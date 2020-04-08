@@ -34,7 +34,6 @@
 #include "core/os/memory.h"
 
 #include "core/color.h"
-#include "core/pool_vector.h"
 
 #include "core/variant.h"
 
@@ -53,9 +52,9 @@ void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src) {
 	memnew_placement(dest, Array(*src));
 }
 
-void GDAPI godot_array_new_pool_color_array(godot_array *r_dest, const godot_pool_color_array *p_pca) {
+void GDAPI godot_array_new_packed_color_array(godot_array *r_dest, const godot_packed_color_array *p_pca) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<Color> *pca = (PoolVector<Color> *)p_pca;
+	Vector<Color> *pca = (Vector<Color> *)p_pca;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -65,9 +64,9 @@ void GDAPI godot_array_new_pool_color_array(godot_array *r_dest, const godot_poo
 	}
 }
 
-void GDAPI godot_array_new_pool_vector3_array(godot_array *r_dest, const godot_pool_vector3_array *p_pv3a) {
+void GDAPI godot_array_new_packed_vector3_array(godot_array *r_dest, const godot_packed_vector3_array *p_pv3a) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<Vector3> *pca = (PoolVector<Vector3> *)p_pv3a;
+	Vector<Vector3> *pca = (Vector<Vector3> *)p_pv3a;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -77,9 +76,9 @@ void GDAPI godot_array_new_pool_vector3_array(godot_array *r_dest, const godot_p
 	}
 }
 
-void GDAPI godot_array_new_pool_vector2_array(godot_array *r_dest, const godot_pool_vector2_array *p_pv2a) {
+void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot_packed_vector2_array *p_pv2a) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<Vector2> *pca = (PoolVector<Vector2> *)p_pv2a;
+	Vector<Vector2> *pca = (Vector<Vector2> *)p_pv2a;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -89,9 +88,9 @@ void GDAPI godot_array_new_pool_vector2_array(godot_array *r_dest, const godot_p
 	}
 }
 
-void GDAPI godot_array_new_pool_string_array(godot_array *r_dest, const godot_pool_string_array *p_psa) {
+void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_packed_string_array *p_psa) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<String> *pca = (PoolVector<String> *)p_psa;
+	Vector<String> *pca = (Vector<String> *)p_psa;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -101,9 +100,9 @@ void GDAPI godot_array_new_pool_string_array(godot_array *r_dest, const godot_po
 	}
 }
 
-void GDAPI godot_array_new_pool_real_array(godot_array *r_dest, const godot_pool_real_array *p_pra) {
+void GDAPI godot_array_new_packed_real_array(godot_array *r_dest, const godot_packed_real_array *p_pra) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<godot_real> *pca = (PoolVector<godot_real> *)p_pra;
+	Vector<godot_real> *pca = (Vector<godot_real> *)p_pra;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -113,9 +112,9 @@ void GDAPI godot_array_new_pool_real_array(godot_array *r_dest, const godot_pool
 	}
 }
 
-void GDAPI godot_array_new_pool_int_array(godot_array *r_dest, const godot_pool_int_array *p_pia) {
+void GDAPI godot_array_new_packed_int_array(godot_array *r_dest, const godot_packed_int_array *p_pia) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<godot_int> *pca = (PoolVector<godot_int> *)p_pia;
+	Vector<godot_int> *pca = (Vector<godot_int> *)p_pia;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 
@@ -125,9 +124,9 @@ void GDAPI godot_array_new_pool_int_array(godot_array *r_dest, const godot_pool_
 	}
 }
 
-void GDAPI godot_array_new_pool_byte_array(godot_array *r_dest, const godot_pool_byte_array *p_pba) {
+void GDAPI godot_array_new_packed_byte_array(godot_array *r_dest, const godot_packed_byte_array *p_pba) {
 	Array *dest = (Array *)r_dest;
-	PoolVector<uint8_t> *pca = (PoolVector<uint8_t> *)p_pba;
+	Vector<uint8_t> *pca = (Vector<uint8_t> *)p_pba;
 	memnew_placement(dest, Array);
 	dest->resize(pca->size());
 

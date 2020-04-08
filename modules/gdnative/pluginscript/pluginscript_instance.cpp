@@ -79,7 +79,7 @@ bool PluginScriptInstance::has_method(const StringName &p_method) const {
 	return _script->has_method(p_method);
 }
 
-Variant PluginScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant PluginScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	// TODO: optimize when calling a Godot method from Godot to avoid param conversion ?
 	godot_variant ret = _desc->call_method(
 			_data, (godot_string_name *)&p_method, (const godot_variant **)p_args,
@@ -93,8 +93,40 @@ void PluginScriptInstance::notification(int p_notification) {
 	_desc->notification(_data, p_notification);
 }
 
+Vector<ScriptNetData> PluginScriptInstance::get_rpc_methods() const {
+	return _script->get_rpc_methods();
+}
+
+uint16_t PluginScriptInstance::get_rpc_method_id(const StringName &p_variable) const {
+	return _script->get_rpc_method_id(p_variable);
+}
+
+StringName PluginScriptInstance::get_rpc_method(uint16_t p_id) const {
+	return _script->get_rpc_method(p_id);
+}
+
+MultiplayerAPI::RPCMode PluginScriptInstance::get_rpc_mode_by_id(uint16_t p_id) const {
+	return _script->get_rpc_mode_by_id(p_id);
+}
+
 MultiplayerAPI::RPCMode PluginScriptInstance::get_rpc_mode(const StringName &p_method) const {
 	return _script->get_rpc_mode(p_method);
+}
+
+Vector<ScriptNetData> PluginScriptInstance::get_rset_properties() const {
+	return _script->get_rset_properties();
+}
+
+uint16_t PluginScriptInstance::get_rset_property_id(const StringName &p_variable) const {
+	return _script->get_rset_property_id(p_variable);
+}
+
+StringName PluginScriptInstance::get_rset_property(uint16_t p_id) const {
+	return _script->get_rset_property(p_id);
+}
+
+MultiplayerAPI::RPCMode PluginScriptInstance::get_rset_mode_by_id(uint16_t p_id) const {
+	return _script->get_rset_mode_by_id(p_id);
 }
 
 MultiplayerAPI::RPCMode PluginScriptInstance::get_rset_mode(const StringName &p_variable) const {
@@ -124,7 +156,7 @@ bool PluginScriptInstance::init(PluginScript *p_script, Object *p_owner) {
 	_script = Ref<PluginScript>(p_script);
 	_desc = &p_script->_desc->instance_desc;
 	_data = _desc->init(p_script->_data, (godot_object *)p_owner);
-	ERR_FAIL_COND_V(_data == NULL, false);
+	ERR_FAIL_COND_V(_data == nullptr, false);
 	p_owner->set_script_instance(this);
 	return true;
 }

@@ -41,16 +41,16 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	LineEdit *search_box;
 	Tree *search_options;
 
+	void _text_changed(const String &p_newtext);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_search();
 
 	void create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text);
-
 	void get_visual_node_names(const String &root_filter, const Set<String> &p_modifiers, bool &found, TreeItem *const root, LineEdit *const search_box);
 
-	void _sbox_input(const Ref<InputEvent> &p_ie);
-
 	void _confirmed();
-	void _text_changed(const String &p_newtext);
+	void _item_selected();
+	void _hide_requested();
 
 	EditorHelpBit *help_bit;
 
@@ -64,8 +64,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	Object *instance;
 	bool virtuals_only;
 	bool seq_connect;
-
-	void _item_selected();
+	VBoxContainer *vbc;
 
 	Vector<Variant::Type> type_filter;
 

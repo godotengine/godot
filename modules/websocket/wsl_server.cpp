@@ -103,7 +103,7 @@ Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT)
 		return ERR_TIMEOUT;
 	if (use_ssl) {
-		Ref<StreamPeerSSL> ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+		Ref<StreamPeerSSL> ssl = static_cast<Ref<StreamPeerSSL>>(connection);
 		if (ssl.is_null())
 			return FAILED;
 		ssl->poll();
@@ -171,7 +171,7 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 void WSLServer::poll() {
 
 	List<int> remove_ids;
-	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		Ref<WSLPeer> peer = (WSLPeer *)E->get().ptr();
 		peer->poll();
 		if (!peer->is_connected_to_host()) {
@@ -184,8 +184,8 @@ void WSLServer::poll() {
 	}
 	remove_ids.clear();
 
-	List<Ref<PendingPeer> > remove_peers;
-	for (List<Ref<PendingPeer> >::Element *E = _pending.front(); E; E = E->next()) {
+	List<Ref<PendingPeer>> remove_peers;
+	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
 		Ref<PendingPeer> ppeer = E->get();
 		Error err = ppeer->do_handshake(_protocols);
 		if (err == ERR_BUSY) {
@@ -212,7 +212,7 @@ void WSLServer::poll() {
 		remove_peers.push_back(ppeer);
 		_on_connect(id, ppeer->protocol);
 	}
-	for (List<Ref<PendingPeer> >::Element *E = remove_peers.front(); E; E = E->next()) {
+	for (List<Ref<PendingPeer>>::Element *E = remove_peers.front(); E; E = E->next()) {
 		_pending.erase(E->get());
 	}
 	remove_peers.clear();
@@ -251,7 +251,7 @@ int WSLServer::get_max_packet_size() const {
 
 void WSLServer::stop() {
 	_server->stop();
-	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		Ref<WSLPeer> peer = (WSLPeer *)E->get().ptr();
 		peer->close_now();
 	}
@@ -265,7 +265,7 @@ bool WSLServer::has_peer(int p_id) const {
 }
 
 Ref<WebSocketPeer> WSLServer::get_peer(int p_id) const {
-	ERR_FAIL_COND_V(!has_peer(p_id), NULL);
+	ERR_FAIL_COND_V(!has_peer(p_id), nullptr);
 	return _peer_map[p_id];
 }
 

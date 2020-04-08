@@ -1,18 +1,21 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
+
+# Only kept to build the thirdparty library used by the theora and webm
+# modules. We now use stb_vorbis for AudioStreamOGGVorbis.
 
 env_vorbis = env_modules.Clone()
 
 stub = True
 
 # Thirdparty source files
-if env['builtin_libvorbis']:
+if env["builtin_libvorbis"]:
     thirdparty_dir = "#thirdparty/libvorbis/"
     thirdparty_sources = [
-        #"analysis.c",
-        #"barkmel.c",
+        # "analysis.c",
+        # "barkmel.c",
         "bitrate.c",
         "block.c",
         "codebook.c",
@@ -26,14 +29,14 @@ if env['builtin_libvorbis']:
         "mapping0.c",
         "mdct.c",
         "psy.c",
-        #"psytune.c",
+        # "psytune.c",
         "registry.c",
         "res0.c",
         "sharedbook.c",
         "smallft.c",
         "synthesis.c",
-        #"tone.c",
-        #"vorbisenc.c",
+        # "tone.c",
+        # "vorbisenc.c",
         "vorbisfile.c",
         "window.c",
     ]
@@ -43,16 +46,12 @@ if env['builtin_libvorbis']:
     env_vorbis.Prepend(CPPPATH=[thirdparty_dir])
 
     # also requires libogg
-    if env['builtin_libogg']:
+    if env["builtin_libogg"]:
         env_vorbis.Prepend(CPPPATH=["#thirdparty/libogg"])
 
     env_thirdparty = env_vorbis.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
-if not stub:
-    # Module files
-    env_vorbis.add_source_files(env.modules_sources, "*.cpp")
-else:
-    # Module files
-    env_vorbis.add_source_files(env.modules_sources, "stub/register_types.cpp")
+# Module files
+env_vorbis.add_source_files(env.modules_sources, "register_types.cpp")

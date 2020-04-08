@@ -1,30 +1,35 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 iphone_lib = [
-    'godot_iphone.cpp',
-    'os_iphone.cpp',
-    'semaphore_iphone.cpp',
-    'gl_view.mm',
-    'main.m',
-    'app_delegate.mm',
-    'view_controller.mm',
-    'game_center.mm',
-    'in_app_store.mm',
-    'icloud.mm',
-    'ios.mm',
+    "godot_iphone.cpp",
+    "os_iphone.cpp",
+    "semaphore_iphone.cpp",
+    "gl_view.mm",
+    "main.m",
+    "app_delegate.mm",
+    "view_controller.mm",
+    "game_center.mm",
+    "in_app_store.mm",
+    "icloud.mm",
+    "ios.mm",
+    "vulkan_context_iphone.mm",
 ]
 
 env_ios = env.Clone()
-ios_lib = env_ios.add_library('iphone', iphone_lib)
+ios_lib = env_ios.add_library("iphone", iphone_lib)
+
 
 def combine_libs(target=None, source=None, env=None):
     lib_path = target[0].srcnode().abspath
     if "osxcross" in env:
-        libtool = '$IPHONEPATH/usr/bin/${ios_triple}libtool'
+        libtool = "$IPHONEPATH/usr/bin/${ios_triple}libtool"
     else:
         libtool = "$IPHONEPATH/usr/bin/libtool"
-    env.Execute(libtool + ' -static -o "' + lib_path + '" ' + ' '.join([('"' + lib.srcnode().abspath + '"') for lib in source]))
+    env.Execute(
+        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+    )
 
-combine_command = env_ios.Command('#bin/libgodot' + env_ios['LIBSUFFIX'], [ios_lib] + env_ios['LIBS'], combine_libs)
+
+combine_command = env_ios.Command("#bin/libgodot" + env_ios["LIBSUFFIX"], [ios_lib] + env_ios["LIBS"], combine_libs)

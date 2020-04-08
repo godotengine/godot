@@ -54,7 +54,7 @@ class EditorAudioBus : public PanelContainer {
 
 	GDCLASS(EditorAudioBus, PanelContainer);
 
-	Ref<Texture> disabled_vu;
+	Ref<Texture2D> disabled_vu;
 	LineEdit *track_name;
 	MenuButton *bus_options;
 	VSlider *slider;
@@ -133,7 +133,7 @@ public:
 	void update_bus();
 	void update_send();
 
-	EditorAudioBus(EditorAudioBuses *p_buses = NULL, bool p_is_master = false);
+	EditorAudioBus(EditorAudioBuses *p_buses = nullptr, bool p_is_master = false);
 };
 
 class EditorAudioBusDrop : public Control {

@@ -39,7 +39,7 @@ ResourceFormatLoaderPluginScript::ResourceFormatLoaderPluginScript(PluginScriptL
 	_language = language;
 }
 
-RES ResourceFormatLoaderPluginScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderPluginScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;
 
@@ -109,5 +109,5 @@ void ResourceFormatSaverPluginScript::get_recognized_extensions(const RES &p_res
 
 bool ResourceFormatSaverPluginScript::recognize(const RES &p_resource) const {
 
-	return Object::cast_to<PluginScript>(*p_resource) != NULL;
+	return Object::cast_to<PluginScript>(*p_resource) != nullptr;
 }

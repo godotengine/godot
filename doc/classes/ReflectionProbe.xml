@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ReflectionProbe" inherits="VisualInstance" version="4.0">
+<class name="ReflectionProbe" inherits="VisualInstance3D" version="4.0">
 	<brief_description>
 		Captures its surroundings to create reflections.
 	</brief_description>
 	<description>
-		Capture its surroundings as a dual parabolid image, and stores versions of it with increasing levels of blur to simulate different material roughnesses.
+		Captures its surroundings as a cubemap, and stores versions of it with increasing levels of blur to simulate different material roughnesses.
 		The [ReflectionProbe] is used to create high-quality reflections at the cost of performance. It can be combined with [GIProbe]s and Screen Space Reflections to achieve high quality reflections. [ReflectionProbe]s render all objects within their [member cull_mask], so updating them can be quite expensive. It is best to update them once with the important static objects and then leave them.
 	</description>
 	<tutorials>
@@ -17,7 +17,7 @@
 			If [code]true[/code], enables box projection. This makes reflections look more correct in rectangle-shaped rooms by offsetting the reflection center depending on the camera's location.
 		</member>
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
-			Sets the cull mask which determines what objects are drawn by this probe. Every [VisualInstance] with a layer included in this cull mask will be rendered by the probe. It is best to only include large objects which are likely to take up a lot of space in the reflection in order to save on rendering cost.
+			Sets the cull mask which determines what objects are drawn by this probe. Every [VisualInstance3D] with a layer included in this cull mask will be rendered by the probe. It is best to only include large objects which are likely to take up a lot of space in the reflection in order to save on rendering cost.
 		</member>
 		<member name="enable_shadows" type="bool" setter="set_enable_shadows" getter="are_shadows_enabled" default="false">
 			If [code]true[/code], computes shadows in the reflection probe. This makes the reflection probe slower to render; you may want to disable this if using the [constant UPDATE_ALWAYS] [member update_mode].
@@ -52,7 +52,7 @@
 	</members>
 	<constants>
 		<constant name="UPDATE_ONCE" value="0" enum="UpdateMode">
-			Update the probe once on the next frame.
+			Update the probe once on the next frame. The corresponding radiance map will be generated over the following six frames. This is slower to update than [constant UPDATE_ALWAYS] but can result in higher quality reflections.
 		</constant>
 		<constant name="UPDATE_ALWAYS" value="1" enum="UpdateMode">
 			Update the probe every frame. This is needed when you want to capture dynamic objects. However, it results in an increased render time. Use [constant UPDATE_ONCE] whenever possible.

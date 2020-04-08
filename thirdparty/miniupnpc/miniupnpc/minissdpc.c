@@ -62,13 +62,13 @@ struct sockaddr_un {
 
 #include "miniupnpc_socketdef.h"
 
-#if !defined(__DragonFly__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__APPLE__) && !defined(_WIN32) && !defined(__CYGWIN__) && !defined(__sun) && !defined(__GNU__) && !defined(__FreeBSD_kernel__)
+#if !defined(__DragonFly__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && !defined(__APPLE__) && !defined(_WIN32) && !defined(__CYGWIN__) && !defined(__sun) && !defined(__GNU__) && !defined(__FreeBSD_kernel__) && !defined(__HAIKU__)
 #define HAS_IP_MREQN
 #endif
 
 #if !defined(HAS_IP_MREQN) && !defined(_WIN32)
 #include <sys/ioctl.h>
-#if defined(__sun)
+#if defined(__sun) || defined(__HAIKU__)
 #include <sys/sockio.h>
 #endif
 #endif

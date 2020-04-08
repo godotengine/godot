@@ -4,7 +4,7 @@
 		Class for displaying popups with a panel background.
 	</brief_description>
 	<description>
-		Class for displaying popups with a panel background. In some cases it might be simpler to use than [Popup], since it provides a configurable background. If you are making windows, better check [WindowDialog].
+		Class for displaying popups with a panel background. In some cases it might be simpler to use than [Popup], since it provides a configurable background. If you are making windows, better check [Window].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,6 +14,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="panel" type="StyleBox">
+			The background panel style of this [PopupPanel].
 		</theme_item>
 	</theme_items>
 </class>

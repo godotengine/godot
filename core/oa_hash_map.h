@@ -48,7 +48,7 @@
  */
 template <class TKey, class TValue,
 		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey> >
+		class Comparator = HashMapComparatorDefault<TKey>>
 class OAHashMap {
 
 private:
@@ -224,7 +224,7 @@ public:
 	/**
 	 * returns true if the value was found, false otherwise.
 	 *
-	 * if r_data is not NULL then the value will be written to the object
+	 * if r_data is not nullptr  then the value will be written to the object
 	 * it points to.
 	 */
 	bool lookup(const TKey &p_key, TValue &r_data) const {
@@ -238,6 +238,22 @@ public:
 		}
 
 		return false;
+	}
+
+	/**
+	 * returns true if the value was found, false otherwise.
+	 *
+	 * if r_data is not nullptr  then the value will be written to the object
+	 * it points to.
+	 */
+	TValue *lookup_ptr(const TKey &p_key) const {
+		uint32_t pos = 0;
+		bool exists = _lookup_pos(p_key, pos);
+
+		if (exists) {
+			return &values[pos];
+		}
+		return nullptr;
 	}
 
 	_FORCE_INLINE_ bool has(const TKey &p_key) const {
@@ -309,8 +325,8 @@ public:
 		Iterator it;
 		it.valid = false;
 		it.pos = p_iter.pos;
-		it.key = NULL;
-		it.value = NULL;
+		it.key = nullptr;
+		it.value = nullptr;
 
 		for (uint32_t i = it.pos; i < capacity; i++) {
 			it.pos = i + 1;
@@ -353,4 +369,4 @@ public:
 	}
 };
 
-#endif
+#endif // OA_HASH_MAP_H

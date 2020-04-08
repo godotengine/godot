@@ -12,9 +12,9 @@
 	</tutorials>
 	<methods>
 		<method name="get_default_texture_param" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
-			<argument index="0" name="param" type="String">
+			<argument index="0" name="param" type="StringName">
 			</argument>
 			<description>
 				Returns the texture that is set as default for the specified parameter.
@@ -31,7 +31,7 @@
 		<method name="has_param" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the shader has this param defined as a uniform in its code.
@@ -41,9 +41,9 @@
 		<method name="set_default_texture_param">
 			<return type="void">
 			</return>
-			<argument index="0" name="param" type="String">
+			<argument index="0" name="param" type="StringName">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
 				Sets the default texture to be used with a texture uniform. The default is used if a texture is not set in the [ShaderMaterial].
@@ -65,6 +65,9 @@
 		</constant>
 		<constant name="MODE_PARTICLES" value="2" enum="Mode">
 			Mode used to calculate particle information on a per-particle basis. Not used for drawing.
+		</constant>
+		<constant name="MODE_SKY" value="3" enum="Mode">
+			Mode used for drawing skies. Only works with shaders attached to [Sky] objects.
 		</constant>
 	</constants>
 </class>

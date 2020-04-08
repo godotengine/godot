@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef COWDATA_H_
-#define COWDATA_H_
-
-#include <string.h>
+#ifndef COWDATA_H
+#define COWDATA_H
 
 #include "core/error_macros.h"
 #include "core/os/memory.h"
 #include "core/safe_refcount.h"
+
+#include <string.h>
 
 template <class T>
 class Vector;
@@ -61,7 +61,7 @@ private:
 	_FORCE_INLINE_ uint32_t *_get_refcount() const {
 
 		if (!_ptr)
-			return NULL;
+			return nullptr;
 
 		return reinterpret_cast<uint32_t *>(_ptr) - 2;
 	}
@@ -69,7 +69,7 @@ private:
 	_FORCE_INLINE_ uint32_t *_get_size() const {
 
 		if (!_ptr)
-			return NULL;
+			return nullptr;
 
 		return reinterpret_cast<uint32_t *>(_ptr) - 1;
 	}
@@ -77,29 +77,30 @@ private:
 	_FORCE_INLINE_ T *_get_data() const {
 
 		if (!_ptr)
-			return NULL;
+			return nullptr;
 		return reinterpret_cast<T *>(_ptr);
 	}
 
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
-		//return nearest_power_of_2_templated(p_elements*sizeof(T)+sizeof(SafeRefCount)+sizeof(int));
 		return next_power_of_2(p_elements * sizeof(T));
 	}
 
 	_FORCE_INLINE_ bool _get_alloc_size_checked(size_t p_elements, size_t *out) const {
-#if defined(_add_overflow) && defined(_mul_overflow)
+#if defined(__GNUC__)
 		size_t o;
 		size_t p;
-		if (_mul_overflow(p_elements, sizeof(T), &o)) {
+		if (__builtin_mul_overflow(p_elements, sizeof(T), &o)) {
 			*out = 0;
 			return false;
 		}
 		*out = next_power_of_2(o);
-		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //no longer allocated here
+		if (__builtin_add_overflow(o, static_cast<size_t>(32), &p)) {
+			return false; // No longer allocated here.
+		}
 		return true;
 #else
 		// Speed is more important than correctness here, do the operations unchecked
-		// and hope the best
+		// and hope for the best.
 		*out = _get_alloc_size(p_elements);
 		return true;
 #endif
@@ -252,37 +253,42 @@ Error CowData<T>::resize(int p_size) {
 
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
-	if (p_size == size())
+	int current_size = size();
+
+	if (p_size == current_size)
 		return OK;
 
 	if (p_size == 0) {
 		// wants to clean up
 		_unref(_ptr);
-		_ptr = NULL;
+		_ptr = nullptr;
 		return OK;
 	}
 
 	// possibly changing size, copy on write
 	_copy_on_write();
 
+	size_t current_alloc_size = _get_alloc_size(current_size);
 	size_t alloc_size;
 	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
 
-	if (p_size > size()) {
+	if (p_size > current_size) {
 
-		if (size() == 0) {
-			// alloc from scratch
-			uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
-			ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
-			*(ptr - 1) = 0; //size, currently none
-			*(ptr - 2) = 1; //refcount
+		if (alloc_size != current_alloc_size) {
+			if (current_size == 0) {
+				// alloc from scratch
+				uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
+				ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
+				*(ptr - 1) = 0; //size, currently none
+				*(ptr - 2) = 1; //refcount
 
-			_ptr = (T *)ptr;
+				_ptr = (T *)ptr;
 
-		} else {
-			void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
-			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-			_ptr = (T *)(_ptrnew);
+			} else {
+				void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
+				ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
+				_ptr = (T *)(_ptrnew);
+			}
 		}
 
 		// construct the newly created elements
@@ -297,7 +303,7 @@ Error CowData<T>::resize(int p_size) {
 
 		*_get_size() = p_size;
 
-	} else if (p_size < size()) {
+	} else if (p_size < current_size) {
 
 		if (!__has_trivial_destructor(T)) {
 			// deinitialize no longer needed elements
@@ -307,10 +313,12 @@ Error CowData<T>::resize(int p_size) {
 			}
 		}
 
-		void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
-		ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
+		if (alloc_size != current_alloc_size) {
+			void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
+			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
 
-		_ptr = (T *)(_ptrnew);
+			_ptr = (T *)(_ptrnew);
+		}
 
 		*_get_size() = p_size;
 	}
@@ -348,7 +356,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; // self assign, do nothing.
 
 	_unref(_ptr);
-	_ptr = NULL;
+	_ptr = nullptr;
 
 	if (!p_from._ptr)
 		return; //nothing to do
@@ -361,7 +369,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 template <class T>
 CowData<T>::CowData() {
 
-	_ptr = NULL;
+	_ptr = nullptr;
 }
 
 template <class T>
@@ -370,4 +378,4 @@ CowData<T>::~CowData() {
 	_unref(_ptr);
 }
 
-#endif /* COW_H_ */
+#endif // COWDATA_H

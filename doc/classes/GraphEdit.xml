@@ -49,11 +49,11 @@
 		<method name="connect_node">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -64,11 +64,11 @@
 		<method name="disconnect_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -94,11 +94,11 @@
 		<method name="is_node_connected">
 			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -149,11 +149,11 @@
 		<method name="set_connection_activity">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_port" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_port" type="int">
 			</argument>
@@ -204,7 +204,7 @@
 			</description>
 		</signal>
 		<signal name="connection_from_empty">
-			<argument index="0" name="to" type="String">
+			<argument index="0" name="to" type="StringName">
 			</argument>
 			<argument index="1" name="to_slot" type="int">
 			</argument>
@@ -215,11 +215,11 @@
 			</description>
 		</signal>
 		<signal name="connection_request">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_slot" type="int">
 			</argument>
@@ -228,7 +228,7 @@
 			</description>
 		</signal>
 		<signal name="connection_to_empty">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
@@ -249,11 +249,11 @@
 			</description>
 		</signal>
 		<signal name="disconnection_request">
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
 			<argument index="1" name="from_slot" type="int">
 			</argument>
-			<argument index="2" name="to" type="String">
+			<argument index="2" name="to" type="StringName">
 			</argument>
 			<argument index="3" name="to_slot" type="int">
 			</argument>
@@ -303,26 +303,37 @@
 		<theme_item name="bezier_len_pos" type="int" default="80">
 		</theme_item>
 		<theme_item name="bg" type="StyleBox">
+			The background drawn under the grid.
 		</theme_item>
 		<theme_item name="grid_major" type="Color" default="Color( 1, 1, 1, 0.2 )">
+			Color of major grid lines.
 		</theme_item>
 		<theme_item name="grid_minor" type="Color" default="Color( 1, 1, 1, 0.05 )">
+			Color of minor grid lines.
 		</theme_item>
-		<theme_item name="minus" type="Texture">
+		<theme_item name="minus" type="Texture2D">
+			The icon for the zoom out button.
 		</theme_item>
-		<theme_item name="more" type="Texture">
+		<theme_item name="more" type="Texture2D">
+			The icon for the zoom in button.
 		</theme_item>
 		<theme_item name="port_grab_distance_horizontal" type="int" default="48">
+			The horizontal range within which a port can be grabbed (on both sides).
 		</theme_item>
 		<theme_item name="port_grab_distance_vertical" type="int" default="6">
+			The vertical range within which a port can be grabbed (on both sides).
 		</theme_item>
-		<theme_item name="reset" type="Texture">
+		<theme_item name="reset" type="Texture2D">
+			The icon for the zoom reset button.
 		</theme_item>
 		<theme_item name="selection_fill" type="Color" default="Color( 1, 1, 1, 0.3 )">
+			The fill color of the selection rectangle.
 		</theme_item>
 		<theme_item name="selection_stroke" type="Color" default="Color( 1, 1, 1, 0.8 )">
+			The outline color of the selection rectangle.
 		</theme_item>
-		<theme_item name="snap" type="Texture">
+		<theme_item name="snap" type="Texture2D">
+			The icon for the snap toggle button.
 		</theme_item>
 	</theme_items>
 </class>

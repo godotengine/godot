@@ -35,42 +35,79 @@
 
 #include "core/reference.h"
 
-class MonoGCHandle : public Reference {
+namespace gdmono {
 
-	GDCLASS(MonoGCHandle, Reference);
+enum class GCHandleType : char {
+	NIL,
+	STRONG_HANDLE,
+	WEAK_HANDLE
+};
 
-	bool released;
-	bool weak;
+}
+
+// Manual release of the GC handle must be done when using this struct
+struct MonoGCHandleData {
 	uint32_t handle;
+	gdmono::GCHandleType type;
 
-public:
-	enum HandleType {
-		STRONG_HANDLE,
-		WEAK_HANDLE
-	};
+	_FORCE_INLINE_ bool is_released() const { return !handle; }
+	_FORCE_INLINE_ bool is_weak() const { return type == gdmono::GCHandleType::WEAK_HANDLE; }
 
-	static uint32_t new_strong_handle(MonoObject *p_object);
-	static uint32_t new_strong_handle_pinned(MonoObject *p_object);
-	static uint32_t new_weak_handle(MonoObject *p_object);
-	static void free_handle(uint32_t p_gchandle);
+	_FORCE_INLINE_ MonoObject *get_target() const { return handle ? mono_gchandle_get_target(handle) : nullptr; }
 
-	static Ref<MonoGCHandle> create_strong(MonoObject *p_object);
-	static Ref<MonoGCHandle> create_weak(MonoObject *p_object);
-
-	_FORCE_INLINE_ bool is_released() { return released; }
-	_FORCE_INLINE_ bool is_weak() { return weak; }
-
-	_FORCE_INLINE_ MonoObject *get_target() const { return released ? NULL : mono_gchandle_get_target(handle); }
-
-	_FORCE_INLINE_ void set_handle(uint32_t p_handle, HandleType p_handle_type) {
-		released = false;
-		weak = p_handle_type == WEAK_HANDLE;
-		handle = p_handle;
-	}
 	void release();
 
-	MonoGCHandle(uint32_t p_handle, HandleType p_handle_type);
-	~MonoGCHandle();
+	MonoGCHandleData &operator=(const MonoGCHandleData &p_other) {
+#ifdef DEBUG_ENABLED
+		CRASH_COND(!is_released());
+#endif
+		handle = p_other.handle;
+		type = p_other.type;
+		return *this;
+	}
+
+	MonoGCHandleData(const MonoGCHandleData &) = default;
+
+	MonoGCHandleData() :
+			handle(0),
+			type(gdmono::GCHandleType::NIL) {
+	}
+
+	MonoGCHandleData(uint32_t p_handle, gdmono::GCHandleType p_type) :
+			handle(p_handle),
+			type(p_type) {
+	}
+
+	static MonoGCHandleData new_strong_handle(MonoObject *p_object);
+	static MonoGCHandleData new_strong_handle_pinned(MonoObject *p_object);
+	static MonoGCHandleData new_weak_handle(MonoObject *p_object);
+};
+
+class MonoGCHandleRef : public Reference {
+
+	GDCLASS(MonoGCHandleRef, Reference);
+
+	MonoGCHandleData data;
+
+public:
+	static Ref<MonoGCHandleRef> create_strong(MonoObject *p_object);
+	static Ref<MonoGCHandleRef> create_weak(MonoObject *p_object);
+
+	_FORCE_INLINE_ bool is_released() const { return data.is_released(); }
+	_FORCE_INLINE_ bool is_weak() const { return data.is_weak(); }
+
+	_FORCE_INLINE_ MonoObject *get_target() const { return data.get_target(); }
+
+	void release() { data.release(); }
+
+	_FORCE_INLINE_ void set_handle(uint32_t p_handle, gdmono::GCHandleType p_handle_type) {
+		data = MonoGCHandleData(p_handle, p_handle_type);
+	}
+
+	MonoGCHandleRef(const MonoGCHandleData &p_gc_handle_data) :
+			data(p_gc_handle_data) {
+	}
+	~MonoGCHandleRef() { release(); }
 };
 
 #endif // CSHARP_GC_HANDLE_H

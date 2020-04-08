@@ -59,12 +59,13 @@
 # king <wangding1992@126.com>, 2019.
 # silentbird <silentbird520@outlook.com>, 2019.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2019, 2020.
+# Revan Ji <jiruifancr@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-01-27 07:10+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2020-03-08 22:33+0000\n"
+"Last-Translator: Revan Ji <jiruifancr@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -72,7 +73,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -354,7 +355,7 @@ msgstr "线性"
 
 #: editor/animation_track_editor.cpp
 msgid "Cubic"
-msgstr "立方体"
+msgstr "三次方"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
@@ -732,8 +733,8 @@ msgid "Line Number:"
 msgstr "行号:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "替换了%d项。"
+msgid "%d replaced."
+msgstr "已替换%d处。"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1525,6 +1526,10 @@ msgstr "名称"
 msgid "Singleton"
 msgstr "单例"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "粘贴参数"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "更新场景"
@@ -1801,9 +1806,9 @@ msgstr "在文件管理器中显示"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "New Folder..."
-msgstr "新建文件夹 ..."
+msgstr "新建文件夹..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "刷新"
@@ -1814,7 +1819,7 @@ msgstr "所有可用类型"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
-msgstr "所有文件(*)"
+msgstr "所有文件（*）"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File"
@@ -2334,8 +2339,8 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"这是一个远程对象，因此不会保留对其的更改。 请阅读与调试相关的文档，以更好地了"
-"解此工作流程。"
+"这是远程对象，因此不会保留对其的更改。\n"
+"请阅读与调试相关的文档，以更好地了解此工作流程。"
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
@@ -3131,11 +3136,11 @@ msgstr "更新"
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Version:"
-msgstr "版本:"
+msgstr "版本："
 
 #: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 msgid "Author:"
-msgstr "作者:"
+msgstr "作者："
 
 #: editor/editor_plugin_settings.cpp
 msgid "Status:"
@@ -3147,7 +3152,7 @@ msgstr "编辑："
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
-msgstr "测量:"
+msgstr "测量："
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
@@ -3207,7 +3212,7 @@ msgstr "[空]"
 
 #: editor/editor_properties.cpp editor/plugins/root_motion_editor_plugin.cpp
 msgid "Assign..."
-msgstr "分配..."
+msgstr "指定..."
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
@@ -3217,7 +3222,7 @@ msgstr "无效的RID"
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
 "property (%s)."
-msgstr "被选择的资源（%s）并不能匹配此属性（%s）应有的类型。"
+msgstr "所选资源（%s）与该属性（%s）所需的类型都不匹配。"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3346,11 +3351,11 @@ msgstr "浏览"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
-msgstr "场景路径:"
+msgstr "场景路径："
 
 #: editor/editor_sub_scene.cpp
 msgid "Import From Node:"
-msgstr "从节点中导入:"
+msgstr "从节点中导入："
 
 #: editor/export_template_manager.cpp
 msgid "Redownload"
@@ -3387,7 +3392,7 @@ msgstr "检索镜像，请等待..."
 
 #: editor/export_template_manager.cpp
 msgid "Remove template version '%s'?"
-msgstr "移除版本为 '%s' 的模板?"
+msgstr "是否移除版本为“%s”的模板？"
 
 #: editor/export_template_manager.cpp
 msgid "Can't open export templates zip."
@@ -3403,7 +3408,7 @@ msgstr "模板中没有找到version.txt文件。"
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:"
-msgstr "创建模板文件路径出错:"
+msgstr "创建模板文件路径出错："
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -3411,7 +3416,7 @@ msgstr "正在解压导出模板"
 
 #: editor/export_template_manager.cpp
 msgid "Importing:"
-msgstr "导入:"
+msgstr "正在导入："
 
 #: editor/export_template_manager.cpp
 msgid "Error getting the list of mirrors."
@@ -3430,7 +3435,7 @@ msgstr "没有找到这个版本的下载链接。直接下载只适用于正式
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Can't resolve."
-msgstr "无法解析."
+msgstr "无法解析。"
 
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -3453,7 +3458,7 @@ msgstr "循环重定向。"
 #: editor/export_template_manager.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Failed:"
-msgstr "失败:"
+msgstr "失败："
 
 #: editor/export_template_manager.cpp
 msgid "Download Complete."
@@ -3461,21 +3466,23 @@ msgstr "下载完成。"
 
 #: editor/export_template_manager.cpp
 msgid "Cannot remove temporary file:"
-msgstr "无法移除临时文件:"
+msgstr "无法移除临时文件："
 
 #: editor/export_template_manager.cpp
 msgid ""
 "Templates installation failed.\n"
 "The problematic templates archives can be found at '%s'."
-msgstr "模板安装失败。有问题的模板文档在 '%s' 。"
+msgstr ""
+"模板安装失败。\n"
+"有问题的模板文档在“%s”。"
 
 #: editor/export_template_manager.cpp
 msgid "Error requesting URL:"
-msgstr "错误的请求链接:"
+msgstr "请求URL时出错："
 
 #: editor/export_template_manager.cpp
 msgid "Connecting to Mirror..."
-msgstr "正在连接镜像网站。。"
+msgstr "正在连接镜像网站..."
 
 #: editor/export_template_manager.cpp
 msgid "Disconnected"
@@ -3525,11 +3532,11 @@ msgstr "无压缩的Android Build资源"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
-msgstr "当前版本:"
+msgstr "当前版本："
 
 #: editor/export_template_manager.cpp
 msgid "Installed Versions:"
-msgstr "已安装版本:"
+msgstr "已安装版本："
 
 #: editor/export_template_manager.cpp
 msgid "Install From File"
@@ -3565,7 +3572,7 @@ msgstr "收藏"
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
-msgstr "状态: 导入文件失败。请手动修复文件后重新导入。"
+msgstr "状态：导入文件失败。请手动修复文件后重新导入。"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot move/rename resources root."
@@ -3577,15 +3584,15 @@ msgstr "无法将文件夹移动到其自身。"
 
 #: editor/filesystem_dock.cpp
 msgid "Error moving:"
-msgstr "移动出错:"
+msgstr "移动出错："
 
 #: editor/filesystem_dock.cpp
 msgid "Error duplicating:"
-msgstr "复制出错:"
+msgstr "复制出错："
 
 #: editor/filesystem_dock.cpp
 msgid "Unable to update dependencies:"
-msgstr "无法更新依赖:"
+msgstr "无法更新依赖："
 
 #: editor/filesystem_dock.cpp editor/scene_tree_editor.cpp
 msgid "No name provided."
@@ -3605,19 +3612,19 @@ msgstr "名称包含无效字符。"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
-msgstr "重命名文件:"
+msgstr "重命名文件："
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
-msgstr "重命名文件夹:"
+msgstr "重命名文件夹："
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating file:"
-msgstr "拷贝文件:"
+msgstr "拷贝文件："
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating folder:"
-msgstr "复制文件夹:"
+msgstr "复制文件夹："
 
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
@@ -3926,16 +3933,16 @@ msgid "Saving..."
 msgstr "保存中..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d个文件"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "设置为“%s”的默认值"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "清除默认'%s'"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " 文件"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -3982,10 +3989,6 @@ msgstr "另存为..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "复制参数"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "粘贴参数"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -4523,7 +4526,7 @@ msgstr "未来"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Depth"
-msgstr "深度"
+msgstr "Depth(深度)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "1 step"
@@ -5247,22 +5250,22 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock Selected"
-msgstr "锁定选定"
+msgstr "锁定所选项"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock Selected"
-msgstr "解锁所选"
+msgstr "解锁所选项"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Group Selected"
-msgstr "分组选择"
+msgstr "编组所选项"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Ungroup Selected"
-msgstr "取消选定分组"
+msgstr "解组所选项"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
@@ -5647,7 +5650,7 @@ msgstr "生成顶点计数:"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr "发射遮罩"
+msgstr "Emission Mask(发射遮挡)"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5672,7 +5675,7 @@ msgstr "从像素捕获"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "发光颜色"
+msgstr "Emission Colors(发射颜色)"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -5785,12 +5788,12 @@ msgid "Mesh is empty!"
 msgstr "网格为空！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "创建静态三维身体"
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "无法创建Trimesh碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "创建静态凸体(Convex Body)"
+msgid "Create Static Trimesh Body"
+msgstr "创建静态三维身体"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5801,12 +5804,28 @@ msgid "Create Trimesh Static Shape"
 msgstr "创建三维网格静态形状"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "创建形状失败！"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr "无法为场景根节点创建单一凸碰撞形状。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
-msgstr "创建凸形"
+msgid "Couldn't create a single convex collision shape."
+msgstr "无法创建单一凸碰撞形状。"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Shape"
+msgstr "创建单一凸形状"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr "无法为场景根节点创建多个凸碰撞形状。"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create any collision shapes."
+msgstr "无法创建碰撞形状。"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Shapes"
+msgstr "创建多个凸形状"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5857,16 +5876,64 @@ msgid "Create Trimesh Static Body"
 msgstr "创建三角网格静态实体"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"创建StaticBody并自动为其分配基于多边形的碰撞形状。\n"
+"这是最准确（但是最慢）的碰撞检测手段。"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "创建三角网格碰撞同级"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
-msgstr "创建凸型碰撞同级"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"创建基于多边形的碰撞形状。\n"
+"这是最准确（但是最慢）的碰撞检测手段。"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Single Convex Collision Sibling"
+msgstr "创建单一凸碰撞同级"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+"创建单一凸碰撞形状。\n"
+"这是最快（但是最不精确）的碰撞检测手段。"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "创建多个凸碰撞同级"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
+"创建基于多边形的碰撞形状。\n"
+"这是性能位于上述两种之间的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "创建轮廓网格..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"创建一个静态轮廓网格。轮廓网格会自动翻转法线。\n"
+"可以用来在必要时代替SpatialMaterial的Grow属性。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -7839,7 +7906,7 @@ msgstr "字体"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr "颜色"
+msgstr "Color(颜色)"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -8260,7 +8327,7 @@ msgstr "图块集"
 msgid "No VCS addons are available."
 msgstr "没有可用的VCS插件。"
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "错误"
 
@@ -9383,24 +9450,29 @@ msgid "Export With Debug"
 msgstr "使用调试导出"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
-msgstr "该路径不存在。"
+msgid "The path specified doesn't exist."
+msgstr "指定的路径不存在。"
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
-msgstr "无效的“.zip”项目文件，没有包含一个“project.godot”文件。"
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "打开包文件时出错（非ZIP格式）。"
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+msgstr "无效的“.zip”项目文件；没有包含“project.godot”文件。"
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "请选择空文件夹。"
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
-msgstr "请选择一个“project.godot”或者“.zip”文件。"
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "请选择“project.godot”或“.zip”文件。"
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
-msgstr "文件夹已经包含了一个Godot项目。"
+msgid "This directory already contains a Godot project."
+msgstr "该目录已经包含Godot项目。"
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -10081,6 +10153,10 @@ msgid "Suffix"
 msgstr "后缀"
 
 #: editor/rename_dialog.cpp
+msgid "Use Regular Expressions"
+msgstr "使用正则表达式"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "高级选项"
 
@@ -10117,7 +10193,7 @@ msgstr ""
 "比较计数器的选项。"
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr "各级单独计数"
 
 #: editor/rename_dialog.cpp
@@ -10149,10 +10225,6 @@ msgstr ""
 "缺失的数字将用0填充在头部。"
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "正则表达式"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "后期处理"
 
@@ -10161,11 +10233,11 @@ msgid "Keep"
 msgstr "保持"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr "驼峰式转为下划线式"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr "下划线式转为驼峰式"
 
 #: editor/rename_dialog.cpp
@@ -10183,6 +10255,14 @@ msgstr "转为大写"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "重置"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr "正则表达式出错"
+
+#: editor/rename_dialog.cpp
+msgid "At character %s"
+msgstr "位于字符%s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10636,8 +10716,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "所继承父类的名称或路径无效。"
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
-msgstr "脚本有效。"
+msgid "Script path/name is valid."
+msgstr "脚本路径/名称有效。"
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10728,6 +10808,10 @@ msgid "Copy Error"
 msgstr "复制错误信息"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr "显存"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "跳过断点"
 
@@ -10774,10 +10858,6 @@ msgstr "占用显存的资源列表:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "合计:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "显存"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12069,6 +12149,11 @@ msgid ""
 "don't use them."
 msgstr "平面形状无法正常工作，未来版本将被删除。请勿使用。"
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "无物可见，因为没有指定网格。"
@@ -12370,6 +12455,15 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "替换了%d项。"
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "创建静态凸体(Convex Body)"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "创建形状失败！"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

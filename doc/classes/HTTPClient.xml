@@ -55,7 +55,7 @@
 			</description>
 		</method>
 		<method name="get_response_headers">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the response headers.
@@ -124,7 +124,7 @@
 			</description>
 		</method>
 		<method name="read_response_body_chunk">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<description>
 				Reads one chunk from the response.
@@ -137,7 +137,7 @@
 			</argument>
 			<argument index="1" name="url" type="String">
 			</argument>
-			<argument index="2" name="headers" type="PoolStringArray">
+			<argument index="2" name="headers" type="PackedStringArray">
 			</argument>
 			<argument index="3" name="body" type="String" default="&quot;&quot;">
 			</argument>
@@ -160,9 +160,9 @@
 			</argument>
 			<argument index="1" name="url" type="String">
 			</argument>
-			<argument index="2" name="headers" type="PoolStringArray">
+			<argument index="2" name="headers" type="PackedStringArray">
 			</argument>
-			<argument index="3" name="body" type="PoolByteArray">
+			<argument index="3" name="body" type="PackedByteArray">
 			</argument>
 			<description>
 				Sends a raw request to the connected host. The URL parameter is just the part after the host, so for [code]http://somehost.com/index.php[/code], it is [code]index.php[/code].

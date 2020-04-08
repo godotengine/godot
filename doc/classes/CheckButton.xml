@@ -4,7 +4,7 @@
 		Checkable button. See also [CheckBox].
 	</brief_description>
 	<description>
-		CheckButton is a toggle button displayed as a check field. It's similar to [CheckBox] in functionality, but it has a different apperance. To follow established UX patterns, it's recommended to use CheckButton when toggling it has an [b]immediate[/b] effect on something. For instance, it should be used if toggling it enables/disables a setting without requiring the user to press a confirmation button.
+		CheckButton is a toggle button displayed as a check field. It's similar to [CheckBox] in functionality, but it has a different appearance. To follow established UX patterns, it's recommended to use CheckButton when toggling it has an [b]immediate[/b] effect on something. For instance, it should be used if toggling it enables/disables a setting without requiring the user to press a confirmation button.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -56,16 +56,16 @@
 		<theme_item name="normal" type="StyleBox">
 			The [StyleBox] to display as a background.
 		</theme_item>
-		<theme_item name="off" type="Texture">
+		<theme_item name="off" type="Texture2D">
 			The icon to display when the [CheckButton] is unchecked.
 		</theme_item>
-		<theme_item name="off_disabled" type="Texture">
+		<theme_item name="off_disabled" type="Texture2D">
 			The icon to display when the [CheckButton] is unchecked and disabled.
 		</theme_item>
-		<theme_item name="on" type="Texture">
+		<theme_item name="on" type="Texture2D">
 			The icon to display when the [CheckButton] is checked.
 		</theme_item>
-		<theme_item name="on_disabled" type="Texture">
+		<theme_item name="on_disabled" type="Texture2D">
 			The icon to display when the [CheckButton] is checked and disabled.
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">

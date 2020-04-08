@@ -32,19 +32,19 @@
 
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "scene/3d/collision_shape.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/navigation.h"
-#include "scene/3d/physics_body.h"
-#include "scene/3d/vehicle_body.h"
+#include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation_3d.h"
+#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/vehicle_body_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/box_shape.h"
+#include "scene/resources/box_shape_3d.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/plane_shape.h"
-#include "scene/resources/ray_shape.h"
+#include "scene/resources/ray_shape_3d.h"
 #include "scene/resources/resource_format_text.h"
-#include "scene/resources/sphere_shape.h"
+#include "scene/resources/sphere_shape_3d.h"
+#include "scene/resources/world_margin_shape_3d.h"
 
 uint32_t EditorSceneImporter::get_import_flags() const {
 
@@ -72,7 +72,7 @@ Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, 
 		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
 	}
 
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V(nullptr);
 }
 
 Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
@@ -81,7 +81,7 @@ Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint3
 		return get_script_instance()->call("_import_animation", p_path, p_flags);
 	}
 
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V(nullptr);
 }
 
 //for documenters, these functions are useful when an importer calls an external conversion helper (like, fbx2gltf),
@@ -170,7 +170,7 @@ String ResourceImporterScene::get_visible_name() const {
 
 void ResourceImporterScene::get_recognized_extensions(List<String> *p_extensions) const {
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 		E->get()->get_extensions(p_extensions);
 	}
 }
@@ -276,15 +276,15 @@ static String _fixstr(const String &p_what, const String &p_str) {
 	return what;
 }
 
-static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape> > &r_shape_list, bool p_convex) {
+static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 
 	if (!p_convex) {
 
-		Ref<Shape> shape = mesh->create_trimesh_shape();
+		Ref<Shape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
 	} else {
 
-		Vector<Ref<Shape> > cd = mesh->convex_decompose();
+		Vector<Ref<Shape3D>> cd = mesh->convex_decompose();
 		if (cd.size()) {
 			for (int i = 0; i < cd.size(); i++) {
 				r_shape_list.push_back(cd[i]);
@@ -293,7 +293,7 @@ static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape> > &r_shape_li
 	}
 }
 
-Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape> > > &collision_map, LightBakeMode p_light_bake_mode) {
+Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape3D>>> &collision_map, LightBakeMode p_light_bake_mode) {
 
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -311,12 +311,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 	if (!isroot && _teststr(name, "noimp")) {
 
 		memdelete(p_node);
-		return NULL;
+		return nullptr;
 	}
 
-	if (Object::cast_to<MeshInstance>(p_node)) {
+	if (Object::cast_to<MeshInstance3D>(p_node)) {
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 
 		Ref<ArrayMesh> m = mi->get_mesh();
 
@@ -324,19 +324,19 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 			for (int i = 0; i < m->get_surface_count(); i++) {
 
-				Ref<SpatialMaterial> mat = m->surface_get_material(i);
+				Ref<StandardMaterial3D> mat = m->surface_get_material(i);
 				if (!mat.is_valid())
 					continue;
 
 				if (_teststr(mat->get_name(), "alpha")) {
 
-					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+					mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 					mat->set_name(_fixstr(mat->get_name(), "alpha"));
 				}
 				if (_teststr(mat->get_name(), "vcol")) {
 
-					mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+					mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 					mat->set_name(_fixstr(mat->get_name(), "vcol"));
 				}
 			}
@@ -344,7 +344,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		if (p_light_bake_mode != LIGHT_BAKE_DISABLED) {
 
-			mi->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT, true);
+			mi->set_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT, true);
 		}
 	}
 
@@ -377,12 +377,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		if (isroot)
 			return p_node;
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 		if (mi) {
 			Ref<Mesh> mesh = mi->get_mesh();
 
 			if (mesh.is_valid()) {
-				List<Ref<Shape> > shapes;
+				List<Ref<Shape3D>> shapes;
 				String fixed_name;
 				if (collision_map.has(mesh)) {
 					shapes = collision_map[mesh];
@@ -400,11 +400,11 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 					fixed_name = _fixstr(name, "convcolonly");
 				}
 
-				ERR_FAIL_COND_V(fixed_name == String(), NULL);
+				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
 
 				if (shapes.size()) {
 
-					StaticBody *col = memnew(StaticBody);
+					StaticBody3D *col = memnew(StaticBody3D);
 					col->set_transform(mi->get_transform());
 					col->set_name(fixed_name);
 					p_node->replace_by(col);
@@ -412,9 +412,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 					p_node = col;
 
 					int idx = 0;
-					for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
+					for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
 
-						CollisionShape *cshape = memnew(CollisionShape);
+						CollisionShape3D *cshape = memnew(CollisionShape3D);
 						cshape->set_shape(E->get());
 						col->add_child(cshape);
 
@@ -427,55 +427,55 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		} else if (p_node->has_meta("empty_draw_type")) {
 			String empty_draw_type = String(p_node->get_meta("empty_draw_type"));
-			StaticBody *sb = memnew(StaticBody);
+			StaticBody3D *sb = memnew(StaticBody3D);
 			sb->set_name(_fixstr(name, "colonly"));
-			Object::cast_to<Spatial>(sb)->set_transform(Object::cast_to<Spatial>(p_node)->get_transform());
+			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
 			p_node->replace_by(sb);
 			memdelete(p_node);
-			p_node = NULL;
-			CollisionShape *colshape = memnew(CollisionShape);
+			p_node = nullptr;
+			CollisionShape3D *colshape = memnew(CollisionShape3D);
 			if (empty_draw_type == "CUBE") {
-				BoxShape *boxShape = memnew(BoxShape);
+				BoxShape3D *boxShape = memnew(BoxShape3D);
 				boxShape->set_extents(Vector3(1, 1, 1));
 				colshape->set_shape(boxShape);
-				colshape->set_name("BoxShape");
+				colshape->set_name("BoxShape3D");
 			} else if (empty_draw_type == "SINGLE_ARROW") {
-				RayShape *rayShape = memnew(RayShape);
+				RayShape3D *rayShape = memnew(RayShape3D);
 				rayShape->set_length(1);
 				colshape->set_shape(rayShape);
-				colshape->set_name("RayShape");
-				Object::cast_to<Spatial>(sb)->rotate_x(Math_PI / 2);
+				colshape->set_name("RayShape3D");
+				Object::cast_to<Node3D>(sb)->rotate_x(Math_PI / 2);
 			} else if (empty_draw_type == "IMAGE") {
-				PlaneShape *planeShape = memnew(PlaneShape);
-				colshape->set_shape(planeShape);
-				colshape->set_name("PlaneShape");
+				WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
+				colshape->set_shape(world_margin_shape);
+				colshape->set_name("WorldMarginShape3D");
 			} else {
-				SphereShape *sphereShape = memnew(SphereShape);
+				SphereShape3D *sphereShape = memnew(SphereShape3D);
 				sphereShape->set_radius(1);
 				colshape->set_shape(sphereShape);
-				colshape->set_name("SphereShape");
+				colshape->set_name("SphereShape3D");
 			}
 			sb->add_child(colshape);
 			colshape->set_owner(sb->get_owner());
 		}
 
-	} else if (_teststr(name, "rigid") && Object::cast_to<MeshInstance>(p_node)) {
+	} else if (_teststr(name, "rigid") && Object::cast_to<MeshInstance3D>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			List<Ref<Shape> > shapes;
+			List<Ref<Shape3D>> shapes;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else {
 				_gen_shape_list(mesh, shapes, true);
 			}
 
-			RigidBody *rigid_body = memnew(RigidBody);
+			RigidBody3D *rigid_body = memnew(RigidBody3D);
 			rigid_body->set_name(_fixstr(name, "rigid"));
 			p_node->replace_by(rigid_body);
 			rigid_body->set_transform(mi->get_transform());
@@ -486,9 +486,9 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			mi->set_owner(rigid_body->get_owner());
 
 			int idx = 0;
-			for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
+			for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
 
-				CollisionShape *cshape = memnew(CollisionShape);
+				CollisionShape3D *cshape = memnew(CollisionShape3D);
 				cshape->set_shape(E->get());
 				rigid_body->add_child(cshape);
 
@@ -498,14 +498,14 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 		}
 
-	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<MeshInstance>(p_node)) {
+	} else if ((_teststr(name, "col") || (_teststr(name, "convcol"))) && Object::cast_to<MeshInstance3D>(p_node)) {
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 
 		Ref<Mesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid()) {
-			List<Ref<Shape> > shapes;
+			List<Ref<Shape3D>> shapes;
 			String fixed_name;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
@@ -530,15 +530,15 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 
 			if (shapes.size()) {
-				StaticBody *col = memnew(StaticBody);
+				StaticBody3D *col = memnew(StaticBody3D);
 				col->set_name("static_collision");
 				mi->add_child(col);
 				col->set_owner(mi->get_owner());
 
 				int idx = 0;
-				for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
+				for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
 
-					CollisionShape *cshape = memnew(CollisionShape);
+					CollisionShape3D *cshape = memnew(CollisionShape3D);
 					cshape->set_shape(E->get());
 					col->add_child(cshape);
 
@@ -550,22 +550,22 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 		}
 
-	} else if (_teststr(name, "navmesh") && Object::cast_to<MeshInstance>(p_node)) {
+	} else if (_teststr(name, "navmesh") && Object::cast_to<MeshInstance3D>(p_node)) {
 
 		if (isroot)
 			return p_node;
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
-		ERR_FAIL_COND_V(mesh.is_null(), NULL);
-		NavigationMeshInstance *nmi = memnew(NavigationMeshInstance);
+		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
+		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 
 		nmi->set_name(_fixstr(name, "navmesh"));
 		Ref<NavigationMesh> nmesh = memnew(NavigationMesh);
 		nmesh->create_from_mesh(mesh);
 		nmi->set_navigation_mesh(nmesh);
-		Object::cast_to<Spatial>(nmi)->set_transform(mi->get_transform());
+		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
 		p_node->replace_by(nmi);
 		memdelete(p_node);
 		p_node = nmi;
@@ -575,8 +575,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = Object::cast_to<Spatial>(p_node);
-		VehicleBody *bv = memnew(VehicleBody);
+		Node3D *s = Object::cast_to<Node3D>(p_node);
+		VehicleBody3D *bv = memnew(VehicleBody3D);
 		String n = _fixstr(p_node->get_name(), "vehicle");
 		bv->set_name(n);
 		p_node->replace_by(bv);
@@ -595,8 +595,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			return p_node;
 
 		Node *owner = p_node->get_owner();
-		Spatial *s = Object::cast_to<Spatial>(p_node);
-		VehicleWheel *bv = memnew(VehicleWheel);
+		Node3D *s = Object::cast_to<Node3D>(p_node);
+		VehicleWheel3D *bv = memnew(VehicleWheel3D);
 		String n = _fixstr(p_node->get_name(), "wheel");
 		bv->set_name(n);
 		p_node->replace_by(bv);
@@ -609,16 +609,16 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		p_node = bv;
 
-	} else if (Object::cast_to<MeshInstance>(p_node)) {
+	} else if (Object::cast_to<MeshInstance3D>(p_node)) {
 
 		//last attempt, maybe collision inside the mesh data
 
-		MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 		if (!mesh.is_null()) {
 
-			List<Ref<Shape> > shapes;
+			List<Ref<Shape3D>> shapes;
 			if (collision_map.has(mesh)) {
 				shapes = collision_map[mesh];
 			} else if (_teststr(mesh->get_name(), "col")) {
@@ -632,15 +632,15 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 
 			if (shapes.size()) {
-				StaticBody *col = memnew(StaticBody);
+				StaticBody3D *col = memnew(StaticBody3D);
 				col->set_name("static_collision");
 				p_node->add_child(col);
 				col->set_owner(p_node->get_owner());
 
 				int idx = 0;
-				for (List<Ref<Shape> >::Element *E = shapes.front(); E; E = E->next()) {
+				for (List<Ref<Shape3D>>::Element *E = shapes.front(); E; E = E->next()) {
 
-					CollisionShape *cshape = memnew(CollisionShape);
+					CollisionShape3D *cshape = memnew(CollisionShape3D);
 					cshape->set_shape(E->get());
 					col->add_child(cshape);
 
@@ -934,14 +934,14 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 	List<PropertyInfo> pi;
 	p_node->get_property_list(&pi);
 
-	MeshInstance *mi = Object::cast_to<MeshInstance>(p_node);
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 
 	if (mi) {
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
 
 		if (mesh.is_valid() && !meshes.has(mesh)) {
-			Spatial *s = mi;
+			Node3D *s = mi;
 			Transform transform;
 			while (s) {
 				transform = transform * s->get_transform();
@@ -957,7 +957,7 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 	}
 }
 
-void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation> > &p_animations, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh> > &p_meshes) {
+void ResourceImporterScene::_make_external_resources(Node *p_node, const String &p_base_path, bool p_make_animations, bool p_animations_as_text, bool p_keep_animations, bool p_make_materials, bool p_materials_as_text, bool p_keep_materials, bool p_make_meshes, bool p_meshes_as_text, Map<Ref<Animation>, Ref<Animation>> &p_animations, Map<Ref<Material>, Ref<Material>> &p_materials, Map<Ref<ArrayMesh>, Ref<ArrayMesh>> &p_meshes) {
 
 	List<PropertyInfo> pi;
 
@@ -1141,7 +1141,7 @@ void ResourceImporterScene::_make_external_resources(Node *p_node, const String 
 
 void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), "Spatial"));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), "Node3D"));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), "Scene Root"));
 
 	List<String> script_extentions;
@@ -1160,7 +1160,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	bool scenes_out = p_preset == PRESET_MULTIPLE_SCENES || p_preset == PRESET_MULTIPLE_SCENES_AND_MATERIALS;
 	bool animations_out = p_preset == PRESET_SEPARATE_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MATERIALS_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS;
 
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/custom_script", PROPERTY_HINT_FILE, script_ext_hint), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/storage", PROPERTY_HINT_ENUM, "Single Scene,Instanced Sub-Scenes"), scenes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), (meshes_out || materials_out) ? 1 : 0));
@@ -1170,17 +1170,18 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.mesh),Files (.tres)"), meshes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Enable,Gen Lightmaps", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "skins/use_named_skins"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "external_files/store_in_subdir"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/fps", PROPERTY_HINT_RANGE, "1,120,1"), 15));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "animation/filter_script", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/storage", PROPERTY_HINT_ENUM, "Built-In,Files (.anim),Files (.tres)", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), animations_out));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/keep_custom_tracks"), animations_out));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/optimizer/max_linear_error"), 0.05));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/optimizer/max_angular_error"), 0.01));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "animation/optimizer/max_angle"), 22));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/optimizer/max_linear_error"), 0.05));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/optimizer/max_angular_error"), 0.01));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "animation/optimizer/max_angle"), 22));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "animation/optimizer/remove_unused_tracks"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "animation/clips/amount", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	for (int i = 0; i < 256; i++) {
@@ -1208,7 +1209,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 
 		if (E->get().ptr() == p_exception)
 			continue;
@@ -1228,7 +1229,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 			break;
 	}
 
-	ERR_FAIL_COND_V(!importer.is_valid(), NULL);
+	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	List<String> missing;
 	Error err;
@@ -1240,7 +1241,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 	Ref<EditorSceneImporter> importer;
 	String ext = p_path.get_extension().to_lower();
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 
 		if (E->get().ptr() == p_exception)
 			continue;
@@ -1260,7 +1261,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 			break;
 	}
 
-	ERR_FAIL_COND_V(!importer.is_valid(), NULL);
+	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	return importer->import_animation(p_path, p_flags, p_bake_fps);
 }
@@ -1275,7 +1276,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	EditorProgress progress("import", TTR("Import Scene"), 104);
 	progress.step(TTR("Importing Scene..."), 0);
 
-	for (Set<Ref<EditorSceneImporter> >::Element *E = importers.front(); E; E = E->next()) {
+	for (Set<Ref<EditorSceneImporter>>::Element *E = importers.front(); E; E = E->next()) {
 
 		List<String> extensions;
 		E->get()->get_extensions(&extensions);
@@ -1313,6 +1314,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	if (int(p_options["materials/location"]) == 0)
 		import_flags |= EditorSceneImporter::IMPORT_MATERIALS_IN_INSTANCES;
 
+	if (bool(p_options["skins/use_named_skins"]))
+		import_flags |= EditorSceneImporter::IMPORT_USE_NAMED_SKIN_BINDS;
+
 	Error err = OK;
 	List<String> missing_deps; // for now, not much will be done with this
 	Node *scene = importer->import_scene(src_path, import_flags, fps, &missing_deps, &err);
@@ -1323,13 +1327,13 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String root_type = p_options["nodes/root_type"];
 	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
 
-	Ref<Script> root_script = NULL;
+	Ref<Script> root_script = nullptr;
 	if (ScriptServer::is_global_class(root_type)) {
 		root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
 		root_type = ScriptServer::get_global_class_base(root_type);
 	}
 
-	if (root_type != "Spatial") {
+	if (root_type != "Node3D") {
 		Node *base_node = Object::cast_to<Node>(ClassDB::instance(root_type));
 
 		if (base_node) {
@@ -1344,9 +1348,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		scene->set_script(Variant(root_script));
 	}
 
-	if (Object::cast_to<Spatial>(scene)) {
+	if (Object::cast_to<Node3D>(scene)) {
 		float root_scale = p_options["nodes/root_scale"];
-		Object::cast_to<Spatial>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
+		Object::cast_to<Node3D>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
 	}
 
 	if (p_options["nodes/root_name"] != "Scene Root")
@@ -1364,7 +1368,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float anim_optimizer_maxang = p_options["animation/optimizer/max_angle"];
 	int light_bake_mode = p_options["meshes/light_baking"];
 
-	Map<Ref<Mesh>, List<Ref<Shape> > > collision_map;
+	Map<Ref<Mesh>, List<Ref<Shape3D>>> collision_map;
 
 	scene = _fix_node(scene, scene, collision_map, LightBakeMode(light_bake_mode));
 
@@ -1452,9 +1456,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	}
 
 	if (external_animations || external_materials || external_meshes) {
-		Map<Ref<Animation>, Ref<Animation> > anim_map;
-		Map<Ref<Material>, Ref<Material> > mat_map;
-		Map<Ref<ArrayMesh>, Ref<ArrayMesh> > mesh_map;
+		Map<Ref<Animation>, Ref<Animation>> anim_map;
+		Map<Ref<Material>, Ref<Material>> mat_map;
+		Map<Ref<ArrayMesh>, Ref<ArrayMesh>> mesh_map;
 
 		bool keep_materials = bool(p_options["materials/keep_on_reimport"]);
 
@@ -1473,7 +1477,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		} else {
 
 			post_import_script = Ref<EditorScenePostImport>(memnew(EditorScenePostImport));
-			post_import_script->set_script(scr.get_ref_ptr());
+			post_import_script->set_script(scr);
 			if (!post_import_script->get_script_instance()) {
 				EditorNode::add_io_error(TTR("Invalid/broken script for post-import (check console):") + " " + post_import_script_path);
 				post_import_script.unref();
@@ -1529,7 +1533,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	return OK;
 }
 
-ResourceImporterScene *ResourceImporterScene::singleton = NULL;
+ResourceImporterScene *ResourceImporterScene::singleton = nullptr;
 
 ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
@@ -1546,10 +1550,10 @@ Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_fla
 
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
-	ERR_FAIL_COND_V_MSG(!ps.is_valid(), NULL, "Cannot load scene as text resource from path '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!ps.is_valid(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");
 
 	Node *scene = ps->instance();
-	ERR_FAIL_COND_V(!scene, NULL);
+	ERR_FAIL_COND_V(!scene, nullptr);
 
 	return scene;
 }

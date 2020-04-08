@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		A color is represented by red, green, and blue [code](r, g, b)[/code] components. Additionally, [code]a[/code] represents the alpha component, often used for transparency. Values are in floating-point and usually range from 0 to 1. Some properties (such as [member CanvasItem.modulate]) may accept values greater than 1.
-		You can also create a color from standardized color names by using [method @GDScript.ColorN] or directly using the color constants defined here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url].
+		You can also create a color from standardized color names by using [method @GDScript.ColorN] or directly using the color constants defined here. The standardized color set is based on the [url=https://en.wikipedia.org/wiki/X11_color_names]X11 color names[/url]. 
+		If you want to supply values in a range of 0 to 255, you should use [method @GDScript.Color8].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -119,24 +120,12 @@
 			</argument>
 			<argument index="2" name="v" type="float">
 			</argument>
-			<argument index="3" name="a" type="float" default="1">
+			<argument index="3" name="a" type="float" default="1.0">
 			</argument>
 			<description>
 				Constructs a color from an HSV profile. [code]h[/code], [code]s[/code], and [code]v[/code] are values between 0 and 1.
 				[codeblock]
 				var c = Color.from_hsv(0.58, 0.5, 0.79, 0.8) # Equivalent to HSV(210, 50, 79, 0.8) or Color8(100, 151, 201, 0.8)
-				[/codeblock]
-			</description>
-		</method>
-		<method name="gray">
-			<return type="float">
-			</return>
-			<description>
-				Returns the color's grayscale representation.
-				The gray value is calculated as [code](r + g + b) / 3[/code].
-				[codeblock]
-				var c = Color(0.2, 0.45, 0.82)
-				var gray = c.gray() # A value of 0.466667
 				[/codeblock]
 			</description>
 		</method>
@@ -236,7 +225,7 @@
 		<method name="to_html">
 			<return type="String">
 			</return>
-			<argument index="0" name="with_alpha" type="bool" default="True">
+			<argument index="0" name="with_alpha" type="bool" default="true">
 			</argument>
 			<description>
 				Returns the color's HTML hexadecimal color string in ARGB format (ex: [code]ff34f822[/code]).
@@ -307,9 +296,6 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="gray" value="Color( 0.75, 0.75, 0.75, 1 )">
-			Gray color.
-		</constant>
 		<constant name="aliceblue" value="Color( 0.94, 0.97, 1, 1 )">
 			Alice blue color.
 		</constant>
@@ -459,6 +445,9 @@
 		</constant>
 		<constant name="goldenrod" value="Color( 0.85, 0.65, 0.13, 1 )">
 			Goldenrod color.
+		</constant>
+		<constant name="gray" value="Color( 0.75, 0.75, 0.75, 1 )">
+			Gray color.
 		</constant>
 		<constant name="green" value="Color( 0, 1, 0, 1 )">
 			Green color.

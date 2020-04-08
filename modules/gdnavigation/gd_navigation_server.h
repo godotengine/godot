@@ -6,7 +6,7 @@
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,9 @@
 #ifndef GD_NAVIGATION_SERVER_H
 #define GD_NAVIGATION_SERVER_H
 
-#include "servers/navigation_server.h"
+#include "core/rid.h"
+#include "core/rid_owner.h"
+#include "servers/navigation_server_3d.h"
 
 #include "nav_map.h"
 #include "nav_region.h"
@@ -59,23 +61,22 @@
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
 class GdNavigationServer;
-class Mutex;
 
 struct SetCommand {
 	virtual ~SetCommand() {}
 	virtual void exec(GdNavigationServer *server) = 0;
 };
 
-class GdNavigationServer : public NavigationServer {
-	Mutex *commands_mutex;
+class GdNavigationServer : public NavigationServer3D {
+	Mutex commands_mutex;
 	/// Mutex used to make any operation threadsafe.
-	Mutex *operations_mutex;
+	Mutex operations_mutex;
 
 	std::vector<SetCommand *> commands;
 
-	mutable RID_Owner<NavMap> map_owner;
-	mutable RID_Owner<NavRegion> region_owner;
-	mutable RID_Owner<RvoAgent> agent_owner;
+	mutable RID_PtrOwner<NavMap> map_owner;
+	mutable RID_PtrOwner<NavRegion> region_owner;
+	mutable RID_PtrOwner<RvoAgent> agent_owner;
 
 	bool active;
 	Vector<NavMap *> active_maps;
@@ -101,6 +102,11 @@ public:
 
 	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize) const;
 
+	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const;
+	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const;
+	virtual Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const;
+	virtual RID map_get_closest_point_owner(RID p_map, const Vector3 &p_point) const;
+
 	virtual RID region_create() const;
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
 	COMMAND_2(region_set_transform, RID, p_region, Transform, p_transform);
@@ -124,7 +130,9 @@ public:
 	COMMAND_1(free, RID, p_object);
 
 	virtual void set_active(bool p_active) const;
-	virtual void step(real_t p_delta_time);
+
+	void flush_queries();
+	virtual void process(real_t p_delta_time);
 };
 
 #undef COMMAND_1

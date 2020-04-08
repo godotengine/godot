@@ -20,8 +20,8 @@
 			<return type="String">
 			</return>
 			<description>
-				Override this method to define the category of the associated custom node in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Custom" category.
+				Override this method to define the path to the associated custom node in the Visual Shader Editor's members dialog. The path may looks like [code]"MyGame/MyFunctions/Noise"[/code].
+				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Addons" category.
 			</description>
 		</method>
 		<method name="_get_code" qualifiers="virtual">
@@ -72,7 +72,7 @@
 			</description>
 		</method>
 		<method name="_get_input_port_name" qualifiers="virtual">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
@@ -108,7 +108,7 @@
 			</description>
 		</method>
 		<method name="_get_output_port_name" qualifiers="virtual">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
@@ -135,12 +135,12 @@
 				Defining this method is [b]optional[/b]. If not overridden, no return icon is shown.
 			</description>
 		</method>
-		<method name="_get_subcategory" qualifiers="virtual">
-			<return type="String">
+		<method name="_is_highend" qualifiers="virtual">
+			<return type="bool">
 			</return>
 			<description>
-				Override this method to define the subcategory of the associated custom node in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the root of the main category (see [method _get_category]).
+				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
+				Defining this method is [b]optional[/b]. If not overridden, it's false.
 			</description>
 		</method>
 	</methods>

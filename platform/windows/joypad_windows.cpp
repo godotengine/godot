@@ -52,15 +52,15 @@ DWORD WINAPI _xinput_set_state(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration) 
 JoypadWindows::JoypadWindows() {
 }
 
-JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
+JoypadWindows::JoypadWindows(HWND *hwnd) {
 
-	input = _input;
+	input = InputFilter::get_singleton();
 	hWnd = hwnd;
 	joypad_count = 0;
-	dinput = NULL;
-	xinput_dll = NULL;
-	xinput_get_state = NULL;
-	xinput_set_state = NULL;
+	dinput = nullptr;
+	xinput_dll = nullptr;
+	xinput_get_state = nullptr;
+	xinput_set_state = nullptr;
 
 	load_xinput();
 
@@ -68,7 +68,7 @@ JoypadWindows::JoypadWindows(InputDefault *_input, HWND *hwnd) {
 		attached_joypads[i] = false;
 
 	HRESULT result;
-	result = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, NULL);
+	result = DirectInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&dinput, nullptr);
 	if (FAILED(result)) {
 		printf("failed init DINPUT: %ld\n", result);
 	}
@@ -105,10 +105,10 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 	if (p_guid == &IID_ValveStreamingGamepad || p_guid == &IID_X360WiredGamepad || p_guid == &IID_X360WirelessGamepad)
 		return true;
 
-	PRAWINPUTDEVICELIST dev_list = NULL;
+	PRAWINPUTDEVICELIST dev_list = nullptr;
 	unsigned int dev_list_count = 0;
 
-	if (GetRawInputDeviceList(NULL, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
+	if (GetRawInputDeviceList(nullptr, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		return false;
 	}
 	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
@@ -130,7 +130,7 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != (UINT)-1) &&
 				(MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == (LONG)p_guid->Data1) &&
 				(GetRawInputDeviceInfoA(dev_list[i].hDevice, RIDI_DEVICENAME, &dev_name, &nameSize) != (UINT)-1) &&
-				(strstr(dev_name, "IG_") != NULL)) {
+				(strstr(dev_name, "IG_") != nullptr)) {
 
 			free(dev_list);
 			return true;
@@ -157,7 +157,7 @@ bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE *instance) {
 		return false;
 	}
 
-	hr = dinput->CreateDevice(instance->guidInstance, &joy->di_joy, NULL);
+	hr = dinput->CreateDevice(instance->guidInstance, &joy->di_joy, nullptr);
 
 	if (FAILED(hr)) {
 		return false;
@@ -436,46 +436,46 @@ void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
 	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);"
 	// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416628(v%3Dvs.85)#remarks
 	if (LOWORD(p_dpad) == 0xFFFF) {
-		dpad_val = InputDefault::HAT_MASK_CENTER;
+		dpad_val = InputFilter::HAT_MASK_CENTER;
 	}
 	if (p_dpad == 0) {
 
-		dpad_val = InputDefault::HAT_MASK_UP;
+		dpad_val = InputFilter::HAT_MASK_UP;
 
 	} else if (p_dpad == 4500) {
 
-		dpad_val = (InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_RIGHT);
+		dpad_val = (InputFilter::HAT_MASK_UP | InputFilter::HAT_MASK_RIGHT);
 
 	} else if (p_dpad == 9000) {
 
-		dpad_val = InputDefault::HAT_MASK_RIGHT;
+		dpad_val = InputFilter::HAT_MASK_RIGHT;
 
 	} else if (p_dpad == 13500) {
 
-		dpad_val = (InputDefault::HAT_MASK_RIGHT | InputDefault::HAT_MASK_DOWN);
+		dpad_val = (InputFilter::HAT_MASK_RIGHT | InputFilter::HAT_MASK_DOWN);
 
 	} else if (p_dpad == 18000) {
 
-		dpad_val = InputDefault::HAT_MASK_DOWN;
+		dpad_val = InputFilter::HAT_MASK_DOWN;
 
 	} else if (p_dpad == 22500) {
 
-		dpad_val = (InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_LEFT);
+		dpad_val = (InputFilter::HAT_MASK_DOWN | InputFilter::HAT_MASK_LEFT);
 
 	} else if (p_dpad == 27000) {
 
-		dpad_val = InputDefault::HAT_MASK_LEFT;
+		dpad_val = InputFilter::HAT_MASK_LEFT;
 
 	} else if (p_dpad == 31500) {
 
-		dpad_val = (InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_UP);
+		dpad_val = (InputFilter::HAT_MASK_LEFT | InputFilter::HAT_MASK_UP);
 	}
 	input->joy_hat(p_device, dpad_val);
 };
 
-InputDefault::JoyAxis JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
+InputFilter::JoyAxis JoypadWindows::axis_correct(int p_val, bool p_xinput, bool p_trigger, bool p_negate) const {
 
-	InputDefault::JoyAxis jx;
+	InputFilter::JoyAxis jx;
 	if (Math::abs(p_val) < MIN_JOY_AXIS) {
 		jx.min = p_trigger ? 0 : -1;
 		jx.value = 0.0f;

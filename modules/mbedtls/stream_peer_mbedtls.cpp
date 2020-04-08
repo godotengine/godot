@@ -33,18 +33,13 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/file_access.h"
 
-void _print_error(int ret) {
-	printf("mbedtls error: returned -0x%x\n\n", -ret);
-	fflush(stdout);
-}
-
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) return 0;
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 
-	ERR_FAIL_COND_V(sp == NULL, 0);
+	ERR_FAIL_COND_V(sp == nullptr, 0);
 
 	int sent;
 	Error err = sp->base->put_partial_data((const uint8_t *)buf, len, sent);
@@ -59,11 +54,11 @@ int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len)
 
 int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) return 0;
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 
-	ERR_FAIL_COND_V(sp == NULL, 0);
+	ERR_FAIL_COND_V(sp == nullptr, 0);
 
 	int got;
 	Error err = sp->base->get_partial_data((uint8_t *)buf, len, got);
@@ -89,7 +84,7 @@ Error StreamPeerMbedTLS::_do_handshake() {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
 			// An error occurred.
 			ERR_PRINT("TLS handshake error: " + itos(ret));
-			_print_error(ret);
+			SSLContextMbedTLS::print_mbedtls_error(ret);
 			disconnect_from_stream();
 			status = STATUS_ERROR;
 			return FAILED;
@@ -117,7 +112,7 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	ERR_FAIL_COND_V(err != OK, err);
 
 	mbedtls_ssl_set_hostname(ssl_ctx->get_context(), p_for_hostname.utf8().get_data());
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
+	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 
 	status = STATUS_HANDSHAKING;
 
@@ -138,7 +133,7 @@ Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_
 
 	base = p_base;
 
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
+	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 
 	status = STATUS_HANDSHAKING;
 
@@ -188,7 +183,7 @@ Error StreamPeerMbedTLS::put_partial_data(const uint8_t *p_data, int p_bytes, in
 		disconnect_from_stream();
 		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
-		_print_error(ret);
+		SSLContextMbedTLS::print_mbedtls_error(ret);
 		disconnect_from_stream();
 		return ERR_CONNECTION_ERROR;
 	}
@@ -233,7 +228,7 @@ Error StreamPeerMbedTLS::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r
 		disconnect_from_stream();
 		return ERR_FILE_EOF;
 	} else if (ret <= 0) {
-		_print_error(ret);
+		SSLContextMbedTLS::print_mbedtls_error(ret);
 		disconnect_from_stream();
 		return ERR_CONNECTION_ERROR;
 	}
@@ -264,7 +259,7 @@ void StreamPeerMbedTLS::poll() {
 		disconnect_from_stream();
 		return;
 	} else if (ret < 0) {
-		_print_error(ret);
+		SSLContextMbedTLS::print_mbedtls_error(ret);
 		disconnect_from_stream();
 		return;
 	}
@@ -325,5 +320,5 @@ void StreamPeerMbedTLS::initialize_ssl() {
 void StreamPeerMbedTLS::finalize_ssl() {
 
 	available = false;
-	_create = NULL;
+	_create = nullptr;
 }

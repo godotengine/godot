@@ -11,17 +11,24 @@
 	</tutorials>
 	<methods>
 		<method name="post">
+			<return type="void">
+			</return>
+			<description>
+				Lowers the [Semaphore], allowing one more thread in.
+			</description>
+		</method>
+		<method name="try_wait">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Lowers the [Semaphore], allowing one more thread in. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Like [method wait], but won't block, so if the value is zero, fails immediately and returns [constant ERR_BUSY]. If non-zero, it returns [constant OK] to report success.
 			</description>
 		</method>
 		<method name="wait">
-			<return type="int" enum="Error">
+			<return type="void">
 			</return>
 			<description>
-				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Waits for the [Semaphore], if its value is zero, blocks until non-zero.
 			</description>
 		</method>
 	</methods>

@@ -91,8 +91,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
-					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
-					GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, true);
+					GodotLib.key(KeyEvent.KEYCODE_DEL, KeyEvent.KEYCODE_DEL, 0, false);
 				}
 			}
 		});
@@ -110,8 +110,13 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
-					GodotLib.key(0, newChars[i], true);
-					GodotLib.key(0, newChars[i], false);
+					int key = newChars[i];
+					if (key == '\n') {
+						// Return keys are handled through action events
+						continue;
+					}
+					GodotLib.key(0, 0, key, true);
+					GodotLib.key(0, 0, key, false);
 				}
 			}
 		});
@@ -127,15 +132,20 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 				public void run() {
 					for (int i = 0; i < characters.length(); i++) {
 						final int ch = characters.codePointAt(i);
-						GodotLib.key(0, ch, true);
-						GodotLib.key(0, ch, false);
+						GodotLib.key(0, 0, ch, true);
+						GodotLib.key(0, 0, ch, false);
 					}
 				}
 			});
 		}
 
-		if (pActionID == EditorInfo.IME_ACTION_DONE) {
+		if (pActionID == EditorInfo.IME_NULL) {
+			// Enter key has been pressed
+			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, true);
+			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, false);
+
 			this.mView.requestFocus();
+			return true;
 		}
 		return false;
 	}

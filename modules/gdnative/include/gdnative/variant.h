@@ -56,33 +56,35 @@ typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_STRING,
 
 	// math types
-
-	GODOT_VARIANT_TYPE_VECTOR2, // 5
+	GODOT_VARIANT_TYPE_VECTOR2,
+	GODOT_VARIANT_TYPE_VECTOR2I,
 	GODOT_VARIANT_TYPE_RECT2,
+	GODOT_VARIANT_TYPE_RECT2I,
 	GODOT_VARIANT_TYPE_VECTOR3,
+	GODOT_VARIANT_TYPE_VECTOR3I,
 	GODOT_VARIANT_TYPE_TRANSFORM2D,
 	GODOT_VARIANT_TYPE_PLANE,
-	GODOT_VARIANT_TYPE_QUAT, // 10
+	GODOT_VARIANT_TYPE_QUAT,
 	GODOT_VARIANT_TYPE_AABB,
 	GODOT_VARIANT_TYPE_BASIS,
 	GODOT_VARIANT_TYPE_TRANSFORM,
 
 	// misc types
 	GODOT_VARIANT_TYPE_COLOR,
-	GODOT_VARIANT_TYPE_NODE_PATH, // 15
+	GODOT_VARIANT_TYPE_NODE_PATH,
 	GODOT_VARIANT_TYPE_RID,
 	GODOT_VARIANT_TYPE_OBJECT,
 	GODOT_VARIANT_TYPE_DICTIONARY,
-	GODOT_VARIANT_TYPE_ARRAY, // 20
+	GODOT_VARIANT_TYPE_ARRAY,
 
 	// arrays
-	GODOT_VARIANT_TYPE_POOL_BYTE_ARRAY,
-	GODOT_VARIANT_TYPE_POOL_INT_ARRAY,
-	GODOT_VARIANT_TYPE_POOL_REAL_ARRAY,
-	GODOT_VARIANT_TYPE_POOL_STRING_ARRAY,
-	GODOT_VARIANT_TYPE_POOL_VECTOR2_ARRAY, // 25
-	GODOT_VARIANT_TYPE_POOL_VECTOR3_ARRAY,
-	GODOT_VARIANT_TYPE_POOL_COLOR_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_BYTE_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_INT_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_REAL_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_STRING_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_VECTOR2_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_VECTOR3_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_COLOR_ARRAY,
 } godot_variant_type;
 
 typedef enum godot_variant_call_error_error {
@@ -194,13 +196,13 @@ void GDAPI godot_variant_new_rid(godot_variant *r_dest, const godot_rid *p_rid);
 void GDAPI godot_variant_new_object(godot_variant *r_dest, const godot_object *p_obj);
 void GDAPI godot_variant_new_dictionary(godot_variant *r_dest, const godot_dictionary *p_dict);
 void GDAPI godot_variant_new_array(godot_variant *r_dest, const godot_array *p_arr);
-void GDAPI godot_variant_new_pool_byte_array(godot_variant *r_dest, const godot_pool_byte_array *p_pba);
-void GDAPI godot_variant_new_pool_int_array(godot_variant *r_dest, const godot_pool_int_array *p_pia);
-void GDAPI godot_variant_new_pool_real_array(godot_variant *r_dest, const godot_pool_real_array *p_pra);
-void GDAPI godot_variant_new_pool_string_array(godot_variant *r_dest, const godot_pool_string_array *p_psa);
-void GDAPI godot_variant_new_pool_vector2_array(godot_variant *r_dest, const godot_pool_vector2_array *p_pv2a);
-void GDAPI godot_variant_new_pool_vector3_array(godot_variant *r_dest, const godot_pool_vector3_array *p_pv3a);
-void GDAPI godot_variant_new_pool_color_array(godot_variant *r_dest, const godot_pool_color_array *p_pca);
+void GDAPI godot_variant_new_packed_byte_array(godot_variant *r_dest, const godot_packed_byte_array *p_pba);
+void GDAPI godot_variant_new_packed_int_array(godot_variant *r_dest, const godot_packed_int_array *p_pia);
+void GDAPI godot_variant_new_packed_real_array(godot_variant *r_dest, const godot_packed_real_array *p_pra);
+void GDAPI godot_variant_new_packed_string_array(godot_variant *r_dest, const godot_packed_string_array *p_psa);
+void GDAPI godot_variant_new_packed_vector2_array(godot_variant *r_dest, const godot_packed_vector2_array *p_pv2a);
+void GDAPI godot_variant_new_packed_vector3_array(godot_variant *r_dest, const godot_packed_vector3_array *p_pv3a);
+void GDAPI godot_variant_new_packed_color_array(godot_variant *r_dest, const godot_packed_color_array *p_pca);
 
 godot_bool GDAPI godot_variant_as_bool(const godot_variant *p_self);
 uint64_t GDAPI godot_variant_as_uint(const godot_variant *p_self);
@@ -222,13 +224,13 @@ godot_rid GDAPI godot_variant_as_rid(const godot_variant *p_self);
 godot_object GDAPI *godot_variant_as_object(const godot_variant *p_self);
 godot_dictionary GDAPI godot_variant_as_dictionary(const godot_variant *p_self);
 godot_array GDAPI godot_variant_as_array(const godot_variant *p_self);
-godot_pool_byte_array GDAPI godot_variant_as_pool_byte_array(const godot_variant *p_self);
-godot_pool_int_array GDAPI godot_variant_as_pool_int_array(const godot_variant *p_self);
-godot_pool_real_array GDAPI godot_variant_as_pool_real_array(const godot_variant *p_self);
-godot_pool_string_array GDAPI godot_variant_as_pool_string_array(const godot_variant *p_self);
-godot_pool_vector2_array GDAPI godot_variant_as_pool_vector2_array(const godot_variant *p_self);
-godot_pool_vector3_array GDAPI godot_variant_as_pool_vector3_array(const godot_variant *p_self);
-godot_pool_color_array GDAPI godot_variant_as_pool_color_array(const godot_variant *p_self);
+godot_packed_byte_array GDAPI godot_variant_as_packed_byte_array(const godot_variant *p_self);
+godot_packed_int_array GDAPI godot_variant_as_packed_int_array(const godot_variant *p_self);
+godot_packed_real_array GDAPI godot_variant_as_packed_real_array(const godot_variant *p_self);
+godot_packed_string_array GDAPI godot_variant_as_packed_string_array(const godot_variant *p_self);
+godot_packed_vector2_array GDAPI godot_variant_as_packed_vector2_array(const godot_variant *p_self);
+godot_packed_vector3_array GDAPI godot_variant_as_packed_vector3_array(const godot_variant *p_self);
+godot_packed_color_array GDAPI godot_variant_as_packed_color_array(const godot_variant *p_self);
 
 godot_variant GDAPI godot_variant_call(godot_variant *p_self, const godot_string *p_method, const godot_variant **p_args, const godot_int p_argcount, godot_variant_call_error *r_error);
 

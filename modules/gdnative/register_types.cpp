@@ -214,7 +214,7 @@ static godot_variant cb_standard_varcall(void *p_procedure_handle, godot_array *
 
 GDNativeCallRegistry *GDNativeCallRegistry::singleton;
 
-Vector<Ref<GDNative> > singleton_gdnatives;
+Vector<Ref<GDNative>> singleton_gdnatives;
 
 Ref<GDNativeLibraryResourceLoader> resource_loader_gdnlib;
 Ref<GDNativeLibraryResourceSaver> resource_saver_gdnlib;
@@ -325,7 +325,7 @@ void unregister_gdnative_types() {
 	print_line(String("dict:\t" )     + itos(sizeof(Dictionary)));
 	print_line(String("node_path:\t") + itos(sizeof(NodePath)));
 	print_line(String("plane:\t")     + itos(sizeof(Plane)));
-	print_line(String("poolarray:\t") + itos(sizeof(PoolByteArray)));
+	print_line(String("poolarray:\t") + itos(sizeof(PackedByteArray)));
 	print_line(String("quat:\t")      + itos(sizeof(Quat)));
 	print_line(String("rect2:\t")     + itos(sizeof(Rect2)));
 	print_line(String("aabb:\t")     + itos(sizeof(AABB)));

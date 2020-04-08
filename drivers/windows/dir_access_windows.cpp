@@ -67,7 +67,7 @@ Error DirAccessWindows::list_dir_begin() {
 	_cishidden = false;
 
 	list_dir_end();
-	p->h = FindFirstFileExW((current_dir + "\\*").c_str(), FindExInfoStandard, &p->fu, FindExSearchNameMatch, NULL, 0);
+	p->h = FindFirstFileExW((current_dir + "\\*").c_str(), FindExInfoStandard, &p->fu, FindExSearchNameMatch, nullptr, 0);
 
 	return (p->h == INVALID_HANDLE_VALUE) ? ERR_CANT_OPEN : OK;
 }
@@ -175,7 +175,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	p_dir = "\\\\?\\" + p_dir; //done according to
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
 
-	success = CreateDirectoryW(p_dir.c_str(), NULL);
+	success = CreateDirectoryW(p_dir.c_str(), nullptr);
 	err = GetLastError();
 
 	if (success) {
@@ -189,7 +189,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	return ERR_CANT_CREATE;
 }
 
-String DirAccessWindows::get_current_dir() {
+String DirAccessWindows::get_current_dir(bool p_include_drive) {
 
 	String base = _get_root_path();
 	if (base != "") {
@@ -203,7 +203,17 @@ String DirAccessWindows::get_current_dir() {
 	} else {
 	}
 
-	return current_dir;
+	if (p_include_drive) {
+		return current_dir;
+	} else {
+		if (_get_root_string() == "") {
+			int p = current_dir.find(":");
+			if (p != -1) {
+				return current_dir.right(p + 1);
+			}
+		}
+		return current_dir;
+	}
 }
 
 bool DirAccessWindows::file_exists(String p_file) {
@@ -265,11 +275,11 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 	if (p_path.to_lower() == p_new_path.to_lower()) {
 		WCHAR tmpfile[MAX_PATH];
 
-		if (!GetTempFileNameW(fix_path(get_current_dir()).c_str(), NULL, 0, tmpfile)) {
+		if (!GetTempFileNameW(fix_path(get_current_dir()).c_str(), nullptr, 0, tmpfile)) {
 			return FAILED;
 		}
 
-		if (!::ReplaceFileW(tmpfile, p_path.c_str(), NULL, 0, NULL, NULL)) {
+		if (!::ReplaceFileW(tmpfile, p_path.c_str(), nullptr, 0, nullptr, nullptr)) {
 			DeleteFileW(tmpfile);
 			return FAILED;
 		}
@@ -339,7 +349,7 @@ FileType DirAccessWindows::get_file_type(const String& p_file) const {
 size_t DirAccessWindows::get_space_left() {
 
 	uint64_t bytes = 0;
-	if (!GetDiskFreeSpaceEx(NULL, (PULARGE_INTEGER)&bytes, NULL, NULL))
+	if (!GetDiskFreeSpaceEx(nullptr, (PULARGE_INTEGER)&bytes, nullptr, nullptr))
 		return 0;
 
 	//this is either 0 or a value in bytes.

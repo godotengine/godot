@@ -40,7 +40,7 @@ class ResourceImporterTextureAtlas : public ResourceImporter {
 		Rect2 region;
 		bool is_mesh;
 		Vector<int> chart_pieces; //one for region, many for mesh
-		Vector<Vector<Vector2> > chart_vertices; //for mesh
+		Vector<Vector<Vector2>> chart_vertices; //for mesh
 		Ref<Image> image;
 	};
 
@@ -63,8 +63,8 @@ public:
 	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
 	virtual String get_option_group_file() const;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = NULL, Variant *r_metadata = NULL);
-	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant> > &p_source_file_options, const Map<String, String> &p_base_paths);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
+	virtual Error import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths);
 
 	ResourceImporterTextureAtlas();
 };

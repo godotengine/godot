@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "menu_button.h"
+
 #include "core/os/keyboard.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 
@@ -42,23 +43,34 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 		if (!get_parent() || !is_visible_in_tree() || is_disabled())
 			return;
 
-		bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
-
-		if (popup->activate_item_by_event(p_event, global_only))
+		//bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
+		//if (popup->activate_item_by_event(p_event, global_only))
+		//	accept_event();
+		if (popup->activate_item_by_event(p_event, false))
 			accept_event();
 	}
 }
 
 void MenuButton::pressed() {
 
-	emit_signal("about_to_show");
+	{
+		Window *w = Object::cast_to<Window>(get_viewport());
+		if (w && !w->is_embedding_subwindows()) {
+			print_line("windowpos: " + w->get_position());
+		}
+	}
 	Size2 size = get_size();
 
-	Point2 gp = get_global_position();
-	popup->set_global_position(gp + Size2(0, size.height * get_global_transform().get_scale().y));
+	Point2 gp = get_screen_position();
+
+	print_line("screenpos: " + gp);
+	gp.y += get_size().y;
+
+	popup->set_position(gp);
+
 	popup->set_size(Size2(size.width, 0));
-	popup->set_scale(get_global_transform().get_scale());
-	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_position()), get_size()));
+	popup->set_parent_rect(Rect2(Point2(gp - popup->get_position()), get_size()));
+	popup->take_mouse_focus();
 	popup->popup();
 }
 
@@ -115,7 +127,7 @@ void MenuButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_items", "_get_items");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_hover"), "set_switch_on_hover", "is_switch_on_hover");
 
-	ADD_SIGNAL(MethodInfo("about_to_show"));
+	ADD_SIGNAL(MethodInfo("about_to_popup"));
 }
 
 void MenuButton::set_disable_shortcuts(bool p_disabled) {
@@ -136,9 +148,8 @@ MenuButton::MenuButton() {
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
-	popup->set_pass_on_modal_close_click(false);
-	popup->connect("about_to_show", this, "set_pressed", varray(true)); // For when switching from another MenuButton.
-	popup->connect("popup_hide", this, "set_pressed", varray(false));
+	popup->connect("about_to_popup", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(true)); // For when switching from another MenuButton.
+	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
 }
 
 MenuButton::~MenuButton() {

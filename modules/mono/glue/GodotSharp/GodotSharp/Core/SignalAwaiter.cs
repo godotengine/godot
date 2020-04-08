@@ -9,13 +9,13 @@ namespace Godot
         private object[] result;
         private Action action;
 
-        public SignalAwaiter(Object source, string signal, Object target)
+        public SignalAwaiter(Object source, StringName signal, Object target)
         {
-            godot_icall_SignalAwaiter_connect(Object.GetPtr(source), signal, Object.GetPtr(target), this);
+            godot_icall_SignalAwaiter_connect(Object.GetPtr(source), StringName.GetPtr(signal), Object.GetPtr(target), this);
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static Error godot_icall_SignalAwaiter_connect(IntPtr source, string signal, IntPtr target, SignalAwaiter awaiter);
+        internal extern static Error godot_icall_SignalAwaiter_connect(IntPtr source, IntPtr signal, IntPtr target, SignalAwaiter awaiter);
 
         public bool IsCompleted
         {
@@ -49,12 +49,6 @@ namespace Godot
             {
                 action();
             }
-        }
-
-        internal void FailureCallback()
-        {
-            action = null;
-            completed = true;
         }
     }
 }

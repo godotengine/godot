@@ -50,20 +50,17 @@ void NodeDock::show_connections() {
 }
 
 void NodeDock::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("show_groups"), &NodeDock::show_groups);
-	ClassDB::bind_method(D_METHOD("show_connections"), &NodeDock::show_connections);
 }
 
 void NodeDock::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
-		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
+		connections_button->set_icon(get_theme_icon("Signals", "EditorIcons"));
+		groups_button->set_icon(get_theme_icon("Groups", "EditorIcons"));
 	}
 }
 
-NodeDock *NodeDock::singleton = NULL;
+NodeDock *NodeDock::singleton = nullptr;
 
 void NodeDock::update_lists() {
 
@@ -107,7 +104,7 @@ NodeDock::NodeDock() {
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
-	connections_button->connect("pressed", this, "show_connections");
+	connections_button->connect("pressed", callable_mp(this, &NodeDock::show_connections));
 
 	groups_button = memnew(ToolButton);
 	groups_button->set_text(TTR("Groups"));
@@ -116,7 +113,7 @@ NodeDock::NodeDock() {
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
-	groups_button->connect("pressed", this, "show_groups");
+	groups_button->connect("pressed", callable_mp(this, &NodeDock::show_groups));
 
 	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
 	connections->set_undoredo(EditorNode::get_undo_redo());

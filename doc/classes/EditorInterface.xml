@@ -52,6 +52,12 @@
 				Returns the editor [Viewport].
 			</description>
 		</method>
+		<method name="get_file_system_dock">
+			<return type="FileSystemDock">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_inspector" qualifiers="const">
 			<return type="EditorInspector">
 			</return>
@@ -127,7 +133,7 @@
 			<argument index="1" name="preview_size" type="int">
 			</argument>
 			<description>
-				Returns mesh previews rendered at the given size as an [Array] of [Texture]s.
+				Returns mesh previews rendered at the given size as an [Array] of [Texture2D]s.
 			</description>
 		</method>
 		<method name="open_scene_from_path">

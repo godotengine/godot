@@ -32,42 +32,77 @@
 #define MUTEX_H
 
 #include "core/error_list.h"
+#include "core/typedefs.h"
 
-/**
- * @class Mutex
- * @author Juan Linietsky
- * Portable Mutex (thread-safe locking) implementation.
- * Mutexes are always recursive ( they don't self-lock in a single thread ).
- * Mutexes can be used with a Lockp object like this, to avoid having to worry about unlocking:
- * Lockp( mutex );
- */
+#if !defined(NO_THREADS)
 
-class Mutex {
-protected:
-	static Mutex *(*create_func)(bool);
+#include <mutex>
+
+template <class StdMutexT>
+class MutexImpl {
+	mutable StdMutexT mutex;
 
 public:
-	virtual void lock() = 0; ///< Lock the mutex, block if locked by someone else
-	virtual void unlock() = 0; ///< Unlock the mutex, let other threads continue
-	virtual Error try_lock() = 0; ///< Attempt to lock the mutex, OK on success, ERROR means it can't lock.
+	_ALWAYS_INLINE_ void lock() const {
+		mutex.lock();
+	}
 
-	static Mutex *create(bool p_recursive = true); ///< Create a mutex
+	_ALWAYS_INLINE_ void unlock() const {
+		mutex.unlock();
+	}
 
-	virtual ~Mutex();
+	_ALWAYS_INLINE_ Error try_lock() const {
+		return mutex.try_lock() ? OK : ERR_BUSY;
+	}
 };
 
+template <class MutexT>
 class MutexLock {
-
-	Mutex *mutex;
+	const MutexT &mutex;
 
 public:
-	MutexLock(Mutex *p_mutex) {
-		mutex = p_mutex;
-		if (mutex) mutex->lock();
+	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
+			mutex(p_mutex) {
+		mutex.lock();
 	}
-	~MutexLock() {
-		if (mutex) mutex->unlock();
+
+	_ALWAYS_INLINE_ ~MutexLock() {
+		mutex.unlock();
 	}
 };
 
-#endif
+using Mutex = MutexImpl<std::recursive_mutex>; // Recursive, for general use
+using BinaryMutex = MutexImpl<std::mutex>; // Non-recursive, handle with care
+
+extern template class MutexImpl<std::recursive_mutex>;
+extern template class MutexImpl<std::mutex>;
+extern template class MutexLock<MutexImpl<std::recursive_mutex>>;
+extern template class MutexLock<MutexImpl<std::mutex>>;
+
+#else
+
+class FakeMutex {
+
+	FakeMutex(){};
+};
+
+template <class MutexT>
+class MutexImpl {
+public:
+	_ALWAYS_INLINE_ void lock() const {}
+	_ALWAYS_INLINE_ void unlock() const {}
+	_ALWAYS_INLINE_ Error try_lock() const { return OK; }
+};
+
+template <class MutexT>
+class MutexLock {
+public:
+	explicit MutexLock(const MutexT &p_mutex) {}
+};
+
+using Mutex = MutexImpl<FakeMutex>;
+using BinaryMutex = MutexImpl<FakeMutex>; // Non-recursive, handle with care
+
+#endif // !NO_THREADS
+
+#endif // MUTEX_H

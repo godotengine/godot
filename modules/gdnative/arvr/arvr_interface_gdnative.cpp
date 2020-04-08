@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "arvr_interface_gdnative.h"
-#include "main/input_default.h"
+#include "core/input/input_filter.h"
 #include "servers/arvr/arvr_positional_tracker.h"
-#include "servers/visual/visual_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 void ARVRInterfaceGDNative::_bind_methods() {
 	ADD_PROPERTY_DEFAULT("interface_is_initialized", false);
@@ -42,15 +42,15 @@ ARVRInterfaceGDNative::ARVRInterfaceGDNative() {
 	print_verbose("Construct gdnative interface\n");
 
 	// we won't have our data pointer until our library gets set
-	data = NULL;
+	data = nullptr;
 
-	interface = NULL;
+	interface = nullptr;
 }
 
 ARVRInterfaceGDNative::~ARVRInterfaceGDNative() {
 	print_verbose("Destruct gdnative interface\n");
 
-	if (interface != NULL && is_initialized()) {
+	if (interface != nullptr && is_initialized()) {
 		uninitialize();
 	};
 
@@ -59,10 +59,10 @@ ARVRInterfaceGDNative::~ARVRInterfaceGDNative() {
 }
 
 void ARVRInterfaceGDNative::cleanup() {
-	if (interface != NULL) {
+	if (interface != nullptr) {
 		interface->destructor(data);
-		data = NULL;
-		interface = NULL;
+		data = nullptr;
+		interface = nullptr;
 	}
 }
 
@@ -81,7 +81,7 @@ void ARVRInterfaceGDNative::set_interface(const godot_arvr_interface_gdnative *p
 
 StringName ARVRInterfaceGDNative::get_name() const {
 
-	ERR_FAIL_COND_V(interface == NULL, StringName());
+	ERR_FAIL_COND_V(interface == nullptr, StringName());
 
 	godot_string result = interface->get_name(data);
 
@@ -95,7 +95,7 @@ StringName ARVRInterfaceGDNative::get_name() const {
 int ARVRInterfaceGDNative::get_capabilities() const {
 	int capabilities;
 
-	ERR_FAIL_COND_V(interface == NULL, 0); // 0 = None
+	ERR_FAIL_COND_V(interface == nullptr, 0); // 0 = None
 
 	capabilities = interface->get_capabilities(data);
 
@@ -104,21 +104,21 @@ int ARVRInterfaceGDNative::get_capabilities() const {
 
 bool ARVRInterfaceGDNative::get_anchor_detection_is_enabled() const {
 
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	return interface->get_anchor_detection_is_enabled(data);
 }
 
 void ARVRInterfaceGDNative::set_anchor_detection_is_enabled(bool p_enable) {
 
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	interface->set_anchor_detection_is_enabled(data, p_enable);
 }
 
 int ARVRInterfaceGDNative::get_camera_feed_id() {
 
-	ERR_FAIL_COND_V(interface == NULL, 0);
+	ERR_FAIL_COND_V(interface == nullptr, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
 		return (unsigned int)interface->get_camera_feed_id(data);
@@ -130,7 +130,7 @@ int ARVRInterfaceGDNative::get_camera_feed_id() {
 bool ARVRInterfaceGDNative::is_stereo() {
 	bool stereo;
 
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	stereo = interface->is_stereo(data);
 
@@ -139,13 +139,13 @@ bool ARVRInterfaceGDNative::is_stereo() {
 
 bool ARVRInterfaceGDNative::is_initialized() const {
 
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	return interface->is_initialized(data);
 }
 
 bool ARVRInterfaceGDNative::initialize() {
-	ERR_FAIL_COND_V(interface == NULL, false);
+	ERR_FAIL_COND_V(interface == nullptr, false);
 
 	bool initialized = interface->initialize(data);
 
@@ -153,7 +153,7 @@ bool ARVRInterfaceGDNative::initialize() {
 		// if we successfully initialize our interface and we don't have a primary interface yet, this becomes our primary interface
 
 		ARVRServer *arvr_server = ARVRServer::get_singleton();
-		if ((arvr_server != NULL) && (arvr_server->get_primary_interface() == NULL)) {
+		if ((arvr_server != nullptr) && (arvr_server->get_primary_interface() == nullptr)) {
 			arvr_server->set_primary_interface(this);
 		};
 	};
@@ -162,10 +162,10 @@ bool ARVRInterfaceGDNative::initialize() {
 }
 
 void ARVRInterfaceGDNative::uninitialize() {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	if (arvr_server != NULL) {
+	if (arvr_server != nullptr) {
 		// Whatever happens, make sure this is no longer our primary interface
 		arvr_server->clear_primary_interface_if(this);
 	}
@@ -175,7 +175,7 @@ void ARVRInterfaceGDNative::uninitialize() {
 
 Size2 ARVRInterfaceGDNative::get_render_targetsize() {
 
-	ERR_FAIL_COND_V(interface == NULL, Size2());
+	ERR_FAIL_COND_V(interface == nullptr, Size2());
 
 	godot_vector2 result = interface->get_render_targetsize(data);
 	Vector2 *vec = (Vector2 *)&result;
@@ -186,7 +186,7 @@ Size2 ARVRInterfaceGDNative::get_render_targetsize() {
 Transform ARVRInterfaceGDNative::get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) {
 	Transform *ret;
 
-	ERR_FAIL_COND_V(interface == NULL, Transform());
+	ERR_FAIL_COND_V(interface == nullptr, Transform());
 
 	godot_transform t = interface->get_transform_for_eye(data, (int)p_eye, (godot_transform *)&p_cam_transform);
 
@@ -198,7 +198,7 @@ Transform ARVRInterfaceGDNative::get_transform_for_eye(ARVRInterface::Eyes p_eye
 CameraMatrix ARVRInterfaceGDNative::get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
 	CameraMatrix cm;
 
-	ERR_FAIL_COND_V(interface == NULL, CameraMatrix());
+	ERR_FAIL_COND_V(interface == nullptr, CameraMatrix());
 
 	interface->fill_projection_for_eye(data, (godot_real *)cm.matrix, (godot_int)p_eye, p_aspect, p_z_near, p_z_far);
 
@@ -207,7 +207,7 @@ CameraMatrix ARVRInterfaceGDNative::get_projection_for_eye(ARVRInterface::Eyes p
 
 unsigned int ARVRInterfaceGDNative::get_external_texture_for_eye(ARVRInterface::Eyes p_eye) {
 
-	ERR_FAIL_COND_V(interface == NULL, 0);
+	ERR_FAIL_COND_V(interface == nullptr, 0);
 
 	if ((interface->version.major > 1) || ((interface->version.major) == 1 && (interface->version.minor >= 1))) {
 		return (unsigned int)interface->get_external_texture_for_eye(data, (godot_int)p_eye);
@@ -218,19 +218,19 @@ unsigned int ARVRInterfaceGDNative::get_external_texture_for_eye(ARVRInterface::
 
 void ARVRInterfaceGDNative::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
 
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	interface->commit_for_eye(data, (godot_int)p_eye, (godot_rid *)&p_render_target, (godot_rect2 *)&p_screen_rect);
 }
 
 void ARVRInterfaceGDNative::process() {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	interface->process(data);
 }
 
 void ARVRInterfaceGDNative::notification(int p_what) {
-	ERR_FAIL_COND(interface == NULL);
+	ERR_FAIL_COND(interface == nullptr);
 
 	// this is only available in interfaces that implement 1.1 or later
 	if ((interface->version.major > 1) || ((interface->version.major == 1) && (interface->version.minor > 0))) {
@@ -265,7 +265,7 @@ godot_transform GDAPI godot_arvr_get_reference_frame() {
 	Transform *reference_frame_ptr = (Transform *)&reference_frame;
 
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	if (arvr_server != NULL) {
+	if (arvr_server != nullptr) {
 		*reference_frame_ptr = arvr_server->get_reference_frame();
 	} else {
 		godot_transform_new_identity(&reference_frame);
@@ -277,7 +277,9 @@ godot_transform GDAPI godot_arvr_get_reference_frame() {
 void GDAPI godot_arvr_blit(godot_int p_eye, godot_rid *p_render_target, godot_rect2 *p_rect) {
 	// blits out our texture as is, handy for preview display of one of the eyes that is already rendered with lens distortion on an external HMD
 	ARVRInterface::Eyes eye = (ARVRInterface::Eyes)p_eye;
+#if 0
 	RID *render_target = (RID *)p_render_target;
+#endif
 	Rect2 screen_rect = *(Rect2 *)p_rect;
 
 	if (eye == ARVRInterface::EYE_LEFT) {
@@ -286,18 +288,27 @@ void GDAPI godot_arvr_blit(godot_int p_eye, godot_rid *p_render_target, godot_re
 		screen_rect.size.x /= 2.0;
 		screen_rect.position.x += screen_rect.size.x;
 	}
-
-	VSG::rasterizer->set_current_render_target(RID());
-	VSG::rasterizer->blit_render_target_to_screen(*render_target, screen_rect, 0);
+#ifndef _MSC_VER
+#warning this needs to be redone
+#endif
+#if 0
+	RSG::rasterizer->blit_render_target_to_screen(*render_target, screen_rect, 0);
+#endif
 }
 
 godot_int GDAPI godot_arvr_get_texid(godot_rid *p_render_target) {
 	// In order to send off our textures to display on our hardware we need the opengl texture ID instead of the render target RID
 	// This is a handy function to expose that.
+#if 0
 	RID *render_target = (RID *)p_render_target;
 
-	RID eye_texture = VSG::storage->render_target_get_texture(*render_target);
-	uint32_t texid = VS::get_singleton()->texture_get_texid(eye_texture);
+	RID eye_texture = RSG::storage->render_target_get_texture(*render_target);
+#endif
+
+#ifndef _MSC_VER
+#warning need to obtain this ID again
+#endif
+	uint32_t texid = 0; //RS::get_singleton()->texture_get_texid(eye_texture);
 
 	return texid;
 }
@@ -306,7 +317,7 @@ godot_int GDAPI godot_arvr_add_controller(char *p_device_name, godot_int p_hand,
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL_V(arvr_server, 0);
 
-	InputDefault *input = (InputDefault *)Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL_V(input, 0);
 
 	ARVRPositionalTracker *new_tracker = memnew(ARVRPositionalTracker);
@@ -345,11 +356,11 @@ void GDAPI godot_arvr_remove_controller(godot_int p_controller_id) {
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	InputDefault *input = (InputDefault *)Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	ARVRPositionalTracker *remove_tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (remove_tracker != NULL) {
+	if (remove_tracker != nullptr) {
 		// unset our joystick if applicable
 		int joyid = remove_tracker->get_joy_id();
 		if (joyid != -1) {
@@ -368,7 +379,7 @@ void GDAPI godot_arvr_set_controller_transform(godot_int p_controller_id, godot_
 	ERR_FAIL_NULL(arvr_server);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	if (tracker != nullptr) {
 		Transform *transform = (Transform *)p_transform;
 		if (p_tracks_orientation) {
 			tracker->set_orientation(transform->basis);
@@ -383,11 +394,11 @@ void GDAPI godot_arvr_set_controller_button(godot_int p_controller_id, godot_int
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	InputDefault *input = (InputDefault *)Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	if (tracker != nullptr) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
 			input->joy_button(joyid, p_button, p_is_pressed);
@@ -399,14 +410,14 @@ void GDAPI godot_arvr_set_controller_axis(godot_int p_controller_id, godot_int p
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 
-	InputDefault *input = (InputDefault *)Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	if (tracker != nullptr) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
-			InputDefault::JoyAxis jx;
+			InputFilter::JoyAxis jx;
 			jx.min = p_can_be_negative ? -1 : 0;
 			jx.value = p_value;
 			input->joy_axis(joyid, p_axis, jx);
@@ -419,7 +430,7 @@ godot_real GDAPI godot_arvr_get_controller_rumble(godot_int p_controller_id) {
 	ERR_FAIL_NULL_V(arvr_server, 0.0);
 
 	ARVRPositionalTracker *tracker = arvr_server->find_by_type_and_id(ARVRServer::TRACKER_CONTROLLER, p_controller_id);
-	if (tracker != NULL) {
+	if (tracker != nullptr) {
 		return tracker->get_rumble();
 	}
 

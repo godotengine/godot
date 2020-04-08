@@ -14,7 +14,7 @@
 		<method name="add_icon_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="icon" type="Texture">
+			<argument index="0" name="icon" type="Texture2D">
 			</argument>
 			<argument index="1" name="selectable" type="bool" default="true">
 			</argument>
@@ -27,7 +27,7 @@
 			</return>
 			<argument index="0" name="text" type="String">
 			</argument>
-			<argument index="1" name="icon" type="Texture" default="null">
+			<argument index="1" name="icon" type="Texture2D" default="null">
 			</argument>
 			<argument index="2" name="selectable" type="bool" default="true">
 			</argument>
@@ -88,7 +88,7 @@
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -142,7 +142,7 @@
 			</description>
 		</method>
 		<method name="get_selected_items">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<description>
 				Returns an array with the indexes of the selected items.
@@ -286,10 +286,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="icon" type="Texture">
+			<argument index="1" name="icon" type="Texture2D">
 			</argument>
 			<description>
-				Sets (or replaces) the icon's [Texture] associated with the specified index.
+				Sets (or replaces) the icon's [Texture2D] associated with the specified index.
 			</description>
 		</method>
 		<method name="set_item_icon_modulate">

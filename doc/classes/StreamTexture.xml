@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamTexture" inherits="Texture" version="4.0">
+<class name="StreamTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
 		A [code].stex[/code] texture.
 	</brief_description>
@@ -15,11 +15,11 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
+				Loads the texture from the given path.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
 		<member name="load_path" type="String" setter="load" getter="get_load_path" default="&quot;&quot;">
 			The StreamTexture's file path to a [code].stex[/code] file.
 		</member>

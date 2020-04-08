@@ -244,6 +244,18 @@ void Basis::scale_local(const Vector3 &p_scale) {
 	*this = scaled_local(p_scale);
 }
 
+float Basis::get_uniform_scale() const {
+	return (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
+}
+
+void Basis::make_scale_uniform() {
+	float l = (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
+	for (int i = 0; i < 3; i++) {
+		elements[i].normalize();
+		elements[i] *= l;
+	}
+}
+
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
 	Basis b;
 	b.set_diagonal(p_scale);

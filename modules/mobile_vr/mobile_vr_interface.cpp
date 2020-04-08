@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "mobile_vr_interface.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/os.h"
-#include "servers/visual/visual_server_globals.h"
+#include "servers/display_server.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
@@ -117,7 +118,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	float delta_time = (double)ticks_elapsed / 1000000.0;
 
 	// few things we need
-	Input *input = Input::get_singleton();
+	InputFilter *input = InputFilter::get_singleton();
 	Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
 	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 
@@ -221,13 +222,13 @@ void MobileVRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_k2", "k"), &MobileVRInterface::set_k2);
 	ClassDB::bind_method(D_METHOD("get_k2"), &MobileVRInterface::get_k2);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "eye_height", PROPERTY_HINT_RANGE, "0.0,3.0,0.1"), "set_eye_height", "get_eye_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "iod", PROPERTY_HINT_RANGE, "4.0,10.0,0.1"), "set_iod", "get_iod");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "display_width", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_width", "get_display_width");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "display_to_lens", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_to_lens", "get_display_to_lens");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "oversample", PROPERTY_HINT_RANGE, "1.0,2.0,0.1"), "set_oversample", "get_oversample");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "k1", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k1", "get_k1");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "k2", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k2", "get_k2");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "eye_height", PROPERTY_HINT_RANGE, "0.0,3.0,0.1"), "set_eye_height", "get_eye_height");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "iod", PROPERTY_HINT_RANGE, "4.0,10.0,0.1"), "set_iod", "get_iod");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_width", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_width", "get_display_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_to_lens", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_to_lens", "get_display_to_lens");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversample", PROPERTY_HINT_RANGE, "1.0,2.0,0.1"), "set_oversample", "get_oversample");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k1", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k1", "get_k1");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "k2", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k2", "get_k2");
 }
 
 void MobileVRInterface::set_eye_height(const real_t p_eye_height) {
@@ -326,7 +327,7 @@ bool MobileVRInterface::initialize() {
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
 		ARVRServer *arvr_server = ARVRServer::get_singleton();
-		if (arvr_server != NULL) {
+		if (arvr_server != nullptr) {
 			// no longer our primary interface
 			arvr_server->clear_primary_interface_if(this);
 		}
@@ -339,7 +340,7 @@ Size2 MobileVRInterface::get_render_targetsize() {
 	_THREAD_SAFE_METHOD_
 
 	// we use half our window size
-	Size2 target_size = OS::get_singleton()->get_window_size();
+	Size2 target_size = DisplayServer::get_singleton()->window_get_size();
 
 	target_size.x *= 0.5 * oversample;
 	target_size.y *= oversample;
@@ -424,13 +425,7 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	}
 	// we don't offset the eye center vertically (yet)
 	eye_center.y = 0.0;
-
-	// unset our render target so we are outputting to our main screen by making RasterizerStorageGLES3::system_fbo our current FBO
-	VSG::rasterizer->set_current_render_target(RID());
-
-	// and output
-	VSG::rasterizer->output_lens_distorted_to_screen(p_render_target, dest, k1, k2, eye_center, oversample);
-};
+}
 
 void MobileVRInterface::process() {
 	_THREAD_SAFE_METHOD_

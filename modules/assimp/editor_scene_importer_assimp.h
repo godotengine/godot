@@ -37,9 +37,9 @@
 #include "core/vector.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/project_settings_editor.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/surface_tool.h"
@@ -90,29 +90,29 @@ private:
 
 	Ref<Mesh> _generate_mesh_from_surface_indices(ImportState &state, const Vector<int> &p_surface_indices,
 			const aiNode *assimp_node, Ref<Skin> &skin,
-			Skeleton *&skeleton_assigned);
+			Skeleton3D *&skeleton_assigned);
 
 	// simple object creation functions
-	Spatial *create_light(ImportState &state,
+	Node3D *create_light(ImportState &state,
 			const String &node_name,
 			Transform &look_at_transform);
-	Spatial *create_camera(
+	Node3D *create_camera(
 			ImportState &state,
 			const String &node_name,
 			Transform &look_at_transform);
 	// non recursive - linear so must not use recursive arguments
-	MeshInstance *create_mesh(ImportState &state, const aiNode *assimp_node, const String &node_name, Node *active_node, Transform node_transform);
+	MeshInstance3D *create_mesh(ImportState &state, const aiNode *assimp_node, const String &node_name, Node *active_node, Transform node_transform);
 	// recursive node generator
 	void _generate_node(ImportState &state, const aiNode *assimp_node);
 	void _insert_animation_track(ImportState &scene, const aiAnimation *assimp_anim, int track_id,
 			int anim_fps, Ref<Animation> animation, float ticks_per_second,
-			Skeleton *skeleton, const NodePath &node_path,
+			Skeleton3D *skeleton, const NodePath &node_path,
 			const String &node_name, aiBone *track_bone);
 
 	void _import_animation(ImportState &state, int p_animation_index, int p_bake_fps);
 	Node *get_node_by_name(ImportState &state, String name);
 	aiBone *get_bone_from_stack(ImportState &state, aiString name);
-	Spatial *_generate_scene(const String &p_path, aiScene *scene, const uint32_t p_flags, int p_bake_fps, const int32_t p_max_bone_weights);
+	Node3D *_generate_scene(const String &p_path, aiScene *scene, const uint32_t p_flags, int p_bake_fps, const int32_t p_max_bone_weights);
 
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, AssetImportAnimation::Interpolation p_interp);
@@ -138,7 +138,7 @@ public:
 
 	virtual void get_extensions(List<String> *r_extensions) const;
 	virtual uint32_t get_import_flags() const;
-	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = NULL);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err = nullptr);
 	Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path);
 
 	static void RegenerateBoneStack(ImportState &state);

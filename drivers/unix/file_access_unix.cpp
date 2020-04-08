@@ -76,7 +76,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	if (f)
 		fclose(f);
-	f = NULL;
+	f = nullptr;
 
 	path_src = p_path;
 	path = fix_path(p_path);
@@ -119,7 +119,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	f = fopen(path.utf8().get_data(), mode_string);
 
-	if (f == NULL) {
+	if (f == nullptr) {
 		switch (errno) {
 			case ENOENT: {
 				last_error = ERR_FILE_NOT_FOUND;
@@ -155,7 +155,7 @@ void FileAccessUnix::close() {
 		return;
 
 	fclose(f);
-	f = NULL;
+	f = nullptr;
 
 	if (close_notification_func) {
 		close_notification_func(path, flags);
@@ -175,7 +175,7 @@ void FileAccessUnix::close() {
 
 bool FileAccessUnix::is_open() const {
 
-	return (f != NULL);
+	return (f != nullptr);
 }
 
 String FileAccessUnix::get_path() const {
@@ -352,10 +352,10 @@ FileAccess *FileAccessUnix::create_libc() {
 	return memnew(FileAccessUnix);
 }
 
-CloseNotificationFunc FileAccessUnix::close_notification_func = NULL;
+CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::FileAccessUnix() :
-		f(NULL),
+		f(nullptr),
 		flags(0),
 		last_error(OK) {
 }

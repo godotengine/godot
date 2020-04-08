@@ -10,10 +10,21 @@
 	</tutorials>
 	<methods>
 	</methods>
+	<members>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Panel.Mode" default="0">
+		</member>
+	</members>
 	<constants>
+		<constant name="MODE_BACKGROUND" value="0" enum="Mode">
+		</constant>
+		<constant name="MODE_FOREGROUND" value="1" enum="Mode">
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="panel" type="StyleBox">
+			The style of this [Panel].
+		</theme_item>
+		<theme_item name="panel_fg" type="StyleBox">
 		</theme_item>
 	</theme_items>
 </class>

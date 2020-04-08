@@ -11,19 +11,19 @@
 	<members>
 		<member name="base_script" type="String" setter="set_base_script" getter="get_base_script">
 		</member>
-		<member name="base_type" type="String" setter="set_base_type" getter="get_base_type" default="&quot;Object&quot;">
+		<member name="base_type" type="StringName" setter="set_base_type" getter="get_base_type" default="@&quot;Object&quot;">
 		</member>
 		<member name="basic_type" type="int" setter="set_basic_type" getter="get_basic_type" enum="Variant.Type">
 		</member>
 		<member name="call_mode" type="int" setter="set_call_mode" getter="get_call_mode" enum="VisualScriptFunctionCall.CallMode" default="0">
 		</member>
-		<member name="function" type="String" setter="set_function" getter="get_function" default="&quot;&quot;">
+		<member name="function" type="StringName" setter="set_function" getter="get_function" default="@&quot;&quot;">
 		</member>
 		<member name="node_path" type="NodePath" setter="set_base_path" getter="get_base_path">
 		</member>
 		<member name="rpc_call_mode" type="int" setter="set_rpc_call_mode" getter="get_rpc_call_mode" enum="VisualScriptFunctionCall.RPCCallMode" default="0">
 		</member>
-		<member name="singleton" type="String" setter="set_singleton" getter="get_singleton">
+		<member name="singleton" type="StringName" setter="set_singleton" getter="get_singleton">
 		</member>
 		<member name="use_default_args" type="int" setter="set_use_default_args" getter="get_use_default_args">
 		</member>

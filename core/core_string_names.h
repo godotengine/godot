@@ -41,7 +41,7 @@ class CoreStringNames {
 	static void create() { singleton = memnew(CoreStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	CoreStringNames();
@@ -90,6 +90,11 @@ public:
 	StringName g8;
 	StringName b8;
 	StringName a8;
+
+	StringName call;
+	StringName call_deferred;
+	StringName emit;
+	StringName notification;
 };
 
-#endif // SCENE_STRING_NAMES_H
+#endif // CORE_STRING_NAMES_H

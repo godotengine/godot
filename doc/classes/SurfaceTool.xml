@@ -22,7 +22,7 @@
 		<method name="add_bones">
 			<return type="void">
 			</return>
-			<argument index="0" name="bones" type="PoolIntArray">
+			<argument index="0" name="bones" type="PackedInt32Array">
 			</argument>
 			<description>
 				Adds an array of bones for the next vertex to use. [code]bones[/code] must contain 4 integers.
@@ -76,15 +76,15 @@
 		<method name="add_triangle_fan">
 			<return type="void">
 			</return>
-			<argument index="0" name="vertices" type="PoolVector3Array">
+			<argument index="0" name="vertices" type="PackedVector3Array">
 			</argument>
-			<argument index="1" name="uvs" type="PoolVector2Array" default="PoolVector2Array(  )">
+			<argument index="1" name="uvs" type="PackedVector2Array" default="PackedVector2Array(  )">
 			</argument>
-			<argument index="2" name="colors" type="PoolColorArray" default="PoolColorArray(  )">
+			<argument index="2" name="colors" type="PackedColorArray" default="PackedColorArray(  )">
 			</argument>
-			<argument index="3" name="uv2s" type="PoolVector2Array" default="PoolVector2Array(  )">
+			<argument index="3" name="uv2s" type="PackedVector2Array" default="PackedVector2Array(  )">
 			</argument>
-			<argument index="4" name="normals" type="PoolVector3Array" default="PoolVector3Array(  )">
+			<argument index="4" name="normals" type="PackedVector3Array" default="PackedVector3Array(  )">
 			</argument>
 			<argument index="5" name="tangents" type="Array" default="[  ]">
 			</argument>
@@ -123,7 +123,7 @@
 		<method name="add_weights">
 			<return type="void">
 			</return>
-			<argument index="0" name="weights" type="PoolRealArray">
+			<argument index="0" name="weights" type="PackedFloat32Array">
 			</argument>
 			<description>
 				Specifies weight values for next vertex to use. [code]weights[/code] must contain 4 values.
@@ -163,7 +163,7 @@
 			</return>
 			<argument index="0" name="existing" type="ArrayMesh" default="null">
 			</argument>
-			<argument index="1" name="flags" type="int" default="97280">
+			<argument index="1" name="flags" type="int" default="31744">
 			</argument>
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].

@@ -149,7 +149,7 @@ void Resource::reload_from_file() {
 	}
 }
 
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -190,7 +190,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return res;
 }
 
-void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -328,7 +328,7 @@ Node *Resource::get_local_scene() const {
 		return _get_local_scene_func();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void Resource::setup_local_to_scene() {
@@ -337,7 +337,7 @@ void Resource::setup_local_to_scene() {
 		get_script_instance()->call("_setup_local_to_scene");
 }
 
-Node *(*Resource::_get_local_scene_func)() = NULL;
+Node *(*Resource::_get_local_scene_func)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
 
@@ -423,7 +423,7 @@ void Resource::_bind_methods() {
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
 
 	BIND_VMETHOD(MethodInfo("_setup_local_to_scene"));
 }
@@ -438,7 +438,7 @@ Resource::Resource() :
 
 	subindex = 0;
 	local_to_scene = false;
-	local_scene = NULL;
+	local_scene = nullptr;
 }
 
 Resource::~Resource() {
@@ -455,12 +455,12 @@ Resource::~Resource() {
 
 HashMap<String, Resource *> ResourceCache::resources;
 #ifdef TOOLS_ENABLED
-HashMap<String, HashMap<String, int> > ResourceCache::resource_path_cache;
+HashMap<String, HashMap<String, int>> ResourceCache::resource_path_cache;
 #endif
 
-RWLock *ResourceCache::lock = NULL;
+RWLock *ResourceCache::lock = nullptr;
 #ifdef TOOLS_ENABLED
-RWLock *ResourceCache::path_cache_lock = NULL;
+RWLock *ResourceCache::path_cache_lock = nullptr;
 #endif
 
 void ResourceCache::setup() {
@@ -482,7 +482,7 @@ void ResourceCache::clear() {
 void ResourceCache::reload_externals() {
 
 	/*
-	const String *K=NULL;
+	const String *K=nullptr;
 	while ((K=resources.next(K))) {
 		resources[*K]->reload_external_data();
 	}
@@ -506,16 +506,16 @@ Resource *ResourceCache::get(const String &p_path) {
 	lock->read_unlock();
 
 	if (!res) {
-		return NULL;
+		return nullptr;
 	}
 
 	return *res;
 }
 
-void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
+void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 
 	lock->read_lock();
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
 
 		Resource *r = resources[*K];
@@ -539,13 +539,13 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 
 	Map<String, int> type_count;
 
-	FileAccess *f = NULL;
+	FileAccess *f = nullptr;
 	if (p_file) {
 		f = FileAccess::open(p_file, FileAccess::WRITE);
 		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String(p_file) + "'.");
 	}
 
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
 
 		Resource *r = resources[*K];

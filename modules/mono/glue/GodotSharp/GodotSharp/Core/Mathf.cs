@@ -130,7 +130,7 @@ namespace Godot
 
         public static real_t InverseLerp(real_t from, real_t to, real_t weight)
         {
-           return (weight - from) / (to - from);
+            return (weight - from) / (to - from);
         }
 
         public static bool IsEqualApprox(real_t a, real_t b)
@@ -151,12 +151,12 @@ namespace Godot
 
         public static bool IsInf(real_t s)
         {
-           return real_t.IsInfinity(s);
+            return real_t.IsInfinity(s);
         }
 
         public static bool IsNaN(real_t s)
         {
-           return real_t.IsNaN(s);
+            return real_t.IsNaN(s);
         }
 
         public static bool IsZeroApprox(real_t s)

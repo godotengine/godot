@@ -104,7 +104,7 @@ public:
 	virtual Error capture_stop() { return FAILED; }
 	virtual void capture_set_device(const String &p_name) {}
 	virtual String capture_get_device() { return "Default"; }
-	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PoolStringArray
+	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PackedStringArray
 
 	virtual float get_latency() { return 0; }
 
@@ -198,7 +198,7 @@ private:
 			bool active;
 			AudioFrame peak_volume;
 			Vector<AudioFrame> buffer;
-			Vector<Ref<AudioEffectInstance> > effect_instances;
+			Vector<Ref<AudioEffectInstance>> effect_instances;
 			uint64_t last_mix_with_audio;
 			Channel() {
 				last_mix_with_audio = 0;
@@ -224,21 +224,13 @@ private:
 		int index_cache;
 	};
 
-	Vector<Vector<AudioFrame> > temp_buffer; //temp_buffer for each level
+	Vector<Vector<AudioFrame>> temp_buffer; //temp_buffer for each level
 	Vector<Bus *> buses;
 	Map<StringName, Bus *> bus_map;
 
 	void _update_bus_effects(int p_bus);
 
 	static AudioServer *singleton;
-
-	// TODO create an audiodata pool to optimize memory
-
-	Map<void *, uint32_t> audio_data;
-	size_t audio_data_total_mem;
-	size_t audio_data_max_mem;
-
-	Mutex *audio_data_lock;
 
 	void init_channels_and_buffers();
 
@@ -349,12 +341,6 @@ public:
 	virtual double get_output_latency() const;
 	virtual double get_time_to_next_mix() const;
 	virtual double get_time_since_last_mix() const;
-
-	void *audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data = NULL);
-	void audio_data_free(void *p_data);
-
-	size_t audio_data_get_total_memory_usage() const;
-	size_t audio_data_get_max_memory_usage() const;
 
 	void add_callback(AudioCallback p_callback, void *p_userdata);
 	void remove_callback(AudioCallback p_callback, void *p_userdata);

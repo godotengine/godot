@@ -28,19 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "servers/audio_server.h"
-
 #ifdef ALSA_ENABLED
+
+#ifndef AUDIO_DRIVER_ALSA_H
+#define AUDIO_DRIVER_ALSA_H
 
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "servers/audio_server.h"
 
 #include <alsa/asoundlib.h>
 
 class AudioDriverALSA : public AudioDriver {
 
 	Thread *thread;
-	Mutex *mutex;
+	Mutex mutex;
 
 	snd_pcm_t *pcm_handle;
 
@@ -87,4 +89,6 @@ public:
 	~AudioDriverALSA();
 };
 
-#endif
+#endif // AUDIO_DRIVER_ALSA_H
+
+#endif // ALSA_ENABLED

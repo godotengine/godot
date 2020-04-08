@@ -40,7 +40,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "mono_gd/gd_mono_android.h"
+#include "mono_gd/support/mono-support.h"
 #endif
 
 #include "mono_gd/gd_mono.h"
@@ -49,13 +49,13 @@ namespace GodotSharpDirs {
 
 String _get_expected_build_config() {
 #ifdef TOOLS_ENABLED
-	return "Tools";
+	return "Debug";
 #else
 
 #ifdef DEBUG_ENABLED
-	return "Debug";
+	return "ExportDebug";
 #else
-	return "Release";
+	return "ExportRelease";
 #endif
 
 #endif
@@ -169,7 +169,7 @@ private:
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
 #ifdef ANDROID_ENABLED
-		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
+		data_mono_lib_dir = gdmono::android::support::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
 #endif
@@ -206,7 +206,7 @@ private:
 		data_mono_etc_dir = data_mono_root_dir.plus_file("etc");
 
 #ifdef ANDROID_ENABLED
-		data_mono_lib_dir = GDMonoAndroid::get_app_native_lib_dir();
+		data_mono_lib_dir = gdmono::android::support::get_app_native_lib_dir();
 #else
 		data_mono_lib_dir = data_mono_root_dir.plus_file("lib");
 		data_game_assemblies_dir = data_dir_root.plus_file("Assemblies");

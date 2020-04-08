@@ -166,13 +166,13 @@ namespace GodotTools
                 Internal.GodotIs32Bits() ? "32" : "64"
             };
 
-            bool buildSuccess = BuildManager.BuildProjectBlocking("Tools", godotDefines);
+            bool buildSuccess = BuildManager.BuildProjectBlocking("Debug", godotDefines);
 
             if (!buildSuccess)
                 return;
 
             // Notify running game for hot-reload
-            Internal.ScriptEditorDebuggerReloadScripts();
+            Internal.EditorDebuggerNodeReloadScripts();
 
             // Hot-reload in the editor
             GodotSharpEditor.Instance.GetNode<HotReloadAssemblyWatcher>("HotReloadAssemblyWatcher").RestartTimer();
@@ -205,9 +205,9 @@ namespace GodotTools
             if (what == EditorSettings.NotificationEditorSettingsChanged)
             {
                 var editorBaseControl = editorInterface.GetBaseControl();
-                panelTabs.AddStyleboxOverride("panel", editorBaseControl.GetStylebox("DebuggerPanel", "EditorStyles"));
-                panelTabs.AddStyleboxOverride("tab_fg", editorBaseControl.GetStylebox("DebuggerTabFG", "EditorStyles"));
-                panelTabs.AddStyleboxOverride("tab_bg", editorBaseControl.GetStylebox("DebuggerTabBG", "EditorStyles"));
+                panelTabs.AddThemeStyleboxOverride("panel", editorBaseControl.GetThemeStylebox("DebuggerPanel", "EditorStyles"));
+                panelTabs.AddThemeStyleboxOverride("tab_fg", editorBaseControl.GetThemeStylebox("DebuggerTabFG", "EditorStyles"));
+                panelTabs.AddThemeStyleboxOverride("tab_bg", editorBaseControl.GetThemeStylebox("DebuggerTabBG", "EditorStyles"));
             }
         }
 
@@ -258,9 +258,9 @@ namespace GodotTools
                 RectMinSize = new Vector2(0, 228) * EditorScale,
                 SizeFlagsVertical = (int)SizeFlags.ExpandFill
             };
-            panelTabs.AddStyleboxOverride("panel", editorBaseControl.GetStylebox("DebuggerPanel", "EditorStyles"));
-            panelTabs.AddStyleboxOverride("tab_fg", editorBaseControl.GetStylebox("DebuggerTabFG", "EditorStyles"));
-            panelTabs.AddStyleboxOverride("tab_bg", editorBaseControl.GetStylebox("DebuggerTabBG", "EditorStyles"));
+            panelTabs.AddThemeStyleboxOverride("panel", editorBaseControl.GetThemeStylebox("DebuggerPanel", "EditorStyles"));
+            panelTabs.AddThemeStyleboxOverride("tab_fg", editorBaseControl.GetThemeStylebox("DebuggerTabFG", "EditorStyles"));
+            panelTabs.AddThemeStyleboxOverride("tab_bg", editorBaseControl.GetThemeStylebox("DebuggerTabBG", "EditorStyles"));
             AddChild(panelTabs);
 
             {
@@ -280,7 +280,7 @@ namespace GodotTools
                     Text = "Build Project".TTR(),
                     FocusMode = FocusModeEnum.None
                 };
-                buildProjectBtn.Connect("pressed", this, nameof(BuildProjectPressed));
+                buildProjectBtn.PressedSignal += BuildProjectPressed;
                 toolBarHBox.AddChild(buildProjectBtn);
 
                 toolBarHBox.AddSpacer(begin: false);
@@ -293,7 +293,7 @@ namespace GodotTools
                     Visible = false,
                     FocusMode = FocusModeEnum.None
                 };
-                warningsBtn.Connect("toggled", this, nameof(_WarningsToggled));
+                warningsBtn.Toggled += _WarningsToggled;
                 toolBarHBox.AddChild(warningsBtn);
 
                 errorsBtn = new ToolButton
@@ -304,7 +304,7 @@ namespace GodotTools
                     Visible = false,
                     FocusMode = FocusModeEnum.None
                 };
-                errorsBtn.Connect("toggled", this, nameof(_ErrorsToggled));
+                errorsBtn.Toggled += _ErrorsToggled;
                 toolBarHBox.AddChild(errorsBtn);
 
                 toolBarHBox.AddSpacer(begin: false);
@@ -315,7 +315,7 @@ namespace GodotTools
                     FocusMode = FocusModeEnum.None,
                     Visible = false
                 };
-                viewLogBtn.Connect("pressed", this, nameof(_ViewLogPressed));
+                viewLogBtn.PressedSignal += _ViewLogPressed;
                 toolBarHBox.AddChild(viewLogBtn);
 
                 var hsc = new HSplitContainer
@@ -326,8 +326,8 @@ namespace GodotTools
                 panelBuildsTab.AddChild(hsc);
 
                 buildTabsList = new ItemList { SizeFlagsHorizontal = (int)SizeFlags.ExpandFill };
-                buildTabsList.Connect("item_selected", this, nameof(_BuildTabsItemSelected));
-                buildTabsList.Connect("nothing_selected", this, nameof(_BuildTabsNothingSelected));
+                buildTabsList.ItemSelected += _BuildTabsItemSelected;
+                buildTabsList.NothingSelected += _BuildTabsNothingSelected;
                 hsc.AddChild(buildTabsList);
 
                 buildTabs = new TabContainer

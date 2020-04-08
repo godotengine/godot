@@ -34,7 +34,7 @@
 #include "java_class_wrapper.h"
 
 #if !defined(ANDROID_ENABLED)
-static JavaClassWrapper *java_class_wrapper = NULL;
+static JavaClassWrapper *java_class_wrapper = nullptr;
 #endif
 
 void register_android_api() {
@@ -62,18 +62,18 @@ void JavaClassWrapper::_bind_methods() {
 
 #if !defined(ANDROID_ENABLED)
 
-Variant JavaClass::call(const StringName &, const Variant **, int, Variant::CallError &) {
+Variant JavaClass::call(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
 }
 
 JavaClass::JavaClass() {
 }
 
-Variant JavaObject::call(const StringName &, const Variant **, int, Variant::CallError &) {
+Variant JavaObject::call(const StringName &, const Variant **, int, Callable::CallError &) {
 	return Variant();
 }
 
-JavaClassWrapper *JavaClassWrapper::singleton = NULL;
+JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
 
 Ref<JavaClass> JavaClassWrapper::wrap(const String &) {
 	return Ref<JavaClass>();

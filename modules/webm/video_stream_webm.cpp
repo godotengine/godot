@@ -96,17 +96,17 @@ private:
 
 VideoStreamPlaybackWebm::VideoStreamPlaybackWebm() :
 		audio_track(0),
-		webm(NULL),
-		video(NULL),
-		audio(NULL),
-		video_frames(NULL),
-		audio_frame(NULL),
+		webm(nullptr),
+		video(nullptr),
+		audio(nullptr),
+		video_frames(nullptr),
+		audio_frame(nullptr),
 		video_frames_pos(0),
 		video_frames_capacity(0),
 		num_decoded_samples(0),
 		samples_offset(-1),
-		mix_callback(NULL),
-		mix_udata(NULL),
+		mix_callback(nullptr),
+		mix_udata(nullptr),
 		playing(false),
 		paused(false),
 		delay_compensation(0.0),
@@ -114,7 +114,7 @@ VideoStreamPlaybackWebm::VideoStreamPlaybackWebm() :
 		video_frame_delay(0.0),
 		video_pos(0.0),
 		texture(memnew(ImageTexture)),
-		pcm(NULL) {}
+		pcm(nullptr) {}
 VideoStreamPlaybackWebm::~VideoStreamPlaybackWebm() {
 
 	delete_pointers();
@@ -137,19 +137,22 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			} else {
 
 				memdelete(audio);
-				audio = NULL;
+				audio = nullptr;
 			}
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
-			texture->create(webm->getWidth(), webm->getHeight(), Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+			Ref<Image> img;
+			img.instance();
+			img->create(webm->getWidth(), webm->getHeight(), false, Image::FORMAT_RGBA8);
+			texture->create_from_image(img);
 
 			return true;
 		}
 		memdelete(video);
-		video = NULL;
+		video = nullptr;
 	}
 	memdelete(webm);
-	webm = NULL;
+	webm = nullptr;
 	return false;
 }
 
@@ -159,13 +162,13 @@ void VideoStreamPlaybackWebm::stop() {
 
 		delete_pointers();
 
-		pcm = NULL;
+		pcm = nullptr;
 
-		audio_frame = NULL;
-		video_frames = NULL;
+		audio_frame = nullptr;
+		video_frames = nullptr;
 
-		video = NULL;
-		audio = NULL;
+		video = nullptr;
+		audio = nullptr;
 
 		open_file(file_name); //Should not fail here...
 
@@ -231,7 +234,7 @@ void VideoStreamPlaybackWebm::set_audio_track(int p_idx) {
 	audio_track = p_idx;
 }
 
-Ref<Texture> VideoStreamPlaybackWebm::get_texture() const {
+Ref<Texture2D> VideoStreamPlaybackWebm::get_texture() const {
 
 	return texture;
 }
@@ -312,12 +315,12 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 					if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
 
-						PoolVector<uint8_t>::Write w = frame_data.write();
+						uint8_t *w = frame_data.ptrw();
 						bool converted = false;
 
 						if (image.chromaShiftW == 0 && image.chromaShiftH == 0 && image.cs == VPX_CS_SRGB) {
 
-							uint8_t *wp = w.ptr();
+							uint8_t *wp = w;
 							unsigned char *rRow = image.planes[2];
 							unsigned char *gRow = image.planes[0];
 							unsigned char *bRow = image.planes[1];
@@ -335,17 +338,17 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
 
-							yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							yuv420_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							//libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
-							yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							yuv422_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							//libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
-							yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
+							yuv444_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
 							//libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
@@ -356,7 +359,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 						if (converted) {
 							Ref<Image> img = memnew(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data));
-							texture->set_data(img); //Zero copy send to visual server
+							texture->update(img); //Zero copy send to visual server
 							video_frame_done = true;
 						}
 					}
@@ -444,7 +447,7 @@ Ref<VideoStreamPlayback> VideoStreamWebm::instance_playback() {
 	pb->set_audio_track(audio_track);
 	if (pb->open_file(file))
 		return pb;
-	return NULL;
+	return nullptr;
 }
 
 void VideoStreamWebm::set_file(const String &p_file) {
@@ -471,7 +474,7 @@ void VideoStreamWebm::set_audio_track(int p_track) {
 
 ////////////
 
-RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {

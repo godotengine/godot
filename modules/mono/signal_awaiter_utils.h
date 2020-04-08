@@ -32,40 +32,66 @@
 #define SIGNAL_AWAITER_UTILS_H
 
 #include "core/reference.h"
+
+#include "csharp_script.h"
 #include "mono_gc_handle.h"
 
-namespace SignalAwaiterUtils {
+Error gd_mono_connect_signal_awaiter(Object *p_source, const StringName &p_signal, Object *p_target, MonoObject *p_awaiter);
 
-Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p_target, MonoObject *p_awaiter);
-}
-
-class SignalAwaiterHandle : public MonoGCHandle {
-
-	GDCLASS(SignalAwaiterHandle, MonoGCHandle);
-
-	bool completed;
-
-#ifdef DEBUG_ENABLED
-	ObjectID conn_target_id;
-#endif
-
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-
-protected:
-	static void _bind_methods();
+class SignalAwaiterCallable : public CallableCustom {
+	ObjectID target_id;
+	MonoGCHandleData awaiter_handle;
+	StringName signal;
 
 public:
-	_FORCE_INLINE_ bool is_completed() { return completed; }
-	_FORCE_INLINE_ void set_completed(bool p_completed) { completed = p_completed; }
+	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
+	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
 
-#ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void set_connection_target(Object *p_target) {
-		conn_target_id = p_target->get_instance_id();
-	}
-#endif
+	static constexpr CompareEqualFunc compare_equal_func_ptr = &SignalAwaiterCallable::compare_equal;
+	static constexpr CompareEqualFunc compare_less_func_ptr = &SignalAwaiterCallable::compare_less;
 
-	SignalAwaiterHandle(MonoObject *p_managed);
-	~SignalAwaiterHandle();
+	uint32_t hash() const override;
+
+	String get_as_text() const override;
+
+	CompareEqualFunc get_compare_equal_func() const override;
+	CompareLessFunc get_compare_less_func() const override;
+
+	ObjectID get_object() const override;
+
+	_FORCE_INLINE_ StringName get_signal() const { return signal; }
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
+
+	SignalAwaiterCallable(Object *p_target, MonoObject *p_awaiter, const StringName &p_signal);
+	~SignalAwaiterCallable();
+};
+
+class EventSignalCallable : public CallableCustom {
+	Object *owner;
+	const CSharpScript::EventSignal *event_signal;
+
+public:
+	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
+	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
+
+	static constexpr CompareEqualFunc compare_equal_func_ptr = &EventSignalCallable::compare_equal;
+	static constexpr CompareEqualFunc compare_less_func_ptr = &EventSignalCallable::compare_less;
+
+	uint32_t hash() const override;
+
+	String get_as_text() const override;
+
+	CompareEqualFunc get_compare_equal_func() const override;
+	CompareLessFunc get_compare_less_func() const override;
+
+	ObjectID get_object() const override;
+
+	StringName get_signal() const;
+
+	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
+
+	EventSignalCallable(Object *p_owner, const CSharpScript::EventSignal *p_event_signal);
 };
 
 #endif // SIGNAL_AWAITER_UTILS_H

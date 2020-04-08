@@ -410,14 +410,16 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 
 		ke.type = OS_UWP::KeyEvent::MessageType::KEY_EVENT_MESSAGE;
 		ke.unicode = 0;
-		ke.scancode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
+		ke.keycode = KeyMappingWindows::get_keysym((unsigned int)key_args->VirtualKey);
+		ke.physical_keycode = KeyMappingWindows::get_scansym((unsigned int)key_args->KeyStatus.ScanCode);
 		ke.echo = (!p_pressed && !key_args->KeyStatus.IsKeyReleased) || (p_pressed && key_args->KeyStatus.WasKeyDown);
 
 	} else {
 
 		ke.type = OS_UWP::KeyEvent::MessageType::CHAR_EVENT_MESSAGE;
 		ke.unicode = char_args->KeyCode;
-		ke.scancode = 0;
+		ke.keycode = 0;
+		ke.physical_keycode = 0;
 		ke.echo = (!p_pressed && !char_args->KeyStatus.IsKeyReleased) || (p_pressed && char_args->KeyStatus.WasKeyDown);
 	}
 
@@ -505,12 +507,12 @@ void App::UpdateWindowSize(Size size) {
 
 char **App::get_command_line(unsigned int *out_argc) {
 
-	static char *fail_cl[] = { "--path", "game", NULL };
+	static char *fail_cl[] = { "--path", "game", nullptr };
 	*out_argc = 2;
 
 	FILE *f = _wfopen(L"__cl__.cl", L"rb");
 
-	if (f == NULL) {
+	if (f == nullptr) {
 
 		wprintf(L"Couldn't open command line file.\n");
 		return fail_cl;
@@ -556,7 +558,7 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 		if (r == strlen) {
 
-			int warg_size = MultiByteToWideChar(CP_UTF8, 0, arg, -1, NULL, 0);
+			int warg_size = MultiByteToWideChar(CP_UTF8, 0, arg, -1, nullptr, 0);
 			wchar_t *warg = new wchar_t[warg_size];
 
 			MultiByteToWideChar(CP_UTF8, 0, arg, -1, warg, warg_size);
@@ -581,14 +583,14 @@ char **App::get_command_line(unsigned int *out_argc) {
 
 	for (int i = 0; i < cl.Size; i++) {
 
-		int arg_size = WideCharToMultiByte(CP_UTF8, 0, cl.GetAt(i)->Data(), -1, NULL, 0, NULL, NULL);
+		int arg_size = WideCharToMultiByte(CP_UTF8, 0, cl.GetAt(i)->Data(), -1, nullptr, 0, nullptr, nullptr);
 		char *arg = new char[arg_size];
 
-		WideCharToMultiByte(CP_UTF8, 0, cl.GetAt(i)->Data(), -1, arg, arg_size, NULL, NULL);
+		WideCharToMultiByte(CP_UTF8, 0, cl.GetAt(i)->Data(), -1, arg, arg_size, nullptr, nullptr);
 
 		ret[i] = arg;
 	}
-	ret[cl.Size] = NULL;
+	ret[cl.Size] = nullptr;
 	*out_argc = cl.Size;
 
 	return ret;

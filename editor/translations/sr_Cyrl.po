@@ -722,8 +722,9 @@ msgid "Line Number:"
 msgstr "Број линије:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Замени %d појаве/а."
+#, fuzzy
+msgid "%d replaced."
+msgstr "Замени..."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1561,6 +1562,10 @@ msgstr "Име"
 msgid "Singleton"
 msgstr "Синглетон"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Налепи параметре"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Ажурирање сцене"
@@ -1870,7 +1875,7 @@ msgstr "Покажи у менаџеру датотека"
 msgid "New Folder..."
 msgstr "Нови директоријум..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Освежи"
@@ -4150,16 +4155,17 @@ msgid "Saving..."
 msgstr "Чување..."
 
 #: editor/import_dock.cpp
+#, fuzzy
+msgid "%d Files"
+msgstr " Датотеке"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Постави као уобичајено за „%s“"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Обриши уобичајено за „%s“"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Датотеке"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4209,10 +4215,6 @@ msgstr "Сачувај као..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Копирај параметре"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Налепи параметре"
 
 #: editor/inspector_dock.cpp
 #, fuzzy
@@ -6152,12 +6154,13 @@ msgid "Mesh is empty!"
 msgstr "Мрежа је празна!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Направи статичо тело од троуглова"
+#, fuzzy
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Направи троугластог сударног брата"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Направи конвексно статичко тело"
+msgid "Create Static Trimesh Body"
+msgstr "Направи статичо тело од троуглова"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -6169,12 +6172,30 @@ msgid "Create Trimesh Static Shape"
 msgstr "Направи фигуру од троуглова"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create a single convex collision shape."
 msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Shape(s)"
+msgid "Create Single Convex Shape"
+msgstr "Направи конвексну фигуру"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Couldn't create any collision shapes."
+msgstr "Неуспех при прављењу директоријума."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Shapes"
 msgstr "Направи конвексну фигуру"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -6226,17 +6247,55 @@ msgid "Create Trimesh Static Body"
 msgstr "Направи троугласто статично тело"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Направи троугластог сударног брата"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
-msgid "Create Convex Collision Sibling(s)"
+msgid "Create Single Convex Collision Sibling"
 msgstr "Направи конвексног сударног брата"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+#, fuzzy
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Направи конвексног сударног брата"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Направи ивичну мрежу..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -8819,7 +8878,7 @@ msgstr "TileSet..."
 msgid "No VCS addons are available."
 msgstr ""
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Грешка"
 
@@ -9977,11 +10036,18 @@ msgid "Export With Debug"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
+#, fuzzy
+msgid "The path specified doesn't exist."
 msgstr "Путања не постоји."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
+#, fuzzy
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Грешка при отварању датотеку пакета. Датотека није zip формата."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9989,11 +10055,11 @@ msgid "Please choose an empty folder."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
+msgid "This directory already contains a Godot project."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -10661,6 +10727,11 @@ msgstr ""
 
 #: editor/rename_dialog.cpp
 #, fuzzy
+msgid "Use Regular Expressions"
+msgstr "Постави правоугаони регион"
+
+#: editor/rename_dialog.cpp
+#, fuzzy
 msgid "Advanced Options"
 msgstr "Поставке залепљавања"
 
@@ -10699,7 +10770,7 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10730,10 +10801,6 @@ msgid ""
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr ""
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr ""
 
@@ -10742,11 +10809,11 @@ msgid "Keep"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr ""
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr ""
 
 #: editor/rename_dialog.cpp
@@ -10767,6 +10834,15 @@ msgstr "Велика слова"
 #, fuzzy
 msgid "Reset"
 msgstr "Ресетуј увеличање"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr ""
+
+#: editor/rename_dialog.cpp
+#, fuzzy
+msgid "At character %s"
+msgstr "Важећа слова:"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -11239,7 +11315,7 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Script is valid."
+msgid "Script path/name is valid."
 msgstr "Анимационо дрво је важеће."
 
 #: editor/script_create_dialog.cpp
@@ -11352,6 +11428,10 @@ msgid "Copy Error"
 msgstr "Учитај грешке"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr ""
+
+#: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Skip Breakpoints"
 msgstr "Обриши тачке"
@@ -11399,10 +11479,6 @@ msgstr ""
 
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
-msgstr ""
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -12706,6 +12782,11 @@ msgid ""
 "don't use them."
 msgstr ""
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr ""
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr ""
@@ -12980,6 +13061,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Замени %d појаве/а."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Направи конвексно статичко тело"
 
 #, fuzzy
 #~ msgid ""

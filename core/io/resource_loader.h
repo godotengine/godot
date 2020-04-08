@@ -31,31 +31,9 @@
 #ifndef RESOURCE_LOADER_H
 #define RESOURCE_LOADER_H
 
+#include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/resource.h"
-
-class ResourceInteractiveLoader : public Reference {
-
-	GDCLASS(ResourceInteractiveLoader, Reference);
-	friend class ResourceLoader;
-	String path_loading;
-	Thread::ID path_loading_thread;
-
-protected:
-	static void _bind_methods();
-
-public:
-	virtual void set_local_path(const String &p_local_path) = 0;
-	virtual Ref<Resource> get_resource() = 0;
-	virtual Error poll() = 0;
-	virtual int get_stage() const = 0;
-	virtual int get_stage_count() const = 0;
-	virtual void set_translation_remapped(bool p_remapped) = 0;
-	virtual Error wait();
-
-	ResourceInteractiveLoader() {}
-	~ResourceInteractiveLoader();
-};
 
 class ResourceFormatLoader : public Reference {
 
@@ -65,8 +43,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
@@ -95,6 +72,15 @@ class ResourceLoader {
 		MAX_LOADERS = 64
 	};
 
+public:
+	enum ThreadLoadStatus {
+		THREAD_LOAD_INVALID_RESOURCE,
+		THREAD_LOAD_IN_PROGRESS,
+		THREAD_LOAD_FAILED,
+		THREAD_LOAD_LOADED
+	};
+
+private:
 	static Ref<ResourceFormatLoader> loader[MAX_LOADERS];
 	static int loader_count;
 	static bool timestamp_on_load;
@@ -104,10 +90,10 @@ class ResourceLoader {
 	static void *dep_err_notify_ud;
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
-	static HashMap<String, Vector<String> > translation_remaps;
+	static HashMap<String, Vector<String>> translation_remaps;
 	static HashMap<String, String> path_remaps;
 
-	static String _path_remap(const String &p_path, bool *r_translation_remapped = NULL);
+	static String _path_remap(const String &p_path, bool *r_translation_remapped = nullptr);
 	friend class Resource;
 
 	static SelfList<Resource>::List remapped_list;
@@ -115,35 +101,48 @@ class ResourceLoader {
 	friend class ResourceFormatImporter;
 	friend class ResourceInteractiveLoader;
 	//internal load function
-	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, bool p_no_cache, Error *r_error);
+	static RES _load(const String &p_path, const String &p_original_path, const String &p_type_hint, bool p_no_cache, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;
 
 	static Ref<ResourceFormatLoader> _find_custom_resource_format_loader(String path);
-	static Mutex *loading_map_mutex;
 
-	//used to track paths being loaded in a thread, avoids cyclic recursion
-	struct LoadingMapKey {
-		String path;
-		Thread::ID thread;
-		bool operator==(const LoadingMapKey &p_key) const {
-			return (thread == p_key.thread && path == p_key.path);
-		}
+	struct ThreadLoadTask {
+		Thread *thread = nullptr;
+		Thread::ID loader_id = 0;
+		Semaphore *semaphore = nullptr;
+		String local_path;
+		String remapped_path;
+		String type_hint;
+		float progress = 0.0;
+		ThreadLoadStatus status = THREAD_LOAD_IN_PROGRESS;
+		Error error = OK;
+		RES resource;
+		bool xl_remapped = false;
+		bool use_sub_threads = false;
+		bool start_next = true;
+		int requests = 0;
+		int poll_requests = 0;
+		Set<String> sub_tasks;
 	};
-	struct LoadingMapKeyHasher {
 
-		static _FORCE_INLINE_ uint32_t hash(const LoadingMapKey &p_key) { return p_key.path.hash() + HashMapHasherDefault::hash(p_key.thread); }
-	};
+	static void _thread_load_function(void *p_userdata);
+	static Mutex *thread_load_mutex;
+	static HashMap<String, ThreadLoadTask> thread_load_tasks;
+	static Semaphore *thread_load_semaphore;
+	static int thread_waiting_count;
+	static int thread_loading_count;
+	static int thread_suspended_count;
+	static int thread_load_max;
 
-	static HashMap<LoadingMapKey, int, LoadingMapKeyHasher> loading_map;
-
-	static bool _add_to_loading_map(const String &p_path);
-	static void _remove_from_loading_map(const String &p_path);
-	static void _remove_from_loading_map_and_thread(const String &p_path, Thread::ID p_thread);
+	static float _dependency_get_progress(const String &p_path);
 
 public:
-	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
-	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = NULL);
+	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, const String &p_source_resource = String());
+	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
+	static RES load_threaded_get(const String &p_path, Error *r_error = nullptr);
+
+	static RES load(const String &p_path, const String &p_type_hint = "", bool p_no_cache = false, Error *r_error = nullptr);
 	static bool exists(const String &p_path, const String &p_type_hint = "");
 
 	static void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions);
@@ -201,4 +200,4 @@ public:
 	static void finalize();
 };
 
-#endif
+#endif // RESOURCE_LOADER_H

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GradientTexture" inherits="Texture" version="4.0">
+<class name="GradientTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
 		Gradient-filled texture.
 	</brief_description>

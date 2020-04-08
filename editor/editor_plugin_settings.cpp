@@ -40,11 +40,11 @@
 
 void EditorPluginSettings::_notification(int p_what) {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
+	if (p_what == NOTIFICATION_WM_FOCUS_IN) {
 		update_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
-		plugin_config_dialog->connect("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
-		plugin_list->connect("button_pressed", this, "_cell_button_pressed");
+		plugin_config_dialog->connect_compat("plugin_ready", EditorNode::get_singleton(), "_on_plugin_ready");
+		plugin_list->connect("button_pressed", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
 	}
 }
 
@@ -137,19 +137,12 @@ void EditorPluginSettings::update_plugins() {
 				item->set_metadata(1, script);
 				item->set_text(2, author);
 				item->set_metadata(2, description);
-				item->set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
-				item->set_range_config(3, 0, 1, 1);
-				item->set_text(3, "Inactive,Active");
+				item->set_cell_mode(3, TreeItem::CELL_MODE_CHECK);
+				item->set_text(3, TTR("Enable"));
+				bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(d2);
+				item->set_checked(3, is_active);
 				item->set_editable(3, true);
-				item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
-
-				if (EditorNode::get_singleton()->is_addon_plugin_enabled(d2)) {
-					item->set_custom_color(3, get_color("success_color", "Editor"));
-					item->set_range(3, 1);
-				} else {
-					item->set_custom_color(3, get_color("disabled_font_color", "Editor"));
-					item->set_range(3, 0);
-				}
+				item->add_button(4, get_theme_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
 			}
 		}
 	}
@@ -164,7 +157,7 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_COND(!ti);
-	bool active = ti->get_range(3);
+	bool active = ti->is_checked(3);
 	String name = ti->get_metadata(0);
 
 	EditorNode::get_singleton()->set_addon_plugin_enabled(name, active, true);
@@ -173,14 +166,9 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 	if (is_active != active) {
 		updating = true;
-		ti->set_range(3, is_active ? 1 : 0);
+		ti->set_checked(3, is_active);
 		updating = false;
 	}
-
-	if (is_active)
-		ti->set_custom_color(3, get_color("success_color", "Editor"));
-	else
-		ti->set_custom_color(3, get_color("disabled_font_color", "Editor"));
 }
 
 void EditorPluginSettings::_create_clicked() {
@@ -202,11 +190,6 @@ void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, in
 }
 
 void EditorPluginSettings::_bind_methods() {
-
-	ClassDB::bind_method("update_plugins", &EditorPluginSettings::update_plugins);
-	ClassDB::bind_method("_create_clicked", &EditorPluginSettings::_create_clicked);
-	ClassDB::bind_method("_plugin_activity_changed", &EditorPluginSettings::_plugin_activity_changed);
-	ClassDB::bind_method("_cell_button_pressed", &EditorPluginSettings::_cell_button_pressed);
 }
 
 EditorPluginSettings::EditorPluginSettings() {
@@ -219,10 +202,10 @@ EditorPluginSettings::EditorPluginSettings() {
 	title_hb->add_child(memnew(Label(TTR("Installed Plugins:"))));
 	title_hb->add_spacer();
 	create_plugin = memnew(Button(TTR("Create")));
-	create_plugin->connect("pressed", this, "_create_clicked");
+	create_plugin->connect("pressed", callable_mp(this, &EditorPluginSettings::_create_clicked));
 	title_hb->add_child(create_plugin);
 	update_list = memnew(Button(TTR("Update")));
-	update_list->connect("pressed", this, "update_plugins");
+	update_list->connect("pressed", callable_mp(this, &EditorPluginSettings::update_plugins));
 	title_hb->add_child(update_list);
 	add_child(title_hb);
 
@@ -245,7 +228,7 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_column_min_width(3, 80 * EDSCALE);
 	plugin_list->set_column_min_width(4, 40 * EDSCALE);
 	plugin_list->set_hide_root(true);
-	plugin_list->connect("item_edited", this, "_plugin_activity_changed");
+	plugin_list->connect("item_edited", callable_mp(this, &EditorPluginSettings::_plugin_activity_changed));
 
 	VBoxContainer *mc = memnew(VBoxContainer);
 	mc->add_child(plugin_list);

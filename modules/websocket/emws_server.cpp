@@ -50,11 +50,11 @@ bool EMWSServer::has_peer(int p_id) const {
 }
 
 Ref<WebSocketPeer> EMWSServer::get_peer(int p_id) const {
-	return NULL;
+	return nullptr;
 }
 
-PoolVector<String> EMWSServer::get_protocols() const {
-	PoolVector<String> out;
+Vector<String> EMWSServer::get_protocols() const {
+	Vector<String> out;
 
 	return out;
 }

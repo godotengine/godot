@@ -153,7 +153,7 @@ public:
 
 	static FileAccess *create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static FileAccess *create_for_path(const String &p_path);
-	static FileAccess *open(const String &p_path, int p_mode_flags, Error *r_error = NULL); /// Create a file access (for the current platform) this is the only portable way of accessing files.
+	static FileAccess *open(const String &p_path, int p_mode_flags, Error *r_error = nullptr); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
 	static uint64_t get_modified_time(const String &p_file);
@@ -167,8 +167,8 @@ public:
 	static String get_sha256(const String &p_file);
 	static String get_multiple_md5(const Vector<String> &p_file);
 
-	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = NULL);
-	static String get_file_as_string(const String &p_path, Error *r_error = NULL);
+	static Vector<uint8_t> get_file_as_array(const String &p_path, Error *r_error = nullptr);
+	static String get_file_as_string(const String &p_path, Error *r_error = nullptr);
 
 	template <class T>
 	static void make_default(AccessType p_access) {
@@ -187,7 +187,7 @@ struct FileAccessRef {
 		return f;
 	}
 
-	operator bool() const { return f != NULL; }
+	operator bool() const { return f != nullptr; }
 	FileAccess *f;
 	operator FileAccess *() { return f; }
 	FileAccessRef(FileAccess *fa) { f = fa; }
@@ -196,4 +196,4 @@ struct FileAccessRef {
 	}
 };
 
-#endif
+#endif // FILE_ACCESS_H

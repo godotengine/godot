@@ -97,7 +97,6 @@ class ProjectManager : public Control {
 	void _restart_confirm();
 	void _exit_dialog();
 	void _scan_begin(const String &p_base);
-	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	void _confirm_update_settings();
 
@@ -111,8 +110,8 @@ class ProjectManager : public Control {
 
 	void _dim_window();
 	void _unhandled_input(const Ref<InputEvent> &p_ev);
-	void _files_dropped(PoolStringArray p_files, int p_screen);
-	void _scan_multiple_folders(PoolStringArray p_files);
+	void _files_dropped(PackedStringArray p_files, int p_screen);
+	void _scan_multiple_folders(PackedStringArray p_files);
 
 	void _on_order_option_changed();
 	void _on_filter_option_changed();
@@ -134,7 +133,7 @@ public:
 	enum FilterOption {
 		FILTER_NAME,
 		FILTER_PATH,
-		FILTER_MODIFIED,
+		FILTER_EDIT_DATE,
 	};
 
 private:

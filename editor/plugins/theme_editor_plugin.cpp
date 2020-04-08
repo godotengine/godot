@@ -120,12 +120,12 @@ struct _TECategory {
 		bool operator<(const Item<T> &p) const { return name < p.name; }
 	};
 
-	Set<RefItem<StyleBox> > stylebox_items;
-	Set<RefItem<Font> > font_items;
-	Set<RefItem<Texture> > icon_items;
+	Set<RefItem<StyleBox>> stylebox_items;
+	Set<RefItem<Font>> font_items;
+	Set<RefItem<Texture2D>> icon_items;
 
-	Set<Item<Color> > color_items;
-	Set<Item<int> > constant_items;
+	Set<Item<Color>> color_items;
+	Set<Item<int>> constant_items;
 };
 
 void ThemeEditor::_save_template_cbk(String fname) {
@@ -167,7 +167,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		List<StringName> icon_list;
 		Theme::get_default()->get_icon_list(E->key(), &icon_list);
 		for (List<StringName>::Element *F = icon_list.front(); F; F = F->next()) {
-			_TECategory::RefItem<Texture> it;
+			_TECategory::RefItem<Texture2D> it;
 			it.name = F->get();
 			it.item = Theme::get_default()->get_icon(F->get(), E->key());
 			tc.icon_items.insert(it);
@@ -275,7 +275,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.stylebox_items.size())
 			file->store_line("\n; StyleBox Items:\n");
 
-		for (Set<_TECategory::RefItem<StyleBox> >::Element *F = tc.stylebox_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::RefItem<StyleBox>>::Element *F = tc.stylebox_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -283,7 +283,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.font_items.size())
 			file->store_line("\n; Font Items:\n");
 
-		for (Set<_TECategory::RefItem<Font> >::Element *F = tc.font_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::RefItem<Font>>::Element *F = tc.font_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -291,7 +291,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.icon_items.size())
 			file->store_line("\n; Icon Items:\n");
 
-		for (Set<_TECategory::RefItem<Texture> >::Element *F = tc.icon_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::RefItem<Texture2D>>::Element *F = tc.icon_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -299,7 +299,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.color_items.size())
 			file->store_line("\n; Color Items:\n");
 
-		for (Set<_TECategory::Item<Color> >::Element *F = tc.color_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::Item<Color>>::Element *F = tc.color_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -307,7 +307,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 		if (tc.constant_items.size())
 			file->store_line("\n; Constant Items:\n");
 
-		for (Set<_TECategory::Item<int> >::Element *F = tc.constant_items.front(); F; F = F->next()) {
+		for (Set<_TECategory::Item<int>>::Element *F = tc.constant_items.front(); F; F = F->next()) {
 
 			file->store_line(E->key() + "." + F->get().name + " = default");
 		}
@@ -324,7 +324,7 @@ void ThemeEditor::_dialog_cbk() {
 
 			switch (type_select->get_selected()) {
 
-				case 0: theme->set_icon(name_edit->get_text(), type_edit->get_text(), Ref<Texture>()); break;
+				case 0: theme->set_icon(name_edit->get_text(), type_edit->get_text(), Ref<Texture2D>()); break;
 				case 1: theme->set_stylebox(name_edit->get_text(), type_edit->get_text(), Ref<StyleBox>()); break;
 				case 2: theme->set_font(name_edit->get_text(), type_edit->get_text(), Ref<Font>()); break;
 				case 3: theme->set_color(name_edit->get_text(), type_edit->get_text(), Color()); break;
@@ -341,7 +341,7 @@ void ThemeEditor::_dialog_cbk() {
 				names.clear();
 				Theme::get_default()->get_icon_list(fromtype, &names);
 				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					theme->set_icon(E->get(), fromtype, Ref<Texture>());
+					theme->set_icon(E->get(), fromtype, Ref<Texture2D>());
 				}
 			}
 			{
@@ -454,7 +454,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 				base_theme->get_icon_list(type, &icons);
 
 				for (List<StringName>::Element *E = icons.front(); E; E = E->next()) {
-					theme->set_icon(E->get(), type, import ? base_theme->get_icon(E->get(), type) : Ref<Texture>());
+					theme->set_icon(E->get(), type, import ? base_theme->get_icon(E->get(), type) : Ref<Texture2D>());
 				}
 
 				List<StringName> shaders;
@@ -592,19 +592,12 @@ void ThemeEditor::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			theme_menu->set_icon(get_icon("Theme", "EditorIcons"));
+			theme_menu->set_icon(get_theme_icon("Theme", "EditorIcons"));
 		} break;
 	}
 }
 
 void ThemeEditor::_bind_methods() {
-
-	ClassDB::bind_method("_type_menu_cbk", &ThemeEditor::_type_menu_cbk);
-	ClassDB::bind_method("_name_menu_about_to_show", &ThemeEditor::_name_menu_about_to_show);
-	ClassDB::bind_method("_name_menu_cbk", &ThemeEditor::_name_menu_cbk);
-	ClassDB::bind_method("_theme_menu_cbk", &ThemeEditor::_theme_menu_cbk);
-	ClassDB::bind_method("_dialog_cbk", &ThemeEditor::_dialog_cbk);
-	ClassDB::bind_method("_save_template_cbk", &ThemeEditor::_save_template_cbk);
 }
 
 ThemeEditor::ThemeEditor() {
@@ -629,7 +622,7 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item(TTR("Create Empty Editor Template"), POPUP_CREATE_EDITOR_EMPTY);
 	theme_menu->get_popup()->add_item(TTR("Create From Current Editor Theme"), POPUP_IMPORT_EDITOR_THEME);
 	top_menu->add_child(theme_menu);
-	theme_menu->get_popup()->connect("id_pressed", this, "_theme_menu_cbk");
+	theme_menu->get_popup()->connect("id_pressed", callable_mp(this, &ThemeEditor::_theme_menu_cbk));
 
 	ScrollContainer *scroll = memnew(ScrollContainer);
 	add_child(scroll);
@@ -652,10 +645,10 @@ ThemeEditor::ThemeEditor() {
 
 	main_container = memnew(MarginContainer);
 	root_container->add_child(main_container);
-	main_container->add_constant_override("margin_right", 4 * EDSCALE);
-	main_container->add_constant_override("margin_top", 4 * EDSCALE);
-	main_container->add_constant_override("margin_left", 4 * EDSCALE);
-	main_container->add_constant_override("margin_bottom", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_right", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_top", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_left", 4 * EDSCALE);
+	main_container->add_theme_constant_override("margin_bottom", 4 * EDSCALE);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
 	main_container->add_child(main_hb);
@@ -663,7 +656,7 @@ ThemeEditor::ThemeEditor() {
 	VBoxContainer *first_vb = memnew(VBoxContainer);
 	main_hb->add_child(first_vb);
 	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	first_vb->add_constant_override("separation", 10 * EDSCALE);
+	first_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 
 	first_vb->add_child(memnew(Label("Label")));
 
@@ -723,7 +716,7 @@ ThemeEditor::ThemeEditor() {
 	VBoxContainer *second_vb = memnew(VBoxContainer);
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(second_vb);
-	second_vb->add_constant_override("separation", 10 * EDSCALE);
+	second_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	LineEdit *le = memnew(LineEdit);
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
@@ -763,7 +756,7 @@ ThemeEditor::ThemeEditor() {
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
 	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	third_vb->add_constant_override("separation", 10 * EDSCALE);
+	third_vb->add_theme_constant_override("separation", 10 * EDSCALE);
 	main_hb->add_child(third_vb);
 
 	TabContainer *tc = memnew(TabContainer);
@@ -783,7 +776,7 @@ ThemeEditor::ThemeEditor() {
 	Tree *test_tree = memnew(Tree);
 	third_vb->add_child(test_tree);
 	test_tree->set_custom_minimum_size(Size2(0, 175) * EDSCALE);
-	test_tree->add_constant_override("draw_relationship_lines", 1);
+	test_tree->add_theme_constant_override("draw_relationship_lines", 1);
 
 	TreeItem *item = test_tree->create_item();
 	item->set_text(0, "Tree");
@@ -809,7 +802,7 @@ ThemeEditor::ThemeEditor() {
 	item->set_text(0, TTR("Has,Many,Options"));
 	item->set_range(0, 2);
 
-	main_hb->add_constant_override("separation", 20 * EDSCALE);
+	main_hb->add_theme_constant_override("separation", 20 * EDSCALE);
 
 	////////
 
@@ -835,7 +828,7 @@ ThemeEditor::ThemeEditor() {
 	type_menu->set_text("..");
 	type_hbc->add_child(type_menu);
 
-	type_menu->get_popup()->connect("id_pressed", this, "_type_menu_cbk");
+	type_menu->get_popup()->connect("id_pressed", callable_mp(this, &ThemeEditor::_type_menu_cbk));
 
 	l = memnew(Label);
 	l->set_text(TTR("Name:"));
@@ -853,8 +846,8 @@ ThemeEditor::ThemeEditor() {
 	name_menu->set_text("..");
 	name_hbc->add_child(name_menu);
 
-	name_menu->get_popup()->connect("about_to_show", this, "_name_menu_about_to_show");
-	name_menu->get_popup()->connect("id_pressed", this, "_name_menu_cbk");
+	name_menu->get_popup()->connect("about_to_popup", callable_mp(this, &ThemeEditor::_name_menu_about_to_show));
+	name_menu->get_popup()->connect("id_pressed", callable_mp(this, &ThemeEditor::_name_menu_cbk));
 
 	type_select_label = memnew(Label);
 	type_select_label->set_text(TTR("Data Type:"));
@@ -869,12 +862,12 @@ ThemeEditor::ThemeEditor() {
 
 	dialog_vbc->add_child(type_select);
 
-	add_del_dialog->get_ok()->connect("pressed", this, "_dialog_cbk");
+	add_del_dialog->get_ok()->connect("pressed", callable_mp(this, &ThemeEditor::_dialog_cbk));
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->add_filter("*.theme ; " + TTR("Theme File"));
 	add_child(file_dialog);
-	file_dialog->connect("file_selected", this, "_save_template_cbk");
+	file_dialog->connect("file_selected", callable_mp(this, &ThemeEditor::_save_template_cbk));
 }
 
 void ThemeEditorPlugin::edit(Object *p_node) {

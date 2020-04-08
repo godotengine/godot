@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="get_recognized_extensions" qualifiers="virtual">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="resource" type="Resource">
 			</argument>

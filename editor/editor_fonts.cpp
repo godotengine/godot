@@ -231,7 +231,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Default font
 	MAKE_DEFAULT_FONT(df, default_font_size);
-	p_theme->set_default_theme_font(df);
+	p_theme->set_font("font", "Node", df); // Default theme font
 	p_theme->set_font("main", "EditorFonts", df);
 
 	// Bold font
@@ -255,6 +255,10 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	// Ruler font
 	MAKE_DEFAULT_FONT(df_rulers, 8 * EDSCALE);
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
+
+	// Rotation widget font
+	MAKE_DEFAULT_FONT(df_rotation_control, 14 * EDSCALE);
+	p_theme->set_font("rotation_control", "EditorFonts", df_rotation_control);
 
 	// Code font
 	MAKE_SOURCE_FONT(df_code, int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);

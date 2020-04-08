@@ -43,7 +43,7 @@ Error AudioDriverXAudio2::init() {
 	thread_exited = false;
 	exit_thread = false;
 	pcm_open = false;
-	samples_in = NULL;
+	samples_in = nullptr;
 
 	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
@@ -79,7 +79,6 @@ Error AudioDriverXAudio2::init() {
 	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
 	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 source voice. Error code: " + itos(hr) + ".");
 
-	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverXAudio2::thread_func, this);
 
 	return OK;
@@ -158,15 +157,15 @@ float AudioDriverXAudio2::get_latency() {
 
 void AudioDriverXAudio2::lock() {
 
-	if (!thread || !mutex)
+	if (!thread)
 		return;
-	mutex->lock();
+	mutex.lock();
 }
 void AudioDriverXAudio2::unlock() {
 
-	if (!thread || !mutex)
+	if (!thread)
 		return;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverXAudio2::finish() {
@@ -194,14 +193,11 @@ void AudioDriverXAudio2::finish() {
 	mastering_voice->DestroyVoice();
 
 	memdelete(thread);
-	if (mutex)
-		memdelete(mutex);
-	thread = NULL;
+	thread = nullptr;
 }
 
 AudioDriverXAudio2::AudioDriverXAudio2() :
-		thread(NULL),
-		mutex(NULL),
+		thread(nullptr),
 		current_buffer(0) {
 	wave_format = { 0 };
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {

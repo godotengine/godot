@@ -32,7 +32,7 @@
 #include "scene/resources/mesh.h"
 #include "thirdparty/vhacd/public/VHACD.h"
 
-static Vector<Vector<Face3> > convex_decompose(const Vector<Face3> &p_faces) {
+static Vector<Vector<Face3>> convex_decompose(const Vector<Face3> &p_faces) {
 
 	Vector<float> vertices;
 	vertices.resize(p_faces.size() * 9);
@@ -54,7 +54,7 @@ static Vector<Vector<Face3> > convex_decompose(const Vector<Face3> &p_faces) {
 
 	int hull_count = decomposer->GetNConvexHulls();
 
-	Vector<Vector<Face3> > ret;
+	Vector<Vector<Face3>> ret;
 
 	for (int i = 0; i < hull_count; i++) {
 		Vector<Face3> triangles;
@@ -84,5 +84,5 @@ void register_vhacd_types() {
 }
 
 void unregister_vhacd_types() {
-	Mesh::convex_composition_function = NULL;
+	Mesh::convex_composition_function = nullptr;
 }

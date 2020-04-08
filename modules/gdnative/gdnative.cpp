@@ -48,7 +48,7 @@ static const bool default_reloadable = true;
 // Defined in gdnative_api_struct.gen.cpp
 extern const godot_gdnative_core_api_struct api_struct;
 
-Map<String, Vector<Ref<GDNative> > > GDNativeLibrary::loaded_libraries;
+Map<String, Vector<Ref<GDNative>>> GDNativeLibrary::loaded_libraries;
 
 GDNativeLibrary::GDNativeLibrary() {
 	config_file.instance();
@@ -248,7 +248,7 @@ void GDNativeLibrary::_bind_methods() {
 }
 
 GDNative::GDNative() {
-	native_handle = NULL;
+	native_handle = nullptr;
 	initialized = false;
 }
 
@@ -338,7 +338,7 @@ bool GDNative::initialize() {
 
 	if (err || !library_init) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
-		native_handle = NULL;
+		native_handle = nullptr;
 		ERR_PRINT("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
 		return false;
 	}
@@ -373,7 +373,7 @@ bool GDNative::initialize() {
 	initialized = true;
 
 	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries.has(lib_path)) {
-		Vector<Ref<GDNative> > gdnatives;
+		Vector<Ref<GDNative>> gdnatives;
 		gdnatives.resize(1);
 		gdnatives.write[0] = Ref<GDNative>(this);
 		GDNativeLibrary::loaded_libraries.insert(lib_path, gdnatives);
@@ -390,7 +390,7 @@ bool GDNative::terminate() {
 	}
 
 	if (library->should_load_once()) {
-		Vector<Ref<GDNative> > *gdnatives = &GDNativeLibrary::loaded_libraries[library->get_current_library_path()];
+		Vector<Ref<GDNative>> *gdnatives = &GDNativeLibrary::loaded_libraries[library->get_current_library_path()];
 		if (gdnatives->size() > 1) {
 			// there are other GDNative's still using this library, so we actually don't terminate
 			gdnatives->erase(Ref<GDNative>(this));
@@ -408,7 +408,7 @@ bool GDNative::terminate() {
 	Error error = get_symbol(library->get_symbol_prefix() + terminate_symbol, library_terminate);
 	if (error || !library_terminate) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
-		native_handle = NULL;
+		native_handle = nullptr;
 		initialized = false;
 		return true;
 	}
@@ -426,7 +426,7 @@ bool GDNative::terminate() {
 	// GDNativeScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
 
 	OS::get_singleton()->close_dynamic_library(native_handle);
-	native_handle = NULL;
+	native_handle = nullptr;
 
 	return true;
 }
@@ -466,7 +466,7 @@ Variant GDNative::call_native(StringName p_native_call_type, StringName p_proced
 			p_procedure_name,
 			procedure_handle);
 
-	if (err != OK || procedure_handle == NULL) {
+	if (err != OK || procedure_handle == nullptr) {
 		return Variant();
 	}
 
@@ -493,7 +493,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 	return result;
 }
 
-RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	Ref<GDNativeLibrary> lib;
 	lib.instance();
 
@@ -544,11 +544,11 @@ Error GDNativeLibraryResourceSaver::save(const String &p_path, const RES &p_reso
 }
 
 bool GDNativeLibraryResourceSaver::recognize(const RES &p_resource) const {
-	return Object::cast_to<GDNativeLibrary>(*p_resource) != NULL;
+	return Object::cast_to<GDNativeLibrary>(*p_resource) != nullptr;
 }
 
 void GDNativeLibraryResourceSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
-	if (Object::cast_to<GDNativeLibrary>(*p_resource) != NULL) {
+	if (Object::cast_to<GDNativeLibrary>(*p_resource) != nullptr) {
 		p_extensions->push_back("gdnlib");
 	}
 }

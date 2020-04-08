@@ -32,7 +32,7 @@
 #define EDITOR_HELP_H
 
 #include "editor/code_editor.h"
-#include "editor/doc/doc_data.h"
+#include "editor/doc_data.h"
 #include "editor/editor_plugin.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
@@ -108,14 +108,14 @@ class EditorHelp : public VBoxContainer {
 
 	String edited_class;
 
-	Vector<Pair<String, int> > section_line;
+	Vector<Pair<String, int>> section_line;
 	Map<String, int> method_line;
 	Map<String, int> signal_line;
 	Map<String, int> property_line;
 	Map<String, int> theme_property_line;
 	Map<String, int> constant_line;
 	Map<String, int> enum_line;
-	Map<String, Map<String, int> > enum_values_line;
+	Map<String, Map<String, int>> enum_values_line;
 	int description_line;
 
 	RichTextLabel *class_desc;
@@ -175,7 +175,7 @@ public:
 	void go_to_help(const String &p_help);
 	void go_to_class(const String &p_class, int p_scroll = 0);
 
-	Vector<Pair<String, int> > get_sections();
+	Vector<Pair<String, int>> get_sections();
 	void scroll_to_section(int p_section_index);
 
 	void popup_search();
@@ -192,13 +192,15 @@ public:
 	~EditorHelp();
 };
 
-class EditorHelpBit : public PanelContainer {
+class EditorHelpBit : public MarginContainer {
 
-	GDCLASS(EditorHelpBit, PanelContainer);
+	GDCLASS(EditorHelpBit, MarginContainer);
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);
 	void _meta_clicked(String p_select);
+
+	String text;
 
 protected:
 	static void _bind_methods();

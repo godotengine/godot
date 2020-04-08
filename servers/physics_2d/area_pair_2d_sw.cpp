@@ -37,7 +37,7 @@ bool AreaPair2DSW::setup(real_t p_step) {
 
 	if (area->is_shape_set_as_disabled(area_shape) || body->is_shape_set_as_disabled(body_shape)) {
 		result = false;
-	} else if (area->test_collision_mask(body) && CollisionSolver2DSW::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), NULL, this)) {
+	} else if (area->test_collision_mask(body) && CollisionSolver2DSW::solve(body->get_shape(body_shape), body->get_transform() * body->get_shape_transform(body_shape), Vector2(), area->get_shape(area_shape), area->get_transform() * area->get_shape_transform(area_shape), Vector2(), nullptr, this)) {
 		result = true;
 	}
 
@@ -45,14 +45,14 @@ bool AreaPair2DSW::setup(real_t p_step) {
 
 		if (result) {
 
-			if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
+			if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)
 				body->add_area(area);
 			if (area->has_monitor_callback())
 				area->add_body_to_query(body, body_shape, area_shape);
 
 		} else {
 
-			if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
+			if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)
 				body->remove_area(area);
 			if (area->has_monitor_callback())
 				area->remove_body_from_query(body, body_shape, area_shape);
@@ -76,7 +76,7 @@ AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area,
 	colliding = false;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
-	if (p_body->get_mode() == Physics2DServer::BODY_MODE_KINEMATIC) //need to be active to process pair
+	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) //need to be active to process pair
 		p_body->set_active(true);
 }
 
@@ -84,7 +84,7 @@ AreaPair2DSW::~AreaPair2DSW() {
 
 	if (colliding) {
 
-		if (area->get_space_override_mode() != Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
+		if (area->get_space_override_mode() != PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED)
 			body->remove_area(area);
 		if (area->has_monitor_callback())
 			area->remove_body_from_query(body, body_shape, area_shape);
@@ -100,7 +100,7 @@ bool Area2Pair2DSW::setup(real_t p_step) {
 	bool result = false;
 	if (area_a->is_shape_set_as_disabled(shape_a) || area_b->is_shape_set_as_disabled(shape_b)) {
 		result = false;
-	} else if (area_a->test_collision_mask(area_b) && CollisionSolver2DSW::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), NULL, this)) {
+	} else if (area_a->test_collision_mask(area_b) && CollisionSolver2DSW::solve(area_a->get_shape(shape_a), area_a->get_transform() * area_a->get_shape_transform(shape_a), Vector2(), area_b->get_shape(shape_b), area_b->get_transform() * area_b->get_shape_transform(shape_b), Vector2(), nullptr, this)) {
 		result = true;
 	}
 

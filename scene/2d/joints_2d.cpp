@@ -32,15 +32,15 @@
 
 #include "core/engine.h"
 #include "physics_body_2d.h"
-#include "servers/physics_2d_server.h"
+#include "servers/physics_server_2d.h"
 
 void Joint2D::_update_joint(bool p_only_free) {
 
 	if (joint.is_valid()) {
 		if (ba.is_valid() && bb.is_valid() && exclude_from_collision)
-			Physics2DServer::get_singleton()->joint_disable_collisions_between_bodies(joint, false);
+			PhysicsServer2D::get_singleton()->joint_disable_collisions_between_bodies(joint, false);
 
-		Physics2DServer::get_singleton()->free(joint);
+		PhysicsServer2D::get_singleton()->free(joint);
 		joint = RID();
 		ba = RID();
 		bb = RID();
@@ -49,8 +49,8 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (p_only_free || !is_inside_tree())
 		return;
 
-	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
-	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
+	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)nullptr;
+	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)nullptr;
 
 	if (!node_a || !node_b)
 		return;
@@ -66,12 +66,12 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (!joint.is_valid())
 		return;
 
-	Physics2DServer::get_singleton()->get_singleton()->joint_set_param(joint, Physics2DServer::JOINT_PARAM_BIAS, bias);
+	PhysicsServer2D::get_singleton()->get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
 
 	ba = body_a->get_rid();
 	bb = body_b->get_rid();
 
-	Physics2DServer::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
+	PhysicsServer2D::get_singleton()->joint_disable_collisions_between_bodies(joint, exclude_from_collision);
 }
 
 void Joint2D::set_node_a(const NodePath &p_node_a) {
@@ -119,7 +119,7 @@ void Joint2D::set_bias(real_t p_bias) {
 
 	bias = p_bias;
 	if (joint.is_valid())
-		Physics2DServer::get_singleton()->get_singleton()->joint_set_param(joint, Physics2DServer::JOINT_PARAM_BIAS, bias);
+		PhysicsServer2D::get_singleton()->get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
 }
 
 real_t Joint2D::get_bias() const {
@@ -158,7 +158,7 @@ void Joint2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject2D"), "set_node_a", "get_node_a");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject2D"), "set_node_b", "get_node_b");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bias", PROPERTY_HINT_RANGE, "0,0.9,0.001"), "set_bias", "get_bias");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bias", PROPERTY_HINT_RANGE, "0,0.9,0.001"), "set_bias", "get_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_collision"), "set_exclude_nodes_from_collision", "get_exclude_nodes_from_collision");
 }
 
@@ -192,8 +192,8 @@ void PinJoint2D::_notification(int p_what) {
 
 RID PinJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
 
-	RID pj = Physics2DServer::get_singleton()->pin_joint_create(get_global_transform().get_origin(), body_a->get_rid(), body_b ? body_b->get_rid() : RID());
-	Physics2DServer::get_singleton()->pin_joint_set_param(pj, Physics2DServer::PIN_JOINT_SOFTNESS, softness);
+	RID pj = PhysicsServer2D::get_singleton()->pin_joint_create(get_global_transform().get_origin(), body_a->get_rid(), body_b ? body_b->get_rid() : RID());
+	PhysicsServer2D::get_singleton()->pin_joint_set_param(pj, PhysicsServer2D::PIN_JOINT_SOFTNESS, softness);
 	return pj;
 }
 
@@ -202,7 +202,7 @@ void PinJoint2D::set_softness(real_t p_softness) {
 	softness = p_softness;
 	update();
 	if (get_joint().is_valid())
-		Physics2DServer::get_singleton()->pin_joint_set_param(get_joint(), Physics2DServer::PIN_JOINT_SOFTNESS, p_softness);
+		PhysicsServer2D::get_singleton()->pin_joint_set_param(get_joint(), PhysicsServer2D::PIN_JOINT_SOFTNESS, p_softness);
 }
 
 real_t PinJoint2D::get_softness() const {
@@ -215,7 +215,7 @@ void PinJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_softness", "softness"), &PinJoint2D::set_softness);
 	ClassDB::bind_method(D_METHOD("get_softness"), &PinJoint2D::get_softness);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "softness", PROPERTY_HINT_EXP_RANGE, "0.00,16,0.01"), "set_softness", "get_softness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "softness", PROPERTY_HINT_EXP_RANGE, "0.00,16,0.01"), "set_softness", "get_softness");
 }
 
 PinJoint2D::PinJoint2D() {
@@ -253,7 +253,7 @@ RID GrooveJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b
 	Vector2 groove_A2 = gt.xform(Vector2(0, length));
 	Vector2 anchor_B = gt.xform(Vector2(0, initial_offset));
 
-	return Physics2DServer::get_singleton()->groove_joint_create(groove_A1, groove_A2, anchor_B, body_a->get_rid(), body_b->get_rid());
+	return PhysicsServer2D::get_singleton()->groove_joint_create(groove_A1, groove_A2, anchor_B, body_a->get_rid(), body_b->get_rid());
 }
 
 void GrooveJoint2D::set_length(real_t p_length) {
@@ -285,8 +285,8 @@ void GrooveJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_initial_offset", "offset"), &GrooveJoint2D::set_initial_offset);
 	ClassDB::bind_method(D_METHOD("get_initial_offset"), &GrooveJoint2D::get_initial_offset);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_EXP_RANGE, "1,65535,1"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "initial_offset", PROPERTY_HINT_EXP_RANGE, "1,65535,1"), "set_initial_offset", "get_initial_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_EXP_RANGE, "1,65535,1"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "initial_offset", PROPERTY_HINT_EXP_RANGE, "1,65535,1"), "set_initial_offset", "get_initial_offset");
 }
 
 GrooveJoint2D::GrooveJoint2D() {
@@ -324,11 +324,11 @@ RID DampedSpringJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *
 	Vector2 anchor_A = gt.get_origin();
 	Vector2 anchor_B = gt.xform(Vector2(0, length));
 
-	RID dsj = Physics2DServer::get_singleton()->damped_spring_joint_create(anchor_A, anchor_B, body_a->get_rid(), body_b->get_rid());
+	RID dsj = PhysicsServer2D::get_singleton()->damped_spring_joint_create(anchor_A, anchor_B, body_a->get_rid(), body_b->get_rid());
 	if (rest_length)
-		Physics2DServer::get_singleton()->damped_string_joint_set_param(dsj, Physics2DServer::DAMPED_STRING_REST_LENGTH, rest_length);
-	Physics2DServer::get_singleton()->damped_string_joint_set_param(dsj, Physics2DServer::DAMPED_STRING_STIFFNESS, stiffness);
-	Physics2DServer::get_singleton()->damped_string_joint_set_param(dsj, Physics2DServer::DAMPED_STRING_DAMPING, damping);
+		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_REST_LENGTH, rest_length);
+	PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_STIFFNESS, stiffness);
+	PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_DAMPING, damping);
 
 	return dsj;
 }
@@ -349,7 +349,7 @@ void DampedSpringJoint2D::set_rest_length(real_t p_rest_length) {
 	rest_length = p_rest_length;
 	update();
 	if (get_joint().is_valid())
-		Physics2DServer::get_singleton()->damped_string_joint_set_param(get_joint(), Physics2DServer::DAMPED_STRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
+		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
 }
 
 real_t DampedSpringJoint2D::get_rest_length() const {
@@ -362,7 +362,7 @@ void DampedSpringJoint2D::set_stiffness(real_t p_stiffness) {
 	stiffness = p_stiffness;
 	update();
 	if (get_joint().is_valid())
-		Physics2DServer::get_singleton()->damped_string_joint_set_param(get_joint(), Physics2DServer::DAMPED_STRING_STIFFNESS, p_stiffness);
+		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_STIFFNESS, p_stiffness);
 }
 
 real_t DampedSpringJoint2D::get_stiffness() const {
@@ -375,7 +375,7 @@ void DampedSpringJoint2D::set_damping(real_t p_damping) {
 	damping = p_damping;
 	update();
 	if (get_joint().is_valid())
-		Physics2DServer::get_singleton()->damped_string_joint_set_param(get_joint(), Physics2DServer::DAMPED_STRING_DAMPING, p_damping);
+		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_DAMPING, p_damping);
 }
 
 real_t DampedSpringJoint2D::get_damping() const {
@@ -394,10 +394,10 @@ void DampedSpringJoint2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_damping", "damping"), &DampedSpringJoint2D::set_damping);
 	ClassDB::bind_method(D_METHOD("get_damping"), &DampedSpringJoint2D::get_damping);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "length", PROPERTY_HINT_EXP_RANGE, "1,65535,1"), "set_length", "get_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rest_length", PROPERTY_HINT_EXP_RANGE, "0,65535,1"), "set_rest_length", "get_rest_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "stiffness", PROPERTY_HINT_EXP_RANGE, "0.1,64,0.1"), "set_stiffness", "get_stiffness");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "damping", PROPERTY_HINT_EXP_RANGE, "0.01,16,0.01"), "set_damping", "get_damping");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "length", PROPERTY_HINT_EXP_RANGE, "1,65535,1"), "set_length", "get_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rest_length", PROPERTY_HINT_EXP_RANGE, "0,65535,1"), "set_rest_length", "get_rest_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stiffness", PROPERTY_HINT_EXP_RANGE, "0.1,64,0.1"), "set_stiffness", "get_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping", PROPERTY_HINT_EXP_RANGE, "0.01,16,0.01"), "set_damping", "get_damping");
 }
 
 DampedSpringJoint2D::DampedSpringJoint2D() {

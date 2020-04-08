@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Rect2" version="4.0">
 	<brief_description>
-		2D axis-aligned bounding box.
+		2D axis-aligned bounding box using floating point coordinates.
 	</brief_description>
 	<description>
-		Rect2 consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		[Rect2] consists of a position, a size, and several utility functions. It is typically used for fast overlap tests.
+		It uses floating point coordinates.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
@@ -34,6 +35,15 @@
 			</argument>
 			<description>
 				Constructs a [Rect2] by x, y, width, and height.
+			</description>
+		</method>
+		<method name="Rect2">
+			<return type="Rect2">
+			</return>
+			<argument index="0" name="from" type="Rect2i">
+			</argument>
+			<description>
+				Constructs a [Rect2] from a [Rect2i].
 			</description>
 		</method>
 		<method name="abs">
@@ -133,8 +143,11 @@
 			</return>
 			<argument index="0" name="b" type="Rect2">
 			</argument>
+			<argument index="1" name="include_borders" type="bool" default="false">
+			</argument>
 			<description>
-				Returns [code]true[/code] if the [Rect2] overlaps with another.
+				Returns [code]true[/code] if the [Rect2] overlaps with [code]b[/code] (i.e. they have at least one point in common).
+				If [code]include_borders[/code] is [code]true[/code], they will also be considered overlapping if their borders touch, even without intersection.
 			</description>
 		</method>
 		<method name="is_equal_approx">

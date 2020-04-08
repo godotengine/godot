@@ -32,10 +32,10 @@
 #define OS_JAVASCRIPT_H
 
 #include "audio_driver_javascript.h"
+#include "core/input/input_filter.h"
 #include "drivers/unix/os_unix.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/rendering/rasterizer.h"
 
 #include <emscripten/html5.h>
 
@@ -52,7 +52,7 @@ class OS_JavaScript : public OS_Unix {
 	Ref<InputEventKey> deferred_key_event;
 	CursorShape cursor_shape;
 	String cursors[CURSOR_MAX];
-	Map<CursorShape, Vector<Variant> > cursors_cache;
+	Map<CursorShape, Vector<Variant>> cursors_cache;
 	Point2 touches[32];
 
 	Point2i last_click_pos;
@@ -145,7 +145,7 @@ public:
 	void run_async();
 	bool main_loop_iterate();
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
 	virtual Error kill(const ProcessID &p_pid);
 	virtual int get_process_id() const;
 
@@ -159,10 +159,6 @@ public:
 
 	virtual String get_resource_dir() const;
 	virtual String get_user_data_dir() const;
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 
 	void set_idb_available(bool p_idb_available);
 	virtual bool is_userfs_persistent() const;

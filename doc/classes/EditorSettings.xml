@@ -50,7 +50,7 @@
 			</description>
 		</method>
 		<method name="get_favorites" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Gets the list of favorite files and directories for this project.
@@ -76,7 +76,7 @@
 			</description>
 		</method>
 		<method name="get_recent_dirs" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Gets the list of recently visited folders in the file dialog for this project.
@@ -126,7 +126,7 @@
 		<method name="set_favorites">
 			<return type="void">
 			</return>
-			<argument index="0" name="dirs" type="PoolStringArray">
+			<argument index="0" name="dirs" type="PackedStringArray">
 			</argument>
 			<description>
 				Sets the list of favorite files and directories for this project.
@@ -135,7 +135,7 @@
 		<method name="set_initial_value">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="value" type="Variant">
 			</argument>
@@ -159,7 +159,7 @@
 		<method name="set_recent_dirs">
 			<return type="void">
 			</return>
-			<argument index="0" name="dirs" type="PoolStringArray">
+			<argument index="0" name="dirs" type="PackedStringArray">
 			</argument>
 			<description>
 				Sets the list of recently visited folders in the file dialog for this project.

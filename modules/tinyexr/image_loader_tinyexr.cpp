@@ -37,12 +37,12 @@
 
 Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force_linear, float p_scale) {
 
-	PoolVector<uint8_t> src_image;
+	Vector<uint8_t> src_image;
 	int src_image_len = f->get_len();
 	ERR_FAIL_COND_V(src_image_len == 0, ERR_FILE_CORRUPT);
 	src_image.resize(src_image_len);
 
-	PoolVector<uint8_t>::Write w = src_image.write();
+	uint8_t *w = src_image.ptrw();
 
 	f->get_buffer(&w[0], src_image_len);
 
@@ -56,17 +56,17 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	EXRVersion exr_version;
 	EXRImage exr_image;
 	EXRHeader exr_header;
-	const char *err = NULL;
+	const char *err = nullptr;
 
 	InitEXRHeader(&exr_header);
 
-	int ret = ParseEXRVersionFromMemory(&exr_version, w.ptr(), src_image_len);
+	int ret = ParseEXRVersionFromMemory(&exr_version, w, src_image_len);
 	if (ret != TINYEXR_SUCCESS) {
 
 		return ERR_FILE_CORRUPT;
 	}
 
-	ret = ParseEXRHeaderFromMemory(&exr_header, &exr_version, w.ptr(), src_image_len, &err);
+	ret = ParseEXRHeaderFromMemory(&exr_header, &exr_version, w, src_image_len, &err);
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
@@ -82,7 +82,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	}
 
 	InitEXRImage(&exr_image);
-	ret = LoadEXRImageFromMemory(&exr_image, &exr_header, w.ptr(), src_image_len, &err);
+	ret = LoadEXRImageFromMemory(&exr_image, &exr_header, w, src_image_len, &err);
 	if (ret != TINYEXR_SUCCESS) {
 		if (err) {
 			ERR_PRINT(String(err));
@@ -136,7 +136,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 
 	// EXR image data loaded, now parse it into Godot-friendly image data
 
-	PoolVector<uint8_t> imgdata;
+	Vector<uint8_t> imgdata;
 	Image::Format format;
 	int output_channels = 0;
 
@@ -180,8 +180,8 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	}
 
 	{
-		PoolVector<uint8_t>::Write wd = imgdata.write();
-		uint16_t *iw = (uint16_t *)wd.ptr();
+		uint8_t *wd = imgdata.ptrw();
+		uint16_t *iw = (uint16_t *)wd;
 
 		// Assume `out_rgba` have enough memory allocated.
 		for (int tile_index = 0; tile_index < num_tiles; tile_index++) {
@@ -194,7 +194,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 			const float *r_channel_start = reinterpret_cast<const float *>(tile.images[idxR]);
 			const float *g_channel_start = reinterpret_cast<const float *>(tile.images[idxG]);
 			const float *b_channel_start = reinterpret_cast<const float *>(tile.images[idxB]);
-			const float *a_channel_start = NULL;
+			const float *a_channel_start = nullptr;
 
 			if (idxA != -1) {
 				a_channel_start = reinterpret_cast<const float *>(tile.images[idxA]);
@@ -206,7 +206,7 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 				const float *r_channel = r_channel_start + y * tile_width;
 				const float *g_channel = g_channel_start + y * tile_width;
 				const float *b_channel = b_channel_start + y * tile_width;
-				const float *a_channel = NULL;
+				const float *a_channel = nullptr;
 
 				if (a_channel_start) {
 					a_channel = a_channel_start + y * tile_width;
@@ -234,8 +234,6 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 	}
 
 	p_image->create(exr_image.width, exr_image.height, false, format, imgdata);
-
-	w.release();
 
 	FreeEXRHeader(&exr_header);
 	FreeEXRImage(&exr_image);

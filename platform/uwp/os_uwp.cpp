@@ -36,7 +36,6 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/ip_unix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
@@ -46,8 +45,8 @@
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 #include "thread_uwp.h"
 
 #include <ppltasks.h>
@@ -141,8 +140,6 @@ void OS_UWP::initialize_core() {
 	//RedirectIOToConsole();
 
 	ThreadUWP::make_default();
-	SemaphoreWindows::make_default();
-	MutexWindows::make_default();
 	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
@@ -183,74 +180,36 @@ void OS_UWP::screen_size_changed() {
 
 Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	main_loop = NULL;
+	main_loop = nullptr;
 	outside = true;
 
+	// FIXME: Hardcoded for now, add Vulkan support.
+	p_video_driver = VIDEO_DRIVER_GLES2;
 	ContextEGL_UWP::Driver opengl_api_type = ContextEGL_UWP::GLES_2_0;
-
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		opengl_api_type = ContextEGL_UWP::GLES_2_0;
-	}
 
 	bool gl_initialization_error = false;
 
-	gl_context = NULL;
-	while (!gl_context) {
-		gl_context = memnew(ContextEGL_UWP(window, opengl_api_type));
+	gl_context = memnew(ContextEGL_UWP(window, opengl_api_type));
 
-		if (gl_context->initialize() != OK) {
-			memdelete(gl_context);
-			gl_context = NULL;
-
-			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-				if (p_video_driver == VIDEO_DRIVER_GLES2) {
-					gl_initialization_error = true;
-					break;
-				}
-
-				p_video_driver = VIDEO_DRIVER_GLES2;
-				opengl_api_type = ContextEGL_UWP::GLES_2_0;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	if (gl_context->initialize() != OK) {
+		memdelete(gl_context);
+		gl_context = nullptr;
+		gl_initialization_error = true;
 	}
 
-	while (true) {
-		if (opengl_api_type == ContextEGL_UWP::GLES_3_0) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					opengl_api_type = ContextEGL_UWP::GLES_2_0;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		}
-
-		if (opengl_api_type == ContextEGL_UWP::GLES_2_0) {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
+	if (opengl_api_type == ContextEGL_UWP::GLES_2_0) {
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+		} else {
+			gl_initialization_error = true;
 		}
 	}
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
 								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
-				"Unable to initialize Video driver");
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
 
@@ -295,13 +254,13 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	set_video_mode(vm);
 
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
 
-	visual_server->init();
+	rendering_server->init();
 
 	input = memnew(InputDefault);
 
@@ -309,8 +268,6 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	joypad->register_events();
 
 	AudioDriverManager::initialize(p_audio_driver);
-
-	power_manager = memnew(PowerUWP);
 
 	managed_object->update_clipboard();
 
@@ -376,7 +333,7 @@ void OS_UWP::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_UWP::set_main_loop(MainLoop *p_main_loop) {
@@ -390,10 +347,10 @@ void OS_UWP::finalize() {
 	if (main_loop)
 		memdelete(main_loop);
 
-	main_loop = NULL;
+	main_loop = nullptr;
 
-	visual_server->finish();
-	memdelete(visual_server);
+	rendering_server->finish();
+	memdelete(rendering_server);
 #ifdef OPENGL_ENABLED
 	if (gl_context)
 		memdelete(gl_context);
@@ -647,7 +604,8 @@ void OS_UWP::process_key_events() {
 		key_event->set_shift(kev.shift);
 		key_event->set_control(kev.control);
 		key_event->set_echo(kev.echo);
-		key_event->set_scancode(kev.scancode);
+		key_event->set_keycode(kev.keycode);
+		key_event->set_physical_keycode(kev.physical_keycode);
 		key_event->set_unicode(kev.unicode);
 		key_event->set_pressed(kev.pressed);
 
@@ -815,9 +773,9 @@ void OS_UWP::hide_virtual_keyboard() {
 
 static String format_error_message(DWORD id) {
 
-	LPWSTR messageBuffer = NULL;
+	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
+			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
 
 	String msg = "Error " + itos(id) + ": " + String(messageBuffer, size);
 
@@ -893,18 +851,6 @@ bool OS_UWP::_check_internal_feature_support(const String &p_feature) {
 	return p_feature == "pc";
 }
 
-OS::PowerState OS_UWP::get_power_state() {
-	return power_manager->get_power_state();
-}
-
-int OS_UWP::get_power_seconds_left() {
-	return power_manager->get_power_seconds_left();
-}
-
-int OS_UWP::get_power_percent_left() {
-	return power_manager->get_power_percent_left();
-}
-
 OS_UWP::OS_UWP() {
 
 	key_event_pos = 0;
@@ -923,14 +869,14 @@ OS_UWP::OS_UWP() {
 	stdo = fopen("stdout.txt", "wb");
 #endif
 
-	gl_context = NULL;
+	gl_context = nullptr;
 
 	display_request = ref new Windows::System::Display::DisplayRequest();
 
 	managed_object = ref new ManagedType;
 	managed_object->os = this;
 
-	mouse_mode_changed = CreateEvent(NULL, TRUE, FALSE, L"os_mouse_mode_changed");
+	mouse_mode_changed = CreateEvent(nullptr, TRUE, FALSE, L"os_mouse_mode_changed");
 
 	AudioDriverManager::add_driver(&audio_driver);
 

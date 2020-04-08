@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  nav_region.h                                                         */
+/*  nav_region.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 */
 
 NavRegion::NavRegion() :
-		map(NULL),
+		map(nullptr),
 		polygons_dirty(true) {
 }
 
@@ -71,19 +71,19 @@ void NavRegion::update_polygons() {
 	polygons.clear();
 	polygons_dirty = false;
 
-	if (map == NULL) {
+	if (map == nullptr) {
 		return;
 	}
 
 	if (mesh.is_null())
 		return;
 
-	PoolVector<Vector3> vertices = mesh->get_vertices();
+	Vector<Vector3> vertices = mesh->get_vertices();
 	int len = vertices.size();
 	if (len == 0)
 		return;
 
-	PoolVector<Vector3>::Read vertices_r = vertices.read();
+	const Vector3 *vertices_r = vertices.ptr();
 
 	polygons.resize(mesh->get_polygon_count());
 

@@ -33,11 +33,16 @@
 
 #include "../gdscript_parser.h"
 #include "core/variant.h"
+#include "editor/editor_file_system.h"
 #include "gdscript_extend_parser.h"
 #include "lsp.hpp"
 
 class GDScriptWorkspace : public Reference {
 	GDCLASS(GDScriptWorkspace, Reference);
+
+private:
+	void _get_owners(EditorFileSystemDirectory *efsd, String p_path, List<String> &owners);
+	Node *_get_owner_scene_node(String p_path);
 
 protected:
 	static void _bind_methods();

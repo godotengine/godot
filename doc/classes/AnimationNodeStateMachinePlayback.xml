@@ -16,14 +16,14 @@
 	</tutorials>
 	<methods>
 		<method name="get_current_node" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Returns the currently playing animation state.
 			</description>
 		</method>
 		<method name="get_travel_path" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the current travel path as computed internally by the A* algorithm.
@@ -39,7 +39,7 @@
 		<method name="start">
 			<return type="void">
 			</return>
-			<argument index="0" name="node" type="String">
+			<argument index="0" name="node" type="StringName">
 			</argument>
 			<description>
 				Starts playing the given animation.
@@ -55,7 +55,7 @@
 		<method name="travel">
 			<return type="void">
 			</return>
-			<argument index="0" name="to_node" type="String">
+			<argument index="0" name="to_node" type="StringName">
 			</argument>
 			<description>
 				Transitions from the current state to another one, following the shortest path.

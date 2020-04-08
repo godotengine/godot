@@ -48,11 +48,12 @@
 # David May <wasser@gmail.com>, 2019.
 # Draco Drache <jan.holger.te@gmail.com>, 2019.
 # Jonas <dotchucknorris@gmx.de>, 2019.
+# PagDev <pag.develop@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-20 11:39+0000\n"
+"PO-Revision-Date: 2020-03-14 15:05+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -61,7 +62,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -734,8 +735,8 @@ msgid "Line Number:"
 msgstr "Zeilennummer:"
 
 #: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Suchbegriff wurde %d mal ersetzt."
+msgid "%d replaced."
+msgstr "%d ersetzt."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -1538,6 +1539,10 @@ msgstr "Name"
 msgid "Singleton"
 msgstr "Singleton"
 
+#: editor/editor_data.cpp editor/inspector_dock.cpp
+msgid "Paste Params"
+msgstr "Parameter einfügen"
+
 #: editor/editor_data.cpp
 msgid "Updating Scene"
 msgstr "Aktualisiere Szene"
@@ -1825,7 +1830,7 @@ msgstr "Im Dateimanager anzeigen"
 msgid "New Folder..."
 msgstr "Neuer Ordner..."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "Aktualisieren"
@@ -2992,7 +2997,7 @@ msgstr "Problem-Melder"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
-msgstr "Internetgemeinschaft"
+msgstr "Community"
 
 #: editor/editor_node.cpp
 msgid "About"
@@ -4022,16 +4027,16 @@ msgid "Saving..."
 msgstr "Speichere..."
 
 #: editor/import_dock.cpp
+msgid "%d Files"
+msgstr "%d Dateien"
+
+#: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
 msgstr "Als Standard für ‚%s‘ setzen"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
 msgstr "Standard für ‚%s‘ löschen"
-
-#: editor/import_dock.cpp
-msgid " Files"
-msgstr " Dateien"
 
 #: editor/import_dock.cpp
 msgid "Import As:"
@@ -4082,10 +4087,6 @@ msgstr "Speichern als..."
 #: editor/inspector_dock.cpp
 msgid "Copy Params"
 msgstr "Parameter kopieren"
-
-#: editor/inspector_dock.cpp
-msgid "Paste Params"
-msgstr "Parameter einfügen"
 
 #: editor/inspector_dock.cpp
 msgid "Edit Resource Clipboard"
@@ -5667,9 +5668,8 @@ msgid "Auto Insert Key"
 msgstr "Schlüsselbild automatisch einfügen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Animationsschlüsselbild eingefügt."
+msgstr "Schlüsselbild- und Posen-Optionen für Animationen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -5914,12 +5914,12 @@ msgid "Mesh is empty!"
 msgstr "Mesh ist leer!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Trimesh Body"
-msgstr "Statischen Trimesh-Körper erzeugen"
+msgid "Couldn't create a Trimesh collision shape."
+msgstr "Trimesh-Kollisions-Shape konnte nicht erstellt werden."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Static Convex Body"
-msgstr "Statischen Konvex-Körper erzeugen"
+msgid "Create Static Trimesh Body"
+msgstr "Statischen Trimesh-Körper erzeugen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
@@ -5930,12 +5930,32 @@ msgid "Create Trimesh Static Shape"
 msgstr "Trimesh-Statische-Form erzeugen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Failed creating shapes!"
-msgstr "Form-Erstellung fehlgeschlagen!"
+msgid "Can't create a single convex collision shape for the scene root."
+msgstr ""
+"Aus der Szenenwurzel kann ein einzelnes konvexes Kollisionselement nicht "
+"erzeugt werden."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape(s)"
-msgstr "Konvexe Form(en) erstellen"
+msgid "Couldn't create a single convex collision shape."
+msgstr "Ein einzelnes konvexes Kollisionselement konnte nicht erzeugt werden."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Shape"
+msgstr "Einzelne konvexe Form erstellen"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Can't create multiple convex collision shapes for the scene root."
+msgstr ""
+"Aus der Szenenwurzel konnten mehrere konvexe Kollisionselemente nicht "
+"erzeugt werden."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Couldn't create any collision shapes."
+msgstr "Konnte kein einziges Kollisionselement erzeugen."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Shapes"
+msgstr "Mehrere konvexe Formen erstellen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5987,16 +6007,66 @@ msgid "Create Trimesh Static Body"
 msgstr "Statischen Trimesh-Körper erzeugen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a StaticBody and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Erstellt einen StaticBody und weist ein polygon-basiertes Kollisionselement "
+"automatisch zu.\n"
+"Dies ist die präziseste (aber langsamste) Methode für Kollisionsberechnungen."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Trimesh-Kollisionselement erzeugen"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling(s)"
-msgstr "Konvexe(s) Kollisionselement(e) erzeugen"
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Erstellt ein polygon-basiertes Kollisionselement.\n"
+"Dies ist die präziseste (aber langsamste) Methode für Kollisionsberechnungen."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Single Convex Collision Sibling"
+msgstr "Ein einzelnes konvexes Kollisionsnachbarelement erzeugen"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+"Erstellt ein einzelnes konvexes Kollisionselement.\n"
+"Dies ist die schnellste (aber ungenauste) Methode für Kollisionsberechnungen."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Multiple Convex Collision Siblings"
+msgstr "Mehrere konvexe Kollisionsunterelemente erzeugen"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between the two above options."
+msgstr ""
+"Erstellt ein polygon-basiertes Kollisionselement.\n"
+"Dies liegt von der Geschwindigkeit in der Mitte der beiden anderen Methoden."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
 msgstr "Umriss-Mesh erzeugen..."
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the SpatialMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Erstellt ein statisches Outline-Mesh. Outline-Meshes haben ihre "
+"Normalenvektoren automatisch invertiert.\n"
+"Dies kann als Ersatz für die SpatialMaterial-Grow-Eigenschaft genutzt werden "
+"wenn sie nicht verfügbar ist."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -8422,7 +8492,7 @@ msgstr "TileSet"
 msgid "No VCS addons are available."
 msgstr "Keine Versionsverwaltungserweiterungen verfügbar."
 
-#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Error"
 msgstr "Fehler"
 
@@ -9592,24 +9662,29 @@ msgid "Export With Debug"
 msgstr "Exportiere mit Debuginformationen"
 
 #: editor/project_manager.cpp
-msgid "The path does not exist."
-msgstr "Dieser Pfad existiert nicht."
+msgid "The path specified doesn't exist."
+msgstr "Der angegebene Pfad existiert nicht."
 
 #: editor/project_manager.cpp
-msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
-msgstr "Ungültige Projekt-Zipdatei, enthält keine ‚project.godot‘-Datei."
+msgid "Error opening package file (it's not in ZIP format)."
+msgstr "Fehler beim Öffnen der Paketdatei (kein ZIP-Format)."
+
+#: editor/project_manager.cpp
+msgid ""
+"Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
+msgstr "Ungültige „.zip“-Projektdatei, enthält keine „project.godot“-Datei."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Bitte einen leeren Ordner auswählen."
 
 #: editor/project_manager.cpp
-msgid "Please choose a 'project.godot' or '.zip' file."
-msgstr "Eine ‚project.godot‘-Datei oder Zipdatei auswählen."
+msgid "Please choose a \"project.godot\" or \".zip\" file."
+msgstr "Eine „project.godot” oder „.zip“-Datei auswählen."
 
 #: editor/project_manager.cpp
-msgid "Directory already contains a Godot project."
-msgstr "Das Verzeichnis beinhaltet bereits ein Godot-Projekt."
+msgid "This directory already contains a Godot project."
+msgstr "Dieses Verzeichnis beinhaltet bereits ein Godot-Projekt."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -10040,7 +10115,7 @@ msgstr "Ereignis hinzufügen"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "Knopf"
+msgstr "\"Button\""
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -10312,6 +10387,10 @@ msgid "Suffix"
 msgstr "Suffix"
 
 #: editor/rename_dialog.cpp
+msgid "Use Regular Expressions"
+msgstr "Reguläre Ausdrücke verwenden"
+
+#: editor/rename_dialog.cpp
 msgid "Advanced Options"
 msgstr "Erweiterte Einstellungen"
 
@@ -10348,7 +10427,7 @@ msgstr ""
 "Zahleroptionen vergleichen."
 
 #: editor/rename_dialog.cpp
-msgid "Per Level counter"
+msgid "Per-level Counter"
 msgstr "Pro-Ebene-Zähler"
 
 #: editor/rename_dialog.cpp
@@ -10381,10 +10460,6 @@ msgstr ""
 "Fehlende Ziffern werden mit führenden Nullen ergänzt."
 
 #: editor/rename_dialog.cpp
-msgid "Regular Expressions"
-msgstr "Reguläre Ausdrücke"
-
-#: editor/rename_dialog.cpp
 msgid "Post-Process"
 msgstr "Nachbearbeitung"
 
@@ -10393,11 +10468,11 @@ msgid "Keep"
 msgstr "Behalten"
 
 #: editor/rename_dialog.cpp
-msgid "CamelCase to under_scored"
+msgid "PascalCase to snake_case"
 msgstr "CamelCase zu unter_strich"
 
 #: editor/rename_dialog.cpp
-msgid "under_scored to CamelCase"
+msgid "snake_case to PascalCase"
 msgstr "unter_strich zu CamelCase"
 
 #: editor/rename_dialog.cpp
@@ -10415,6 +10490,14 @@ msgstr "Zu Großbuchstaben"
 #: editor/rename_dialog.cpp
 msgid "Reset"
 msgstr "Zurücksetzen"
+
+#: editor/rename_dialog.cpp
+msgid "Regular Expression Error"
+msgstr "Fehler in regulärem Ausdruck"
+
+#: editor/rename_dialog.cpp
+msgid "At character %s"
+msgstr "Bei Zeichen %s"
 
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
@@ -10882,8 +10965,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Ungültiger geerbter Name oder Pfad."
 
 #: editor/script_create_dialog.cpp
-msgid "Script is valid."
-msgstr "Skript ist gültig."
+msgid "Script path/name is valid."
+msgstr "Skript-Pfad oder -Name ist gültig."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10974,6 +11057,10 @@ msgid "Copy Error"
 msgstr "Fehlermeldung kopieren"
 
 #: editor/script_editor_debugger.cpp
+msgid "Video RAM"
+msgstr "Video RAM"
+
+#: editor/script_editor_debugger.cpp
 msgid "Skip Breakpoints"
 msgstr "Haltepunkte auslassen"
 
@@ -11020,10 +11107,6 @@ msgstr "Auflistung der Grafikspeichernutzung nach Ressource:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Insgesamt:"
-
-#: editor/script_editor_debugger.cpp
-msgid "Video Mem"
-msgstr "Grafikspeicher"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12038,7 +12121,7 @@ msgstr "Verwende Standard-Startbildschirm-Bilddatei."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
-msgstr "Ungültiger Paketekurzname."
+msgstr "Ungültiger Paket-Kurzname."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
@@ -12396,6 +12479,11 @@ msgstr ""
 "Plane-Shapes funktionieren nicht gut und werden in einer zukünftigen Version "
 "entfernt. Von der Nutzung wird abgeraten."
 
+#: scene/3d/collision_shape.cpp
+msgid ""
+"ConcavePolygonShape doesn't support RigidBody in another mode than static."
+msgstr "ConcavePolygonShape unterstützt RigidBody nur im Modus Statisch."
+
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nichts ist sichtbar da kein Mesh zugewiesen wurden."
@@ -12736,6 +12824,15 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "Replaced %d occurrence(s)."
+#~ msgstr "Suchbegriff wurde %d mal ersetzt."
+
+#~ msgid "Create Static Convex Body"
+#~ msgstr "Statischen Konvex-Körper erzeugen"
+
+#~ msgid "Failed creating shapes!"
+#~ msgstr "Form-Erstellung fehlgeschlagen!"
 
 #~ msgid ""
 #~ "There are currently no tutorials for this class, you can [color=$color]"

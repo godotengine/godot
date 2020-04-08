@@ -35,7 +35,7 @@ void Bone2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		Node *parent = get_parent();
 		parent_bone = Object::cast_to<Bone2D>(parent);
-		skeleton = NULL;
+		skeleton = nullptr;
 		while (parent) {
 			skeleton = Object::cast_to<Skeleton2D>(parent);
 			if (skeleton)
@@ -73,9 +73,9 @@ void Bone2D::_notification(int p_what) {
 				}
 			}
 			skeleton->_make_bone_setup_dirty();
-			skeleton = NULL;
+			skeleton = nullptr;
 		}
-		parent_bone = NULL;
+		parent_bone = nullptr;
 	}
 }
 void Bone2D::_bind_methods() {
@@ -90,7 +90,7 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
 
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "rest"), "set_rest", "get_rest");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "default_length", PROPERTY_HINT_RANGE, "1,1024,1"), "set_default_length", "get_default_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_length", PROPERTY_HINT_RANGE, "1,1024,1"), "set_default_length", "get_default_length");
 }
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
@@ -157,8 +157,8 @@ String Bone2D::get_configuration_warning() const {
 }
 
 Bone2D::Bone2D() {
-	skeleton = NULL;
-	parent_bone = NULL;
+	skeleton = nullptr;
+	parent_bone = nullptr;
 	skeleton_index = -1;
 	default_length = 16;
 	set_notify_local_transform(true);
@@ -186,7 +186,7 @@ void Skeleton2D::_update_bone_setup() {
 		return;
 
 	bone_setup_dirty = false;
-	VS::get_singleton()->skeleton_allocate(skeleton, bones.size(), true);
+	RS::get_singleton()->skeleton_allocate(skeleton, bones.size(), true);
 
 	bones.sort(); //sorty so they are always in the same order/index
 
@@ -240,7 +240,7 @@ void Skeleton2D::_update_transform() {
 	for (int i = 0; i < bones.size(); i++) {
 
 		Transform2D final_xform = bones[i].accum_transform * bones[i].rest_inverse;
-		VS::get_singleton()->skeleton_bone_set_transform_2d(skeleton, i, final_xform);
+		RS::get_singleton()->skeleton_bone_set_transform_2d(skeleton, i, final_xform);
 	}
 }
 
@@ -257,8 +257,8 @@ int Skeleton2D::get_bone_count() const {
 
 Bone2D *Skeleton2D::get_bone(int p_idx) {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
-	ERR_FAIL_INDEX_V(p_idx, bones.size(), NULL);
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
+	ERR_FAIL_INDEX_V(p_idx, bones.size(), nullptr);
 
 	return bones[p_idx].bone;
 }
@@ -276,7 +276,7 @@ void Skeleton2D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
-		VS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
+		RS::get_singleton()->skeleton_set_base_transform_2d(skeleton, get_global_transform());
 	}
 }
 
@@ -300,11 +300,11 @@ Skeleton2D::Skeleton2D() {
 	bone_setup_dirty = true;
 	transform_dirty = true;
 
-	skeleton = VS::get_singleton()->skeleton_create();
+	skeleton = RS::get_singleton()->skeleton_create();
 	set_notify_transform(true);
 }
 
 Skeleton2D::~Skeleton2D() {
 
-	VS::get_singleton()->free(skeleton);
+	RS::get_singleton()->free(skeleton);
 }

@@ -115,7 +115,7 @@
 		<method name="open_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Opens an XML raw buffer for parsing. This returns an error code.

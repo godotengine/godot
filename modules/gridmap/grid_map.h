@@ -31,17 +31,17 @@
 #ifndef GRID_MAP_H
 #define GRID_MAP_H
 
-#include "scene/3d/navigation.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/navigation_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/multimesh.h"
 
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
-class GridMap : public Spatial {
+class GridMap : public Node3D {
 
-	GDCLASS(GridMap, Spatial);
+	GDCLASS(GridMap, Node3D);
 
 	enum {
 		MAP_DIRTY_TRANSFORMS = 1,
@@ -147,7 +147,7 @@ class GridMap : public Spatial {
 	int octant_size;
 	bool center_x, center_y, center_z;
 	float cell_scale;
-	Navigation *navigation;
+	Navigation3D *navigation;
 
 	bool clip;
 	bool clip_above;
@@ -166,10 +166,10 @@ class GridMap : public Spatial {
 
 	struct BakeLight {
 
-		VS::LightType type;
+		RS::LightType type;
 		Vector3 pos;
 		Vector3 dir;
-		float param[VS::LIGHT_PARAM_MAX];
+		float param[RS::LIGHT_PARAM_MAX];
 	};
 
 	_FORCE_INLINE_ Vector3 _octant_get_offset(const OctantKey &p_key) const {

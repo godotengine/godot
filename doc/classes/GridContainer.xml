@@ -20,8 +20,10 @@
 	</constants>
 	<theme_items>
 		<theme_item name="hseparation" type="int" default="4">
+			The horizontal separation of children nodes.
 		</theme_item>
 		<theme_item name="vseparation" type="int" default="4">
+			The vertical separation of children nodes.
 		</theme_item>
 	</theme_items>
 </class>

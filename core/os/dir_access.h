@@ -76,9 +76,10 @@ public:
 	virtual int get_drive_count() = 0;
 	virtual String get_drive(int p_drive) = 0;
 	virtual int get_current_drive();
+	virtual bool drives_are_shortcuts();
 
 	virtual Error change_dir(String p_dir) = 0; ///< can be relative or absolute, return false on success
-	virtual String get_current_dir() = 0; ///< return current dir location
+	virtual String get_current_dir(bool p_include_drive = true) = 0; ///< return current dir location
 	virtual Error make_dir(String p_dir) = 0;
 	virtual Error make_dir_recursive(String p_dir);
 	virtual Error erase_contents_recursive(); //super dangerous, use with care!
@@ -127,7 +128,7 @@ public:
 		create_func[p_access] = _create_builtin<T>;
 	}
 
-	static DirAccess *open(const String &p_path, Error *r_error = NULL);
+	static DirAccess *open(const String &p_path, Error *r_error = nullptr);
 
 	DirAccess();
 	virtual ~DirAccess();
@@ -140,7 +141,7 @@ struct DirAccessRef {
 		return f;
 	}
 
-	operator bool() const { return f != NULL; }
+	operator bool() const { return f != nullptr; }
 	DirAccess *f;
 	DirAccessRef(DirAccess *fa) { f = fa; }
 	~DirAccessRef() {
@@ -148,4 +149,4 @@ struct DirAccessRef {
 	}
 };
 
-#endif
+#endif // DIR_ACCESS_H

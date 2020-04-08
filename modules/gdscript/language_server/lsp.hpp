@@ -33,7 +33,7 @@
 
 #include "core/class_db.h"
 #include "core/list.h"
-#include "editor/doc/doc_data.h"
+#include "editor/doc_data.h"
 
 namespace lsp {
 
@@ -156,7 +156,7 @@ struct LocationLink {
 	 * Used as the underlined span for mouse interaction. Defaults to the word range at
 	 * the mouse position.
 	 */
-	Range *originSelectionRange = NULL;
+	Range *originSelectionRange = nullptr;
 
 	/**
 	 * The target resource identifier of this link.
@@ -1686,8 +1686,8 @@ struct InitializeResult {
 struct GodotNativeClassInfo {
 
 	String name;
-	const DocData::ClassDoc *class_doc = NULL;
-	const ClassDB::ClassInfo *class_info = NULL;
+	const DocData::ClassDoc *class_doc = nullptr;
+	const ClassDB::ClassInfo *class_info = nullptr;
 
 	Dictionary to_json() {
 		Dictionary dict;

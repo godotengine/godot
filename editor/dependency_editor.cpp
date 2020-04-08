@@ -63,7 +63,7 @@ void DependencyEditor::_load_pressed(Object *p_item, int p_cell, int p_button) {
 	search->popup_centered_ratio(0.65); // So it doesn't completely cover the dialog below it.
 }
 
-void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String> > &candidates) {
+void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String, Map<String, String>> &candidates) {
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_fix_and_find(efsd->get_subdir(i), candidates);
@@ -124,7 +124,7 @@ void DependencyEditor::_fix_all() {
 	if (!EditorFileSystem::get_singleton()->get_filesystem())
 		return;
 
-	Map<String, Map<String, String> > candidates;
+	Map<String, Map<String, String>> candidates;
 
 	for (List<String>::Element *E = missing.front(); E; E = E->next()) {
 
@@ -140,7 +140,7 @@ void DependencyEditor::_fix_all() {
 
 	Map<String, String> remaps;
 
-	for (Map<String, Map<String, String> >::Element *E = candidates.front(); E; E = E->next()) {
+	for (Map<String, Map<String, String>>::Element *E = candidates.front(); E; E = E->next()) {
 
 		for (Map<String, String>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -174,7 +174,7 @@ void DependencyEditor::_update_list() {
 
 	TreeItem *root = tree->create_item();
 
-	Ref<Texture> folder = get_icon("folder", "FileDialog");
+	Ref<Texture2D> folder = tree->get_theme_icon("folder", "FileDialog");
 
 	bool broken = false;
 
@@ -195,7 +195,7 @@ void DependencyEditor::_update_list() {
 		}
 		String name = path.get_file();
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 		item->set_text(0, name);
 		item->set_icon(0, icon);
 		item->set_metadata(0, type);
@@ -229,10 +229,6 @@ void DependencyEditor::edit(const String &p_path) {
 }
 
 void DependencyEditor::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_searched"), &DependencyEditor::_searched);
-	ClassDB::bind_method(D_METHOD("_load_pressed"), &DependencyEditor::_load_pressed);
-	ClassDB::bind_method(D_METHOD("_fix_all"), &DependencyEditor::_fix_all);
 }
 
 DependencyEditor::DependencyEditor() {
@@ -247,7 +243,7 @@ DependencyEditor::DependencyEditor() {
 	tree->set_column_title(0, TTR("Resource"));
 	tree->set_column_title(1, TTR("Path"));
 	tree->set_hide_root(true);
-	tree->connect("button_pressed", this, "_load_pressed");
+	tree->connect("button_pressed", callable_mp(this, &DependencyEditor::_load_pressed));
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	Label *label = memnew(Label(TTR("Dependencies:")));
@@ -255,20 +251,20 @@ DependencyEditor::DependencyEditor() {
 	hbc->add_spacer();
 	fixdeps = memnew(Button(TTR("Fix Broken")));
 	hbc->add_child(fixdeps);
-	fixdeps->connect("pressed", this, "_fix_all");
+	fixdeps->connect("pressed", callable_mp(this, &DependencyEditor::_fix_all));
 
 	vb->add_child(hbc);
 
 	MarginContainer *mc = memnew(MarginContainer);
-	mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	mc->add_child(tree);
 	vb->add_child(mc);
 
 	set_title(TTR("Dependency Editor"));
 	search = memnew(EditorFileDialog);
-	search->connect("file_selected", this, "_searched");
-	search->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	search->connect("file_selected", callable_mp(this, &DependencyEditor::_searched));
+	search->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	search->set_title(TTR("Search Replacement Resource:"));
 	add_child(search);
 }
@@ -310,10 +306,6 @@ void DependencyEditorOwners::_file_option(int p_option) {
 }
 
 void DependencyEditorOwners::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_list_rmb_select"), &DependencyEditorOwners::_list_rmb_select);
-	ClassDB::bind_method(D_METHOD("_file_option"), &DependencyEditorOwners::_file_option);
-	ClassDB::bind_method(D_METHOD("_select_file"), &DependencyEditorOwners::_select_file);
 }
 
 void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
@@ -338,7 +330,7 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 		if (!found)
 			continue;
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
 
 		owners->add_item(efsd->get_file_path(i), icon);
 	}
@@ -360,12 +352,12 @@ DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
 
 	file_options = memnew(PopupMenu);
 	add_child(file_options);
-	file_options->connect("id_pressed", this, "_file_option");
+	file_options->connect("id_pressed", callable_mp(this, &DependencyEditorOwners::_file_option));
 
 	owners = memnew(ItemList);
 	owners->set_select_mode(ItemList::SELECT_SINGLE);
-	owners->connect("item_rmb_selected", this, "_list_rmb_select");
-	owners->connect("item_activated", this, "_select_file");
+	owners->connect("item_rmb_selected", callable_mp(this, &DependencyEditorOwners::_list_rmb_select));
+	owners->connect("item_activated", callable_mp(this, &DependencyEditorOwners::_select_file));
 	owners->set_allow_rmb_select(true);
 	add_child(owners);
 }
@@ -430,23 +422,23 @@ void DependencyRemoveDialog::_build_removed_dependency_tree(const Vector<Removed
 				if (!tree_items.has(rd.dependency_folder)) {
 					TreeItem *folder_item = owners->create_item(owners->get_root());
 					folder_item->set_text(0, rd.dependency_folder);
-					folder_item->set_icon(0, get_icon("Folder", "EditorIcons"));
+					folder_item->set_icon(0, owners->get_theme_icon("Folder", "EditorIcons"));
 					tree_items[rd.dependency_folder] = folder_item;
 				}
 				TreeItem *dependency_item = owners->create_item(tree_items[rd.dependency_folder]);
 				dependency_item->set_text(0, rd.dependency);
-				dependency_item->set_icon(0, get_icon("Warning", "EditorIcons"));
+				dependency_item->set_icon(0, owners->get_theme_icon("Warning", "EditorIcons"));
 				tree_items[rd.dependency] = dependency_item;
 			} else {
 				TreeItem *dependency_item = owners->create_item(owners->get_root());
 				dependency_item->set_text(0, rd.dependency);
-				dependency_item->set_icon(0, get_icon("Warning", "EditorIcons"));
+				dependency_item->set_icon(0, owners->get_theme_icon("Warning", "EditorIcons"));
 				tree_items[rd.dependency] = dependency_item;
 			}
 		}
 
 		//List this file under this dependency
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(rd.file_type);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(rd.file_type);
 		TreeItem *file_item = owners->create_item(tree_items[rd.dependency]);
 		file_item->set_text(0, rd.file);
 		file_item->set_icon(0, icon);
@@ -588,7 +580,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners = memnew(Tree);
 	owners->set_hide_root(true);
 	vb->add_child(owners);
-	owners->set_v_size_flags(SIZE_EXPAND_FILL);
+	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 }
 
 //////////////
@@ -600,7 +592,7 @@ void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Ve
 	set_title(TTR("Error loading:") + " " + p_for_file.get_file());
 	files->clear();
 
-	TreeItem *root = files->create_item(NULL);
+	TreeItem *root = files->create_item(nullptr);
 	for (int i = 0; i < report.size(); i++) {
 
 		String dep;
@@ -609,7 +601,7 @@ void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Ve
 		if (report[i].get_slice_count("::") > 0)
 			type = report[i].get_slice("::", 1);
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 
 		TreeItem *ti = files->create_item(root);
 		ti->set_text(0, dep);
@@ -644,9 +636,9 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	files = memnew(Tree);
 	files->set_hide_root(true);
 	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
-	files->set_v_size_flags(SIZE_EXPAND_FILL);
+	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	set_custom_minimum_size(Size2(500, 220) * EDSCALE);
+	set_min_size(Size2(500, 220) * EDSCALE);
 	get_ok()->set_text(TTR("Open Anyway"));
 	get_cancel()->set_text(TTR("Close"));
 
@@ -670,7 +662,7 @@ void OrphanResourcesDialog::ok_pressed() {
 		return;
 
 	delete_confirm->set_text(vformat(TTR("Permanently delete %d item(s)? (No undo!)"), paths.size()));
-	delete_confirm->popup_centered_clamped(delete_confirm->get_minimum_size());
+	delete_confirm->popup_centered();
 }
 
 bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent) {
@@ -682,11 +674,11 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 
-		TreeItem *dir_item = NULL;
+		TreeItem *dir_item = nullptr;
 		if (p_parent) {
 			dir_item = files->create_item(p_parent);
 			dir_item->set_text(0, efsd->get_subdir(i)->get_name());
-			dir_item->set_icon(0, get_icon("folder", "FileDialog"));
+			dir_item->set_icon(0, files->get_theme_icon("folder", "FileDialog"));
 		}
 		bool children = _fill_owners(efsd->get_subdir(i), refs, dir_item);
 
@@ -720,12 +712,12 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 				String type = efsd->get_file_type(i);
 
-				Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(type);
+				Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 				ti->set_icon(0, icon);
 				int ds = efsd->get_file_deps(i).size();
 				ti->set_text(1, itos(ds));
 				if (ds) {
-					ti->add_button(1, get_icon("GuiVisibilityVisible", "EditorIcons"), -1, false, TTR("Show Dependencies"));
+					ti->add_button(1, files->get_theme_icon("GuiVisibilityVisible", "EditorIcons"), -1, false, TTR("Show Dependencies"));
 				}
 				ti->set_metadata(0, path);
 				has_children = true;
@@ -738,7 +730,7 @@ bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMa
 
 void OrphanResourcesDialog::refresh() {
 	HashMap<String, int> refs;
-	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem(), refs, NULL);
+	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem(), refs, nullptr);
 	files->clear();
 	TreeItem *root = files->create_item();
 	_fill_owners(EditorFileSystem::get_singleton()->get_filesystem(), refs, root);
@@ -787,9 +779,6 @@ void OrphanResourcesDialog::_button_pressed(Object *p_item, int p_column, int p_
 }
 
 void OrphanResourcesDialog::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_delete_confirm"), &OrphanResourcesDialog::_delete_confirm);
-	ClassDB::bind_method(D_METHOD("_button_pressed"), &OrphanResourcesDialog::_button_pressed);
 }
 
 OrphanResourcesDialog::OrphanResourcesDialog() {
@@ -800,7 +789,7 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	add_child(delete_confirm);
 	dep_edit = memnew(DependencyEditor);
 	add_child(dep_edit);
-	delete_confirm->connect("confirmed", this, "_delete_confirm");
+	delete_confirm->connect("confirmed", callable_mp(this, &OrphanResourcesDialog::_delete_confirm));
 	set_hide_on_ok(false);
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
@@ -816,5 +805,5 @@ OrphanResourcesDialog::OrphanResourcesDialog() {
 	files->set_column_title(1, TTR("Owns"));
 	files->set_hide_root(true);
 	vbc->add_margin_child(TTR("Resources Without Explicit Ownership:"), files, true);
-	files->connect("button_pressed", this, "_button_pressed");
+	files->connect("button_pressed", callable_mp(this, &OrphanResourcesDialog::_button_pressed));
 }

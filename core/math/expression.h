@@ -63,7 +63,6 @@ public:
 		MATH_ISNAN,
 		MATH_ISINF,
 		MATH_EASE,
-		MATH_DECIMALS,
 		MATH_STEP_DECIMALS,
 		MATH_STEPIFY,
 		MATH_LERP,
@@ -112,7 +111,7 @@ public:
 
 	static int get_func_argument_count(BuiltinFunc p_func);
 	static String get_func_name(BuiltinFunc p_func);
-	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str);
+	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Callable::CallError &r_error, String &r_error_str);
 	static BuiltinFunc find_function(const String &p_string);
 
 private:
@@ -220,7 +219,7 @@ private:
 
 		Type type;
 
-		ENode() { next = NULL; }
+		ENode() { next = nullptr; }
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -353,7 +352,7 @@ protected:
 
 public:
 	Error parse(const String &p_expression, const Vector<String> &p_input_names = Vector<String>());
-	Variant execute(Array p_inputs, Object *p_base = NULL, bool p_show_error = true);
+	Variant execute(Array p_inputs, Object *p_base = nullptr, bool p_show_error = true);
 	bool has_execute_failed() const;
 	String get_error_text() const;
 

@@ -46,7 +46,7 @@ bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringN
 bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringName &p_name) {
 
 	GDScript *scr = owner;
-	GDScriptNativeClass *nc = NULL;
+	GDScriptNativeClass *nc = nullptr;
 	while (scr) {
 
 		if (scr->native.is_valid())
@@ -265,7 +265,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			while (owner) {
 
 				GDScript *scr = owner;
-				GDScriptNativeClass *nc = NULL;
+				GDScriptNativeClass *nc = nullptr;
 				while (scr) {
 
 					if (scr->constants.has(identifier)) {
@@ -1579,7 +1579,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	codegen.stack_max = 0;
 	codegen.current_line = 0;
 	codegen.call_max = 0;
-	codegen.debug_stack = ScriptDebugger::get_singleton() != NULL;
+	codegen.debug_stack = EngineDebugger::is_active();
 	Vector<StringName> argnames;
 
 	int stack_level = 0;
@@ -1700,14 +1700,14 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->_constant_count = codegen.constant_map.size();
 		gdfunc->constants.resize(codegen.constant_map.size());
 		gdfunc->_constants_ptr = gdfunc->constants.ptrw();
-		const Variant *K = NULL;
+		const Variant *K = nullptr;
 		while ((K = codegen.constant_map.next(K))) {
 			int idx = codegen.constant_map[*K];
 			gdfunc->constants.write[idx] = *K;
 		}
 	} else {
 
-		gdfunc->_constants_ptr = NULL;
+		gdfunc->_constants_ptr = nullptr;
 		gdfunc->_constant_count = 0;
 	}
 	//global names
@@ -1722,7 +1722,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->_global_names_count = gdfunc->global_names.size();
 
 	} else {
-		gdfunc->_global_names_ptr = NULL;
+		gdfunc->_global_names_ptr = nullptr;
 		gdfunc->_global_names_count = 0;
 	}
 
@@ -1746,7 +1746,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 
 	} else {
 
-		gdfunc->_code_ptr = NULL;
+		gdfunc->_code_ptr = nullptr;
 		gdfunc->_code_size = 0;
 	}
 
@@ -1757,7 +1757,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->_default_arg_ptr = &gdfunc->default_arguments[0];
 	} else {
 		gdfunc->_default_arg_count = 0;
-		gdfunc->_default_arg_ptr = NULL;
+		gdfunc->_default_arg_ptr = nullptr;
 	}
 
 	gdfunc->_argument_count = p_func ? p_func->arguments.size() : 0;
@@ -1765,7 +1765,7 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	gdfunc->_call_size = codegen.call_max;
 	gdfunc->name = func_name;
 #ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton()) {
+	if (EngineDebugger::is_active()) {
 		String signature;
 		//path
 		if (p_script->get_path() != String())
@@ -1838,7 +1838,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
-	p_script->_base = NULL;
+	p_script->_base = nullptr;
 	p_script->members.clear();
 	p_script->constants.clear();
 	for (Map<StringName, GDScriptFunction *>::Element *E = p_script->member_functions.front(); E; E = E->next()) {
@@ -1848,7 +1848,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	p_script->member_indices.clear();
 	p_script->member_info.clear();
 	p_script->_signals.clear();
-	p_script->initializer = NULL;
+	p_script->initializer = nullptr;
 
 	p_script->tool = p_class->tool;
 	p_script->name = p_class->name;
@@ -1962,7 +1962,7 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			if (c->base.is_valid()) {
 				c = c->base.ptr();
 			} else {
-				c = NULL;
+				c = nullptr;
 			}
 		}
 
@@ -2032,14 +2032,14 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 	if (!has_initializer) {
 		//create a constructor
-		Error err = _parse_function(p_script, p_class, NULL);
+		Error err = _parse_function(p_script, p_class, nullptr);
 		if (err)
 			return err;
 	}
 
 	if (!has_ready && p_class->ready->statements.size()) {
 		//create a constructor
-		Error err = _parse_function(p_script, p_class, NULL, true);
+		Error err = _parse_function(p_script, p_class, nullptr, true);
 		if (err)
 			return err;
 	}
@@ -2076,10 +2076,10 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 					/* STEP 2, INITIALIZE AND CONSTRUCT */
 
-					Variant::CallError ce;
-					p_script->initializer->call(instance, NULL, 0, ce);
+					Callable::CallError ce;
+					p_script->initializer->call(instance, nullptr, 0, ce);
 
-					if (ce.error != Variant::CallError::CALL_OK) {
+					if (ce.error != Callable::CallError::CALL_OK) {
 						//well, tough luck, not goinna do anything here
 					}
 				}
@@ -2111,7 +2111,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 
-	Map<StringName, Ref<GDScript> > old_subclasses;
+	Map<StringName, Ref<GDScript>> old_subclasses;
 
 	if (p_keep_state) {
 		old_subclasses = p_script->subclasses;
@@ -2162,7 +2162,7 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	// Create scripts for subclasses beforehand so they can be referenced
 	_make_scripts(p_script, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);
 
-	p_script->_owner = NULL;
+	p_script->_owner = nullptr;
 	Error err = _parse_class_level(p_script, static_cast<const GDScriptParser::ClassNode *>(root), p_keep_state);
 
 	if (err)

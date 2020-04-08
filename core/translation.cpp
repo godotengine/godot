@@ -407,7 +407,7 @@ static const char *locale_list[] = {
 	"zh_SG", //  Chinese (Singapore)
 	"zh_TW", //  Chinese (Taiwan)
 	"zu_ZA", //  Zulu (South Africa)
-	0
+	nullptr
 };
 
 static const char *locale_names[] = {
@@ -775,7 +775,7 @@ static const char *locale_names[] = {
 	"Chinese (Singapore)",
 	"Chinese (Taiwan)",
 	"Zulu (South Africa)",
-	0
+	nullptr
 };
 
 // Windows has some weird locale identifiers which do not honor the ISO 639-1
@@ -789,14 +789,14 @@ static const char *locale_renames[][2] = {
 	{ "in", "id" }, //  Indonesian
 	{ "iw", "he" }, //  Hebrew
 	{ "no", "nb" }, //  Norwegian Bokmål
-	{ NULL, NULL }
+	{ nullptr, nullptr }
 };
 
 ///////////////////////////////////////////////
 
-PoolVector<String> Translation::_get_messages() const {
+Vector<String> Translation::_get_messages() const {
 
-	PoolVector<String> msgs;
+	Vector<String> msgs;
 	msgs.resize(translation_map.size() * 2);
 	int idx = 0;
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
@@ -809,9 +809,9 @@ PoolVector<String> Translation::_get_messages() const {
 	return msgs;
 }
 
-PoolVector<String> Translation::_get_message_list() const {
+Vector<String> Translation::_get_message_list() const {
 
-	PoolVector<String> msgs;
+	Vector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx = 0;
 	for (const Map<StringName, StringName>::Element *E = translation_map.front(); E; E = E->next()) {
@@ -823,12 +823,12 @@ PoolVector<String> Translation::_get_message_list() const {
 	return msgs;
 }
 
-void Translation::_set_messages(const PoolVector<String> &p_messages) {
+void Translation::_set_messages(const Vector<String> &p_messages) {
 
 	int msg_count = p_messages.size();
 	ERR_FAIL_COND(msg_count % 2);
 
-	PoolVector<String>::Read r = p_messages.read();
+	const String *r = p_messages.ptr();
 
 	for (int i = 0; i < msg_count; i += 2) {
 
@@ -898,7 +898,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_STRING_ARRAY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
 }
 
@@ -929,7 +929,7 @@ String TranslationServer::standardize_locale(const String &p_locale) {
 
 	// Handles known non-ISO locale names used e.g. on Windows
 	int idx = 0;
-	while (locale_renames[idx][0] != NULL) {
+	while (locale_renames[idx][0] != nullptr) {
 		if (locale_renames[idx][0] == univ_locale) {
 			univ_locale = locale_renames[idx][1];
 			break;
@@ -995,7 +995,7 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 
 Array TranslationServer::get_loaded_locales() const {
 	Array locales;
-	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), Array());
@@ -1072,7 +1072,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	String lang = get_language_code(locale);
 	bool near_match = false;
 
-	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+	for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 		const Ref<Translation> &t = E->get();
 		ERR_FAIL_COND_V(t.is_null(), p_message);
 		String l = t->get_locale();
@@ -1105,7 +1105,7 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		String fallback_lang = get_language_code(fallback);
 		near_match = false;
 
-		for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+		for (const Set<Ref<Translation>>::Element *E = translations.front(); E; E = E->next()) {
 			const Ref<Translation> &t = E->get();
 			ERR_FAIL_COND_V(t.is_null(), p_message);
 			String l = t->get_locale();
@@ -1141,17 +1141,17 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	return res;
 }
 
-TranslationServer *TranslationServer::singleton = NULL;
+TranslationServer *TranslationServer::singleton = nullptr;
 
 bool TranslationServer::_load_translations(const String &p_from) {
 
 	if (ProjectSettings::get_singleton()->has_setting(p_from)) {
-		PoolVector<String> translations = ProjectSettings::get_singleton()->get(p_from);
+		Vector<String> translations = ProjectSettings::get_singleton()->get(p_from);
 
 		int tcount = translations.size();
 
 		if (tcount) {
-			PoolVector<String>::Read r = translations.read();
+			const String *r = translations.ptr();
 
 			for (int i = 0; i < tcount; i++) {
 
@@ -1176,7 +1176,6 @@ void TranslationServer::setup() {
 		set_locale(OS::get_singleton()->get_locale());
 	fallback = GLOBAL_DEF("locale/fallback", "en");
 #ifdef TOOLS_ENABLED
-
 	{
 		String options = "";
 		int idx = 0;
@@ -1189,7 +1188,6 @@ void TranslationServer::setup() {
 		ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
 	}
 #endif
-	//load translations
 }
 
 void TranslationServer::set_tool_translation(const Ref<Translation> &p_translation) {
@@ -1197,15 +1195,26 @@ void TranslationServer::set_tool_translation(const Ref<Translation> &p_translati
 }
 
 StringName TranslationServer::tool_translate(const StringName &p_message) const {
-
 	if (tool_translation.is_valid()) {
 		StringName r = tool_translation->get_message(p_message);
-
 		if (r) {
 			return r;
 		}
 	}
+	return p_message;
+}
 
+void TranslationServer::set_doc_translation(const Ref<Translation> &p_translation) {
+	doc_translation = p_translation;
+}
+
+StringName TranslationServer::doc_translate(const StringName &p_message) const {
+	if (doc_translation.is_valid()) {
+		StringName r = doc_translation->get_message(p_message);
+		if (r) {
+			return r;
+		}
+	}
 	return p_message;
 }
 

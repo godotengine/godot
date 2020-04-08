@@ -36,7 +36,7 @@
 #include <string.h>
 #include <unistd.h>
 
-static OSIPhone *os = NULL;
+static OSIPhone *os = nullptr;
 
 extern "C" {
 int add_path(int p_argc, char **p_args);
@@ -71,7 +71,7 @@ int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
 	for (int i = 0; i < argc; i++) {
 		fargv[i] = argv[i];
 	};
-	fargv[argc] = NULL;
+	fargv[argc] = nullptr;
 	argc = add_path(argc, fargv);
 	argc = add_cmdline(argc, fargv);
 

@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/os.h"
 #include "scene/resources/surface_tool.h"
-#include "servers/visual/visual_server_globals.h"
+#include "servers/rendering/rendering_server_globals.h"
 
 #import <ARKit/ARKit.h>
 #import <UIKit/UIKit.h>
@@ -488,7 +488,7 @@ void ARKitInterface::process() {
 								img_data[0].resize(new_width * new_height);
 							}
 
-							PoolVector<uint8_t>::Write w = img_data[0].write();
+							uint8_t *w = img_data[0].write();
 							if (new_width == bytes_per_row) {
 								memcpy(w.ptr(), dataY, new_width * new_height);
 							} else {
@@ -519,7 +519,7 @@ void ARKitInterface::process() {
 								img_data[1].resize(2 * new_width * new_height);
 							}
 
-							PoolVector<uint8_t>::Write w = img_data[1].write();
+							uint8_t *w = img_data[1].write();
 							if ((2 * new_width) == bytes_per_row) {
 								memcpy(w.ptr(), dataCbCr, 2 * new_width * new_height);
 							} else {

@@ -53,10 +53,10 @@ void EditorRunNative::_notification(int p_what) {
 					im->resize(16 * EDSCALE, 16 * EDSCALE);
 					Ref<ImageTexture> small_icon;
 					small_icon.instance();
-					small_icon->create_from_image(im, 0);
+					small_icon->create_from_image(im);
 					MenuButton *mb = memnew(MenuButton);
-					mb->get_popup()->connect("id_pressed", this, "_run_native", varray(i));
-					mb->connect("pressed", this, "_run_native", varray(-1, i));
+					mb->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::_run_native), varray(i));
+					mb->connect("pressed", callable_mp(this, &EditorRunNative::_run_native), varray(-1, i));
 					mb->set_icon(small_icon);
 					add_child(mb);
 					menus[i] = mb;
@@ -136,6 +136,12 @@ void EditorRunNative::_run_native(int p_idx, int p_platform) {
 	emit_signal("native_run");
 
 	int flags = 0;
+
+	bool deploy_debug_remote = is_deploy_debug_remote_enabled();
+	bool deploy_dumb = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
+	bool debug_collisions = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+
 	if (deploy_debug_remote)
 		flags |= EditorExportPlatform::DEBUG_FLAG_REMOTE_DEBUG;
 	if (deploy_dumb)
@@ -154,58 +160,17 @@ void EditorRunNative::resume_run_native() {
 
 void EditorRunNative::_bind_methods() {
 
-	ClassDB::bind_method("_run_native", &EditorRunNative::_run_native);
-
 	ADD_SIGNAL(MethodInfo("native_run"));
-}
-
-void EditorRunNative::set_deploy_dumb(bool p_enabled) {
-
-	deploy_dumb = p_enabled;
-}
-
-bool EditorRunNative::is_deploy_dumb_enabled() const {
-
-	return deploy_dumb;
-}
-
-void EditorRunNative::set_deploy_debug_remote(bool p_enabled) {
-
-	deploy_debug_remote = p_enabled;
 }
 
 bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 
-	return deploy_debug_remote;
-}
-
-void EditorRunNative::set_debug_collisions(bool p_debug) {
-
-	debug_collisions = p_debug;
-}
-
-bool EditorRunNative::get_debug_collisions() const {
-
-	return debug_collisions;
-}
-
-void EditorRunNative::set_debug_navigation(bool p_debug) {
-
-	debug_navigation = p_debug;
-}
-
-bool EditorRunNative::get_debug_navigation() const {
-
-	return debug_navigation;
+	return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
 }
 
 EditorRunNative::EditorRunNative() {
 	set_process(true);
 	first = true;
-	deploy_dumb = false;
-	deploy_debug_remote = false;
-	debug_collisions = false;
-	debug_navigation = false;
 	resume_idx = 0;
 	resume_platform = 0;
 }

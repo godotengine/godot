@@ -33,12 +33,12 @@
 
 #include "audio_driver_media_kit.h"
 #include "context_gl_haiku.h"
+#include "core/input/input_filter.h"
 #include "drivers/unix/os_unix.h"
 #include "haiku_application.h"
 #include "haiku_direct_window.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class OS_Haiku : public OS_Unix {
 private:
@@ -46,7 +46,7 @@ private:
 	HaikuDirectWindow *window;
 	MainLoop *main_loop;
 	InputDefault *input;
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	VideoMode current_video_mode;
 	int video_driver_index;
 
@@ -112,10 +112,6 @@ public:
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 	virtual String get_executable_path() const;
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 

@@ -21,17 +21,17 @@
 	</tutorials>
 	<methods>
 		<method name="follow_method">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="initial_val" type="Variant">
 			</argument>
 			<argument index="3" name="target" type="Object">
 			</argument>
-			<argument index="4" name="target_method" type="String">
+			<argument index="4" name="target_method" type="StringName">
 			</argument>
 			<argument index="5" name="duration" type="float">
 			</argument>
@@ -47,7 +47,7 @@
 			</description>
 		</method>
 		<method name="follow_property">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -80,7 +80,7 @@
 			</description>
 		</method>
 		<method name="interpolate_callback">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -103,7 +103,7 @@
 			</description>
 		</method>
 		<method name="interpolate_deferred_callback">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -126,11 +126,11 @@
 			</description>
 		</method>
 		<method name="interpolate_method">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="initial_val" type="Variant">
 			</argument>
@@ -150,7 +150,7 @@
 			</description>
 		</method>
 		<method name="interpolate_property">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
@@ -182,61 +182,61 @@
 			</description>
 		</method>
 		<method name="remove">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Stops animation and removes a tween, given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="remove_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Stops animation and removes all tweens.
 			</description>
 		</method>
 		<method name="reset">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Resets a tween to its initial value (the one given, not the one before the tween), given its object and property/method pair. By default, all tweens are removed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="reset_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Resets all tweens to their initial values (the ones given, not those before the tween).
 			</description>
 		</method>
 		<method name="resume">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Continues animating a stopped tween, given its object and property/method pair. By default, all tweens are resumed, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="resume_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Continues animating all stopped tweens.
 			</description>
 		</method>
 		<method name="seek">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="time" type="float">
 			</argument>
@@ -254,40 +254,40 @@
 			</description>
 		</method>
 		<method name="start">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Starts the tween. You can define animations both before and after this.
 			</description>
 		</method>
 		<method name="stop">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="key" type="String" default="&quot;&quot;">
+			<argument index="1" name="key" type="StringName" default="&quot;&quot;">
 			</argument>
 			<description>
 				Stops a tween, given its object and property/method pair. By default, all tweens are stopped, unless [code]key[/code] is specified.
 			</description>
 		</method>
 		<method name="stop_all">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<description>
 				Stops animating all tweens.
 			</description>
 		</method>
 		<method name="targeting_method">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<argument index="2" name="initial" type="Object">
 			</argument>
-			<argument index="3" name="initial_method" type="String">
+			<argument index="3" name="initial_method" type="StringName">
 			</argument>
 			<argument index="4" name="final_val" type="Variant">
 			</argument>
@@ -305,7 +305,7 @@
 			</description>
 		</method>
 		<method name="targeting_property">
-			<return type="bool">
+			<return type="void">
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>

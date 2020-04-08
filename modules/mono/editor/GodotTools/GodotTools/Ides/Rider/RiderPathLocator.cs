@@ -11,6 +11,10 @@ using Environment = System.Environment;
 using File = System.IO.File;
 using Path = System.IO.Path;
 using OS = GodotTools.Utils.OS;
+// ReSharper disable UnassignedField.Local
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnassignedField.Global
+// ReSharper disable MemberHidesStaticFromOuterClass
 
 namespace GodotTools.Ides.Rider
 {
@@ -131,28 +135,45 @@ namespace GodotTools.Ides.Rider
             if (OS.IsWindows)
             {
                 var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                return Path.Combine(localAppData, @"JetBrains\Toolbox\apps\Rider");
+                return GetToolboxRiderRootPath(localAppData);
             }
 
             if (OS.IsOSX)
             {
                 var home = Environment.GetEnvironmentVariable("HOME");
-                if (!string.IsNullOrEmpty(home))
-                {
-                    return Path.Combine(home, @"Library/Application Support/JetBrains/Toolbox/apps/Rider");
-                }
+                if (string.IsNullOrEmpty(home)) 
+                    return string.Empty;
+                var localAppData = Path.Combine(home, @"Library/Application Support");
+                return GetToolboxRiderRootPath(localAppData);
             }
 
             if (OS.IsUnixLike())
             {
                 var home = Environment.GetEnvironmentVariable("HOME");
-                if (!string.IsNullOrEmpty(home))
-                {
-                    return Path.Combine(home, @".local/share/JetBrains/Toolbox/apps/Rider");
-                }
+                if (string.IsNullOrEmpty(home)) 
+                    return string.Empty;
+                var localAppData = Path.Combine(home, @".local/share");
+                return GetToolboxRiderRootPath(localAppData);
             }
 
-            throw new Exception("Unexpected OS.");
+            return string.Empty;
+        }
+
+
+        private static string GetToolboxRiderRootPath(string localAppData)
+        {
+            var toolboxPath = Path.Combine(localAppData, @"JetBrains/Toolbox");
+            var settingsJson = Path.Combine(toolboxPath, ".settings.json");
+
+            if (File.Exists(settingsJson))
+            {
+                var path = SettingsJson.GetInstallLocationFromJson(File.ReadAllText(settingsJson));
+                if (!string.IsNullOrEmpty(path))
+                    toolboxPath = path;
+            }
+
+            var toolboxRiderRootPath = Path.Combine(toolboxPath, @"apps/Rider");
+            return toolboxRiderRootPath;
         }
 
         internal static ProductInfo GetBuildVersion(string path)
@@ -197,20 +218,29 @@ namespace GodotTools.Ides.Rider
 
         private static void CollectPathsFromRegistry(string registryKey, List<string> installPaths)
         {
+            using (var key = Registry.CurrentUser.OpenSubKey(registryKey))
+            {
+                CollectPathsFromRegistry(installPaths, key);
+            }
             using (var key = Registry.LocalMachine.OpenSubKey(registryKey))
             {
-                if (key == null) return;
-                foreach (var subkeyName in key.GetSubKeyNames().Where(a => a.Contains("Rider")))
+                CollectPathsFromRegistry(installPaths, key);
+            }
+        }
+
+        private static void CollectPathsFromRegistry(List<string> installPaths, RegistryKey key)
+        {
+            if (key == null) return;
+            foreach (var subkeyName in key.GetSubKeyNames().Where(a => a.Contains("Rider")))
+            {
+                using (var subkey = key.OpenSubKey(subkeyName))
                 {
-                    using (var subkey = key.OpenSubKey(subkeyName))
-                    {
-                        var folderObject = subkey?.GetValue("InstallLocation");
-                        if (folderObject == null) continue;
-                        var folder = folderObject.ToString();
-                        var possiblePath = Path.Combine(folder, @"bin\rider64.exe");
-                        if (File.Exists(possiblePath))
-                            installPaths.Add(possiblePath);
-                    }
+                    var folderObject = subkey?.GetValue("InstallLocation");
+                    if (folderObject == null) continue;
+                    var folder = folderObject.ToString();
+                    var possiblePath = Path.Combine(folder, @"bin\rider64.exe");
+                    if (File.Exists(possiblePath))
+                        installPaths.Add(possiblePath);
                 }
             }
         }
@@ -226,8 +256,8 @@ namespace GodotTools.Ides.Rider
               {
                   try
                   {
-                // use history.json - last entry stands for the active build https://jetbrains.slack.com/archives/C07KNP99D/p1547807024066500?thread_ts=1547731708.057700&cid=C07KNP99D
-                var historyFile = Path.Combine(channelDir, ".history.json");
+                      // use history.json - last entry stands for the active build https://jetbrains.slack.com/archives/C07KNP99D/p1547807024066500?thread_ts=1547731708.057700&cid=C07KNP99D
+                      var historyFile = Path.Combine(channelDir, ".history.json");
                       if (File.Exists(historyFile))
                       {
                           var json = File.ReadAllText(historyFile);
@@ -255,14 +285,14 @@ namespace GodotTools.Ides.Rider
                           }
                       }
 
-                // changes in toolbox json files format may brake the logic above, so return all found Rider installations
-                return Directory.GetDirectories(channelDir)
-                  .SelectMany(buildDir => GetExecutablePaths(dirName, searchPattern, isMac, buildDir));
+                      // changes in toolbox json files format may brake the logic above, so return all found Rider installations
+                      return Directory.GetDirectories(channelDir)
+                          .SelectMany(buildDir => GetExecutablePaths(dirName, searchPattern, isMac, buildDir));
                   }
                   catch (Exception e)
                   {
-                // do not write to Debug.Log, just log it.
-                Logger.Warn($"Failed to get RiderPath from {channelDir}", e);
+                      // do not write to Debug.Log, just log it.
+                      Logger.Warn($"Failed to get RiderPath from {channelDir}", e);
                   }
 
                   return new string[0];
@@ -287,6 +317,27 @@ namespace GodotTools.Ides.Rider
         // Disable the "field is never assigned" compiler warning. We never assign it, but Unity does.
         // Note that Unity disable this warning in the generated C# projects
 #pragma warning disable 0649
+
+        [Serializable]
+        class SettingsJson
+        {
+            public string install_location;
+      
+            [CanBeNull]
+            public static string GetInstallLocationFromJson(string json)
+            {
+                try
+                {
+                    return JsonConvert.DeserializeObject<SettingsJson>(json).install_location;
+                }
+                catch (Exception)
+                {
+                    Logger.Warn($"Failed to get install_location from json {json}");
+                }
+
+                return null;
+            }
+        }
 
         [Serializable]
         class ToolboxHistory
@@ -372,7 +423,6 @@ namespace GodotTools.Ides.Rider
         [Serializable]
         class ActiveApplication
         {
-            // ReSharper disable once InconsistentNaming
             public List<string> builds;
         }
 
@@ -380,6 +430,7 @@ namespace GodotTools.Ides.Rider
 
         public struct RiderInfo
         {
+            // ReSharper disable once NotAccessedField.Global
             public bool IsToolbox;
             public string Presentation;
             public Version BuildNumber;

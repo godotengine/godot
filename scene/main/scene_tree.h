@@ -36,14 +36,17 @@
 #include "core/os/thread_safe.h"
 #include "core/self_list.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
+#include "scene/resources/world_3d.h"
+
+#undef Window
 
 class PackedScene;
 class Node;
-class Viewport;
+class Window;
 class Material;
 class Mesh;
+class SceneDebugger;
 
 class SceneTreeTimer : public Reference {
 	GDCLASS(SceneTreeTimer, Reference);
@@ -75,22 +78,6 @@ class SceneTree : public MainLoop {
 public:
 	typedef void (*IdleCallback)();
 
-	enum StretchMode {
-
-		STRETCH_MODE_DISABLED,
-		STRETCH_MODE_2D,
-		STRETCH_MODE_VIEWPORT,
-	};
-
-	enum StretchAspect {
-
-		STRETCH_ASPECT_IGNORE,
-		STRETCH_ASPECT_KEEP,
-		STRETCH_ASPECT_KEEP_WIDTH,
-		STRETCH_ASPECT_KEEP_HEIGHT,
-		STRETCH_ASPECT_EXPAND,
-	};
-
 private:
 	struct Group {
 
@@ -100,7 +87,7 @@ private:
 		Group() { changed = false; };
 	};
 
-	Viewport *root;
+	Window *root;
 
 	uint64_t tree_version;
 	float physics_process_time;
@@ -118,15 +105,12 @@ private:
 	Map<StringName, Group> group_map;
 	bool _quit;
 	bool initialized;
-	bool input_handled;
 
-	Size2 last_screen_size;
 	StringName tree_changed_name;
 	StringName node_added_name;
 	StringName node_removed_name;
 	StringName node_renamed_name;
 
-	bool use_font_oversampling;
 	int64_t current_frame;
 	int64_t current_event;
 	int node_count;
@@ -146,17 +130,9 @@ private:
 	int call_lock;
 	Set<Node *> call_skip; //skip erased nodes
 
-	StretchMode stretch_mode;
-	StretchAspect stretch_aspect;
-	Size2i stretch_min;
-	real_t stretch_shrink;
-
-	void _update_font_oversampling(float p_ratio);
-	void _update_root_rect();
-
 	List<ObjectID> delete_queue;
 
-	Map<UGCall, Vector<Variant> > unique_group_calls;
+	Map<UGCall, Vector<Variant>> unique_group_calls;
 	bool ugc_locked;
 	void _flush_ugc();
 
@@ -180,7 +156,7 @@ private:
 	void _change_scene(Node *p_to);
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
-	List<Ref<SceneTreeTimer> > timers;
+	List<Ref<SceneTreeTimer>> timers;
 
 	///network///
 
@@ -207,51 +183,19 @@ private:
 	void make_group_changed(const StringName &p_group);
 
 	void _notify_group_pause(const StringName &p_group, int p_notification);
-	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input);
-	Variant _call_group_flags(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Variant _call_group(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
+	Variant _call_group(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	void _flush_delete_queue();
 	//optimization
 	friend class CanvasItem;
-	friend class Spatial;
+	friend class Node3D;
 	friend class Viewport;
 
 	SelfList<Node>::List xform_change_list;
 
-	friend class ScriptDebuggerRemote;
-#ifdef DEBUG_ENABLED
-
-	Map<int, NodePath> live_edit_node_path_cache;
-	Map<int, String> live_edit_resource_cache;
-
-	NodePath live_edit_root;
-	String live_edit_scene;
-
-	Map<String, Set<Node *> > live_scene_edit_cache;
-	Map<Node *, Map<ObjectID, Node *> > live_edit_remove_list;
-
-	void _debugger_request_tree();
-
-	void _live_edit_node_path_func(const NodePath &p_path, int p_id);
-	void _live_edit_res_path_func(const String &p_path, int p_id);
-
-	void _live_edit_node_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
-	void _live_edit_node_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
-	void _live_edit_node_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-	void _live_edit_res_set_func(int p_id, const StringName &p_prop, const Variant &p_value);
-	void _live_edit_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value);
-	void _live_edit_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE);
-	void _live_edit_root_func(const NodePath &p_scene_path, const String &p_scene_from);
-
-	void _live_edit_create_node_func(const NodePath &p_parent, const String &p_type, const String &p_name);
-	void _live_edit_instance_node_func(const NodePath &p_parent, const String &p_path, const String &p_name);
-	void _live_edit_remove_node_func(const NodePath &p_at);
-	void _live_edit_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_keep_id);
-	void _live_edit_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_at_pos);
-	void _live_edit_duplicate_node_func(const NodePath &p_at, const String &p_new_name);
-	void _live_edit_reparent_node_func(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
-
+#ifdef DEBUG_ENABLED // No live editor in release build.
+	friend class LiveEditor;
 #endif
 
 	enum {
@@ -261,6 +205,13 @@ private:
 	static IdleCallback idle_callbacks[MAX_IDLE_CALLBACKS];
 	static int idle_callback_count;
 	void _call_idle_callbacks();
+
+	void _main_window_focus_in();
+	void _main_window_close();
+	void _main_window_go_back();
+
+	//used by viewport
+	void _call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
 protected:
 	void _notification(int p_notification);
@@ -279,7 +230,7 @@ public:
 		GROUP_CALL_MULTILEVEL = 8,
 	};
 
-	_FORCE_INLINE_ Viewport *get_root() const { return root; }
+	_FORCE_INLINE_ Window *get_root() const { return root; }
 
 	void call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_LIST);
 	void notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification);
@@ -291,8 +242,6 @@ public:
 
 	void flush_transform_notifications();
 
-	virtual void input_text(const String &p_text);
-	virtual void input_event(const Ref<InputEvent> &p_event);
 	virtual void init();
 
 	virtual bool iteration(float p_time);
@@ -305,8 +254,6 @@ public:
 
 	void quit(int p_exit_code = -1);
 
-	void set_input_as_handled();
-	bool is_input_handled();
 	_FORCE_INLINE_ float get_physics_process_time() const { return physics_process_time; }
 	_FORCE_INLINE_ float get_idle_process_time() const { return idle_process_time; }
 
@@ -365,11 +312,6 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	bool has_group(const StringName &p_identifier) const;
 
-	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink = 1);
-
-	void set_use_font_oversampling(bool p_oversampling);
-	bool is_using_font_oversampling() const;
-
 	//void change_scene(const String& p_path);
 	//Node *get_loaded_scene();
 
@@ -389,8 +331,6 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
-	void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
-	void global_menu_action(const Variant &p_id, const Variant &p_meta);
 	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
 	//network API
@@ -411,12 +351,13 @@ public:
 	bool is_refusing_new_network_connections() const;
 
 	static void add_idle_callback(IdleCallback p_callback);
+
+	//default texture settings
+
 	SceneTree();
 	~SceneTree();
 };
 
-VARIANT_ENUM_CAST(SceneTree::StretchMode);
-VARIANT_ENUM_CAST(SceneTree::StretchAspect);
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
 
 #endif

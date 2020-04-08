@@ -122,7 +122,7 @@ void TextureButton::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			DrawMode draw_mode = get_draw_mode();
 
-			Ref<Texture> texdraw;
+			Ref<Texture2D> texdraw;
 
 			switch (draw_mode) {
 				case DRAW_NORMAL: {
@@ -252,11 +252,11 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureButton::get_stretch_mode);
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_texture", "get_normal_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_pressed_texture", "get_pressed_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_hover_texture", "get_hover_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_disabled_texture", "get_disabled_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_focused_texture", "get_focused_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_texture", "get_normal_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_pressed_texture", "get_pressed_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_hover_texture", "get_hover_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_disabled_texture", "get_disabled_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_focused_texture", "get_focused_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_click_mask", "get_click_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_expand", "get_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
@@ -270,24 +270,24 @@ void TextureButton::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
 }
 
-void TextureButton::set_normal_texture(const Ref<Texture> &p_normal) {
+void TextureButton::set_normal_texture(const Ref<Texture2D> &p_normal) {
 
 	normal = p_normal;
 	update();
 	minimum_size_changed();
 }
 
-void TextureButton::set_pressed_texture(const Ref<Texture> &p_pressed) {
+void TextureButton::set_pressed_texture(const Ref<Texture2D> &p_pressed) {
 
 	pressed = p_pressed;
 	update();
 }
-void TextureButton::set_hover_texture(const Ref<Texture> &p_hover) {
+void TextureButton::set_hover_texture(const Ref<Texture2D> &p_hover) {
 
 	hover = p_hover;
 	update();
 }
-void TextureButton::set_disabled_texture(const Ref<Texture> &p_disabled) {
+void TextureButton::set_disabled_texture(const Ref<Texture2D> &p_disabled) {
 
 	disabled = p_disabled;
 	update();
@@ -298,19 +298,19 @@ void TextureButton::set_click_mask(const Ref<BitMap> &p_click_mask) {
 	update();
 }
 
-Ref<Texture> TextureButton::get_normal_texture() const {
+Ref<Texture2D> TextureButton::get_normal_texture() const {
 
 	return normal;
 }
-Ref<Texture> TextureButton::get_pressed_texture() const {
+Ref<Texture2D> TextureButton::get_pressed_texture() const {
 
 	return pressed;
 }
-Ref<Texture> TextureButton::get_hover_texture() const {
+Ref<Texture2D> TextureButton::get_hover_texture() const {
 
 	return hover;
 }
-Ref<Texture> TextureButton::get_disabled_texture() const {
+Ref<Texture2D> TextureButton::get_disabled_texture() const {
 
 	return disabled;
 }
@@ -319,12 +319,12 @@ Ref<BitMap> TextureButton::get_click_mask() const {
 	return click_mask;
 }
 
-Ref<Texture> TextureButton::get_focused_texture() const {
+Ref<Texture2D> TextureButton::get_focused_texture() const {
 
 	return focused;
 };
 
-void TextureButton::set_focused_texture(const Ref<Texture> &p_focused) {
+void TextureButton::set_focused_texture(const Ref<Texture2D> &p_focused) {
 
 	focused = p_focused;
 };

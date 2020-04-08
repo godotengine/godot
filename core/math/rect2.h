@@ -47,28 +47,26 @@ struct Rect2 {
 
 	real_t get_area() const { return size.width * size.height; }
 
-	inline bool intersects(const Rect2 &p_rect) const {
-		if (position.x >= (p_rect.position.x + p_rect.size.width))
-			return false;
-		if ((position.x + size.width) <= p_rect.position.x)
-			return false;
-		if (position.y >= (p_rect.position.y + p_rect.size.height))
-			return false;
-		if ((position.y + size.height) <= p_rect.position.y)
-			return false;
-
-		return true;
-	}
-
-	inline bool intersects_touch(const Rect2 &p_rect) const {
-		if (position.x > (p_rect.position.x + p_rect.size.width))
-			return false;
-		if ((position.x + size.width) < p_rect.position.x)
-			return false;
-		if (position.y > (p_rect.position.y + p_rect.size.height))
-			return false;
-		if ((position.y + size.height) < p_rect.position.y)
-			return false;
+	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
+		if (p_include_borders) {
+			if (position.x > (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) < p_rect.position.x)
+				return false;
+			if (position.y > (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) < p_rect.position.y)
+				return false;
+		} else {
+			if (position.x >= (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) <= p_rect.position.x)
+				return false;
+			if (position.y >= (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) <= p_rect.position.y)
+				return false;
+		}
 
 		return true;
 	}
@@ -107,7 +105,7 @@ struct Rect2 {
 
 	bool intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const;
 
-	bool intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos = NULL, Point2 *r_normal = NULL) const;
+	bool intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos = nullptr, Point2 *r_normal = nullptr) const;
 
 	inline bool encloses(const Rect2 &p_rect) const {
 
@@ -385,6 +383,11 @@ struct Rect2i {
 
 		position = begin;
 		size = end - begin;
+	}
+
+	_FORCE_INLINE_ Rect2i abs() const {
+
+		return Rect2i(Point2i(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
 	}
 
 	operator String() const { return String(position) + ", " + String(size); }

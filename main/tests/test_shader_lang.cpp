@@ -37,7 +37,7 @@
 #include "core/print_string.h"
 #include "scene/gui/control.h"
 #include "scene/gui/text_edit.h"
-#include "servers/visual/shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 typedef ShaderLanguage SL;
 
@@ -163,6 +163,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 
 			//code+=dump_node_code(pnode->body,p_level);
 		} break;
+		case SL::Node::TYPE_STRUCT: {
+
+		} break;
 		case SL::Node::TYPE_FUNCTION: {
 
 		} break;
@@ -202,6 +205,9 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 			code = vnode->name;
 		} break;
 		case SL::Node::TYPE_ARRAY_DECLARATION: {
+			// FIXME: Implement
+		} break;
+		case SL::Node::TYPE_ARRAY_CONSTRUCT: {
 			// FIXME: Implement
 		} break;
 		case SL::Node::TYPE_CONSTANT: {
@@ -304,7 +310,7 @@ MainLoop *test() {
 	if (cmdlargs.empty()) {
 		//try editor!
 		print_line("usage: godot -test shader_lang <shader>");
-		return NULL;
+		return nullptr;
 	}
 
 	String test = cmdlargs.back()->get();
@@ -312,7 +318,7 @@ MainLoop *test() {
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
 
 	if (!fa) {
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	String code;
@@ -341,13 +347,13 @@ MainLoop *test() {
 	if (err) {
 
 		print_line("Error at line: " + rtos(sl.get_error_line()) + ": " + sl.get_error_text());
-		return NULL;
+		return nullptr;
 	} else {
 		String code2;
 		recreate_code(&code2, sl.get_shader());
 		print_line("code:\n\n" + code2);
 	}
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestShaderLang

@@ -34,7 +34,7 @@
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<description>
 				Returns the controller or anchor point's name if available.
@@ -52,6 +52,13 @@
 			</return>
 			<description>
 				Returns the world-space controller position.
+			</description>
+		</method>
+		<method name="get_tracker_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the internal tracker ID. This uniquely identifies the tracker per tracker type and matches the ID you need to specify for nodes such as the [ARVRController] and [ARVRAnchor] nodes.
 			</description>
 		</method>
 		<method name="get_tracks_orientation" qualifiers="const">

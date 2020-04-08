@@ -32,7 +32,9 @@
 
 #include "core/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
+#if defined(OPENGL_ENABLED)
 #import "gl_view.h"
+#endif
 #include "main/main.h"
 #include "os_iphone.h"
 
@@ -418,10 +420,12 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 OS::VideoMode _get_video_mode() {
 	int backingWidth;
 	int backingHeight;
+#if defined(OPENGL_ENABLED)
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
 	glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES,
 			GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+#endif
 
 	OS::VideoMode vm;
 	vm.fullscreen = true;
@@ -432,7 +436,7 @@ OS::VideoMode _get_video_mode() {
 };
 
 static int frame_count = 0;
-- (void)drawView:(GLView *)view;
+- (void)drawView:(UIView *)view;
 {
 
 	switch (frame_count) {
@@ -640,6 +644,7 @@ static int frame_count = 0;
 		return FALSE;
 	};
 
+#if defined(OPENGL_ENABLED)
 	// WARNING: We must *always* create the GLView after we have constructed the
 	// OS with iphone_main. This allows the GLView to access project settings so
 	// it can properly initialize the OpenGL context
@@ -648,7 +653,6 @@ static int frame_count = 0;
 
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
-	window.rootViewController = view_controller;
 
 	_set_keep_screen_on(bool(GLOBAL_DEF("display/window/energy_saving/keep_screen_on", true)) ? YES : NO);
 	glView.useCADisplayLink =
@@ -656,6 +660,13 @@ static int frame_count = 0;
 	printf("cadisaplylink: %d", glView.useCADisplayLink);
 	glView.animationInterval = 1.0 / kRenderingFrequency;
 	[glView startAnimation];
+#endif
+
+#if defined(VULKAN_ENABLED)
+	view_controller = [[ViewController alloc] init];
+#endif
+
+	window.rootViewController = view_controller;
 
 	// Show the window
 	[window makeKeyAndVisible];

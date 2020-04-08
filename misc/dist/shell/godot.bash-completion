@@ -105,7 +105,7 @@ _complete_godot_bash() {
   elif [[ $prev == "--video-driver" ]]; then
     local IFS=$' \n\t'
     # shellcheck disable=SC2207
-    COMPREPLY=($(compgen -W "GLES3 GLES2" -- "$cur"))
+    COMPREPLY=($(compgen -W "Vulkan GLES2" -- "$cur"))
   elif [[ $prev == "--path" || $prev == "--doctool" ]]; then
     local IFS=$'\n\t'
     # shellcheck disable=SC2207

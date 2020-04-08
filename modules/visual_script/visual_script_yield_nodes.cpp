@@ -99,7 +99,7 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
@@ -109,7 +109,7 @@ public:
 			SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 			if (!tree) {
 				r_error_str = "Main Loop is not SceneTree";
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				return 0;
 			}
 
@@ -188,7 +188,7 @@ void VisualScriptYield::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_wait_time"), &VisualScriptYield::get_wait_time);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Frame,Physics Frame,Time", PROPERTY_USAGE_NOEDITOR), "set_yield_mode", "get_yield_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "wait_time"), "set_wait_time", "get_wait_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wait_time"), "set_wait_time", "get_wait_time");
 
 	BIND_ENUM_CONSTANT(YIELD_FRAME);
 	BIND_ENUM_CONSTANT(YIELD_PHYSICS_FRAME);
@@ -228,7 +228,7 @@ bool VisualScriptYieldSignal::has_input_sequence_port() const {
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
-		return NULL;
+		return nullptr;
 
 	Ref<Script> scr = p_current_node->get_script();
 
@@ -241,7 +241,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 			return n;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 #endif
@@ -250,33 +250,33 @@ Node *VisualScriptYieldSignal::_get_base_node() const {
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
 	if (!script.is_valid())
-		return NULL;
+		return nullptr;
 
 	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree)
-		return NULL;
+		return nullptr;
 
 	Node *edited_scene = scene_tree->get_edited_scene_root();
 
 	if (!edited_scene)
-		return NULL;
+		return nullptr;
 
 	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node)
-		return NULL;
+		return nullptr;
 
 	if (!script_node->has_node(base_path))
-		return NULL;
+		return nullptr;
 
 	Node *path_to = script_node->get_node(base_path);
 
 	return path_to;
 #else
 
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -509,14 +509,14 @@ public:
 	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
 	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
-	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
 			return 0; //resuming yield
 		} else {
 			//yield
 
-			Object *object = NULL;
+			Object *object = nullptr;
 
 			switch (call_mode) {
 
@@ -529,14 +529,14 @@ public:
 
 					Node *node = Object::cast_to<Node>(instance->get_owner_ptr());
 					if (!node) {
-						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						r_error_str = "Base object is not a Node!";
 						return 0;
 					}
 
 					Node *another = node->get_node(node_path);
 					if (!another) {
-						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						r_error_str = "Path does not lead Node!";
 						return 0;
 					}
@@ -548,7 +548,7 @@ public:
 
 					object = *p_inputs[0];
 					if (!object) {
-						r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+						r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 						r_error_str = "Supplied instance input is null.";
 						return 0;
 					}

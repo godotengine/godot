@@ -82,7 +82,7 @@ void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/8_bit"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/mono"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "force/max_rate_hz", PROPERTY_HINT_EXP_RANGE, "11025,192000,1"), 44100));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "force/max_rate_hz", PROPERTY_HINT_EXP_RANGE, "11025,192000,1"), 44100));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/trim"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/loop"), false));
@@ -467,7 +467,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		is16 = false;
 	}
 
-	PoolVector<uint8_t> dst_data;
+	Vector<uint8_t> dst_data;
 	AudioStreamSample::Format dst_format;
 
 	if (compression == 1) {
@@ -490,8 +490,8 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				right.write[i] = data[i * 2 + 1];
 			}
 
-			PoolVector<uint8_t> bleft;
-			PoolVector<uint8_t> bright;
+			Vector<uint8_t> bleft;
+			Vector<uint8_t> bright;
 
 			_compress_ima_adpcm(left, bleft);
 			_compress_ima_adpcm(right, bright);
@@ -499,9 +499,9 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			int dl = bleft.size();
 			dst_data.resize(dl * 2);
 
-			PoolVector<uint8_t>::Write w = dst_data.write();
-			PoolVector<uint8_t>::Read rl = bleft.read();
-			PoolVector<uint8_t>::Read rr = bright.read();
+			uint8_t *w = dst_data.ptrw();
+			const uint8_t *rl = bleft.ptr();
+			const uint8_t *rr = bright.ptr();
 
 			for (int i = 0; i < dl; i++) {
 				w[i * 2 + 0] = rl[i];
@@ -514,7 +514,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		dst_format = is16 ? AudioStreamSample::FORMAT_16_BITS : AudioStreamSample::FORMAT_8_BITS;
 		dst_data.resize(data.size() * (is16 ? 2 : 1));
 		{
-			PoolVector<uint8_t>::Write w = dst_data.write();
+			uint8_t *w = dst_data.ptrw();
 
 			int ds = data.size();
 			for (int i = 0; i < ds; i++) {

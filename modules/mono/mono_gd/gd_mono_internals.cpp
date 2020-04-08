@@ -33,10 +33,12 @@
 #include "../csharp_script.h"
 #include "../mono_gc_handle.h"
 #include "../utils/macros.h"
-#include "../utils/thread_local.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
+
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 
 #include <mono/metadata/exception.h>
 
@@ -59,7 +61,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	GDMonoClass *native = GDMonoUtils::get_class_native_base(klass);
 
-	CRASH_COND(native == NULL);
+	CRASH_COND(native == nullptr);
 
 	if (native == klass) {
 		// If it's just a wrapper Godot class and not a custom inheriting class, then attach a
@@ -73,7 +75,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		script_binding.inited = true;
 		script_binding.type_name = NATIVE_GDMONOCLASS_NAME(klass);
 		script_binding.wrapper_class = klass;
-		script_binding.gchandle = ref ? MonoGCHandle::create_weak(managed) : MonoGCHandle::create_strong(managed);
+		script_binding.gchandle = ref ? MonoGCHandleData::new_weak_handle(managed) : MonoGCHandleData::new_strong_handle(managed);
 		script_binding.owner = unmanaged;
 
 		if (ref) {
@@ -99,15 +101,17 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		return;
 	}
 
-	Ref<MonoGCHandle> gchandle = ref ? MonoGCHandle::create_weak(managed) : MonoGCHandle::create_strong(managed);
+	MonoGCHandleData gchandle = ref ? MonoGCHandleData::new_weak_handle(managed) : MonoGCHandleData::new_strong_handle(managed);
 
 	Ref<CSharpScript> script = CSharpScript::create_for_managed_type(klass, native);
 
 	CRASH_COND(script.is_null());
 
-	ScriptInstance *si = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
+	CSharpInstance *csharp_instance = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
-	unmanaged->set_script_and_instance(script.get_ref_ptr(), si);
+	unmanaged->set_script_and_instance(script, csharp_instance);
+
+	csharp_instance->connect_event_signals();
 }
 
 void unhandled_exception(MonoException *p_exc) {
@@ -115,13 +119,13 @@ void unhandled_exception(MonoException *p_exc) {
 
 	if (GDMono::get_singleton()->get_unhandled_exception_policy() == GDMono::POLICY_TERMINATE_APP) {
 		// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders
-		GDMono::unhandled_exception_hook((MonoObject *)p_exc, NULL);
+		GDMono::unhandled_exception_hook((MonoObject *)p_exc, nullptr);
 		GD_UNREACHABLE();
 	} else {
 #ifdef DEBUG_ENABLED
 		GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
-		if (ScriptDebugger::get_singleton())
-			ScriptDebugger::get_singleton()->idle_poll();
+		if (EngineDebugger::is_active())
+			EngineDebugger::get_singleton()->poll_events(false);
 #endif
 	}
 }

@@ -32,56 +32,35 @@
 
 #include "mono_gd/gd_mono.h"
 
-uint32_t MonoGCHandle::new_strong_handle(MonoObject *p_object) {
-
-	return mono_gchandle_new(p_object, /* pinned: */ false);
-}
-
-uint32_t MonoGCHandle::new_strong_handle_pinned(MonoObject *p_object) {
-
-	return mono_gchandle_new(p_object, /* pinned: */ true);
-}
-
-uint32_t MonoGCHandle::new_weak_handle(MonoObject *p_object) {
-
-	return mono_gchandle_new_weakref(p_object, /* track_resurrection: */ false);
-}
-
-void MonoGCHandle::free_handle(uint32_t p_gchandle) {
-
-	mono_gchandle_free(p_gchandle);
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_strong(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(new_strong_handle(p_object), STRONG_HANDLE));
-}
-
-Ref<MonoGCHandle> MonoGCHandle::create_weak(MonoObject *p_object) {
-
-	return memnew(MonoGCHandle(new_weak_handle(p_object), WEAK_HANDLE));
-}
-
-void MonoGCHandle::release() {
-
+void MonoGCHandleData::release() {
 #ifdef DEBUG_ENABLED
-	CRASH_COND(!released && GDMono::get_singleton() == NULL);
+	CRASH_COND(handle && GDMono::get_singleton() == nullptr);
 #endif
 
-	if (!released && GDMono::get_singleton()->is_runtime_initialized()) {
-		free_handle(handle);
-		released = true;
+	if (handle && GDMono::get_singleton()->is_runtime_initialized()) {
+		GDMonoUtils::free_gchandle(handle);
+		handle = 0;
 	}
 }
 
-MonoGCHandle::MonoGCHandle(uint32_t p_handle, HandleType p_handle_type) {
-
-	released = false;
-	weak = p_handle_type == WEAK_HANDLE;
-	handle = p_handle;
+MonoGCHandleData MonoGCHandleData::new_strong_handle(MonoObject *p_object) {
+	return MonoGCHandleData(GDMonoUtils::new_strong_gchandle(p_object), gdmono::GCHandleType::STRONG_HANDLE);
 }
 
-MonoGCHandle::~MonoGCHandle() {
+MonoGCHandleData MonoGCHandleData::new_strong_handle_pinned(MonoObject *p_object) {
+	return MonoGCHandleData(GDMonoUtils::new_strong_gchandle_pinned(p_object), gdmono::GCHandleType::STRONG_HANDLE);
+}
 
-	release();
+MonoGCHandleData MonoGCHandleData::new_weak_handle(MonoObject *p_object) {
+	return MonoGCHandleData(GDMonoUtils::new_weak_gchandle(p_object), gdmono::GCHandleType::WEAK_HANDLE);
+}
+
+Ref<MonoGCHandleRef> MonoGCHandleRef::create_strong(MonoObject *p_object) {
+
+	return memnew(MonoGCHandleRef(MonoGCHandleData::new_strong_handle(p_object)));
+}
+
+Ref<MonoGCHandleRef> MonoGCHandleRef::create_weak(MonoObject *p_object) {
+
+	return memnew(MonoGCHandleRef(MonoGCHandleData::new_weak_handle(p_object)));
 }

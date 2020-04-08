@@ -129,9 +129,9 @@ class EditorFileSystem : public Node {
 
 		ItemAction() {
 			action = ACTION_NONE;
-			dir = NULL;
-			new_dir = NULL;
-			new_file = NULL;
+			dir = nullptr;
+			new_dir = nullptr;
+			new_file = nullptr;
 		}
 	};
 
@@ -240,7 +240,7 @@ class EditorFileSystem : public Node {
 
 	bool using_fat32_or_exfat; // Workaround for projects in FAT32 or exFAT filesystem (pendrives, most of the time)
 
-	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String> > &group_files, Set<String> &groups_to_reimport);
+	void _find_group_files(EditorFileSystemDirectory *efd, Map<String, Vector<String>> &group_files, Set<String> &groups_to_reimport);
 
 	void _move_group_files(EditorFileSystemDirectory *efd, const String &p_group_file, const String &p_new_location);
 

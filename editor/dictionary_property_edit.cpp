@@ -96,7 +96,7 @@ Node *DictionaryPropertyEdit::get_node() {
 
 	Object *o = ObjectDB::get_instance(obj);
 	if (!o)
-		return NULL;
+		return nullptr;
 
 	return cast_to<Node>(o);
 }
@@ -190,5 +190,4 @@ bool DictionaryPropertyEdit::_get(const StringName &p_name, Variant &r_ret) cons
 }
 
 DictionaryPropertyEdit::DictionaryPropertyEdit() {
-	obj = 0;
 }

@@ -32,7 +32,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
-void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, bool p_selectable) {
+void ItemList::add_item(const String &p_item, const Ref<Texture2D> &p_texture, bool p_selectable) {
 
 	Item item;
 	item.icon = p_texture;
@@ -51,7 +51,7 @@ void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, boo
 	shape_changed = true;
 }
 
-void ItemList::add_icon_item(const Ref<Texture> &p_item, bool p_selectable) {
+void ItemList::add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable) {
 
 	Item item;
 	item.icon = p_item;
@@ -110,7 +110,7 @@ String ItemList::get_item_tooltip(int p_idx) const {
 	return items[p_idx].tooltip;
 }
 
-void ItemList::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
+void ItemList::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -119,9 +119,9 @@ void ItemList::set_item_icon(int p_idx, const Ref<Texture> &p_icon) {
 	shape_changed = true;
 }
 
-Ref<Texture> ItemList::get_item_icon(int p_idx) const {
+Ref<Texture2D> ItemList::get_item_icon(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 
 	return items[p_idx].icon;
 }
@@ -201,7 +201,7 @@ Color ItemList::get_item_custom_fg_color(int p_idx) const {
 	return items[p_idx].custom_fg;
 }
 
-void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
+void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -209,9 +209,9 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
 	update();
 	shape_changed = true;
 }
-Ref<Texture> ItemList::get_item_tag_icon(int p_idx) const {
+Ref<Texture2D> ItemList::get_item_tag_icon(int p_idx) const {
 
-	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 
 	return items[p_idx].tag_icon;
 }
@@ -495,7 +495,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
-		Ref<StyleBox> bg = get_stylebox("bg");
+		Ref<StyleBox> bg = get_theme_stylebox("bg");
 		pos -= bg->get_offset();
 		pos.y += scroll_bar->get_value();
 
@@ -820,7 +820,7 @@ void ItemList::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<StyleBox> bg = get_stylebox("bg");
+		Ref<StyleBox> bg = get_theme_stylebox("bg");
 
 		int mw = scroll_bar->get_minimum_size().x;
 		scroll_bar->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -mw);
@@ -837,18 +837,18 @@ void ItemList::_notification(int p_what) {
 
 		draw_style_box(bg, Rect2(Point2(), size));
 
-		int hseparation = get_constant("hseparation");
-		int vseparation = get_constant("vseparation");
-		int icon_margin = get_constant("icon_margin");
-		int line_separation = get_constant("line_separation");
+		int hseparation = get_theme_constant("hseparation");
+		int vseparation = get_theme_constant("vseparation");
+		int icon_margin = get_theme_constant("icon_margin");
+		int line_separation = get_theme_constant("line_separation");
 
-		Ref<StyleBox> sbsel = has_focus() ? get_stylebox("selected_focus") : get_stylebox("selected");
-		Ref<StyleBox> cursor = has_focus() ? get_stylebox("cursor") : get_stylebox("cursor_unfocused");
+		Ref<StyleBox> sbsel = has_focus() ? get_theme_stylebox("selected_focus") : get_theme_stylebox("selected");
+		Ref<StyleBox> cursor = has_focus() ? get_theme_stylebox("cursor") : get_theme_stylebox("cursor_unfocused");
 
-		Ref<Font> font = get_font("font");
-		Color guide_color = get_color("guide_color");
-		Color font_color = get_color("font_color");
-		Color font_color_selected = get_color("font_color_selected");
+		Ref<Font> font = get_theme_font("font");
+		Color guide_color = get_theme_color("guide_color");
+		Color font_color = get_theme_color("font_color");
+		Color font_color_selected = get_theme_color("font_color_selected");
 		int font_height = font->get_height();
 		Vector<int> line_size_cache;
 		Vector<int> line_limit_cache;
@@ -859,9 +859,9 @@ void ItemList::_notification(int p_what) {
 		}
 
 		if (has_focus()) {
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
-			draw_style_box(get_stylebox("bg_focus"), Rect2(Point2(), size));
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
+			draw_style_box(get_theme_stylebox("bg_focus"), Rect2(Point2(), size));
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 		}
 
 		if (shape_changed) {
@@ -1251,7 +1251,7 @@ void ItemList::_scroll_changed(double) {
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_stylebox("bg");
+	Ref<StyleBox> bg = get_theme_stylebox("bg");
 	pos -= bg->get_offset();
 	pos.y += scroll_bar->get_value();
 
@@ -1286,7 +1286,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 		return true;
 
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_stylebox("bg");
+	Ref<StyleBox> bg = get_theme_stylebox("bg");
 	pos -= bg->get_offset();
 	pos.y += scroll_bar->get_value();
 
@@ -1398,7 +1398,7 @@ void ItemList::_set_items(const Array &p_items) {
 	for (int i = 0; i < p_items.size(); i += 3) {
 
 		String text = p_items[i + 0];
-		Ref<Texture> icon = p_items[i + 1];
+		Ref<Texture2D> icon = p_items[i + 1];
 		bool disabled = p_items[i + 2];
 
 		int idx = get_item_count();
@@ -1542,7 +1542,6 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_v_scroll"), &ItemList::get_v_scroll);
 
-	ClassDB::bind_method(D_METHOD("_scroll_changed"), &ItemList::_scroll_changed);
 	ClassDB::bind_method(D_METHOD("_gui_input"), &ItemList::_gui_input);
 
 	ClassDB::bind_method(D_METHOD("_set_items"), &ItemList::_set_items);
@@ -1561,7 +1560,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_column_width", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), "set_fixed_column_width", "get_fixed_column_width");
 	ADD_GROUP("Icon", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_mode", PROPERTY_HINT_ENUM, "Top,Left"), "set_icon_mode", "get_icon_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "icon_scale"), "set_icon_scale", "get_icon_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "icon_scale"), "set_icon_scale", "get_icon_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fixed_icon_size"), "set_fixed_icon_size", "get_fixed_icon_size");
 
 	BIND_ENUM_CONSTANT(ICON_MODE_TOP);
@@ -1599,7 +1598,7 @@ ItemList::ItemList() {
 	add_child(scroll_bar);
 
 	shape_changed = true;
-	scroll_bar->connect("value_changed", this, "_scroll_changed");
+	scroll_bar->connect("value_changed", callable_mp(this, &ItemList::_scroll_changed));
 
 	set_focus_mode(FOCUS_ALL);
 	current_columns = 1;

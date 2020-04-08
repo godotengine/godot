@@ -61,8 +61,8 @@ class StringName {
 		_Data *prev;
 		_Data *next;
 		_Data() {
-			cname = NULL;
-			next = prev = NULL;
+			cname = nullptr;
+			next = prev = nullptr;
 			idx = 0;
 			hash = 0;
 		}
@@ -82,7 +82,7 @@ class StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 
-	static Mutex *lock;
+	static Mutex mutex;
 	static void setup();
 	static void cleanup();
 	static bool configured;

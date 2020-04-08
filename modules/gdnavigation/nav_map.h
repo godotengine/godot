@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  rvo_space.h                                                          */
+/*  nav_map.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,6 +104,10 @@ public:
 	gd::PointKey get_point_key(const Vector3 &p_pos) const;
 
 	Vector<Vector3> get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize) const;
+	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const;
+	Vector3 get_closest_point(const Vector3 &p_point) const;
+	Vector3 get_closest_point_normal(const Vector3 &p_point) const;
+	RID get_closest_point_owner(const Vector3 &p_point) const;
 
 	void add_region(NavRegion *p_region);
 	void remove_region(NavRegion *p_region);

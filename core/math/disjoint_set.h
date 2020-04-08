@@ -152,4 +152,4 @@ void DisjointSet<T, C, AL>::get_members(Vector<T> &out_members, T representative
 	}
 }
 
-#endif
+#endif // DISJOINT_SET_H

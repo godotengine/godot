@@ -131,13 +131,14 @@ void PluginConfigDialog::_on_required_text_changed(const String &) {
 
 void PluginConfigDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_READY: {
-			connect("confirmed", this, "_on_confirmed");
-			get_cancel()->connect("pressed", this, "_on_cancelled");
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				name_edit->grab_focus();
+			}
 		} break;
-
-		case NOTIFICATION_POST_POPUP: {
-			name_edit->grab_focus();
+		case NOTIFICATION_READY: {
+			connect("confirmed", callable_mp(this, &PluginConfigDialog::_on_confirmed));
+			get_cancel()->connect("pressed", callable_mp(this, &PluginConfigDialog::_on_cancelled));
 		} break;
 	}
 }
@@ -175,9 +176,6 @@ void PluginConfigDialog::config(const String &p_config_path) {
 }
 
 void PluginConfigDialog::_bind_methods() {
-	ClassDB::bind_method("_on_required_text_changed", &PluginConfigDialog::_on_required_text_changed);
-	ClassDB::bind_method("_on_confirmed", &PluginConfigDialog::_on_confirmed);
-	ClassDB::bind_method("_on_cancelled", &PluginConfigDialog::_on_cancelled);
 	ADD_SIGNAL(MethodInfo("plugin_ready", PropertyInfo(Variant::STRING, "script_path", PROPERTY_HINT_NONE, ""), PropertyInfo(Variant::STRING, "activate_name")));
 }
 
@@ -194,7 +192,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(name_lb);
 
 	name_edit = memnew(LineEdit);
-	name_edit->connect("text_changed", this, "_on_required_text_changed");
+	name_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	name_edit->set_placeholder("MyPlugin");
 	grid->add_child(name_edit);
 
@@ -253,7 +251,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_lb);
 
 	script_edit = memnew(LineEdit);
-	script_edit->connect("text_changed", this, "_on_required_text_changed");
+	script_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
 	grid->add_child(script_edit);
 

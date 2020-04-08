@@ -78,6 +78,9 @@ public:
 
 	void set_no_delay(bool p_enabled);
 
+	// Poll functions (wait or check for writable, readable)
+	Error poll(NetSocket::PollType p_type, int timeout = 0);
+
 	// Read/Write from StreamPeer
 	Error put_data(const uint8_t *p_data, int p_bytes);
 	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
@@ -90,4 +93,4 @@ public:
 
 VARIANT_ENUM_CAST(StreamPeerTCP::Status);
 
-#endif
+#endif // STREAM_PEER_TCP_H

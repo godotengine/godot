@@ -42,10 +42,10 @@ class Translation : public Resource {
 	String locale;
 	Map<StringName, StringName> translation_map;
 
-	PoolVector<String> _get_message_list() const;
+	Vector<String> _get_message_list() const;
 
-	PoolVector<String> _get_messages() const;
-	void _set_messages(const PoolVector<String> &p_messages);
+	Vector<String> _get_messages() const;
+	void _set_messages(const Vector<String> &p_messages);
 
 protected:
 	static void _bind_methods();
@@ -71,8 +71,9 @@ class TranslationServer : public Object {
 	String locale;
 	String fallback;
 
-	Set<Ref<Translation> > translations;
+	Set<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
+	Ref<Translation> doc_translation;
 
 	Map<String, String> locale_name_map;
 
@@ -109,6 +110,8 @@ public:
 
 	void set_tool_translation(const Ref<Translation> &p_translation);
 	StringName tool_translate(const StringName &p_message) const;
+	void set_doc_translation(const Ref<Translation> &p_translation);
+	StringName doc_translate(const StringName &p_message) const;
 
 	void setup();
 

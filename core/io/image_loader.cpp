@@ -100,7 +100,7 @@ ImageFormatLoader *ImageLoader::recognize(const String &p_extension) {
 			return loader[i];
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 Vector<ImageFormatLoader *> ImageLoader::loader;
@@ -129,7 +129,7 @@ void ImageLoader::cleanup() {
 
 /////////////////
 
-RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderImage::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {

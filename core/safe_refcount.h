@@ -208,4 +208,4 @@ public:
 	}
 };
 
-#endif
+#endif // SAFE_REFCOUNT_H

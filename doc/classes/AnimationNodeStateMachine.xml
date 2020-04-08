@@ -18,7 +18,7 @@
 		<method name="add_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
@@ -31,9 +31,9 @@
 		<method name="add_transition">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
-			<argument index="1" name="to" type="String">
+			<argument index="1" name="to" type="StringName">
 			</argument>
 			<argument index="2" name="transition" type="AnimationNodeStateMachineTransition">
 			</argument>
@@ -58,14 +58,14 @@
 		<method name="get_node" qualifiers="const">
 			<return type="AnimationNode">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the animation node with the given name.
 			</description>
 		</method>
 		<method name="get_node_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="node" type="AnimationNode">
 			</argument>
@@ -76,7 +76,7 @@
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the given node's coordinates. Used for display in the editor.
@@ -106,7 +106,7 @@
 			</description>
 		</method>
 		<method name="get_transition_from" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -115,7 +115,7 @@
 			</description>
 		</method>
 		<method name="get_transition_to" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -126,7 +126,7 @@
 		<method name="has_node" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the graph contains the given node.
@@ -135,9 +135,9 @@
 		<method name="has_transition" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
-			<argument index="1" name="to" type="String">
+			<argument index="1" name="to" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if there is a transition between the given nodes.
@@ -146,7 +146,7 @@
 		<method name="remove_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Deletes the given node from the graph.
@@ -155,9 +155,9 @@
 		<method name="remove_transition">
 			<return type="void">
 			</return>
-			<argument index="0" name="from" type="String">
+			<argument index="0" name="from" type="StringName">
 			</argument>
-			<argument index="1" name="to" type="String">
+			<argument index="1" name="to" type="StringName">
 			</argument>
 			<description>
 				Deletes the transition between the two specified nodes.
@@ -175,18 +175,28 @@
 		<method name="rename_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="new_name" type="String">
+			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
 				Renames the given node.
 			</description>
 		</method>
+		<method name="replace_node">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="node" type="AnimationNode">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_end_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Sets the given node as the graph end point.
@@ -204,7 +214,7 @@
 		<method name="set_node_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="position" type="Vector2">
 			</argument>
@@ -215,7 +225,7 @@
 		<method name="set_start_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Sets the given node as the graph start point.

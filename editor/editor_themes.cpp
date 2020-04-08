@@ -41,7 +41,7 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
-static Ref<StyleBoxTexture> make_stylebox(Ref<Texture> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
+static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left, float p_top, float p_right, float p_botton, float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_botton = -1, bool p_draw_center = true) {
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
 	style->set_margin_size(MARGIN_LEFT, p_left * EDSCALE);
@@ -90,19 +90,13 @@ Ref<ImageTexture> editor_generate_icon(int p_index, bool p_convert_color, float 
 	Ref<ImageTexture> icon = memnew(ImageTexture);
 	Ref<Image> img = memnew(Image);
 
-	// dumb gizmo check
-	bool is_gizmo = String(editor_icons_names[p_index]).begins_with("Gizmo");
-
 	// Upsample icon generation only if the editor scale isn't an integer multiplier.
 	// Generating upsampled icons is slower, and the benefit is hardly visible
 	// with integer editor scales.
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
 	ImageLoaderSVG::create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_color);
 
-	if ((p_scale - (float)((int)p_scale)) > 0.0 || is_gizmo || p_force_filter)
-		icon->create_from_image(img); // in this case filter really helps
-	else
-		icon->create_from_image(img, 0);
+	icon->create_from_image(img); // in this case filter really helps
 
 	return icon;
 }
@@ -193,8 +187,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		exceptions.insert("EditorHandle");
 		exceptions.insert("Editor3DHandle");
 		exceptions.insert("Godot");
-		exceptions.insert("PanoramaSky");
-		exceptions.insert("ProceduralSky");
+		exceptions.insert("Sky");
 		exceptions.insert("EditorControlAnchor");
 		exceptions.insert("DefaultProjectIcon");
 		exceptions.insert("GuiCloseCustomizable");
@@ -255,7 +248,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		}
 	}
 
-	ImageLoaderSVG::set_convert_colors(NULL);
+	ImageLoaderSVG::set_convert_colors(nullptr);
 #else
 	WARN_PRINT("SVG support disabled, editor icons won't be rendered.");
 #endif
@@ -412,6 +405,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("error_color", "Editor", error_color);
 	theme->set_color("property_color", "Editor", property_color);
 
+	if (!dark_theme) {
+		theme->set_color("vulkan_color", "Editor", Color::hex(0xad1128ff));
+	} else {
+		theme->set_color("vulkan_color", "Editor", Color(1.0, 0.0, 0.0));
+	}
 	const int thumb_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 	theme->set_constant("scale", "Editor", EDSCALE);
 	theme->set_constant("thumb_size", "Editor", thumb_size);
@@ -420,7 +418,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	//Register icons + font
 
 	// the resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons
-	if (p_theme != NULL && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
+	if (p_theme != nullptr && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
 		// register already generated icons
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
@@ -429,7 +427,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		editor_register_and_generate_icons(theme, dark_theme, thumb_size);
 	}
 	// thumbnail size has changed, so we regenerate the medium sizes
-	if (p_theme != NULL && fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
+	if (p_theme != nullptr && fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
 		editor_register_and_generate_icons(p_theme, dark_theme, thumb_size, true);
 	}
 
@@ -853,12 +851,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_panel_debugger = style_content_panel->duplicate();
 	style_panel_debugger->set_border_width(MARGIN_BOTTOM, 0);
 	theme->set_stylebox("DebuggerPanel", "EditorStyles", style_panel_debugger);
-	theme->set_stylebox("DebuggerTabFG", "EditorStyles", style_tab_selected);
-	theme->set_stylebox("DebuggerTabBG", "EditorStyles", style_tab_unselected);
 
 	Ref<StyleBoxFlat> style_panel_invisible_top = style_content_panel->duplicate();
 	int stylebox_offset = theme->get_font("tab_fg", "TabContainer")->get_height() + theme->get_stylebox("tab_fg", "TabContainer")->get_minimum_size().height + theme->get_stylebox("panel", "TabContainer")->get_default_margin(MARGIN_TOP);
 	style_panel_invisible_top->set_expand_margin_size(MARGIN_TOP, -stylebox_offset);
+	style_panel_invisible_top->set_default_margin(MARGIN_TOP, 0);
 	theme->set_stylebox("BottomPanelDebuggerOverride", "EditorStyles", style_panel_invisible_top);
 
 	// LineEdit
@@ -913,14 +910,17 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_window->set_border_color(tab_color);
 	style_window->set_border_width(MARGIN_TOP, 24 * EDSCALE);
 	style_window->set_expand_margin_size(MARGIN_TOP, 24 * EDSCALE);
-	theme->set_stylebox("panel", "WindowDialog", style_window);
-	theme->set_color("title_color", "WindowDialog", font_color);
-	theme->set_icon("close", "WindowDialog", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_icon("close_highlight", "WindowDialog", theme->get_icon("GuiClose", "EditorIcons"));
-	theme->set_constant("close_h_ofs", "WindowDialog", 22 * EDSCALE);
-	theme->set_constant("close_v_ofs", "WindowDialog", 20 * EDSCALE);
-	theme->set_constant("title_height", "WindowDialog", 24 * EDSCALE);
-	theme->set_font("title_font", "WindowDialog", theme->get_font("title", "EditorFonts"));
+
+	theme->set_stylebox("panel", "Window", style_default);
+	theme->set_stylebox("panel_window", "Window", style_window);
+	theme->set_color("title_color", "Window", font_color);
+	theme->set_icon("close", "Window", theme->get_icon("GuiClose", "EditorIcons"));
+	theme->set_icon("close_highlight", "Window", theme->get_icon("GuiClose", "EditorIcons"));
+	theme->set_constant("close_h_ofs", "Window", 22 * EDSCALE);
+	theme->set_constant("close_v_ofs", "Window", 20 * EDSCALE);
+	theme->set_constant("title_height", "Window", 24 * EDSCALE);
+	theme->set_constant("resize_margin", "Window", 4 * EDSCALE);
+	theme->set_font("title_font", "Window", theme->get_font("title", "EditorFonts"));
 
 	// complex window, for now only Editor settings and Project settings
 	Ref<StyleBoxFlat> style_complex_window = style_window->duplicate();
@@ -931,7 +931,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "EditorAbout", style_complex_window);
 
 	// HScrollBar
-	Ref<Texture> empty_icon = memnew(ImageTexture);
+	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
 	theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
 	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
@@ -981,6 +981,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
+	theme->set_stylebox("panel_fg", "Panel", style_default);
 
 	// Label
 	theme->set_stylebox("normal", "Label", style_empty);
@@ -994,6 +995,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// LinkButton
 	theme->set_stylebox("focus", "LinkButton", style_empty);
 	theme->set_color("font_color", "LinkButton", font_color);
+	theme->set_color("font_color_hover", "LinkButton", font_color_hl);
+	theme->set_color("font_color_pressed", "LinkButton", accent_color);
+	theme->set_color("font_color_disabled", "LinkButton", font_color_disabled);
 
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();

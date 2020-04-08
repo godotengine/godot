@@ -31,26 +31,24 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
+#include "core/input/input_filter.h"
 #include "drivers/dummy/texture_loader_dummy.h"
 #include "drivers/unix/os_unix.h"
-#include "main/input_default.h"
 #ifdef __APPLE__
 #include "platform/osx/crash_handler_osx.h"
-#include "platform/osx/power_osx.h"
 #include "platform/osx/semaphore_osx.h"
 #else
-#include "platform/x11/crash_handler_x11.h"
-#include "platform/x11/power_x11.h"
+#include "platform/x11/crash_handler_linuxbsd.h"
 #endif
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering_server.h"
 
 #undef CursorShape
 
 class OS_Server : public OS_Unix {
 
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	VideoMode current_videomode;
 	List<String> args;
 	MainLoop *main_loop;
@@ -62,12 +60,6 @@ class OS_Server : public OS_Unix {
 	bool force_quit;
 
 	InputDefault *input;
-
-#ifdef __APPLE__
-	PowerOSX *power_manager;
-#else
-	PowerX11 *power_manager;
-#endif
 
 	CrashHandler crash_handler;
 
@@ -112,9 +104,6 @@ public:
 
 	void run();
 
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 	virtual bool _check_internal_feature_support(const String &p_feature);
 
 	virtual String get_config_path() const;

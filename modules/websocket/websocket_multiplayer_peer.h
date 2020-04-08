@@ -41,7 +41,7 @@ class WebSocketMultiplayerPeer : public NetworkedMultiplayerPeer {
 	GDCLASS(WebSocketMultiplayerPeer, NetworkedMultiplayerPeer);
 
 private:
-	PoolVector<uint8_t> _make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
+	Vector<uint8_t> _make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
 	void _store_pkt(int32_t p_source, int32_t p_dest, const uint8_t *p_data, uint32_t p_data_size);
 	Error _server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size);
 
@@ -63,7 +63,7 @@ protected:
 	};
 
 	List<Packet> _incoming_packets;
-	Map<int, Ref<WebSocketPeer> > _peer_map;
+	Map<int, Ref<WebSocketPeer>> _peer_map;
 	Packet _current_packet;
 
 	bool _is_multiplayer;

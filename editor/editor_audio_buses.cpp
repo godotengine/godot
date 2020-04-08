@@ -30,8 +30,8 @@
 
 #include "editor_audio_buses.h"
 
+#include "core/input/input_filter.h"
 #include "core/io/resource_saver.h"
-#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor_node.h"
 #include "editor_scale.h"
@@ -69,27 +69,27 @@ void EditorAudioBus::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 			for (int i = 0; i < CHANNELS_MAX; i++) {
-				channel[i].vu_l->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
-				channel[i].vu_l->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
-				channel[i].vu_r->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
-				channel[i].vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
+				channel[i].vu_l->set_under_texture(get_theme_icon("BusVuEmpty", "EditorIcons"));
+				channel[i].vu_l->set_progress_texture(get_theme_icon("BusVuFull", "EditorIcons"));
+				channel[i].vu_r->set_under_texture(get_theme_icon("BusVuEmpty", "EditorIcons"));
+				channel[i].vu_r->set_progress_texture(get_theme_icon("BusVuFull", "EditorIcons"));
 				channel[i].prev_active = true;
 			}
 
-			disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
+			disabled_vu = get_theme_icon("BusVuFrozen", "EditorIcons");
 
 			Color solo_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
 			Color mute_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
 			Color bypass_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
 
-			solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
-			solo->add_color_override("icon_color_pressed", solo_color);
-			mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
-			mute->add_color_override("icon_color_pressed", mute_color);
-			bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
-			bypass->add_color_override("icon_color_pressed", bypass_color);
+			solo->set_icon(get_theme_icon("AudioBusSolo", "EditorIcons"));
+			solo->add_theme_color_override("icon_color_pressed", solo_color);
+			mute->set_icon(get_theme_icon("AudioBusMute", "EditorIcons"));
+			mute->add_theme_color_override("icon_color_pressed", mute_color);
+			bypass->set_icon(get_theme_icon("AudioBusBypass", "EditorIcons"));
+			bypass->add_theme_color_override("icon_color_pressed", bypass_color);
 
-			bus_options->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+			bus_options->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
 
 			update_bus();
 			set_process(true);
@@ -97,15 +97,15 @@ void EditorAudioBus::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 
 			if (is_master) {
-				draw_style_box(get_stylebox("disabled", "Button"), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox("disabled", "Button"), Rect2(Vector2(), get_size()));
 			} else if (has_focus()) {
-				draw_style_box(get_stylebox("focus", "Button"), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox("focus", "Button"), Rect2(Vector2(), get_size()));
 			} else {
-				draw_style_box(get_stylebox("panel", "TabContainer"), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox("panel", "TabContainer"), Rect2(Vector2(), get_size()));
 			}
 
 			if (get_index() != 0 && hovering_drop) {
-				Color accent = get_color("accent_color", "Editor");
+				Color accent = get_theme_color("accent_color", "Editor");
 				accent.a *= 0.7;
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}
@@ -144,8 +144,8 @@ void EditorAudioBus::_notification(int p_what) {
 
 				if (activity_found != channel[i].prev_active) {
 					if (activity_found) {
-						channel[i].vu_l->set_over_texture(Ref<Texture>());
-						channel[i].vu_r->set_over_texture(Ref<Texture>());
+						channel[i].vu_l->set_over_texture(Ref<Texture2D>());
+						channel[i].vu_r->set_over_texture(Ref<Texture2D>());
 					} else {
 						channel[i].vu_l->set_over_texture(disabled_vu);
 						channel[i].vu_r->set_over_texture(disabled_vu);
@@ -168,20 +168,20 @@ void EditorAudioBus::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			for (int i = 0; i < CHANNELS_MAX; i++) {
-				channel[i].vu_l->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
-				channel[i].vu_l->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
-				channel[i].vu_r->set_under_texture(get_icon("BusVuEmpty", "EditorIcons"));
-				channel[i].vu_r->set_progress_texture(get_icon("BusVuFull", "EditorIcons"));
+				channel[i].vu_l->set_under_texture(get_theme_icon("BusVuEmpty", "EditorIcons"));
+				channel[i].vu_l->set_progress_texture(get_theme_icon("BusVuFull", "EditorIcons"));
+				channel[i].vu_r->set_under_texture(get_theme_icon("BusVuEmpty", "EditorIcons"));
+				channel[i].vu_r->set_progress_texture(get_theme_icon("BusVuFull", "EditorIcons"));
 				channel[i].prev_active = true;
 			}
 
-			disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
+			disabled_vu = get_theme_icon("BusVuFrozen", "EditorIcons");
 
-			solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
-			mute->set_icon(get_icon("AudioBusMute", "EditorIcons"));
-			bypass->set_icon(get_icon("AudioBusBypass", "EditorIcons"));
+			solo->set_icon(get_theme_icon("AudioBusSolo", "EditorIcons"));
+			mute->set_icon(get_theme_icon("AudioBusMute", "EditorIcons"));
+			bypass->set_icon(get_theme_icon("AudioBusBypass", "EditorIcons"));
 
-			bus_options->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
+			bus_options->set_icon(get_theme_icon("GuiTabMenu", "EditorIcons"));
 		} break;
 		case NOTIFICATION_MOUSE_EXIT:
 		case NOTIFICATION_DRAG_END: {
@@ -325,7 +325,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	const float p_db = this->_normalized_volume_to_scaled_db(p_normalized);
 
-	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+	if (InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 		// Snap the value when holding Ctrl for easier editing.
 		// To do so, it needs to be converted back to normalized volume (as the slider uses that unit).
 		slider->set_value(_scaled_db_to_normalized_volume(Math::round(p_db)));
@@ -386,7 +386,7 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 void EditorAudioBus::_show_value(float slider_value) {
 
 	float db;
-	if (Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+	if (InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 		// Display the correct (snapped) value when holding Ctrl
 		db = Math::round(_normalized_volume_to_scaled_db(slider_value));
 	} else {
@@ -549,7 +549,7 @@ void EditorAudioBus::_effect_add(int p_which) {
 void EditorAudioBus::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
 		accept_event();
 		emit_signal("delete_request");
 	}
@@ -586,7 +586,7 @@ Variant EditorAudioBus::get_drag_data(const Point2 &p_point) {
 	Panel *p = memnew(Panel);
 	c->add_child(p);
 	p->set_modulate(Color(1, 1, 1, 0.7));
-	p->add_style_override("panel", get_stylebox("focus", "Button"));
+	p->add_theme_style_override("panel", get_theme_stylebox("focus", "Button"));
 	p->set_size(get_size());
 	p->set_position(-p_point);
 	set_drag_preview(c);
@@ -757,25 +757,10 @@ void EditorAudioBus::_bind_methods() {
 
 	ClassDB::bind_method("update_bus", &EditorAudioBus::update_bus);
 	ClassDB::bind_method("update_send", &EditorAudioBus::update_send);
-	ClassDB::bind_method("_name_changed", &EditorAudioBus::_name_changed);
-	ClassDB::bind_method("_volume_changed", &EditorAudioBus::_volume_changed);
-	ClassDB::bind_method("_show_value", &EditorAudioBus::_show_value);
-	ClassDB::bind_method("_hide_value_preview", &EditorAudioBus::_hide_value_preview);
-	ClassDB::bind_method("_solo_toggled", &EditorAudioBus::_solo_toggled);
-	ClassDB::bind_method("_mute_toggled", &EditorAudioBus::_mute_toggled);
-	ClassDB::bind_method("_bypass_toggled", &EditorAudioBus::_bypass_toggled);
-	ClassDB::bind_method("_name_focus_exit", &EditorAudioBus::_name_focus_exit);
-	ClassDB::bind_method("_send_selected", &EditorAudioBus::_send_selected);
-	ClassDB::bind_method("_effect_edited", &EditorAudioBus::_effect_edited);
-	ClassDB::bind_method("_effect_selected", &EditorAudioBus::_effect_selected);
-	ClassDB::bind_method("_effect_add", &EditorAudioBus::_effect_add);
 	ClassDB::bind_method("_gui_input", &EditorAudioBus::_gui_input);
-	ClassDB::bind_method("_bus_popup_pressed", &EditorAudioBus::_bus_popup_pressed);
 	ClassDB::bind_method("get_drag_data_fw", &EditorAudioBus::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &EditorAudioBus::can_drop_data_fw);
 	ClassDB::bind_method("drop_data_fw", &EditorAudioBus::drop_data_fw);
-	ClassDB::bind_method("_delete_effect_pressed", &EditorAudioBus::_delete_effect_pressed);
-	ClassDB::bind_method("_effect_rmb", &EditorAudioBus::_effect_rmb);
 
 	ADD_SIGNAL(MethodInfo("duplicate_request"));
 	ADD_SIGNAL(MethodInfo("delete_request"));
@@ -799,8 +784,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
 	track_name = memnew(LineEdit);
-	track_name->connect("text_entered", this, "_name_changed");
-	track_name->connect("focus_exited", this, "_name_focus_exit");
+	track_name->connect("text_entered", callable_mp(this, &EditorAudioBus::_name_changed));
+	track_name->connect("focus_exited", callable_mp(this, &EditorAudioBus::_name_focus_exit));
 	vb->add_child(track_name);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
@@ -809,19 +794,19 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	solo->set_toggle_mode(true);
 	solo->set_tooltip(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
-	solo->connect("pressed", this, "_solo_toggled");
+	solo->connect("pressed", callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(ToolButton);
 	mute->set_toggle_mode(true);
 	mute->set_tooltip(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
-	mute->connect("pressed", this, "_mute_toggled");
+	mute->connect("pressed", callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(ToolButton);
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
-	bypass->connect("pressed", this, "_bypass_toggled");
+	bypass->connect("pressed", callable_mp(this, &EditorAudioBus::_bypass_toggled));
 	hbc->add_child(bypass);
 	hbc->add_spacer();
 
@@ -834,10 +819,10 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	Ref<StyleBoxEmpty> sbempty = memnew(StyleBoxEmpty);
 	for (int i = 0; i < hbc->get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(hbc->get_child(i));
-		child->add_style_override("normal", sbempty);
-		child->add_style_override("hover", sbempty);
-		child->add_style_override("focus", sbempty);
-		child->add_style_override("pressed", sbempty);
+		child->add_theme_style_override("normal", sbempty);
+		child->add_theme_style_override("hover", sbempty);
+		child->add_theme_style_override("focus", sbempty);
+		child->add_theme_style_override("pressed", sbempty);
 	}
 
 	HSeparator *separator = memnew(HSeparator);
@@ -869,7 +854,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	audio_value_preview_box->set_as_toplevel(true);
 	Ref<StyleBoxFlat> panel_style = memnew(StyleBoxFlat);
 	panel_style->set_bg_color(Color(0.0f, 0.0f, 0.0f, 0.8f));
-	audio_value_preview_box->add_style_override("panel", panel_style);
+	audio_value_preview_box->add_theme_style_override("panel", panel_style);
 	audio_value_preview_box->set_mouse_filter(MOUSE_FILTER_PASS);
 	audio_value_preview_box->hide();
 
@@ -878,9 +863,9 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	preview_timer->set_one_shot(true);
 	add_child(preview_timer);
 
-	slider->connect("value_changed", this, "_volume_changed");
-	slider->connect("value_changed", this, "_show_value");
-	preview_timer->connect("timeout", this, "_hide_value_preview");
+	slider->connect("value_changed", callable_mp(this, &EditorAudioBus::_volume_changed));
+	slider->connect("value_changed", callable_mp(this, &EditorAudioBus::_show_value));
+	preview_timer->connect("timeout", callable_mp(this, &EditorAudioBus::_hide_value_preview));
 	hb->add_child(slider);
 
 	cc = 0;
@@ -918,24 +903,24 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_hide_folding(true);
 	effects->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(effects);
-	effects->connect("item_edited", this, "_effect_edited");
-	effects->connect("cell_selected", this, "_effect_selected");
+	effects->connect("item_edited", callable_mp(this, &EditorAudioBus::_effect_edited));
+	effects->connect("cell_selected", callable_mp(this, &EditorAudioBus::_effect_selected));
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	effects->set_drag_forwarding(this);
-	effects->connect("item_rmb_selected", this, "_effect_rmb");
+	effects->connect("item_rmb_selected", callable_mp(this, &EditorAudioBus::_effect_rmb));
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
 
 	send = memnew(OptionButton);
 	send->set_clip_text(true);
-	send->connect("item_selected", this, "_send_selected");
+	send->connect("item_selected", callable_mp(this, &EditorAudioBus::_send_selected));
 	vb->add_child(send);
 
 	set_focus_mode(FOCUS_CLICK);
 
 	effect_options = memnew(PopupMenu);
-	effect_options->connect("index_pressed", this, "_effect_add");
+	effect_options->connect("index_pressed", callable_mp(this, &EditorAudioBus::_effect_add));
 	add_child(effect_options);
 	List<StringName> effects;
 	ClassDB::get_inheriters_from_class("AudioEffect", &effects);
@@ -944,7 +929,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		if (!ClassDB::can_instance(E->get()))
 			continue;
 
-		Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(E->get());
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(E->get());
 		String name = E->get().operator String().replace("AudioEffect", "");
 		effect_options->add_item(name);
 		effect_options->set_item_metadata(effect_options->get_item_count() - 1, E->get());
@@ -956,22 +941,22 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_popup->add_item(TTR("Delete"));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
-	bus_popup->connect("index_pressed", this, "_bus_popup_pressed");
+	bus_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_bus_popup_pressed));
 
 	delete_effect_popup = memnew(PopupMenu);
 	delete_effect_popup->add_item(TTR("Delete Effect"));
 	add_child(delete_effect_popup);
-	delete_effect_popup->connect("index_pressed", this, "_delete_effect_pressed");
+	delete_effect_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_delete_effect_pressed));
 }
 
 void EditorAudioBusDrop::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			draw_style_box(get_stylebox("normal", "Button"), Rect2(Vector2(), get_size()));
+			draw_style_box(get_theme_stylebox("normal", "Button"), Rect2(Vector2(), get_size()));
 
 			if (hovering_drop) {
-				Color accent = get_color("accent_color", "Editor");
+				Color accent = get_theme_color("accent_color", "Editor");
 				accent.a *= 0.7;
 				draw_rect(Rect2(Point2(), get_size()), accent, false);
 			}
@@ -1022,18 +1007,18 @@ void EditorAudioBuses::_update_buses() {
 		memdelete(bus_hb->get_child(0));
 	}
 
-	drop_end = NULL;
+	drop_end = nullptr;
 
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 
 		bool is_master = (i == 0);
 		EditorAudioBus *audio_bus = memnew(EditorAudioBus(this, is_master));
 		bus_hb->add_child(audio_bus);
-		audio_bus->connect("delete_request", this, "_delete_bus", varray(audio_bus), CONNECT_DEFERRED);
-		audio_bus->connect("duplicate_request", this, "_duplicate_bus", varray(), CONNECT_DEFERRED);
-		audio_bus->connect("vol_reset_request", this, "_reset_bus_volume", varray(audio_bus), CONNECT_DEFERRED);
-		audio_bus->connect("drop_end_request", this, "_request_drop_end");
-		audio_bus->connect("dropped", this, "_drop_at_index", varray(), CONNECT_DEFERRED);
+		audio_bus->connect("delete_request", callable_mp(this, &EditorAudioBuses::_delete_bus), varray(audio_bus), CONNECT_DEFERRED);
+		audio_bus->connect("duplicate_request", callable_mp(this, &EditorAudioBuses::_duplicate_bus), varray(), CONNECT_DEFERRED);
+		audio_bus->connect("vol_reset_request", callable_mp(this, &EditorAudioBuses::_reset_bus_volume), varray(audio_bus), CONNECT_DEFERRED);
+		audio_bus->connect("drop_end_request", callable_mp(this, &EditorAudioBuses::_request_drop_end));
+		audio_bus->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -1050,7 +1035,7 @@ void EditorAudioBuses::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 
-			bus_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
+			bus_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_READY: {
 
@@ -1060,7 +1045,7 @@ void EditorAudioBuses::_notification(int p_what) {
 
 			if (drop_end) {
 				drop_end->queue_delete();
-				drop_end = NULL;
+				drop_end = nullptr;
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -1187,7 +1172,7 @@ void EditorAudioBuses::_request_drop_end() {
 
 		bus_hb->add_child(drop_end);
 		drop_end->set_custom_minimum_size(Object::cast_to<Control>(bus_hb->get_child(0))->get_size());
-		drop_end->connect("dropped", this, "_drop_at_index", varray(), CONNECT_DEFERRED);
+		drop_end->connect("dropped", callable_mp(this, &EditorAudioBuses::_drop_at_index), varray(), CONNECT_DEFERRED);
 	}
 }
 
@@ -1219,7 +1204,7 @@ void EditorAudioBuses::_select_layout() {
 
 void EditorAudioBuses::_save_as_layout() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Save Audio Bus Layout As..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
@@ -1228,7 +1213,7 @@ void EditorAudioBuses::_save_as_layout() {
 
 void EditorAudioBuses::_new_layout() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_title(TTR("Location for New Layout..."));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
@@ -1237,7 +1222,7 @@ void EditorAudioBuses::_new_layout() {
 
 void EditorAudioBuses::_load_layout() {
 
-	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	file_dialog->set_title(TTR("Open Audio Bus Layout"));
 	file_dialog->set_current_path(edited_path);
 	file_dialog->popup_centered_ratio();
@@ -1264,7 +1249,7 @@ void EditorAudioBuses::_load_default_layout() {
 
 void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 
-	if (file_dialog->get_mode() == EditorFileDialog::MODE_OPEN_FILE) {
+	if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_OPEN_FILE) {
 		Ref<AudioBusLayout> state = ResourceLoader::load(p_string, "", true);
 		if (state.is_null()) {
 			EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
@@ -1278,7 +1263,7 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		EditorNode::get_singleton()->get_undo_redo()->clear_history();
 		call_deferred("_select_layout");
 
-	} else if (file_dialog->get_mode() == EditorFileDialog::MODE_SAVE_FILE) {
+	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 
 		if (new_layout) {
 			Ref<AudioBusLayout> empty_state;
@@ -1303,28 +1288,15 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 
 void EditorAudioBuses::_bind_methods() {
 
-	ClassDB::bind_method("_add_bus", &EditorAudioBuses::_add_bus);
 	ClassDB::bind_method("_update_buses", &EditorAudioBuses::_update_buses);
 	ClassDB::bind_method("_update_bus", &EditorAudioBuses::_update_bus);
 	ClassDB::bind_method("_update_sends", &EditorAudioBuses::_update_sends);
-	ClassDB::bind_method("_delete_bus", &EditorAudioBuses::_delete_bus);
-	ClassDB::bind_method("_request_drop_end", &EditorAudioBuses::_request_drop_end);
-	ClassDB::bind_method("_drop_at_index", &EditorAudioBuses::_drop_at_index);
-	ClassDB::bind_method("_server_save", &EditorAudioBuses::_server_save);
 	ClassDB::bind_method("_select_layout", &EditorAudioBuses::_select_layout);
-	ClassDB::bind_method("_save_as_layout", &EditorAudioBuses::_save_as_layout);
-	ClassDB::bind_method("_load_layout", &EditorAudioBuses::_load_layout);
-	ClassDB::bind_method("_load_default_layout", &EditorAudioBuses::_load_default_layout);
-	ClassDB::bind_method("_new_layout", &EditorAudioBuses::_new_layout);
-	ClassDB::bind_method("_duplicate_bus", &EditorAudioBuses::_duplicate_bus);
-	ClassDB::bind_method("_reset_bus_volume", &EditorAudioBuses::_reset_bus_volume);
-
-	ClassDB::bind_method("_file_dialog_callback", &EditorAudioBuses::_file_dialog_callback);
 }
 
 EditorAudioBuses::EditorAudioBuses() {
 
-	drop_end = NULL;
+	drop_end = nullptr;
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
 
@@ -1339,7 +1311,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb->add_child(add);
 	add->set_text(TTR("Add Bus"));
 	add->set_tooltip(TTR("Add a new Audio Bus to this layout."));
-	add->connect("pressed", this, "_add_bus");
+	add->connect("pressed", callable_mp(this, &EditorAudioBuses::_add_bus));
 
 	VSeparator *separator = memnew(VSeparator);
 	top_hb->add_child(separator);
@@ -1348,25 +1320,25 @@ EditorAudioBuses::EditorAudioBuses() {
 	load->set_text(TTR("Load"));
 	load->set_tooltip(TTR("Load an existing Bus Layout."));
 	top_hb->add_child(load);
-	load->connect("pressed", this, "_load_layout");
+	load->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_layout));
 
 	save_as = memnew(Button);
 	save_as->set_text(TTR("Save As"));
 	save_as->set_tooltip(TTR("Save this Bus Layout to a file."));
 	top_hb->add_child(save_as);
-	save_as->connect("pressed", this, "_save_as_layout");
+	save_as->connect("pressed", callable_mp(this, &EditorAudioBuses::_save_as_layout));
 
 	_default = memnew(Button);
 	_default->set_text(TTR("Load Default"));
 	_default->set_tooltip(TTR("Load the default Bus Layout."));
 	top_hb->add_child(_default);
-	_default->connect("pressed", this, "_load_default_layout");
+	_default->connect("pressed", callable_mp(this, &EditorAudioBuses::_load_default_layout));
 
 	_new = memnew(Button);
 	_new->set_text(TTR("Create"));
 	_new->set_tooltip(TTR("Create a new Bus Layout."));
 	top_hb->add_child(_new);
-	_new->connect("pressed", this, "_new_layout");
+	_new->connect("pressed", callable_mp(this, &EditorAudioBuses::_new_layout));
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1381,7 +1353,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	save_timer->set_wait_time(0.8);
 	save_timer->set_one_shot(true);
 	add_child(save_timer);
-	save_timer->connect("timeout", this, "_server_save");
+	save_timer->connect("timeout", callable_mp(this, &EditorAudioBuses::_server_save));
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -1394,7 +1366,7 @@ EditorAudioBuses::EditorAudioBuses() {
 		file_dialog->add_filter("*." + E->get() + "; Audio Bus Layout");
 	}
 	add_child(file_dialog);
-	file_dialog->connect("file_selected", this, "_file_dialog_callback");
+	file_dialog->connect("file_selected", callable_mp(this, &EditorAudioBuses::_file_dialog_callback));
 
 	set_process(true);
 }
@@ -1430,7 +1402,7 @@ void AudioBusesEditorPlugin::edit(Object *p_node) {
 
 bool AudioBusesEditorPlugin::handles(Object *p_node) const {
 
-	return (Object::cast_to<AudioBusLayout>(p_node) != NULL);
+	return (Object::cast_to<AudioBusLayout>(p_node) != nullptr);
 }
 
 void AudioBusesEditorPlugin::make_visible(bool p_visible) {
@@ -1451,7 +1423,7 @@ void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_va
 
 Size2 EditorAudioMeterNotches::get_minimum_size() const {
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	float font_height = font->get_height();
 
 	float width = 0;
@@ -1488,7 +1460,7 @@ void EditorAudioMeterNotches::_notification(int p_what) {
 
 void EditorAudioMeterNotches::_draw_audio_notches() {
 
-	Ref<Font> font = get_font("font", "Label");
+	Ref<Font> font = get_theme_font("font", "Label");
 	float font_height = font->get_height();
 
 	for (int i = 0; i < notches.size(); i++) {

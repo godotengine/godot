@@ -32,32 +32,32 @@
 #include "string_android.h"
 #include "thread_jandroid.h"
 
-bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error, Variant &ret) {
+bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error, Variant &ret) {
 
-	Map<StringName, List<MethodInfo> >::Element *M = methods.find(p_method);
+	Map<StringName, List<MethodInfo>>::Element *M = methods.find(p_method);
 	if (!M)
 		return false;
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	MethodInfo *method = NULL;
+	MethodInfo *method = nullptr;
 	for (List<MethodInfo>::Element *E = M->get().front(); E; E = E->next()) {
 
 		if (!p_instance && !E->get()._static) {
-			r_error.error = Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL;
+			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			continue;
 		}
 
 		int pc = E->get().param_types.size();
 		if (pc > p_argcount) {
 
-			r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 			r_error.argument = pc;
 			continue;
 		}
 		if (pc < p_argcount) {
 
-			r_error.error = Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 			r_error.argument = pc;
 			continue;
 		}
@@ -97,7 +97,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				case ARG_TYPE_DOUBLE: {
 
 					if (!p_args[i]->is_num())
-						arg_expected = Variant::REAL;
+						arg_expected = Variant::FLOAT;
 
 				} break;
 				case ARG_TYPE_STRING: {
@@ -141,7 +141,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			}
 
 			if (arg_expected != Variant::NIL) {
-				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = i;
 				r_error.expected = arg_expected;
 				valid = false;
@@ -158,9 +158,9 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	if (!method)
 		return true; //no version convinces
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 
-	jvalue *argv = NULL;
+	jvalue *argv = nullptr;
 
 	if (method->param_types.size()) {
 
@@ -173,7 +173,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 		switch (method->param_types[i]) {
 			case ARG_TYPE_VOID: {
 				//can't happen
-				argv[i].l = NULL; //I hope this works
+				argv[i].l = nullptr; //I hope this works
 			} break;
 
 			case ARG_TYPE_BOOLEAN: {
@@ -285,7 +285,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 					argv[i].l = jo->instance;
 				} else {
-					argv[i].l = NULL; //I hope this works
+					argv[i].l = nullptr; //I hope this works
 				}
 
 			} break;
@@ -386,7 +386,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			case ARG_ARRAY_BIT | ARG_TYPE_STRING: {
 
 				Array arr = *p_args[i];
-				jobjectArray a = env->NewObjectArray(arr.size(), env->FindClass("java/lang/String"), NULL);
+				jobjectArray a = env->NewObjectArray(arr.size(), env->FindClass("java/lang/String"), nullptr);
 				for (int j = 0; j < arr.size(); j++) {
 
 					String s = arr[j];
@@ -400,12 +400,12 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			} break;
 			case ARG_ARRAY_BIT | ARG_TYPE_CLASS: {
 
-				argv[i].l = NULL;
+				argv[i].l = nullptr;
 			} break;
 		}
 	}
 
-	r_error.error = Variant::CallError::CALL_OK;
+	r_error.error = Callable::CallError::CALL_OK;
 	bool success = true;
 
 	switch (method->return_type) {
@@ -501,7 +501,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 				if (!_convert_object_to_variant(env, obj, ret, method->return_type)) {
 					ret = Variant();
-					r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 					success = false;
 				}
 				env->DeleteLocalRef(obj);
@@ -517,10 +517,10 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	return success;
 }
 
-Variant JavaClass::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant JavaClass::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	Variant ret;
-	bool found = _call_method(NULL, p_method, p_args, p_argcount, r_error, ret);
+	bool found = _call_method(nullptr, p_method, p_args, p_argcount, r_error, ret);
 	if (found) {
 		return ret;
 	}
@@ -533,7 +533,7 @@ JavaClass::JavaClass() {
 
 /////////////////////
 
-Variant JavaObject::call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+Variant JavaObject::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
 	return Variant();
 }
@@ -1205,7 +1205,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
 		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
 
-			jobject objc = env->CallObjectMethod(obj, Field_get, NULL);
+			jobject objc = env->CallObjectMethod(obj, Field_get, nullptr);
 			if (objc) {
 
 				uint32_t sig;
@@ -1236,7 +1236,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 	return Ref<JavaClass>();
 }
 
-JavaClassWrapper *JavaClassWrapper::singleton = NULL;
+JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
 
 JavaClassWrapper::JavaClassWrapper(jobject p_activity) {
 

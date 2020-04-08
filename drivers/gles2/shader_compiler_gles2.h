@@ -33,15 +33,15 @@
 
 #include "core/pair.h"
 #include "core/string_builder.h"
-#include "servers/visual/shader_language.h"
-#include "servers/visual/shader_types.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/shader_language.h"
+#include "servers/rendering/shader_types.h"
+#include "servers/rendering_server.h"
 
 class ShaderCompilerGLES2 {
 public:
 	struct IdentifierActions {
 
-		Map<StringName, Pair<int *, int> > render_mode_values;
+		Map<StringName, Pair<int *, int>> render_mode_values;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
 		Map<StringName, bool *> write_flag_pointers;
@@ -91,12 +91,12 @@ private:
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
 
-	DefaultIdentifierActions actions[VS::SHADER_MAX];
+	DefaultIdentifierActions actions[RS::SHADER_MAX];
 
 public:
-	Error compile(VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
+	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
 	ShaderCompilerGLES2();
 };
 
-#endif // SHADERCOMPILERGLES3_H
+#endif // SHADERCOMPILERGLES2_H

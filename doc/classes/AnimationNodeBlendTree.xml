@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeBlendTree" inherits="AnimationRootNode" version="4.0">
 	<brief_description>
+		[AnimationTree] node resource that contains many blend type nodes.
 	</brief_description>
 	<description>
+		This node may contain a sub-tree of any other blend type nodes, such as mix, blend2, blend3, one shot, etc. This is one of the most commonly used roots.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
@@ -11,106 +13,122 @@
 		<method name="add_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
 			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
+				Adds an [AnimationNode] at the given [code]position[/code]. The [code]name[/code] is used to identify the created sub-node later.
 			</description>
 		</method>
 		<method name="connect_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="input_node" type="String">
+			<argument index="0" name="input_node" type="StringName">
 			</argument>
 			<argument index="1" name="input_index" type="int">
 			</argument>
-			<argument index="2" name="output_node" type="String">
+			<argument index="2" name="output_node" type="StringName">
 			</argument>
 			<description>
+				Connects the output of an [AnimationNode] as input for another [AnimationNode], at the input port specified by [code]input_index[/code].
 			</description>
 		</method>
 		<method name="disconnect_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="input_node" type="String">
+			<argument index="0" name="input_node" type="StringName">
 			</argument>
 			<argument index="1" name="input_index" type="int">
 			</argument>
 			<description>
+				Disconnects the node connected to the specified input.
 			</description>
 		</method>
 		<method name="get_node" qualifiers="const">
 			<return type="AnimationNode">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
+				Returns the sub-node with the specified [code]name[/code].
 			</description>
 		</method>
 		<method name="get_node_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
+				Returns the position of the sub-node with the specified [code]name[/code].
 			</description>
 		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
+				Returns [code]true[/code] if a sub-node with specified [code]name[/code] exists.
 			</description>
 		</method>
 		<method name="remove_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
+				Removes a sub-node.
 			</description>
 		</method>
 		<method name="rename_node">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="new_name" type="String">
+			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
+				Changes the name of a sub-node.
 			</description>
 		</method>
 		<method name="set_node_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="position" type="Vector2">
 			</argument>
 			<description>
+				Modifies the position of a sub-node.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2( 0, 0 )">
+			The global offset of all sub-nodes.
 		</member>
 	</members>
 	<constants>
 		<constant name="CONNECTION_OK" value="0">
+			The connection was successful.
 		</constant>
 		<constant name="CONNECTION_ERROR_NO_INPUT" value="1">
+			The input node is [code]null[/code].
 		</constant>
 		<constant name="CONNECTION_ERROR_NO_INPUT_INDEX" value="2">
+			The specified input port is out of range.
 		</constant>
 		<constant name="CONNECTION_ERROR_NO_OUTPUT" value="3">
+			The output node is [code]null[/code].
 		</constant>
 		<constant name="CONNECTION_ERROR_SAME_NODE" value="4">
+			Input and output nodes are the same.
 		</constant>
 		<constant name="CONNECTION_ERROR_CONNECTION_EXISTS" value="5">
+			The specified connection already exists.
 		</constant>
 	</constants>
 </class>

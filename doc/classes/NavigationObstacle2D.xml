@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationObstacle2D" inherits="Node" category="Core" version="3.2">
+<class name="NavigationObstacle2D" inherits="Node" version="4.0">
 	<brief_description>
 		2D Obstacle used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		2D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation2D] node, or using [method set_navigation]. [NavigationObstacle] is physics safe.
+		2D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. This can be done by having the obstacle as a child of a [Navigation2D] node, or using [method set_navigation]. [NavigationObstacle2D] is physics safe.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -26,4 +26,6 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+	</constants>
 </class>

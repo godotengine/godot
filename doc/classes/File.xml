@@ -87,16 +87,16 @@
 			</description>
 		</method>
 		<method name="get_buffer" qualifiers="const">
-			<return type="PoolByteArray">
+			<return type="PackedByteArray">
 			</return>
 			<argument index="0" name="len" type="int">
 			</argument>
 			<description>
-				Returns next [code]len[/code] bytes of the file as a [PoolByteArray].
+				Returns next [code]len[/code] bytes of the file as a [PackedByteArray].
 			</description>
 		</method>
 		<method name="get_csv_line" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
@@ -252,7 +252,7 @@
 			</argument>
 			<argument index="1" name="mode_flags" type="int" enum="File.ModeFlags">
 			</argument>
-			<argument index="2" name="key" type="PoolByteArray">
+			<argument index="2" name="key" type="PackedByteArray">
 			</argument>
 			<description>
 				Opens an encrypted file in write or read mode. You need to pass a binary key to encrypt/decrypt it.
@@ -329,7 +329,7 @@
 		<method name="store_buffer">
 			<return type="void">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Stores the given array of bytes in the file.
@@ -338,12 +338,12 @@
 		<method name="store_csv_line">
 			<return type="void">
 			</return>
-			<argument index="0" name="values" type="PoolStringArray">
+			<argument index="0" name="values" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
 			<description>
-				Store the given [PoolStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
+				Store the given [PackedStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text will be encoded as UTF-8.
 			</description>
 		</method>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PacketPeerDTLS" inherits="PacketPeer" version="4.0">
+	<brief_description>
+		DTLS packet peer.
+	</brief_description>
+	<description>
+		This class represents a DTLS peer connection. It can be used to connect to a DTLS server, and is returned by [method DTLSServer.take_connection].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="connect_to_peer">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="packet_peer" type="PacketPeerUDP">
+			</argument>
+			<argument index="1" name="validate_certs" type="bool" default="true">
+			</argument>
+			<argument index="2" name="for_hostname" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="3" name="valid_certificate" type="X509Certificate" default="null">
+			</argument>
+			<description>
+				Connects a [code]peer[/code] beginning the DTLS handshake using the underlying [PacketPeerUDP] which must be connected (see [method PacketPeerUDP.connect_to_host]). If [code]validate_certs[/code] is [code]true[/code], [PacketPeerDTLS] will validate that the certificate presented by the remote peer and match it with the [code]for_hostname[/code] argument. You can specify a custom [X509Certificate] to use for validation via the [code]valid_certificate[/code] argument.
+			</description>
+		</method>
+		<method name="disconnect_from_peer">
+			<return type="void">
+			</return>
+			<description>
+				Disconnects this peer, terminating the DTLS session.
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" enum="PacketPeerDTLS.Status">
+			</return>
+			<description>
+				Returns the status of the connection. See [enum Status] for values.
+			</description>
+		</method>
+		<method name="poll">
+			<return type="void">
+			</return>
+			<description>
+				Poll the connection to check for incoming packets. Call this frequently to update the status and keep the connection working.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
+			A status representing a [PacketPeerDTLS] that is disconnected.
+		</constant>
+		<constant name="STATUS_HANDSHAKING" value="1" enum="Status">
+			A status representing a [PacketPeerDTLS] that is currently performing the handshake with a remote peer.
+		</constant>
+		<constant name="STATUS_CONNECTED" value="2" enum="Status">
+			A status representing a [PacketPeerDTLS] that is connected to a remote peer.
+		</constant>
+		<constant name="STATUS_ERROR" value="3" enum="Status">
+			A status representing a [PacketPeerDTLS] in a generic error state.
+		</constant>
+		<constant name="STATUS_ERROR_HOSTNAME_MISMATCH" value="4" enum="Status">
+			An error status that shows a mismatch in the DTLS certificate domain presented by the host and the domain requested for validation.
+		</constant>
+	</constants>
+</class>

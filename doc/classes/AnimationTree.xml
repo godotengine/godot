@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationTree" inherits="Node" version="4.0">
 	<brief_description>
+		A node to be used for advanced animation transitions in an [AnimationPlayer].
 	</brief_description>
 	<description>
 	</description>
@@ -15,6 +16,7 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
+				Manually advance the animations by the specified time (in seconds).
 			</description>
 		</method>
 		<method name="get_root_motion_transform" qualifiers="const">
@@ -36,22 +38,29 @@
 	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active" default="false">
+			If [code]true[/code], the [AnimationTree] will be processing.
 		</member>
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
+			The path to the [AnimationPlayer] used for animating.
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="AnimationTree.AnimationProcessMode" default="1">
+			The process mode of this [AnimationTree]. See [enum AnimationProcessMode] for available modes.
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 		</member>
 		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
+			The root animation node of this [AnimationTree]. See [AnimationNode].
 		</member>
 	</members>
 	<constants>
 		<constant name="ANIMATION_PROCESS_PHYSICS" value="0" enum="AnimationProcessMode">
+			The animations will progress during the physics frame (i.e. [method Node._physics_process]).
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1" enum="AnimationProcessMode">
+			The animations will progress during the idle frame (i.e. [method Node._process]).
 		</constant>
 		<constant name="ANIMATION_PROCESS_MANUAL" value="2" enum="AnimationProcessMode">
+			The animations will only progress manually (see [method advance]).
 		</constant>
 	</constants>
 </class>

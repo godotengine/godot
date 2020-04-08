@@ -1,54 +1,57 @@
 #!/usr/bin/env python
 
-import build_scripts.tls_configure as tls_configure
 import build_scripts.mono_configure as mono_configure
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 env_mono = env_modules.Clone()
 
-if env_mono['tools']:
+if env_mono["tools"]:
     # NOTE: It is safe to generate this file here, since this is still executed serially
     import build_scripts.gen_cs_glue_version as gen_cs_glue_version
-    gen_cs_glue_version.generate_header('glue/GodotSharp', 'glue/cs_glue_version.gen.h')
+
+    gen_cs_glue_version.generate_header("glue/GodotSharp", "glue/cs_glue_version.gen.h")
 
 # Glue sources
-if env_mono['mono_glue']:
-    env_mono.Append(CPPDEFINES=['MONO_GLUE_ENABLED'])
+if env_mono["mono_glue"]:
+    env_mono.Append(CPPDEFINES=["MONO_GLUE_ENABLED"])
 
     import os.path
-    if not os.path.isfile('glue/mono_glue.gen.cpp'):
+
+    if not os.path.isfile("glue/mono_glue.gen.cpp"):
         raise RuntimeError("Mono glue sources not found. Did you forget to run '--generate-mono-glue'?")
 
-if env_mono['tools'] or env_mono['target'] != 'release':
-    env_mono.Append(CPPDEFINES=['GD_MONO_HOT_RELOAD'])
-
-# Configure Thread Local Storage
-
-conf = Configure(env_mono)
-tls_configure.configure(conf)
-env_mono = conf.Finish()
+if env_mono["tools"] or env_mono["target"] != "release":
+    env_mono.Append(CPPDEFINES=["GD_MONO_HOT_RELOAD"])
 
 # Configure Mono
 
 mono_configure.configure(env, env_mono)
 
-if env_mono['tools'] and env_mono['mono_glue']:
+if env_mono["tools"] and env_mono["mono_glue"]:
     # Build Godot API solution
     import build_scripts.api_solution_build as api_solution_build
+
     api_sln_cmd = api_solution_build.build(env_mono)
 
     # Build GodotTools
     import build_scripts.godot_tools_build as godot_tools_build
+
     godot_tools_build.build(env_mono, api_sln_cmd)
 
 # Add sources
 
-env_mono.add_source_files(env.modules_sources, '*.cpp')
-env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
-env_mono.add_source_files(env.modules_sources, 'mono_gd/*.cpp')
-env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
+env_mono.add_source_files(env.modules_sources, "*.cpp")
+env_mono.add_source_files(env.modules_sources, "glue/*.cpp")
+env_mono.add_source_files(env.modules_sources, "mono_gd/*.cpp")
+env_mono.add_source_files(env.modules_sources, "utils/*.cpp")
 
-if env['tools']:
-    env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
+env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.cpp")
+
+if env["platform"] in ["osx", "iphone"]:
+    env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.mm")
+    env_mono.add_source_files(env.modules_sources, "mono_gd/support/*.m")
+
+if env["tools"]:
+    env_mono.add_source_files(env.modules_sources, "editor/*.cpp")

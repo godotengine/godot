@@ -41,6 +41,10 @@ class VisualShaderNode;
 class VisualShader : public Shader {
 	GDCLASS(VisualShader, Shader);
 
+	friend class VisualShaderNodeVersionChecker;
+
+	String version = "";
+
 public:
 	enum Type {
 		TYPE_VERTEX,
@@ -58,7 +62,7 @@ public:
 
 	struct DefaultTextureParam {
 		StringName name;
-		Ref<Texture> param;
+		Ref<Texture2D> param;
 	};
 
 private:
@@ -118,6 +122,11 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	void set_version(const String &p_version);
+	String get_version() const;
+
+	void update_version(const String &p_new_version);
+
 	enum {
 		NODE_ID_INVALID = -1,
 		NODE_ID_OUTPUT = 0,
@@ -182,6 +191,7 @@ protected:
 public:
 	enum PortType {
 		PORT_TYPE_SCALAR,
+		PORT_TYPE_SCALAR_INT,
 		PORT_TYPE_VECTOR,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
@@ -368,6 +378,8 @@ protected:
 public:
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
+
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
 
 	VisualShaderNodeUniform();
 };

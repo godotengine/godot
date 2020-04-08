@@ -51,15 +51,15 @@ Error ResourceSaverPNG::save(const String &p_path, const RES &p_resource, uint32
 
 Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img) {
 
-	PoolVector<uint8_t> buffer;
+	Vector<uint8_t> buffer;
 	Error err = PNGDriverCommon::image_to_png(p_img, buffer);
 	ERR_FAIL_COND_V_MSG(err, err, "Can't convert image to PNG.");
 	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save PNG at path: '%s'.", p_path));
 
-	PoolVector<uint8_t>::Read reader = buffer.read();
+	const uint8_t *reader = buffer.ptr();
 
-	file->store_buffer(reader.ptr(), buffer.size());
+	file->store_buffer(reader, buffer.size());
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
 		memdelete(file);
 		return ERR_CANT_CREATE;
@@ -69,6 +69,14 @@ Error ResourceSaverPNG::save_image(const String &p_path, const Ref<Image> &p_img
 	memdelete(file);
 
 	return OK;
+}
+
+Vector<uint8_t> ResourceSaverPNG::save_image_to_buffer(const Ref<Image> &p_img) {
+
+	Vector<uint8_t> buffer;
+	Error err = PNGDriverCommon::image_to_png(p_img, buffer);
+	ERR_FAIL_COND_V_MSG(err, Vector<uint8_t>(), "Can't convert image to PNG.");
+	return buffer;
 }
 
 bool ResourceSaverPNG::recognize(const RES &p_resource) const {
@@ -86,4 +94,5 @@ void ResourceSaverPNG::get_recognized_extensions(const RES &p_resource, List<Str
 ResourceSaverPNG::ResourceSaverPNG() {
 
 	Image::save_png_func = &save_image;
+	Image::save_png_buffer_func = &save_image_to_buffer;
 };

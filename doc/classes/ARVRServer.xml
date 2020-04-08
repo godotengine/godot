@@ -69,7 +69,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the absolute timestamp (in μs) of the last [ARVRServer] commit of the AR/VR eyes to [VisualServer]. The value comes from an internal call to [method OS.get_ticks_usec].
+				Returns the absolute timestamp (in μs) of the last [ARVRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method OS.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_last_frame_usec">
@@ -120,21 +120,21 @@
 	</members>
 	<signals>
 		<signal name="interface_added">
-			<argument index="0" name="interface_name" type="String">
+			<argument index="0" name="interface_name" type="StringName">
 			</argument>
 			<description>
 				Emitted when a new interface has been added.
 			</description>
 		</signal>
 		<signal name="interface_removed">
-			<argument index="0" name="interface_name" type="String">
+			<argument index="0" name="interface_name" type="StringName">
 			</argument>
 			<description>
 				Emitted when an interface is removed.
 			</description>
 		</signal>
 		<signal name="tracker_added">
-			<argument index="0" name="tracker_name" type="String">
+			<argument index="0" name="tracker_name" type="StringName">
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>
@@ -145,7 +145,7 @@
 			</description>
 		</signal>
 		<signal name="tracker_removed">
-			<argument index="0" name="tracker_name" type="String">
+			<argument index="0" name="tracker_name" type="StringName">
 			</argument>
 			<argument index="1" name="type" type="int">
 			</argument>

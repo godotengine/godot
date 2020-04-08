@@ -84,6 +84,8 @@ class Tabs;
 class TextureProgress;
 class ToolButton;
 class VSplitContainer;
+class Window;
+class SubViewport;
 
 class EditorNode : public Node {
 
@@ -107,7 +109,7 @@ public:
 		List<String> args;
 		String output;
 		Thread *execute_output_thread;
-		Mutex *execute_output_mutex;
+		Mutex execute_output_mutex;
 		int exitcode;
 		volatile bool done;
 	};
@@ -165,12 +167,6 @@ private:
 		RUN_SETTINGS,
 		RUN_PROJECT_DATA_FOLDER,
 		RUN_PROJECT_MANAGER,
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISONS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
 		RUN_VCS_SETTINGS,
 		RUN_VCS_SHUT_DOWN,
 		SETTINGS_UPDATE_CONTINUOUSLY,
@@ -198,7 +194,8 @@ private:
 		HELP_SEARCH,
 		HELP_DOCS,
 		HELP_QA,
-		HELP_ISSUES,
+		HELP_REPORT_A_BUG,
+		HELP_SEND_DOCS_FEEDBACK,
 		HELP_COMMUNITY,
 		HELP_ABOUT,
 
@@ -212,7 +209,7 @@ private:
 		TOOL_MENU_BASE = 1000
 	};
 
-	Viewport *scene_root; //root of the scene being edited
+	SubViewport *scene_root; //root of the scene being edited
 
 	PanelContainer *scene_root_parent;
 	Control *theme_base;
@@ -354,11 +351,14 @@ private:
 	Button *new_inherited_button;
 	String open_import_request;
 
+	Vector<Control *> floating_docks;
+
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
 	int dock_select_rect_over;
 	PopupPanel *dock_select_popup;
 	Control *dock_select;
+	Button *dock_float;
 	ToolButton *dock_tab_move_left;
 	ToolButton *dock_tab_move_right;
 	int dock_popup_selected;
@@ -410,8 +410,6 @@ private:
 	EditorResourcePreview *resource_preview;
 	EditorFolding editor_folding;
 
-	EditorFileServer *file_server;
-
 	struct BottomPanelItem {
 		String name;
 		Control *control;
@@ -453,7 +451,6 @@ private:
 	void _save_screenshot(NodePath p_path);
 
 	void _tool_menu_option(int p_idx);
-	void _update_debug_options();
 	void _update_file_menu_opened();
 	void _update_file_menu_closed();
 
@@ -502,7 +499,8 @@ private:
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
-	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
+	void _global_menu_scene(const Variant &p_tag);
+	void _global_menu_new_window(const Variant &p_tag);
 	void _dropped_files(const Vector<String> &p_files, int p_screen);
 	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 	String _recent_scene;
@@ -522,13 +520,13 @@ private:
 	Set<FileDialog *> file_dialogs;
 	Set<EditorFileDialog *> editor_file_dialogs;
 
-	Map<String, Ref<Texture> > icon_type_cache;
+	Map<String, Ref<Texture2D>> icon_type_cache;
 	void _build_icon_type_cache();
 
 	bool _initializing_addons;
 	Map<String, EditorPlugin *> plugin_addons;
 
-	static Ref<Texture> _file_dialog_get_icon(const String &p_path);
+	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
@@ -545,7 +543,7 @@ private:
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
 
-	Map<String, Set<String> > dependency_errors;
+	Map<String, Set<String>> dependency_errors;
 
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
 		EditorNode *en = (EditorNode *)ud;
@@ -569,6 +567,8 @@ private:
 
 	bool _find_scene_in_use(Node *p_node, const String &p_path) const;
 
+	void _update_dock_containers();
+
 	void _dock_select_input(const Ref<InputEvent> &p_input);
 	void _dock_move_left();
 	void _dock_move_right();
@@ -576,13 +576,15 @@ private:
 	void _dock_pre_popup(int p_which);
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
+	void _dock_floating_close_request(Control *p_control);
+	void _dock_make_float();
 	void _scene_tab_changed(int p_tab);
 	void _scene_tab_closed(int p_tab, int option = SCENE_TAB_CLOSE);
 	void _scene_tab_hover(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
 	void _reposition_active_tab(int idx_to);
-	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
+	void _thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
 	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
@@ -631,7 +633,7 @@ private:
 
 	void _update_update_spinner();
 
-	Vector<Ref<EditorResourceConversionPlugin> > resource_conversion_plugins;
+	Vector<Ref<EditorResourceConversionPlugin>> resource_conversion_plugins;
 
 	PrintHandlerList print_handler;
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
@@ -639,7 +641,7 @@ private:
 	static void _resource_saved(RES p_resource, const String &p_path);
 	static void _resource_loaded(RES p_resource, const String &p_path);
 
-	void _resources_changed(const PoolVector<String> &p_resources);
+	void _resources_changed(const Vector<String> &p_resources);
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
@@ -733,7 +735,7 @@ public:
 
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
-	Viewport *get_scene_root() { return scene_root; } //root of the scene being edited
+	SubViewport *get_scene_root() { return scene_root; } //root of the scene being edited
 
 	void fix_dependencies(const String &p_for_file);
 	void clear_scene() { _cleanup_scene(); }
@@ -764,16 +766,16 @@ public:
 
 	void set_convert_old_scene(bool p_old) { convert_old = p_old; }
 
-	void notify_child_process_exited();
+	void notify_all_debug_sessions_exited();
 
-	OS::ProcessID get_child_process_id() const { return editor_run.get_pid(); }
-	void stop_child_process();
+	OS::ProcessID has_child_process(OS::ProcessID p_pid) const { return editor_run.has_child_process(p_pid); }
+	void stop_child_process(OS::ProcessID p_pid);
 
 	Ref<Theme> get_editor_theme() const { return theme; }
 	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
 	StringName get_object_custom_type_name(const Object *p_object) const;
-	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
-	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
+	Ref<Texture2D> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = TTR("Warning!"));
@@ -853,7 +855,7 @@ public:
 
 	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
-	Vector<Ref<EditorResourceConversionPlugin> > find_resource_conversion_plugin(const Ref<Resource> &p_for_resource);
+	Vector<Ref<EditorResourceConversionPlugin>> find_resource_conversion_plugin(const Ref<Resource> &p_for_resource);
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
@@ -893,7 +895,7 @@ public:
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 	void forward_canvas_force_draw_over_viewport(Control *p_overlay);
-	bool forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
+	bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled);
 	void forward_spatial_draw_over_viewport(Control *p_overlay);
 	void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 	void add_plugin(EditorPlugin *p_plugin);

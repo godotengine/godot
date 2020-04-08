@@ -96,7 +96,7 @@
 			</return>
 			<argument index="0" name="url" type="String">
 			</argument>
-			<argument index="1" name="custom_headers" type="PoolStringArray" default="PoolStringArray(  )">
+			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray(  )">
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
@@ -136,9 +136,9 @@
 			</argument>
 			<argument index="1" name="response_code" type="int">
 			</argument>
-			<argument index="2" name="headers" type="PoolStringArray">
+			<argument index="2" name="headers" type="PackedStringArray">
 			</argument>
-			<argument index="3" name="body" type="PoolByteArray">
+			<argument index="3" name="body" type="PackedByteArray">
 			</argument>
 			<description>
 				Emitted when a request is completed.

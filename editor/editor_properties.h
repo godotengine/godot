@@ -53,6 +53,7 @@ class EditorPropertyText : public EditorProperty {
 	LineEdit *text;
 
 	bool updating;
+	bool string_name;
 	void _text_changed(const String &p_string);
 	void _text_entered(const String &p_string);
 
@@ -60,6 +61,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_string_name(bool p_enabled);
 	virtual void update_property();
 	void set_placeholder(const String &p_string);
 	EditorPropertyText();
@@ -91,12 +93,13 @@ class EditorPropertyTextEnum : public EditorProperty {
 	OptionButton *options;
 
 	void _option_selected(int p_which);
+	bool string_name;
 
 protected:
 	static void _bind_methods();
 
 public:
-	void setup(const Vector<String> &p_options);
+	void setup(const Vector<String> &p_options, bool p_string_name = false);
 	virtual void update_property();
 	EditorPropertyTextEnum();
 };
@@ -574,7 +577,7 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _file_selected(const String &p_path);
 	void _menu_option(int p_which);
-	void _resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj);
+	void _resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj);
 	void _resource_selected();
 	void _viewport_selected(const NodePath &p_path);
 

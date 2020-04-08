@@ -42,7 +42,7 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL) :
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr) :
 				name(p_name),
 				ptr(p_ptr) {
 		}
@@ -64,6 +64,7 @@ private:
 	bool _pixel_snap;
 	uint64_t _physics_frames;
 	float _physics_interpolation_fraction;
+	bool abort_on_gpu_errors;
 
 	uint64_t _idle_frames;
 	bool _in_physics;
@@ -125,6 +126,8 @@ public:
 	Dictionary get_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;
+
+	bool is_abort_on_gpu_errors_enabled() const;
 
 	Engine();
 	virtual ~Engine() {}

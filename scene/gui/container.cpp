@@ -48,9 +48,9 @@ void Container::add_child_notify(Node *p_child) {
 	if (!control)
 		return;
 
-	control->connect("size_flags_changed", this, "queue_sort");
-	control->connect("minimum_size_changed", this, "_child_minsize_changed");
-	control->connect("visibility_changed", this, "_child_minsize_changed");
+	control->connect("size_flags_changed", callable_mp(this, &Container::queue_sort));
+	control->connect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->connect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
 
 	minimum_size_changed();
 	queue_sort();
@@ -75,9 +75,9 @@ void Container::remove_child_notify(Node *p_child) {
 	if (!control)
 		return;
 
-	control->disconnect("size_flags_changed", this, "queue_sort");
-	control->disconnect("minimum_size_changed", this, "_child_minsize_changed");
-	control->disconnect("visibility_changed", this, "_child_minsize_changed");
+	control->disconnect("size_flags_changed", callable_mp(this, &Container::queue_sort));
+	control->disconnect("minimum_size_changed", callable_mp(this, &Container::_child_minsize_changed));
+	control->disconnect("visibility_changed", callable_mp(this, &Container::_child_minsize_changed));
 
 	minimum_size_changed();
 	queue_sort();
@@ -185,7 +185,6 @@ String Container::get_configuration_warning() const {
 void Container::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_sort_children"), &Container::_sort_children);
-	ClassDB::bind_method(D_METHOD("_child_minsize_changed"), &Container::_child_minsize_changed);
 
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);

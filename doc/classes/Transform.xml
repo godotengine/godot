@@ -154,7 +154,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+				Transforms the given [Vector3], [Plane], [AABB], or [PackedVector3Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -163,7 +163,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
+				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PackedVector3Array] by this transform.
 			</description>
 		</method>
 	</methods>

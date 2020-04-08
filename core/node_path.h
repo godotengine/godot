@@ -54,15 +54,6 @@ class NodePath {
 	void _update_hash_cache() const;
 
 public:
-	_FORCE_INLINE_ StringName get_sname() const {
-
-		if (data && data->path.size() == 1 && data->subpath.empty()) {
-			return data->path[0];
-		} else {
-			return operator String();
-		}
-	}
-
 	bool is_absolute() const;
 	int get_name_count() const;
 	StringName get_name(int p_idx) const;
@@ -106,4 +97,4 @@ public:
 	~NodePath();
 };
 
-#endif
+#endif // NODE_PATH_H

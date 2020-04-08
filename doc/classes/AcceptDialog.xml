@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AcceptDialog" inherits="WindowDialog" version="4.0">
+<class name="AcceptDialog" inherits="Window" version="4.0">
 	<brief_description>
 		Base dialog for user notification.
 	</brief_description>
@@ -67,16 +67,23 @@
 		<member name="dialog_text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The text displayed by the dialog.
 		</member>
-		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Alert!&quot;" />
+		<member name="title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Alert!&quot;" />
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" override="true" default="true" />
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" override="true" default="false" />
+		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" override="true" default="true" />
 	</members>
 	<signals>
+		<signal name="cancelled">
+			<description>
+			</description>
+		</signal>
 		<signal name="confirmed">
 			<description>
 				Emitted when the dialog is accepted, i.e. the OK button is pressed.
 			</description>
 		</signal>
 		<signal name="custom_action">
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Emitted when a custom button is pressed. See [method add_button].

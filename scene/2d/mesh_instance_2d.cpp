@@ -53,8 +53,8 @@ void MeshInstance2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
 }
 
 void MeshInstance2D::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -68,7 +68,7 @@ Ref<Mesh> MeshInstance2D::get_mesh() const {
 	return mesh;
 }
 
-void MeshInstance2D::set_texture(const Ref<Texture> &p_texture) {
+void MeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	if (p_texture == texture)
 		return;
@@ -78,18 +78,18 @@ void MeshInstance2D::set_texture(const Ref<Texture> &p_texture) {
 	_change_notify("texture");
 }
 
-void MeshInstance2D::set_normal_map(const Ref<Texture> &p_texture) {
+void MeshInstance2D::set_normal_map(const Ref<Texture2D> &p_texture) {
 
 	normal_map = p_texture;
 	update();
 }
 
-Ref<Texture> MeshInstance2D::get_normal_map() const {
+Ref<Texture2D> MeshInstance2D::get_normal_map() const {
 
 	return normal_map;
 }
 
-Ref<Texture> MeshInstance2D::get_texture() const {
+Ref<Texture2D> MeshInstance2D::get_texture() const {
 
 	return texture;
 }

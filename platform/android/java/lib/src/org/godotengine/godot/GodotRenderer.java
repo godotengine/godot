@@ -30,9 +30,12 @@
 
 package org.godotengine.godot;
 
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
+import org.godotengine.godot.plugin.GodotPlugin;
+import org.godotengine.godot.plugin.GodotPluginRegistry;
 import org.godotengine.godot.utils.GLUtils;
 
 /**
@@ -40,7 +43,12 @@ import org.godotengine.godot.utils.GLUtils;
  */
 class GodotRenderer implements GLSurfaceView.Renderer {
 
+	private final GodotPluginRegistry pluginRegistry;
 	private boolean activityJustResumed = false;
+
+	GodotRenderer() {
+		this.pluginRegistry = GodotPluginRegistry.getPluginRegistry();
+	}
 
 	public void onDrawFrame(GL10 gl) {
 		if (activityJustResumed) {
@@ -49,21 +57,23 @@ class GodotRenderer implements GLSurfaceView.Renderer {
 		}
 
 		GodotLib.step();
-		for (int i = 0; i < Godot.singleton_count; i++) {
-			Godot.singletons[i].onGLDrawFrame(gl);
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onGLDrawFrame(gl);
 		}
 	}
 
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
-
 		GodotLib.resize(width, height);
-		for (int i = 0; i < Godot.singleton_count; i++) {
-			Godot.singletons[i].onGLSurfaceChanged(gl, width, height);
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onGLSurfaceChanged(gl, width, height);
 		}
 	}
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		GodotLib.newcontext(GLUtils.use_32);
+		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
+			plugin.onGLSurfaceCreated(gl, config);
+		}
 	}
 
 	void onActivityResumed() {

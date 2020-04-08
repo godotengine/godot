@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  utils.h                                                              */
+/*  nav_utils.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,7 +90,7 @@ struct Edge {
 
 	Edge() {
 		this_edge = -1;
-		other_polygon = NULL;
+		other_polygon = nullptr;
 		other_edge = -1;
 	}
 };
@@ -119,8 +119,8 @@ struct Connection {
 	int B_edge;
 
 	Connection() {
-		A = NULL;
-		B = NULL;
+		A = nullptr;
+		B = nullptr;
 		A_edge = -1;
 		B_edge = -1;
 	}

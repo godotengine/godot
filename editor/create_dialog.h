@@ -60,6 +60,7 @@ class CreateDialog : public ConfirmationDialog {
 	Set<StringName> type_blacklist;
 
 	void _item_selected();
+	void _hide_requested();
 
 	void _update_search();
 	void _update_favorite_list();
@@ -77,7 +78,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _confirmed();
 	void _text_changed(const String &p_newtext);
 
-	Ref<Texture> _get_editor_icon(const String &p_type) const;
+	Ref<Texture2D> _get_editor_icon(const String &p_type) const;
 
 	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
 

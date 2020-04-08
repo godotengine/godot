@@ -32,8 +32,8 @@
 
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -42,12 +42,12 @@ uint32_t EditorOBJImporter::get_import_flags() const {
 	return IMPORT_SCENE;
 }
 
-static Error _parse_material_library(const String &p_path, Map<String, Ref<SpatialMaterial> > &material_map, List<String> *r_missing_deps) {
+static Error _parse_material_library(const String &p_path, Map<String, Ref<StandardMaterial3D>> &material_map, List<String> *r_missing_deps) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open MTL file '%s', it may not exist or not be readable.", p_path));
 
-	Ref<SpatialMaterial> current;
+	Ref<StandardMaterial3D> current;
 	String current_name;
 	String base_path = p_path.get_base_dir();
 	while (true) {
@@ -102,7 +102,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			c.a = d;
 			current->set_albedo(c);
 			if (c.a < 0.99) {
-				current->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				current->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 			}
 		} else if (l.begins_with("Tr ")) {
 			//normal
@@ -114,7 +114,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			c.a = 1.0 - d;
 			current->set_albedo(c);
 			if (c.a < 0.99) {
-				current->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				current->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 			}
 
 		} else if (l.begins_with("map_Ka ")) {
@@ -133,10 +133,10 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 				path = base_path.plus_file(p);
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(path);
+			Ref<Texture2D> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+				current->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -153,10 +153,10 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 				path = base_path.plus_file(p);
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(path);
+			Ref<Texture2D> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
+				current->set_texture(StandardMaterial3D::TEXTURE_METALLIC, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -173,10 +173,10 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 				path = base_path.plus_file(p);
 			}
 
-			Ref<Texture> texture = ResourceLoader::load(path);
+			Ref<Texture2D> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
+				current->set_texture(StandardMaterial3D::TEXTURE_ROUGHNESS, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -187,11 +187,11 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 			String p = l.replace("map_bump", "").replace("\\", "/").strip_edges();
 			String path = base_path.plus_file(p);
 
-			Ref<Texture> texture = ResourceLoader::load(path);
+			Ref<Texture2D> texture = ResourceLoader::load(path);
 
 			if (texture.is_valid()) {
-				current->set_feature(SpatialMaterial::FEATURE_NORMAL_MAPPING, true);
-				current->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
+				current->set_feature(StandardMaterial3D::FEATURE_NORMAL_MAPPING, true);
+				current->set_texture(StandardMaterial3D::TEXTURE_NORMAL, texture);
 			} else if (r_missing_deps) {
 				r_missing_deps->push_back(path);
 			}
@@ -203,7 +203,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Spati
 	return OK;
 }
 
-static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, List<String> *r_missing_deps) {
+static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_single_mesh, bool p_generate_tangents, bool p_optimize, Vector3 p_scale_mesh, Vector3 p_offset_mesh, List<String> *r_missing_deps) {
 
 	FileAccessRef f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
@@ -221,7 +221,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 	Vector<Vector2> uvs;
 	String name;
 
-	Map<String, Map<String, Ref<SpatialMaterial> > > material_map;
+	Map<String, Map<String, Ref<StandardMaterial3D>>> material_map;
 
 	Ref<SurfaceTool> surf_tool = memnew(SurfaceTool);
 	surf_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -397,7 +397,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 
 			current_material_library = l.replace("mtllib", "").strip_edges();
 			if (!material_map.has(current_material_library)) {
-				Map<String, Ref<SpatialMaterial> > lib;
+				Map<String, Ref<StandardMaterial3D>> lib;
 				Error err = _parse_material_library(current_material_library, lib, r_missing_deps);
 				if (err == ERR_CANT_OPEN) {
 					String dir = p_path.get_base_dir();
@@ -420,7 +420,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 
 Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 
-	List<Ref<Mesh> > meshes;
+	List<Ref<Mesh>> meshes;
 
 	Error err = _parse_obj(p_path, meshes, false, p_flags & IMPORT_GENERATE_TANGENT_ARRAYS, p_flags & IMPORT_USE_COMPRESSION, Vector3(1, 1, 1), Vector3(0, 0, 0), r_missing_deps);
 
@@ -428,14 +428,14 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		if (r_err) {
 			*r_err = err;
 		}
-		return NULL;
+		return nullptr;
 	}
 
-	Spatial *scene = memnew(Spatial);
+	Node3D *scene = memnew(Node3D);
 
-	for (List<Ref<Mesh> >::Element *E = meshes.front(); E; E = E->next()) {
+	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
 
-		MeshInstance *mi = memnew(MeshInstance);
+		MeshInstance3D *mi = memnew(MeshInstance3D);
 		mi->set_mesh(E->get());
 		mi->set_name(E->get()->get_name());
 		scene->add_child(mi);
@@ -500,9 +500,9 @@ bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Ma
 
 Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
-	List<Ref<Mesh> > meshes;
+	List<Ref<Mesh>> meshes;
 
-	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], NULL);
+	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], nullptr);
 
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(meshes.size() != 1, ERR_BUG);

@@ -33,6 +33,7 @@
 
 #include "core/node_path.h"
 #include "core/string_name.h"
+
 class SceneStringNames {
 
 	friend void register_scene_types();
@@ -43,7 +44,7 @@ class SceneStringNames {
 	static void create() { singleton = memnew(SceneStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	SceneStringNames();
@@ -147,12 +148,6 @@ public:
 	StringName camera_entered;
 	StringName camera_exited;
 
-	StringName _body_enter_tree;
-	StringName _body_exit_tree;
-
-	StringName _area_enter_tree;
-	StringName _area_exit_tree;
-
 	StringName changed;
 	StringName _shader_changed;
 
@@ -179,7 +174,6 @@ public:
 	StringName _get_minimum_size;
 
 	StringName _im_update;
-	StringName _queue_update;
 
 	StringName baked_light_changed;
 	StringName _baked_light_changed;
@@ -207,11 +201,17 @@ public:
 
 	StringName tracks_changed;
 
+	StringName _window_group;
+	StringName _window_input;
+	StringName _window_unhandled_input;
+	StringName window_input;
+
+	StringName theme_changed;
+
 	enum {
 		MAX_MATERIALS = 32
 	};
 	StringName mesh_materials[MAX_MATERIALS];
-	StringName _mesh_changed;
 };
 
 #endif // SCENE_STRING_NAMES_H

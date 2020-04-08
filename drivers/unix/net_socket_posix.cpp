@@ -86,7 +86,7 @@
 #define SOCK_CLOSE closesocket
 // connect is broken on windows under certain conditions, reasons unknown:
 // See https://github.com/godotengine/webrtc-native/issues/6
-#define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::WSAConnect(p_sock, p_addr, p_addr_len, NULL, NULL, NULL, NULL)
+#define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::WSAConnect(p_sock, p_addr, p_addr_len, nullptr, nullptr, nullptr, nullptr)
 
 // Workaround missing flag in MinGW
 #if defined(__MINGW32__) && !defined(SIO_UDP_NETRESET)
@@ -155,7 +155,7 @@ NetSocket *NetSocketPosix::_create_func() {
 
 void NetSocketPosix::make_default() {
 #if defined(WINDOWS_ENABLED)
-	if (_create == NULL) {
+	if (_create == nullptr) {
 		WSADATA data;
 		WSAStartup(MAKEWORD(2, 2), &data);
 	}
@@ -165,10 +165,10 @@ void NetSocketPosix::make_default() {
 
 void NetSocketPosix::cleanup() {
 #if defined(WINDOWS_ENABLED)
-	if (_create != NULL) {
+	if (_create != nullptr) {
 		WSACleanup();
 	}
-	_create = NULL;
+	_create = nullptr;
 #endif
 }
 
@@ -446,15 +446,15 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 #if defined(WINDOWS_ENABLED)
 	bool ready = false;
 	fd_set rd, wr, ex;
-	fd_set *rdp = NULL;
-	fd_set *wrp = NULL;
+	fd_set *rdp = nullptr;
+	fd_set *wrp = nullptr;
 	FD_ZERO(&rd);
 	FD_ZERO(&wr);
 	FD_ZERO(&ex);
 	FD_SET(_sock, &ex);
 	struct timeval timeout = { p_timeout, 0 };
-	// For blocking operation, pass NULL timeout pointer to select.
-	struct timeval *tp = NULL;
+	// For blocking operation, pass nullptr  timeout pointer to select.
+	struct timeval *tp = nullptr;
 	if (p_timeout >= 0) {
 		//  If timeout is non-negative, we want to specify the timeout instead.
 		tp = &timeout;
@@ -544,14 +544,14 @@ Error NetSocketPosix::recv(uint8_t *p_buffer, int p_len, int &r_read) {
 	return OK;
 }
 
-Error NetSocketPosix::recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port) {
+Error NetSocketPosix::recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port, bool p_peek) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
 	struct sockaddr_storage from;
 	socklen_t len = sizeof(struct sockaddr_storage);
 	memset(&from, 0, len);
 
-	r_read = ::recvfrom(_sock, SOCK_BUF(p_buffer), p_len, 0, (struct sockaddr *)&from, &len);
+	r_read = ::recvfrom(_sock, SOCK_BUF(p_buffer), p_len, p_peek ? MSG_PEEK : 0, (struct sockaddr *)&from, &len);
 
 	if (r_read < 0) {
 		NetError err = _get_socket_error();
@@ -673,22 +673,27 @@ void NetSocketPosix::set_tcp_no_delay_enabled(bool p_enabled) {
 void NetSocketPosix::set_reuse_address_enabled(bool p_enabled) {
 	ERR_FAIL_COND(!is_open());
 
+// On Windows, enabling SO_REUSEADDR actually would also enable reuse port, very bad on TCP. Denying...
+// Windows does not have this option, SO_REUSEADDR in this magical world means SO_REUSEPORT
+#ifndef WINDOWS_ENABLED
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEADDR, SOCK_CBUF(&par), sizeof(int)) < 0) {
 		WARN_PRINT("Unable to set socket REUSEADDR option!");
 	}
+#endif
 }
 
 void NetSocketPosix::set_reuse_port_enabled(bool p_enabled) {
-// Windows does not have this option, as it is always ON when setting REUSEADDR.
-#ifndef WINDOWS_ENABLED
 	ERR_FAIL_COND(!is_open());
 
+// See comment above...
+#ifdef WINDOWS_ENABLED
+#define SO_REUSEPORT SO_REUSEADDR
+#endif
 	int par = p_enabled ? 1 : 0;
 	if (setsockopt(_sock, SOL_SOCKET, SO_REUSEPORT, SOCK_CBUF(&par), sizeof(int)) < 0) {
 		WARN_PRINT("Unable to set socket REUSEPORT option!");
 	}
-#endif
 }
 
 bool NetSocketPosix::is_open() const {

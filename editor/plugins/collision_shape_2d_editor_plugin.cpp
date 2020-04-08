@@ -39,6 +39,13 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
 
+void CollisionShape2DEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = nullptr;
+	}
+}
+
 Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 
 	switch (shape_type) {
@@ -435,7 +442,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	Ref<Texture> h = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> h = get_theme_icon("EditorHandle", "EditorIcons");
 	Vector2 size = h->get_size() * 0.5;
 
 	handles.clear();
@@ -525,6 +532,20 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	}
 }
 
+void CollisionShape2DEditor::_notification(int p_what) {
+
+	switch (p_what) {
+
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
+		} break;
+	}
+}
+
 void CollisionShape2DEditor::edit(Node *p_node) {
 
 	if (!canvas_item_editor) {
@@ -540,7 +561,7 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 		edit_handle = -1;
 		shape_type = -1;
 
-		node = NULL;
+		node = nullptr;
 	}
 
 	canvas_item_editor->update_viewport();
@@ -553,8 +574,8 @@ void CollisionShape2DEditor::_bind_methods() {
 
 CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 
-	node = NULL;
-	canvas_item_editor = NULL;
+	node = nullptr;
+	canvas_item_editor = nullptr;
 	editor = p_editor;
 
 	undo_redo = p_editor->get_undo_redo();
@@ -576,7 +597,7 @@ bool CollisionShape2DEditorPlugin::handles(Object *p_obj) const {
 void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 
 	if (!visible) {
-		edit(NULL);
+		edit(nullptr);
 	}
 }
 

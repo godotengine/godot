@@ -44,7 +44,7 @@ void AnimatedValuesBackup::update_skeletons() {
 	for (int i = 0; i < entries.size(); i++) {
 		if (entries[i].bone_idx != -1) {
 			// 3D bone
-			Object::cast_to<Skeleton>(entries[i].object)->notification(Skeleton::NOTIFICATION_UPDATE_SKELETON);
+			Object::cast_to<Skeleton3D>(entries[i].object)->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
 		} else {
 			Bone2D *bone = Object::cast_to<Bone2D>(entries[i].object);
 			if (bone && bone->skeleton) {
@@ -106,7 +106,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (name.begins_with("anims/")) {
 
 		String which = name.get_slicec('/', 1);
-		r_ret = get_animation(which).get_ref_ptr();
+		r_ret = get_animation(which);
 
 	} else if (name.begins_with("next/")) {
 
@@ -244,17 +244,17 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
-		p_anim->node_cache.write[i] = NULL;
+		p_anim->node_cache.write[i] = nullptr;
 		RES resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
 		ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node
-		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
+		ObjectID id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
-		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
+		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton3D>(child)) {
 
-			Skeleton *sk = Object::cast_to<Skeleton>(child);
+			Skeleton3D *sk = Object::cast_to<Skeleton3D>(child);
 			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
 			if (bone_idx == -1) {
 
@@ -263,8 +263,8 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		}
 
 		{
-			if (!child->is_connected("tree_exiting", this, "_node_removed"))
-				child->connect("tree_exiting", this, "_node_removed", make_binds(child), CONNECT_ONESHOT);
+			if (!child->is_connected("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed)))
+				child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed), make_binds(child), CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -283,9 +283,9 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 			// special cases and caches for transform tracks
 
 			// cache spatial
-			p_anim->node_cache[i]->spatial = Object::cast_to<Spatial>(child);
+			p_anim->node_cache[i]->spatial = Object::cast_to<Node3D>(child);
 			// cache skeleton
-			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
+			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton3D>(child);
 			if (p_anim->node_cache[i]->skeleton) {
 				if (a->track_get_path(i).get_subname_count() == 1) {
 					StringName bone_name = a->track_get_path(i).get_subname(0);
@@ -293,13 +293,13 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 					p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
 					if (p_anim->node_cache[i]->bone_idx < 0) {
 						// broken track (nonexistent bone)
-						p_anim->node_cache[i]->skeleton = NULL;
-						p_anim->node_cache[i]->spatial = NULL;
+						p_anim->node_cache[i]->skeleton = nullptr;
+						p_anim->node_cache[i]->spatial = nullptr;
 						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
 					}
 				} else {
 					// no property, just use spatialnode
-					p_anim->node_cache[i]->skeleton = NULL;
+					p_anim->node_cache[i]->skeleton = nullptr;
 				}
 			}
 		}
@@ -830,7 +830,7 @@ void AnimationPlayer::_animation_process2(float p_delta, bool p_started) {
 		c.seeked = false;
 	}
 
-	List<Blend>::Element *prev = NULL;
+	List<Blend>::Element *prev = nullptr;
 	for (List<Blend>::Element *E = c.blend.back(); E; E = prev) {
 
 		Blend &b = E->get();
@@ -1007,12 +1007,12 @@ void AnimationPlayer::remove_animation(const StringName &p_name) {
 
 void AnimationPlayer::_ref_anim(const Ref<Animation> &p_anim) {
 
-	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed", varray(), CONNECT_REFERENCE_COUNTED);
+	Ref<Animation>(p_anim)->connect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed), varray(), CONNECT_REFERENCE_COUNTED);
 }
 
 void AnimationPlayer::_unref_anim(const Ref<Animation> &p_anim) {
 
-	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, this, "_animation_changed");
+	Ref<Animation>(p_anim)->disconnect(SceneStringNames::get_singleton()->tracks_changed, callable_mp(this, &AnimationPlayer::_animation_changed));
 }
 
 void AnimationPlayer::rename_animation(const StringName &p_name, const StringName &p_new_name) {
@@ -1129,8 +1129,8 @@ void AnimationPlayer::queue(const StringName &p_name) {
 		queued.push_back(p_name);
 }
 
-PoolVector<String> AnimationPlayer::get_queue() {
-	PoolVector<String> ret;
+Vector<String> AnimationPlayer::get_queue() {
+	Vector<String> ret;
 	for (List<StringName>::Element *E = queued.front(); E; E = E->next()) {
 		ret.push_back(E->get());
 	}
@@ -1242,19 +1242,6 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 bool AnimationPlayer::is_playing() const {
 
 	return playing;
-	/*
-	if (playback.current.from==NULL)
-		return false;
-
-	float len=playback.current.from->animation->get_length();
-	float pos = playback.current.pos;
-	bool loop=playback.current.from->animation->has_loop();
-	if (!loop && pos >= len) {
-		return false;
-	};
-
-	return true;
-	*/
 }
 
 void AnimationPlayer::set_current_animation(const String &p_anim) {
@@ -1296,7 +1283,7 @@ void AnimationPlayer::stop(bool p_reset) {
 	Playback &c = playback;
 	c.blend.clear();
 	if (p_reset) {
-		c.current.from = NULL;
+		c.current.from = nullptr;
 		c.current.speed_scale = 1;
 		c.current.pos = 0;
 	}
@@ -1612,17 +1599,13 @@ void AnimationPlayer::restore_animated_values(const AnimatedValuesBackup &p_back
 		if (entry->bone_idx == -1) {
 			entry->object->set_indexed(entry->subpath, entry->value);
 		} else {
-			Object::cast_to<Skeleton>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
+			Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
 		}
 	}
 }
 #endif
 
 void AnimationPlayer::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationPlayer::_node_removed);
-	ClassDB::bind_method(D_METHOD("_animation_changed"), &AnimationPlayer::_animation_changed);
-
 	ClassDB::bind_method(D_METHOD("add_animation", "name", "animation"), &AnimationPlayer::add_animation);
 	ClassDB::bind_method(D_METHOD("remove_animation", "name"), &AnimationPlayer::remove_animation);
 	ClassDB::bind_method(D_METHOD("rename_animation", "name", "newname"), &AnimationPlayer::rename_animation);
@@ -1682,22 +1665,22 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationPlayer::advance);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_node"), "set_root", "get_root");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "assigned_animation", PROPERTY_HINT_NONE, "", 0), "set_assigned_animation", "get_assigned_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_autoplay", "get_autoplay");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_length", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_length");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "current_animation_position", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_position");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "current_animation", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ANIMATE_AS_TRIGGER), "set_current_animation", "get_current_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "assigned_animation", PROPERTY_HINT_NONE, "", 0), "set_assigned_animation", "get_assigned_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_autoplay", "get_autoplay");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_animation_length", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "current_animation_position", PROPERTY_HINT_NONE, "", 0), "", "get_current_animation_position");
 
 	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_animation_process_mode", "get_animation_process_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", 0), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "method_call_mode", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_method_call_mode", "get_method_call_mode");
 
-	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING, "anim_name")));
-	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
-	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING_NAME, "old_name"), PropertyInfo(Variant::STRING_NAME, "new_name")));
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 	ADD_SIGNAL(MethodInfo("caches_cleared"));
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);

@@ -162,22 +162,22 @@ String escape_csharp_keyword(const String &p_name) {
 #endif
 
 Error read_all_file_utf8(const String &p_path, String &r_content) {
-	PoolVector<uint8_t> sourcef;
+	Vector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
 
 	int len = f->get_len();
 	sourcef.resize(len + 1);
-	PoolVector<uint8_t>::Write w = sourcef.write();
-	int r = f->get_buffer(w.ptr(), len);
+	uint8_t *w = sourcef.ptrw();
+	int r = f->get_buffer(w, len);
 	f->close();
 	memdelete(f);
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
 	w[len] = 0;
 
 	String source;
-	if (source.parse_utf8((const char *)w.ptr())) {
+	if (source.parse_utf8((const char *)w)) {
 		ERR_FAIL_V(ERR_INVALID_DATA);
 	}
 
@@ -212,7 +212,7 @@ String str_format(const char *p_format, ...) {
 #define gd_vscprintf(m_format, m_args_copy) _vscprintf(m_format, m_args_copy)
 #else
 #define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf(m_buffer, m_count, m_format, m_args_copy)
-#define gd_vscprintf(m_format, m_args_copy) vsnprintf(NULL, 0, p_format, m_args_copy)
+#define gd_vscprintf(m_format, m_args_copy) vsnprintf(nullptr, 0, p_format, m_args_copy)
 #endif
 
 String str_format(const char *p_format, va_list p_list) {

@@ -31,7 +31,7 @@
 #ifndef GODOT_RESULT_CALLBACKS_H
 #define GODOT_RESULT_CALLBACKS_H
 
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 #include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
 #include <btBulletDynamicsCommon.h>
@@ -85,12 +85,12 @@ public:
 // store all colliding object
 struct GodotAllConvexResultCallback : public btCollisionWorld::ConvexResultCallback {
 public:
-	PhysicsDirectSpaceState::ShapeResult *m_results;
+	PhysicsDirectSpaceState3D::ShapeResult *m_results;
 	int m_resultMax;
 	const Set<RID> *m_exclude;
 	int count;
 
-	GodotAllConvexResultCallback(PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude) :
+	GodotAllConvexResultCallback(PhysicsDirectSpaceState3D::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude) :
 			m_results(p_results),
 			m_resultMax(p_resultMax),
 			m_exclude(p_exclude),
@@ -137,7 +137,7 @@ public:
 struct GodotAllContactResultCallback : public btCollisionWorld::ContactResultCallback {
 public:
 	const btCollisionObject *m_self_object;
-	PhysicsDirectSpaceState::ShapeResult *m_results;
+	PhysicsDirectSpaceState3D::ShapeResult *m_results;
 	int m_resultMax;
 	const Set<RID> *m_exclude;
 	int m_count;
@@ -145,7 +145,7 @@ public:
 	bool collide_with_bodies;
 	bool collide_with_areas;
 
-	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
+	GodotAllContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState3D::ShapeResult *p_results, int p_resultMax, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_results(p_results),
 			m_resultMax(p_resultMax),
@@ -188,7 +188,7 @@ public:
 struct GodotRestInfoContactResultCallback : public btCollisionWorld::ContactResultCallback {
 public:
 	const btCollisionObject *m_self_object;
-	PhysicsDirectSpaceState::ShapeRestInfo *m_result;
+	PhysicsDirectSpaceState3D::ShapeRestInfo *m_result;
 	const Set<RID> *m_exclude;
 	bool m_collided;
 	real_t m_min_distance;
@@ -197,7 +197,7 @@ public:
 	bool collide_with_bodies;
 	bool collide_with_areas;
 
-	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState::ShapeRestInfo *p_result, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
+	GodotRestInfoContactResultCallback(btCollisionObject *p_self_object, PhysicsDirectSpaceState3D::ShapeRestInfo *p_result, const Set<RID> *p_exclude, bool p_collide_with_bodies, bool p_collide_with_areas) :
 			m_self_object(p_self_object),
 			m_result(p_result),
 			m_exclude(p_exclude),

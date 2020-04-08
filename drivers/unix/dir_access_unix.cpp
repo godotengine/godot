@@ -129,7 +129,7 @@ String DirAccessUnix::get_next() {
 
 	dirent *entry = readdir(dir_stream);
 
-	if (entry == NULL) {
+	if (entry == nullptr) {
 		list_dir_end();
 		return "";
 	}
@@ -173,7 +173,7 @@ void DirAccessUnix::list_dir_end() {
 
 	if (dir_stream)
 		closedir(dir_stream);
-	dir_stream = 0;
+	dir_stream = nullptr;
 	_cisdir = false;
 }
 
@@ -207,7 +207,7 @@ static void _get_drives(List<String> *list) {
 		char strings[4096];
 
 		while (getmntent_r(mtab, &mnt, strings, sizeof(strings))) {
-			if (mnt.mnt_dir != NULL && _filter_drive(&mnt)) {
+			if (mnt.mnt_dir != nullptr && _filter_drive(&mnt)) {
 				// Avoid duplicates
 				if (!list->find(mnt.mnt_dir)) {
 					list->push_back(mnt.mnt_dir);
@@ -269,6 +269,11 @@ String DirAccessUnix::get_drive(int p_drive) {
 	return list[p_drive];
 }
 
+bool DirAccessUnix::drives_are_shortcuts() {
+
+	return true;
+}
+
 Error DirAccessUnix::make_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
@@ -301,7 +306,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// prev_dir is the directory we are changing out of
 	String prev_dir;
 	char real_current_dir_name[2048];
-	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
+	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
 	if (prev_dir.parse_utf8(real_current_dir_name))
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 
@@ -322,7 +327,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 
 	String base = _get_root_path();
 	if (base != String() && !try_dir.begins_with(base)) {
-		ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
+		ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
 		String new_dir;
 		new_dir.parse_utf8(real_current_dir_name);
 
@@ -337,7 +342,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessUnix::get_current_dir() {
+String DirAccessUnix::get_current_dir(bool p_include_drive) {
 
 	String base = _get_root_path();
 	if (base != "") {
@@ -405,14 +410,14 @@ String DirAccessUnix::get_filesystem_type() const {
 
 DirAccessUnix::DirAccessUnix() {
 
-	dir_stream = 0;
+	dir_stream = nullptr;
 	_cisdir = false;
 
 	/* determine drive count */
 
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
-	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == NULL);
+	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == nullptr);
 	if (current_dir.parse_utf8(real_current_dir_name))
 		current_dir = real_current_dir_name;
 

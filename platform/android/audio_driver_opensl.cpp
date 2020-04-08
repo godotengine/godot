@@ -44,8 +44,8 @@ void AudioDriverOpenSL::_buffer_callback(
 
 	if (pause) {
 		mix = false;
-	} else if (mutex) {
-		mix = mutex->try_lock() == OK;
+	} else {
+		mix = mutex.try_lock() == OK;
 	}
 
 	if (mix) {
@@ -58,8 +58,8 @@ void AudioDriverOpenSL::_buffer_callback(
 		}
 	}
 
-	if (mutex && mix)
-		mutex->unlock();
+	if (mix)
+		mutex.unlock();
 
 	const int32_t *src_buff = mixdown_buffer;
 
@@ -83,7 +83,7 @@ void AudioDriverOpenSL::_buffer_callbacks(
 	ad->_buffer_callback(queueItf);
 }
 
-AudioDriverOpenSL *AudioDriverOpenSL::s_ad = NULL;
+AudioDriverOpenSL *AudioDriverOpenSL::s_ad = nullptr;
 
 const char *AudioDriverOpenSL::get_name() const {
 
@@ -96,7 +96,7 @@ Error AudioDriverOpenSL::init() {
 	SLEngineOption EngineOption[] = {
 		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
 	};
-	res = slCreateEngine(&sl, 1, EngineOption, 0, NULL, NULL);
+	res = slCreateEngine(&sl, 1, EngineOption, 0, nullptr, nullptr);
 	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not initialize OpenSL.");
 
 	res = (*sl)->Realize(sl, SL_BOOLEAN_FALSE);
@@ -107,7 +107,6 @@ Error AudioDriverOpenSL::init() {
 
 void AudioDriverOpenSL::start() {
 
-	mutex = Mutex::create();
 	active = false;
 
 	SLresult res;
@@ -162,7 +161,7 @@ void AudioDriverOpenSL::start() {
 	locator_outputmix.locatorType = SL_DATALOCATOR_OUTPUTMIX;
 	locator_outputmix.outputMix = OutputMix;
 	audioSink.pLocator = (void *)&locator_outputmix;
-	audioSink.pFormat = NULL;
+	audioSink.pFormat = nullptr;
 	/* Initialize the context for Buffer queue callbacks */
 	//cntxt.pDataBase = (void*)&pcmData;
 	//cntxt.pData = cntxt.pDataBase;
@@ -229,9 +228,9 @@ Error AudioDriverOpenSL::capture_init_device() {
 		SL_DATALOCATOR_IODEVICE,
 		SL_IODEVICE_AUDIOINPUT,
 		SL_DEFAULTDEVICEID_AUDIOINPUT,
-		NULL
+		nullptr
 	};
-	SLDataSource recSource = { &loc_dev, NULL };
+	SLDataSource recSource = { &loc_dev, nullptr };
 
 	SLDataLocator_AndroidSimpleBufferQueue loc_bq = {
 		SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,
@@ -329,14 +328,14 @@ AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 
 void AudioDriverOpenSL::lock() {
 
-	if (active && mutex)
-		mutex->lock();
+	if (active)
+		mutex.lock();
 }
 
 void AudioDriverOpenSL::unlock() {
 
-	if (active && mutex)
-		mutex->unlock();
+	if (active)
+		mutex.unlock();
 }
 
 void AudioDriverOpenSL::finish() {
@@ -359,7 +358,6 @@ void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 AudioDriverOpenSL::AudioDriverOpenSL() {
 	s_ad = this;
-	mutex = Mutex::create(); //NULL;
 	pause = false;
 	active = false;
 }

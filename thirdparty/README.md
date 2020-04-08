@@ -1,11 +1,40 @@
 # Third party libraries
 
+Please keep categories (`##` level) listed alphabetically and matching their
+respective folder names. Use two empty lines to separate categories for
+readability.
+Subcategories (`###` level) where needed are separated by a single empty line.
+
 
 ## assimp
 
 - Upstream: http://github.com/assimp/assimp
-- Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23)
+- Version: git (308db73d0b3c2d1870cd3e465eaa283692a4cf23, 2019)
 - License: BSD-3-Clause
+
+Files extracted from upstream source:
+
+- Run `cmake .` in root folder to generate files
+- `code/{CApi,Common,FBX,Material,PostProcessing}/`
+- `contrib/utf8cpp/source/`
+- `include/`
+- `revision.h`
+- `CREDITS` and `LICENSE` files
+- `rm -f code/Common/ZipArchiveIOSystem.cpp include/assimp/ZipArchiveIOSystem.h
+   include/assimp/irrXMLWrapper.h`
+
+
+## basis_universal
+
+- Upstream: https://github.com/BinomialLLC/basis_universal
+- Version: git (895ee8e, 2020)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `.cpp` and `.h` files in root folder except for `basisu_tool.cpp` (contains `main` and can cause link error)
+- `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
+- `LICENSE`
 
 
 ## bullet
@@ -128,6 +157,26 @@ Files extracted from upstream source:
 The files we package are automatically generated.
 See the header of glad.c for instructions on how to generate them for
 the GLES version Godot targets.
+
+
+## glslang
+
+- Upstream: https://github.com/KhronosGroup/glslang
+- Version: git (4fc7a33910fb8e40b970d160e1b38ab3f67fe0f3, 2020)
+- License: glslang
+
+Version should be kept in sync with the one of the used Vulkan SDK (see `vulkan`
+section). Check Vulkan-ValidationLayers at the matching SDK tag for the known
+good glslang commit: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/scripts/known_good.json
+
+Files extracted from upstream source:
+
+- `glslang`, `OGLCompilersDLL`, `SPIRV`
+- `LICENSE.txt`
+- Unnecessary files like `CMakeLists.txt`, `revision.template` and
+  `updateGrammar` removed.
+
+Patches in the `patches` directory should be re-applied after updates.
 
 
 ## jpeg-compressor
@@ -253,7 +302,7 @@ changes are marked with `// -- GODOT --` comments.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.4
+- Version: 2.16.5
 - License: Apache 2.0
 
 File extracted from upstream release tarball (`-apache.tgz` variant):
@@ -263,9 +312,9 @@ File extracted from upstream release tarball (`-apache.tgz` variant):
 - LICENSE and apache-2.0.txt files
 - Applied the patch in `thirdparty/mbedtls/patches/1453.diff` (PR 1453).
   Soon to be merged upstream. Check it out at next update.
-- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables VIA
-  padlock support which defines a symbol `unsupported` which clashes with
-  a symbol in libwebsockets.
+- Applied the patch in `thirdparty/mbedtls/patches/padlock.diff`. This disables
+  VIA padlock support which defines a symbol `unsupported` which clashes with
+  a pre-defined symbol.
 - Added 2 files `godot_core_mbedtls_platform.{c,h}` providing configuration
   for light bundling with core.
 
@@ -273,7 +322,7 @@ File extracted from upstream release tarball (`-apache.tgz` variant):
 ## miniupnpc
 
 - Upstream: https://github.com/miniupnp/miniupnp/tree/master/miniupnpc
-- Version: git (0ab1d67, 2019)
+- Version: git (4436632, 2020)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -311,6 +360,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 + Godot changes (added optional exceptions handling)
   * License: BSL-1.0
+- `cubemap_coeffs.h`
+  * Upstream: https://research.activision.com/publications/archives/fast-filtering-of-reflection-probes
+    File coeffs_const_8.txt
+  * License: MIT
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ
   * Version: git (f121734, 2007)
@@ -449,7 +502,7 @@ Files extracted from upstream source:
 
 Files extracted from upstream source:
 
-- All .cpp and .h files in the `src/` folder except for RVOSimulator.cpp and RVOSimulator.h
+- All .cpp and .h files in the `src/` folder except for RVO.h, RVOSimulator.cpp and RVOSimulator.h
 - LICENSE
 
 Important: Some files have Godot-made changes; so to enrich the features
@@ -498,6 +551,36 @@ Some downstream changes have been made and are identified by
 `// -- GODOT start --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `vhacd`
 folder.
+
+
+## vulkan
+
+- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
+- Version: sdk-1.2.131.2
+- License: Apache 2.0
+
+Unless there is a specific reason to package a more recent version, please stick
+to Vulkan SDK releases (prefixed by `sdk-`) for all components.
+
+NOTE: Use `scripts/update_deps.py --ref <version>` in the Loader git repository
+to retrieve the `Vulkan-Headers` repository matching the loader version.
+
+Files extracted from upstream source:
+
+- `Vulkan-Headers/include/` as `include/`
+- All `.c` and `.h` files in `loader/` and `loader/generated/`, put in a common
+  `loader/` folder
+- `LICENSE.txt`
+
+`vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
+SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
+Includes custom change to disable MSVC pragma, might be upstreamed via:
+https://github.com/KhronosGroup/Vulkan-ValidationLayers/pull/1666
+
+`vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
+Version: 2.3.0
+
+Patches in the `patches` directory should be re-applied after updates.
 
 
 ## wslay

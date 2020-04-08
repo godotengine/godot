@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AudioStreamPlayer3D" inherits="Spatial" version="4.0">
+<class name="AudioStreamPlayer3D" inherits="Node3D" version="4.0">
 	<brief_description>
 		Plays 3D sound in 3D space.
 	</brief_description>
@@ -66,7 +66,7 @@
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
 			If [code]true[/code], audio plays when added to scene tree.
 		</member>
-		<member name="bus" type="String" setter="set_bus" getter="get_bus" default="&quot;Master&quot;">
+		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="@&quot;Master&quot;">
 			Bus on which this audio is playing.
 		</member>
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="AudioStreamPlayer3D.DopplerTracking" default="0">

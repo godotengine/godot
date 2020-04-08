@@ -24,7 +24,7 @@
 			</description>
 		</method>
 		<method name="get_recognized_extensions" qualifiers="virtual">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Gets the list of extensions for files this loader is able to read.
@@ -43,7 +43,7 @@
 		<method name="handles_type" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="typename" type="String">
+			<argument index="0" name="typename" type="StringName">
 			</argument>
 			<description>
 				Tells which resource class this loader can load.

@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectRecord" inherits="AudioEffect" version="4.0">
 	<brief_description>
+		Audio effect used for recording sound from a microphone.
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/audio/recording_with_microphone.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_recording" qualifiers="const">
 			<return type="AudioStreamSample">
 			</return>
 			<description>
+				Returns the recorded sample.
 			</description>
 		</method>
 		<method name="is_recording_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether the recording is active or not.
 			</description>
 		</method>
 		<method name="set_recording_active">
@@ -25,11 +29,13 @@
 			<argument index="0" name="record" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], the sound will be recorded. Note that restarting the recording will remove the previously recorded sample.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="1">
+			Specifies the format in which the sample will be recorded. See [enum AudioStreamSample.Format] for available formats.
 		</member>
 	</members>
 	<constants>

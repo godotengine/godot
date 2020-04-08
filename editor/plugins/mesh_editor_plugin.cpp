@@ -57,10 +57,10 @@ void MeshEditor::_notification(int p_what) {
 		if (first_enter) {
 			//it's in propertyeditor so. could be moved around
 
-			light_1_switch->set_normal_texture(get_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_icon("MaterialPreviewLight2Off", "EditorIcons"));
+			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
+			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
+			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
+			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
 			first_enter = false;
 		}
 	}
@@ -111,36 +111,35 @@ void MeshEditor::_button_pressed(Node *p_button) {
 void MeshEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &MeshEditor::_gui_input);
-	ClassDB::bind_method(D_METHOD("_button_pressed"), &MeshEditor::_button_pressed);
 }
 
 MeshEditor::MeshEditor() {
 
-	viewport = memnew(Viewport);
-	Ref<World> world;
+	viewport = memnew(SubViewport);
+	Ref<World3D> world;
 	world.instance();
 	viewport->set_world(world); //use own world
 	add_child(viewport);
 	viewport->set_disable_input(true);
 	viewport->set_msaa(Viewport::MSAA_2X);
 	set_stretch(true);
-	camera = memnew(Camera);
+	camera = memnew(Camera3D);
 	camera->set_transform(Transform(Basis(), Vector3(0, 0, 1.1)));
 	camera->set_perspective(45, 0.1, 10);
 	viewport->add_child(camera);
 
-	light1 = memnew(DirectionalLight);
+	light1 = memnew(DirectionalLight3D);
 	light1->set_transform(Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 	viewport->add_child(light1);
 
-	light2 = memnew(DirectionalLight);
+	light2 = memnew(DirectionalLight3D);
 	light2->set_transform(Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 	light2->set_color(Color(0.7, 0.7, 0.7));
 	viewport->add_child(light2);
 
-	rotation = memnew(Spatial);
+	rotation = memnew(Node3D);
 	viewport->add_child(rotation);
-	mesh_instance = memnew(MeshInstance);
+	mesh_instance = memnew(MeshInstance3D);
 	rotation->add_child(mesh_instance);
 
 	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
@@ -157,12 +156,12 @@ MeshEditor::MeshEditor() {
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", this, "_button_pressed", varray(light_1_switch));
+	light_1_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed), varray(light_1_switch));
 
 	light_2_switch = memnew(TextureButton);
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", this, "_button_pressed", varray(light_2_switch));
+	light_2_switch->connect("pressed", callable_mp(this, &MeshEditor::_button_pressed), varray(light_2_switch));
 
 	first_enter = true;
 
@@ -174,7 +173,7 @@ MeshEditor::MeshEditor() {
 
 bool EditorInspectorPluginMesh::can_handle(Object *p_object) {
 
-	return Object::cast_to<Mesh>(p_object) != NULL;
+	return Object::cast_to<Mesh>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginMesh::parse_begin(Object *p_object) {

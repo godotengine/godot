@@ -32,7 +32,7 @@
 #define FILE_ACCESS_BUFFERED_H
 
 #include "core/os/file_access.h"
-#include "core/pool_vector.h"
+
 #include "core/ustring.h"
 
 class FileAccessBuffered : public FileAccess {

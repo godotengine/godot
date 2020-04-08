@@ -508,13 +508,6 @@ Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
 	return Color(m + r, m + g, m + b, p_a);
 }
 
-// FIXME: Remove once Godot 3.1 has been released
-float Color::gray() const {
-
-	WARN_DEPRECATED_MSG("'Color.gray()' is deprecated and will be removed in a future version. Use 'Color.v' for a better grayscale approximation.");
-	return (r + g + b) / 3.0;
-}
-
 Color::operator String() const {
 
 	return rtos(r) + ", " + rtos(g) + ", " + rtos(b) + ", " + rtos(a);
@@ -527,14 +520,6 @@ Color Color::operator+(const Color &p_color) const {
 			g + p_color.g,
 			b + p_color.b,
 			a + p_color.a);
-}
-
-void Color::operator+=(const Color &p_color) {
-
-	r = r + p_color.r;
-	g = g + p_color.g;
-	b = b + p_color.b;
-	a = a + p_color.a;
 }
 
 Color Color::operator-(const Color &p_color) const {

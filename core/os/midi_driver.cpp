@@ -30,11 +30,11 @@
 
 #include "midi_driver.h"
 
+#include "core/input/input_filter.h"
 #include "core/os/os.h"
-#include "main/input_default.h"
 
 uint8_t MIDIDriver::last_received_message = 0x00;
-MIDIDriver *MIDIDriver::singleton = NULL;
+MIDIDriver *MIDIDriver::singleton = nullptr;
 MIDIDriver *MIDIDriver::get_singleton() {
 
 	return singleton;
@@ -117,13 +117,13 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 			break;
 	}
 
-	InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
+	InputFilter *id = InputFilter::get_singleton();
 	id->parse_input_event(event);
 }
 
-PoolStringArray MIDIDriver::get_connected_inputs() {
+PackedStringArray MIDIDriver::get_connected_inputs() {
 
-	PoolStringArray list;
+	PackedStringArray list;
 	return list;
 }
 

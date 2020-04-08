@@ -37,100 +37,44 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/texture_button.h"
-
-class WindowDialog : public Popup {
-
-	GDCLASS(WindowDialog, Popup);
-
-	enum DRAG_TYPE {
-		DRAG_NONE = 0,
-		DRAG_MOVE = 1,
-		DRAG_RESIZE_TOP = 1 << 1,
-		DRAG_RESIZE_RIGHT = 1 << 2,
-		DRAG_RESIZE_BOTTOM = 1 << 3,
-		DRAG_RESIZE_LEFT = 1 << 4
-	};
-
-	TextureButton *close_button;
-	String title;
-	String xl_title;
-	int drag_type;
-	Point2 drag_offset;
-	Point2 drag_offset_far;
-	bool resizable;
-
-#ifdef TOOLS_ENABLED
-	bool was_editor_dimmed;
-#endif
-
-	void _gui_input(const Ref<InputEvent> &p_event);
-	void _closed();
-	int _drag_hit_test(const Point2 &pos) const;
-
-protected:
-	virtual void _post_popup();
-	virtual void _fix_size();
-	virtual void _close_pressed() {}
-	virtual bool has_point(const Point2 &p_point) const;
-	void _notification(int p_what);
-	static void _bind_methods();
-
-public:
-	TextureButton *get_close_button();
-
-	void set_title(const String &p_title);
-	String get_title() const;
-	void set_resizable(bool p_resizable);
-	bool get_resizable() const;
-
-	Size2 get_minimum_size() const;
-
-	WindowDialog();
-	~WindowDialog();
-};
-
-class PopupDialog : public Popup {
-
-	GDCLASS(PopupDialog, Popup);
-
-protected:
-	void _notification(int p_what);
-
-public:
-	PopupDialog();
-	~PopupDialog();
-};
+#include "scene/main/window.h"
 
 class LineEdit;
 
-class AcceptDialog : public WindowDialog {
+class AcceptDialog : public Window {
 
-	GDCLASS(AcceptDialog, WindowDialog);
+	GDCLASS(AcceptDialog, Window);
 
+	Window *parent_visible;
+	Panel *bg;
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
 	bool hide_on_ok;
 
 	void _custom_action(const String &p_action);
-	void _ok_pressed();
-	void _close_pressed();
-	void _builtin_text_entered(const String &p_text);
 	void _update_child_rects();
 
 	static bool swap_ok_cancel;
 
+	void _input_from_window(const Ref<InputEvent> &p_event);
+	void _parent_focused();
+
 protected:
-	virtual void _post_popup();
+	virtual Size2 _get_contents_minimum_size() const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void ok_pressed() {}
 	virtual void cancel_pressed() {}
 	virtual void custom_action(const String &) {}
 
-public:
-	Size2 get_minimum_size() const;
+	// Not private since used by derived classes signal.
+	void _text_entered(const String &p_text);
+	void _ok_pressed();
+	void _cancel_pressed();
 
+public:
 	Label *get_label() { return label; }
 	static void set_swap_ok_cancel(bool p_swap);
 

@@ -50,7 +50,7 @@ public:
 	virtual Error open() = 0;
 	virtual void close() = 0;
 
-	virtual PoolStringArray get_connected_inputs();
+	virtual PackedStringArray get_connected_inputs();
 
 	static void receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_t length);
 
@@ -58,4 +58,4 @@ public:
 	virtual ~MIDIDriver() {}
 };
 
-#endif
+#endif // MIDI_DRIVER_H

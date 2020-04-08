@@ -67,10 +67,10 @@ public:
 			valid = false;
 			is_server = false;
 			id = 1;
-			ctx = NULL;
-			obj = NULL;
+			ctx = nullptr;
+			obj = nullptr;
 			closing = false;
-			peer = NULL;
+			peer = nullptr;
 		}
 	};
 
@@ -86,7 +86,7 @@ private:
 	// Our packet info is just a boolean (is_string), using uint8_t for it.
 	PacketBuffer<uint8_t> _in_buffer;
 
-	PoolVector<uint8_t> _packet_buffer;
+	Vector<uint8_t> _packet_buffer;
 
 	WriteMode write_mode;
 

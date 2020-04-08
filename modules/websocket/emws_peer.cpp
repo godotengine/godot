@@ -68,12 +68,17 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 			bytes_array[i] = getValue($1+i, 'i8');
 		}
 
-		if ($3) {
-			sock.send(bytes_array.buffer);
-		} else {
-			var string = new TextDecoder("utf-8").decode(bytes_array);
-			sock.send(string);
+		try {
+			if ($3) {
+				sock.send(bytes_array.buffer);
+			} else {
+				var string = new TextDecoder("utf-8").decode(bytes_array);
+				sock.send(string);
+			}
+		} catch (e) {
+			return 1;
 		}
+		return 0;
 	}, peer_sock, p_buffer, p_buffer_size, is_bin);
 	/* clang-format on */
 
@@ -85,12 +90,11 @@ Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	if (_in_buffer.packets_left() == 0)
 		return ERR_UNAVAILABLE;
 
-	PoolVector<uint8_t>::Write rw = _packet_buffer.write();
 	int read = 0;
-	Error err = _in_buffer.read_packet(rw.ptr(), _packet_buffer.size(), &_is_string, read);
+	Error err = _in_buffer.read_packet(_packet_buffer.ptrw(), _packet_buffer.size(), &_is_string, read);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	*r_buffer = rw.ptr();
+	*r_buffer = _packet_buffer.ptr();
 	r_buffer_size = read;
 
 	return OK;

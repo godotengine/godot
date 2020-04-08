@@ -128,7 +128,7 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 
 				case GDScriptParser::OperatorNode::OP_PARENT_CALL:
 					txt += ".";
-					FALLTHROUGH;
+					[[fallthrough]];
 				case GDScriptParser::OperatorNode::OP_CALL: {
 
 					ERR_FAIL_COND_V(c_node->arguments.size() < 1, "");
@@ -396,7 +396,7 @@ static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_i
 	}
 }
 
-static void _parser_show_function(const GDScriptParser::FunctionNode *p_func, int p_indent, GDScriptParser::BlockNode *p_initializer = NULL) {
+static void _parser_show_function(const GDScriptParser::FunctionNode *p_func, int p_indent, GDScriptParser::BlockNode *p_initializer = nullptr) {
 
 	String txt;
 	if (p_func->_static)
@@ -947,17 +947,17 @@ MainLoop *test(TestType p_type) {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
-		return NULL;
+		return nullptr;
 	}
 
 	String test = cmdlargs.back()->get();
 	if (!test.ends_with(".gd") && !test.ends_with(".gdc")) {
 		print_line("This test expects a path to a GDScript file as its last parameter. Got: " + test);
-		return NULL;
+		return nullptr;
 	}
 
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fa, NULL, "Could not open file: " + test);
+	ERR_FAIL_COND_V_MSG(!fa, nullptr, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
@@ -1030,11 +1030,11 @@ MainLoop *test(TestType p_type) {
 		if (err) {
 			print_line("Parse Error:\n" + itos(parser.get_error_line()) + ":" + itos(parser.get_error_column()) + ":" + parser.get_error());
 			memdelete(fa);
-			return NULL;
+			return nullptr;
 		}
 
 		const GDScriptParser::Node *root = parser.get_parse_tree();
-		ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, NULL);
+		ERR_FAIL_COND_V(root->type != GDScriptParser::Node::TYPE_CLASS, nullptr);
 		const GDScriptParser::ClassNode *cnode = static_cast<const GDScriptParser::ClassNode *>(root);
 
 		_parser_show_class(cnode, 0, lines);
@@ -1048,7 +1048,7 @@ MainLoop *test(TestType p_type) {
 		if (err) {
 			print_line("Parse Error:\n" + itos(parser.get_error_line()) + ":" + itos(parser.get_error_column()) + ":" + parser.get_error());
 			memdelete(fa);
-			return NULL;
+			return nullptr;
 		}
 
 		Ref<GDScript> gds;
@@ -1059,7 +1059,7 @@ MainLoop *test(TestType p_type) {
 		if (err) {
 
 			print_line("Compile Error:\n" + itos(gdc.get_error_line()) + ":" + itos(gdc.get_error_column()) + ":" + gdc.get_error());
-			return NULL;
+			return nullptr;
 		}
 
 		Ref<GDScript> current = gds;
@@ -1083,7 +1083,7 @@ MainLoop *test(TestType p_type) {
 
 	memdelete(fa);
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestGDScript
 
@@ -1093,7 +1093,7 @@ namespace TestGDScript {
 
 MainLoop *test(TestType p_type) {
 	ERR_PRINT("The GDScript module is disabled, therefore GDScript tests cannot be used.");
-	return NULL;
+	return nullptr;
 }
 } // namespace TestGDScript
 

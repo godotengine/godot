@@ -33,9 +33,9 @@
 #include "core/project_settings.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/visibility_notifier_2d.h"
-#include "scene/main/viewport.h"
-#include "servers/physics_2d_server.h"
-#include "servers/visual_server.h"
+#include "scene/main/window.h"
+#include "servers/physics_server_2d.h"
+#include "servers/rendering_server.h"
 
 struct SpatialIndexer2D {
 
@@ -376,33 +376,33 @@ void World2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "canvas", PROPERTY_HINT_NONE, "", 0), "", "get_canvas");
 	ADD_PROPERTY(PropertyInfo(Variant::_RID, "space", PROPERTY_HINT_NONE, "", 0), "", "get_space");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "Physics2DDirectSpaceState", 0), "", "get_direct_space_state");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "direct_space_state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectSpaceState2D", 0), "", "get_direct_space_state");
 }
 
-Physics2DDirectSpaceState *World2D::get_direct_space_state() {
+PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
 
-	return Physics2DServer::get_singleton()->space_get_direct_state(space);
+	return PhysicsServer2D::get_singleton()->space_get_direct_state(space);
 }
 
 World2D::World2D() {
 
-	canvas = VisualServer::get_singleton()->canvas_create();
-	space = Physics2DServer::get_singleton()->space_create();
+	canvas = RenderingServer::get_singleton()->canvas_create();
+	space = PhysicsServer2D::get_singleton()->space_create();
 
 	//set space2D to be more friendly with pixels than meters, by adjusting some constants
-	Physics2DServer::get_singleton()->space_set_active(space, true);
-	Physics2DServer::get_singleton()->area_set_param(space, Physics2DServer::AREA_PARAM_GRAVITY, GLOBAL_DEF("physics/2d/default_gravity", 98));
-	Physics2DServer::get_singleton()->area_set_param(space, Physics2DServer::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_DEF("physics/2d/default_gravity_vector", Vector2(0, 1)));
-	Physics2DServer::get_singleton()->area_set_param(space, Physics2DServer::AREA_PARAM_LINEAR_DAMP, GLOBAL_DEF("physics/2d/default_linear_damp", 0.1));
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/default_linear_damp", PropertyInfo(Variant::REAL, "physics/2d/default_linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
-	Physics2DServer::get_singleton()->area_set_param(space, Physics2DServer::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/2d/default_angular_damp", 1.0));
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/default_angular_damp", PropertyInfo(Variant::REAL, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
+	PhysicsServer2D::get_singleton()->space_set_active(space, true);
+	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY, GLOBAL_DEF("physics/2d/default_gravity", 98));
+	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_DEF("physics/2d/default_gravity_vector", Vector2(0, 1)));
+	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_LINEAR_DAMP, GLOBAL_DEF("physics/2d/default_linear_damp", 0.1));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/default_linear_damp", PropertyInfo(Variant::FLOAT, "physics/2d/default_linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
+	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF("physics/2d/default_angular_damp", 1.0));
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/default_angular_damp", PropertyInfo(Variant::FLOAT, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"));
 	indexer = memnew(SpatialIndexer2D);
 }
 
 World2D::~World2D() {
 
-	VisualServer::get_singleton()->free(canvas);
-	Physics2DServer::get_singleton()->free(space);
+	RenderingServer::get_singleton()->free(canvas);
+	PhysicsServer2D::get_singleton()->free(space);
 	memdelete(indexer);
 }

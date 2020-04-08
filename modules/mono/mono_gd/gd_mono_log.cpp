@@ -46,13 +46,13 @@ static CharString get_default_log_level() {
 #endif
 }
 
-GDMonoLog *GDMonoLog::singleton = NULL;
+GDMonoLog *GDMonoLog::singleton = nullptr;
 
-#if !defined(JAVASCRIPT_ENABLED)
+#ifdef GD_MONO_LOG_ENABLED
 
 static int get_log_level_id(const char *p_log_level) {
 
-	const char *valid_log_levels[] = { "error", "critical", "warning", "message", "info", "debug", NULL };
+	const char *valid_log_levels[] = { "error", "critical", "warning", "message", "info", "debug", nullptr };
 
 	int i = 0;
 	while (valid_log_levels[i]) {
@@ -191,7 +191,7 @@ GDMonoLog::GDMonoLog() {
 
 GDMonoLog::~GDMonoLog() {
 
-	singleton = NULL;
+	singleton = nullptr;
 
 	if (log_file) {
 		log_file->close();
@@ -213,7 +213,7 @@ GDMonoLog::GDMonoLog() {
 
 GDMonoLog::~GDMonoLog() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 #endif // !defined(JAVASCRIPT_ENABLED)

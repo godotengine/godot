@@ -34,7 +34,7 @@
 #include "core/project_settings.h"
 #include "thread_jandroid.h"
 
-AudioDriverAndroid *AudioDriverAndroid::s_ad = NULL;
+AudioDriverAndroid *AudioDriverAndroid::s_ad = nullptr;
 
 jobject AudioDriverAndroid::io;
 jmethodID AudioDriverAndroid::_init_audio;
@@ -46,10 +46,10 @@ jclass AudioDriverAndroid::cls;
 int AudioDriverAndroid::audioBufferFrames = 0;
 int AudioDriverAndroid::mix_rate = 44100;
 bool AudioDriverAndroid::quit = false;
-jobject AudioDriverAndroid::audioBuffer = NULL;
-void *AudioDriverAndroid::audioBufferPinned = NULL;
-Mutex *AudioDriverAndroid::mutex = NULL;
-int32_t *AudioDriverAndroid::audioBuffer32 = NULL;
+jobject AudioDriverAndroid::audioBuffer = nullptr;
+void *AudioDriverAndroid::audioBufferPinned = nullptr;
+Mutex AudioDriverAndroid::mutex;
+int32_t *AudioDriverAndroid::audioBuffer32 = nullptr;
 
 const char *AudioDriverAndroid::get_name() const {
 
@@ -58,7 +58,6 @@ const char *AudioDriverAndroid::get_name() const {
 
 Error AudioDriverAndroid::init() {
 
-	mutex = Mutex::create();
 	/*
 	// TODO: pass in/return a (Java) device ID, also whether we're opening for input or output
 	   this->spec.samples = Android_JNI_OpenAudioDevice(this->spec.freq, this->spec.format == AUDIO_U8 ? 0 : 1, this->spec.channels, this->spec.samples);
@@ -84,7 +83,7 @@ Error AudioDriverAndroid::init() {
 
 	audioBuffer = env->CallObjectMethod(io, _init_audio, mix_rate, buffer_size);
 
-	ERR_FAIL_COND_V(audioBuffer == NULL, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(audioBuffer == nullptr, ERR_INVALID_PARAMETER);
 
 	audioBuffer = env->NewGlobalRef(audioBuffer);
 
@@ -133,7 +132,7 @@ void AudioDriverAndroid::thread_func(JNIEnv *env) {
 		int16_t *ptr = (int16_t *)audioBufferPinned;
 		int fc = audioBufferFrames;
 
-		if (!s_ad->active || mutex->try_lock() != OK) {
+		if (!s_ad->active || mutex.try_lock() != OK) {
 
 			for (int i = 0; i < fc; i++) {
 				ptr[i] = 0;
@@ -143,7 +142,7 @@ void AudioDriverAndroid::thread_func(JNIEnv *env) {
 
 			s_ad->audio_server_process(fc / 2, audioBuffer32);
 
-			mutex->unlock();
+			mutex.unlock();
 
 			for (int i = 0; i < fc; i++) {
 
@@ -167,14 +166,12 @@ AudioDriver::SpeakerMode AudioDriverAndroid::get_speaker_mode() const {
 
 void AudioDriverAndroid::lock() {
 
-	if (mutex)
-		mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverAndroid::unlock() {
 
-	if (mutex)
-		mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverAndroid::finish() {
@@ -184,8 +181,8 @@ void AudioDriverAndroid::finish() {
 
 	if (audioBuffer) {
 		env->DeleteGlobalRef(audioBuffer);
-		audioBuffer = NULL;
-		audioBufferPinned = NULL;
+		audioBuffer = nullptr;
+		audioBufferPinned = nullptr;
 	}
 
 	active = false;

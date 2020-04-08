@@ -32,18 +32,20 @@
 
 #include <mono/metadata/exception.h>
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/os/dir_access.h"
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/reference.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/script_editor_debugger.h"
+#include "editor/debugger/editor_debugger_node.h"
 #endif
 
 #include "../csharp_script.h"
 #include "../utils/macros.h"
-#include "../utils/mutex_utils.h"
 #include "gd_mono.h"
 #include "gd_mono_cache.h"
 #include "gd_mono_class.h"
@@ -55,7 +57,7 @@ namespace GDMonoUtils {
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	if (!unmanaged)
-		return NULL;
+		return nullptr;
 
 	if (unmanaged->get_script_instance()) {
 		CSharpInstance *cs_instance = CAST_CSHARP_INSTANCE(unmanaged->get_script_instance());
@@ -69,25 +71,24 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 	void *data = unmanaged->get_script_instance_binding(CSharpLanguage::get_singleton()->get_language_index());
 
-	ERR_FAIL_NULL_V(data, NULL);
+	ERR_FAIL_NULL_V(data, nullptr);
 
 	CSharpScriptBinding &script_binding = ((Map<Object *, CSharpScriptBinding>::Element *)data)->value();
 
 	if (!script_binding.inited) {
-		SCOPED_MUTEX_LOCK(CSharpLanguage::get_singleton()->get_language_bind_mutex());
+		MutexLock lock(CSharpLanguage::get_singleton()->get_language_bind_mutex());
 
 		if (!script_binding.inited) { // Other thread may have set it up
 			// Already had a binding that needs to be setup
 			CSharpLanguage::get_singleton()->setup_csharp_script_binding(script_binding, unmanaged);
 
-			ERR_FAIL_COND_V(!script_binding.inited, NULL);
+			ERR_FAIL_COND_V(!script_binding.inited, nullptr);
 		}
 	}
 
-	Ref<MonoGCHandle> &gchandle = script_binding.gchandle;
-	ERR_FAIL_COND_V(gchandle.is_null(), NULL);
+	MonoGCHandleData &gchandle = script_binding.gchandle;
 
-	MonoObject *target = gchandle->get_target();
+	MonoObject *target = gchandle.get_target();
 
 	if (target)
 		return target;
@@ -98,13 +99,13 @@ MonoObject *unmanaged_get_managed(Object *unmanaged) {
 
 #ifdef DEBUG_ENABLED
 	CRASH_COND(script_binding.type_name == StringName());
-	CRASH_COND(script_binding.wrapper_class == NULL);
+	CRASH_COND(script_binding.wrapper_class == nullptr);
 #endif
 
 	MonoObject *mono_object = GDMonoUtils::create_managed_for_godot_object(script_binding.wrapper_class, script_binding.type_name, unmanaged);
-	ERR_FAIL_NULL_V(mono_object, NULL);
+	ERR_FAIL_NULL_V(mono_object, nullptr);
 
-	gchandle->set_handle(MonoGCHandle::new_strong_handle(mono_object), MonoGCHandle::STRONG_HANDLE);
+	gchandle = MonoGCHandleData::new_strong_handle(mono_object);
 
 	// Tie managed to unmanaged
 	Reference *ref = Object::cast_to<Reference>(unmanaged);
@@ -126,10 +127,15 @@ void set_main_thread(MonoThread *p_thread) {
 }
 
 MonoThread *attach_current_thread() {
-	ERR_FAIL_COND_V(!GDMono::get_singleton()->is_runtime_initialized(), NULL);
+	ERR_FAIL_COND_V(!GDMono::get_singleton()->is_runtime_initialized(), nullptr);
 	MonoDomain *scripts_domain = GDMono::get_singleton()->get_scripts_domain();
+#ifndef GD_MONO_SINGLE_APPDOMAIN
 	MonoThread *mono_thread = mono_thread_attach(scripts_domain ? scripts_domain : mono_get_root_domain());
-	ERR_FAIL_NULL_V(mono_thread, NULL);
+#else
+	// The scripts domain is the root domain
+	MonoThread *mono_thread = mono_thread_attach(scripts_domain);
+#endif
+	ERR_FAIL_NULL_V(mono_thread, nullptr);
 	return mono_thread;
 }
 
@@ -151,13 +157,36 @@ MonoThread *get_current_thread() {
 }
 
 bool is_thread_attached() {
-	return mono_domain_get() != NULL;
+	return mono_domain_get() != nullptr;
+}
+
+uint32_t new_strong_gchandle(MonoObject *p_object) {
+	return mono_gchandle_new(p_object, /* pinned: */ false);
+}
+
+uint32_t new_strong_gchandle_pinned(MonoObject *p_object) {
+	return mono_gchandle_new(p_object, /* pinned: */ true);
+}
+
+uint32_t new_weak_gchandle(MonoObject *p_object) {
+	return mono_gchandle_new_weakref(p_object, /* track_resurrection: */ false);
+}
+
+void free_gchandle(uint32_t p_gchandle) {
+	mono_gchandle_free(p_gchandle);
 }
 
 void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc) {
 	GDMonoMethod *ctor = p_class->get_method(".ctor", 0);
 	ERR_FAIL_NULL(ctor);
-	ctor->invoke_raw(p_this_obj, NULL, r_exc);
+	ctor->invoke_raw(p_this_obj, nullptr, r_exc);
+}
+
+bool mono_delegate_equal(MonoDelegate *p_a, MonoDelegate *p_b) {
+	MonoException *exc = nullptr;
+	MonoBoolean res = CACHED_METHOD_THUNK(Delegate, Equals).invoke((MonoObject *)p_a, (MonoObject *)p_b, &exc);
+	UNHANDLED_EXCEPTION(exc);
+	return (bool)res;
 }
 
 GDMonoClass *get_object_class(MonoObject *p_object) {
@@ -197,18 +226,18 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 		if (assembly == GDMono::get_singleton()->get_editor_api_assembly())
 			return klass;
 #endif
-	} while ((klass = klass->get_parent_class()) != NULL);
+	} while ((klass = klass->get_parent_class()) != nullptr);
 
-	return NULL;
+	return nullptr;
 }
 
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
 	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), p_native);
-	ERR_FAIL_COND_V_MSG(!parent_is_object_class, NULL,
+	ERR_FAIL_COND_V_MSG(!parent_is_object_class, nullptr,
 			"Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'.");
 
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
-	ERR_FAIL_NULL_V(mono_object, NULL);
+	ERR_FAIL_NULL_V(mono_object, nullptr);
 
 	CACHED_FIELD(GodotObject, ptr)->set_value_raw(mono_object, p_object);
 
@@ -218,9 +247,21 @@ MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringNa
 	return mono_object;
 }
 
+MonoObject *create_managed_from(const StringName &p_from) {
+	MonoObject *mono_object = mono_object_new(mono_domain_get(), CACHED_CLASS_RAW(StringName));
+	ERR_FAIL_NULL_V(mono_object, nullptr);
+
+	// Construct
+	GDMonoUtils::runtime_object_init(mono_object, CACHED_CLASS(StringName));
+
+	CACHED_FIELD(StringName, ptr)->set_value_raw(mono_object, memnew(StringName(p_from)));
+
+	return mono_object;
+}
+
 MonoObject *create_managed_from(const NodePath &p_from) {
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), CACHED_CLASS_RAW(NodePath));
-	ERR_FAIL_NULL_V(mono_object, NULL);
+	ERR_FAIL_NULL_V(mono_object, nullptr);
 
 	// Construct
 	GDMonoUtils::runtime_object_init(mono_object, CACHED_CLASS(NodePath));
@@ -232,7 +273,7 @@ MonoObject *create_managed_from(const NodePath &p_from) {
 
 MonoObject *create_managed_from(const RID &p_from) {
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), CACHED_CLASS_RAW(RID));
-	ERR_FAIL_NULL_V(mono_object, NULL);
+	ERR_FAIL_NULL_V(mono_object, nullptr);
 
 	// Construct
 	GDMonoUtils::runtime_object_init(mono_object, CACHED_CLASS(RID));
@@ -244,15 +285,15 @@ MonoObject *create_managed_from(const RID &p_from) {
 
 MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class) {
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
-	ERR_FAIL_NULL_V(mono_object, NULL);
+	ERR_FAIL_NULL_V(mono_object, nullptr);
 
 	// Search constructor that takes a pointer as parameter
 	MonoMethod *m;
-	void *iter = NULL;
+	void *iter = nullptr;
 	while ((m = mono_class_get_methods(p_class->get_mono_ptr(), &iter))) {
 		if (strcmp(mono_method_get_name(m), ".ctor") == 0) {
 			MonoMethodSignature *sig = mono_method_signature(m);
-			void *front = NULL;
+			void *front = nullptr;
 			if (mono_signature_get_param_count(sig) == 1 &&
 					mono_class_from_mono_type(mono_signature_get_params(sig, &front)) == CACHED_CLASS(IntPtr)->get_mono_ptr()) {
 				break;
@@ -260,12 +301,12 @@ MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class) {
 		}
 	}
 
-	CRASH_COND(m == NULL);
+	CRASH_COND(m == nullptr);
 
 	Array *new_array = memnew(Array(p_from));
 	void *args[1] = { &new_array };
 
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	GDMonoUtils::runtime_invoke(m, mono_object, args, &exc);
 	UNHANDLED_EXCEPTION(exc);
 
@@ -274,15 +315,15 @@ MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class) {
 
 MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class) {
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
-	ERR_FAIL_NULL_V(mono_object, NULL);
+	ERR_FAIL_NULL_V(mono_object, nullptr);
 
 	// Search constructor that takes a pointer as parameter
 	MonoMethod *m;
-	void *iter = NULL;
+	void *iter = nullptr;
 	while ((m = mono_class_get_methods(p_class->get_mono_ptr(), &iter))) {
 		if (strcmp(mono_method_get_name(m), ".ctor") == 0) {
 			MonoMethodSignature *sig = mono_method_signature(m);
-			void *front = NULL;
+			void *front = nullptr;
 			if (mono_signature_get_param_count(sig) == 1 &&
 					mono_class_from_mono_type(mono_signature_get_params(sig, &front)) == CACHED_CLASS(IntPtr)->get_mono_ptr()) {
 				break;
@@ -290,12 +331,12 @@ MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class) 
 		}
 	}
 
-	CRASH_COND(m == NULL);
+	CRASH_COND(m == nullptr);
 
 	Dictionary *new_dict = memnew(Dictionary(p_from));
 	void *args[1] = { &new_dict };
 
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	GDMonoUtils::runtime_invoke(m, mono_object, args, &exc);
 	UNHANDLED_EXCEPTION(exc);
 
@@ -305,7 +346,7 @@ MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class) 
 MonoDomain *create_domain(const String &p_friendly_name) {
 	print_verbose("Mono: Creating domain '" + p_friendly_name + "'...");
 
-	MonoDomain *domain = mono_domain_create_appdomain((char *)p_friendly_name.utf8().get_data(), NULL);
+	MonoDomain *domain = mono_domain_create_appdomain((char *)p_friendly_name.utf8().get_data(), nullptr);
 
 	if (domain) {
 		// Workaround to avoid this exception:
@@ -330,7 +371,7 @@ String get_exception_name_and_message(MonoException *p_exc) {
 	res += ": ";
 
 	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
-	MonoString *msg = (MonoString *)property_get_value(prop, (MonoObject *)p_exc, NULL, NULL);
+	MonoString *msg = (MonoString *)property_get_value(prop, (MonoObject *)p_exc, nullptr, nullptr);
 	res += GDMonoMarshal::mono_string_to_godot(msg);
 
 	return res;
@@ -341,7 +382,7 @@ void set_exception_message(MonoException *p_exc, String message) {
 	MonoProperty *prop = mono_class_get_property_from_name(klass, "Message");
 	MonoString *msg = GDMonoMarshal::mono_string_from_godot(message);
 	void *params[1] = { msg };
-	property_set_value(prop, (MonoObject *)p_exc, params, NULL);
+	property_set_value(prop, (MonoObject *)p_exc, params, nullptr);
 }
 
 void debug_print_unhandled_exception(MonoException *p_exc) {
@@ -351,7 +392,7 @@ void debug_print_unhandled_exception(MonoException *p_exc) {
 
 void debug_send_unhandled_exception_error(MonoException *p_exc) {
 #ifdef DEBUG_ENABLED
-	if (!ScriptDebugger::get_singleton()) {
+	if (!EngineDebugger::is_active()) {
 #ifdef TOOLS_ENABLED
 		if (Engine::get_singleton()->is_editor_hint()) {
 			ERR_PRINT(GDMonoUtils::get_exception_name_and_message(p_exc));
@@ -360,7 +401,11 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		return;
 	}
 
-	_TLS_RECURSION_GUARD_;
+	static thread_local bool _recursion_flag_ = false;
+	if (_recursion_flag_)
+		return;
+	_recursion_flag_ = true;
+	SCOPE_EXIT { _recursion_flag_ = false; };
 
 	ScriptLanguage::StackInfo separator;
 	separator.file = String();
@@ -370,14 +415,14 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	Vector<ScriptLanguage::StackInfo> si;
 	String exc_msg;
 
-	while (p_exc != NULL) {
+	while (p_exc != nullptr) {
 		GDMonoClass *st_klass = CACHED_CLASS(System_Diagnostics_StackTrace);
 		MonoObject *stack_trace = mono_object_new(mono_domain_get(), st_klass->get_mono_ptr());
 
 		MonoBoolean need_file_info = true;
 		void *ctor_args[2] = { p_exc, &need_file_info };
 
-		MonoException *unexpected_exc = NULL;
+		MonoException *unexpected_exc = nullptr;
 		CACHED_METHOD(System_Diagnostics_StackTrace, ctor_Exception_bool)->invoke_raw(stack_trace, ctor_args, &unexpected_exc);
 
 		if (unexpected_exc) {
@@ -386,7 +431,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 		}
 
 		Vector<ScriptLanguage::StackInfo> _si;
-		if (stack_trace != NULL) {
+		if (stack_trace != nullptr) {
 			_si = CSharpLanguage::get_singleton()->stack_trace_get_info(stack_trace);
 			for (int i = _si.size() - 1; i >= 0; i--)
 				si.insert(0, _si[i]);
@@ -396,10 +441,10 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 		GDMonoClass *exc_class = GDMono::get_singleton()->get_class(mono_get_exception_class());
 		GDMonoProperty *inner_exc_prop = exc_class->get_property("InnerException");
-		CRASH_COND(inner_exc_prop == NULL);
+		CRASH_COND(inner_exc_prop == nullptr);
 
 		MonoObject *inner_exc = inner_exc_prop->get_value((MonoObject *)p_exc);
-		if (inner_exc != NULL)
+		if (inner_exc != nullptr)
 			si.insert(0, separator);
 
 		p_exc = (MonoException *)inner_exc;
@@ -410,7 +455,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 	int line = si.size() ? si[0].line : __LINE__;
 	String error_msg = "Unhandled exception";
 
-	ScriptDebugger::get_singleton()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
+	EngineDebugger::get_script_debugger()->send_error(func, file, line, error_msg, exc_msg, ERR_HANDLER_ERROR, si);
 #endif
 }
 
@@ -437,8 +482,7 @@ void set_pending_exception(MonoException *p_exc) {
 #endif
 }
 
-_THREAD_LOCAL_(int)
-current_invoke_count = 0;
+thread_local int current_invoke_count = 0;
 
 MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc) {
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
@@ -526,7 +570,7 @@ namespace Marshal {
 
 bool type_is_generic_array(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericArray).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -534,27 +578,27 @@ bool type_is_generic_array(MonoReflectionType *p_reftype) {
 
 bool type_is_generic_dictionary(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, TypeIsGenericDictionary).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
 }
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype) {
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, ArrayGetElementType).invoke(p_array_reftype, r_elem_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 }
 
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype) {
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, DictionaryGetKeyValueTypes).invoke(p_dict_reftype, r_key_reftype, r_value_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 }
 
 bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIEnumerableIsAssignableFromType).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -562,7 +606,7 @@ bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype) {
 
 bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype) {
 	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIDictionaryIsAssignableFromType).invoke(p_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -570,7 +614,7 @@ bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype) {
 
 bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype) {
 	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIEnumerableIsAssignableFromType_with_info).invoke(p_reftype, r_elem_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -578,7 +622,7 @@ bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoR
 
 bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype) {
 	NO_GLUE_RET(false);
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	MonoBoolean res = CACHED_METHOD_THUNK(MarshalUtils, GenericIDictionaryIsAssignableFromType_with_info).invoke(p_reftype, r_key_reftype, r_value_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return (bool)res;
@@ -587,7 +631,7 @@ bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoR
 Array enumerable_to_array(MonoObject *p_enumerable) {
 	NO_GLUE_RET(Array());
 	Array result;
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, EnumerableToArray).invoke(p_enumerable, &result, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return result;
@@ -596,7 +640,7 @@ Array enumerable_to_array(MonoObject *p_enumerable) {
 Dictionary idictionary_to_dictionary(MonoObject *p_idictionary) {
 	NO_GLUE_RET(Dictionary());
 	Dictionary result;
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, IDictionaryToDictionary).invoke(p_idictionary, &result, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return result;
@@ -605,23 +649,23 @@ Dictionary idictionary_to_dictionary(MonoObject *p_idictionary) {
 Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary) {
 	NO_GLUE_RET(Dictionary());
 	Dictionary result;
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(MarshalUtils, GenericIDictionaryToDictionary).invoke(p_generic_idictionary, &result, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return result;
 }
 
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype) {
-	NO_GLUE_RET(NULL);
-	MonoException *exc = NULL;
+	NO_GLUE_RET(nullptr);
+	MonoException *exc = nullptr;
 	MonoReflectionType *reftype = CACHED_METHOD_THUNK(MarshalUtils, MakeGenericArrayType).invoke(p_elem_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return GDMono::get_singleton()->get_class(mono_class_from_mono_type(mono_reflection_type_get_type(reftype)));
 }
 
 GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype) {
-	NO_GLUE_RET(NULL);
-	MonoException *exc = NULL;
+	NO_GLUE_RET(nullptr);
+	MonoException *exc = nullptr;
 	MonoReflectionType *reftype = CACHED_METHOD_THUNK(MarshalUtils, MakeGenericDictionaryType).invoke(p_key_reftype, p_value_reftype, &exc);
 	UNHANDLED_EXCEPTION(exc);
 	return GDMono::get_singleton()->get_class(mono_class_from_mono_type(mono_reflection_type_get_type(reftype)));
@@ -630,7 +674,7 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 } // namespace Marshal
 
 ScopeThreadAttach::ScopeThreadAttach() :
-		mono_thread(NULL) {
+		mono_thread(nullptr) {
 	if (likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get())) {
 		mono_thread = GDMonoUtils::attach_current_thread();
 	}
@@ -642,6 +686,10 @@ ScopeThreadAttach::~ScopeThreadAttach() {
 	}
 }
 
-// namespace Marshal
+StringName get_native_godot_class_name(GDMonoClass *p_class) {
+	MonoObject *native_name_obj = p_class->get_field(BINDINGS_NATIVE_NAME_FIELD)->get_value(nullptr);
+	StringName *ptr = GDMonoMarshal::unbox<StringName *>(CACHED_FIELD(StringName, ptr)->get_value(native_name_obj));
+	return ptr ? *ptr : StringName();
+}
 
 } // namespace GDMonoUtils

@@ -93,52 +93,52 @@
             ]
           },
           {
-            "name": "godot_pool_byte_array_empty",
+            "name": "godot_packed_byte_array_empty",
             "return_type": "godot_bool",
             "arguments": [
-              ["const godot_pool_byte_array *", "p_self"]
+              ["const godot_packed_byte_array *", "p_self"]
             ]
           },
           {
-            "name": "godot_pool_int_array_empty",
+            "name": "godot_packed_int_array_empty",
             "return_type": "godot_bool",
             "arguments": [
-              ["const godot_pool_int_array *", "p_self"]
+              ["const godot_packed_int_array *", "p_self"]
             ]
           },
           {
-            "name": "godot_pool_real_array_empty",
+            "name": "godot_packed_real_array_empty",
             "return_type": "godot_bool",
             "arguments": [
-              ["const godot_pool_real_array *", "p_self"]
+              ["const godot_packed_real_array *", "p_self"]
             ]
           },
           {
-            "name": "godot_pool_string_array_empty",
+            "name": "godot_packed_string_array_empty",
             "return_type": "godot_bool",
             "arguments": [
-              ["const godot_pool_string_array *", "p_self"]
+              ["const godot_packed_string_array *", "p_self"]
             ]
           },
           {
-            "name": "godot_pool_vector2_array_empty",
+            "name": "godot_packed_vector2_array_empty",
             "return_type": "godot_bool",
             "arguments": [
-              ["const godot_pool_vector2_array *", "p_self"]
+              ["const godot_packed_vector2_array *", "p_self"]
             ]
           },
           {
-            "name": "godot_pool_vector3_array_empty",
+            "name": "godot_packed_vector3_array_empty",
             "return_type": "godot_bool",
             "arguments": [
-              ["const godot_pool_vector3_array *", "p_self"]
+              ["const godot_packed_vector3_array *", "p_self"]
             ]
           },
           {
-            "name": "godot_pool_color_array_empty",
+            "name": "godot_packed_color_array_empty",
             "return_type": "godot_bool",
             "arguments": [
-              ["const godot_pool_color_array *", "p_self"]
+              ["const godot_packed_color_array *", "p_self"]
             ]
           },
           {
@@ -352,7 +352,7 @@
         },
         {
           "name": "godot_string_rsplit",
-          "return_type": "godot_pool_string_array",
+          "return_type": "godot_packed_string_array",
           "arguments": [
             ["const godot_string *", "p_self"],
             ["const godot_string *", "p_divisor"],
@@ -401,13 +401,6 @@
             ["godot_basis *", "p_self"],
             ["const godot_quat *", "p_quat"],
             ["const godot_vector3 *", "p_scale"]
-          ]
-        },
-        {
-          "name": "godot_is_instance_valid",
-          "return_type": "bool",
-          "arguments": [
-            ["const godot_object *", "p_object"]
           ]
         },
         {
@@ -574,13 +567,6 @@
       {
         "name": "godot_color_to_argb32",
         "return_type": "godot_int",
-        "arguments": [
-          ["const godot_color *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_color_gray",
-        "return_type": "godot_real",
         "arguments": [
           ["const godot_color *", "p_self"]
         ]
@@ -1671,1277 +1657,773 @@
         ]
       },
       {
-        "name": "godot_pool_byte_array_new",
+        "name": "godot_packed_byte_array_new",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "r_dest"]
+          ["godot_packed_byte_array *", "r_dest"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_new_copy",
+        "name": "godot_packed_byte_array_new_copy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "r_dest"],
-          ["const godot_pool_byte_array *", "p_src"]
+          ["godot_packed_byte_array *", "r_dest"],
+          ["const godot_packed_byte_array *", "p_src"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_new_with_array",
+        "name": "godot_packed_byte_array_new_with_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "r_dest"],
+          ["godot_packed_byte_array *", "r_dest"],
           ["const godot_array *", "p_a"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_append",
+        "name": "godot_packed_byte_array_append",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"],
+          ["godot_packed_byte_array *", "p_self"],
           ["const uint8_t", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_append_array",
+        "name": "godot_packed_byte_array_append_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"],
-          ["const godot_pool_byte_array *", "p_array"]
+          ["godot_packed_byte_array *", "p_self"],
+          ["const godot_packed_byte_array *", "p_array"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_insert",
+        "name": "godot_packed_byte_array_insert",
         "return_type": "godot_error",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"],
+          ["godot_packed_byte_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const uint8_t", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_invert",
+        "name": "godot_packed_byte_array_invert",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"]
+          ["godot_packed_byte_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_push_back",
+        "name": "godot_packed_byte_array_push_back",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"],
+          ["godot_packed_byte_array *", "p_self"],
           ["const uint8_t", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_remove",
+        "name": "godot_packed_byte_array_remove",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"],
+          ["godot_packed_byte_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_resize",
+        "name": "godot_packed_byte_array_resize",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"],
+          ["godot_packed_byte_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_read",
-        "return_type": "godot_pool_byte_array_read_access *",
-        "arguments": [
-          ["const godot_pool_byte_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_write",
-        "return_type": "godot_pool_byte_array_write_access *",
-        "arguments": [
-          ["godot_pool_byte_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_set",
+        "name": "godot_packed_byte_array_set",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"],
+          ["godot_packed_byte_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const uint8_t", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_get",
+        "name": "godot_packed_byte_array_get",
         "return_type": "uint8_t",
         "arguments": [
-          ["const godot_pool_byte_array *", "p_self"],
+          ["const godot_packed_byte_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_size",
+        "name": "godot_packed_byte_array_size",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_byte_array *", "p_self"]
+          ["const godot_packed_byte_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_byte_array_destroy",
+        "name": "godot_packed_byte_array_destroy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_byte_array *", "p_self"]
+          ["godot_packed_byte_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_int_array_new",
+        "name": "godot_packed_int_array_new",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "r_dest"]
+          ["godot_packed_int_array *", "r_dest"]
         ]
       },
       {
-        "name": "godot_pool_int_array_new_copy",
+        "name": "godot_packed_int_array_new_copy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "r_dest"],
-          ["const godot_pool_int_array *", "p_src"]
+          ["godot_packed_int_array *", "r_dest"],
+          ["const godot_packed_int_array *", "p_src"]
         ]
       },
       {
-        "name": "godot_pool_int_array_new_with_array",
+        "name": "godot_packed_int_array_new_with_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "r_dest"],
+          ["godot_packed_int_array *", "r_dest"],
           ["const godot_array *", "p_a"]
         ]
       },
       {
-        "name": "godot_pool_int_array_append",
+        "name": "godot_packed_int_array_append",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"],
+          ["godot_packed_int_array *", "p_self"],
           ["const godot_int", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_int_array_append_array",
+        "name": "godot_packed_int_array_append_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"],
-          ["const godot_pool_int_array *", "p_array"]
+          ["godot_packed_int_array *", "p_self"],
+          ["const godot_packed_int_array *", "p_array"]
         ]
       },
       {
-        "name": "godot_pool_int_array_insert",
+        "name": "godot_packed_int_array_insert",
         "return_type": "godot_error",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"],
+          ["godot_packed_int_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_int", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_int_array_invert",
+        "name": "godot_packed_int_array_invert",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"]
+          ["godot_packed_int_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_int_array_push_back",
+        "name": "godot_packed_int_array_push_back",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"],
+          ["godot_packed_int_array *", "p_self"],
           ["const godot_int", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_int_array_remove",
+        "name": "godot_packed_int_array_remove",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"],
+          ["godot_packed_int_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_int_array_resize",
+        "name": "godot_packed_int_array_resize",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"],
+          ["godot_packed_int_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
       },
       {
-        "name": "godot_pool_int_array_read",
-        "return_type": "godot_pool_int_array_read_access *",
-        "arguments": [
-          ["const godot_pool_int_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_write",
-        "return_type": "godot_pool_int_array_write_access *",
-        "arguments": [
-          ["godot_pool_int_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_set",
+        "name": "godot_packed_int_array_set",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"],
+          ["godot_packed_int_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_int", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_int_array_get",
+        "name": "godot_packed_int_array_get",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_int_array *", "p_self"],
+          ["const godot_packed_int_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_int_array_size",
+        "name": "godot_packed_int_array_size",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_int_array *", "p_self"]
+          ["const godot_packed_int_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_int_array_destroy",
+        "name": "godot_packed_int_array_destroy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_int_array *", "p_self"]
+          ["godot_packed_int_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_real_array_new",
+        "name": "godot_packed_real_array_new",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "r_dest"]
+          ["godot_packed_real_array *", "r_dest"]
         ]
       },
       {
-        "name": "godot_pool_real_array_new_copy",
+        "name": "godot_packed_real_array_new_copy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "r_dest"],
-          ["const godot_pool_real_array *", "p_src"]
+          ["godot_packed_real_array *", "r_dest"],
+          ["const godot_packed_real_array *", "p_src"]
         ]
       },
       {
-        "name": "godot_pool_real_array_new_with_array",
+        "name": "godot_packed_real_array_new_with_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "r_dest"],
+          ["godot_packed_real_array *", "r_dest"],
           ["const godot_array *", "p_a"]
         ]
       },
       {
-        "name": "godot_pool_real_array_append",
+        "name": "godot_packed_real_array_append",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"],
+          ["godot_packed_real_array *", "p_self"],
           ["const godot_real", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_real_array_append_array",
+        "name": "godot_packed_real_array_append_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"],
-          ["const godot_pool_real_array *", "p_array"]
+          ["godot_packed_real_array *", "p_self"],
+          ["const godot_packed_real_array *", "p_array"]
         ]
       },
       {
-        "name": "godot_pool_real_array_insert",
+        "name": "godot_packed_real_array_insert",
         "return_type": "godot_error",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"],
+          ["godot_packed_real_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_real", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_real_array_invert",
+        "name": "godot_packed_real_array_invert",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"]
+          ["godot_packed_real_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_real_array_push_back",
+        "name": "godot_packed_real_array_push_back",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"],
+          ["godot_packed_real_array *", "p_self"],
           ["const godot_real", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_real_array_remove",
+        "name": "godot_packed_real_array_remove",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"],
+          ["godot_packed_real_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_real_array_resize",
+        "name": "godot_packed_real_array_resize",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"],
+          ["godot_packed_real_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
       },
       {
-        "name": "godot_pool_real_array_read",
-        "return_type": "godot_pool_real_array_read_access *",
-        "arguments": [
-          ["const godot_pool_real_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_write",
-        "return_type": "godot_pool_real_array_write_access *",
-        "arguments": [
-          ["godot_pool_real_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_set",
+        "name": "godot_packed_real_array_set",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"],
+          ["godot_packed_real_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_real", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_real_array_get",
+        "name": "godot_packed_real_array_get",
         "return_type": "godot_real",
         "arguments": [
-          ["const godot_pool_real_array *", "p_self"],
+          ["const godot_packed_real_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_real_array_size",
+        "name": "godot_packed_real_array_size",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_real_array *", "p_self"]
+          ["const godot_packed_real_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_real_array_destroy",
+        "name": "godot_packed_real_array_destroy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_real_array *", "p_self"]
+          ["godot_packed_real_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_string_array_new",
+        "name": "godot_packed_string_array_new",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "r_dest"]
+          ["godot_packed_string_array *", "r_dest"]
         ]
       },
       {
-        "name": "godot_pool_string_array_new_copy",
+        "name": "godot_packed_string_array_new_copy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "r_dest"],
-          ["const godot_pool_string_array *", "p_src"]
+          ["godot_packed_string_array *", "r_dest"],
+          ["const godot_packed_string_array *", "p_src"]
         ]
       },
       {
-        "name": "godot_pool_string_array_new_with_array",
+        "name": "godot_packed_string_array_new_with_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "r_dest"],
+          ["godot_packed_string_array *", "r_dest"],
           ["const godot_array *", "p_a"]
         ]
       },
       {
-        "name": "godot_pool_string_array_append",
+        "name": "godot_packed_string_array_append",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"],
+          ["godot_packed_string_array *", "p_self"],
           ["const godot_string *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_string_array_append_array",
+        "name": "godot_packed_string_array_append_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"],
-          ["const godot_pool_string_array *", "p_array"]
+          ["godot_packed_string_array *", "p_self"],
+          ["const godot_packed_string_array *", "p_array"]
         ]
       },
       {
-        "name": "godot_pool_string_array_insert",
+        "name": "godot_packed_string_array_insert",
         "return_type": "godot_error",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"],
+          ["godot_packed_string_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_string *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_string_array_invert",
+        "name": "godot_packed_string_array_invert",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"]
+          ["godot_packed_string_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_string_array_push_back",
+        "name": "godot_packed_string_array_push_back",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"],
+          ["godot_packed_string_array *", "p_self"],
           ["const godot_string *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_string_array_remove",
+        "name": "godot_packed_string_array_remove",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"],
+          ["godot_packed_string_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_string_array_resize",
+        "name": "godot_packed_string_array_resize",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"],
+          ["godot_packed_string_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
       },
       {
-        "name": "godot_pool_string_array_read",
-        "return_type": "godot_pool_string_array_read_access *",
-        "arguments": [
-          ["const godot_pool_string_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_write",
-        "return_type": "godot_pool_string_array_write_access *",
-        "arguments": [
-          ["godot_pool_string_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_set",
+        "name": "godot_packed_string_array_set",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"],
+          ["godot_packed_string_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_string *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_string_array_get",
+        "name": "godot_packed_string_array_get",
         "return_type": "godot_string",
         "arguments": [
-          ["const godot_pool_string_array *", "p_self"],
+          ["const godot_packed_string_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_string_array_size",
+        "name": "godot_packed_string_array_size",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_string_array *", "p_self"]
+          ["const godot_packed_string_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_string_array_destroy",
+        "name": "godot_packed_string_array_destroy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_string_array *", "p_self"]
+          ["godot_packed_string_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_new",
+        "name": "godot_packed_vector2_array_new",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "r_dest"]
+          ["godot_packed_vector2_array *", "r_dest"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_new_copy",
+        "name": "godot_packed_vector2_array_new_copy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "r_dest"],
-          ["const godot_pool_vector2_array *", "p_src"]
+          ["godot_packed_vector2_array *", "r_dest"],
+          ["const godot_packed_vector2_array *", "p_src"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_new_with_array",
+        "name": "godot_packed_vector2_array_new_with_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "r_dest"],
+          ["godot_packed_vector2_array *", "r_dest"],
           ["const godot_array *", "p_a"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_append",
+        "name": "godot_packed_vector2_array_append",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"],
+          ["godot_packed_vector2_array *", "p_self"],
           ["const godot_vector2 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_append_array",
+        "name": "godot_packed_vector2_array_append_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"],
-          ["const godot_pool_vector2_array *", "p_array"]
+          ["godot_packed_vector2_array *", "p_self"],
+          ["const godot_packed_vector2_array *", "p_array"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_insert",
+        "name": "godot_packed_vector2_array_insert",
         "return_type": "godot_error",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"],
+          ["godot_packed_vector2_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_vector2 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_invert",
+        "name": "godot_packed_vector2_array_invert",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"]
+          ["godot_packed_vector2_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_push_back",
+        "name": "godot_packed_vector2_array_push_back",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"],
+          ["godot_packed_vector2_array *", "p_self"],
           ["const godot_vector2 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_remove",
+        "name": "godot_packed_vector2_array_remove",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"],
+          ["godot_packed_vector2_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_resize",
+        "name": "godot_packed_vector2_array_resize",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"],
+          ["godot_packed_vector2_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_read",
-        "return_type": "godot_pool_vector2_array_read_access *",
-        "arguments": [
-          ["const godot_pool_vector2_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_write",
-        "return_type": "godot_pool_vector2_array_write_access *",
-        "arguments": [
-          ["godot_pool_vector2_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_set",
+        "name": "godot_packed_vector2_array_set",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"],
+          ["godot_packed_vector2_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_vector2 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_get",
+        "name": "godot_packed_vector2_array_get",
         "return_type": "godot_vector2",
         "arguments": [
-          ["const godot_pool_vector2_array *", "p_self"],
+          ["const godot_packed_vector2_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_size",
+        "name": "godot_packed_vector2_array_size",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_vector2_array *", "p_self"]
+          ["const godot_packed_vector2_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_vector2_array_destroy",
+        "name": "godot_packed_vector2_array_destroy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector2_array *", "p_self"]
+          ["godot_packed_vector2_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_new",
+        "name": "godot_packed_vector3_array_new",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "r_dest"]
+          ["godot_packed_vector3_array *", "r_dest"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_new_copy",
+        "name": "godot_packed_vector3_array_new_copy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "r_dest"],
-          ["const godot_pool_vector3_array *", "p_src"]
+          ["godot_packed_vector3_array *", "r_dest"],
+          ["const godot_packed_vector3_array *", "p_src"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_new_with_array",
+        "name": "godot_packed_vector3_array_new_with_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "r_dest"],
+          ["godot_packed_vector3_array *", "r_dest"],
           ["const godot_array *", "p_a"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_append",
+        "name": "godot_packed_vector3_array_append",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"],
+          ["godot_packed_vector3_array *", "p_self"],
           ["const godot_vector3 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_append_array",
+        "name": "godot_packed_vector3_array_append_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"],
-          ["const godot_pool_vector3_array *", "p_array"]
+          ["godot_packed_vector3_array *", "p_self"],
+          ["const godot_packed_vector3_array *", "p_array"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_insert",
+        "name": "godot_packed_vector3_array_insert",
         "return_type": "godot_error",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"],
+          ["godot_packed_vector3_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_vector3 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_invert",
+        "name": "godot_packed_vector3_array_invert",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"]
+          ["godot_packed_vector3_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_push_back",
+        "name": "godot_packed_vector3_array_push_back",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"],
+          ["godot_packed_vector3_array *", "p_self"],
           ["const godot_vector3 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_remove",
+        "name": "godot_packed_vector3_array_remove",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"],
+          ["godot_packed_vector3_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_resize",
+        "name": "godot_packed_vector3_array_resize",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"],
+          ["godot_packed_vector3_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_read",
-        "return_type": "godot_pool_vector3_array_read_access *",
-        "arguments": [
-          ["const godot_pool_vector3_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_write",
-        "return_type": "godot_pool_vector3_array_write_access *",
-        "arguments": [
-          ["godot_pool_vector3_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_set",
+        "name": "godot_packed_vector3_array_set",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"],
+          ["godot_packed_vector3_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_vector3 *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_get",
+        "name": "godot_packed_vector3_array_get",
         "return_type": "godot_vector3",
         "arguments": [
-          ["const godot_pool_vector3_array *", "p_self"],
+          ["const godot_packed_vector3_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_size",
+        "name": "godot_packed_vector3_array_size",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_vector3_array *", "p_self"]
+          ["const godot_packed_vector3_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_vector3_array_destroy",
+        "name": "godot_packed_vector3_array_destroy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_vector3_array *", "p_self"]
+          ["godot_packed_vector3_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_color_array_new",
+        "name": "godot_packed_color_array_new",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "r_dest"]
+          ["godot_packed_color_array *", "r_dest"]
         ]
       },
       {
-        "name": "godot_pool_color_array_new_copy",
+        "name": "godot_packed_color_array_new_copy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "r_dest"],
-          ["const godot_pool_color_array *", "p_src"]
+          ["godot_packed_color_array *", "r_dest"],
+          ["const godot_packed_color_array *", "p_src"]
         ]
       },
       {
-        "name": "godot_pool_color_array_new_with_array",
+        "name": "godot_packed_color_array_new_with_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "r_dest"],
+          ["godot_packed_color_array *", "r_dest"],
           ["const godot_array *", "p_a"]
         ]
       },
       {
-        "name": "godot_pool_color_array_append",
+        "name": "godot_packed_color_array_append",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"],
+          ["godot_packed_color_array *", "p_self"],
           ["const godot_color *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_color_array_append_array",
+        "name": "godot_packed_color_array_append_array",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"],
-          ["const godot_pool_color_array *", "p_array"]
+          ["godot_packed_color_array *", "p_self"],
+          ["const godot_packed_color_array *", "p_array"]
         ]
       },
       {
-        "name": "godot_pool_color_array_insert",
+        "name": "godot_packed_color_array_insert",
         "return_type": "godot_error",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"],
+          ["godot_packed_color_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_color *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_color_array_invert",
+        "name": "godot_packed_color_array_invert",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"]
+          ["godot_packed_color_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_color_array_push_back",
+        "name": "godot_packed_color_array_push_back",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"],
+          ["godot_packed_color_array *", "p_self"],
           ["const godot_color *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_color_array_remove",
+        "name": "godot_packed_color_array_remove",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"],
+          ["godot_packed_color_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_color_array_resize",
+        "name": "godot_packed_color_array_resize",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"],
+          ["godot_packed_color_array *", "p_self"],
           ["const godot_int", "p_size"]
         ]
       },
       {
-        "name": "godot_pool_color_array_read",
-        "return_type": "godot_pool_color_array_read_access *",
-        "arguments": [
-          ["const godot_pool_color_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_write",
-        "return_type": "godot_pool_color_array_write_access *",
-        "arguments": [
-          ["godot_pool_color_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_set",
+        "name": "godot_packed_color_array_set",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"],
+          ["godot_packed_color_array *", "p_self"],
           ["const godot_int", "p_idx"],
           ["const godot_color *", "p_data"]
         ]
       },
       {
-        "name": "godot_pool_color_array_get",
+        "name": "godot_packed_color_array_get",
         "return_type": "godot_color",
         "arguments": [
-          ["const godot_pool_color_array *", "p_self"],
+          ["const godot_packed_color_array *", "p_self"],
           ["const godot_int", "p_idx"]
         ]
       },
       {
-        "name": "godot_pool_color_array_size",
+        "name": "godot_packed_color_array_size",
         "return_type": "godot_int",
         "arguments": [
-          ["const godot_pool_color_array *", "p_self"]
+          ["const godot_packed_color_array *", "p_self"]
         ]
       },
       {
-        "name": "godot_pool_color_array_destroy",
+        "name": "godot_packed_color_array_destroy",
         "return_type": "void",
         "arguments": [
-          ["godot_pool_color_array *", "p_self"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_read_access_copy",
-        "return_type": "godot_pool_byte_array_read_access *",
-        "arguments": [
-          ["const godot_pool_byte_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_read_access_ptr",
-        "return_type": "const uint8_t *",
-        "arguments": [
-          ["const godot_pool_byte_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_read_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_byte_array_read_access *", "p_read"],
-          ["godot_pool_byte_array_read_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_read_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_byte_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_read_access_copy",
-        "return_type": "godot_pool_int_array_read_access *",
-        "arguments": [
-          ["const godot_pool_int_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_read_access_ptr",
-        "return_type": "const godot_int *",
-        "arguments": [
-          ["const godot_pool_int_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_read_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_int_array_read_access *", "p_read"],
-          ["godot_pool_int_array_read_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_read_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_int_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_read_access_copy",
-        "return_type": "godot_pool_real_array_read_access *",
-        "arguments": [
-          ["const godot_pool_real_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_read_access_ptr",
-        "return_type": "const godot_real *",
-        "arguments": [
-          ["const godot_pool_real_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_read_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_real_array_read_access *", "p_read"],
-          ["godot_pool_real_array_read_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_read_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_real_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_read_access_copy",
-        "return_type": "godot_pool_string_array_read_access *",
-        "arguments": [
-          ["const godot_pool_string_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_read_access_ptr",
-        "return_type": "const godot_string *",
-        "arguments": [
-          ["const godot_pool_string_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_read_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_string_array_read_access *", "p_read"],
-          ["godot_pool_string_array_read_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_read_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_string_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_read_access_copy",
-        "return_type": "godot_pool_vector2_array_read_access *",
-        "arguments": [
-          ["const godot_pool_vector2_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_read_access_ptr",
-        "return_type": "const godot_vector2 *",
-        "arguments": [
-          ["const godot_pool_vector2_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_read_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector2_array_read_access *", "p_read"],
-          ["godot_pool_vector2_array_read_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_read_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector2_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_read_access_copy",
-        "return_type": "godot_pool_vector3_array_read_access *",
-        "arguments": [
-          ["const godot_pool_vector3_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_read_access_ptr",
-        "return_type": "const godot_vector3 *",
-        "arguments": [
-          ["const godot_pool_vector3_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_read_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector3_array_read_access *", "p_read"],
-          ["godot_pool_vector3_array_read_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_read_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector3_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_read_access_copy",
-        "return_type": "godot_pool_color_array_read_access *",
-        "arguments": [
-          ["const godot_pool_color_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_read_access_ptr",
-        "return_type": "const godot_color *",
-        "arguments": [
-          ["const godot_pool_color_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_read_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_color_array_read_access *", "p_read"],
-          ["godot_pool_color_array_read_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_read_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_color_array_read_access *", "p_read"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_write_access_copy",
-        "return_type": "godot_pool_byte_array_write_access *",
-        "arguments": [
-          ["const godot_pool_byte_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_write_access_ptr",
-        "return_type": "uint8_t *",
-        "arguments": [
-          ["const godot_pool_byte_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_write_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_byte_array_write_access *", "p_write"],
-          ["godot_pool_byte_array_write_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_byte_array_write_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_byte_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_write_access_copy",
-        "return_type": "godot_pool_int_array_write_access *",
-        "arguments": [
-          ["const godot_pool_int_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_write_access_ptr",
-        "return_type": "godot_int *",
-        "arguments": [
-          ["const godot_pool_int_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_write_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_int_array_write_access *", "p_write"],
-          ["godot_pool_int_array_write_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_int_array_write_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_int_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_write_access_copy",
-        "return_type": "godot_pool_real_array_write_access *",
-        "arguments": [
-          ["const godot_pool_real_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_write_access_ptr",
-        "return_type": "godot_real *",
-        "arguments": [
-          ["const godot_pool_real_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_write_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_real_array_write_access *", "p_write"],
-          ["godot_pool_real_array_write_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_real_array_write_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_real_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_write_access_copy",
-        "return_type": "godot_pool_string_array_write_access *",
-        "arguments": [
-          ["const godot_pool_string_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_write_access_ptr",
-        "return_type": "godot_string *",
-        "arguments": [
-          ["const godot_pool_string_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_write_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_string_array_write_access *", "p_write"],
-          ["godot_pool_string_array_write_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_string_array_write_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_string_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_write_access_copy",
-        "return_type": "godot_pool_vector2_array_write_access *",
-        "arguments": [
-          ["const godot_pool_vector2_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_write_access_ptr",
-        "return_type": "godot_vector2 *",
-        "arguments": [
-          ["const godot_pool_vector2_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_write_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector2_array_write_access *", "p_write"],
-          ["godot_pool_vector2_array_write_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector2_array_write_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector2_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_write_access_copy",
-        "return_type": "godot_pool_vector3_array_write_access *",
-        "arguments": [
-          ["const godot_pool_vector3_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_write_access_ptr",
-        "return_type": "godot_vector3 *",
-        "arguments": [
-          ["const godot_pool_vector3_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_write_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector3_array_write_access *", "p_write"],
-          ["godot_pool_vector3_array_write_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_vector3_array_write_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_vector3_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_write_access_copy",
-        "return_type": "godot_pool_color_array_write_access *",
-        "arguments": [
-          ["const godot_pool_color_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_write_access_ptr",
-        "return_type": "godot_color *",
-        "arguments": [
-          ["const godot_pool_color_array_write_access *", "p_write"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_write_access_operator_assign",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_color_array_write_access *", "p_write"],
-          ["godot_pool_color_array_write_access *", "p_other"]
-        ]
-      },
-      {
-        "name": "godot_pool_color_array_write_access_destroy",
-        "return_type": "void",
-        "arguments": [
-          ["godot_pool_color_array_write_access *", "p_write"]
+          ["godot_packed_color_array *", "p_self"]
         ]
       },
       {
@@ -2960,59 +2442,59 @@
         ]
       },
       {
-        "name": "godot_array_new_pool_color_array",
+        "name": "godot_array_new_packed_color_array",
         "return_type": "void",
         "arguments": [
           ["godot_array *", "r_dest"],
-          ["const godot_pool_color_array *", "p_pca"]
+          ["const godot_packed_color_array *", "p_pca"]
         ]
       },
       {
-        "name": "godot_array_new_pool_vector3_array",
+        "name": "godot_array_new_packed_vector3_array",
         "return_type": "void",
         "arguments": [
           ["godot_array *", "r_dest"],
-          ["const godot_pool_vector3_array *", "p_pv3a"]
+          ["const godot_packed_vector3_array *", "p_pv3a"]
         ]
       },
       {
-        "name": "godot_array_new_pool_vector2_array",
+        "name": "godot_array_new_packed_vector2_array",
         "return_type": "void",
         "arguments": [
           ["godot_array *", "r_dest"],
-          ["const godot_pool_vector2_array *", "p_pv2a"]
+          ["const godot_packed_vector2_array *", "p_pv2a"]
         ]
       },
       {
-        "name": "godot_array_new_pool_string_array",
+        "name": "godot_array_new_packed_string_array",
         "return_type": "void",
         "arguments": [
           ["godot_array *", "r_dest"],
-          ["const godot_pool_string_array *", "p_psa"]
+          ["const godot_packed_string_array *", "p_psa"]
         ]
       },
       {
-        "name": "godot_array_new_pool_real_array",
+        "name": "godot_array_new_packed_real_array",
         "return_type": "void",
         "arguments": [
           ["godot_array *", "r_dest"],
-          ["const godot_pool_real_array *", "p_pra"]
+          ["const godot_packed_real_array *", "p_pra"]
         ]
       },
       {
-        "name": "godot_array_new_pool_int_array",
+        "name": "godot_array_new_packed_int_array",
         "return_type": "void",
         "arguments": [
           ["godot_array *", "r_dest"],
-          ["const godot_pool_int_array *", "p_pia"]
+          ["const godot_packed_int_array *", "p_pia"]
         ]
       },
       {
-        "name": "godot_array_new_pool_byte_array",
+        "name": "godot_array_new_packed_byte_array",
         "return_type": "void",
         "arguments": [
           ["godot_array *", "r_dest"],
-          ["const godot_pool_byte_array *", "p_pba"]
+          ["const godot_packed_byte_array *", "p_pba"]
         ]
       },
       {
@@ -4569,59 +4051,59 @@
         ]
       },
       {
-        "name": "godot_variant_new_pool_byte_array",
+        "name": "godot_variant_new_packed_byte_array",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_pool_byte_array *", "p_pba"]
+          ["const godot_packed_byte_array *", "p_pba"]
         ]
       },
       {
-        "name": "godot_variant_new_pool_int_array",
+        "name": "godot_variant_new_packed_int_array",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_pool_int_array *", "p_pia"]
+          ["const godot_packed_int_array *", "p_pia"]
         ]
       },
       {
-        "name": "godot_variant_new_pool_real_array",
+        "name": "godot_variant_new_packed_real_array",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_pool_real_array *", "p_pra"]
+          ["const godot_packed_real_array *", "p_pra"]
         ]
       },
       {
-        "name": "godot_variant_new_pool_string_array",
+        "name": "godot_variant_new_packed_string_array",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_pool_string_array *", "p_psa"]
+          ["const godot_packed_string_array *", "p_psa"]
         ]
       },
       {
-        "name": "godot_variant_new_pool_vector2_array",
+        "name": "godot_variant_new_packed_vector2_array",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_pool_vector2_array *", "p_pv2a"]
+          ["const godot_packed_vector2_array *", "p_pv2a"]
         ]
       },
       {
-        "name": "godot_variant_new_pool_vector3_array",
+        "name": "godot_variant_new_packed_vector3_array",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_pool_vector3_array *", "p_pv3a"]
+          ["const godot_packed_vector3_array *", "p_pv3a"]
         ]
       },
       {
-        "name": "godot_variant_new_pool_color_array",
+        "name": "godot_variant_new_packed_color_array",
         "return_type": "void",
         "arguments": [
           ["godot_variant *", "r_dest"],
-          ["const godot_pool_color_array *", "p_pca"]
+          ["const godot_packed_color_array *", "p_pca"]
         ]
       },
       {
@@ -4765,50 +4247,50 @@
         ]
       },
       {
-        "name": "godot_variant_as_pool_byte_array",
-        "return_type": "godot_pool_byte_array",
+        "name": "godot_variant_as_packed_byte_array",
+        "return_type": "godot_packed_byte_array",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]
       },
       {
-        "name": "godot_variant_as_pool_int_array",
-        "return_type": "godot_pool_int_array",
+        "name": "godot_variant_as_packed_int_array",
+        "return_type": "godot_packed_int_array",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]
       },
       {
-        "name": "godot_variant_as_pool_real_array",
-        "return_type": "godot_pool_real_array",
+        "name": "godot_variant_as_packed_real_array",
+        "return_type": "godot_packed_real_array",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]
       },
       {
-        "name": "godot_variant_as_pool_string_array",
-        "return_type": "godot_pool_string_array",
+        "name": "godot_variant_as_packed_string_array",
+        "return_type": "godot_packed_string_array",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]
       },
       {
-        "name": "godot_variant_as_pool_vector2_array",
-        "return_type": "godot_pool_vector2_array",
+        "name": "godot_variant_as_packed_vector2_array",
+        "return_type": "godot_packed_vector2_array",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]
       },
       {
-        "name": "godot_variant_as_pool_vector3_array",
-        "return_type": "godot_pool_vector3_array",
+        "name": "godot_variant_as_packed_vector3_array",
+        "return_type": "godot_packed_vector3_array",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]
       },
       {
-        "name": "godot_variant_as_pool_color_array",
-        "return_type": "godot_pool_color_array",
+        "name": "godot_variant_as_packed_color_array",
+        "return_type": "godot_packed_color_array",
         "arguments": [
           ["const godot_variant *", "p_self"]
         ]
@@ -5796,7 +5278,7 @@
       },
       {
         "name": "godot_string_md5_buffer",
-        "return_type": "godot_pool_byte_array",
+        "return_type": "godot_packed_byte_array",
         "arguments": [
           ["const godot_string *", "p_self"]
         ]
@@ -5810,7 +5292,7 @@
       },
       {
         "name": "godot_string_sha256_buffer",
-        "return_type": "godot_pool_byte_array",
+        "return_type": "godot_packed_byte_array",
         "arguments": [
           ["const godot_string *", "p_self"]
         ]
@@ -6482,7 +5964,7 @@
           "name": "godot_arvr_blit",
           "return_type": "void",
           "arguments": [
-            ["int", "p_eye"],
+            ["godot_int", "p_eye"],
             ["godot_rid *", "p_render_target"],
             ["godot_rect2 *", "p_screen_rect"]
           ]

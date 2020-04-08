@@ -33,7 +33,7 @@
 #include "arvr/arvr_positional_tracker.h"
 #include "core/project_settings.h"
 
-ARVRServer *ARVRServer::singleton = NULL;
+ARVRServer *ARVRServer::singleton = nullptr;
 
 ARVRServer *ARVRServer::get_singleton() {
 	return singleton;
@@ -46,7 +46,7 @@ void ARVRServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("center_on_hmd", "rotation_mode", "keep_height"), &ARVRServer::center_on_hmd);
 	ClassDB::bind_method(D_METHOD("get_hmd_transform"), &ARVRServer::get_hmd_transform);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "world_scale"), "set_world_scale", "get_world_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "world_scale"), "set_world_scale", "get_world_scale");
 
 	ClassDB::bind_method(D_METHOD("get_interface_count"), &ARVRServer::get_interface_count);
 	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &ARVRServer::get_interface);
@@ -75,11 +75,11 @@ void ARVRServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESET_BUT_KEEP_TILT);
 	BIND_ENUM_CONSTANT(DONT_RESET_ROTATION);
 
-	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING, "interface_name")));
-	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING, "interface_name")));
+	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
+	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
 
-	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("tracker_added", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
+	ADD_SIGNAL(MethodInfo("tracker_removed", PropertyInfo(Variant::STRING_NAME, "tracker_name"), PropertyInfo(Variant::INT, "type"), PropertyInfo(Variant::INT, "id")));
 };
 
 real_t ARVRServer::get_world_scale() const {
@@ -109,7 +109,7 @@ Transform ARVRServer::get_reference_frame() const {
 };
 
 void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
-	if (primary_interface != NULL) {
+	if (primary_interface != nullptr) {
 		// clear our current reference frame or we'll end up double adjusting it
 		reference_frame = Transform();
 
@@ -142,7 +142,7 @@ void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height)
 
 Transform ARVRServer::get_hmd_transform() {
 	Transform hmd_transform;
-	if (primary_interface != NULL) {
+	if (primary_interface != nullptr) {
 		hmd_transform = primary_interface->get_transform_for_eye(ARVRInterface::EYE_MONO, hmd_transform);
 	};
 	return hmd_transform;
@@ -189,7 +189,7 @@ int ARVRServer::get_interface_count() const {
 };
 
 Ref<ARVRInterface> ARVRServer::get_interface(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, interfaces.size(), NULL);
+	ERR_FAIL_INDEX_V(p_index, interfaces.size(), nullptr);
 
 	return interfaces[p_index];
 };
@@ -205,7 +205,7 @@ Ref<ARVRInterface> ARVRServer::find_interface(const String &p_name) const {
 		};
 	};
 
-	ERR_FAIL_COND_V(idx == -1, NULL);
+	ERR_FAIL_COND_V(idx == -1, nullptr);
 
 	return interfaces[idx];
 };
@@ -296,13 +296,13 @@ int ARVRServer::get_tracker_count() const {
 };
 
 ARVRPositionalTracker *ARVRServer::get_tracker(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, trackers.size(), NULL);
+	ERR_FAIL_INDEX_V(p_index, trackers.size(), nullptr);
 
 	return trackers[p_index];
 };
 
 ARVRPositionalTracker *ARVRServer::find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const {
-	ERR_FAIL_COND_V(p_tracker_id == 0, NULL);
+	ERR_FAIL_COND_V(p_tracker_id == 0, nullptr);
 
 	for (int i = 0; i < trackers.size(); i++) {
 		if (trackers[i]->get_type() == p_tracker_type && trackers[i]->get_tracker_id() == p_tracker_id) {
@@ -310,7 +310,7 @@ ARVRPositionalTracker *ARVRServer::find_by_type_and_id(TrackerType p_tracker_typ
 		};
 	};
 
-	return NULL;
+	return nullptr;
 };
 
 Ref<ARVRInterface> ARVRServer::get_primary_interface() const {
@@ -343,7 +343,7 @@ uint64_t ARVRServer::get_last_frame_usec() {
 };
 
 void ARVRServer::_process() {
-	/* called from visual_server_viewport.draw_viewports right before we start drawing our viewports */
+	/* called from rendering_server_viewport.draw_viewports right before we start drawing our viewports */
 
 	/* mark for our frame timing */
 	last_process_usec = OS::get_singleton()->get_ticks_usec();
@@ -382,5 +382,5 @@ ARVRServer::~ARVRServer() {
 		trackers.remove(0);
 	}
 
-	singleton = NULL;
+	singleton = nullptr;
 };

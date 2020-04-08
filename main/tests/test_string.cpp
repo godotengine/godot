@@ -1071,7 +1071,7 @@ bool test_33() {
 	OS::get_singleton()->print("\n\nTest 33: parse_utf8(null, -1)\n");
 
 	String empty;
-	return empty.parse_utf8(NULL, -1);
+	return empty.parse_utf8(nullptr, -1);
 }
 
 bool test_34() {
@@ -1164,7 +1164,7 @@ TestFunc test_funcs[] = {
 	test_33,
 	test_34,
 	test_35,
-	0
+	nullptr
 
 };
 
@@ -1172,7 +1172,7 @@ MainLoop *test() {
 
 	/** A character length != wchar_t may be forced, so the tests won't work */
 
-	ERR_FAIL_COND_V(sizeof(CharType) != sizeof(wchar_t), NULL);
+	static_assert(sizeof(CharType) == sizeof(wchar_t));
 
 	int count = 0;
 	int passed = 0;
@@ -1195,6 +1195,6 @@ MainLoop *test() {
 
 	OS::get_singleton()->print("Passed %i of %i tests\n", passed, count);
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestString

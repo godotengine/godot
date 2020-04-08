@@ -34,7 +34,7 @@
 
 #include "core/project_settings.h"
 
-int32_t *AudioDriverMediaKit::samples_in = NULL;
+int32_t *AudioDriverMediaKit::samples_in = nullptr;
 
 Error AudioDriverMediaKit::init() {
 	active = false;
@@ -59,15 +59,14 @@ Error AudioDriverMediaKit::init() {
 			&format,
 			"godot_sound_server",
 			AudioDriverMediaKit::PlayBuffer,
-			NULL,
+			nullptr,
 			this);
 
 	if (player->InitCheck() != B_OK) {
 		fprintf(stderr, "MediaKit ERR: can not create a BSoundPlayer instance\n");
-		ERR_FAIL_COND_V(player == NULL, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V(player == nullptr, ERR_CANT_OPEN);
 	}
 
-	mutex = Mutex::create();
 	player->Start();
 
 	return OK;
@@ -108,14 +107,14 @@ void AudioDriverMediaKit::lock() {
 	if (!mutex)
 		return;
 
-	mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverMediaKit::unlock() {
 	if (!mutex)
 		return;
 
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverMediaKit::finish() {
@@ -124,16 +123,10 @@ void AudioDriverMediaKit::finish() {
 	if (samples_in) {
 		memdelete_arr(samples_in);
 	};
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
 }
 
 AudioDriverMediaKit::AudioDriverMediaKit() {
-	mutex = NULL;
-	player = NULL;
+	player = nullptr;
 }
 
 AudioDriverMediaKit::~AudioDriverMediaKit() {

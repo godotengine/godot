@@ -42,7 +42,7 @@ _arguments \
   '--remote-fs[use a remote filesystem]:remote filesystem address' \
   '--remote-fs-password[password for remote filesystem]:remote filesystem password' \
   '--audio-driver[set the audio driver]:audio driver name' \
-  "--video-driver[set the video driver]:video driver name:((GLES3\:'OpenGL ES 3.0 renderer' GLES2\:'OpenGL ES 2.0 renderer'))" \
+  "--video-driver[set the video driver]:video driver name:((Vulkan\:'Vulkan renderer' GLES2\:'OpenGL ES 2.0 renderer'))" \
   '(-f --fullscreen)'{-f,--fullscreen}'[request fullscreen mode]' \
   '(-m --maximized)'{-m,--maximized}'[request a maximized window]' \
   '(-w --windowed)'{-w,--windowed}'[request windowed mode]' \

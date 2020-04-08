@@ -34,8 +34,8 @@
 #include "core/map.h"
 #include "core/resource.h"
 #include "mesh.h"
-#include "scene/3d/navigation_mesh_instance.h"
-#include "shape.h"
+#include "scene/3d/navigation_region_3d.h"
+#include "shape_3d.h"
 
 class MeshLibrary : public Resource {
 
@@ -44,14 +44,14 @@ class MeshLibrary : public Resource {
 
 public:
 	struct ShapeData {
-		Ref<Shape> shape;
+		Ref<Shape3D> shape;
 		Transform local_transform;
 	};
 	struct Item {
 		String name;
 		Ref<Mesh> mesh;
 		Vector<ShapeData> shapes;
-		Ref<Texture> preview;
+		Ref<Texture2D> preview;
 		Transform navmesh_transform;
 		Ref<NavigationMesh> navmesh;
 	};
@@ -75,13 +75,13 @@ public:
 	void set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh);
 	void set_item_navmesh_transform(int p_item, const Transform &p_transform);
 	void set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes);
-	void set_item_preview(int p_item, const Ref<Texture> &p_preview);
+	void set_item_preview(int p_item, const Ref<Texture2D> &p_preview);
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
 	Ref<NavigationMesh> get_item_navmesh(int p_item) const;
 	Transform get_item_navmesh_transform(int p_item) const;
 	Vector<ShapeData> get_item_shapes(int p_item) const;
-	Ref<Texture> get_item_preview(int p_item) const;
+	Ref<Texture2D> get_item_preview(int p_item) const;
 
 	void remove_item(int p_item);
 	bool has_item(int p_item) const;

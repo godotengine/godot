@@ -15,6 +15,76 @@ namespace Godot
         public Basis basis;
         public Vector3 origin;
 
+        /// <summary>
+        /// Access whole columns in the form of Vector3. The fourth column is the origin vector.
+        /// </summary>
+        /// <param name="column">Which column vector.</param>
+        public Vector3 this[int column]
+        {
+            get
+            {
+                switch (column)
+                {
+                    case 0:
+                        return basis.Column0;
+                    case 1:
+                        return basis.Column1;
+                    case 2:
+                        return basis.Column2;
+                    case 3:
+                        return origin;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+            set
+            {
+                switch (column)
+                {
+                    case 0:
+                        basis.Column0 = value;
+                        return;
+                    case 1:
+                        basis.Column1 = value;
+                        return;
+                    case 2:
+                        basis.Column2 = value;
+                        return;
+                    case 3:
+                        origin = value;
+                        return;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Access matrix elements in column-major order. The fourth column is the origin vector.
+        /// </summary>
+        /// <param name="column">Which column, the matrix horizontal position.</param>
+        /// <param name="row">Which row, the matrix vertical position.</param>
+        public real_t this[int column, int row]
+        {
+            get
+            {
+                if (column == 3)
+                {
+                    return origin[row];
+                }
+                return basis[column, row];
+            }
+            set
+            {
+                if (column == 3)
+                {
+                    origin[row] = value;
+                    return;
+                }
+                basis[column, row] = value;
+            }
+        }
+
         public Transform AffineInverse()
         {
             Basis basisInv = basis.Inverse();

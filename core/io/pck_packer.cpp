@@ -63,7 +63,7 @@ void PCKPacker::_bind_methods() {
 
 Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
-	if (file != NULL) {
+	if (file != nullptr) {
 		memdelete(file);
 	}
 
@@ -163,7 +163,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		src->close();
 		memdelete(src);
 		count += 1;
-		if (p_verbose) {
+		if (p_verbose && files.size() > 0) {
 			if (count % 100 == 0) {
 				printf("%i/%i (%.2f)\r", count, files.size(), float(count) / files.size() * 100);
 				fflush(stdout);
@@ -182,12 +182,12 @@ Error PCKPacker::flush(bool p_verbose) {
 
 PCKPacker::PCKPacker() {
 
-	file = NULL;
+	file = nullptr;
 };
 
 PCKPacker::~PCKPacker() {
-	if (file != NULL) {
+	if (file != nullptr) {
 		memdelete(file);
 	};
-	file = NULL;
+	file = nullptr;
 };

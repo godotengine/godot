@@ -66,6 +66,11 @@ int DirAccess::get_current_drive() {
 	return 0;
 }
 
+bool DirAccess::drives_are_shortcuts() {
+
+	return false;
+}
+
 static Error _erase_recursive(DirAccess *da) {
 
 	List<String> dirs;
@@ -221,11 +226,11 @@ String DirAccess::fix_path(String p_path) const {
 	return p_path;
 }
 
-DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { 0, 0, 0 };
+DirAccess::CreateFunc DirAccess::create_func[ACCESS_MAX] = { nullptr, nullptr, nullptr };
 
 DirAccess *DirAccess::create_for_path(const String &p_path) {
 
-	DirAccess *da = NULL;
+	DirAccess *da = nullptr;
 	if (p_path.begins_with("res://")) {
 
 		da = create(ACCESS_RESOURCES);
@@ -244,13 +249,13 @@ DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
 
 	DirAccess *da = create_for_path(p_path);
 
-	ERR_FAIL_COND_V_MSG(!da, NULL, "Cannot create DirAccess for path '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!da, nullptr, "Cannot create DirAccess for path '" + p_path + "'.");
 	Error err = da->change_dir(p_path);
 	if (r_error)
 		*r_error = err;
 	if (err != OK) {
 		memdelete(da);
-		return NULL;
+		return nullptr;
 	}
 
 	return da;
@@ -258,7 +263,7 @@ DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
 
 DirAccess *DirAccess::create(AccessType p_access) {
 
-	DirAccess *da = create_func[p_access] ? create_func[p_access]() : NULL;
+	DirAccess *da = create_func[p_access] ? create_func[p_access]() : nullptr;
 	if (da) {
 		da->_access_type = p_access;
 	}

@@ -62,13 +62,13 @@ extern "C" {
 
 void GDAPI godot_array_new(godot_array *r_dest);
 void GDAPI godot_array_new_copy(godot_array *r_dest, const godot_array *p_src);
-void GDAPI godot_array_new_pool_color_array(godot_array *r_dest, const godot_pool_color_array *p_pca);
-void GDAPI godot_array_new_pool_vector3_array(godot_array *r_dest, const godot_pool_vector3_array *p_pv3a);
-void GDAPI godot_array_new_pool_vector2_array(godot_array *r_dest, const godot_pool_vector2_array *p_pv2a);
-void GDAPI godot_array_new_pool_string_array(godot_array *r_dest, const godot_pool_string_array *p_psa);
-void GDAPI godot_array_new_pool_real_array(godot_array *r_dest, const godot_pool_real_array *p_pra);
-void GDAPI godot_array_new_pool_int_array(godot_array *r_dest, const godot_pool_int_array *p_pia);
-void GDAPI godot_array_new_pool_byte_array(godot_array *r_dest, const godot_pool_byte_array *p_pba);
+void GDAPI godot_array_new_packed_color_array(godot_array *r_dest, const godot_packed_color_array *p_pca);
+void GDAPI godot_array_new_packed_vector3_array(godot_array *r_dest, const godot_packed_vector3_array *p_pv3a);
+void GDAPI godot_array_new_packed_vector2_array(godot_array *r_dest, const godot_packed_vector2_array *p_pv2a);
+void GDAPI godot_array_new_packed_string_array(godot_array *r_dest, const godot_packed_string_array *p_psa);
+void GDAPI godot_array_new_packed_real_array(godot_array *r_dest, const godot_packed_real_array *p_pra);
+void GDAPI godot_array_new_packed_int_array(godot_array *r_dest, const godot_packed_int_array *p_pia);
+void GDAPI godot_array_new_packed_byte_array(godot_array *r_dest, const godot_packed_byte_array *p_pba);
 
 void GDAPI godot_array_set(godot_array *p_self, const godot_int p_idx, const godot_variant *p_value);
 

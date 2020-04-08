@@ -32,7 +32,7 @@
 
 #include <emscripten.h>
 
-AudioDriverJavaScript *AudioDriverJavaScript::singleton = NULL;
+AudioDriverJavaScript *AudioDriverJavaScript::singleton = nullptr;
 
 const char *AudioDriverJavaScript::get_name() const {
 
@@ -69,31 +69,37 @@ void AudioDriverJavaScript::process_capture(float sample) {
 Error AudioDriverJavaScript::init() {
 
 	/* clang-format off */
-	EM_ASM({
-		_audioDriver_audioContext = new (window.AudioContext || window.webkitAudioContext);
-		_audioDriver_audioInput = null;
-		_audioDriver_inputStream = null;
-		_audioDriver_scriptNode = null;
+	_driver_id = EM_ASM_INT({
+		return Module.IDHandler.add({
+			'context': new (window.AudioContext || window.webkitAudioContext),
+			'input': null,
+			'stream': null,
+			'script': null
+		});
 	});
 	/* clang-format on */
 
 	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
 	/* clang-format off */
 	buffer_length = EM_ASM_INT({
-		var CHANNEL_COUNT = $0;
+		var ref = Module.IDHandler.get($0);
+		var ctx = ref['context'];
+		var CHANNEL_COUNT = $1;
 
-		var channelCount = _audioDriver_audioContext.destination.channelCount;
+		var channelCount = ctx.destination.channelCount;
+		var script = null;
 		try {
 			// Try letting the browser recommend a buffer length.
-			_audioDriver_scriptNode = _audioDriver_audioContext.createScriptProcessor(0, 2, channelCount);
+			script = ctx.createScriptProcessor(0, 2, channelCount);
 		} catch (e) {
 			// ...otherwise, default to 4096.
-			_audioDriver_scriptNode = _audioDriver_audioContext.createScriptProcessor(4096, 2, channelCount);
+			script = ctx.createScriptProcessor(4096, 2, channelCount);
 		}
-		_audioDriver_scriptNode.connect(_audioDriver_audioContext.destination);
+		script.connect(ctx.destination);
+		ref['script'] = script;
 
-		return _audioDriver_scriptNode.bufferSize;
-	}, channel_count);
+		return script.bufferSize;
+	}, _driver_id, channel_count);
 	/* clang-format on */
 	if (!buffer_length) {
 		return FAILED;
@@ -112,11 +118,12 @@ void AudioDriverJavaScript::start() {
 
 	/* clang-format off */
 	EM_ASM({
-		var INTERNAL_BUFFER_PTR = $0;
+		const ref = Module.IDHandler.get($0);
+		var INTERNAL_BUFFER_PTR = $1;
 
 		var audioDriverMixFunction = cwrap('audio_driver_js_mix');
 		var audioDriverProcessCapture = cwrap('audio_driver_process_capture', null, ['number']);
-		_audioDriver_scriptNode.onaudioprocess = function(audioProcessingEvent) {
+		ref['script'].onaudioprocess = function(audioProcessingEvent) {
 			audioDriverMixFunction();
 
 			var input = audioProcessingEvent.inputBuffer;
@@ -133,7 +140,7 @@ void AudioDriverJavaScript::start() {
 				}
 			}
 
-			if (_audioDriver_audioInput) {
+			if (ref['input']) {
 				var inputDataL = input.getChannelData(0);
 				var inputDataR = input.getChannelData(1);
 				for (var i = 0; i < inputDataL.length; i++) {
@@ -142,34 +149,37 @@ void AudioDriverJavaScript::start() {
 				}
 			}
 		};
-	}, internal_buffer);
+	}, _driver_id, internal_buffer);
 	/* clang-format on */
 }
 
 void AudioDriverJavaScript::resume() {
 	/* clang-format off */
 	EM_ASM({
-		if (_audioDriver_audioContext.resume)
-			_audioDriver_audioContext.resume();
-	});
+		const ref = Module.IDHandler.get($0);
+		if (ref && ref['context'] && ref['context'].resume)
+			ref['context'].resume();
+	}, _driver_id);
 	/* clang-format on */
 }
 
 int AudioDriverJavaScript::get_mix_rate() const {
 
 	/* clang-format off */
-	return EM_ASM_INT_V({
-		return _audioDriver_audioContext.sampleRate;
-	});
+	return EM_ASM_INT({
+		const ref = Module.IDHandler.get($0);
+		return ref && ref['context'] ? ref['context'].sampleRate : 0;
+	}, _driver_id);
 	/* clang-format on */
 }
 
 AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const {
 
 	/* clang-format off */
-	return get_speaker_mode_by_total_channels(EM_ASM_INT_V({
-		return _audioDriver_audioContext.destination.channelCount;
-	}));
+	return get_speaker_mode_by_total_channels(EM_ASM_INT({
+		const ref = Module.IDHandler.get($0);
+		return ref && ref['context'] ? ref['context'].destination.channelCount : 0;
+	}, _driver_id));
 	/* clang-format on */
 }
 
@@ -184,16 +194,15 @@ void AudioDriverJavaScript::finish() {
 
 	/* clang-format off */
 	EM_ASM({
-		_audioDriver_audioContext = null;
-		_audioDriver_audioInput = null;
-		_audioDriver_scriptNode = null;
-	});
+		Module.IDHandler.remove($0);
+	}, _driver_id);
 	/* clang-format on */
 
 	if (internal_buffer) {
 		memdelete_arr(internal_buffer);
-		internal_buffer = NULL;
+		internal_buffer = nullptr;
 	}
+	_driver_id = 0;
 }
 
 Error AudioDriverJavaScript::capture_start() {
@@ -203,9 +212,10 @@ Error AudioDriverJavaScript::capture_start() {
 	/* clang-format off */
 	EM_ASM({
 		function gotMediaInput(stream) {
-			_audioDriver_inputStream = stream;
-			_audioDriver_audioInput = _audioDriver_audioContext.createMediaStreamSource(stream);
-			_audioDriver_audioInput.connect(_audioDriver_scriptNode);
+			var ref = Module.IDHandler.get($0);
+			ref['stream'] = stream;
+			ref['input'] = ref['context'].createMediaStreamSource(stream);
+			ref['input'].connect(ref['script']);
 		}
 
 		function gotMediaInputError(e) {
@@ -219,7 +229,7 @@ Error AudioDriverJavaScript::capture_start() {
 				navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 			navigator.getUserMedia({"audio": true}, gotMediaInput, gotMediaInputError);
 		}
-	});
+	}, _driver_id);
 	/* clang-format on */
 
 	return OK;
@@ -229,20 +239,21 @@ Error AudioDriverJavaScript::capture_stop() {
 
 	/* clang-format off */
 	EM_ASM({
-		if (_audioDriver_inputStream) {
-			const tracks = _audioDriver_inputStream.getTracks();
+		var ref = Module.IDHandler.get($0);
+		if (ref['stream']) {
+			const tracks = ref['stream'].getTracks();
 			for (var i = 0; i < tracks.length; i++) {
 				tracks[i].stop();
 			}
-			_audioDriver_inputStream = null;
+			ref['stream'] = null;
 		}
 
-		if (_audioDriver_audioInput) {
-			_audioDriver_audioInput.disconnect();
-			_audioDriver_audioInput = null;
+		if (ref['input']) {
+			ref['input'].disconnect();
+			ref['input'] = null;
 		}
 
-	});
+	}, _driver_id);
 	/* clang-format on */
 
 	input_buffer.clear();
@@ -252,7 +263,9 @@ Error AudioDriverJavaScript::capture_stop() {
 
 AudioDriverJavaScript::AudioDriverJavaScript() {
 
-	internal_buffer = NULL;
+	_driver_id = 0;
+	internal_buffer = nullptr;
+	buffer_length = 0;
 
 	singleton = this;
 }

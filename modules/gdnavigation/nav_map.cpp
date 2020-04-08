@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  rvo_space.cpp                                                        */
+/*  nav_map.cpp                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,8 +81,8 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
 
-	const gd::Polygon *begin_poly = NULL;
-	const gd::Polygon *end_poly = NULL;
+	const gd::Polygon *begin_poly = nullptr;
+	const gd::Polygon *end_poly = nullptr;
 	Vector3 begin_point;
 	Vector3 end_point;
 	float begin_d = 1e20;
@@ -146,7 +146,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	open_list.push_back(0);
 
-	const gd::Polygon *reachable_end = NULL;
+	const gd::Polygon *reachable_end = nullptr;
 	float reachable_d = 1e30;
 	bool is_reachable = true;
 
@@ -215,7 +215,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			// so use the further reachable polygon
 			ERR_BREAK_MSG(is_reachable == false, "It's not expect to not find the most reachable polygons");
 			is_reachable = false;
-			if (reachable_end == NULL) {
+			if (reachable_end == nullptr) {
 				// The path is not found and there is not a way out.
 				break;
 			}
@@ -240,7 +240,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			open_list.clear();
 			open_list.push_back(0);
 
-			reachable_end = NULL;
+			reachable_end = nullptr;
 
 			continue;
 		}
@@ -249,7 +249,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		least_cost_id = -1;
 		float least_cost = 1e30;
 
-		for (auto element = open_list.front(); element != NULL; element = element->next()) {
+		for (auto element = open_list.front(); element != nullptr; element = element->next()) {
 			gd::NavigationPoly *np = &navigation_polys[element->get()];
 			float cost = np->traveled_distance;
 #ifdef USE_ENTRY_POINT
@@ -366,7 +366,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					p = &navigation_polys[p->prev_navigation_poly_id];
 				else
 					// The end
-					p = NULL;
+					p = nullptr;
 			}
 
 			if (path[path.size() - 1] != begin_point)
@@ -401,14 +401,155 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	return Vector<Vector3>();
 }
 
+Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
+
+	bool use_collision = p_use_collision;
+	Vector3 closest_point;
+	real_t closest_point_d = 1e20;
+
+	// Find the initial poly and the end poly on this map.
+	for (size_t i(0); i < polygons.size(); i++) {
+		const gd::Polygon &p = polygons[i];
+
+		// For each point cast a face and check the distance to the segment
+		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
+
+			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+			Vector3 inters;
+			if (f.intersects_segment(p_from, p_to, &inters)) {
+				const real_t d = closest_point_d = p_from.distance_to(inters);
+				if (use_collision == false) {
+					closest_point = inters;
+					use_collision = true;
+					closest_point_d = d;
+				} else if (closest_point_d > d) {
+
+					closest_point = inters;
+					closest_point_d = d;
+				}
+			}
+		}
+
+		if (use_collision == false) {
+
+			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
+
+				Vector3 a, b;
+
+				Geometry::get_closest_points_between_segments(
+						p_from,
+						p_to,
+						p.points[point_id].pos,
+						p.points[(point_id + 1) % p.points.size()].pos,
+						a,
+						b);
+
+				const real_t d = a.distance_to(b);
+				if (d < closest_point_d) {
+
+					closest_point_d = d;
+					closest_point = b;
+				}
+			}
+		}
+	}
+
+	return closest_point;
+}
+
+Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
+	// TODO this is really not optimal, please redesign the API to directly return all this data
+
+	Vector3 closest_point;
+	real_t closest_point_d = 1e20;
+
+	// Find the initial poly and the end poly on this map.
+	for (size_t i(0); i < polygons.size(); i++) {
+		const gd::Polygon &p = polygons[i];
+
+		// For each point cast a face and check the distance to the point
+		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
+
+			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+			const Vector3 inters = f.get_closest_point_to(p_point);
+			const real_t d = inters.distance_to(p_point);
+			if (d < closest_point_d) {
+				closest_point = inters;
+				closest_point_d = d;
+			}
+		}
+	}
+
+	return closest_point;
+}
+
+Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
+	// TODO this is really not optimal, please redesign the API to directly return all this data
+
+	Vector3 closest_point;
+	Vector3 closest_point_normal;
+	real_t closest_point_d = 1e20;
+
+	// Find the initial poly and the end poly on this map.
+	for (size_t i(0); i < polygons.size(); i++) {
+		const gd::Polygon &p = polygons[i];
+
+		// For each point cast a face and check the distance to the point
+		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
+
+			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+			const Vector3 inters = f.get_closest_point_to(p_point);
+			const real_t d = inters.distance_to(p_point);
+			if (d < closest_point_d) {
+				closest_point = inters;
+				closest_point_normal = f.get_plane().normal;
+				closest_point_d = d;
+			}
+		}
+	}
+
+	return closest_point_normal;
+}
+
+RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
+	// TODO this is really not optimal, please redesign the API to directly return all this data
+
+	Vector3 closest_point;
+	RID closest_point_owner;
+	real_t closest_point_d = 1e20;
+
+	// Find the initial poly and the end poly on this map.
+	for (size_t i(0); i < polygons.size(); i++) {
+		const gd::Polygon &p = polygons[i];
+
+		// For each point cast a face and check the distance to the point
+		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
+
+			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
+			const Vector3 inters = f.get_closest_point_to(p_point);
+			const real_t d = inters.distance_to(p_point);
+			if (d < closest_point_d) {
+				closest_point = inters;
+				closest_point_owner = p.owner->get_self();
+				closest_point_d = d;
+			}
+		}
+	}
+
+	return closest_point_owner;
+}
+
 void NavMap::add_region(NavRegion *p_region) {
 	regions.push_back(p_region);
 	regenerate_links = true;
 }
 
 void NavMap::remove_region(NavRegion *p_region) {
-	regions.push_back(p_region);
-	regenerate_links = true;
+	std::vector<NavRegion *>::iterator it = std::find(regions.begin(), regions.end(), p_region);
+	if (it != regions.end()) {
+		regions.erase(it);
+		regenerate_links = true;
+	}
 }
 
 bool NavMap::has_agent(RvoAgent *agent) const {
@@ -496,12 +637,12 @@ void NavMap::sync() {
 					gd::Connection c;
 					c.A = &poly;
 					c.A_edge = p;
-					c.B = NULL;
+					c.B = nullptr;
 					c.B_edge = -1;
 					connections[ek] = c;
 
-				} else if (connection->get().B == NULL) {
-					CRASH_COND(connection->get().A == NULL); // Unreachable
+				} else if (connection->get().B == nullptr) {
+					CRASH_COND(connection->get().A == nullptr); // Unreachable
 
 					// Connect the two Polygons by this edge
 					connection->get().B = &poly;
@@ -516,6 +657,7 @@ void NavMap::sync() {
 					connection->get().B->edges[connection->get().B_edge].other_edge = connection->get().A_edge;
 				} else {
 					// The edge is already connected with another edge, skip.
+					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the Navigation3D's `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
 				}
 			}
 		}
@@ -525,8 +667,8 @@ void NavMap::sync() {
 		free_edges.reserve(connections.size());
 
 		for (auto connection_element = connections.front(); connection_element; connection_element = connection_element->next()) {
-			if (connection_element->get().B == NULL) {
-				CRASH_COND(connection_element->get().A == NULL); // Unreachable
+			if (connection_element->get().B == nullptr) {
+				CRASH_COND(connection_element->get().A == nullptr); // Unreachable
 				CRASH_COND(connection_element->get().A_edge < 0); // Unreachable
 
 				// This is a free edge
@@ -549,7 +691,7 @@ void NavMap::sync() {
 		const float ecm_squared(edge_connection_margin * edge_connection_margin);
 #define LEN_TOLLERANCE 0.1
 #define DIR_TOLLERANCE 0.9
-		// In front of tollerance
+		// In front of tolerance
 #define IFO_TOLLERANCE 0.5
 
 		// Find the compatible near edges.
@@ -573,7 +715,7 @@ void NavMap::sync() {
 				Vector3 rel_centers = other_edge.edge_center - edge.edge_center;
 				if (ecm_squared > rel_centers.length_squared() // Are enough closer?
 						&& ABS(edge.edge_len_squared - other_edge.edge_len_squared) < LEN_TOLLERANCE // Are the same length?
-						&& ABS(edge.edge_dir.dot(other_edge.edge_dir)) > DIR_TOLLERANCE // Are alligned?
+						&& ABS(edge.edge_dir.dot(other_edge.edge_dir)) > DIR_TOLLERANCE // Are aligned?
 						&& ABS(rel_centers.normalized().dot(edge.edge_dir)) < IFO_TOLLERANCE // Are one in front the other?
 				) {
 					// The edges can be connected

@@ -33,13 +33,11 @@
 
 #include "audio_driver_jandroid.h"
 #include "audio_driver_opensl.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "core/os/main_loop.h"
 #include "drivers/unix/os_unix.h"
-#include "main/input_default.h"
-//#include "power_android.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/rendering/rasterizer.h"
 
 class GodotJavaWrapper;
 class GodotIOJavaWrapper;
@@ -77,7 +75,7 @@ private:
 
 	bool use_16bits_fbo;
 
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 
 	mutable String data_dir_cache;
 
@@ -92,8 +90,6 @@ private:
 
 	GodotJavaWrapper *godot_java;
 	GodotIOJavaWrapper *godot_io_java;
-
-	//PowerAndroid *power_manager_func;
 
 	int video_driver_index;
 

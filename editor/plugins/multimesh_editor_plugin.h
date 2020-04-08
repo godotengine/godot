@@ -33,7 +33,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/3d/multimesh_instance.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/gui/spin_box.h"
 
 class MultiMeshEditor : public Control {
@@ -44,11 +44,11 @@ class MultiMeshEditor : public Control {
 
 	AcceptDialog *err_dialog;
 	MenuButton *options;
-	MultiMeshInstance *_last_pp_node;
+	MultiMeshInstance3D *_last_pp_node;
 	bool browsing_source;
 
 	Panel *panel;
-	MultiMeshInstance *node;
+	MultiMeshInstance3D *node;
 
 	LineEdit *surface_source;
 	LineEdit *mesh_source;
@@ -78,7 +78,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void edit(MultiMeshInstance *p_multimesh);
+	void edit(MultiMeshInstance3D *p_multimesh);
 	MultiMeshEditor();
 };
 

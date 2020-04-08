@@ -32,17 +32,15 @@
 #define OS_UWP_H
 
 #include "context_egl_uwp.h"
+#include "core/input/input_filter.h"
 #include "core/math/transform_2d.h"
-#include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/ustring.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #include "joypad_uwp.h"
-#include "main/input_default.h"
-#include "power_uwp.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering_server.h"
 
 #include <fcntl.h>
 #include <io.h>
@@ -62,7 +60,8 @@ public:
 		bool alt, shift, control;
 		MessageType type;
 		bool pressed;
-		unsigned int scancode;
+		unsigned int keycode;
+		unsigned int physical_keycode;
 		unsigned int unicode;
 		bool echo;
 		CorePhysicalKeyStatus status;
@@ -89,7 +88,7 @@ private:
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 	int pressrc;
 
 	ContextEGL_UWP *gl_context;
@@ -101,8 +100,6 @@ private:
 	MainLoop *main_loop;
 
 	AudioDriverXAudio2 audio_driver;
-
-	PowerUWP *power_manager;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -205,7 +202,7 @@ public:
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;
 
-	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking = true, ProcessID *r_child_id = nullptr, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr);
 	virtual Error kill(const ProcessID &p_pid);
 
 	virtual bool has_environment(const String &p_var) const;
@@ -253,10 +250,6 @@ public:
 	virtual bool get_swap_ok_cancel() { return true; }
 
 	void input_event(const Ref<InputEvent> &p_event);
-
-	virtual OS::PowerState get_power_state();
-	virtual int get_power_seconds_left();
-	virtual int get_power_percent_left();
 
 	void queue_key_event(KeyEvent &p_event);
 

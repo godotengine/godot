@@ -98,10 +98,10 @@ void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
 
 Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(p_width * p_height * 4);
 
-	PoolVector<uint8_t>::Write wd8 = data.write();
+	uint8_t *wd8 = data.ptrw();
 
 	for (int i = 0; i < p_height; i++) {
 		for (int j = 0; j < p_width; j++) {
@@ -121,10 +121,10 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) {
 
 Ref<Image> OpenSimplexNoise::get_seamless_image(int p_size) {
 
-	PoolVector<uint8_t> data;
+	Vector<uint8_t> data;
 	data.resize(p_size * p_size * 4);
 
-	PoolVector<uint8_t>::Write wd8 = data.write();
+	uint8_t *wd8 = data.ptrw();
 
 	for (int i = 0; i < p_size; i++) {
 		for (int j = 0; j < p_size; j++) {
@@ -186,9 +186,9 @@ void OpenSimplexNoise::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "seed"), "set_seed", "get_seed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "octaves", PROPERTY_HINT_RANGE, vformat("1,%d,1", MAX_OCTAVES)), "set_octaves", "get_octaves");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "period", PROPERTY_HINT_RANGE, "0.1,256.0,0.1"), "set_period", "get_period");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "persistence", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_persistence", "get_persistence");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lacunarity", PROPERTY_HINT_RANGE, "0.1,4.0,0.01"), "set_lacunarity", "get_lacunarity");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "period", PROPERTY_HINT_RANGE, "0.1,256.0,0.1"), "set_period", "get_period");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "persistence", PROPERTY_HINT_RANGE, "0.0,1.0,0.001"), "set_persistence", "get_persistence");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lacunarity", PROPERTY_HINT_RANGE, "0.1,4.0,0.01"), "set_lacunarity", "get_lacunarity");
 }
 
 float OpenSimplexNoise::get_noise_1d(float x) {

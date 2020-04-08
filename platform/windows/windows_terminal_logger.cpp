@@ -49,7 +49,7 @@ void WindowsTerminalLogger::logv(const char *p_format, va_list p_list, bool p_er
 		len = BUFFER_SIZE; // Output is too big, will be truncated
 	buf[len] = 0;
 
-	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, NULL, 0);
+	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, nullptr, 0);
 	if (wlen < 0)
 		return;
 

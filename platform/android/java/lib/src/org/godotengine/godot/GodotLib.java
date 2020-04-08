@@ -136,7 +136,7 @@ public class GodotLib {
 	/**
 	 * Forward regular key events from the main thread to the GL thread.
 	 */
-	public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
+	public static native void key(int p_keycode, int p_scancode, int p_unicode_char, boolean p_pressed);
 
 	/**
 	 * Forward game device's key events from the main thread to the GL thread.
@@ -174,22 +174,6 @@ public class GodotLib {
 	 * Invoked when the audio thread is started.
 	 */
 	public static native void audio();
-
-	/**
-	 * Used to setup a {@link org.godotengine.godot.Godot.SingletonBase} instance.
-	 * @param p_name Name of the instance.
-	 * @param p_object Reference to the singleton instance.
-	 */
-	public static native void singleton(String p_name, Object p_object);
-
-	/**
-	 * Used to complete registration of the {@link org.godotengine.godot.Godot.SingletonBase} instance's methods.
-	 * @param p_sname Name of the instance
-	 * @param p_name Name of the method to register
-	 * @param p_ret Return type of the registered method
-	 * @param p_params Method parameters types
-	 */
-	public static native void method(String p_sname, String p_name, String p_ret, String[] p_params);
 
 	/**
 	 * Used to access Godot global properties.

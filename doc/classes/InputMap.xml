@@ -13,7 +13,7 @@
 		<method name="action_add_event">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -24,7 +24,7 @@
 		<method name="action_erase_event">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -35,7 +35,7 @@
 		<method name="action_erase_events">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Removes all events from an action.
@@ -44,7 +44,7 @@
 		<method name="action_has_event">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -55,7 +55,7 @@
 		<method name="action_set_deadzone">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="deadzone" type="float">
 			</argument>
@@ -66,7 +66,7 @@
 		<method name="add_action">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<argument index="1" name="deadzone" type="float" default="0.5">
 			</argument>
@@ -78,7 +78,7 @@
 		<method name="erase_action">
 			<return type="void">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Removes an action from the [InputMap].
@@ -89,7 +89,7 @@
 			</return>
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
-			<argument index="1" name="action" type="String">
+			<argument index="1" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given event is part of an existing action. This method ignores keyboard modifiers if the given [InputEvent] is not pressed (for proper release detection). See [method action_has_event] if you don't want this behavior.
@@ -98,7 +98,7 @@
 		<method name="get_action_list">
 			<return type="Array">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns an array of [InputEvent]s associated with a given action.
@@ -114,7 +114,7 @@
 		<method name="has_action" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="action" type="String">
+			<argument index="0" name="action" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [InputMap] has a registered action with the given name.
