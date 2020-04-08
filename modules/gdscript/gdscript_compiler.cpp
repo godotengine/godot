@@ -1318,6 +1318,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
 						codegen.opcodes.push_back(0); // break addr
 
+						int last_fallthrough_addr = -1;
 						for (int j = 0; j < match->compiled_pattern_branches.size(); j++) {
 							GDScriptParser::MatchNode::CompiledPatternBranch branch = match->compiled_pattern_branches[j];
 
@@ -1334,12 +1335,19 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 							codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP_IF);
 							codegen.opcodes.push_back(ret2);
-							codegen.opcodes.push_back(codegen.opcodes.size() + 3);
+							codegen.opcodes.push_back(codegen.opcodes.size() + 5);
 							int continue_addr = codegen.opcodes.size();
 							codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
 							codegen.opcodes.push_back(0);
+							int fallthrough_addr = codegen.opcodes.size();
+							codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
+							codegen.opcodes.push_back(0);
 
-							Error err = _parse_block(codegen, branch.body, p_stack_level, p_break_addr, continue_addr);
+							if (last_fallthrough_addr >= 0) {
+								codegen.opcodes.write[last_fallthrough_addr] = codegen.opcodes.size();
+							}
+
+							Error err = _parse_block(codegen, branch.body, p_stack_level, p_break_addr, fallthrough_addr);
 							if (err) {
 								memdelete(id);
 								memdelete(op);
@@ -1350,6 +1358,8 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 							codegen.opcodes.push_back(break_addr);
 
 							codegen.opcodes.write[continue_addr + 1] = codegen.opcodes.size();
+							codegen.opcodes.write[fallthrough_addr + 1] = codegen.opcodes.size();
+							last_fallthrough_addr = fallthrough_addr + 1;
 						}
 
 						codegen.opcodes.write[break_addr + 1] = codegen.opcodes.size();
