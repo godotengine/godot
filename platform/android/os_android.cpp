@@ -32,15 +32,11 @@
 
 #include "core/io/file_access_buffered_fa.h"
 #include "core/project_settings.h"
-#if defined(OPENGL_ENABLED)
-#include "drivers/gles2/rasterizer_gles2.h"
-#endif
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"
 #include "main/main.h"
-#include "servers/rendering/rendering_server_raster.h"
-#include "servers/rendering/rendering_server_wrap_mt.h"
+#include "platform/android/display_server_android.h"
 
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
@@ -59,29 +55,6 @@ public:
 
 	virtual ~AndroidLogger() {}
 };
-
-int OS_Android::get_video_driver_count() const {
-
-	return 2;
-}
-
-const char *OS_Android::get_video_driver_name(int p_driver) const {
-
-	switch (p_driver) {
-		case VIDEO_DRIVER_GLES2:
-			return "GLES2";
-	}
-	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
-}
-int OS_Android::get_audio_driver_count() const {
-
-	return 1;
-}
-
-const char *OS_Android::get_audio_driver_name(int p_driver) const {
-
-	return "Android";
-}
 
 void OS_Android::initialize_core() {
 
@@ -110,71 +83,33 @@ void OS_Android::initialize_core() {
 	NetSocketAndroid::make_default();
 }
 
-void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
-
-	ERR_FAIL_COND(!p_gl_extensions);
-	gl_extensions = p_gl_extensions;
+void OS_Android::initialize() {
+	initialize_core();
 }
 
-int OS_Android::get_current_video_driver() const {
-	return video_driver_index;
-}
+void OS_Android::initialize_joypads() {
+	InputFilter::get_singleton()->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
-Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-
-	// FIXME: Add Vulkan support. Readd fallback code from Vulkan to GLES2?
-
-#if defined(OPENGL_ENABLED)
-	if (video_driver_index == VIDEO_DRIVER_GLES2) {
-		bool gl_initialization_error = false;
-
-		if (RasterizerGLES2::is_viable() == OK) {
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-		} else {
-			gl_initialization_error = true;
-		}
-
-		if (gl_initialization_error) {
-			OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.\n"
-									   "Please try updating your Android version.",
-					"Unable to initialize video driver");
-			return ERR_UNAVAILABLE;
-		}
-	}
-#endif
-
-	video_driver_index = p_video_driver;
-
-	rendering_server = memnew(RenderingServerRaster);
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
-	}
-
-	rendering_server->init();
-
-	AudioDriverManager::initialize(p_audio_driver);
-
-	input = memnew(InputDefault);
-	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
-
-	return OK;
+	// This queries/updates the currently connected devices/joypads.
+	godot_java->init_input_devices();
 }
 
 void OS_Android::set_main_loop(MainLoop *p_main_loop) {
-
 	main_loop = p_main_loop;
-	input->set_main_loop(p_main_loop);
 }
 
 void OS_Android::delete_main_loop() {
-
-	memdelete(main_loop);
+	if (main_loop) {
+		memdelete(main_loop);
+		main_loop = nullptr;
+	}
 }
 
 void OS_Android::finalize() {
+}
 
-	memdelete(input);
+OS_Android *OS_Android::get_singleton() {
+	return (OS_Android *)OS::get_singleton();
 }
 
 GodotJavaWrapper *OS_Android::get_godot_java() {
@@ -183,12 +118,6 @@ GodotJavaWrapper *OS_Android::get_godot_java() {
 
 GodotIOJavaWrapper *OS_Android::get_godot_io_java() {
 	return godot_io_java;
-}
-
-void OS_Android::alert(const String &p_alert, const String &p_title) {
-
-	//print("ALERT: %s\n", p_alert.utf8().get_data());
-	godot_java->alert(p_alert, p_title);
 }
 
 bool OS_Android::request_permission(const String &p_name) {
@@ -212,63 +141,6 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 	return OK;
 }
 
-void OS_Android::set_mouse_show(bool p_show) {
-
-	//android has no mouse...
-}
-
-void OS_Android::set_mouse_grab(bool p_grab) {
-
-	//it really has no mouse...!
-}
-
-bool OS_Android::is_mouse_grab_enabled() const {
-
-	//*sigh* technology has evolved so much since i was a kid..
-	return false;
-}
-
-Point2 OS_Android::get_mouse_position() const {
-
-	return Point2();
-}
-
-int OS_Android::get_mouse_button_state() const {
-
-	return 0;
-}
-
-void OS_Android::set_window_title(const String &p_title) {
-	//This queries/updates the currently connected devices/joypads
-	//Set_window_title is called when initializing the main loop (main.cpp)
-	//therefore this place is found to be suitable (I found no better).
-	godot_java->init_input_devices();
-}
-
-void OS_Android::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
-}
-
-OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
-
-	return default_videomode;
-}
-
-void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
-
-	p_list->push_back(default_videomode);
-}
-
-void OS_Android::set_keep_screen_on(bool p_enabled) {
-	OS::set_keep_screen_on(p_enabled);
-
-	godot_java->set_keep_screen_on(p_enabled);
-}
-
-Size2 OS_Android::get_window_size() const {
-
-	return Vector2(default_videomode.width, default_videomode.height);
-}
-
 String OS_Android::get_name() const {
 
 	return "Android";
@@ -277,11 +149,6 @@ String OS_Android::get_name() const {
 MainLoop *OS_Android::get_main_loop() const {
 
 	return main_loop;
-}
-
-bool OS_Android::can_draw() const {
-
-	return true; //always?
 }
 
 void OS_Android::main_loop_begin() {
@@ -304,277 +171,17 @@ void OS_Android::main_loop_end() {
 }
 
 void OS_Android::main_loop_focusout() {
-
-	if (main_loop)
-		main_loop->notification(NOTIFICATION_WM_FOCUS_OUT);
+	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_OUT);
 	audio_driver_android.set_pause(true);
 }
 
 void OS_Android::main_loop_focusin() {
-
-	if (main_loop)
-		main_loop->notification(NOTIFICATION_WM_FOCUS_IN);
+	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_FOCUS_IN);
 	audio_driver_android.set_pause(false);
 }
 
-void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
-
-	switch (p_event.type) {
-		case JOY_EVENT_BUTTON:
-			input->joy_button(p_event.device, p_event.index, p_event.pressed);
-			break;
-		case JOY_EVENT_AXIS:
-			InputDefault::JoyAxis value;
-			value.min = -1;
-			value.value = p_event.value;
-			input->joy_axis(p_event.device, p_event.index, value);
-			break;
-		case JOY_EVENT_HAT:
-			input->joy_hat(p_event.device, p_event.hat);
-			break;
-		default:
-			return;
-	}
-}
-
-void OS_Android::process_event(Ref<InputEvent> p_event) {
-
-	input->parse_input_event(p_event);
-}
-
-void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points) {
-
-	switch (p_what) {
-		case 0: { //gesture begin
-
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
-
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					input->parse_input_event(ev);
-				}
-			}
-
-			touch.resize(p_points.size());
-			for (int i = 0; i < p_points.size(); i++) {
-				touch.write[i].id = p_points[i].id;
-				touch.write[i].pos = p_points[i].pos;
-			}
-
-			//send touch
-			for (int i = 0; i < touch.size(); i++) {
-
-				Ref<InputEventScreenTouch> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_pressed(true);
-				ev->set_position(touch[i].pos);
-				input->parse_input_event(ev);
-			}
-
-		} break;
-		case 1: { //motion
-
-			ERR_FAIL_COND(touch.size() != p_points.size());
-
-			for (int i = 0; i < touch.size(); i++) {
-
-				int idx = -1;
-				for (int j = 0; j < p_points.size(); j++) {
-
-					if (touch[i].id == p_points[j].id) {
-						idx = j;
-						break;
-					}
-				}
-
-				ERR_CONTINUE(idx == -1);
-
-				if (touch[i].pos == p_points[idx].pos)
-					continue; //no move unncesearily
-
-				Ref<InputEventScreenDrag> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_position(p_points[idx].pos);
-				ev->set_relative(p_points[idx].pos - touch[i].pos);
-				input->parse_input_event(ev);
-				touch.write[i].pos = p_points[idx].pos;
-			}
-
-		} break;
-		case 2: { //release
-
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
-
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					input->parse_input_event(ev);
-				}
-				touch.clear();
-			}
-		} break;
-		case 3: { // add touch
-
-			for (int i = 0; i < p_points.size(); i++) {
-				if (p_points[i].id == p_pointer) {
-					TouchPos tp = p_points[i];
-					touch.push_back(tp);
-
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-
-					ev->set_index(tp.id);
-					ev->set_pressed(true);
-					ev->set_position(tp.pos);
-					input->parse_input_event(ev);
-
-					break;
-				}
-			}
-		} break;
-		case 4: { // remove touch
-
-			for (int i = 0; i < touch.size(); i++) {
-				if (touch[i].id == p_pointer) {
-
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					input->parse_input_event(ev);
-					touch.remove(i);
-
-					break;
-				}
-			}
-		} break;
-	}
-}
-
-void OS_Android::process_hover(int p_type, Point2 p_pos) {
-	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
-	switch (p_type) {
-		case 7: // hover move
-		case 9: // hover enter
-		case 10: { // hover exit
-			Ref<InputEventMouseMotion> ev;
-			ev.instance();
-			ev->set_position(p_pos);
-			ev->set_global_position(p_pos);
-			ev->set_relative(p_pos - hover_prev_pos);
-			input->parse_input_event(ev);
-			hover_prev_pos = p_pos;
-		} break;
-	}
-}
-
-void OS_Android::process_double_tap(Point2 p_pos) {
-	Ref<InputEventMouseButton> ev;
-	ev.instance();
-	ev->set_position(p_pos);
-	ev->set_global_position(p_pos);
-	ev->set_pressed(false);
-	ev->set_doubleclick(true);
-	input->parse_input_event(ev);
-}
-
-void OS_Android::process_scroll(Point2 p_pos) {
-	Ref<InputEventPanGesture> ev;
-	ev.instance();
-	ev->set_position(p_pos);
-	ev->set_delta(p_pos - scroll_prev_pos);
-	input->parse_input_event(ev);
-	scroll_prev_pos = p_pos;
-}
-
-void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
-
-	input->set_accelerometer(p_accelerometer);
-}
-
-void OS_Android::process_gravity(const Vector3 &p_gravity) {
-
-	input->set_gravity(p_gravity);
-}
-
-void OS_Android::process_magnetometer(const Vector3 &p_magnetometer) {
-
-	input->set_magnetometer(p_magnetometer);
-}
-
-void OS_Android::process_gyroscope(const Vector3 &p_gyroscope) {
-
-	input->set_gyroscope(p_gyroscope);
-}
-
-bool OS_Android::has_touchscreen_ui_hint() const {
-
-	return true;
-}
-
-bool OS_Android::has_virtual_keyboard() const {
-
-	return true;
-}
-
-int OS_Android::get_virtual_keyboard_height() const {
-	return godot_io_java->get_vk_height();
-
-	// ERR_PRINT("Cannot obtain virtual keyboard height.");
-	// return 0;
-}
-
-void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
-
-	if (godot_io_java->has_vk()) {
-		godot_io_java->show_vk(p_existing_text, p_max_input_length);
-	} else {
-
-		ERR_PRINT("Virtual keyboard not available");
-	};
-}
-
-void OS_Android::hide_virtual_keyboard() {
-
-	if (godot_io_java->has_vk()) {
-
-		godot_io_java->hide_vk();
-	} else {
-
-		ERR_PRINT("Virtual keyboard not available");
-	};
-}
-
-void OS_Android::init_video_mode(int p_video_width, int p_video_height) {
-
-	default_videomode.width = p_video_width;
-	default_videomode.height = p_video_height;
-	default_videomode.fullscreen = true;
-	default_videomode.resizable = false;
-}
-
 void OS_Android::main_loop_request_go_back() {
-
-	if (main_loop)
-		main_loop->notification(NOTIFICATION_WM_GO_BACK_REQUEST);
-}
-
-void OS_Android::set_display_size(Size2 p_size) {
-
-	default_videomode.width = p_size.x;
-	default_videomode.height = p_size.y;
+	DisplayServerAndroid::get_singleton()->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST);
 }
 
 Error OS_Android::shell_open(String p_uri) {
@@ -597,26 +204,6 @@ String OS_Android::get_locale() const {
 	return OS_Unix::get_locale();
 }
 
-void OS_Android::set_clipboard(const String &p_text) {
-
-	// DO we really need the fallback to OS_Unix here?!
-	if (godot_java->has_set_clipboard()) {
-		godot_java->set_clipboard(p_text);
-	} else {
-		OS_Unix::set_clipboard(p_text);
-	}
-}
-
-String OS_Android::get_clipboard() const {
-
-	// DO we really need the fallback to OS_Unix here?!
-	if (godot_java->has_get_clipboard()) {
-		return godot_java->get_clipboard();
-	}
-
-	return OS_Unix::get_clipboard();
-}
-
 String OS_Android::get_model_name() const {
 
 	String model = godot_io_java->get_model();
@@ -624,11 +211,6 @@ String OS_Android::get_model_name() const {
 		return model;
 
 	return OS_Unix::get_model_name();
-}
-
-int OS_Android::get_screen_dpi(int p_screen) const {
-
-	return godot_io_java->get_screen_dpi();
 }
 
 String OS_Android::get_user_data_dir() const {
@@ -662,11 +244,6 @@ String OS_Android::get_user_data_dir() const {
 	return ".";
 }
 
-void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
-
-	godot_io_java->set_screen_orientation(p_orientation);
-}
-
 String OS_Android::get_unique_id() const {
 
 	String unique_id = godot_io_java->get_unique_id();
@@ -676,50 +253,46 @@ String OS_Android::get_unique_id() const {
 	return OS::get_unique_id();
 }
 
-Error OS_Android::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
-	// FIXME: Add support for volume, audio and subtitle tracks
-
-	godot_io_java->play_video(p_path);
-	return OK;
-}
-
-bool OS_Android::native_video_is_playing() const {
-
-	return godot_io_java->is_video_playing();
-}
-
-void OS_Android::native_video_pause() {
-
-	godot_io_java->pause_video();
-}
-
 String OS_Android::get_system_dir(SystemDir p_dir) const {
 
 	return godot_io_java->get_system_dir(p_dir);
 }
 
-void OS_Android::native_video_stop() {
+void OS_Android::set_display_size(const Size2i &p_size) {
+	display_size = p_size;
+}
 
-	godot_io_java->stop_video();
+Size2i OS_Android::get_display_size() const {
+	return display_size;
 }
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
-
+#if defined(OPENGL_ENABLED)
 	//use_16bits_fbo = p_is_16;
 	//if (rasterizer)
 	//	rasterizer->set_force_16_bits_fbo(p_is_16);
+#endif
 }
 
-void OS_Android::joy_connection_changed(int p_device, bool p_connected, String p_name) {
-	return input->joy_connection_changed(p_device, p_connected, p_name, "");
+void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
+#if defined(OPENGL_ENABLED)
+	ERR_FAIL_COND(!p_gl_extensions);
+	gl_extensions = p_gl_extensions;
+#endif
 }
 
-bool OS_Android::is_joy_known(int p_device) {
-	return input->is_joy_mapped(p_device);
+void OS_Android::set_native_window(ANativeWindow *p_native_window) {
+#if defined(VULKAN_ENABLED)
+	native_window = p_native_window;
+#endif
 }
 
-String OS_Android::get_joy_guid(int p_device) const {
-	return input->get_joy_guid_remapped(p_device);
+ANativeWindow *OS_Android::get_native_window() const {
+#if defined(VULKAN_ENABLED)
+	return native_window;
+#else
+	return nullptr;
+#endif
 }
 
 void OS_Android::vibrate_handheld(int p_duration_ms) {
@@ -747,19 +320,21 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 }
 
 OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {
+	display_size.width = 800;
+	display_size.height = 600;
 
 	use_apk_expansion = p_use_apk_expansion;
-	default_videomode.width = 800;
-	default_videomode.height = 600;
-	default_videomode.fullscreen = true;
-	default_videomode.resizable = false;
 
 	main_loop = nullptr;
-	gl_extensions = nullptr;
-	//rasterizer = nullptr;
-	use_gl2 = false;
 
-	rendering_server = nullptr;
+#if defined(OPENGL_ENABLED)
+	gl_extensions = nullptr;
+	use_gl2 = false;
+#endif
+
+#if defined(VULKAN_ENABLED)
+	native_window = nullptr;
+#endif
 
 	godot_java = p_godot_java;
 	godot_io_java = p_godot_io_java;
@@ -769,6 +344,8 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver_android);
+
+	DisplayServerAndroid::register_android_driver();
 }
 
 OS_Android::~OS_Android() {

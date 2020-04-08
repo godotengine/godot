@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vk_renderer_jni.cpp                                                  */
+/*  vulkan_context_android.h                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,31 +28,22 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "vk_renderer_jni.h"
+#ifndef VULKAN_CONTEXT_ANDROID_H
+#define VULKAN_CONTEXT_ANDROID_H
 
-extern "C" {
+#include "drivers/vulkan/vulkan_context.h"
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkSurfaceCreated(JNIEnv *env, jobject obj, jobject j_surface) {
-	// TODO: complete
-}
+struct ANativeWindow;
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkSurfaceChanged(JNIEnv *env, jobject object, jobject j_surface, jint width, jint height) {
-	// TODO: complete
-}
+class VulkanContextAndroid : public VulkanContext {
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkResume(JNIEnv *env, jobject obj) {
-	// TODO: complete
-}
+	virtual const char *_get_platform_surface_extension() const;
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkDrawFrame(JNIEnv *env, jobject obj) {
-	// TODO: complete
-}
+public:
+	int window_create(ANativeWindow *p_window, int p_width, int p_height);
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkPause(JNIEnv *env, jobject obj) {
-	// TODO: complete
-}
+	VulkanContextAndroid();
+	~VulkanContextAndroid();
+};
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkDestroy(JNIEnv *env, jobject obj) {
-	// TODO: complete
-}
-}
+#endif // VULKAN_CONTEXT_ANDROID_H

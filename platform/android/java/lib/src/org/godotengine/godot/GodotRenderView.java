@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  vk_renderer_jni.h                                                    */
+/*  GodotRenderView.java                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,19 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef VK_RENDERER_JNI_H
-#define VK_RENDERER_JNI_H
+package org.godotengine.godot;
 
-#include <android/log.h>
-#include <jni.h>
+import android.view.SurfaceView;
 
-extern "C" {
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkSurfaceCreated(JNIEnv *env, jobject obj, jobject j_surface);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkSurfaceChanged(JNIEnv *env, jobject object, jobject j_surface, jint width, jint height);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkResume(JNIEnv *env, jobject obj);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkDrawFrame(JNIEnv *env, jobject obj);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkPause(JNIEnv *env, jobject obj);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_vulkan_VkRenderer_nativeOnVkDestroy(JNIEnv *env, jobject obj);
+public interface GodotRenderView {
+
+	abstract public SurfaceView getView();
+
+	abstract public void initInputDevices();
+
+	abstract public void queueOnRenderThread(Runnable event);
+
+	abstract public void onActivityPaused();
+	abstract public void onActivityResumed();
+
+	abstract public void onBackPressed();
 }
-
-#endif // VK_RENDERER_JNI_H

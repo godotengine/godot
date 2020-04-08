@@ -1565,15 +1565,20 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	image_create_info.pNext = nullptr;
 	image_create_info.flags = 0;
 
-	VkImageFormatListCreateInfoKHR format_list_create_info;
-	Vector<VkFormat> allowed_formats;
-
+#ifndef _MSC_VER
+#warning TODO check for support via RenderingDevice to enable on mobile when possible
+#endif
+	// vkCreateImage fails with format list on Android (VK_ERROR_OUT_OF_HOST_MEMORY)
+#ifndef ANDROID_ENABLED
 	if (p_format.shareable_formats.size()) {
 		image_create_info.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+
+		Vector<VkFormat> allowed_formats;
 		for (int i = 0; i < p_format.shareable_formats.size(); i++) {
 			allowed_formats.push_back(vulkan_formats[p_format.shareable_formats[i]]);
 		}
 
+		VkImageFormatListCreateInfoKHR format_list_create_info;
 		format_list_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO_KHR;
 		format_list_create_info.pNext = nullptr;
 		format_list_create_info.viewFormatCount = allowed_formats.size();
@@ -1585,6 +1590,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		ERR_FAIL_COND_V_MSG(p_view.format_override != DATA_FORMAT_MAX && p_format.shareable_formats.find(p_view.format_override) == -1, RID(),
 				"If supplied a list of shareable formats, the current view format override must be present in the list");
 	}
+#endif
 	if (p_format.type == TEXTURE_TYPE_CUBE || p_format.type == TEXTURE_TYPE_CUBE_ARRAY) {
 		image_create_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 	}

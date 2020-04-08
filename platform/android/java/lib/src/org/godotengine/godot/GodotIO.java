@@ -53,8 +53,6 @@ public class GodotIO {
 	Godot activity;
 	GodotEditText edit;
 
-	MediaPlayer mediaPlayer;
-
 	final int SCREEN_LANDSCAPE = 0;
 	final int SCREEN_PORTRAIT = 1;
 	final int SCREEN_REVERSE_LANDSCAPE = 2;
@@ -530,44 +528,14 @@ public class GodotIO {
 				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
 			} break;
 		}
-	};
+	}
+
+	public int getScreenOrientation() {
+		return activity.getRequestedOrientation();
+	}
 
 	public void setEdit(GodotEditText _edit) {
 		edit = _edit;
-	}
-
-	public void playVideo(String p_path) {
-		Uri filePath = Uri.parse(p_path);
-		mediaPlayer = new MediaPlayer();
-
-		try {
-			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			mediaPlayer.setDataSource(activity.getApplicationContext(), filePath);
-			mediaPlayer.prepare();
-			mediaPlayer.start();
-		} catch (IOException e) {
-			System.out.println("IOError while playing video");
-		}
-	}
-
-	public boolean isVideoPlaying() {
-		if (mediaPlayer != null) {
-			return mediaPlayer.isPlaying();
-		}
-		return false;
-	}
-
-	public void pauseVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.pause();
-		}
-	}
-
-	public void stopVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.release();
-			mediaPlayer = null;
-		}
 	}
 
 	public static final int SYSTEM_DIR_DESKTOP = 0;

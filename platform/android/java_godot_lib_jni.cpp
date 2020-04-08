@@ -34,13 +34,13 @@
 #include "java_godot_wrapper.h"
 
 #include "android/asset_manager_jni.h"
-#include "android_keys_utils.h"
 #include "api/java_class_wrapper.h"
 #include "audio_driver_jandroid.h"
 #include "core/engine.h"
 #include "core/input/input_filter.h"
 #include "core/project_settings.h"
 #include "dir_access_jandroid.h"
+#include "display_server_android.h"
 #include "file_access_android.h"
 #include "file_access_jandroid.h"
 #include "jni_utils.h"
@@ -51,6 +51,8 @@
 #include "thread_jandroid.h"
 
 #include <unistd.h>
+
+#include <android/native_window_jni.h>
 
 static JavaClassWrapper *java_class_wrapper = nullptr;
 static OS_Android *os_android = nullptr;
@@ -165,17 +167,20 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jclass clazz, jint width, jint height) {
 
 	if (os_android)
-		os_android->set_display_size(Size2(width, height));
+		os_android->set_display_size(Size2i(width, height));
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jboolean p_32_bits) {
-
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jclass clazz, jobject p_surface, jboolean p_32_bits) {
 	if (os_android) {
 		if (step == 0) {
 			// During startup
 			os_android->set_context_is_16_bits(!p_32_bits);
+			if (p_surface) {
+				ANativeWindow *native_window = ANativeWindow_fromSurface(env, p_surface);
+				os_android->set_native_window(native_window);
+			}
 		} else {
-			// GL context recreated because it was lost; restart app to let it reload everything
+			// Rendering context recreated because it was lost; restart app to let it reload everything
 			os_android->main_loop_end();
 			godot_java->restart(env);
 			step = -1; // Ensure no further steps are attempted
@@ -195,7 +200,6 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		return;
 
 	if (step == 0) {
-
 		// Since Godot is initialized on the UI thread, _main_thread_id was set to that thread's id,
 		// but for Godot purposes, the main thread is the one running the game loop
 		Main::setup2(Thread::get_caller_id());
@@ -213,10 +217,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 		++step;
 	}
 
-	os_android->process_accelerometer(accelerometer);
-	os_android->process_gravity(gravity);
-	os_android->process_magnetometer(magnetometer);
-	os_android->process_gyroscope(gyroscope);
+	DisplayServerAndroid::get_singleton()->process_accelerometer(accelerometer);
+	DisplayServerAndroid::get_singleton()->process_gravity(gravity);
+	DisplayServerAndroid::get_singleton()->process_magnetometer(magnetometer);
+	DisplayServerAndroid::get_singleton()->process_gyroscope(gyroscope);
 
 	if (os_android->main_loop_iterate()) {
 
@@ -229,18 +233,18 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jc
 	if (step == 0)
 		return;
 
-	Vector<OS_Android::TouchPos> points;
+	Vector<DisplayServerAndroid::TouchPos> points;
 	for (int i = 0; i < count; i++) {
 
 		jint p[3];
 		env->GetIntArrayRegion(positions, i * 3, 3, p);
-		OS_Android::TouchPos tp;
+		DisplayServerAndroid::TouchPos tp;
 		tp.pos = Point2(p[1], p[2]);
 		tp.id = p[0];
 		points.push_back(tp);
 	}
 
-	os_android->process_touch(ev, pointer, points);
+	DisplayServerAndroid::get_singleton()->process_touch(ev, pointer, points);
 
 	/*
 	if (os_android)
@@ -252,78 +256,78 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_hover(JNIEnv *env, jc
 	if (step == 0)
 		return;
 
-	os_android->process_hover(p_type, Point2(p_x, p_y));
+	DisplayServerAndroid::get_singleton()->process_hover(p_type, Point2(p_x, p_y));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_doubletap(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
 	if (step == 0)
 		return;
 
-	os_android->process_double_tap(Point2(p_x, p_y));
+	DisplayServerAndroid::get_singleton()->process_double_tap(Point2(p_x, p_y));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_scroll(JNIEnv *env, jclass clazz, jint p_x, jint p_y) {
 	if (step == 0)
 		return;
 
-	os_android->process_scroll(Point2(p_x, p_y));
+	DisplayServerAndroid::get_singleton()->process_scroll(Point2(p_x, p_y));
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv *env, jclass clazz, jint p_device, jint p_button, jboolean p_pressed) {
 	if (step == 0)
 		return;
 
-	OS_Android::JoypadEvent jevent;
+	DisplayServerAndroid::JoypadEvent jevent;
 	jevent.device = p_device;
-	jevent.type = OS_Android::JOY_EVENT_BUTTON;
+	jevent.type = DisplayServerAndroid::JOY_EVENT_BUTTON;
 	jevent.index = p_button;
 	jevent.pressed = p_pressed;
 
-	os_android->process_joy_event(jevent);
+	DisplayServerAndroid::get_singleton()->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv *env, jclass clazz, jint p_device, jint p_axis, jfloat p_value) {
 	if (step == 0)
 		return;
 
-	OS_Android::JoypadEvent jevent;
+	DisplayServerAndroid::JoypadEvent jevent;
 	jevent.device = p_device;
-	jevent.type = OS_Android::JOY_EVENT_AXIS;
+	jevent.type = DisplayServerAndroid::JOY_EVENT_AXIS;
 	jevent.index = p_axis;
 	jevent.value = p_value;
 
-	os_android->process_joy_event(jevent);
+	DisplayServerAndroid::get_singleton()->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, jclass clazz, jint p_device, jint p_hat_x, jint p_hat_y) {
 	if (step == 0)
 		return;
 
-	OS_Android::JoypadEvent jevent;
+	DisplayServerAndroid::JoypadEvent jevent;
 	jevent.device = p_device;
-	jevent.type = OS_Android::JOY_EVENT_HAT;
+	jevent.type = DisplayServerAndroid::JOY_EVENT_HAT;
 	int hat = 0;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0)
-			hat |= InputDefault::HAT_MASK_LEFT;
+			hat |= InputFilter::HAT_MASK_LEFT;
 		else
-			hat |= InputDefault::HAT_MASK_RIGHT;
+			hat |= InputFilter::HAT_MASK_RIGHT;
 	}
 	if (p_hat_y != 0) {
 		if (p_hat_y < 0)
-			hat |= InputDefault::HAT_MASK_UP;
+			hat |= InputFilter::HAT_MASK_UP;
 		else
-			hat |= InputDefault::HAT_MASK_DOWN;
+			hat |= InputFilter::HAT_MASK_DOWN;
 	}
 	jevent.hat = hat;
 
-	os_android->process_joy_event(jevent);
+	DisplayServerAndroid::get_singleton()->process_joy_event(jevent);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jclass clazz, jint p_device, jboolean p_connected, jstring p_name) {
 	if (os_android) {
 		String name = jstring_to_string(p_name, env);
-		os_android->joy_connection_changed(p_device, p_connected, name);
+		InputFilter::get_singleton()->joy_connection_changed(p_device, p_connected, name);
 	}
 }
 
@@ -331,29 +335,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv *env, jcla
 	if (step == 0)
 		return;
 
-	Ref<InputEventKey> ievent;
-	ievent.instance();
-	int val = p_unicode_char;
-	int keycode = android_get_keysym(p_keycode);
-	int phy_keycode = android_get_keysym(p_scancode);
-	ievent->set_keycode(keycode);
-	ievent->set_physical_keycode(phy_keycode);
-	ievent->set_unicode(val);
-	ievent->set_pressed(p_pressed);
-
-	if (val == '\n') {
-		ievent->set_keycode(KEY_ENTER);
-	} else if (val == 61448) {
-		ievent->set_keycode(KEY_BACKSPACE);
-		ievent->set_unicode(KEY_BACKSPACE);
-	} else if (val == 61453) {
-		ievent->set_keycode(KEY_ENTER);
-		ievent->set_unicode(KEY_ENTER);
-	} else if (p_keycode == 4) {
-		os_android->main_loop_request_go_back();
-	}
-
-	os_android->process_event(ievent);
+	DisplayServerAndroid::get_singleton()->process_key_event(p_keycode, p_scancode, p_unicode_char, p_pressed);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_accelerometer(JNIEnv *env, jclass clazz, jfloat x, jfloat y, jfloat z) {

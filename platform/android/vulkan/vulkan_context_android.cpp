@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  RegularContextFactory.java                                           */
+/*  vulkan_context_android.cpp                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.xr.regular;
+#include "vulkan_context_android.h"
+#include <vulkan/vulkan_android.h>
 
-import android.opengl.GLSurfaceView;
-import android.util.Log;
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
-import javax.microedition.khronos.egl.EGLDisplay;
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.utils.GLUtils;
+#define VMA_IMPLEMENTATION
+#ifdef DEBUG_ENABLED
+#ifndef _DEBUG
+#define _DEBUG
+#endif
+#endif
+#include <vk_mem_alloc.h>
 
-/**
- * Factory used to setup the opengl context for pancake games.
- */
-public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
-	private static final String TAG = RegularContextFactory.class.getSimpleName();
+const char *VulkanContextAndroid::_get_platform_surface_extension() const {
+	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
+}
 
-	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
-	private static final int _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR = 0x00000001;
+int VulkanContextAndroid::window_create(ANativeWindow *p_window, int p_width, int p_height) {
+	VkAndroidSurfaceCreateInfoKHR createInfo;
+	createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+	createInfo.pNext = nullptr;
+	createInfo.flags = 0;
+	createInfo.window = p_window;
 
-	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
-
-	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		// FIXME: Add support for Vulkan.
-		Log.w(TAG, "creating OpenGL ES 2.0 context :");
-
-		GLUtils.checkEglError(TAG, "Before eglCreateContext", egl);
-		EGLContext context;
-		if (GLUtils.use_debug_opengl) {
-			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list2);
-		} else {
-			int[] attrib_list2 = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list2);
-		}
-		GLUtils.checkEglError(TAG, "After eglCreateContext", egl);
-		return context;
+	VkSurfaceKHR surface;
+	VkResult err = vkCreateAndroidSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
+	if (err != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(-1, "vkCreateAndroidSurfaceKHR failed with error " + itos(err));
 	}
 
-	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
-		egl.eglDestroyContext(display, context);
-	}
+	return _window_create(DisplayServer::MAIN_WINDOW_ID, surface, p_width, p_height);
+}
+
+VulkanContextAndroid::VulkanContextAndroid() {
+	// TODO: fix validation layers
+	use_validation_layers = false;
+}
+
+VulkanContextAndroid::~VulkanContextAndroid() {
 }

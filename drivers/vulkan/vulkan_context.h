@@ -45,8 +45,6 @@ class VulkanContext {
 		FRAME_LAG = 2
 	};
 
-	bool use_validation_layers;
-
 	VkInstance inst;
 	VkSurfaceKHR surface;
 	VkPhysicalDevice gpu;
@@ -180,6 +178,8 @@ protected:
 	}
 
 	bool buffers_prepared;
+
+	bool use_validation_layers;
 
 public:
 	VkDevice get_device();

@@ -25,7 +25,7 @@ def get_opts():
 
     return [
         ("ANDROID_NDK_ROOT", "Path to the Android NDK", os.environ.get("ANDROID_NDK_ROOT", 0)),
-        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-18")', "android-18"),
+        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
         EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
         BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
     ]
@@ -102,7 +102,7 @@ def configure(env):
     neon_text = ""
     if env["android_arch"] == "armv7" and env["android_neon"]:
         neon_text = " (with NEON)"
-    print("Building for Android (" + env["android_arch"] + ")" + neon_text)
+    print("Building for Android, platform " + env["ndk_platform"] + " (" + env["android_arch"] + ")" + neon_text)
 
     can_vectorize = True
     if env["android_arch"] == "x86":
@@ -314,8 +314,8 @@ def configure(env):
     )
 
     env.Prepend(CPPPATH=["#platform/android"])
-    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "NO_FCNTL"])
-    env.Append(LIBS=["OpenSLES", "EGL", "GLESv3", "GLESv2", "android", "log", "z", "dl"])
+    env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED", "VULKAN_ENABLED", "NO_FCNTL"])
+    env.Append(LIBS=["OpenSLES", "EGL", "GLESv2", "vulkan", "android", "log", "z", "dl"])
 
 
 # Return NDK version string in source.properties (adapted from the Chromium project).
