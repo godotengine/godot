@@ -367,6 +367,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM4R(Vector2, cubic_interpolate);
 	VCALL_LOCALMEM2R(Vector2, move_toward);
 	VCALL_LOCALMEM1R(Vector2, rotated);
+	VCALL_LOCALMEM1R(Vector2, magnified);
 	VCALL_LOCALMEM0R(Vector2, tangent);
 	VCALL_LOCALMEM0R(Vector2, floor);
 	VCALL_LOCALMEM0R(Vector2, ceil);
@@ -426,6 +427,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector3, inverse);
 	VCALL_LOCALMEM1R(Vector3, snapped);
 	VCALL_LOCALMEM2R(Vector3, rotated);
+	VCALL_LOCALMEM1R(Vector3, magnified);
 	VCALL_LOCALMEM2R(Vector3, linear_interpolate);
 	VCALL_LOCALMEM2R(Vector3, slerp);
 	VCALL_LOCALMEM4R(Vector3, cubic_interpolate);
@@ -1814,6 +1816,7 @@ void register_variant_methods() {
 	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, move_toward, VECTOR2, "to", FLOAT, "delta", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, rotated, FLOAT, "phi", varray());
+	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, magnified, FLOAT, "length", varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, tangent, varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, floor, varray());
 	ADDFUNC0R(VECTOR2, VECTOR2, Vector2, ceil, varray());
@@ -1874,6 +1877,7 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", FLOAT, "phi", varray());
+	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, magnified, FLOAT, "length", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", FLOAT, "t", varray());

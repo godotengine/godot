@@ -135,6 +135,7 @@ struct Vector2 {
 	}
 
 	Vector2 rotated(real_t p_by) const;
+	Vector2 magnified(real_t p_by) const;
 	Vector2 tangent() const {
 
 		return Vector2(y, -x);

@@ -126,6 +126,14 @@ Vector2 Vector2::rotated(real_t p_by) const {
 	return v;
 }
 
+Vector2 Vector2::magnified(real_t p_by) const {
+
+	Vector2 v = *this;
+	v.normalize();
+	v *= p_by;
+	return v;
+}
+
 Vector2 Vector2::posmod(const real_t p_mod) const {
 	return Vector2(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod));
 }

@@ -73,6 +73,7 @@ struct Vector3 {
 
 	_FORCE_INLINE_ real_t length() const;
 	_FORCE_INLINE_ real_t length_squared() const;
+	_FORCE_INLINE_ Vector3 magnified(real_t p_by) const;
 
 	_FORCE_INLINE_ void normalize();
 	_FORCE_INLINE_ Vector3 normalized() const;
@@ -424,6 +425,14 @@ real_t Vector3::length_squared() const {
 	real_t z2 = z * z;
 
 	return x2 + y2 + z2;
+}
+
+Vector3 Vector3::magnified(real_t p_by) const {
+
+	Vector3 v = *this;
+	v.normalize();
+	v *= p_by;
+	return v;
 }
 
 void Vector3::normalize() {
