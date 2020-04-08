@@ -155,7 +155,7 @@
 				Returns [code]true[/code] if an "undo" action is available.
 			</description>
 		</method>
-		<method name="is_commiting_action" qualifiers="const">
+		<method name="is_committing_action" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
