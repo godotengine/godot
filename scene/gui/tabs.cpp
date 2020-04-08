@@ -184,10 +184,7 @@ void Tabs::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			int found = -1;
-			for (int i = 0; i < tabs.size(); i++) {
-
-				if (i < offset)
-					continue;
+			for (int i = offset; i < tabs.size(); i++) {
 
 				if (tabs[i].rb_rect.has_point(pos)) {
 					rb_pressing = true;
@@ -276,10 +273,7 @@ void Tabs::_notification(int p_what) {
 
 			missing_right = false;
 
-			for (int i = 0; i < tabs.size(); i++) {
-
-				if (i < offset)
-					continue;
+			for (int i = offset; i < tabs.size(); i++) {
 
 				tabs.write[i].ofs_cache = w;
 
@@ -499,10 +493,7 @@ void Tabs::_update_hover() {
 	// test hovering to display right or close button
 	int hover_now = -1;
 	int hover_buttons = -1;
-	for (int i = 0; i < tabs.size(); i++) {
-
-		if (i < offset)
-			continue;
+	for (int i = offset; i < tabs.size(); i++) {
 
 		Rect2 rect = get_tab_rect(i);
 		if (rect.has_point(pos)) {
@@ -559,9 +550,8 @@ void Tabs::_update_cache() {
 	if (count_resize > 0) {
 		m_width = MAX((limit - size_fixed) / count_resize, min_width);
 	}
-	for (int i = 0; i < tabs.size(); i++) {
-		if (i < offset)
-			continue;
+	for (int i = offset; i < tabs.size(); i++) {
+
 		Ref<StyleBox> sb;
 		if (tabs[i].disabled) {
 			sb = tab_disabled;
@@ -753,10 +743,7 @@ void Tabs::drop_data(const Point2 &p_point, const Variant &p_data) {
 int Tabs::get_tab_idx_at_point(const Point2 &p_point) const {
 
 	int hover_now = -1;
-	for (int i = 0; i < tabs.size(); i++) {
-
-		if (i < offset)
-			continue;
+	for (int i = offset; i < tabs.size(); i++) {
 
 		Rect2 rect = get_tab_rect(i);
 		if (rect.has_point(p_point)) {
@@ -850,10 +837,7 @@ void Tabs::_ensure_no_over_offset() {
 	while (offset > 0) {
 
 		int total_w = 0;
-		for (int i = 0; i < tabs.size(); i++) {
-
-			if (i < offset - 1)
-				continue;
+		for (int i = offset - 1; i < tabs.size(); i++) {
 
 			total_w += tabs[i].size_cache;
 		}
