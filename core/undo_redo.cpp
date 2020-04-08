@@ -511,8 +511,7 @@ void UndoRedo::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode"), &UndoRedo::create_action, DEFVAL(MERGE_DISABLE));
 	ClassDB::bind_method(D_METHOD("commit_action"), &UndoRedo::commit_action);
-	// FIXME: Typo in "commiting", fix in 4.0 when breaking compat.
-	ClassDB::bind_method(D_METHOD("is_commiting_action"), &UndoRedo::is_committing_action);
+	ClassDB::bind_method(D_METHOD("is_committing_action"), &UndoRedo::is_committing_action);
 
 	{
 		MethodInfo mi;
