@@ -1136,7 +1136,12 @@ bool AtlasTexture::has_alpha() const {
 }
 
 void AtlasTexture::set_atlas(const Ref<Texture2D> &p_atlas) {
-	ERR_FAIL_COND(p_atlas == this);
+	const AtlasTexture *p_atlas_child = Object::cast_to<AtlasTexture>(*p_atlas);
+	while (p_atlas_child != nullptr) {
+		ERR_FAIL_COND_MSG(p_atlas_child == this, "Can't set atlas as one of its parents or self to prevent crashes due to recursive loop.");
+		p_atlas_child = Object::cast_to<AtlasTexture>(*p_atlas_child->get_atlas());
+	}
+
 	if (atlas == p_atlas) {
 		return;
 	}

@@ -524,7 +524,7 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != nullptr; fallback_child = fallback_child->get_fallback()) {
-		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
+		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set fallback as one of its parents or self to prevent crashes due to recursive loop.");
 	}
 
 	fallback = p_fallback;
