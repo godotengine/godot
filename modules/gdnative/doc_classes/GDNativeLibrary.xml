@@ -4,7 +4,7 @@
 		An external library containing functions or script classes to use in Godot.
 	</brief_description>
 	<description>
-		A GDNative library can implement [NativeScript]s, global functions to call with the [GDNative] class, or low-level engine extensions through interfaces such as [ARVRInterfaceGDNative]. The library must be compiled for each platform and architecture that the project will run on.
+		A GDNative library can implement [NativeScript]s, global functions to call with the [GDNative] class, or low-level engine extensions through interfaces such as [XRInterfaceGDNative]. The library must be compiled for each platform and architecture that the project will run on.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/plugins/gdnative/gdnative-c-example.html</link>

@@ -12,8 +12,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="ARVRServer" type="ARVRServer" setter="" getter="">
-			The [ARVRServer] singleton.
+		<member name="XRServer" type="XRServer" setter="" getter="">
+			The [XRServer] singleton.
 		</member>
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
 			The [AudioServer] singleton.

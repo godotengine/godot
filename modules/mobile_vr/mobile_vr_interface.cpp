@@ -39,7 +39,7 @@ StringName MobileVRInterface::get_name() const {
 };
 
 int MobileVRInterface::get_capabilities() const {
-	return ARVRInterface::ARVR_STEREO;
+	return XRInterface::XR_STEREO;
 };
 
 Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
@@ -165,7 +165,7 @@ void MobileVRInterface::set_position_from_sensors() {
 		rotate.rotate(orientation.get_axis(2), gyro.z * delta_time);
 		orientation = rotate * orientation;
 
-		tracking_state = ARVRInterface::ARVR_NORMAL_TRACKING;
+		tracking_state = XRInterface::XR_NORMAL_TRACKING;
 	};
 
 	///@TODO improve this, the magnetometer is very fidgity sometimes flipping the axis for no apparent reason (probably a bug on my part)
@@ -177,7 +177,7 @@ void MobileVRInterface::set_position_from_sensors() {
 		transform_quat = transform_quat.slerp(acc_mag_quat, 0.1);
 		orientation = Basis(transform_quat);
 
-		tracking_state = ARVRInterface::ARVR_NORMAL_TRACKING;
+		tracking_state = XRInterface::XR_NORMAL_TRACKING;
 	} else if (has_grav) {
 		// use gravity vector to make sure down is down...
 		// transform gravity into our world space
@@ -297,8 +297,8 @@ bool MobileVRInterface::is_initialized() const {
 };
 
 bool MobileVRInterface::initialize() {
-	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	ERR_FAIL_NULL_V(arvr_server, false);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, false);
 
 	if (!initialized) {
 		// reset our sensor data and orientation
@@ -314,7 +314,7 @@ bool MobileVRInterface::initialize() {
 		orientation = Basis();
 
 		// make this our primary interface
-		arvr_server->set_primary_interface(this);
+		xr_server->set_primary_interface(this);
 
 		last_ticks = OS::get_singleton()->get_ticks_usec();
 
@@ -326,10 +326,10 @@ bool MobileVRInterface::initialize() {
 
 void MobileVRInterface::uninitialize() {
 	if (initialized) {
-		ARVRServer *arvr_server = ARVRServer::get_singleton();
-		if (arvr_server != nullptr) {
+		XRServer *xr_server = XRServer::get_singleton();
+		if (xr_server != nullptr) {
 			// no longer our primary interface
-			arvr_server->clear_primary_interface_if(this);
+			xr_server->clear_primary_interface_if(this);
 		}
 
 		initialized = false;
@@ -348,22 +348,22 @@ Size2 MobileVRInterface::get_render_targetsize() {
 	return target_size;
 };
 
-Transform MobileVRInterface::get_transform_for_eye(ARVRInterface::Eyes p_eye, const Transform &p_cam_transform) {
+Transform MobileVRInterface::get_transform_for_eye(XRInterface::Eyes p_eye, const Transform &p_cam_transform) {
 	_THREAD_SAFE_METHOD_
 
 	Transform transform_for_eye;
 
-	ARVRServer *arvr_server = ARVRServer::get_singleton();
-	ERR_FAIL_NULL_V(arvr_server, transform_for_eye);
+	XRServer *xr_server = XRServer::get_singleton();
+	ERR_FAIL_NULL_V(xr_server, transform_for_eye);
 
 	if (initialized) {
-		float world_scale = arvr_server->get_world_scale();
+		float world_scale = xr_server->get_world_scale();
 
 		// we don't need to check for the existence of our HMD, doesn't effect our values...
 		// note * 0.01 to convert cm to m and * 0.5 as we're moving half in each direction...
-		if (p_eye == ARVRInterface::EYE_LEFT) {
+		if (p_eye == XRInterface::EYE_LEFT) {
 			transform_for_eye.origin.x = -(intraocular_dist * 0.01 * 0.5 * world_scale);
-		} else if (p_eye == ARVRInterface::EYE_RIGHT) {
+		} else if (p_eye == XRInterface::EYE_RIGHT) {
 			transform_for_eye.origin.x = intraocular_dist * 0.01 * 0.5 * world_scale;
 		} else {
 			// for mono we don't reposition, we want our center position.
@@ -374,7 +374,7 @@ Transform MobileVRInterface::get_transform_for_eye(ARVRInterface::Eyes p_eye, co
 		hmd_transform.basis = orientation;
 		hmd_transform.origin = Vector3(0.0, eye_height * world_scale, 0.0);
 
-		transform_for_eye = p_cam_transform * (arvr_server->get_reference_frame()) * hmd_transform * transform_for_eye;
+		transform_for_eye = p_cam_transform * (xr_server->get_reference_frame()) * hmd_transform * transform_for_eye;
 	} else {
 		// huh? well just return what we got....
 		transform_for_eye = p_cam_transform;
@@ -383,12 +383,12 @@ Transform MobileVRInterface::get_transform_for_eye(ARVRInterface::Eyes p_eye, co
 	return transform_for_eye;
 };
 
-CameraMatrix MobileVRInterface::get_projection_for_eye(ARVRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
+CameraMatrix MobileVRInterface::get_projection_for_eye(XRInterface::Eyes p_eye, real_t p_aspect, real_t p_z_near, real_t p_z_far) {
 	_THREAD_SAFE_METHOD_
 
 	CameraMatrix eye;
 
-	if (p_eye == ARVRInterface::EYE_MONO) {
+	if (p_eye == XRInterface::EYE_MONO) {
 		///@TODO for now hardcode some of this, what is really needed here is that this needs to be in sync with the real cameras properties
 		// which probably means implementing a specific class for iOS and Android. For now this is purely here as an example.
 		// Note also that if you use a normal viewport with AR/VR turned off you can still use the tracker output of this interface
@@ -396,13 +396,13 @@ CameraMatrix MobileVRInterface::get_projection_for_eye(ARVRInterface::Eyes p_eye
 		// This will make more sense when we implement ARkit on iOS (probably a separate interface).
 		eye.set_perspective(60.0, p_aspect, p_z_near, p_z_far, false);
 	} else {
-		eye.set_for_hmd(p_eye == ARVRInterface::EYE_LEFT ? 1 : 2, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
+		eye.set_for_hmd(p_eye == XRInterface::EYE_LEFT ? 1 : 2, p_aspect, intraocular_dist, display_width, display_to_lens, oversample, p_z_near, p_z_far);
 	};
 
 	return eye;
 };
 
-void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
+void MobileVRInterface::commit_for_eye(XRInterface::Eyes p_eye, RID p_render_target, const Rect2 &p_screen_rect) {
 	_THREAD_SAFE_METHOD_
 
 	// We must have a valid render target
@@ -417,9 +417,9 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	// we output half a screen
 	dest.size.x *= 0.5;
 
-	if (p_eye == ARVRInterface::EYE_LEFT) {
+	if (p_eye == XRInterface::EYE_LEFT) {
 		eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
-	} else if (p_eye == ARVRInterface::EYE_RIGHT) {
+	} else if (p_eye == XRInterface::EYE_RIGHT) {
 		dest.position.x = dest.size.x;
 		eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
 	}

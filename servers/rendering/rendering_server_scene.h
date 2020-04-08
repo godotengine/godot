@@ -39,7 +39,7 @@
 #include "core/os/thread.h"
 #include "core/rid_owner.h"
 #include "core/self_list.h"
-#include "servers/arvr/arvr_interface.h"
+#include "servers/xr/xr_interface.h"
 
 class RenderingServerScene {
 public:
@@ -426,7 +426,7 @@ public:
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
-	void render_camera(RID p_render_buffers, Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
+	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
 
 	void render_probes();

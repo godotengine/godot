@@ -3067,15 +3067,15 @@
 				Sets when the viewport should be updated. See [enum ViewportUpdateMode] constants for options.
 			</description>
 		</method>
-		<method name="viewport_set_use_arvr">
+		<method name="viewport_set_use_xr">
 			<return type="void">
 			</return>
 			<argument index="0" name="viewport" type="RID">
 			</argument>
-			<argument index="1" name="use_arvr" type="bool">
+			<argument index="1" name="use_xr" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
+				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [XRInterface].
 			</description>
 		</method>
 	</methods>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ARVRServer" inherits="Object" version="4.0">
+<class name="XRServer" inherits="Object" version="4.0">
 	<brief_description>
 		Server for AR and VR features.
 	</brief_description>
@@ -13,7 +13,7 @@
 		<method name="center_on_hmd">
 			<return type="void">
 			</return>
-			<argument index="0" name="rotation_mode" type="int" enum="ARVRServer.RotationMode">
+			<argument index="0" name="rotation_mode" type="int" enum="XRServer.RotationMode">
 			</argument>
 			<argument index="1" name="keep_height" type="bool">
 			</argument>
@@ -27,7 +27,7 @@
 			</description>
 		</method>
 		<method name="find_interface" qualifiers="const">
-			<return type="ARVRInterface">
+			<return type="XRInterface">
 			</return>
 			<argument index="0" name="name" type="String">
 			</argument>
@@ -43,7 +43,7 @@
 			</description>
 		</method>
 		<method name="get_interface" qualifiers="const">
-			<return type="ARVRInterface">
+			<return type="XRInterface">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -69,7 +69,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the absolute timestamp (in μs) of the last [ARVRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method OS.get_ticks_usec].
+				Returns the absolute timestamp (in μs) of the last [XRServer] commit of the AR/VR eyes to [RenderingServer]. The value comes from an internal call to [method OS.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_last_frame_usec">
@@ -83,7 +83,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the absolute timestamp (in μs) of the last [ARVRServer] process callback. The value comes from an internal call to [method OS.get_ticks_usec].
+				Returns the absolute timestamp (in μs) of the last [XRServer] process callback. The value comes from an internal call to [method OS.get_ticks_usec].
 			</description>
 		</method>
 		<method name="get_reference_frame" qualifiers="const">
@@ -94,7 +94,7 @@
 			</description>
 		</method>
 		<method name="get_tracker" qualifiers="const">
-			<return type="ARVRPositionalTracker">
+			<return type="XRPositionalTracker">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -111,8 +111,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="primary_interface" type="ARVRInterface" setter="set_primary_interface" getter="get_primary_interface">
-			The primary [ARVRInterface] currently bound to the [ARVRServer].
+		<member name="primary_interface" type="XRInterface" setter="set_primary_interface" getter="get_primary_interface">
+			The primary [XRInterface] currently bound to the [XRServer].
 		</member>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">
 			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 real world meter.
@@ -141,7 +141,7 @@
 			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
-				Emitted when a new tracker has been added. If you don't use a fixed number of controllers or if you're using [ARVRAnchor]s for an AR solution, it is important to react to this signal to add the appropriate [ARVRController] or [ARVRAnchor] nodes related to this new tracker.
+				Emitted when a new tracker has been added. If you don't use a fixed number of controllers or if you're using [XRAnchor3D]s for an AR solution, it is important to react to this signal to add the appropriate [XRController3D] or [XRAnchor3D] nodes related to this new tracker.
 			</description>
 		</signal>
 		<signal name="tracker_removed">
@@ -152,7 +152,7 @@
 			<argument index="2" name="id" type="int">
 			</argument>
 			<description>
-				Emitted when a tracker is removed. You should remove any [ARVRController] or [ARVRAnchor] points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
+				Emitted when a tracker is removed. You should remove any [XRController3D] or [XRAnchor3D] points if applicable. This is not mandatory, the nodes simply become inactive and will be made active again when a new tracker becomes available (i.e. a new controller is switched on that takes the place of the previous one).
 			</description>
 		</signal>
 	</signals>

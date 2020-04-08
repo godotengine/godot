@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-#include "arvr_interface_gdnative.h"
+#ifndef XR_REGISTER_TYPES_H
+#define XR_REGISTER_TYPES_H
 
-void register_arvr_types() {
-	ClassDB::register_class<ARVRInterfaceGDNative>();
-}
+void register_xr_types();
+void unregister_xr_types();
 
-void unregister_arvr_types() {
-}
+#endif // XR_REGISTER_TYPES_H

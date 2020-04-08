@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arvr_server.h                                                        */
+/*  xr_server.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_SERVER_H
-#define ARVR_SERVER_H
+#ifndef XR_SERVER_H
+#define XR_SERVER_H
 
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
@@ -37,16 +37,16 @@
 #include "core/rid.h"
 #include "core/variant.h"
 
-class ARVRInterface;
-class ARVRPositionalTracker;
+class XRInterface;
+class XRPositionalTracker;
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
 
-	The ARVR server is a singleton object that gives access to the various
+	The XR server is a singleton object that gives access to the various
 	objects and SDKs that are available on the system.
 	Because there can be multiple SDKs active this is exposed as an array
-	and our ARVR server object acts as a pass through
+	and our XR server object acts as a pass through
 	Also each positioning tracker is accessible from here.
 
 	I've added some additional info into this header file that should move
@@ -54,8 +54,8 @@ class ARVRPositionalTracker;
 	or as a separate PR once this has been merged into the master branch.
 **/
 
-class ARVRServer : public Object {
-	GDCLASS(ARVRServer, Object);
+class XRServer : public Object {
+	GDCLASS(XRServer, Object);
 	_THREAD_SAFE_CLASS_
 
 public:
@@ -76,10 +76,10 @@ public:
 	};
 
 private:
-	Vector<Ref<ARVRInterface>> interfaces;
-	Vector<ARVRPositionalTracker *> trackers;
+	Vector<Ref<XRInterface>> interfaces;
+	Vector<XRPositionalTracker *> trackers;
 
-	Ref<ARVRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
+	Ref<XRInterface> primary_interface; /* we'll identify one interface as primary, this will be used by our viewports */
 
 	real_t world_scale; /* scale by which we multiply our tracker positions */
 	Transform world_origin; /* our world origin point, maps a location in our virtual world to the origin point in our real world tracking volume */
@@ -90,12 +90,12 @@ private:
 	uint64_t last_frame_usec; /* time it took between process and committing, we should probably average this over the last x frames */
 
 protected:
-	static ARVRServer *singleton;
+	static XRServer *singleton;
 
 	static void _bind_methods();
 
 public:
-	static ARVRServer *get_singleton();
+	static XRServer *get_singleton();
 
 	/*
 		World scale allows you to specify a scale factor that is applied to all positioning vectors in our VR world in essence scaling up, or scaling down the world.
@@ -105,7 +105,7 @@ public:
 		Most VR platforms, and our assumption, is that 1 unit in our virtual world equates to 1 meter in the real mode.
 		This scale basically effects the unit size relationship to real world size.
 
-		I may remove access to this property in GDScript in favour of exposing it on the ARVROrigin node
+		I may remove access to this property in GDScript in favour of exposing it on the XROrigin3D node
 	*/
 	real_t get_world_scale() const;
 	void set_world_scale(real_t p_world_scale);
@@ -116,7 +116,7 @@ public:
 		actions be it straffing, teleporting, etc. Movement of the player by moving through the physical space is always tracked
 		in relation to this point.
 
-		Note that the ARVROrigin spatial node in your scene automatically updates this property and it should be used instead of
+		Note that the XROrigin3D spatial node in your scene automatically updates this property and it should be used instead of
 		direct access to this property and it therefore is not available in GDScript
 
 		Note: this should not be used in AR and should be ignored by an AR based interface as it would throw what you're looking at in the real world
@@ -146,20 +146,20 @@ public:
 	/*
 		Interfaces are objects that 'glue' Godot to an AR or VR SDK such as the Oculus SDK, OpenVR, OpenHMD, etc.
 	*/
-	void add_interface(const Ref<ARVRInterface> &p_interface);
-	void remove_interface(const Ref<ARVRInterface> &p_interface);
+	void add_interface(const Ref<XRInterface> &p_interface);
+	void remove_interface(const Ref<XRInterface> &p_interface);
 	int get_interface_count() const;
-	Ref<ARVRInterface> get_interface(int p_index) const;
-	Ref<ARVRInterface> find_interface(const String &p_name) const;
+	Ref<XRInterface> get_interface(int p_index) const;
+	Ref<XRInterface> find_interface(const String &p_name) const;
 	Array get_interfaces() const;
 
 	/*
 		note, more then one interface can technically be active, especially on mobile, but only one interface is used for
 		rendering. This interface identifies itself by calling set_primary_interface when it is initialized
 	*/
-	Ref<ARVRInterface> get_primary_interface() const;
-	void set_primary_interface(const Ref<ARVRInterface> &p_primary_interface);
-	void clear_primary_interface_if(const Ref<ARVRInterface> &p_primary_interface); /* this is automatically called if an interface destructs */
+	Ref<XRInterface> get_primary_interface() const;
+	void set_primary_interface(const Ref<XRInterface> &p_primary_interface);
+	void clear_primary_interface_if(const Ref<XRInterface> &p_primary_interface); /* this is automatically called if an interface destructs */
 
 	/*
 		Our trackers are objects that expose the orientation and position of physical devices such as controller, anchor points, etc.
@@ -167,11 +167,11 @@ public:
 	*/
 	bool is_tracker_id_in_use_for_type(TrackerType p_tracker_type, int p_tracker_id) const;
 	int get_free_tracker_id_for_type(TrackerType p_tracker_type);
-	void add_tracker(ARVRPositionalTracker *p_tracker);
-	void remove_tracker(ARVRPositionalTracker *p_tracker);
+	void add_tracker(XRPositionalTracker *p_tracker);
+	void remove_tracker(XRPositionalTracker *p_tracker);
 	int get_tracker_count() const;
-	ARVRPositionalTracker *get_tracker(int p_index) const;
-	ARVRPositionalTracker *find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
+	XRPositionalTracker *get_tracker(int p_index) const;
+	XRPositionalTracker *find_by_type_and_id(TrackerType p_tracker_type, int p_tracker_id) const;
 
 	uint64_t get_last_process_usec();
 	uint64_t get_last_commit_usec();
@@ -180,13 +180,13 @@ public:
 	void _process();
 	void _mark_commit();
 
-	ARVRServer();
-	~ARVRServer();
+	XRServer();
+	~XRServer();
 };
 
-#define ARVR ARVRServer
+#define XR XRServer
 
-VARIANT_ENUM_CAST(ARVRServer::TrackerType);
-VARIANT_ENUM_CAST(ARVRServer::RotationMode);
+VARIANT_ENUM_CAST(XRServer::TrackerType);
+VARIANT_ENUM_CAST(XRServer::RotationMode);
 
 #endif

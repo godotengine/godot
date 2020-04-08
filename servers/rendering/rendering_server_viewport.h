@@ -34,8 +34,8 @@
 #include "core/rid_owner.h"
 #include "core/self_list.h"
 #include "rasterizer.h"
-#include "servers/arvr/arvr_interface.h"
 #include "servers/rendering_server.h"
+#include "servers/xr/xr_interface.h"
 
 class RenderingServerViewport {
 public:
@@ -47,7 +47,7 @@ public:
 		RID self;
 		RID parent;
 
-		bool use_arvr; /* use arvr interface to override camera positioning and projection matrices and control output */
+		bool use_xr; /* use xr interface to override camera positioning and projection matrices and control output */
 
 		Size2i size;
 		RID camera;
@@ -127,7 +127,7 @@ public:
 			for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_MAX; i++) {
 				render_info[i] = 0;
 			}
-			use_arvr = false;
+			use_xr = false;
 		}
 	};
 
@@ -152,13 +152,13 @@ public:
 	Vector<Viewport *> active_viewports;
 
 private:
-	void _draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_eye);
-	void _draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye = ARVRInterface::EYE_MONO);
+	void _draw_3d(Viewport *p_viewport, XRInterface::Eyes p_eye);
+	void _draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_eye = XRInterface::EYE_MONO);
 
 public:
 	RID viewport_create();
 
-	void viewport_set_use_arvr(RID p_viewport, bool p_use_arvr);
+	void viewport_set_use_xr(RID p_viewport, bool p_use_xr);
 
 	void viewport_set_size(RID p_viewport, int p_width, int p_height);
 
