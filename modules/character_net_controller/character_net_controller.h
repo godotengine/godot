@@ -41,6 +41,7 @@
 #define CHARACTER_NET_CONTROLLER_H
 
 struct Controller;
+class SceneRewinder;
 
 class CharacterNetController : public Node {
 	GDCLASS(CharacterNetController, Node);
@@ -111,6 +112,8 @@ private:
 
 	Controller *controller;
 	InputsBuffer inputs_buffer;
+
+	SceneRewinder *scene_rewinder;
 
 	Vector<int> active_doll_peers;
 	// Disabled peers is used to stop information propagation to a particular pear.
@@ -219,6 +222,10 @@ public:
 
 public:
 	void set_inputs_buffer(const BitArray &p_new_buffer);
+
+	void set_scene_rewinder(SceneRewinder *p_rewinder);
+	SceneRewinder *get_scene_rewinder() const;
+	bool has_scene_rewinder() const;
 
 	/* On server rpc functions. */
 	void _rpc_server_send_frames_snapshot(Vector<uint8_t> p_data);

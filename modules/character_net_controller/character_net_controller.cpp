@@ -32,6 +32,7 @@
 
 #include "core/engine.h"
 #include "core/io/marshalls.h"
+#include "scene_rewinder.h"
 #include <stdint.h>
 #include <algorithm>
 
@@ -135,7 +136,8 @@ CharacterNetController::CharacterNetController() :
 		missing_snapshots_max_tollerance(4),
 		tick_acceleration(2.0),
 		state_notify_interval(1.0),
-		controller(NULL) {
+		controller(nullptr),
+		scene_rewinder(nullptr) {
 
 	rpc_config("_rpc_server_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_player_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -305,6 +307,18 @@ void CharacterNetController::replay_snapshots() {
 
 void CharacterNetController::set_inputs_buffer(const BitArray &p_new_buffer) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
+}
+
+void CharacterNetController::set_scene_rewinder(SceneRewinder *p_rewinder) {
+	scene_rewinder = p_rewinder;
+}
+
+SceneRewinder *CharacterNetController::get_scene_rewinder() const {
+	return scene_rewinder;
+}
+
+bool CharacterNetController::has_scene_rewinder() const {
+	return scene_rewinder;
 }
 
 void CharacterNetController::_rpc_server_send_frames_snapshot(Vector<uint8_t> p_data) {

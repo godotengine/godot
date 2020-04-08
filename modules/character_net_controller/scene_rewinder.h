@@ -31,64 +31,13 @@
 #include "scene/main/node.h"
 
 #include "core/hash_map.h"
+#include <deque>
 
 #ifndef SCENE_REWINDER_H
 #define SCENE_REWINDER_H
 
-struct NodeData;
-struct VarData;
-struct PeerData;
-
 class Rewinder;
-
-class SceneRewinder : public Node {
-	GDCLASS(SceneRewinder, Node);
-
-	friend class Rewinder;
-	friend class ServerRewinder;
-	friend class ClientRewinder;
-	friend class NoNetRewinder;
-
-	Rewinder *rewinder;
-
-	uint32_t node_id;
-	HashMap<ObjectID, NodeData> data;
-
-public:
-	static void _bind_methods();
-
-	virtual void _notification(int p_what);
-
-public:
-	SceneRewinder();
-	~SceneRewinder();
-
-	void register_variable(Object *p_object, StringName p_variable, StringName p_on_change_notify_to = StringName());
-	void unregister_variable(Object *p_object, StringName p_variable);
-
-	String get_changed_event_name(StringName p_variable);
-
-	void track_variable_changes(Object *p_object, StringName p_variable, StringName p_method);
-	void untrack_variable_changes(Object *p_object, StringName p_variable, StringName p_method);
-
-	/// Remove anything.
-	void reset();
-
-private:
-	void process();
-
-	void on_peer_connected(int p_peer_id);
-	void on_peer_disconnected(int p_peer_id);
-};
-
-struct NodeData {
-	uint32_t id;
-	ObjectID instance_id;
-	Vector<VarData> vars;
-
-	NodeData();
-	NodeData(uint32_t p_id, ObjectID p_instance_id);
-};
+class CharacterNetController;
 
 struct VarData {
 	uint32_t id;
@@ -103,6 +52,59 @@ struct VarData {
 	bool operator==(const VarData &p_other) const;
 };
 
+struct NodeData {
+	uint32_t id;
+	ObjectID instance_id;
+	Vector<VarData> vars;
+
+	// This is valid to use only inside the process function.
+	Node *cached_node;
+
+	NodeData();
+	NodeData(uint32_t p_id, ObjectID p_instance_id);
+};
+
+class SceneRewinder : public Node {
+	GDCLASS(SceneRewinder, Node);
+
+	friend class Rewinder;
+	friend class ServerRewinder;
+	friend class ClientRewinder;
+	friend class NoNetRewinder;
+
+	Rewinder *rewinder;
+
+	uint32_t node_id;
+	HashMap<ObjectID, NodeData> data;
+	Vector<CharacterNetController *> controllers;
+
+public:
+	static void _bind_methods();
+
+	virtual void _notification(int p_what);
+
+public:
+	SceneRewinder();
+	~SceneRewinder();
+
+	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName());
+	void unregister_variable(Node *p_node, StringName p_variable);
+
+	String get_changed_event_name(StringName p_variable);
+
+	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+
+	/// Remove anything.
+	void reset();
+
+private:
+	void process();
+
+	void on_peer_connected(int p_peer_id);
+	void on_peer_disconnected(int p_peer_id);
+};
+
 struct PeerData {
 	int peer;
 	// List of nodes which the server sent the variable information.
@@ -114,12 +116,19 @@ struct PeerData {
 	bool operator==(const PeerData &p_other) const;
 };
 
+struct Snapshot {
+	uint64_t snapshot_id;
+	Vector<NodeData> data;
+};
+
 class Rewinder {
-	SceneRewinder *node;
+protected:
+	SceneRewinder *scene_rewinder;
 
 public:
 	Rewinder(SceneRewinder *p_node);
 
+	// TODO we need delta?
 	virtual void process(real_t p_delta) = 0;
 };
 
@@ -145,6 +154,9 @@ public:
 };
 
 class ClientRewinder : public Rewinder {
+
+	std::deque<Snapshot> snapshots;
+
 public:
 	ClientRewinder(SceneRewinder *p_node);
 
