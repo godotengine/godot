@@ -751,16 +751,13 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		bool valid_w = false;
 		bool valid_h = false;
 
-		for (int i = 0; i < 1; i++) {
+		int w = ceil(p_width * scales[0]);
+		int h = ceil(p_height * scales[0]);
 
-			int w = ceil(p_width * scales[i]);
-			int h = ceil(p_height * scales[i]);
-
-			if (w == p_image->get_width())
-				valid_w = true;
-			if (h == p_image->get_height())
-				valid_h = true;
-		}
+		if (w == p_image->get_width())
+			valid_w = true;
+		if (h == p_image->get_height())
+			valid_h = true;
 
 		return valid_w && valid_h;
 	}
