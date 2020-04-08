@@ -34,9 +34,9 @@
 #include "editor/node_3d_editor_gizmos.h"
 #include "scene/3d/path_3d.h"
 
-class PathNode3DGizmo : public EditorNode3DGizmo {
+class Path3DGizmo : public EditorNode3DGizmo {
 
-	GDCLASS(PathNode3DGizmo, EditorNode3DGizmo);
+	GDCLASS(Path3DGizmo, EditorNode3DGizmo);
 
 	Path3D *path;
 	mutable Vector3 original;
@@ -50,12 +50,12 @@ public:
 	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	virtual void redraw();
-	PathNode3DGizmo(Path3D *p_path = nullptr);
+	Path3DGizmo(Path3D *p_path = nullptr);
 };
 
-class PathNode3DGizmoPlugin : public EditorNode3DGizmoPlugin {
+class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(PathNode3DGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(Path3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 protected:
 	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial);
@@ -63,7 +63,7 @@ protected:
 public:
 	String get_name() const;
 	int get_priority() const;
-	PathNode3DGizmoPlugin();
+	Path3DGizmoPlugin();
 };
 
 class Path3DEditorPlugin : public EditorPlugin {
