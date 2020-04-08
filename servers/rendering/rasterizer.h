@@ -106,6 +106,8 @@ public:
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
+	virtual void shadow_filter_set(RS::ShadowFilter p_filter) = 0;
+
 	struct InstanceBase;
 
 	struct InstanceDependency {
@@ -229,7 +231,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light) = 0;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0) = 0;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const {
 		return true;

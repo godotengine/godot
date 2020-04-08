@@ -79,7 +79,7 @@ protected:
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_color) = 0;
-	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip) = 0;
+	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip, bool p_use_pancake) = 0;
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
 
 	virtual void _debug_giprobe(RID p_gi_probe, RenderingDevice::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
@@ -527,6 +527,8 @@ private:
 
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
 
+	RS::ShadowFilter shadow_filter = RS::SHADOW_FILTER_NONE;
+
 	/* DIRECTIONAL SHADOW */
 
 	struct DirectionalShadow {
@@ -570,6 +572,7 @@ private:
 			float farplane;
 			float split;
 			float bias_scale;
+			float shadow_texel_size;
 			Rect2 atlas_rect;
 		};
 
@@ -880,7 +883,7 @@ public:
 
 	RID light_instance_create(RID p_light);
 	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0);
+	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0);
 	void light_instance_mark_visible(RID p_light_instance);
 
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
@@ -926,10 +929,43 @@ public:
 		return li->shadow_transform[p_index].camera;
 	}
 
-	_FORCE_INLINE_ Transform light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
+	_FORCE_INLINE_ float light_instance_get_shadow_texel_size(RID p_light_instance, RID p_shadow_atlas) {
+
+#ifdef DEBUG_ENABLED
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		ERR_FAIL_COND_V(!li->shadow_atlases.has(p_shadow_atlas), 0);
+#endif
+		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
+		ERR_FAIL_COND_V(!shadow_atlas, 0);
+#ifdef DEBUG_ENABLED
+		ERR_FAIL_COND_V(!shadow_atlas->shadow_owners.has(p_light_instance), 0);
+#endif
+		uint32_t key = shadow_atlas->shadow_owners[p_light_instance];
+
+		uint32_t quadrant = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
+
+		uint32_t quadrant_size = shadow_atlas->size >> 1;
+
+		uint32_t shadow_size = (quadrant_size / shadow_atlas->quadrants[quadrant].subdivision);
+
+		return float(1.0) / shadow_size;
+	}
+
+	_FORCE_INLINE_ Transform
+	light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
 
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].transform;
+	}
+	_FORCE_INLINE_ float light_instance_get_shadow_bias_scale(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].bias_scale;
+	}
+	_FORCE_INLINE_ float light_instance_get_shadow_range(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].farplane;
 	}
 
 	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_rect(RID p_light_instance, int p_index) {
@@ -942,6 +978,12 @@ public:
 
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].split;
+	}
+
+	_FORCE_INLINE_ float light_instance_get_directional_shadow_texel_size(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].shadow_texel_size;
 	}
 
 	_FORCE_INLINE_ void light_instance_set_render_pass(RID p_light_instance, uint64_t p_pass) {
@@ -1107,8 +1149,12 @@ public:
 
 	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 
-	virtual void set_scene_pass(uint64_t p_pass) { scene_pass = p_pass; }
-	_FORCE_INLINE_ uint64_t get_scene_pass() { return scene_pass; }
+	virtual void set_scene_pass(uint64_t p_pass) {
+		scene_pass = p_pass;
+	}
+	_FORCE_INLINE_ uint64_t get_scene_pass() {
+		return scene_pass;
+	}
 
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve);
 	virtual bool screen_space_roughness_limiter_is_active() const;
@@ -1118,6 +1164,9 @@ public:
 	RS::SubSurfaceScatteringQuality sub_surface_scattering_get_quality() const;
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale);
 
+	virtual void shadow_filter_set(RS::ShadowFilter p_filter);
+	_FORCE_INLINE_ RS::ShadowFilter shadow_filter_get() const { return shadow_filter; }
+
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;
 
@@ -1126,7 +1175,9 @@ public:
 	virtual void update();
 
 	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw);
-	_FORCE_INLINE_ RS::ViewportDebugDraw get_debug_draw_mode() const { return debug_draw; }
+	_FORCE_INLINE_ RS::ViewportDebugDraw get_debug_draw_mode() const {
+		return debug_draw;
+	}
 
 	virtual void set_time(double p_time, double p_step);
 

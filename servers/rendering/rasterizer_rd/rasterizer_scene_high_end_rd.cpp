@@ -109,6 +109,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	unshaded = false;
 	uses_vertex = false;
 	uses_sss = false;
+	uses_transmittance = false;
 	uses_screen_texture = false;
 	uses_depth_texture = false;
 	uses_normal_texture = false;
@@ -142,6 +143,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
+	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
 
 	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
 	actions.usage_flag_pointers["DEPTH_TEXTURE"] = &uses_depth_texture;
@@ -944,7 +946,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	}
 }
 
-void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers) {
+void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers, bool p_pancake_shadows) {
 
 	//CameraMatrix projection = p_cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
@@ -960,6 +962,9 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 
 	scene_state.ubo.z_far = p_zfar;
 	scene_state.ubo.z_near = p_znear;
+	scene_state.ubo.shadow_filter_mode = shadow_filter_get();
+
+	scene_state.ubo.pancake_shadows = p_pancake_shadows;
 
 	scene_state.ubo.screen_pixel_size[0] = p_screen_pixel_size.x;
 	scene_state.ubo.screen_pixel_size[1] = p_screen_pixel_size.y;
@@ -1481,9 +1486,43 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 				Color shadow_col = storage->light_get_shadow_color(base).to_linear();
 
-				light_data.shadow_color[0] = shadow_col.r;
-				light_data.shadow_color[1] = shadow_col.g;
-				light_data.shadow_color[2] = shadow_col.b;
+				if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
+					light_data.shadow_color1[0] = 1.0;
+					light_data.shadow_color1[1] = 0.0;
+					light_data.shadow_color1[2] = 0.0;
+					light_data.shadow_color1[3] = 1.0;
+					light_data.shadow_color2[0] = 0.0;
+					light_data.shadow_color2[1] = 1.0;
+					light_data.shadow_color2[2] = 0.0;
+					light_data.shadow_color2[3] = 1.0;
+					light_data.shadow_color3[0] = 0.0;
+					light_data.shadow_color3[1] = 0.0;
+					light_data.shadow_color3[2] = 1.0;
+					light_data.shadow_color3[3] = 1.0;
+					light_data.shadow_color4[0] = 1.0;
+					light_data.shadow_color4[1] = 1.0;
+					light_data.shadow_color4[2] = 0.0;
+					light_data.shadow_color4[3] = 1.0;
+
+				} else {
+
+					light_data.shadow_color1[0] = shadow_col.r;
+					light_data.shadow_color1[1] = shadow_col.g;
+					light_data.shadow_color1[2] = shadow_col.b;
+					light_data.shadow_color1[3] = 1.0;
+					light_data.shadow_color2[0] = shadow_col.r;
+					light_data.shadow_color2[1] = shadow_col.g;
+					light_data.shadow_color2[2] = shadow_col.b;
+					light_data.shadow_color2[3] = 1.0;
+					light_data.shadow_color3[0] = shadow_col.r;
+					light_data.shadow_color3[1] = shadow_col.g;
+					light_data.shadow_color3[2] = shadow_col.b;
+					light_data.shadow_color3[3] = 1.0;
+					light_data.shadow_color4[0] = shadow_col.r;
+					light_data.shadow_color4[1] = shadow_col.g;
+					light_data.shadow_color4[2] = shadow_col.b;
+					light_data.shadow_color4[3] = 1.0;
+				}
 
 				light_data.shadow_enabled = p_using_shadows && storage->light_has_shadow(base);
 
@@ -1507,6 +1546,11 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 						CameraMatrix shadow_mtx = rectm * bias * matrix * modelview;
 						light_data.shadow_split_offsets[j] = split;
+						float bias_scale = light_instance_get_shadow_bias_scale(li, j);
+						light_data.shadow_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * bias_scale;
+						light_data.shadow_normal_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * light_instance_get_directional_shadow_texel_size(li, j);
+						light_data.shadow_transmittance_bias[j] = storage->light_get_transmittance_bias(base) * bias_scale;
+						light_data.shadow_transmittance_z_scale[j] = light_instance_get_shadow_range(li, j);
 						store_camera(shadow_mtx, light_data.shadow_matrices[j]);
 					}
 
@@ -1581,14 +1625,6 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 				light_data.mask = storage->light_get_cull_mask(base);
 
-				Color shadow_color = storage->light_get_shadow_color(base);
-
-				bool has_shadow = p_using_shadows && storage->light_has_shadow(base);
-				light_data.shadow_color_enabled[0] = MIN(uint32_t(shadow_color.r * 255), 255);
-				light_data.shadow_color_enabled[1] = MIN(uint32_t(shadow_color.g * 255), 255);
-				light_data.shadow_color_enabled[2] = MIN(uint32_t(shadow_color.b * 255), 255);
-				light_data.shadow_color_enabled[3] = has_shadow ? 255 : 0;
-
 				light_data.atlas_rect[0] = 0;
 				light_data.atlas_rect[1] = 0;
 				light_data.atlas_rect[2] = 0;
@@ -1596,6 +1632,27 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 				if (p_using_shadows && p_shadow_atlas.is_valid() && shadow_atlas_owns_light_instance(p_shadow_atlas, li)) {
 					// fill in the shadow information
+
+					Color shadow_color = storage->light_get_shadow_color(base);
+
+					light_data.shadow_color_enabled[0] = MIN(uint32_t(shadow_color.r * 255), 255);
+					light_data.shadow_color_enabled[1] = MIN(uint32_t(shadow_color.g * 255), 255);
+					light_data.shadow_color_enabled[2] = MIN(uint32_t(shadow_color.b * 255), 255);
+					light_data.shadow_color_enabled[3] = 255;
+
+					if (type == RS::LIGHT_SPOT) {
+						light_data.shadow_bias = (storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0);
+						float shadow_texel_size = Math::tan(Math::deg2rad(spot_angle)) * radius * 2.0;
+						shadow_texel_size *= light_instance_get_shadow_texel_size(li, p_shadow_atlas);
+
+						light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size;
+					} else { //omni
+						light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0;
+						float shadow_texel_size = light_instance_get_shadow_texel_size(li, p_shadow_atlas);
+						light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 2.0; // applied in -1 .. 1 space
+					}
+
+					light_data.transmittance_bias = storage->light_get_transmittance_bias(base);
 
 					Rect2 rect = light_instance_get_shadow_atlas_rect(li, p_shadow_atlas);
 
@@ -1620,6 +1677,8 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 						CameraMatrix shadow_mtx = rectm * bias * light_instance_get_shadow_camera(li, 0) * modelview;
 						store_camera(shadow_mtx, light_data.shadow_matrix);
 					}
+				} else {
+					light_data.shadow_color_enabled[3] = 0;
 				}
 
 				light_instance_set_index(li, light_count);
@@ -1697,9 +1756,6 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	}
 
 	//scene_state.ubo.subsurface_scatter_width = subsurface_scatter_size;
-
-	scene_state.ubo.shadow_z_offset = 0;
-	scene_state.ubo.shadow_z_slope_scale = 0;
 
 	Vector2 vp_he = p_cam_projection.get_viewport_half_extents();
 	scene_state.ubo.viewport_size[0] = vp_he.x;
@@ -2063,7 +2119,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	//disable all stuff
 #endif
 }
-void RasterizerSceneHighEndRD::_render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip) {
+void RasterizerSceneHighEndRD::_render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake) {
 
 	RENDER_TIMESTAMP("Setup Rendering Shadow");
 
@@ -2071,11 +2127,9 @@ void RasterizerSceneHighEndRD::_render_shadow(RID p_framebuffer, InstanceBase **
 
 	render_pass++;
 
-	scene_state.ubo.shadow_z_offset = p_bias;
-	scene_state.ubo.shadow_z_slope_scale = p_normal_bias;
 	scene_state.ubo.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
 
-	_setup_environment(RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID(), true, Color(), 0, p_zfar);
+	_setup_environment(RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID(), true, Color(), 0, p_zfar, false, p_use_pancake);
 
 	render_list.clear();
 
@@ -2106,8 +2160,6 @@ void RasterizerSceneHighEndRD::_render_material(const Transform &p_cam_transform
 
 	render_pass++;
 
-	scene_state.ubo.shadow_z_offset = 0;
-	scene_state.ubo.shadow_z_slope_scale = 0;
 	scene_state.ubo.dual_paraboloid_side = 0;
 
 	_setup_environment(RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), false, Color(), 0, 0);
@@ -2204,7 +2256,7 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 5;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(scene_state.light_buffer);
 			uniforms.push_back(u);
 		}
@@ -2463,11 +2515,11 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		}
 
 		{ //lights
-			scene_state.max_lights = MIN(65536, uniform_max_size) / sizeof(LightData);
+			scene_state.max_lights = MIN(1024 * 1024, uniform_max_size) / sizeof(LightData); //1mb of lights
 			uint32_t light_buffer_size = scene_state.max_lights * sizeof(LightData);
 			scene_state.lights = memnew_arr(LightData, scene_state.max_lights);
-			scene_state.light_buffer = RD::get_singleton()->uniform_buffer_create(light_buffer_size);
-			defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(scene_state.max_lights) + "\n";
+			scene_state.light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
+			//defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(scene_state.max_lights) + "\n";
 
 			scene_state.max_directional_lights = 8;
 			uint32_t directional_light_buffer_size = scene_state.max_directional_lights * sizeof(DirectionalLightData);
@@ -2569,7 +2621,11 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.renames["ANISOTROPY"] = "anisotropy";
 		actions.renames["ANISOTROPY_FLOW"] = "anisotropy_flow";
 		actions.renames["SSS_STRENGTH"] = "sss_strength";
-		actions.renames["TRANSMISSION"] = "transmission";
+		actions.renames["SSS_TRANSMITTANCE_COLOR"] = "transmittance_color";
+		actions.renames["SSS_TRANSMITTANCE_DEPTH"] = "transmittance_depth";
+		actions.renames["SSS_TRANSMITTANCE_CURVE"] = "transmittance_curve";
+		actions.renames["SSS_TRANSMITTANCE_BOOST"] = "transmittance_boost";
+		actions.renames["BACKLIGHT"] = "backlight";
 		actions.renames["AO"] = "ao";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
 		actions.renames["EMISSION"] = "emission";
@@ -2609,7 +2665,8 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 
 		actions.usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
-		actions.usage_defines["TRANSMISSION"] = "#define LIGHT_TRANSMISSION_USED\n";
+		actions.usage_defines["SSS_TRANSMITTANCE_DEPTH"] = "#define ENABLE_TRANSMITTANCE\n";
+		actions.usage_defines["BACKLIGHT"] = "#define LIGHT_BACKLIGHT_USED\n";
 		actions.usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
