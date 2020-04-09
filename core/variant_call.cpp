@@ -1594,6 +1594,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		PropertyInfo pi;
 		pi.name = "from";
 		pi.type = Variant::Type(i);
+		pi.class_name = Variant::get_type_name(pi.type);
 		mi.arguments.push_back(pi);
 		mi.return_val.type = p_type;
 		p_list->push_back(mi);
