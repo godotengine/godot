@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  arvr_positional_tracker.h                                            */
+/*  xr_positional_tracker.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ARVR_POSITIONAL_TRACKER_H
-#define ARVR_POSITIONAL_TRACKER_H
+#ifndef XR_POSITIONAL_TRACKER_H
+#define XR_POSITIONAL_TRACKER_H
 
 #include "core/os/thread_safe.h"
 #include "scene/resources/mesh.h"
-#include "servers/arvr_server.h"
+#include "servers/xr_server.h"
 
 /**
 	@author Bastiaan Olij <mux213@gmail.com>
@@ -43,8 +43,8 @@
 	This is where potentially additional AR/VR interfaces may be active as there are AR/VR SDKs that solely deal with positional tracking.
 */
 
-class ARVRPositionalTracker : public Object {
-	GDCLASS(ARVRPositionalTracker, Object);
+class XRPositionalTracker : public Object {
+	GDCLASS(XRPositionalTracker, Object);
 	_THREAD_SAFE_CLASS_
 
 public:
@@ -55,7 +55,7 @@ public:
 	};
 
 private:
-	ARVRServer::TrackerType type; // type of tracker
+	XRServer::TrackerType type; // type of tracker
 	StringName name; // (unique) name of the tracker
 	int tracker_id; // tracker index id that is unique per type
 	int joy_id; // if we also have a related joystick entity, the id of the joystick
@@ -65,14 +65,14 @@ private:
 	Vector3 rw_position; // our position "in the real world, so without world_scale applied"
 	Ref<Mesh> mesh; // when available, a mesh that can be used to render this tracker
 	TrackerHand hand; // if known, the hand this tracker is held in
-	real_t rumble; // rumble strength, 0.0 is off, 1.0 is maximum, note that we only record here, arvr_interface is responsible for execution
+	real_t rumble; // rumble strength, 0.0 is off, 1.0 is maximum, note that we only record here, xr_interface is responsible for execution
 
 protected:
 	static void _bind_methods();
 
 public:
-	void set_type(ARVRServer::TrackerType p_type);
-	ARVRServer::TrackerType get_type() const;
+	void set_type(XRServer::TrackerType p_type);
+	XRServer::TrackerType get_type() const;
 	void set_name(const String &p_name);
 	StringName get_name() const;
 	int get_tracker_id() const;
@@ -86,8 +86,8 @@ public:
 	Vector3 get_position() const; // get position with world_scale applied
 	void set_rw_position(const Vector3 &p_rw_position);
 	Vector3 get_rw_position() const;
-	ARVRPositionalTracker::TrackerHand get_hand() const;
-	void set_hand(const ARVRPositionalTracker::TrackerHand p_hand);
+	XRPositionalTracker::TrackerHand get_hand() const;
+	void set_hand(const XRPositionalTracker::TrackerHand p_hand);
 	real_t get_rumble() const;
 	void set_rumble(real_t p_rumble);
 	void set_mesh(const Ref<Mesh> &p_mesh);
@@ -95,10 +95,10 @@ public:
 
 	Transform get_transform(bool p_adjust_by_reference_frame) const;
 
-	ARVRPositionalTracker();
-	~ARVRPositionalTracker();
+	XRPositionalTracker();
+	~XRPositionalTracker();
 };
 
-VARIANT_ENUM_CAST(ARVRPositionalTracker::TrackerHand);
+VARIANT_ENUM_CAST(XRPositionalTracker::TrackerHand);
 
 #endif

@@ -5935,8 +5935,8 @@
       ]
     },
     {
-      "name": "arvr",
-      "type": "ARVR",
+      "name": "xr",
+      "type": "XR",
       "version": {
         "major": 1,
         "minor": 1
@@ -5944,24 +5944,24 @@
       "next": null,
       "api": [
         {
-          "name": "godot_arvr_register_interface",
+          "name": "godot_xr_register_interface",
           "return_type": "void",
           "arguments": [
-            ["const godot_arvr_interface_gdnative *", "p_interface"]
+            ["const godot_xr_interface_gdnative *", "p_interface"]
           ]
         },
         {
-          "name": "godot_arvr_get_worldscale",
+          "name": "godot_xr_get_worldscale",
           "return_type": "godot_real",
           "arguments": []
         },
         {
-          "name": "godot_arvr_get_reference_frame",
+          "name": "godot_xr_get_reference_frame",
           "return_type": "godot_transform",
           "arguments": []
         },
         {
-          "name": "godot_arvr_blit",
+          "name": "godot_xr_blit",
           "return_type": "void",
           "arguments": [
             ["godot_int", "p_eye"],
@@ -5970,14 +5970,14 @@
           ]
         },
         {
-          "name": "godot_arvr_get_texid",
+          "name": "godot_xr_get_texid",
           "return_type": "godot_int",
           "arguments": [
             ["godot_rid *", "p_render_target"]
           ]
         },
         {
-          "name": "godot_arvr_add_controller",
+          "name": "godot_xr_add_controller",
           "return_type": "godot_int",
           "arguments": [
             ["char *", "p_device_name"],
@@ -5987,14 +5987,14 @@
           ]
         },
         {
-          "name": "godot_arvr_remove_controller",
+          "name": "godot_xr_remove_controller",
           "return_type": "void",
           "arguments": [
             ["godot_int", "p_controller_id"]
           ]
         },
         {
-          "name": "godot_arvr_set_controller_transform",
+          "name": "godot_xr_set_controller_transform",
           "return_type": "void",
           "arguments": [
             ["godot_int", "p_controller_id"],
@@ -6004,7 +6004,7 @@
           ]
         },
         {
-          "name": "godot_arvr_set_controller_button",
+          "name": "godot_xr_set_controller_button",
           "return_type": "void",
           "arguments": [
             ["godot_int", "p_controller_id"],
@@ -6013,7 +6013,7 @@
           ]
         },
         {
-          "name": "godot_arvr_set_controller_axis",
+          "name": "godot_xr_set_controller_axis",
           "return_type": "void",
           "arguments": [
             ["godot_int", "p_controller_id"],
@@ -6023,7 +6023,7 @@
           ]
         },
         {
-          "name": "godot_arvr_get_controller_rumble",
+          "name": "godot_xr_get_controller_rumble",
           "return_type": "godot_real",
           "arguments": [
             ["godot_int", "p_controller_id"]

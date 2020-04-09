@@ -370,7 +370,7 @@ public:
 
 	FUNCRID(viewport)
 
-	FUNC2(viewport_set_use_arvr, RID, bool)
+	FUNC2(viewport_set_use_xr, RID, bool)
 
 	FUNC3(viewport_set_size, RID, int, int)
 
