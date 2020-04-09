@@ -1499,7 +1499,9 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					if (j == 0 || d_z > z_max)
 						z_max = d_z;
 				}
+
 				real_t radius = 0;
+				real_t soft_shadow_expand = 0;
 				Vector3 center;
 
 				{
@@ -1528,11 +1530,29 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 						bias_scale = radius / first_radius;
 					}
 
-					x_max_cam = x_vec.dot(center) + radius;
-					x_min_cam = x_vec.dot(center) - radius;
-					y_max_cam = y_vec.dot(center) + radius;
-					y_min_cam = y_vec.dot(center) - radius;
 					z_min_cam = z_vec.dot(center) - radius;
+
+					{
+
+						float soft_shadow_angle = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SIZE);
+
+						if (soft_shadow_angle > 0.0 && pancake_size > 0.0) {
+
+							float z_range = (z_vec.dot(center) + radius + pancake_size) - z_min_cam;
+							soft_shadow_expand = Math::tan(Math::deg2rad(soft_shadow_angle)) * z_range;
+
+							x_max += soft_shadow_expand;
+							y_max += soft_shadow_expand;
+
+							x_min -= soft_shadow_expand;
+							y_min -= soft_shadow_expand;
+						}
+					}
+
+					x_max_cam = x_vec.dot(center) + radius + soft_shadow_expand;
+					x_min_cam = x_vec.dot(center) - radius - soft_shadow_expand;
+					y_max_cam = y_vec.dot(center) + radius + soft_shadow_expand;
+					y_min_cam = y_vec.dot(center) - radius - soft_shadow_expand;
 
 					if (depth_range_mode == RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
 						//this trick here is what stabilizes the shadow (make potential jaggies to not move)
@@ -1588,8 +1608,9 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					}
 				}
 
-				if (cull_max > z_max)
+				if (cull_max > z_max) {
 					z_max = cull_max;
+				}
 
 				if (pancake_size > 0) {
 					z_max = z_vec.dot(center) + radius + pancake_size;
@@ -1677,11 +1698,19 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 					ortho_camera.set_orthogonal(-half_x, half_x, -half_y, half_y, 0, (z_max - z_min_cam));
 
+					Vector2 uv_scale(1.0 / (x_max_cam - x_min_cam), 1.0 / (y_max_cam - y_min_cam));
+
 					Transform ortho_transform;
 					ortho_transform.basis = transform.basis;
 					ortho_transform.origin = x_vec * (x_min_cam + half_x) + y_vec * (y_min_cam + half_y) + z_vec * z_max;
 
-					RSG::scene_render->light_instance_set_shadow_transform(light->instance, ortho_camera, ortho_transform, z_max - z_min_cam, distances[i + 1], i, radius * 2.0 / texture_size, bias_scale * aspect_bias_scale * min_distance_bias_scale);
+					{
+						Vector3 max_in_view = p_cam_transform.affine_inverse().xform(z_vec * cull_max);
+						Vector3 dir_in_view = p_cam_transform.xform_inv(z_vec).normalized();
+						cull_max = dir_in_view.dot(max_in_view);
+					}
+
+					RSG::scene_render->light_instance_set_shadow_transform(light->instance, ortho_camera, ortho_transform, z_max - z_min_cam, distances[i + 1], i, radius * 2.0 / texture_size, bias_scale * aspect_bias_scale * min_distance_bias_scale, z_max, uv_scale);
 				}
 
 				RSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);

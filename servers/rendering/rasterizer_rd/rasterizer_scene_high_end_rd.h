@@ -254,17 +254,19 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float position[3];
 		float inv_radius;
 		float direction[3];
+		float size;
 		uint16_t attenuation_energy[2]; //16 bits attenuation, then energy
 		uint8_t color_specular[4]; //rgb color, a specular (8 bit unorm)
 		uint16_t cone_attenuation_angle[2]; // attenuation and angle, (16bit float)
-		uint32_t mask;
 		uint8_t shadow_color_enabled[4]; //shadow rgb color, a>0.5 enabled (8bit unorm)
 		float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
 		float shadow_matrix[16];
 		float shadow_bias;
 		float shadow_normal_bias;
 		float transmittance_bias;
-		uint32_t pad;
+		float soft_shadow_size;
+		uint32_t mask;
+		uint32_t pad[3];
 	};
 
 	struct DirectionalLightData {
@@ -272,9 +274,11 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float direction[3];
 		float energy;
 		float color[3];
+		float size;
 		float specular;
 		uint32_t mask;
-		uint32_t pad[3];
+		float softshadow_angle;
+		uint32_t pad[1];
 		uint32_t blend_splits;
 		uint32_t shadow_enabled;
 		float fade_from;
@@ -283,12 +287,17 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float shadow_normal_bias[4];
 		float shadow_transmittance_bias[4];
 		float shadow_transmittance_z_scale[4];
+		float shadow_range_begin[4];
 		float shadow_split_offsets[4];
 		float shadow_matrices[4][16];
 		float shadow_color1[4];
 		float shadow_color2[4];
 		float shadow_color3[4];
 		float shadow_color4[4];
+		float uv_scale1[2];
+		float uv_scale2[2];
+		float uv_scale3[2];
+		float uv_scale4[2];
 	};
 
 	struct GIProbeData {
@@ -342,6 +351,9 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 			uint32_t pancake_shadows;
 			uint32_t shadow_filter_mode;
+
+			uint32_t shadow_blocker_count;
+			uint32_t shadow_pad[3];
 
 			float ambient_light_color_energy[4];
 

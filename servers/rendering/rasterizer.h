@@ -231,7 +231,7 @@ public:
 
 	virtual RID light_instance_create(RID p_light) = 0;
 	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) = 0;
-	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0) = 0;
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) = 0;
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const {
 		return true;
