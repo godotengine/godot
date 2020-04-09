@@ -965,6 +965,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 	scene_state.ubo.shadow_filter_mode = shadow_filter_get();
 
 	scene_state.ubo.pancake_shadows = p_pancake_shadows;
+	scene_state.ubo.shadow_blocker_count = 16;
 
 	scene_state.ubo.screen_pixel_size[0] = p_screen_pixel_size.x;
 	scene_state.ubo.screen_pixel_size[1] = p_screen_pixel_size.y;
@@ -1484,6 +1485,10 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 				light_data.specular = storage->light_get_param(base, RS::LIGHT_PARAM_SPECULAR);
 				light_data.mask = storage->light_get_cull_mask(base);
 
+				float size = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+
+				light_data.size = 1.0 - Math::cos(Math::deg2rad(size)); //angle to cosine offset
+
 				Color shadow_col = storage->light_get_shadow_color(base).to_linear();
 
 				if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
@@ -1551,12 +1556,44 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 						light_data.shadow_normal_bias[j] = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * light_instance_get_directional_shadow_texel_size(li, j);
 						light_data.shadow_transmittance_bias[j] = storage->light_get_transmittance_bias(base) * bias_scale;
 						light_data.shadow_transmittance_z_scale[j] = light_instance_get_shadow_range(li, j);
+						light_data.shadow_range_begin[j] = light_instance_get_shadow_range_begin(li, j);
 						store_camera(shadow_mtx, light_data.shadow_matrices[j]);
+
+						Vector2 uv_scale = light_instance_get_shadow_uv_scale(li, j);
+						uv_scale *= atlas_rect.size; //adapt to atlas size
+						switch (j) {
+							case 0: {
+								light_data.uv_scale1[0] = uv_scale.x;
+								light_data.uv_scale1[1] = uv_scale.y;
+							} break;
+							case 1: {
+								light_data.uv_scale2[0] = uv_scale.x;
+								light_data.uv_scale2[1] = uv_scale.y;
+							} break;
+							case 2: {
+								light_data.uv_scale3[0] = uv_scale.x;
+								light_data.uv_scale3[1] = uv_scale.y;
+							} break;
+							case 3: {
+								light_data.uv_scale4[0] = uv_scale.x;
+								light_data.uv_scale4[1] = uv_scale.y;
+							} break;
+						}
 					}
 
 					float fade_start = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_FADE_START);
 					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
+
+					float softshadow_angle = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+					if (softshadow_angle > 0.0) {
+						// I know tan(0) is 0, but let's not risk it with numerical precision.
+						// technically this will keep expanding until reaching the sun, but all we care
+						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
+						light_data.softshadow_angle = Math::tan(Math::deg2rad(softshadow_angle));
+					} else {
+						light_data.softshadow_angle = 0;
+					}
 				}
 
 				//	Copy to SkyDirectionalLightData
@@ -1619,6 +1656,10 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 				light_data.direction[1] = direction.y;
 				light_data.direction[2] = direction.z;
 
+				float size = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+
+				light_data.size = size;
+
 				light_data.cone_attenuation_angle[0] = Math::make_half_float(storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ATTENUATION));
 				float spot_angle = storage->light_get_param(base, RS::LIGHT_PARAM_SPOT_ANGLE);
 				light_data.cone_attenuation_angle[1] = Math::make_half_float(Math::cos(Math::deg2rad(spot_angle)));
@@ -1646,6 +1687,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 						shadow_texel_size *= light_instance_get_shadow_texel_size(li, p_shadow_atlas);
 
 						light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size;
+
 					} else { //omni
 						light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0;
 						float shadow_texel_size = light_instance_get_shadow_texel_size(li, p_shadow_atlas);
@@ -1656,17 +1698,30 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 					Rect2 rect = light_instance_get_shadow_atlas_rect(li, p_shadow_atlas);
 
+					light_data.atlas_rect[0] = rect.position.x;
+					light_data.atlas_rect[1] = rect.position.y;
+					light_data.atlas_rect[2] = rect.size.width;
+					light_data.atlas_rect[3] = rect.size.height;
+
 					if (type == RS::LIGHT_OMNI) {
 
-						light_data.atlas_rect[0] = rect.position.x;
-						light_data.atlas_rect[1] = rect.position.y;
-						light_data.atlas_rect[2] = rect.size.width;
-						light_data.atlas_rect[3] = rect.size.height * 0.5;
-
+						light_data.atlas_rect[3] *= 0.5; //one paraboloid on top of another
 						Transform proj = (p_camera_inverse_transform * light_transform).inverse();
 
 						store_transform(proj, light_data.shadow_matrix);
+
+						if (size > 0.0) {
+
+							light_data.soft_shadow_size = size;
+						} else {
+							light_data.soft_shadow_size = 0.0;
+						}
+
 					} else if (type == RS::LIGHT_SPOT) {
+
+						//used for clamping in this light type
+						light_data.atlas_rect[2] += light_data.atlas_rect[0];
+						light_data.atlas_rect[3] += light_data.atlas_rect[1];
 
 						Transform modelview = (p_camera_inverse_transform * light_transform).inverse();
 						CameraMatrix bias;
@@ -1676,6 +1731,14 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 						CameraMatrix shadow_mtx = rectm * bias * light_instance_get_shadow_camera(li, 0) * modelview;
 						store_camera(shadow_mtx, light_data.shadow_matrix);
+
+						if (size > 0.0) {
+							CameraMatrix cm = light_instance_get_shadow_camera(li, 0);
+							float half_np = cm.get_z_near() * Math::tan(Math::deg2rad(spot_angle));
+							light_data.soft_shadow_size = (size * 0.5 / radius) / (half_np / cm.get_z_near()) * rect.size.width;
+						} else {
+							light_data.soft_shadow_size = 0.0;
+						}
 					}
 				} else {
 					light_data.shadow_color_enabled[3] = 0;

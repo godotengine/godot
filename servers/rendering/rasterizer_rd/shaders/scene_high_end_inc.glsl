@@ -47,6 +47,11 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	bool pancake_shadows;
 	uint shadow_filter_mode;
 
+	uint shadow_blocker_count;
+	uint shadow_pad0;
+	uint shadow_pad1;
+	uint shadow_pad2;
+
 	vec4 ambient_light_color_energy;
 
 	float ambient_color_sky_mix;
@@ -141,17 +146,19 @@ struct LightData { //this structure needs to be as packed as possible
 	vec3 position;
 	float inv_radius;
 	vec3 direction;
+	float size;
 	uint attenuation_energy; //attenuation
 	uint color_specular; //rgb color, a specular (8 bit unorm)
 	uint cone_attenuation_angle; // attenuation and angle, (16bit float)
-	uint mask;
 	uint shadow_color_enabled; //shadow rgb color, a>0.5 enabled (8bit unorm)
 	vec4 atlas_rect; // used for spot
 	mat4 shadow_matrix;
 	float shadow_bias;
 	float shadow_normal_bias;
 	float transmittance_bias;
-	uint pad;
+	float soft_shadow_size; // for spot, it's the size in uv coordinates of the light, for omni it's the span angle
+	uint mask;
+	uint pad[3];
 };
 
 layout(set = 0, binding = 5, std430) buffer Lights {
@@ -180,11 +187,11 @@ struct DirectionalLightData {
 	vec3 direction;
 	float energy;
 	vec3 color;
+	float size;
 	float specular;
 	uint mask;
-	uint pad0;
+	float softshadow_angle;
 	uint pad1;
-	uint pad2;
 	bool blend_splits;
 	bool shadow_enabled;
 	float fade_from;
@@ -193,6 +200,7 @@ struct DirectionalLightData {
 	vec4 shadow_normal_bias;
 	vec4 shadow_transmittance_bias;
 	vec4 shadow_transmittance_z_scale;
+	vec4 shadow_range_begin;
 	vec4 shadow_split_offsets;
 	mat4 shadow_matrix1;
 	mat4 shadow_matrix2;
@@ -202,6 +210,10 @@ struct DirectionalLightData {
 	vec4 shadow_color2;
 	vec4 shadow_color3;
 	vec4 shadow_color4;
+	vec2 uv_scale1;
+	vec2 uv_scale2;
+	vec2 uv_scale3;
+	vec2 uv_scale4;
 };
 
 layout(set = 0, binding = 7, std140) uniform DirectionalLights {

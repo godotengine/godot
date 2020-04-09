@@ -3104,6 +3104,7 @@ RID RasterizerStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
 	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
+	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
 	light.param[RS::LIGHT_PARAM_SPOT_ANGLE] = 45;
 	light.param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
