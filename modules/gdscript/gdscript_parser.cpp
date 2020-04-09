@@ -7014,6 +7014,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 
 					if (!_is_type_compatible(arg_type, par_types[i], true)) {
 						types_match = false;
+						if (arg_type.kind == DataType::NATIVE && par_types[i].kind == DataType::CLASS)
+							types_match = true;
 						break;
 					} else {
 #ifdef DEBUG_ENABLED
