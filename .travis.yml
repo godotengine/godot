@@ -55,17 +55,15 @@ matrix:
           packages:
             - *linux_deps
 
-# TODO: Android support
-
-#    - name: Android export template (release_debug, Clang)
-#      stage: build
-#      env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
-#      os: linux
-#      compiler: clang
-#      addons:
-#        apt:
-#          packages:
-#            - openjdk-8-jdk
+    - name: Android export template (release_debug, Clang)
+      stage: build
+      env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="werror=yes"
+      os: linux
+      compiler: clang
+      addons:
+        apt:
+          packages:
+            - openjdk-8-jdk
 
     - name: macOS editor (debug, Clang)
       stage: build
@@ -91,21 +89,6 @@ matrix:
 #        homebrew:
 #          packages:
 #            - scons
-
-# TODO: Dummy/Offscreen rasterizer
-
-#    - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
-#      stage: build
-#      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes" TEST_PROJECT=yes
-#      os: linux
-#      compiler: gcc-9
-#      addons:
-#        apt:
-#          sources:
-#            - sourceline: "ppa:ubuntu-toolchain-r/test"
-#          packages:
-#            - *gcc9_deps
-#            - *linux_deps
 
     - name: Linux export template (release_debug, GCC 7, without 3D support)
       stage: build
