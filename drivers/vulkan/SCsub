@@ -14,6 +14,14 @@ if env["platform"] == "android":
         thirdparty_dir + "/layers/generated",
     ]
     env.Prepend(CPPPATH=thirdparty_includes)
+
+    # Build Vulkan memory allocator
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+
+    thirdparty_dir = "#thirdparty/vulkan"
+    vma_sources = [thirdparty_dir + "/android/vk_mem_alloc.cpp"]
+    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
 elif env["builtin_vulkan"]:
     # Use bundled Vulkan headers
     thirdparty_dir = "#thirdparty/vulkan"

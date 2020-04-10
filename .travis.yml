@@ -57,7 +57,7 @@ matrix:
 
     - name: Android export template (release_debug, Clang)
       stage: build
-      env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="werror=yes"
+      env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
       addons:
