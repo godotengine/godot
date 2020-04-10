@@ -216,6 +216,14 @@ bool Light3D::is_editor_only() const {
 }
 
 void Light3D::_validate_property(PropertyInfo &property) const {
+
+	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_size") {
+		property.usage = 0;
+	}
+
+	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
+		property.usage = 0;
+	}
 }
 
 void Light3D::_bind_methods() {
@@ -251,6 +259,8 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,64,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disable,Indirect,All"), "set_bake_mode", "get_bake_mode");
@@ -315,6 +325,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_INDIRECT_ENERGY, 1);
 	set_param(PARAM_SPECULAR, 0.5);
 	set_param(PARAM_RANGE, 5);
+	set_param(PARAM_SIZE, 0);
 	set_param(PARAM_ATTENUATION, 1);
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);

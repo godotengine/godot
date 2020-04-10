@@ -573,7 +573,9 @@ private:
 			float split;
 			float bias_scale;
 			float shadow_texel_size;
+			float range_begin;
 			Rect2 atlas_rect;
+			Vector2 uv_scale;
 		};
 
 		RS::LightType light_type = RS::LIGHT_DIRECTIONAL;
@@ -883,7 +885,7 @@ public:
 
 	RID light_instance_create(RID p_light);
 	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0);
+	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2());
 	void light_instance_mark_visible(RID p_light_instance);
 
 	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
@@ -966,6 +968,17 @@ public:
 
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].farplane;
+	}
+	_FORCE_INLINE_ float light_instance_get_shadow_range_begin(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].range_begin;
+	}
+
+	_FORCE_INLINE_ Vector2 light_instance_get_shadow_uv_scale(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].uv_scale;
 	}
 
 	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_rect(RID p_light_instance, int p_index) {
