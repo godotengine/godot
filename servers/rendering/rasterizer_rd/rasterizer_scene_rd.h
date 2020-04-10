@@ -527,7 +527,19 @@ private:
 
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
 
-	RS::ShadowFilter shadow_filter = RS::SHADOW_FILTER_NONE;
+	RS::ShadowQuality shadows_quality = RS::SHADOW_QUALITY_MAX; //So it always updates when first set
+	RS::ShadowQuality directional_shadow_quality = RS::SHADOW_QUALITY_MAX;
+	float shadows_quality_radius = 1.0;
+	float directional_shadow_quality_radius = 1.0;
+
+	float *directional_penumbra_shadow_kernel;
+	float *directional_soft_shadow_kernel;
+	float *penumbra_shadow_kernel;
+	float *soft_shadow_kernel;
+	int directional_penumbra_shadow_samples = 0;
+	int directional_soft_shadow_samples = 0;
+	int penumbra_shadow_samples = 0;
+	int soft_shadow_samples = 0;
 
 	/* DIRECTIONAL SHADOW */
 
@@ -1177,8 +1189,22 @@ public:
 	RS::SubSurfaceScatteringQuality sub_surface_scattering_get_quality() const;
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale);
 
-	virtual void shadow_filter_set(RS::ShadowFilter p_filter);
-	_FORCE_INLINE_ RS::ShadowFilter shadow_filter_get() const { return shadow_filter; }
+	virtual void shadows_quality_set(RS::ShadowQuality p_quality);
+	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality);
+	_FORCE_INLINE_ RS::ShadowQuality shadows_quality_get() const { return shadows_quality; }
+	_FORCE_INLINE_ RS::ShadowQuality directional_shadow_quality_get() const { return directional_shadow_quality; }
+	_FORCE_INLINE_ float shadows_quality_radius_get() const { return shadows_quality_radius; }
+	_FORCE_INLINE_ float directional_shadow_quality_radius_get() const { return directional_shadow_quality_radius; }
+
+	_FORCE_INLINE_ float *directional_penumbra_shadow_kernel_get() { return directional_penumbra_shadow_kernel; }
+	_FORCE_INLINE_ float *directional_soft_shadow_kernel_get() { return directional_soft_shadow_kernel; }
+	_FORCE_INLINE_ float *penumbra_shadow_kernel_get() { return penumbra_shadow_kernel; }
+	_FORCE_INLINE_ float *soft_shadow_kernel_get() { return soft_shadow_kernel; }
+
+	_FORCE_INLINE_ int directional_penumbra_shadow_samples_get() const { return directional_penumbra_shadow_samples; }
+	_FORCE_INLINE_ int directional_soft_shadow_samples_get() const { return directional_soft_shadow_samples; }
+	_FORCE_INLINE_ int penumbra_shadow_samples_get() const { return penumbra_shadow_samples; }
+	_FORCE_INLINE_ int soft_shadow_samples_get() const { return soft_shadow_samples; }
 
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;
