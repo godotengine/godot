@@ -60,7 +60,7 @@ void Engine::set_target_fps(int p_fps) {
 	_target_fps = p_fps > 0 ? p_fps : 0;
 }
 
-float Engine::get_target_fps() const {
+int Engine::get_target_fps() const {
 	return _target_fps;
 }
 
