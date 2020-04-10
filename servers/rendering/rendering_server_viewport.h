@@ -67,8 +67,13 @@ public:
 		bool hide_scenario;
 		bool hide_canvas;
 		bool disable_environment;
-		bool disable_3d_by_usage;
-		bool keep_3d_linear;
+		bool measure_render_time;
+
+		uint64_t time_cpu_begin;
+		uint64_t time_cpu_end;
+
+		uint64_t time_gpu_begin;
+		uint64_t time_gpu_end;
 
 		RID shadow_atlas;
 		int shadow_atlas_size;
@@ -121,15 +126,24 @@ public:
 			disable_environment = false;
 			viewport_to_screen = DisplayServer::INVALID_WINDOW_ID;
 			shadow_atlas_size = 0;
-			keep_3d_linear = false;
+			measure_render_time = false;
+
 			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 			msaa = RS::VIEWPORT_MSAA_DISABLED;
 			for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_MAX; i++) {
 				render_info[i] = 0;
 			}
 			use_xr = false;
+
+			time_cpu_begin = 0;
+			time_cpu_end = 0;
+
+			time_gpu_begin = 0;
+			time_gpu_end = 0;
 		}
 	};
+
+	HashMap<String, RID> timestamp_vp_map;
 
 	uint64_t draw_viewports_pass = 0;
 
@@ -195,6 +209,12 @@ public:
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);
+
+	void viewport_set_measure_render_time(RID p_viewport, bool p_enable);
+	float viewport_get_measured_render_time_cpu(RID p_viewport) const;
+	float viewport_get_measured_render_time_gpu(RID p_viewport) const;
+
+	void handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time);
 
 	void set_default_clear_color(const Color &p_color);
 	void draw_viewports();

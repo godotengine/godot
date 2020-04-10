@@ -493,6 +493,10 @@ public:
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
 	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
+	BIND2(viewport_set_measure_render_time, RID, bool)
+	BIND1RC(float, viewport_get_measured_render_time_cpu, RID)
+	BIND1RC(float, viewport_get_measured_render_time_gpu, RID)
+
 	/* ENVIRONMENT API */
 
 #undef BINDBASE
