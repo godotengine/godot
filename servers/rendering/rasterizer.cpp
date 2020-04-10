@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
-Rasterizer *(*Rasterizer::_create_func)() = NULL;
+Rasterizer *(*Rasterizer::_create_func)() = nullptr;
 
 void RasterizerScene::InstanceDependency::instance_notify_changed(bool p_aabb, bool p_dependencies) {
 	for (Map<InstanceBase *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
@@ -67,9 +67,9 @@ Rasterizer *Rasterizer::create() {
 	return _create_func();
 }
 
-RasterizerCanvas *RasterizerCanvas::singleton = NULL;
+RasterizerCanvas *RasterizerCanvas::singleton = nullptr;
 
-RasterizerStorage *RasterizerStorage::base_singleton = NULL;
+RasterizerStorage *RasterizerStorage::base_singleton = nullptr;
 
 RasterizerStorage::RasterizerStorage() {
 

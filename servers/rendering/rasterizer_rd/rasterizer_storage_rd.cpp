@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rasterizer_storage_rd.h"
+
 #include "core/engine.h"
 #include "core/project_settings.h"
 #include "servers/rendering/shader_language.h"
@@ -861,7 +862,7 @@ Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) {
 RID RasterizerStorageRD::shader_create() {
 
 	Shader shader;
-	shader.data = NULL;
+	shader.data = nullptr;
 	shader.type = SHADER_TYPE_MAX;
 
 	return shader_owner.make_rid(shader);
@@ -889,7 +890,7 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 	if (new_type != shader->type) {
 		if (shader->data) {
 			memdelete(shader->data);
-			shader->data = NULL;
+			shader->data = nullptr;
 		}
 
 		for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
@@ -898,7 +899,7 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			material->shader_type = new_type;
 			if (material->data) {
 				memdelete(material->data);
-				material->data = NULL;
+				material->data = nullptr;
 			}
 		}
 
@@ -990,10 +991,10 @@ void RasterizerStorageRD::shader_set_data_request_function(ShaderType p_shader_t
 RID RasterizerStorageRD::material_create() {
 
 	Material material;
-	material.data = NULL;
-	material.shader = NULL;
+	material.data = nullptr;
+	material.shader = nullptr;
 	material.shader_type = SHADER_TYPE_MAX;
-	material.update_next = NULL;
+	material.update_next = nullptr;
 	material.update_requested = false;
 	material.uniform_dirty = false;
 	material.texture_dirty = false;
@@ -1025,12 +1026,12 @@ void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
 
 	if (material->data) {
 		memdelete(material->data);
-		material->data = NULL;
+		material->data = nullptr;
 	}
 
 	if (material->shader) {
 		material->shader->owners.erase(material);
-		material->shader = NULL;
+		material->shader = nullptr;
 		material->shader_type = SHADER_TYPE_MAX;
 	}
 
@@ -1049,7 +1050,7 @@ void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
 		return;
 	}
 
-	ERR_FAIL_COND(shader->data == NULL);
+	ERR_FAIL_COND(shader->data == nullptr);
 
 	material->data = material_data_request_func[shader->type](shader->data);
 	material->data->set_next_pass(material->next_pass);
@@ -1664,7 +1665,7 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 	RasterizerStorageRD *singleton = (RasterizerStorageRD *)RasterizerStorage::base_singleton;
 #ifdef TOOLS_ENABLED
 	Texture *roughness_detect_texture = nullptr;
-	RS::TextureDetectRoughnessChannel roughness_channel;
+	RS::TextureDetectRoughnessChannel roughness_channel = RS::TEXTURE_DETECT_ROUGNHESS_R;
 	Texture *normal_detect_texture = nullptr;
 #endif
 
@@ -1769,10 +1770,10 @@ void RasterizerStorageRD::_update_queued_materials() {
 		material->update_requested = false;
 		material->texture_dirty = false;
 		material->uniform_dirty = false;
-		material->update_next = NULL;
+		material->update_next = nullptr;
 		material = next;
 	}
-	material_update_list = NULL;
+	material_update_list = nullptr;
 }
 /* MESH API */
 
@@ -3103,15 +3104,17 @@ RID RasterizerStorageRD::light_create(RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
 	light.param[RS::LIGHT_PARAM_SPECULAR] = 0.5;
 	light.param[RS::LIGHT_PARAM_RANGE] = 1.0;
+	light.param[RS::LIGHT_PARAM_SIZE] = 0.0;
 	light.param[RS::LIGHT_PARAM_SPOT_ANGLE] = 45;
-	light.param[RS::LIGHT_PARAM_CONTACT_SHADOW_SIZE] = 45;
 	light.param[RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
 	light.param[RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
 	light.param[RS::LIGHT_PARAM_SHADOW_FADE_START] = 0.8;
-	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 0.1;
-	light.param[RS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE] = 0.1;
+	light.param[RS::LIGHT_PARAM_SHADOW_BIAS] = 0.02;
+	light.param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 1.0;
+	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
+	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 
 	return light_owner.make_rid(light);
 }
@@ -3137,6 +3140,7 @@ void RasterizerStorageRD::light_set_param(RID p_light, RS::LightParam p_param, f
 		case RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
 		case RS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
 		case RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS:
+		case RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE:
 		case RS::LIGHT_PARAM_SHADOW_BIAS: {
 
 			light->version++;
@@ -4452,10 +4456,10 @@ String RasterizerStorageRD::get_captured_timestamp_name(uint32_t p_index) const 
 RasterizerStorageRD::RasterizerStorageRD() {
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
-		shader_data_request_func[i] = NULL;
+		shader_data_request_func[i] = nullptr;
 	}
 
-	material_update_list = NULL;
+	material_update_list = nullptr;
 	{ //create default textures
 
 		RD::TextureFormat tformat;

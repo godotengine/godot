@@ -534,7 +534,7 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 	// local neighbourhood of blocks
 	PVRTCBlock *p_blocks[2][2];
 
-	PVRTCBlock *prev[2][2] = { { NULL, NULL }, { NULL, NULL } };
+	PVRTCBlock *prev[2][2] = { { nullptr, nullptr }, { nullptr, nullptr } };
 
 	struct
 	{

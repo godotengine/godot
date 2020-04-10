@@ -68,7 +68,7 @@ void RemoteDebuggerPeerTCP::close() {
 		running = false;
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
-		thread = NULL;
+		thread = nullptr;
 	}
 	tcp_client->disconnect_from_host();
 	out_buf.resize(0);
@@ -106,7 +106,7 @@ void RemoteDebuggerPeerTCP::_write_out() {
 			out_queue.pop_front();
 			mutex.unlock();
 			int size = 0;
-			Error err = encode_variant(var, NULL, size);
+			Error err = encode_variant(var, nullptr, size);
 			ERR_CONTINUE(err != OK || size > out_buf.size() - 4); // 4 bytes separator.
 			encode_uint32(size, buf);
 			encode_variant(var, buf + 4, size);

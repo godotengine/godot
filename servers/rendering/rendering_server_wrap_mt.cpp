@@ -126,17 +126,6 @@ void RenderingServerWrapMT::init() {
 
 void RenderingServerWrapMT::finish() {
 
-	if (thread) {
-
-		command_queue.push(this, &RenderingServerWrapMT::thread_exit);
-		Thread::wait_to_finish(thread);
-		memdelete(thread);
-
-		thread = NULL;
-	} else {
-		rendering_server->finish();
-	}
-
 	sky_free_cached_ids();
 	shader_free_cached_ids();
 	material_free_cached_ids();
@@ -161,6 +150,17 @@ void RenderingServerWrapMT::finish() {
 	canvas_item_free_cached_ids();
 	canvas_light_occluder_free_cached_ids();
 	canvas_occluder_polygon_free_cached_ids();
+
+	if (thread) {
+
+		command_queue.push(this, &RenderingServerWrapMT::thread_exit);
+		Thread::wait_to_finish(thread);
+		memdelete(thread);
+
+		thread = nullptr;
+	} else {
+		rendering_server->finish();
+	}
 }
 
 void RenderingServerWrapMT::set_use_vsync_callback(bool p_enable) {
@@ -168,7 +168,7 @@ void RenderingServerWrapMT::set_use_vsync_callback(bool p_enable) {
 	singleton_mt->call_set_use_vsync(p_enable);
 }
 
-RenderingServerWrapMT *RenderingServerWrapMT::singleton_mt = NULL;
+RenderingServerWrapMT *RenderingServerWrapMT::singleton_mt = nullptr;
 
 RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool p_create_thread) :
 		command_queue(p_create_thread) {
@@ -178,7 +178,7 @@ RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool 
 
 	rendering_server = p_contained;
 	create_thread = p_create_thread;
-	thread = NULL;
+	thread = nullptr;
 	draw_pending = 0;
 	draw_thread_up = false;
 	pool_max_size = GLOBAL_GET("memory/limits/multithreaded_server/rid_pool_prealloc");

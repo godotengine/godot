@@ -33,7 +33,7 @@
 #include "thread_jandroid.h"
 #include <unistd.h>
 
-jobject FileAccessJAndroid::io = NULL;
+jobject FileAccessJAndroid::io = nullptr;
 jclass FileAccessJAndroid::cls;
 jmethodID FileAccessJAndroid::_file_open = 0;
 jmethodID FileAccessJAndroid::_file_get_size = 0;

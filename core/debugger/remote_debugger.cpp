@@ -318,7 +318,7 @@ struct RemoteDebugger::ServersProfiler {
 
 	void _send_frame_data(bool p_final) {
 		DebuggerMarshalls::ServersProfilerFrame frame;
-		frame.frame_number = Engine::get_singleton()->get_frames_drawn();
+		frame.frame_number = Engine::get_singleton()->get_idle_frames();
 		frame.frame_time = frame_time;
 		frame.idle_time = idle_time;
 		frame.physics_time = physics_time;
@@ -373,7 +373,7 @@ struct RemoteDebugger::VisualProfiler {
 
 struct RemoteDebugger::PerformanceProfiler {
 
-	Object *performance = NULL;
+	Object *performance = nullptr;
 	int last_perf_time = 0;
 
 	void toggle(bool p_enable, const Array &p_opts) {}
@@ -867,7 +867,7 @@ RemoteDebugger *RemoteDebugger::create_for_uri(const String &p_uri) {
 	Ref<RemoteDebuggerPeer> peer = RemoteDebuggerPeer::create_from_uri(p_uri);
 	if (peer.is_valid())
 		return memnew(RemoteDebugger(peer));
-	return NULL;
+	return nullptr;
 }
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {

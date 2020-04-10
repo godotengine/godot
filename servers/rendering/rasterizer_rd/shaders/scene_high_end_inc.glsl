@@ -22,6 +22,10 @@ draw_call;
 #define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
 #define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
+#define SHADOW_MODE_NO_FILTER 0
+#define SHADOW_MODE_PCF5 1
+#define SHADOW_MODE_PCF13 2
+
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
@@ -37,12 +41,16 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	vec2 viewport_size;
 	vec2 screen_pixel_size;
 
-	//used for shadow mapping only
-	float z_offset;
-	float z_slope_scale;
-
 	float time;
 	float reflection_multiplier; // one normally, zero when rendering reflections
+
+	bool pancake_shadows;
+	uint shadow_filter_mode;
+
+	uint shadow_blocker_count;
+	uint shadow_pad0;
+	uint shadow_pad1;
+	uint shadow_pad2;
 
 	vec4 ambient_light_color_energy;
 
@@ -134,21 +142,27 @@ layout(set = 0, binding = 4, std430) buffer Instances {
 }
 instances;
 
-struct LightData { //this structure needs to be 128 bits
+struct LightData { //this structure needs to be as packed as possible
 	vec3 position;
 	float inv_radius;
 	vec3 direction;
+	float size;
 	uint attenuation_energy; //attenuation
 	uint color_specular; //rgb color, a specular (8 bit unorm)
 	uint cone_attenuation_angle; // attenuation and angle, (16bit float)
-	uint mask;
 	uint shadow_color_enabled; //shadow rgb color, a>0.5 enabled (8bit unorm)
-	vec4 atlas_rect; //used for shadow atlas uv on omni, and for projection atlas on spot
+	vec4 atlas_rect; // used for spot
 	mat4 shadow_matrix;
+	float shadow_bias;
+	float shadow_normal_bias;
+	float transmittance_bias;
+	float soft_shadow_size; // for spot, it's the size in uv coordinates of the light, for omni it's the span angle
+	uint mask;
+	uint pad[3];
 };
 
-layout(set = 0, binding = 5, std140) uniform Lights {
-	LightData data[MAX_LIGHT_DATA_STRUCTS];
+layout(set = 0, binding = 5, std430) buffer Lights {
+	LightData data[];
 }
 lights;
 
@@ -173,18 +187,33 @@ struct DirectionalLightData {
 	vec3 direction;
 	float energy;
 	vec3 color;
+	float size;
 	float specular;
-	vec3 shadow_color;
 	uint mask;
+	float softshadow_angle;
+	uint pad1;
 	bool blend_splits;
 	bool shadow_enabled;
 	float fade_from;
 	float fade_to;
+	vec4 shadow_bias;
+	vec4 shadow_normal_bias;
+	vec4 shadow_transmittance_bias;
+	vec4 shadow_transmittance_z_scale;
+	vec4 shadow_range_begin;
 	vec4 shadow_split_offsets;
 	mat4 shadow_matrix1;
 	mat4 shadow_matrix2;
 	mat4 shadow_matrix3;
 	mat4 shadow_matrix4;
+	vec4 shadow_color1;
+	vec4 shadow_color2;
+	vec4 shadow_color3;
+	vec4 shadow_color4;
+	vec2 uv_scale1;
+	vec2 uv_scale2;
+	vec2 uv_scale3;
+	vec2 uv_scale4;
 };
 
 layout(set = 0, binding = 7, std140) uniform DirectionalLights {

@@ -725,7 +725,7 @@ void TileSetEditor::_on_texture_list_selected(int p_index) {
 		update_workspace_minsize();
 	} else {
 		current_item_index = -1;
-		preview->set_texture(NULL);
+		preview->set_texture(nullptr);
 		workspace->set_custom_minimum_size(Size2i());
 		update_workspace_tile_mode();
 	}
@@ -3003,7 +3003,7 @@ void TileSetEditor::select_coord(const Vector2 &coord) {
 			}
 		}
 		if (!found_collision_shape)
-			_set_edited_collision_shape(Ref<ConvexPolygonShape2D>(NULL));
+			_set_edited_collision_shape(Ref<ConvexPolygonShape2D>(nullptr));
 		if (edited_occlusion_shape != tileset->autotile_get_light_occluder(get_current_tile(), coord))
 			edited_occlusion_shape = tileset->autotile_get_light_occluder(get_current_tile(), coord);
 		if (edited_navigation_shape != tileset->autotile_get_navigation_polygon(get_current_tile(), coord))

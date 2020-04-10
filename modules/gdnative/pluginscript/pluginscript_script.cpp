@@ -69,7 +69,7 @@ PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int
 	} else {
 		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		memdelete(instance);
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V(nullptr);
 	}
 
 	// Construct
@@ -93,7 +93,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	}
 
 	REF ref;
-	Object *owner = NULL;
+	Object *owner = nullptr;
 
 	if (get_instance_base_type() == "") {
 		owner = memnew(Reference);
@@ -175,7 +175,7 @@ void PluginScript::update_exports() {
 
 // TODO: rename p_this "p_owner" ?
 ScriptInstance *PluginScript::instance_create(Object *p_this) {
-	ASSERT_SCRIPT_VALID_V(NULL);
+	ASSERT_SCRIPT_VALID_V(nullptr);
 	// TODO check script validity ?
 	if (!_tool && !ScriptServer::is_scripting_enabled()) {
 #ifdef TOOLS_ENABLED
@@ -185,7 +185,7 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 		update_exports();
 		return si;
 #else
-		return NULL;
+		return nullptr;
 #endif
 	}
 
@@ -197,12 +197,12 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 			// if (EngineDebugger::is_active()) {
 			// 	_language->debug_break_parse(get_path(), 0, msg);
 			// }
-			ERR_FAIL_V_MSG(NULL, msg);
+			ERR_FAIL_V_MSG(nullptr, msg);
 		}
 	}
 
 	Callable::CallError unchecked_error;
-	return _create_instance(NULL, 0, p_this, unchecked_error);
+	return _create_instance(nullptr, 0, p_this, unchecked_error);
 }
 
 bool PluginScript::instance_has(const Object *p_this) const {
@@ -296,7 +296,7 @@ Error PluginScript::reload(bool p_keep_state) {
 	_tool = manifest.is_tool;
 
 	Dictionary *members = (Dictionary *)&manifest.member_lines;
-	for (const Variant *key = members->next(); key != NULL; key = members->next(key)) {
+	for (const Variant *key = members->next(); key != nullptr; key = members->next(key)) {
 		_member_lines[*key] = (*members)[*key];
 	}
 	Array *methods = (Array *)&manifest.methods;
@@ -366,14 +366,14 @@ Error PluginScript::reload(bool p_keep_state) {
 
 void PluginScript::get_script_method_list(List<MethodInfo> *r_methods) const {
 	ASSERT_SCRIPT_VALID();
-	for (Map<StringName, MethodInfo>::Element *e = _methods_info.front(); e != NULL; e = e->next()) {
+	for (Map<StringName, MethodInfo>::Element *e = _methods_info.front(); e != nullptr; e = e->next()) {
 		r_methods->push_back(e->get());
 	}
 }
 
 void PluginScript::get_script_property_list(List<PropertyInfo> *r_properties) const {
 	ASSERT_SCRIPT_VALID();
-	for (Map<StringName, PropertyInfo>::Element *e = _properties_info.front(); e != NULL; e = e->next()) {
+	for (Map<StringName, PropertyInfo>::Element *e = _properties_info.front(); e != nullptr; e = e->next()) {
 		r_properties->push_back(e->get());
 	}
 }
@@ -386,7 +386,7 @@ bool PluginScript::has_method(const StringName &p_method) const {
 MethodInfo PluginScript::get_method_info(const StringName &p_method) const {
 	ASSERT_SCRIPT_VALID_V(MethodInfo());
 	const Map<StringName, MethodInfo>::Element *e = _methods_info.find(p_method);
-	if (e != NULL) {
+	if (e != nullptr) {
 		return e->get();
 	} else {
 		return MethodInfo();
@@ -401,7 +401,7 @@ bool PluginScript::has_property(const StringName &p_method) const {
 PropertyInfo PluginScript::get_property_info(const StringName &p_property) const {
 	ASSERT_SCRIPT_VALID_V(PropertyInfo());
 	const Map<StringName, PropertyInfo>::Element *e = _properties_info.find(p_property);
-	if (e != NULL) {
+	if (e != nullptr) {
 		return e->get();
 	} else {
 		return PropertyInfo();
@@ -412,7 +412,7 @@ bool PluginScript::get_property_default_value(const StringName &p_property, Vari
 	ASSERT_SCRIPT_VALID_V(false);
 #ifdef TOOLS_ENABLED
 	const Map<StringName, Variant>::Element *e = _properties_default_values.find(p_property);
-	if (e != NULL) {
+	if (e != nullptr) {
 		r_value = e->get();
 		return true;
 	} else {
@@ -462,7 +462,7 @@ bool PluginScript::has_script_signal(const StringName &p_signal) const {
 
 void PluginScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	ASSERT_SCRIPT_VALID();
-	for (Map<StringName, MethodInfo>::Element *e = _signals_info.front(); e != NULL; e = e->next()) {
+	for (Map<StringName, MethodInfo>::Element *e = _signals_info.front(); e != nullptr; e = e->next()) {
 		r_signals->push_back(e->get());
 	}
 }
@@ -543,9 +543,9 @@ MultiplayerAPI::RPCMode PluginScript::get_rset_mode(const StringName &p_variable
 }
 
 PluginScript::PluginScript() :
-		_data(NULL),
-		_desc(NULL),
-		_language(NULL),
+		_data(nullptr),
+		_desc(nullptr),
+		_language(nullptr),
 		_tool(false),
 		_valid(false),
 		_script_list(this) {

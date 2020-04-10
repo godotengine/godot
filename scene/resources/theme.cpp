@@ -230,11 +230,11 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	List<PropertyInfo> list;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = icon_map.next(key))) {
 
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = icon_map[*key].next(key2))) {
 
@@ -242,11 +242,11 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = style_map.next(key))) {
 
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = style_map[*key].next(key2))) {
 
@@ -254,11 +254,11 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = font_map.next(key))) {
 
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = font_map[*key].next(key2))) {
 
@@ -266,11 +266,11 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = color_map.next(key))) {
 
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = color_map[*key].next(key2))) {
 
@@ -278,11 +278,11 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = constant_map.next(key))) {
 
-		const StringName *key2 = NULL;
+		const StringName *key2 = nullptr;
 
 		while ((key2 = constant_map[*key].next(key2))) {
 
@@ -417,7 +417,7 @@ void Theme::get_icon_list(StringName p_type, List<StringName> *p_list) const {
 	if (!icon_map.has(p_type))
 		return;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = icon_map[p_type].next(key))) {
 
@@ -440,7 +440,7 @@ Ref<Shader> Theme::get_shader(const StringName &p_name, const StringName &p_type
 	if (shader_map.has(p_type) && shader_map[p_type].has(p_name) && shader_map[p_type][p_name].is_valid()) {
 		return shader_map[p_type][p_name];
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -464,7 +464,7 @@ void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) 
 	if (!shader_map.has(p_type))
 		return;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = shader_map[p_type].next(key))) {
 
@@ -530,7 +530,7 @@ void Theme::get_stylebox_list(StringName p_type, List<StringName> *p_list) const
 	if (!style_map.has(p_type))
 		return;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = style_map[p_type].next(key))) {
 
@@ -541,7 +541,7 @@ void Theme::get_stylebox_list(StringName p_type, List<StringName> *p_list) const
 void Theme::get_stylebox_types(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 	while ((key = style_map.next(key))) {
 		p_list->push_back(*key);
 	}
@@ -604,7 +604,7 @@ void Theme::get_font_list(StringName p_type, List<StringName> *p_list) const {
 	if (!font_map.has(p_type))
 		return;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = font_map[p_type].next(key))) {
 
@@ -654,7 +654,7 @@ void Theme::get_color_list(StringName p_type, List<StringName> *p_list) const {
 	if (!color_map.has(p_type))
 		return;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = color_map[p_type].next(key))) {
 
@@ -704,7 +704,7 @@ void Theme::get_constant_list(StringName p_type, List<StringName> *p_list) const
 	if (!constant_map.has(p_type))
 		return;
 
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = constant_map[p_type].next(key))) {
 
@@ -716,9 +716,9 @@ void Theme::clear() {
 
 	//these need disconnecting
 	{
-		const StringName *K = NULL;
+		const StringName *K = nullptr;
 		while ((K = icon_map.next(K))) {
-			const StringName *L = NULL;
+			const StringName *L = nullptr;
 			while ((L = icon_map[*K].next(L))) {
 				Ref<Texture2D> icon = icon_map[*K][*L];
 				if (icon.is_valid()) {
@@ -729,9 +729,9 @@ void Theme::clear() {
 	}
 
 	{
-		const StringName *K = NULL;
+		const StringName *K = nullptr;
 		while ((K = style_map.next(K))) {
-			const StringName *L = NULL;
+			const StringName *L = nullptr;
 			while ((L = style_map[*K].next(L))) {
 				Ref<StyleBox> style = style_map[*K][*L];
 				if (style.is_valid()) {
@@ -742,9 +742,9 @@ void Theme::clear() {
 	}
 
 	{
-		const StringName *K = NULL;
+		const StringName *K = nullptr;
 		while ((K = font_map.next(K))) {
-			const StringName *L = NULL;
+			const StringName *L = nullptr;
 			while ((L = font_map[*K].next(L))) {
 				Ref<Font> font = font_map[*K][*L];
 				if (font.is_valid()) {
@@ -781,9 +781,9 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 
 	//these need reconnecting, so add normally
 	{
-		const StringName *K = NULL;
+		const StringName *K = nullptr;
 		while ((K = p_other->icon_map.next(K))) {
-			const StringName *L = NULL;
+			const StringName *L = nullptr;
 			while ((L = p_other->icon_map[*K].next(L))) {
 				set_icon(*L, *K, p_other->icon_map[*K][*L]);
 			}
@@ -791,9 +791,9 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	}
 
 	{
-		const StringName *K = NULL;
+		const StringName *K = nullptr;
 		while ((K = p_other->style_map.next(K))) {
-			const StringName *L = NULL;
+			const StringName *L = nullptr;
 			while ((L = p_other->style_map[*K].next(L))) {
 				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
 			}
@@ -801,9 +801,9 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 	}
 
 	{
-		const StringName *K = NULL;
+		const StringName *K = nullptr;
 		while ((K = p_other->font_map.next(K))) {
-			const StringName *L = NULL;
+			const StringName *L = nullptr;
 			while ((L = p_other->font_map[*K].next(L))) {
 				set_font(*L, *K, p_other->font_map[*K][*L]);
 			}
@@ -825,35 +825,35 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 	ERR_FAIL_NULL(p_list);
 
 	Set<StringName> types;
-	const StringName *key = NULL;
+	const StringName *key = nullptr;
 
 	while ((key = icon_map.next(key))) {
 
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = style_map.next(key))) {
 
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = font_map.next(key))) {
 
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = color_map.next(key))) {
 
 		types.insert(*key);
 	}
 
-	key = NULL;
+	key = nullptr;
 
 	while ((key = constant_map.next(key))) {
 

@@ -40,7 +40,7 @@
 void SceneDebugger::initialize() {
 #ifdef DEBUG_ENABLED
 	LiveEditor::singleton = memnew(LiveEditor);
-	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(NULL, SceneDebugger::parse_message));
+	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
 #endif
 }
 
@@ -51,7 +51,7 @@ void SceneDebugger::deinitialize() {
 		if (EngineDebugger::has_capture("scene"))
 			EngineDebugger::unregister_message_capture("scene");
 		memdelete(LiveEditor::singleton);
-		LiveEditor::singleton = NULL;
+		LiveEditor::singleton = nullptr;
 	}
 #endif
 }
@@ -279,7 +279,7 @@ SceneDebuggerObject::SceneDebuggerObject(ObjectID p_id) {
 		}
 	} else if (Script *s = Object::cast_to<Script>(obj)) {
 		// Add script constants (no instance).
-		_parse_script_properties(s, NULL);
+		_parse_script_properties(s, nullptr);
 	}
 
 	// Add base object properties.
@@ -373,7 +373,7 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 			var = res->get_path();
 		} else { //only send information that can be sent..
 			int len = 0; //test how big is this to encode
-			encode_variant(var, NULL, len);
+			encode_variant(var, nullptr, len);
 			if (len > p_max_size) { //limit to max size
 				hint = PROPERTY_HINT_OBJECT_TOO_BIG;
 				hint_string = "";
@@ -478,7 +478,7 @@ void SceneDebuggerTree::deserialize(const Array &p_arr) {
 }
 
 /// LiveEditor
-LiveEditor *LiveEditor::singleton = NULL;
+LiveEditor *LiveEditor::singleton = nullptr;
 LiveEditor *LiveEditor::get_singleton() {
 	return singleton;
 }
@@ -515,7 +515,7 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		return;
 
 	NodePath np = live_edit_node_path_cache[p_id];
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -553,7 +553,7 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 		return;
 
 	NodePath np = live_edit_node_path_cache[p_id];
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -626,7 +626,7 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 	if (!scene_tree)
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -664,7 +664,7 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 	if (!ps.is_valid())
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -697,7 +697,7 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 	if (!scene_tree)
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -728,7 +728,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 	if (!scene_tree)
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -762,7 +762,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 	if (!scene_tree)
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -808,7 +808,7 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 	if (!scene_tree)
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 
@@ -841,7 +841,7 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 	if (!scene_tree)
 		return;
 
-	Node *base = NULL;
+	Node *base = nullptr;
 	if (scene_tree->root->has_node(live_edit_root))
 		base = scene_tree->root->get_node(live_edit_root);
 

@@ -266,7 +266,6 @@ class DisplayServerWindows : public DisplayServer {
 	bool shift_mem = false;
 	bool control_mem = false;
 	bool meta_mem = false;
-	bool force_quit = false;
 	uint32_t last_button_state = 0;
 	bool use_raw_input = false;
 	bool drop_events = false;
@@ -274,7 +273,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	WNDCLASSEXW wc;
 
-	HCURSOR cursors[CURSOR_MAX] = { NULL };
+	HCURSOR cursors[CURSOR_MAX] = { nullptr };
 	CursorShape cursor_shape;
 	Map<CursorShape, Vector<Variant>> cursors_cache;
 

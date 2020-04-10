@@ -32,7 +32,7 @@
 
 #include <emscripten.h>
 
-AudioDriverJavaScript *AudioDriverJavaScript::singleton = NULL;
+AudioDriverJavaScript *AudioDriverJavaScript::singleton = nullptr;
 
 const char *AudioDriverJavaScript::get_name() const {
 
@@ -200,7 +200,7 @@ void AudioDriverJavaScript::finish() {
 
 	if (internal_buffer) {
 		memdelete_arr(internal_buffer);
-		internal_buffer = NULL;
+		internal_buffer = nullptr;
 	}
 	_driver_id = 0;
 }
@@ -264,7 +264,7 @@ Error AudioDriverJavaScript::capture_stop() {
 AudioDriverJavaScript::AudioDriverJavaScript() {
 
 	_driver_id = 0;
-	internal_buffer = NULL;
+	internal_buffer = nullptr;
 	buffer_length = 0;
 
 	singleton = this;

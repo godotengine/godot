@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "soft_body_3d.h"
+
 #include "core/list.h"
 #include "core/object.h"
 #include "core/os/os.h"
@@ -98,7 +99,7 @@ void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
 
 SoftBody3D::PinnedPoint::PinnedPoint() :
 		point_index(-1),
-		spatial_attachment(NULL) {
+		spatial_attachment(nullptr) {
 }
 
 SoftBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
@@ -402,7 +403,7 @@ String SoftBody3D::get_configuration_warning() const {
 		if (!warning.empty())
 			warning += "\n\n";
 
-		warning += TTR("Size changes to SoftBody will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
+		warning += TTR("Size changes to SoftBody3D will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
 
 	return warning;
@@ -453,7 +454,7 @@ void SoftBody3D::prepare_physics_server() {
 		if (get_mesh().is_valid())
 			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		else
-			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 
 		return;
 	}
@@ -465,7 +466,7 @@ void SoftBody3D::prepare_physics_server() {
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 	} else {
 
-		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, NULL);
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh))) {
 			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 		}
@@ -585,14 +586,14 @@ Array SoftBody3D::get_collision_exceptions() {
 void SoftBody3D::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject3Ds.");
 	PhysicsServer3D::get_singleton()->soft_body_add_collision_exception(physics_rid, collision_object->get_rid());
 }
 
 void SoftBody3D::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject3Ds.");
 	PhysicsServer3D::get_singleton()->soft_body_remove_collision_exception(physics_rid, collision_object->get_rid());
 }
 
@@ -807,7 +808,7 @@ void SoftBody3D::_remove_pinned_point(int p_point_index) {
 int SoftBody3D::_get_pinned_point(int p_point_index, SoftBody3D::PinnedPoint *&r_point) const {
 	const int id = _has_pinned_point(p_point_index);
 	if (-1 == id) {
-		r_point = NULL;
+		r_point = nullptr;
 		return -1;
 	} else {
 		r_point = const_cast<SoftBody3D::PinnedPoint *>(&pinned_points.ptr()[id]);

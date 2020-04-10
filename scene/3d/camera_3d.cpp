@@ -138,7 +138,7 @@ void Camera3D::_notification(int p_what) {
 
 			if (viewport) {
 				viewport->_camera_remove(this);
-				viewport = NULL;
+				viewport = nullptr;
 			}
 
 		} break;
@@ -241,7 +241,7 @@ void Camera3D::clear_current(bool p_enable_next) {
 		return;
 
 	if (get_viewport()->get_camera() == this) {
-		get_viewport()->_camera_set(NULL);
+		get_viewport()->_camera_set(nullptr);
 
 		if (p_enable_next) {
 			get_viewport()->_camera_make_next_current(this);
@@ -412,23 +412,6 @@ Vector3 Camera3D::project_position(const Point2 &p_point, float p_z_depth) const
 
 	return get_camera_transform().xform(p);
 }
-
-/*
-void Camera::_camera_make_current(Node *p_camera) {
-
-
-	if (p_camera==this) {
-		RenderingServer::get_singleton()->viewport_attach_camera(viewport_id,camera);
-		active=true;
-	} else {
-		if (active && p_camera==NULL) {
-			//detech camera because no one else will claim it
-			RenderingServer::get_singleton()->viewport_attach_camera(viewport_id,RID());
-		}
-		active=false;
-	}
-}
-*/
 
 void Camera3D::set_environment(const Ref<Environment> &p_environment) {
 
@@ -703,7 +686,7 @@ Camera3D::Camera3D() {
 	near = 0;
 	far = 0;
 	current = false;
-	viewport = NULL;
+	viewport = nullptr;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(70.0, 0.05, 100.0);

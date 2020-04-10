@@ -394,7 +394,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (allow_search && k.is_valid() && k->get_unicode()) {
+	if (allow_search && k.is_valid() && k->get_unicode() && k->is_pressed()) {
 
 		uint64_t now = OS::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - search_time_msec;
@@ -1514,6 +1514,7 @@ PopupMenu::PopupMenu() {
 	submenu_over = -1;
 	initial_button_mask = 0;
 	during_grabbed_click = false;
+	invalidated_click = false;
 
 	allow_search = false;
 	search_time_msec = 0;

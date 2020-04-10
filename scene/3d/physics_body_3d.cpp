@@ -128,7 +128,7 @@ void PhysicsBody3D::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject3Ds.");
 	PhysicsServer3D::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -136,7 +136,7 @@ void PhysicsBody3D::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject3D *collision_object = Object::cast_to<CollisionObject3D>(p_node);
-	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject3Ds.");
 	PhysicsServer3D::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -406,7 +406,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 
 		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(state->get_contact_count() * sizeof(_RigidBodyInOut));
 		int toadd_count = 0; //state->get_contact_count();
-		RigidBody_RemoveAction *toremove = (RigidBody_RemoveAction *)alloca(rc * sizeof(RigidBody_RemoveAction));
+		RigidBody3D_RemoveAction *toremove = (RigidBody3D_RemoveAction *)alloca(rc * sizeof(RigidBody3D_RemoveAction));
 		int toremove_count = 0;
 
 		//put the ones to add
@@ -474,7 +474,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 		contact_monitor->locked = false;
 	}
 
-	state = NULL;
+	state = nullptr;
 }
 
 void RigidBody3D::_notification(int p_what) {
@@ -744,7 +744,7 @@ void RigidBody3D::set_contact_monitor(bool p_enabled) {
 		}
 
 		memdelete(contact_monitor);
-		contact_monitor = NULL;
+		contact_monitor = nullptr;
 	} else {
 
 		contact_monitor = memnew(ContactMonitor);
@@ -754,7 +754,7 @@ void RigidBody3D::set_contact_monitor(bool p_enabled) {
 
 bool RigidBody3D::is_contact_monitor_enabled() const {
 
-	return contact_monitor != NULL;
+	return contact_monitor != nullptr;
 }
 
 void RigidBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_lock) {
@@ -794,7 +794,7 @@ String RigidBody3D::get_configuration_warning() const {
 		if (warning != String()) {
 			warning += "\n\n";
 		}
-		warning += TTR("Size changes to RigidBody (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
+		warning += TTR("Size changes to RigidBody3D (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
 
 	return warning;
@@ -864,7 +864,7 @@ void RigidBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &RigidBody3D::get_colliding_bodies);
 
-	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState")));
+	BIND_VMETHOD(MethodInfo("_integrate_forces", PropertyInfo(Variant::OBJECT, "state", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsDirectBodyState3D")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Rigid,Static,Character,Kinematic"), "set_mode", "get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mass", PROPERTY_HINT_EXP_RANGE, "0.01,65535,0.01"), "set_mass", "get_mass");
@@ -910,7 +910,7 @@ RigidBody3D::RigidBody3D() :
 
 	mass = 1;
 	max_contacts_reported = 0;
-	state = NULL;
+	state = nullptr;
 
 	gravity_scale = 1;
 	linear_damp = -1;
@@ -921,7 +921,7 @@ RigidBody3D::RigidBody3D() :
 	ccd = false;
 
 	custom_integrator = false;
-	contact_monitor = NULL;
+	contact_monitor = nullptr;
 	can_sleep = true;
 
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
@@ -1321,12 +1321,12 @@ KinematicBody3D::KinematicBody3D() :
 KinematicBody3D::~KinematicBody3D() {
 
 	if (motion_cache.is_valid()) {
-		motion_cache->owner = NULL;
+		motion_cache->owner = nullptr;
 	}
 
 	for (int i = 0; i < slide_colliders.size(); i++) {
 		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = NULL;
+			slide_colliders.write[i]->owner = nullptr;
 		}
 	}
 }
@@ -1346,7 +1346,7 @@ Vector3 KinematicCollision3D::get_remainder() const {
 	return collision.remainder;
 }
 Object *KinematicCollision3D::get_local_shape() const {
-	if (!owner) return NULL;
+	if (!owner) return nullptr;
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }
@@ -1357,7 +1357,7 @@ Object *KinematicCollision3D::get_collider() const {
 		return ObjectDB::get_instance(collision.collider);
 	}
 
-	return NULL;
+	return nullptr;
 }
 ObjectID KinematicCollision3D::get_collider_id() const {
 
@@ -1374,7 +1374,7 @@ Object *KinematicCollision3D::get_collider_shape() const {
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 int KinematicCollision3D::get_collider_shape_index() const {
 
@@ -1420,7 +1420,7 @@ KinematicCollision3D::KinematicCollision3D() {
 
 	collision.collider_shape = 0;
 	collision.local_shape = 0;
-	owner = NULL;
+	owner = nullptr;
 }
 
 ///////////////////////////////////////
@@ -2078,7 +2078,7 @@ void PhysicalBone3D::_notification(int p_what) {
 					parent_skeleton->unbind_physical_bone_from_bone(bone_id);
 				}
 			}
-			parent_skeleton = NULL;
+			parent_skeleton = nullptr;
 			if (joint.is_valid()) {
 				PhysicsServer3D::get_singleton()->free(joint);
 				joint = RID();
@@ -2181,7 +2181,7 @@ void PhysicalBone3D::_bind_methods() {
 
 Skeleton3D *PhysicalBone3D::find_skeleton_parent(Node *p_parent) {
 	if (!p_parent) {
-		return NULL;
+		return nullptr;
 	}
 	Skeleton3D *s = Object::cast_to<Skeleton3D>(p_parent);
 	return s ? s : find_skeleton_parent(p_parent->get_parent());
@@ -2333,7 +2333,7 @@ void PhysicalBone3D::set_joint_type(JointType p_joint_type) {
 
 	if (joint_data)
 		memdelete(joint_data);
-	joint_data = NULL;
+	joint_data = nullptr;
 	switch (p_joint_type) {
 		case JOINT_TYPE_PIN:
 			joint_data = memnew(PinJointData);
@@ -2501,8 +2501,8 @@ PhysicalBone3D::PhysicalBone3D() :
 #ifdef TOOLS_ENABLED
 		gizmo_move_joint(false),
 #endif
-		joint_data(NULL),
-		parent_skeleton(NULL),
+		joint_data(nullptr),
+		parent_skeleton(nullptr),
 		simulate_physics(false),
 		_internal_simulate_physics(false),
 		bone_id(-1),
@@ -2588,7 +2588,7 @@ void PhysicalBone3D::_stop_physics_simulation() {
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	}
 	if (_internal_simulate_physics) {
-		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
+		PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
 		parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 		set_as_toplevel(false);
 		_internal_simulate_physics = false;

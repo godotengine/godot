@@ -107,7 +107,7 @@ DynamicFontData::DynamicFontData() {
 	antialiased = true;
 	force_autohinter = false;
 	hinting = DynamicFontData::HINTING_NORMAL;
-	font_mem = NULL;
+	font_mem = nullptr;
 	font_mem_size = 0;
 }
 
@@ -124,7 +124,7 @@ Error DynamicFontAtSize::_load() {
 	ERR_FAIL_COND_V_MSG(error != 0, ERR_CANT_CREATE, "Error initializing FreeType.");
 
 	// FT_OPEN_STREAM is extremely slow only on Android.
-	if (OS::get_singleton()->get_name() == "Android" && font->font_mem == NULL && font->font_path != String()) {
+	if (OS::get_singleton()->get_name() == "Android" && font->font_mem == nullptr && font->font_path != String()) {
 		// cache font only once for each font->font_path
 		if (_fontdata.has(font->font_path)) {
 
@@ -148,7 +148,7 @@ Error DynamicFontAtSize::_load() {
 		}
 	}
 
-	if (font->font_mem == NULL && font->font_path != String()) {
+	if (font->font_mem == nullptr && font->font_path != String()) {
 
 		FileAccess *f = FileAccess::open(font->font_path, FileAccess::READ);
 		if (!f) {
@@ -157,7 +157,7 @@ Error DynamicFontAtSize::_load() {
 		}
 
 		memset(&stream, 0, sizeof(FT_StreamRec));
-		stream.base = NULL;
+		stream.base = nullptr;
 		stream.size = f->get_len();
 		stream.pos = 0;
 		stream.descriptor.pointer = f;
@@ -245,7 +245,7 @@ float DynamicFontAtSize::get_descent() const {
 
 const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFontAtSize::_find_char_with_font(CharType p_char, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const {
 	const Character *chr = char_map.getptr(p_char);
-	ERR_FAIL_COND_V(!chr, (Pair<const Character *, DynamicFontAtSize *>(NULL, NULL)));
+	ERR_FAIL_COND_V(!chr, (Pair<const Character *, DynamicFontAtSize *>(nullptr, nullptr)));
 
 	if (!chr->found) {
 
@@ -269,7 +269,7 @@ const Pair<const DynamicFontAtSize::Character *, DynamicFontAtSize *> DynamicFon
 		//not found, try 0xFFFD to display 'not found'.
 		const_cast<DynamicFontAtSize *>(this)->_update_char(0xFFFD);
 		chr = char_map.getptr(0xFFFD);
-		ERR_FAIL_COND_V(!chr, (Pair<const Character *, DynamicFontAtSize *>(NULL, NULL)));
+		ERR_FAIL_COND_V(!chr, (Pair<const Character *, DynamicFontAtSize *>(nullptr, nullptr)));
 	}
 
 	return Pair<const Character *, DynamicFontAtSize *>(chr, const_cast<DynamicFontAtSize *>(this));
@@ -565,7 +565,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_make_outline_char(CharType p_ch
 		goto cleanup_stroker;
 	if (FT_Glyph_Stroke(&glyph, stroker, 1) != 0)
 		goto cleanup_glyph;
-	if (FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, 0, 1) != 0)
+	if (FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, nullptr, 1) != 0)
 		goto cleanup_glyph;
 
 	glyph_bitmap = (FT_BitmapGlyph)glyph;
@@ -992,11 +992,12 @@ void DynamicFont::_bind_methods() {
 
 Mutex DynamicFont::dynamic_font_mutex;
 
-SelfList<DynamicFont>::List *DynamicFont::dynamic_fonts = NULL;
+SelfList<DynamicFont>::List *DynamicFont::dynamic_fonts = nullptr;
 
 DynamicFont::DynamicFont() :
 		font_list(this) {
 
+	valid = false;
 	cache_id.size = 16;
 	outline_cache_id.size = 16;
 	spacing_top = 0;
@@ -1020,7 +1021,7 @@ void DynamicFont::initialize_dynamic_fonts() {
 
 void DynamicFont::finish_dynamic_fonts() {
 	memdelete(dynamic_fonts);
-	dynamic_fonts = NULL;
+	dynamic_fonts = nullptr;
 }
 
 void DynamicFont::update_oversampling() {

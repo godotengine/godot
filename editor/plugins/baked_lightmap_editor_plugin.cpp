@@ -81,25 +81,25 @@ void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-EditorProgress *BakedLightmapEditorPlugin::tmp_progress = NULL;
+EditorProgress *BakedLightmapEditorPlugin::tmp_progress = nullptr;
 
 void BakedLightmapEditorPlugin::bake_func_begin(int p_steps) {
 
-	ERR_FAIL_COND(tmp_progress != NULL);
+	ERR_FAIL_COND(tmp_progress != nullptr);
 
 	tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), p_steps, true));
 }
 
 bool BakedLightmapEditorPlugin::bake_func_step(int p_step, const String &p_description) {
 
-	ERR_FAIL_COND_V(tmp_progress == NULL, false);
+	ERR_FAIL_COND_V(tmp_progress == nullptr, false);
 	return tmp_progress->step(p_description, p_step, false);
 }
 
 void BakedLightmapEditorPlugin::bake_func_end() {
-	ERR_FAIL_COND(tmp_progress == NULL);
+	ERR_FAIL_COND(tmp_progress == nullptr);
 	memdelete(tmp_progress);
-	tmp_progress = NULL;
+	tmp_progress = nullptr;
 }
 
 void BakedLightmapEditorPlugin::_bind_methods() {
@@ -116,7 +116,7 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 	bake->hide();
 	bake->connect("pressed", this, "_bake");
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake);
-	lightmap = NULL;
+	lightmap = nullptr;
 
 	BakedLightmap::bake_begin_function = bake_func_begin;
 	BakedLightmap::bake_step_function = bake_func_step;

@@ -96,17 +96,17 @@ private:
 
 VideoStreamPlaybackWebm::VideoStreamPlaybackWebm() :
 		audio_track(0),
-		webm(NULL),
-		video(NULL),
-		audio(NULL),
-		video_frames(NULL),
-		audio_frame(NULL),
+		webm(nullptr),
+		video(nullptr),
+		audio(nullptr),
+		video_frames(nullptr),
+		audio_frame(nullptr),
 		video_frames_pos(0),
 		video_frames_capacity(0),
 		num_decoded_samples(0),
 		samples_offset(-1),
-		mix_callback(NULL),
-		mix_udata(NULL),
+		mix_callback(nullptr),
+		mix_udata(nullptr),
 		playing(false),
 		paused(false),
 		delay_compensation(0.0),
@@ -114,7 +114,7 @@ VideoStreamPlaybackWebm::VideoStreamPlaybackWebm() :
 		video_frame_delay(0.0),
 		video_pos(0.0),
 		texture(memnew(ImageTexture)),
-		pcm(NULL) {}
+		pcm(nullptr) {}
 VideoStreamPlaybackWebm::~VideoStreamPlaybackWebm() {
 
 	delete_pointers();
@@ -137,7 +137,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			} else {
 
 				memdelete(audio);
-				audio = NULL;
+				audio = nullptr;
 			}
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
@@ -149,10 +149,10 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			return true;
 		}
 		memdelete(video);
-		video = NULL;
+		video = nullptr;
 	}
 	memdelete(webm);
-	webm = NULL;
+	webm = nullptr;
 	return false;
 }
 
@@ -162,13 +162,13 @@ void VideoStreamPlaybackWebm::stop() {
 
 		delete_pointers();
 
-		pcm = NULL;
+		pcm = nullptr;
 
-		audio_frame = NULL;
-		video_frames = NULL;
+		audio_frame = nullptr;
+		video_frames = nullptr;
 
-		video = NULL;
-		audio = NULL;
+		video = nullptr;
+		audio = nullptr;
 
 		open_file(file_name); //Should not fail here...
 
@@ -447,7 +447,7 @@ Ref<VideoStreamPlayback> VideoStreamWebm::instance_playback() {
 	pb->set_audio_track(audio_track);
 	if (pb->open_file(file))
 		return pb;
-	return NULL;
+	return nullptr;
 }
 
 void VideoStreamWebm::set_file(const String &p_file) {

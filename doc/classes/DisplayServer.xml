@@ -1,0 +1,1049 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DisplayServer" inherits="Object" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="alert">
+			<return type="void">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<argument index="1" name="title" type="String" default="&quot;Alert!&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clipboard_get" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clipboard_set">
+			<return type="void">
+			</return>
+			<argument index="0" name="clipboard" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="console_set_visible">
+			<return type="void">
+			</return>
+			<argument index="0" name="console_visible" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="create_sub_window">
+			<return type="int">
+			</return>
+			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode">
+			</argument>
+			<argument index="1" name="rect" type="int">
+			</argument>
+			<argument index="2" name="arg2" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cursor_get_shape" qualifiers="const">
+			<return type="int" enum="DisplayServer.CursorShape">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="cursor_set_custom_image">
+			<return type="void">
+			</return>
+			<argument index="0" name="cursor" type="Resource">
+			</argument>
+			<argument index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="0">
+			</argument>
+			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="cursor_set_shape">
+			<return type="void">
+			</return>
+			<argument index="0" name="shape" type="int" enum="DisplayServer.CursorShape">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="delete_sub_window">
+			<return type="void">
+			</return>
+			<argument index="0" name="window_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="dialog_input_text">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="title" type="String">
+			</argument>
+			<argument index="1" name="description" type="String">
+			</argument>
+			<argument index="2" name="existing_text" type="String">
+			</argument>
+			<argument index="3" name="callback" type="Callable">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="dialog_show">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="title" type="String">
+			</argument>
+			<argument index="1" name="description" type="String">
+			</argument>
+			<argument index="2" name="buttons" type="PackedStringArray">
+			</argument>
+			<argument index="3" name="callback" type="Callable">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="enable_for_stealing_focus">
+			<return type="void">
+			</return>
+			<argument index="0" name="process_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="force_process_and_drop_events">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_latin_keyboard_variant" qualifiers="const">
+			<return type="int" enum="DisplayServer.LatinKeyboardVariant">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_screen_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_swap_ok_cancel">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_window_at_screen_position" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="position" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_window_list" qualifiers="const">
+			<return type="PackedInt32Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_add_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="callback" type="Callable">
+			</argument>
+			<argument index="3" name="tag" type="Variant" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_add_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="callback" type="Callable">
+			</argument>
+			<argument index="3" name="tag" type="Variant" default="null">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_add_separator">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_add_submenu_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="submenu" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_clear">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_get_item_callback">
+			<return type="Callable">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_get_item_submenu">
+			<return type="String">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_get_item_tag">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_get_item_text">
+			<return type="String">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_is_item_checkable" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_is_item_checked" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_remove_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_set_item_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="callback" type="Callable">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_set_item_checkable">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="checkable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_set_item_checked">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="checked" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_set_item_submenu">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="submenu" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_set_item_tag">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="tag" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_menu_set_item_text">
+			<return type="void">
+			</return>
+			<argument index="0" name="menu_root" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
+			</argument>
+			<argument index="2" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_feature" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="feature" type="int" enum="DisplayServer.Feature">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="ime_get_selection" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="ime_get_text" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_console_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="mouse_get_absolute_position" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="mouse_get_button_state" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="mouse_get_mode" qualifiers="const">
+			<return type="int" enum="DisplayServer.MouseMode">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="mouse_get_position" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="mouse_set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mouse_mode" type="int" enum="DisplayServer.MouseMode">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="mouse_warp_to_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_is_playing" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_pause">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_play">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="volume" type="float">
+			</argument>
+			<argument index="2" name="audio_track" type="String">
+			</argument>
+			<argument index="3" name="subtitle_track" type="String">
+			</argument>
+			<argument index="4" name="arg4" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_stop">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_unpause">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="process_events">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_dpi" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_orientation" qualifiers="const">
+			<return type="int" enum="DisplayServer.ScreenOrientation">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_position" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_size" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_get_usable_rect" qualifiers="const">
+			<return type="Rect2i">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_is_kept_on" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="screen_is_touchscreen" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_set_keep_on">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="screen_set_orientation">
+			<return type="void">
+			</return>
+			<argument index="0" name="orientation" type="int" enum="DisplayServer.ScreenOrientation">
+			</argument>
+			<argument index="1" name="screen" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_native_icon">
+			<return type="void">
+			</return>
+			<argument index="0" name="filename" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="virtual_keyboard_get_height" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="virtual_keyboard_hide">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="virtual_keyboard_show">
+			<return type="void">
+			</return>
+			<argument index="0" name="existing_text" type="String">
+			</argument>
+			<argument index="1" name="position" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			</argument>
+			<argument index="2" name="max_length" type="int" default="-1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="vsync_is_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="vsync_is_using_via_compositor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="vsync_set_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="vsync_set_use_via_compositor">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_attach_instance_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="instance_id" type="int">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_can_draw" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_attached_instance_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_current_screen" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_max_size" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_min_size" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_mode" qualifiers="const">
+			<return type="int" enum="DisplayServer.WindowMode">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_position" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_real_size" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_get_size" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_move_to_foreground">
+			<return type="void">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_request_attention">
+			<return type="void">
+			</return>
+			<argument index="0" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_current_screen">
+			<return type="void">
+			</return>
+			<argument index="0" name="screen" type="int">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_drop_files_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="callback" type="Callable">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="DisplayServer.WindowFlags">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<argument index="2" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_ime_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="active" type="bool">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_ime_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2i">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_input_event_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="callback" type="Callable">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_input_text_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="callback" type="Callable">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_max_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="max_size" type="Vector2i">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_min_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="min_size" type="Vector2i">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_mode">
+			<return type="void">
+			</return>
+			<argument index="0" name="mode" type="int" enum="DisplayServer.WindowMode">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector2i">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_rect_changed_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="callback" type="Callable">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2i">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_title">
+			<return type="void">
+			</return>
+			<argument index="0" name="title" type="String">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_transient">
+			<return type="void">
+			</return>
+			<argument index="0" name="window_id" type="int">
+			</argument>
+			<argument index="1" name="parent_window_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="window_set_window_event_callback">
+			<return type="void">
+			</return>
+			<argument index="0" name="callback" type="Callable">
+			</argument>
+			<argument index="1" name="window_id" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature">
+		</constant>
+		<constant name="FEATURE_SUBWINDOWS" value="1" enum="Feature">
+		</constant>
+		<constant name="FEATURE_TOUCHSCREEN" value="2" enum="Feature">
+		</constant>
+		<constant name="FEATURE_MOUSE" value="3" enum="Feature">
+		</constant>
+		<constant name="FEATURE_MOUSE_WARP" value="4" enum="Feature">
+		</constant>
+		<constant name="FEATURE_CLIPBOARD" value="5" enum="Feature">
+		</constant>
+		<constant name="FEATURE_VIRTUAL_KEYBOARD" value="6" enum="Feature">
+		</constant>
+		<constant name="FEATURE_CURSOR_SHAPE" value="7" enum="Feature">
+		</constant>
+		<constant name="FEATURE_CUSTOM_CURSOR_SHAPE" value="8" enum="Feature">
+		</constant>
+		<constant name="FEATURE_NATIVE_VIDEO" value="9" enum="Feature">
+		</constant>
+		<constant name="FEATURE_NATIVE_DIALOG" value="10" enum="Feature">
+		</constant>
+		<constant name="FEATURE_CONSOLE_WINDOW" value="11" enum="Feature">
+		</constant>
+		<constant name="FEATURE_IME" value="12" enum="Feature">
+		</constant>
+		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="13" enum="Feature">
+		</constant>
+		<constant name="FEATURE_HIDPI" value="14" enum="Feature">
+		</constant>
+		<constant name="FEATURE_ICON" value="15" enum="Feature">
+		</constant>
+		<constant name="FEATURE_NATIVE_ICON" value="16" enum="Feature">
+		</constant>
+		<constant name="FEATURE_ORIENTATION" value="17" enum="Feature">
+		</constant>
+		<constant name="FEATURE_SWAP_BUFFERS" value="18" enum="Feature">
+		</constant>
+		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
+		</constant>
+		<constant name="MOUSE_MODE_HIDDEN" value="1" enum="MouseMode">
+		</constant>
+		<constant name="MOUSE_MODE_CAPTURED" value="2" enum="MouseMode">
+		</constant>
+		<constant name="MOUSE_MODE_CONFINED" value="3" enum="MouseMode">
+		</constant>
+		<constant name="SCREEN_OF_MAIN_WINDOW" value="-1">
+		</constant>
+		<constant name="MAIN_WINDOW_ID" value="0">
+		</constant>
+		<constant name="INVALID_WINDOW_ID" value="-1">
+		</constant>
+		<constant name="SCREEN_LANDSCAPE" value="0" enum="ScreenOrientation">
+		</constant>
+		<constant name="SCREEN_PORTRAIT" value="1" enum="ScreenOrientation">
+		</constant>
+		<constant name="SCREEN_REVERSE_LANDSCAPE" value="2" enum="ScreenOrientation">
+		</constant>
+		<constant name="SCREEN_REVERSE_PORTRAIT" value="3" enum="ScreenOrientation">
+		</constant>
+		<constant name="SCREEN_SENSOR_LANDSCAPE" value="4" enum="ScreenOrientation">
+		</constant>
+		<constant name="SCREEN_SENSOR_PORTRAIT" value="5" enum="ScreenOrientation">
+		</constant>
+		<constant name="SCREEN_SENSOR" value="6" enum="ScreenOrientation">
+		</constant>
+		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_IBEAM" value="1" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_POINTING_HAND" value="2" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_CROSS" value="3" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_WAIT" value="4" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_BUSY" value="5" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_DRAG" value="6" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_CAN_DROP" value="7" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_FORBIDDEN" value="8" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_VSIZE" value="9" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_HSIZE" value="10" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_BDIAGSIZE" value="11" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_FDIAGSIZE" value="12" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_MOVE" value="13" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_VSPLIT" value="14" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_HSPLIT" value="15" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_HELP" value="16" enum="CursorShape">
+		</constant>
+		<constant name="CURSOR_MAX" value="17" enum="CursorShape">
+		</constant>
+		<constant name="WINDOW_MODE_WINDOWED" value="0" enum="WindowMode">
+		</constant>
+		<constant name="WINDOW_MODE_MINIMIZED" value="1" enum="WindowMode">
+		</constant>
+		<constant name="WINDOW_MODE_MAXIMIZED" value="2" enum="WindowMode">
+		</constant>
+		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
+		</constant>
+		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
+		</constant>
+		<constant name="WINDOW_FLAG_BORDERLESS" value="1" enum="WindowFlags">
+		</constant>
+		<constant name="WINDOW_FLAG_ALWAYS_ON_TOP" value="2" enum="WindowFlags">
+		</constant>
+		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
+		</constant>
+		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
+		</constant>
+		<constant name="WINDOW_FLAG_MAX" value="5" enum="WindowFlags">
+		</constant>
+		<constant name="LATIN_KEYBOARD_QWERTY" value="0" enum="LatinKeyboardVariant">
+		</constant>
+		<constant name="LATIN_KEYBOARD_QWERTZ" value="1" enum="LatinKeyboardVariant">
+		</constant>
+		<constant name="LATIN_KEYBOARD_AZERTY" value="2" enum="LatinKeyboardVariant">
+		</constant>
+		<constant name="LATIN_KEYBOARD_QZERTY" value="3" enum="LatinKeyboardVariant">
+		</constant>
+		<constant name="LATIN_KEYBOARD_DVORAK" value="4" enum="LatinKeyboardVariant">
+		</constant>
+		<constant name="LATIN_KEYBOARD_NEO" value="5" enum="LatinKeyboardVariant">
+		</constant>
+		<constant name="LATIN_KEYBOARD_COLEMAK" value="6" enum="LatinKeyboardVariant">
+		</constant>
+		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
+		</constant>
+		<constant name="WINDOW_EVENT_MOUSE_EXIT" value="1" enum="WindowEvent">
+		</constant>
+		<constant name="WINDOW_EVENT_FOCUS_IN" value="2" enum="WindowEvent">
+		</constant>
+		<constant name="WINDOW_EVENT_FOCUS_OUT" value="3" enum="WindowEvent">
+		</constant>
+		<constant name="WINDOW_EVENT_CLOSE_REQUEST" value="4" enum="WindowEvent">
+		</constant>
+		<constant name="WINDOW_EVENT_GO_BACK_REQUEST" value="5" enum="WindowEvent">
+		</constant>
+		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
+		</constant>
+	</constants>
+</class>

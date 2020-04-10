@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OmniLight3D" inherits="Light3D" version="4.0">
+	<brief_description>
+		Omnidirectional light, such as a light bulb or a candle.
+	</brief_description>
+	<description>
+		An Omnidirectional light is a type of [Light3D] that emits light in all directions. The light is attenuated by distance and this attenuation can be configured by changing its energy, radius, and attenuation parameters.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/lights_and_shadows.html</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="omni_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
+			The light's attenuation (drop-off) curve. A number of presets are available in the [b]Inspector[/b] by right-clicking the curve.
+		</member>
+		<member name="omni_range" type="float" setter="set_param" getter="get_param" default="5.0">
+			The light's radius.
+		</member>
+		<member name="omni_shadow_mode" type="int" setter="set_shadow_mode" getter="get_shadow_mode" enum="OmniLight3D.ShadowMode" default="1">
+			See [enum ShadowMode].
+		</member>
+	</members>
+	<constants>
+		<constant name="SHADOW_DUAL_PARABOLOID" value="0" enum="ShadowMode">
+			Shadows are rendered to a dual-paraboloid texture. Faster than [constant SHADOW_CUBE], but lower-quality.
+		</constant>
+		<constant name="SHADOW_CUBE" value="1" enum="ShadowMode">
+			Shadows are rendered to a cubemap. Slower than [constant SHADOW_DUAL_PARABOLOID], but higher-quality.
+		</constant>
+	</constants>
+</class>

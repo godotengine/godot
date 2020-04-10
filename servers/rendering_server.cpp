@@ -33,8 +33,8 @@
 #include "core/method_bind_ext.gen.inc"
 #include "core/project_settings.h"
 
-RenderingServer *RenderingServer::singleton = NULL;
-RenderingServer *(*RenderingServer::create_func)() = NULL;
+RenderingServer *RenderingServer::singleton = nullptr;
+RenderingServer *(*RenderingServer::create_func)() = nullptr;
 
 RenderingServer *RenderingServer::get_singleton() {
 
@@ -43,12 +43,12 @@ RenderingServer *RenderingServer::get_singleton() {
 
 RenderingServer *RenderingServer::create() {
 
-	ERR_FAIL_COND_V(singleton, NULL);
+	ERR_FAIL_COND_V(singleton, nullptr);
 
 	if (create_func)
 		return create_func();
 
-	return NULL;
+	return nullptr;
 }
 
 Array RenderingServer::_texture_debug_usage_bind() {
@@ -333,7 +333,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 	uint8_t *vw = r_vertex_array.ptrw();
 
-	uint8_t *iw = NULL;
+	uint8_t *iw = nullptr;
 	if (r_index_array.size()) {
 		iw = r_index_array.ptrw();
 	}
@@ -1766,7 +1766,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_set_use_vertical_aspect", "camera", "enable"), &RenderingServer::camera_set_use_vertical_aspect);
 
 	ClassDB::bind_method(D_METHOD("viewport_create"), &RenderingServer::viewport_create);
-	ClassDB::bind_method(D_METHOD("viewport_set_use_arvr", "viewport", "use_arvr"), &RenderingServer::viewport_set_use_arvr);
+	ClassDB::bind_method(D_METHOD("viewport_set_use_xr", "viewport", "use_xr"), &RenderingServer::viewport_set_use_xr);
 	ClassDB::bind_method(D_METHOD("viewport_set_size", "viewport", "width", "height"), &RenderingServer::viewport_set_size);
 	ClassDB::bind_method(D_METHOD("viewport_set_active", "viewport", "active"), &RenderingServer::viewport_set_active);
 	ClassDB::bind_method(D_METHOD("viewport_set_parent_viewport", "viewport", "parent_viewport"), &RenderingServer::viewport_set_parent_viewport);
@@ -1802,10 +1802,10 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &RenderingServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &RenderingServer::environment_set_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contibution", "reflection_source", "ao_color"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG), DEFVAL(Color()));
-	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap", "bicubic_upscale"), &RenderingServer::environment_set_glow);
+	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap"), &RenderingServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &RenderingServer::environment_set_adjustment);
-	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance", "roughness"), &RenderingServer::environment_set_ssr);
+	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance"), &RenderingServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "bias", "light_affect", "ao_channel_affect", "blur", "bilateral_sharpness"), &RenderingServer::environment_set_ssao);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "color", "sun_color", "sun_amount"), &RenderingServer::environment_set_fog);
 
@@ -2030,7 +2030,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_ATTENUATION);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SPOT_ANGLE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SPOT_ATTENUATION);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_CONTACT_SHADOW_SIZE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET);
@@ -2038,7 +2037,6 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_FADE_START);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BIAS);
-	BIND_ENUM_CONSTANT(LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE);
 	BIND_ENUM_CONSTANT(LIGHT_PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(LIGHT_OMNI_SHADOW_DUAL_PARABOLOID);
@@ -2098,6 +2096,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_SSAO);
 	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER);
+	BIND_ENUM_CONSTANT(VIEWPORT_DEBUG_DRAW_PSSM_SPLITS);
 
 	BIND_ENUM_CONSTANT(SKY_MODE_QUALITY);
 	BIND_ENUM_CONSTANT(SKY_MODE_REALTIME);
@@ -2312,7 +2311,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode", 1);
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode.mobile", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled (Fastest),PCF5,PCF13 (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled (Fast),PCF5 (Average),PCF13 (Slow)"));
 
 	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 8);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
@@ -2326,7 +2325,7 @@ RenderingServer::RenderingServer() {
 
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
 	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Ultra-Low (1 cone - fastest),Medium (4 cones), High (6 cones - slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Lowest (1 Cone - Fast),Medium (4 Cones - Average),High (6 Cones - Slow)"));
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
@@ -2342,22 +2341,36 @@ RenderingServer::RenderingServer() {
 	GLOBAL_DEF("rendering/quality/filters/max_anisotropy", 4);
 
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_bokeh_shape", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fastest),Hexagon,Circle (Slowest)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_shape", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slow)"));
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_bokeh_quality", 2);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fast),Low,Medium,High (Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/depth_of_field_bokeh_quality", PropertyInfo(Variant::INT, "rendering/quality/filters/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"));
 	GLOBAL_DEF("rendering/quality/filters/depth_of_field_use_jitter", false);
 
 	GLOBAL_DEF("rendering/quality/ssao/quality", 1);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium,High (Slow),Ultra (Very Slow)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/ssao/quality", PropertyInfo(Variant::INT, "rendering/quality/ssao/quality", PROPERTY_HINT_ENUM, "Low (Fast),Medium (Average),High (Slow),Ultra (Slower)"));
 	GLOBAL_DEF("rendering/quality/ssao/half_size", false);
 
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled,Enabled (Small Cost)"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_roughness_limiter", PROPERTY_HINT_ENUM, "Disabled (Fast),Enabled (Average)"));
 	GLOBAL_DEF("rendering/quality/filters/screen_space_roughness_limiter_curve", 1.0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_roughness_limiter_curve", PropertyInfo(Variant::FLOAT, "rendering/quality/filters/screen_space_roughness_limiter_curve", PROPERTY_HINT_EXP_EASING, "0.01,8,0.01"));
+
+	GLOBAL_DEF("rendering/quality/glow/upscale_mode", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/glow/upscale_mode", PropertyInfo(Variant::INT, "rendering/quality/glow/upscale_mode", PROPERTY_HINT_ENUM, "Linear (Fast),Bicubic (Slow)"));
+	GLOBAL_DEF("rendering/quality/glow/upscale_mode.mobile", 0);
+
+	GLOBAL_DEF("rendering/quality/screen_space_reflection/roughness_quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_space_reflection/roughness_quality", PropertyInfo(Variant::INT, "rendering/quality/screen_space_reflection/roughness_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
+
+	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_quality", PropertyInfo(Variant::INT, "rendering/quality/subsurface_scattering/subsurface_scattering_quality", PROPERTY_HINT_ENUM, "Disabled (Fastest),Low (Fast),Medium (Average),High (Slow)"));
+	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_scale", 0.05);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_scale", PropertyInfo(Variant::FLOAT, "rendering/quality/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
+	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", PropertyInfo(Variant::FLOAT, "rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
 }
 
 RenderingServer::~RenderingServer() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }

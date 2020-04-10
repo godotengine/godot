@@ -77,7 +77,7 @@ public:
 	void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {}
 #endif
 
-	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {}
+	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {}
 
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
@@ -719,7 +719,7 @@ public:
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
 	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
 		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, NULL);
+		ERR_FAIL_COND_V(!capture, nullptr);
 		return &capture->octree;
 	}
 

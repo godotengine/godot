@@ -41,7 +41,7 @@
 #include "scene/gui/margin_container.h"
 #include "scene/gui/tab_container.h"
 
-ProjectSettingsEditor *ProjectSettingsEditor::singleton = NULL;
+ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
 static const char *_button_names[JOY_BUTTON_MAX] = {
 	"DualShock Cross, Xbox A, Nintendo B",
@@ -750,7 +750,7 @@ void ProjectSettingsEditor::_update_actions() {
 		item->set_range(1, action["deadzone"]);
 		item->set_custom_bg_color(1, input_editor->get_theme_color("prop_subsection", "Editor"));
 
-		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(pi.name) != NULL;
+		const bool is_builtin_input = ProjectSettings::get_singleton()->get_input_presets().find(pi.name) != nullptr;
 		const String tooltip = is_builtin_input ? TTR("Built-in actions can't be removed as they're used for UI navigation.") : TTR("Remove");
 		item->add_button(2, input_editor->get_theme_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		item->add_button(2, input_editor->get_theme_icon("Remove", "EditorIcons"), 2, false, tooltip);
@@ -883,7 +883,7 @@ void ProjectSettingsEditor::_item_add() {
 	// Initialize the property with the default value for the given type.
 	// The type list starts at 1 (as we exclude Nil), so add 1 to the selected value.
 	Callable::CallError ce;
-	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), NULL, 0, ce);
+	const Variant value = Variant::construct(Variant::Type(type->get_selected() + 1), nullptr, 0, ce);
 
 	String catname = category->get_text().strip_edges();
 	String propname = property->get_text().strip_edges();
@@ -1537,7 +1537,7 @@ void ProjectSettingsEditor::_update_translations() {
 	updating_translations = true;
 
 	translation_list->clear();
-	TreeItem *root = translation_list->create_item(NULL);
+	TreeItem *root = translation_list->create_item(nullptr);
 	translation_list->set_hide_root(true);
 	if (ProjectSettings::get_singleton()->has_setting("locale/translations")) {
 
@@ -1589,7 +1589,7 @@ void ProjectSettingsEditor::_update_translations() {
 
 		translation_locales_list_created = true;
 		translation_filter->clear();
-		root = translation_filter->create_item(NULL);
+		root = translation_filter->create_item(nullptr);
 		translation_filter->set_hide_root(true);
 		translation_filter_treeitems.clear();
 		for (int i = 0; i < s; i++) {
@@ -1622,8 +1622,8 @@ void ProjectSettingsEditor::_update_translations() {
 
 	translation_remap->clear();
 	translation_remap_options->clear();
-	root = translation_remap->create_item(NULL);
-	TreeItem *root2 = translation_remap_options->create_item(NULL);
+	root = translation_remap->create_item(nullptr);
+	TreeItem *root2 = translation_remap_options->create_item(nullptr);
 	translation_remap->set_hide_root(true);
 	translation_remap_options->set_hide_root(true);
 	translation_res_option_add_button->set_disabled(true);

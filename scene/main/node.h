@@ -180,7 +180,7 @@ private:
 
 	void _duplicate_signals(const Node *p_original, Node *p_copy) const;
 	void _duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p_reown_map) const;
-	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = NULL) const;
+	Node *_duplicate(int p_flags, Map<const Node *, Node *> *r_duplimap = nullptr) const;
 
 	Array _get_children() const;
 	Array _get_groups() const;
@@ -286,7 +286,7 @@ public:
 	Node *find_parent(const String &p_mask) const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
-		ERR_FAIL_COND_V(!data.tree, NULL);
+		ERR_FAIL_COND_V(!data.tree, nullptr);
 		return data.tree;
 	}
 
@@ -368,8 +368,6 @@ public:
 
 	void set_process_unhandled_key_input(bool p_enable);
 	bool is_processing_unhandled_key_input() const;
-
-	int get_position_in_parent() const;
 
 	Node *duplicate(int p_flags = DUPLICATE_GROUPS | DUPLICATE_SIGNALS | DUPLICATE_SCRIPTS) const;
 	Node *duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const;

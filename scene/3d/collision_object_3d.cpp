@@ -245,7 +245,7 @@ Transform CollisionObject3D::shape_owner_get_transform(uint32_t p_owner) const {
 
 Object *CollisionObject3D::shape_owner_get_owner(uint32_t p_owner) const {
 
-	ERR_FAIL_COND_V(!shapes.has(p_owner), NULL);
+	ERR_FAIL_COND_V(!shapes.has(p_owner), nullptr);
 
 	return shapes[p_owner].owner;
 }
@@ -374,7 +374,7 @@ String CollisionObject3D::get_configuration_warning() const {
 		if (!warning.empty()) {
 			warning += "\n\n";
 		}
-		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape or CollisionPolygon as a child to define its shape.");
+		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape3D or CollisionPolygon3D as a child to define its shape.");
 	}
 
 	return warning;

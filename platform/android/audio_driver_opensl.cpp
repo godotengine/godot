@@ -83,7 +83,7 @@ void AudioDriverOpenSL::_buffer_callbacks(
 	ad->_buffer_callback(queueItf);
 }
 
-AudioDriverOpenSL *AudioDriverOpenSL::s_ad = NULL;
+AudioDriverOpenSL *AudioDriverOpenSL::s_ad = nullptr;
 
 const char *AudioDriverOpenSL::get_name() const {
 
@@ -96,7 +96,7 @@ Error AudioDriverOpenSL::init() {
 	SLEngineOption EngineOption[] = {
 		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
 	};
-	res = slCreateEngine(&sl, 1, EngineOption, 0, NULL, NULL);
+	res = slCreateEngine(&sl, 1, EngineOption, 0, nullptr, nullptr);
 	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not initialize OpenSL.");
 
 	res = (*sl)->Realize(sl, SL_BOOLEAN_FALSE);
@@ -161,7 +161,7 @@ void AudioDriverOpenSL::start() {
 	locator_outputmix.locatorType = SL_DATALOCATOR_OUTPUTMIX;
 	locator_outputmix.outputMix = OutputMix;
 	audioSink.pLocator = (void *)&locator_outputmix;
-	audioSink.pFormat = NULL;
+	audioSink.pFormat = nullptr;
 	/* Initialize the context for Buffer queue callbacks */
 	//cntxt.pDataBase = (void*)&pcmData;
 	//cntxt.pData = cntxt.pDataBase;
@@ -228,9 +228,9 @@ Error AudioDriverOpenSL::capture_init_device() {
 		SL_DATALOCATOR_IODEVICE,
 		SL_IODEVICE_AUDIOINPUT,
 		SL_DEFAULTDEVICEID_AUDIOINPUT,
-		NULL
+		nullptr
 	};
-	SLDataSource recSource = { &loc_dev, NULL };
+	SLDataSource recSource = { &loc_dev, nullptr };
 
 	SLDataLocator_AndroidSimpleBufferQueue loc_bq = {
 		SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE,

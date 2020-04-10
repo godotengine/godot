@@ -49,7 +49,7 @@ public:
 
 			p_elem->_root = this;
 			p_elem->_next = _first;
-			p_elem->_prev = NULL;
+			p_elem->_prev = nullptr;
 
 			if (_first) {
 				_first->_prev = p_elem;
@@ -66,7 +66,7 @@ public:
 			ERR_FAIL_COND(p_elem->_root);
 
 			p_elem->_root = this;
-			p_elem->_next = NULL;
+			p_elem->_next = nullptr;
 			p_elem->_prev = _last;
 
 			if (_last) {
@@ -98,18 +98,18 @@ public:
 				_last = p_elem->_prev;
 			}
 
-			p_elem->_next = NULL;
-			p_elem->_prev = NULL;
-			p_elem->_root = NULL;
+			p_elem->_next = nullptr;
+			p_elem->_prev = nullptr;
+			p_elem->_root = nullptr;
 		}
 
 		_FORCE_INLINE_ SelfList<T> *first() { return _first; }
 		_FORCE_INLINE_ const SelfList<T> *first() const { return _first; }
 		_FORCE_INLINE_ List() {
-			_first = NULL;
-			_last = NULL;
+			_first = nullptr;
+			_last = nullptr;
 		}
-		_FORCE_INLINE_ ~List() { ERR_FAIL_COND(_first != NULL); }
+		_FORCE_INLINE_ ~List() { ERR_FAIL_COND(_first != nullptr); }
 	};
 
 private:
@@ -129,9 +129,9 @@ public:
 	_FORCE_INLINE_ SelfList(T *p_self) {
 
 		_self = p_self;
-		_next = NULL;
-		_prev = NULL;
-		_root = NULL;
+		_next = nullptr;
+		_prev = nullptr;
+		_root = nullptr;
 	}
 
 	_FORCE_INLINE_ ~SelfList() {

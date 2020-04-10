@@ -72,7 +72,7 @@ Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, 
 		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
 	}
 
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V(nullptr);
 }
 
 Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
@@ -81,7 +81,7 @@ Ref<Animation> EditorSceneImporter::import_animation(const String &p_path, uint3
 		return get_script_instance()->call("_import_animation", p_path, p_flags);
 	}
 
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V(nullptr);
 }
 
 //for documenters, these functions are useful when an importer calls an external conversion helper (like, fbx2gltf),
@@ -311,7 +311,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 	if (!isroot && _teststr(name, "noimp")) {
 
 		memdelete(p_node);
-		return NULL;
+		return nullptr;
 	}
 
 	if (Object::cast_to<MeshInstance3D>(p_node)) {
@@ -400,7 +400,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 					fixed_name = _fixstr(name, "convcolonly");
 				}
 
-				ERR_FAIL_COND_V(fixed_name == String(), NULL);
+				ERR_FAIL_COND_V(fixed_name == String(), nullptr);
 
 				if (shapes.size()) {
 
@@ -432,7 +432,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			Object::cast_to<Node3D>(sb)->set_transform(Object::cast_to<Node3D>(p_node)->get_transform());
 			p_node->replace_by(sb);
 			memdelete(p_node);
-			p_node = NULL;
+			p_node = nullptr;
 			CollisionShape3D *colshape = memnew(CollisionShape3D);
 			if (empty_draw_type == "CUBE") {
 				BoxShape3D *boxShape = memnew(BoxShape3D);
@@ -448,7 +448,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			} else if (empty_draw_type == "IMAGE") {
 				WorldMarginShape3D *world_margin_shape = memnew(WorldMarginShape3D);
 				colshape->set_shape(world_margin_shape);
-				colshape->set_name("WorldMarginShape");
+				colshape->set_name("WorldMarginShape3D");
 			} else {
 				SphereShape3D *sphereShape = memnew(SphereShape3D);
 				sphereShape->set_radius(1);
@@ -558,7 +558,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_node);
 
 		Ref<ArrayMesh> mesh = mi->get_mesh();
-		ERR_FAIL_COND_V(mesh.is_null(), NULL);
+		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
 		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
 
 		nmi->set_name(_fixstr(name, "navmesh"));
@@ -1229,7 +1229,7 @@ Node *ResourceImporterScene::import_scene_from_other_importer(EditorSceneImporte
 			break;
 	}
 
-	ERR_FAIL_COND_V(!importer.is_valid(), NULL);
+	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	List<String> missing;
 	Error err;
@@ -1261,7 +1261,7 @@ Ref<Animation> ResourceImporterScene::import_animation_from_other_importer(Edito
 			break;
 	}
 
-	ERR_FAIL_COND_V(!importer.is_valid(), NULL);
+	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	return importer->import_animation(p_path, p_flags, p_bake_fps);
 }
@@ -1327,7 +1327,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	String root_type = p_options["nodes/root_type"];
 	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
 
-	Ref<Script> root_script = NULL;
+	Ref<Script> root_script = nullptr;
 	if (ScriptServer::is_global_class(root_type)) {
 		root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
 		root_type = ScriptServer::get_global_class_base(root_type);
@@ -1533,7 +1533,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	return OK;
 }
 
-ResourceImporterScene *ResourceImporterScene::singleton = NULL;
+ResourceImporterScene *ResourceImporterScene::singleton = nullptr;
 
 ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
@@ -1550,10 +1550,10 @@ Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_fla
 
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
-	ERR_FAIL_COND_V_MSG(!ps.is_valid(), NULL, "Cannot load scene as text resource from path '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(!ps.is_valid(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");
 
 	Node *scene = ps->instance();
-	ERR_FAIL_COND_V(!scene, NULL);
+	ERR_FAIL_COND_V(!scene, nullptr);
 
 	return scene;
 }

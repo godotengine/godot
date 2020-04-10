@@ -51,7 +51,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Build\MsBuildFinder.cs" />
+    <Compile Include="Export\AotBuilder.cs" />
     <Compile Include="Export\ExportPlugin.cs" />
+    <Compile Include="Export\XcodeHelper.cs" />
     <Compile Include="ExternalEditorId.cs" />
     <Compile Include="Ides\GodotIdeManager.cs" />
     <Compile Include="Ides\GodotIdeServer.cs" />

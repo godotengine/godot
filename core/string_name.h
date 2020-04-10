@@ -61,8 +61,8 @@ class StringName {
 		_Data *prev;
 		_Data *next;
 		_Data() {
-			cname = NULL;
-			next = prev = NULL;
+			cname = nullptr;
+			next = prev = nullptr;
 			idx = 0;
 			hash = 0;
 		}

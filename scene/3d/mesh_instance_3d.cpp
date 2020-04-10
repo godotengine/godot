@@ -217,11 +217,11 @@ Vector<Face3> MeshInstance3D::get_faces(uint32_t p_usage_flags) const {
 Node *MeshInstance3D::create_trimesh_collision_node() {
 
 	if (mesh.is_null())
-		return NULL;
+		return nullptr;
 
 	Ref<Shape3D> shape = mesh->create_trimesh_shape();
 	if (shape.is_null())
-		return NULL;
+		return nullptr;
 
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -247,11 +247,11 @@ void MeshInstance3D::create_trimesh_collision() {
 Node *MeshInstance3D::create_convex_collision_node() {
 
 	if (mesh.is_null())
-		return NULL;
+		return nullptr;
 
 	Ref<Shape3D> shape = mesh->create_convex_shape();
 	if (shape.is_null())
-		return NULL;
+		return nullptr;
 
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -303,6 +303,23 @@ Ref<Material> MeshInstance3D::get_surface_material(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, materials.size(), Ref<Material>());
 
 	return materials[p_surface];
+}
+
+Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
+
+	if (get_material_override() != Ref<Material>()) {
+		return get_material_override();
+	} else if (p_surface < materials.size()) {
+		return materials[p_surface];
+	} else {
+		Ref<Mesh> mesh = get_mesh();
+
+		if (mesh.is_null() || p_surface >= mesh->get_surface_count()) {
+			return Ref<Material>();
+		}
+
+		return mesh->surface_get_material(p_surface);
+	}
 }
 
 void MeshInstance3D::_mesh_changed() {
@@ -397,6 +414,7 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surface_material_count"), &MeshInstance3D::get_surface_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance3D::set_surface_material);
 	ClassDB::bind_method(D_METHOD("get_surface_material", "surface"), &MeshInstance3D::get_surface_material);
+	ClassDB::bind_method(D_METHOD("get_active_material", "surface"), &MeshInstance3D::get_active_material);
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance3D::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);

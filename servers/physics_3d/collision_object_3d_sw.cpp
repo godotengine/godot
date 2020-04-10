@@ -231,7 +231,7 @@ CollisionObject3DSW::CollisionObject3DSW(Type p_type) :
 
 	_static = true;
 	type = p_type;
-	space = NULL;
+	space = nullptr;
 
 	collision_layer = 1;
 	collision_mask = 1;

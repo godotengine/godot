@@ -169,7 +169,7 @@ void AnimationTreeEditor::_notification(int p_what) {
 void AnimationTreeEditor::_bind_methods() {
 }
 
-AnimationTreeEditor *AnimationTreeEditor::singleton = NULL;
+AnimationTreeEditor *AnimationTreeEditor::singleton = nullptr;
 
 void AnimationTreeEditor::add_plugin(AnimationTreeNodeEditorPlugin *p_editor) {
 	ERR_FAIL_COND(p_editor->get_parent());

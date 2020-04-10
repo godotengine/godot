@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisibilityNotifier3D" inherits="Node3D" version="4.0">
+	<brief_description>
+		Detects when the node is visible on screen.
+	</brief_description>
+	<description>
+		The VisibilityNotifier3D detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a [Camera3D]'s view.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_on_screen" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				If [code]true[/code], the bounding box is on the screen.
+				[b]Note:[/b] It takes one frame for the node's visibility to be assessed once added to the scene tree, so this method will return [code]false[/code] right after it is instantiated, even if it will be on screen in the draw pass.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb" default="AABB( -1, -1, -1, 2, 2, 2 )">
+			The VisibilityNotifier3D's bounding box.
+		</member>
+	</members>
+	<signals>
+		<signal name="camera_entered">
+			<argument index="0" name="camera" type="Camera3D">
+			</argument>
+			<description>
+				Emitted when the VisibilityNotifier3D enters a [Camera3D]'s view.
+			</description>
+		</signal>
+		<signal name="camera_exited">
+			<argument index="0" name="camera" type="Camera3D">
+			</argument>
+			<description>
+				Emitted when the VisibilityNotifier3D exits a [Camera3D]'s view.
+			</description>
+		</signal>
+		<signal name="screen_entered">
+			<description>
+				Emitted when the VisibilityNotifier3D enters the screen.
+			</description>
+		</signal>
+		<signal name="screen_exited">
+			<description>
+				Emitted when the VisibilityNotifier3D exits the screen.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

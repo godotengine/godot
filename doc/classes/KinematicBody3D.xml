@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="KinematicBody3D" inherits="PhysicsBody3D" version="4.0">
+	<brief_description>
+		Kinematic body 3D node.
+	</brief_description>
+	<description>
+		Kinematic bodies are special types of bodies that are meant to be user-controlled. They are not affected by physics at all; to other types of bodies, such as a character or a rigid body, these are the same as a static body. However, they have two main uses:
+		[b]Simulated motion:[/b] When these bodies are moved manually, either from code or from an [AnimationPlayer] (with [member AnimationPlayer.playback_process_mode] set to "physics"), the physics will automatically compute an estimate of their linear and angular velocity. This makes them very useful for moving platforms or other AnimationPlayer-controlled objects (like a door, a bridge that opens, etc).
+		[b]Kinematic characters:[/b] KinematicBody3D also has an API for moving objects (the [method move_and_collide] and [method move_and_slide] methods) while performing collision tests. This makes them really useful to implement characters that collide against a world, but that don't require advanced physics.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
+	</tutorials>
+	<methods>
+		<method name="get_axis_lock" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the specified [code]axis[/code] is locked. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
+			</description>
+		</method>
+		<method name="get_floor_normal" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the surface normal of the floor at the last collision point. Only valid after calling [method move_and_slide] or [method move_and_slide_with_snap] and when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="get_floor_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] or [method move_and_slide_with_snap] and when [method is_on_floor] returns [code]true[/code].
+			</description>
+		</method>
+		<method name="get_slide_collision">
+			<return type="KinematicCollision3D">
+			</return>
+			<argument index="0" name="slide_idx" type="int">
+			</argument>
+			<description>
+				Returns a [KinematicCollision3D], which contains information about a collision that occurred during the last [method move_and_slide] call. Since the body can collide several times in a single call to [method move_and_slide], you must specify the index of the collision in the range 0 to ([method get_slide_count] - 1).
+			</description>
+		</method>
+		<method name="get_slide_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
+			</description>
+		</method>
+		<method name="is_on_ceiling" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the body is on the ceiling. Only updates when calling [method move_and_slide].
+			</description>
+		</method>
+		<method name="is_on_floor" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the body is on the floor. Only updates when calling [method move_and_slide].
+			</description>
+		</method>
+		<method name="is_on_wall" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the body is on a wall. Only updates when calling [method move_and_slide].
+			</description>
+		</method>
+		<method name="move_and_collide">
+			<return type="KinematicCollision3D">
+			</return>
+			<argument index="0" name="rel_vec" type="Vector3">
+			</argument>
+			<argument index="1" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<argument index="2" name="exclude_raycast_shapes" type="bool" default="true">
+			</argument>
+			<argument index="3" name="test_only" type="bool" default="false">
+			</argument>
+			<description>
+				Moves the body along the vector [code]rel_vec[/code]. The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision.
+				If [code]test_only[/code] is [code]true[/code], the body does not move but the would-be collision information is given.
+			</description>
+		</method>
+		<method name="move_and_slide">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector3">
+			</argument>
+			<argument index="1" name="up_direction" type="Vector3" default="Vector3( 0, 0, 0 )">
+			</argument>
+			<argument index="2" name="stop_on_slope" type="bool" default="false">
+			</argument>
+			<argument index="3" name="max_slides" type="int" default="4">
+			</argument>
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
+			</argument>
+			<argument index="5" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<description>
+				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody3D] or [RigidBody3D], it will also be affected by the motion of the other body. You can use this to make moving or rotating platforms, or to make nodes push other nodes.
+				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
+				[code]linear_velocity[/code] is the velocity vector (typically meters per second). Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity. 
+				[code]up_direction[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector3(0, 0, 0)[/code], everything is considered a wall.
+				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes if you include gravity in [code]linear_velocity[/code].
+				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
+				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
+				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody3D] nodes, but it won't also detect any collisions with them. If [code]false[/code], it will interact with [RigidBody3D] nodes like with [StaticBody3D].
+				Returns the [code]linear_velocity[/code] vector, rotated and/or scaled if a slide collision occurred. To get detailed information about collisions that occurred, use [method get_slide_collision].
+			</description>
+		</method>
+		<method name="move_and_slide_with_snap">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="linear_velocity" type="Vector3">
+			</argument>
+			<argument index="1" name="snap" type="Vector3">
+			</argument>
+			<argument index="2" name="up_direction" type="Vector3" default="Vector3( 0, 0, 0 )">
+			</argument>
+			<argument index="3" name="stop_on_slope" type="bool" default="false">
+			</argument>
+			<argument index="4" name="max_slides" type="int" default="4">
+			</argument>
+			<argument index="5" name="floor_max_angle" type="float" default="0.785398">
+			</argument>
+			<argument index="6" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<description>
+				Moves the body while keeping it attached to slopes. Similar to [method move_and_slide].
+				As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code](0, 0, 0)[/code] or by using [method move_and_slide] instead.
+			</description>
+		</method>
+		<method name="set_axis_lock">
+			<return type="void">
+			</return>
+			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
+			</argument>
+			<argument index="1" name="lock" type="bool">
+			</argument>
+			<description>
+				Locks or unlocks the specified [code]axis[/code] depending on the value of [code]lock[/code]. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
+			</description>
+		</method>
+		<method name="test_move">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="Transform">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector3">
+			</argument>
+			<argument index="2" name="infinite_inertia" type="bool" default="true">
+			</argument>
+			<description>
+				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
+			If the body is at least this close to another body, this body will consider them to be colliding.
+		</member>
+		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's X axis movement.
+		</member>
+		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's Y axis movement.
+		</member>
+		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+			Lock the body's Z axis movement.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

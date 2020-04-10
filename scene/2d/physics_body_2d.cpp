@@ -157,7 +157,7 @@ void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody type.");
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody2D type.");
 	PhysicsServer2D::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
@@ -165,7 +165,7 @@ void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody type.");
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody2D type.");
 	PhysicsServer2D::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
 }
 
@@ -362,7 +362,7 @@ struct _RigidBody2DInOut {
 
 bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
 
-	PhysicsServer2D::MotionResult *r = NULL;
+	PhysicsServer2D::MotionResult *r = nullptr;
 	if (p_result.is_valid())
 		r = p_result->get_result_ptr();
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), get_global_transform(), p_motion, p_infinite_inertia, p_margin, r);
@@ -474,7 +474,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		contact_monitor->locked = false;
 	}
 
-	state = NULL;
+	state = nullptr;
 }
 
 void RigidBody2D::set_mode(Mode p_mode) {
@@ -780,7 +780,7 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 		}
 
 		memdelete(contact_monitor);
-		contact_monitor = NULL;
+		contact_monitor = nullptr;
 	} else {
 
 		contact_monitor = memnew(ContactMonitor);
@@ -790,7 +790,7 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 
 bool RigidBody2D::is_contact_monitor_enabled() const {
 
-	return contact_monitor != NULL;
+	return contact_monitor != nullptr;
 }
 
 void RigidBody2D::_notification(int p_what) {
@@ -950,14 +950,14 @@ RigidBody2D::RigidBody2D() :
 	angular_damp = -1;
 
 	max_contacts_reported = 0;
-	state = NULL;
+	state = nullptr;
 
 	angular_velocity = 0;
 	sleeping = false;
 	ccd_mode = CCD_MODE_DISABLED;
 
 	custom_integrator = false;
-	contact_monitor = NULL;
+	contact_monitor = nullptr;
 	can_sleep = true;
 
 	PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
@@ -1281,7 +1281,7 @@ void KinematicBody2D::set_sync_to_physics(bool p_enable) {
 		set_only_update_transform_changes(true);
 		set_notify_local_transform(true);
 	} else {
-		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
+		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), nullptr, "");
 		set_only_update_transform_changes(false);
 		set_notify_local_transform(false);
 	}
@@ -1368,12 +1368,12 @@ KinematicBody2D::KinematicBody2D() :
 }
 KinematicBody2D::~KinematicBody2D() {
 	if (motion_cache.is_valid()) {
-		motion_cache->owner = NULL;
+		motion_cache->owner = nullptr;
 	}
 
 	for (int i = 0; i < slide_colliders.size(); i++) {
 		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = NULL;
+			slide_colliders.write[i]->owner = nullptr;
 		}
 	}
 }
@@ -1394,7 +1394,7 @@ Vector2 KinematicCollision2D::get_remainder() const {
 	return collision.remainder;
 }
 Object *KinematicCollision2D::get_local_shape() const {
-	if (!owner) return NULL;
+	if (!owner) return nullptr;
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }
@@ -1405,7 +1405,7 @@ Object *KinematicCollision2D::get_collider() const {
 		return ObjectDB::get_instance(collision.collider);
 	}
 
-	return NULL;
+	return nullptr;
 }
 ObjectID KinematicCollision2D::get_collider_id() const {
 
@@ -1422,7 +1422,7 @@ Object *KinematicCollision2D::get_collider_shape() const {
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 int KinematicCollision2D::get_collider_shape_index() const {
 
@@ -1468,5 +1468,5 @@ KinematicCollision2D::KinematicCollision2D() {
 
 	collision.collider_shape = 0;
 	collision.local_shape = 0;
-	owner = NULL;
+	owner = nullptr;
 }

@@ -303,7 +303,7 @@ void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const S
 
 		_dump_function_deps(p_node, E->get(), p_func_code, r_to_add, added);
 
-		SL::FunctionNode *fnode = NULL;
+		SL::FunctionNode *fnode = nullptr;
 
 		for (int i = 0; i < p_node->functions.size(); i++) {
 			if (p_node->functions[i].name == E->get()) {
@@ -572,7 +572,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				function = fnode;
 				current_func_name = fnode->name;
 				function_code[fnode->name] = _dump_node_code(fnode->body, p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
-				function = NULL;
+				function = nullptr;
 			}
 
 			//place functions in actual code
@@ -605,7 +605,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.fragment_global, added_fragment);
 					r_gen_code.light = function_code[light_name];
 				}
-				function = NULL;
+				function = nullptr;
 			}
 
 			//code+=dump_node_code(pnode->body,p_level);
@@ -798,12 +798,12 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			else
 				code = _mkid(anode->name);
 
-			if (anode->call_expression != NULL) {
+			if (anode->call_expression != nullptr) {
 				code += ".";
 				code += _dump_node_code(anode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 			}
 
-			if (anode->index_expression != NULL) {
+			if (anode->index_expression != nullptr) {
 				code += "[";
 				code += _dump_node_code(anode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
@@ -1025,7 +1025,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		case SL::Node::TYPE_MEMBER: {
 			SL::MemberNode *mnode = (SL::MemberNode *)p_node;
 			code = _dump_node_code(mnode->owner, p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + "." + mnode->name;
-			if (mnode->index_expression != NULL) {
+			if (mnode->index_expression != nullptr) {
 				code += "[";
 				code += _dump_node_code(mnode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
@@ -1048,7 +1048,7 @@ Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, Ide
 			print_line(itos(i + 1) + " " + shader[i]);
 		}
 
-		_err_print_error(NULL, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), ERR_HANDLER_SHADER);
+		_err_print_error(nullptr, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), ERR_HANDLER_SHADER);
 		return err;
 	}
 
@@ -1066,7 +1066,7 @@ Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, Ide
 	used_flag_pointers.clear();
 
 	shader = parser.get_shader();
-	function = NULL;
+	function = nullptr;
 	_dump_node_code(shader, 1, r_gen_code, *p_actions, actions, false);
 
 	return OK;

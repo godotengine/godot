@@ -96,7 +96,7 @@ void PropertySelector::_update_search() {
 		} else if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, NULL, 0, ce);
+			v = Variant::construct(type, nullptr, 0, ce);
 
 			v.get_property_list(&props);
 		} else {
@@ -116,7 +116,7 @@ void PropertySelector::_update_search() {
 			}
 		}
 
-		TreeItem *category = NULL;
+		TreeItem *category = nullptr;
 
 		bool found = false;
 
@@ -152,7 +152,7 @@ void PropertySelector::_update_search() {
 
 		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 			if (E->get().usage == PROPERTY_USAGE_CATEGORY) {
-				if (category && category->get_children() == NULL) {
+				if (category && category->get_children() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
@@ -191,7 +191,7 @@ void PropertySelector::_update_search() {
 			item->set_selectable(0, true);
 		}
 
-		if (category && category->get_children() == NULL) {
+		if (category && category->get_children() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	} else {
@@ -201,7 +201,7 @@ void PropertySelector::_update_search() {
 		if (type != Variant::NIL) {
 			Variant v;
 			Callable::CallError ce;
-			v = Variant::construct(type, NULL, 0, ce);
+			v = Variant::construct(type, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
 
@@ -220,14 +220,14 @@ void PropertySelector::_update_search() {
 			}
 		}
 
-		TreeItem *category = NULL;
+		TreeItem *category = nullptr;
 
 		bool found = false;
 		bool script_methods = false;
 
 		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
 			if (E->get().name.begins_with("*")) {
-				if (category && category->get_children() == NULL) {
+				if (category && category->get_children() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
@@ -310,12 +310,12 @@ void PropertySelector::_update_search() {
 			}
 		}
 
-		if (category && category->get_children() == NULL) {
+		if (category && category->get_children() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(root->get_children() == nullptr);
 }
 
 void PropertySelector::_confirmed() {
@@ -410,7 +410,7 @@ void PropertySelector::select_method_from_base_type(const String &p_base, const 
 	type = Variant::NIL;
 	script = ObjectID();
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = p_virtuals_only;
 
 	popup_centered_ratio(0.6);
@@ -427,7 +427,7 @@ void PropertySelector::select_method_from_script(const Ref<Script> &p_script, co
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -443,7 +443,7 @@ void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const
 	type = p_type;
 	script = ObjectID();
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -464,7 +464,7 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 			script = scr->get_instance_id();
 	}
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -480,7 +480,7 @@ void PropertySelector::select_property_from_base_type(const String &p_base, cons
 	type = Variant::NIL;
 	script = ObjectID();
 	properties = true;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -498,7 +498,7 @@ void PropertySelector::select_property_from_script(const Ref<Script> &p_script, 
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	properties = true;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -515,7 +515,7 @@ void PropertySelector::select_property_from_basic_type(Variant::Type p_type, con
 	type = p_type;
 	script = ObjectID();
 	properties = true;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);

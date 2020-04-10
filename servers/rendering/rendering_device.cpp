@@ -30,14 +30,14 @@
 
 #include "rendering_device.h"
 
-RenderingDevice *RenderingDevice::singleton = NULL;
+RenderingDevice *RenderingDevice::singleton = nullptr;
 
 RenderingDevice *RenderingDevice::get_singleton() {
 	return singleton;
 }
 
-RenderingDevice::ShaderCompileFunction RenderingDevice::compile_function = NULL;
-RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = NULL;
+RenderingDevice::ShaderCompileFunction RenderingDevice::compile_function = nullptr;
+RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = nullptr;
 
 void RenderingDevice::shader_set_compile_function(ShaderCompileFunction p_function) {
 	compile_function = p_function;

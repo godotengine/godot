@@ -285,6 +285,13 @@ void main() {
 	frag_color = color;
 #endif
 
+#ifdef MODE_LINEARIZE_DEPTH_COPY
+	float depth = texture(source_color, uv_interp, 0.0).r;
+	depth = depth * 2.0 - 1.0;
+	depth = 2.0 * blur.camera_z_near * blur.camera_z_far / (blur.camera_z_far + blur.camera_z_near - depth * (blur.camera_z_far - blur.camera_z_near));
+	frag_color = vec4(depth / blur.camera_z_far);
+#endif
+
 #ifdef MODE_SSAO_MERGE
 	vec4 color = texture(source_color, uv_interp, 0.0);
 	float ssao = texture(source_ssao, uv_interp, 0.0).r;

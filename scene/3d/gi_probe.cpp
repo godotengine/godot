@@ -293,6 +293,7 @@ GIProbeData::GIProbeData() {
 	propagation = 0.7;
 	anisotropy_strength = 0.5;
 	interior = false;
+	use_two_bounces = false;
 
 	probe = RS::get_singleton()->gi_probe_create();
 }
@@ -402,9 +403,9 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 }
 
-GIProbe::BakeBeginFunc GIProbe::bake_begin_function = NULL;
-GIProbe::BakeStepFunc GIProbe::bake_step_function = NULL;
-GIProbe::BakeEndFunc GIProbe::bake_end_function = NULL;
+GIProbe::BakeBeginFunc GIProbe::bake_begin_function = nullptr;
+GIProbe::BakeStepFunc GIProbe::bake_step_function = nullptr;
+GIProbe::BakeEndFunc GIProbe::bake_end_function = nullptr;
 
 Vector3i GIProbe::get_estimated_cell_size() const {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
@@ -511,7 +512,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 void GIProbe::_debug_bake() {
 
-	bake(NULL, true);
+	bake(nullptr, true);
 }
 
 AABB GIProbe::get_aabb() const {

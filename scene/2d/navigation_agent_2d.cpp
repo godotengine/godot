@@ -98,12 +98,12 @@ void NavigationAgent2D::_notification(int p_what) {
 
 			// Search the navigation node and set it
 			{
-				Navigation2D *nav = NULL;
+				Navigation2D *nav = nullptr;
 				Node *p = get_parent();
-				while (p != NULL) {
+				while (p != nullptr) {
 					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != NULL)
-						p = NULL;
+					if (nav != nullptr)
+						p = nullptr;
 					else
 						p = p->get_parent();
 				}
@@ -114,8 +114,8 @@ void NavigationAgent2D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			agent_parent = NULL;
-			set_navigation(NULL);
+			agent_parent = nullptr;
+			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -134,8 +134,8 @@ void NavigationAgent2D::_notification(int p_what) {
 }
 
 NavigationAgent2D::NavigationAgent2D() :
-		agent_parent(NULL),
-		navigation(NULL),
+		agent_parent(nullptr),
+		navigation(nullptr),
 		agent(RID()),
 		target_desired_distance(1.0),
 		path_max_distance(3.0),
@@ -160,12 +160,12 @@ void NavigationAgent2D::set_navigation(Navigation2D *p_nav) {
 		return; // Pointless
 
 	navigation = p_nav;
-	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == NULL ? RID() : navigation->get_rid());
+	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
 }
 
 void NavigationAgent2D::set_navigation_node(Node *p_nav) {
 	Navigation2D *nav = Object::cast_to<Navigation2D>(p_nav);
-	ERR_FAIL_COND(nav == NULL);
+	ERR_FAIL_COND(nav == nullptr);
 	set_navigation(nav);
 }
 
@@ -225,7 +225,7 @@ Vector2 NavigationAgent2D::get_target_location() const {
 Vector2 NavigationAgent2D::get_next_location() {
 	update_navigation();
 	if (navigation_path.size() == 0) {
-		ERR_FAIL_COND_V(agent_parent == NULL, Vector2());
+		ERR_FAIL_COND_V(agent_parent == nullptr, Vector2());
 		return agent_parent->get_global_transform().get_origin();
 	} else {
 		return navigation_path[nav_path_index];
@@ -233,7 +233,7 @@ Vector2 NavigationAgent2D::get_next_location() {
 }
 
 real_t NavigationAgent2D::distance_to_target() const {
-	ERR_FAIL_COND_V(agent_parent == NULL, 0.0);
+	ERR_FAIL_COND_V(agent_parent == nullptr, 0.0);
 	return agent_parent->get_global_transform().get_origin().distance_to(target_location);
 }
 
@@ -288,8 +288,8 @@ String NavigationAgent2D::get_configuration_warning() const {
 
 void NavigationAgent2D::update_navigation() {
 
-	if (agent_parent == NULL) return;
-	if (navigation == NULL) return;
+	if (agent_parent == nullptr) return;
+	if (navigation == nullptr) return;
 	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) return;
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();

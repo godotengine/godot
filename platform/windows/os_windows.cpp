@@ -81,9 +81,9 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
 
-	LPWSTR messageBuffer = NULL;
+	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
+			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
 
 	String msg = "Error " + itos(id) + ": " + String(messageBuffer, size);
 
@@ -129,7 +129,7 @@ void RedirectIOToConsole() {
 
 	*stdout = *fp;
 
-	setvbuf(stdout, NULL, _IONBF, 0);
+	setvbuf(stdout, nullptr, _IONBF, 0);
 
 	// redirect unbuffered STDIN to the console
 
@@ -141,7 +141,7 @@ void RedirectIOToConsole() {
 
 	*stdin = *fp;
 
-	setvbuf(stdin, NULL, _IONBF, 0);
+	setvbuf(stdin, nullptr, _IONBF, 0);
 
 	// redirect unbuffered STDERR to the console
 
@@ -153,7 +153,7 @@ void RedirectIOToConsole() {
 
 	*stderr = *fp;
 
-	setvbuf(stderr, NULL, _IONBF, 0);
+	setvbuf(stderr, nullptr, _IONBF, 0);
 
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
 
@@ -213,14 +213,14 @@ void OS_Windows::initialize() {
 	process_map = memnew((Map<ProcessID, ProcessInfo>));
 
 	IP_Unix::make_default();
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_Windows::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_Windows::set_main_loop(MainLoop *p_main_loop) {
@@ -237,7 +237,7 @@ void OS_Windows::finalize() {
 	if (main_loop)
 		memdelete(main_loop);
 
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_Windows::finalize_core() {
@@ -263,14 +263,14 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	PAddDllDirectory add_dll_directory = (PAddDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
 	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
 
-	bool has_dll_directory_api = ((add_dll_directory != NULL) && (remove_dll_directory != NULL));
-	DLL_DIRECTORY_COOKIE cookie = NULL;
+	bool has_dll_directory_api = ((add_dll_directory != nullptr) && (remove_dll_directory != nullptr));
+	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	if (p_also_set_library_path && has_dll_directory_api) {
 		cookie = add_dll_directory(path.get_base_dir().c_str());
 	}
 
-	p_library_handle = (void *)LoadLibraryExW(path.c_str(), NULL, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW(path.c_str(), nullptr, (p_also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + format_error_message(GetLastError()) + ".");
 
 	if (cookie) {
@@ -490,7 +490,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	modstr.resize(cmdline.size());
 	for (int i = 0; i < cmdline.size(); i++)
 		modstr.write[i] = cmdline[i];
-	int ret = CreateProcessW(NULL, modstr.ptrw(), NULL, NULL, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, NULL, NULL, si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, modstr.ptrw(), nullptr, nullptr, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
@@ -542,7 +542,7 @@ Error OS_Windows::set_cwd(const String &p_cwd) {
 String OS_Windows::get_executable_path() const {
 
 	wchar_t bufname[4096];
-	GetModuleFileNameW(NULL, bufname, 4096);
+	GetModuleFileNameW(nullptr, bufname, 4096);
 	String s = bufname;
 	return s;
 }
@@ -550,12 +550,12 @@ String OS_Windows::get_executable_path() const {
 bool OS_Windows::has_environment(const String &p_var) const {
 
 #ifdef MINGW_ENABLED
-	return _wgetenv(p_var.c_str()) != NULL;
+	return _wgetenv(p_var.c_str()) != nullptr;
 #else
 	wchar_t *env;
 	size_t len;
 	_wdupenv_s(&env, &len, p_var.c_str());
-	const bool has_env = env != NULL;
+	const bool has_env = env != nullptr;
 	free(env);
 	return has_env;
 #endif
@@ -588,7 +588,7 @@ String OS_Windows::get_stdin_string(bool p_block) {
 
 Error OS_Windows::shell_open(String p_uri) {
 
-	ShellExecuteW(NULL, NULL, p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	ShellExecuteW(nullptr, nullptr, p_uri.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 	return OK;
 }
 
@@ -739,7 +739,7 @@ String OS_Windows::get_system_dir(SystemDir p_dir) const {
 	}
 
 	PWSTR szPath;
-	HRESULT res = SHGetKnownFolderPath(id, 0, NULL, &szPath);
+	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
 	String path = String(szPath);
 	CoTaskMemFree(szPath);
@@ -794,11 +794,11 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 	sf.hwnd = main_window;
 	sf.wFunc = FO_DELETE;
 	sf.pFrom = from;
-	sf.pTo = NULL;
+	sf.pTo = nullptr;
 	sf.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
 	sf.fAnyOperationsAborted = FALSE;
-	sf.hNameMappings = NULL;
-	sf.lpszProgressTitle = NULL;
+	sf.hNameMappings = nullptr;
+	sf.lpszProgressTitle = nullptr;
 
 	int ret = SHFileOperationW(&sf);
 	delete[] from;

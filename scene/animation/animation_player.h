@@ -118,9 +118,9 @@ private:
 			Variant capture;
 
 			PropertyAnim() :
-					owner(NULL),
+					owner(nullptr),
 					special(SP_NONE),
-					object(NULL),
+					object(nullptr),
 					accum_pass(0) {}
 		};
 
@@ -135,9 +135,9 @@ private:
 			uint64_t accum_pass;
 
 			BezierAnim() :
-					owner(NULL),
+					owner(nullptr),
 					bezier_accum(0.0),
-					object(NULL),
+					object(nullptr),
 					accum_pass(0) {}
 		};
 
@@ -145,10 +145,10 @@ private:
 
 		TrackNodeCache() :
 				id(0),
-				node(NULL),
-				spatial(NULL),
-				node_2d(NULL),
-				skeleton(NULL),
+				node(nullptr),
+				spatial(nullptr),
+				node_2d(nullptr),
+				skeleton(nullptr),
 				bone_idx(-1),
 				accum_pass(0),
 				audio_playing(false),
@@ -212,7 +212,7 @@ private:
 
 			pos = 0;
 			speed_scale = 1.0;
-			from = NULL;
+			from = nullptr;
 		}
 	};
 

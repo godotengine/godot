@@ -39,7 +39,7 @@
 #include "gd_mono_method.h"
 #include "gd_mono_utils.h"
 
-#if !defined(JAVASCRIPT_ENABLED)
+#if !defined(JAVASCRIPT_ENABLED) && !defined(IPHONE_ENABLED)
 #define HAVE_METHOD_THUNKS
 #endif
 
@@ -60,16 +60,16 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_null() {
-		return mono_method_thunk == NULL;
+		return mono_method_thunk == nullptr;
 	}
 
 	_FORCE_INLINE_ void nullify() {
-		mono_method_thunk = NULL;
+		mono_method_thunk = nullptr;
 	}
 
 	_FORCE_INLINE_ void set_from_method(GDMonoMethod *p_mono_method) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(p_mono_method == NULL);
+		CRASH_COND(p_mono_method == nullptr);
 		CRASH_COND(p_mono_method->get_return_type().type_encoding != MONO_TYPE_VOID);
 
 		if (p_mono_method->is_static()) {
@@ -82,7 +82,7 @@ public:
 	}
 
 	GDMonoMethodThunk() :
-			mono_method_thunk(NULL) {
+			mono_method_thunk(nullptr) {
 	}
 
 	explicit GDMonoMethodThunk(GDMonoMethod *p_mono_method) {
@@ -106,16 +106,16 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_null() {
-		return mono_method_thunk == NULL;
+		return mono_method_thunk == nullptr;
 	}
 
 	_FORCE_INLINE_ void nullify() {
-		mono_method_thunk = NULL;
+		mono_method_thunk = nullptr;
 	}
 
 	_FORCE_INLINE_ void set_from_method(GDMonoMethod *p_mono_method) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(p_mono_method == NULL);
+		CRASH_COND(p_mono_method == nullptr);
 		CRASH_COND(p_mono_method->get_return_type().type_encoding == MONO_TYPE_VOID);
 
 		if (p_mono_method->is_static()) {
@@ -128,12 +128,12 @@ public:
 	}
 
 	GDMonoMethodThunkR() :
-			mono_method_thunk(NULL) {
+			mono_method_thunk(nullptr) {
 	}
 
 	explicit GDMonoMethodThunkR(GDMonoMethod *p_mono_method) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(p_mono_method == NULL);
+		CRASH_COND(p_mono_method == nullptr);
 #endif
 		mono_method_thunk = (M)mono_method_get_unmanaged_thunk(p_mono_method->get_mono_ptr());
 	}
@@ -146,7 +146,7 @@ struct VariadicInvokeMonoMethodImpl {
 	static void invoke(GDMonoMethod *p_mono_method, P1 p_arg1, ParamTypes... p_args, MonoException **r_exc) {
 		if (p_mono_method->is_static()) {
 			void *args[ThunkParamCount] = { p_arg1, p_args... };
-			p_mono_method->invoke_raw(NULL, args, r_exc);
+			p_mono_method->invoke_raw(nullptr, args, r_exc);
 		} else {
 			void *args[ThunkParamCount] = { p_args... };
 			p_mono_method->invoke_raw((MonoObject *)p_arg1, args, r_exc);
@@ -167,7 +167,7 @@ struct VariadicInvokeMonoMethod<0> {
 #ifdef DEBUG_ENABLED
 		CRASH_COND(!p_mono_method->is_static());
 #endif
-		p_mono_method->invoke_raw(NULL, NULL, r_exc);
+		p_mono_method->invoke_raw(nullptr, nullptr, r_exc);
 	}
 };
 
@@ -176,9 +176,9 @@ struct VariadicInvokeMonoMethod<1, P1> {
 	static void invoke(GDMonoMethod *p_mono_method, P1 p_arg1, MonoException **r_exc) {
 		if (p_mono_method->is_static()) {
 			void *args[1] = { p_arg1 };
-			p_mono_method->invoke_raw(NULL, args, r_exc);
+			p_mono_method->invoke_raw(nullptr, args, r_exc);
 		} else {
-			p_mono_method->invoke_raw((MonoObject *)p_arg1, NULL, r_exc);
+			p_mono_method->invoke_raw((MonoObject *)p_arg1, nullptr, r_exc);
 		}
 	}
 };
@@ -203,7 +203,7 @@ struct VariadicInvokeMonoMethodRImpl {
 	static R invoke(GDMonoMethod *p_mono_method, P1 p_arg1, ParamTypes... p_args, MonoException **r_exc) {
 		if (p_mono_method->is_static()) {
 			void *args[ThunkParamCount] = { p_arg1, p_args... };
-			MonoObject *r = p_mono_method->invoke_raw(NULL, args, r_exc);
+			MonoObject *r = p_mono_method->invoke_raw(nullptr, args, r_exc);
 			return unbox_if_needed<R>(r, p_mono_method->get_return_type());
 		} else {
 			void *args[ThunkParamCount] = { p_args... };
@@ -226,7 +226,7 @@ struct VariadicInvokeMonoMethodR<0, R> {
 #ifdef DEBUG_ENABLED
 		CRASH_COND(!p_mono_method->is_static());
 #endif
-		MonoObject *r = p_mono_method->invoke_raw(NULL, NULL, r_exc);
+		MonoObject *r = p_mono_method->invoke_raw(nullptr, nullptr, r_exc);
 		return unbox_if_needed<R>(r, p_mono_method->get_return_type());
 	}
 };
@@ -236,10 +236,10 @@ struct VariadicInvokeMonoMethodR<1, R, P1> {
 	static R invoke(GDMonoMethod *p_mono_method, P1 p_arg1, MonoException **r_exc) {
 		if (p_mono_method->is_static()) {
 			void *args[1] = { p_arg1 };
-			MonoObject *r = p_mono_method->invoke_raw(NULL, args, r_exc);
+			MonoObject *r = p_mono_method->invoke_raw(nullptr, args, r_exc);
 			return unbox_if_needed<R>(r, p_mono_method->get_return_type());
 		} else {
-			MonoObject *r = p_mono_method->invoke_raw((MonoObject *)p_arg1, NULL, r_exc);
+			MonoObject *r = p_mono_method->invoke_raw((MonoObject *)p_arg1, nullptr, r_exc);
 			return unbox_if_needed<R>(r, p_mono_method->get_return_type());
 		}
 	}
@@ -256,16 +256,16 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_null() {
-		return mono_method == NULL;
+		return mono_method == nullptr;
 	}
 
 	_FORCE_INLINE_ void nullify() {
-		mono_method = NULL;
+		mono_method = nullptr;
 	}
 
 	_FORCE_INLINE_ void set_from_method(GDMonoMethod *p_mono_method) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(p_mono_method == NULL);
+		CRASH_COND(p_mono_method == nullptr);
 		CRASH_COND(p_mono_method->get_return_type().type_encoding != MONO_TYPE_VOID);
 
 		if (p_mono_method->is_static()) {
@@ -278,7 +278,7 @@ public:
 	}
 
 	GDMonoMethodThunk() :
-			mono_method(NULL) {
+			mono_method(nullptr) {
 	}
 
 	explicit GDMonoMethodThunk(GDMonoMethod *p_mono_method) {
@@ -297,16 +297,16 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_null() {
-		return mono_method == NULL;
+		return mono_method == nullptr;
 	}
 
 	_FORCE_INLINE_ void nullify() {
-		mono_method = NULL;
+		mono_method = nullptr;
 	}
 
 	_FORCE_INLINE_ void set_from_method(GDMonoMethod *p_mono_method) {
 #ifdef DEBUG_ENABLED
-		CRASH_COND(p_mono_method == NULL);
+		CRASH_COND(p_mono_method == nullptr);
 		CRASH_COND(p_mono_method->get_return_type().type_encoding == MONO_TYPE_VOID);
 
 		if (p_mono_method->is_static()) {
@@ -319,7 +319,7 @@ public:
 	}
 
 	GDMonoMethodThunkR() :
-			mono_method(NULL) {
+			mono_method(nullptr) {
 	}
 
 	explicit GDMonoMethodThunkR(GDMonoMethod *p_mono_method) {

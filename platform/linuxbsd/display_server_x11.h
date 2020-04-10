@@ -193,7 +193,6 @@ class DisplayServerX11 : public DisplayServer {
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, bool p_echo = false);
 
-	bool force_quit;
 	bool minimized;
 	bool window_has_focus;
 	bool do_mouse_warp;

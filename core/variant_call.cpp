@@ -1191,9 +1191,9 @@ struct _VariantCall {
 	}
 };
 
-_VariantCall::TypeFunc *_VariantCall::type_funcs = NULL;
-_VariantCall::ConstructFunc *_VariantCall::construct_funcs = NULL;
-_VariantCall::ConstantData *_VariantCall::constant_data = NULL;
+_VariantCall::TypeFunc *_VariantCall::type_funcs = nullptr;
+_VariantCall::ConstructFunc *_VariantCall::construct_funcs = nullptr;
+_VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
 
 Variant Variant::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
@@ -1310,7 +1310,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case NODE_PATH:
 				return NodePath();
 			case _RID: return RID();
-			case OBJECT: return (Object *)NULL;
+			case OBJECT: return (Object *)nullptr;
 			case CALLABLE: return Callable();
 			case SIGNAL: return Signal();
 			case DICTIONARY: return Dictionary();
@@ -1957,7 +1957,7 @@ void register_variant_methods() {
 	ADDFUNC0NC(DICTIONARY, NIL, Dictionary, clear, varray());
 	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has, NIL, "key", varray());
 	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has_all, ARRAY, "keys", varray());
-	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, erase, NIL, "key", varray());
+	ADDFUNC1RNC(DICTIONARY, BOOL, Dictionary, erase, NIL, "key", varray());
 	ADDFUNC0R(DICTIONARY, INT, Dictionary, hash, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, keys, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, values, varray());

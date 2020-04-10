@@ -50,13 +50,13 @@ bool Shape2D::collide_with_motion(const Transform2D &p_local_xform, const Vector
 
 	ERR_FAIL_COND_V(p_shape.is_null(), false);
 	int r;
-	return PhysicsServer2D::get_singleton()->shape_collide(get_rid(), p_local_xform, p_local_motion, p_shape->get_rid(), p_shape_xform, p_shape_motion, NULL, 0, r);
+	return PhysicsServer2D::get_singleton()->shape_collide(get_rid(), p_local_xform, p_local_motion, p_shape->get_rid(), p_shape_xform, p_shape_motion, nullptr, 0, r);
 }
 
 bool Shape2D::collide(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform) {
 	ERR_FAIL_COND_V(p_shape.is_null(), false);
 	int r;
-	return PhysicsServer2D::get_singleton()->shape_collide(get_rid(), p_local_xform, Vector2(), p_shape->get_rid(), p_shape_xform, Vector2(), NULL, 0, r);
+	return PhysicsServer2D::get_singleton()->shape_collide(get_rid(), p_local_xform, Vector2(), p_shape->get_rid(), p_shape_xform, Vector2(), nullptr, 0, r);
 }
 
 Array Shape2D::collide_with_motion_and_get_contacts(const Transform2D &p_local_xform, const Vector2 &p_local_motion, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_shape_motion) {

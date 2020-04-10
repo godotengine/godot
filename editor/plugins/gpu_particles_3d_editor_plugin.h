@@ -108,7 +108,7 @@ class GPUParticles3DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "Particles"; }
+	virtual String get_name() const { return "GPUParticles3D"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

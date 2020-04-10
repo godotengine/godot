@@ -45,7 +45,7 @@
 #define MARK_EDITED
 #endif
 
-AudioDriver *AudioDriver::singleton = NULL;
+AudioDriver *AudioDriver::singleton = nullptr;
 AudioDriver *AudioDriver::get_singleton() {
 
 	return singleton;
@@ -215,7 +215,7 @@ void AudioDriverManager::initialize(int p_driver) {
 
 AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 
-	ERR_FAIL_INDEX_V(p_driver, driver_count, NULL);
+	ERR_FAIL_INDEX_V(p_driver, driver_count, nullptr);
 	return drivers[p_driver];
 }
 
@@ -322,7 +322,7 @@ void AudioServer::_mix_step() {
 
 					bus->soloed = true;
 				} else {
-					bus = NULL;
+					bus = nullptr;
 				}
 
 			} while (bus);
@@ -388,7 +388,7 @@ void AudioServer::_mix_step() {
 
 		//process send
 
-		Bus *send = NULL;
+		Bus *send = nullptr;
 
 		if (i > 0) {
 			//everything has a send save for master bus
@@ -476,8 +476,8 @@ bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
 
 AudioFrame *AudioServer::thread_get_channel_mix_buffer(int p_bus, int p_buffer) {
 
-	ERR_FAIL_INDEX_V(p_bus, buses.size(), NULL);
-	ERR_FAIL_INDEX_V(p_buffer, buses[p_bus]->channels.size(), NULL);
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_buffer, buses[p_bus]->channels.size(), nullptr);
 
 	AudioFrame *data = buses.write[p_bus]->channels.write[p_buffer].buffer.ptrw();
 
@@ -1129,7 +1129,7 @@ double AudioServer::get_time_since_last_mix() const {
 	return AudioDriver::get_singleton()->get_time_since_last_mix();
 }
 
-AudioServer *AudioServer::singleton = NULL;
+AudioServer *AudioServer::singleton = nullptr;
 
 void AudioServer::add_callback(AudioCallback p_callback, void *p_userdata) {
 	lock();
@@ -1372,7 +1372,7 @@ AudioServer::AudioServer() {
 
 AudioServer::~AudioServer() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 /////////////////////////////////

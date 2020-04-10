@@ -125,7 +125,8 @@ public:
 		TEXTURE_AMBIENT_OCCLUSION,
 		TEXTURE_HEIGHTMAP,
 		TEXTURE_SUBSURFACE_SCATTERING,
-		TEXTURE_TRANSMISSION,
+		TEXTURE_SUBSURFACE_TRANSMITTANCE,
+		TEXTURE_BACKLIGHT,
 		TEXTURE_REFRACTION,
 		TEXTURE_DETAIL_MASK,
 		TEXTURE_DETAIL_ALBEDO,
@@ -173,8 +174,9 @@ public:
 		FEATURE_ANISOTROPY,
 		FEATURE_AMBIENT_OCCLUSION,
 		FEATURE_HEIGHT_MAPPING,
-		FEATURE_SUBSURACE_SCATTERING,
-		FEATURE_TRANSMISSION,
+		FEATURE_SUBSURFACE_SCATTERING,
+		FEATURE_SUBSURFACE_TRANSMITTANCE,
+		FEATURE_BACKLIGHT,
 		FEATURE_REFRACTION,
 		FEATURE_DETAIL,
 		FEATURE_MAX
@@ -218,6 +220,7 @@ public:
 		FLAG_USE_SHADOW_TO_OPACITY,
 		FLAG_USE_TEXTURE_REPEAT,
 		FLAG_INVERT_HEIGHTMAP,
+		FLAG_SUBSURFACE_MODE_SKIN,
 		FLAG_MAX
 	};
 
@@ -290,10 +293,16 @@ private:
 			uint64_t roughness_channel : 3;
 		};
 
-		uint64_t key;
+		struct {
+			uint64_t key0;
+			uint64_t key1;
+		};
 
+		bool operator==(const MaterialKey &p_key) const {
+			return (key0 == p_key.key0) && (key1 == p_key.key1);
+		}
 		bool operator<(const MaterialKey &p_key) const {
-			return key < p_key.key;
+			return (key0 == p_key.key0) ? (key1 < p_key.key1) : (key0 < p_key.key0);
 		}
 	};
 
@@ -309,7 +318,8 @@ private:
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 
 		MaterialKey mk;
-		mk.key = 0;
+		mk.key0 = 0;
+		mk.key1 = 0;
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
 				mk.feature_mask |= ((uint64_t)1 << i);
@@ -356,7 +366,11 @@ private:
 		StringName anisotropy;
 		StringName heightmap_scale;
 		StringName subsurface_scattering_strength;
-		StringName transmission;
+		StringName transmittance_color;
+		StringName transmittance_curve;
+		StringName transmittance_depth;
+		StringName transmittance_boost;
+		StringName backlight;
 		StringName refraction;
 		StringName point_size;
 		StringName uv1_scale;
@@ -414,7 +428,13 @@ private:
 	float anisotropy;
 	float heightmap_scale;
 	float subsurface_scattering_strength;
-	Color transmission;
+	float transmittance_amount;
+	Color transmittance_color;
+	float transmittance_depth;
+	float transmittance_curve;
+	float transmittance_boost;
+
+	Color backlight;
 	float refraction;
 	float point_size;
 	float alpha_scissor_threshold;
@@ -545,8 +565,20 @@ public:
 	void set_subsurface_scattering_strength(float p_subsurface_scattering_strength);
 	float get_subsurface_scattering_strength() const;
 
-	void set_transmission(const Color &p_transmission);
-	Color get_transmission() const;
+	void set_transmittance_color(const Color &p_color);
+	Color get_transmittance_color() const;
+
+	void set_transmittance_depth(float p_depth);
+	float get_transmittance_depth() const;
+
+	void set_transmittance_curve(float p_curve);
+	float get_transmittance_curve() const;
+
+	void set_transmittance_boost(float p_boost);
+	float get_transmittance_boost() const;
+
+	void set_backlight(const Color &p_backlight);
+	Color get_backlight() const;
 
 	void set_refraction(float p_refraction);
 	float get_refraction() const;

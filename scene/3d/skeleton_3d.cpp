@@ -685,19 +685,19 @@ void Skeleton3D::bind_physical_bone_to_bone(int p_bone, PhysicalBone3D *p_physic
 
 void Skeleton3D::unbind_physical_bone_from_bone(int p_bone) {
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	bones.write[p_bone].physical_bone = NULL;
+	bones.write[p_bone].physical_bone = nullptr;
 
 	_rebuild_physical_bones_cache();
 }
 
 PhysicalBone3D *Skeleton3D::get_physical_bone(int p_bone) {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), NULL);
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), nullptr);
 
 	return bones[p_bone].physical_bone;
 }
 
 PhysicalBone3D *Skeleton3D::get_physical_bone_parent(int p_bone) {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), NULL);
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), nullptr);
 
 	if (bones[p_bone].cache_parent_physical_bone) {
 		return bones[p_bone].cache_parent_physical_bone;
@@ -707,11 +707,11 @@ PhysicalBone3D *Skeleton3D::get_physical_bone_parent(int p_bone) {
 }
 
 PhysicalBone3D *Skeleton3D::_get_physical_bone_parent(int p_bone) {
-	ERR_FAIL_INDEX_V(p_bone, bones.size(), NULL);
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), nullptr);
 
 	const int parent_bone = bones[p_bone].parent;
 	if (0 > parent_bone) {
-		return NULL;
+		return nullptr;
 	}
 
 	PhysicalBone3D *pb = bones[parent_bone].physical_bone;

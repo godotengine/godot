@@ -54,7 +54,7 @@ JoypadLinux::Joypad::Joypad() {
 	dpad = 0;
 	devpath = "";
 	for (int i = 0; i < MAX_ABS; i++) {
-		abs_info[i] = NULL;
+		abs_info[i] = nullptr;
 	}
 }
 
@@ -146,9 +146,9 @@ void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 void JoypadLinux::monitor_joypads(udev *p_udev) {
 
-	udev_device *dev = NULL;
+	udev_device *dev = nullptr;
 	udev_monitor *mon = udev_monitor_new_from_netlink(p_udev, "udev");
-	udev_monitor_filter_add_match_subsystem_devtype(mon, "input", NULL);
+	udev_monitor_filter_add_match_subsystem_devtype(mon, "input", nullptr);
 	udev_monitor_enable_receiving(mon);
 	int fd = udev_monitor_get_fd(mon);
 
@@ -163,7 +163,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 		tv.tv_sec = 0;
 		tv.tv_usec = 0;
 
-		ret = select(fd + 1, &fds, NULL, NULL, &tv);
+		ret = select(fd + 1, &fds, nullptr, nullptr, &tv);
 
 		/* Check if our file descriptor has received data. */
 		if (ret > 0 && FD_ISSET(fd, &fds)) {
@@ -299,7 +299,7 @@ void JoypadLinux::setup_joypad_properties(int p_id) {
 			joy->abs_info[i] = memnew(input_absinfo);
 			if (ioctl(joy->fd, EVIOCGABS(i), joy->abs_info[i]) < 0) {
 				memdelete(joy->abs_info[i]);
-				joy->abs_info[i] = NULL;
+				joy->abs_info[i] = nullptr;
 			}
 		}
 	}

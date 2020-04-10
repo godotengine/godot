@@ -88,7 +88,7 @@ void EditorPropertyRootMotion::_node_assign() {
 	for (Set<String>::Element *E = paths.front(); E; E = E->next()) {
 
 		NodePath path = E->get();
-		TreeItem *ti = NULL;
+		TreeItem *ti = nullptr;
 		String accum;
 		for (int i = 0; i < path.get_name_count(); i++) {
 			String name = path.get_name(i);
@@ -117,7 +117,7 @@ void EditorPropertyRootMotion::_node_assign() {
 			}
 		}
 
-		Node *node = NULL;
+		Node *node = nullptr;
 		if (base->has_node(accum)) {
 			node = base->get_node(accum);
 		}
@@ -212,7 +212,7 @@ void EditorPropertyRootMotion::update_property() {
 	}
 	assign->set_flat(true);
 
-	Node *base_node = NULL;
+	Node *base_node = nullptr;
 	if (base_hint != NodePath()) {
 		if (get_tree()->get_root()->has_node(base_hint)) {
 			base_node = get_tree()->get_root()->get_node(base_hint);

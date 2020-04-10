@@ -99,7 +99,7 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
 }
 
-EditorResourcePreview *EditorResourcePreview::singleton = NULL;
+EditorResourcePreview *EditorResourcePreview::singleton = nullptr;
 
 void EditorResourcePreview::_thread_func(void *ud) {
 
@@ -469,12 +469,12 @@ void EditorResourcePreview::stop() {
 		}
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
-		thread = NULL;
+		thread = nullptr;
 	}
 }
 
 EditorResourcePreview::EditorResourcePreview() {
-	thread = NULL;
+	thread = nullptr;
 	singleton = this;
 	order = 0;
 	exit = false;

@@ -69,7 +69,7 @@ void WSLPeer::_wsl_destroy(struct PeerData **p_data) {
 	}
 	wslay_event_context_free(data->ctx);
 	memdelete(data);
-	*p_data = NULL;
+	*p_data = nullptr;
 }
 
 bool WSLPeer::_wsl_poll(struct PeerData *p_data) {
@@ -163,9 +163,9 @@ wslay_event_callbacks wsl_callbacks = {
 	wsl_recv_callback,
 	wsl_send_callback,
 	wsl_genmask_callback,
-	NULL, /* on_frame_recv_start_callback */
-	NULL, /* on_frame_recv_callback */
-	NULL, /* on_frame_recv_end_callback */
+	nullptr, /* on_frame_recv_start_callback */
+	nullptr, /* on_frame_recv_callback */
+	nullptr, /* on_frame_recv_end_callback */
 	wsl_msg_recv_callback
 };
 
@@ -199,8 +199,8 @@ Error WSLPeer::parse_message(const wslay_event_on_msg_recv_arg *arg) {
 }
 
 void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigned int p_in_pkt_size, unsigned int p_out_buf_size, unsigned int p_out_pkt_size) {
-	ERR_FAIL_COND(_data != NULL);
-	ERR_FAIL_COND(p_data == NULL);
+	ERR_FAIL_COND(_data != nullptr);
+	ERR_FAIL_COND(p_data == nullptr);
 
 	_in_buffer.resize(p_in_pkt_size, p_in_buf_size);
 	_packet_buffer.resize((1 << MAX(p_in_buf_size, p_out_buf_size)));
@@ -229,7 +229,7 @@ void WSLPeer::poll() {
 		return;
 
 	if (_wsl_poll(_data)) {
-		_data = NULL;
+		_data = nullptr;
 	}
 }
 
@@ -284,7 +284,7 @@ bool WSLPeer::was_string_packet() const {
 
 bool WSLPeer::is_connected_to_host() const {
 
-	return _data != NULL;
+	return _data != nullptr;
 }
 
 void WSLPeer::close_now() {
@@ -330,7 +330,7 @@ void WSLPeer::invalidate() {
 }
 
 WSLPeer::WSLPeer() {
-	_data = NULL;
+	_data = nullptr;
 	_is_string = 0;
 	close_code = -1;
 	write_mode = WRITE_MODE_BINARY;
@@ -341,7 +341,7 @@ WSLPeer::~WSLPeer() {
 	close();
 	invalidate();
 	_wsl_destroy(&_data);
-	_data = NULL;
+	_data = nullptr;
 }
 
 #endif // JAVASCRIPT_ENABLED

@@ -218,7 +218,7 @@ private:
 	struct Mesh {
 
 		struct Surface {
-			RS::PrimitiveType primitive;
+			RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
 			uint32_t format = 0;
 
 			RID vertex_buffer;
@@ -232,8 +232,8 @@ private:
 			// cache-efficient structure.
 
 			struct Version {
-				uint32_t input_mask;
-				RD::VertexFormatID vertex_format;
+				uint32_t input_mask = 0;
+				RD::VertexFormatID vertex_format = 0;
 				RID vertex_array;
 			};
 
@@ -246,7 +246,7 @@ private:
 			uint32_t index_count = 0;
 
 			struct LOD {
-				float edge_length;
+				float edge_length = 0.0;
 				RID index_buffer;
 				RID index_array;
 			};
@@ -456,9 +456,9 @@ private:
 		RID color;
 
 		//used for retrieving from CPU
-		RD::DataFormat color_format;
-		RD::DataFormat color_format_srgb;
-		Image::Format image_format;
+		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
+		RD::DataFormat color_format_srgb = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
+		Image::Format image_format = Image::FORMAT_L8;
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
 
@@ -604,7 +604,7 @@ public:
 	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
 		Material *material = material_owner.getornull(p_material);
 		if (!material || material->shader_type != p_shader_type) {
-			return NULL;
+			return nullptr;
 		} else {
 			return material->data;
 		}
@@ -640,10 +640,10 @@ public:
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
 		Mesh *mesh = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!mesh, NULL);
+		ERR_FAIL_COND_V(!mesh, nullptr);
 		r_surface_count = mesh->surface_count;
 		if (r_surface_count == 0) {
-			return NULL;
+			return nullptr;
 		}
 		if (mesh->material_cache.empty()) {
 			mesh->material_cache.resize(mesh->surface_count);
@@ -926,6 +926,14 @@ public:
 		return light->negative;
 	}
 
+	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, 0.0);
+
+		return light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS];
+	}
+
 	bool light_get_use_gi(RID p_light);
 	uint64_t light_get_version(RID p_light) const;
 
@@ -1037,7 +1045,7 @@ public:
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
 	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
-		return NULL;
+		return nullptr;
 	}
 
 	/* PARTICLES */

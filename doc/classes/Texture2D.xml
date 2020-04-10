@@ -4,7 +4,7 @@
 		Texture for 2D and 3D.
 	</brief_description>
 	<description>
-		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite] or GUI [Control].
+		A texture works by registering an image in the video hardware, which then can be used in 3D models or 2D [Sprite2D] or GUI [Control].
 		Textures are often created by loading them from a file. See [method @GDScript.load].
 		[Texture2D] is a base for other resources. It cannot be used directly.
 	</description>
@@ -28,12 +28,12 @@
 			</argument>
 			<argument index="6" name="specular_color_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="7" name="texture_filter" type="int" enum="VisualServer.CanvasItemTextureFilter" default="0">
+			<argument index="7" name="texture_filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" default="0">
 			</argument>
-			<argument index="8" name="texture_repeat" type="int" enum="VisualServer.CanvasItemTextureRepeat" default="0">
+			<argument index="8" name="texture_repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" default="0">
 			</argument>
 			<description>
-				Draws the texture using a [CanvasItem] with the [VisualServer] API at the specified [code]position[/code].
+				Draws the texture using a [CanvasItem] with the [RenderingServer] API at the specified [code]position[/code].
 			</description>
 		</method>
 		<method name="draw_rect" qualifiers="const">
@@ -55,12 +55,12 @@
 			</argument>
 			<argument index="7" name="specular_color_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="8" name="texture_filter" type="int" enum="VisualServer.CanvasItemTextureFilter" default="0">
+			<argument index="8" name="texture_filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" default="0">
 			</argument>
-			<argument index="9" name="texture_repeat" type="int" enum="VisualServer.CanvasItemTextureRepeat" default="0">
+			<argument index="9" name="texture_repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" default="0">
 			</argument>
 			<description>
-				Draws the texture using a [CanvasItem] with the [VisualServer] API.
+				Draws the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
 		<method name="draw_rect_region" qualifiers="const">
@@ -82,14 +82,14 @@
 			</argument>
 			<argument index="7" name="specular_color_shininess" type="Color" default="Color( 1, 1, 1, 1 )">
 			</argument>
-			<argument index="8" name="texture_filter" type="int" enum="VisualServer.CanvasItemTextureFilter" default="0">
+			<argument index="8" name="texture_filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" default="0">
 			</argument>
-			<argument index="9" name="texture_repeat" type="int" enum="VisualServer.CanvasItemTextureRepeat" default="0">
+			<argument index="9" name="texture_repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" default="0">
 			</argument>
 			<argument index="10" name="clip_uv" type="bool" default="true">
 			</argument>
 			<description>
-				Draws a part of the texture using a [CanvasItem] with the [VisualServer] API.
+				Draws a part of the texture using a [CanvasItem] with the [RenderingServer] API.
 			</description>
 		</method>
 		<method name="get_data" qualifiers="const">

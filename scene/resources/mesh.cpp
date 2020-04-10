@@ -37,7 +37,7 @@
 
 #include <stdlib.h>
 
-Mesh::ConvexDecompositionFunc Mesh::convex_composition_function = NULL;
+Mesh::ConvexDecompositionFunc Mesh::convex_composition_function = nullptr;
 
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
@@ -372,7 +372,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	ERR_FAIL_COND_V(arrays.size() != ARRAY_MAX, Ref<ArrayMesh>());
 
 	{
-		int *ir = NULL;
+		int *ir = nullptr;
 		Vector<int> indices = arrays[ARRAY_INDEX];
 		bool has_indices = false;
 		Vector<Vector3> vertices = arrays[ARRAY_VERTEX];
@@ -1359,7 +1359,7 @@ void ArrayMesh::regen_normalmaps() {
 }
 
 //dirty hack
-bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) = NULL;
+bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) = nullptr;
 
 struct ArrayMeshLightmapSurface {
 

@@ -288,7 +288,7 @@ static const _KeyCodeText _keycodes[] = {
 
 		{KEY_DIVISION                      ,"Division"},
 		{KEY_YDIAERESIS                    ,"Ydiaeresis"},
-		{0                                 ,0}
+		{0                                 ,nullptr}
 	/* clang-format on */
 };
 

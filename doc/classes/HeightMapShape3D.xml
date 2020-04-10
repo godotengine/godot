@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HeightMapShape3D" inherits="Shape3D" version="4.0">
+	<brief_description>
+		Height map shape for 3D physics (Bullet only).
+	</brief_description>
+	<description>
+		Height map shape resource, which can be added to a [PhysicsBody3D] or [Area3D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="map_data" type="PackedFloat32Array" setter="set_map_data" getter="get_map_data" default="PackedFloat32Array( 0, 0, 0, 0 )">
+			Height map data, pool array must be of [member map_width] * [member map_depth] size.
+		</member>
+		<member name="map_depth" type="int" setter="set_map_depth" getter="get_map_depth" default="2">
+			Depth of the height map data. Changing this will resize the [member map_data].
+		</member>
+		<member name="map_width" type="int" setter="set_map_width" getter="get_map_width" default="2">
+			Width of the height map data. Changing this will resize the [member map_data].
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

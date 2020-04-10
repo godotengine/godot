@@ -34,7 +34,7 @@
 
 NoiseTexture::NoiseTexture() {
 	update_queued = false;
-	noise_thread = NULL;
+	noise_thread = nullptr;
 	regen_queued = false;
 	first_time = true;
 
@@ -114,7 +114,7 @@ void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
 	_set_texture_data(p_image);
 	Thread::wait_to_finish(noise_thread);
 	memdelete(noise_thread);
-	noise_thread = NULL;
+	noise_thread = nullptr;
 	if (regen_queued) {
 		noise_thread = Thread::create(_thread_function, this);
 		regen_queued = false;
@@ -137,14 +137,19 @@ void NoiseTexture::_queue_update() {
 
 Ref<Image> NoiseTexture::_generate_texture() {
 
-	if (noise.is_null()) return Ref<Image>();
+	// Prevent memdelete due to unref() on other thread.
+	Ref<OpenSimplexNoise> ref_noise = noise;
+
+	if (ref_noise.is_null()) {
+		return Ref<Image>();
+	}
 
 	Ref<Image> image;
 
 	if (seamless) {
-		image = noise->get_seamless_image(size.x);
+		image = ref_noise->get_seamless_image(size.x);
 	} else {
-		image = noise->get_image(size.x, size.y);
+		image = ref_noise->get_image(size.x, size.y);
 	}
 
 	if (as_normalmap) {

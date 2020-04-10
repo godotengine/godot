@@ -379,6 +379,8 @@ public:
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
 
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
 	VisualShaderNodeUniform();
 };
 

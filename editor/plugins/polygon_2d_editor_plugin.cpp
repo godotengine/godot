@@ -107,7 +107,7 @@ void Polygon2DEditor::_notification(int p_what) {
 
 void Polygon2DEditor::_sync_bones() {
 
-	Skeleton2D *skeleton = NULL;
+	Skeleton2D *skeleton = nullptr;
 	if (!node->has_node(node->get_skeleton())) {
 		error->set_text(TTR("The skeleton property of the Polygon2D does not point to a Skeleton2D node"));
 		error->popup_centered();
@@ -1031,7 +1031,7 @@ void Polygon2DEditor::_uv_draw() {
 		uvs = node->get_polygon();
 	}
 
-	const float *weight_r;
+	const float *weight_r = nullptr;
 
 	if (uv_edit_mode[3]->is_pressed()) {
 		int bone_selected = -1;
@@ -1044,7 +1044,6 @@ void Polygon2DEditor::_uv_draw() {
 		}
 
 		if (bone_selected != -1 && node->get_bone_weights(bone_selected).size() == uvs.size()) {
-
 			weight_r = node->get_bone_weights(bone_selected).ptr();
 		}
 	}
@@ -1250,7 +1249,7 @@ Vector2 Polygon2DEditor::snap_point(Vector2 p_target) const {
 Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
 
-	node = NULL;
+	node = nullptr;
 	snap_offset = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_offset", Vector2());
 	snap_step = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_step", Vector2(10, 10));
 	use_snap = EditorSettings::get_singleton()->get_project_metadata("polygon_2d_uv_editor", "snap_enabled", false);

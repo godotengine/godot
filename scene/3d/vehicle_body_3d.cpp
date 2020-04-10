@@ -99,13 +99,13 @@ void VehicleWheel3D::_notification(int p_what) {
 		if (!cb)
 			return;
 		cb->wheels.erase(this);
-		body = NULL;
+		body = nullptr;
 	}
 }
 
 String VehicleWheel3D::get_configuration_warning() const {
 	if (!Object::cast_to<VehicleBody3D>(get_parent())) {
-		return TTR("VehicleWheel serves to provide a wheel system to a VehicleBody. Please use it as a child of a VehicleBody.");
+		return TTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D.");
 	}
 
 	return String();
@@ -285,7 +285,7 @@ void VehicleWheel3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, "0.00,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
-	ADD_GROUP("VehicleBody Motion", "");
+	ADD_GROUP("VehicleBody3D Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
 	ADD_GROUP("Wheel", "wheel_");
@@ -385,7 +385,7 @@ VehicleWheel3D::VehicleWheel3D() {
 	m_clippedInvContactDotSuspension = 1.0;
 	m_raycastInfo.m_isInContact = false;
 
-	body = NULL;
+	body = nullptr;
 }
 
 void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState3D *s) {
@@ -454,7 +454,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	bool col = ss->intersect_ray(source, target, rr, exclude);
 
-	wheel.m_raycastInfo.m_groundObject = 0;
+	wheel.m_raycastInfo.m_groundObject = nullptr;
 
 	if (col) {
 		param = source.distance_to(rr.position) / source.distance_to(target);
@@ -917,7 +917,7 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}
 
-	state = NULL;
+	state = nullptr;
 }
 
 void VehicleBody3D::set_engine_force(float p_engine_force) {
@@ -988,7 +988,7 @@ VehicleBody3D::VehicleBody3D() {
 	engine_force = 0;
 	brake = 0;
 
-	state = NULL;
+	state = nullptr;
 	ccd = false;
 
 	exclude.insert(get_rid());

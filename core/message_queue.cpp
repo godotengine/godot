@@ -34,7 +34,7 @@
 #include "core/project_settings.h"
 #include "core/script_language.h"
 
-MessageQueue *MessageQueue::singleton = NULL;
+MessageQueue *MessageQueue::singleton = nullptr;
 
 MessageQueue *MessageQueue::get_singleton() {
 
@@ -174,7 +174,7 @@ void MessageQueue::statistics() {
 
 		Object *target = message->callable.get_object();
 
-		if (target != NULL) {
+		if (target != nullptr) {
 
 			switch (message->type & FLAG_MASK) {
 
@@ -240,7 +240,7 @@ int MessageQueue::get_max_buffer_usage() const {
 
 void MessageQueue::_call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error) {
 
-	const Variant **argptrs = NULL;
+	const Variant **argptrs = nullptr;
 	if (p_argcount) {
 		argptrs = (const Variant **)alloca(sizeof(Variant *) * p_argcount);
 		for (int i = 0; i < p_argcount; i++) {
@@ -291,7 +291,7 @@ void MessageQueue::flush() {
 
 		Object *target = message->callable.get_object();
 
-		if (target != NULL) {
+		if (target != nullptr) {
 
 			switch (message->type & FLAG_MASK) {
 				case TYPE_CALL: {
@@ -343,7 +343,7 @@ bool MessageQueue::is_flushing() const {
 
 MessageQueue::MessageQueue() {
 
-	ERR_FAIL_COND_MSG(singleton != NULL, "A MessageQueue singleton already exists.");
+	ERR_FAIL_COND_MSG(singleton != nullptr, "A MessageQueue singleton already exists.");
 	singleton = this;
 	flushing = false;
 
@@ -375,6 +375,6 @@ MessageQueue::~MessageQueue() {
 			read_pos += sizeof(Variant) * message->args;
 	}
 
-	singleton = NULL;
+	singleton = nullptr;
 	memdelete_arr(buffer);
 }

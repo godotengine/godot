@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "audio_stream_player_3d.h"
+
 #include "core/engine.h"
 #include "scene/3d/area_3d.h"
 #include "scene/3d/camera_3d.h"
@@ -96,7 +97,7 @@ static const Vector3 speaker_directions[7] = {
 };
 
 void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, AudioStreamPlayer3D::Output &output) {
-	unsigned int speaker_count; // only main speakers (no LFE)
+	unsigned int speaker_count = 0; // only main speakers (no LFE)
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_MODE_STEREO:
 			speaker_count = 2;
@@ -400,7 +401,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
-			Area3D *area = NULL;
+			Area3D *area = nullptr;
 
 			for (int i = 0; i < areas; i++) {
 				if (!sr[i].collider)

@@ -138,6 +138,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		bool unshaded;
 		bool uses_vertex;
 		bool uses_sss;
+		bool uses_transmittance;
 		bool uses_screen_texture;
 		bool uses_depth_texture;
 		bool uses_normal_texture;
@@ -207,6 +208,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		RID depth_normal_roughness_fb;
 		RID color_fb;
 		RID color_specular_fb;
+		RID specular_only_fb;
 		int width, height;
 
 		void ensure_specular();
@@ -252,13 +254,19 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float position[3];
 		float inv_radius;
 		float direction[3];
+		float size;
 		uint16_t attenuation_energy[2]; //16 bits attenuation, then energy
 		uint8_t color_specular[4]; //rgb color, a specular (8 bit unorm)
 		uint16_t cone_attenuation_angle[2]; // attenuation and angle, (16bit float)
-		uint32_t mask;
 		uint8_t shadow_color_enabled[4]; //shadow rgb color, a>0.5 enabled (8bit unorm)
 		float atlas_rect[4]; // in omni, used for atlas uv, in spot, used for projector uv
 		float shadow_matrix[16];
+		float shadow_bias;
+		float shadow_normal_bias;
+		float transmittance_bias;
+		float soft_shadow_size;
+		uint32_t mask;
+		uint32_t pad[3];
 	};
 
 	struct DirectionalLightData {
@@ -266,15 +274,30 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float direction[3];
 		float energy;
 		float color[3];
+		float size;
 		float specular;
-		float shadow_color[3];
 		uint32_t mask;
+		float softshadow_angle;
+		uint32_t pad[1];
 		uint32_t blend_splits;
 		uint32_t shadow_enabled;
 		float fade_from;
 		float fade_to;
+		float shadow_bias[4];
+		float shadow_normal_bias[4];
+		float shadow_transmittance_bias[4];
+		float shadow_transmittance_z_scale[4];
+		float shadow_range_begin[4];
 		float shadow_split_offsets[4];
 		float shadow_matrices[4][16];
+		float shadow_color1[4];
+		float shadow_color2[4];
+		float shadow_color3[4];
+		float shadow_color4[4];
+		float uv_scale1[2];
+		float uv_scale2[2];
+		float uv_scale3[2];
+		float uv_scale4[2];
 	};
 
 	struct GIProbeData {
@@ -323,11 +346,14 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float viewport_size[2];
 			float screen_pixel_size[2];
 
-			float shadow_z_offset;
-			float shadow_z_slope_scale;
-
 			float time;
 			float reflection_multiplier;
+
+			uint32_t pancake_shadows;
+			uint32_t shadow_filter_mode;
+
+			uint32_t shadow_blocker_count;
+			uint32_t shadow_pad[3];
 
 			float ambient_light_color_energy[4];
 
@@ -489,7 +515,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		_FORCE_INLINE_ Element *add_element() {
 
 			if (element_count + alpha_element_count >= max_elements)
-				return NULL;
+				return nullptr;
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
 		}
@@ -497,7 +523,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		_FORCE_INLINE_ Element *add_alpha_element() {
 
 			if (element_count + alpha_element_count >= max_elements)
-				return NULL;
+				return nullptr;
 			int idx = max_elements - alpha_element_count - 1;
 			elements[idx] = &base_elements[idx];
 			alpha_element_count++;
@@ -557,7 +583,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		PASS_MODE_DEPTH_MATERIAL,
 	};
 
-	void _setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false);
+	void _setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers = false, bool p_pancake_shadows = false);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
 	void _setup_gi_probes(RID *p_gi_probe_probe_cull_result, int p_gi_probe_probe_cull_count, const Transform &p_camera_transform);
@@ -571,7 +597,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 protected:
 	virtual void _render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color);
-	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip);
+	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip, bool p_use_pancake);
 	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 
 public:

@@ -83,8 +83,8 @@ void SpriteBase3D::_notification(int p_what) {
 		if (parent_sprite) {
 
 			parent_sprite->children.erase(pI);
-			pI = NULL;
-			parent_sprite = NULL;
+			pI = nullptr;
+			parent_sprite = nullptr;
 		}
 	}
 }
@@ -364,8 +364,8 @@ SpriteBase3D::SpriteBase3D() {
 	centered = true;
 	hflip = false;
 	vflip = false;
-	parent_sprite = NULL;
-	pI = NULL;
+	parent_sprite = nullptr;
+	pI = nullptr;
 
 	for (int i = 0; i < FLAG_MAX; i++)
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
@@ -441,7 +441,7 @@ void Sprite3D::_draw() {
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = texture;
-	if (atlas_tex != NULL) {
+	if (atlas_tex != nullptr) {
 		src_tsize[0] = atlas_tex->get_atlas()->get_width();
 		src_tsize[1] = atlas_tex->get_atlas()->get_height();
 	}
@@ -775,7 +775,7 @@ void AnimatedSprite3D::_draw() {
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = texture;
-	if (atlas_tex != NULL) {
+	if (atlas_tex != nullptr) {
 		src_tsize[0] = atlas_tex->get_atlas()->get_width();
 		src_tsize[1] = atlas_tex->get_atlas()->get_height();
 	}

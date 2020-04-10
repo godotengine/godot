@@ -53,7 +53,7 @@ struct MonoGCHandleData {
 	_FORCE_INLINE_ bool is_released() const { return !handle; }
 	_FORCE_INLINE_ bool is_weak() const { return type == gdmono::GCHandleType::WEAK_HANDLE; }
 
-	_FORCE_INLINE_ MonoObject *get_target() const { return handle ? mono_gchandle_get_target(handle) : NULL; }
+	_FORCE_INLINE_ MonoObject *get_target() const { return handle ? mono_gchandle_get_target(handle) : nullptr; }
 
 	void release();
 

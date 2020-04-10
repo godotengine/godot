@@ -106,12 +106,12 @@ void NavigationAgent3D::_notification(int p_what) {
 
 			// Search the navigation node and set it
 			{
-				Navigation3D *nav = NULL;
+				Navigation3D *nav = nullptr;
 				Node *p = get_parent();
-				while (p != NULL) {
+				while (p != nullptr) {
 					nav = Object::cast_to<Navigation3D>(p);
-					if (nav != NULL)
-						p = NULL;
+					if (nav != nullptr)
+						p = nullptr;
 					else
 						p = p->get_parent();
 				}
@@ -122,8 +122,8 @@ void NavigationAgent3D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			agent_parent = NULL;
-			set_navigation(NULL);
+			agent_parent = nullptr;
+			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
@@ -142,8 +142,8 @@ void NavigationAgent3D::_notification(int p_what) {
 }
 
 NavigationAgent3D::NavigationAgent3D() :
-		agent_parent(NULL),
-		navigation(NULL),
+		agent_parent(nullptr),
+		navigation(nullptr),
 		agent(RID()),
 		target_desired_distance(1.0),
 		navigation_height_offset(0.0),
@@ -170,12 +170,12 @@ void NavigationAgent3D::set_navigation(Navigation3D *p_nav) {
 		return; // Pointless
 
 	navigation = p_nav;
-	NavigationServer3D::get_singleton()->agent_set_map(agent, navigation == NULL ? RID() : navigation->get_rid());
+	NavigationServer3D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
 }
 
 void NavigationAgent3D::set_navigation_node(Node *p_nav) {
 	Navigation3D *nav = Object::cast_to<Navigation3D>(p_nav);
-	ERR_FAIL_COND(nav == NULL);
+	ERR_FAIL_COND(nav == nullptr);
 	set_navigation(nav);
 }
 
@@ -244,7 +244,7 @@ Vector3 NavigationAgent3D::get_target_location() const {
 Vector3 NavigationAgent3D::get_next_location() {
 	update_navigation();
 	if (navigation_path.size() == 0) {
-		ERR_FAIL_COND_V(agent_parent == NULL, Vector3());
+		ERR_FAIL_COND_V(agent_parent == nullptr, Vector3());
 		return agent_parent->get_global_transform().origin;
 	} else {
 		return navigation_path[nav_path_index] - Vector3(0, navigation_height_offset, 0);
@@ -252,7 +252,7 @@ Vector3 NavigationAgent3D::get_next_location() {
 }
 
 real_t NavigationAgent3D::distance_to_target() const {
-	ERR_FAIL_COND_V(agent_parent == NULL, 0.0);
+	ERR_FAIL_COND_V(agent_parent == nullptr, 0.0);
 	return agent_parent->get_global_transform().origin.distance_to(target_location);
 }
 
@@ -298,7 +298,7 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 
 String NavigationAgent3D::get_configuration_warning() const {
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		return TTR("The NavigationAgent can be used only under a spatial node.");
+		return TTR("The NavigationAgent3D can be used only under a spatial node.");
 	}
 
 	return String();
@@ -306,8 +306,8 @@ String NavigationAgent3D::get_configuration_warning() const {
 
 void NavigationAgent3D::update_navigation() {
 
-	if (agent_parent == NULL) return;
-	if (navigation == NULL) return;
+	if (agent_parent == nullptr) return;
+	if (navigation == nullptr) return;
 	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) return;
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();

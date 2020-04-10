@@ -976,7 +976,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 	int pc = particles.size();
 
 	int *ow;
-	int *order = NULL;
+	int *order = nullptr;
 
 	float *w = particle_data.ptrw();
 	const Particle *r = particles.ptr();
@@ -1145,7 +1145,7 @@ void CPUParticles2D::_notification(int p_what) {
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
 
 	GPUParticles2D *particles = Object::cast_to<GPUParticles2D>(p_particles);
-	ERR_FAIL_COND_MSG(!particles, "Only Particles2D nodes can be converted to CPUParticles2D.");
+	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles2D nodes can be converted to CPUParticles2D.");
 
 	set_emitting(particles->is_emitting());
 	set_amount(particles->get_amount());

@@ -79,7 +79,7 @@ StringName Callable::get_method() const {
 }
 
 CallableCustom *Callable::get_custom() const {
-	ERR_FAIL_COND_V_MSG(!is_custom(), NULL,
+	ERR_FAIL_COND_V_MSG(!is_custom(), nullptr,
 			vformat("Can't get custom on non-CallableCustom \"%s\".", operator String()));
 	return custom;
 }

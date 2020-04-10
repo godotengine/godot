@@ -39,13 +39,13 @@ Error VulkanContextX11::window_create(DisplayServer::WindowID p_window_id, ::Win
 
 	VkXlibSurfaceCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-	createInfo.pNext = NULL;
+	createInfo.pNext = nullptr;
 	createInfo.flags = 0;
 	createInfo.dpy = p_display;
 	createInfo.window = p_window;
 
 	VkSurfaceKHR surface;
-	VkResult err = vkCreateXlibSurfaceKHR(_get_instance(), &createInfo, NULL, &surface);
+	VkResult err = vkCreateXlibSurfaceKHR(_get_instance(), &createInfo, nullptr, &surface);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 	return _window_create(p_window_id, surface, p_width, p_height);
 }

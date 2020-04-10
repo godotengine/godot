@@ -39,7 +39,7 @@
 #include "core/os/thread.h"
 #include "core/rid_owner.h"
 #include "core/self_list.h"
-#include "servers/arvr/arvr_interface.h"
+#include "servers/xr/xr_interface.h"
 
 class RenderingServerScene {
 public:
@@ -196,7 +196,7 @@ public:
 				update_item(this) {
 
 			octree_id = 0;
-			scenario = NULL;
+			scenario = nullptr;
 
 			update_aabb = false;
 			update_dependencies = false;
@@ -213,9 +213,9 @@ public:
 			last_render_pass = 0;
 			last_frame_pass = 0;
 			version = 1;
-			base_data = NULL;
+			base_data = nullptr;
 
-			custom_aabb = NULL;
+			custom_aabb = nullptr;
 		}
 
 		~Instance() {
@@ -301,9 +301,9 @@ public:
 		InstanceLightData() {
 
 			shadow_dirty = true;
-			D = NULL;
+			D = nullptr;
 			last_version = 0;
-			baked_light = NULL;
+			baked_light = nullptr;
 		}
 	};
 
@@ -418,15 +418,15 @@ public:
 	_FORCE_INLINE_ void _update_dirty_instance(Instance *p_instance);
 	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario);
 
 	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
+	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
 	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
 
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
-	void render_camera(RID p_render_buffers, Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
+	void render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
 
 	void render_probes();

@@ -125,7 +125,7 @@ void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
 }
 
 ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
-	EditorDebuggerRemoteObject *debugObj = NULL;
+	EditorDebuggerRemoteObject *debugObj = nullptr;
 
 	SceneDebuggerObject obj;
 	obj.deserialize(p_arr);
@@ -211,7 +211,7 @@ void EditorDebuggerInspector::clear_cache() {
 	for (Map<ObjectID, EditorDebuggerRemoteObject *>::Element *E = remote_objects.front(); E; E = E->next()) {
 		EditorNode *editor = EditorNode::get_singleton();
 		if (editor->get_editor_history()->get_current() == E->value()->get_instance_id()) {
-			editor->push_item(NULL);
+			editor->push_item(nullptr);
 		}
 		memdelete(E->value());
 	}
@@ -221,7 +221,7 @@ void EditorDebuggerInspector::clear_cache() {
 Object *EditorDebuggerInspector::get_object(ObjectID p_id) {
 	if (remote_objects.has(p_id))
 		return remote_objects[p_id];
-	return NULL;
+	return nullptr;
 }
 
 void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {

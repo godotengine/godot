@@ -194,7 +194,7 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 		return gi_probe->lights.insert(A);
 	}
 
-	return NULL;
+	return nullptr;
 }
 void RenderingServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *udata) {
 
@@ -375,7 +375,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 #endif
 				if (instance->scenario && light->D) {
 					instance->scenario->directional_lights.erase(light->D);
-					light->D = NULL;
+					light->D = nullptr;
 				}
 				RSG::scene_render->free(light->instance);
 			} break;
@@ -416,7 +416,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 					Instance *capture = (Instance *)instance->lightmap_capture;
 					InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(capture->base_data);
 					lightmap_capture->users.erase(instance);
-					instance->lightmap_capture = NULL;
+					instance->lightmap_capture = nullptr;
 					instance->lightmap = RID();
 				}
 
@@ -429,7 +429,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 		if (instance->base_data) {
 			memdelete(instance->base_data);
-			instance->base_data = NULL;
+			instance->base_data = nullptr;
 		}
 
 		instance->blend_values.clear();
@@ -533,7 +533,7 @@ void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario)
 #endif
 				if (light->D) {
 					instance->scenario->directional_lights.erase(light->D);
-					light->D = NULL;
+					light->D = nullptr;
 				}
 			} break;
 			case RS::INSTANCE_REFLECTION_PROBE: {
@@ -564,7 +564,7 @@ void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario)
 			}
 		}
 
-		instance->scenario = NULL;
+		instance->scenario = nullptr;
 	}
 
 	if (p_scenario.is_valid()) {
@@ -720,7 +720,7 @@ void RenderingServerScene::instance_set_use_lightmap(RID p_instance, RID p_light
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(((Instance *)instance->lightmap_capture)->base_data);
 		lightmap_capture->users.erase(instance);
 		instance->lightmap = RID();
-		instance->lightmap_capture = NULL;
+		instance->lightmap_capture = nullptr;
 	}
 
 	if (p_lightmap_instance.is_valid()) {
@@ -744,16 +744,16 @@ void RenderingServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb)
 	if (p_aabb != AABB()) {
 
 		// Set custom AABB
-		if (instance->custom_aabb == NULL)
+		if (instance->custom_aabb == nullptr)
 			instance->custom_aabb = memnew(AABB);
 		*instance->custom_aabb = p_aabb;
 
 	} else {
 
 		// Clear custom AABB
-		if (instance->custom_aabb != NULL) {
+		if (instance->custom_aabb != nullptr) {
 			memdelete(instance->custom_aabb);
-			instance->custom_aabb = NULL;
+			instance->custom_aabb = nullptr;
 		}
 	}
 
@@ -1334,7 +1334,7 @@ void RenderingServerScene::_update_instance_lightmap_captures(Instance *p_instan
 	}
 }
 
-bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario) {
+bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario) {
 
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
@@ -1347,15 +1347,17 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 		case RS::LIGHT_DIRECTIONAL: {
 
-			float max_distance = p_cam_projection.get_z_far();
-			float shadow_max = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
+			real_t max_distance = p_cam_projection.get_z_far();
+			real_t shadow_max = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 			if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
 				max_distance = MIN(shadow_max, max_distance);
 			}
 			max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
-			float min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
+			real_t min_distance = MIN(p_cam_projection.get_z_near(), max_distance);
 
 			RS::LightDirectionalShadowDepthRangeMode depth_range_mode = RSG::storage->light_directional_get_shadow_depth_range_mode(p_instance->base);
+
+			real_t pancake_size = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE);
 
 			if (depth_range_mode == RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
 				//optimize min/max
@@ -1365,8 +1367,8 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				//check distance max and min
 
 				bool found_items = false;
-				float z_max = -1e20;
-				float z_min = 1e20;
+				real_t z_max = -1e20;
+				real_t z_min = 1e20;
 
 				for (int i = 0; i < cull_count; i++) {
 
@@ -1379,7 +1381,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 						animated_material_found = true;
 					}
 
-					float max, min;
+					real_t max, min;
 					instance->transformed_aabb.project_range_in_plane(base, min, max);
 
 					if (max > z_max) {
@@ -1399,7 +1401,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				}
 			}
 
-			float range = max_distance - min_distance;
+			real_t range = max_distance - min_distance;
 
 			int splits = 0;
 			switch (RSG::storage->light_directional_get_shadow_mode(p_instance->base)) {
@@ -1408,7 +1410,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: splits = 4; break;
 			}
 
-			float distances[5];
+			real_t distances[5];
 
 			distances[0] = min_distance;
 			for (int i = 0; i < splits; i++) {
@@ -1417,11 +1419,13 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 			distances[splits] = max_distance;
 
-			float texture_size = RSG::scene_render->get_directional_light_shadow_size(light->instance);
+			real_t texture_size = RSG::scene_render->get_directional_light_shadow_size(light->instance);
 
 			bool overlap = RSG::storage->light_directional_get_blend_splits(p_instance->base);
 
-			float first_radius = 0.0;
+			real_t first_radius = 0.0;
+
+			real_t min_distance_bias_scale = pancake_size > 0 ? distances[1] / 10.0 : 0;
 
 			for (int i = 0; i < splits; i++) {
 
@@ -1430,7 +1434,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				// setup a camera matrix for that range!
 				CameraMatrix camera_matrix;
 
-				float aspect = p_cam_projection.get_aspect();
+				real_t aspect = p_cam_projection.get_aspect();
 
 				if (p_cam_orthogonal) {
 
@@ -1439,8 +1443,8 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					camera_matrix.set_orthogonal(vp_he.y * 2.0, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 				} else {
 
-					float fov = p_cam_projection.get_fov();
-					camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+					real_t fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
+					camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
 				}
 
 				//obtain the frustum endpoints
@@ -1458,26 +1462,27 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				Vector3 z_vec = transform.basis.get_axis(Vector3::AXIS_Z).normalized();
 				//z_vec points agsint the camera, like in default opengl
 
-				float x_min = 0.f, x_max = 0.f;
-				float y_min = 0.f, y_max = 0.f;
-				float z_min = 0.f, z_max = 0.f;
+				real_t x_min = 0.f, x_max = 0.f;
+				real_t y_min = 0.f, y_max = 0.f;
+				real_t z_min = 0.f, z_max = 0.f;
 
 				// FIXME: z_max_cam is defined, computed, but not used below when setting up
 				// ortho_camera. Commented out for now to fix warnings but should be investigated.
-				float x_min_cam = 0.f, x_max_cam = 0.f;
-				float y_min_cam = 0.f, y_max_cam = 0.f;
-				float z_min_cam = 0.f;
-				//float z_max_cam = 0.f;
+				real_t x_min_cam = 0.f, x_max_cam = 0.f;
+				real_t y_min_cam = 0.f, y_max_cam = 0.f;
+				real_t z_min_cam = 0.f;
+				//real_t z_max_cam = 0.f;
 
-				float bias_scale = 1.0;
+				real_t bias_scale = 1.0;
+				real_t aspect_bias_scale = 1.0;
 
 				//used for culling
 
 				for (int j = 0; j < 8; j++) {
 
-					float d_x = x_vec.dot(endpoints[j]);
-					float d_y = y_vec.dot(endpoints[j]);
-					float d_z = z_vec.dot(endpoints[j]);
+					real_t d_x = x_vec.dot(endpoints[j]);
+					real_t d_y = y_vec.dot(endpoints[j]);
+					real_t d_z = z_vec.dot(endpoints[j]);
 
 					if (j == 0 || d_x < x_min)
 						x_min = d_x;
@@ -1495,10 +1500,12 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 						z_max = d_z;
 				}
 
+				real_t radius = 0;
+				real_t soft_shadow_expand = 0;
+				Vector3 center;
+
 				{
 					//camera viewport stuff
-
-					Vector3 center;
 
 					for (int j = 0; j < 8; j++) {
 
@@ -1508,11 +1515,9 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 					//center=x_vec*(x_max-x_min)*0.5 + y_vec*(y_max-y_min)*0.5 + z_vec*(z_max-z_min)*0.5;
 
-					float radius = 0;
-
 					for (int j = 0; j < 8; j++) {
 
-						float d = center.distance_to(endpoints[j]);
+						real_t d = center.distance_to(endpoints[j]);
 						if (d > radius)
 							radius = d;
 					}
@@ -1525,18 +1530,35 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 						bias_scale = radius / first_radius;
 					}
 
-					x_max_cam = x_vec.dot(center) + radius;
-					x_min_cam = x_vec.dot(center) - radius;
-					y_max_cam = y_vec.dot(center) + radius;
-					y_min_cam = y_vec.dot(center) - radius;
-					//z_max_cam = z_vec.dot(center) + radius;
 					z_min_cam = z_vec.dot(center) - radius;
+
+					{
+
+						float soft_shadow_angle = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SIZE);
+
+						if (soft_shadow_angle > 0.0 && pancake_size > 0.0) {
+
+							float z_range = (z_vec.dot(center) + radius + pancake_size) - z_min_cam;
+							soft_shadow_expand = Math::tan(Math::deg2rad(soft_shadow_angle)) * z_range;
+
+							x_max += soft_shadow_expand;
+							y_max += soft_shadow_expand;
+
+							x_min -= soft_shadow_expand;
+							y_min -= soft_shadow_expand;
+						}
+					}
+
+					x_max_cam = x_vec.dot(center) + radius + soft_shadow_expand;
+					x_min_cam = x_vec.dot(center) - radius - soft_shadow_expand;
+					y_max_cam = y_vec.dot(center) + radius + soft_shadow_expand;
+					y_min_cam = y_vec.dot(center) - radius - soft_shadow_expand;
 
 					if (depth_range_mode == RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
 						//this trick here is what stabilizes the shadow (make potential jaggies to not move)
 						//at the cost of some wasted resolution. Still the quality increase is very well worth it
 
-						float unit = radius * 2.0 / texture_size;
+						real_t unit = radius * 2.0 / texture_size;
 
 						x_max_cam = Math::stepify(x_max_cam, unit);
 						x_min_cam = Math::stepify(x_min_cam, unit);
@@ -1566,9 +1588,10 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 				Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
 
+				real_t cull_max = 0;
 				for (int j = 0; j < cull_count; j++) {
 
-					float min, max;
+					real_t min, max;
 					Instance *instance = instance_shadow_cull_result[j];
 					if (!instance->visible || !((1 << instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) || !static_cast<InstanceGeometryData *>(instance->base_data)->can_cast_shadows) {
 						cull_count--;
@@ -1580,8 +1603,91 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					instance->transformed_aabb.project_range_in_plane(Plane(z_vec, 0), min, max);
 					instance->depth = near_plane.distance_to(instance->transform.origin);
 					instance->depth_layer = 0;
-					if (max > z_max)
-						z_max = max;
+					if (j == 0 || max > cull_max) {
+						cull_max = max;
+					}
+				}
+
+				if (cull_max > z_max) {
+					z_max = cull_max;
+				}
+
+				if (pancake_size > 0) {
+					z_max = z_vec.dot(center) + radius + pancake_size;
+				}
+
+				if (aspect != 1.0) {
+
+					// if the aspect is different, then the radius will become larger.
+					// if this happens, then bias needs to be adjusted too, as depth will increase
+					// to do this, compare the depth of one that would have resulted from a square frustum
+
+					CameraMatrix camera_matrix_square;
+					if (p_cam_orthogonal) {
+
+						Vector2 vp_he = camera_matrix.get_viewport_half_extents();
+						if (p_cam_vaspect) {
+							camera_matrix_square.set_orthogonal(vp_he.x * 2.0, 1.0, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
+						} else {
+							camera_matrix_square.set_orthogonal(vp_he.y * 2.0, 1.0, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+						}
+					} else {
+						Vector2 vp_he = camera_matrix.get_viewport_half_extents();
+						if (p_cam_vaspect) {
+							camera_matrix_square.set_frustum(vp_he.x * 2.0, 1.0, Vector2(), distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
+						} else {
+							camera_matrix_square.set_frustum(vp_he.y * 2.0, 1.0, Vector2(), distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
+						}
+
+						if (i == 0) {
+							//print_line("prev he: " + vp_he + " new he: " + camera_matrix_square.get_viewport_half_extents());
+						}
+					}
+
+					Vector3 endpoints_square[8]; // frustum plane endpoints
+					res = camera_matrix_square.get_endpoints(p_cam_transform, endpoints_square);
+					ERR_CONTINUE(!res);
+					Vector3 center_square;
+					real_t z_max_square = 0;
+
+					for (int j = 0; j < 8; j++) {
+
+						center_square += endpoints_square[j];
+
+						real_t d_z = z_vec.dot(endpoints_square[j]);
+
+						if (j == 0 || d_z > z_max_square)
+							z_max_square = d_z;
+					}
+
+					if (cull_max > z_max_square) {
+						z_max_square = cull_max;
+					}
+
+					center_square /= 8.0;
+
+					real_t radius_square = 0;
+
+					for (int j = 0; j < 8; j++) {
+
+						real_t d = center_square.distance_to(endpoints_square[j]);
+						if (d > radius_square)
+							radius_square = d;
+					}
+
+					radius_square *= texture_size / (texture_size - 2.0); //add a texel by each side
+
+					if (pancake_size > 0) {
+						z_max_square = z_vec.dot(center_square) + radius_square + pancake_size;
+					}
+
+					real_t z_min_cam_square = z_vec.dot(center_square) - radius_square;
+
+					aspect_bias_scale = (z_max - z_min_cam) / (z_max_square - z_min_cam_square);
+
+					// this is not entirely perfect, because the cull-adjusted z-max may be different
+					// but at least it's warranted that it results in a greater bias, so no acne should be present either way.
+					// pancaking also helps with this.
 				}
 
 				{
@@ -1592,11 +1698,19 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 					ortho_camera.set_orthogonal(-half_x, half_x, -half_y, half_y, 0, (z_max - z_min_cam));
 
+					Vector2 uv_scale(1.0 / (x_max_cam - x_min_cam), 1.0 / (y_max_cam - y_min_cam));
+
 					Transform ortho_transform;
 					ortho_transform.basis = transform.basis;
 					ortho_transform.origin = x_vec * (x_min_cam + half_x) + y_vec * (y_min_cam + half_y) + z_vec * z_max;
 
-					RSG::scene_render->light_instance_set_shadow_transform(light->instance, ortho_camera, ortho_transform, 0, distances[i + 1], i, bias_scale);
+					{
+						Vector3 max_in_view = p_cam_transform.affine_inverse().xform(z_vec * cull_max);
+						Vector3 dir_in_view = p_cam_transform.xform_inv(z_vec).normalized();
+						cull_max = dir_in_view.dot(max_in_view);
+					}
+
+					RSG::scene_render->light_instance_set_shadow_transform(light->instance, ortho_camera, ortho_transform, z_max - z_min_cam, distances[i + 1], i, radius * 2.0 / texture_size, bias_scale * aspect_bias_scale * min_distance_bias_scale, z_max, uv_scale);
 				}
 
 				RSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
@@ -1614,9 +1728,9 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					//using this one ensures that raster deferred will have it
 					RENDER_TIMESTAMP("Culling Shadow Paraboloid" + itos(i));
 
-					float radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
+					real_t radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 
-					float z = i == 0 ? -1 : 1;
+					real_t z = i == 0 ? -1 : 1;
 					Vector<Plane> planes;
 					planes.resize(5);
 					planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
@@ -1645,12 +1759,12 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 						}
 					}
 
-					RSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i);
+					RSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i, 0);
 					RSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 				}
 			} else { //shadow cube
 
-				float radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
+				real_t radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 				CameraMatrix cm;
 				cm.set_perspective(90, 1, 0.01, radius);
 
@@ -1699,12 +1813,12 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 						}
 					}
 
-					RSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, xform, radius, 0, i);
+					RSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, xform, radius, 0, i, 0);
 					RSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 				}
 
 				//restore the regular DP matrix
-				RSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0);
+				RSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0, 0);
 			}
 
 		} break;
@@ -1712,8 +1826,8 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 			RENDER_TIMESTAMP("Culling Spot Light");
 
-			float radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
-			float angle = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
+			real_t radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
+			real_t angle = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SPOT_ANGLE);
 
 			CameraMatrix cm;
 			cm.set_perspective(angle * 2.0, 1.0, 0.01, radius);
@@ -1738,7 +1852,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				}
 			}
 
-			RSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0);
+			RSG::scene_render->light_instance_set_shadow_transform(light->instance, cm, light_transform, radius, 0, 0, 0);
 			RSG::scene_render->render_shadow(light->instance, p_shadow_atlas, 0, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 
 		} break;
@@ -1793,12 +1907,12 @@ void RenderingServerScene::render_camera(RID p_render_buffers, RID p_camera, RID
 		} break;
 	}
 
-	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	_prepare_scene(camera->transform, camera_matrix, ortho, camera->vaspect, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	_render_scene(p_render_buffers, camera->transform, camera_matrix, ortho, camera->env, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
 
-void RenderingServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
+void RenderingServerScene::render_camera(RID p_render_buffers, Ref<XRInterface> &p_interface, XRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
 	// render for AR/VR interface
 
 	Camera *camera = camera_owner.getornull(p_camera);
@@ -1810,16 +1924,14 @@ void RenderingServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface
 
 	// We also ignore our camera position, it will have been positioned with a slightly old tracking position.
 	// Instead we take our origin point and have our ar/vr interface add fresh tracking data! Whoohoo!
-	Transform world_origin = ARVRServer::get_singleton()->get_world_origin();
+	Transform world_origin = XRServer::get_singleton()->get_world_origin();
 	Transform cam_transform = p_interface->get_transform_for_eye(p_eye, world_origin);
 
 	// For stereo render we only prepare for our left eye and then reuse the outcome for our right eye
-	if (p_eye == ARVRInterface::EYE_LEFT) {
-		///@TODO possibly move responsibility for this into our ARVRServer or ARVRInterface?
-
+	if (p_eye == XRInterface::EYE_LEFT) {
 		// Center our transform, we assume basis is equal.
 		Transform mono_transform = cam_transform;
-		Transform right_transform = p_interface->get_transform_for_eye(ARVRInterface::EYE_RIGHT, world_origin);
+		Transform right_transform = p_interface->get_transform_for_eye(XRInterface::EYE_RIGHT, world_origin);
 		mono_transform.origin += right_transform.origin;
 		mono_transform.origin *= 0.5;
 
@@ -1872,17 +1984,17 @@ void RenderingServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface
 		mono_transform *= apply_z_shift;
 
 		// now prepare our scene with our adjusted transform projection matrix
-		_prepare_scene(mono_transform, combined_matrix, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
-	} else if (p_eye == ARVRInterface::EYE_MONO) {
+		_prepare_scene(mono_transform, combined_matrix, false, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+	} else if (p_eye == XRInterface::EYE_MONO) {
 		// For mono render, prepare as per usual
-		_prepare_scene(cam_transform, camera_matrix, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
+		_prepare_scene(cam_transform, camera_matrix, false, false, camera->env, camera->effects, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
 	}
 
 	// And render our scene...
 	_render_scene(p_render_buffers, cam_transform, camera_matrix, false, camera->env, camera->effects, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows) {
+void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_force_environment, RID p_force_camera_effects, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows) {
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -2112,7 +2224,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 			RENDER_TIMESTAMP(">Rendering Directional Light " + itos(i));
 
-			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_cam_vaspect, p_shadow_atlas, scenario);
 
 			RENDER_TIMESTAMP("<Rendering Directional Light " + itos(i));
 		}
@@ -2214,7 +2326,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 			if (redraw) {
 				//must redraw!
 				RENDER_TIMESTAMP(">Rendering Light " + itos(i));
-				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_cam_vaspect, p_shadow_atlas, scenario);
 				RENDER_TIMESTAMP("<Rendering Light " + itos(i));
 			}
 		}
@@ -2259,7 +2371,7 @@ void RenderingServerScene::render_empty_scene(RID p_render_buffers, RID p_scenar
 	else
 		environment = scenario->fallback_environment;
 	RENDER_TIMESTAMP("Render Empty Scene ");
-	RSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, NULL, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+	RSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
 
@@ -2324,7 +2436,7 @@ bool RenderingServerScene::_render_reflection_probe_step(Instance *p_instance, i
 		}
 
 		RENDER_TIMESTAMP("Render Reflection Probe, Step " + itos(p_step));
-		_prepare_scene(xform, cm, false, RID(), RID(), RSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, use_shadows);
+		_prepare_scene(xform, cm, false, false, RID(), RID(), RSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, use_shadows);
 		_render_scene(RID(), xform, cm, false, RID(), RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
@@ -2827,7 +2939,7 @@ bool RenderingServerScene::free(RID p_rid) {
 	return true;
 }
 
-RenderingServerScene *RenderingServerScene::singleton = NULL;
+RenderingServerScene *RenderingServerScene::singleton = nullptr;
 
 RenderingServerScene::RenderingServerScene() {
 

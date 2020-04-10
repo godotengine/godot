@@ -217,8 +217,12 @@ bool Light3D::is_editor_only() const {
 
 void Light3D::_validate_property(PropertyInfo &property) const {
 
-	if (RenderingServer::get_singleton()->is_low_end() && property.name == "shadow_contact") {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_size") {
+		property.usage = 0;
+	}
+
+	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
+		property.usage = 0;
 	}
 }
 
@@ -255,6 +259,8 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,64,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disable,Indirect,All"), "set_bake_mode", "get_bake_mode");
@@ -262,9 +268,10 @@ void Light3D::_bind_methods() {
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled"), "set_shadow", "has_shadow");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_shadow_color", "get_shadow_color");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_CONTACT_SHADOW_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BIAS);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_normal_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_transmittance_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_TRANSMITTANCE_BIAS);
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_GROUP("", "");
@@ -276,7 +283,6 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ATTENUATION);
 	BIND_ENUM_CONSTANT(PARAM_SPOT_ANGLE);
 	BIND_ENUM_CONSTANT(PARAM_SPOT_ATTENUATION);
-	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_SIZE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_MAX_DISTANCE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_1_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_2_OFFSET);
@@ -284,7 +290,8 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_FADE_START);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
-	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS_SPLIT_SCALE);
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_PANCAKE_SIZE);
+	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
@@ -318,17 +325,19 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_INDIRECT_ENERGY, 1);
 	set_param(PARAM_SPECULAR, 0.5);
 	set_param(PARAM_RANGE, 5);
+	set_param(PARAM_SIZE, 0);
 	set_param(PARAM_ATTENUATION, 1);
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);
-	set_param(PARAM_CONTACT_SHADOW_SIZE, 0);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
 	set_param(PARAM_SHADOW_SPLIT_3_OFFSET, 0.5);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.0);
-	set_param(PARAM_SHADOW_BIAS, 0.15);
+	set_param(PARAM_SHADOW_PANCAKE_SIZE, 20.0);
+	set_param(PARAM_SHADOW_BIAS, 0.02);
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
+	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }
@@ -336,7 +345,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 Light3D::Light3D() {
 
 	type = RenderingServer::LIGHT_DIRECTIONAL;
-	ERR_PRINT("Light should not be instanced directly; use the DirectionalLight, OmniLight or SpotLight subtypes instead.");
+	ERR_PRINT("Light3D should not be instanced directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
 }
 
 Light3D::~Light3D() {
@@ -398,10 +407,9 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_3", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_3_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional_shadow_blend_splits"), "set_blend_splits", "is_blend_splits_enabled");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_normal_bias", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_bias_split_scale", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS_SPLIT_SCALE);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_depth_range", PROPERTY_HINT_ENUM, "Stable,Optimized"), "set_shadow_depth_range", "get_shadow_depth_range");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_EXP_RANGE, "0,8192,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_EXP_RANGE, "0,1024,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
@@ -414,11 +422,8 @@ void DirectionalLight3D::_bind_methods() {
 DirectionalLight3D::DirectionalLight3D() :
 		Light3D(RenderingServer::LIGHT_DIRECTIONAL) {
 
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
-	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
-	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
 
@@ -464,7 +469,7 @@ String SpotLight3D::get_configuration_warning() const {
 			warning += "\n\n";
 		}
 
-		warning += TTR("A SpotLight with an angle wider than 90 degrees cannot cast shadows.");
+		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
 	}
 
 	return warning;

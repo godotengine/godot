@@ -100,7 +100,7 @@ ScrollContainer *EditorAbout::_populate_list(const String &p_name, const List<St
 			il->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 			il->add_theme_constant_override("hseparation", 16 * EDSCALE);
 			while (*names_ptr) {
-				il->add_item(String::utf8(*names_ptr++), NULL, false);
+				il->add_item(String::utf8(*names_ptr++), nullptr, false);
 			}
 			il->set_max_columns(il->get_item_count() < 4 || single_column ? 1 : 16);
 			vbc->add_child(il);

@@ -80,7 +80,7 @@ void ColorPicker::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
 
-			if (screen != NULL && screen->is_visible())
+			if (screen != nullptr && screen->is_visible())
 				screen->hide();
 		} break;
 	}
@@ -275,7 +275,7 @@ void ColorPicker::_text_type_toggled() {
 		c_text->set_editable(false);
 	} else {
 		text_type->set_text("#");
-		text_type->set_icon(NULL);
+		text_type->set_icon(nullptr);
 
 		c_text->set_editable(true);
 	}
@@ -732,7 +732,7 @@ ColorPicker::ColorPicker() :
 	changing_color = false;
 	presets_enabled = true;
 	presets_visible = true;
-	screen = NULL;
+	screen = nullptr;
 
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
 	add_child(hb_edit);
@@ -1024,8 +1024,8 @@ ColorPickerButton::ColorPickerButton() {
 	// Initialization is now done deferred,
 	// this improves performance in the inspector as the color picker
 	// can be expensive to initialize.
-	picker = NULL;
-	popup = NULL;
+	picker = nullptr;
+	popup = nullptr;
 	edit_alpha = true;
 
 	set_toggle_mode(true);

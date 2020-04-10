@@ -49,8 +49,8 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (p_only_free || !is_inside_tree())
 		return;
 
-	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)NULL;
-	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)NULL;
+	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)nullptr;
+	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)nullptr;
 
 	if (!node_a || !node_b)
 		return;

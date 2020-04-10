@@ -297,6 +297,7 @@
 			</argument>
 			<description>
 				Stores an integer as 16 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^16 - 1][/code].
 			</description>
 		</method>
 		<method name="store_32">
@@ -306,6 +307,7 @@
 			</argument>
 			<description>
 				Stores an integer as 32 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 2^32 - 1][/code].
 			</description>
 		</method>
 		<method name="store_64">
@@ -315,6 +317,7 @@
 			</argument>
 			<description>
 				Stores an integer as 64 bits in the file.
+				[b]Note:[/b] The [code]value[/code] must lie in the interval [code][-2^63, 2^63 - 1][/code] (i.e. be a valid [int] value).
 			</description>
 		</method>
 		<method name="store_8">
@@ -324,6 +327,7 @@
 			</argument>
 			<description>
 				Stores an integer as 8 bits in the file.
+				[b]Note:[/b] The [code]value[/code] should lie in the interval [code][0, 255][/code].
 			</description>
 		</method>
 		<method name="store_buffer">

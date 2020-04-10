@@ -248,7 +248,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		}
 	}
 
-	ImageLoaderSVG::set_convert_colors(NULL);
+	ImageLoaderSVG::set_convert_colors(nullptr);
 #else
 	WARN_PRINT("SVG support disabled, editor icons won't be rendered.");
 #endif
@@ -418,7 +418,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	//Register icons + font
 
 	// the resolution and the icon color (dark_theme bool) has not changed, so we do not regenerate the icons
-	if (p_theme != NULL && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
+	if (p_theme != nullptr && fabs(p_theme->get_constant("scale", "Editor") - EDSCALE) < 0.00001 && (bool)p_theme->get_constant("dark_theme", "Editor") == dark_theme) {
 		// register already generated icons
 		for (int i = 0; i < editor_icons_count; i++) {
 			theme->set_icon(editor_icons_names[i], "EditorIcons", p_theme->get_icon(editor_icons_names[i], "EditorIcons"));
@@ -427,7 +427,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		editor_register_and_generate_icons(theme, dark_theme, thumb_size);
 	}
 	// thumbnail size has changed, so we regenerate the medium sizes
-	if (p_theme != NULL && fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
+	if (p_theme != nullptr && fabs((double)p_theme->get_constant("thumb_size", "Editor") - thumb_size) > 0.00001) {
 		editor_register_and_generate_icons(p_theme, dark_theme, thumb_size, true);
 	}
 
@@ -961,12 +961,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("grabber", "HSlider", theme->get_icon("GuiSliderGrabber", "EditorIcons"));
 	theme->set_stylebox("slider", "HSlider", make_flat_stylebox(dark_color_3, 0, default_margin_size / 2, 0, default_margin_size / 2));
 	theme->set_stylebox("grabber_area", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2));
+	theme->set_stylebox("grabber_area_highlight", "HSlider", make_flat_stylebox(contrast_color_1, 0, default_margin_size / 2, 0, default_margin_size / 2));
 
 	// VSlider
 	theme->set_icon("grabber", "VSlider", theme->get_icon("GuiSliderGrabber", "EditorIcons"));
 	theme->set_icon("grabber_highlight", "VSlider", theme->get_icon("GuiSliderGrabberHl", "EditorIcons"));
 	theme->set_stylebox("slider", "VSlider", make_flat_stylebox(dark_color_3, default_margin_size / 2, 0, default_margin_size / 2, 0));
 	theme->set_stylebox("grabber_area", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0));
+	theme->set_stylebox("grabber_area_highlight", "VSlider", make_flat_stylebox(contrast_color_1, default_margin_size / 2, 0, default_margin_size / 2, 0));
 
 	//RichTextLabel
 	theme->set_color("default_color", "RichTextLabel", font_color);
@@ -976,8 +978,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("shadow_as_outline", "RichTextLabel", 0 * EDSCALE);
 	theme->set_stylebox("focus", "RichTextLabel", make_empty_stylebox());
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
-
-	theme->set_stylebox("panel", "EditorHelpBit", make_flat_stylebox(dark_color_1, 6, 4, 6, 4));
 
 	theme->set_color("headline_color", "EditorHelp", mono_color);
 
@@ -997,6 +997,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// LinkButton
 	theme->set_stylebox("focus", "LinkButton", style_empty);
 	theme->set_color("font_color", "LinkButton", font_color);
+	theme->set_color("font_color_hover", "LinkButton", font_color_hl);
+	theme->set_color("font_color_pressed", "LinkButton", accent_color);
+	theme->set_color("font_color_disabled", "LinkButton", font_color_disabled);
 
 	// TooltipPanel
 	Ref<StyleBoxFlat> style_tooltip = style_popup->duplicate();

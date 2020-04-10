@@ -45,7 +45,7 @@ class AreaBullet;
 class SpaceBullet;
 class btRigidBody;
 class GodotMotionState;
-class BulletPhysicsDirectBodyState;
+class BulletPhysicsDirectBodyState3D;
 
 /// This class could be used in multi thread with few changes but currently
 /// is set to be only in one single thread.
@@ -53,29 +53,29 @@ class BulletPhysicsDirectBodyState;
 /// In the system there is only one object at a time that manage all bodies and is
 /// created by BulletPhysicsServer3D and is held by the "singleton" variable of this class
 /// Each time something require it, the body must be set again.
-class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState3D {
-	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState3D);
+class BulletPhysicsDirectBodyState3D : public PhysicsDirectBodyState3D {
+	GDCLASS(BulletPhysicsDirectBodyState3D, PhysicsDirectBodyState3D);
 
-	static BulletPhysicsDirectBodyState *singleton;
+	static BulletPhysicsDirectBodyState3D *singleton;
 
 public:
 	/// This class avoid the creation of more object of this class
 	static void initSingleton() {
 		if (!singleton) {
-			singleton = memnew(BulletPhysicsDirectBodyState);
+			singleton = memnew(BulletPhysicsDirectBodyState3D);
 		}
 	}
 
 	static void destroySingleton() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	static void singleton_setDeltaTime(real_t p_deltaTime) {
 		singleton->deltaTime = p_deltaTime;
 	}
 
-	static BulletPhysicsDirectBodyState *get_singleton(RigidBodyBullet *p_body) {
+	static BulletPhysicsDirectBodyState3D *get_singleton(RigidBodyBullet *p_body) {
 		singleton->body = p_body;
 		return singleton;
 	}
@@ -85,7 +85,7 @@ public:
 	real_t deltaTime;
 
 private:
-	BulletPhysicsDirectBodyState() {}
+	BulletPhysicsDirectBodyState3D() {}
 
 public:
 	virtual Vector3 get_total_gravity() const;
@@ -166,7 +166,7 @@ public:
 		btTransform transform;
 
 		KinematicShape() :
-				shape(NULL) {}
+				shape(nullptr) {}
 		bool is_active() const { return shape; }
 	};
 
@@ -187,7 +187,7 @@ public:
 	};
 
 private:
-	friend class BulletPhysicsDirectBodyState;
+	friend class BulletPhysicsDirectBodyState3D;
 
 	// This is required only for Kinematic movement
 	KinematicUtilities *kinematic_utilities;

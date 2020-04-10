@@ -236,7 +236,7 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 void GPUParticles3DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 		hide();
 	}
 }
@@ -424,7 +424,7 @@ void GPUParticles3DEditor::_bind_methods() {
 
 GPUParticles3DEditor::GPUParticles3DEditor() {
 
-	node = NULL;
+	node = nullptr;
 	particles_editor_hb = memnew(HBoxContainer);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
@@ -476,7 +476,7 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		particles_editor->particles_editor_hb->hide();
 		particles_editor->hide();
-		particles_editor->edit(NULL);
+		particles_editor->edit(nullptr);
 	}
 }
 

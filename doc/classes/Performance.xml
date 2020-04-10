@@ -95,7 +95,7 @@
 			Number of islands in the 2D physics engine.
 		</constant>
 		<constant name="PHYSICS_3D_ACTIVE_OBJECTS" value="23" enum="Monitor">
-			Number of active [RigidBody] and [VehicleBody] nodes in the game.
+			Number of active [RigidBody3D] and [VehicleBody3D] nodes in the game.
 		</constant>
 		<constant name="PHYSICS_3D_COLLISION_PAIRS" value="24" enum="Monitor">
 			Number of collision pairs in the 3D physics engine.

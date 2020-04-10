@@ -330,13 +330,6 @@
 				Returns the tooltip associated with the specified index index [code]idx[/code].
 			</description>
 		</method>
-		<method name="is_hide_on_window_lose_focus" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the popup will be hidden when the window loses focus or not.
-			</description>
-		</method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -402,15 +395,6 @@
 			<description>
 				Removes the item at index [code]idx[/code] from the menu.
 				[b]Note:[/b] The indices of items after the removed item will be shifted by one.
-			</description>
-		</method>
-		<method name="set_hide_on_window_lose_focus">
-			<return type="void">
-			</return>
-			<argument index="0" name="enable" type="bool">
-			</argument>
-			<description>
-				Hides the [PopupMenu] when the window loses focus.
 			</description>
 		</method>
 		<method name="set_item_accelerator">
@@ -604,7 +588,6 @@
 		<member name="allow_search" type="bool" setter="set_allow_search" getter="get_allow_search" default="false">
 			If [code]true[/code], allows to navigate [PopupMenu] with letter keys.
 		</member>
-		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" override="true" enum="Control.FocusMode" default="2" />
 		<member name="hide_on_checkable_item_selection" type="bool" setter="set_hide_on_checkable_item_selection" getter="is_hide_on_checkable_item_selection" default="true">
 			If [code]true[/code], hides the [PopupMenu] when a checkbox or radio button is selected.
 		</member>

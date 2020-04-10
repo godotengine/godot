@@ -208,13 +208,13 @@ String CPUParticles3D::get_configuration_warning() const {
 	if (get_mesh().is_valid()) {
 		mesh_found = true;
 		for (int j = 0; j < get_mesh()->get_surface_count(); j++) {
-			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != NULL;
+			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != nullptr;
 			StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_mesh()->surface_get_material(j).ptr());
 			anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 		}
 	}
 
-	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != NULL;
+	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != nullptr;
 	StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_material_override().ptr());
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
@@ -228,7 +228,7 @@ String CPUParticles3D::get_configuration_warning() const {
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
 		if (warnings != String())
 			warnings += "\n";
-		warnings += "- " + TTR("CPUParticles animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
+		warnings += "- " + TTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
 	}
 
 	return warnings;
@@ -1022,7 +1022,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 	int pc = particles.size();
 
 	int *ow;
-	int *order = NULL;
+	int *order = nullptr;
 
 	float *w = particle_data.ptrw();
 	const Particle *r = particles.ptr();
@@ -1206,7 +1206,7 @@ void CPUParticles3D::_notification(int p_what) {
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
 
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_particles);
-	ERR_FAIL_COND_MSG(!particles, "Only Particles nodes can be converted to CPUParticles.");
+	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
 	set_emitting(particles->is_emitting());
 	set_amount(particles->get_amount());

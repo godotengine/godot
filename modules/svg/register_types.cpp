@@ -32,7 +32,7 @@
 
 #include "image_loader_svg.h"
 
-static ImageLoaderSVG *image_loader_svg = NULL;
+static ImageLoaderSVG *image_loader_svg = nullptr;
 
 void register_svg_types() {
 

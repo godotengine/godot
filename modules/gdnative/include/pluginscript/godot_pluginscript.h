@@ -60,7 +60,7 @@ typedef struct {
 	//this is used by script languages that keep a reference counter of their own
 	//you can make make Ref<> not die when it reaches zero, so deleting the reference
 	//depends entirely from the script.
-	// Note: You can set those function pointer to NULL if not needed.
+	// Note: You can set those function pointer to nullptr  if not needed.
 	void (*refcount_incremented)(godot_pluginscript_instance_data *p_data);
 	bool (*refcount_decremented)(godot_pluginscript_instance_data *p_data); // return true if it can die
 } godot_pluginscript_instance_desc;
@@ -119,18 +119,18 @@ typedef struct {
 	const char *name;
 	const char *type;
 	const char *extension;
-	const char **recognized_extensions; // NULL terminated array
+	const char **recognized_extensions; // nullptr  terminated array
 	godot_pluginscript_language_data *(*init)();
 	void (*finish)(godot_pluginscript_language_data *p_data);
-	const char **reserved_words; // NULL terminated array
-	const char **comment_delimiters; // NULL terminated array
-	const char **string_delimiters; // NULL terminated array
+	const char **reserved_words; // nullptr  terminated array
+	const char **comment_delimiters; // nullptr  terminated array
+	const char **string_delimiters; // nullptr  terminated array
 	godot_bool has_named_classes;
 	godot_bool supports_builtin_mode;
 
 	godot_string (*get_template_source_code)(godot_pluginscript_language_data *p_data, const godot_string *p_class_name, const godot_string *p_base_class_name);
 	godot_bool (*validate)(godot_pluginscript_language_data *p_data, const godot_string *p_script, int *r_line_error, int *r_col_error, godot_string *r_test_error, const godot_string *p_path, godot_packed_string_array *r_functions);
-	int (*find_function)(godot_pluginscript_language_data *p_data, const godot_string *p_function, const godot_string *p_code); // Can be NULL
+	int (*find_function)(godot_pluginscript_language_data *p_data, const godot_string *p_function, const godot_string *p_code); // Can be nullptr
 	godot_string (*make_function)(godot_pluginscript_language_data *p_data, const godot_string *p_class, const godot_string *p_name, const godot_packed_string_array *p_args);
 	godot_error (*complete_code)(godot_pluginscript_language_data *p_data, const godot_string *p_code, const godot_string *p_path, godot_object *p_owner, godot_array *r_options, godot_bool *r_force, godot_string *r_call_hint);
 	void (*auto_indent_code)(godot_pluginscript_language_data *p_data, godot_string *p_code, int p_from_line, int p_to_line);

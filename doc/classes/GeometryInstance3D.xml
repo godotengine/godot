@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GeometryInstance3D" inherits="VisualInstance3D" version="4.0">
+	<brief_description>
+		Base node for geometry-based visual instances.
+	</brief_description>
+	<description>
+		Base node for geometry-based visual instances. Shares some common functionality like visibility and custom materials.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="GeometryInstance3D.Flags">
+			</argument>
+			<description>
+				Returns the [enum GeometryInstance3D.Flags] that have been set for this object.
+			</description>
+		</method>
+		<method name="set_custom_aabb">
+			<return type="void">
+			</return>
+			<argument index="0" name="aabb" type="AABB">
+			</argument>
+			<description>
+				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="GeometryInstance3D.Flags">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+				Sets the [enum GeometryInstance3D.Flags] specified. See [enum GeometryInstance3D.Flags] for options.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
+			The selected shadow casting flag. See [enum ShadowCastingSetting] for possible values.
+		</member>
+		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" default="0.0">
+			The extra distance added to the GeometryInstance3D's bounding box ([AABB]) to increase its cull box.
+		</member>
+		<member name="lod_max_distance" type="float" setter="set_lod_max_distance" getter="get_lod_max_distance" default="0.0">
+			The GeometryInstance3D's max LOD distance.
+			[b]Note:[/b] This property currently has no effect.
+		</member>
+		<member name="lod_max_hysteresis" type="float" setter="set_lod_max_hysteresis" getter="get_lod_max_hysteresis" default="0.0">
+			The GeometryInstance3D's max LOD margin.
+			[b]Note:[/b] This property currently has no effect.
+		</member>
+		<member name="lod_min_distance" type="float" setter="set_lod_min_distance" getter="get_lod_min_distance" default="0.0">
+			The GeometryInstance3D's min LOD distance.
+			[b]Note:[/b] This property currently has no effect.
+		</member>
+		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis" default="0.0">
+			The GeometryInstance3D's min LOD margin.
+			[b]Note:[/b] This property currently has no effect.
+		</member>
+		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
+			The material override for the whole geometry.
+			If a material is assigned to this property, it will be used instead of any material set in any material slot of the mesh.
+		</member>
+		<member name="use_dynamic_gi" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
+		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], this GeometryInstance3D will be used when baking lights using a [GIProbe].
+		</member>
+	</members>
+	<constants>
+		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
+			Will not cast any shadows.
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_ON" value="1" enum="ShadowCastingSetting">
+			Will cast shadows from all visible faces in the GeometryInstance3D.
+			Will take culling into account, so faces not being rendered will not be taken into account when shadow casting.
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_DOUBLE_SIDED" value="2" enum="ShadowCastingSetting">
+			Will cast shadows from all visible faces in the GeometryInstance3D.
+			Will not take culling into account, so all faces will be taken into account when shadow casting.
+		</constant>
+		<constant name="SHADOW_CASTING_SETTING_SHADOWS_ONLY" value="3" enum="ShadowCastingSetting">
+			Will only show the shadows casted from this object.
+			In other words, the actual mesh will not be visible, only the shadows casted from the mesh will be.
+		</constant>
+		<constant name="FLAG_USE_BAKED_LIGHT" value="0" enum="Flags">
+			Will allow the GeometryInstance3D to be used when baking lights using a [GIProbe].
+		</constant>
+		<constant name="FLAG_USE_DYNAMIC_GI" value="1" enum="Flags">
+		</constant>
+		<constant name="FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="2" enum="Flags">
+			Unused in this class, exposed for consistency with [enum RenderingServer.InstanceFlags].
+		</constant>
+		<constant name="FLAG_MAX" value="3" enum="Flags">
+			Represents the size of the [enum Flags] enum.
+		</constant>
+	</constants>
+</class>

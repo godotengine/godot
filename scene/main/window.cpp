@@ -909,7 +909,7 @@ void Window::_window_input_text(const String &p_text) {
 	input_text(p_text);
 }
 void Window::_window_drop_files(const Vector<String> &p_files) {
-	emit_signal("files_dropped", p_files);
+	emit_signal("files_dropped", p_files, current_screen);
 }
 
 Viewport *Window::get_parent_viewport() const {
@@ -1108,13 +1108,13 @@ void Window::remove_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
-		Control::_propagate_theme_changed(child_c, NULL, NULL);
+		Control::_propagate_theme_changed(child_c, nullptr, nullptr);
 	}
 
 	Window *child_w = Object::cast_to<Window>(p_child);
 
 	if (child_w && (child_w->theme_owner || child_w->theme_owner_window) && child_w->theme.is_null()) {
-		Control::_propagate_theme_changed(child_w, NULL, NULL);
+		Control::_propagate_theme_changed(child_w, nullptr, nullptr);
 	}
 
 	if (is_inside_tree() && wrap_controls) {
@@ -1285,7 +1285,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &Window::set_exclusive);
 	ClassDB::bind_method(D_METHOD("is_exclusive"), &Window::is_exclusive);
 
-	ClassDB::bind_method(D_METHOD("can_draw"), &Window::is_transient);
+	ClassDB::bind_method(D_METHOD("can_draw"), &Window::can_draw);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Window::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Window::grab_focus);
 

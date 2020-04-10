@@ -370,7 +370,7 @@ public:
 
 	FUNCRID(viewport)
 
-	FUNC2(viewport_set_use_arvr, RID, bool)
+	FUNC2(viewport_set_use_xr, RID, bool)
 
 	FUNC3(viewport_set_size, RID, int, int)
 
@@ -437,12 +437,15 @@ public:
 #if 0
 	FUNC2(environment_set_camera_feed_id, RID, int)
 #endif
-	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
+	FUNC6(environment_set_ssr, RID, bool, int, float, float, float)
+	FUNC1(environment_set_ssr_roughness_quality, EnvironmentSSRRoughnessQuality)
+
 	FUNC9(environment_set_ssao, RID, bool, float, float, float, float, float, EnvironmentSSAOBlur, float)
 
 	FUNC2(environment_set_ssao_quality, EnvironmentSSAOQuality, bool)
 
-	FUNC12(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
+	FUNC11(environment_set_glow, RID, bool, int, float, float, float, float, EnvironmentGlowBlendMode, float, float, float)
+	FUNC1(environment_glow_set_use_bicubic_upscale, bool)
 
 	FUNC9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
@@ -453,6 +456,8 @@ public:
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
 	FUNC2(screen_space_roughness_limiter_set_active, bool, float)
+	FUNC1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
+	FUNC2(sub_surface_scattering_set_scale, float, float)
 
 	FUNCRID(camera_effects)
 
@@ -461,6 +466,8 @@ public:
 
 	FUNC8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
+
+	FUNC1(shadow_filter_set, ShadowFilter)
 
 	FUNCRID(scenario)
 

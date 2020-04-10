@@ -29,6 +29,10 @@
 /*************************************************************************/
 
 #include "collision_shape_3d.h"
+
+#include "core/math/quick_hull.h"
+#include "mesh_instance_3d.h"
+#include "physics_body_3d.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
@@ -37,10 +41,8 @@
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/world_margin_shape_3d.h"
 #include "servers/rendering_server.h"
+
 //TODO: Implement CylinderShape and HeightMapShape?
-#include "core/math/quick_hull.h"
-#include "mesh_instance_3d.h"
-#include "physics_body_3d.h"
 
 void CollisionShape3D::make_convex_from_brothers() {
 
@@ -103,7 +105,7 @@ void CollisionShape3D::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 	}
 }
@@ -116,17 +118,17 @@ void CollisionShape3D::resource_changed(RES res) {
 String CollisionShape3D::get_configuration_warning() const {
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		return TTR("CollisionShape only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+		return TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
 	}
 
 	if (!shape.is_valid()) {
-		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
+		return TTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it.");
 	}
 
 	if (Object::cast_to<RigidBody3D>(get_parent())) {
 		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
 			if (Object::cast_to<RigidBody3D>(get_parent())->get_mode() != RigidBody3D::MODE_STATIC) {
-				return TTR("ConcavePolygonShape doesn't support RigidBody in another mode than static.");
+				return TTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static.");
 			}
 		}
 	}
@@ -198,8 +200,8 @@ CollisionShape3D::CollisionShape3D() {
 
 	//indicator = RenderingServer::get_singleton()->mesh_create();
 	disabled = false;
-	debug_shape = NULL;
-	parent = NULL;
+	debug_shape = nullptr;
+	parent = nullptr;
 	owner_id = 0;
 	set_notify_local_transform(true);
 }
@@ -215,7 +217,7 @@ void CollisionShape3D::_update_debug_shape() {
 
 	if (debug_shape) {
 		debug_shape->queue_delete();
-		debug_shape = NULL;
+		debug_shape = nullptr;
 	}
 
 	Ref<Shape3D> s = get_shape();

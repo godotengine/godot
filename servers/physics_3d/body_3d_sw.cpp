@@ -569,7 +569,7 @@ void Body3DSW::integrate_forces(real_t p_step) {
 		_update_shapes_with_motion(motion);
 	}
 
-	def_area = NULL; // clear the area, so it is set in the next frame
+	def_area = nullptr; // clear the area, so it is set in the next frame
 	contact_count = 0;
 }
 
@@ -746,7 +746,7 @@ void Body3DSW::set_force_integration_callback(ObjectID p_id, const StringName &p
 	if (fi_callback) {
 
 		memdelete(fi_callback);
-		fi_callback = NULL;
+		fi_callback = nullptr;
 	}
 
 	if (p_id.is_valid()) {
@@ -781,8 +781,8 @@ Body3DSW::Body3DSW() :
 	omit_force_integration = false;
 	//applied_torque=0;
 	island_step = 0;
-	island_next = NULL;
-	island_list_next = NULL;
+	island_next = nullptr;
+	island_list_next = nullptr;
 	first_time_kinematic = false;
 	first_integration = false;
 	_set_static(false);
@@ -797,7 +797,7 @@ Body3DSW::Body3DSW() :
 	still_time = 0;
 	continuous_cd = false;
 	can_sleep = true;
-	fi_callback = NULL;
+	fi_callback = nullptr;
 }
 
 Body3DSW::~Body3DSW() {
@@ -806,7 +806,7 @@ Body3DSW::~Body3DSW() {
 		memdelete(fi_callback);
 }
 
-PhysicsDirectBodyState3DSW *PhysicsDirectBodyState3DSW::singleton = NULL;
+PhysicsDirectBodyState3DSW *PhysicsDirectBodyState3DSW::singleton = nullptr;
 
 PhysicsDirectSpaceState3D *PhysicsDirectBodyState3DSW::get_space_state() {
 

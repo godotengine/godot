@@ -38,6 +38,13 @@
 #include "editor/editor_settings.h"
 #include "scene/gui/split_container.h"
 
+void TileMapEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = nullptr;
+	}
+}
+
 void TileMapEditor::_notification(int p_what) {
 
 	switch (p_what) {
@@ -60,6 +67,7 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			get_tree()->connect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
 			paint_button->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			bucket_fill_button->set_icon(get_theme_icon("Bucket", "EditorIcons"));
 			picker_button->set_icon(get_theme_icon("ColorPick", "EditorIcons"));
@@ -79,6 +87,10 @@ void TileMapEditor::_notification(int p_what) {
 			p->set_item_icon(p->get_item_index(OPTION_COPY), get_theme_icon("Duplicate", "EditorIcons"));
 			p->set_item_icon(p->get_item_index(OPTION_ERASE_SELECTION), get_theme_icon("Remove", "EditorIcons"));
 
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &TileMapEditor::_node_removed));
 		} break;
 	}
 }
@@ -627,7 +639,7 @@ Vector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool erase, 
 		if (r != bucket_cache_rect)
 			_clear_bucket_cache();
 		// Cache grid is not initialized
-		if (bucket_cache_visited == NULL) {
+		if (bucket_cache_visited == nullptr) {
 			bucket_cache_visited = new bool[area];
 			invalidate_cache = true;
 		}
@@ -894,7 +906,7 @@ void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Po
 void TileMapEditor::_clear_bucket_cache() {
 	if (bucket_cache_visited) {
 		delete[] bucket_cache_visited;
-		bucket_cache_visited = NULL;
+		bucket_cache_visited = nullptr;
 	}
 }
 
@@ -1773,7 +1785,7 @@ void TileMapEditor::edit(Node *p_tile_map) {
 		_update_palette();
 
 	} else {
-		node = NULL;
+		node = nullptr;
 
 		if (canvas_item_editor_viewport->is_connected("mouse_entered", callable_mp(this, &TileMapEditor::_canvas_mouse_enter)))
 			canvas_item_editor_viewport->disconnect("mouse_entered", callable_mp(this, &TileMapEditor::_canvas_mouse_enter));
@@ -1889,11 +1901,11 @@ void TileMapEditor::_clear_transform() {
 
 TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
-	node = NULL;
+	node = nullptr;
 	manual_autotile = false;
 	priority_atlastile = false;
 	manual_position = Vector2(0, 0);
-	canvas_item_editor_viewport = NULL;
+	canvas_item_editor_viewport = nullptr;
 	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
 
@@ -1906,7 +1918,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	transpose = false;
 
 	bucket_cache_tile = -1;
-	bucket_cache_visited = NULL;
+	bucket_cache_visited = nullptr;
 
 	invalid_cell.resize(1);
 	invalid_cell.write[0] = TileMap::INVALID_CELL;
@@ -2142,7 +2154,7 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 		tile_map_editor->get_toolbar()->hide();
 		tile_map_editor->get_toolbar_right()->hide();
 		tile_map_editor->get_tile_info()->hide();
-		tile_map_editor->edit(NULL);
+		tile_map_editor->edit(nullptr);
 	}
 }
 

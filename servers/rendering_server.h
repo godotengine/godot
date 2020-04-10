@@ -382,10 +382,10 @@ public:
 		LIGHT_PARAM_INDIRECT_ENERGY,
 		LIGHT_PARAM_SPECULAR,
 		LIGHT_PARAM_RANGE,
+		LIGHT_PARAM_SIZE,
 		LIGHT_PARAM_ATTENUATION,
 		LIGHT_PARAM_SPOT_ANGLE,
 		LIGHT_PARAM_SPOT_ATTENUATION,
-		LIGHT_PARAM_CONTACT_SHADOW_SIZE,
 		LIGHT_PARAM_SHADOW_MAX_DISTANCE,
 		LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
 		LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
@@ -393,7 +393,8 @@ public:
 		LIGHT_PARAM_SHADOW_FADE_START,
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS,
-		LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE,
+		LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
+		LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		LIGHT_PARAM_MAX
 	};
 
@@ -580,7 +581,7 @@ public:
 
 	virtual RID viewport_create() = 0;
 
-	virtual void viewport_set_use_arvr(RID p_viewport, bool p_use_arvr) = 0;
+	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
@@ -666,6 +667,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE,
 		VIEWPORT_DEBUG_DRAW_SSAO,
 		VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER,
+		VIEWPORT_DEBUG_DRAW_PSSM_SPLITS,
 
 	};
 
@@ -733,7 +735,9 @@ public:
 		ENV_GLOW_BLEND_MODE_REPLACE,
 		ENV_GLOW_BLEND_MODE_MIX,
 	};
-	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) = 0;
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) = 0;
+
+	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
 
 	enum EnvironmentToneMapper {
 		ENV_TONE_MAPPER_LINEAR,
@@ -745,7 +749,16 @@ public:
 	virtual void environment_set_tonemap(RID p_env, EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_grey) = 0;
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) = 0;
 
-	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness) = 0;
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance) = 0;
+
+	enum EnvironmentSSRRoughnessQuality {
+		ENV_SSR_ROUGNESS_QUALITY_DISABLED,
+		ENV_SSR_ROUGNESS_QUALITY_LOW,
+		ENV_SSR_ROUGNESS_QUALITY_MEDIUM,
+		ENV_SSR_ROUGNESS_QUALITY_HIGH,
+	};
+
+	virtual void environment_set_ssr_roughness_quality(EnvironmentSSRRoughnessQuality p_quality) = 0;
 
 	enum EnvironmentSSAOBlur {
 		ENV_SSAO_BLUR_DISABLED,
@@ -771,6 +784,16 @@ public:
 
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) = 0;
 
+	enum SubSurfaceScatteringQuality {
+		SUB_SURFACE_SCATTERING_QUALITY_DISABLED,
+		SUB_SURFACE_SCATTERING_QUALITY_LOW,
+		SUB_SURFACE_SCATTERING_QUALITY_MEDIUM,
+		SUB_SURFACE_SCATTERING_QUALITY_HIGH,
+	};
+
+	virtual void sub_surface_scattering_set_quality(SubSurfaceScatteringQuality p_quality) = 0;
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) = 0;
+
 	/* CAMERA EFFECTS */
 
 	virtual RID camera_effects_create() = 0;
@@ -794,6 +817,15 @@ public:
 
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
+
+	enum ShadowFilter {
+		SHADOW_FILTER_NONE,
+		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF13,
+		SHADOW_FILTER_MAX
+	};
+
+	virtual void shadow_filter_set(ShadowFilter p_filter) = 0;
 
 	/* SCENARIO API */
 

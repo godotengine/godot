@@ -244,7 +244,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
-		p_anim->node_cache.write[i] = NULL;
+		p_anim->node_cache.write[i] = nullptr;
 		RES resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
@@ -293,13 +293,13 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 					p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
 					if (p_anim->node_cache[i]->bone_idx < 0) {
 						// broken track (nonexistent bone)
-						p_anim->node_cache[i]->skeleton = NULL;
-						p_anim->node_cache[i]->spatial = NULL;
+						p_anim->node_cache[i]->skeleton = nullptr;
+						p_anim->node_cache[i]->spatial = nullptr;
 						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
 					}
 				} else {
 					// no property, just use spatialnode
-					p_anim->node_cache[i]->skeleton = NULL;
+					p_anim->node_cache[i]->skeleton = nullptr;
 				}
 			}
 		}
@@ -830,7 +830,7 @@ void AnimationPlayer::_animation_process2(float p_delta, bool p_started) {
 		c.seeked = false;
 	}
 
-	List<Blend>::Element *prev = NULL;
+	List<Blend>::Element *prev = nullptr;
 	for (List<Blend>::Element *E = c.blend.back(); E; E = prev) {
 
 		Blend &b = E->get();
@@ -1242,19 +1242,6 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 bool AnimationPlayer::is_playing() const {
 
 	return playing;
-	/*
-	if (playback.current.from==NULL)
-		return false;
-
-	float len=playback.current.from->animation->get_length();
-	float pos = playback.current.pos;
-	bool loop=playback.current.from->animation->has_loop();
-	if (!loop && pos >= len) {
-		return false;
-	};
-
-	return true;
-	*/
 }
 
 void AnimationPlayer::set_current_animation(const String &p_anim) {
@@ -1296,7 +1283,7 @@ void AnimationPlayer::stop(bool p_reset) {
 	Playback &c = playback;
 	c.blend.clear();
 	if (p_reset) {
-		c.current.from = NULL;
+		c.current.from = nullptr;
 		c.current.speed_scale = 1;
 		c.current.pos = 0;
 	}
