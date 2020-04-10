@@ -276,8 +276,9 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float shadow_normal_bias;
 		float transmittance_bias;
 		float soft_shadow_size;
+		float soft_shadow_scale;
 		uint32_t mask;
-		uint32_t pad[3];
+		uint32_t pad[2];
 	};
 
 	struct DirectionalLightData {
@@ -289,7 +290,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float specular;
 		uint32_t mask;
 		float softshadow_angle;
-		uint32_t pad[1];
+		float soft_shadow_scale;
 		uint32_t blend_splits;
 		uint32_t shadow_enabled;
 		float fade_from;
@@ -361,10 +362,17 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			float reflection_multiplier;
 
 			uint32_t pancake_shadows;
-			uint32_t shadow_filter_mode;
+			uint32_t pad;
 
-			uint32_t shadow_blocker_count;
-			uint32_t shadow_pad[3];
+			float directional_penumbra_shadow_kernel[128]; //32 vec4s
+			float directional_soft_shadow_kernel[128];
+			float penumbra_shadow_kernel[128];
+			float soft_shadow_kernel[128];
+
+			uint32_t directional_penumbra_shadow_samples;
+			uint32_t directional_soft_shadow_samples;
+			uint32_t penumbra_shadow_samples;
+			uint32_t soft_shadow_samples;
 
 			float ambient_light_color_energy[4];
 

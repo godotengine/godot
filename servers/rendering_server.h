@@ -394,6 +394,7 @@ public:
 		LIGHT_PARAM_SHADOW_NORMAL_BIAS,
 		LIGHT_PARAM_SHADOW_BIAS,
 		LIGHT_PARAM_SHADOW_PANCAKE_SIZE,
+		LIGHT_PARAM_SHADOW_BLUR,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		LIGHT_PARAM_MAX
 	};
@@ -827,14 +828,17 @@ public:
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) = 0;
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) = 0;
 
-	enum ShadowFilter {
-		SHADOW_FILTER_NONE,
-		SHADOW_FILTER_PCF5,
-		SHADOW_FILTER_PCF13,
-		SHADOW_FILTER_MAX
+	enum ShadowQuality {
+		SHADOW_QUALITY_HARD,
+		SHADOW_QUALITY_SOFT_LOW,
+		SHADOW_QUALITY_SOFT_MEDIUM,
+		SHADOW_QUALITY_SOFT_HIGH,
+		SHADOW_QUALITY_SOFT_ULTRA,
+		SHADOW_QUALITY_MAX
 	};
 
-	virtual void shadow_filter_set(ShadowFilter p_filter) = 0;
+	virtual void shadows_quality_set(ShadowQuality p_quality) = 0;
+	virtual void directional_shadow_quality_set(ShadowQuality p_quality) = 0;
 
 	/* SCENARIO API */
 
