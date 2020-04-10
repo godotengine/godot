@@ -2897,7 +2897,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
-	WindowID main_window = _create_window(p_mode, 0, Rect2i(Point2i(), p_resolution));
+	Point2i window_position(
+			(screen_get_size(0).width - p_resolution.width) / 2,
+			(screen_get_size(0).height - p_resolution.height) / 2);
+	WindowID main_window = _create_window(p_mode, 0, Rect2i(window_position, p_resolution));
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, main_window);
