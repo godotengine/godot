@@ -120,6 +120,13 @@
 				Returns all the [Color]s as a [PackedStringArray] filled with each [Color]'s name, for use in [method get_color], if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="get_color_type_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Returns all the [Color] types as a [PackedStringArray] filled with unique type names, for use in [method get_color] and/or [method get_color_list].
+			</description>
+		</method>
 		<method name="get_constant" qualifiers="const">
 			<return type="int">
 			</return>
@@ -138,6 +145,13 @@
 			</argument>
 			<description>
 				Returns all the constants as a [PackedStringArray] filled with each constant's name, for use in [method get_constant], if the theme has [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_constant_type_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Returns all the constant types as a [PackedStringArray] filled with unique type names, for use in [method get_constant] and/or [method get_constant_list].
 			</description>
 		</method>
 		<method name="get_font" qualifiers="const">
@@ -180,6 +194,13 @@
 				Returns all the font sizes as a [PackedStringArray] filled with each font size name, for use in [method get_font_size], if the theme has [code]node_type[/code].
 			</description>
 		</method>
+		<method name="get_font_type_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Returns all the [Font] types as a [PackedStringArray] filled with unique type names, for use in [method get_font] and/or [method get_font_list].
+			</description>
+		</method>
 		<method name="get_icon" qualifiers="const">
 			<return type="Texture2D">
 			</return>
@@ -198,6 +219,13 @@
 			</argument>
 			<description>
 				Returns all the icons as a [PackedStringArray] filled with each [Texture2D]'s name, for use in [method get_icon], if the theme has [code]node_type[/code].
+			</description>
+		</method>
+		<method name="get_icon_type_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+				Returns all the icon types as a [PackedStringArray] filled with unique type names, for use in [method get_icon] and/or [method get_icon_list].
 			</description>
 		</method>
 		<method name="get_stylebox" qualifiers="const">
@@ -220,20 +248,18 @@
 				Returns all the [StyleBox]s as a [PackedStringArray] filled with each [StyleBox]'s name, for use in [method get_stylebox], if the theme has [code]node_type[/code].
 			</description>
 		</method>
-		<method name="get_stylebox_types" qualifiers="const">
+		<method name="get_stylebox_type_list" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
 			<description>
-				Returns all the [StyleBox] types as a [PackedStringArray] filled with each [StyleBox]'s type, for use in [method get_stylebox] and/or [method get_stylebox_list], if the theme has [code]node_type[/code].
+				Returns all the [StyleBox] types as a [PackedStringArray] filled with unique type names, for use in [method get_stylebox] and/or [method get_stylebox_list].
 			</description>
 		</method>
 		<method name="get_type_list" qualifiers="const">
 			<return type="PackedStringArray">
 			</return>
-			<argument index="0" name="node_type" type="String">
-			</argument>
 			<description>
-				Returns all the types in [code]node_type[/code] as a [PackedStringArray] for use in any of the [code]get_*[/code] functions, if the theme has [code]node_type[/code].
+				Returns all the theme types as a [PackedStringArray] filled with unique type names, for use in other [code]get_*[/code] functions of this theme.
 			</description>
 		</method>
 		<method name="has_color" qualifiers="const">
