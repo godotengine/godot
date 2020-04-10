@@ -345,7 +345,7 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 		if (orthogonal) {
 			float half_fov = Math::deg2rad(get_fov()) / 2.0;
 			float height = 2.0 * cursor.distance * Math::tan(half_fov);
-			camera->set_orthogonal(height, 0.1, 8192);
+			camera->set_orthogonal(height, get_znear(), get_zfar());
 		} else {
 			camera->set_perspective(get_fov(), get_znear(), get_zfar());
 		}
@@ -362,7 +362,7 @@ Transform SpatialEditorViewport::to_camera_transform(const Cursor &p_cursor) con
 	camera_transform.basis.rotate(Vector3(0, 1, 0), -p_cursor.y_rot);
 
 	if (orthogonal)
-		camera_transform.translate(0, 0, 4096);
+		camera_transform.translate(0, 0, (get_zfar() - get_znear()) / 2.0);
 	else
 		camera_transform.translate(0, 0, p_cursor.distance);
 
