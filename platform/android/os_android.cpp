@@ -141,18 +141,6 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 	return OK;
 }
 
-// Move to DisplayServerAndroid
-Point2 OS_Android::get_mouse_position() const {
-
-	return last_mouse_position;
-}
-
-int OS_Android::get_mouse_button_state() const {
-
-	return last_mouse_buttons_mask;
-}
-// end - move
-
 String OS_Android::get_name() const {
 
 	return "Android";

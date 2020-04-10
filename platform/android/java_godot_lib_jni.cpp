@@ -238,16 +238,16 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv *env, jc
 	Vector<DisplayServerAndroid::TouchPos> points;
 	for (int i = 0; i < pointers_count; i++) {
 
-		jint pointer_info[OS_Android::TOUCH_POINTER_INFO_SIZE];
-		env->GetIntArrayRegion(j_pointers_info, i * OS_Android::TOUCH_POINTER_INFO_SIZE, OS_Android::TOUCH_POINTER_INFO_SIZE, pointer_info);
+		jint pointer_info[DisplayServerAndroid::TOUCH_POINTER_INFO_SIZE];
+		env->GetIntArrayRegion(j_pointers_info, i * DisplayServerAndroid::TOUCH_POINTER_INFO_SIZE, DisplayServerAndroid::TOUCH_POINTER_INFO_SIZE, pointer_info);
 
 		jfloat pointer_position[2];
 		env->GetFloatArrayRegion(j_pointers_position, i * 2, 2, pointer_position);
 
 		DisplayServerAndroid::TouchPos touch_pos;
 		touch_pos.pos = Point2(pointer_position[0], pointer_position[1]);
-		touch_pos.id = pointer_info[OS_Android::TOUCH_POINTER_INFO_ID_OFFSET];
-		touch_pos.tool_type = pointer_info[OS_Android::TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET];
+		touch_pos.id = pointer_info[DisplayServerAndroid::TOUCH_POINTER_INFO_ID_OFFSET];
+		touch_pos.tool_type = pointer_info[DisplayServerAndroid::TOUCH_POINTER_INFO_TOOL_TYPE_OFFSET];
 		points.push_back(touch_pos);
 	}
 

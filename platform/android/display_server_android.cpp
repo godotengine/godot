@@ -442,6 +442,16 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 #endif
 }
 
+Point2i DisplayServerAndroid::mouse_get_position() const {
+
+	return last_mouse_position;
+}
+
+int DisplayServerAndroid::mouse_get_button_state() const {
+
+	return last_mouse_buttons_mask;
+}
+
 void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p_event) {
 	switch (p_event.type) {
 		case JOY_EVENT_BUTTON:
@@ -487,41 +497,125 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 	InputFilter::get_singleton()->parse_input_event(ev);
 }
 
-void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector<DisplayServerAndroid::TouchPos> &p_points) {
-	switch (p_what) {
-		case 0: { //gesture begin
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
+int DisplayServerAndroid::get_mouse_button_index(int android_motion_event_button_state) {
+	if ((android_motion_event_button_state & BUTTON_PRIMARY) != 0) {
+		return BUTTON_LEFT;
+	}
+	if ((android_motion_event_button_state & BUTTON_SECONDARY) != 0) {
+		return BUTTON_RIGHT;
+	}
+	if ((android_motion_event_button_state & BUTTON_TERTIARY) != 0) {
+		return BUTTON_MIDDLE;
+	}
+	if ((android_motion_event_button_state & BUTTON_FORWARD) != 0) {
+		return BUTTON_XBUTTON1;
+	}
+	if ((android_motion_event_button_state & BUTTON_BACK) != 0) {
+		return BUTTON_XBUTTON2;
+	}
 
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
-				}
-			}
+	return 0;
+}
+
+bool DisplayServerAndroid::is_mouse_pointer(DisplayServerAndroid::TouchPos touch_pos) const {
+	return is_mouse_pointer(touch_pos.tool_type);
+}
+
+bool DisplayServerAndroid::is_mouse_pointer(int tool_type) const {
+	return tool_type == TOOL_TYPE_MOUSE;
+}
+
+void DisplayServerAndroid::send_touch_event(DisplayServerAndroid::TouchPos touch_pos, int android_motion_event_action_button) {
+	if (is_mouse_pointer(touch_pos)) {
+		int button_index = get_mouse_button_index(android_motion_event_action_button);
+		last_mouse_buttons_mask |= button_index;
+		last_mouse_position = touch_pos.pos;
+
+		Ref<InputEventMouseButton> ev;
+		ev.instance();
+		ev->set_pressed(true);
+		ev->set_position(touch_pos.pos);
+		ev->set_global_position(touch_pos.pos);
+		ev->set_button_index(button_index);
+		ev->set_button_mask(last_mouse_buttons_mask);
+		InputFilter::get_singleton()->parse_input_event(ev);
+	} else {
+		Ref<InputEventScreenTouch> ev;
+		ev.instance();
+		ev->set_index(touch_pos.id);
+		ev->set_pressed(true);
+		ev->set_position(touch_pos.pos);
+		InputFilter::get_singleton()->parse_input_event(ev);
+	}
+}
+
+void DisplayServerAndroid::release_touch_event(TouchPos touch_pos, int android_motion_event_action_button, bool update_last_mouse_buttons_mask) {
+	if (is_mouse_pointer(touch_pos)) {
+
+		int button_index = get_mouse_button_index(android_motion_event_action_button);
+		last_mouse_position = touch_pos.pos;
+		if (update_last_mouse_buttons_mask) {
+			last_mouse_buttons_mask &= ~button_index;
+		}
+
+		Ref<InputEventMouseButton> ev;
+		ev.instance();
+		ev->set_pressed(false);
+		ev->set_position(touch_pos.pos);
+		ev->set_global_position(touch_pos.pos);
+		ev->set_button_index(button_index);
+		ev->set_button_mask(last_mouse_buttons_mask);
+		InputFilter::get_singleton()->parse_input_event(ev);
+
+	} else {
+		Ref<InputEventScreenTouch> ev;
+		ev.instance();
+		ev->set_index(touch_pos.id);
+		ev->set_pressed(false);
+		ev->set_position(touch_pos.pos);
+		InputFilter::get_singleton()->parse_input_event(ev);
+	}
+}
+
+void DisplayServerAndroid::release_touches(int android_motion_event_action_button, bool update_last_mouse_buttons_mask) {
+	if (touch.size()) {
+		//end all if exist
+		for (int i = 0; i < touch.size(); i++) {
+
+			TouchPos touch_pos = touch[i];
+			release_touch_event(touch_pos, android_motion_event_action_button, update_last_mouse_buttons_mask);
+		}
+		touch.clear();
+	}
+}
+
+void DisplayServerAndroid::process_touch(int motion_event_action, int motion_event_action_button, int p_pointer, const Vector<TouchPos> &p_points) {
+
+	switch (motion_event_action) {
+		case ACTION_DOWN:
+		case ACTION_BUTTON_PRESS: { // gesture begin
+
+			// end all if exist
+			release_touches(motion_event_action_button);
 
 			touch.resize(p_points.size());
 			for (int i = 0; i < p_points.size(); i++) {
 				touch.write[i].id = p_points[i].id;
 				touch.write[i].pos = p_points[i].pos;
+				touch.write[i].tool_type = p_points[i].tool_type;
 			}
 
 			//send touch
 			for (int i = 0; i < touch.size(); i++) {
 
-				Ref<InputEventScreenTouch> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_pressed(true);
-				ev->set_position(touch[i].pos);
-				InputFilter::get_singleton()->parse_input_event(ev);
+				TouchPos touch_pos = touch[i];
+				send_touch_event(touch_pos, motion_event_action_button);
 			}
 
 		} break;
-		case 1: { //motion
+
+		case ACTION_MOVE: { // motion
+
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
 			for (int i = 0; i < touch.size(); i++) {
@@ -540,59 +634,65 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 				if (touch[i].pos == p_points[idx].pos)
 					continue; //no move unncesearily
 
-				Ref<InputEventScreenDrag> ev;
-				ev.instance();
-				ev->set_index(touch[i].id);
-				ev->set_position(p_points[idx].pos);
-				ev->set_relative(p_points[idx].pos - touch[i].pos);
-				InputFilter::get_singleton()->parse_input_event(ev);
-				touch.write[i].pos = p_points[idx].pos;
-			}
-
-		} break;
-		case 2: { //release
-			if (touch.size()) {
-				//end all if exist
-				for (int i = 0; i < touch.size(); i++) {
-
-					Ref<InputEventScreenTouch> ev;
+				TouchPos touch_pos = p_points[idx];
+				if (is_mouse_pointer(touch_pos)) {
+					Ref<InputEventMouseMotion> ev;
+					ev.instance();
+					ev->set_position(touch_pos.pos);
+					ev->set_global_position(touch_pos.pos);
+					ev->set_relative(touch_pos.pos - touch[i].pos);
+					ev->set_button_mask(last_mouse_buttons_mask);
+					InputFilter::get_singleton()->parse_input_event(ev);
+				} else {
+					Ref<InputEventScreenDrag> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
+					ev->set_position(p_points[idx].pos);
+					ev->set_relative(p_points[idx].pos - touch[i].pos);
 					InputFilter::get_singleton()->parse_input_event(ev);
 				}
-				touch.clear();
+				touch.write[i].pos = p_points[idx].pos;
+				touch.write[i].tool_type = p_points[idx].tool_type;
+			}
+
+		} break;
+
+		case ACTION_UP:
+		case ACTION_BUTTON_RELEASE: {
+			release_touches(motion_event_action_button, true);
+		} break;
+
+		case ACTION_CANCEL: {
+			release_touches(motion_event_action_button);
+			// Reset the `last_mouse_buttons_mask` if the tool type is TOOL_TYPE_MOUSE or TOOL_TYPE_STYLUS.
+			for (int i = 0; i < p_points.size(); i++) {
+				if (is_mouse_pointer(p_points[i])) {
+					last_mouse_buttons_mask = 0;
+					break;
+				}
 			}
 		} break;
-		case 3: { // add touch
+
+		case ACTION_POINTER_DOWN: { // add touch
+
 			for (int i = 0; i < p_points.size(); i++) {
 				if (p_points[i].id == p_pointer) {
 					TouchPos tp = p_points[i];
 					touch.push_back(tp);
 
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-
-					ev->set_index(tp.id);
-					ev->set_pressed(true);
-					ev->set_position(tp.pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					send_touch_event(tp, motion_event_action_button);
 
 					break;
 				}
 			}
 		} break;
-		case 4: { // remove touch
+
+		case ACTION_POINTER_UP: { // remove touch
+
 			for (int i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
 
-					Ref<InputEventScreenTouch> ev;
-					ev.instance();
-					ev->set_index(touch[i].id);
-					ev->set_pressed(false);
-					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					release_touch_event(touch[i], motion_event_action_button, true);
 					touch.remove(i);
 
 					break;
@@ -602,7 +702,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 	}
 }
 
-void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
+void DisplayServerAndroid::process_hover(int tool_type, int p_type, Point2 p_pos) {
 	// https://developer.android.com/reference/android/view/MotionEvent.html#ACTION_HOVER_ENTER
 	switch (p_type) {
 		case 7: // hover move
@@ -613,29 +713,77 @@ void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
 			ev->set_position(p_pos);
 			ev->set_global_position(p_pos);
 			ev->set_relative(p_pos - hover_prev_pos);
+			if (is_mouse_pointer(tool_type)) {
+				ev->set_button_mask(last_mouse_buttons_mask);
+				last_mouse_position = p_pos;
+			}
 			InputFilter::get_singleton()->parse_input_event(ev);
 			hover_prev_pos = p_pos;
 		} break;
 	}
 }
 
-void DisplayServerAndroid::process_double_tap(Point2 p_pos) {
+void DisplayServerAndroid::process_double_tap(int tool_type, int android_motion_event_button_state, Point2 p_pos) {
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_position(p_pos);
 	ev->set_global_position(p_pos);
-	ev->set_pressed(false);
 	ev->set_doubleclick(true);
+	ev->set_pressed(false);
+
+	if (is_mouse_pointer(tool_type)) {
+		// Since this is a double tap, only one of the mouse button was active.
+		int button_index = get_mouse_button_index(android_motion_event_button_state);
+		ev->set_button_index(button_index);
+		ev->set_button_mask(last_mouse_buttons_mask);
+		last_mouse_position = p_pos;
+	}
+
 	InputFilter::get_singleton()->parse_input_event(ev);
 }
 
-void DisplayServerAndroid::process_scroll(Point2 p_pos) {
-	Ref<InputEventPanGesture> ev;
-	ev.instance();
-	ev->set_position(p_pos);
-	ev->set_delta(p_pos - scroll_prev_pos);
-	InputFilter::get_singleton()->parse_input_event(ev);
-	scroll_prev_pos = p_pos;
+void DisplayServerAndroid::process_scroll(int tool_type, Point2 start, Point2 end, Vector2 scroll_delta) {
+	if (is_mouse_pointer(tool_type)) {
+		// For a mouse scroll, `start` and `end` are the same.
+		Point2 event_position = start;
+
+		// Identify the BUTTON_WHEEL index.
+		int button_index;
+		float scroll_factor;
+		if (abs(scroll_delta.x) > abs(scroll_delta.y)) {
+			// Horizontal scroll
+			button_index = (scroll_delta.x > 0.0f) ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT;
+			scroll_factor = scroll_delta.x;
+		} else {
+			// Vertical scroll
+			button_index = (scroll_delta.y > 0.0f) ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN;
+			scroll_factor = scroll_delta.y;
+		}
+
+		// We dispatch pressed and released events for mouse scrolling
+		Ref<InputEventMouseButton> ev;
+		ev.instance();
+		ev->set_position(event_position);
+		ev->set_global_position(event_position);
+		ev->set_button_index(button_index);
+		ev->set_factor(scroll_factor);
+		ev->set_pressed(true);
+		ev->set_button_mask(last_mouse_buttons_mask | button_index);
+		InputFilter::get_singleton()->parse_input_event(ev);
+
+		// Send release event
+		ev->set_pressed(false);
+		ev->set_button_mask(last_mouse_buttons_mask & ~button_index);
+		InputFilter::get_singleton()->parse_input_event(ev);
+
+		last_mouse_position = event_position;
+	} else {
+		Ref<InputEventPanGesture> ev;
+		ev.instance();
+		ev->set_position(end);
+		ev->set_delta(scroll_delta);
+		InputFilter::get_singleton()->parse_input_event(ev);
+	}
 }
 
 void DisplayServerAndroid::process_accelerometer(const Vector3 &p_accelerometer) {

@@ -94,7 +94,12 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 	public boolean onTouchEvent(MotionEvent event) {
 		super.onTouchEvent(event);
 		mGestureDetector.onTouchEvent(event);
-		return mActivity.gotTouchEvent(event);
+		return mInputHandler.onTouchEvent(event);
+	}
+
+	@Override
+	public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
+		return mInputHandler.onKeyMultiple(inKeyCode, repeatCount, event) || super.onKeyMultiple(inKeyCode, repeatCount, event);
 	}
 
 	@Override
