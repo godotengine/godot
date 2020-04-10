@@ -81,6 +81,12 @@ void RenderingServerViewport::_draw_3d(Viewport *p_viewport, XRInterface::Eyes p
 
 void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::Eyes p_eye) {
 
+	if (p_viewport->measure_render_time) {
+		String rt_id = "vp_begin_" + itos(p_viewport->self.get_id());
+		RSG::storage->capture_timestamp(rt_id);
+		timestamp_vp_map[rt_id] = p_viewport->self;
+	}
+
 	/* Camera should always be BEFORE any other 3D */
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
@@ -289,9 +295,17 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 		//was never cleared in the end, force clear it
 		RSG::storage->render_target_do_clear_request(p_viewport->render_target);
 	}
+
+	if (p_viewport->measure_render_time) {
+		String rt_id = "vp_end_" + itos(p_viewport->self.get_id());
+		RSG::storage->capture_timestamp(rt_id);
+		timestamp_vp_map[rt_id] = p_viewport->self;
+	}
 }
 
 void RenderingServerViewport::draw_viewports() {
+
+	timestamp_vp_map.clear();
 
 	// get our xr interface in case we need it
 	Ref<XRInterface> xr_interface;
@@ -745,6 +759,30 @@ void RenderingServerViewport::viewport_set_debug_draw(RID p_viewport, RS::Viewpo
 	viewport->debug_draw = p_draw;
 }
 
+void RenderingServerViewport::viewport_set_measure_render_time(RID p_viewport, bool p_enable) {
+
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	viewport->measure_render_time = p_enable;
+}
+
+float RenderingServerViewport::viewport_get_measured_render_time_cpu(RID p_viewport) const {
+
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND_V(!viewport, 0);
+
+	return double(viewport->time_cpu_end - viewport->time_cpu_begin) / 1000.0;
+}
+
+float RenderingServerViewport::viewport_get_measured_render_time_gpu(RID p_viewport) const {
+
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND_V(!viewport, 0);
+
+	return double((viewport->time_gpu_end - viewport->time_gpu_begin) / 1000) / 1000.0;
+}
+
 bool RenderingServerViewport::free(RID p_rid) {
 
 	if (viewport_owner.owns(p_rid)) {
@@ -771,6 +809,29 @@ bool RenderingServerViewport::free(RID p_rid) {
 	}
 
 	return false;
+}
+
+void RenderingServerViewport::handle_timestamp(String p_timestamp, uint64_t p_cpu_time, uint64_t p_gpu_time) {
+
+	RID *vp = timestamp_vp_map.getptr(p_timestamp);
+	if (!vp) {
+		return;
+	}
+
+	Viewport *viewport = viewport_owner.getornull(*vp);
+	if (!viewport) {
+		return;
+	}
+
+	if (p_timestamp.begins_with("vp_begin")) {
+		viewport->time_cpu_begin = p_cpu_time;
+		viewport->time_gpu_begin = p_gpu_time;
+	}
+
+	if (p_timestamp.begins_with("vp_end")) {
+		viewport->time_cpu_end = p_cpu_time;
+		viewport->time_gpu_end = p_gpu_time;
+	}
 }
 
 void RenderingServerViewport::set_default_clear_color(const Color &p_color) {

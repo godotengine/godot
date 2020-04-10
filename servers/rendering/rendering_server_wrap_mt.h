@@ -411,6 +411,14 @@ public:
 
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
+	FUNC2(viewport_set_measure_render_time, RID, bool)
+	virtual float viewport_get_measured_render_time_cpu(RID p_viewport) const {
+		return rendering_server->viewport_get_measured_render_time_cpu(p_viewport);
+	}
+	virtual float viewport_get_measured_render_time_gpu(RID p_viewport) const {
+		return rendering_server->viewport_get_measured_render_time_gpu(p_viewport);
+	}
+
 	FUNC1(directional_shadow_atlas_set_size, int)
 
 	/* SKY API */

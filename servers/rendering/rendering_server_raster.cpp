@@ -135,16 +135,27 @@ void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	if (RSG::storage->get_captured_timestamps_count()) {
 		Vector<FrameProfileArea> new_profile;
-		new_profile.resize(RSG::storage->get_captured_timestamps_count());
+		if (RSG::storage->capturing_timestamps) {
+			new_profile.resize(RSG::storage->get_captured_timestamps_count());
+		}
 
 		uint64_t base_cpu = RSG::storage->get_captured_timestamp_cpu_time(0);
 		uint64_t base_gpu = RSG::storage->get_captured_timestamp_gpu_time(0);
 		for (uint32_t i = 0; i < RSG::storage->get_captured_timestamps_count(); i++) {
-			uint64_t time_cpu = RSG::storage->get_captured_timestamp_cpu_time(i) - base_cpu;
-			uint64_t time_gpu = RSG::storage->get_captured_timestamp_gpu_time(i) - base_gpu;
-			new_profile.write[i].gpu_msec = float(time_gpu / 1000) / 1000.0;
-			new_profile.write[i].cpu_msec = float(time_cpu) / 1000.0;
-			new_profile.write[i].name = RSG::storage->get_captured_timestamp_name(i);
+			uint64_t time_cpu = RSG::storage->get_captured_timestamp_cpu_time(i);
+			uint64_t time_gpu = RSG::storage->get_captured_timestamp_gpu_time(i);
+
+			String name = RSG::storage->get_captured_timestamp_name(i);
+
+			if (name.begins_with("vp_")) {
+				RSG::viewport->handle_timestamp(name, time_cpu, time_gpu);
+			}
+
+			if (RSG::storage->capturing_timestamps) {
+				new_profile.write[i].gpu_msec = float((time_gpu - base_gpu) / 1000) / 1000.0;
+				new_profile.write[i].cpu_msec = float(time_cpu - base_cpu) / 1000.0;
+				new_profile.write[i].name = RSG::storage->get_captured_timestamp_name(i);
+			}
 		}
 
 		frame_profile = new_profile;
