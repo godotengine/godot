@@ -36,6 +36,18 @@
 
 uint64_t RasterizerSceneRD::auto_exposure_counter = 2;
 
+void get_vogel_disk(float *r_kernel, int p_sample_count) {
+	const float golden_angle = 2.4;
+
+	for (int i = 0; i < p_sample_count; i++) {
+		float r = Math::sqrt(float(i) + 0.5) / Math::sqrt(float(p_sample_count));
+		float theta = float(i) * golden_angle;
+
+		r_kernel[i * 4] = Math::cos(theta) * r;
+		r_kernel[i * 4 + 1] = Math::sin(theta) * r;
+	}
+}
+
 void RasterizerSceneRD::_clear_reflection_data(ReflectionData &rd) {
 
 	rd.layers.clear();
@@ -3583,8 +3595,86 @@ void RasterizerSceneRD::sub_surface_scattering_set_scale(float p_scale, float p_
 	sss_depth_scale = p_depth_scale;
 }
 
-void RasterizerSceneRD::shadow_filter_set(RS::ShadowFilter p_filter) {
-	shadow_filter = p_filter;
+void RasterizerSceneRD::shadows_quality_set(RS::ShadowQuality p_quality) {
+
+	ERR_FAIL_INDEX_MSG(p_quality, RS::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
+
+	if (shadows_quality != p_quality) {
+		shadows_quality = p_quality;
+
+		switch (shadows_quality) {
+			case RS::SHADOW_QUALITY_HARD: {
+				penumbra_shadow_samples = 4;
+				soft_shadow_samples = 1;
+				shadows_quality_radius = 1.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_LOW: {
+				penumbra_shadow_samples = 8;
+				soft_shadow_samples = 4;
+				shadows_quality_radius = 2.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
+				penumbra_shadow_samples = 12;
+				soft_shadow_samples = 8;
+				shadows_quality_radius = 2.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_HIGH: {
+				penumbra_shadow_samples = 24;
+				soft_shadow_samples = 16;
+				shadows_quality_radius = 3.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_ULTRA: {
+				penumbra_shadow_samples = 32;
+				soft_shadow_samples = 32;
+				shadows_quality_radius = 4.0;
+			} break;
+			case RS::SHADOW_QUALITY_MAX:
+				break;
+		}
+		get_vogel_disk(penumbra_shadow_kernel, penumbra_shadow_samples);
+		get_vogel_disk(soft_shadow_kernel, soft_shadow_samples);
+	}
+}
+
+void RasterizerSceneRD::directional_shadow_quality_set(RS::ShadowQuality p_quality) {
+
+	ERR_FAIL_INDEX_MSG(p_quality, RS::SHADOW_QUALITY_MAX, "Shadow quality too high, please see RenderingServer's ShadowQuality enum");
+
+	if (directional_shadow_quality != p_quality) {
+		directional_shadow_quality = p_quality;
+
+		switch (directional_shadow_quality) {
+			case RS::SHADOW_QUALITY_HARD: {
+				directional_penumbra_shadow_samples = 4;
+				directional_soft_shadow_samples = 1;
+				directional_shadow_quality_radius = 1.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_LOW: {
+				directional_penumbra_shadow_samples = 8;
+				directional_soft_shadow_samples = 4;
+				directional_shadow_quality_radius = 2.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_MEDIUM: {
+				directional_penumbra_shadow_samples = 12;
+				directional_soft_shadow_samples = 8;
+				directional_shadow_quality_radius = 2.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_HIGH: {
+				directional_penumbra_shadow_samples = 24;
+				directional_soft_shadow_samples = 16;
+				directional_shadow_quality_radius = 3.0;
+			} break;
+			case RS::SHADOW_QUALITY_SOFT_ULTRA: {
+				directional_penumbra_shadow_samples = 32;
+				directional_soft_shadow_samples = 32;
+				directional_shadow_quality_radius = 4.0;
+			} break;
+			case RS::SHADOW_QUALITY_MAX:
+				break;
+		}
+		get_vogel_disk(directional_penumbra_shadow_kernel, directional_penumbra_shadow_samples);
+		get_vogel_disk(directional_soft_shadow_kernel, directional_soft_shadow_samples);
+	}
 }
 
 int RasterizerSceneRD::get_roughness_layers() const {
@@ -4155,7 +4245,12 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));
 	sss_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_scale");
 	sss_depth_scale = GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale");
-	shadow_filter = RS::ShadowFilter(int(GLOBAL_GET("rendering/quality/shadows/filter_mode")));
+	directional_penumbra_shadow_kernel = memnew_arr(float, 128);
+	directional_soft_shadow_kernel = memnew_arr(float, 128);
+	penumbra_shadow_kernel = memnew_arr(float, 128);
+	soft_shadow_kernel = memnew_arr(float, 128);
+	shadows_quality_set(RS::ShadowQuality(int(GLOBAL_GET("rendering/quality/shadows/soft_shadow_quality"))));
+	directional_shadow_quality_set(RS::ShadowQuality(int(GLOBAL_GET("rendering/quality/directional_shadow/soft_shadow_quality"))));
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {
@@ -4184,4 +4279,8 @@ RasterizerSceneRD::~RasterizerSceneRD() {
 	memdelete_arr(sky_scene_state.last_frame_directional_lights);
 	storage->free(sky_shader.default_shader);
 	storage->free(sky_shader.default_material);
+	memdelete_arr(directional_penumbra_shadow_kernel);
+	memdelete_arr(directional_soft_shadow_kernel);
+	memdelete_arr(penumbra_shadow_kernel);
+	memdelete_arr(soft_shadow_kernel);
 }

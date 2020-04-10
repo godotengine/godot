@@ -554,7 +554,8 @@ public:
 	BIND8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	BIND3(camera_effects_set_custom_exposure, RID, bool, float)
 
-	BIND1(shadow_filter_set, ShadowFilter)
+	BIND1(shadows_quality_set, ShadowQuality);
+	BIND1(directional_shadow_quality_set, ShadowQuality);
 
 	/* SCENARIO API */
 

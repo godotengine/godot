@@ -994,6 +994,12 @@
 		<member name="rendering/quality/directional_shadow/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/quality/directional_shadow/size] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/directional_shadow/soft_shadow_quality" type="int" setter="" getter="" default="2">
+			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
+		</member>
+		<member name="rendering/quality/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
+		Lower-end override for [member rendering/quality/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
 			The video driver to use ("GLES2" or "Vulkan").
 			[b]Note:[/b] The backend in use can be overridden at runtime via the [code]--rendering-driver[/code] command line argument.
@@ -1098,11 +1104,11 @@
 		<member name="rendering/quality/shadow_atlas/size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/quality/shadow_atlas/size] on mobile devices, due to performance concerns or driver support.
 		</member>
-		<member name="rendering/quality/shadows/filter_mode" type="int" setter="" getter="" default="1">
-			Shadow filter mode. Higher-quality settings result in smoother shadows that flicker less when moving. "Disabled" is the fastest option, but also has the lowest quality. "PCF5" is smoother but is also slower. "PCF13" is the smoothest option, but is also the slowest.
+		<member name="rendering/quality/shadows/soft_shadow_quality" type="int" setter="" getter="" default="2">
+			Quality setting for shadows cast by [OmniLight3D]s and [SpotLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 		</member>
-		<member name="rendering/quality/shadows/filter_mode.mobile" type="int" setter="" getter="" default="0">
-			Lower-end override for [member rendering/quality/shadows/filter_mode] on mobile devices, due to performance concerns or driver support.
+		<member name="rendering/quality/shadows/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/quality/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/quality/ssao/half_size" type="bool" setter="" getter="" default="false">
 		</member>

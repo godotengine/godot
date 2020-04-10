@@ -77,6 +77,13 @@ static _FORCE_INLINE_ void store_camera(const CameraMatrix &p_mtx, float *p_arra
 	}
 }
 
+static _FORCE_INLINE_ void store_soft_shadow_kernel(const float *p_kernel, float *p_array) {
+
+	for (int i = 0; i < 128; i++) {
+		p_array[i] = p_kernel[i];
+	}
+}
+
 /* SCENE SHADER */
 void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	//compile
@@ -962,10 +969,18 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 
 	scene_state.ubo.z_far = p_zfar;
 	scene_state.ubo.z_near = p_znear;
-	scene_state.ubo.shadow_filter_mode = shadow_filter_get();
 
 	scene_state.ubo.pancake_shadows = p_pancake_shadows;
-	scene_state.ubo.shadow_blocker_count = 16;
+
+	store_soft_shadow_kernel(directional_penumbra_shadow_kernel_get(), scene_state.ubo.directional_penumbra_shadow_kernel);
+	store_soft_shadow_kernel(directional_soft_shadow_kernel_get(), scene_state.ubo.directional_soft_shadow_kernel);
+	store_soft_shadow_kernel(penumbra_shadow_kernel_get(), scene_state.ubo.penumbra_shadow_kernel);
+	store_soft_shadow_kernel(soft_shadow_kernel_get(), scene_state.ubo.soft_shadow_kernel);
+
+	scene_state.ubo.directional_penumbra_shadow_samples = directional_penumbra_shadow_samples_get();
+	scene_state.ubo.directional_soft_shadow_samples = directional_soft_shadow_samples_get();
+	scene_state.ubo.penumbra_shadow_samples = penumbra_shadow_samples_get();
+	scene_state.ubo.soft_shadow_samples = soft_shadow_samples_get();
 
 	scene_state.ubo.screen_pixel_size[0] = p_screen_pixel_size.x;
 	scene_state.ubo.screen_pixel_size[1] = p_screen_pixel_size.y;
@@ -1585,6 +1600,8 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
 
+					light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
+
 					float softshadow_angle = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 					if (softshadow_angle > 0.0) {
 						// I know tan(0) is 0, but let's not risk it with numerical precision.
@@ -1593,6 +1610,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 						light_data.softshadow_angle = Math::tan(Math::deg2rad(softshadow_angle));
 					} else {
 						light_data.softshadow_angle = 0;
+						light_data.soft_shadow_scale *= directional_shadow_quality_radius_get(); // Only use quality radius for PCF
 					}
 				}
 
@@ -1703,6 +1721,8 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					light_data.atlas_rect[2] = rect.size.width;
 					light_data.atlas_rect[3] = rect.size.height;
 
+					light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
+
 					if (type == RS::LIGHT_OMNI) {
 
 						light_data.atlas_rect[3] *= 0.5; //one paraboloid on top of another
@@ -1715,6 +1735,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 							light_data.soft_shadow_size = size;
 						} else {
 							light_data.soft_shadow_size = 0.0;
+							light_data.soft_shadow_scale *= shadows_quality_radius_get(); // Only use quality radius for PCF
 						}
 
 					} else if (type == RS::LIGHT_SPOT) {
@@ -1738,6 +1759,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 							light_data.soft_shadow_size = (size * 0.5 / radius) / (half_np / cm.get_z_near()) * rect.size.width;
 						} else {
 							light_data.soft_shadow_size = 0.0;
+							light_data.soft_shadow_scale *= shadows_quality_radius_get(); // Only use quality radius for PCF
 						}
 					}
 				} else {
