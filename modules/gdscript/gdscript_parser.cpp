@@ -7364,6 +7364,8 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		}
 	}
 
+#define IS_USAGE_MEMBER(m_usage) (!(m_usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY)))
+
 	// Check other script types
 	while (scr.is_valid()) {
 		Map<StringName, Variant> constants;
@@ -7376,7 +7378,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		List<PropertyInfo> properties;
 		scr->get_script_property_list(&properties);
 		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (E->get().name == p_member) {
+			if (E->get().name == p_member && IS_USAGE_MEMBER(E->get().usage)) {
 				r_member_type = _type_from_property(E->get());
 				return true;
 			}
@@ -7418,7 +7420,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		List<PropertyInfo> properties;
 		ClassDB::get_property_list(native, &properties);
 		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (E->get().name == p_member) {
+			if (E->get().name == p_member && IS_USAGE_MEMBER(E->get().usage)) {
 				// Check if a getter exists
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
 				if (getter_name != StringName()) {
@@ -7458,7 +7460,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		List<PropertyInfo> properties;
 		ClassDB::get_property_list(native, &properties);
 		for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (E->get().name == p_member) {
+			if (E->get().name == p_member && IS_USAGE_MEMBER(E->get().usage)) {
 				// Check if a getter exists
 				StringName getter_name = ClassDB::get_property_getter(native, p_member);
 				if (getter_name != StringName()) {
@@ -7480,6 +7482,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 			}
 		}
 	}
+#undef IS_USAGE_MEMBER
 
 	return false;
 }
