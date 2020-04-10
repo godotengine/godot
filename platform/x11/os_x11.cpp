@@ -664,13 +664,16 @@ bool OS_X11::refresh_device_info() {
 		bool absolute_mode = false;
 		int resolution_x = 0;
 		int resolution_y = 0;
-		double range_min_x = 0;
-		double range_min_y = 0;
-		double range_max_x = 0;
-		double range_max_y = 0;
-		int pressure_resolution = 0;
-		int tilt_resolution_x = 0;
-		int tilt_resolution_y = 0;
+		double abs_x_min = 0;
+		double abs_x_max = 0;
+		double abs_y_min = 0;
+		double abs_y_max = 0;
+		double pressure_min = 0;
+		double pressure_max = 0;
+		double tilt_x_min = 0;
+		double tilt_x_max = 0;
+		double tilt_y_min = 0;
+		double tilt_y_max = 0;
 		for (int j = 0; j < dev->num_classes; j++) {
 #ifdef TOUCH_ENABLED
 			if (dev->classes[j]->type == XITouchClass && ((XITouchClassInfo *)dev->classes[j])->mode == XIDirectTouch) {
@@ -682,23 +685,23 @@ bool OS_X11::refresh_device_info() {
 
 				if (class_info->number == VALUATOR_ABSX && class_info->mode == XIModeAbsolute) {
 					resolution_x = class_info->resolution;
-					range_min_x = class_info->min;
-					range_max_x = class_info->max;
+					abs_x_min = class_info->min;
+					abs_y_max = class_info->max;
 					absolute_mode = true;
 				} else if (class_info->number == VALUATOR_ABSY && class_info->mode == XIModeAbsolute) {
 					resolution_y = class_info->resolution;
-					range_min_y = class_info->min;
-					range_max_y = class_info->max;
+					abs_y_min = class_info->min;
+					abs_y_max = class_info->max;
 					absolute_mode = true;
 				} else if (class_info->number == VALUATOR_PRESSURE && class_info->mode == XIModeAbsolute) {
-					pressure_resolution = (class_info->max - class_info->min);
-					if (pressure_resolution == 0) pressure_resolution = 1;
+					pressure_min = class_info->min;
+					pressure_max = class_info->max;
 				} else if (class_info->number == VALUATOR_TILTX && class_info->mode == XIModeAbsolute) {
-					tilt_resolution_x = (class_info->max - class_info->min);
-					if (tilt_resolution_x == 0) tilt_resolution_x = 1;
+					tilt_x_min = class_info->min;
+					tilt_x_max = class_info->max;
 				} else if (class_info->number == VALUATOR_TILTY && class_info->mode == XIModeAbsolute) {
-					tilt_resolution_y = (class_info->max - class_info->min);
-					if (tilt_resolution_y == 0) tilt_resolution_y = 1;
+					tilt_x_min = class_info->min;
+					tilt_x_max = class_info->max;
 				}
 			}
 		}
@@ -709,18 +712,19 @@ bool OS_X11::refresh_device_info() {
 		if (absolute_mode) {
 			// If no resolution was reported, use the min/max ranges.
 			if (resolution_x <= 0) {
-				resolution_x = (range_max_x - range_min_x) * abs_resolution_range_mult;
+				resolution_x = (abs_x_max - abs_x_min) * abs_resolution_range_mult;
 			}
 			if (resolution_y <= 0) {
-				resolution_y = (range_max_y - range_min_y) * abs_resolution_range_mult;
+				resolution_y = (abs_y_max - abs_y_min) * abs_resolution_range_mult;
 			}
-
 			xi.absolute_devices[dev->deviceid] = Vector2(abs_resolution_mult / resolution_x, abs_resolution_mult / resolution_y);
 			print_verbose("XInput: Absolute pointing device: " + String(dev->name));
 		}
 
 		xi.pressure = 0;
-		xi.pen_devices[dev->deviceid] = Vector3(pressure_resolution, tilt_resolution_x, tilt_resolution_y);
+		xi.pen_pressure_range[dev->deviceid] = Vector2(pressure_min, pressure_max);
+		xi.pen_tilt_x_range[dev->deviceid] = Vector2(tilt_x_min, tilt_x_max);
+		xi.pen_tilt_y_range[dev->deviceid] = Vector2(tilt_y_min, tilt_y_max);
 	}
 
 	XIFreeDeviceInfo(info);
@@ -2079,6 +2083,9 @@ void OS_X11::process_xevents() {
 	// Is the current mouse mode one where it needs to be grabbed.
 	bool mouse_mode_grab = mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED;
 
+	xi.pressure = 0;
+	xi.tilt = Vector2();
+
 	while (XPending(x11_display) > 0) {
 		XEvent event;
 		XNextEvent(x11_display, &event);
@@ -2115,9 +2122,6 @@ void OS_X11::process_xevents() {
 
 						double rel_x = 0.0;
 						double rel_y = 0.0;
-						double pressure = 0.0;
-						double tilt_x = 0.0;
-						double tilt_y = 0.0;
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_ABSX)) {
 							rel_x = *values;
@@ -2130,24 +2134,39 @@ void OS_X11::process_xevents() {
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_PRESSURE)) {
-							pressure = *values;
+							Map<int, Vector2>::Element *pen_pressure = xi.pen_pressure_range.find(device_id);
+							if (pen_pressure) {
+								Vector2 pen_pressure_range = pen_pressure->value();
+								if (pen_pressure_range != Vector2())
+									xi.pressure = (*values - pen_pressure_range[0]) /
+												  (pen_pressure_range[1] - pen_pressure_range[0]);
+							}
+
 							values++;
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_TILTX)) {
-							tilt_x = *values;
+							Map<int, Vector2>::Element *pen_tilt_x = xi.pen_tilt_x_range.find(device_id);
+							if (pen_tilt_x) {
+								Vector2 pen_tilt_x_range = pen_tilt_x->value();
+								if (pen_tilt_x_range != Vector2()) {
+									xi.tilt.x = ((*values - pen_tilt_x_range[0]) / (pen_tilt_x_range[1] - pen_tilt_x_range[0])) * 2 - 1;
+								}
+							}
+
 							values++;
 						}
 
 						if (XIMaskIsSet(raw_event->valuators.mask, VALUATOR_TILTY)) {
-							tilt_y = *values;
-						}
+							Map<int, Vector2>::Element *pen_tilt_y = xi.pen_tilt_y_range.find(device_id);
+							if (pen_tilt_y) {
+								Vector2 pen_tilt_y_range = pen_tilt_y->value();
+								if (pen_tilt_y_range != Vector2()) {
+									xi.tilt.y = ((*values - pen_tilt_y_range[0]) / (pen_tilt_y_range[1] - pen_tilt_y_range[0])) * 2 - 1;
+								}
+							}
 
-						Map<int, Vector3>::Element *pen_info = xi.pen_devices.find(device_id);
-						if (pen_info) {
-							Vector3 mult = pen_info->value();
-							if (mult.x != 0.0) xi.pressure = pressure / mult.x;
-							if ((mult.y != 0.0) && (mult.z != 0.0)) xi.tilt = Vector2(tilt_x / mult.y, tilt_y / mult.z);
+							values++;
 						}
 
 						// https://bugs.freedesktop.org/show_bug.cgi?id=71609
