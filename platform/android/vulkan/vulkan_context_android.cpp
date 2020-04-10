@@ -31,14 +31,6 @@
 #include "vulkan_context_android.h"
 #include <vulkan/vulkan_android.h>
 
-#define VMA_IMPLEMENTATION
-#ifdef DEBUG_ENABLED
-#ifndef _DEBUG
-#define _DEBUG
-#endif
-#endif
-#include <vk_mem_alloc.h>
-
 const char *VulkanContextAndroid::_get_platform_surface_extension() const {
 	return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }
