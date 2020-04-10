@@ -254,10 +254,10 @@ bool DisplayServerX11::_refresh_device_info() {
 		bool absolute_mode = false;
 		int resolution_x = 0;
 		int resolution_y = 0;
-		int range_min_x = 0;
-		int range_min_y = 0;
-		int range_max_x = 0;
-		int range_max_y = 0;
+		double range_min_x = 0;
+		double range_min_y = 0;
+		double range_max_x = 0;
+		double range_max_y = 0;
 		int pressure_resolution = 0;
 		int tilt_resolution_x = 0;
 		int tilt_resolution_y = 0;
