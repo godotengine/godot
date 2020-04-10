@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  godot_plugin_jni.h                                                   */
+/*  SignalInfo.java                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,18 +28,71 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_PLUGIN_JNI_H
-#define GODOT_PLUGIN_JNI_H
+package org.godotengine.godot.plugin;
 
-#include <android/log.h>
-#include <jni.h>
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+import java.util.Arrays;
 
-extern "C" {
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterMethod(JNIEnv *env, jclass clazz, jstring sname, jstring name, jstring ret, jobjectArray args);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSignal(JNIEnv *env, jobject obj, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_param_types);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitSignal(JNIEnv *env, jobject obj, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_params);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jobject obj, jobjectArray gdnlib_paths);
+/**
+ * Store information about a {@link GodotPlugin}'s signal.
+ */
+public final class SignalInfo {
+
+	private final String name;
+	private final Class<?>[] paramTypes;
+	private final String[] paramTypesNames;
+
+	public SignalInfo(@NonNull String signalName, Class<?>... paramTypes) {
+		if (TextUtils.isEmpty(signalName)) {
+			throw new IllegalArgumentException("Invalid signal name: " + signalName);
+		}
+
+		this.name = signalName;
+		this.paramTypes = paramTypes == null ? new Class<?>[ 0 ] : paramTypes;
+		this.paramTypesNames = new String[this.paramTypes.length];
+		for (int i = 0; i < this.paramTypes.length; i++) {
+			this.paramTypesNames[i] = this.paramTypes[i].getName();
+		}
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	Class<?>[] getParamTypes() {
+		return paramTypes;
+	}
+
+	String[] getParamTypesNames() {
+		return paramTypesNames;
+	}
+
+	@Override
+	public String toString() {
+		return "SignalInfo{"
+				+
+				"name='" + name + '\'' +
+				", paramsTypes=" + Arrays.toString(paramTypes) +
+				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof SignalInfo)) {
+			return false;
+		}
+
+		SignalInfo that = (SignalInfo)o;
+
+		return name.equals(that.name);
+	}
+
+	@Override
+	public int hashCode() {
+		return name.hashCode();
+	}
 }
-
-#endif // GODOT_PLUGIN_JNI_H

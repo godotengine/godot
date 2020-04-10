@@ -33,6 +33,7 @@
 #include <core/engine.h>
 #include <core/error_macros.h>
 #include <core/project_settings.h>
+#include <platform/android/api/jni_singleton.h>
 #include <platform/android/jni_utils.h>
 #include <platform/android/string_android.h>
 
@@ -43,7 +44,7 @@ extern "C" {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSingleton(JNIEnv *env, jclass clazz, jstring name, jobject obj) {
 
 	String singname = jstring_to_string(name, env);
-	JNISingleton *s = memnew(JNISingleton);
+	JNISingleton *s = (JNISingleton *)ClassDB::instance("JNISingleton");
 	s->set_instance(env->NewGlobalRef(obj));
 	jni_singletons[singname] = s;
 
@@ -84,6 +85,51 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegis
 	}
 
 	s->add_method(mname, mid, types, get_jni_type(retval));
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterSignal(JNIEnv *env, jobject obj, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_param_types) {
+	String singleton_name = jstring_to_string(j_plugin_name, env);
+
+	ERR_FAIL_COND(!jni_singletons.has(singleton_name));
+
+	JNISingleton *singleton = jni_singletons.get(singleton_name);
+
+	String signal_name = jstring_to_string(j_signal_name, env);
+	Vector<Variant::Type> types;
+
+	int stringCount = env->GetArrayLength(j_signal_param_types);
+
+	for (int i = 0; i < stringCount; i++) {
+
+		jstring j_signal_param_type = (jstring)env->GetObjectArrayElement(j_signal_param_types, i);
+		const String signal_param_type = jstring_to_string(j_signal_param_type, env);
+		types.push_back(get_jni_type(signal_param_type));
+	}
+
+	singleton->add_signal(signal_name, types);
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeEmitSignal(JNIEnv *env, jobject obj, jstring j_plugin_name, jstring j_signal_name, jobjectArray j_signal_params) {
+	String singleton_name = jstring_to_string(j_plugin_name, env);
+
+	ERR_FAIL_COND(!jni_singletons.has(singleton_name));
+
+	JNISingleton *singleton = jni_singletons.get(singleton_name);
+
+	String signal_name = jstring_to_string(j_signal_name, env);
+
+	int count = env->GetArrayLength(j_signal_params);
+	const Variant *args[count];
+
+	for (int i = 0; i < count; i++) {
+
+		jobject j_param = env->GetObjectArrayElement(j_signal_params, i);
+		Variant variant = _jobject_to_variant(env, j_param);
+		args[i] = &variant;
+		env->DeleteLocalRef(j_param);
+	};
+
+	singleton->emit_signal(signal_name, args, count);
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_plugin_GodotPlugin_nativeRegisterGDNativeLibraries(JNIEnv *env, jobject obj, jobjectArray gdnlib_paths) {
