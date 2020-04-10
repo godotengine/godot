@@ -852,7 +852,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box)
-				gn->set_selected(box_selection_mode_aditive);
+				gn->set_selected(box_selection_mode_additive);
 			else
 				gn->set_selected(previus_selected.find(gn) != NULL);
 		}
@@ -951,8 +951,16 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
-						if (o_gn)
-							o_gn->set_selected(o_gn == gn);
+						if (o_gn) {
+							if (o_gn == gn) {
+								o_gn->set_selected(true);
+							} else {
+								if (o_gn->is_selected()) {
+									emit_signal("node_unselected", o_gn);
+								}
+								o_gn->set_selected(false);
+							}
+						}
 					}
 				}
 
@@ -974,7 +982,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				box_selecting = true;
 				box_selecting_from = get_local_mouse_position();
 				if (b->get_control()) {
-					box_selection_mode_aditive = true;
+					box_selection_mode_additive = true;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -985,7 +993,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						previus_selected.push_back(gn2);
 					}
 				} else if (b->get_shift()) {
-					box_selection_mode_aditive = false;
+					box_selection_mode_additive = false;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -996,14 +1004,16 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						previus_selected.push_back(gn2);
 					}
 				} else {
-					box_selection_mode_aditive = true;
+					box_selection_mode_additive = true;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2)
 							continue;
-
+						if (gn2->is_selected()) {
+							emit_signal("node_unselected", gn2);
+						}
 						gn2->set_selected(false);
 					}
 				}
@@ -1324,6 +1334,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
 	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_unselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
