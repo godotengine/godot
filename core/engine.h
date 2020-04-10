@@ -86,7 +86,7 @@ public:
 	float get_physics_jitter_fix() const;
 
 	virtual void set_target_fps(int p_fps);
-	virtual float get_target_fps() const;
+	virtual int get_target_fps() const;
 
 	virtual float get_frames_per_second() const { return _fps; }
 
