@@ -22,10 +22,6 @@ draw_call;
 #define SAMPLER_NEAREST_WITH_MIPMAPS_ANISOTROPIC_REPEAT 10
 #define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
-#define SHADOW_MODE_NO_FILTER 0
-#define SHADOW_MODE_PCF5 1
-#define SHADOW_MODE_PCF13 2
-
 layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
@@ -45,12 +41,18 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	float reflection_multiplier; // one normally, zero when rendering reflections
 
 	bool pancake_shadows;
-	uint shadow_filter_mode;
+	uint pad;
 
-	uint shadow_blocker_count;
-	uint shadow_pad0;
-	uint shadow_pad1;
-	uint shadow_pad2;
+	//use vec4s because std140 doesnt play nice with vec2s, z and w are wasted
+	vec4 directional_penumbra_shadow_kernel[32];
+	vec4 directional_soft_shadow_kernel[32];
+	vec4 penumbra_shadow_kernel[32];
+	vec4 soft_shadow_kernel[32];
+
+	uint directional_penumbra_shadow_samples;
+	uint directional_soft_shadow_samples;
+	uint penumbra_shadow_samples;
+	uint soft_shadow_samples;
 
 	vec4 ambient_light_color_energy;
 
@@ -157,8 +159,9 @@ struct LightData { //this structure needs to be as packed as possible
 	float shadow_normal_bias;
 	float transmittance_bias;
 	float soft_shadow_size; // for spot, it's the size in uv coordinates of the light, for omni it's the span angle
+	float soft_shadow_scale; // scales the shadow kernel for blurrier shadows
 	uint mask;
-	uint pad[3];
+	uint pad[2];
 };
 
 layout(set = 0, binding = 5, std430) buffer Lights {
@@ -191,7 +194,7 @@ struct DirectionalLightData {
 	float specular;
 	uint mask;
 	float softshadow_angle;
-	uint pad1;
+	float soft_shadow_scale;
 	bool blend_splits;
 	bool shadow_enabled;
 	float fade_from;
