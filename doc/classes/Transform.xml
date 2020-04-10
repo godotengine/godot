@@ -135,7 +135,7 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Scales the transform by the given scale factor, using matrix multiplication.
+				Scales basis and origin of the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated">
