@@ -6935,9 +6935,42 @@ uint64_t RenderingDeviceVulkan::get_captured_timestamps_frame() const {
 	return frames[frame].index;
 }
 
+static void mult64to128(uint64_t u, uint64_t v, uint64_t &h, uint64_t &l) {
+	uint64_t u1 = (u & 0xffffffff);
+	uint64_t v1 = (v & 0xffffffff);
+	uint64_t t = (u1 * v1);
+	uint64_t w3 = (t & 0xffffffff);
+	uint64_t k = (t >> 32);
+
+	u >>= 32;
+	t = (u * v1) + k;
+	k = (t & 0xffffffff);
+	uint64_t w1 = (t >> 32);
+
+	v >>= 32;
+	t = (u1 * v) + k;
+	k = (t >> 32);
+
+	h = (u * v) + w1 + k;
+	l = (t << 32) + w3;
+}
+
 uint64_t RenderingDeviceVulkan::get_captured_timestamp_gpu_time(uint32_t p_index) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
-	return frames[frame].timestamp_result_values[p_index] * limits.timestampPeriod;
+
+	// this sucks because timestampPeriod multiplier is a float, while the timestamp is 64 bits nanosecs.
+	// so, in cases like nvidia which give you enormous numbers and 1 as multiplier, multiplying is next to impossible
+	// need to do 128 bits fixed point multiplication to get the rigth value
+
+	uint64_t shift_bits = 16;
+
+	uint64_t h, l;
+
+	mult64to128(frames[frame].timestamp_result_values[p_index], uint64_t(double(limits.timestampPeriod) * double(1 << shift_bits)), h, l);
+	l >>= shift_bits;
+	l |= h << (64 - shift_bits);
+
+	return l;
 }
 uint64_t RenderingDeviceVulkan::get_captured_timestamp_cpu_time(uint32_t p_index) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
