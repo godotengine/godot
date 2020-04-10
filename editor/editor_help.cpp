@@ -754,6 +754,8 @@ void EditorHelp::_update_doc() {
 
 		class_desc->push_indent(1);
 
+		const String signal_missing_desc_msg = TTR("There is currently no description for this signal. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
+
 		for (int i = 0; i < cd.signals.size(); i++) {
 			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 			class_desc->push_font(doc_code_font); // monofont
@@ -786,15 +788,23 @@ void EditorHelp::_update_doc() {
 			class_desc->add_text(")");
 			class_desc->pop();
 			class_desc->pop(); // end monofont
-			if (cd.signals[i].description != "") {
-				class_desc->push_font(doc_font);
-				class_desc->push_color(comment_color);
-				class_desc->push_indent(1);
+
+			class_desc->push_font(doc_font);
+			class_desc->push_color(comment_color);
+			class_desc->push_indent(1);
+			if (cd.signals[i].description.strip_edges() != String()) {
 				_add_text(DTR(cd.signals[i].description));
-				class_desc->pop(); // indent
+			} else {
+				class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
+				class_desc->add_text(" ");
+				class_desc->push_color(comment_color);
+				class_desc->append_bbcode(signal_missing_desc_msg);
 				class_desc->pop();
-				class_desc->pop(); // font
 			}
+			class_desc->pop(); // indent
+			class_desc->pop();
+			class_desc->pop(); // font
+
 			class_desc->add_newline();
 			class_desc->add_newline();
 		}
@@ -831,6 +841,8 @@ void EditorHelp::_update_doc() {
 			class_desc->push_indent(1);
 
 			class_desc->add_newline();
+
+			const String enum_missing_desc_msg = TTR("There is currently no description for this enum. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
 
 			for (Map<String, Vector<DocData::ConstantDoc>>::Element *E = enums.front(); E; E = E->next()) {
 				enum_line[E->key()] = class_desc->get_line_count() - 2;
@@ -878,18 +890,23 @@ void EditorHelp::_update_doc() {
 					_add_text(_fix_constant(enum_list[i].value));
 					class_desc->pop();
 					class_desc->pop();
-					if (enum_list[i].description != "") {
-						class_desc->push_font(doc_font);
-						//class_desc->add_text("  ");
-						class_desc->push_indent(1);
-						class_desc->push_color(comment_color);
-						_add_text(DTR(enum_list[i].description));
-						class_desc->pop();
-						class_desc->pop();
-						class_desc->pop(); // indent
-						class_desc->add_newline();
-					}
 
+					class_desc->push_font(doc_font);
+					class_desc->push_indent(1);
+					class_desc->push_color(comment_color);
+					if (enum_list[i].description.strip_edges() != String()) {
+						_add_text(DTR(enum_list[i].description));
+					} else {
+						class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
+						class_desc->add_text(" ");
+						class_desc->push_color(comment_color);
+						class_desc->append_bbcode(enum_missing_desc_msg);
+						class_desc->pop();
+					}
+					class_desc->pop();
+					class_desc->pop();
+					class_desc->pop(); // indent
+					class_desc->add_newline();
 					class_desc->add_newline();
 				}
 
@@ -918,6 +935,8 @@ void EditorHelp::_update_doc() {
 
 			class_desc->add_newline();
 
+			const String constant_missing_desc_msg = TTR("There is currently no description for this constant. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
+
 			for (int i = 0; i < constants.size(); i++) {
 				constant_line[constants[i].name] = class_desc->get_line_count() - 2;
 				class_desc->push_font(doc_code_font);
@@ -944,17 +963,23 @@ void EditorHelp::_update_doc() {
 				class_desc->pop();
 
 				class_desc->pop();
-				if (constants[i].description != "") {
-					class_desc->push_font(doc_font);
-					class_desc->push_indent(1);
-					class_desc->push_color(comment_color);
-					_add_text(DTR(constants[i].description));
-					class_desc->pop();
-					class_desc->pop();
-					class_desc->pop(); // indent
-					class_desc->add_newline();
-				}
 
+				class_desc->push_font(doc_font);
+				class_desc->push_indent(1);
+				class_desc->push_color(comment_color);
+				if (constants[i].description.strip_edges() != String()) {
+					_add_text(DTR(constants[i].description));
+				} else {
+					class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
+					class_desc->add_text(" ");
+					class_desc->push_color(comment_color);
+					class_desc->append_bbcode(constant_missing_desc_msg);
+					class_desc->pop();
+				}
+				class_desc->pop();
+				class_desc->pop();
+				class_desc->pop(); // indent
+				class_desc->add_newline();
 				class_desc->add_newline();
 			}
 
@@ -974,6 +999,8 @@ void EditorHelp::_update_doc() {
 
 		class_desc->add_newline();
 		class_desc->add_newline();
+
+		const String property_missing_desc_msg = TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
 
 		for (int i = 0; i < cd.properties.size(); i++) {
 			if (cd.properties[i].overridden) {
@@ -1063,7 +1090,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
 				class_desc->add_text(" ");
 				class_desc->push_color(comment_color);
-				class_desc->append_bbcode(TTR("There is currently no description for this property. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+				class_desc->append_bbcode(property_missing_desc_msg);
 				class_desc->pop();
 			}
 			class_desc->pop();
@@ -1086,6 +1113,8 @@ void EditorHelp::_update_doc() {
 
 		class_desc->add_newline();
 		class_desc->add_newline();
+
+		const String method_missing_desc_msg = TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text);
 
 		for (int pass = 0; pass < 2; pass++) {
 			Vector<DocData::MethodDoc> methods_filtered;
@@ -1114,7 +1143,7 @@ void EditorHelp::_update_doc() {
 					class_desc->add_image(get_theme_icon("Error", "EditorIcons"));
 					class_desc->add_text(" ");
 					class_desc->push_color(comment_color);
-					class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->append_bbcode(method_missing_desc_msg);
 					class_desc->pop();
 				}
 
