@@ -138,6 +138,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t layers;
 		uint32_t mipmaps;
 		uint32_t usage_flags;
+		uint32_t base_mipmap;
+		uint32_t base_layer;
 
 		Vector<DataFormat> allowed_shared_formats;
 

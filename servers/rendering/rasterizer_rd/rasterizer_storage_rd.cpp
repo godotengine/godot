@@ -3914,7 +3914,6 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 	if (rt->backbuffer.is_valid()) {
 		RD::get_singleton()->free(rt->backbuffer);
 		rt->backbuffer = RID();
-		rt->backbuffer_fb = RID();
 		for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 			//just erase copies, since the rest are erased by dependency
 			RD::get_singleton()->free(rt->backbuffer_mipmaps[i].mipmap_copy);
@@ -4028,17 +4027,11 @@ void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 	tf.width = rt->size.width;
 	tf.height = rt->size.height;
 	tf.type = RD::TEXTURE_TYPE_2D;
-	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
 	tf.mipmaps = mipmaps_required;
 
 	rt->backbuffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-	{
-		Vector<RID> backbuffer_att;
-		RID backbuffer_fb_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, 0);
-		backbuffer_att.push_back(backbuffer_fb_tex);
-		rt->backbuffer_fb = RD::get_singleton()->framebuffer_create(backbuffer_att);
-	}
+	rt->backbuffer_mipmap0 = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, 0);
 
 	//create mipmaps
 	for (uint32_t i = 1; i < mipmaps_required; i++) {
@@ -4046,9 +4039,6 @@ void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 		RenderTarget::BackbufferMipmap mm;
 		{
 			mm.mipmap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, i);
-			Vector<RID> mm_fb_at;
-			mm_fb_at.push_back(mm.mipmap);
-			mm.mipmap_fb = RD::get_singleton()->framebuffer_create(mm_fb_at);
 		}
 
 		{
@@ -4060,9 +4050,6 @@ void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
 			mmtf.mipmaps = 1;
 
 			mm.mipmap_copy = RD::get_singleton()->texture_create(mmtf, RD::TextureView());
-			Vector<RID> mm_fb_at;
-			mm_fb_at.push_back(mm.mipmap_copy);
-			mm.mipmap_copy_fb = RD::get_singleton()->framebuffer_create(mm_fb_at);
 		}
 
 		rt->backbuffer_mipmaps.push_back(mm);
@@ -4138,7 +4125,12 @@ RID RasterizerStorageRD::render_target_get_rd_framebuffer(RID p_render_target) {
 
 	return rt->framebuffer;
 }
+RID RasterizerStorageRD::render_target_get_rd_texture(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
 
+	return rt->color;
+}
 void RasterizerStorageRD::render_target_request_clear(RID p_render_target, const Color &p_clear_color) {
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
@@ -4188,27 +4180,25 @@ void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target,
 	}
 
 	Rect2i region = p_region;
-	Rect2 blur_region;
 	if (region == Rect2i()) {
 		region.size = rt->size;
-	} else {
-		blur_region = region;
-		blur_region.position /= rt->size;
-		blur_region.size /= rt->size;
 	}
 
 	//single texture copy for backbuffer
-	RD::get_singleton()->texture_copy(rt->color, rt->backbuffer, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
+	RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
 	//effects.copy(rt->color, rt->backbuffer_fb, blur_region);
 
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
-	Vector2 pixel_size = Vector2(1.0 / rt->size.width, 1.0 / rt->size.height);
 
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
-		pixel_size *= 2.0; //go halfway
+		region.position.x >>= 1;
+		region.position.y >>= 1;
+		region.size.x = MAX(1, region.size.x >> 1);
+		region.size.y = MAX(1, region.size.y >> 1);
+
 		const RenderTarget::BackbufferMipmap &mm = rt->backbuffer_mipmaps[i];
-		effects.gaussian_blur(prev_texture, mm.mipmap_copy_fb, mm.mipmap_copy, mm.mipmap_fb, pixel_size, blur_region);
+		effects.gaussian_blur(prev_texture, mm.mipmap, mm.mipmap_copy, region, true);
 		prev_texture = mm.mipmap;
 	}
 }

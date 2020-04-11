@@ -545,7 +545,6 @@ private:
 
 	struct DirectionalShadow {
 		RID depth;
-		RID fb; //for copying
 
 		int light_count = 0;
 		int size = 0;
@@ -742,7 +741,6 @@ private:
 
 			struct Mipmap {
 				RID texture;
-				RID framebuffer;
 				int width;
 				int height;
 			};
