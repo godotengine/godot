@@ -1317,6 +1317,9 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+	//reset flags on Sky Texture that may have changed
+	texture_set_flags(sky->panorama, texture->flags);
+
 	// Framebuffer did its job. thank mr framebuffer
 	glActiveTexture(GL_TEXTURE0); //back to panorama
 	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
