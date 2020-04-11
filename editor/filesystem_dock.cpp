@@ -860,7 +860,6 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				file_list.push_back(fi);
 			}
 		}
-		file_list.sort();
 	}
 
 	// Sort the file list if needed.
