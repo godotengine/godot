@@ -178,4 +178,10 @@ FRAGMENT_SHADER_CODE
 
 	frag_color.rgb = color * params.position_multiplier.w;
 	frag_color.a = alpha;
+
+	// Blending is disabled for Sky, so alpha doesn't blend
+	// alpha is used for subsurface scattering so make sure it doesn't get applied to Sky
+	if (!AT_CUBEMAP_PASS && !AT_HALF_RES_PASS && !AT_QUARTER_RES_PASS) {
+		frag_color.a = 0.0;
+	}
 }
