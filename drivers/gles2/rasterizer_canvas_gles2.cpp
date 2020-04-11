@@ -250,20 +250,44 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 		switch (command->type) {
 
 			default: {
-				if (r_fill_state.curr_batch->type == Batch::BT_DEFAULT) {
-					// another default command, just add to the existing batch
-					r_fill_state.curr_batch->num_commands++;
-				} else {
-					// end of previous different type batch, so start new default batch
-					r_fill_state.curr_batch = _batch_request_new();
-					r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
-					r_fill_state.curr_batch->first_command = command_num;
-					r_fill_state.curr_batch->num_commands = 1;
-				}
+				_prefill_default_batch(r_fill_state, command_num);
 			} break;
 			case Item::Command::TYPE_RECT: {
 
 				Item::CommandRect *rect = static_cast<Item::CommandRect *>(command);
+
+				bool change_batch = false;
+
+				// conditions for creating a new batch
+				if (r_fill_state.curr_batch->type != Batch::BT_RECT) {
+					change_batch = true;
+
+					// check for special case if there is only a single or small number of rects,
+					// in which case we will use the legacy default rect renderer
+					// because it is faster for single rects
+
+					// we only want to do this if not a joined item with more than 1 item,
+					// because joined items with more than 1, the command * will be incorrect
+					// NOTE - this is assuming that use_hardware_transform means that it is a non-joined item!!
+					// If that assumption is incorrect this will go horribly wrong.
+					if (r_fill_state.use_hardware_transform) {
+						bool is_single_rect = false;
+						int command_num_next = command_num + 1;
+						if (command_num_next < command_count) {
+							Item::Command *command_next = commands[command_num_next];
+							if (command_next->type != Item::Command::TYPE_RECT) {
+								is_single_rect = true;
+							}
+						} else {
+							is_single_rect = true;
+						}
+						// if it is a rect on its own, do exactly the same as the default routine
+						if (is_single_rect) {
+							_prefill_default_batch(r_fill_state, command_num);
+							break;
+						}
+					}
+				} // if use hardware transform
 
 				Color col = rect->modulate;
 				if (multiply_final_modulate) {
@@ -290,10 +314,8 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 					return true;
 				}
 
-				bool change_batch = false;
-
 				// conditions for creating a new batch
-				if ((r_fill_state.curr_batch->type != Batch::BT_RECT) || (old_batch_tex_id != r_fill_state.batch_tex_id)) {
+				if (old_batch_tex_id != r_fill_state.batch_tex_id) {
 					change_batch = true;
 				}
 

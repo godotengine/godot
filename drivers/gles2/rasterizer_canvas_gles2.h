@@ -242,6 +242,7 @@ private:
 	void _software_transform_vertex(BatchVector2 &r_v, const Transform2D &p_tr) const;
 	void _software_transform_vertex(Vector2 &r_v, const Transform2D &p_tr) const;
 	TransformMode _find_transform_mode(bool p_use_hardware_transform, const Transform2D &p_tr, Transform2D &r_tr) const;
+	_FORCE_INLINE_ void _prefill_default_batch(FillState &r_fill_state, int p_command_num);
 
 	// light scissoring
 	bool _light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect, Rect2 &r_cliprect) const;
@@ -254,6 +255,19 @@ public:
 };
 
 //////////////////////////////////////////////////////////////
+
+_FORCE_INLINE_ void RasterizerCanvasGLES2::_prefill_default_batch(FillState &r_fill_state, int p_command_num) {
+	if (r_fill_state.curr_batch->type == Batch::BT_DEFAULT) {
+		// another default command, just add to the existing batch
+		r_fill_state.curr_batch->num_commands++;
+	} else {
+		// end of previous different type batch, so start new default batch
+		r_fill_state.curr_batch = _batch_request_new();
+		r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
+		r_fill_state.curr_batch->first_command = p_command_num;
+		r_fill_state.curr_batch->num_commands = 1;
+	}
+}
 
 _FORCE_INLINE_ void RasterizerCanvasGLES2::_software_transform_vertex(BatchVector2 &r_v, const Transform2D &p_tr) const {
 	Vector2 vc(r_v.x, r_v.y);
