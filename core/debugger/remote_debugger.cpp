@@ -78,18 +78,22 @@ public:
 
 	int bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
 		int total_bandwidth = 0;
+		
+		// No frames no usage.
+		if(p_buffer.size()) // Not zero
+		{
+			uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
+			uint32_t final_timestamp = timestamp - 1000;
 
-		uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
-		uint32_t final_timestamp = timestamp - 1000;
+			int i = (p_pointer + p_buffer.size() - 1) % p_buffer.size();
 
-		int i = (p_pointer + p_buffer.size() - 1) % p_buffer.size();
-
-		while (i != p_pointer && p_buffer[i].packet_size > 0) {
-			if (p_buffer[i].timestamp < final_timestamp) {
-				return total_bandwidth;
+			while (i != p_pointer && p_buffer[i].packet_size > 0) {
+				if (p_buffer[i].timestamp < final_timestamp) {
+					return total_bandwidth;
+				}
+				total_bandwidth += p_buffer[i].packet_size;
+				i = (i + p_buffer.size() - 1) % p_buffer.size();
 			}
-			total_bandwidth += p_buffer[i].packet_size;
-			i = (i + p_buffer.size() - 1) % p_buffer.size();
 		}
 
 		ERR_FAIL_COND_V_MSG(i == p_pointer, total_bandwidth, "Reached the end of the bandwidth profiler buffer, values might be inaccurate.");
