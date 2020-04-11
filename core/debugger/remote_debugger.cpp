@@ -79,9 +79,8 @@ public:
 	int bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
 		int total_bandwidth = 0;
 		
-		// No frames no usage.
-		if(p_buffer.size()) // Not zero
-		{
+		// Zero frames then no usage.
+		if(p_buffer.size()) {
 			uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
 			uint32_t final_timestamp = timestamp - 1000;
 
