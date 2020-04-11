@@ -1604,7 +1604,7 @@ void Viewport::_gui_show_tooltip() {
 	base_tooltip->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
 	TooltipPanel *panel = memnew(TooltipPanel);
-	panel->set_transient(false);
+	panel->set_transient(true);
 	panel->set_flag(Window::FLAG_NO_FOCUS, true);
 	panel->set_wrap_controls(true);
 	panel->add_child(base_tooltip);
