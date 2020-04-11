@@ -463,13 +463,11 @@ private:
 		bool flags[RENDER_TARGET_FLAG_MAX];
 
 		RID backbuffer; //used for effects
-		RID backbuffer_fb;
+		RID backbuffer_mipmap0;
 
 		struct BackbufferMipmap {
 			RID mipmap;
-			RID mipmap_fb;
 			RID mipmap_copy;
-			RID mipmap_copy_fb;
 		};
 
 		Vector<BackbufferMipmap> backbuffer_mipmaps;
@@ -1105,6 +1103,7 @@ public:
 
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);
+	RID render_target_get_rd_texture(RID p_render_target);
 
 	RS::InstanceType get_base_type(RID p_rid) const;
 
