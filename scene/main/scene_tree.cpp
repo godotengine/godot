@@ -1425,6 +1425,10 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
+	int ssaa_mode = GLOBAL_DEF("rendering/quality/filters/screen_space_aa", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/screen_space_aa", PropertyInfo(Variant::INT, "rendering/quality/filters/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled,FXAA"));
+	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
+
 	{ //load default fallback environment
 		//get possible extensions
 		List<String> exts;
