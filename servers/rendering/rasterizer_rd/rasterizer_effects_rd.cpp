@@ -676,6 +676,10 @@ void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, 
 
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
 
+	tonemap.push_constant.use_fxaa = p_settings.use_fxaa;
+	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
+	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
+
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
