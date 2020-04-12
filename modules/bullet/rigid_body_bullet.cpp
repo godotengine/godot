@@ -138,8 +138,8 @@ void BulletPhysicsDirectBodyState3D::apply_torque_impulse(const Vector3 &p_impul
 	body->apply_torque_impulse(p_impulse);
 }
 
-void BulletPhysicsDirectBodyState3D::set_sleep_state(bool p_enable) {
-	body->set_activation_state(p_enable);
+void BulletPhysicsDirectBodyState3D::set_sleep_state(bool p_sleep) {
+	body->set_activation_state(!p_sleep);
 }
 
 bool BulletPhysicsDirectBodyState3D::is_sleeping() const {
