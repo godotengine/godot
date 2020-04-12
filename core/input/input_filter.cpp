@@ -67,6 +67,7 @@ void InputFilter::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_key_pressed", "keycode"), &InputFilter::is_key_pressed);
 	ClassDB::bind_method(D_METHOD("is_mouse_button_pressed", "button"), &InputFilter::is_mouse_button_pressed);
 	ClassDB::bind_method(D_METHOD("is_joy_button_pressed", "device", "button"), &InputFilter::is_joy_button_pressed);
+	ClassDB::bind_method(D_METHOD("is_action_empty"), &InputFilter::is_action_empty);
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action"), &InputFilter::is_action_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action"), &InputFilter::is_action_just_pressed);
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action"), &InputFilter::is_action_just_released);
@@ -213,6 +214,10 @@ bool InputFilter::is_joy_button_pressed(int p_device, int p_button) const {
 
 	_THREAD_SAFE_METHOD_
 	return joy_buttons_pressed.has(_combine_device(p_button, p_device));
+}
+
+bool InputFilter::is_action_empty() const {
+	return action_state.empty();
 }
 
 bool InputFilter::is_action_pressed(const StringName &p_action) const {
