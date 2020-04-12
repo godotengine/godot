@@ -6252,7 +6252,7 @@ void RasterizerStorageGLES2::initialize() {
 #endif
 
 	config.force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
-	config.use_fast_texture_filter = GLOBAL_GET("rendering/quality/filters/use_nearest_mipmap_filter");
+	config.use_fast_texture_filter = GLOBAL_GET("rendering/quality/texture_filters/use_nearest_mipmap_filter");
 }
 
 void RasterizerStorageGLES2::finalize() {

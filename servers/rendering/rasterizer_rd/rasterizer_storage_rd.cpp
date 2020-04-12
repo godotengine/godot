@@ -4637,14 +4637,14 @@ RasterizerStorageRD::RasterizerStorageRD() {
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.use_anisotropy = true;
-					sampler_state.anisotropy_max = GLOBAL_GET("rendering/quality/filters/max_anisotropy");
+					sampler_state.anisotropy_max = GLOBAL_GET("rendering/quality/texture_filters/max_anisotropy");
 				} break;
 				case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
 					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
 					sampler_state.use_anisotropy = true;
-					sampler_state.anisotropy_max = GLOBAL_GET("rendering/quality/filters/max_anisotropy");
+					sampler_state.anisotropy_max = GLOBAL_GET("rendering/quality/texture_filters/max_anisotropy");
 
 				} break;
 				default: {

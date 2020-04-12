@@ -2676,6 +2676,159 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 
 	return OK;
 }
+Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID p_to_texture, bool p_sync_with_draw) {
+	_THREAD_SAFE_METHOD_
+
+	Texture *src_tex = texture_owner.getornull(p_from_texture);
+	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
+
+	ERR_FAIL_COND_V_MSG(p_sync_with_draw && src_tex->bound, ERR_INVALID_PARAMETER,
+			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
+			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+
+	ERR_FAIL_COND_V_MSG(src_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Source texture must be 2D (or a slice of a 3D/Cube texture)");
+	ERR_FAIL_COND_V_MSG(src_tex->samples == TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Source texture must be multisampled.");
+
+	Texture *dst_tex = texture_owner.getornull(p_to_texture);
+	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
+
+	ERR_FAIL_COND_V_MSG(p_sync_with_draw && dst_tex->bound, ERR_INVALID_PARAMETER,
+			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
+			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
+
+	ERR_FAIL_COND_V_MSG(dst_tex->type != TEXTURE_TYPE_2D, ERR_INVALID_PARAMETER, "Destination texture must be 2D (or a slice of a 3D/Cube texture).");
+	ERR_FAIL_COND_V_MSG(dst_tex->samples != TEXTURE_SAMPLES_1, ERR_INVALID_PARAMETER, "Destination texture must not be multisampled.");
+
+	ERR_FAIL_COND_V_MSG(src_tex->format != dst_tex->format, ERR_INVALID_PARAMETER, "Source and Destionation textures must be the same format.");
+	ERR_FAIL_COND_V_MSG(src_tex->width != dst_tex->width && src_tex->height != dst_tex->height && src_tex->depth != dst_tex->depth, ERR_INVALID_PARAMETER, "Source and Destionation textures must have the same dimensions.");
+
+	ERR_FAIL_COND_V_MSG(src_tex->read_aspect_mask != dst_tex->read_aspect_mask, ERR_INVALID_PARAMETER,
+			"Source and destination texture must be of the same type (color or depth).");
+
+	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
+
+	{
+
+		//PRE Copy the image
+
+		{ //Source
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = nullptr;
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			image_memory_barrier.oldLayout = src_tex->layout;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = src_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = src_tex->barrier_aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = src_tex->base_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = 1;
+			image_memory_barrier.subresourceRange.baseArrayLayer = src_tex->base_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		}
+		{ //Dest
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = nullptr;
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.oldLayout = dst_tex->layout;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = dst_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = dst_tex->read_aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = dst_tex->base_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = 1;
+			image_memory_barrier.subresourceRange.baseArrayLayer = dst_tex->base_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		}
+
+		//COPY
+
+		{
+
+			VkImageResolve image_copy_region;
+			image_copy_region.srcSubresource.aspectMask = src_tex->read_aspect_mask;
+			image_copy_region.srcSubresource.baseArrayLayer = src_tex->base_layer;
+			image_copy_region.srcSubresource.layerCount = 1;
+			image_copy_region.srcSubresource.mipLevel = src_tex->base_mipmap;
+			image_copy_region.srcOffset.x = 0;
+			image_copy_region.srcOffset.y = 0;
+			image_copy_region.srcOffset.z = 0;
+
+			image_copy_region.dstSubresource.aspectMask = dst_tex->read_aspect_mask;
+			image_copy_region.dstSubresource.baseArrayLayer = dst_tex->base_layer;
+			image_copy_region.dstSubresource.layerCount = 1;
+			image_copy_region.dstSubresource.mipLevel = dst_tex->base_mipmap;
+			image_copy_region.dstOffset.x = 0;
+			image_copy_region.dstOffset.y = 0;
+			image_copy_region.dstOffset.z = 0;
+
+			image_copy_region.extent.width = src_tex->width;
+			image_copy_region.extent.height = src_tex->height;
+			image_copy_region.extent.depth = src_tex->depth;
+
+			vkCmdResolveImage(command_buffer, src_tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst_tex->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy_region);
+		}
+
+		// RESTORE LAYOUT for SRC and DST
+
+		{ //restore src
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = nullptr;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			image_memory_barrier.newLayout = src_tex->layout;
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = src_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = src_tex->barrier_aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = src_tex->base_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = 1;
+			image_memory_barrier.subresourceRange.baseArrayLayer = src_tex->base_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		}
+
+		{ //make dst readable
+
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = nullptr;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			image_memory_barrier.newLayout = dst_tex->layout;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = dst_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_memory_barrier.subresourceRange.baseMipLevel = dst_tex->base_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = 1;
+			image_memory_barrier.subresourceRange.baseArrayLayer = dst_tex->base_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		}
+	}
+
+	return OK;
+}
 
 Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw) {
 

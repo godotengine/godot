@@ -3538,7 +3538,12 @@ void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_ren
 		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 		tf.width = rb->width;
 		tf.height = rb->height;
-		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		} else {
+			tf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		}
 
 		rb->texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
@@ -3549,6 +3554,9 @@ void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_ren
 		tf.width = p_width;
 		tf.height = p_height;
 		tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		if (rb->msaa != RS::VIEWPORT_MSAA_DISABLED) {
+			tf.usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		}
 
 		rb->depth_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	}
@@ -4132,11 +4140,11 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		sky_scene_state.sampler_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, sky_shader.default_shader_rd, SKY_SET_SAMPLERS);
 	}
 
-	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_shape"))));
-	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/filters/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/filters/depth_of_field_use_jitter"));
+	camera_effects_set_dof_blur_bokeh_shape(RS::DOFBokehShape(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_shape"))));
+	camera_effects_set_dof_blur_quality(RS::DOFBlurQuality(int(GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_bokeh_quality"))), GLOBAL_GET("rendering/quality/depth_of_field/depth_of_field_use_jitter"));
 	environment_set_ssao_quality(RS::EnvironmentSSAOQuality(int(GLOBAL_GET("rendering/quality/ssao/quality"))), GLOBAL_GET("rendering/quality/ssao/half_size"));
-	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter");
-	screen_space_roughness_limiter_curve = GLOBAL_GET("rendering/quality/filters/screen_space_roughness_limiter_curve");
+	screen_space_roughness_limiter = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter");
+	screen_space_roughness_limiter_curve = GLOBAL_GET("rendering/quality/screen_filters/screen_space_roughness_limiter_curve");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/quality/glow/upscale_mode")) > 0;
 	ssr_roughness_quality = RS::EnvironmentSSRRoughnessQuality(int(GLOBAL_GET("rendering/quality/screen_space_reflection/roughness_quality")));
 	sss_quality = RS::SubSurfaceScatteringQuality(int(GLOBAL_GET("rendering/quality/subsurface_scattering/subsurface_scattering_quality")));

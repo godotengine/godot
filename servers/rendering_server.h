@@ -633,8 +633,7 @@ public:
 		VIEWPORT_MSAA_4X,
 		VIEWPORT_MSAA_8X,
 		VIEWPORT_MSAA_16X,
-		VIEWPORT_MSAA_EXT_2X,
-		VIEWPORT_MSAA_EXT_4X,
+		VIEWPORT_MSAA_MAX,
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
