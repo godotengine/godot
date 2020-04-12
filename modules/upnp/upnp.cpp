@@ -44,9 +44,8 @@ bool UPNP::is_common_device(const String &dev) const {
 }
 
 int UPNP::discover(int timeout, int ttl, const String &device_filter) {
-	ERR_FAIL_COND_V(timeout < 0, UPNP_RESULT_INVALID_PARAM);
-	ERR_FAIL_COND_V(ttl < 0, UPNP_RESULT_INVALID_PARAM);
-	ERR_FAIL_COND_V(ttl > 255, UPNP_RESULT_INVALID_PARAM);
+	ERR_FAIL_COND_V_MSG(timeout < 0, UPNP_RESULT_INVALID_PARAM, "The response's wait time can't be negative.");
+	ERR_FAIL_COND_V_MSG(ttl < 0 || ttl > 255, UPNP_RESULT_INVALID_PARAM, "The time-to-live must be set between 0 and 255 (inclusive).");
 
 	devices.clear();
 
@@ -264,7 +263,7 @@ void UPNP::clear_devices() {
 }
 
 Ref<UPNPDevice> UPNP::get_gateway() const {
-	ERR_FAIL_COND_V(devices.size() < 1, nullptr);
+	ERR_FAIL_COND_V_MSG(devices.size() < 1, nullptr, "Couldn't find any UPNPDevices.");
 
 	for (int i = 0; i < devices.size(); i++) {
 		Ref<UPNPDevice> dev = get_device(i);
