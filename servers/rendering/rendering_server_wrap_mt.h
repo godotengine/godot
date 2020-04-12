@@ -476,7 +476,8 @@ public:
 	FUNC8(camera_effects_set_dof_blur, RID, bool, float, float, bool, float, float, float)
 	FUNC3(camera_effects_set_custom_exposure, RID, bool, float)
 
-	FUNC1(shadow_filter_set, ShadowFilter)
+	FUNC1(shadows_quality_set, ShadowQuality);
+	FUNC1(directional_shadow_quality_set, ShadowQuality);
 
 	FUNCRID(scenario)
 
