@@ -67,16 +67,18 @@ RasterizerCanvasGLES2::BatchData::BatchData() {
 	settings_scissor_threshold = -1.0f;
 }
 
-RasterizerCanvasGLES2::RenderItemState::RenderItemState() {
-	current_clip = NULL;
-	shader_cache = NULL;
+void RasterizerCanvasGLES2::RenderItemState::reset() {
+	current_clip = nullptr;
+	shader_cache = nullptr;
 	rebind_shader = true;
 	prev_use_skeleton = false;
 	last_blend_mode = -1;
 	canvas_last_material = RID();
 	item_group_z = 0;
-	item_group_light = 0;
+	item_group_light = nullptr;
 	final_modulate = Color(-1.0, -1.0, -1.0, -1.0); // just something unlikely
+
+	joined_item = nullptr;
 }
 
 RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_get_canvas_texture(const RID &p_texture) const {
@@ -286,8 +288,8 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 							_prefill_default_batch(r_fill_state, command_num);
 							break;
 						}
-					}
-				} // if use hardware transform
+					} // if use hardware transform
+				}
 
 				Color col = rect->modulate;
 				if (multiply_final_modulate) {
@@ -1523,17 +1525,9 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *p_c
 	render_batches(commands, p_current_clip, r_reclip, p_material);
 }
 
-void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
-	bdata.items_joined.reset();
-	bdata.item_refs.reset();
+void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z) {
 
-	RenderItemState render_item_state;
-	render_item_state.item_group_z = p_z;
-	render_item_state.item_group_modulate = p_modulate;
-	render_item_state.item_group_light = p_light;
-	render_item_state.item_group_base_transform = p_base_transform;
-
-	BItemJoined *j = 0;
+	_render_item_state.item_group_z = p_z;
 
 	// join is whether to join to the previous batch.
 	// batch_break is whether to PREVENT the next batch from joining with us
@@ -1554,17 +1548,17 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z, const Color &
 			// even though we know join is false.
 			// also we need to run try_join_item for every item because it keeps the state up to date,
 			// if we didn't run it the state would be out of date.
-			try_join_item(ci, render_item_state, batch_break);
+			try_join_item(ci, _render_item_state, batch_break);
 		} else {
-			join = try_join_item(ci, render_item_state, batch_break);
+			join = try_join_item(ci, _render_item_state, batch_break);
 		}
 
 		// assume the first item will always return no join
 		if (!join) {
-			j = bdata.items_joined.request_with_grow();
-			j->first_item_ref = bdata.item_refs.size();
-			j->num_item_refs = 1;
-			j->bounding_rect = ci->global_rect_cache;
+			_render_item_state.joined_item = bdata.items_joined.request_with_grow();
+			_render_item_state.joined_item->first_item_ref = bdata.item_refs.size();
+			_render_item_state.joined_item->num_item_refs = 1;
+			_render_item_state.joined_item->bounding_rect = ci->global_rect_cache;
 
 			// add the reference
 			BItemRef *r = bdata.item_refs.request_with_grow();
@@ -1573,23 +1567,22 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z, const Color &
 			// for baking into vertex colors.
 			// this may not be ideal... as we are increasing the size of item reference,
 			// but it is stupidly complex to calculate later, which would probably be slower.
-			r->final_modulate = render_item_state.final_modulate;
+			r->final_modulate = _render_item_state.final_modulate;
 		} else {
-			CRASH_COND(j == 0);
-			j->num_item_refs += 1;
-			j->bounding_rect = j->bounding_rect.merge(ci->global_rect_cache);
+			CRASH_COND(_render_item_state.joined_item == 0);
+			_render_item_state.joined_item->num_item_refs += 1;
+			_render_item_state.joined_item->bounding_rect = _render_item_state.joined_item->bounding_rect.merge(ci->global_rect_cache);
 
 			BItemRef *r = bdata.item_refs.request_with_grow();
 			r->item = ci;
-			r->final_modulate = render_item_state.final_modulate;
+			r->final_modulate = _render_item_state.final_modulate;
 		}
 
 		p_item_list = p_item_list->next;
 	}
 }
 
-void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
-
+void RasterizerCanvasGLES2::canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
 	// if we are debugging, flash each frame between batching renderer and old version to compare for regressions
 	if (bdata.settings_flash_batching) {
 		if ((Engine::get_singleton()->get_frames_drawn() % 2) == 0)
@@ -1598,15 +1591,44 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 			bdata.settings_use_batching = false;
 	}
 
+	if (!bdata.settings_use_batching) {
+		return;
+	}
+
 	// this only needs to be done when screen size changes, but this should be
 	// infrequent enough
 	_calculate_scissor_threshold_area();
 
-	// state 1 : join similar items, so that their state changes are not repeated,
-	// and commands from joined items can be batched together
-	if (bdata.settings_use_batching)
-		join_items(p_item_list, p_z, p_modulate, p_light, p_base_transform);
+	// set up render item state for all the z_indexes (this is common to all z_indexes)
+	_render_item_state.reset();
+	_render_item_state.item_group_modulate = p_modulate;
+	_render_item_state.item_group_light = p_light;
+	_render_item_state.item_group_base_transform = p_base_transform;
+}
 
+void RasterizerCanvasGLES2::canvas_render_items_end() {
+	if (!bdata.settings_use_batching) {
+		return;
+	}
+
+	// batching render is deferred until after going through all the z_indices, joining all the items
+	canvas_render_items_implementation(0, 0, _render_item_state.item_group_modulate,
+			_render_item_state.item_group_light,
+			_render_item_state.item_group_base_transform);
+
+	bdata.items_joined.reset();
+	bdata.item_refs.reset();
+}
+
+void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
+	// stage 1 : join similar items, so that their state changes are not repeated,
+	// and commands from joined items can be batched together
+	if (bdata.settings_use_batching) {
+		join_items(p_item_list, p_z);
+		return;
+	}
+
+	// only legacy renders at this stage, batched renderer doesn't render until canvas_render_items_end()
 	canvas_render_items_implementation(p_item_list, p_z, p_modulate, p_light, p_base_transform);
 }
 
@@ -1767,6 +1789,9 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 		// a + light_blend + b + light_blend IS NOT THE SAME AS
 		// a + b + light_blend
 		join = false;
+
+		// we also dont want to allow joining this item with the next item, because the next item could have no lights!
+		r_batch_break = true;
 	}
 
 	if (reclip) {

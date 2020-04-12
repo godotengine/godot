@@ -181,7 +181,8 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 	} bdata;
 
 	struct RenderItemState {
-		RenderItemState();
+		RenderItemState() { reset(); }
+		void reset();
 		Item *current_clip;
 		RasterizerStorageGLES2::Shader *shader_cache;
 		bool rebind_shader;
@@ -190,12 +191,15 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		RID canvas_last_material;
 		Color final_modulate;
 
+		// used for joining items only
+		BItemJoined *joined_item;
+
 		// 'item group' is data over a single call to canvas_render_items
 		int item_group_z;
 		Color item_group_modulate;
 		Light *item_group_light;
 		Transform2D item_group_base_transform;
-	};
+	} _render_item_state;
 
 	struct FillState {
 		void reset() {
@@ -212,6 +216,8 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 	};
 
 public:
+	virtual void canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	virtual void canvas_render_items_end();
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
 
 private:
@@ -222,7 +228,7 @@ private:
 	// high level batch funcs
 	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
 	void render_joined_item(const BItemJoined &p_bij, RenderItemState &r_ris);
-	void join_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	void join_items(Item *p_item_list, int p_z);
 	bool try_join_item(Item *p_ci, RenderItemState &r_ris, bool &r_batch_break);
 	void render_joined_item_commands(const BItemJoined &p_bij, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
 	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);

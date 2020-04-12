@@ -1066,6 +1066,8 @@ public:
 	virtual void canvas_begin() = 0;
 	virtual void canvas_end() = 0;
 
+	virtual void canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {}
+	virtual void canvas_render_items_end() {}
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
