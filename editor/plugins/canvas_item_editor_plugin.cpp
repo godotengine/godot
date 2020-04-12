@@ -4907,6 +4907,16 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			_focus_selection(p_op);
 
 		} break;
+		case TRANSFORM_DIALOG: {
+
+			for (int i = 0; i < 2; i++) {
+				xform_translate[i]->set_text("0");
+				xform_scale[i]->set_text("1");
+			}
+			xform_rotate[0]->set_text("0");
+			xform_dialog->popup_centered(Size2(320, 240) * EDSCALE);
+
+		} break;
 		case PREVIEW_CANVAS_SCALE: {
 
 			bool preview = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(PREVIEW_CANVAS_SCALE));
@@ -5073,6 +5083,51 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			_update_zoom_label();
 			call_deferred("_popup_callback", VIEW_CENTER_TO_SELECTION);
 		}
+	}
+}
+
+void CanvasItemEditor::_xform_dialog_action() {
+	Vector2 scale;
+	double rotate;
+	Vector2 translate;
+
+	for (int i = 0; i < 2; i++) {
+		translate[i] = xform_translate[i]->get_text().to_double();
+		scale[i] = xform_scale[i]->get_text().to_double();
+	}
+	rotate = Math::deg2rad(xform_rotate[0]->get_text().to_double());
+
+	List<Node *> &selection = editor_selection->get_selected_node_list();
+	List<CanvasItem *> restoreList = List<CanvasItem *>();
+
+	// Add to restore list
+	for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+		CanvasItem *ci = Object::cast_to<CanvasItem>(E->get());
+		if (!ci)
+			continue;
+
+		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
+		if (!se)
+			continue;
+
+		restoreList.push_back(ci);
+	}
+
+	if (restoreList.size() > 0) {
+		_restore_canvas_item_state(restoreList);
+
+		for (List<CanvasItem *>::Element *E = restoreList.front(); E; E = E->next()) {
+			CanvasItem *ci = Object::cast_to<CanvasItem>(E->get());
+
+			ci->_edit_set_rotation(ci->_edit_get_rotation() + rotate);
+			ci->_edit_set_position(ci->_edit_get_position() + translate);
+			ci->_edit_set_scale(ci->_edit_get_scale() * scale);
+
+			ci->update();
+			viewport->update();
+		}
+
+		_commit_canvas_item_state(restoreList, TTR("XFORM Dialog"));
 	}
 }
 
@@ -5671,6 +5726,61 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	_update_override_camera_button(false);
 
 	hb->add_child(memnew(VSeparator));
+
+	/* XFORM DIALOG */
+	transform_button = memnew(ToolButton);
+	transform_button->set_text(TTR("Transform"));
+	hb->add_child(transform_button);
+	transform_button->connect("pressed", callable_mp(this, &CanvasItemEditor::_popup_callback), varray(TRANSFORM_DIALOG));
+
+	xform_dialog = memnew(ConfirmationDialog);
+	xform_dialog->set_title(TTR("Transform Change"));
+	add_child(xform_dialog);
+
+	VBoxContainer *xform_vbc = memnew(VBoxContainer);
+	xform_dialog->add_child(xform_vbc);
+
+	Label *l = memnew(Label);
+	l->set_text(TTR("Translate:"));
+	xform_vbc->add_child(l);
+
+	HBoxContainer *xform_hbc = memnew(HBoxContainer);
+	xform_vbc->add_child(xform_hbc);
+
+	for (int i = 0; i < 2; i++) {
+
+		xform_translate[i] = memnew(LineEdit);
+		xform_translate[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_hbc->add_child(xform_translate[i]);
+	}
+
+	l = memnew(Label);
+	l->set_text(TTR("Rotate (deg.):"));
+	xform_vbc->add_child(l);
+
+	xform_hbc = memnew(HBoxContainer);
+	xform_vbc->add_child(xform_hbc);
+
+	xform_rotate[0] = memnew(LineEdit);
+	xform_rotate[0]->set_h_size_flags(SIZE_EXPAND_FILL);
+	xform_hbc->add_child(xform_rotate[0]);
+
+	l = memnew(Label);
+	l->set_text(TTR("Scale (ratio):"));
+	xform_vbc->add_child(l);
+
+	xform_hbc = memnew(HBoxContainer);
+	xform_vbc->add_child(xform_hbc);
+
+	for (int i = 0; i < 2; i++) {
+		xform_scale[i] = memnew(LineEdit);
+		xform_scale[i]->set_h_size_flags(SIZE_EXPAND_FILL);
+		xform_hbc->add_child(xform_scale[i]);
+	}
+
+	xform_dialog->connect("confirmed", callable_mp(this, &CanvasItemEditor::_xform_dialog_action));
+
+	/* XFORM DIALOG END */
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));

@@ -123,6 +123,7 @@ private:
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
+		TRANSFORM_DIALOG,
 		UNGROUP_SELECTED,
 		ANCHORS_AND_MARGINS_PRESET_TOP_LEFT,
 		ANCHORS_AND_MARGINS_PRESET_TOP_RIGHT,
@@ -368,6 +369,12 @@ private:
 	ToolButton *group_button;
 	ToolButton *ungroup_button;
 
+	ToolButton *transform_button;
+	ConfirmationDialog *xform_dialog;
+	LineEdit *xform_translate[2];
+	LineEdit *xform_rotate[1];
+	LineEdit *xform_scale[2];
+
 	MenuButton *skeleton_menu;
 	ToolButton *override_camera_button;
 	MenuButton *view_menu;
@@ -415,6 +422,7 @@ private:
 	Ref<ShortCut> divide_grid_step_shortcut;
 	Ref<ShortCut> pan_view_shortcut;
 
+	void _xform_dialog_action();
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
