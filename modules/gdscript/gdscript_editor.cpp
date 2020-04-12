@@ -2236,6 +2236,8 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 
 	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", false) ? "'" : "\"";
 
+#define IS_METHOD_SIGNAL(m_method) (m_method == "connect" || m_method == "disconnect" || m_method == "is_connected" || m_method == "emit_signal")
+
 	while (base_type.has_type) {
 		switch (base_type.kind) {
 			case GDScriptParser::DataType::CLASS: {
@@ -2252,7 +2254,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 					}
 				}
 
-				if ((p_method == "connect" || p_method == "emit_signal") && p_argidx == 0) {
+				if (IS_METHOD_SIGNAL(p_method) && p_argidx == 0) {
 					for (int i = 0; i < base_type.class_type->_signals.size(); i++) {
 						ScriptCodeCompletionOption option(base_type.class_type->_signals[i].name.operator String(), ScriptCodeCompletionOption::KIND_SIGNAL);
 						option.insert_text = quote_style + option.display + quote_style;
@@ -2265,7 +2267,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 			case GDScriptParser::DataType::GDSCRIPT: {
 				Ref<GDScript> gds = base_type.script_type;
 				if (gds.is_valid()) {
-					if ((p_method == "connect" || p_method == "emit_signal") && p_argidx == 0) {
+					if (IS_METHOD_SIGNAL(p_method) && p_argidx == 0) {
 						List<MethodInfo> signals;
 						gds->get_script_signal_list(&signals);
 						for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
@@ -2327,7 +2329,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 					}
 				}
 
-				if ((p_method == "connect" || p_method == "emit_signal") && p_argidx == 0) {
+				if (IS_METHOD_SIGNAL(p_method) && p_argidx == 0) {
 					List<MethodInfo> signals;
 					ClassDB::get_signal_list(class_name, &signals);
 					for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
@@ -2336,6 +2338,7 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 						r_result.insert(option.display, option);
 					}
 				}
+#undef IS_METHOD_SIGNAL
 
 				if (ClassDB::is_parent_class(class_name, "Node") && (p_method == "get_node" || p_method == "has_node") && p_argidx == 0) {
 					// Get autoloads
