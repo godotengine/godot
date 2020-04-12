@@ -1557,6 +1557,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	drives = memnew(OptionButton);
 	drives->connect("item_selected", this, "_select_drive");
+	pathhb->add_child(drives);
 
 	dir = memnew(LineEdit);
 	pathhb->add_child(dir);
