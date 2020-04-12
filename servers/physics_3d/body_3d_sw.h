@@ -257,7 +257,7 @@ public:
 	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_pos) {
 
 		applied_force += p_force;
-		applied_torque += p_pos.cross(p_force);
+		applied_torque += (p_pos - center_of_mass).cross(p_force);
 	}
 
 	_FORCE_INLINE_ void add_torque(const Vector3 &p_torque) {
