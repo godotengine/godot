@@ -433,6 +433,58 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 	CASES(math);
 	r_valid = true;
 
+	Object *operand_left = (p_a.type == OBJECT) ? p_a._get_obj().obj : nullptr;
+	Object *operand_right = (p_b.type == OBJECT) ? p_b._get_obj().obj : nullptr;
+	const Variant *variant_arg = &p_b;
+	StringName op_overload = get_op_overload_name(p_op);
+	bool is_delegate = false;
+
+	// check operand left doesn't has overload
+	if (operand_left && !operand_left->has_method(op_overload)) {
+		// delegation check
+		if (p_op == OP_EQUAL && operand_left->has_method(get_op_overload_name(OP_NOT_EQUAL))) {
+			op_overload = get_op_overload_name(OP_NOT_EQUAL);
+			is_delegate = true;
+		} else if (p_op == OP_NOT_EQUAL && operand_left->has_method(get_op_overload_name(OP_EQUAL))) {
+			op_overload = get_op_overload_name(OP_EQUAL);
+			is_delegate = true;
+		} else {
+			operand_left = nullptr;
+		}
+	}
+
+	// check operand right has overload
+	if (!operand_left && operand_right) {
+		if (operand_right->has_method(get_op_reflection_name(p_op))) {
+			op_overload = get_op_reflection_name(p_op);
+			operand_left = operand_right;
+			variant_arg = &p_a;
+		} else {
+			// delegation check
+			if (p_op == OP_EQUAL && operand_right->has_method(get_op_overload_name(OP_NOT_EQUAL))) {
+				op_overload = get_op_overload_name(OP_NOT_EQUAL);
+				operand_left = operand_right;
+				is_delegate = true;
+			} else if (p_op == OP_NOT_EQUAL && operand_right->has_method(get_op_overload_name(OP_EQUAL))) {
+				op_overload = get_op_overload_name(OP_EQUAL);
+				operand_left = operand_right;
+				is_delegate = true;
+			} else {
+				operand_left = nullptr;
+			}
+		}
+	}
+
+	// perform overload
+	if (operand_left) {
+		Callable::CallError err;
+		int arg_count = (Variant::is_op_unary(p_op)) ? 0 : 1;
+		r_ret = operand_left->call(op_overload, &variant_arg, arg_count, err);
+		if (is_delegate) r_ret = !(r_ret.booleanize());
+		r_valid = !err.error;
+		return;
+	}
+
 	SWITCH(math, p_op, p_a.type) {
 		SWITCH_OP(math, OP_EQUAL, p_a.type) {
 			CASE_TYPE(math, OP_EQUAL, NIL) {
@@ -4544,4 +4596,127 @@ String Variant::get_operator_name(Operator p_op) {
 
 	ERR_FAIL_INDEX_V(p_op, OP_MAX, "");
 	return _op_names[p_op];
+}
+
+StringName Variant::get_op_overload_name(Operator p_op) {
+
+	ERR_FAIL_INDEX_V(p_op, OP_MAX, "");
+	switch (p_op) {
+		case OP_EQUAL:
+			return "_eq";
+		case OP_NOT_EQUAL:
+			return "_neq";
+		case OP_LESS:
+			return "_lt";
+		case OP_LESS_EQUAL:
+			return "_le";
+		case OP_GREATER:
+			return "_gt";
+		case OP_GREATER_EQUAL:
+			return "_ge";
+		case OP_ADD:
+			return "_add";
+		case OP_SUBTRACT:
+			return "_sub";
+		case OP_MULTIPLY:
+			return "_mul";
+		case OP_DIVIDE:
+			return "_div";
+		case OP_NEGATE:
+			return "_negate";
+		case OP_POSITIVE:
+			return "_positive";
+		case OP_MODULE:
+			return "_mod";
+		case OP_STRING_CONCAT:
+			return StringName();
+		case OP_SHIFT_LEFT:
+			return "_lshift";
+		case OP_SHIFT_RIGHT:
+			return "_rshift";
+		case OP_BIT_AND:
+			return "_and";
+		case OP_BIT_OR:
+			return "_or";
+		case OP_BIT_XOR:
+			return "_xor";
+		case OP_BIT_NEGATE:
+			return "_invert";
+		case OP_AND:
+		case OP_OR:
+		case OP_XOR:
+		case OP_NOT:
+			return StringName();
+		case OP_IN:
+			return "_contains";
+		default:
+			return StringName();
+	}
+}
+
+StringName Variant::get_op_reflection_name(Operator p_op) {
+
+	ERR_FAIL_INDEX_V(p_op, OP_MAX, "");
+	if (is_op_unary(p_op)) return StringName();
+
+	switch (p_op) {
+		case OP_EQUAL:
+		case OP_NOT_EQUAL:
+			return get_op_overload_name(p_op);
+		case OP_LESS:
+			return get_op_overload_name(OP_GREATER);
+		case OP_LESS_EQUAL:
+			return get_op_overload_name(OP_GREATER_EQUAL);
+		case OP_GREATER:
+			return get_op_overload_name(OP_LESS);
+		case OP_GREATER_EQUAL:
+			return get_op_overload_name(OP_LESS_EQUAL);
+		case OP_ADD:
+			return "_radd";
+		case OP_SUBTRACT:
+			return "_rsub";
+		case OP_MULTIPLY:
+			return "_rmul";
+		case OP_DIVIDE:
+			return "_rdiv";
+		case OP_NEGATE:
+		case OP_POSITIVE:
+			return StringName();
+		case OP_MODULE:
+			return "_rmod";
+		case OP_STRING_CONCAT:
+			return StringName();
+		case OP_SHIFT_LEFT:
+			return "_rlshift";
+		case OP_SHIFT_RIGHT:
+			return "_rrshift";
+		case OP_BIT_AND:
+			return "_rand";
+		case OP_BIT_OR:
+			return "_ror";
+		case OP_BIT_XOR:
+			return "_rxor";
+		case OP_BIT_NEGATE:
+		case OP_AND:
+		case OP_OR:
+		case OP_XOR:
+		case OP_NOT:
+		case OP_IN:
+		default:
+			return StringName();
+	}
+}
+
+bool Variant::is_op_unary(Operator p_op) {
+
+	ERR_FAIL_INDEX_V(p_op, OP_MAX, false);
+	switch (p_op) {
+		case OP_NEGATE:
+		case OP_POSITIVE:
+		case OP_BIT_NEGATE:
+		case OP_NOT:
+			return true;
+		default:
+			return false;
+	}
 }

@@ -756,6 +756,33 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 
 	ClassDB::bind_method(D_METHOD("get_as_byte_code"), &GDScript::get_as_byte_code);
+
+	for (int i = 0; i < Variant::Operator::OP_MAX; i++) {
+		Variant::Operator op = (Variant::Operator)i;
+		bool is_unary = Variant::is_op_unary(op);
+		bool is_op_boolean = (op == Variant::OP_EQUAL ||
+							  op == Variant::OP_NOT_EQUAL ||
+							  op == Variant::OP_LESS ||
+							  op == Variant::OP_LESS_EQUAL ||
+							  op == Variant::OP_GREATER ||
+							  op == Variant::OP_GREATER_EQUAL ||
+							  op == Variant::OP_IN ||
+							  op == Variant::OP_AND ||
+							  op == Variant::OP_OR ||
+							  op == Variant::OP_XOR ||
+							  op == Variant::OP_NOT);
+		StringName overload_name = Variant::get_op_overload_name(op);
+
+		PropertyInfo ret_value;
+		ret_value.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
+		if (is_unary) {
+			BIND_VMETHOD(MethodInfo(ret_value, overload_name));
+		} else if (is_op_boolean) {
+			BIND_VMETHOD(MethodInfo(Variant::BOOL, overload_name, PropertyInfo()));
+		} else {
+			BIND_VMETHOD(MethodInfo(ret_value, overload_name, PropertyInfo()));
+		}
+	}
 }
 
 Vector<uint8_t> GDScript::get_as_byte_code() const {

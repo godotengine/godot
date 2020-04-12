@@ -6414,7 +6414,25 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 
 					Variant::Operator var_op = _get_variant_operation(op->op);
 					bool valid = false;
-					node_type = _get_operation_type(var_op, argument_type, argument_type, valid);
+
+					if (argument_type.kind == DataType::CLASS || argument_type.kind == DataType::GDSCRIPT) {
+						valid = true;
+
+						IdentifierNode op_overload;
+						op_overload.name = Variant::get_op_overload_name(var_op);
+
+						OperatorNode op_call;
+						op_call.op = OperatorNode::OP_CALL;
+						op_call.line = op->line;
+
+						op_call.arguments.push_back(op->arguments[0]);
+						op_call.arguments.push_back(&op_overload);
+
+						node_type = _reduce_function_call_type(&op_call);
+
+					} else {
+						node_type = _get_operation_type(var_op, argument_type, argument_type, valid);
+					}
 
 					if (check_types && !valid) {
 						_set_error("Invalid operand type (\"" + argument_type.to_string() +
@@ -6459,7 +6477,15 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 
 					Variant::Operator var_op = _get_variant_operation(op->op);
 					bool valid = false;
-					node_type = _get_operation_type(var_op, argument_a_type, argument_b_type, valid);
+
+					if (argument_a_type.kind == DataType::CLASS || argument_b_type.kind == DataType::CLASS ||
+							argument_a_type.kind == DataType::GDSCRIPT || argument_b_type.kind == DataType::GDSCRIPT) {
+						valid = true;
+						node_type = _reduce_binary_op_overload_type(op);
+
+					} else {
+						node_type = _get_operation_type(var_op, argument_a_type, argument_b_type, valid);
+					}
 
 					if (check_types && !valid) {
 						_set_error("Invalid operand types (\"" + argument_a_type.to_string() + "\" and \"" +
@@ -6769,6 +6795,69 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 	node_type = _resolve_type(node_type, p_node->line);
 	p_node->set_datatype(node_type);
 	return node_type;
+}
+
+GDScriptParser::DataType GDScriptParser::_reduce_binary_op_overload_type(const OperatorNode *p_op) {
+
+	if (p_op->arguments.size() != 2) {
+		_set_error("Parser bug: binary operation without 2 arguments.", p_op->line);
+		ERR_FAIL_V(DataType());
+	}
+	DataType ret;
+
+	Variant::Operator var_op = _get_variant_operation(p_op->op);
+	OperatorNode op_call;
+	op_call.op = OperatorNode::OP_CALL;
+	op_call.line = p_op->line;
+	IdentifierNode op_overload;
+	bool check_reflection = false;
+	bool check_delegate = (var_op == Variant::OP_EQUAL || var_op == Variant::OP_NOT_EQUAL);
+	Node *operand_left;
+	Node *operand_right;
+
+	DataType lh_type = _reduce_node_type(p_op->arguments[0]);
+	DataType rh_type = _reduce_node_type(p_op->arguments[1]);
+
+	if (lh_type.kind == DataType::CLASS || lh_type.kind == DataType::GDSCRIPT) {
+		operand_left = p_op->arguments[0];
+		operand_right = p_op->arguments[1];
+		check_reflection = ((rh_type.kind == DataType::CLASS || rh_type.kind == DataType::GDSCRIPT));
+	} else {
+		operand_left = p_op->arguments[1];
+		operand_right = p_op->arguments[0];
+	}
+
+	op_overload.name = Variant::get_op_overload_name(var_op);
+	op_call.arguments.push_back(operand_left);
+	op_call.arguments.push_back(&op_overload);
+	op_call.arguments.push_back(operand_right);
+	ret = _reduce_function_call_type(&op_call);
+
+	if (!check_types) return ret;
+
+	if (ret.kind == DataType::UNRESOLVED && check_delegate) {
+		Variant::Operator op_delegate = (var_op == Variant::OP_EQUAL) ? Variant::OP_NOT_EQUAL : Variant::OP_EQUAL;
+		op_overload.name = Variant::get_op_overload_name(op_delegate);
+		op_call.arguments.write[1] = &op_overload;
+		ret = _reduce_function_call_type(&op_call);
+	}
+
+	if (ret.kind == DataType::UNRESOLVED && check_reflection && Variant::get_op_reflection_name(var_op) != StringName()) {
+		op_call.arguments.clear();
+		op_call.arguments.push_back(operand_right);
+		op_call.arguments.push_back(&op_overload);
+		op_call.arguments.push_back(operand_left);
+		ret = _reduce_function_call_type(&op_call);
+
+		if (ret.kind == DataType::UNRESOLVED && check_delegate) {
+			Variant::Operator op_delegate = (var_op == Variant::OP_EQUAL) ? Variant::OP_NOT_EQUAL : Variant::OP_EQUAL;
+			op_overload.name = Variant::get_op_overload_name(op_delegate);
+			op_call.arguments.write[1] = &op_overload;
+			ret = _reduce_function_call_type(&op_call);
+		}
+	}
+
+	return ret;
 }
 
 bool GDScriptParser::_get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const {
@@ -7912,6 +8001,9 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 		bool vararg = false;
 
 		DataType base_type = current_class->base_type;
+		// Ref<GDScript> to include gdscript virtual methods (operator overload) for better parser errors
+		if (base_type.native_type == "Reference")
+			base_type.native_type = "GDScript";
 		if (_get_function_signature(base_type, p_function->name, return_type, arg_types, default_arg_count, _static, vararg)) {
 			bool valid = _static == p_function->_static;
 			valid = valid && return_type == p_function->return_type;
@@ -8193,7 +8285,13 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 
 							Variant::Operator oper = _get_variant_operation(op->op);
 							bool valid = false;
-							rh_type = _get_operation_type(oper, lh_type, arg_type, valid);
+							if ((lh_type.kind == DataType::CLASS || arg_type.kind == DataType::CLASS ||
+										lh_type.kind == DataType::GDSCRIPT || arg_type.kind == DataType::GDSCRIPT)) {
+								valid = true;
+								rh_type = _reduce_binary_op_overload_type(op);
+							} else {
+								rh_type = _get_operation_type(oper, lh_type, arg_type, valid);
+							}
 
 							if (check_types && !valid) {
 								_set_error("Invalid operand types (\"" + lh_type.to_string() + "\" and \"" + arg_type.to_string() +
