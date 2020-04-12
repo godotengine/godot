@@ -170,6 +170,10 @@ class RasterizerEffectsRD {
 		float exposure;
 		float white;
 		float auto_exposure_grey;
+
+		float pixel_size[2];
+		uint32_t use_fxaa;
+		uint32_t pad;
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -595,6 +599,9 @@ public:
 
 		bool use_color_correction = false;
 		RID color_correction_texture;
+
+		bool use_fxaa = false;
+		Vector2i texture_size;
 	};
 
 	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
