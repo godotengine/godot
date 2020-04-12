@@ -91,7 +91,7 @@ public:
 	bool operator!=(const Callable &p_callable) const;
 	bool operator<(const Callable &p_callable) const;
 
-	void operator=(const Callable &p_callable);
+	Callable &operator=(const Callable &p_callable);
 
 	operator String() const;
 

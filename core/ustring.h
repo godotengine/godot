@@ -94,7 +94,7 @@ public:
 
 	_FORCE_INLINE_ CharString() {}
 	_FORCE_INLINE_ CharString(const CharString &p_str) { _cowdata._ref(p_str._cowdata); }
-	_FORCE_INLINE_ CharString operator=(const CharString &p_str) {
+	_FORCE_INLINE_ CharString &operator=(const CharString &p_str) {
 		_cowdata._ref(p_str._cowdata);
 		return *this;
 	}
@@ -356,7 +356,7 @@ public:
 
 	_FORCE_INLINE_ String() {}
 	_FORCE_INLINE_ String(const String &p_str) { _cowdata._ref(p_str._cowdata); }
-	String operator=(const String &p_str) {
+	String &operator=(const String &p_str) {
 		_cowdata._ref(p_str._cowdata);
 		return *this;
 	}

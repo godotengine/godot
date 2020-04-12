@@ -250,8 +250,9 @@ Dictionary Dictionary::duplicate(bool p_deep) const {
 	return n;
 }
 
-void Dictionary::operator=(const Dictionary &p_dictionary) {
+Dictionary &Dictionary::operator=(const Dictionary &p_dictionary) {
 	_ref(p_dictionary);
+	return *this;
 }
 
 const void *Dictionary::id() const {

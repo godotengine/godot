@@ -2714,14 +2714,14 @@ Variant::Variant(const Vector<StringName> &p_array) {
 	*this = v;
 }
 
-void Variant::operator=(const Variant &p_variant) {
+Variant &Variant::operator=(const Variant &p_variant) {
 	if (unlikely(this == &p_variant)) {
-		return;
+		return *this;
 	}
 
 	if (unlikely(type != p_variant.type)) {
 		reference(p_variant);
-		return;
+		return *this;
 	}
 
 	switch (p_variant.type) {
@@ -2862,6 +2862,7 @@ void Variant::operator=(const Variant &p_variant) {
 		default: {
 		}
 	}
+	return *this;
 }
 
 Variant::Variant(const IP_Address &p_address) {

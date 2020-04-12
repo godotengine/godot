@@ -125,8 +125,9 @@ public:
 		return Variant(reference);
 	}
 
-	void operator=(const Ref &p_from) {
+	Ref &operator=(const Ref &p_from) {
 		ref(p_from);
+		return *this;
 	}
 
 	template <class T_Other>

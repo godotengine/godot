@@ -153,11 +153,11 @@ bool Callable::operator<(const Callable &p_callable) const {
 	}
 }
 
-void Callable::operator=(const Callable &p_callable) {
+Callable &Callable::operator=(const Callable &p_callable) {
 	if (is_custom()) {
 		if (p_callable.is_custom()) {
 			if (custom == p_callable.custom) {
-				return;
+				return *this;
 			}
 		}
 
@@ -178,6 +178,7 @@ void Callable::operator=(const Callable &p_callable) {
 		method = p_callable.method;
 		object = p_callable.object;
 	}
+	return *this;
 }
 
 Callable::operator String() const {

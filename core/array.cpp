@@ -152,8 +152,9 @@ void Array::_assign(const Array &p_array) {
 	}
 }
 
-void Array::operator=(const Array &p_array) {
+Array &Array::operator=(const Array &p_array) {
 	_assign(p_array);
+	return *this;
 }
 
 void Array::push_back(const Variant &p_value) {

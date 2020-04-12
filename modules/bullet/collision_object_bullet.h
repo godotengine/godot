@@ -94,12 +94,13 @@ public:
 			operator=(otherShape);
 		}
 
-		void operator=(const ShapeWrapper &otherShape) {
+		ShapeWrapper &operator=(const ShapeWrapper &otherShape) {
 			shape = otherShape.shape;
 			bt_shape = otherShape.bt_shape;
 			transform = otherShape.transform;
 			scale = otherShape.scale;
 			active = otherShape.active;
+			return *this;
 		}
 
 		void set_transform(const Transform &p_transform);

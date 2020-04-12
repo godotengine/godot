@@ -149,9 +149,9 @@ bool NodePath::operator!=(const NodePath &p_path) const {
 	return (!(*this == p_path));
 }
 
-void NodePath::operator=(const NodePath &p_path) {
+NodePath &NodePath::operator=(const NodePath &p_path) {
 	if (this == &p_path) {
-		return;
+		return *this;
 	}
 
 	unref();
@@ -159,6 +159,7 @@ void NodePath::operator=(const NodePath &p_path) {
 	if (p_path.data && p_path.data->refcount.ref()) {
 		data = p_path.data;
 	}
+	return *this;
 }
 
 NodePath::operator String() const {

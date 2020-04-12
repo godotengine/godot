@@ -63,7 +63,7 @@ public:
 	bool operator==(const Array &p_array) const;
 
 	uint32_t hash() const;
-	void operator=(const Array &p_array);
+	Array &operator=(const Array &p_array);
 
 	void push_back(const Variant &p_value);
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility

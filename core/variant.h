@@ -466,7 +466,7 @@ public:
 	String get_construct_string() const;
 	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
-	void operator=(const Variant &p_variant); // only this is enough for all the other types
+	Variant &operator=(const Variant &p_variant); // only this is enough for all the other types
 
 	Variant(const Variant &p_variant);
 	_FORCE_INLINE_ Variant() {}

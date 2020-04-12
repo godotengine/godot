@@ -144,7 +144,7 @@ public:
 		}
 	};
 
-	void operator=(const StringName &p_name);
+	StringName &operator=(const StringName &p_name);
 	StringName(const char *p_name);
 	StringName(const StringName &p_name);
 	StringName(const String &p_name);
