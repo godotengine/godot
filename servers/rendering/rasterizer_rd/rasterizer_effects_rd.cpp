@@ -99,7 +99,7 @@ RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use
 	u.ids.push_back(p_texture);
 	uniforms.push_back(u);
 	//any thing with the same configuration (one texture in binding 0 for set 0), is good
-	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, blur.shader.version_get_shader(blur.shader_version, 0), 0);
+	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 0);
 
 	texture_to_uniform_set_cache[p_texture] = uniform_set;
 
@@ -204,154 +204,199 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1
 	return uniform_set;
 }
 
-void RasterizerEffectsRD::copy_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y, float p_z_near, float p_z_far) {
+void RasterizerEffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance) {
+	zeromem(&copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
 
-	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
 	if (p_flip_y) {
-		blur.push_constant.flags |= BLUR_FLAG_FLIP_Y;
-	}
-
-	blur.push_constant.camera_z_near = p_z_near;
-	blur.push_constant.camera_z_far = p_z_far;
-
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_LINEARIZE_DEPTH].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
-}
-
-void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y, bool p_force_luminance) {
-
-	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
-	if (p_flip_y) {
-		blur.push_constant.flags |= BLUR_FLAG_FLIP_Y;
+		copy_to_fb.push_constant.flip_y = true;
 	}
 	if (p_force_luminance) {
-		blur.push_constant.flags |= BLUR_COPY_FORCE_LUMINANCE;
+		copy_to_fb.push_constant.force_luminance = true;
 	}
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_SIMPLY_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
 	RD::get_singleton()->draw_list_draw(draw_list, true);
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerEffectsRD::region_copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region) {
+void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_all_source, bool p_8_bit_dst) {
 
-	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
-
-	if (p_region != Rect2()) {
-		blur.push_constant.flags = BLUR_FLAG_USE_BLUR_SECTION;
-		blur.push_constant.section[0] = p_region.position.x;
-		blur.push_constant.section[1] = p_region.position.y;
-		blur.push_constant.section[2] = p_region.size.width;
-		blur.push_constant.section[3] = p_region.size.height;
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	if (p_flip_y) {
+		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
 	}
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_SIMPLY_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	if (p_force_luminance) {
+		copy.push_constant.flags |= COPY_FLAG_FORCE_LUMINANCE;
+	}
+
+	if (p_all_source) {
+		copy.push_constant.flags |= COPY_FLAG_ALL_SOURCE;
+	}
+
+	copy.push_constant.section[0] = 0;
+	copy.push_constant.section[1] = 0;
+	copy.push_constant.section[2] = p_rect.size.width;
+	copy.push_constant.section[3] = p_rect.size.height;
+	copy.push_constant.target[0] = p_rect.position.x;
+	copy.push_constant.target[1] = p_rect.position.y;
+
+	int32_t x_groups = (p_rect.size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_rect.size.height - 1) / 8 + 1;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[p_8_bit_dst ? COPY_MODE_SIMPLY_COPY_8BIT : COPY_MODE_SIMPLY_COPY]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_texture), 3);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region) {
+void RasterizerEffectsRD::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far) {
 
-	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	if (p_flip_y) {
+		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
+	}
+
+	copy.push_constant.section[0] = 0;
+	copy.push_constant.section[1] = 0;
+	copy.push_constant.section[2] = p_rect.size.width;
+	copy.push_constant.section[3] = p_rect.size.height;
+	copy.push_constant.target[0] = p_rect.position.x;
+	copy.push_constant.target[1] = p_rect.position.y;
+	copy.push_constant.camera_z_far = p_z_far;
+	copy.push_constant.camera_z_near = p_z_near;
+
+	int32_t x_groups = (p_rect.size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_rect.size.height - 1) / 8 + 1;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[COPY_MODE_LINEARIZE_DEPTH]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_texture), 3);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
+}
+
+void RasterizerEffectsRD::copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y) {
+
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+	if (p_flip_y) {
+		copy.push_constant.flags |= COPY_FLAG_FLIP_Y;
+	}
+
+	copy.push_constant.section[0] = 0;
+	copy.push_constant.section[1] = 0;
+	copy.push_constant.section[2] = p_rect.size.width;
+	copy.push_constant.section[3] = p_rect.size.height;
+	copy.push_constant.target[0] = p_rect.position.x;
+	copy.push_constant.target[1] = p_rect.position.y;
+
+	int32_t x_groups = (p_rect.size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_rect.size.height - 1) / 8 + 1;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[COPY_MODE_SIMPLY_COPY_DEPTH]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_texture), 3);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
+}
+
+void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Rect2i &p_region, bool p_8bit_dst) {
+
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
 
 	uint32_t base_flags = 0;
-	if (p_region != Rect2()) {
-		base_flags = BLUR_FLAG_USE_BLUR_SECTION;
-		blur.push_constant.section[0] = p_region.position.x;
-		blur.push_constant.section[1] = p_region.position.y;
-		blur.push_constant.section[2] = p_region.size.width;
-		blur.push_constant.section[3] = p_region.size.height;
-	}
+	copy.push_constant.section[0] = p_region.position.x;
+	copy.push_constant.section[1] = p_region.position.y;
+	copy.push_constant.section[2] = p_region.size.width;
+	copy.push_constant.section[3] = p_region.size.height;
 
-	blur.push_constant.pixel_size[0] = p_pixel_size.x;
-	blur.push_constant.pixel_size[1] = p_pixel_size.y;
-
+	int32_t x_groups = (p_region.size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_region.size.height - 1) / 8 + 1;
 	//HORIZONTAL
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer_half, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_GAUSSIAN_BLUR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer_half)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::DrawListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[p_8bit_dst ? COPY_MODE_GAUSSIAN_COPY_8BIT : COPY_MODE_GAUSSIAN_COPY]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_back_texture), 0);
 
-	blur.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL;
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	copy.push_constant.flags = base_flags | COPY_FLAG_HORIZONTAL;
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+
+	RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 	//VERTICAL
-	draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_GAUSSIAN_BLUR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_rd_texture_half), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_back_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_texture), 0);
 
-	blur.push_constant.flags = base_flags;
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	copy.push_constant.flags = base_flags;
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
+void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_texture, RID p_back_texture, const Size2i &p_size, float p_strength, bool p_first_pass, float p_luminance_cap, float p_exposure, float p_bloom, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, RID p_auto_exposure, float p_auto_exposure_grey) {
 
-	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
 
-	BlurMode blur_mode = p_first_pass && p_auto_exposure.is_valid() ? BLUR_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : BLUR_MODE_GAUSSIAN_GLOW;
+	CopyMode copy_mode = p_first_pass && p_auto_exposure.is_valid() ? COPY_MODE_GAUSSIAN_GLOW_AUTO_EXPOSURE : COPY_MODE_GAUSSIAN_GLOW;
 	uint32_t base_flags = 0;
 
-	blur.push_constant.pixel_size[0] = p_pixel_size.x;
-	blur.push_constant.pixel_size[1] = p_pixel_size.y;
+	int32_t x_groups = (p_size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_size.height - 1) / 8 + 1;
 
-	blur.push_constant.glow_strength = p_strength;
-	blur.push_constant.glow_bloom = p_bloom;
-	blur.push_constant.glow_hdr_threshold = p_hdr_bleed_treshold;
-	blur.push_constant.glow_hdr_scale = p_hdr_bleed_scale;
-	blur.push_constant.glow_exposure = p_exposure;
-	blur.push_constant.glow_white = 0; //actually unused
-	blur.push_constant.glow_luminance_cap = p_luminance_cap;
+	copy.push_constant.section[2] = p_size.x;
+	copy.push_constant.section[3] = p_size.y;
 
-	blur.push_constant.glow_auto_exposure_grey = p_auto_exposure_grey; //unused also
+	copy.push_constant.glow_strength = p_strength;
+	copy.push_constant.glow_bloom = p_bloom;
+	copy.push_constant.glow_hdr_threshold = p_hdr_bleed_treshold;
+	copy.push_constant.glow_hdr_scale = p_hdr_bleed_scale;
+	copy.push_constant.glow_exposure = p_exposure;
+	copy.push_constant.glow_white = 0; //actually unused
+	copy.push_constant.glow_luminance_cap = p_luminance_cap;
+
+	copy.push_constant.glow_auto_exposure_grey = p_auto_exposure_grey; //unused also
 
 	//HORIZONTAL
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer_half, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer_half)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[copy_mode]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_back_texture), 3);
 	if (p_auto_exposure.is_valid() && p_first_pass) {
-		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_auto_exposure), 1);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_auto_exposure), 1);
 	}
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 
-	blur.push_constant.flags = base_flags | BLUR_FLAG_HORIZONTAL | (p_first_pass ? BLUR_FLAG_GLOW_FIRST_PASS : 0);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	copy.push_constant.flags = base_flags | COPY_FLAG_HORIZONTAL | (p_first_pass ? COPY_FLAG_GLOW_FIRST_PASS : 0);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-	blur_mode = BLUR_MODE_GAUSSIAN_GLOW;
+	copy_mode = COPY_MODE_GAUSSIAN_GLOW;
 
 	//VERTICAL
-	draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[blur_mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_rd_texture_half), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[copy_mode]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_back_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_texture), 3);
 
-	blur.push_constant.flags = base_flags;
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	copy.push_constant.flags = base_flags;
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
 
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
 }
 
 void RasterizerEffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal, RenderingServer::EnvironmentSSRRoughnessQuality p_roughness_quality, RID p_roughness, RID p_blur_radius, RID p_blur_radius2, RID p_metallic, const Color &p_metallic_mask, RID p_depth, RID p_scale_depth, RID p_scale_normal, RID p_output, RID p_output_blur, const Size2i &p_screen_size, int p_max_steps, float p_fade_in, float p_fade_out, float p_tolerance, const CameraMatrix &p_camera) {
@@ -560,37 +605,49 @@ void RasterizerEffectsRD::merge_specular(RID p_dest_framebuffer, RID p_specular,
 	RD::get_singleton()->draw_list_end();
 }
 
-void RasterizerEffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_framebuffer, const Vector2 &p_pixel_size) {
+void RasterizerEffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_texture, const Size2i &p_size) {
 
-	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
 
-	blur.push_constant.pixel_size[0] = p_pixel_size.x;
-	blur.push_constant.pixel_size[1] = p_pixel_size.y;
+	copy.push_constant.section[0] = 0;
+	copy.push_constant.section[1] = 0;
+	copy.push_constant.section[2] = p_size.width;
+	copy.push_constant.section[3] = p_size.height;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_MIPMAP].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	int32_t x_groups = (p_size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_size.height - 1) / 8 + 1;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[COPY_MODE_MIPMAP]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_texture), 3);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip) {
+void RasterizerEffectsRD::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip) {
 
 	CopyToDPPushConstant push_constant;
+	push_constant.screen_size[0] = p_rect.size.x;
+	push_constant.screen_size[1] = p_rect.size.y;
+	push_constant.dest_offset[0] = p_rect.position.x;
+	push_constant.dest_offset[1] = p_rect.position.y;
 	push_constant.bias = p_bias;
 	push_constant.z_far = p_z_far;
 	push_constant.z_near = p_z_near;
 	push_constant.z_flip = p_dp_flip;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy.pipelines[COPY_MODE_CUBE_TO_DP].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
+	int32_t x_groups = (p_rect.size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_rect.size.height - 1) / 8 + 1;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, cube_to_dp.pipeline);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_texture), 1);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(CopyToDPPushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
 }
 
 void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings) {
@@ -619,7 +676,7 @@ void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, 
 
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1);
@@ -1129,32 +1186,37 @@ void RasterizerEffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_
 
 RasterizerEffectsRD::RasterizerEffectsRD() {
 
-	{ // Initialize blur
-		Vector<String> blur_modes;
-		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
-		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n");
-		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
-		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_LOW\n");
-		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_MEDIUM\n");
-		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_HIGH\n");
-		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_LOW\n#define DOF_NEAR_BLUR_MERGE\n");
-		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_MEDIUM\n#define DOF_NEAR_BLUR_MERGE\n");
-		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_HIGH\n#define DOF_NEAR_BLUR_MERGE\n");
-		blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_LOW\n");
-		blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_MEDIUM\n");
-		blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_HIGH\n");
-		blur_modes.push_back("\n#define MODE_SSAO_MERGE\n");
-		blur_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
-		blur_modes.push_back("\n#define MODE_MIPMAP\n");
-		blur_modes.push_back("\n#define MODE_LINEARIZE_DEPTH_COPY\n");
+	{ // Initialize copy
+		Vector<String> copy_modes;
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n#define DST_IMAGE_8BIT\n");
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n");
+		copy_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
+		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
+		copy_modes.push_back("\n#define MODE_SIMPLE_COPY\n#define DST_IMAGE_8BIT\n");
+		copy_modes.push_back("\n#define MODE_SIMPLE_COPY_DEPTH\n");
+		copy_modes.push_back("\n#define MODE_MIPMAP\n");
+		copy_modes.push_back("\n#define MODE_LINEARIZE_DEPTH_COPY\n");
 
-		blur.shader.initialize(blur_modes);
-		zeromem(&blur.push_constant, sizeof(BlurPushConstant));
-		blur.shader_version = blur.shader.version_create();
+		copy.shader.initialize(copy_modes);
+		zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+		copy.shader_version = copy.shader.version_create();
 
-		for (int i = 0; i < BLUR_MODE_MAX; i++) {
-			blur.pipelines[i].setup(blur.shader.version_get_shader(blur.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		for (int i = 0; i < COPY_MODE_MAX; i++) {
+			copy.pipelines[i] = RD::get_singleton()->compute_pipeline_create(copy.shader.version_get_shader(copy.shader_version, i));
 		}
+	}
+	{
+		Vector<String> copy_modes;
+		copy_modes.push_back("\n");
+
+		copy_to_fb.shader.initialize(copy_modes);
+
+		copy_to_fb.shader_version = copy_to_fb.shader.version_create();
+
+		//use additive
+
+		copy_to_fb.pipeline.setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 	}
 
 	{
@@ -1202,15 +1264,13 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	{
 		// Initialize copier
 		Vector<String> copy_modes;
-		copy_modes.push_back("\n#define MODE_CUBE_TO_DP\n");
+		copy_modes.push_back("\n");
 
-		copy.shader.initialize(copy_modes);
+		cube_to_dp.shader.initialize(copy_modes);
 
-		copy.shader_version = copy.shader.version_create();
+		cube_to_dp.shader_version = cube_to_dp.shader.version_create();
 
-		for (int i = 0; i < COPY_MODE_MAX; i++) {
-			copy.pipelines[i].setup(copy.shader.version_get_shader(copy.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
-		}
+		cube_to_dp.pipeline = RD::get_singleton()->compute_pipeline_create(cube_to_dp.shader.version_get_shader(cube_to_dp.shader_version, 0));
 	}
 
 	{
@@ -1482,9 +1542,9 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 	RD::get_singleton()->free(filter.coefficient_buffer);
 
-	blur.shader.version_free(blur.shader_version);
-	bokeh.shader.version_free(bokeh.shader_version);
 	copy.shader.version_free(copy.shader_version);
+	bokeh.shader.version_free(bokeh.shader_version);
+	cube_to_dp.shader.version_free(cube_to_dp.shader_version);
 	cubemap_downsampler.shader.version_free(cubemap_downsampler.shader_version);
 	filter.shader.version_free(filter.shader_version);
 	luminance_reduce.shader.version_free(luminance_reduce.shader_version);
