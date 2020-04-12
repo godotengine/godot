@@ -198,11 +198,22 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
 	struct RenderBufferDataHighEnd : public RenderBufferData {
 		//for rendering, may be MSAAd
+
 		RID color;
 		RID depth;
 		RID specular;
 		RID normal_buffer;
 		RID roughness_buffer;
+
+		RS::ViewportMSAA msaa;
+		RD::TextureSamples texture_samples;
+
+		RID color_msaa;
+		RID depth_msaa;
+		RID specular_msaa;
+		RID normal_buffer_msaa;
+		RID roughness_buffer_msaa;
+
 		RID depth_fb;
 		RID depth_normal_fb;
 		RID depth_normal_roughness_fb;
