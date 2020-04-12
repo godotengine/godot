@@ -2478,9 +2478,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		//update msaa if changed
 
-		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
+		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/screen_filters/msaa");
 		viewport->set_msaa(Viewport::MSAA(msaa_mode));
-		int ssaa_mode = GLOBAL_GET("rendering/quality/filters/screen_space_aa");
+		int ssaa_mode = GLOBAL_GET("rendering/quality/screen_filters/screen_space_aa");
 		viewport->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
