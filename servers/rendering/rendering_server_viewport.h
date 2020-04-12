@@ -59,6 +59,7 @@ public:
 		RID render_buffers;
 
 		RS::ViewportMSAA msaa;
+		RS::ViewportScreenSpaceAA screen_space_aa;
 
 		DisplayServer::WindowID viewport_to_screen;
 		Rect2 viewport_to_screen_rect;
@@ -130,6 +131,8 @@ public:
 
 			debug_draw = RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 			msaa = RS::VIEWPORT_MSAA_DISABLED;
+			screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
+
 			for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_MAX; i++) {
 				render_info[i] = 0;
 			}
@@ -206,6 +209,7 @@ public:
 	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa(RID p_viewport, RS::ViewportMSAA p_msaa);
+	void viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode);
 
 	virtual int viewport_get_render_info(RID p_viewport, RS::ViewportRenderInfo p_info);
 	virtual void viewport_set_debug_draw(RID p_viewport, RS::ViewportDebugDraw p_draw);

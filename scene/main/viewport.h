@@ -106,6 +106,13 @@ public:
 		MSAA_4X,
 		MSAA_8X,
 		MSAA_16X,
+		MSAA_MAX
+	};
+
+	enum ScreenSpaceAA {
+		SCREEN_SPACE_AA_DISABLED,
+		SCREEN_SPACE_AA_FXAA,
+		SCREEN_SPACE_AA_MAX
 	};
 
 	enum RenderInfo {
@@ -272,6 +279,7 @@ private:
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
+	ScreenSpaceAA screen_space_aa;
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -505,6 +513,9 @@ public:
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
 
+	void set_screen_space_aa(ScreenSpaceAA p_screen_space_aa);
+	ScreenSpaceAA get_screen_space_aa() const;
+
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
@@ -624,6 +635,7 @@ public:
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(SubViewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);
