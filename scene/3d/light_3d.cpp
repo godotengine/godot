@@ -44,7 +44,7 @@ void Light3D::set_param(Param p_param, float p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	param[p_param] = p_value;
 
-	VS::get_singleton()->light_set_param(light, VS::LightParam(p_param), p_value);
+	RS::get_singleton()->light_set_param(light, RS::LightParam(p_param), p_value);
 
 	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
 		update_gizmo();
@@ -68,9 +68,9 @@ float Light3D::get_param(Param p_param) const {
 void Light3D::set_shadow(bool p_enable) {
 
 	shadow = p_enable;
-	VS::get_singleton()->light_set_shadow(light, p_enable);
+	RS::get_singleton()->light_set_shadow(light, p_enable);
 
-	if (type == VisualServer::LIGHT_SPOT) {
+	if (type == RenderingServer::LIGHT_SPOT) {
 		update_configuration_warning();
 	}
 }
@@ -82,7 +82,7 @@ bool Light3D::has_shadow() const {
 void Light3D::set_negative(bool p_enable) {
 
 	negative = p_enable;
-	VS::get_singleton()->light_set_negative(light, p_enable);
+	RS::get_singleton()->light_set_negative(light, p_enable);
 }
 bool Light3D::is_negative() const {
 
@@ -92,7 +92,7 @@ bool Light3D::is_negative() const {
 void Light3D::set_cull_mask(uint32_t p_cull_mask) {
 
 	cull_mask = p_cull_mask;
-	VS::get_singleton()->light_set_cull_mask(light, p_cull_mask);
+	RS::get_singleton()->light_set_cull_mask(light, p_cull_mask);
 }
 uint32_t Light3D::get_cull_mask() const {
 
@@ -102,7 +102,7 @@ uint32_t Light3D::get_cull_mask() const {
 void Light3D::set_color(const Color &p_color) {
 
 	color = p_color;
-	VS::get_singleton()->light_set_color(light, p_color);
+	RS::get_singleton()->light_set_color(light, p_color);
 	// The gizmo color depends on the light color, so update it.
 	update_gizmo();
 }
@@ -114,7 +114,7 @@ Color Light3D::get_color() const {
 void Light3D::set_shadow_color(const Color &p_shadow_color) {
 
 	shadow_color = p_shadow_color;
-	VS::get_singleton()->light_set_shadow_color(light, p_shadow_color);
+	RS::get_singleton()->light_set_shadow_color(light, p_shadow_color);
 }
 
 Color Light3D::get_shadow_color() const {
@@ -124,7 +124,7 @@ Color Light3D::get_shadow_color() const {
 
 void Light3D::set_shadow_reverse_cull_face(bool p_enable) {
 	reverse_cull = p_enable;
-	VS::get_singleton()->light_set_reverse_cull_face_mode(light, reverse_cull);
+	RS::get_singleton()->light_set_reverse_cull_face_mode(light, reverse_cull);
 }
 
 bool Light3D::get_shadow_reverse_cull_face() const {
@@ -134,15 +134,15 @@ bool Light3D::get_shadow_reverse_cull_face() const {
 
 AABB Light3D::get_aabb() const {
 
-	if (type == VisualServer::LIGHT_DIRECTIONAL) {
+	if (type == RenderingServer::LIGHT_DIRECTIONAL) {
 
 		return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 
-	} else if (type == VisualServer::LIGHT_OMNI) {
+	} else if (type == RenderingServer::LIGHT_OMNI) {
 
 		return AABB(Vector3(-1, -1, -1) * param[PARAM_RANGE], Vector3(2, 2, 2) * param[PARAM_RANGE]);
 
-	} else if (type == VisualServer::LIGHT_SPOT) {
+	} else if (type == RenderingServer::LIGHT_SPOT) {
 
 		float len = param[PARAM_RANGE];
 		float size = Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE])) * len;
@@ -159,7 +159,7 @@ Vector<Face3> Light3D::get_faces(uint32_t p_usage_flags) const {
 
 void Light3D::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
-	VS::get_singleton()->light_set_use_gi(light, p_mode != BAKE_DISABLED);
+	RS::get_singleton()->light_set_use_gi(light, p_mode != BAKE_DISABLED);
 }
 
 Light3D::BakeMode Light3D::get_bake_mode() const {
@@ -187,7 +187,7 @@ void Light3D::_update_visibility() {
 	}
 #endif
 
-	VS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
+	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
 
 	_change_notify("geometry/visible");
 }
@@ -217,8 +217,12 @@ bool Light3D::is_editor_only() const {
 
 void Light3D::_validate_property(PropertyInfo &property) const {
 
-	if (VisualServer::get_singleton()->is_low_end() && property.name == "shadow_contact") {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+	if (get_light_type() == RS::LIGHT_DIRECTIONAL && property.name == "light_size") {
+		property.usage = 0;
+	}
+
+	if (get_light_type() != RS::LIGHT_DIRECTIONAL && property.name == "light_angular_distance") {
+		property.usage = 0;
 	}
 }
 
@@ -255,6 +259,8 @@ void Light3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_size", PROPERTY_HINT_RANGE, "0,64,0.01,or_greater"), "set_param", "get_param", PARAM_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_angular_distance", PROPERTY_HINT_RANGE, "0,90,0.01"), "set_param", "get_param", PARAM_SIZE);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disable,Indirect,All"), "set_bake_mode", "get_bake_mode");
@@ -262,9 +268,10 @@ void Light3D::_bind_methods() {
 	ADD_GROUP("Shadow", "shadow_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_enabled"), "set_shadow", "has_shadow");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "shadow_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_shadow_color", "get_shadow_color");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_contact", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_CONTACT_SHADOW_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_BIAS);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_normal_bias", PROPERTY_HINT_RANGE, "0,10,0.001"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shadow_reverse_cull_face"), "set_shadow_reverse_cull_face", "get_shadow_reverse_cull_face");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "shadow_transmittance_bias", PROPERTY_HINT_RANGE, "-16,16,0.01"), "set_param", "get_param", PARAM_TRANSMITTANCE_BIAS);
 	ADD_GROUP("Editor", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editor_only"), "set_editor_only", "is_editor_only");
 	ADD_GROUP("", "");
@@ -276,7 +283,6 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_ATTENUATION);
 	BIND_ENUM_CONSTANT(PARAM_SPOT_ANGLE);
 	BIND_ENUM_CONSTANT(PARAM_SPOT_ATTENUATION);
-	BIND_ENUM_CONSTANT(PARAM_CONTACT_SHADOW_SIZE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_MAX_DISTANCE);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_1_OFFSET);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_SPLIT_2_OFFSET);
@@ -284,7 +290,8 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_FADE_START);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_NORMAL_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS);
-	BIND_ENUM_CONSTANT(PARAM_SHADOW_BIAS_SPLIT_SCALE);
+	BIND_ENUM_CONSTANT(PARAM_SHADOW_PANCAKE_SIZE);
+	BIND_ENUM_CONSTANT(PARAM_TRANSMITTANCE_BIAS);
 	BIND_ENUM_CONSTANT(PARAM_MAX);
 
 	BIND_ENUM_CONSTANT(BAKE_DISABLED);
@@ -292,18 +299,18 @@ void Light3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(BAKE_ALL);
 }
 
-Light3D::Light3D(VisualServer::LightType p_type) {
+Light3D::Light3D(RenderingServer::LightType p_type) {
 
 	type = p_type;
 	switch (p_type) {
-		case VS::LIGHT_DIRECTIONAL: light = VisualServer::get_singleton()->directional_light_create(); break;
-		case VS::LIGHT_OMNI: light = VisualServer::get_singleton()->omni_light_create(); break;
-		case VS::LIGHT_SPOT: light = VisualServer::get_singleton()->spot_light_create(); break;
+		case RS::LIGHT_DIRECTIONAL: light = RenderingServer::get_singleton()->directional_light_create(); break;
+		case RS::LIGHT_OMNI: light = RenderingServer::get_singleton()->omni_light_create(); break;
+		case RS::LIGHT_SPOT: light = RenderingServer::get_singleton()->spot_light_create(); break;
 		default: {
 		};
 	}
 
-	VS::get_singleton()->instance_set_base(get_instance(), light);
+	RS::get_singleton()->instance_set_base(get_instance(), light);
 
 	reverse_cull = false;
 	bake_mode = BAKE_INDIRECT;
@@ -318,40 +325,42 @@ Light3D::Light3D(VisualServer::LightType p_type) {
 	set_param(PARAM_INDIRECT_ENERGY, 1);
 	set_param(PARAM_SPECULAR, 0.5);
 	set_param(PARAM_RANGE, 5);
+	set_param(PARAM_SIZE, 0);
 	set_param(PARAM_ATTENUATION, 1);
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);
-	set_param(PARAM_CONTACT_SHADOW_SIZE, 0);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
 	set_param(PARAM_SHADOW_SPLIT_3_OFFSET, 0.5);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.0);
-	set_param(PARAM_SHADOW_BIAS, 0.15);
+	set_param(PARAM_SHADOW_PANCAKE_SIZE, 20.0);
+	set_param(PARAM_SHADOW_BIAS, 0.02);
+	set_param(PARAM_SHADOW_NORMAL_BIAS, 1.0);
+	set_param(PARAM_TRANSMITTANCE_BIAS, 0.05);
 	set_param(PARAM_SHADOW_FADE_START, 1);
 	set_disable_scale(true);
 }
 
 Light3D::Light3D() {
 
-	type = VisualServer::LIGHT_DIRECTIONAL;
-	ERR_PRINT("Light should not be instanced directly; use the DirectionalLight, OmniLight or SpotLight subtypes instead.");
+	type = RenderingServer::LIGHT_DIRECTIONAL;
+	ERR_PRINT("Light3D should not be instanced directly; use the DirectionalLight3D, OmniLight3D or SpotLight3D subtypes instead.");
 }
 
 Light3D::~Light3D() {
 
-	VS::get_singleton()->instance_set_base(get_instance(), RID());
+	RS::get_singleton()->instance_set_base(get_instance(), RID());
 
 	if (light.is_valid())
-		VisualServer::get_singleton()->free(light);
+		RenderingServer::get_singleton()->free(light);
 }
 /////////////////////////////////////////
 
 void DirectionalLight3D::set_shadow_mode(ShadowMode p_mode) {
 
 	shadow_mode = p_mode;
-	VS::get_singleton()->light_directional_set_shadow_mode(light, VS::LightDirectionalShadowMode(p_mode));
+	RS::get_singleton()->light_directional_set_shadow_mode(light, RS::LightDirectionalShadowMode(p_mode));
 }
 
 DirectionalLight3D::ShadowMode DirectionalLight3D::get_shadow_mode() const {
@@ -361,7 +370,7 @@ DirectionalLight3D::ShadowMode DirectionalLight3D::get_shadow_mode() const {
 
 void DirectionalLight3D::set_shadow_depth_range(ShadowDepthRange p_range) {
 	shadow_depth_range = p_range;
-	VS::get_singleton()->light_directional_set_shadow_depth_range_mode(light, VS::LightDirectionalShadowDepthRangeMode(p_range));
+	RS::get_singleton()->light_directional_set_shadow_depth_range_mode(light, RS::LightDirectionalShadowDepthRangeMode(p_range));
 }
 
 DirectionalLight3D::ShadowDepthRange DirectionalLight3D::get_shadow_depth_range() const {
@@ -372,7 +381,7 @@ DirectionalLight3D::ShadowDepthRange DirectionalLight3D::get_shadow_depth_range(
 void DirectionalLight3D::set_blend_splits(bool p_enable) {
 
 	blend_splits = p_enable;
-	VS::get_singleton()->light_directional_set_blend_splits(light, p_enable);
+	RS::get_singleton()->light_directional_set_blend_splits(light, p_enable);
 }
 
 bool DirectionalLight3D::is_blend_splits_enabled() const {
@@ -398,10 +407,9 @@ void DirectionalLight3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_split_3", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_param", "get_param", PARAM_SHADOW_SPLIT_3_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_fade_start", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_FADE_START);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional_shadow_blend_splits"), "set_blend_splits", "is_blend_splits_enabled");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_normal_bias", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_SHADOW_NORMAL_BIAS);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_bias_split_scale", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SHADOW_BIAS_SPLIT_SCALE);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "directional_shadow_depth_range", PROPERTY_HINT_ENUM, "Stable,Optimized"), "set_shadow_depth_range", "get_shadow_depth_range");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_max_distance", PROPERTY_HINT_EXP_RANGE, "0,8192,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_MAX_DISTANCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "directional_shadow_pancake_size", PROPERTY_HINT_EXP_RANGE, "0,1024,0.1,or_greater"), "set_param", "get_param", PARAM_SHADOW_PANCAKE_SIZE);
 
 	BIND_ENUM_CONSTANT(SHADOW_ORTHOGONAL);
 	BIND_ENUM_CONSTANT(SHADOW_PARALLEL_2_SPLITS);
@@ -412,13 +420,10 @@ void DirectionalLight3D::_bind_methods() {
 }
 
 DirectionalLight3D::DirectionalLight3D() :
-		Light3D(VisualServer::LIGHT_DIRECTIONAL) {
+		Light3D(RenderingServer::LIGHT_DIRECTIONAL) {
 
-	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
-	set_param(PARAM_SHADOW_BIAS, 0.1);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_FADE_START, 0.8);
-	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
 
@@ -428,7 +433,7 @@ DirectionalLight3D::DirectionalLight3D() :
 void OmniLight3D::set_shadow_mode(ShadowMode p_mode) {
 
 	shadow_mode = p_mode;
-	VS::get_singleton()->light_omni_set_shadow_mode(light, VS::LightOmniShadowMode(p_mode));
+	RS::get_singleton()->light_omni_set_shadow_mode(light, RS::LightOmniShadowMode(p_mode));
 }
 
 OmniLight3D::ShadowMode OmniLight3D::get_shadow_mode() const {
@@ -451,7 +456,7 @@ void OmniLight3D::_bind_methods() {
 }
 
 OmniLight3D::OmniLight3D() :
-		Light3D(VisualServer::LIGHT_OMNI) {
+		Light3D(RenderingServer::LIGHT_OMNI) {
 
 	set_shadow_mode(SHADOW_CUBE);
 }
@@ -464,7 +469,7 @@ String SpotLight3D::get_configuration_warning() const {
 			warning += "\n\n";
 		}
 
-		warning += TTR("A SpotLight with an angle wider than 90 degrees cannot cast shadows.");
+		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
 	}
 
 	return warning;

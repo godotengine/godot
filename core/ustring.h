@@ -117,7 +117,7 @@ struct StrRange {
 	const CharType *c_str;
 	int len;
 
-	StrRange(const CharType *p_c_str = NULL, int p_len = 0) {
+	StrRange(const CharType *p_c_str = nullptr, int p_len = 0) {
 		c_str = p_c_str;
 		len = p_len;
 	}
@@ -206,7 +206,7 @@ public:
 	int findn(const String &p_str, int p_from = 0) const; ///< return <0 if failed, case insensitive
 	int rfind(const String &p_str, int p_from = -1) const; ///< return <0 if failed
 	int rfindn(const String &p_str, int p_from = -1) const; ///< return <0 if failed, case insensitive
-	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = NULL) const; ///< return <0 if failed
+	int findmk(const Vector<String> &p_keys, int p_from = 0, int *r_key = nullptr) const; ///< return <0 if failed
 	bool match(const String &p_wildcard) const;
 	bool matchn(const String &p_wildcard) const;
 	bool begins_with(const String &p_string) const;
@@ -253,7 +253,7 @@ public:
 	int64_t to_int64() const;
 	static int to_int(const char *p_str, int p_len = -1);
 	static double to_double(const char *p_str);
-	static double to_double(const CharType *p_str, const CharType **r_end = NULL);
+	static double to_double(const CharType *p_str, const CharType **r_end = nullptr);
 	static int64_t to_int(const CharType *p_str, int p_len = -1);
 	String capitalize() const;
 	String camelcase_to_underscore(bool lowercase = true) const;

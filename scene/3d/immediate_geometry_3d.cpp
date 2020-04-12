@@ -32,39 +32,39 @@
 
 void ImmediateGeometry3D::begin(Mesh::PrimitiveType p_primitive, const Ref<Texture2D> &p_texture) {
 
-	VS::get_singleton()->immediate_begin(im, (VS::PrimitiveType)p_primitive, p_texture.is_valid() ? p_texture->get_rid() : RID());
+	RS::get_singleton()->immediate_begin(im, (RS::PrimitiveType)p_primitive, p_texture.is_valid() ? p_texture->get_rid() : RID());
 	if (p_texture.is_valid())
 		cached_textures.push_back(p_texture);
 }
 
 void ImmediateGeometry3D::set_normal(const Vector3 &p_normal) {
 
-	VS::get_singleton()->immediate_normal(im, p_normal);
+	RS::get_singleton()->immediate_normal(im, p_normal);
 }
 
 void ImmediateGeometry3D::set_tangent(const Plane &p_tangent) {
 
-	VS::get_singleton()->immediate_tangent(im, p_tangent);
+	RS::get_singleton()->immediate_tangent(im, p_tangent);
 }
 
 void ImmediateGeometry3D::set_color(const Color &p_color) {
 
-	VS::get_singleton()->immediate_color(im, p_color);
+	RS::get_singleton()->immediate_color(im, p_color);
 }
 
 void ImmediateGeometry3D::set_uv(const Vector2 &p_uv) {
 
-	VS::get_singleton()->immediate_uv(im, p_uv);
+	RS::get_singleton()->immediate_uv(im, p_uv);
 }
 
 void ImmediateGeometry3D::set_uv2(const Vector2 &p_uv2) {
 
-	VS::get_singleton()->immediate_uv2(im, p_uv2);
+	RS::get_singleton()->immediate_uv2(im, p_uv2);
 }
 
 void ImmediateGeometry3D::add_vertex(const Vector3 &p_vertex) {
 
-	VS::get_singleton()->immediate_vertex(im, p_vertex);
+	RS::get_singleton()->immediate_vertex(im, p_vertex);
 	if (empty) {
 		aabb.position = p_vertex;
 		aabb.size = Vector3();
@@ -76,12 +76,12 @@ void ImmediateGeometry3D::add_vertex(const Vector3 &p_vertex) {
 
 void ImmediateGeometry3D::end() {
 
-	VS::get_singleton()->immediate_end(im);
+	RS::get_singleton()->immediate_end(im);
 }
 
 void ImmediateGeometry3D::clear() {
 
-	VS::get_singleton()->immediate_clear(im);
+	RS::get_singleton()->immediate_clear(im);
 	empty = true;
 	cached_textures.clear();
 }
@@ -158,12 +158,12 @@ void ImmediateGeometry3D::_bind_methods() {
 
 ImmediateGeometry3D::ImmediateGeometry3D() {
 
-	im = VisualServer::get_singleton()->immediate_create();
+	im = RenderingServer::get_singleton()->immediate_create();
 	set_base(im);
 	empty = true;
 }
 
 ImmediateGeometry3D::~ImmediateGeometry3D() {
 
-	VisualServer::get_singleton()->free(im);
+	RenderingServer::get_singleton()->free(im);
 }

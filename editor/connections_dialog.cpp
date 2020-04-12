@@ -40,7 +40,7 @@
 
 static Node *_find_first_script(Node *p_root, Node *p_node) {
 	if (p_node != p_root && p_node->get_owner() != p_root) {
-		return NULL;
+		return nullptr;
 	}
 	if (!p_node->get_script().is_null()) {
 		return p_node;
@@ -54,7 +54,7 @@ static Node *_find_first_script(Node *p_root, Node *p_node) {
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 class ConnectDialogBinds : public Object {
@@ -315,7 +315,7 @@ void ConnectDialog::init(ConnectionData c, bool bEdit) {
 	source = static_cast<Node *>(c.source);
 	signal = c.signal;
 
-	tree->set_selected(NULL);
+	tree->set_selected(nullptr);
 	tree->set_marked(source, true);
 
 	if (c.target) {
@@ -574,7 +574,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 	}
 
 	// IMPORTANT NOTE: _disconnect and _connect cause an update_tree, which will delete the object "it" is pointing to.
-	it = NULL;
+	it = nullptr;
 
 	if (add_script_function) {
 		editor->emit_signal("script_add_function_request", target, cToMake.method, script_function_args);
@@ -924,7 +924,7 @@ void ConnectionsDock::update_tree() {
 			icon = get_theme_icon("Object", "EditorIcons");
 		}
 
-		TreeItem *pitem = NULL;
+		TreeItem *pitem = nullptr;
 
 		if (node_signals2.size()) {
 			pitem = tree->create_item(root);

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Shape3D" inherits="Resource" version="4.0">
+	<brief_description>
+		Base class for all 3D shape resources.
+	</brief_description>
+	<description>
+		Base class for all 3D shape resources. Nodes that inherit from this can be used as shapes for a [PhysicsBody3D] or [Area3D] objects.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
+			The collision margin for the shape.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

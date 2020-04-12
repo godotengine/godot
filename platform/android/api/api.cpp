@@ -32,15 +32,20 @@
 
 #include "core/engine.h"
 #include "java_class_wrapper.h"
+#include "jni_singleton.h"
 
 #if !defined(ANDROID_ENABLED)
-static JavaClassWrapper *java_class_wrapper = NULL;
+static JavaClassWrapper *java_class_wrapper = nullptr;
 #endif
 
 void register_android_api() {
 
 #if !defined(ANDROID_ENABLED)
+	// On Android platforms, the `java_class_wrapper` instantiation and the
+	// `JNISingleton` registration occurs in
+	// `platform/android/java_godot_lib_jni.cpp#Java_org_godotengine_godot_GodotLib_setup`
 	java_class_wrapper = memnew(JavaClassWrapper); // Dummy
+	ClassDB::register_class<JNISingleton>();
 #endif
 
 	ClassDB::register_class<JavaClass>();
@@ -73,7 +78,7 @@ Variant JavaObject::call(const StringName &, const Variant **, int, Callable::Ca
 	return Variant();
 }
 
-JavaClassWrapper *JavaClassWrapper::singleton = NULL;
+JavaClassWrapper *JavaClassWrapper::singleton = nullptr;
 
 Ref<JavaClass> JavaClassWrapper::wrap(const String &) {
 	return Ref<JavaClass>();

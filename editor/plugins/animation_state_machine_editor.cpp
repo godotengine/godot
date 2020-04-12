@@ -1082,7 +1082,7 @@ void AnimationNodeStateMachineEditor::_open_editor(const String &p_name) {
 
 void AnimationNodeStateMachineEditor::_removed_from_graph() {
 
-	EditorNode::get_singleton()->edit_item(NULL);
+	EditorNode::get_singleton()->edit_item(nullptr);
 }
 
 void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
@@ -1241,7 +1241,7 @@ void AnimationNodeStateMachineEditor::_bind_methods() {
 	ClassDB::bind_method("_open_editor", &AnimationNodeStateMachineEditor::_open_editor);
 }
 
-AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = NULL;
+AnimationNodeStateMachineEditor *AnimationNodeStateMachineEditor::singleton = nullptr;
 
 AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 
@@ -1362,7 +1362,6 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	name_edit = memnew(LineEdit);
 	name_edit_popup->add_child(name_edit);
 	name_edit->set_anchors_and_margins_preset(PRESET_WIDE);
-	name_edit_popup->add_child(name_edit);
 	name_edit->connect("text_entered", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited));
 	name_edit->connect("focus_exited", callable_mp(this, &AnimationNodeStateMachineEditor::_name_edited_focus_out));
 

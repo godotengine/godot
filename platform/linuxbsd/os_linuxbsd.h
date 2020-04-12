@@ -39,8 +39,8 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering_server.h"
 
 class OS_LinuxBSD : public OS_Unix {
 

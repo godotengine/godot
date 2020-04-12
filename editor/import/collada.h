@@ -404,7 +404,7 @@ public:
 		Node() {
 			noname = false;
 			type = TYPE_NODE;
-			parent = NULL;
+			parent = nullptr;
 			ignore_anim = false;
 		}
 		virtual ~Node() {
@@ -424,7 +424,7 @@ public:
 		String sid;
 		NodeJoint() {
 			type = TYPE_JOINT;
-			owner = NULL;
+			owner = nullptr;
 		}
 	};
 
@@ -631,7 +631,7 @@ private: // private stuff
 	String _read_empty_draw_type(XMLParser &parser);
 
 	void _joint_set_owner(Collada::Node *p_node, NodeSkeleton *p_owner);
-	void _create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton = NULL);
+	void _create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton = nullptr);
 	void _find_morph_nodes(VisualScene *p_vscene, Node *p_node);
 	bool _remove_node(Node *p_parent, Node *p_node);
 	void _remove_node(VisualScene *p_vscene, Node *p_node);

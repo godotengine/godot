@@ -30,7 +30,7 @@
 
 #include "net_socket.h"
 
-NetSocket *(*NetSocket::_create)() = NULL;
+NetSocket *(*NetSocket::_create)() = nullptr;
 
 NetSocket *NetSocket::create() {
 
@@ -38,5 +38,5 @@ NetSocket *NetSocket::create() {
 		return _create();
 
 	ERR_PRINT("Unable to create network socket, platform not supported");
-	return NULL;
+	return nullptr;
 }

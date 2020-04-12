@@ -110,6 +110,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tabs.h"
 #include "scene/gui/text_edit.h"
@@ -119,7 +120,6 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_player.h"
-#include "scene/gui/viewport_container.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/http_request.h"
@@ -179,7 +179,6 @@
 
 #ifndef _3D_DISABLED
 #include "scene/3d/area_3d.h"
-#include "scene/3d/arvr_nodes.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -213,6 +212,7 @@
 #include "scene/3d/vehicle_body_3d.h"
 #include "scene/3d/visibility_notifier_3d.h"
 #include "scene/3d/world_environment.h"
+#include "scene/3d/xr_nodes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/mesh_library.h"
 #endif
@@ -270,6 +270,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<InstancePlaceholder>();
 
 	ClassDB::register_virtual_class<Viewport>();
+	ClassDB::register_class<SubViewport>();
 	ClassDB::register_class<ViewportTexture>();
 	ClassDB::register_class<HTTPRequest>();
 	ClassDB::register_class<Timer>();
@@ -356,7 +357,7 @@ void register_scene_types() {
 	ClassDB::register_class<ConfirmationDialog>();
 
 	ClassDB::register_class<MarginContainer>();
-	ClassDB::register_class<ViewportContainer>();
+	ClassDB::register_class<SubViewportContainer>();
 	ClassDB::register_virtual_class<SplitContainer>();
 	ClassDB::register_class<HSplitContainer>();
 	ClassDB::register_class<VSplitContainer>();
@@ -409,10 +410,10 @@ void register_scene_types() {
 	ClassDB::register_class<Camera3D>();
 	ClassDB::register_class<ClippedCamera3D>();
 	ClassDB::register_class<Listener3D>();
-	ClassDB::register_class<ARVRCamera>();
-	ClassDB::register_class<ARVRController>();
-	ClassDB::register_class<ARVRAnchor>();
-	ClassDB::register_class<ARVROrigin>();
+	ClassDB::register_class<XRCamera3D>();
+	ClassDB::register_class<XRController3D>();
+	ClassDB::register_class<XRAnchor3D>();
+	ClassDB::register_class<XROrigin3D>();
 	ClassDB::register_class<MeshInstance3D>();
 	ClassDB::register_class<ImmediateGeometry3D>();
 	ClassDB::register_virtual_class<SpriteBase3D>();
@@ -754,6 +755,8 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Area", "Area3D");
 	ClassDB::add_compatibility_class("BoneAttachment", "BoneAttachment3D");
 	ClassDB::add_compatibility_class("BoxShape", "BoxShape3D");
+	ClassDB::add_compatibility_class("BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D");
+	ClassDB::add_compatibility_class("BulletPhysicsServer", "BulletPhysicsServer3D");
 	ClassDB::add_compatibility_class("Camera", "Camera3D");
 	ClassDB::add_compatibility_class("CapsuleShape", "CapsuleShape3D");
 	ClassDB::add_compatibility_class("ClippedCamera", "ClippedCamera3D");
@@ -764,8 +767,19 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("ConeTwistJoint", "ConeTwistJoint3D");
 	ClassDB::add_compatibility_class("ConvexPolygonShape", "ConvexPolygonShape3D");
 	ClassDB::add_compatibility_class("CPUParticles", "CPUParticles3D");
+	ClassDB::add_compatibility_class("CSGBox", "CSGBox3D");
+	ClassDB::add_compatibility_class("CSGCombiner", "CSGCombiner3D");
+	ClassDB::add_compatibility_class("CSGCylinder", "CSGCylinder3D");
+	ClassDB::add_compatibility_class("CSGMesh", "CSGMesh3D");
+	ClassDB::add_compatibility_class("CSGPolygon", "CSGPolygon3D");
+	ClassDB::add_compatibility_class("CSGPrimitive", "CSGPrimitive3D");
+	ClassDB::add_compatibility_class("CSGShape", "CSGShape3D");
+	ClassDB::add_compatibility_class("CSGSphere", "CSGSphere3D");
+	ClassDB::add_compatibility_class("CSGTorus", "CSGTorus3D");
 	ClassDB::add_compatibility_class("CylinderShape", "CylinderShape3D");
 	ClassDB::add_compatibility_class("DirectionalLight", "DirectionalLight3D");
+	ClassDB::add_compatibility_class("EditorSpatialGizmo", "EditorNode3DGizmo");
+	ClassDB::add_compatibility_class("EditorSpatialGizmoPlugin", "EditorNode3DGizmoPlugin");
 	ClassDB::add_compatibility_class("Generic6DOFJoint", "Generic6DOFJoint3D");
 	ClassDB::add_compatibility_class("HeightMapShape", "HeightMapShape3D");
 	ClassDB::add_compatibility_class("HingeJoint", "HingeJoint3D");
@@ -783,13 +797,28 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("NavigationObstacle", "NavigationObstacle3D");
 	ClassDB::add_compatibility_class("NavigationPolygonInstance", "NavigationRegion2D");
 	ClassDB::add_compatibility_class("NavigationRegion", "NavigationRegion3D");
+	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
+	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
 	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
 	ClassDB::add_compatibility_class("Particles2D", "GPUParticles2D");
 	ClassDB::add_compatibility_class("Path", "Path3D");
 	ClassDB::add_compatibility_class("PathFollow", "PathFollow3D");
 	ClassDB::add_compatibility_class("PhysicalBone", "PhysicalBone3D");
+	ClassDB::add_compatibility_class("Physics2DDirectBodyStateSW", "PhysicsDirectBodyState2DSW");
+	ClassDB::add_compatibility_class("Physics2DDirectBodyState", "PhysicsDirectBodyState2D");
+	ClassDB::add_compatibility_class("Physics2DDirectSpaceState", "PhysicsDirectSpaceState2D");
+	ClassDB::add_compatibility_class("Physics2DServerSW", "PhysicsServer2DSW");
+	ClassDB::add_compatibility_class("Physics2DServer", "PhysicsServer2D");
+	ClassDB::add_compatibility_class("Physics2DShapeQueryParameters", "PhysicsShapeQueryParameters2D");
+	ClassDB::add_compatibility_class("Physics2DShapeQueryResult", "PhysicsShapeQueryResult2D");
+	ClassDB::add_compatibility_class("Physics2DTestMotionResult", "PhysicsTestMotionResult2D");
 	ClassDB::add_compatibility_class("PhysicsBody", "PhysicsBody3D");
+	ClassDB::add_compatibility_class("PhysicsDirectBodyState", "PhysicsDirectBodyState3D");
+	ClassDB::add_compatibility_class("PhysicsDirectSpaceState", "PhysicsDirectSpaceState3D");
+	ClassDB::add_compatibility_class("PhysicsServer", "PhysicsServer3D");
+	ClassDB::add_compatibility_class("PhysicsShapeQueryParameters", "PhysicsShapeQueryParameters3D");
+	ClassDB::add_compatibility_class("PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D");
 	ClassDB::add_compatibility_class("PinJoint", "PinJoint3D");
 	ClassDB::add_compatibility_class("PlaneShape", "WorldMarginShape3D");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
@@ -803,6 +832,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("SliderJoint", "SliderJoint3D");
 	ClassDB::add_compatibility_class("SoftBody", "SoftBody3D");
 	ClassDB::add_compatibility_class("Spatial", "Node3D");
+	ClassDB::add_compatibility_class("SpatialGizmo", "Node3DGizmo");
 	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
 	ClassDB::add_compatibility_class("SpatialVelocityTracker", "VelocityTracker3D");
 	ClassDB::add_compatibility_class("SphereShape", "SphereShape3D");
@@ -812,13 +842,22 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("StaticBody", "StaticBody3D");
 	ClassDB::add_compatibility_class("VehicleBody", "VehicleBody3D");
 	ClassDB::add_compatibility_class("VehicleWheel", "VehicleWheel3D");
+	ClassDB::add_compatibility_class("ViewportContainer", "SubViewportContainer");
 	ClassDB::add_compatibility_class("VisibilityEnabler", "VisibilityEnabler3D");
 	ClassDB::add_compatibility_class("VisibilityNotifier", "VisibilityNotifier3D");
+	ClassDB::add_compatibility_class("VisualServer", "RenderingServer");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarConstant", "VisualShaderNodeFloatConstant");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarFunc", "VisualShaderNodeFloatFunc");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("World", "World3D");
+	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
+	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
+	ClassDB::add_compatibility_class("ARVRCamera", "XRCamera3D");
+	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
+	ClassDB::add_compatibility_class("ARVRController", "XRController3D");
+	ClassDB::add_compatibility_class("ARVRAnchor", "XRAnchor3D");
+
 #endif
 
 	OS::get_singleton()->yield(); //may take time to init

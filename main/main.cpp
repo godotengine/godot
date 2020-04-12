@@ -61,17 +61,17 @@
 #include "scene/main/window.h"
 #include "scene/register_scene_types.h"
 #include "scene/resources/packed_scene.h"
-#include "servers/arvr_server.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
-#include "servers/navigation_2d_server.h"
-#include "servers/navigation_server.h"
-#include "servers/physics_2d_server.h"
-#include "servers/physics_server.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
+#include "servers/xr_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc_data.h"
@@ -87,29 +87,29 @@
 // Singletons
 
 // Initialized in setup()
-static Engine *engine = NULL;
-static ProjectSettings *globals = NULL;
-static InputFilter *input = NULL;
-static InputMap *input_map = NULL;
-static TranslationServer *translation_server = NULL;
-static Performance *performance = NULL;
-static PackedData *packed_data = NULL;
+static Engine *engine = nullptr;
+static ProjectSettings *globals = nullptr;
+static InputFilter *input = nullptr;
+static InputMap *input_map = nullptr;
+static TranslationServer *translation_server = nullptr;
+static Performance *performance = nullptr;
+static PackedData *packed_data = nullptr;
 #ifdef MINIZIP_ENABLED
-static ZipArchive *zip_packed_data = NULL;
+static ZipArchive *zip_packed_data = nullptr;
 #endif
-static FileAccessNetworkClient *file_access_network_client = NULL;
-static MessageQueue *message_queue = NULL;
+static FileAccessNetworkClient *file_access_network_client = nullptr;
+static MessageQueue *message_queue = nullptr;
 
 // Initialized in setup2()
-static AudioServer *audio_server = NULL;
-static DisplayServer *display_server = NULL;
-static VisualServer *visual_server = NULL;
-static CameraServer *camera_server = NULL;
-static ARVRServer *arvr_server = NULL;
-static PhysicsServer *physics_server = NULL;
-static Physics2DServer *physics_2d_server = NULL;
-static NavigationServer *navigation_server = NULL;
-static Navigation2DServer *navigation_2d_server = NULL;
+static AudioServer *audio_server = nullptr;
+static DisplayServer *display_server = nullptr;
+static RenderingServer *rendering_server = nullptr;
+static CameraServer *camera_server = nullptr;
+static XRServer *xr_server = nullptr;
+static PhysicsServer3D *physics_server = nullptr;
+static PhysicsServer2D *physics_2d_server = nullptr;
+static NavigationServer3D *navigation_server = nullptr;
+static NavigationServer2D *navigation_2d_server = nullptr;
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -180,23 +180,23 @@ static String get_full_version_string() {
 	return String(VERSION_FULL_BUILD) + hash;
 }
 
-// FIXME: Could maybe be moved to PhysicsServerManager and Physics2DServerManager directly
+// FIXME: Could maybe be moved to PhysicsServer3DManager and PhysicsServer2DManager directly
 // to have less code in main.cpp.
 void initialize_physics() {
 	/// 3D Physics Server
-	physics_server = PhysicsServerManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServerManager::setting_property_name));
+	physics_server = PhysicsServer3DManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServer3DManager::setting_property_name));
 	if (!physics_server) {
 		// Physics server not found, Use the default physics
-		physics_server = PhysicsServerManager::new_default_server();
+		physics_server = PhysicsServer3DManager::new_default_server();
 	}
 	ERR_FAIL_COND(!physics_server);
 	physics_server->init();
 
 	/// 2D Physics server
-	physics_2d_server = Physics2DServerManager::new_server(ProjectSettings::get_singleton()->get(Physics2DServerManager::setting_property_name));
+	physics_2d_server = PhysicsServer2DManager::new_server(ProjectSettings::get_singleton()->get(PhysicsServer2DManager::setting_property_name));
 	if (!physics_2d_server) {
 		// Physics server not found, Use the default physics
-		physics_2d_server = Physics2DServerManager::new_default_server();
+		physics_2d_server = PhysicsServer2DManager::new_default_server();
 	}
 	ERR_FAIL_COND(!physics_2d_server);
 	physics_2d_server->init();
@@ -213,25 +213,25 @@ void finalize_physics() {
 
 void finalize_display() {
 
-	visual_server->finish();
-	memdelete(visual_server);
+	rendering_server->finish();
+	memdelete(rendering_server);
 
 	memdelete(display_server);
 }
 
 void initialize_navigation_server() {
-	ERR_FAIL_COND(navigation_server != NULL);
+	ERR_FAIL_COND(navigation_server != nullptr);
 
-	navigation_server = NavigationServerManager::new_default_server();
-	navigation_2d_server = memnew(Navigation2DServer);
+	navigation_server = NavigationServer3DManager::new_default_server();
+	navigation_2d_server = memnew(NavigationServer2D);
 }
 
 void finalize_navigation_server() {
 	memdelete(navigation_server);
-	navigation_server = NULL;
+	navigation_server = nullptr;
 
 	memdelete(navigation_2d_server);
-	navigation_2d_server = NULL;
+	navigation_2d_server = nullptr;
 }
 
 //#define DEBUG_INIT
@@ -478,6 +478,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	I = args.front();
 	while (I) {
+#ifdef OSX_ENABLED
+		// Ignore the process serial number argument passed by macOS Gatekeeper.
+		// Otherwise, Godot would try to open a non-existent project on the first start and abort.
+		if (I->get().begins_with("-psn_")) {
+			I = I->next();
+			continue;
+		}
+#endif
 
 		List<String>::Element *N = I->next();
 
@@ -1273,12 +1281,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	/* Initialize Visual Server */
 
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	if (OS::get_singleton()->get_render_thread_mode() != OS::RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD));
 	}
 
-	visual_server->init();
+	rendering_server->init();
 
 	OS::get_singleton()->initialize_joypads();
 
@@ -1297,8 +1305,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	audio_server = memnew(AudioServer);
 	audio_server->init();
 
-	// also init our arvr_server from here
-	arvr_server = memnew(ARVRServer);
+	// also init our xr_server from here
+	xr_server = memnew(XRServer);
 
 	register_core_singletons();
 
@@ -1333,7 +1341,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	MAIN_PRINT("Main: Load Remaps");
 
 	Color clear = GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3));
-	VisualServer::get_singleton()->set_default_clear_color(clear);
+	RenderingServer::get_singleton()->set_default_clear_color(clear);
 
 	if (show_logo) { //boot logo!
 		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
@@ -1355,7 +1363,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
 		if (boot_logo.is_valid()) {
 			OS::get_singleton()->_msec_splash = OS::get_singleton()->get_ticks_msec();
-			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
+			RenderingServer::get_singleton()->set_boot_image(boot_logo, boot_bg_color, boot_logo_scale, boot_logo_filter);
 
 		} else {
 #ifndef NO_DEFAULT_BOOT_LOGO
@@ -1367,9 +1375,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 
 			MAIN_PRINT("Main: ClearColor");
-			VisualServer::get_singleton()->set_default_clear_color(boot_bg_color);
+			RenderingServer::get_singleton()->set_default_clear_color(boot_bg_color);
 			MAIN_PRINT("Main: Image");
-			VisualServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
+			RenderingServer::get_singleton()->set_boot_image(splash, boot_bg_color, false);
 #endif
 		}
 
@@ -1380,7 +1388,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	}
 
 	MAIN_PRINT("Main: DCC");
-	VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3)));
+	RenderingServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3)));
 	MAIN_PRINT("Main: END");
 
 	GLOBAL_DEF("application/config/icon", String());
@@ -1642,7 +1650,7 @@ bool Main::start() {
 		game_path = GLOBAL_DEF("application/run/main_scene", "");
 	}
 
-	MainLoop *main_loop = NULL;
+	MainLoop *main_loop = nullptr;
 	if (editor) {
 		main_loop = memnew(SceneTree);
 	};
@@ -1723,7 +1731,9 @@ bool Main::start() {
 		}
 #endif
 
-		if (single_window) {
+		bool embed_subwindows = GLOBAL_DEF("display/window/subwindows/embed_subwindows", false);
+
+		if (single_window || (!project_manager && !editor && embed_subwindows)) {
 			sml->get_root()->set_embed_subwindows_hint(true);
 		}
 		ResourceLoader::add_custom_loaders();
@@ -1772,7 +1782,7 @@ bool Main::start() {
 
 					RES res = ResourceLoader::load(path);
 					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + path);
-					Node *n = NULL;
+					Node *n = nullptr;
 					if (res->is_class("PackedScene")) {
 						Ref<PackedScene> ps = res;
 						n = ps->instance();
@@ -1784,7 +1794,7 @@ bool Main::start() {
 
 						Object *obj = ClassDB::instance(ibt);
 
-						ERR_CONTINUE_MSG(obj == NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
+						ERR_CONTINUE_MSG(obj == nullptr, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res);
@@ -1811,7 +1821,7 @@ bool Main::start() {
 		}
 
 #ifdef TOOLS_ENABLED
-		EditorNode *editor_node = NULL;
+		EditorNode *editor_node = nullptr;
 		if (editor) {
 			editor_node = memnew(EditorNode);
 			sml->get_root()->add_child(editor_node);
@@ -1826,7 +1836,7 @@ bool Main::start() {
 		{
 
 			int directional_atlas_size = GLOBAL_GET("rendering/quality/directional_shadow/size");
-			VisualServer::get_singleton()->directional_shadow_atlas_set_size(directional_atlas_size);
+			RenderingServer::get_singleton()->directional_shadow_atlas_set_size(directional_atlas_size);
 		}
 
 		if (!editor && !project_manager) {
@@ -1942,6 +1952,12 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 			if (editor) {
 
+				bool editor_embed_subwindows = EditorSettings::get_singleton()->get_setting("interface/editor/single_window_mode");
+
+				if (editor_embed_subwindows) {
+					sml->get_root()->set_embed_subwindows_hint(true);
+				}
+
 				if (game_path != GLOBAL_GET("application/run/main_scene") || !editor_node->has_scenes_in_session()) {
 					Error serr = editor_node->load_scene(local_game_path);
 					if (serr != OK)
@@ -1961,7 +1977,7 @@ bool Main::start() {
 			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificates", ""));
 
 			if (game_path != "") {
-				Node *scene = NULL;
+				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid())
 					scene = scenedata->instance();
@@ -2101,25 +2117,25 @@ bool Main::iteration() {
 
 		uint64_t physics_begin = OS::get_singleton()->get_ticks_usec();
 
-		PhysicsServer::get_singleton()->sync();
-		PhysicsServer::get_singleton()->flush_queries();
+		PhysicsServer3D::get_singleton()->sync();
+		PhysicsServer3D::get_singleton()->flush_queries();
 
-		Physics2DServer::get_singleton()->sync();
-		Physics2DServer::get_singleton()->flush_queries();
+		PhysicsServer2D::get_singleton()->sync();
+		PhysicsServer2D::get_singleton()->flush_queries();
 
 		if (OS::get_singleton()->get_main_loop()->iteration(frame_slice * time_scale)) {
 			exit = true;
 			break;
 		}
 
-		NavigationServer::get_singleton_mut()->process(frame_slice * time_scale);
+		NavigationServer3D::get_singleton_mut()->process(frame_slice * time_scale);
 
 		message_queue->flush();
 
-		PhysicsServer::get_singleton()->step(frame_slice * time_scale);
+		PhysicsServer3D::get_singleton()->step(frame_slice * time_scale);
 
-		Physics2DServer::get_singleton()->end_sync();
-		Physics2DServer::get_singleton()->step(frame_slice * time_scale);
+		PhysicsServer2D::get_singleton()->end_sync();
+		PhysicsServer2D::get_singleton()->step(frame_slice * time_scale);
 
 		message_queue->flush();
 
@@ -2137,17 +2153,17 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
-	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() && !disable_render_loop) {
 
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
-			if (VisualServer::get_singleton()->has_changed()) {
-				VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
+			if (RenderingServer::get_singleton()->has_changed()) {
+				RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 				Engine::get_singleton()->frames_drawn++;
 			}
 		} else {
-			VisualServer::get_singleton()->draw(true, scaled_step); // flush visual commands
+			RenderingServer::get_singleton()->draw(true, scaled_step); // flush visual commands
 			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
@@ -2262,15 +2278,15 @@ void Main::cleanup() {
 	ScriptServer::finish_languages();
 
 	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
-	VisualServer::get_singleton()->sync();
+	RenderingServer::get_singleton()->sync();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
 
-	if (arvr_server) {
+	if (xr_server) {
 		// cleanup now before we pull the rug from underneath...
-		memdelete(arvr_server);
+		memdelete(xr_server);
 	}
 
 	ImageLoader::cleanup();

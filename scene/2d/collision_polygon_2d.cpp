@@ -106,7 +106,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 			/*if (Engine::get_singleton()->is_editor_hint()) {
 				//display above all else
 				set_z_as_relative(false);
-				set_z_index(VS::CANVAS_ITEM_Z_MAX - 1);
+				set_z_index(RS::CANVAS_ITEM_Z_MAX - 1);
 			}*/
 
 		} break;
@@ -129,7 +129,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -319,7 +319,7 @@ CollisionPolygon2D::CollisionPolygon2D() {
 	aabb = Rect2(-10, -10, 20, 20);
 	build_mode = BUILD_SOLIDS;
 	set_notify_local_transform(true);
-	parent = NULL;
+	parent = nullptr;
 	owner_id = 0;
 	disabled = false;
 	one_way_collision = false;

@@ -86,7 +86,7 @@
 #define SOCK_CLOSE closesocket
 // connect is broken on windows under certain conditions, reasons unknown:
 // See https://github.com/godotengine/webrtc-native/issues/6
-#define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::WSAConnect(p_sock, p_addr, p_addr_len, NULL, NULL, NULL, NULL)
+#define SOCK_CONNECT(p_sock, p_addr, p_addr_len) ::WSAConnect(p_sock, p_addr, p_addr_len, nullptr, nullptr, nullptr, nullptr)
 
 // Workaround missing flag in MinGW
 #if defined(__MINGW32__) && !defined(SIO_UDP_NETRESET)
@@ -155,7 +155,7 @@ NetSocket *NetSocketPosix::_create_func() {
 
 void NetSocketPosix::make_default() {
 #if defined(WINDOWS_ENABLED)
-	if (_create == NULL) {
+	if (_create == nullptr) {
 		WSADATA data;
 		WSAStartup(MAKEWORD(2, 2), &data);
 	}
@@ -165,10 +165,10 @@ void NetSocketPosix::make_default() {
 
 void NetSocketPosix::cleanup() {
 #if defined(WINDOWS_ENABLED)
-	if (_create != NULL) {
+	if (_create != nullptr) {
 		WSACleanup();
 	}
-	_create = NULL;
+	_create = nullptr;
 #endif
 }
 
@@ -446,15 +446,15 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 #if defined(WINDOWS_ENABLED)
 	bool ready = false;
 	fd_set rd, wr, ex;
-	fd_set *rdp = NULL;
-	fd_set *wrp = NULL;
+	fd_set *rdp = nullptr;
+	fd_set *wrp = nullptr;
 	FD_ZERO(&rd);
 	FD_ZERO(&wr);
 	FD_ZERO(&ex);
 	FD_SET(_sock, &ex);
 	struct timeval timeout = { p_timeout, 0 };
-	// For blocking operation, pass NULL timeout pointer to select.
-	struct timeval *tp = NULL;
+	// For blocking operation, pass nullptr  timeout pointer to select.
+	struct timeval *tp = nullptr;
 	if (p_timeout >= 0) {
 		//  If timeout is non-negative, we want to specify the timeout instead.
 		tp = &timeout;

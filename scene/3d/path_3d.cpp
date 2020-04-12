@@ -229,7 +229,7 @@ void PathFollow3D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			path = NULL;
+			path = nullptr;
 		} break;
 	}
 }
@@ -262,11 +262,11 @@ String PathFollow3D::get_configuration_warning() const {
 		return String();
 
 	if (!Object::cast_to<Path3D>(get_parent())) {
-		return TTR("PathFollow only works when set as a child of a Path node.");
+		return TTR("PathFollow3D only works when set as a child of a Path3D node.");
 	} else {
 		Path3D *path = Object::cast_to<Path3D>(get_parent());
 		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-			return TTR("PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path's Curve resource.");
+			return TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource.");
 		}
 	}
 
@@ -409,7 +409,7 @@ PathFollow3D::PathFollow3D() {
 	delta_offset = 0;
 	h_offset = 0;
 	v_offset = 0;
-	path = NULL;
+	path = nullptr;
 	rotation_mode = ROTATION_XYZ;
 	cubic = true;
 	loop = true;

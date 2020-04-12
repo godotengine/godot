@@ -99,7 +99,7 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
 }
 
-EditorResourcePreview *EditorResourcePreview::singleton = NULL;
+EditorResourcePreview *EditorResourcePreview::singleton = nullptr;
 
 void EditorResourcePreview::_thread_func(void *ud) {
 
@@ -465,16 +465,16 @@ void EditorResourcePreview::stop() {
 		preview_sem.post();
 		while (!exited) {
 			OS::get_singleton()->delay_usec(10000);
-			VisualServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
+			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
 		}
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
-		thread = NULL;
+		thread = nullptr;
 	}
 }
 
 EditorResourcePreview::EditorResourcePreview() {
-	thread = NULL;
+	thread = nullptr;
 	singleton = this;
 	order = 0;
 	exit = false;

@@ -33,7 +33,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/resources/particles_material.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 AABB CPUParticles3D::get_aabb() const {
 
@@ -73,7 +73,7 @@ void CPUParticles3D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((12 + 4 + 4) * p_amount);
-	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_3D, true, true);
+	RS::get_singleton()->multimesh_allocate(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -171,9 +171,9 @@ void CPUParticles3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	mesh = p_mesh;
 	if (mesh.is_valid()) {
-		VS::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
+		RS::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
 	} else {
-		VS::get_singleton()->multimesh_set_mesh(multimesh, RID());
+		RS::get_singleton()->multimesh_set_mesh(multimesh, RID());
 	}
 }
 
@@ -208,13 +208,13 @@ String CPUParticles3D::get_configuration_warning() const {
 	if (get_mesh().is_valid()) {
 		mesh_found = true;
 		for (int j = 0; j < get_mesh()->get_surface_count(); j++) {
-			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != NULL;
+			anim_material_found = Object::cast_to<ShaderMaterial>(get_mesh()->surface_get_material(j).ptr()) != nullptr;
 			StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_mesh()->surface_get_material(j).ptr());
 			anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 		}
 	}
 
-	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != NULL;
+	anim_material_found = anim_material_found || Object::cast_to<ShaderMaterial>(get_material_override().ptr()) != nullptr;
 	StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(get_material_override().ptr());
 	anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 
@@ -228,7 +228,7 @@ String CPUParticles3D::get_configuration_warning() const {
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
 		if (warnings != String())
 			warnings += "\n";
-		warnings += "- " + TTR("CPUParticles animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
+		warnings += "- " + TTR("CPUParticles3D animation requires the usage of a StandardMaterial3D whose Billboard Mode is set to \"Particle Billboard\".");
 	}
 
 	return warnings;
@@ -1022,7 +1022,7 @@ void CPUParticles3D::_update_particle_data_buffer() {
 	int pc = particles.size();
 
 	int *ow;
-	int *order = NULL;
+	int *order = nullptr;
 
 	float *w = particle_data.ptrw();
 	const Particle *r = particles.ptr();
@@ -1115,15 +1115,15 @@ void CPUParticles3D::_set_redraw(bool p_redraw) {
 		MutexLock lock(update_mutex);
 
 		if (redraw) {
-			VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
-			VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
+			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+			RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 		} else {
-			if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread))) {
-				VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
+			if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread))) {
+				RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles3D::_update_render_thread));
 			}
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
-			VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+			RS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 		}
 	}
 }
@@ -1133,7 +1133,7 @@ void CPUParticles3D::_update_render_thread() {
 	MutexLock lock(update_mutex);
 
 	if (can_update) {
-		VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+		RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 		can_update = false; //wait for next time
 	}
 }
@@ -1206,7 +1206,7 @@ void CPUParticles3D::_notification(int p_what) {
 void CPUParticles3D::convert_from_particles(Node *p_particles) {
 
 	GPUParticles3D *particles = Object::cast_to<GPUParticles3D>(p_particles);
-	ERR_FAIL_COND_MSG(!particles, "Only Particles nodes can be converted to CPUParticles.");
+	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles3D nodes can be converted to CPUParticles3D.");
 
 	set_emitting(particles->is_emitting());
 	set_amount(particles->get_amount());
@@ -1488,8 +1488,8 @@ CPUParticles3D::CPUParticles3D() {
 
 	set_notify_transform(true);
 
-	multimesh = VisualServer::get_singleton()->multimesh_create();
-	VisualServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
+	multimesh = RenderingServer::get_singleton()->multimesh_create();
+	RenderingServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	set_base(multimesh);
 
 	set_emitting(true);
@@ -1542,5 +1542,5 @@ CPUParticles3D::CPUParticles3D() {
 }
 
 CPUParticles3D::~CPUParticles3D() {
-	VS::get_singleton()->free(multimesh);
+	RS::get_singleton()->free(multimesh);
 }

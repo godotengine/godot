@@ -31,7 +31,7 @@
 #include "visual_shader.h"
 
 #include "core/vmap.h"
-#include "servers/visual/shader_types.h"
+#include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 
 bool VisualShaderNode::is_simple_decl() const {
@@ -881,7 +881,7 @@ VisualShader::RenderModeEnums VisualShader::render_mode_enums[] = {
 	{ Shader::MODE_SPATIAL, "diffuse" },
 	{ Shader::MODE_SPATIAL, "specular" },
 	{ Shader::MODE_CANVAS_ITEM, "blend" },
-	{ Shader::MODE_CANVAS_ITEM, NULL }
+	{ Shader::MODE_CANVAS_ITEM, nullptr }
 };
 
 static const char *type_string[VisualShader::TYPE_MAX] = {
@@ -1040,8 +1040,8 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	Map<String, String> blend_mode_enums;
 	Set<String> toggles;
 
-	for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode)).size(); i++) {
-		String mode = ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode))[i];
+	for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
+		String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 		int idx = 0;
 		bool in_enum = false;
 		while (render_mode_enums[idx].string) {
@@ -1085,12 +1085,12 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 			}
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 
-			if (Object::cast_to<VisualShaderNodeGroupBase>(E->get().node.ptr()) != NULL) {
+			if (Object::cast_to<VisualShaderNodeGroupBase>(E->get().node.ptr()) != nullptr) {
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, prop_name + "/size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/input_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/output_ports", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
-			if (Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr()) != NULL) {
+			if (Object::cast_to<VisualShaderNodeExpression>(E->get().node.ptr()) != nullptr) {
 				p_list->push_back(PropertyInfo(Variant::STRING, prop_name + "/expression", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 			}
 		}
@@ -1317,8 +1317,8 @@ void VisualShader::_update_shader() const {
 
 					int which = modes[render_mode_enums[idx].string];
 					int count = 0;
-					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode)).size(); i++) {
-						String mode = ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode))[i];
+					for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
+						String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 						if (mode.begins_with(render_mode_enums[idx].string)) {
 							if (count == which) {
 								if (render_mode != String()) {
@@ -1336,9 +1336,9 @@ void VisualShader::_update_shader() const {
 		}
 
 		//fill render mode flags
-		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode)).size(); i++) {
+		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
 
-			String mode = ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader_mode))[i];
+			String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
 			if (flags.has(mode)) {
 				if (render_mode != String()) {
 					render_mode += ", ";
@@ -1358,7 +1358,7 @@ void VisualShader::_update_shader() const {
 	String global_expressions;
 	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
 
-		if (!ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader_mode)).has(func_name[i])) {
+		if (!ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader_mode)).has(func_name[i])) {
 			continue;
 		}
 
@@ -1378,7 +1378,7 @@ void VisualShader::_update_shader() const {
 
 	for (int i = 0; i < TYPE_MAX; i++) {
 
-		if (!ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader_mode)).has(func_name[i])) {
+		if (!ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader_mode)).has(func_name[i])) {
 			continue;
 		}
 
@@ -1417,7 +1417,7 @@ void VisualShader::_update_shader() const {
 	final_code += global_expressions;
 	String tcode = code;
 	for (int i = 0; i < TYPE_MAX; i++) {
-		if (!ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader_mode)).has(func_name[i])) {
+		if (!ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader_mode)).has(func_name[i])) {
 			continue;
 		}
 		tcode = tcode.insert(insertion_pos[i], global_code_per_func[Type(i)]);
@@ -1478,7 +1478,7 @@ void VisualShader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_node", "type", "id"), &VisualShader::remove_node);
 
 	ClassDB::bind_method(D_METHOD("is_node_connection", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::is_node_connection);
-	ClassDB::bind_method(D_METHOD("can_connect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::is_node_connection);
+	ClassDB::bind_method(D_METHOD("can_connect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::can_connect_nodes);
 
 	ClassDB::bind_method(D_METHOD("connect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::connect_nodes);
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "type", "from_node", "from_port", "to_node", "to_port"), &VisualShader::disconnect_nodes);
@@ -1687,7 +1687,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "sky_coords", "vec3(SKY_COORDS, 0.0)" },
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, NULL, NULL },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
 const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
@@ -1736,7 +1736,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "1.0" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR, "velocity", "vec3(0.0, 0.0, 1.0)" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, NULL, NULL },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
 int VisualShaderNodeInput::get_input_port_count() const {
@@ -2034,7 +2034,7 @@ const VisualShaderNodeOutput::Port VisualShaderNodeOutput::ports[] = {
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR, "color", "COLOR" },
 	{ Shader::MODE_SKY, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR, "alpha", "ALPHA" },
 
-	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, NULL, NULL },
+	{ Shader::MODE_MAX, VisualShader::TYPE_MAX, VisualShaderNode::PORT_TYPE_TRANSFORM, nullptr, nullptr },
 };
 
 int VisualShaderNodeOutput::get_input_port_count() const {
@@ -2162,6 +2162,17 @@ void VisualShaderNodeUniform::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_uniform_name"), &VisualShaderNodeUniform::get_uniform_name);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "uniform_name"), "set_uniform_name", "get_uniform_name");
+}
+
+String VisualShaderNodeUniform::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+
+	List<String> keyword_list;
+	ShaderLanguage::get_keyword_list(&keyword_list);
+	if (keyword_list.find(uniform_name)) {
+		return TTR("Uniform name cannot be equal to a shader keyword. Choose another name.");
+	}
+
+	return String();
 }
 
 VisualShaderNodeUniform::VisualShaderNodeUniform() {
@@ -2565,7 +2576,7 @@ void VisualShaderNodeGroupBase::set_control(Control *p_control, int p_index) {
 }
 
 Control *VisualShaderNodeGroupBase::get_control(int p_index) {
-	ERR_FAIL_COND_V(!controls.has(p_index), NULL);
+	ERR_FAIL_COND_V(!controls.has(p_index), nullptr);
 	return controls[p_index];
 }
 

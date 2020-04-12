@@ -2,7 +2,7 @@
 [vertex]
 
 /*
-from VisualServer:
+from RenderingServer:
 
 ARRAY_VERTEX=0,
 ARRAY_NORMAL=1,

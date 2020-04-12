@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ClippedCamera3D" inherits="Camera3D" version="4.0">
+	<brief_description>
+		A [Camera3D] that includes collision.
+	</brief_description>
+	<description>
+		This node extends [Camera3D] to add collisions with [Area3D] and/or [PhysicsBody3D] nodes. The camera cannot move through colliding objects.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+				Adds a collision exception so the camera does not collide with the specified node.
+			</description>
+		</method>
+		<method name="add_exception_rid">
+			<return type="void">
+			</return>
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+				Adds a collision exception so the camera does not collide with the specified [RID].
+			</description>
+		</method>
+		<method name="clear_exceptions">
+			<return type="void">
+			</return>
+			<description>
+				Removes all collision exceptions.
+			</description>
+		</method>
+		<method name="get_clip_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the distance the camera has been offset due to a collision.
+			</description>
+		</method>
+		<method name="get_collision_mask_bit" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<description>
+				Returns [code]true[/code] if the specified bit index is on.
+				[b]Note:[/b] Bit indices range from 0-19.
+			</description>
+		</method>
+		<method name="remove_exception">
+			<return type="void">
+			</return>
+			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+				Removes a collision exception with the specified node.
+			</description>
+		</method>
+		<method name="remove_exception_rid">
+			<return type="void">
+			</return>
+			<argument index="0" name="rid" type="RID">
+			</argument>
+			<description>
+				Removes a collision exception with the specified [RID].
+			</description>
+		</method>
+		<method name="set_collision_mask_bit">
+			<return type="void">
+			</return>
+			<argument index="0" name="bit" type="int">
+			</argument>
+			<argument index="1" name="value" type="bool">
+			</argument>
+			<description>
+				Sets the specified bit index to the [code]value[/code].
+				[b]Note:[/b] Bit indices range from 0-19.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="clip_to_areas" type="bool" setter="set_clip_to_areas" getter="is_clip_to_areas_enabled" default="false">
+			If [code]true[/code], the camera stops on contact with [Area3D]s.
+		</member>
+		<member name="clip_to_bodies" type="bool" setter="set_clip_to_bodies" getter="is_clip_to_bodies_enabled" default="true">
+			If [code]true[/code], the camera stops on contact with [PhysicsBody3D]s.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The camera's collision mask. Only objects in at least one collision layer matching the mask will be detected.
+		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
+			The camera's collision margin. The camera can't get closer than this distance to a colliding object.
+		</member>
+		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="ClippedCamera3D.ProcessMode" default="0">
+			The camera's process callback. See [enum ProcessMode].
+		</member>
+	</members>
+	<constants>
+		<constant name="CLIP_PROCESS_PHYSICS" value="0" enum="ProcessMode">
+			The camera updates with the [code]_physics_process[/code] callback.
+		</constant>
+		<constant name="CLIP_PROCESS_IDLE" value="1" enum="ProcessMode">
+			The camera updates with the [code]_process[/code] callback.
+		</constant>
+	</constants>
+</class>

@@ -79,8 +79,8 @@ Error AudioDriverCoreAudio::init() {
 #endif
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
-	AudioComponent comp = AudioComponentFindNext(NULL, &desc);
-	ERR_FAIL_COND_V(comp == NULL, FAILED);
+	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
+	ERR_FAIL_COND_V(comp == nullptr, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &audio_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -335,7 +335,7 @@ void AudioDriverCoreAudio::finish() {
 			ERR_PRINT("AudioComponentInstanceDispose failed");
 		}
 
-		audio_unit = NULL;
+		audio_unit = nullptr;
 		unlock();
 	}
 }
@@ -351,8 +351,8 @@ Error AudioDriverCoreAudio::capture_init() {
 #endif
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
-	AudioComponent comp = AudioComponentFindNext(NULL, &desc);
-	ERR_FAIL_COND_V(comp == NULL, FAILED);
+	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
+	ERR_FAIL_COND_V(comp == nullptr, FAILED);
 
 	OSStatus result = AudioComponentInstanceNew(comp, &input_unit);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
@@ -380,7 +380,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	size = sizeof(AudioDeviceID);
 	AudioObjectPropertyAddress property = { kAudioHardwarePropertyDefaultInputDevice, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 
-	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, NULL, &size, &deviceId);
+	result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &deviceId);
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	result = AudioUnitSetProperty(input_unit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &deviceId, sizeof(AudioDeviceID));
@@ -469,7 +469,7 @@ void AudioDriverCoreAudio::capture_finish() {
 			ERR_PRINT("AudioComponentInstanceDispose failed");
 		}
 
-		input_unit = NULL;
+		input_unit = nullptr;
 		unlock();
 	}
 }
@@ -513,18 +513,18 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 	prop.mElement = kAudioObjectPropertyElementMaster;
 
 	UInt32 size = 0;
-	AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, NULL, &size);
+	AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
 	AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
-	AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, NULL, &size, audioDevices);
+	AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, nullptr, &size, audioDevices);
 
 	UInt32 deviceCount = size / sizeof(AudioDeviceID);
 	for (UInt32 i = 0; i < deviceCount; i++) {
 		prop.mScope = capture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
 		prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
-		AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, NULL, &size);
+		AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
 		AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
-		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, bufferList);
+		AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 		UInt32 channelCount = 0;
 		for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
@@ -538,7 +538,7 @@ Array AudioDriverCoreAudio::_get_device_list(bool capture) {
 			size = sizeof(CFStringRef);
 			prop.mSelector = kAudioObjectPropertyName;
 
-			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, &cfname);
+			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, &cfname);
 
 			CFIndex length = CFStringGetLength(cfname);
 			CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
@@ -569,18 +569,18 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		prop.mElement = kAudioObjectPropertyElementMaster;
 
 		UInt32 size = 0;
-		AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, NULL, &size);
+		AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &prop, 0, nullptr, &size);
 		AudioDeviceID *audioDevices = (AudioDeviceID *)malloc(size);
-		AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, NULL, &size, audioDevices);
+		AudioObjectGetPropertyData(kAudioObjectSystemObject, &prop, 0, nullptr, &size, audioDevices);
 
 		UInt32 deviceCount = size / sizeof(AudioDeviceID);
 		for (UInt32 i = 0; i < deviceCount && !found; i++) {
 			prop.mScope = capture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput;
 			prop.mSelector = kAudioDevicePropertyStreamConfiguration;
 
-			AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, NULL, &size);
+			AudioObjectGetPropertyDataSize(audioDevices[i], &prop, 0, nullptr, &size);
 			AudioBufferList *bufferList = (AudioBufferList *)malloc(size);
-			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, bufferList);
+			AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, bufferList);
 
 			UInt32 channelCount = 0;
 			for (UInt32 j = 0; j < bufferList->mNumberBuffers; j++)
@@ -594,7 +594,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 				size = sizeof(CFStringRef);
 				prop.mSelector = kAudioObjectPropertyName;
 
-				AudioObjectGetPropertyData(audioDevices[i], &prop, 0, NULL, &size, &cfname);
+				AudioObjectGetPropertyData(audioDevices[i], &prop, 0, nullptr, &size, &cfname);
 
 				CFIndex length = CFStringGetLength(cfname);
 				CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
@@ -620,7 +620,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		UInt32 elem = capture ? kAudioHardwarePropertyDefaultInputDevice : kAudioHardwarePropertyDefaultOutputDevice;
 		AudioObjectPropertyAddress property = { elem, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 
-		OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, NULL, &size, &deviceId);
+		OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &property, 0, nullptr, &size, &deviceId);
 		ERR_FAIL_COND(result != noErr);
 
 		found = true;
@@ -677,8 +677,8 @@ String AudioDriverCoreAudio::capture_get_device() {
 #endif
 
 AudioDriverCoreAudio::AudioDriverCoreAudio() :
-		audio_unit(NULL),
-		input_unit(NULL),
+		audio_unit(nullptr),
+		input_unit(nullptr),
 		active(false),
 		device_name("Default"),
 		capture_device_name("Default"),

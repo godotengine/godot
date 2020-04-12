@@ -59,9 +59,9 @@ class AudioDriverWASAPI : public AudioDriver {
 		String new_device;
 
 		AudioDeviceWASAPI() :
-				audio_client(NULL),
-				render_client(NULL),
-				capture_client(NULL),
+				audio_client(nullptr),
+				render_client(nullptr),
+				capture_client(nullptr),
 				active(false),
 				format_tag(0),
 				bits_per_sample(0),

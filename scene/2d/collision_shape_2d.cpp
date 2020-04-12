@@ -73,7 +73,7 @@ void CollisionShape2D::_notification(int p_what) {
 			/*if (Engine::get_singleton()->is_editor_hint()) {
 				//display above all else
 				set_z_as_relative(false);
-				set_z_index(VS::CANVAS_ITEM_Z_MAX - 1);
+				set_z_index(RS::CANVAS_ITEM_Z_MAX - 1);
 			}*/
 
 		} break;
@@ -96,7 +96,7 @@ void CollisionShape2D::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -249,7 +249,7 @@ CollisionShape2D::CollisionShape2D() {
 	rect = Rect2(-Point2(10, 10), Point2(20, 20));
 	set_notify_local_transform(true);
 	owner_id = 0;
-	parent = NULL;
+	parent = nullptr;
 	disabled = false;
 	one_way_collision = false;
 	one_way_collision_margin = 1.0;

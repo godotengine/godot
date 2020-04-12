@@ -40,7 +40,7 @@
 
 #include <stdarg.h>
 
-OS *OS::singleton = NULL;
+OS *OS::singleton = nullptr;
 
 OS *OS::get_singleton() {
 
@@ -184,7 +184,7 @@ void OS::dump_memory_to_file(const char *p_file) {
 	//Memory::dump_static_mem_to_file(p_file);
 }
 
-static FileAccess *_OSPRF = NULL;
+static FileAccess *_OSPRF = nullptr;
 
 static void _OS_printres(Object *p_obj) {
 
@@ -207,7 +207,7 @@ void OS::print_all_resources(String p_to_file) {
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
-			_OSPRF = NULL;
+			_OSPRF = nullptr;
 			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
@@ -218,13 +218,13 @@ void OS::print_all_resources(String p_to_file) {
 
 		if (_OSPRF)
 			memdelete(_OSPRF);
-		_OSPRF = NULL;
+		_OSPRF = nullptr;
 	}
 }
 
 void OS::print_resources_in_use(bool p_short) {
 
-	ResourceCache::dump(NULL, p_short);
+	ResourceCache::dump(nullptr, p_short);
 }
 
 void OS::dump_resources_to_file(const char *p_file) {
@@ -523,9 +523,9 @@ OS::OS() {
 	_allow_layered = false;
 	_stack_bottom = (void *)(&stack_bottom);
 
-	_logger = NULL;
+	_logger = nullptr;
 
-	has_server_feature_callback = NULL;
+	has_server_feature_callback = nullptr;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));
@@ -534,5 +534,5 @@ OS::OS() {
 
 OS::~OS() {
 	memdelete(_logger);
-	singleton = NULL;
+	singleton = nullptr;
 }

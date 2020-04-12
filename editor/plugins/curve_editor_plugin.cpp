@@ -755,7 +755,7 @@ void CurveEditor::_bind_methods() {
 
 bool EditorInspectorPluginCurve::can_handle(Object *p_object) {
 
-	return Object::cast_to<Curve>(p_object) != NULL;
+	return Object::cast_to<Curve>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginCurve::parse_begin(Object *p_object) {

@@ -56,11 +56,8 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;I)V");
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
+		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(I)Ljava/lang/String;");
-		_play_video = p_env->GetMethodID(cls, "playVideo", "(Ljava/lang/String;)V");
-		_is_video_playing = p_env->GetMethodID(cls, "isVideoPlaying", "()Z");
-		_pause_video = p_env->GetMethodID(cls, "pauseVideo", "()V");
-		_stop_video = p_env->GetMethodID(cls, "stopVideo", "()V");
 	}
 }
 
@@ -157,6 +154,15 @@ void GodotIOJavaWrapper::set_screen_orientation(int p_orient) {
 	}
 }
 
+int GodotIOJavaWrapper::get_screen_orientation() {
+	if (_get_screen_orientation) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		return env->CallIntMethod(godot_io_instance, _get_screen_orientation);
+	} else {
+		return 0;
+	}
+}
+
 String GodotIOJavaWrapper::get_system_dir(int p_dir) {
 	if (_get_system_dir) {
 		JNIEnv *env = ThreadAndroid::get_env();
@@ -164,33 +170,6 @@ String GodotIOJavaWrapper::get_system_dir(int p_dir) {
 		return jstring_to_string(s, env);
 	} else {
 		return String(".");
-	}
-}
-
-void GodotIOJavaWrapper::play_video(const String &p_path) {
-	// Why is this not here?!?!
-}
-
-bool GodotIOJavaWrapper::is_video_playing() {
-	if (_is_video_playing) {
-		JNIEnv *env = ThreadAndroid::get_env();
-		return env->CallBooleanMethod(godot_io_instance, _is_video_playing);
-	} else {
-		return false;
-	}
-}
-
-void GodotIOJavaWrapper::pause_video() {
-	if (_pause_video) {
-		JNIEnv *env = ThreadAndroid::get_env();
-		env->CallVoidMethod(godot_io_instance, _pause_video);
-	}
-}
-
-void GodotIOJavaWrapper::stop_video() {
-	if (_stop_video) {
-		JNIEnv *env = ThreadAndroid::get_env();
-		env->CallVoidMethod(godot_io_instance, _stop_video);
 	}
 }
 

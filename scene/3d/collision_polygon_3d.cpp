@@ -112,7 +112,7 @@ void CollisionPolygon3D::_notification(int p_what) {
 				parent->remove_shape_owner(owner_id);
 			}
 			owner_id = 0;
-			parent = NULL;
+			parent = nullptr;
 		} break;
 	}
 }
@@ -165,11 +165,11 @@ bool CollisionPolygon3D::is_disabled() const {
 String CollisionPolygon3D::get_configuration_warning() const {
 
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
-		return TTR("CollisionPolygon only serves to provide a collision shape to a CollisionObject derived node. Please only use it as a child of Area, StaticBody, RigidBody, KinematicBody, etc. to give them a shape.");
+		return TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
 	}
 
 	if (polygon.empty()) {
-		return TTR("An empty CollisionPolygon has no effect on collision.");
+		return TTR("An empty CollisionPolygon3D has no effect on collision.");
 	}
 
 	return String();
@@ -201,7 +201,7 @@ CollisionPolygon3D::CollisionPolygon3D() {
 	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	depth = 1.0;
 	set_notify_local_transform(true);
-	parent = NULL;
+	parent = nullptr;
 	owner_id = 0;
 	disabled = false;
 }

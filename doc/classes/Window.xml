@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Window" inherits="Viewport" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="can_draw" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="child_controls_changed">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="Window.Flags">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_real_size" qualifiers="const">
+			<return type="Vector2i">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_theme_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_theme_constant" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_theme_font" qualifiers="const">
+			<return type="Font">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_theme_icon" qualifiers="const">
+			<return type="Texture2D">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_theme_stylebox" qualifiers="const">
+			<return type="StyleBox">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="grab_focus">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_focus" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_theme_color" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_theme_constant" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_theme_font" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_theme_icon" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_theme_stylebox" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="StringName" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="hide">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_embedded" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_maximize_allowed" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_using_font_oversampling" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="move_to_foreground">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="popup">
+			<return type="void">
+			</return>
+			<argument index="0" name="rect" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="popup_centered">
+			<return type="void">
+			</return>
+			<argument index="0" name="minsize" type="Vector2i" default="Vector2i( 0, 0 )">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="popup_centered_clamped">
+			<return type="void">
+			</return>
+			<argument index="0" name="minsize" type="Vector2i" default="Vector2i( 0, 0 )">
+			</argument>
+			<argument index="1" name="fallback_ratio" type="float" default="0.75">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="popup_centered_ratio">
+			<return type="void">
+			</return>
+			<argument index="0" name="ratio" type="float" default="0.8">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="popup_on_parent">
+			<return type="void">
+			</return>
+			<argument index="0" name="parent_rect" type="Rect2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="request_attention">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="Window.Flags">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ime_active">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_ime_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="Vector2i">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_font_oversampling">
+			<return type="void">
+			</return>
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="show">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
+		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
+		<member name="content_scale_aspect" type="int" setter="set_content_scale_aspect" getter="get_content_scale_aspect" enum="Window.ContentScaleAspect" default="0">
+		</member>
+		<member name="content_scale_mode" type="int" setter="set_content_scale_mode" getter="get_content_scale_mode" enum="Window.ContentScaleMode" default="0">
+		</member>
+		<member name="content_scale_size" type="Vector2i" setter="set_content_scale_size" getter="get_content_scale_size" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="current_screen" type="int" setter="set_current_screen" getter="get_current_screen" default="0">
+		</member>
+		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
+		</member>
+		<member name="max_size" type="Vector2i" setter="set_max_size" getter="get_max_size" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
+		</member>
+		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i( 0, 0 )">
+		</member>
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i( 100, 100 )">
+		</member>
+		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
+		</member>
+		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
+		</member>
+		<member name="transient" type="bool" setter="set_transient" getter="is_transient" default="false">
+		</member>
+		<member name="transparent" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
+		<member name="unfocusable" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
+		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" default="false">
+		</member>
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
+		</member>
+		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" default="false">
+		</member>
+	</members>
+	<signals>
+		<signal name="about_to_popup">
+			<description>
+			</description>
+		</signal>
+		<signal name="close_requested">
+			<description>
+			</description>
+		</signal>
+		<signal name="files_dropped">
+			<argument index="0" name="files" type="PackedStringArray">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="focus_entered">
+			<description>
+			</description>
+		</signal>
+		<signal name="focus_exited">
+			<description>
+			</description>
+		</signal>
+		<signal name="go_back_requested">
+			<description>
+			</description>
+		</signal>
+		<signal name="mouse_entered">
+			<description>
+			</description>
+		</signal>
+		<signal name="mouse_exited">
+			<description>
+			</description>
+		</signal>
+		<signal name="visibility_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="window_input">
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="30">
+		</constant>
+		<constant name="MODE_WINDOWED" value="0" enum="Mode">
+		</constant>
+		<constant name="MODE_MINIMIZED" value="1" enum="Mode">
+		</constant>
+		<constant name="MODE_MAXIMIZED" value="2" enum="Mode">
+		</constant>
+		<constant name="MODE_FULLSCREEN" value="3" enum="Mode">
+		</constant>
+		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
+		</constant>
+		<constant name="FLAG_BORDERLESS" value="1" enum="Flags">
+		</constant>
+		<constant name="FLAG_ALWAYS_ON_TOP" value="2" enum="Flags">
+		</constant>
+		<constant name="FLAG_TRANSPARENT" value="3" enum="Flags">
+		</constant>
+		<constant name="FLAG_NO_FOCUS" value="4" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="5" enum="Flags">
+		</constant>
+		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
+		</constant>
+		<constant name="CONTENT_SCALE_MODE_OBJECTS" value="1" enum="ContentScaleMode">
+		</constant>
+		<constant name="CONTENT_SCALE_MODE_PIXELS" value="2" enum="ContentScaleMode">
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_IGNORE" value="0" enum="ContentScaleAspect">
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_KEEP" value="1" enum="ContentScaleAspect">
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_KEEP_WIDTH" value="2" enum="ContentScaleAspect">
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_KEEP_HEIGHT" value="3" enum="ContentScaleAspect">
+		</constant>
+		<constant name="CONTENT_SCALE_ASPECT_EXPAND" value="4" enum="ContentScaleAspect">
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="close" type="Texture2D">
+		</theme_item>
+		<theme_item name="close_h_ofs" type="int" default="18">
+		</theme_item>
+		<theme_item name="close_highlight" type="Texture2D">
+		</theme_item>
+		<theme_item name="close_v_ofs" type="int" default="18">
+		</theme_item>
+		<theme_item name="panel" type="StyleBox">
+		</theme_item>
+		<theme_item name="resize_margin" type="int" default="4">
+		</theme_item>
+		<theme_item name="scaleborder_size" type="int" default="4">
+		</theme_item>
+		<theme_item name="title_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		</theme_item>
+		<theme_item name="title_font" type="Font">
+		</theme_item>
+		<theme_item name="title_height" type="int" default="20">
+		</theme_item>
+		<theme_item name="window_panel" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>

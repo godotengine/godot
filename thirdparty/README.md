@@ -360,6 +360,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://sourceforge.net/projects/polyclipping
   * Version: 6.4.2 + Godot changes (added optional exceptions handling)
   * License: BSL-1.0
+- `cubemap_coeffs.h`
+  * Upstream: https://research.activision.com/publications/archives/fast-filtering-of-reflection-probes
+    File coeffs_const_8.txt
+  * License: MIT
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ
   * Version: git (f121734, 2007)
@@ -570,6 +574,8 @@ Files extracted from upstream source:
 
 `vk_enum_string_helper.h` is taken from the matching `Vulkan-ValidationLayers`
 SDK release: https://github.com/KhronosGroup/Vulkan-ValidationLayers/blob/master/layers/generated/vk_enum_string_helper.h
+Includes custom change to disable MSVC pragma, might be upstreamed via:
+https://github.com/KhronosGroup/Vulkan-ValidationLayers/pull/1666
 
 `vk_mem_alloc.h` is taken from https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 Version: 2.3.0

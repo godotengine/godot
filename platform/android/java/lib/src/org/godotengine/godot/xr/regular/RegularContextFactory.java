@@ -51,7 +51,6 @@ public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 
 	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		String driver_name = GodotLib.getGlobal("rendering/quality/driver/driver_name");
 		// FIXME: Add support for Vulkan.
 		Log.w(TAG, "creating OpenGL ES 2.0 context :");
 

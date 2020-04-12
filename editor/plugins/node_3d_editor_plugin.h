@@ -43,7 +43,7 @@ class Camera3D;
 class Node3DEditor;
 class EditorNode3DGizmoPlugin;
 class Node3DEditorViewport;
-class ViewportContainer;
+class SubViewportContainer;
 
 class EditorNode3DGizmo : public Node3DGizmo {
 
@@ -123,7 +123,7 @@ public:
 	Ref<EditorNode3DGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	Vector3 get_handle_pos(int p_idx) const;
 	bool intersect_frustum(const Camera3D *p_camera, const Vector<Plane> &p_frustum);
-	bool intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
+	bool intersect_ray(Camera3D *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = nullptr, bool p_sec_first = false);
 
 	virtual void clear();
 	virtual void create();
@@ -202,7 +202,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_AUDIO_DOPPLER,
 		VIEW_GIZMOS,
 		VIEW_INFORMATION,
-		VIEW_FPS,
+		VIEW_FRAME_TIME,
 		VIEW_DISPLAY_NORMAL,
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
@@ -218,6 +218,7 @@ class Node3DEditorViewport : public Control {
 		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
 		VIEW_DISPLAY_DEBUG_SSAO,
 		VIEW_DISPLAY_DEBUG_ROUGHNESS_LIMITER,
+		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
 		VIEW_LOCK_ROTATION,
 		VIEW_CINEMATIC_PREVIEW,
 		VIEW_AUTO_ORTHOGONAL,
@@ -228,7 +229,9 @@ public:
 	enum {
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
-		GIZMO_GRID_LAYER = 25
+		GIZMO_GRID_LAYER = 25,
+
+		FRAME_TIME_HISTORY = 20,
 	};
 
 	enum NavigationScheme {
@@ -238,6 +241,11 @@ public:
 	};
 
 private:
+	float cpu_time_history[FRAME_TIME_HISTORY];
+	int cpu_time_history_index;
+	float gpu_time_history[FRAME_TIME_HISTORY];
+	int gpu_time_history_index;
+
 	int index;
 	String name;
 	void _menu_option(int p_option);
@@ -256,7 +264,7 @@ private:
 	UndoRedo *undo_redo;
 
 	CheckBox *preview_camera;
-	ViewportContainer *viewport_container;
+	SubViewportContainer *subviewport_container;
 
 	MenuButton *view_menu;
 	PopupMenu *display_submenu;
@@ -295,7 +303,7 @@ private:
 	void _clear_selected();
 	void _select_clicked(bool p_append, bool p_single, bool p_allow_locked = false);
 	void _select(Node *p_node, bool p_append, bool p_single);
-	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = NULL, bool p_alt_select = false);
+	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = nullptr, bool p_alt_select = false);
 	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
 	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
 	Vector3 _get_ray(const Vector2 &p_pos) const;
@@ -487,7 +495,7 @@ public:
 	RID sbox_instance;
 
 	Node3DEditorSelectedItem() {
-		sp = NULL;
+		sp = nullptr;
 		last_xform_dirty = true;
 	}
 	~Node3DEditorSelectedItem();
@@ -578,7 +586,7 @@ private:
 	ToolMode tool_mode;
 	bool orthogonal;
 
-	VisualServer::ScenarioDebugMode scenario_debug;
+	RenderingServer::ScenarioDebugMode scenario_debug;
 
 	RID origin;
 	RID origin_instance;
@@ -761,7 +769,7 @@ public:
 	Ref<ArrayMesh> get_scale_plane_gizmo(int idx) const { return scale_plane_gizmo[idx]; }
 
 	void update_transform_gizmo();
-	void update_all_gizmos(Node *p_node = NULL);
+	void update_all_gizmos(Node *p_node = nullptr);
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
@@ -788,7 +796,7 @@ public:
 	void set_can_preview(Camera3D *p_preview);
 
 	Node3DEditorViewport *get_editor_viewport(int p_idx) {
-		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), NULL);
+		ERR_FAIL_INDEX_V(p_idx, static_cast<int>(VIEWPORTS_COUNT), nullptr);
 		return viewports[p_idx];
 	}
 

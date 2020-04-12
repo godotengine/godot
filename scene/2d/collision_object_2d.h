@@ -60,7 +60,7 @@ class CollisionObject2D : public Node2D {
 			disabled = false;
 			one_way_collision = false;
 			one_way_collision_margin = 0;
-			owner = NULL;
+			owner = nullptr;
 		}
 	};
 

@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 import modules_builders
 
 env_modules = env.Clone()
 
-Export('env_modules')
+Export("env_modules")
 
 # Header with MODULE_*_ENABLED defines.
 env.CommandNoCache("modules_enabled.gen.h", Value(env.module_list), modules_builders.generate_modules_enabled)
 
+vs_sources = []
 # libmodule_<name>.a for each active module.
 for module in env.module_list:
     env.modules_sources = []
@@ -23,6 +24,8 @@ for module in env.module_list:
 
     lib = env_modules.add_library("module_%s" % module, env.modules_sources)
     env.Prepend(LIBS=[lib])
+    if env["vsproj"]:
+        vs_sources += env.modules_sources
 
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side
@@ -31,3 +34,5 @@ env.modules_sources = []
 env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
 lib = env_modules.add_library("modules", env.modules_sources)
 env.Prepend(LIBS=[lib])
+if env["vsproj"]:
+    env.modules_sources += vs_sources

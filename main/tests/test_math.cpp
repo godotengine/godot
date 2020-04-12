@@ -43,7 +43,7 @@
 #include "core/vmap.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
-#include "servers/visual/shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 #include "core/method_ptrcall.h"
 
@@ -475,18 +475,18 @@ MainLoop *test() {
 
 	if (cmdlargs.empty()) {
 		//try editor!
-		return NULL;
+		return nullptr;
 	}
 
 	String test = cmdlargs.back()->get();
 	if (test == "math") {
 		// Not a file name but the test name, abort.
 		// FIXME: This test is ugly as heck, needs fixing :)
-		return NULL;
+		return nullptr;
 	}
 
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(!fa, NULL, "Could not open file: " + test);
+	ERR_FAIL_COND_V_MSG(!fa, nullptr, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();
@@ -580,7 +580,7 @@ MainLoop *test() {
 
 	List<String> args;
 	args.push_back("-l");
-	Error err = OS::get_singleton()->execute("/bin/ls", args, true, NULL, &ret);
+	Error err = OS::get_singleton()->execute("/bin/ls", args, true, nullptr, &ret);
 	print_line("error: " + itos(err));
 	print_line(ret);
 
@@ -660,6 +660,6 @@ MainLoop *test() {
 		print_line("scalar /=: " + v);
 	}
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestMath

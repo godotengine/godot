@@ -39,7 +39,7 @@
 #include "scene/gui/text_edit.h"
 #include "scene/main/timer.h"
 #include "scene/resources/shader.h"
-#include "servers/visual/shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 class ShaderTextEditor : public CodeTextEditor {
 

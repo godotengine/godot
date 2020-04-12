@@ -84,5 +84,5 @@ void register_vhacd_types() {
 }
 
 void unregister_vhacd_types() {
-	Mesh::convex_composition_function = NULL;
+	Mesh::convex_composition_function = nullptr;
 }

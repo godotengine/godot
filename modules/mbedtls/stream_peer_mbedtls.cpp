@@ -35,11 +35,11 @@
 
 int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) return 0;
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 
-	ERR_FAIL_COND_V(sp == NULL, 0);
+	ERR_FAIL_COND_V(sp == nullptr, 0);
 
 	int sent;
 	Error err = sp->base->put_partial_data((const uint8_t *)buf, len, sent);
@@ -54,11 +54,11 @@ int StreamPeerMbedTLS::bio_send(void *ctx, const unsigned char *buf, size_t len)
 
 int StreamPeerMbedTLS::bio_recv(void *ctx, unsigned char *buf, size_t len) {
 
-	if (buf == NULL || len <= 0) return 0;
+	if (buf == nullptr || len <= 0) return 0;
 
 	StreamPeerMbedTLS *sp = (StreamPeerMbedTLS *)ctx;
 
-	ERR_FAIL_COND_V(sp == NULL, 0);
+	ERR_FAIL_COND_V(sp == nullptr, 0);
 
 	int got;
 	Error err = sp->base->get_partial_data((uint8_t *)buf, len, got);
@@ -112,7 +112,7 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	ERR_FAIL_COND_V(err != OK, err);
 
 	mbedtls_ssl_set_hostname(ssl_ctx->get_context(), p_for_hostname.utf8().get_data());
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
+	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 
 	status = STATUS_HANDSHAKING;
 
@@ -133,7 +133,7 @@ Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_
 
 	base = p_base;
 
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
+	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 
 	status = STATUS_HANDSHAKING;
 
@@ -320,5 +320,5 @@ void StreamPeerMbedTLS::initialize_ssl() {
 void StreamPeerMbedTLS::finalize_ssl() {
 
 	available = false;
-	_create = NULL;
+	_create = nullptr;
 }

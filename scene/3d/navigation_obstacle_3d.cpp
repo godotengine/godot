@@ -33,7 +33,7 @@
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/navigation_3d.h"
 #include "scene/3d/physics_body_3d.h"
-#include "servers/navigation_server.h"
+#include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
 
@@ -49,12 +49,12 @@ void NavigationObstacle3D::_notification(int p_what) {
 
 			// Search the navigation node and set it
 			{
-				Navigation3D *nav = NULL;
+				Navigation3D *nav = nullptr;
 				Node *p = get_parent();
-				while (p != NULL) {
+				while (p != nullptr) {
 					nav = Object::cast_to<Navigation3D>(p);
-					if (nav != NULL)
-						p = NULL;
+					if (nav != nullptr)
+						p = nullptr;
 					else
 						p = p->get_parent();
 				}
@@ -65,21 +65,21 @@ void NavigationObstacle3D::_notification(int p_what) {
 			set_physics_process_internal(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			set_navigation(NULL);
+			set_navigation(nullptr);
 			set_physics_process_internal(false);
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			Node3D *spatial = Object::cast_to<Node3D>(get_parent());
 			if (spatial) {
-				NavigationServer::get_singleton()->agent_set_position(agent, spatial->get_global_transform().origin);
+				NavigationServer3D::get_singleton()->agent_set_position(agent, spatial->get_global_transform().origin);
 			}
 
 			PhysicsBody3D *rigid = Object::cast_to<PhysicsBody3D>(get_parent());
 			if (rigid) {
 
 				Vector3 v = rigid->get_linear_velocity();
-				NavigationServer::get_singleton()->agent_set_velocity(agent, v);
-				NavigationServer::get_singleton()->agent_set_target_velocity(agent, v);
+				NavigationServer3D::get_singleton()->agent_set_velocity(agent, v);
+				NavigationServer3D::get_singleton()->agent_set_target_velocity(agent, v);
 			}
 
 		} break;
@@ -87,13 +87,13 @@ void NavigationObstacle3D::_notification(int p_what) {
 }
 
 NavigationObstacle3D::NavigationObstacle3D() :
-		navigation(NULL),
+		navigation(nullptr),
 		agent(RID()) {
-	agent = NavigationServer::get_singleton()->agent_create();
+	agent = NavigationServer3D::get_singleton()->agent_create();
 }
 
 NavigationObstacle3D::~NavigationObstacle3D() {
-	NavigationServer::get_singleton()->free(agent);
+	NavigationServer3D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }
 
@@ -102,12 +102,12 @@ void NavigationObstacle3D::set_navigation(Navigation3D *p_nav) {
 		return; // Pointless
 
 	navigation = p_nav;
-	NavigationServer::get_singleton()->agent_set_map(agent, navigation == NULL ? RID() : navigation->get_rid());
+	NavigationServer3D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
 }
 
 void NavigationObstacle3D::set_navigation_node(Node *p_nav) {
 	Navigation3D *nav = Object::cast_to<Navigation3D>(p_nav);
-	ERR_FAIL_COND(nav == NULL);
+	ERR_FAIL_COND(nav == nullptr);
 	set_navigation(nav);
 }
 
@@ -118,7 +118,7 @@ Node *NavigationObstacle3D::get_navigation_node() const {
 String NavigationObstacle3D::get_configuration_warning() const {
 	if (!Object::cast_to<Node3D>(get_parent())) {
 
-		return TTR("The NavigationObstacle only serves to provide collision avoidance to a spatial object.");
+		return TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");
 	}
 
 	return String();
@@ -155,9 +155,9 @@ void NavigationObstacle3D::update_agent_shape() {
 		radius = 1.0; // Never a 0 radius
 
 	// Initialize the Agent as an object
-	NavigationServer::get_singleton()->agent_set_neighbor_dist(agent, 0.0);
-	NavigationServer::get_singleton()->agent_set_max_neighbors(agent, 0);
-	NavigationServer::get_singleton()->agent_set_time_horizon(agent, 0.0);
-	NavigationServer::get_singleton()->agent_set_radius(agent, radius);
-	NavigationServer::get_singleton()->agent_set_max_speed(agent, 0.0);
+	NavigationServer3D::get_singleton()->agent_set_neighbor_dist(agent, 0.0);
+	NavigationServer3D::get_singleton()->agent_set_max_neighbors(agent, 0);
+	NavigationServer3D::get_singleton()->agent_set_time_horizon(agent, 0.0);
+	NavigationServer3D::get_singleton()->agent_set_radius(agent, radius);
+	NavigationServer3D::get_singleton()->agent_set_max_speed(agent, 0.0);
 }

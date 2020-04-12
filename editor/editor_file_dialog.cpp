@@ -44,11 +44,11 @@
 #include "scene/gui/margin_container.h"
 #include "servers/display_server.h"
 
-EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = NULL;
-EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = NULL;
+EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
+EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = nullptr;
 
-EditorFileDialog::RegisterFunc EditorFileDialog::register_func = NULL;
-EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = NULL;
+EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
+EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
 
 VBoxContainer *EditorFileDialog::get_vbox() {
 	return vbox;
@@ -1579,6 +1579,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	drives = memnew(OptionButton);
 	drives->connect("item_selected", callable_mp(this, &EditorFileDialog::_select_drive));
+	pathhb->add_child(drives);
 
 	makedir = memnew(Button);
 	makedir->set_text(TTR("Create Folder"));
@@ -1732,43 +1733,4 @@ EditorFileDialog::~EditorFileDialog() {
 	if (unregister_func)
 		unregister_func(this);
 	memdelete(dir_access);
-}
-
-void EditorLineEditFileChooser::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED)
-		button->set_icon(get_theme_icon("Folder", "EditorIcons"));
-}
-
-void EditorLineEditFileChooser::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("get_button"), &EditorLineEditFileChooser::get_button);
-	ClassDB::bind_method(D_METHOD("get_line_edit"), &EditorLineEditFileChooser::get_line_edit);
-	ClassDB::bind_method(D_METHOD("get_file_dialog"), &EditorLineEditFileChooser::get_file_dialog);
-}
-
-void EditorLineEditFileChooser::_chosen(const String &p_text) {
-
-	line_edit->set_text(p_text);
-	line_edit->emit_signal("text_entered", p_text);
-}
-
-void EditorLineEditFileChooser::_browse() {
-
-	dialog->popup_centered_ratio();
-}
-
-EditorLineEditFileChooser::EditorLineEditFileChooser() {
-
-	line_edit = memnew(LineEdit);
-	add_child(line_edit);
-	line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	button = memnew(Button);
-	add_child(button);
-	button->connect("pressed", callable_mp(this, &EditorLineEditFileChooser::_browse));
-	dialog = memnew(EditorFileDialog);
-	add_child(dialog);
-	dialog->connect("file_selected", callable_mp(this, &EditorLineEditFileChooser::_chosen));
-	dialog->connect("dir_selected", callable_mp(this, &EditorLineEditFileChooser::_chosen));
-	dialog->connect("files_selected", callable_mp(this, &EditorLineEditFileChooser::_chosen));
 }

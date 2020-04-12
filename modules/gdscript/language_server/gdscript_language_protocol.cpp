@@ -35,7 +35,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 
-GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = NULL;
+GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
 Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 	int read = 0;
@@ -191,7 +191,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		Dictionary request = make_notification("gdscrip_client/changeWorkspace", params);
 
 		Ref<LSPeer> peer = clients.get(latest_client_id);
-		if (peer != NULL) {
+		if (peer != nullptr) {
 			String msg = JSON::print(request);
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
@@ -230,26 +230,26 @@ void GDScriptLanguageProtocol::poll() {
 	if (server->is_connection_available()) {
 		on_client_connected();
 	}
-	const int *id = NULL;
+	const int *id = nullptr;
 	while ((id = clients.next(id))) {
 		Ref<LSPeer> peer = clients.get(*id);
 		StreamPeerTCP::Status status = peer->connection->get_status();
 		if (status == StreamPeerTCP::STATUS_NONE || status == StreamPeerTCP::STATUS_ERROR) {
 			on_client_disconnected(*id);
-			id = NULL;
+			id = nullptr;
 		} else {
 			if (peer->connection->get_available_bytes() > 0) {
 				latest_client_id = *id;
 				Error err = peer->handle_data();
 				if (err != OK && err != ERR_BUSY) {
 					on_client_disconnected(*id);
-					id = NULL;
+					id = nullptr;
 				}
 			}
 			Error err = peer->send_data();
 			if (err != OK && err != ERR_BUSY) {
 				on_client_disconnected(*id);
-				id = NULL;
+				id = nullptr;
 			}
 		}
 	}
@@ -260,7 +260,7 @@ Error GDScriptLanguageProtocol::start(int p_port, const IP_Address &p_bind_ip) {
 }
 
 void GDScriptLanguageProtocol::stop() {
-	const int *id = NULL;
+	const int *id = nullptr;
 	while ((id = clients.next(id))) {
 		Ref<LSPeer> peer = clients.get(*id);
 		peer->connection->disconnect_from_host();
@@ -274,7 +274,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 		p_client_id = latest_client_id;
 	}
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_COND(peer == NULL);
+	ERR_FAIL_COND(peer == nullptr);
 
 	Dictionary message = make_notification(p_method, p_params);
 	String msg = JSON::print(message);

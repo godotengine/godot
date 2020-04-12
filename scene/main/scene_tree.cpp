@@ -48,9 +48,9 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
-#include "servers/navigation_server.h"
-#include "servers/physics_2d_server.h"
-#include "servers/physics_server.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
 #include "window.h"
 
 #include <stdio.h>
@@ -112,7 +112,7 @@ void SceneTree::node_added(Node *p_node) {
 void SceneTree::node_removed(Node *p_node) {
 
 	if (current_scene == p_node) {
-		current_scene = NULL;
+		current_scene = nullptr;
 	}
 	emit_signal(node_removed_name, p_node);
 	if (call_lock > 0)
@@ -435,7 +435,7 @@ bool SceneTree::idle(float p_time) {
 
 	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
 	//print_line("node count: "+itos(get_node_count()));
-	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
+	//print_line("TEXTURE RAM: "+itos(RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED)));
 
 	root_lock++;
 
@@ -539,10 +539,10 @@ void SceneTree::finish() {
 	MainLoop::finish();
 
 	if (root) {
-		root->_set_tree(NULL);
+		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
-		root = NULL;
+		root = nullptr;
 	}
 
 	// cleanup timers
@@ -796,9 +796,9 @@ void SceneTree::set_pause(bool p_enabled) {
 	if (p_enabled == pause)
 		return;
 	pause = p_enabled;
-	NavigationServer::get_singleton()->set_active(!p_enabled);
-	PhysicsServer::get_singleton()->set_active(!p_enabled);
-	Physics2DServer::get_singleton()->set_active(!p_enabled);
+	NavigationServer3D::get_singleton()->set_active(!p_enabled);
+	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
+	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
 	if (get_root())
 		get_root()->propagate_notification(p_enabled ? Node::NOTIFICATION_PAUSED : Node::NOTIFICATION_UNPAUSED);
 }
@@ -1037,7 +1037,7 @@ Node *SceneTree::get_edited_scene_root() const {
 #ifdef TOOLS_ENABLED
 	return edited_scene_root;
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -1056,7 +1056,7 @@ void SceneTree::_change_scene(Node *p_to) {
 
 	if (current_scene) {
 		memdelete(current_scene);
-		current_scene = NULL;
+		current_scene = nullptr;
 	}
 
 	// If we're quitting, abort.
@@ -1082,7 +1082,7 @@ Error SceneTree::change_scene(const String &p_path) {
 }
 
 Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
-	Node *new_scene = NULL;
+	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
 		new_scene = p_scene->instance();
 		ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
@@ -1321,7 +1321,7 @@ void SceneTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(GROUP_CALL_UNIQUE);
 }
 
-SceneTree *SceneTree::singleton = NULL;
+SceneTree *SceneTree::singleton = nullptr;
 
 SceneTree::IdleCallback SceneTree::idle_callbacks[SceneTree::MAX_IDLE_CALLBACKS];
 int SceneTree::idle_callback_count = 0;
@@ -1372,7 +1372,7 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 
 SceneTree::SceneTree() {
 
-	if (singleton == NULL) singleton = this;
+	if (singleton == nullptr) singleton = this;
 	_quit = false;
 	accept_quit = true;
 	quit_on_go_back = true;
@@ -1392,7 +1392,7 @@ SceneTree::SceneTree() {
 	physics_process_time = 1;
 	idle_process_time = 1;
 
-	root = NULL;
+	root = nullptr;
 	pause = false;
 	current_frame = 0;
 	current_event = 0;
@@ -1419,7 +1419,7 @@ SceneTree::SceneTree() {
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
-	current_scene = NULL;
+	current_scene = nullptr;
 
 	int msaa_mode = GLOBAL_DEF("rendering/quality/filters/msaa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"));
@@ -1463,16 +1463,16 @@ SceneTree::SceneTree() {
 	root->connect("focus_entered", callable_mp(this, &SceneTree::_main_window_focus_in));
 
 #ifdef TOOLS_ENABLED
-	edited_scene_root = NULL;
+	edited_scene_root = nullptr;
 #endif
 }
 
 SceneTree::~SceneTree() {
 	if (root) {
-		root->_set_tree(NULL);
+		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root);
 	}
 
-	if (singleton == this) singleton = NULL;
+	if (singleton == this) singleton = nullptr;
 }

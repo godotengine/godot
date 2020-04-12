@@ -40,8 +40,8 @@
 #include "test_math.h"
 #include "test_oa_hash_map.h"
 #include "test_ordered_hash_map.h"
-#include "test_physics.h"
 #include "test_physics_2d.h"
+#include "test_physics_3d.h"
 #include "test_render.h"
 #include "test_shader_lang.h"
 #include "test_string.h"
@@ -51,8 +51,8 @@ const char **tests_get_names() {
 	static const char *test_names[] = {
 		"string",
 		"math",
-		"physics",
 		"physics_2d",
+		"physics_3d",
 		"render",
 		"oa_hash_map",
 		"gui",
@@ -63,7 +63,7 @@ const char **tests_get_names() {
 		"gd_bytecode",
 		"ordered_hash_map",
 		"astar",
-		NULL
+		nullptr
 	};
 
 	return test_names;
@@ -81,14 +81,14 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 		return TestMath::test();
 	}
 
-	if (p_test == "physics") {
-
-		return TestPhysics::test();
-	}
-
 	if (p_test == "physics_2d") {
 
 		return TestPhysics2D::test();
+	}
+
+	if (p_test == "physics_3d") {
+
+		return TestPhysics3D::test();
 	}
 
 	if (p_test == "render") {
@@ -144,7 +144,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 	}
 
 	print_line("Unknown test: " + p_test);
-	return NULL;
+	return nullptr;
 }
 
 #else
@@ -152,7 +152,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 const char **tests_get_names() {
 
 	static const char *test_names[] = {
-		NULL
+		nullptr
 	};
 
 	return test_names;
@@ -160,7 +160,7 @@ const char **tests_get_names() {
 
 MainLoop *test_main(String p_test, const List<String> &p_args) {
 
-	return NULL;
+	return nullptr;
 }
 
 #endif

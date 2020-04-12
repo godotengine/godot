@@ -34,7 +34,7 @@
 #include "core/engine.h"
 #include "core/os/mutex.h"
 #include "navigation_2d.h"
-#include "servers/navigation_2d_server.h"
+#include "servers/navigation_server_2d.h"
 
 #include "thirdparty/misc/triangulator.h"
 
@@ -281,7 +281,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 			for (int l = 0; l < olsize2; l++) {
 
-				if (Geometry::segment_intersects_segment_2d(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], NULL)) {
+				if (Geometry::segment_intersects_segment_2d(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], nullptr)) {
 					interscount++;
 				}
 			}
@@ -385,12 +385,12 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (!enabled) {
 
-		Navigation2DServer::get_singleton()->region_set_map(region, RID());
+		NavigationServer2D::get_singleton()->region_set_map(region, RID());
 	} else {
 
 		if (navigation) {
 
-			Navigation2DServer::get_singleton()->region_set_map(region, navigation->get_rid());
+			NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
 		}
 	}
 
@@ -429,7 +429,7 @@ void NavigationRegion2D::_notification(int p_what) {
 
 					if (enabled) {
 
-						Navigation2DServer::get_singleton()->region_set_map(region, navigation->get_rid());
+						NavigationServer2D::get_singleton()->region_set_map(region, navigation->get_rid());
 					}
 					break;
 				}
@@ -440,16 +440,16 @@ void NavigationRegion2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			Navigation2DServer::get_singleton()->region_set_transform(region, get_global_transform());
+			NavigationServer2D::get_singleton()->region_set_transform(region, get_global_transform());
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
 			if (navigation) {
 
-				Navigation2DServer::get_singleton()->region_set_map(region, RID());
+				NavigationServer2D::get_singleton()->region_set_map(region, RID());
 			}
-			navigation = NULL;
+			navigation = nullptr;
 		} break;
 		case NOTIFICATION_DRAW: {
 
@@ -494,7 +494,7 @@ void NavigationRegion2D::_notification(int p_what) {
 						}
 					}
 				}
-				VS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, vertices, colors);
+				RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, vertices, colors);
 			}
 		} break;
 	}
@@ -511,7 +511,7 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 
 	navpoly = p_navpoly;
-	Navigation2DServer::get_singleton()->region_set_navpoly(region, p_navpoly);
+	NavigationServer2D::get_singleton()->region_set_navpoly(region, p_navpoly);
 
 	if (navpoly.is_valid()) {
 		navpoly->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &NavigationRegion2D::_navpoly_changed));
@@ -572,11 +572,11 @@ NavigationRegion2D::NavigationRegion2D() {
 
 	enabled = true;
 	set_notify_transform(true);
-	region = Navigation2DServer::get_singleton()->region_create();
+	region = NavigationServer2D::get_singleton()->region_create();
 
-	navigation = NULL;
+	navigation = nullptr;
 }
 
 NavigationRegion2D::~NavigationRegion2D() {
-	Navigation2DServer::get_singleton()->free(region);
+	NavigationServer2D::get_singleton()->free(region);
 }

@@ -121,7 +121,7 @@ void SignalAwaiterCallable::call(const Variant **p_arguments, int p_argcount, Va
 		return;
 	}
 
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback).invoke(awaiter, signal_args, &exc);
 
 	if (exc) {
@@ -210,7 +210,7 @@ void EventSignalCallable::call(const Variant **p_arguments, int p_argcount, Vari
 		return;
 	}
 
-	MonoException *exc = NULL;
+	MonoException *exc = nullptr;
 	event_signal->invoke_method->invoke(delegate_field_value, p_arguments, &exc);
 
 	if (exc) {

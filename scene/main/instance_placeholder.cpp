@@ -77,11 +77,11 @@ String InstancePlaceholder::get_instance_path() const {
 
 Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene> &p_custom_scene) {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	Node *base = get_parent();
 	if (!base)
-		return NULL;
+		return nullptr;
 
 	Ref<PackedScene> ps;
 	if (p_custom_scene.is_valid())
@@ -90,12 +90,12 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 		ps = ResourceLoader::load(path, "PackedScene");
 
 	if (!ps.is_valid())
-		return NULL;
+		return nullptr;
 	Node *scene = ps->instance();
 	if (!scene)
-		return NULL;
+		return nullptr;
 	scene->set_name(get_name());
-	int pos = get_position_in_parent();
+	int pos = get_index();
 
 	for (List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
 		scene->set(E->get().name, E->get().value);

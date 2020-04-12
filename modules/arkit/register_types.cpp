@@ -37,7 +37,7 @@ void register_arkit_types() {
 
 	Ref<ARKitInterface> arkit_interface;
 	arkit_interface.instance();
-	ARVRServer::get_singleton()->add_interface(arkit_interface);
+	XRServer::get_singleton()->add_interface(arkit_interface);
 }
 
 void unregister_arkit_types() {

@@ -33,7 +33,7 @@
 #include "collision_object_3d.h"
 #include "core/engine.h"
 #include "mesh_instance_3d.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 void RayCast3D::set_cast_to(const Vector3 &p_point) {
 
@@ -81,7 +81,7 @@ bool RayCast3D::is_colliding() const {
 Object *RayCast3D::get_collider() const {
 
 	if (against.is_null())
-		return NULL;
+		return nullptr;
 
 	return ObjectDB::get_instance(against);
 }
@@ -199,7 +199,7 @@ void RayCast3D::_update_raycast_state() {
 	Ref<World3D> w3d = get_world();
 	ERR_FAIL_COND(w3d.is_null());
 
-	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(w3d->get_space());
+	PhysicsDirectSpaceState3D *dss = PhysicsServer3D::get_singleton()->space_get_direct_state(w3d->get_space());
 	ERR_FAIL_COND(!dss);
 
 	Transform gt = get_global_transform();
@@ -208,7 +208,7 @@ void RayCast3D::_update_raycast_state() {
 	if (to == Vector3())
 		to = Vector3(0, 0.01, 0);
 
-	PhysicsDirectSpaceState::RayResult rr;
+	PhysicsDirectSpaceState3D::RayResult rr;
 
 	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
 
@@ -387,7 +387,7 @@ void RayCast3D::_clear_debug_shape() {
 	else
 		memdelete(mi);
 
-	debug_shape = NULL;
+	debug_shape = nullptr;
 }
 
 RayCast3D::RayCast3D() {
@@ -398,7 +398,7 @@ RayCast3D::RayCast3D() {
 	against_shape = 0;
 	collision_mask = 1;
 	cast_to = Vector3(0, -1, 0);
-	debug_shape = NULL;
+	debug_shape = nullptr;
 	exclude_parent_body = true;
 	collide_with_areas = false;
 	collide_with_bodies = true;

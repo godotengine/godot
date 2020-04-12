@@ -34,11 +34,11 @@
 #include "core/print_string.h"
 #include "scene/gui/label.h"
 
-FileDialog::GetIconFunc FileDialog::get_icon_func = NULL;
-FileDialog::GetIconFunc FileDialog::get_large_icon_func = NULL;
+FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
+FileDialog::GetIconFunc FileDialog::get_large_icon_func = nullptr;
 
-FileDialog::RegisterFunc FileDialog::register_func = NULL;
-FileDialog::RegisterFunc FileDialog::unregister_func = NULL;
+FileDialog::RegisterFunc FileDialog::register_func = nullptr;
+FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
 
 VBoxContainer *FileDialog::get_vbox() {
 	return vbox;
@@ -46,9 +46,9 @@ VBoxContainer *FileDialog::get_vbox() {
 
 void FileDialog::_theme_changed() {
 
-	Color font_color = vbc->get_theme_color("font_color", "ToolButton");
-	Color font_color_hover = vbc->get_theme_color("font_color_hover", "ToolButton");
-	Color font_color_pressed = vbc->get_theme_color("font_color_pressed", "ToolButton");
+	Color font_color = vbox->get_theme_color("font_color", "ToolButton");
+	Color font_color_hover = vbox->get_theme_color("font_color_hover", "ToolButton");
+	Color font_color_pressed = vbox->get_theme_color("font_color_pressed", "ToolButton");
 
 	dir_up->add_theme_color_override("icon_color_normal", font_color);
 	dir_up->add_theme_color_override("icon_color_hover", font_color_hover);
@@ -73,9 +73,9 @@ void FileDialog::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		dir_up->set_icon(vbc->get_theme_icon("parent_folder"));
-		refresh->set_icon(vbc->get_theme_icon("reload"));
-		show_hidden->set_icon(vbc->get_theme_icon("toggle_hidden"));
+		dir_up->set_icon(vbox->get_theme_icon("parent_folder", "FileDialog"));
+		refresh->set_icon(vbox->get_theme_icon("reload", "FileDialog"));
+		show_hidden->set_icon(vbox->get_theme_icon("toggle_hidden", "FileDialog"));
 		_theme_changed();
 	}
 }
@@ -195,7 +195,7 @@ void FileDialog::_action_pressed() {
 
 	if (mode == FILE_MODE_OPEN_FILES) {
 
-		TreeItem *ti = tree->get_next_selected(NULL);
+		TreeItem *ti = tree->get_next_selected(nullptr);
 		String fbase = dir_access->get_current_dir();
 
 		Vector<String> files;
@@ -429,8 +429,8 @@ void FileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	TreeItem *root = tree->create_item();
-	Ref<Texture2D> folder = vbc->get_theme_icon("folder");
-	const Color folder_color = vbc->get_theme_color("folder_icon_modulate");
+	Ref<Texture2D> folder = vbox->get_theme_icon("folder", "FileDialog");
+	const Color folder_color = vbox->get_theme_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
@@ -528,7 +528,7 @@ void FileDialog::update_file_list() {
 			}
 
 			if (mode == FILE_MODE_OPEN_DIR) {
-				ti->set_custom_color(0, vbc->get_theme_color("files_disabled"));
+				ti->set_custom_color(0, vbox->get_theme_color("files_disabled", "FileDialog"));
 				ti->set_selectable(0, false);
 			}
 			Dictionary d;
@@ -543,7 +543,7 @@ void FileDialog::update_file_list() {
 		files.pop_front();
 	}
 
-	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == NULL)
+	if (tree->get_root() && tree->get_root()->get_children() && tree->get_selected() == nullptr)
 		tree->get_root()->get_children()->select(0);
 }
 
@@ -888,9 +888,9 @@ FileDialog::FileDialog() {
 
 	mode_overrides_title = true;
 
-	vbc = memnew(VBoxContainer);
-	add_child(vbc);
-	vbc->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
+	vbox = memnew(VBoxContainer);
+	add_child(vbox);
+	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;
 	set_title(RTR("Save a File"));
@@ -909,6 +909,7 @@ FileDialog::FileDialog() {
 
 	drives = memnew(OptionButton);
 	drives->connect("item_selected", callable_mp(this, &FileDialog::_select_drive));
+	hbc->add_child(drives);
 
 	dir = memnew(LineEdit);
 	hbc->add_child(dir);
@@ -933,11 +934,11 @@ FileDialog::FileDialog() {
 	makedir->set_text(RTR("Create Folder"));
 	makedir->connect("pressed", callable_mp(this, &FileDialog::_make_dir));
 	hbc->add_child(makedir);
-	vbc->add_child(hbc);
+	vbox->add_child(hbc);
 
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	vbc->add_margin_child(RTR("Directories & Files:"), tree, true);
+	vbox->add_margin_child(RTR("Directories & Files:"), tree, true);
 
 	file_box = memnew(HBoxContainer);
 	file_box->add_child(memnew(Label(RTR("File:"))));
@@ -950,7 +951,7 @@ FileDialog::FileDialog() {
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	filter->set_clip_text(true); // too many extensions overflows it
 	file_box->add_child(filter);
-	vbc->add_child(file_box);
+	vbox->add_child(file_box);
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	access = ACCESS_RESOURCES;
@@ -993,7 +994,6 @@ FileDialog::FileDialog() {
 	update_dir();
 
 	set_hide_on_ok(false);
-	vbox = vbc;
 
 	invalidated = true;
 	if (register_func)
@@ -1005,38 +1005,4 @@ FileDialog::~FileDialog() {
 	if (unregister_func)
 		unregister_func(this);
 	memdelete(dir_access);
-}
-
-void LineEditFileChooser::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("get_button"), &LineEditFileChooser::get_button);
-	ClassDB::bind_method(D_METHOD("get_line_edit"), &LineEditFileChooser::get_line_edit);
-	ClassDB::bind_method(D_METHOD("get_file_dialog"), &LineEditFileChooser::get_file_dialog);
-}
-
-void LineEditFileChooser::_chosen(const String &p_text) {
-
-	line_edit->set_text(p_text);
-	line_edit->emit_signal("text_entered", p_text);
-}
-
-void LineEditFileChooser::_browse() {
-
-	dialog->popup_centered_ratio();
-}
-
-LineEditFileChooser::LineEditFileChooser() {
-
-	line_edit = memnew(LineEdit);
-	add_child(line_edit);
-	line_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	button = memnew(Button);
-	button->set_text(" .. ");
-	add_child(button);
-	button->connect("pressed", callable_mp(this, &LineEditFileChooser::_browse));
-	dialog = memnew(FileDialog);
-	add_child(dialog);
-	dialog->connect("file_selected", callable_mp(this, &LineEditFileChooser::_chosen));
-	dialog->connect("dir_selected", callable_mp(this, &LineEditFileChooser::_chosen));
-	dialog->connect("files_selected", callable_mp(this, &LineEditFileChooser::_chosen));
 }

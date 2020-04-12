@@ -58,7 +58,7 @@ bool VisualScriptFunctionCall::has_input_sequence_port() const {
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
-		return NULL;
+		return nullptr;
 
 	Ref<Script> scr = p_current_node->get_script();
 
@@ -71,7 +71,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 			return n;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 #endif
@@ -80,33 +80,33 @@ Node *VisualScriptFunctionCall::_get_base_node() const {
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
 	if (!script.is_valid())
-		return NULL;
+		return nullptr;
 
 	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree)
-		return NULL;
+		return nullptr;
 
 	Node *edited_scene = scene_tree->get_edited_scene_root();
 
 	if (!edited_scene)
-		return NULL;
+		return nullptr;
 
 	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node)
-		return NULL;
+		return nullptr;
 
 	if (!script_node->has_node(base_path))
-		return NULL;
+		return nullptr;
 
 	Node *path_to = script_node->get_node(base_path);
 
 	return path_to;
 #else
 
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -955,34 +955,34 @@ Node *VisualScriptPropertySet::_get_base_node() const {
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
 	if (!script.is_valid())
-		return NULL;
+		return nullptr;
 
 	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
 
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree)
-		return NULL;
+		return nullptr;
 
 	Node *edited_scene = scene_tree->get_edited_scene_root();
 
 	if (!edited_scene)
-		return NULL;
+		return nullptr;
 
 	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node)
-		return NULL;
+		return nullptr;
 
 	if (!script_node->has_node(base_path))
-		return NULL;
+		return nullptr;
 
 	Node *path_to = script_node->get_node(base_path);
 
 	return path_to;
 #else
 
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -1021,7 +1021,7 @@ void VisualScriptPropertySet::_adjust_input_index(PropertyInfo &pinfo) const {
 
 		Variant v;
 		Callable::CallError ce;
-		v = Variant::construct(pinfo.type, NULL, 0, ce);
+		v = Variant::construct(pinfo.type, nullptr, 0, ce);
 		Variant i = v.get(index);
 		pinfo.type = i.get_type();
 	}
@@ -1168,7 +1168,7 @@ void VisualScriptPropertySet::_update_cache() {
 
 		Variant v;
 		Callable::CallError ce;
-		v = Variant::construct(basic_type, NULL, 0, ce);
+		v = Variant::construct(basic_type, nullptr, 0, ce);
 
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
@@ -1185,7 +1185,7 @@ void VisualScriptPropertySet::_update_cache() {
 
 		StringName type;
 		Ref<Script> script;
-		Node *node = NULL;
+		Node *node = nullptr;
 
 		if (call_mode == CALL_MODE_NODE_PATH) {
 
@@ -1410,7 +1410,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 	if (property.name == "index") {
 
 		Callable::CallError ce;
-		Variant v = Variant::construct(type_cache.type, NULL, 0, ce);
+		Variant v = Variant::construct(type_cache.type, nullptr, 0, ce);
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
@@ -1735,34 +1735,34 @@ Node *VisualScriptPropertyGet::_get_base_node() const {
 #ifdef TOOLS_ENABLED
 	Ref<Script> script = get_visual_script();
 	if (!script.is_valid())
-		return NULL;
+		return nullptr;
 
 	MainLoop *main_loop = OS::get_singleton()->get_main_loop();
 
 	SceneTree *scene_tree = Object::cast_to<SceneTree>(main_loop);
 
 	if (!scene_tree)
-		return NULL;
+		return nullptr;
 
 	Node *edited_scene = scene_tree->get_edited_scene_root();
 
 	if (!edited_scene)
-		return NULL;
+		return nullptr;
 
 	Node *script_node = _find_script_node(edited_scene, edited_scene, script);
 
 	if (!script_node)
-		return NULL;
+		return nullptr;
 
 	if (!script_node->has_node(base_path))
-		return NULL;
+		return nullptr;
 
 	Node *path_to = script_node->get_node(base_path);
 
 	return path_to;
 #else
 
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -1876,7 +1876,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
 		Variant v;
 		Callable::CallError ce;
-		v = Variant::construct(basic_type, NULL, 0, ce);
+		v = Variant::construct(basic_type, nullptr, 0, ce);
 
 		List<PropertyInfo> pinfo;
 		v.get_property_list(&pinfo);
@@ -1894,7 +1894,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
 		StringName type;
 		Ref<Script> script;
-		Node *node = NULL;
+		Node *node = nullptr;
 
 		if (call_mode == CALL_MODE_NODE_PATH) {
 
@@ -2125,7 +2125,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 	if (property.name == "index") {
 
 		Callable::CallError ce;
-		Variant v = Variant::construct(type_cache, NULL, 0, ce);
+		Variant v = Variant::construct(type_cache, nullptr, 0, ce);
 		List<PropertyInfo> plist;
 		v.get_property_list(&plist);
 		String options = "";
@@ -2501,7 +2501,7 @@ void register_visual_script_func_nodes() {
 		Variant::Type t = Variant::Type(i);
 		String type_name = Variant::get_type_name(t);
 		Callable::CallError ce;
-		Variant vt = Variant::construct(t, NULL, 0, ce);
+		Variant vt = Variant::construct(t, nullptr, 0, ce);
 		List<MethodInfo> ml;
 		vt.get_method_list(&ml);
 

@@ -116,7 +116,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		case MONO_TYPE_STRING: {
 			if (p_value.get_type() == Variant::NIL) {
 				// Otherwise, Variant -> String would return the string "Null"
-				MonoString *mono_string = NULL;
+				MonoString *mono_string = nullptr;
 				mono_field_set_value(p_object, mono_field, mono_string);
 			} else {
 				MonoString *mono_string = GDMonoMarshal::mono_string_from_godot(p_value);
@@ -623,19 +623,19 @@ bool GDMonoField::has_attribute(GDMonoClass *p_attr_class) {
 }
 
 MonoObject *GDMonoField::get_attribute(GDMonoClass *p_attr_class) {
-	ERR_FAIL_NULL_V(p_attr_class, NULL);
+	ERR_FAIL_NULL_V(p_attr_class, nullptr);
 
 	if (!attrs_fetched)
 		fetch_attributes();
 
 	if (!attributes)
-		return NULL;
+		return nullptr;
 
 	return mono_custom_attrs_get_attr(attributes, p_attr_class->get_mono_ptr());
 }
 
 void GDMonoField::fetch_attributes() {
-	ERR_FAIL_COND(attributes != NULL);
+	ERR_FAIL_COND(attributes != nullptr);
 	attributes = mono_custom_attrs_from_field(owner->get_mono_ptr(), mono_field);
 	attrs_fetched = true;
 }
@@ -671,7 +671,7 @@ GDMonoField::GDMonoField(MonoClassField *p_mono_field, GDMonoClass *p_owner) {
 	type.type_class = GDMono::get_singleton()->get_class(field_type_class);
 
 	attrs_fetched = false;
-	attributes = NULL;
+	attributes = nullptr;
 }
 
 GDMonoField::~GDMonoField() {

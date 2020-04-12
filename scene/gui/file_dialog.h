@@ -70,7 +70,6 @@ private:
 	ConfirmationDialog *makedialog;
 	LineEdit *makedirname;
 
-	VBoxContainer *vbc;
 	Button *makedir;
 	Access access;
 	//Button *action;
@@ -176,27 +175,6 @@ public:
 
 	FileDialog();
 	~FileDialog();
-};
-
-class LineEditFileChooser : public HBoxContainer {
-
-	GDCLASS(LineEditFileChooser, HBoxContainer);
-	Button *button;
-	LineEdit *line_edit;
-	FileDialog *dialog;
-
-	void _chosen(const String &p_text);
-	void _browse();
-
-protected:
-	static void _bind_methods();
-
-public:
-	Button *get_button() { return button; }
-	LineEdit *get_line_edit() { return line_edit; }
-	FileDialog *get_file_dialog() { return dialog; }
-
-	LineEditFileChooser();
 };
 
 VARIANT_ENUM_CAST(FileDialog::FileMode);

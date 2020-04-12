@@ -128,7 +128,7 @@ public:
 		create_func[p_access] = _create_builtin<T>;
 	}
 
-	static DirAccess *open(const String &p_path, Error *r_error = NULL);
+	static DirAccess *open(const String &p_path, Error *r_error = nullptr);
 
 	DirAccess();
 	virtual ~DirAccess();
@@ -141,7 +141,7 @@ struct DirAccessRef {
 		return f;
 	}
 
-	operator bool() const { return f != NULL; }
+	operator bool() const { return f != nullptr; }
 	DirAccess *f;
 	DirAccessRef(DirAccess *fa) { f = fa; }
 	~DirAccessRef() {

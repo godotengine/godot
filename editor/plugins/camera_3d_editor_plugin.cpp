@@ -35,15 +35,15 @@
 void Camera3DEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
-		Node3DEditor::get_singleton()->set_custom_camera(NULL);
+		node = nullptr;
+		Node3DEditor::get_singleton()->set_custom_camera(nullptr);
 		hide();
 	}
 }
 
 void Camera3DEditor::_pressed() {
 
-	Node *sn = (node && preview->is_pressed()) ? node : NULL;
+	Node *sn = (node && preview->is_pressed()) ? node : nullptr;
 	Node3DEditor::get_singleton()->set_custom_camera(sn);
 }
 
@@ -56,13 +56,13 @@ void Camera3DEditor::edit(Node *p_camera) {
 
 	if (!node) {
 		preview->set_pressed(false);
-		Node3DEditor::get_singleton()->set_custom_camera(NULL);
+		Node3DEditor::get_singleton()->set_custom_camera(nullptr);
 	} else {
 
 		if (preview->is_pressed())
 			Node3DEditor::get_singleton()->set_custom_camera(p_camera);
 		else
-			Node3DEditor::get_singleton()->set_custom_camera(NULL);
+			Node3DEditor::get_singleton()->set_custom_camera(nullptr);
 	}
 }
 
@@ -96,9 +96,9 @@ bool Camera3DEditorPlugin::handles(Object *p_object) const {
 void Camera3DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		//Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera>(p_object));
+		//Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera3D>(p_object));
 	} else {
-		Node3DEditor::get_singleton()->set_can_preview(NULL);
+		Node3DEditor::get_singleton()->set_can_preview(nullptr);
 	}
 }
 

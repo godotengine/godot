@@ -43,7 +43,7 @@
 #include "BulletSoftBody/btSoftBodyHelpers.h"
 #include "collision_object_bullet.h"
 #include "scene/resources/mesh.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 #ifdef x11_None
 /// This is required to re add the macro None defined by x11 compiler
@@ -100,7 +100,7 @@ public:
 
 	_FORCE_INLINE_ btSoftBody *get_bt_soft_body() const { return bt_soft_body; }
 
-	void update_visual_server(class SoftBodyVisualServerHandler *p_visual_server_handler);
+	void update_rendering_server(class SoftBodyRenderingServerHandler *p_rendering_server_handler);
 
 	void set_soft_mesh(const Ref<Mesh> &p_mesh);
 	void destroy_soft_body();

@@ -162,12 +162,12 @@ void HTTPRequest::cancel_request() {
 		thread_request_quit = true;
 		Thread::wait_to_finish(thread);
 		memdelete(thread);
-		thread = NULL;
+		thread = nullptr;
 	}
 
 	if (file) {
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 	}
 	client->close();
 	body.resize(0);
@@ -566,7 +566,7 @@ void HTTPRequest::_bind_methods() {
 
 HTTPRequest::HTTPRequest() {
 
-	thread = NULL;
+	thread = nullptr;
 
 	port = 80;
 	redirections = 0;
@@ -583,7 +583,7 @@ HTTPRequest::HTTPRequest() {
 	thread_done = false;
 	downloaded = 0;
 	body_size_limit = -1;
-	file = NULL;
+	file = nullptr;
 
 	timer = memnew(Timer);
 	timer->set_one_shot(true);

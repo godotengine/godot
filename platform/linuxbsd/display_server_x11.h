@@ -43,8 +43,8 @@
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering_server.h"
 
 #if defined(OPENGL_ENABLED)
 #include "context_gl_x11.h"
@@ -193,7 +193,6 @@ class DisplayServerX11 : public DisplayServer {
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, bool p_echo = false);
 
-	bool force_quit;
 	bool minimized;
 	bool window_has_focus;
 	bool do_mouse_warp;

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "display_server.h"
+
 #include "core/input/input_filter.h"
 #include "scene/resources/texture.h"
 
@@ -434,7 +435,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("native_video_unpause"), &DisplayServer::native_video_unpause);
 
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
-	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_show);
+	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
 	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"), &DisplayServer::get_latin_keyboard_variant);
 
@@ -517,11 +518,6 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_TRANSPARENT);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_NO_FOCUS);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MAX);
-	BIND_ENUM_CONSTANT(WINDOW_FLAG_RESIZE_DISABLED_BIT);
-	BIND_ENUM_CONSTANT(WINDOW_FLAG_BORDERLESS_BIT);
-	BIND_ENUM_CONSTANT(WINDOW_FLAG_ALWAYS_ON_TOP_BIT);
-	BIND_ENUM_CONSTANT(WINDOW_FLAG_TRANSPARENT_BIT);
-	BIND_ENUM_CONSTANT(WINDOW_FLAG_NO_FOCUS_BIT);
 
 	BIND_ENUM_CONSTANT(LATIN_KEYBOARD_QWERTY);
 	BIND_ENUM_CONSTANT(LATIN_KEYBOARD_QWERTZ);

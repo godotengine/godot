@@ -176,7 +176,7 @@ class BindingsGenerator {
 			is_virtual = false;
 			requires_object_call = false;
 			is_internal = false;
-			method_doc = NULL;
+			method_doc = nullptr;
 			is_deprecated = false;
 		}
 	};
@@ -202,7 +202,7 @@ class BindingsGenerator {
 		}
 
 		SignalInterface() {
-			method_doc = NULL;
+			method_doc = nullptr;
 			is_deprecated = false;
 		}
 	};
@@ -376,7 +376,7 @@ class BindingsGenerator {
 					return &E->get();
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 		const PropertyInterface *find_property_by_name(const StringName &p_cname) const {
@@ -385,7 +385,7 @@ class BindingsGenerator {
 					return &E->get();
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 		const PropertyInterface *find_property_by_proxy_name(const String &p_proxy_name) const {
@@ -394,7 +394,7 @@ class BindingsGenerator {
 					return &E->get();
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
@@ -403,7 +403,7 @@ class BindingsGenerator {
 					return &E->get();
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 	private:
@@ -498,7 +498,7 @@ class BindingsGenerator {
 
 			c_arg_in = "%s";
 
-			class_doc = NULL;
+			class_doc = nullptr;
 		}
 	};
 
@@ -622,7 +622,7 @@ class BindingsGenerator {
 			if (it->get().name == p_name) return it;
 			it = it->next();
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	const ConstantInterface *find_constant_by_name(const String &p_name, const List<ConstantInterface> &p_constants) const {
@@ -631,7 +631,7 @@ class BindingsGenerator {
 				return &E->get();
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	inline String get_unique_sig(const TypeInterface &p_type) {

@@ -795,7 +795,7 @@ Error ResourceLoaderText::rename_dependencies(FileAccess *p_f, const String &p_p
 	ignore_resource_parsing = true;
 	//FileAccess
 
-	FileAccess *fw = NULL;
+	FileAccess *fw = nullptr;
 
 	String base_path = local_path.get_base_dir();
 
@@ -961,7 +961,7 @@ void ResourceLoaderText::open(FileAccess *p_f, bool p_skip_first_tag) {
 
 	rp.ext_func = _parse_ext_resources;
 	rp.sub_func = _parse_sub_resources;
-	rp.func = NULL;
+	rp.func = nullptr;
 	rp.userdata = this;
 }
 
@@ -1392,7 +1392,7 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path, const 
 	return loader.rename_dependencies(f, p_path, p_map);
 }
 
-ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = NULL;
+ResourceFormatLoaderText *ResourceFormatLoaderText::singleton = nullptr;
 
 Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path, const String &p_dst_path) {
 
@@ -1674,7 +1674,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 		RES res = E->get();
 		ERR_CONTINUE(!resource_set.has(res));
-		bool main = (E->next() == NULL);
+		bool main = (E->next() == nullptr);
 
 		if (main && packed_scene.is_valid())
 			break; //save as a scene
@@ -1880,7 +1880,7 @@ void ResourceFormatSaverText::get_recognized_extensions(const RES &p_resource, L
 		p_extensions->push_back("tres"); //text resource
 }
 
-ResourceFormatSaverText *ResourceFormatSaverText::singleton = NULL;
+ResourceFormatSaverText *ResourceFormatSaverText::singleton = nullptr;
 ResourceFormatSaverText::ResourceFormatSaverText() {
 	singleton = this;
 }

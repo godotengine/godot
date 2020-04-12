@@ -42,7 +42,7 @@ struct VideoDecoderGDNative {
 	Vector<String> supported_extensions;
 
 	VideoDecoderGDNative() :
-			interface(NULL),
+			interface(nullptr),
 			plugin_name("none") {}
 
 	VideoDecoderGDNative(const godot_videodecoder_interface_gdnative *p_interface) :
@@ -89,7 +89,7 @@ public:
 
 	VideoDecoderGDNative *get_decoder(const String &extension) {
 		if (extensions.size() == 0 || !extensions.has(extension))
-			return NULL;
+			return nullptr;
 		return decoders[extensions[extension]];
 	}
 
@@ -102,7 +102,7 @@ public:
 			memdelete(decoders[i]);
 		}
 		decoders.clear();
-		instance = NULL;
+		instance = nullptr;
 	}
 };
 
@@ -194,12 +194,12 @@ public:
 	virtual void set_audio_track(int p_track);
 	virtual Ref<VideoStreamPlayback> instance_playback();
 
-	VideoStreamGDNative() {}
+	VideoStreamGDNative() { audio_track = 0; }
 };
 
 class ResourceFormatLoaderVideoStreamGDNative : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

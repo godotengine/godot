@@ -99,19 +99,19 @@ void VehicleWheel3D::_notification(int p_what) {
 		if (!cb)
 			return;
 		cb->wheels.erase(this);
-		body = NULL;
+		body = nullptr;
 	}
 }
 
 String VehicleWheel3D::get_configuration_warning() const {
 	if (!Object::cast_to<VehicleBody3D>(get_parent())) {
-		return TTR("VehicleWheel serves to provide a wheel system to a VehicleBody. Please use it as a child of a VehicleBody.");
+		return TTR("VehicleWheel3D serves to provide a wheel system to a VehicleBody3D. Please use it as a child of a VehicleBody3D.");
 	}
 
 	return String();
 }
 
-void VehicleWheel3D::_update(PhysicsDirectBodyState *s) {
+void VehicleWheel3D::_update(PhysicsDirectBodyState3D *s) {
 
 	if (m_raycastInfo.m_isInContact)
 
@@ -285,7 +285,7 @@ void VehicleWheel3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "engine_force", PROPERTY_HINT_RANGE, "0.00,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
-	ADD_GROUP("VehicleBody Motion", "");
+	ADD_GROUP("VehicleBody3D Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
 	ADD_GROUP("Wheel", "wheel_");
@@ -385,10 +385,10 @@ VehicleWheel3D::VehicleWheel3D() {
 	m_clippedInvContactDotSuspension = 1.0;
 	m_raycastInfo.m_isInContact = false;
 
-	body = NULL;
+	body = nullptr;
 }
 
-void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState *s) {
+void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState3D *s) {
 
 	wheel.m_raycastInfo.m_isInContact = false;
 
@@ -405,7 +405,7 @@ void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirect
 	wheel.m_raycastInfo.m_wheelAxleWS = chassisTrans.get_basis().xform(wheel.m_wheelAxleCS).normalized();
 }
 
-void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
+void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	VehicleWheel3D &wheel = *wheels[p_idx];
 	_update_wheel_transform(wheel, s);
@@ -430,7 +430,7 @@ void VehicleBody3D::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 			wheel.m_raycastInfo.m_hardPointWS + wheel.m_raycastInfo.m_wheelDirectionWS * wheel.m_raycastInfo.m_suspensionLength);
 }
 
-real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
+real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 
 	VehicleWheel3D &wheel = *wheels[p_idx];
 
@@ -448,13 +448,13 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 
 	real_t param = real_t(0.);
 
-	PhysicsDirectSpaceState::RayResult rr;
+	PhysicsDirectSpaceState3D::RayResult rr;
 
-	PhysicsDirectSpaceState *ss = s->get_space_state();
+	PhysicsDirectSpaceState3D *ss = s->get_space_state();
 
 	bool col = ss->intersect_ray(source, target, rr, exclude);
 
-	wheel.m_raycastInfo.m_groundObject = 0;
+	wheel.m_raycastInfo.m_groundObject = nullptr;
 
 	if (col) {
 		param = source.distance_to(rr.position) / source.distance_to(target);
@@ -513,7 +513,7 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState *s) {
 	return depth;
 }
 
-void VehicleBody3D::_update_suspension(PhysicsDirectBodyState *s) {
+void VehicleBody3D::_update_suspension(PhysicsDirectBodyState3D *s) {
 
 	real_t chassisMass = mass;
 
@@ -558,7 +558,7 @@ void VehicleBody3D::_update_suspension(PhysicsDirectBodyState *s) {
 }
 
 //bilateral constraint between two dynamic objects
-void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vector3 &pos1,
+void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const Vector3 &pos1,
 		PhysicsBody3D *body2, const Vector3 &pos2, const Vector3 &normal, real_t &impulse, const real_t p_rollInfluence) {
 
 	real_t normalLenSqr = normal.length_squared();
@@ -636,7 +636,7 @@ void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState *s, const V
 #endif
 }
 
-VehicleBody3D::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirectBodyState *s, PhysicsBody3D *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse) :
+VehicleBody3D::btVehicleWheelContactPoint::btVehicleWheelContactPoint(PhysicsDirectBodyState3D *s, PhysicsBody3D *body1, const Vector3 &frictionPosWorld, const Vector3 &frictionDirectionWorld, real_t maxImpulse) :
 		m_s(s),
 		m_body1(body1),
 		m_frictionPositionWorld(frictionPosWorld),
@@ -698,7 +698,7 @@ real_t VehicleBody3D::_calc_rolling_friction(btVehicleWheelContactPoint &contact
 }
 
 static const real_t sideFrictionStiffness2 = real_t(1.0);
-void VehicleBody3D::_update_friction(PhysicsDirectBodyState *s) {
+void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 
 	//calculate the impulse, so that the wheels don't move sidewards
 	int numWheel = wheels.size();
@@ -854,7 +854,7 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 
 	RigidBody3D::_direct_state_changed(p_state);
 
-	state = Object::cast_to<PhysicsDirectBodyState>(p_state);
+	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 
 	float step = state->get_step();
 
@@ -917,7 +917,7 @@ void VehicleBody3D::_direct_state_changed(Object *p_state) {
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}
 
-	state = NULL;
+	state = nullptr;
 }
 
 void VehicleBody3D::set_engine_force(float p_engine_force) {
@@ -988,11 +988,11 @@ VehicleBody3D::VehicleBody3D() {
 	engine_force = 0;
 	brake = 0;
 
-	state = NULL;
+	state = nullptr;
 	ccd = false;
 
 	exclude.insert(get_rid());
-	//PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
+	//PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 
 	set_mass(40);
 }

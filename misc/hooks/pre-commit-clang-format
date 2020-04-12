@@ -15,28 +15,28 @@
 
 ##################################################################
 # SETTINGS
-# Set path to clang-format binary
-# CLANG_FORMAT="/usr/bin/clang-format"
+# Set path to clang-format binary.
 CLANG_FORMAT=`which clang-format`
 
 # Remove any older patches from previous commits. Set to true or false.
-# DELETE_OLD_PATCHES=false
 DELETE_OLD_PATCHES=false
 
 # Only parse files with the extensions in FILE_EXTS. Set to true or false.
 # If false every changed file in the commit will be parsed with clang-format.
 # If true only files matching one of the extensions are parsed with clang-format.
-# PARSE_EXTS=true
 PARSE_EXTS=true
 
 # File types to parse. Only effective when PARSE_EXTS is true.
-# FILE_EXTS=".c .h .cpp .hpp"
 FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .m .mm .inc .java .glsl"
 
 # Use pygmentize instead of cat to parse diff with highlighting.
 # Install it with `pip install pygments` (Linux) or `easy_install Pygments` (Mac)
-# READER="pygmentize -l diff"
-READER=cat
+PYGMENTIZE=`which pygmentize`
+if [ ! -z "$PYGMENTIZE" ]; then
+  READER="pygmentize -l diff"
+else
+  READER=cat
+fi
 
 ##################################################################
 # There should be no need to change anything below this line.

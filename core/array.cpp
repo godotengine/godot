@@ -67,7 +67,7 @@ void Array::_unref() const {
 	if (_p->refcount.unref()) {
 		memdelete(_p);
 	}
-	_p = NULL;
+	_p = nullptr;
 }
 
 Variant &Array::operator[](int p_idx) {
@@ -467,7 +467,7 @@ const void *Array::id() const {
 
 Array::Array(const Array &p_from) {
 
-	_p = NULL;
+	_p = nullptr;
 	_ref(p_from);
 }
 

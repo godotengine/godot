@@ -41,7 +41,7 @@
 #include "plugins/node_3d_editor_plugin.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 
@@ -51,7 +51,7 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 		meshes.push_back(p_meshes[i]);
 	}
 
-	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, NULL, p_preview_size);
+	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, nullptr, p_preview_size);
 	Array ret;
 	for (int i = 0; i < textures.size(); i++) {
 		ret.push_back(textures[i]);
@@ -64,25 +64,25 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 
 	int size = p_preview_size;
 
-	RID scenario = VS::get_singleton()->scenario_create();
+	RID scenario = RS::get_singleton()->scenario_create();
 
-	RID viewport = VS::get_singleton()->viewport_create();
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ALWAYS);
-	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	VS::get_singleton()->viewport_set_size(viewport, size, size);
-	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	VS::get_singleton()->viewport_set_active(viewport, true);
-	RID viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+	RID viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
+	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
+	RS::get_singleton()->viewport_set_size(viewport, size, size);
+	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+	RID viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
 
-	RID camera = VS::get_singleton()->camera_create();
-	VS::get_singleton()->viewport_attach_camera(viewport, camera);
+	RID camera = RS::get_singleton()->camera_create();
+	RS::get_singleton()->viewport_attach_camera(viewport, camera);
 
-	RID light = VS::get_singleton()->directional_light_create();
-	RID light_instance = VS::get_singleton()->instance_create2(light, scenario);
+	RID light = RS::get_singleton()->directional_light_create();
+	RID light_instance = RS::get_singleton()->instance_create2(light, scenario);
 
-	RID light2 = VS::get_singleton()->directional_light_create();
-	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	RID light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
+	RID light2 = RS::get_singleton()->directional_light_create();
+	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	RID light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
 	EditorProgress ep("mlib", TTR("Creating Mesh Previews"), p_meshes.size());
 
@@ -97,12 +97,12 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		}
 
 		Transform mesh_xform;
-		if (p_transforms != NULL) {
+		if (p_transforms != nullptr) {
 			mesh_xform = (*p_transforms)[i];
 		}
 
-		RID inst = VS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
-		VS::get_singleton()->instance_set_transform(inst, mesh_xform);
+		RID inst = RS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+		RS::get_singleton()->instance_set_transform(inst, mesh_xform);
 
 		AABB aabb = mesh->get_aabb();
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
@@ -121,32 +121,32 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		xform.invert();
 		xform = mesh_xform * xform;
 
-		VS::get_singleton()->camera_set_transform(camera, xform * Transform(Basis(), Vector3(0, 0, 3)));
-		VS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
+		RS::get_singleton()->camera_set_transform(camera, xform * Transform(Basis(), Vector3(0, 0, 3)));
+		RS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
 
-		VS::get_singleton()->instance_set_transform(light_instance, xform * Transform().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
-		VS::get_singleton()->instance_set_transform(light_instance2, xform * Transform().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
+		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
 
 		ep.step(TTR("Thumbnail..."), i);
 		Main::iteration();
 		Main::iteration();
-		Ref<Image> img = VS::get_singleton()->texture_2d_get(viewport_texture);
+		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		ERR_CONTINUE(!img.is_valid() || img->empty());
 		Ref<ImageTexture> it(memnew(ImageTexture));
 		it->create_from_image(img);
 
-		VS::get_singleton()->free(inst);
+		RS::get_singleton()->free(inst);
 
 		textures.push_back(it);
 	}
 
-	VS::get_singleton()->free(viewport);
-	VS::get_singleton()->free(light);
-	VS::get_singleton()->free(light_instance);
-	VS::get_singleton()->free(light2);
-	VS::get_singleton()->free(light_instance2);
-	VS::get_singleton()->free(camera);
-	VS::get_singleton()->free(scenario);
+	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free(light);
+	RS::get_singleton()->free(light_instance);
+	RS::get_singleton()->free(light2);
+	RS::get_singleton()->free(light_instance2);
+	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(scenario);
 
 	return textures;
 }
@@ -194,7 +194,7 @@ Array EditorInterface::get_open_scenes() const {
 
 	int scns_amount = scenes.size();
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == NULL)
+		if (scenes[idx_scn].root == nullptr)
 			continue;
 		ret.push_back(scenes[idx_scn].root->get_filename());
 	}
@@ -278,7 +278,7 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
 }
 
-EditorInterface *EditorInterface::singleton = NULL;
+EditorInterface *EditorInterface::singleton = nullptr;
 
 void EditorInterface::_bind_methods() {
 
@@ -337,7 +337,7 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 }
 
 ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
-	ERR_FAIL_NULL_V(p_control, NULL);
+	ERR_FAIL_NULL_V(p_control, nullptr);
 	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
 }
 
@@ -914,7 +914,7 @@ void EditorPlugin::_bind_methods() {
 }
 
 EditorPlugin::EditorPlugin() :
-		undo_redo(NULL),
+		undo_redo(nullptr),
 		input_event_forwarding_always_enabled(false),
 		force_draw_over_forwarding_enabled(false),
 		last_main_screen_name("") {

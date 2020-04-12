@@ -316,7 +316,7 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 			break;
 	}
 
-	Map<int, Ref<ConnectedPeer>>::Element *E = NULL;
+	Map<int, Ref<ConnectedPeer>>::Element *E = nullptr;
 
 	if (target_peer > 0) {
 
@@ -371,6 +371,7 @@ WebRTCMultiplayer::WebRTCMultiplayer() {
 	unique_id = 0;
 	next_packet_peer = 0;
 	target_peer = 0;
+	client_count = 0;
 	transfer_mode = TRANSFER_MODE_RELIABLE;
 	refuse_connections = false;
 	connection_status = CONNECTION_DISCONNECTED;

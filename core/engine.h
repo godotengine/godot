@@ -42,7 +42,7 @@ public:
 	struct Singleton {
 		StringName name;
 		Object *ptr;
-		Singleton(const StringName &p_name = StringName(), Object *p_ptr = NULL) :
+		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr) :
 				name(p_name),
 				ptr(p_ptr) {
 		}
@@ -86,7 +86,7 @@ public:
 	float get_physics_jitter_fix() const;
 
 	virtual void set_target_fps(int p_fps);
-	virtual float get_target_fps() const;
+	virtual int get_target_fps() const;
 
 	virtual float get_frames_per_second() const { return _fps; }
 
