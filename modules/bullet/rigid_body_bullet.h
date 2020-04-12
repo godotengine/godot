@@ -117,7 +117,7 @@ public:
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 	virtual void apply_torque_impulse(const Vector3 &p_impulse);
 
-	virtual void set_sleep_state(bool p_enable);
+	virtual void set_sleep_state(bool p_sleep);
 	virtual bool is_sleeping() const;
 
 	virtual int get_contact_count() const;

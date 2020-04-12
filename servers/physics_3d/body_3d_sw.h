@@ -421,7 +421,7 @@ public:
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) { body->apply_impulse(p_pos, p_j); }
 	virtual void apply_torque_impulse(const Vector3 &p_j) { body->apply_torque_impulse(p_j); }
 
-	virtual void set_sleep_state(bool p_enable) { body->set_active(!p_enable); }
+	virtual void set_sleep_state(bool p_sleep) { body->set_active(!p_sleep); }
 	virtual bool is_sleeping() const { return !body->is_active(); }
 
 	virtual int get_contact_count() const { return body->contact_count; }
