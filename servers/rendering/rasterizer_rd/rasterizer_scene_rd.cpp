@@ -3439,6 +3439,12 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 			tonemap.glow_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
 		}
 
+		if (rb->screen_space_aa == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
+			tonemap.use_fxaa = true;
+		}
+
+		tonemap.texture_size = Vector2i(rb->width, rb->height);
+
 		if (env) {
 			tonemap.tonemap_mode = env->tone_mapper;
 			tonemap.white = env->white;
@@ -3517,13 +3523,14 @@ RID RasterizerSceneRD::render_buffers_get_ao_texture(RID p_render_buffers) {
 	return rb->ssao.ao_full.is_valid() ? rb->ssao.ao_full : rb->ssao.ao[0];
 }
 
-void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa) {
+void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa) {
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	rb->width = p_width;
 	rb->height = p_height;
 	rb->render_target = p_render_target;
 	rb->msaa = p_msaa;
+	rb->screen_space_aa = p_screen_space_aa;
 	_free_render_buffer_data(rb);
 
 	{

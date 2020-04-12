@@ -639,6 +639,12 @@ public:
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
 
+	enum ViewportScreenSpaceAA {
+		VIEWPORT_SCREEN_SPACE_AA_DISABLED,
+		VIEWPORT_SCREEN_SPACE_AA_FXAA,
+	};
+	virtual void viewport_set_screen_space_aa(RID p_viewport, ViewportScreenSpaceAA p_mode) = 0;
+
 	enum ViewportRenderInfo {
 
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,

@@ -3173,7 +3173,7 @@ int Viewport::gui_get_canvas_sort_index() {
 
 void Viewport::set_msaa(MSAA p_msaa) {
 
-	ERR_FAIL_INDEX(p_msaa, 7);
+	ERR_FAIL_INDEX(p_msaa, MSAA_MAX);
 	if (msaa == p_msaa)
 		return;
 	msaa = p_msaa;
@@ -3185,6 +3185,19 @@ Viewport::MSAA Viewport::get_msaa() const {
 	return msaa;
 }
 
+void Viewport::set_screen_space_aa(ScreenSpaceAA p_screen_space_aa) {
+
+	ERR_FAIL_INDEX(p_screen_space_aa, SCREEN_SPACE_AA_MAX);
+	if (screen_space_aa == p_screen_space_aa)
+		return;
+	screen_space_aa = p_screen_space_aa;
+	RS::get_singleton()->viewport_set_screen_space_aa(viewport, RS::ViewportScreenSpaceAA(p_screen_space_aa));
+}
+
+Viewport::ScreenSpaceAA Viewport::get_screen_space_aa() const {
+
+	return screen_space_aa;
+}
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
 
 	debug_draw = p_debug_draw;
@@ -3371,6 +3384,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
 
+	ClassDB::bind_method(D_METHOD("set_screen_space_aa", "screen_space_aa"), &Viewport::set_screen_space_aa);
+	ClassDB::bind_method(D_METHOD("get_screen_space_aa"), &Viewport::get_screen_space_aa);
+
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
 
@@ -3444,6 +3460,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled,FXAA"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Canvas Items", "canvas_item_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_item_default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,MipmapLinear,MipmapNearest"), "set_default_canvas_item_texture_filter", "get_default_canvas_item_texture_filter");
@@ -3586,7 +3603,7 @@ Viewport::Viewport() {
 	gui.subwindow_drag = SUB_WINDOW_DRAG_DISABLED;
 
 	msaa = MSAA_DISABLED;
-
+	screen_space_aa = SCREEN_SPACE_AA_DISABLED;
 	debug_draw = DEBUG_DRAW_DISABLED;
 
 	snap_controls_to_pixels = true;
