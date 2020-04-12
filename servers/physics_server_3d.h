@@ -70,7 +70,7 @@ public:
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) = 0;
 	virtual void apply_torque_impulse(const Vector3 &p_j) = 0;
 
-	virtual void set_sleep_state(bool p_enable) = 0;
+	virtual void set_sleep_state(bool p_sleep) = 0;
 	virtual bool is_sleeping() const = 0;
 
 	virtual int get_contact_count() const = 0;
