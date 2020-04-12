@@ -976,6 +976,8 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 a
 #ifdef LIGHT_TRANSMITTANCE_USED
 		{
 
+			vec4 clamp_rect = lights.data[idx].atlas_rect;
+
 			//redo shadowmapping, but shrink the model a bit to avoid arctifacts
 			splane = (lights.data[idx].shadow_matrix * vec4(vertex - normalize(normal_interp) * lights.data[idx].transmittance_bias, 1.0));
 
