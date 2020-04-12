@@ -1919,6 +1919,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			Point2 offset = drag_to_local - drag_from_local;
 
 			Size2 scale = canvas_item->call("get_scale");
+			Size2 original_scale = scale;
 			float ratio = scale.y / scale.x;
 			if (drag_type == DRAG_SCALE_BOTH) {
 				Size2 scale_factor = drag_to_local / drag_from_local;
@@ -1931,6 +1932,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 				Size2 scale_factor = Vector2(offset.x, -offset.y) / SCALE_HANDLE_DISTANCE;
 				Size2 parent_scale = parent_xform.get_scale();
 				scale_factor *= Vector2(1.0 / parent_scale.x, 1.0 / parent_scale.y);
+
 				if (drag_type == DRAG_SCALE_X) {
 					scale.x += scale_factor.x;
 					if (uniform) {
@@ -1945,8 +1947,13 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			}
 
 			if (snap_scale && !is_ctrl) {
-				scale.x = roundf(scale.x / snap_scale_step) * snap_scale_step;
-				scale.y = roundf(scale.y / snap_scale_step) * snap_scale_step;
+				if (snap_relative) {
+					scale.x = original_scale.x * (roundf((scale.x / original_scale.x) / snap_scale_step) * snap_scale_step);
+					scale.y = original_scale.y * (roundf((scale.y / original_scale.y) / snap_scale_step) * snap_scale_step);
+				} else {
+					scale.x = roundf(scale.x / snap_scale_step) * snap_scale_step;
+					scale.y = roundf(scale.y / snap_scale_step) * snap_scale_step;
+				}
 			}
 
 			canvas_item->call("set_scale", scale);
