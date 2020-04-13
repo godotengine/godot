@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,7 +62,7 @@ private:
 	bool monitorable;
 	bool locked;
 
-	void _body_inout(int p_status, const RID &p_body, int p_instance, int p_body_shape, int p_area_shape);
+	void _body_inout(int p_status, const RID &p_body, ObjectID p_instance, int p_body_shape, int p_area_shape);
 
 	void _body_enter_tree(ObjectID p_id);
 	void _body_exit_tree(ObjectID p_id);
@@ -94,7 +94,7 @@ private:
 
 	Map<ObjectID, BodyState> body_map;
 
-	void _area_inout(int p_status, const RID &p_area, int p_instance, int p_area_shape, int p_self_shape);
+	void _area_inout(int p_status, const RID &p_area, ObjectID p_instance, int p_area_shape, int p_self_shape);
 
 	void _area_enter_tree(ObjectID p_id);
 	void _area_exit_tree(ObjectID p_id);

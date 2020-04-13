@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextEdit" inherits="Control" category="Core" version="3.2">
+<class name="TextEdit" inherits="Control" version="4.0">
 	<brief_description>
 		Multiline text editing control.
 	</brief_description>
@@ -54,7 +54,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Clears all the syntax coloring information.
+				Clears all custom syntax coloring information previously added with [method add_color_region] or [method add_keyword_color].
 			</description>
 		</method>
 		<method name="clear_undo_history">
@@ -94,7 +94,7 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]column[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
 			</description>
 		</method>
 		<method name="cursor_set_line">
@@ -110,8 +110,8 @@
 			</argument>
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
-				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs.
-				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
+				If [code]adjust_viewport[/code] is set to [code]true[/code], the viewport will center at the cursor position after the move occurs.
+				If [code]can_be_hidden[/code] is set to [code]true[/code], the specified [code]line[/code] can be hidden using [method set_line_as_hidden].
 			</description>
 		</method>
 		<method name="cut">
@@ -299,7 +299,7 @@
 			</description>
 		</method>
 		<method name="search" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<argument index="0" name="key" type="String">
 			</argument>
@@ -310,7 +310,15 @@
 			<argument index="3" name="from_column" type="int">
 			</argument>
 			<description>
-				Perform a search inside the text. Search flags can be specified in the[code]SEARCH_*[/code] enum.
+				Perform a search inside the text. Search flags can be specified in the [enum SearchFlags] enum.
+				Returns an empty [code]PackedInt32Array[/code] if no result was found. Otherwise, the result line and column can be accessed at indices specified in the [enum SearchResult] enum, e.g:
+				[codeblock]
+				var result = search(key, flags, line, column)
+				if result.size() &gt; 0:
+				    # Result found.
+				    var res_line = result[TextEdit.SEARCH_RESULT_LINE]
+				    var res_column = result[TextEdit.SEARCH_RESULT_COLUMN]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="select">
@@ -429,6 +437,12 @@
 		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly" default="false">
 			If [code]true[/code], read-only mode is enabled. Existing text cannot be modified and new text cannot be added.
 		</member>
+		<member name="scroll_horizontal" type="int" setter="set_h_scroll" getter="get_h_scroll" default="0">
+			The current horizontal scroll value.
+		</member>
+		<member name="scroll_vertical" type="float" setter="set_v_scroll" getter="get_v_scroll" default="0.0">
+			The current vertical scroll value.
+		</member>
 		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
@@ -488,6 +502,12 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="symbol_validate">
+			<argument index="0" name="symbol" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="text_changed">
 			<description>
 				Emitted when the text changes.
@@ -504,8 +524,14 @@
 		<constant name="SEARCH_BACKWARDS" value="4" enum="SearchFlags">
 			Search from end to beginning.
 		</constant>
+		<constant name="SEARCH_RESULT_COLUMN" value="0" enum="SearchResult">
+			Used to access the result column from [method search].
+		</constant>
+		<constant name="SEARCH_RESULT_LINE" value="1" enum="SearchResult">
+			Used to access the result line from [method search].
+		</constant>
 		<constant name="MENU_CUT" value="0" enum="MenuItems">
-			Cuts (Copies and clears) the selected text.
+			Cuts (copies and clears) the selected text.
 		</constant>
 		<constant name="MENU_COPY" value="1" enum="MenuItems">
 			Copies the selected text.
@@ -530,7 +556,7 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">
 			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
 		</theme_item>
 		<theme_item name="bookmark_color" type="Color" default="Color( 0.08, 0.49, 0.98, 1 )">
@@ -572,9 +598,9 @@
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 		</theme_item>
-		<theme_item name="fold" type="Texture">
+		<theme_item name="fold" type="Texture2D">
 		</theme_item>
-		<theme_item name="folded" type="Texture">
+		<theme_item name="folded" type="Texture2D">
 		</theme_item>
 		<theme_item name="font" type="Font">
 			Sets the default [Font].
@@ -612,12 +638,12 @@
 		<theme_item name="selection_color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
-		<theme_item name="space" type="Texture">
+		<theme_item name="space" type="Texture2D">
 		</theme_item>
 		<theme_item name="symbol_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
-		<theme_item name="tab" type="Texture">
-			Sets a custom [Texture] for tab text characters.
+		<theme_item name="tab" type="Texture2D">
+			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
 		<theme_item name="word_highlighted_color" type="Color" default="Color( 0.8, 0.9, 0.9, 0.15 )">
 			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.

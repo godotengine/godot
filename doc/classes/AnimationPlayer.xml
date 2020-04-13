@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationPlayer" inherits="Node" category="Core" version="3.2">
+<class name="AnimationPlayer" inherits="Node" version="4.0">
 	<brief_description>
 		Container and player of [Animation] resources.
 	</brief_description>
 	<description>
 		An animation player is used for general-purpose playback of [Animation] resources. It contains a dictionary of animations (referenced by name) and custom blend times between their transitions. Additionally, animations can be played and blended in different channels.
+		[AnimationPlayer] is more suited than [Tween] for animations where you know the final values in advance. For example, fading a screen in and out is more easily done with an [AnimationPlayer] node thanks to the animation tools provided by the editor. That particular example can also be implemented with a [Tween] node, but it requires doing everything by code.
+		Updating the target properties of animations occurs at process time.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/animations.html</link>
@@ -14,7 +16,7 @@
 		<method name="add_animation">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<argument index="1" name="animation" type="Animation">
 			</argument>
@@ -28,13 +30,13 @@
 			<argument index="0" name="delta" type="float">
 			</argument>
 			<description>
-				Shifts position in the animation timeline. Delta is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
+				Shifts position in the animation timeline and immediately updates the animation. [code]delta[/code] is the time in seconds to shift. Events between the current frame and [code]delta[/code] are handled.
 			</description>
 		</method>
 		<method name="animation_get_next" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
 			<description>
 				Returns the name of the next animation in the queue.
@@ -43,9 +45,9 @@
 		<method name="animation_set_next">
 			<return type="void">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
-			<argument index="1" name="anim_to" type="String">
+			<argument index="1" name="anim_to" type="StringName">
 			</argument>
 			<description>
 				Triggers the [code]anim_to[/code] animation when the [code]anim_from[/code] animation completes.
@@ -66,7 +68,7 @@
 			</description>
 		</method>
 		<method name="find_animation" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="animation" type="Animation">
 			</argument>
@@ -77,14 +79,14 @@
 		<method name="get_animation" qualifiers="const">
 			<return type="Animation">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns the [Animation] with key [code]name[/code] or [code]null[/code] if not found.
 			</description>
 		</method>
 		<method name="get_animation_list" qualifiers="const">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns the list of stored animation names.
@@ -93,9 +95,9 @@
 		<method name="get_blend_time" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
-			<argument index="1" name="anim_to" type="String">
+			<argument index="1" name="anim_to" type="StringName">
 			</argument>
 			<description>
 				Gets the blend time (in seconds) between two animations, referenced by their names.
@@ -105,11 +107,11 @@
 			<return type="float">
 			</return>
 			<description>
-				Gets the actual playing speed of current animation or 0 if not playing. This speed is the [code]playback_speed[/code] property multiplied by [code]custom_speed[/code] argument specified when calling the [code]play[/code] method.
+				Gets the actual playing speed of current animation or 0 if not playing. This speed is the [member playback_speed] property multiplied by [code]custom_speed[/code] argument specified when calling the [method play] method.
 			</description>
 		</method>
 		<method name="get_queue">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				Returns a list of the animation names that are currently queued to play.
@@ -118,7 +120,7 @@
 		<method name="has_animation" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the [AnimationPlayer] stores an [Animation] with key [code]name[/code].
@@ -134,7 +136,7 @@
 		<method name="play">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String" default="&quot;&quot;">
+			<argument index="0" name="name" type="StringName" default="&quot;&quot;">
 			</argument>
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
@@ -143,26 +145,27 @@
 			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
-				Plays the animation with key [code]name[/code]. Custom speed and blend times can be set. If [code]custom_speed[/code] is negative and [code]from_end[/code] is [code]true[/code], the animation will play backwards.
-				If the animation has been paused by [method stop], it will be resumed. Calling [method play] without arguments will also resume the animation.
+				Plays the animation with key [code]name[/code]. Custom blend times and speed can be set. If [code]custom_speed[/code] is negative and [code]from_end[/code] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
+				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [code]name[/code], or with no [code]name[/code] parameter, the assigned animation will resume playing if it was paused, or restart if it was stopped (see [method stop] for both pause and stop). If the animation was already playing, it will keep playing.
+				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
 			</description>
 		</method>
 		<method name="play_backwards">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String" default="&quot;&quot;">
+			<argument index="0" name="name" type="StringName" default="&quot;&quot;">
 			</argument>
 			<argument index="1" name="custom_blend" type="float" default="-1">
 			</argument>
 			<description>
 				Plays the animation with key [code]name[/code] in reverse.
-				If the animation has been paused by [code]stop(true)[/code], it will be resumed backwards. Calling [code]play_backwards()[/code] without arguments will also resume the animation backwards.
+				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
 			</description>
 		</method>
 		<method name="queue">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Queues an animation for playback once the current one is done.
@@ -172,7 +175,7 @@
 		<method name="remove_animation">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Removes the animation with key [code]name[/code].
@@ -181,9 +184,9 @@
 		<method name="rename_animation">
 			<return type="void">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="newname" type="String">
+			<argument index="1" name="newname" type="StringName">
 			</argument>
 			<description>
 				Renames an existing animation with key [code]name[/code] to [code]newname[/code].
@@ -203,9 +206,9 @@
 		<method name="set_blend_time">
 			<return type="void">
 			</return>
-			<argument index="0" name="anim_from" type="String">
+			<argument index="0" name="anim_from" type="StringName">
 			</argument>
-			<argument index="1" name="anim_to" type="String">
+			<argument index="1" name="anim_to" type="StringName">
 			</argument>
 			<argument index="2" name="sec" type="float">
 			</argument>
@@ -219,8 +222,8 @@
 			<argument index="0" name="reset" type="bool" default="true">
 			</argument>
 			<description>
-				Stops the currently playing animation. If [code]reset[/code] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
-				If [code]reset[/code] is [code]false[/code], then calling [method play] without arguments or [code]play("same_as_before")[/code] will resume the animation. Works the same for the [method play_backwards].
+				Stops or pauses the currently playing animation. If [code]reset[/code] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
+				If [code]reset[/code] is [code]false[/code], the [member current_animation_position] will be kept and calling [method play] or [method play_backwards] without arguments or with the same animation name as [member assigned_animation] will resume the animation.
 			</description>
 		</method>
 	</methods>
@@ -261,23 +264,23 @@
 	</members>
 	<signals>
 		<signal name="animation_changed">
-			<argument index="0" name="old_name" type="String">
+			<argument index="0" name="old_name" type="StringName">
 			</argument>
-			<argument index="1" name="new_name" type="String">
+			<argument index="1" name="new_name" type="StringName">
 			</argument>
 			<description>
 				If the currently being played animation changes, this signal will notify of such change.
 			</description>
 		</signal>
 		<signal name="animation_finished">
-			<argument index="0" name="anim_name" type="String">
+			<argument index="0" name="anim_name" type="StringName">
 			</argument>
 			<description>
 				Notifies when an animation finished playing.
 			</description>
 		</signal>
 		<signal name="animation_started">
-			<argument index="0" name="anim_name" type="String">
+			<argument index="0" name="anim_name" type="StringName">
 			</argument>
 			<description>
 				Notifies when an animation starts playing.

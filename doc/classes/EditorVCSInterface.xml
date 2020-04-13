@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorVCSInterface" inherits="Object" category="Core" version="3.2">
+<class name="EditorVCSInterface" inherits="Object" version="4.0">
 	<brief_description>
 		Version Control System (VCS) interface which reads and writes to the local VCS in use.
 	</brief_description>
@@ -34,13 +34,6 @@
 				- [code]"offset"[/code] to store the offset of the line change since the first contextual line content.
 			</description>
 		</method>
-		<method name="get_is_vcs_intialized">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
-			</description>
-		</method>
 		<method name="get_modified_files_data">
 			<return type="Dictionary">
 			</return>
@@ -58,14 +51,14 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the project name of the VCS working directory
+				Returns the project name of the VCS working directory.
 			</description>
 		</method>
 		<method name="get_vcs_name">
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the VCS if the VCS has been initialized, else return an empty string.
+				Returns the name of the VCS if the VCS has been initialized, else return an empty string.
 			</description>
 		</method>
 		<method name="initialize">
@@ -74,7 +67,7 @@
 			<argument index="0" name="project_root_path" type="String">
 			</argument>
 			<description>
-				Initialize the VCS addon if not already. Uses the argument value as the path to the working directory of the project. Creates the initial commit if required. Returns [code]true[/code] if no failure occurs, else returns [code]false[/code].
+				Initializes the VCS addon if not already. Uses the argument value as the path to the working directory of the project. Creates the initial commit if required. Returns [code]true[/code] if no failure occurs, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_addon_ready">
@@ -82,6 +75,13 @@
 			</return>
 			<description>
 				Returns [code]true[/code] if the addon is ready to respond to function calls, else returns [code]false[/code].
+			</description>
+		</method>
+		<method name="is_vcs_initialized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="shut_down">
@@ -97,7 +97,7 @@
 			<argument index="0" name="file_path" type="String">
 			</argument>
 			<description>
-				Stage the file which should be committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
+				Stages the file which should be committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>
 		</method>
 		<method name="unstage_file">
@@ -106,7 +106,7 @@
 			<argument index="0" name="file_path" type="String">
 			</argument>
 			<description>
-				Unstage the file which was staged previously to be committed, so that it is no longer committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
+				Unstages the file which was staged previously to be committed, so that it is no longer committed when [method EditorVCSInterface.commit] is called. Argument should contain the absolute path.
 			</description>
 		</method>
 	</methods>

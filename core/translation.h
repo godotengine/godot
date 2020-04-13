@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,10 @@ class Translation : public Resource {
 	String locale;
 	Map<StringName, StringName> translation_map;
 
-	PoolVector<String> _get_message_list() const;
+	Vector<String> _get_message_list() const;
 
-	PoolVector<String> _get_messages() const;
-	void _set_messages(const PoolVector<String> &p_messages);
+	Vector<String> _get_messages() const;
+	void _set_messages(const Vector<String> &p_messages);
 
 protected:
 	static void _bind_methods();
@@ -71,8 +71,9 @@ class TranslationServer : public Object {
 	String locale;
 	String fallback;
 
-	Set<Ref<Translation> > translations;
+	Set<Ref<Translation>> translations;
 	Ref<Translation> tool_translation;
+	Ref<Translation> doc_translation;
 
 	Map<String, String> locale_name_map;
 
@@ -105,9 +106,12 @@ public:
 	static Vector<String> get_all_locale_names();
 	static bool is_locale_valid(const String &p_locale);
 	static String standardize_locale(const String &p_locale);
+	static String get_language_code(const String &p_locale);
 
 	void set_tool_translation(const Ref<Translation> &p_translation);
 	StringName tool_translate(const StringName &p_message) const;
+	void set_doc_translation(const Ref<Translation> &p_translation);
+	StringName doc_translate(const StringName &p_message) const;
 
 	void setup();
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,18 @@
 
 #include "os_iphone.h"
 
+#if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
+// #import <QuartzCore/CAMetalLayer.h>
+#include <vulkan/vulkan_metal.h>
+#endif
+
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 
 #include "main/main.h"
 
@@ -47,8 +55,6 @@
 
 #include "semaphore_iphone.h"
 
-#include "ios.h"
-
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
@@ -59,12 +65,10 @@ int OSIPhone::get_video_driver_count() const {
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
 
 	switch (p_driver) {
-		case VIDEO_DRIVER_GLES3:
-			return "GLES3";
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -96,7 +100,6 @@ String OSIPhone::get_unique_id() const {
 void OSIPhone::initialize_core() {
 
 	OS_Unix::initialize_core();
-	SemaphoreIphone::make_default();
 
 	set_data_dir(data_dir);
 };
@@ -105,68 +108,48 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
-extern bool gles3_available; // from gl_view.mm
-
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
+	video_driver_index = p_video_driver;
 
-	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
+#if defined(OPENGL_ENABLED)
 	bool gl_initialization_error = false;
 
-	while (true) {
-		if (use_gl3) {
-			if (RasterizerGLES3::is_viable() == OK && gles3_available) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					use_gl3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
+	// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
+
+	if (RasterizerGLES2::is_viable() == OK) {
+		RasterizerGLES2::register_config();
+		RasterizerGLES2::make_current();
+	} else {
+		gl_initialization_error = true;
 	}
 
 	if (gl_initialization_error) {
 		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
-				"Unable to initialize Video driver");
+				"Unable to initialize video driver");
 		return ERR_UNAVAILABLE;
 	}
+#endif
 
-	video_driver_index = p_video_driver;
-	visual_server = memnew(VisualServerRaster);
+#if defined(VULKAN_ENABLED)
+	RasterizerRD::make_current();
+#endif
+
+	rendering_server = memnew(RenderingServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
+	rendering_server->init();
+	//rendering_server->cursor_set_visible(false, 0);
 
-	visual_server->init();
-	//visual_server->cursor_set_visible(false, 0);
-
-	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	if (use_gl3)
-		RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
-	else
-		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+#if defined(OPENGL_ENABLED)
+	// reset this to what it should be, it will have been set to 0 after rendering_server->init() is called
+	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
+#endif
 
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
-
-	camera_server = memnew(CameraIOS);
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -184,7 +167,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
 	//icloud->connect();
 #endif
-	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", memnew(iOS)));
+	ios = memnew(iOS);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
 
 	return OK;
 };
@@ -226,7 +210,8 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 	ev.instance();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
-	ev->set_scancode(p_key);
+	ev->set_keycode(p_key);
+	ev->set_physical_keycode(p_key);
 	ev->set_unicode(p_key);
 	queue_event(ev);
 };
@@ -354,24 +339,37 @@ void OSIPhone::delete_main_loop() {
 		memdelete(main_loop);
 	};
 
-	main_loop = NULL;
+	main_loop = nullptr;
 };
 
 void OSIPhone::finalize() {
 
-	if (main_loop) // should not happen?
-		memdelete(main_loop);
-
-	if (camera_server) {
-		memdelete(camera_server);
-		camera_server = NULL;
-	}
-
-	visual_server->finish();
-	memdelete(visual_server);
-	//	memdelete(rasterizer);
+	delete_main_loop();
 
 	memdelete(input);
+	memdelete(ios);
+
+#ifdef GAME_CENTER_ENABLED
+	memdelete(game_center);
+#endif
+
+#ifdef STOREKIT_ENABLED
+	memdelete(store_kit);
+#endif
+
+#ifdef ICLOUD_ENABLED
+	memdelete(icloud);
+#endif
+
+	rendering_server->finish();
+	memdelete(rendering_server);
+	//	memdelete(rasterizer);
+
+	// Free unhandled events before close
+	for (int i = 0; i < MAX_EVENTS; i++) {
+		event_queue[i].unref();
+	};
+	event_count = 0;
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};
@@ -455,9 +453,10 @@ bool OSIPhone::can_draw() const {
 };
 
 int OSIPhone::set_base_framebuffer(int p_fb) {
-
+#if defined(OPENGL_ENABLED)
 	// gl_view_base_fb has not been updated yet
-	RasterizerStorageGLES3::system_fbo = p_fb;
+	RasterizerStorageGLES2::system_fbo = p_fb;
+#endif
 
 	return 0;
 };
@@ -472,7 +471,7 @@ extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
 
-void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
+void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_input_length) {
 	_show_keyboard(p_existing_text);
 };
 
@@ -506,6 +505,15 @@ String OSIPhone::get_name() const {
 
 	return "iOS";
 };
+
+String OSIPhone::get_model_name() const {
+
+	String model = ios->get_model();
+	if (model != "")
+		return model;
+
+	return OS_Unix::get_model_name();
+}
 
 Size2 OSIPhone::get_window_size() const {
 
@@ -600,7 +608,7 @@ bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 // so we use this as a hack to ensure certain code is called before
 // everything else, but after all units are initialized.
 typedef void (*init_callback)();
-static init_callback *ios_init_callbacks = NULL;
+static init_callback *ios_init_callbacks = nullptr;
 static int ios_init_callbacks_count = 0;
 static int ios_init_callbacks_capacity = 0;
 
@@ -623,12 +631,12 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 		ios_init_callbacks[i]();
 	}
 	free(ios_init_callbacks);
-	ios_init_callbacks = NULL;
+	ios_init_callbacks = nullptr;
 	ios_init_callbacks_count = 0;
 	ios_init_callbacks_capacity = 0;
 
-	main_loop = NULL;
-	visual_server = NULL;
+	main_loop = nullptr;
+	rendering_server = nullptr;
 
 	VideoMode vm;
 	vm.fullscreen = true;

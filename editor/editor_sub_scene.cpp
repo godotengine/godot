@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ void EditorSubScene::_path_changed(const String &p_path) {
 
 	if (scene) {
 		memdelete(scene);
-		scene = NULL;
+		scene = nullptr;
 	}
 
 	if (p_path == "")
@@ -61,7 +61,7 @@ void EditorSubScene::_path_changed(const String &p_path) {
 	if (!scene)
 		return;
 
-	_fill_tree(scene, NULL);
+	_fill_tree(scene, nullptr);
 }
 
 void EditorSubScene::_path_browse() {
@@ -70,11 +70,11 @@ void EditorSubScene::_path_browse() {
 }
 
 void EditorSubScene::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible() && scene == NULL)
+		if (is_visible() && scene == nullptr) {
 			_path_browse();
+		}
 	}
 }
 
@@ -97,8 +97,14 @@ void EditorSubScene::_fill_tree(Node *p_node, TreeItem *p_parent) {
 }
 
 void EditorSubScene::_selected_changed() {
-	selection.clear();
-	is_root = false;
+	TreeItem *item = tree->get_selected();
+	ERR_FAIL_COND(!item);
+	Node *n = item->get_metadata(0);
+
+	if (!n || !selection.find(n)) {
+		selection.clear();
+		is_root = false;
+	}
 }
 
 void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_selected) {
@@ -116,8 +122,17 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 				selection.clear();
 			}
 			selection.push_back(n);
+		} else {
+			List<Node *>::Element *E = selection.find(n);
+
+			if (E)
+				selection.erase(E);
 		}
 	}
+}
+
+void EditorSubScene::_item_activated() {
+	_ok_pressed(); // From AcceptDialog.
 }
 
 void EditorSubScene::_remove_selection_child(Node *p_node) {
@@ -194,7 +209,7 @@ void EditorSubScene::move(Node *p_new_parent, Node *p_new_owner) {
 	if (!is_root) {
 		memdelete(scene);
 	}
-	scene = NULL;
+	scene = nullptr;
 	//return selnode;
 }
 
@@ -206,17 +221,12 @@ void EditorSubScene::clear() {
 
 void EditorSubScene::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_path_selected"), &EditorSubScene::_path_selected);
-	ClassDB::bind_method(D_METHOD("_path_changed"), &EditorSubScene::_path_changed);
-	ClassDB::bind_method(D_METHOD("_path_browse"), &EditorSubScene::_path_browse);
-	ClassDB::bind_method(D_METHOD("_item_multi_selected"), &EditorSubScene::_item_multi_selected);
-	ClassDB::bind_method(D_METHOD("_selected_changed"), &EditorSubScene::_selected_changed);
 	ADD_SIGNAL(MethodInfo("subscene_selected"));
 }
 
 EditorSubScene::EditorSubScene() {
 
-	scene = NULL;
+	scene = nullptr;
 	is_root = false;
 
 	set_title(TTR("Select Node(s) to Import"));
@@ -228,24 +238,24 @@ EditorSubScene::EditorSubScene() {
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	path = memnew(LineEdit);
-	path->connect("text_entered", this, "_path_changed");
+	path->connect("text_entered", callable_mp(this, &EditorSubScene::_path_changed));
 	hb->add_child(path);
-	path->set_h_size_flags(SIZE_EXPAND_FILL);
+	path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	Button *b = memnew(Button);
 	b->set_text(TTR("Browse"));
 	hb->add_child(b);
-	b->connect("pressed", this, "_path_browse");
+	b->connect("pressed", callable_mp(this, &EditorSubScene::_path_browse));
 	vb->add_margin_child(TTR("Scene Path:"), hb);
 
 	tree = memnew(Tree);
-	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vb->add_margin_child(TTR("Import From Node:"), tree, true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
-	tree->connect("multi_selected", this, "_item_multi_selected");
+	tree->connect("multi_selected", callable_mp(this, &EditorSubScene::_item_multi_selected));
 	//tree->connect("nothing_selected", this, "_deselect_items");
-	tree->connect("cell_selected", this, "_selected_changed");
+	tree->connect("cell_selected", callable_mp(this, &EditorSubScene::_selected_changed));
 
-	tree->connect("item_activated", this, "_ok", make_binds(), CONNECT_DEFERRED);
+	tree->connect("item_activated", callable_mp(this, &EditorSubScene::_item_activated), make_binds(), CONNECT_DEFERRED);
 
 	file_dialog = memnew(EditorFileDialog);
 	List<String> extensions;
@@ -256,7 +266,7 @@ EditorSubScene::EditorSubScene() {
 		file_dialog->add_filter("*." + E->get());
 	}
 
-	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	add_child(file_dialog);
-	file_dialog->connect("file_selected", this, "_path_selected");
+	file_dialog->connect("file_selected", callable_mp(this, &EditorSubScene::_path_selected));
 }

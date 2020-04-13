@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "collision_object_2d.h"
 #include "core/engine.h"
 #include "physics_body_2d.h"
-#include "servers/physics_2d_server.h"
+#include "servers/physics_server_2d.h"
 
 void RayCast2D::set_cast_to(const Vector2 &p_point) {
 
@@ -78,8 +78,8 @@ bool RayCast2D::is_colliding() const {
 }
 Object *RayCast2D::get_collider() const {
 
-	if (against == 0)
-		return NULL;
+	if (against.is_null())
+		return nullptr;
 
 	return ObjectDB::get_instance(against);
 }
@@ -176,12 +176,12 @@ void RayCast2D::_notification(int p_what) {
 				draw_col.g = g;
 				draw_col.b = g;
 			}
-			draw_line(Vector2(), cast_to, draw_col, 2, true);
+			draw_line(Vector2(), cast_to, draw_col, 2);
 			Vector<Vector2> pts;
 			float tsize = 8;
 			pts.push_back(xf.xform(Vector2(tsize, 0)));
-			pts.push_back(xf.xform(Vector2(0, 0.707 * tsize)));
-			pts.push_back(xf.xform(Vector2(0, -0.707 * tsize)));
+			pts.push_back(xf.xform(Vector2(0, Math_SQRT12 * tsize)));
+			pts.push_back(xf.xform(Vector2(0, -Math_SQRT12 * tsize)));
 			Vector<Color> cols;
 			for (int i = 0; i < 3; i++)
 				cols.push_back(draw_col);
@@ -205,7 +205,7 @@ void RayCast2D::_update_raycast_state() {
 	Ref<World2D> w2d = get_world_2d();
 	ERR_FAIL_COND(w2d.is_null());
 
-	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(w2d->get_space());
+	PhysicsDirectSpaceState2D *dss = PhysicsServer2D::get_singleton()->space_get_direct_state(w2d->get_space());
 	ERR_FAIL_COND(!dss);
 
 	Transform2D gt = get_global_transform();
@@ -214,7 +214,7 @@ void RayCast2D::_update_raycast_state() {
 	if (to == Vector2())
 		to = Vector2(0, 0.01);
 
-	Physics2DDirectSpaceState::RayResult rr;
+	PhysicsDirectSpaceState2D::RayResult rr;
 
 	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
 
@@ -225,7 +225,7 @@ void RayCast2D::_update_raycast_state() {
 		against_shape = rr.shape;
 	} else {
 		collided = false;
-		against = 0;
+		against = ObjectID();
 		against_shape = 0;
 	}
 }
@@ -339,7 +339,7 @@ void RayCast2D::_bind_methods() {
 RayCast2D::RayCast2D() {
 
 	enabled = false;
-	against = 0;
+
 	collided = false;
 	against_shape = 0;
 	collision_mask = 1;

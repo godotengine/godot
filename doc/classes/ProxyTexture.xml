@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ProxyTexture" inherits="Texture" category="Core" version="3.2">
+<class name="ProxyTexture" inherits="Texture2D" version="4.0">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -9,9 +9,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="base" type="Texture" setter="set_base" getter="get_base">
+		<member name="base" type="Texture2D" setter="set_base" getter="get_base">
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags" override="true" default="0" />
 	</members>
 	<constants>
 	</constants>

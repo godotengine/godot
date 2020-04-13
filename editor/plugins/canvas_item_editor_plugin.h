@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,12 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-#include "scene/2d/canvas_item.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
+#include "scene/main/canvas_item.h"
 
 class CanvasItemEditorViewport;
 
@@ -108,6 +108,7 @@ private:
 		SNAP_USE_GRID,
 		SNAP_USE_GUIDES,
 		SNAP_USE_ROTATION,
+		SNAP_USE_SCALE,
 		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
@@ -118,6 +119,7 @@ private:
 		SHOW_ORIGIN,
 		SHOW_VIEWPORT,
 		SHOW_EDIT_LOCKS,
+		SHOW_TRANSFORMATION_GIZMOS,
 		LOCK_SELECTED,
 		UNLOCK_SELECTED,
 		GROUP_SELECTED,
@@ -188,7 +190,6 @@ private:
 		SKELETON_SHOW_BONES,
 		SKELETON_SET_IK_CHAIN,
 		SKELETON_CLEAR_IK_CHAIN
-
 	};
 
 	enum DragType {
@@ -208,6 +209,8 @@ private:
 		DRAG_ANCHOR_BOTTOM_LEFT,
 		DRAG_ANCHOR_ALL,
 		DRAG_MOVE,
+		DRAG_MOVE_X,
+		DRAG_MOVE_Y,
 		DRAG_SCALE_X,
 		DRAG_SCALE_Y,
 		DRAG_SCALE_BOTH,
@@ -247,27 +250,34 @@ private:
 	bool show_viewport;
 	bool show_helpers;
 	bool show_edit_locks;
+	bool show_transformation_gizmos;
+
 	float zoom;
 	Point2 view_offset;
 	Point2 previous_update_view_offset;
 
+	bool selected_from_canvas;
 	bool anchors_mode;
 
 	Point2 grid_offset;
 	Point2 grid_step;
+	int primary_grid_steps;
 	int grid_step_multiplier;
 
 	float snap_rotation_step;
 	float snap_rotation_offset;
-	bool snap_active;
+	float snap_scale_step;
+	bool smart_snap_active;
+	bool grid_snap_active;
+
 	bool snap_node_parent;
 	bool snap_node_anchors;
 	bool snap_node_sides;
 	bool snap_node_center;
 	bool snap_other_nodes;
-	bool snap_grid;
 	bool snap_guides;
 	bool snap_rotation;
+	bool snap_scale;
 	bool snap_relative;
 	bool snap_pixel;
 	bool skeleton_show_bones;
@@ -296,7 +306,7 @@ private:
 	struct _HoverResult {
 
 		Point2 position;
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		String name;
 	};
 	Vector<_HoverResult> hovering_results;
@@ -347,7 +357,8 @@ private:
 
 	ToolButton *ruler_button;
 
-	ToolButton *snap_button;
+	ToolButton *smart_snap_button;
+	ToolButton *grid_snap_button;
 	MenuButton *snap_config_menu;
 	PopupMenu *smartsnap_config_popup;
 
@@ -358,6 +369,7 @@ private:
 	ToolButton *ungroup_button;
 
 	MenuButton *skeleton_menu;
+	ToolButton *override_camera_button;
 	MenuButton *view_menu;
 	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
@@ -394,8 +406,8 @@ private:
 	Point2 box_selecting_to;
 
 	Ref<StyleBoxTexture> select_sb;
-	Ref<Texture> select_handle;
-	Ref<Texture> anchor_handle;
+	Ref<Texture2D> select_handle;
+	Ref<Texture2D> anchor_handle;
 
 	Ref<ShortCut> drag_pivot_shortcut;
 	Ref<ShortCut> set_pivot_shortcut;
@@ -406,7 +418,7 @@ private:
 	bool _is_node_locked(const Node *p_node);
 	bool _is_node_movable(const Node *p_node, bool p_popup_warning = false);
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<_SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
-	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
+	void _get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
 	void _get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items);
 
 	void _find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_node, List<CanvasItem *> *r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
@@ -523,14 +535,19 @@ private:
 
 	void _button_toggle_anchor_mode(bool p_status);
 
+	VBoxContainer *controls_vb;
 	HBoxContainer *zoom_hb;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
 	void _update_zoom_label();
 	void _button_zoom_minus();
 	void _button_zoom_reset();
 	void _button_zoom_plus();
-	void _button_toggle_snap(bool p_status);
+	void _button_toggle_smart_snap(bool p_status);
+	void _button_toggle_grid_snap(bool p_status);
+	void _button_override_camera(bool p_pressed);
 	void _button_tool_select(int p_index);
+
+	void _update_override_camera_button(bool p_game_running);
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
@@ -596,7 +613,7 @@ public:
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = NULL, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = nullptr, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
@@ -615,6 +632,8 @@ public:
 	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }
+
+	Control *get_controls_container() { return controls_vb; }
 
 	void update_viewport();
 
@@ -668,7 +687,7 @@ class CanvasItemEditorViewport : public Control {
 	CanvasItemEditor *canvas_item_editor;
 	Node2D *preview_node;
 	AcceptDialog *accept;
-	WindowDialog *selector;
+	AcceptDialog *selector;
 	Label *selector_label;
 	Label *label;
 	Label *label_desc;

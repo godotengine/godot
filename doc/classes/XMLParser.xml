@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="XMLParser" inherits="Reference" category="Core" version="3.2">
+<class name="XMLParser" inherits="Reference" version="4.0">
 	<brief_description>
 		Low-level class for creating parsers for [url=https://en.wikipedia.org/wiki/XML]XML[/url] files.
 	</brief_description>
@@ -84,7 +84,7 @@
 			<return type="int" enum="XMLParser.NodeType">
 			</return>
 			<description>
-				Gets the type of the current node. Compare with [code]NODE_*[/code] constants.
+				Gets the type of the current node. Compare with [enum NodeType] constants.
 			</description>
 		</method>
 		<method name="has_attribute" qualifiers="const">
@@ -115,7 +115,7 @@
 		<method name="open_buffer">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="buffer" type="PoolByteArray">
+			<argument index="0" name="buffer" type="PackedByteArray">
 			</argument>
 			<description>
 				Opens an XML raw buffer for parsing. This returns an error code.
@@ -147,25 +147,25 @@
 	</methods>
 	<constants>
 		<constant name="NODE_NONE" value="0" enum="NodeType">
-			There's no node (no file or buffer opened)
+			There's no node (no file or buffer opened).
 		</constant>
 		<constant name="NODE_ELEMENT" value="1" enum="NodeType">
-			Element (tag)
+			Element (tag).
 		</constant>
 		<constant name="NODE_ELEMENT_END" value="2" enum="NodeType">
-			End of element
+			End of element.
 		</constant>
 		<constant name="NODE_TEXT" value="3" enum="NodeType">
-			Text node
+			Text node.
 		</constant>
 		<constant name="NODE_COMMENT" value="4" enum="NodeType">
-			Comment node
+			Comment node.
 		</constant>
 		<constant name="NODE_CDATA" value="5" enum="NodeType">
-			CDATA content
+			CDATA content.
 		</constant>
 		<constant name="NODE_UNKNOWN" value="6" enum="NodeType">
-			Unknown node
+			Unknown node.
 		</constant>
 	</constants>
 </class>

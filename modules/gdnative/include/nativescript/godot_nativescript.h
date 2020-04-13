@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,9 +42,7 @@ typedef enum {
 	GODOT_METHOD_RPC_MODE_REMOTE,
 	GODOT_METHOD_RPC_MODE_MASTER,
 	GODOT_METHOD_RPC_MODE_PUPPET,
-	GODOT_METHOD_RPC_MODE_SLAVE = GODOT_METHOD_RPC_MODE_PUPPET,
 	GODOT_METHOD_RPC_MODE_REMOTESYNC,
-	GODOT_METHOD_RPC_MODE_SYNC = GODOT_METHOD_RPC_MODE_REMOTESYNC,
 	GODOT_METHOD_RPC_MODE_MASTERSYNC,
 	GODOT_METHOD_RPC_MODE_PUPPETSYNC,
 } godot_method_rpc_mode;
@@ -56,7 +54,6 @@ typedef enum {
 	GODOT_PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	GODOT_PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease)
 	GODOT_PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
-	GODOT_PROPERTY_HINT_SPRITE_FRAME, // FIXME: Obsolete: drop whenever we can break compat
 	GODOT_PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	GODOT_PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	GODOT_PROPERTY_HINT_LAYERS_2D_RENDER,
@@ -98,8 +95,6 @@ typedef enum {
 	GODOT_PROPERTY_USAGE_INTERNATIONALIZED = 64, //hint for internationalized strings
 	GODOT_PROPERTY_USAGE_GROUP = 128, //used for grouping props in the editor
 	GODOT_PROPERTY_USAGE_CATEGORY = 256,
-	GODOT_PROPERTY_USAGE_STORE_IF_NONZERO = 512, // FIXME: Obsolete: drop whenever we can break compat
-	GODOT_PROPERTY_USAGE_STORE_IF_NONONE = 1024, // FIXME: Obsolete: drop whenever we can break compat
 	GODOT_PROPERTY_USAGE_NO_INSTANCE_STATE = 2048,
 	GODOT_PROPERTY_USAGE_RESTART_IF_CHANGED = 4096,
 	GODOT_PROPERTY_USAGE_SCRIPT_VARIABLE = 8192,

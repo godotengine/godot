@@ -1,4 +1,4 @@
-/* $Id: connecthostport.c,v 1.21 2019/04/23 12:11:08 nanard Exp $ */
+/* $Id: connecthostport.c,v 1.22 2019/10/13 17:22:08 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Author : Thomas Bernard
@@ -195,6 +195,10 @@ SOCKET connecthostport(const char * host, unsigned short port,
 	{
 		if(!ISINVALID(s))
 			closesocket(s);
+#ifdef DEBUG
+		printf("ai_family=%d ai_socktype=%d ai_protocol=%d (PF_INET=%d, PF_INET6=%d)\n",
+		       p->ai_family, p->ai_socktype, p->ai_protocol, PF_INET, PF_INET6);
+#endif
 		s = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 		if(ISINVALID(s))
 			continue;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ void BroadPhase2DBasic::remove(ID p_id) {
 CollisionObject2DSW *BroadPhase2DBasic::get_object(ID p_id) const {
 
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
-	ERR_FAIL_COND_V(!E, NULL);
+	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
 bool BroadPhase2DBasic::is_static(ID p_id) const {
@@ -158,7 +158,7 @@ void BroadPhase2DBasic::update() {
 
 			if (pair_ok && !E) {
 
-				void *data = NULL;
+				void *data = nullptr;
 				if (pair_callback)
 					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
 				pair_map.insert(key, data);
@@ -175,8 +175,8 @@ BroadPhase2DSW *BroadPhase2DBasic::_create() {
 BroadPhase2DBasic::BroadPhase2DBasic() {
 
 	current = 1;
-	unpair_callback = NULL;
-	unpair_userdata = NULL;
-	pair_callback = NULL;
-	pair_userdata = NULL;
+	unpair_callback = nullptr;
+	unpair_userdata = nullptr;
+	pair_callback = nullptr;
+	pair_userdata = nullptr;
 }

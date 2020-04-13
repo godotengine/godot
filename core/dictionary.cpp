@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,7 +90,7 @@ const Variant *Dictionary::getptr(const Variant &p_key) const {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
 
 	if (!E)
-		return NULL;
+		return nullptr;
 	return &E.get();
 }
 
@@ -99,7 +99,7 @@ Variant *Dictionary::getptr(const Variant &p_key) {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(p_key);
 
 	if (!E)
-		return NULL;
+		return nullptr;
 	return &E.get();
 }
 
@@ -186,19 +186,15 @@ void Dictionary::_unref() const {
 	if (_p->refcount.unref()) {
 		memdelete(_p);
 	}
-	_p = NULL;
+	_p = nullptr;
 }
 uint32_t Dictionary::hash() const {
 
 	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
 
-	List<Variant> keys;
-	get_key_list(&keys);
-
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-
-		h = hash_djb2_one_32(E->get().hash(), h);
-		h = hash_djb2_one_32(operator[](E->get()).hash(), h);
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		h = hash_djb2_one_32(E.key().hash(), h);
+		h = hash_djb2_one_32(E.value().hash(), h);
 	}
 
 	return h;
@@ -207,9 +203,10 @@ uint32_t Dictionary::hash() const {
 Array Dictionary::keys() const {
 
 	Array varr;
-	varr.resize(size());
 	if (_p->variant_map.empty())
 		return varr;
+
+	varr.resize(size());
 
 	int i = 0;
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
@@ -223,9 +220,10 @@ Array Dictionary::keys() const {
 Array Dictionary::values() const {
 
 	Array varr;
-	varr.resize(size());
 	if (_p->variant_map.empty())
 		return varr;
+
+	varr.resize(size());
 
 	int i = 0;
 	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
@@ -238,28 +236,25 @@ Array Dictionary::values() const {
 
 const Variant *Dictionary::next(const Variant *p_key) const {
 
-	if (p_key == NULL) {
+	if (p_key == nullptr) {
 		// caller wants to get the first element
 		if (_p->variant_map.front())
 			return &_p->variant_map.front().key();
-		return NULL;
+		return nullptr;
 	}
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.find(*p_key);
 
 	if (E && E.next())
 		return &E.next().key();
-	return NULL;
+	return nullptr;
 }
 
 Dictionary Dictionary::duplicate(bool p_deep) const {
 
 	Dictionary n;
 
-	List<Variant> keys;
-	get_key_list(&keys);
-
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		n[E->get()] = p_deep ? operator[](E->get()).duplicate(p_deep) : operator[](E->get());
+	for (OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::Element E = _p->variant_map.front(); E; E = E.next()) {
+		n[E.key()] = p_deep ? E.value().duplicate(true) : E.value();
 	}
 
 	return n;
@@ -275,7 +270,7 @@ const void *Dictionary::id() const {
 }
 
 Dictionary::Dictionary(const Dictionary &p_from) {
-	_p = NULL;
+	_p = nullptr;
 	_ref(p_from);
 }
 

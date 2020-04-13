@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +75,7 @@ void *ThreadPosix::thread_callback(void *userdata) {
 
 	ScriptServer::thread_exit();
 
-	return NULL;
+	return nullptr;
 }
 
 Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
@@ -108,7 +108,7 @@ void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 	ERR_FAIL_COND(!tp);
 	ERR_FAIL_COND(tp->pthread == 0);
 
-	pthread_join(tp->pthread, NULL);
+	pthread_join(tp->pthread, nullptr);
 	tp->pthread = 0;
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -358,11 +358,11 @@ List<String> GDScriptSyntaxHighlighter::get_supported_languages() {
 }
 
 void GDScriptSyntaxHighlighter::_update_cache() {
-	font_color = text_editor->get_color("font_color");
-	symbol_color = text_editor->get_color("symbol_color");
-	function_color = text_editor->get_color("function_color");
-	number_color = text_editor->get_color("number_color");
-	member_color = text_editor->get_color("member_variable_color");
+	font_color = text_editor->get_theme_color("font_color");
+	symbol_color = text_editor->get_theme_color("symbol_color");
+	function_color = text_editor->get_theme_color("function_color");
+	number_color = text_editor->get_theme_color("number_color");
+	member_color = text_editor->get_theme_color("member_variable_color");
 
 	const String text_editor_color_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
 	const bool default_theme = text_editor_color_theme == "Default";

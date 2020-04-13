@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,7 @@ Control *SplitContainer::_getch(int p_idx) const {
 		idx++;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void SplitContainer::_resort() {
@@ -74,8 +74,8 @@ void SplitContainer::_resort() {
 	bool second_expanded = (vertical ? second->get_v_size_flags() : second->get_h_size_flags()) & SIZE_EXPAND;
 
 	// Determine the separation between items
-	Ref<Texture> g = get_icon("grabber");
-	int sep = get_constant("separation");
+	Ref<Texture2D> g = get_theme_icon("grabber");
+	int sep = get_theme_constant("separation");
 	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
 
 	// Compute the minimum size
@@ -123,8 +123,8 @@ Size2 SplitContainer::get_minimum_size() const {
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
-	Ref<Texture> g = get_icon("grabber");
-	int sep = get_constant("separation");
+	Ref<Texture2D> g = get_theme_icon("grabber");
+	int sep = get_theme_constant("separation");
 	sep = (dragger_visibility != DRAGGER_HIDDEN_COLLAPSED) ? MAX(sep, vertical ? g->get_height() : g->get_width()) : 0;
 
 	for (int i = 0; i < 2; i++) {
@@ -167,7 +167,7 @@ void SplitContainer::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 
 			mouse_inside = false;
-			if (get_constant("autohide"))
+			if (get_theme_constant("autohide"))
 				update();
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -175,14 +175,14 @@ void SplitContainer::_notification(int p_what) {
 			if (!_getch(0) || !_getch(1))
 				return;
 
-			if (collapsed || (!dragging && !mouse_inside && get_constant("autohide")))
+			if (collapsed || (!dragging && !mouse_inside && get_theme_constant("autohide")))
 				return;
 
 			if (dragger_visibility != DRAGGER_VISIBLE)
 				return;
 
-			int sep = dragger_visibility != DRAGGER_HIDDEN_COLLAPSED ? get_constant("separation") : 0;
-			Ref<Texture> tex = get_icon("grabber");
+			int sep = dragger_visibility != DRAGGER_HIDDEN_COLLAPSED ? get_theme_constant("separation") : 0;
+			Ref<Texture2D> tex = get_theme_icon("grabber");
 			Size2 size = get_size();
 
 			if (vertical)
@@ -210,7 +210,7 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (mb->is_pressed()) {
 
-				int sep = get_constant("separation");
+				int sep = get_theme_constant("separation");
 
 				if (vertical) {
 
@@ -242,14 +242,14 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 
 		bool mouse_inside_state = false;
 		if (vertical)
-			mouse_inside_state = mm->get_position().y > middle_sep && mm->get_position().y < middle_sep + get_constant("separation");
+			mouse_inside_state = mm->get_position().y > middle_sep && mm->get_position().y < middle_sep + get_theme_constant("separation");
 		else
-			mouse_inside_state = mm->get_position().x > middle_sep && mm->get_position().x < middle_sep + get_constant("separation");
+			mouse_inside_state = mm->get_position().x > middle_sep && mm->get_position().x < middle_sep + get_theme_constant("separation");
 
 		if (mouse_inside != mouse_inside_state) {
 
 			mouse_inside = mouse_inside_state;
-			if (get_constant("autohide"))
+			if (get_theme_constant("autohide"))
 				update();
 		}
 
@@ -266,20 +266,20 @@ void SplitContainer::_gui_input(const Ref<InputEvent> &p_event) {
 Control::CursorShape SplitContainer::get_cursor_shape(const Point2 &p_pos) const {
 
 	if (dragging)
-		return (vertical ? CURSOR_VSIZE : CURSOR_HSIZE);
+		return (vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
 
 	if (!collapsed && _getch(0) && _getch(1) && dragger_visibility == DRAGGER_VISIBLE) {
 
-		int sep = get_constant("separation");
+		int sep = get_theme_constant("separation");
 
 		if (vertical) {
 
 			if (p_pos.y > middle_sep && p_pos.y < middle_sep + sep)
-				return CURSOR_VSIZE;
+				return CURSOR_VSPLIT;
 		} else {
 
 			if (p_pos.x > middle_sep && p_pos.x < middle_sep + sep)
-				return CURSOR_HSIZE;
+				return CURSOR_HSPLIT;
 		}
 	}
 

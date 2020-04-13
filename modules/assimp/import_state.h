@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,9 +36,9 @@
 #include "core/vector.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/project_settings_editor.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/skeleton.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
+#include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/animation.h"
 #include "scene/resources/surface_tool.h"
@@ -52,28 +52,42 @@
 
 namespace AssimpImporter {
 /** Import state is for global scene import data
-	 * This makes the code simpler and contains useful lookups.
-	 */
+ * This makes the code simpler and contains useful lookups.
+ */
 struct ImportState {
 
 	String path;
+	Node3D *root;
 	const aiScene *assimp_scene;
 	uint32_t max_bone_weights;
 
-	Spatial *root;
-	Map<String, Ref<Mesh> > mesh_cache;
-	Map<int, Ref<Material> > material_cache;
+	Map<String, Ref<Mesh>> mesh_cache;
+	Map<int, Ref<Material>> material_cache;
 	Map<String, int> light_cache;
 	Map<String, int> camera_cache;
-	//Vector<Skeleton *> skeletons;
-	Map<Skeleton *, const Spatial *> armature_skeletons; // maps skeletons based on their armature nodes.
-	Map<const aiBone *, Skeleton *> bone_to_skeleton_lookup; // maps bones back into their skeleton
+
 	// very useful for when you need to ask assimp for the bone mesh
-	Map<String, Node *> node_map;
-	Map<const aiNode *, const Node *> assimp_node_map;
-	Map<String, Ref<Image> > path_to_image_cache;
-	bool fbx; //for some reason assimp does some things different for FBX
+
+	Map<const aiNode *, Node *> assimp_node_map;
+	Map<String, Ref<Image>> path_to_image_cache;
+
+	// Generation 3 - determinisitic iteration
+	// to lower potential recursion errors
+	List<const aiNode *> nodes;
+	Map<const aiNode *, Node3D *> flat_node_map;
 	AnimationPlayer *animation_player;
+
+	// Generation 3 - deterministic armatures
+	// list of armature nodes - flat and simple to parse
+	// assimp node, node in godot
+	List<aiNode *> armature_nodes;
+	Map<const aiNode *, Skeleton3D *> armature_skeletons;
+	Map<aiBone *, Skeleton3D *> skeleton_bone_map;
+	// Generation 3 - deterministic bone handling
+	// bones from the stack are popped when found
+	// this means we can detect
+	// what bones are for other armatures
+	List<aiBone *> bone_stack;
 };
 
 struct AssimpImageData {
@@ -86,14 +100,15 @@ struct AssimpImageData {
 	* This makes the code easier to handle too and add extra arguments without breaking things
 	*/
 struct RecursiveState {
+	RecursiveState() {} // do not construct :)
 	RecursiveState(
 			Transform &_node_transform,
-			Skeleton *_skeleton,
-			Spatial *_new_node,
-			const String &_node_name,
-			const aiNode *_assimp_node,
+			Skeleton3D *_skeleton,
+			Node3D *_new_node,
+			String &_node_name,
+			aiNode *_assimp_node,
 			Node *_parent_node,
-			const aiBone *_bone) :
+			aiBone *_bone) :
 			node_transform(_node_transform),
 			skeleton(_skeleton),
 			new_node(_new_node),
@@ -102,13 +117,13 @@ struct RecursiveState {
 			parent_node(_parent_node),
 			bone(_bone) {}
 
-	Transform &node_transform;
-	Skeleton *skeleton;
-	Spatial *new_node;
-	const String &node_name;
-	const aiNode *assimp_node;
-	Node *parent_node;
-	const aiBone *bone;
+	Transform node_transform;
+	Skeleton3D *skeleton = nullptr;
+	Node3D *new_node = nullptr;
+	String node_name;
+	aiNode *assimp_node = nullptr;
+	Node *parent_node = nullptr;
+	aiBone *bone = nullptr;
 };
 } // namespace AssimpImporter
 

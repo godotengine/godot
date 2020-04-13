@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "core_string_names.h"
 
-CoreStringNames *CoreStringNames::singleton = NULL;
+CoreStringNames *CoreStringNames::singleton = nullptr;
 
 CoreStringNames::CoreStringNames() :
 		_free(StaticCString::create("free")),
@@ -70,5 +70,9 @@ CoreStringNames::CoreStringNames() :
 		r8(StaticCString::create("r8")),
 		g8(StaticCString::create("g8")),
 		b8(StaticCString::create("b8")),
-		a8(StaticCString::create("a8")) {
+		a8(StaticCString::create("a8")),
+		call(StaticCString::create("call")),
+		call_deferred(StaticCString::create("call_deferred")),
+		emit(StaticCString::create("emit")),
+		notification(StaticCString::create("notification")) {
 }

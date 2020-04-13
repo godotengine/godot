@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ void PaneDrag::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 
-			Ref<Texture> icon = mouse_over ? get_icon("PaneDragHover", "EditorIcons") : get_icon("PaneDrag", "EditorIcons");
+			Ref<Texture2D> icon = mouse_over ? get_theme_icon("PaneDragHover", "EditorIcons") : get_theme_icon("PaneDrag", "EditorIcons");
 			if (!icon.is_null())
 				icon->draw(get_canvas_item(), Point2(0, 0));
 
@@ -62,7 +62,7 @@ void PaneDrag::_notification(int p_what) {
 }
 Size2 PaneDrag::get_minimum_size() const {
 
-	Ref<Texture> icon = get_icon("PaneDrag", "EditorIcons");
+	Ref<Texture2D> icon = get_theme_icon("PaneDrag", "EditorIcons");
 	if (!icon.is_null())
 		return icon->get_size();
 	return Size2();

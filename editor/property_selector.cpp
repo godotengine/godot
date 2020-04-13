@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 
 	if (k.is_valid()) {
 
-		switch (k->get_scancode()) {
+		switch (k->get_keycode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
@@ -95,8 +95,8 @@ void PropertySelector::_update_search() {
 			instance->get_property_list(&props, true);
 		} else if (type != Variant::NIL) {
 			Variant v;
-			Variant::CallError ce;
-			v = Variant::construct(type, NULL, 0, ce);
+			Callable::CallError ce;
+			v = Variant::construct(type, nullptr, 0, ce);
 
 			v.get_property_list(&props);
 		} else {
@@ -116,52 +116,52 @@ void PropertySelector::_update_search() {
 			}
 		}
 
-		TreeItem *category = NULL;
+		TreeItem *category = nullptr;
 
 		bool found = false;
 
-		Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
-			Control::get_icon("Variant", "EditorIcons"),
-			Control::get_icon("bool", "EditorIcons"),
-			Control::get_icon("int", "EditorIcons"),
-			Control::get_icon("float", "EditorIcons"),
-			Control::get_icon("String", "EditorIcons"),
-			Control::get_icon("Vector2", "EditorIcons"),
-			Control::get_icon("Rect2", "EditorIcons"),
-			Control::get_icon("Vector3", "EditorIcons"),
-			Control::get_icon("Transform2D", "EditorIcons"),
-			Control::get_icon("Plane", "EditorIcons"),
-			Control::get_icon("Quat", "EditorIcons"),
-			Control::get_icon("AABB", "EditorIcons"),
-			Control::get_icon("Basis", "EditorIcons"),
-			Control::get_icon("Transform", "EditorIcons"),
-			Control::get_icon("Color", "EditorIcons"),
-			Control::get_icon("Path", "EditorIcons"),
-			Control::get_icon("RID", "EditorIcons"),
-			Control::get_icon("Object", "EditorIcons"),
-			Control::get_icon("Dictionary", "EditorIcons"),
-			Control::get_icon("Array", "EditorIcons"),
-			Control::get_icon("PoolByteArray", "EditorIcons"),
-			Control::get_icon("PoolIntArray", "EditorIcons"),
-			Control::get_icon("PoolRealArray", "EditorIcons"),
-			Control::get_icon("PoolStringArray", "EditorIcons"),
-			Control::get_icon("PoolVector2Array", "EditorIcons"),
-			Control::get_icon("PoolVector3Array", "EditorIcons"),
-			Control::get_icon("PoolColorArray", "EditorIcons")
+		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
+			search_options->get_theme_icon("Variant", "EditorIcons"),
+			search_options->get_theme_icon("bool", "EditorIcons"),
+			search_options->get_theme_icon("int", "EditorIcons"),
+			search_options->get_theme_icon("float", "EditorIcons"),
+			search_options->get_theme_icon("String", "EditorIcons"),
+			search_options->get_theme_icon("Vector2", "EditorIcons"),
+			search_options->get_theme_icon("Rect2", "EditorIcons"),
+			search_options->get_theme_icon("Vector3", "EditorIcons"),
+			search_options->get_theme_icon("Transform2D", "EditorIcons"),
+			search_options->get_theme_icon("Plane", "EditorIcons"),
+			search_options->get_theme_icon("Quat", "EditorIcons"),
+			search_options->get_theme_icon("AABB", "EditorIcons"),
+			search_options->get_theme_icon("Basis", "EditorIcons"),
+			search_options->get_theme_icon("Transform", "EditorIcons"),
+			search_options->get_theme_icon("Color", "EditorIcons"),
+			search_options->get_theme_icon("Path", "EditorIcons"),
+			search_options->get_theme_icon("RID", "EditorIcons"),
+			search_options->get_theme_icon("Object", "EditorIcons"),
+			search_options->get_theme_icon("Dictionary", "EditorIcons"),
+			search_options->get_theme_icon("Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedByteArray", "EditorIcons"),
+			search_options->get_theme_icon("PackedInt32Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedFloat32Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedStringArray", "EditorIcons"),
+			search_options->get_theme_icon("PackedVector2Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedVector3Array", "EditorIcons"),
+			search_options->get_theme_icon("PackedColorArray", "EditorIcons")
 		};
 
 		for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 			if (E->get().usage == PROPERTY_USAGE_CATEGORY) {
-				if (category && category->get_children() == NULL) {
+				if (category && category->get_children() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
 				category->set_text(0, E->get().name);
 				category->set_selectable(0, false);
 
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				if (E->get().name == "Script Variables") {
-					icon = get_icon("Script", "EditorIcons");
+					icon = search_options->get_theme_icon("Script", "EditorIcons");
 				} else {
 					icon = EditorNode::get_singleton()->get_class_icon(E->get().name);
 				}
@@ -191,7 +191,7 @@ void PropertySelector::_update_search() {
 			item->set_selectable(0, true);
 		}
 
-		if (category && category->get_children() == NULL) {
+		if (category && category->get_children() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	} else {
@@ -200,8 +200,8 @@ void PropertySelector::_update_search() {
 
 		if (type != Variant::NIL) {
 			Variant v;
-			Variant::CallError ce;
-			v = Variant::construct(type, NULL, 0, ce);
+			Callable::CallError ce;
+			v = Variant::construct(type, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
 
@@ -220,25 +220,25 @@ void PropertySelector::_update_search() {
 			}
 		}
 
-		TreeItem *category = NULL;
+		TreeItem *category = nullptr;
 
 		bool found = false;
 		bool script_methods = false;
 
 		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
 			if (E->get().name.begins_with("*")) {
-				if (category && category->get_children() == NULL) {
+				if (category && category->get_children() == nullptr) {
 					memdelete(category); //old category was unused
 				}
 				category = search_options->create_item(root);
 				category->set_text(0, E->get().name.replace_first("*", ""));
 				category->set_selectable(0, false);
 
-				Ref<Texture> icon;
+				Ref<Texture2D> icon;
 				script_methods = false;
 				String rep = E->get().name.replace("*", "");
 				if (E->get().name == "*Script Methods") {
-					icon = get_icon("Script", "EditorIcons");
+					icon = search_options->get_theme_icon("Script", "EditorIcons");
 					script_methods = true;
 				} else {
 					icon = EditorNode::get_singleton()->get_class_icon(rep);
@@ -310,12 +310,12 @@ void PropertySelector::_update_search() {
 			}
 		}
 
-		if (category && category->get_children() == NULL) {
+		if (category && category->get_children() == nullptr) {
 			memdelete(category); //old category was unused
 		}
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(root->get_children() == nullptr);
 }
 
 void PropertySelector::_confirmed() {
@@ -389,13 +389,17 @@ void PropertySelector::_item_selected() {
 	help_bit->set_text(text);
 }
 
+void PropertySelector::_hide_requested() {
+	_cancel_pressed(); // From AcceptDialog.
+}
+
 void PropertySelector::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		connect("confirmed", this, "_confirmed");
+		connect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
 	} else if (p_what == NOTIFICATION_EXIT_TREE) {
-		disconnect("confirmed", this, "_confirmed");
+		disconnect("confirmed", callable_mp(this, &PropertySelector::_confirmed));
 	}
 }
 
@@ -404,9 +408,9 @@ void PropertySelector::select_method_from_base_type(const String &p_base, const 
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = p_virtuals_only;
 
 	popup_centered_ratio(0.6);
@@ -423,7 +427,7 @@ void PropertySelector::select_method_from_script(const Ref<Script> &p_script, co
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -437,9 +441,9 @@ void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	script = 0;
+	script = ObjectID();
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -453,14 +457,14 @@ void PropertySelector::select_method_from_instance(Object *p_instance, const Str
 	base_type = p_instance->get_class();
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	{
 		Ref<Script> scr = p_instance->get_script();
 		if (scr.is_valid())
 			script = scr->get_instance_id();
 	}
 	properties = false;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -474,9 +478,9 @@ void PropertySelector::select_property_from_base_type(const String &p_base, cons
 	base_type = p_base;
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = true;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -494,7 +498,7 @@ void PropertySelector::select_property_from_script(const Ref<Script> &p_script, 
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	properties = true;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -509,9 +513,9 @@ void PropertySelector::select_property_from_basic_type(Variant::Type p_type, con
 	base_type = "";
 	selected = p_current;
 	type = p_type;
-	script = 0;
+	script = ObjectID();
 	properties = true;
-	instance = NULL;
+	instance = nullptr;
 	virtuals_only = false;
 
 	popup_centered_ratio(0.6);
@@ -525,7 +529,7 @@ void PropertySelector::select_property_from_instance(Object *p_instance, const S
 	base_type = "";
 	selected = p_current;
 	type = Variant::NIL;
-	script = 0;
+	script = ObjectID();
 	properties = true;
 	instance = p_instance;
 	virtuals_only = false;
@@ -542,11 +546,6 @@ void PropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filte
 
 void PropertySelector::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_text_changed"), &PropertySelector::_text_changed);
-	ClassDB::bind_method(D_METHOD("_confirmed"), &PropertySelector::_confirmed);
-	ClassDB::bind_method(D_METHOD("_sbox_input"), &PropertySelector::_sbox_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"), &PropertySelector::_item_selected);
-
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::STRING, "name")));
 }
 
@@ -557,21 +556,21 @@ PropertySelector::PropertySelector() {
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Search:"), search_box);
-	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &PropertySelector::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 	get_ok()->set_text(TTR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("item_activated", this, "_confirmed");
-	search_options->connect("cell_selected", this, "_item_selected");
+	search_options->connect("item_activated", callable_mp(this, &PropertySelector::_confirmed));
+	search_options->connect("cell_selected", callable_mp(this, &PropertySelector::_item_selected));
 	search_options->set_hide_root(true);
 	search_options->set_hide_folding(true);
 	virtuals_only = false;
 
 	help_bit = memnew(EditorHelpBit);
 	vbc->add_margin_child(TTR("Description:"), help_bit);
-	help_bit->connect("request_hide", this, "_closed");
+	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
 }

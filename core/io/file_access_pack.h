@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,11 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/print_string.h"
+
+// Godot's packed file magic header ("GDPC" in ASCII).
+#define PACK_HEADER_MAGIC 0x43504447
+// The current packed file format version number.
+#define PACK_FORMAT_VERSION 1
 
 class PackSource;
 
@@ -180,9 +185,9 @@ FileAccess *PackedData::try_open_path(const String &p_path) {
 	PathMD5 pmd5(p_path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
 	if (!E)
-		return NULL; //not found
+		return nullptr; //not found
 	if (E->get().offset == 0)
-		return NULL; //was erased
+		return nullptr; //was erased
 
 	return E->get().src->get_file(p_path, &E->get());
 }
@@ -211,7 +216,7 @@ public:
 	virtual String get_drive(int p_drive);
 
 	virtual Error change_dir(String p_dir);
-	virtual String get_current_dir();
+	virtual String get_current_dir(bool p_include_drive = true);
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);

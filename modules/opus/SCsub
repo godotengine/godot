@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
-stub = True
+# Only kept to build the thirdparty library used by the webm module.
+# AudioStreamOpus was dropped in 3.0 due to incompatibility with the new audio
+# engine. If you want to port it, fetch it from the Git history.
 
 env_opus = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_opus']:
+if env["builtin_opus"]:
     thirdparty_dir = "#thirdparty/opus/"
 
     thirdparty_sources = [
-
         # Sync with opus_sources.mk
         "opus.c",
         "opus_decoder.c",
@@ -21,17 +22,14 @@ if env['builtin_opus']:
         "opus_multistream_encoder.c",
         "opus_multistream_decoder.c",
         "repacketizer.c",
-
         "analysis.c",
         "mlp.c",
         "mlp_data.c",
-
         # Sync with libopusfile Makefile.am
         "info.c",
         "internal.c",
         "opusfile.c",
         "stream.c",
-
         # Sync with celt_sources.mk
         "celt/bands.c",
         "celt/celt.c",
@@ -51,12 +49,11 @@ if env['builtin_opus']:
         "celt/quant_bands.c",
         "celt/rate.c",
         "celt/vq.c",
-        #"celt/arm/arm_celt_map.c",
-        #"celt/arm/armcpu.c",
-        #"celt/arm/celt_ne10_fft.c",
-        #"celt/arm/celt_ne10_mdct.c",
-        #"celt/arm/celt_neon_intr.c",
-
+        # "celt/arm/arm_celt_map.c",
+        # "celt/arm/armcpu.c",
+        # "celt/arm/celt_ne10_fft.c",
+        # "celt/arm/celt_ne10_mdct.c",
+        # "celt/arm/celt_neon_intr.c",
         # Sync with silk_sources.mk
         "silk/CNG.c",
         "silk/code_signs.c",
@@ -205,7 +202,7 @@ if env['builtin_opus']:
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources + opus_sources_silk]
 
     # also requires libogg
-    if env['builtin_libogg']:
+    if env["builtin_libogg"]:
         env_opus.Prepend(CPPPATH=["#thirdparty/libogg"])
 
     env_opus.Append(CPPDEFINES=["HAVE_CONFIG_H"])
@@ -221,23 +218,19 @@ if env['builtin_opus']:
     env_opus.Prepend(CPPPATH=[thirdparty_dir + "/" + dir for dir in thirdparty_include_paths])
 
     if env["platform"] == "android":
-        if ("android_arch" in env and env["android_arch"] == "armv7"):
+        if "android_arch" in env and env["android_arch"] == "armv7":
             env_opus.Append(CPPDEFINES=["OPUS_ARM_OPT"])
-        elif ("android_arch" in env and env["android_arch"] == "arm64v8"):
+        elif "android_arch" in env and env["android_arch"] == "arm64v8":
             env_opus.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
     elif env["platform"] == "iphone":
-        if ("arch" in env and env["arch"] == "arm"):
+        if "arch" in env and env["arch"] == "arm":
             env_opus.Append(CPPDEFINES=["OPUS_ARM_OPT"])
-        elif ("arch" in env and env["arch"] == "arm64"):
+        elif "arch" in env and env["arch"] == "arm64":
             env_opus.Append(CPPDEFINES=["OPUS_ARM64_OPT"])
 
     env_thirdparty = env_opus.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
-if not stub:
-    # Module files
-    env_opus.add_source_files(env.modules_sources, "*.cpp")
-else:
-    # Module files
-    env_opus.add_source_files(env.modules_sources, "stub/register_types.cpp")
+# Module files
+env_opus.add_source_files(env.modules_sources, "register_types.cpp")

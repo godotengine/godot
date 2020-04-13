@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsDirectSpaceState2D" inherits="Object" version="4.0">
+	<brief_description>
+		Direct access object to a space in the [PhysicsServer2D].
+	</brief_description>
+	<description>
+		Direct access object to a space in the [PhysicsServer2D]. It's used mainly to do queries against objects and areas residing in a given space.
+	</description>
+	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
+	</tutorials>
+	<methods>
+		<method name="cast_motion">
+			<return type="Array">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D">
+			</argument>
+			<description>
+				Checks how far the shape can travel toward a point. If the shape can not move, the array will be empty.
+				[b]Note:[/b] Both the shape and the motion are supplied through a [PhysicsShapeQueryParameters2D] object. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [code][1, 1][/code].
+			</description>
+		</method>
+		<method name="collide_shape">
+			<return type="Array">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D">
+			</argument>
+			<argument index="1" name="max_results" type="int" default="32">
+			</argument>
+			<description>
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. The resulting array contains a list of points where the shape intersects another. Like with [method intersect_shape], the number of returned results can be limited to save processing time.
+			</description>
+		</method>
+		<method name="get_rest_info">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D">
+			</argument>
+			<description>
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. If it collides with more than one shape, the nearest one is selected. If the shape did not intersect anything, then an empty dictionary is returned instead.
+				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object. The returned object is a dictionary containing the following fields:
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]linear_velocity[/code]: The colliding object's velocity [Vector2]. If the object is an [Area2D], the result is [code](0, 0)[/code].
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
+				[code]normal[/code]: The object's surface normal at the intersection point.
+				[code]point[/code]: The intersection point.
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+			</description>
+		</method>
+		<method name="intersect_point">
+			<return type="Array">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="max_results" type="int" default="32">
+			</argument>
+			<argument index="2" name="exclude" type="Array" default="[  ]">
+			</argument>
+			<argument index="3" name="collision_layer" type="int" default="2147483647">
+			</argument>
+			<argument index="4" name="collide_with_bodies" type="bool" default="true">
+			</argument>
+			<argument index="5" name="collide_with_areas" type="bool" default="false">
+			</argument>
+			<description>
+				Checks whether a point is inside any shape. The shapes the point is inside of are returned in an array containing dictionaries with the following fields:
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
+			</description>
+		</method>
+		<method name="intersect_point_on_canvas">
+			<return type="Array">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="canvas_instance_id" type="int">
+			</argument>
+			<argument index="2" name="max_results" type="int" default="32">
+			</argument>
+			<argument index="3" name="exclude" type="Array" default="[  ]">
+			</argument>
+			<argument index="4" name="collision_layer" type="int" default="2147483647">
+			</argument>
+			<argument index="5" name="collide_with_bodies" type="bool" default="true">
+			</argument>
+			<argument index="6" name="collide_with_areas" type="bool" default="false">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="intersect_ray">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="from" type="Vector2">
+			</argument>
+			<argument index="1" name="to" type="Vector2">
+			</argument>
+			<argument index="2" name="exclude" type="Array" default="[  ]">
+			</argument>
+			<argument index="3" name="collision_layer" type="int" default="2147483647">
+			</argument>
+			<argument index="4" name="collide_with_bodies" type="bool" default="true">
+			</argument>
+			<argument index="5" name="collide_with_areas" type="bool" default="false">
+			</argument>
+			<description>
+				Intersects a ray in a given space. The returned object is a dictionary with the following fields:
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
+				[code]normal[/code]: The object's surface normal at the intersection point.
+				[code]position[/code]: The intersection point.
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				If the ray did not intersect anything, then an empty dictionary is returned instead.
+				Additionally, the method can take an [code]exclude[/code] array of objects or [RID]s that are to be excluded from collisions, a [code]collision_mask[/code] bitmask representing the physics layers to check in, or booleans to determine if the ray should collide with [PhysicsBody2D]s or [Area2D]s, respectively.
+			</description>
+		</method>
+		<method name="intersect_shape">
+			<return type="Array">
+			</return>
+			<argument index="0" name="shape" type="PhysicsShapeQueryParameters2D">
+			</argument>
+			<argument index="1" name="max_results" type="int" default="32">
+			</argument>
+			<description>
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space.
+				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object. The intersected shapes are returned in an array containing dictionaries with the following fields:
+				[code]collider[/code]: The colliding object.
+				[code]collider_id[/code]: The colliding object's ID.
+				[code]metadata[/code]: The intersecting shape's metadata. This metadata is different from [method Object.get_meta], and is set with [method PhysicsServer2D.shape_set_data].
+				[code]rid[/code]: The intersecting object's [RID].
+				[code]shape[/code]: The shape index of the colliding shape.
+				The number of intersections can be limited with the [code]max_results[/code] parameter, to reduce the processing time.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

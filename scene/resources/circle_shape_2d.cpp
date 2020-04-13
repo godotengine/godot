@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "circle_shape_2d.h"
 
-#include "servers/physics_2d_server.h"
-#include "servers/visual_server.h"
+#include "servers/physics_server_2d.h"
+#include "servers/rendering_server.h"
 
 bool CircleShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 
@@ -40,7 +40,7 @@ bool CircleShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_t
 
 void CircleShape2D::_update_shape() {
 
-	Physics2DServer::get_singleton()->shape_set_data(get_rid(), radius);
+	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), radius);
 	emit_changed();
 }
 
@@ -60,7 +60,7 @@ void CircleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CircleShape2D::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &CircleShape2D::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.01,16384,0.5"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.01,16384,0.5"), "set_radius", "get_radius");
 }
 
 Rect2 CircleShape2D::get_rect() const {
@@ -68,6 +68,10 @@ Rect2 CircleShape2D::get_rect() const {
 	rect.position = -Point2(get_radius(), get_radius());
 	rect.size = Point2(get_radius(), get_radius()) * 2.0;
 	return rect;
+}
+
+real_t CircleShape2D::get_enclosing_radius() const {
+	return radius;
 }
 
 void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
@@ -80,11 +84,11 @@ void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	Vector<Color> col;
 	col.push_back(p_color);
-	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
+	RenderingServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
 }
 
 CircleShape2D::CircleShape2D() :
-		Shape2D(Physics2DServer::get_singleton()->circle_shape_create()) {
+		Shape2D(PhysicsServer2D::get_singleton()->circle_shape_create()) {
 
 	radius = 10;
 	_update_shape();

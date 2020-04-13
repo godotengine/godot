@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,9 +52,17 @@
 #define _COMMA_11 ,
 #define _COMMA_12 ,
 #define _COMMA_13 ,
+#define _COMMA_14 ,
+#define _COMMA_15 ,
 
 // 1-based comma separated list of ITEMs
 #define COMMA_SEP_LIST(ITEM, LENGTH) _COMMA_SEP_LIST_##LENGTH(ITEM)
+#define _COMMA_SEP_LIST_15(ITEM) \
+	_COMMA_SEP_LIST_14(ITEM)     \
+	, ITEM(15)
+#define _COMMA_SEP_LIST_14(ITEM) \
+	_COMMA_SEP_LIST_13(ITEM)     \
+	, ITEM(14)
 #define _COMMA_SEP_LIST_13(ITEM) \
 	_COMMA_SEP_LIST_12(ITEM)     \
 	, ITEM(13)
@@ -98,6 +106,12 @@
 
 // 1-based semicolon separated list of ITEMs
 #define SEMIC_SEP_LIST(ITEM, LENGTH) _SEMIC_SEP_LIST_##LENGTH(ITEM)
+#define _SEMIC_SEP_LIST_15(ITEM) \
+	_SEMIC_SEP_LIST_14(ITEM);    \
+	ITEM(15)
+#define _SEMIC_SEP_LIST_14(ITEM) \
+	_SEMIC_SEP_LIST_13(ITEM);    \
+	ITEM(14)
 #define _SEMIC_SEP_LIST_13(ITEM) \
 	_SEMIC_SEP_LIST_12(ITEM);    \
 	ITEM(13)
@@ -141,6 +155,12 @@
 
 // 1-based space separated list of ITEMs
 #define SPACE_SEP_LIST(ITEM, LENGTH) _SPACE_SEP_LIST_##LENGTH(ITEM)
+#define _SPACE_SEP_LIST_15(ITEM) \
+	_SPACE_SEP_LIST_14(ITEM)     \
+	ITEM(15)
+#define _SPACE_SEP_LIST_14(ITEM) \
+	_SPACE_SEP_LIST_13(ITEM)     \
+	ITEM(14)
 #define _SPACE_SEP_LIST_13(ITEM) \
 	_SPACE_SEP_LIST_12(ITEM)     \
 	ITEM(13)
@@ -250,7 +270,7 @@
 		cmd->sync_sem = ss;                                                                    \
 		unlock();                                                                              \
 		if (sync) sync->post();                                                                \
-		ss->sem->wait();                                                                       \
+		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
 
@@ -267,17 +287,17 @@
 		cmd->sync_sem = ss;                                                           \
 		unlock();                                                                     \
 		if (sync) sync->post();                                                       \
-		ss->sem->wait();                                                              \
+		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
 
-#define MAX_CMD_PARAMS 13
+#define MAX_CMD_PARAMS 15
 
 class CommandQueueMT {
 
 	struct SyncSemaphore {
 
-		Semaphore *sem;
+		Semaphore sem;
 		bool in_use;
 	};
 
@@ -293,20 +313,20 @@ class CommandQueueMT {
 		SyncSemaphore *sync_sem;
 
 		virtual void post() {
-			sync_sem->sem->post();
+			sync_sem->sem.post();
 		}
 	};
 
 	DECL_CMD(0)
-	SPACE_SEP_LIST(DECL_CMD, 13)
+	SPACE_SEP_LIST(DECL_CMD, 15)
 
 	/* comands that return */
 	DECL_CMD_RET(0)
-	SPACE_SEP_LIST(DECL_CMD_RET, 13)
+	SPACE_SEP_LIST(DECL_CMD_RET, 15)
 
 	/* commands that don't return but sync */
 	DECL_CMD_SYNC(0)
-	SPACE_SEP_LIST(DECL_CMD_SYNC, 13)
+	SPACE_SEP_LIST(DECL_CMD_SYNC, 15)
 
 	/***** BASE *******/
 
@@ -321,7 +341,7 @@ class CommandQueueMT {
 	uint32_t write_ptr;
 	uint32_t dealloc_ptr;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
-	Mutex *mutex;
+	Mutex mutex;
 	Semaphore *sync;
 
 	template <class T>
@@ -340,7 +360,7 @@ class CommandQueueMT {
 				if (dealloc_one()) {
 					goto tryagain;
 				}
-				return NULL;
+				return nullptr;
 			}
 		} else {
 			// ahead of dealloc_ptr, check that there is room
@@ -354,11 +374,11 @@ class CommandQueueMT {
 					if (dealloc_one()) {
 						goto tryagain;
 					}
-					return NULL;
+					return nullptr;
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, NULL);
+				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, nullptr);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
@@ -386,7 +406,7 @@ class CommandQueueMT {
 		lock();
 		T *ret;
 
-		while ((ret = allocate<T>()) == NULL) {
+		while ((ret = allocate<T>()) == nullptr) {
 
 			unlock();
 			// sleep a little until fetch happened and some room is made
@@ -443,15 +463,15 @@ class CommandQueueMT {
 public:
 	/* NORMAL PUSH COMMANDS */
 	DECL_PUSH(0)
-	SPACE_SEP_LIST(DECL_PUSH, 13)
+	SPACE_SEP_LIST(DECL_PUSH, 15)
 
 	/* PUSH AND RET COMMANDS */
 	DECL_PUSH_AND_RET(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 13)
+	SPACE_SEP_LIST(DECL_PUSH_AND_RET, 15)
 
 	/* PUSH AND RET SYNC COMMANDS*/
 	DECL_PUSH_AND_SYNC(0)
-	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 13)
+	SPACE_SEP_LIST(DECL_PUSH_AND_SYNC, 15)
 
 	void wait_and_flush_one() {
 		ERR_FAIL_COND(!sync);
@@ -488,4 +508,4 @@ public:
 #undef CMD_SYNC_TYPE
 #undef DECL_CMD_SYNC
 
-#endif
+#endif // COMMAND_QUEUE_MT_H

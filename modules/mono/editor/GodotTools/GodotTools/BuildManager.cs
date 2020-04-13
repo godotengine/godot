@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using GodotTools.Build;
+using GodotTools.Ides.Rider;
 using GodotTools.Internals;
 using GodotTools.Utils;
 using static GodotTools.Internals.Globals;
@@ -16,6 +17,7 @@ namespace GodotTools
 
         public const string PropNameMsbuildMono = "MSBuild (Mono)";
         public const string PropNameMsbuildVs = "MSBuild (VS Build Tools)";
+        public const string PropNameMsbuildJetBrains = "MSBuild (JetBrains Rider)";
 
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
         public const string MsBuildLogFileName = "msbuild_log.txt";
@@ -23,7 +25,8 @@ namespace GodotTools
         public enum BuildTool
         {
             MsBuildMono,
-            MsBuildVs
+            MsBuildVs,
+            JetBrainsMsBuild
         }
 
         private static void RemoveOldIssuesFile(BuildInfo buildInfo)
@@ -160,12 +163,19 @@ namespace GodotTools
             if (!File.Exists(GodotSharpDirs.ProjectSlnPath))
                 return true; // No solution to build
 
-            // Make sure to update the API assemblies if they happen to be missing. Just in
-            // case the user decided to delete them at some point after they were loaded.
-            Internal.UpdateApiAssembliesFromPrebuilt();
+            // Make sure the API assemblies are up to date before building the project.
+            // We may not have had the chance to update the release API assemblies, and the debug ones
+            // may have been deleted by the user at some point after they were loaded by the Godot editor.
+            string apiAssembliesUpdateError = Internal.UpdateApiAssembliesFromPrebuilt(config == "ExportRelease" ? "Release" : "Debug");
+
+            if (!string.IsNullOrEmpty(apiAssembliesUpdateError))
+            {
+                ShowBuildErrorDialog("Failed to update the Godot API assemblies");
+                return false;
+            }
 
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var buildTool = (BuildTool) editorSettings.GetSetting("mono/builds/build_tool");
+            var buildTool = (BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
 
             using (var pr = new EditorProgress("mono_project_debug_build", "Building project solution...", 1))
             {
@@ -174,7 +184,7 @@ namespace GodotTools
                 var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, config);
 
                 // Add Godot defines
-                string constants = buildTool == BuildTool.MsBuildVs ? "GodotDefineConstants=\"" : "GodotDefineConstants=\\\"";
+                string constants = buildTool != BuildTool.MsBuildMono ? "GodotDefineConstants=\"" : "GodotDefineConstants=\\\"";
 
                 foreach (var godotDefine in godotDefines)
                     constants += $"GODOT_{godotDefine.ToUpper().Replace("-", "_").Replace(" ", "_").Replace(";", "_")};";
@@ -182,7 +192,7 @@ namespace GodotTools
                 if (Internal.GodotIsRealTDouble())
                     constants += "GODOT_REAL_T_IS_DOUBLE;";
 
-                constants += buildTool == BuildTool.MsBuildVs ? "\"" : "\\\"";
+                constants += buildTool != BuildTool.MsBuildMono ? "\"" : "\\\"";
 
                 buildInfo.CustomProperties.Add(constants);
 
@@ -232,24 +242,28 @@ namespace GodotTools
                 Internal.GodotIs32Bits() ? "32" : "64"
             };
 
-            return BuildProjectBlocking("Tools", godotDefines);
+            return BuildProjectBlocking("Debug", godotDefines);
         }
 
         public static void Initialize()
         {
             // Build tool settings
-
-            EditorDef("mono/builds/build_tool", OS.IsWindows() ? BuildTool.MsBuildVs : BuildTool.MsBuildMono);
-
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var msbuild = BuildTool.MsBuildMono;
+            if (OS.IsWindows)
+                msbuild = RiderPathManager.IsExternalEditorSetToRider(editorSettings)
+                        ? BuildTool.JetBrainsMsBuild
+                        : BuildTool.MsBuildVs;
+
+            EditorDef("mono/builds/build_tool", msbuild);
 
             editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
                 ["type"] = Godot.Variant.Type.Int,
                 ["name"] = "mono/builds/build_tool",
                 ["hint"] = Godot.PropertyHint.Enum,
-                ["hint_string"] = OS.IsWindows() ?
-                    $"{PropNameMsbuildMono},{PropNameMsbuildVs}" :
+                ["hint_string"] = OS.IsWindows ?
+                    $"{PropNameMsbuildMono},{PropNameMsbuildVs},{PropNameMsbuildJetBrains}" :
                     $"{PropNameMsbuildMono}"
             });
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,7 @@ public:
 	real_t x, y, z, w;
 
 	_FORCE_INLINE_ real_t length_squared() const;
+	bool is_equal_approx(const Quat &p_quat) const;
 	real_t length() const;
 	void normalize();
 	Quat normalized() const;
@@ -83,7 +84,7 @@ public:
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &v) const {
 #ifdef MATH_CHECKS
-		ERR_FAIL_COND_V(!is_normalized(), v);
+		ERR_FAIL_COND_V_MSG(!is_normalized(), v, "The quaternion must be normalized.");
 #endif
 		Vector3 u(x, y, z);
 		Vector3 uv = u.cross(v);
@@ -230,4 +231,4 @@ bool Quat::operator!=(const Quat &p_quat) const {
 	return x != p_quat.x || y != p_quat.y || z != p_quat.z || w != p_quat.w;
 }
 
-#endif
+#endif // QUAT_H

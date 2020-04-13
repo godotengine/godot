@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,20 +80,20 @@ Variant PackedDataContainer::_iter_get_ofs(const Variant &p_iter, uint32_t p_off
 	if (pos < 0 || pos >= size)
 		return Variant();
 
-	PoolVector<uint8_t>::Read rd = data.read();
+	const uint8_t *rd = data.ptr();
 	const uint8_t *r = &rd[p_offset];
 	uint32_t type = decode_uint32(r);
 
 	bool err = false;
 	if (type == TYPE_ARRAY) {
 
-		uint32_t vpos = decode_uint32(rd.ptr() + p_offset + 8 + pos * 4);
-		return _get_at_ofs(vpos, rd.ptr(), err);
+		uint32_t vpos = decode_uint32(rd + p_offset + 8 + pos * 4);
+		return _get_at_ofs(vpos, rd, err);
 
 	} else if (type == TYPE_DICT) {
 
-		uint32_t vpos = decode_uint32(rd.ptr() + p_offset + 8 + pos * 12 + 4);
-		return _get_at_ofs(vpos, rd.ptr(), err);
+		uint32_t vpos = decode_uint32(rd + p_offset + 8 + pos * 12 + 4);
+		return _get_at_ofs(vpos, rd, err);
 	} else {
 		ERR_FAIL_V(Variant());
 	}
@@ -114,7 +114,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 	} else {
 
 		Variant v;
-		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, NULL, false);
+		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, nullptr, false);
 
 		if (rerr != OK) {
 
@@ -127,7 +127,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 
 uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 
-	PoolVector<uint8_t>::Read rd = data.read();
+	const uint8_t *rd = data.ptr();
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -136,7 +136,8 @@ uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 
 int PackedDataContainer::_size(uint32_t p_ofs) const {
 
-	PoolVector<uint8_t>::Read rd = data.read();
+	const uint8_t *rd = data.ptr();
+	ERR_FAIL_COND_V(!rd, 0);
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -156,7 +157,7 @@ int PackedDataContainer::_size(uint32_t p_ofs) const {
 
 Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, bool &err) const {
 
-	PoolVector<uint8_t>::Read rd = data.read();
+	const uint8_t *rd = data.ptr();
 	const uint8_t *r = &rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -171,7 +172,7 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 				return Variant();
 			}
 			uint32_t ofs = decode_uint32(r + 8 + 4 * idx);
-			return _get_at_ofs(ofs, rd.ptr(), err);
+			return _get_at_ofs(ofs, rd, err);
 
 		} else {
 			err = true;
@@ -187,12 +188,12 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 		for (uint32_t i = 0; i < len; i++) {
 			uint32_t khash = decode_uint32(r + 8 + i * 12 + 0);
 			if (khash == hash) {
-				Variant key = _get_at_ofs(decode_uint32(r + 8 + i * 12 + 4), rd.ptr(), err);
+				Variant key = _get_at_ofs(decode_uint32(r + 8 + i * 12 + 4), rd, err);
 				if (err)
 					return Variant();
 				if (key == p_key) {
 					//key matches, return value
-					return _get_at_ofs(decode_uint32(r + 8 + i * 12 + 8), rd.ptr(), err);
+					return _get_at_ofs(decode_uint32(r + 8 + i * 12 + 8), rd, err);
 				}
 				found = true;
 			} else {
@@ -224,12 +225,12 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			string_cache[s] = tmpdata.size();
 
-			FALLTHROUGH;
-		};
+			[[fallthrough]];
+		}
 		case Variant::NIL:
 		case Variant::BOOL:
 		case Variant::INT:
-		case Variant::REAL:
+		case Variant::FLOAT:
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
@@ -239,18 +240,21 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::AABB:
 		case Variant::BASIS:
 		case Variant::TRANSFORM:
-		case Variant::POOL_BYTE_ARRAY:
-		case Variant::POOL_INT_ARRAY:
-		case Variant::POOL_REAL_ARRAY:
-		case Variant::POOL_STRING_ARRAY:
-		case Variant::POOL_VECTOR2_ARRAY:
-		case Variant::POOL_VECTOR3_ARRAY:
-		case Variant::POOL_COLOR_ARRAY:
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_STRING_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::STRING_NAME:
 		case Variant::NODE_PATH: {
 
 			uint32_t pos = tmpdata.size();
 			int len;
-			encode_variant(p_data, NULL, len, false);
+			encode_variant(p_data, nullptr, len, false);
 			tmpdata.resize(tmpdata.size() + len);
 			encode_variant(p_data, &tmpdata.write[pos], len, false);
 			return pos;
@@ -334,19 +338,19 @@ Error PackedDataContainer::pack(const Variant &p_data) {
 	_pack(p_data, tmpdata, string_cache);
 	datalen = tmpdata.size();
 	data.resize(tmpdata.size());
-	PoolVector<uint8_t>::Write w = data.write();
-	copymem(w.ptr(), tmpdata.ptr(), tmpdata.size());
+	uint8_t *w = data.ptrw();
+	copymem(w, tmpdata.ptr(), tmpdata.size());
 
 	return OK;
 }
 
-void PackedDataContainer::_set_data(const PoolVector<uint8_t> &p_data) {
+void PackedDataContainer::_set_data(const Vector<uint8_t> &p_data) {
 
 	data = p_data;
 	datalen = data.size();
 }
 
-PoolVector<uint8_t> PackedDataContainer::_get_data() const {
+Vector<uint8_t> PackedDataContainer::_get_data() const {
 	return data;
 }
 
@@ -374,7 +378,7 @@ void PackedDataContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pack", "value"), &PackedDataContainer::pack);
 	ClassDB::bind_method(D_METHOD("size"), &PackedDataContainer::size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "__data__"), "_set_data", "_get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "__data__"), "_set_data", "_get_data");
 }
 
 PackedDataContainer::PackedDataContainer() {

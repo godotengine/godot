@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,8 @@
 #include "editor_settings.h"
 #include "scene/resources/texture.h"
 
-static void (*_base_image_compress_pvrtc2_func)(Image *) = NULL;
-static void (*_base_image_compress_pvrtc4_func)(Image *) = NULL;
+static void (*_base_image_compress_pvrtc2_func)(Image *) = nullptr;
+static void (*_base_image_compress_pvrtc4_func)(Image *) = nullptr;
 
 static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 
@@ -98,7 +98,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 
 	// Save source PNG.
 	Ref<ImageTexture> t = memnew(ImageTexture);
-	t->create_from_image(Ref<Image>(p_image), 0);
+	t->create_from_image(Ref<Image>(p_image));
 	ResourceSaver::save(src_img, t);
 
 	Error err = OS::get_singleton()->execute(ttpath, args, true);
@@ -109,7 +109,7 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 		ERR_FAIL_MSG("Could not execute PVRTC tool: " + ttpath);
 	}
 
-	t = ResourceLoader::load(dst_img, "Texture");
+	t = ResourceLoader::load(dst_img, "Texture2D");
 	if (t.is_null()) {
 		// Clean up generated files.
 		DirAccess::remove_file_or_error(src_img);

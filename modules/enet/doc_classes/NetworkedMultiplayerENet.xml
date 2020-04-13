@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" category="Core" version="3.2">
+<class name="NetworkedMultiplayerENet" inherits="NetworkedMultiplayerPeer" version="4.0">
 	<brief_description>
 		PacketPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
 	</brief_description>
@@ -49,7 +49,7 @@
 			<argument index="3" name="out_bandwidth" type="int" default="0">
 			</argument>
 			<description>
-				Create server that listens to connections via [code]port[/code]. The port needs to be an available, unused port between 0 and 65535. Note that ports below 1024 are privileged and may require elevated permissions depending on the platform. To change the interface the server listens on, use [method set_bind_ip]. The default IP is the wildcard [code]"*"[/code], which listens on all available interfaces. [code]max_clients[/code] is the maximum number of clients that are allowed at once, any number up to 4096 may be used, although the achievable number of simultaneous clients may be far lower and depends on the application. For additional details on the bandwidth parameters, see [method create_client]. Returns [constant OK] if a server was created, [constant ERR_ALREADY_IN_USE] if this NetworkedMultiplayerENet instance already has an open connection (in which case you need to call [method close_connection] first) or [constant ERR_CANT_CREATE] if the server could not be created.
+				Create server that listens to connections via [code]port[/code]. The port needs to be an available, unused port between 0 and 65535. Note that ports below 1024 are privileged and may require elevated permissions depending on the platform. To change the interface the server listens on, use [method set_bind_ip]. The default IP is the wildcard [code]"*"[/code], which listens on all available interfaces. [code]max_clients[/code] is the maximum number of clients that are allowed at once, any number up to 4095 may be used, although the achievable number of simultaneous clients may be far lower and depends on the application. For additional details on the bandwidth parameters, see [method create_client]. Returns [constant OK] if a server was created, [constant ERR_ALREADY_IN_USE] if this NetworkedMultiplayerENet instance already has an open connection (in which case you need to call [method close_connection] first) or [constant ERR_CANT_CREATE] if the server could not be created.
 			</description>
 		</method>
 		<method name="disconnect_peer">
@@ -67,14 +67,14 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the last packet fetched via [method PacketPeer.get_packet]
+				Returns the channel of the last packet fetched via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_packet_channel" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet]
+				Returns the channel of the next packet that will be retrieved via [method PacketPeer.get_packet].
 			</description>
 		</method>
 		<method name="get_peer_address" qualifiers="const">
@@ -104,6 +104,24 @@
 				The IP used when creating a server. This is set to the wildcard [code]"*"[/code] by default, which binds to all available interfaces. The given IP needs to be in IPv4 or IPv6 address format, for example: [code]"192.168.1.1"[/code].
 			</description>
 		</method>
+		<method name="set_dtls_certificate">
+			<return type="void">
+			</return>
+			<argument index="0" name="certificate" type="X509Certificate">
+			</argument>
+			<description>
+				Configure the [X509Certificate] to use when [member use_dtls] is [code]true[/code]. For servers, you must also setup the [CryptoKey] via [method set_dtls_key].
+			</description>
+		</method>
+		<method name="set_dtls_key">
+			<return type="void">
+			</return>
+			<argument index="0" name="key" type="CryptoKey">
+			</argument>
+			<description>
+				Configure the [CryptoKey] to use when [member use_dtls] is [code]true[/code]. Remember to also call [method set_dtls_certificate] to setup your [X509Certificate].
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered" default="false">
@@ -115,11 +133,21 @@
 		<member name="compression_mode" type="int" setter="set_compression_mode" getter="get_compression_mode" enum="NetworkedMultiplayerENet.CompressionMode" default="0">
 			The compression method used for network packets. These have different tradeoffs of compression speed versus bandwidth, you may need to test which one works best for your use case if you use compression at all.
 		</member>
+		<member name="dtls_verify" type="bool" setter="set_dtls_verify_enabled" getter="is_dtls_verify_enabled" default="true">
+			Enable or disable certificate verification when [member use_dtls] [code]true[/code].
+		</member>
 		<member name="refuse_new_connections" type="bool" setter="set_refuse_new_connections" getter="is_refusing_new_connections" override="true" default="false" />
+		<member name="server_relay" type="bool" setter="set_server_relay_enabled" getter="is_server_relay_enabled" default="true">
+			Enable or disable the server feature that notifies clients of other peers' connection/disconnection, and relays messages between them. When this option is [code]false[/code], clients won't be automatically notified of other peers and won't be able to send them packets through the server.
+		</member>
 		<member name="transfer_channel" type="int" setter="set_transfer_channel" getter="get_transfer_channel" default="-1">
 			Set the default channel to be used to transfer data. By default, this value is [code]-1[/code] which means that ENet will only use 2 channels, one for reliable and one for unreliable packets. Channel [code]0[/code] is reserved, and cannot be used. Setting this member to any value between [code]0[/code] and [member channel_count] (excluded) will force ENet to use that channel for sending data.
 		</member>
 		<member name="transfer_mode" type="int" setter="set_transfer_mode" getter="get_transfer_mode" override="true" enum="NetworkedMultiplayerPeer.TransferMode" default="2" />
+		<member name="use_dtls" type="bool" setter="set_dtls_enabled" getter="is_dtls_enabled" default="false">
+			When enabled, the client or server created by this peer, will use [PacketPeerDTLS] instead of raw UDP sockets for communicating with the remote peer. This will make the communication encrypted with DTLS at the cost of higher resource usage and potentially larger packet size.
+			Note: When creating a DTLS server, make sure you setup the key/certificate pair via [method set_dtls_key] and [method set_dtls_certificate]. For DTLS clients, have a look at the [member dtls_verify] option, and configure the certificate accordingly via [method set_dtls_certificate].
+		</member>
 	</members>
 	<constants>
 		<constant name="COMPRESS_NONE" value="0" enum="CompressionMode">

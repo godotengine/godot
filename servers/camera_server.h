@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,16 +59,35 @@ public:
 		FEED_IMAGES = 2
 	};
 
+	typedef CameraServer *(*CreateFunc)();
+
 private:
 protected:
-	Vector<Ref<CameraFeed> > feeds;
+	static CreateFunc create_func;
+
+	Vector<Ref<CameraFeed>> feeds;
 
 	static CameraServer *singleton;
 
 	static void _bind_methods();
 
+	template <class T>
+	static CameraServer *_create_builtin() {
+		return memnew(T);
+	}
+
 public:
 	static CameraServer *get_singleton();
+
+	template <class T>
+	static void make_default() {
+		create_func = _create_builtin<T>;
+	}
+
+	static CameraServer *create() {
+		CameraServer *server = create_func ? create_func() : memnew(CameraServer);
+		return server;
+	};
 
 	// Right now we identify our feed by it's ID when it's used in the background.
 	// May see if we can change this to purely relying on CameraFeed objects or by name.

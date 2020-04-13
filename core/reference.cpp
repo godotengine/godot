@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,7 +102,8 @@ bool Reference::unreference() {
 	return die;
 }
 
-Reference::Reference() {
+Reference::Reference() :
+		Object(true) {
 
 	refcount.init();
 	refcount_init.init();
@@ -113,7 +114,7 @@ Reference::~Reference() {
 
 Variant WeakRef::get_ref() const {
 
-	if (ref == 0)
+	if (ref.is_null())
 		return Variant();
 
 	Object *obj = ObjectDB::get_instance(ref);
@@ -129,16 +130,15 @@ Variant WeakRef::get_ref() const {
 }
 
 void WeakRef::set_obj(Object *p_object) {
-	ref = p_object ? p_object->get_instance_id() : 0;
+	ref = p_object ? p_object->get_instance_id() : ObjectID();
 }
 
 void WeakRef::set_ref(const REF &p_ref) {
 
-	ref = p_ref.is_valid() ? p_ref->get_instance_id() : 0;
+	ref = p_ref.is_valid() ? p_ref->get_instance_id() : ObjectID();
 }
 
-WeakRef::WeakRef() :
-		ref(0) {
+WeakRef::WeakRef() {
 }
 
 void WeakRef::_bind_methods() {

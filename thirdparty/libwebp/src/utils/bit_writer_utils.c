@@ -70,7 +70,7 @@ static void Flush(VP8BitWriter* const bw) {
       const int value = (bits & 0x100) ? 0x00 : 0xff;
       for (; bw->run_ > 0; --bw->run_) bw->buf_[pos++] = value;
     }
-    bw->buf_[pos++] = bits;
+    bw->buf_[pos++] = bits & 0xff;
     bw->pos_ = pos;
   } else {
     bw->run_++;   // delay writing of bytes 0xff, pending eventual carry.

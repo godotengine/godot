@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -192,8 +192,6 @@ void GDNativeLibrarySingletonEditor::_notification(int p_what) {
 
 void GDNativeLibrarySingletonEditor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_item_edited"), &GDNativeLibrarySingletonEditor::_item_edited);
-	ClassDB::bind_method(D_METHOD("_discover_singletons"), &GDNativeLibrarySingletonEditor::_discover_singletons);
 	ClassDB::bind_method(D_METHOD("_update_libraries"), &GDNativeLibrarySingletonEditor::_update_libraries);
 }
 
@@ -207,8 +205,8 @@ GDNativeLibrarySingletonEditor::GDNativeLibrarySingletonEditor() {
 	libraries->set_hide_root(true);
 	add_margin_child(TTR("Libraries: "), libraries, true);
 	updating = false;
-	libraries->connect("item_edited", this, "_item_edited");
-	EditorFileSystem::get_singleton()->connect("filesystem_changed", this, "_discover_singletons");
+	libraries->connect("item_edited", callable_mp(this, &GDNativeLibrarySingletonEditor::_item_edited));
+	EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &GDNativeLibrarySingletonEditor::_discover_singletons));
 }
 
 #endif // TOOLS_ENABLED

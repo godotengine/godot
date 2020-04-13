@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -314,7 +314,7 @@ void Reverb::clear_buffers() {
 		if (comb[i].buffer)
 			memdelete_arr(comb[i].buffer);
 
-		comb[i].buffer = 0;
+		comb[i].buffer = nullptr;
 	}
 
 	for (int i = 0; i < MAX_ALLPASS; i++) {
@@ -322,7 +322,7 @@ void Reverb::clear_buffers() {
 		if (allpass[i].buffer)
 			memdelete_arr(allpass[i].buffer);
 
-		allpass[i].buffer = 0;
+		allpass[i].buffer = nullptr;
 	}
 }
 
@@ -342,7 +342,7 @@ Reverb::Reverb() {
 	hpf_h2 = 0;
 
 	input_buffer = memnew_arr(float, INPUT_BUFFER_MAX_SIZE);
-	echo_buffer = 0;
+	echo_buffer = nullptr;
 
 	configure_buffers();
 	update_parameters();

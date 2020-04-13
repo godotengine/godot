@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "pck_packer.h"
 
+#include "core/io/file_access_pack.h" // PACK_HEADER_MAGIC, PACK_FORMAT_VERSION
 #include "core/os/file_access.h"
 #include "core/version.h"
 
@@ -55,12 +56,16 @@ static void _pad(FileAccess *p_file, int p_bytes) {
 
 void PCKPacker::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment"), &PCKPacker::pck_start);
+	ClassDB::bind_method(D_METHOD("pck_start", "pck_name", "alignment"), &PCKPacker::pck_start, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("add_file", "pck_path", "source_path"), &PCKPacker::add_file);
-	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush);
+	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, DEFVAL(false));
 };
 
 Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
+
+	if (file != nullptr) {
+		memdelete(file);
+	}
 
 	file = FileAccess::open(p_file, FileAccess::WRITE);
 
@@ -68,11 +73,11 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
 	alignment = p_alignment;
 
-	file->store_32(0x43504447); // MAGIC
-	file->store_32(1); // # version
-	file->store_32(VERSION_MAJOR); // # major
-	file->store_32(VERSION_MINOR); // # minor
-	file->store_32(0); // # revision
+	file->store_32(PACK_HEADER_MAGIC);
+	file->store_32(PACK_FORMAT_VERSION);
+	file->store_32(VERSION_MAJOR);
+	file->store_32(VERSION_MINOR);
+	file->store_32(VERSION_PATCH);
 
 	for (int i = 0; i < 16; i++) {
 
@@ -158,7 +163,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		src->close();
 		memdelete(src);
 		count += 1;
-		if (p_verbose) {
+		if (p_verbose && files.size() > 0) {
 			if (count % 100 == 0) {
 				printf("%i/%i (%.2f)\r", count, files.size(), float(count) / files.size() * 100);
 				fflush(stdout);
@@ -177,12 +182,12 @@ Error PCKPacker::flush(bool p_verbose) {
 
 PCKPacker::PCKPacker() {
 
-	file = NULL;
+	file = nullptr;
 };
 
 PCKPacker::~PCKPacker() {
-	if (file != NULL) {
+	if (file != nullptr) {
 		memdelete(file);
 	};
-	file = NULL;
+	file = nullptr;
 };

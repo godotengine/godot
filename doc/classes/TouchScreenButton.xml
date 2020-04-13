@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TouchScreenButton" inherits="Node2D" category="Core" version="3.2">
+<class name="TouchScreenButton" inherits="Node2D" version="4.0">
 	<brief_description>
 		Button for touch screen devices.
 	</brief_description>
@@ -24,20 +24,20 @@
 		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask">
 			The button's bitmask.
 		</member>
-		<member name="normal" type="Texture" setter="set_texture" getter="get_texture">
+		<member name="normal" type="Texture2D" setter="set_texture" getter="get_texture">
 			The button's texture for the normal state.
 		</member>
 		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled" default="false">
 			If [code]true[/code], pass-by presses are enabled.
 		</member>
-		<member name="pressed" type="Texture" setter="set_texture_pressed" getter="get_texture_pressed">
+		<member name="pressed" type="Texture2D" setter="set_texture_pressed" getter="get_texture_pressed">
 			The button's texture for the pressed state.
 		</member>
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
 			The button's shape.
 		</member>
 		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered" default="true">
-			If [code]true[/code], the button's shape is centered.
+			If [code]true[/code], the button's shape is centered in the provided texture. If no texture is used, this property has no effect.
 		</member>
 		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" default="true">
 			If [code]true[/code], the button's shape is visible.

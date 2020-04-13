@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" category="Core" version="3.2">
+<class name="AnimationNodeBlendSpace2D" inherits="AnimationRootNode" version="4.0">
 	<brief_description>
-		Blends linearly between three [AnimationNode] of any type placed in a 2d space.
+		Blends linearly between three [AnimationNode] of any type placed in a 2D space.
 	</brief_description>
 	<description>
 		A resource to add to an [AnimationNodeBlendTree].
@@ -9,6 +9,7 @@
 		You can add vertices to the blend space with [method add_blend_point] and automatically triangulate it by setting [member auto_triangles] to [code]true[/code]. Otherwise, use [method add_triangle] and [method remove_triangle] to create up the blend space by hand.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/animation/animation_tree.html</link>
 	</tutorials>
 	<methods>
 		<method name="add_blend_point">
@@ -21,7 +22,7 @@
 			<argument index="2" name="at_index" type="int" default="-1">
 			</argument>
 			<description>
-				Adds a new point that represents a [code]node[/code] at the position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code] , the point is inserted at the end of the blend points array.
+				Adds a new point that represents a [code]node[/code] at the position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="add_triangle">
@@ -36,7 +37,7 @@
 			<argument index="3" name="at_index" type="int" default="-1">
 			</argument>
 			<description>
-				Creates a new triangle using three points [code]x[/code], [code]y[/code], and [code]z[/code]. Triangles can overlap. You can insert the triangle at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code] , the point is inserted at the end of the blend points array.
+				Creates a new triangle using three points [code]x[/code], [code]y[/code], and [code]z[/code]. Triangles can overlap. You can insert the triangle at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code], the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="get_blend_point_count" qualifiers="const">
@@ -52,7 +53,7 @@
 			<argument index="0" name="point" type="int">
 			</argument>
 			<description>
-				Returns the [code]AnimationRootNode[/code] referenced by the point at index [code]point[/code].
+				Returns the [AnimationRootNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="get_blend_point_position" qualifiers="const">
@@ -108,7 +109,7 @@
 			<argument index="1" name="node" type="AnimationRootNode">
 			</argument>
 			<description>
-				Changes the AnimationNode referenced by the point at index [code]point[/code].
+				Changes the [AnimationNode] referenced by the point at index [code]point[/code].
 			</description>
 		</method>
 		<method name="set_blend_point_position">
@@ -125,7 +126,7 @@
 	</methods>
 	<members>
 		<member name="auto_triangles" type="bool" setter="set_auto_triangles" getter="get_auto_triangles" default="true">
-			If true, the blend space is triangulated automatically. The mesh updates every time you add or remove points with [method add_blend_point] and [method remove_blend_point].
+			If [code]true[/code], the blend space is triangulated automatically. The mesh updates every time you add or remove points with [method add_blend_point] and [method remove_blend_point].
 		</member>
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace2D.BlendMode" default="0">
 			Controls the interpolation between animations. See [enum BlendMode] constants.

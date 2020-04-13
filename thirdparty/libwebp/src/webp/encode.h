@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-#define WEBP_ENCODER_ABI_VERSION 0x020e    // MAJOR(8b) + MINOR(8b)
+#define WEBP_ENCODER_ABI_VERSION 0x020f    // MAJOR(8b) + MINOR(8b)
 
 // Note: forward declaring enumerations is not allowed in (strict) C and C++,
 // the types are left here for reference.
@@ -62,6 +62,10 @@ WEBP_EXTERN size_t WebPEncodeBGRA(const uint8_t* bgra,
 // These functions are the equivalent of the above, but compressing in a
 // lossless manner. Files are usually larger than lossy format, but will
 // not suffer any compression loss.
+// Note these functions, like the lossy versions, use the library's default
+// settings. For lossless this means 'exact' is disabled. RGB values in
+// transparent areas will be modified to improve compression. To avoid this,
+// use WebPEncode() and set WebPConfig::exact to 1.
 WEBP_EXTERN size_t WebPEncodeLosslessRGB(const uint8_t* rgb,
                                          int width, int height, int stride,
                                          uint8_t** output);
@@ -74,9 +78,6 @@ WEBP_EXTERN size_t WebPEncodeLosslessRGBA(const uint8_t* rgba,
 WEBP_EXTERN size_t WebPEncodeLosslessBGRA(const uint8_t* bgra,
                                           int width, int height, int stride,
                                           uint8_t** output);
-
-// Releases memory returned by the WebPEncode*() functions above.
-WEBP_EXTERN void WebPFree(void* ptr);
 
 //------------------------------------------------------------------------------
 // Coding parameters
@@ -302,7 +303,7 @@ struct WebPPicture {
   // YUV input (mostly used for input to lossy compression)
   WebPEncCSP colorspace;     // colorspace: should be YUV420 for now (=Y'CbCr).
   int width, height;         // dimensions (less or equal to WEBP_MAX_DIMENSION)
-  uint8_t *y, *u, *v;        // pointers to luma/chroma planes.
+  uint8_t* y, *u, *v;        // pointers to luma/chroma planes.
   int y_stride, uv_stride;   // luma/chroma strides.
   uint8_t* a;                // pointer to the alpha plane
   int a_stride;              // stride of the alpha plane
@@ -346,7 +347,7 @@ struct WebPPicture {
   uint32_t pad3[3];       // padding for later use
 
   // Unused for now
-  uint8_t *pad4, *pad5;
+  uint8_t* pad4, *pad5;
   uint32_t pad6[8];       // padding for later use
 
   // PRIVATE FIELDS

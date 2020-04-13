@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "collision_object_2d_sw.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_server_2d_sw.h"
 #include "space_2d_sw.h"
 
 void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_transform, bool p_disabled) {
@@ -46,7 +46,7 @@ void CollisionObject2DSW::add_shape(Shape2DSW *p_shape, const Transform2D &p_tra
 	p_shape->add_owner(this);
 
 	if (!pending_shape_update_list.in_list()) {
-		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	// _update_shapes();
 	// _shapes_changed();
@@ -61,7 +61,7 @@ void CollisionObject2DSW::set_shape(int p_index, Shape2DSW *p_shape) {
 	p_shape->add_owner(this);
 
 	if (!pending_shape_update_list.in_list()) {
-		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	// _update_shapes();
 	// _shapes_changed();
@@ -81,7 +81,7 @@ void CollisionObject2DSW::set_shape_transform(int p_index, const Transform2D &p_
 	shapes.write[p_index].xform_inv = p_transform.affine_inverse();
 
 	if (!pending_shape_update_list.in_list()) {
-		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	// _update_shapes();
 	// _shapes_changed();
@@ -103,12 +103,12 @@ void CollisionObject2DSW::set_shape_as_disabled(int p_idx, bool p_disabled) {
 		space->get_broadphase()->remove(shape.bpid);
 		shape.bpid = 0;
 		if (!pending_shape_update_list.in_list()) {
-			Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
+			PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 		}
 		//_update_shapes();
 	} else if (!p_disabled && shape.bpid == 0) {
 		if (!pending_shape_update_list.in_list()) {
-			Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
+			PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 		}
 		//_update_shapes(); // automatically adds shape with bpid == 0
 	}
@@ -142,7 +142,7 @@ void CollisionObject2DSW::remove_shape(int p_index) {
 	shapes.remove(p_index);
 
 	if (!pending_shape_update_list.in_list()) {
-		Physics2DServerSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
+		PhysicsServer2DSW::singletonsw->pending_shape_update_list.add(&pending_shape_update_list);
 	}
 	// _update_shapes();
 	// _shapes_changed();
@@ -266,9 +266,7 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) :
 
 	_static = true;
 	type = p_type;
-	space = NULL;
-	instance_id = 0;
-	canvas_instance_id = 0;
+	space = nullptr;
 	collision_mask = 1;
 	collision_layer = 1;
 	pickable = true;

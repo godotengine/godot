@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,9 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GLOBALS_LIST_H
-#define GLOBALS_LIST_H
+#ifndef LIST_H
+#define LIST_H
 
+#include "core/error_macros.h"
 #include "core/os/memory.h"
 #include "core/sort_array.h"
 
@@ -141,7 +142,7 @@ public:
 		_FORCE_INLINE_ Element() {
 			next_ptr = 0;
 			prev_ptr = 0;
-			data = NULL;
+			data = nullptr;
 		};
 	};
 
@@ -219,8 +220,8 @@ public:
 		if (!_data) {
 
 			_data = memnew_allocator(_Data, A);
-			_data->first = NULL;
-			_data->last = NULL;
+			_data->first = nullptr;
+			_data->last = nullptr;
 			_data->size_cache = 0;
 		}
 
@@ -260,8 +261,8 @@ public:
 		if (!_data) {
 
 			_data = memnew_allocator(_Data, A);
-			_data->first = NULL;
-			_data->last = NULL;
+			_data->first = nullptr;
+			_data->last = nullptr;
 			_data->size_cache = 0;
 		}
 
@@ -356,7 +357,7 @@ public:
 			it = it->next();
 		};
 
-		return NULL;
+		return nullptr;
 	};
 
 	/**
@@ -369,7 +370,7 @@ public:
 
 			if (_data->size_cache == 0) {
 				memdelete_allocator<_Data, A>(_data);
-				_data = NULL;
+				_data = nullptr;
 			}
 
 			return ret;
@@ -455,17 +456,12 @@ public:
 
 		Element *I = front();
 		int c = 0;
-		while (I) {
-
-			if (c == p_index) {
-
-				return I->get();
-			}
+		while (c < p_index) {
 			I = I->next();
 			c++;
 		}
 
-		CRASH_NOW(); // bug!!
+		return I->get();
 	}
 
 	const T &operator[](int p_index) const {
@@ -474,17 +470,12 @@ public:
 
 		const Element *I = front();
 		int c = 0;
-		while (I) {
-
-			if (c == p_index) {
-
-				return I->get();
-			}
+		while (c < p_index) {
 			I = I->next();
 			c++;
 		}
 
-		CRASH_NOW(); // bug!!
+		return I->get();
 	}
 
 	void move_to_back(Element *p_I) {
@@ -507,7 +498,7 @@ public:
 
 		_data->last->next_ptr = p_I;
 		p_I->prev_ptr = _data->last;
-		p_I->next_ptr = NULL;
+		p_I->next_ptr = nullptr;
 		_data->last = p_I;
 	}
 
@@ -544,7 +535,7 @@ public:
 
 		_data->first->prev_ptr = p_I;
 		p_I->next_ptr = _data->first;
-		p_I->prev_ptr = NULL;
+		p_I->prev_ptr = nullptr;
 		_data->first = p_I;
 	}
 
@@ -585,7 +576,7 @@ public:
 
 	void sort() {
 
-		sort_custom<Comparator<T> >();
+		sort_custom<Comparator<T>>();
 	}
 
 	template <class C>
@@ -604,7 +595,7 @@ public:
 
 			if (from != current) {
 
-				current->prev_ptr = NULL;
+				current->prev_ptr = nullptr;
 				current->next_ptr = from;
 
 				Element *find = from;
@@ -627,8 +618,8 @@ public:
 					to = current;
 			} else {
 
-				current->prev_ptr = NULL;
-				current->next_ptr = NULL;
+				current->prev_ptr = nullptr;
+				current->next_ptr = nullptr;
 			}
 
 			current = next;
@@ -666,16 +657,16 @@ public:
 			idx++;
 		}
 
-		SortArray<Element *, AuxiliaryComparator<C> > sort;
+		SortArray<Element *, AuxiliaryComparator<C>> sort;
 		sort.sort(aux_buffer, s);
 
 		_data->first = aux_buffer[0];
-		aux_buffer[0]->prev_ptr = NULL;
+		aux_buffer[0]->prev_ptr = nullptr;
 		aux_buffer[0]->next_ptr = aux_buffer[1];
 
 		_data->last = aux_buffer[s - 1];
 		aux_buffer[s - 1]->prev_ptr = aux_buffer[s - 2];
-		aux_buffer[s - 1]->next_ptr = NULL;
+		aux_buffer[s - 1]->next_ptr = nullptr;
 
 		for (int i = 1; i < s - 1; i++) {
 
@@ -695,7 +686,7 @@ public:
 	 */
 	List(const List &p_list) {
 
-		_data = NULL;
+		_data = nullptr;
 		const Element *it = p_list.front();
 		while (it) {
 
@@ -705,7 +696,7 @@ public:
 	}
 
 	List() {
-		_data = NULL;
+		_data = nullptr;
 	};
 	~List() {
 		clear();
@@ -717,4 +708,4 @@ public:
 	};
 };
 
-#endif
+#endif // LIST_H

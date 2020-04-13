@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform2D" category="Built-In Types" version="3.2">
+<class name="Transform2D" version="4.0">
 	<brief_description>
 		2D transformation (3×2 matrix).
 	</brief_description>
@@ -106,6 +106,15 @@
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
 			</description>
 		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="transform" type="Transform2D">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
+			</description>
+		</method>
 		<method name="orthonormalized">
 			<return type="Transform2D">
 			</return>
@@ -119,7 +128,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Rotates the transform by the given angle (in radians).
+				Rotates the transform by the given angle (in radians), using matrix multiplication.
 			</description>
 		</method>
 		<method name="scaled">
@@ -128,7 +137,7 @@
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
 			<description>
-				Scales the transform by the given factor.
+				Scales the transform by the given scale factor, using matrix multiplication.
 			</description>
 		</method>
 		<method name="translated">
@@ -137,7 +146,8 @@
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-				Translates the transform by the given offset.
+				Translates the transform by the given offset, relative to the transform's basis vectors.
+				Unlike [method rotated] and [method scaled], this does not use matrix multiplication.
 			</description>
 		</method>
 		<method name="xform">
@@ -146,7 +156,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
+				Transforms the given [Vector2], [Rect2], or [PackedVector2Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -155,7 +165,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Inverse-transforms the given [Vector2], [Rect2], or [PoolVector2Array] by this transform.
+				Inverse-transforms the given [Vector2], [Rect2], or [PackedVector2Array] by this transform.
 			</description>
 		</method>
 	</methods>

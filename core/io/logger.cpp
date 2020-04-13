@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,12 +58,12 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		return;
 	}
 
-	const char *err_type = "**ERROR**";
+	const char *err_type = "ERROR";
 	switch (p_type) {
-		case ERR_ERROR: err_type = "**ERROR**"; break;
-		case ERR_WARNING: err_type = "**WARNING**"; break;
-		case ERR_SCRIPT: err_type = "**SCRIPT ERROR**"; break;
-		case ERR_SHADER: err_type = "**SHADER ERROR**"; break;
+		case ERR_ERROR: err_type = "ERROR"; break;
+		case ERR_WARNING: err_type = "WARNING"; break;
+		case ERR_SCRIPT: err_type = "SCRIPT ERROR"; break;
+		case ERR_SHADER: err_type = "SHADER ERROR"; break;
 		default: ERR_PRINT("Unknown error type"); break;
 	}
 
@@ -74,7 +74,7 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 		err_details = p_code;
 
 	logf_error("%s: %s\n", err_type, err_details);
-	logf_error("   At: %s:%i:%s() - %s\n", p_file, p_line, p_function, p_code);
+	logf_error("   at: %s (%s:%i) - %s\n", p_function, p_file, p_line, p_code);
 }
 
 void Logger::logf(const char *p_format, ...) {
@@ -108,7 +108,7 @@ Logger::~Logger() {}
 void RotatedFileLogger::close_file() {
 	if (file) {
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 	}
 }
 
@@ -182,7 +182,7 @@ void RotatedFileLogger::rotate_file() {
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
 		base_path(p_base_path.simplify_path()),
 		max_files(p_max_files > 0 ? p_max_files : 1),
-		file(NULL) {
+		file(nullptr) {
 	rotate_file();
 }
 

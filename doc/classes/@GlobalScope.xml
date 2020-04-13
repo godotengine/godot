@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="@GlobalScope" category="Core" version="3.2">
+<class name="@GlobalScope" version="4.0">
 	<brief_description>
 		Global scope constants and variables.
 	</brief_description>
 	<description>
-		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, scancodes, property hints, etc.
+		Global scope constants and variables. This is all that resides in the globals, constants regarding error codes, keycodes, property hints, etc.
 		Singletons are also documented here, since they can be accessed from anywhere.
 	</description>
 	<tutorials>
@@ -12,8 +12,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="ARVRServer" type="ARVRServer" setter="" getter="">
-			The [ARVRServer] singleton.
+		<member name="XRServer" type="XRServer" setter="" getter="">
+			The [XRServer] singleton.
 		</member>
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
 			The [AudioServer] singleton.
@@ -30,11 +30,14 @@
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			The [Geometry] singleton.
 		</member>
+		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
+			The [GodotSharp] singleton. Only available when using Godot's Mono build.
+		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
 		</member>
-		<member name="Input" type="Input" setter="" getter="">
-			The [Input] singleton.
+		<member name="Input" type="InputFilter" setter="" getter="">
+			The [InputFilter] singleton.
 		</member>
 		<member name="InputMap" type="InputMap" setter="" getter="">
 			The [InputMap] singleton.
@@ -42,14 +45,25 @@
 		<member name="JSON" type="JSON" setter="" getter="">
 			The [JSON] singleton.
 		</member>
+		<member name="JavaClassWrapper" type="JavaClassWrapper" setter="" getter="">
+			The [JavaClassWrapper] singleton.
+			[b]Note:[/b] Only implemented on Android.
+		</member>
 		<member name="JavaScript" type="JavaScript" setter="" getter="">
 			The [JavaScript] singleton.
+			[b]Note:[/b] Only implemented on HTML5.
 		</member>
-		<member name="Marshalls" type="Reference" setter="" getter="">
+		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
-		<member name="NavigationMeshGenerator" type="EditorNavigationMeshGenerator" setter="" getter="">
-			The [EditorNavigationMeshGenerator] singleton.
+		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
+			The [NavigationMeshGenerator] singleton.
+		</member>
+		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
+			The [NavigationServer2D] singleton.
+		</member>
+		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
+			The [NavigationServer2D] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -57,14 +71,17 @@
 		<member name="Performance" type="Performance" setter="" getter="">
 			The [Performance] singleton.
 		</member>
-		<member name="Physics2DServer" type="Physics2DServer" setter="" getter="">
-			The [Physics2DServer] singleton.
+		<member name="PhysicsServer2D" type="PhysicsServer2D" setter="" getter="">
+			The [PhysicsServer2D] singleton.
 		</member>
-		<member name="PhysicsServer" type="PhysicsServer" setter="" getter="">
-			The [PhysicsServer] singleton.
+		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
+			The [PhysicsServer3D] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.
+		</member>
+		<member name="RenderingServer" type="RenderingServer" setter="" getter="">
+			The [RenderingServer] singleton.
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader" setter="" getter="">
 			The [ResourceLoader] singleton.
@@ -77,9 +94,6 @@
 		</member>
 		<member name="VisualScriptEditor" type="VisualScriptEditor" setter="" getter="">
 			The [VisualScriptEditor] singleton.
-		</member>
-		<member name="VisualServer" type="VisualServer" setter="" getter="">
-			The [VisualServer] singleton.
 		</member>
 	</members>
 	<constants>
@@ -132,7 +146,7 @@
 			Vertical bottom alignment, usually for text-derived classes.
 		</constant>
 		<constant name="SPKEY" value="16777216">
-			Scancodes with this bit applied are non-printable.
+			Keycodes with this bit applied are non-printable.
 		</constant>
 		<constant name="KEY_ESCAPE" value="16777217" enum="KeyList">
 			Escape key.
@@ -879,7 +893,7 @@
 			Ctrl key mask.
 		</constant>
 		<constant name="KEY_MASK_CMD" value="268435456" enum="KeyModifierMask">
-			Cmd key mask.
+			Command key mask. On macOS, this is equivalent to [constant KEY_MASK_META]. On other platforms, this is equivalent to [constant KEY_MASK_CTRL]. This mask should be preferred to [constant KEY_MASK_META] or [constant KEY_MASK_CTRL] for system shortcuts as it handles all platforms correctly.
 		</constant>
 		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
 			Keypad key mask.
@@ -1162,10 +1176,10 @@
 			Since [constant OK] has value 0, and all other failure codes are positive integers, it can also be used in boolean checks, e.g.:
 			[codeblock]
 			var err = method_that_returns_error()
-			if (err != OK):
+			if err != OK:
 			    print("Failure!)
 			# Or, equivalent:
-			if (err):
+			if err:
 			    print("Still failing!)
 			[/codeblock]
 		</constant>
@@ -1362,7 +1376,7 @@
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
-			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
+			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
@@ -1449,7 +1463,7 @@
 			Default method flags.
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">
-			Variable is of type [Nil] (only applied for [code]null[/code]).
+			Variable is [code]null[/code].
 		</constant>
 		<constant name="TYPE_BOOL" value="1" enum="Variant.Type">
 			Variable is of type [bool].
@@ -1466,70 +1480,94 @@
 		<constant name="TYPE_VECTOR2" value="5" enum="Variant.Type">
 			Variable is of type [Vector2].
 		</constant>
-		<constant name="TYPE_RECT2" value="6" enum="Variant.Type">
+		<constant name="TYPE_VECTOR2I" value="6" enum="Variant.Type">
+			Variable is of type [Vector2i].
+		</constant>
+		<constant name="TYPE_RECT2" value="7" enum="Variant.Type">
 			Variable is of type [Rect2].
 		</constant>
-		<constant name="TYPE_VECTOR3" value="7" enum="Variant.Type">
+		<constant name="TYPE_RECT2I" value="8" enum="Variant.Type">
+			Variable is of type [Rect2i].
+		</constant>
+		<constant name="TYPE_VECTOR3" value="9" enum="Variant.Type">
 			Variable is of type [Vector3].
 		</constant>
-		<constant name="TYPE_TRANSFORM2D" value="8" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3I" value="10" enum="Variant.Type">
+			Variable is of type [Vector3i].
+		</constant>
+		<constant name="TYPE_TRANSFORM2D" value="11" enum="Variant.Type">
 			Variable is of type [Transform2D].
 		</constant>
-		<constant name="TYPE_PLANE" value="9" enum="Variant.Type">
+		<constant name="TYPE_PLANE" value="12" enum="Variant.Type">
 			Variable is of type [Plane].
 		</constant>
-		<constant name="TYPE_QUAT" value="10" enum="Variant.Type">
+		<constant name="TYPE_QUAT" value="13" enum="Variant.Type">
 			Variable is of type [Quat].
 		</constant>
-		<constant name="TYPE_AABB" value="11" enum="Variant.Type">
+		<constant name="TYPE_AABB" value="14" enum="Variant.Type">
 			Variable is of type [AABB].
 		</constant>
-		<constant name="TYPE_BASIS" value="12" enum="Variant.Type">
+		<constant name="TYPE_BASIS" value="15" enum="Variant.Type">
 			Variable is of type [Basis].
 		</constant>
-		<constant name="TYPE_TRANSFORM" value="13" enum="Variant.Type">
+		<constant name="TYPE_TRANSFORM" value="16" enum="Variant.Type">
 			Variable is of type [Transform].
 		</constant>
-		<constant name="TYPE_COLOR" value="14" enum="Variant.Type">
+		<constant name="TYPE_COLOR" value="17" enum="Variant.Type">
 			Variable is of type [Color].
 		</constant>
-		<constant name="TYPE_NODE_PATH" value="15" enum="Variant.Type">
+		<constant name="TYPE_STRING_NAME" value="18" enum="Variant.Type">
+			Variable is of type [StringName].
+		</constant>
+		<constant name="TYPE_NODE_PATH" value="19" enum="Variant.Type">
 			Variable is of type [NodePath].
 		</constant>
-		<constant name="TYPE_RID" value="16" enum="Variant.Type">
+		<constant name="TYPE_RID" value="20" enum="Variant.Type">
 			Variable is of type [RID].
 		</constant>
-		<constant name="TYPE_OBJECT" value="17" enum="Variant.Type">
+		<constant name="TYPE_OBJECT" value="21" enum="Variant.Type">
 			Variable is of type [Object].
 		</constant>
-		<constant name="TYPE_DICTIONARY" value="18" enum="Variant.Type">
+		<constant name="TYPE_CALLABLE" value="22" enum="Variant.Type">
+			Variable is of type [Callable].
+		</constant>
+		<constant name="TYPE_SIGNAL" value="23" enum="Variant.Type">
+			Variable is of type [Signal].
+		</constant>
+		<constant name="TYPE_DICTIONARY" value="24" enum="Variant.Type">
 			Variable is of type [Dictionary].
 		</constant>
-		<constant name="TYPE_ARRAY" value="19" enum="Variant.Type">
+		<constant name="TYPE_ARRAY" value="25" enum="Variant.Type">
 			Variable is of type [Array].
 		</constant>
-		<constant name="TYPE_RAW_ARRAY" value="20" enum="Variant.Type">
-			Variable is of type [PoolByteArray].
+		<constant name="TYPE_RAW_ARRAY" value="26" enum="Variant.Type">
+			Variable is of type [PackedByteArray].
 		</constant>
-		<constant name="TYPE_INT_ARRAY" value="21" enum="Variant.Type">
-			Variable is of type [PoolIntArray].
+		<constant name="TYPE_INT32_ARRAY" value="27" enum="Variant.Type">
+			Variable is of type [PackedInt32Array].
 		</constant>
-		<constant name="TYPE_REAL_ARRAY" value="22" enum="Variant.Type">
-			Variable is of type [PoolRealArray].
+		<constant name="TYPE_INT64_ARRAY" value="28" enum="Variant.Type">
+			Variable is of type [PackedInt64Array].
 		</constant>
-		<constant name="TYPE_STRING_ARRAY" value="23" enum="Variant.Type">
-			Variable is of type [PoolStringArray].
+		<constant name="TYPE_FLOAT32_ARRAY" value="29" enum="Variant.Type">
+			Variable is of type [PackedFloat32Array].
 		</constant>
-		<constant name="TYPE_VECTOR2_ARRAY" value="24" enum="Variant.Type">
-			Variable is of type [PoolVector2Array].
+		<constant name="TYPE_FLOAT64_ARRAY" value="30" enum="Variant.Type">
+			Variable is of type [PackedFloat64Array].
 		</constant>
-		<constant name="TYPE_VECTOR3_ARRAY" value="25" enum="Variant.Type">
-			Variable is of type [PoolVector3Array].
+		<constant name="TYPE_STRING_ARRAY" value="31" enum="Variant.Type">
+			Variable is of type [PackedStringArray].
 		</constant>
-		<constant name="TYPE_COLOR_ARRAY" value="26" enum="Variant.Type">
-			Variable is of type [PoolColorArray].
+		<constant name="TYPE_VECTOR2_ARRAY" value="32" enum="Variant.Type">
+			Variable is of type [PackedVector2Array].
 		</constant>
-		<constant name="TYPE_MAX" value="27" enum="Variant.Type">
+		<constant name="TYPE_VECTOR3_ARRAY" value="33" enum="Variant.Type">
+			Variable is of type [PackedVector3Array].
+		</constant>
+		<constant name="TYPE_COLOR_ARRAY" value="34" enum="Variant.Type">
+			Variable is of type [PackedColorArray].
+		</constant>
+		<constant name="TYPE_MAX" value="35" enum="Variant.Type">
 			Represents the size of the [enum Variant.Type] enum.
 		</constant>
 		<constant name="OP_EQUAL" value="0" enum="Variant.Operator">

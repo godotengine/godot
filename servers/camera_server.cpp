@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +29,13 @@
 /*************************************************************************/
 
 #include "camera_server.h"
+#include "rendering_server.h"
 #include "servers/camera/camera_feed.h"
-#include "visual_server.h"
 
 ////////////////////////////////////////////////////////
 // CameraServer
+
+CameraServer::CreateFunc CameraServer::create_func = nullptr;
 
 void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
@@ -52,7 +54,7 @@ void CameraServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEED_CBCR_IMAGE);
 };
 
-CameraServer *CameraServer::singleton = NULL;
+CameraServer *CameraServer::singleton = nullptr;
 
 CameraServer *CameraServer::get_singleton() {
 	return singleton;
@@ -90,7 +92,7 @@ Ref<CameraFeed> CameraServer::get_feed_by_id(int p_id) {
 	int index = get_feed_index(p_id);
 
 	if (index == -1) {
-		return NULL;
+		return nullptr;
 	} else {
 		return feeds[index];
 	}
@@ -130,7 +132,7 @@ void CameraServer::remove_feed(const Ref<CameraFeed> &p_feed) {
 };
 
 Ref<CameraFeed> CameraServer::get_feed(int p_index) {
-	ERR_FAIL_INDEX_V(p_index, feeds.size(), NULL);
+	ERR_FAIL_INDEX_V(p_index, feeds.size(), nullptr);
 
 	return feeds[p_index];
 };
@@ -165,5 +167,5 @@ CameraServer::CameraServer() {
 };
 
 CameraServer::~CameraServer() {
-	singleton = NULL;
+	singleton = nullptr;
 };

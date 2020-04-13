@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
 
-	ERR_FAIL_COND_V_MSG(file != NULL, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
+	ERR_FAIL_COND_V_MSG(file != nullptr, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
 	pos = 0;
@@ -159,7 +159,7 @@ void FileAccessEncrypted::close() {
 		file->store_buffer(compressed.ptr(), compressed.size());
 		file->close();
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 		data.clear();
 
 	} else {
@@ -167,13 +167,13 @@ void FileAccessEncrypted::close() {
 		file->close();
 		memdelete(file);
 		data.clear();
-		file = NULL;
+		file = nullptr;
 	}
 }
 
 bool FileAccessEncrypted::is_open() const {
 
-	return file != NULL;
+	return file != nullptr;
 }
 
 String FileAccessEncrypted::get_path() const {
@@ -319,7 +319,7 @@ Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t 
 
 FileAccessEncrypted::FileAccessEncrypted() {
 
-	file = NULL;
+	file = nullptr;
 	pos = 0;
 	eofed = false;
 	mode = MODE_MAX;

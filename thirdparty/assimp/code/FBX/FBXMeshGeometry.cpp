@@ -610,11 +610,11 @@ void MeshGeometry::ReadVertexDataMaterials(std::vector<int>& materials_out, cons
     const std::string& ReferenceInformationType)
 {
     const size_t face_count = m_faces.size();
-    if(face_count <= 0)
+    if( 0 == face_count )
     {
         return;
     }
-
+    
     // materials are handled separately. First of all, they are assigned per-face
     // and not per polyvert. Secondly, ReferenceInformationType=IndexToDirect
     // has a slightly different meaning for materials.
@@ -625,16 +625,14 @@ void MeshGeometry::ReadVertexDataMaterials(std::vector<int>& materials_out, cons
         if (materials_out.empty()) {
             FBXImporter::LogError(Formatter::format("expected material index, ignoring"));
             return;
-        }
-        else if (materials_out.size() > 1) {
+        } else if (materials_out.size() > 1) {
             FBXImporter::LogWarn(Formatter::format("expected only a single material index, ignoring all except the first one"));
             materials_out.clear();
         }
 
         materials_out.resize(m_vertices.size());
         std::fill(materials_out.begin(), materials_out.end(), materials_out.at(0));
-    }
-    else if (MappingInformationType == "ByPolygon" && ReferenceInformationType == "IndexToDirect") {
+    } else if (MappingInformationType == "ByPolygon" && ReferenceInformationType == "IndexToDirect") {
         materials_out.resize(face_count);
 
         if(materials_out.size() != face_count) {
@@ -643,18 +641,16 @@ void MeshGeometry::ReadVertexDataMaterials(std::vector<int>& materials_out, cons
             );
             return;
         }
-    }
-    else {
+    } else {
         FBXImporter::LogError(Formatter::format("ignoring material assignments, access type not implemented: ")
             << MappingInformationType << "," << ReferenceInformationType);
     }
 }
 // ------------------------------------------------------------------------------------------------
 ShapeGeometry::ShapeGeometry(uint64_t id, const Element& element, const std::string& name, const Document& doc)
-    : Geometry(id, element, name, doc)
-{
-    const Scope* sc = element.Compound();
-    if (!sc) {
+: Geometry(id, element, name, doc) {
+    const Scope *sc = element.Compound();
+    if (nullptr == sc) {
         DOMError("failed to read Geometry object (class: Shape), no data scope found");
     }
     const Element& Indexes = GetRequiredElement(*sc, "Indexes", &element);

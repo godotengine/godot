@@ -48,6 +48,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_EXPORT_HPP_INC
 #define AI_EXPORT_HPP_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #ifndef ASSIMP_BUILD_NO_EXPORT
 
 #include "cexport.h"

@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+
+Import("env")
+
+env.add_source_files(env.drivers_sources, "*.cpp")
+
+if env["platform"] == "android":
+    # Use NDK Vulkan headers
+    thirdparty_dir = env["ANDROID_NDK_ROOT"] + "/sources/third_party/vulkan/src"
+    thirdparty_includes = [
+        thirdparty_dir,
+        thirdparty_dir + "/include",
+        thirdparty_dir + "/layers",
+        thirdparty_dir + "/layers/generated",
+    ]
+    env.Prepend(CPPPATH=thirdparty_includes)
+
+    # Build Vulkan memory allocator
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+
+    thirdparty_dir = "#thirdparty/vulkan"
+    vma_sources = [thirdparty_dir + "/android/vk_mem_alloc.cpp"]
+    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)
+elif env["builtin_vulkan"]:
+    # Use bundled Vulkan headers
+    thirdparty_dir = "#thirdparty/vulkan"
+    env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include", thirdparty_dir + "/loader"])
+
+    # Build Vulkan loader library
+    env_thirdparty = env.Clone()
+    env_thirdparty.disable_warnings()
+
+    loader_sources = [
+        "cJSON.c",
+        "debug_utils.c",
+        "dev_ext_trampoline.c",
+        "loader.c",
+        "murmurhash.c",
+        "phys_dev_ext.c",
+        "trampoline.c",
+        "unknown_ext_chain.c",
+        "wsi.c",
+        "extension_manual.c",
+    ]
+    vma_sources = [thirdparty_dir + "/vk_mem_alloc.cpp"]
+
+    if env["platform"] == "windows":
+        loader_sources.append("dirent_on_windows.c")
+        loader_sources.append("dxgi_loader.c")
+        env_thirdparty.AppendUnique(
+            CPPDEFINES=[
+                "VK_USE_PLATFORM_WIN32_KHR",
+                "VULKAN_NON_CMAKE_BUILD",
+                "WIN32_LEAN_AND_MEAN",
+                'API_NAME=\\"%s\\"' % "Vulkan",
+            ]
+        )
+        if not env.msvc:  # Windows 7+, missing in mingw headers
+            env_thirdparty.AppendUnique(
+                CPPDEFINES=["CM_GETIDLIST_FILTER_CLASS=0x00000200", "CM_GETIDLIST_FILTER_PRESENT=0x00000100"]
+            )
+    elif env["platform"] == "osx":
+        env_thirdparty.AppendUnique(
+            CPPDEFINES=[
+                "VK_USE_PLATFORM_MACOS_MVK",
+                "VULKAN_NON_CMAKE_BUILD",
+                'SYSCONFDIR=\\"%s\\"' % "/etc",
+                'FALLBACK_DATA_DIRS=\\"%s\\"' % "/usr/local/share:/usr/share",
+                'FALLBACK_CONFIG_DIRS=\\"%s\\"' % "/etc/xdg",
+            ]
+        )
+    elif env["platform"] == "iphone":
+        env_thirdparty.AppendUnique(
+            CPPDEFINES=[
+                "VK_USE_PLATFORM_IOS_MVK",
+                "VULKAN_NON_CMAKE_BUILD",
+                'SYSCONFDIR=\\"%s\\"' % "/etc",
+                'FALLBACK_DATA_DIRS=\\"%s\\"' % "/usr/local/share:/usr/share",
+                'FALLBACK_CONFIG_DIRS=\\"%s\\"' % "/etc/xdg",
+            ]
+        )
+    elif env["platform"] == "linuxbsd":
+        env_thirdparty.AppendUnique(
+            CPPDEFINES=[
+                "VK_USE_PLATFORM_XLIB_KHR",
+                "VULKAN_NON_CMAKE_BUILD",
+                'SYSCONFDIR=\\"%s\\"' % "/etc",
+                'FALLBACK_DATA_DIRS=\\"%s\\"' % "/usr/local/share:/usr/share",
+                'FALLBACK_CONFIG_DIRS=\\"%s\\"' % "/etc/xdg",
+            ]
+        )
+        import platform
+
+        if platform.system() == "Linux":
+            # In glibc since 2.17 and musl libc since 1.1.24. Used by loader.c.
+            env_thirdparty.AppendUnique(CPPDEFINES=["HAVE_SECURE_GETENV"])
+
+    loader_sources = [thirdparty_dir + "/loader/" + file for file in loader_sources]
+    env_thirdparty.add_source_files(env.drivers_sources, loader_sources)
+    env_thirdparty.add_source_files(env.drivers_sources, vma_sources)

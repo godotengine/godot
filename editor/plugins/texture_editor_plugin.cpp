@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ void TextureEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -79,7 +79,7 @@ void TextureEditor::_notification(int p_what) {
 
 		draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
 
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 
 		String format;
 		if (Object::cast_to<ImageTexture>(*texture)) {
@@ -110,7 +110,7 @@ void TextureEditor::_changed_callback(Object *p_changed, const char *p_prop) {
 	update();
 }
 
-void TextureEditor::edit(Ref<Texture> p_texture) {
+void TextureEditor::edit(Ref<Texture2D> p_texture) {
 
 	if (!texture.is_null())
 		texture->remove_change_receptor(this);
@@ -132,6 +132,7 @@ void TextureEditor::_bind_methods() {
 
 TextureEditor::TextureEditor() {
 
+	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 150));
 }
 
@@ -143,16 +144,16 @@ TextureEditor::~TextureEditor() {
 //
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 
-	return Object::cast_to<ImageTexture>(p_object) != NULL || Object::cast_to<AtlasTexture>(p_object) != NULL || Object::cast_to<StreamTexture>(p_object) != NULL || Object::cast_to<LargeTexture>(p_object) != NULL || Object::cast_to<AnimatedTexture>(p_object) != NULL;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<StreamTexture>(p_object) != nullptr || Object::cast_to<LargeTexture>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {
 
-	Texture *texture = Object::cast_to<Texture>(p_object);
+	Texture2D *texture = Object::cast_to<Texture2D>(p_object);
 	if (!texture) {
 		return;
 	}
-	Ref<Texture> m(texture);
+	Ref<Texture2D> m(texture);
 
 	TextureEditor *editor = memnew(TextureEditor);
 	editor->edit(m);

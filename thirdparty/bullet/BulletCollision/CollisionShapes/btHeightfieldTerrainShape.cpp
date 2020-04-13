@@ -21,6 +21,9 @@ btHeightfieldTerrainShape::btHeightfieldTerrainShape(
 	int heightStickWidth, int heightStickLength, const void* heightfieldData,
 	btScalar heightScale, btScalar minHeight, btScalar maxHeight, int upAxis,
 	PHY_ScalarType hdt, bool flipQuadEdges)
+	:m_userIndex2(-1),
+	m_userValue3(0),
+	m_triangleInfoMap(0)
 {
 	initialize(heightStickWidth, heightStickLength, heightfieldData,
 			   heightScale, minHeight, maxHeight, upAxis, hdt,
@@ -28,6 +31,9 @@ btHeightfieldTerrainShape::btHeightfieldTerrainShape(
 }
 
 btHeightfieldTerrainShape::btHeightfieldTerrainShape(int heightStickWidth, int heightStickLength, const void* heightfieldData, btScalar maxHeight, int upAxis, bool useFloatData, bool flipQuadEdges)
+	:m_userIndex2(-1),
+	m_userValue3(0),
+	m_triangleInfoMap(0)
 {
 	// legacy constructor: support only float or unsigned char,
 	// 	and min height is zero
@@ -349,12 +355,12 @@ void btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback
 				getVertex(x, j, vertices[indices[0]]);
 				getVertex(x, j + 1, vertices[indices[1]]);
 				getVertex(x + 1, j + 1, vertices[indices[2]]);
-				callback->processTriangle(vertices, x, j);
+				callback->processTriangle(vertices, 2 * x, j);
 				//second triangle
 				//  getVertex(x,j,vertices[0]);//already got this vertex before, thanks to Danny Chapman
 				getVertex(x + 1, j + 1, vertices[indices[1]]);
 				getVertex(x + 1, j, vertices[indices[2]]);
-				callback->processTriangle(vertices, x, j);
+				callback->processTriangle(vertices, 2 * x+1, j);
 			}
 			else
 			{
@@ -362,12 +368,12 @@ void btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback
 				getVertex(x, j, vertices[indices[0]]);
 				getVertex(x, j + 1, vertices[indices[1]]);
 				getVertex(x + 1, j, vertices[indices[2]]);
-				callback->processTriangle(vertices, x, j);
+				callback->processTriangle(vertices, 2 * x, j);
 				//second triangle
 				getVertex(x + 1, j, vertices[indices[0]]);
 				//getVertex(x,j+1,vertices[1]);
 				getVertex(x + 1, j + 1, vertices[indices[2]]);
-				callback->processTriangle(vertices, x, j);
+				callback->processTriangle(vertices, 2 * x+1, j);
 			}
 		}
 	}

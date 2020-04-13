@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ Node2D *NavigationPolygonEditor::_get_node() const {
 
 void NavigationPolygonEditor::_set_node(Node *p_polygon) {
 
-	node = Object::cast_to<NavigationPolygonInstance>(p_polygon);
+	node = Object::cast_to<NavigationRegion2D>(p_polygon);
 }
 
 int NavigationPolygonEditor::_get_polygon_count() const {
@@ -123,9 +123,9 @@ void NavigationPolygonEditor::_create_resource() {
 
 NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) :
 		AbstractPolygon2DEditor(p_editor) {
-	node = NULL;
+	node = nullptr;
 }
 
 NavigationPolygonEditorPlugin::NavigationPolygonEditorPlugin(EditorNode *p_node) :
-		AbstractPolygon2DEditorPlugin(p_node, memnew(NavigationPolygonEditor(p_node)), "NavigationPolygonInstance") {
+		AbstractPolygon2DEditorPlugin(p_node, memnew(NavigationPolygonEditor(p_node)), "NavigationRegion2D") {
 }

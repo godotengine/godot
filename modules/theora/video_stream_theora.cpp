@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,8 +87,8 @@ void VideoStreamPlaybackTheora::video_write(void) {
 	int pitch = 4;
 	frame_data.resize(size.x * size.y * pitch);
 	{
-		PoolVector<uint8_t>::Write w = frame_data.write();
-		char *dst = (char *)w.ptr();
+		uint8_t *w = frame_data.ptrw();
+		char *dst = (char *)w;
 
 		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
 
@@ -110,7 +110,7 @@ void VideoStreamPlaybackTheora::video_write(void) {
 
 	Ref<Image> img = memnew(Image(size.x, size.y, 0, Image::FORMAT_RGBA8, frame_data)); //zero copy image creation
 
-	texture->set_data(img); //zero copy send to visual server
+	texture->update(img, true); //zero copy send to visual server
 
 	frames_pending = 1;
 }
@@ -144,10 +144,9 @@ void VideoStreamPlaybackTheora::clear() {
 	thread_sem->post(); //just in case
 	Thread::wait_to_finish(thread);
 	memdelete(thread);
-	thread = NULL;
+	thread = nullptr;
 	ring_buffer.clear();
 #endif
-	//file_name = "";
 
 	theora_p = 0;
 	vorbis_p = 0;
@@ -160,7 +159,7 @@ void VideoStreamPlaybackTheora::clear() {
 	if (file) {
 		memdelete(file);
 	}
-	file = NULL;
+	file = nullptr;
 	playing = false;
 };
 
@@ -168,7 +167,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	ERR_FAIL_COND(playing);
 	ogg_packet op;
-	th_setup_info *ts = NULL;
+	th_setup_info *ts = nullptr;
 
 	file_name = p_file;
 	if (file) {
@@ -337,7 +336,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		size.x = w;
 		size.y = h;
 
-		texture->create(w, h, Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+		Ref<Image> img;
+		img.instance();
+		img->create(w, h, false, Image::FORMAT_RGBA8);
 
 	} else {
 		/* tear down the partial theora setup */
@@ -364,11 +365,13 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 };
 
 float VideoStreamPlaybackTheora::get_time() const {
-
-	return time - AudioServer::get_singleton()->get_output_latency() - delay_compensation; //-((get_total())/(float)vi.rate);
+	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
+	// systematically return 0. Now that it gives a proper latency, it broke this
+	// code where the delay compensation likely never really worked.
+	return time - /* AudioServer::get_singleton()->get_output_latency() - */ delay_compensation;
 };
 
-Ref<Texture> VideoStreamPlaybackTheora::get_texture() {
+Ref<Texture2D> VideoStreamPlaybackTheora::get_texture() const {
 
 	return texture;
 }
@@ -671,7 +674,7 @@ void VideoStreamPlaybackTheora::_streaming_thread(void *ud) {
 
 VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 
-	file = NULL;
+	file = nullptr;
 	theora_p = 0;
 	vorbis_p = 0;
 	videobuf_ready = 0;
@@ -682,8 +685,8 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 
 	buffering = false;
 	texture = Ref<ImageTexture>(memnew(ImageTexture));
-	mix_callback = NULL;
-	mix_udata = NULL;
+	mix_callback = nullptr;
+	mix_udata = nullptr;
 	audio_track = 0;
 	delay_compensation = 0;
 	audio_frames_wrote = 0;
@@ -693,7 +696,7 @@ VideoStreamPlaybackTheora::VideoStreamPlaybackTheora() {
 	ring_buffer.resize(rb_power);
 	read_buffer.resize(RB_SIZE_KB * 1024);
 	thread_sem = Semaphore::create();
-	thread = NULL;
+	thread = nullptr;
 	thread_exit = false;
 	thread_eof = false;
 
@@ -722,7 +725,7 @@ void VideoStreamTheora::_bind_methods() {
 
 ////////////
 
-RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
@@ -741,6 +744,8 @@ RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_origi
 		*r_error = OK;
 	}
 
+	f->close();
+	memdelete(f);
 	return ogv_stream;
 }
 

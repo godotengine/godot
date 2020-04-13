@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,15 +50,15 @@ public:
 		ACCESS_FILESYSTEM
 	};
 
-	enum Mode {
-		MODE_OPEN_FILE,
-		MODE_OPEN_FILES,
-		MODE_OPEN_DIR,
-		MODE_OPEN_ANY,
-		MODE_SAVE_FILE
+	enum FileMode {
+		FILE_MODE_OPEN_FILE,
+		FILE_MODE_OPEN_FILES,
+		FILE_MODE_OPEN_DIR,
+		FILE_MODE_OPEN_ANY,
+		FILE_MODE_SAVE_FILE
 	};
 
-	typedef Ref<Texture> (*GetIconFunc)(const String &);
+	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
 	typedef void (*RegisterFunc)(FileDialog *);
 
 	static GetIconFunc get_icon_func;
@@ -74,14 +74,17 @@ private:
 	Access access;
 	//Button *action;
 	VBoxContainer *vbox;
-	Mode mode;
+	FileMode mode;
 	LineEdit *dir;
+	HBoxContainer *drives_container;
+	HBoxContainer *shortcuts_container;
 	OptionButton *drives;
 	Tree *tree;
+	HBoxContainer *file_box;
 	LineEdit *file;
+	OptionButton *filter;
 	AcceptDialog *mkdirerr;
 	AcceptDialog *exterr;
-	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
 
@@ -128,6 +131,8 @@ private:
 	virtual void _post_popup();
 
 protected:
+	void _theme_changed();
+
 	void _notification(int p_what);
 	static void _bind_methods();
 	//bind helpers
@@ -150,8 +155,8 @@ public:
 	void set_mode_overrides_title(bool p_override);
 	bool is_mode_overriding_title() const;
 
-	void set_mode(Mode p_mode);
-	Mode get_mode() const;
+	void set_file_mode(FileMode p_mode);
+	FileMode get_file_mode() const;
 
 	VBoxContainer *get_vbox();
 	LineEdit *get_line_edit() { return file; }
@@ -172,28 +177,7 @@ public:
 	~FileDialog();
 };
 
-class LineEditFileChooser : public HBoxContainer {
-
-	GDCLASS(LineEditFileChooser, HBoxContainer);
-	Button *button;
-	LineEdit *line_edit;
-	FileDialog *dialog;
-
-	void _chosen(const String &p_text);
-	void _browse();
-
-protected:
-	static void _bind_methods();
-
-public:
-	Button *get_button() { return button; }
-	LineEdit *get_line_edit() { return line_edit; }
-	FileDialog *get_file_dialog() { return dialog; }
-
-	LineEditFileChooser();
-};
-
-VARIANT_ENUM_CAST(FileDialog::Mode);
+VARIANT_ENUM_CAST(FileDialog::FileMode);
 VARIANT_ENUM_CAST(FileDialog::Access);
 
 #endif

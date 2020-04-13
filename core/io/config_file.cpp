@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,11 @@
 #include "core/os/keyboard.h"
 #include "core/variant_parser.h"
 
-PoolStringArray ConfigFile::_get_sections() const {
+PackedStringArray ConfigFile::_get_sections() const {
 
 	List<String> s;
 	get_sections(&s);
-	PoolStringArray arr;
+	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
 	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
@@ -49,11 +49,11 @@ PoolStringArray ConfigFile::_get_sections() const {
 	return arr;
 }
 
-PoolStringArray ConfigFile::_get_section_keys(const String &p_section) const {
+PackedStringArray ConfigFile::_get_section_keys(const String &p_section) const {
 
 	List<String> s;
 	get_section_keys(p_section, &s);
-	PoolStringArray arr;
+	PackedStringArray arr;
 	arr.resize(s.size());
 	int idx = 0;
 	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
@@ -86,9 +86,11 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 
 	if (!values.has(p_section) || !values[p_section].has(p_key)) {
-		ERR_FAIL_COND_V_MSG(p_default.get_type() == Variant::NIL, p_default, "Couldn't find the given section/key and no default was given.");
+		ERR_FAIL_COND_V_MSG(p_default.get_type() == Variant::NIL, Variant(),
+				vformat("Couldn't find the given section \"%s\" and key \"%s\", and no default was given.", p_section, p_key));
 		return p_default;
 	}
+
 	return values[p_section][p_key];
 }
 
@@ -105,13 +107,13 @@ bool ConfigFile::has_section_key(const String &p_section, const String &p_key) c
 
 void ConfigFile::get_sections(List<String> *r_sections) const {
 
-	for (OrderedHashMap<String, OrderedHashMap<String, Variant> >::ConstElement E = values.front(); E; E = E.next()) {
+	for (OrderedHashMap<String, OrderedHashMap<String, Variant>>::ConstElement E = values.front(); E; E = E.next()) {
 		r_sections->push_back(E.key());
 	}
 }
 void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
 
-	ERR_FAIL_COND_MSG(!values.has(p_section), "Cannont get keys from nonexistent section '" + p_section + "'.");
+	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot get keys from nonexistent section \"%s\".", p_section));
 
 	for (OrderedHashMap<String, Variant>::ConstElement E = values[p_section].front(); E; E = E.next()) {
 		r_keys->push_back(E.key());
@@ -120,7 +122,16 @@ void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys)
 
 void ConfigFile::erase_section(const String &p_section) {
 
+	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot erase nonexistent section \"%s\".", p_section));
 	values.erase(p_section);
+}
+
+void ConfigFile::erase_section_key(const String &p_section, const String &p_key) {
+
+	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot erase key \"%s\" from nonexistent section \"%s\".", p_key, p_section));
+	ERR_FAIL_COND_MSG(!values[p_section].has(p_key), vformat("Cannot erase nonexistent key \"%s\" from section \"%s\".", p_key, p_section));
+
+	values[p_section].erase(p_key);
 }
 
 Error ConfigFile::save(const String &p_path) {
@@ -176,7 +187,7 @@ Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass
 
 Error ConfigFile::_internal_save(FileAccess *file) {
 
-	for (OrderedHashMap<String, OrderedHashMap<String, Variant> >::Element E = values.front(); E; E = E.next()) {
+	for (OrderedHashMap<String, OrderedHashMap<String, Variant>>::Element E = values.front(); E; E = E.next()) {
 
 		if (E != values.front())
 			file->store_string("\n");
@@ -248,6 +259,22 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 	VariantParser::StreamFile stream;
 	stream.f = f;
 
+	Error err = _parse(p_path, &stream);
+
+	memdelete(f);
+
+	return err;
+}
+
+Error ConfigFile::parse(const String &p_data) {
+
+	VariantParser::StreamString stream;
+	stream.s = p_data;
+	return _parse("<string>", &stream);
+}
+
+Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) {
+
 	String assign;
 	Variant value;
 	VariantParser::Tag next_tag;
@@ -263,13 +290,11 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		Error err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		Error err = VariantParser::parse_tag_assign_eof(p_stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
-			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
-			memdelete(f);
+			ERR_PRINT(vformat("ConfigFile parse error at %s:%d: %s.", p_path, lines, error_text));
 			return err;
 		}
 
@@ -279,6 +304,8 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 			section = next_tag.name;
 		}
 	}
+
+	return OK;
 }
 
 void ConfigFile::_bind_methods() {
@@ -293,16 +320,15 @@ void ConfigFile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_section_keys", "section"), &ConfigFile::_get_section_keys);
 
 	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
+	ClassDB::bind_method(D_METHOD("erase_section_key", "section", "key"), &ConfigFile::erase_section_key);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
+	ClassDB::bind_method(D_METHOD("parse", "data"), &ConfigFile::parse);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
 
 	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key"), &ConfigFile::load_encrypted);
-	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "pass"), &ConfigFile::load_encrypted_pass);
+	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "password"), &ConfigFile::load_encrypted_pass);
 
 	ClassDB::bind_method(D_METHOD("save_encrypted", "path", "key"), &ConfigFile::save_encrypted);
-	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "pass"), &ConfigFile::save_encrypted_pass);
-}
-
-ConfigFile::ConfigFile() {
+	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "password"), &ConfigFile::save_encrypted_pass);
 }

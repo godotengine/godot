@@ -1449,7 +1449,7 @@ read_record_header:
      */
 
     /*
-     * Minimal length (with everything empty and extensions ommitted) is
+     * Minimal length (with everything empty and extensions omitted) is
      * 2 + 32 + 1 + 2 + 1 = 38 bytes. Check that first, so that we can
      * read at least up to session id length without worrying.
      */

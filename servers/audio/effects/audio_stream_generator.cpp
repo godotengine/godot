@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,8 +74,8 @@ void AudioStreamGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_buffer_length", "seconds"), &AudioStreamGenerator::set_buffer_length);
 	ClassDB::bind_method(D_METHOD("get_buffer_length"), &AudioStreamGenerator::get_buffer_length);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "mix_rate", PROPERTY_HINT_RANGE, "20,192000,1"), "set_mix_rate", "get_mix_rate");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "mix_rate", PROPERTY_HINT_RANGE, "20,192000,1"), "set_mix_rate", "get_mix_rate");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "buffer_length", PROPERTY_HINT_RANGE, "0.01,10,0.01"), "set_buffer_length", "get_buffer_length");
 }
 
 AudioStreamGenerator::AudioStreamGenerator() {
@@ -99,17 +99,17 @@ bool AudioStreamGeneratorPlayback::push_frame(const Vector2 &p_frame) {
 bool AudioStreamGeneratorPlayback::can_push_buffer(int p_frames) const {
 	return buffer.space_left() >= p_frames;
 }
-bool AudioStreamGeneratorPlayback::push_buffer(const PoolVector2Array &p_frames) {
+bool AudioStreamGeneratorPlayback::push_buffer(const PackedVector2Array &p_frames) {
 
 	int to_write = p_frames.size();
 	if (buffer.space_left() < to_write) {
 		return false;
 	}
 
-	PoolVector2Array::Read r = p_frames.read();
+	const Vector2 *r = p_frames.ptr();
 	if (sizeof(real_t) == 4) {
 		//write directly
-		buffer.write((const AudioFrame *)r.ptr(), to_write);
+		buffer.write((const AudioFrame *)r, to_write);
 	} else {
 		//convert from double
 		AudioFrame buf[2048];
@@ -205,7 +205,7 @@ void AudioStreamGeneratorPlayback::_bind_methods() {
 }
 
 AudioStreamGeneratorPlayback::AudioStreamGeneratorPlayback() {
-	generator = NULL;
+	generator = nullptr;
 	skips = 0;
 	active = false;
 	mixed = 0;

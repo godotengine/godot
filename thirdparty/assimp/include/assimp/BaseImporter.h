@@ -41,8 +41,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /** @file Definition of the base class for all importer worker classes. */
+#pragma once
 #ifndef INCLUDED_AI_BASEIMPORTER_H
 #define INCLUDED_AI_BASEIMPORTER_H
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #include "Exceptional.h"
 
@@ -191,16 +196,13 @@ public:
     /**
      * Assimp Importer
      * unit conversions available 
-     * if you need another measurment unit add it below.
-     * it's currently defined in assimp that we prefer meters.
+     * NOTE: Valid options are initialised in the
+     * constructor in the implementation file to
+     * work around a VS2013 compiler bug if support
+     * for that compiler is dropped in the future
+     * initialisation can be moved back here
      * */
-    std::map<ImporterUnits, double> importerUnits = {
-        {ImporterUnits::M, 1},
-        {ImporterUnits::CM, 0.01},
-        {ImporterUnits::MM, 0.001},
-        {ImporterUnits::INCHES, 0.0254},
-        {ImporterUnits::FEET, 0.3048}
-    };
+    std::map<ImporterUnits, double> importerUnits;
 
     virtual void SetApplicationUnits( const ImporterUnits& unit )
     {

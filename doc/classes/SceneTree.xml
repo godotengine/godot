@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="SceneTree" inherits="MainLoop" category="Core" version="3.2">
+<class name="SceneTree" inherits="MainLoop" version="4.0">
 	<brief_description>
 		Manages the game loop via a hierarchy of nodes.
 	</brief_description>
@@ -16,9 +16,9 @@
 		<method name="call_group" qualifiers="vararg">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
-			<argument index="1" name="method" type="String">
+			<argument index="1" name="method" type="StringName">
 			</argument>
 			<description>
 				Calls [code]method[/code] on each member of the given group.
@@ -29,9 +29,9 @@
 			</return>
 			<argument index="0" name="flags" type="int">
 			</argument>
-			<argument index="1" name="group" type="String">
+			<argument index="1" name="group" type="StringName">
 			</argument>
-			<argument index="2" name="method" type="String">
+			<argument index="2" name="method" type="StringName">
 			</argument>
 			<description>
 				Calls [code]method[/code] on each member of the given group, respecting the given [enum GroupCallFlags].
@@ -83,7 +83,7 @@
 			</description>
 		</method>
 		<method name="get_network_connected_peers" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
 			<description>
 				Returns the peer IDs of all connected peers of this [SceneTree]'s [member network_peer].
@@ -106,7 +106,7 @@
 		<method name="get_nodes_in_group">
 			<return type="Array">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<description>
 				Returns a list of all nodes assigned to the given group.
@@ -122,7 +122,7 @@
 		<method name="has_group" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="name" type="StringName">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given group exists.
@@ -135,13 +135,6 @@
 				Returns [code]true[/code] if there is a [member network_peer] set.
 			</description>
 		</method>
-		<method name="is_input_handled">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the most recent [InputEvent] was marked as handled with [method set_input_as_handled].
-			</description>
-		</method>
 		<method name="is_network_server" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -152,7 +145,7 @@
 		<method name="notify_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<argument index="1" name="notification" type="int">
 			</argument>
@@ -165,7 +158,7 @@
 			</return>
 			<argument index="0" name="call_flags" type="int">
 			</argument>
-			<argument index="1" name="group" type="String">
+			<argument index="1" name="group" type="StringName">
 			</argument>
 			<argument index="2" name="notification" type="int">
 			</argument>
@@ -185,8 +178,10 @@
 		<method name="quit">
 			<return type="void">
 			</return>
+			<argument index="0" name="exit_code" type="int" default="-1">
+			</argument>
 			<description>
-				Quits the application.
+				Quits the application. A process [code]exit_code[/code] can optionally be passed as an argument. If this argument is [code]0[/code] or greater, it will override the [member OS.exit_code] defined before quitting the application.
 			</description>
 		</method>
 		<method name="reload_current_scene">
@@ -194,7 +189,7 @@
 			</return>
 			<description>
 				Reloads the currently active scene.
-				Returns an [enum Error] code as described in [method change_scene], with the addition of [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet.
+				Returns [constant OK] on success, [constant ERR_UNCONFIGURED] if no [member current_scene] was defined yet, [constant ERR_CANT_OPEN] if [member current_scene] cannot be loaded into a [PackedScene], or [constant ERR_CANT_CREATE] if the scene cannot be instantiated.
 			</description>
 		</method>
 		<method name="set_auto_accept_quit">
@@ -204,12 +199,13 @@
 			</argument>
 			<description>
 				If [code]true[/code], the application automatically accepts quitting. Enabled by default.
+				For mobile platforms, see [method set_quit_on_go_back].
 			</description>
 		</method>
 		<method name="set_group">
 			<return type="void">
 			</return>
-			<argument index="0" name="group" type="String">
+			<argument index="0" name="group" type="StringName">
 			</argument>
 			<argument index="1" name="property" type="String">
 			</argument>
@@ -224,7 +220,7 @@
 			</return>
 			<argument index="0" name="call_flags" type="int">
 			</argument>
-			<argument index="1" name="group" type="String">
+			<argument index="1" name="group" type="StringName">
 			</argument>
 			<argument index="2" name="property" type="String">
 			</argument>
@@ -234,13 +230,6 @@
 				Sets the given [code]property[/code] to [code]value[/code] on all members of the given group, respecting the given [enum GroupCallFlags].
 			</description>
 		</method>
-		<method name="set_input_as_handled">
-			<return type="void">
-			</return>
-			<description>
-				Marks the most recent [InputEvent] as handled.
-			</description>
-		</method>
 		<method name="set_quit_on_go_back">
 			<return type="void">
 			</return>
@@ -248,21 +237,7 @@
 			</argument>
 			<description>
 				If [code]true[/code], the application quits automatically on going back (e.g. on Android). Enabled by default.
-			</description>
-		</method>
-		<method name="set_screen_stretch">
-			<return type="void">
-			</return>
-			<argument index="0" name="mode" type="int" enum="SceneTree.StretchMode">
-			</argument>
-			<argument index="1" name="aspect" type="int" enum="SceneTree.StretchAspect">
-			</argument>
-			<argument index="2" name="minsize" type="Vector2">
-			</argument>
-			<argument index="3" name="shrink" type="float" default="1">
-			</argument>
-			<description>
-				Configures screen stretching to the given [enum StretchMode], [enum StretchAspect], minimum size and [code]shrink[/code] ratio.
+				To handle 'Go Back' button when this option is disabled, use [constant DisplayServer.WINDOW_EVENT_GO_BACK_REQUEST].
 			</description>
 		</method>
 	</methods>
@@ -287,7 +262,7 @@
 			If [code]false[/code], you need to manually call [method MultiplayerAPI.poll] to process network packets and deliver RPCs/RSETs. This allows running RPCs/RSETs in a different loop (e.g. physics, thread, specific time step) and for manual [Mutex] protection when accessing the [MultiplayerAPI] from threads.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set the root node's network mode to master (see [code]NETWORK_MODE_*[/code] constants in [Node]), or it will become a regular peer with the root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the [SceneTree] will become a network server (check with [method is_network_server]) and will set the root node's network mode to master, or it will become a regular peer with the root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to [SceneTree]'s signals.
 		</member>
 		<member name="paused" type="bool" setter="set_pause" getter="is_paused" default="false">
 			If [code]true[/code], the [SceneTree] is paused. Doing so will have the following behavior:
@@ -297,11 +272,8 @@
 		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
 			If [code]true[/code], the [SceneTree]'s [member network_peer] refuses new incoming connections.
 		</member>
-		<member name="root" type="Viewport" setter="" getter="get_root">
-			The [SceneTree]'s root [Viewport].
-		</member>
-		<member name="use_font_oversampling" type="bool" setter="set_use_font_oversampling" getter="is_using_font_oversampling" default="false">
-			If [code]true[/code], font oversampling is used.
+		<member name="root" type="Window" setter="" getter="get_root">
+			The [SceneTree]'s root [Window].
 		</member>
 	</members>
 	<signals>
@@ -316,21 +288,12 @@
 			</description>
 		</signal>
 		<signal name="files_dropped">
-			<argument index="0" name="files" type="PoolStringArray">
+			<argument index="0" name="files" type="PackedStringArray">
 			</argument>
 			<argument index="1" name="screen" type="int">
 			</argument>
 			<description>
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The arguments are a list of file paths and the identifier of the screen where the drag originated.
-			</description>
-		</signal>
-		<signal name="global_menu_action">
-			<argument index="0" name="id" type="Nil">
-			</argument>
-			<argument index="1" name="meta" type="Nil">
-			</argument>
-			<description>
-				Emitted whenever global menu item is clicked.
 			</description>
 		</signal>
 		<signal name="idle_frame">
@@ -385,11 +348,6 @@
 				Emitted immediately before [method Node._physics_process] is called on every node in the [SceneTree].
 			</description>
 		</signal>
-		<signal name="screen_resized">
-			<description>
-				Emitted when the screen resolution (fullscreen) or window size (windowed) changes.
-			</description>
-		</signal>
 		<signal name="server_disconnected">
 			<description>
 				Emitted whenever this [SceneTree]'s [member network_peer] disconnected from server. Only emitted on clients.
@@ -413,30 +371,6 @@
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
 			Call a group only once even if the call is executed many times.
-		</constant>
-		<constant name="STRETCH_MODE_DISABLED" value="0" enum="StretchMode">
-			No stretching.
-		</constant>
-		<constant name="STRETCH_MODE_2D" value="1" enum="StretchMode">
-			Render stretching in higher resolution (interpolated).
-		</constant>
-		<constant name="STRETCH_MODE_VIEWPORT" value="2" enum="StretchMode">
-			Keep the specified display resolution. No interpolation. Content may appear pixelated.
-		</constant>
-		<constant name="STRETCH_ASPECT_IGNORE" value="0" enum="StretchAspect">
-			Fill the window with the content stretched to cover excessive space. Content may appear stretched.
-		</constant>
-		<constant name="STRETCH_ASPECT_KEEP" value="1" enum="StretchAspect">
-			Retain the same aspect ratio by padding with black bars on either axis. This prevents distortion.
-		</constant>
-		<constant name="STRETCH_ASPECT_KEEP_WIDTH" value="2" enum="StretchAspect">
-			Expand vertically. Left/right black bars may appear if the window is too wide.
-		</constant>
-		<constant name="STRETCH_ASPECT_KEEP_HEIGHT" value="3" enum="StretchAspect">
-			Expand horizontally. Top/bottom black bars may appear if the window is too tall.
-		</constant>
-		<constant name="STRETCH_ASPECT_EXPAND" value="4" enum="StretchAspect">
-			Expand in both directions, retaining the same aspect ratio. This prevents distortion while avoiding black bars.
 		</constant>
 	</constants>
 </class>

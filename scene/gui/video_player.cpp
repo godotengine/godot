@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,10 @@
 
 int VideoPlayer::sp_get_channel_count() const {
 
+	if (playback.is_null()) {
+		return 0;
+	}
+
 	return playback->get_channels();
 }
 
@@ -56,6 +60,9 @@ bool VideoPlayer::mix(AudioFrame *p_buffer, int p_frames) {
 // Called from main thread (eg VideoStreamPlaybackWebm::update)
 int VideoPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_frames) {
 
+	ERR_FAIL_NULL_V(p_udata, 0);
+	ERR_FAIL_NULL_V(p_data, 0);
+
 	VideoPlayer *vp = (VideoPlayer *)p_udata;
 
 	int todo = MIN(vp->resampler.get_writer_space(), p_frames);
@@ -69,6 +76,12 @@ int VideoPlayer::_audio_mix_callback(void *p_udata, const float *p_data, int p_f
 	vp->resampler.write(todo);
 
 	return todo;
+}
+
+void VideoPlayer::_mix_audios(void *p_self) {
+
+	ERR_FAIL_NULL(p_self);
+	reinterpret_cast<VideoPlayer *>(p_self)->_mix_audio();
 }
 
 // Called from audio thread
@@ -143,7 +156,7 @@ void VideoPlayer::_notification(int p_notification) {
 
 			bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
-			if (stream.is_null() || paused || !playback->is_playing())
+			if (stream.is_null() || paused || playback.is_null() || !playback->is_playing())
 				return;
 
 			double audio_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
@@ -236,6 +249,10 @@ void VideoPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 	}
 
 	update();
+
+	if (!expand) {
+		minimum_size_changed();
+	}
 };
 
 Ref<VideoStream> VideoPlayer::get_stream() const {
@@ -358,12 +375,12 @@ void VideoPlayer::set_stream_position(float p_position) {
 		playback->seek(p_position);
 }
 
-Ref<Texture> VideoPlayer::get_video_texture() {
+Ref<Texture2D> VideoPlayer::get_video_texture() const {
 
 	if (playback.is_valid())
 		return playback->get_texture();
 
-	return Ref<Texture>();
+	return Ref<Texture2D>();
 }
 
 void VideoPlayer::set_autoplay(bool p_enable) {
@@ -394,9 +411,9 @@ StringName VideoPlayer::get_bus() const {
 	return "Master";
 }
 
-void VideoPlayer::_validate_property(PropertyInfo &property) const {
+void VideoPlayer::_validate_property(PropertyInfo &p_property) const {
 
-	if (property.name == "bus") {
+	if (p_property.name == "bus") {
 
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
@@ -406,7 +423,7 @@ void VideoPlayer::_validate_property(PropertyInfo &property) const {
 			options += name;
 		}
 
-		property.hint_string = options;
+		p_property.hint_string = options;
 	}
 }
 
@@ -456,15 +473,15 @@ void VideoPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_track", PROPERTY_HINT_RANGE, "0,128,1"), "set_audio_track", "get_audio_track");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "VideoStream"), "set_stream", "get_stream");
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), "set_loop", "has_loop") ;
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "volume", PROPERTY_HINT_EXP_RANGE, "0,15,0.01", 0), "set_volume", "get_volume");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume", PROPERTY_HINT_EXP_RANGE, "0,15,0.01", 0), "set_volume", "get_volume");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand"), "set_expand", "has_expand");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffering_msec", PROPERTY_HINT_RANGE, "10,1000"), "set_buffering_msec", "get_buffering_msec");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", 0), "set_stream_position", "get_stream_position");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "stream_position", PROPERTY_HINT_RANGE, "0,1280000,0.1", 0), "set_stream_position", "get_stream_position");
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 }
 
 VideoPlayer::VideoPlayer() {

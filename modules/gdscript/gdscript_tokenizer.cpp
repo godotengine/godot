@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,11 +106,9 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"yield",
 	"signal",
 	"breakpoint",
-	"rpc",
-	"sync",
+	"remote",
 	"master",
 	"puppet",
-	"slave",
 	"remotesync",
 	"mastersync",
 	"puppetsync",
@@ -148,12 +146,15 @@ static const _bit _type_list[] = {
 	//types
 	{ Variant::BOOL, "bool" },
 	{ Variant::INT, "int" },
-	{ Variant::REAL, "float" },
+	{ Variant::FLOAT, "float" },
 	{ Variant::STRING, "String" },
 	{ Variant::VECTOR2, "Vector2" },
+	{ Variant::VECTOR2I, "Vector2i" },
 	{ Variant::RECT2, "Rect2" },
+	{ Variant::RECT2I, "Rect2i" },
 	{ Variant::TRANSFORM2D, "Transform2D" },
 	{ Variant::VECTOR3, "Vector3" },
+	{ Variant::VECTOR3I, "Vector3i" },
 	{ Variant::AABB, "AABB" },
 	{ Variant::PLANE, "Plane" },
 	{ Variant::QUAT, "Quat" },
@@ -162,17 +163,22 @@ static const _bit _type_list[] = {
 	{ Variant::COLOR, "Color" },
 	{ Variant::_RID, "RID" },
 	{ Variant::OBJECT, "Object" },
+	{ Variant::STRING_NAME, "StringName" },
 	{ Variant::NODE_PATH, "NodePath" },
 	{ Variant::DICTIONARY, "Dictionary" },
+	{ Variant::CALLABLE, "Callable" },
+	{ Variant::SIGNAL, "Signal" },
 	{ Variant::ARRAY, "Array" },
-	{ Variant::POOL_BYTE_ARRAY, "PoolByteArray" },
-	{ Variant::POOL_INT_ARRAY, "PoolIntArray" },
-	{ Variant::POOL_REAL_ARRAY, "PoolRealArray" },
-	{ Variant::POOL_STRING_ARRAY, "PoolStringArray" },
-	{ Variant::POOL_VECTOR2_ARRAY, "PoolVector2Array" },
-	{ Variant::POOL_VECTOR3_ARRAY, "PoolVector3Array" },
-	{ Variant::POOL_COLOR_ARRAY, "PoolColorArray" },
-	{ Variant::VARIANT_MAX, NULL },
+	{ Variant::PACKED_BYTE_ARRAY, "PackedByteArray" },
+	{ Variant::PACKED_INT32_ARRAY, "PackedInt32Array" },
+	{ Variant::PACKED_INT64_ARRAY, "PackedInt64Array" },
+	{ Variant::PACKED_FLOAT32_ARRAY, "PackedFloat32Array" },
+	{ Variant::PACKED_FLOAT64_ARRAY, "PackedFloat64Array" },
+	{ Variant::PACKED_STRING_ARRAY, "PackedStringArray" },
+	{ Variant::PACKED_VECTOR2_ARRAY, "PackedVector2Array" },
+	{ Variant::PACKED_VECTOR3_ARRAY, "PackedVector3Array" },
+	{ Variant::PACKED_COLOR_ARRAY, "PackedColorArray" },
+	{ Variant::VARIANT_MAX, nullptr },
 };
 
 struct _kws {
@@ -207,9 +213,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_BREAKPOINT, "breakpoint" },
 	{ GDScriptTokenizer::TK_PR_REMOTE, "remote" },
 	{ GDScriptTokenizer::TK_PR_MASTER, "master" },
-	{ GDScriptTokenizer::TK_PR_SLAVE, "slave" },
 	{ GDScriptTokenizer::TK_PR_PUPPET, "puppet" },
-	{ GDScriptTokenizer::TK_PR_SYNC, "sync" },
 	{ GDScriptTokenizer::TK_PR_REMOTESYNC, "remotesync" },
 	{ GDScriptTokenizer::TK_PR_MASTERSYNC, "mastersync" },
 	{ GDScriptTokenizer::TK_PR_PUPPETSYNC, "puppetsync" },
@@ -232,7 +236,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_WILDCARD, "_" },
 	{ GDScriptTokenizer::TK_CONST_INF, "INF" },
 	{ GDScriptTokenizer::TK_CONST_NAN, "NAN" },
-	{ GDScriptTokenizer::TK_ERROR, NULL }
+	{ GDScriptTokenizer::TK_ERROR, nullptr }
 };
 
 const char *GDScriptTokenizer::get_token_name(Token p_token) {
@@ -255,7 +259,6 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_REMOTE:
 		case TK_PR_MASTER:
 		case TK_PR_PUPPET:
-		case TK_PR_SYNC:
 		case TK_PR_REMOTESYNC:
 		case TK_PR_MASTERSYNC:
 		case TK_PR_PUPPETSYNC:
@@ -342,7 +345,7 @@ StringName GDScriptTokenizer::get_token_literal(int p_offset) const {
 				default: {
 				}
 			}
-		}
+		} break;
 		case TK_OP_AND:
 		case TK_OP_OR:
 			break; // Don't get into default, since they can be non-literal
@@ -450,11 +453,11 @@ void GDScriptTokenizerText::_make_error(const String &p_error) {
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
 
-void GDScriptTokenizerText::_make_newline(int p_spaces) {
+void GDScriptTokenizerText::_make_newline(int p_indentation, int p_tabs) {
 
 	TokenData &tk = tk_rb[tk_rb_pos];
 	tk.type = TK_NEWLINE;
-	tk.constant = p_spaces;
+	tk.constant = Vector2(p_indentation, p_tabs);
 	tk.line = line;
 	tk.col = column;
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
@@ -480,7 +483,7 @@ void GDScriptTokenizerText::_advance() {
 	}
 	while (true) {
 
-		bool is_node_path = false;
+		bool is_string_name = false;
 		StringMode string_mode = STRING_DOUBLE_QUOTE;
 
 		switch (GETCHAR(0)) {
@@ -511,33 +514,6 @@ void GDScriptTokenizerText::_advance() {
 			case ' ':
 				INCPOS(1);
 				continue;
-			case '\n': {
-				line++;
-				INCPOS(1);
-				column = 1;
-				int i = 0;
-				while (true) {
-					if (GETCHAR(i) == ' ') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_SPACES;
-						if (file_indent_type != INDENT_SPACES) {
-							_make_error("Spaces used for indentation in tab-indented file!");
-							return;
-						}
-					} else if (GETCHAR(i) == '\t') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_TABS;
-						if (file_indent_type != INDENT_TABS) {
-							_make_error("Tabs used for indentation in space-indented file!");
-							return;
-						}
-					} else {
-						break; // not indentation anymore
-					}
-					i++;
-				}
-
-				_make_newline(i);
-				return;
-			}
 			case '#': { // line comment skip
 #ifdef DEBUG_ENABLED
 				String comment;
@@ -565,33 +541,34 @@ void GDScriptTokenizerText::_advance() {
 					ignore_warnings = true;
 				}
 #endif // DEBUG_ENABLED
-				INCPOS(1);
-				column = 1;
+				[[fallthrough]];
+			}
+			case '\n': {
 				line++;
+				INCPOS(1);
+				bool used_spaces = false;
+				int tabs = 0;
+				column = 1;
 				int i = 0;
 				while (true) {
 					if (GETCHAR(i) == ' ') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_SPACES;
-						if (file_indent_type != INDENT_SPACES) {
-							_make_error("Spaces used for indentation in tab-indented file!");
-							return;
-						}
+						i++;
+						used_spaces = true;
 					} else if (GETCHAR(i) == '\t') {
-						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_TABS;
-						if (file_indent_type != INDENT_TABS) {
-							_make_error("Tabs used for indentation in space-indented file!");
+						if (used_spaces) {
+							_make_error("Spaces used before tabs on a line");
 							return;
 						}
+						i++;
+						tabs++;
 					} else {
 						break; // not indentation anymore
 					}
-					i++;
 				}
 
-				_make_newline(i);
+				_make_newline(i, tabs);
 				return;
-
-			} break;
+			}
 			case '/': {
 
 				switch (GETCHAR(1)) {
@@ -780,8 +757,8 @@ void GDScriptTokenizerText::_advance() {
 					return;
 				}
 				INCPOS(1);
-				is_node_path = true;
-				FALLTHROUGH;
+				is_string_name = true;
+				[[fallthrough]];
 			case '\'':
 			case '"': {
 
@@ -841,7 +818,7 @@ void GDScriptTokenizerText::_advance() {
 								break; //wtf
 
 							case 'u': {
-								//hexnumbarh - oct is deprecated
+								// hex number
 								i += 1;
 								for (int j = 0; j < 4; j++) {
 									CharType c = GETCHAR(i + j);
@@ -849,12 +826,8 @@ void GDScriptTokenizerText::_advance() {
 										_make_error("Unterminated String");
 										return;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
 
-										_make_error("Malformed hex constant in string");
-										return;
-									}
-									CharType v;
+									CharType v = 0;
 									if (c >= '0' && c <= '9') {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
@@ -864,8 +837,8 @@ void GDScriptTokenizerText::_advance() {
 										v = c - 'A';
 										v += 10;
 									} else {
-										ERR_PRINT("BUG");
-										v = 0;
+										_make_error("Malformed hex constant in string");
+										return;
 									}
 
 									res <<= 4;
@@ -895,8 +868,8 @@ void GDScriptTokenizerText::_advance() {
 				}
 				INCPOS(i);
 
-				if (is_node_path) {
-					_make_constant(NodePath(str));
+				if (is_string_name) {
+					_make_constant(StringName(str));
 				} else {
 					_make_constant(str);
 				}
@@ -937,8 +910,10 @@ void GDScriptTokenizerText::_advance() {
 								return;
 							}
 							hexa_found = true;
-						} else if (GETCHAR(i) == 'b') {
-							if (hexa_found || bin_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
+						} else if (hexa_found && _is_hex(GETCHAR(i))) {
+
+						} else if (!hexa_found && GETCHAR(i) == 'b') {
+							if (bin_found || str.length() != 1 || !((i == 1 && str[0] == '0') || (i == 2 && str[1] == '0' && str[0] == '-'))) {
 								_make_error("Invalid numeric constant at 'b'");
 								return;
 							}
@@ -951,7 +926,6 @@ void GDScriptTokenizerText::_advance() {
 							exponent_found = true;
 						} else if (_is_number(GETCHAR(i))) {
 							//all ok
-						} else if (hexa_found && _is_hex(GETCHAR(i))) {
 
 						} else if (bin_found && _is_bin(GETCHAR(i))) {
 
@@ -1101,7 +1075,7 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	if (len) {
 		_code = &code[0];
 	} else {
-		_code = NULL;
+		_code = nullptr;
 	}
 	code_pos = 0;
 	line = 1; //it is stand-ar-ized that lines begin in 1 in code..
@@ -1112,7 +1086,6 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	ignore_warnings = false;
 #endif // DEBUG_ENABLED
 	last_error = "";
-	file_indent_type = INDENT_NONE;
 	for (int i = 0; i < MAX_LOOKAHEAD + 1; i++)
 		_advance();
 }
@@ -1187,7 +1160,17 @@ int GDScriptTokenizerText::get_token_line_indent(int p_offset) const {
 
 	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
 	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_NEWLINE, 0);
-	return tk_rb[ofs].constant;
+	return tk_rb[ofs].constant.operator Vector2().x;
+}
+
+int GDScriptTokenizerText::get_token_line_tab_indent(int p_offset) const {
+
+	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, 0);
+	ERR_FAIL_COND_V(p_offset >= MAX_LOOKAHEAD, 0);
+
+	int ofs = (TK_RB_SIZE + tk_rb_pos + p_offset - MAX_LOOKAHEAD - 1) % TK_RB_SIZE;
+	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_NEWLINE, 0);
+	return tk_rb[ofs].constant.operator Vector2().y;
 }
 
 String GDScriptTokenizerText::get_token_error(int p_offset) const {
@@ -1375,7 +1358,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 	}
 
 	Map<int, Variant> rev_constant_map;
-	const Variant *K = NULL;
+	const Variant *K = nullptr;
 	while ((K = constant_map.next(K))) {
 		rev_constant_map[constant_map[*K]] = *K;
 	}
@@ -1424,7 +1407,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 
 		int len;
 		// Objects cannot be constant, never encode objects
-		Error err = encode_variant(E->get(), NULL, len, false);
+		Error err = encode_variant(E->get(), nullptr, len, false);
 		ERR_FAIL_COND_V_MSG(err != OK, Vector<uint8_t>(), "Error when trying to encode Variant.");
 		int pos = buf.size();
 		buf.resize(pos + len);

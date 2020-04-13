@@ -13,6 +13,8 @@
 #ifndef THREADING_H_938743
 #define THREADING_H_938743
 
+#include "debug.h"
+
 #if defined (__cplusplus)
 extern "C" {
 #endif
@@ -75,9 +77,11 @@ int ZSTD_pthread_join(ZSTD_pthread_t thread, void** value_ptr);
  */
 
 
-#elif defined(ZSTD_MULTITHREAD)   /* posix assumed ; need a better detection method */
+#elif defined(ZSTD_MULTITHREAD)    /* posix assumed ; need a better detection method */
 /* ===   POSIX Systems   === */
 #  include <pthread.h>
+
+#if DEBUGLEVEL < 1
 
 #define ZSTD_pthread_mutex_t            pthread_mutex_t
 #define ZSTD_pthread_mutex_init(a, b)   pthread_mutex_init((a), (b))
@@ -95,6 +99,33 @@ int ZSTD_pthread_join(ZSTD_pthread_t thread, void** value_ptr);
 #define ZSTD_pthread_t                  pthread_t
 #define ZSTD_pthread_create(a, b, c, d) pthread_create((a), (b), (c), (d))
 #define ZSTD_pthread_join(a, b)         pthread_join((a),(b))
+
+#else /* DEBUGLEVEL >= 1 */
+
+/* Debug implementation of threading.
+ * In this implementation we use pointers for mutexes and condition variables.
+ * This way, if we forget to init/destroy them the program will crash or ASAN
+ * will report leaks.
+ */
+
+#define ZSTD_pthread_mutex_t            pthread_mutex_t*
+int ZSTD_pthread_mutex_init(ZSTD_pthread_mutex_t* mutex, pthread_mutexattr_t const* attr);
+int ZSTD_pthread_mutex_destroy(ZSTD_pthread_mutex_t* mutex);
+#define ZSTD_pthread_mutex_lock(a)      pthread_mutex_lock(*(a))
+#define ZSTD_pthread_mutex_unlock(a)    pthread_mutex_unlock(*(a))
+
+#define ZSTD_pthread_cond_t             pthread_cond_t*
+int ZSTD_pthread_cond_init(ZSTD_pthread_cond_t* cond, pthread_condattr_t const* attr);
+int ZSTD_pthread_cond_destroy(ZSTD_pthread_cond_t* cond);
+#define ZSTD_pthread_cond_wait(a, b)    pthread_cond_wait(*(a), *(b))
+#define ZSTD_pthread_cond_signal(a)     pthread_cond_signal(*(a))
+#define ZSTD_pthread_cond_broadcast(a)  pthread_cond_broadcast(*(a))
+
+#define ZSTD_pthread_t                  pthread_t
+#define ZSTD_pthread_create(a, b, c, d) pthread_create((a), (b), (c), (d))
+#define ZSTD_pthread_join(a, b)         pthread_join((a),(b))
+
+#endif
 
 #else  /* ZSTD_MULTITHREAD not defined */
 /* No multithreading support */

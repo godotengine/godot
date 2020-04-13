@@ -1091,6 +1091,35 @@ void SceneCombiner::Copy( aiMesh** _dest, const aiMesh* src ) {
         aiFace& f = dest->mFaces[i];
         GetArrayCopy(f.mIndices,f.mNumIndices);
     }
+
+    // make a deep copy of all blend shapes
+    CopyPtrArray(dest->mAnimMeshes, dest->mAnimMeshes, dest->mNumAnimMeshes);
+}
+
+// ------------------------------------------------------------------------------------------------
+void SceneCombiner::Copy(aiAnimMesh** _dest, const aiAnimMesh* src) {
+    if (nullptr == _dest || nullptr == src) {
+        return;
+    }
+
+    aiAnimMesh* dest = *_dest = new aiAnimMesh();
+
+    // get a flat copy
+    ::memcpy(dest, src, sizeof(aiAnimMesh));
+
+    // and reallocate all arrays
+    GetArrayCopy(dest->mVertices, dest->mNumVertices);
+    GetArrayCopy(dest->mNormals, dest->mNumVertices);
+    GetArrayCopy(dest->mTangents, dest->mNumVertices);
+    GetArrayCopy(dest->mBitangents, dest->mNumVertices);
+
+    unsigned int n = 0;
+    while (dest->HasTextureCoords(n))
+        GetArrayCopy(dest->mTextureCoords[n++], dest->mNumVertices);
+
+    n = 0;
+    while (dest->HasVertexColors(n))
+        GetArrayCopy(dest->mColors[n++], dest->mNumVertices);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1167,6 +1196,7 @@ void SceneCombiner::Copy( aiAnimation** _dest, const aiAnimation* src ) {
 
     // and reallocate all arrays
     CopyPtrArray( dest->mChannels, src->mChannels, dest->mNumChannels );
+    CopyPtrArray( dest->mMorphMeshChannels, src->mMorphMeshChannels, dest->mNumMorphMeshChannels );
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -1184,6 +1214,26 @@ void SceneCombiner::Copy(aiNodeAnim** _dest, const aiNodeAnim* src) {
     GetArrayCopy( dest->mPositionKeys, dest->mNumPositionKeys );
     GetArrayCopy( dest->mScalingKeys,  dest->mNumScalingKeys );
     GetArrayCopy( dest->mRotationKeys, dest->mNumRotationKeys );
+}
+
+void SceneCombiner::Copy(aiMeshMorphAnim** _dest, const aiMeshMorphAnim* src) {
+    if ( nullptr == _dest || nullptr == src ) {
+        return;
+    }
+
+    aiMeshMorphAnim* dest = *_dest = new aiMeshMorphAnim();
+
+    // get a flat copy
+    ::memcpy(dest,src,sizeof(aiMeshMorphAnim));
+
+    // and reallocate all arrays
+    GetArrayCopy( dest->mKeys, dest->mNumKeys );
+    for (ai_uint i = 0; i < dest->mNumKeys;++i) {
+        dest->mKeys[i].mValues = new unsigned int[dest->mKeys[i].mNumValuesAndWeights];
+        dest->mKeys[i].mWeights = new double[dest->mKeys[i].mNumValuesAndWeights];
+        ::memcpy(dest->mKeys[i].mValues, src->mKeys[i].mValues, dest->mKeys[i].mNumValuesAndWeights * sizeof(unsigned int));
+        ::memcpy(dest->mKeys[i].mWeights, src->mKeys[i].mWeights, dest->mKeys[i].mNumValuesAndWeights * sizeof(double));
+    }
 }
 
 // ------------------------------------------------------------------------------------------------

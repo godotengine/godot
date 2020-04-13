@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CameraEffects" inherits="Resource" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="dof_blur_amount" type="float" setter="set_dof_blur_amount" getter="get_dof_blur_amount" default="0.1">
+		</member>
+		<member name="dof_blur_far_distance" type="float" setter="set_dof_blur_far_distance" getter="get_dof_blur_far_distance" default="10.0">
+		</member>
+		<member name="dof_blur_far_enabled" type="bool" setter="set_dof_blur_far_enabled" getter="is_dof_blur_far_enabled" default="false">
+		</member>
+		<member name="dof_blur_far_transition" type="float" setter="set_dof_blur_far_transition" getter="get_dof_blur_far_transition" default="5.0">
+		</member>
+		<member name="dof_blur_near_distance" type="float" setter="set_dof_blur_near_distance" getter="get_dof_blur_near_distance" default="2.0">
+		</member>
+		<member name="dof_blur_near_enabled" type="bool" setter="set_dof_blur_near_enabled" getter="is_dof_blur_near_enabled" default="false">
+		</member>
+		<member name="dof_blur_near_transition" type="float" setter="set_dof_blur_near_transition" getter="get_dof_blur_near_transition" default="1.0">
+		</member>
+		<member name="override_exposure" type="float" setter="set_override_exposure" getter="get_override_exposure" default="1.0">
+		</member>
+		<member name="override_exposure_enable" type="bool" setter="set_override_exposure_enabled" getter="is_override_exposure_enabled" default="false">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

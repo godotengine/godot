@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
+
+# Only kept to build the thirdparty library used by the theora and webm
+# modules.
 
 env_ogg = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_libogg']:
+if env["builtin_libogg"]:
     thirdparty_dir = "#thirdparty/libogg/"
     thirdparty_sources = [
         "bitwise.c",

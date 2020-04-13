@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,16 +32,16 @@
 
 #ifdef UNIX_ENABLED
 
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/os/thread_dummy.h"
 #include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
-#include "drivers/unix/mutex_posix.h"
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/rw_lock_posix.h"
-#include "drivers/unix/semaphore_posix.h"
 #include "drivers/unix/thread_posix.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -59,6 +59,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
@@ -95,20 +96,20 @@ void OS_Unix::debug_break() {
 };
 
 static void handle_interrupt(int sig) {
-	if (ScriptDebugger::get_singleton() == NULL)
+	if (!EngineDebugger::is_active())
 		return;
 
-	ScriptDebugger::get_singleton()->set_depth(-1);
-	ScriptDebugger::get_singleton()->set_lines_left(1);
+	EngineDebugger::get_script_debugger()->set_depth(-1);
+	EngineDebugger::get_script_debugger()->set_lines_left(1);
 }
 
 void OS_Unix::initialize_debugging() {
 
-	if (ScriptDebugger::get_singleton() != NULL) {
+	if (EngineDebugger::is_active()) {
 		struct sigaction action;
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
-		sigaction(SIGINT, &action, NULL);
+		sigaction(SIGINT, &action, nullptr);
 	}
 }
 
@@ -121,13 +122,9 @@ void OS_Unix::initialize_core() {
 
 #ifdef NO_THREADS
 	ThreadDummy::make_default();
-	SemaphoreDummy::make_default();
-	MutexDummy::make_default();
 	RWLockDummy::make_default();
 #else
 	ThreadPosix::make_default();
-	SemaphorePosix::make_default();
-	MutexPosix::make_default();
 	RWLockPosix::make_default();
 #endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
@@ -175,24 +172,24 @@ String OS_Unix::get_name() const {
 
 uint64_t OS_Unix::get_unix_time() const {
 
-	return time(NULL);
+	return time(nullptr);
 };
 
 uint64_t OS_Unix::get_system_time_secs() const {
 	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
+	gettimeofday(&tv_now, nullptr);
 	return uint64_t(tv_now.tv_sec);
 }
 
 uint64_t OS_Unix::get_system_time_msecs() const {
 	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
+	gettimeofday(&tv_now, nullptr);
 	return uint64_t(tv_now.tv_sec) * 1000 + uint64_t(tv_now.tv_usec) / 1000;
 }
 
 OS::Date OS_Unix::get_date(bool utc) const {
 
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	struct tm *lt;
 	if (utc)
 		lt = gmtime(&t);
@@ -212,7 +209,7 @@ OS::Date OS_Unix::get_date(bool utc) const {
 }
 
 OS::Time OS_Unix::get_time(bool utc) const {
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	struct tm *lt;
 	if (utc)
 		lt = gmtime(&t);
@@ -227,7 +224,7 @@ OS::Time OS_Unix::get_time(bool utc) const {
 }
 
 OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
-	time_t t = time(NULL);
+	time_t t = time(nullptr);
 	struct tm *lt = localtime(&t);
 	char name[16];
 	strftime(name, 16, "%Z", lt);
@@ -307,7 +304,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 			if (p_pipe_mutex) {
 				p_pipe_mutex->lock();
 			}
-			(*r_pipe) += buf;
+			(*r_pipe) += String::utf8(buf);
 			if (p_pipe_mutex) {
 				p_pipe_mutex->unlock();
 			}
@@ -382,7 +379,7 @@ int OS_Unix::get_process_id() const {
 
 bool OS_Unix::has_environment(const String &p_var) const {
 
-	return getenv(p_var.utf8().get_data()) != NULL;
+	return getenv(p_var.utf8().get_data()) != nullptr;
 }
 
 String OS_Unix::get_locale() const {
@@ -436,7 +433,7 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 	p_symbol_handle = dlsym(p_library_handle, p_name.utf8().get_data());
 
 	error = dlerror();
-	if (error != NULL) {
+	if (error != nullptr) {
 		ERR_FAIL_COND_V_MSG(!p_optional, ERR_CANT_RESOLVE, "Can't resolve symbol " + p_name + ". Error: " + error + ".");
 
 		return ERR_CANT_RESOLVE;
@@ -514,7 +511,7 @@ String OS_Unix::get_executable_path() const {
 	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
 	char buf[MAXPATHLEN];
 	size_t len = sizeof(buf);
-	if (sysctl(mib, 4, buf, &len, NULL, 0) != 0) {
+	if (sysctl(mib, 4, buf, &len, nullptr, 0) != 0) {
 		WARN_PRINT("Couldn't get executable path from sysctl");
 		return OS::get_executable_path();
 	}
@@ -552,23 +549,38 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	else
 		err_details = p_code;
 
+	// Disable color codes if stdout is not a TTY.
+	// This prevents Godot from writing ANSI escape codes when redirecting
+	// stdout and stderr to a file.
+	const bool tty = isatty(fileno(stdout));
+	const char *gray = tty ? "\E[0;90m" : "";
+	const char *red = tty ? "\E[0;91m" : "";
+	const char *red_bold = tty ? "\E[1;31m" : "";
+	const char *yellow = tty ? "\E[0;93m" : "";
+	const char *yellow_bold = tty ? "\E[1;33m" : "";
+	const char *magenta = tty ? "\E[0;95m" : "";
+	const char *magenta_bold = tty ? "\E[1;35m" : "";
+	const char *cyan = tty ? "\E[0;96m" : "";
+	const char *cyan_bold = tty ? "\E[1;36m" : "";
+	const char *reset = tty ? "\E[0m" : "";
+
 	switch (p_type) {
 		case ERR_WARNING:
-			logf_error("\E[1;33mWARNING: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;33m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sWARNING:%s %s\n", yellow_bold, yellow, err_details);
+			logf_error("%s     at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 		case ERR_SCRIPT:
-			logf_error("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;35m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sSCRIPT ERROR:%s %s\n", magenta_bold, magenta, err_details);
+			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 		case ERR_SHADER:
-			logf_error("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;36m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sSHADER ERROR:%s %s\n", cyan_bold, cyan, err_details);
+			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 		case ERR_ERROR:
 		default:
-			logf_error("\E[1;31mERROR: %s: \E[0m\E[1m%s\n", p_function, err_details);
-			logf_error("\E[0;31m   At: %s:%i.\E[0m\n", p_file, p_line);
+			logf_error("%sERROR:%s %s\n", red_bold, red, err_details);
+			logf_error("%s   at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
 			break;
 	}
 }

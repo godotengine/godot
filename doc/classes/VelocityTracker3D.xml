@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VelocityTracker3D" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_tracked_linear_velocity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="reset">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="update_position">
+			<return type="void">
+			</return>
+			<argument index="0" name="position" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="track_physics_step" type="bool" setter="set_track_physics_step" getter="is_tracking_physics_step" default="false">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,15 +47,26 @@ struct Rect2 {
 
 	real_t get_area() const { return size.width * size.height; }
 
-	inline bool intersects(const Rect2 &p_rect) const {
-		if (position.x >= (p_rect.position.x + p_rect.size.width))
-			return false;
-		if ((position.x + size.width) <= p_rect.position.x)
-			return false;
-		if (position.y >= (p_rect.position.y + p_rect.size.height))
-			return false;
-		if ((position.y + size.height) <= p_rect.position.y)
-			return false;
+	inline bool intersects(const Rect2 &p_rect, const bool p_include_borders = false) const {
+		if (p_include_borders) {
+			if (position.x > (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) < p_rect.position.x)
+				return false;
+			if (position.y > (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) < p_rect.position.y)
+				return false;
+		} else {
+			if (position.x >= (p_rect.position.x + p_rect.size.width))
+				return false;
+			if ((position.x + size.width) <= p_rect.position.x)
+				return false;
+			if (position.y >= (p_rect.position.y + p_rect.size.height))
+				return false;
+			if ((position.y + size.height) <= p_rect.position.y)
+				return false;
+		}
 
 		return true;
 	}
@@ -94,13 +105,13 @@ struct Rect2 {
 
 	bool intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const;
 
-	bool intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos = NULL, Point2 *r_normal = NULL) const;
+	bool intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos = nullptr, Point2 *r_normal = nullptr) const;
 
 	inline bool encloses(const Rect2 &p_rect) const {
 
 		return (p_rect.position.x >= position.x) && (p_rect.position.y >= position.y) &&
-			   ((p_rect.position.x + p_rect.size.x) < (position.x + size.x)) &&
-			   ((p_rect.position.y + p_rect.size.y) < (position.y + size.y));
+			   ((p_rect.position.x + p_rect.size.x) <= (position.x + size.x)) &&
+			   ((p_rect.position.y + p_rect.size.y) <= (position.y + size.y));
 	}
 
 	_FORCE_INLINE_ bool has_no_area() const {
@@ -153,6 +164,7 @@ struct Rect2 {
 
 		return true;
 	}
+	bool is_equal_approx(const Rect2 &p_rect) const;
 
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
 	bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
@@ -371,6 +383,11 @@ struct Rect2i {
 
 		position = begin;
 		size = end - begin;
+	}
+
+	_FORCE_INLINE_ Rect2i abs() const {
+
+		return Rect2i(Point2i(position.x + MIN(size.x, 0), position.y + MIN(size.y, 0)), size.abs());
 	}
 
 	operator String() const { return String(position) + ", " + String(size); }

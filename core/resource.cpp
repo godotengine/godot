@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +68,10 @@ void Resource::set_path(const String &p_path, bool p_take_over) {
 		if (p_take_over) {
 
 			ResourceCache::lock->write_lock();
-			ResourceCache::resources.get(p_path)->set_name("");
+			Resource **res = ResourceCache::resources.getptr(p_path);
+			if (res) {
+				(*res)->set_name("");
+			}
 			ResourceCache::lock->write_unlock();
 		} else {
 			ResourceCache::lock->read_lock();
@@ -146,7 +149,7 @@ void Resource::reload_from_file() {
 	}
 }
 
-Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -187,7 +190,7 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Res
 	return res;
 }
 
-void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+void Resource::configure_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource>> &remap_cache) {
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -325,7 +328,7 @@ Node *Resource::get_local_scene() const {
 		return _get_local_scene_func();
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void Resource::setup_local_to_scene() {
@@ -334,7 +337,7 @@ void Resource::setup_local_to_scene() {
 		get_script_instance()->call("_setup_local_to_scene");
 }
 
-Node *(*Resource::_get_local_scene_func)() = NULL;
+Node *(*Resource::_get_local_scene_func)() = nullptr;
 
 void Resource::set_as_translation_remapped(bool p_remapped) {
 
@@ -365,17 +368,38 @@ bool Resource::is_translation_remapped() const {
 //helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, int p_id) {
 	if (p_id == -1) {
-		id_for_path.erase(p_path);
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_lock();
+		}
+		ResourceCache::resource_path_cache[p_path].erase(get_path());
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_unlock();
+		}
 	} else {
-		id_for_path[p_path] = p_id;
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_lock();
+		}
+		ResourceCache::resource_path_cache[p_path][get_path()] = p_id;
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->write_unlock();
+		}
 	}
 }
 
 int Resource::get_id_for_path(const String &p_path) const {
-
-	if (id_for_path.has(p_path)) {
-		return id_for_path[p_path];
+	if (ResourceCache::path_cache_lock) {
+		ResourceCache::path_cache_lock->read_lock();
+	}
+	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
+		int result = ResourceCache::resource_path_cache[p_path][get_path()];
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->read_unlock();
+		}
+		return result;
 	} else {
+		if (ResourceCache::path_cache_lock) {
+			ResourceCache::path_cache_lock->read_unlock();
+		}
 		return -1;
 	}
 }
@@ -399,7 +423,7 @@ void Resource::_bind_methods() {
 	ADD_GROUP("Resource", "resource_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "resource_local_to_scene"), "set_local_to_scene", "is_local_to_scene");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "resource_name"), "set_name", "get_name");
 
 	BIND_VMETHOD(MethodInfo("_setup_local_to_scene"));
 }
@@ -414,7 +438,7 @@ Resource::Resource() :
 
 	subindex = 0;
 	local_to_scene = false;
-	local_scene = NULL;
+	local_scene = nullptr;
 }
 
 Resource::~Resource() {
@@ -430,12 +454,21 @@ Resource::~Resource() {
 }
 
 HashMap<String, Resource *> ResourceCache::resources;
+#ifdef TOOLS_ENABLED
+HashMap<String, HashMap<String, int>> ResourceCache::resource_path_cache;
+#endif
 
-RWLock *ResourceCache::lock = NULL;
+RWLock *ResourceCache::lock = nullptr;
+#ifdef TOOLS_ENABLED
+RWLock *ResourceCache::path_cache_lock = nullptr;
+#endif
 
 void ResourceCache::setup() {
 
 	lock = RWLock::create();
+#ifdef TOOLS_ENABLED
+	path_cache_lock = RWLock::create();
+#endif
 }
 
 void ResourceCache::clear() {
@@ -449,7 +482,7 @@ void ResourceCache::clear() {
 void ResourceCache::reload_externals() {
 
 	/*
-	const String *K=NULL;
+	const String *K=nullptr;
 	while ((K=resources.next(K))) {
 		resources[*K]->reload_external_data();
 	}
@@ -473,16 +506,16 @@ Resource *ResourceCache::get(const String &p_path) {
 	lock->read_unlock();
 
 	if (!res) {
-		return NULL;
+		return nullptr;
 	}
 
 	return *res;
 }
 
-void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
+void ResourceCache::get_cached_resources(List<Ref<Resource>> *p_resources) {
 
 	lock->read_lock();
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
 
 		Resource *r = resources[*K];
@@ -506,13 +539,13 @@ void ResourceCache::dump(const char *p_file, bool p_short) {
 
 	Map<String, int> type_count;
 
-	FileAccess *f = NULL;
+	FileAccess *f = nullptr;
 	if (p_file) {
 		f = FileAccess::open(p_file, FileAccess::WRITE);
 		ERR_FAIL_COND_MSG(!f, "Cannot create file at path '" + String(p_file) + "'.");
 	}
 
-	const String *K = NULL;
+	const String *K = nullptr;
 	while ((K = resources.next(K))) {
 
 		Resource *r = resources[*K];

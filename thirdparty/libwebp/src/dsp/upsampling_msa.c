@@ -576,9 +576,9 @@ static void FUNC_NAME(const uint8_t* top_y, const uint8_t* bot_y,        \
   const uint32_t l_uv = ((cur_u[0]) | ((cur_v[0]) << 16));               \
   const uint32_t uv0 = (3 * tl_uv + l_uv + 0x00020002u) >> 2;            \
   const uint8_t* ptop_y = &top_y[1];                                     \
-  uint8_t *ptop_dst = top_dst + XSTEP;                                   \
+  uint8_t* ptop_dst = top_dst + XSTEP;                                   \
   const uint8_t* pbot_y = &bot_y[1];                                     \
-  uint8_t *pbot_dst = bot_dst + XSTEP;                                   \
+  uint8_t* pbot_dst = bot_dst + XSTEP;                                   \
                                                                          \
   FUNC(top_y[0], uv0 & 0xff, (uv0 >> 16), top_dst);                      \
   if (bot_y != NULL) {                                                   \

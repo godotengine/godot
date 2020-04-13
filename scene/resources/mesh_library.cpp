@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,6 @@
 /*************************************************************************/
 
 #include "mesh_library.h"
-#include "core/engine.h"
 
 bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -104,7 +103,7 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::ARRAY, name + "shapes"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "navmesh", PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM, name + "navmesh_transform"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "preview", PROPERTY_HINT_RESOURCE_TYPE, "Texture", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, name + "preview", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_EDITOR_HELPER));
 	}
 }
 
@@ -162,7 +161,7 @@ void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform &p_tran
 	_change_notify();
 }
 
-void MeshLibrary::set_item_preview(int p_item, const Ref<Texture> &p_preview) {
+void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {
 
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].preview = p_preview;
@@ -200,14 +199,9 @@ Transform MeshLibrary::get_item_navmesh_transform(int p_item) const {
 	return item_map[p_item].navmesh_transform;
 }
 
-Ref<Texture> MeshLibrary::get_item_preview(int p_item) const {
+Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		ERR_PRINT("MeshLibrary item previews are only generated in an editor context, which means they aren't available in a running project.");
-		return Ref<Texture>();
-	}
-
-	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<Texture2D>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	return item_map[p_item].preview;
 }
 

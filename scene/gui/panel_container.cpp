@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,16 +34,16 @@ Size2 PanelContainer::get_minimum_size() const {
 
 	Ref<StyleBox> style;
 
-	if (has_stylebox("panel"))
-		style = get_stylebox("panel");
+	if (has_theme_stylebox("panel"))
+		style = get_theme_stylebox("panel");
 	else
-		style = get_stylebox("panel", "PanelContainer");
+		style = get_theme_stylebox("panel", "PanelContainer");
 
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
@@ -65,10 +65,10 @@ void PanelContainer::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		Ref<StyleBox> style;
 
-		if (has_stylebox("panel"))
-			style = get_stylebox("panel");
+		if (has_theme_stylebox("panel"))
+			style = get_theme_stylebox("panel");
 		else
-			style = get_stylebox("panel", "PanelContainer");
+			style = get_theme_stylebox("panel", "PanelContainer");
 
 		style->draw(ci, Rect2(Point2(), get_size()));
 	}
@@ -77,10 +77,10 @@ void PanelContainer::_notification(int p_what) {
 
 		Ref<StyleBox> style;
 
-		if (has_stylebox("panel"))
-			style = get_stylebox("panel");
+		if (has_theme_stylebox("panel"))
+			style = get_theme_stylebox("panel");
 		else
-			style = get_stylebox("panel", "PanelContainer");
+			style = get_theme_stylebox("panel", "PanelContainer");
 
 		Size2 size = get_size();
 		Point2 ofs;
@@ -103,4 +103,6 @@ void PanelContainer::_notification(int p_what) {
 }
 
 PanelContainer::PanelContainer() {
+	// Has visible stylebox, so stop by default.
+	set_mouse_filter(MOUSE_FILTER_STOP);
 }

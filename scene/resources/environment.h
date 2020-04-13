@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "core/resource.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 class Environment : public Resource {
 
@@ -46,11 +46,23 @@ public:
 		BG_CLEAR_COLOR,
 		BG_COLOR,
 		BG_SKY,
-		BG_COLOR_SKY,
 		BG_CANVAS,
 		BG_KEEP,
 		BG_CAMERA_FEED,
 		BG_MAX
+	};
+
+	enum AmbientSource {
+		AMBIENT_SOURCE_BG,
+		AMBIENT_SOURCE_DISABLED,
+		AMBIENT_SOURCE_COLOR,
+		AMBIENT_SOURCE_SKY,
+	};
+
+	enum ReflectionSource {
+		REFLECTION_SOURCE_BG,
+		REFLECTION_SOURCE_DISABLED,
+		REFLECTION_SOURCE_SKY,
 	};
 
 	enum ToneMapper {
@@ -65,12 +77,7 @@ public:
 		GLOW_BLEND_MODE_SCREEN,
 		GLOW_BLEND_MODE_SOFTLIGHT,
 		GLOW_BLEND_MODE_REPLACE,
-	};
-
-	enum DOFBlurQuality {
-		DOF_BLUR_QUALITY_LOW,
-		DOF_BLUR_QUALITY_MEDIUM,
-		DOF_BLUR_QUALITY_HIGH,
+		GLOW_BLEND_MODE_MIX,
 	};
 
 	enum SSAOBlur {
@@ -80,26 +87,23 @@ public:
 		SSAO_BLUR_3x3
 	};
 
-	enum SSAOQuality {
-		SSAO_QUALITY_LOW,
-		SSAO_QUALITY_MEDIUM,
-		SSAO_QUALITY_HIGH
-	};
-
 private:
 	RID environment;
 
 	BGMode bg_mode;
 	Ref<Sky> bg_sky;
 	float bg_sky_custom_fov;
-	Basis bg_sky_orientation;
+	Vector3 sky_rotation;
 	Color bg_color;
 	float bg_energy;
 	int bg_canvas_max_layer;
 	Color ambient_color;
 	float ambient_energy;
+	Color ao_color;
 	float ambient_sky_contribution;
 	int camera_feed_id;
+	AmbientSource ambient_source;
+	ReflectionSource reflection_source;
 
 	ToneMapper tone_mapper;
 	float tonemap_exposure;
@@ -114,50 +118,33 @@ private:
 	float adjustment_contrast;
 	float adjustment_saturation;
 	float adjustment_brightness;
-	Ref<Texture> adjustment_color_correction;
+	Ref<Texture2D> adjustment_color_correction;
 
 	bool ssr_enabled;
 	int ssr_max_steps;
 	float ssr_fade_in;
 	float ssr_fade_out;
 	float ssr_depth_tolerance;
-	bool ssr_roughness;
 
 	bool ssao_enabled;
 	float ssao_radius;
 	float ssao_intensity;
-	float ssao_radius2;
-	float ssao_intensity2;
 	float ssao_bias;
 	float ssao_direct_light_affect;
 	float ssao_ao_channel_affect;
-	Color ssao_color;
 	SSAOBlur ssao_blur;
 	float ssao_edge_sharpness;
-	SSAOQuality ssao_quality;
 
 	bool glow_enabled;
 	int glow_levels;
 	float glow_intensity;
 	float glow_strength;
+	float glow_mix;
 	float glow_bloom;
 	GlowBlendMode glow_blend_mode;
 	float glow_hdr_bleed_threshold;
 	float glow_hdr_bleed_scale;
 	float glow_hdr_luminance_cap;
-	bool glow_bicubic_upscale;
-
-	bool dof_blur_far_enabled;
-	float dof_blur_far_distance;
-	float dof_blur_far_transition;
-	float dof_blur_far_amount;
-	DOFBlurQuality dof_blur_far_quality;
-
-	bool dof_blur_near_enabled;
-	float dof_blur_near_distance;
-	float dof_blur_near_transition;
-	float dof_blur_near_amount;
-	DOFBlurQuality dof_blur_near_quality;
 
 	bool fog_enabled;
 	Color fog_color;
@@ -180,14 +167,17 @@ private:
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
+#ifndef DISABLE_DEPRECATED
+	// Kept for compatibility from 3.x to 4.0.
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 public:
 	void set_background(BGMode p_bg);
+
 	void set_sky(const Ref<Sky> &p_sky);
 	void set_sky_custom_fov(float p_scale);
-	void set_sky_orientation(const Basis &p_orientation);
-	void set_sky_rotation(const Vector3 &p_euler_rad);
-	void set_sky_rotation_degrees(const Vector3 &p_euler_deg);
+	void set_sky_rotation(const Vector3 &p_rotation);
 	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
@@ -195,13 +185,15 @@ public:
 	void set_ambient_light_energy(float p_energy);
 	void set_ambient_light_sky_contribution(float p_energy);
 	void set_camera_feed_id(int p_camera_feed_id);
+	void set_ambient_source(AmbientSource p_source);
+	AmbientSource get_ambient_source() const;
+	void set_reflection_source(ReflectionSource p_source);
+	ReflectionSource get_reflection_source() const;
 
 	BGMode get_background() const;
 	Ref<Sky> get_sky() const;
 	float get_sky_custom_fov() const;
-	Basis get_sky_orientation() const;
 	Vector3 get_sky_rotation() const;
-	Vector3 get_sky_rotation_degrees() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;
 	int get_canvas_max_layer() const;
@@ -246,8 +238,8 @@ public:
 	void set_adjustment_saturation(float p_saturation);
 	float get_adjustment_saturation() const;
 
-	void set_adjustment_color_correction(const Ref<Texture> &p_ramp);
-	Ref<Texture> get_adjustment_color_correction() const;
+	void set_adjustment_color_correction(const Ref<Texture2D> &p_ramp);
+	Ref<Texture2D> get_adjustment_color_correction() const;
 
 	void set_ssr_enabled(bool p_enable);
 	bool is_ssr_enabled() const;
@@ -264,9 +256,6 @@ public:
 	void set_ssr_depth_tolerance(float p_depth_tolerance);
 	float get_ssr_depth_tolerance() const;
 
-	void set_ssr_rough(bool p_enable);
-	bool is_ssr_rough() const;
-
 	void set_ssao_enabled(bool p_enable);
 	bool is_ssao_enabled() const;
 
@@ -275,12 +264,6 @@ public:
 
 	void set_ssao_intensity(float p_intensity);
 	float get_ssao_intensity() const;
-
-	void set_ssao_radius2(float p_radius);
-	float get_ssao_radius2() const;
-
-	void set_ssao_intensity2(float p_intensity);
-	float get_ssao_intensity2() const;
 
 	void set_ssao_bias(float p_bias);
 	float get_ssao_bias() const;
@@ -291,14 +274,11 @@ public:
 	void set_ssao_ao_channel_affect(float p_ao_channel_affect);
 	float get_ssao_ao_channel_affect() const;
 
-	void set_ssao_color(const Color &p_color);
-	Color get_ssao_color() const;
+	void set_ao_color(const Color &p_color);
+	Color get_ao_color() const;
 
 	void set_ssao_blur(SSAOBlur p_blur);
 	SSAOBlur get_ssao_blur() const;
-
-	void set_ssao_quality(SSAOQuality p_quality);
-	SSAOQuality get_ssao_quality() const;
 
 	void set_ssao_edge_sharpness(float p_edge_sharpness);
 	float get_ssao_edge_sharpness() const;
@@ -315,6 +295,9 @@ public:
 	void set_glow_strength(float p_strength);
 	float get_glow_strength() const;
 
+	void set_glow_mix(float p_mix);
+	float get_glow_mix() const;
+
 	void set_glow_bloom(float p_threshold);
 	float get_glow_bloom() const;
 
@@ -329,39 +312,6 @@ public:
 
 	void set_glow_hdr_bleed_scale(float p_scale);
 	float get_glow_hdr_bleed_scale() const;
-
-	void set_glow_bicubic_upscale(bool p_enable);
-	bool is_glow_bicubic_upscale_enabled() const;
-
-	void set_dof_blur_far_enabled(bool p_enable);
-	bool is_dof_blur_far_enabled() const;
-
-	void set_dof_blur_far_distance(float p_distance);
-	float get_dof_blur_far_distance() const;
-
-	void set_dof_blur_far_transition(float p_distance);
-	float get_dof_blur_far_transition() const;
-
-	void set_dof_blur_far_amount(float p_amount);
-	float get_dof_blur_far_amount() const;
-
-	void set_dof_blur_far_quality(DOFBlurQuality p_quality);
-	DOFBlurQuality get_dof_blur_far_quality() const;
-
-	void set_dof_blur_near_enabled(bool p_enable);
-	bool is_dof_blur_near_enabled() const;
-
-	void set_dof_blur_near_distance(float p_distance);
-	float get_dof_blur_near_distance() const;
-
-	void set_dof_blur_near_transition(float p_distance);
-	float get_dof_blur_near_transition() const;
-
-	void set_dof_blur_near_amount(float p_amount);
-	float get_dof_blur_near_amount() const;
-
-	void set_dof_blur_near_quality(DOFBlurQuality p_quality);
-	DOFBlurQuality get_dof_blur_near_quality() const;
 
 	void set_fog_enabled(bool p_enabled);
 	bool is_fog_enabled() const;
@@ -412,10 +362,67 @@ public:
 };
 
 VARIANT_ENUM_CAST(Environment::BGMode)
+VARIANT_ENUM_CAST(Environment::AmbientSource)
+VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
-VARIANT_ENUM_CAST(Environment::DOFBlurQuality)
-VARIANT_ENUM_CAST(Environment::SSAOQuality)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)
+
+class CameraEffects : public Resource {
+
+	GDCLASS(CameraEffects, Resource);
+
+private:
+	RID camera_effects;
+
+	bool dof_blur_far_enabled;
+	float dof_blur_far_distance;
+	float dof_blur_far_transition;
+
+	bool dof_blur_near_enabled;
+	float dof_blur_near_distance;
+	float dof_blur_near_transition;
+
+	float dof_blur_amount;
+
+	bool override_exposure_enabled;
+	float override_exposure;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_dof_blur_far_enabled(bool p_enable);
+	bool is_dof_blur_far_enabled() const;
+
+	void set_dof_blur_far_distance(float p_distance);
+	float get_dof_blur_far_distance() const;
+
+	void set_dof_blur_far_transition(float p_distance);
+	float get_dof_blur_far_transition() const;
+
+	void set_dof_blur_near_enabled(bool p_enable);
+	bool is_dof_blur_near_enabled() const;
+
+	void set_dof_blur_near_distance(float p_distance);
+	float get_dof_blur_near_distance() const;
+
+	void set_dof_blur_near_transition(float p_distance);
+	float get_dof_blur_near_transition() const;
+
+	void set_dof_blur_amount(float p_amount);
+	float get_dof_blur_amount() const;
+
+	void set_override_exposure_enabled(bool p_enabled);
+	bool is_override_exposure_enabled() const;
+
+	void set_override_exposure(float p_exposure);
+	float get_override_exposure() const;
+
+	virtual RID get_rid() const;
+
+	CameraEffects();
+	~CameraEffects();
+};
 
 #endif // ENVIRONMENT_H

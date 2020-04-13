@@ -114,6 +114,11 @@ protected:
 	int m_vboundsGridLength;
 	int m_vboundsChunkSize;
 
+	int m_userIndex2;
+	btScalar m_userValue3;
+
+	struct btTriangleInfoMap* m_triangleInfoMap;
+
 	virtual btScalar getRawHeightFieldValue(int x, int y) const;
 	void quantizeWithClamp(int* out, const btVector3& point, int isMax) const;
 
@@ -185,6 +190,40 @@ public:
 	}
 	//debugging
 	virtual const char* getName() const { return "HEIGHTFIELD"; }
+
+	
+	void setUserIndex2(int index)
+	{
+		m_userIndex2 = index;
+	}
+	int getUserIndex2() const
+	{
+		return m_userIndex2;
+	}
+	void setUserValue3(btScalar value)
+	{
+		m_userValue3 = value;
+	}
+	btScalar getUserValue3() const
+	{
+		return m_userValue3;
+	}
+	const struct btTriangleInfoMap* getTriangleInfoMap() const
+	{
+		return m_triangleInfoMap;
+	}
+	struct btTriangleInfoMap* getTriangleInfoMap()
+	{
+		return m_triangleInfoMap;
+	}
+	void setTriangleInfoMap(btTriangleInfoMap* map)
+	{
+		m_triangleInfoMap = map;
+	}
+	const unsigned char* getHeightfieldRawData() const
+	{
+		return m_heightfieldDataUnsignedChar;
+	}
 };
 
 #endif  //BT_HEIGHTFIELD_TERRAIN_SHAPE_H

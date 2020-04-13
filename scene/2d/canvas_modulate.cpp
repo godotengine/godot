@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,23 +35,23 @@ void CanvasModulate::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_CANVAS) {
 
 		if (is_visible_in_tree()) {
-			VS::get_singleton()->canvas_set_modulate(get_canvas(), color);
+			RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
 			add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
 		}
 
 	} else if (p_what == NOTIFICATION_EXIT_CANVAS) {
 
 		if (is_visible_in_tree()) {
-			VS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
+			RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
 			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
 		}
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
 		if (is_visible_in_tree()) {
-			VS::get_singleton()->canvas_set_modulate(get_canvas(), color);
+			RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
 			add_to_group("_canvas_modulate_" + itos(get_canvas().get_id()));
 		} else {
-			VS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
+			RS::get_singleton()->canvas_set_modulate(get_canvas(), Color(1, 1, 1, 1));
 			remove_from_group("_canvas_modulate_" + itos(get_canvas().get_id()));
 		}
 
@@ -71,7 +71,7 @@ void CanvasModulate::set_color(const Color &p_color) {
 
 	color = p_color;
 	if (is_visible_in_tree()) {
-		VS::get_singleton()->canvas_set_modulate(get_canvas(), color);
+		RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
 	}
 }
 Color CanvasModulate::get_color() const {

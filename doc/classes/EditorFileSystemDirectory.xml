@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileSystemDirectory" inherits="Object" category="Core" version="3.2">
+<class name="EditorFileSystemDirectory" inherits="Object" version="4.0">
 	<brief_description>
 		A directory for the resource filesystem.
 	</brief_description>
@@ -78,7 +78,7 @@
 			</description>
 		</method>
 		<method name="get_file_type" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>

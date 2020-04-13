@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,7 @@ struct CameraMatrix {
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
+	void set_depth_correction(bool p_flip_y = true);
 	void set_light_atlas_rect(const Rect2 &p_rect);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist);
@@ -73,7 +74,8 @@ struct CameraMatrix {
 	Vector<Plane> get_projection_planes(const Transform &p_transform) const;
 
 	bool get_endpoints(const Transform &p_transform, Vector3 *p_8points) const;
-	void get_viewport_size(real_t &r_width, real_t &r_height) const;
+	Vector2 get_viewport_half_extents() const;
+	void get_far_plane_size(real_t &r_width, real_t &r_height) const;
 
 	void invert();
 	CameraMatrix inverse() const;
@@ -90,6 +92,23 @@ struct CameraMatrix {
 	int get_pixels_per_meter(int p_for_pixel_width) const;
 	operator Transform() const;
 
+	void flip_y();
+
+	bool operator==(const CameraMatrix &p_cam) const {
+		for (uint32_t i = 0; i < 4; i++) {
+			for (uint32_t j = 0; j < 4; j++) {
+				if (matrix[i][j] != p_cam.matrix[i][j]) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	bool operator!=(const CameraMatrix &p_cam) const {
+		return !(*this == p_cam);
+	}
+
 	CameraMatrix();
 	CameraMatrix(const Transform &p_transform);
 	~CameraMatrix();
@@ -105,4 +124,4 @@ Vector3 CameraMatrix::xform(const Vector3 &p_vec3) const {
 	return ret / w;
 }
 
-#endif
+#endif // CAMERA_MATRIX_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -212,6 +212,11 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 			b = q;
 			break;
 	}
+}
+
+bool Color::is_equal_approx(const Color &p_color) const {
+
+	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
 }
 
 void Color::invert() {
@@ -503,13 +508,6 @@ Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
 	return Color(m + r, m + g, m + b, p_a);
 }
 
-// FIXME: Remove once Godot 3.1 has been released
-float Color::gray() const {
-
-	WARN_DEPRECATED_MSG("Color.gray() is deprecated and will be removed in a future version. Use Color.get_v() for a better grayscale approximation.");
-	return (r + g + b) / 3.0;
-}
-
 Color::operator String() const {
 
 	return rtos(r) + ", " + rtos(g) + ", " + rtos(b) + ", " + rtos(a);
@@ -522,14 +520,6 @@ Color Color::operator+(const Color &p_color) const {
 			g + p_color.g,
 			b + p_color.b,
 			a + p_color.a);
-}
-
-void Color::operator+=(const Color &p_color) {
-
-	r = r + p_color.r;
-	g = g + p_color.g;
-	b = b + p_color.b;
-	a = a + p_color.a;
 }
 
 Color Color::operator-(const Color &p_color) const {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,9 +113,7 @@ public:
 		TK_PR_SIGNAL,
 		TK_PR_BREAKPOINT,
 		TK_PR_REMOTE,
-		TK_PR_SYNC,
 		TK_PR_MASTER,
-		TK_PR_SLAVE, // Deprecated by TK_PR_PUPPET, to remove in 4.0
 		TK_PR_PUPPET,
 		TK_PR_REMOTESYNC,
 		TK_PR_MASTERSYNC,
@@ -168,10 +166,11 @@ public:
 	virtual int get_token_line(int p_offset = 0) const = 0;
 	virtual int get_token_column(int p_offset = 0) const = 0;
 	virtual int get_token_line_indent(int p_offset = 0) const = 0;
+	virtual int get_token_line_tab_indent(int p_offset = 0) const = 0;
 	virtual String get_token_error(int p_offset = 0) const = 0;
 	virtual void advance(int p_amount = 1) = 0;
 #ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String> > &get_warning_skips() const = 0;
+	virtual const Vector<Pair<int, String>> &get_warning_skips() const = 0;
 	virtual const Set<String> &get_warning_global_skips() const = 0;
 	virtual bool is_ignoring_warnings() const = 0;
 #endif // DEBUG_ENABLED
@@ -205,7 +204,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	};
 
 	void _make_token(Token p_type);
-	void _make_newline(int p_spaces = 0);
+	void _make_newline(int p_indentation = 0, int p_tabs = 0);
 	void _make_identifier(const StringName &p_identifier);
 	void _make_built_in_func(GDScriptFunctions::Function p_func);
 	void _make_constant(const Variant &p_constant);
@@ -222,14 +221,9 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	int tk_rb_pos;
 	String last_error;
 	bool error_flag;
-	enum {
-		INDENT_NONE,
-		INDENT_SPACES,
-		INDENT_TABS,
-	} file_indent_type;
 
 #ifdef DEBUG_ENABLED
-	Vector<Pair<int, String> > warning_skips;
+	Vector<Pair<int, String>> warning_skips;
 	Set<String> warning_global_skips;
 	bool ignore_warnings;
 #endif // DEBUG_ENABLED
@@ -245,11 +239,12 @@ public:
 	virtual int get_token_line(int p_offset = 0) const;
 	virtual int get_token_column(int p_offset = 0) const;
 	virtual int get_token_line_indent(int p_offset = 0) const;
+	virtual int get_token_line_tab_indent(int p_offset = 0) const;
 	virtual const Variant &get_token_constant(int p_offset = 0) const;
 	virtual String get_token_error(int p_offset = 0) const;
 	virtual void advance(int p_amount = 1);
 #ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String> > &get_warning_skips() const { return warning_skips; }
+	virtual const Vector<Pair<int, String>> &get_warning_skips() const { return warning_skips; }
 	virtual const Set<String> &get_warning_global_skips() const { return warning_global_skips; }
 	virtual bool is_ignoring_warnings() const { return ignore_warnings; }
 #endif // DEBUG_ENABLED
@@ -283,12 +278,13 @@ public:
 	virtual int get_token_line(int p_offset = 0) const;
 	virtual int get_token_column(int p_offset = 0) const;
 	virtual int get_token_line_indent(int p_offset = 0) const;
+	virtual int get_token_line_tab_indent(int p_offset = 0) const { return 0; }
 	virtual const Variant &get_token_constant(int p_offset = 0) const;
 	virtual String get_token_error(int p_offset = 0) const;
 	virtual void advance(int p_amount = 1);
 #ifdef DEBUG_ENABLED
-	virtual const Vector<Pair<int, String> > &get_warning_skips() const {
-		static Vector<Pair<int, String> > v;
+	virtual const Vector<Pair<int, String>> &get_warning_skips() const {
+		static Vector<Pair<int, String>> v;
 		return v;
 	}
 	virtual const Set<String> &get_warning_global_skips() const {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,13 +96,13 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	if (p_mode_flags == READ) {
 		WIN32_FIND_DATAW d;
 		HANDLE f = FindFirstFileW(path.c_str(), &d);
-		if (f) {
+		if (f != INVALID_HANDLE_VALUE) {
 			String fname = d.cFileName;
 			if (fname != String()) {
 
 				String base_file = path.get_file();
 				if (base_file != fname && base_file.findn(fname) == 0) {
-					WARN_PRINTS("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
+					WARN_PRINT("Case mismatch opening requested file '" + base_file + "', stored as '" + fname + "' in the filesystem. This file will not open when exported to other case-sensitive platforms.");
 				}
 			}
 			FindClose(f);
@@ -117,7 +117,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 
 	errno_t errcode = _wfopen_s(&f, path.c_str(), mode_string);
 
-	if (f == NULL) {
+	if (f == nullptr) {
 		switch (errcode) {
 			case ENOENT: {
 				last_error = ERR_FILE_NOT_FOUND;
@@ -140,7 +140,7 @@ void FileAccessWindows::close() {
 		return;
 
 	fclose(f);
-	f = NULL;
+	f = nullptr;
 
 	if (save_path != "") {
 
@@ -164,7 +164,7 @@ void FileAccessWindows::close() {
 				rename_error = _wrename((save_path + ".tmp").c_str(), save_path.c_str()) != 0;
 			} else {
 				//atomic replace for existing file
-				rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), NULL, 2 | 4, NULL, NULL);
+				rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), nullptr, 2 | 4, nullptr, nullptr);
 			}
 			if (rename_error) {
 				attempts--;
@@ -196,7 +196,7 @@ String FileAccessWindows::get_path_absolute() const {
 
 bool FileAccessWindows::is_open() const {
 
-	return (f != NULL);
+	return (f != nullptr);
 }
 void FileAccessWindows::seek(size_t p_position) {
 
@@ -318,7 +318,7 @@ bool FileAccessWindows::file_exists(const String &p_name) {
 	//printf("opening file %s\n", p_fname.c_str());
 	String filename = fix_path(p_name);
 	_wfopen_s(&g, filename.c_str(), L"rb");
-	if (g == NULL) {
+	if (g == nullptr) {
 
 		return false;
 	} else {
@@ -354,7 +354,7 @@ Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_
 }
 
 FileAccessWindows::FileAccessWindows() :
-		f(NULL),
+		f(nullptr),
 		flags(0),
 		prev_op(0),
 		last_error(OK) {

@@ -41,13 +41,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** @file Generation of normal vectors basing on smoothing groups */
 
+#pragma once
 #ifndef AI_SMOOTHINGGROUPS_INL_INCLUDED
 #define AI_SMOOTHINGGROUPS_INL_INCLUDED
 
-// internal headers
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include <assimp/SGSpatialSort.h>
 
-// CRT header
 #include <algorithm>
 
 using namespace Assimp;

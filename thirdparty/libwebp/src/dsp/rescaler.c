@@ -109,8 +109,7 @@ void WebPRescalerExportRowExpand_C(WebPRescaler* const wrk) {
     for (x_out = 0; x_out < x_out_max; ++x_out) {
       const uint32_t J = frow[x_out];
       const int v = (int)MULT_FIX(J, wrk->fy_scale);
-      assert(v >= 0 && v <= 255);
-      dst[x_out] = v;
+      dst[x_out] = (v > 255) ? 255u : (uint8_t)v;
     }
   } else {
     const uint32_t B = WEBP_RESCALER_FRAC(-wrk->y_accum, wrk->y_sub);
@@ -120,8 +119,7 @@ void WebPRescalerExportRowExpand_C(WebPRescaler* const wrk) {
                        + (uint64_t)B * irow[x_out];
       const uint32_t J = (uint32_t)((I + ROUNDER) >> WEBP_RESCALER_RFIX);
       const int v = (int)MULT_FIX(J, wrk->fy_scale);
-      assert(v >= 0 && v <= 255);
-      dst[x_out] = v;
+      dst[x_out] = (v > 255) ? 255u : (uint8_t)v;
     }
   }
 }
@@ -138,17 +136,15 @@ void WebPRescalerExportRowShrink_C(WebPRescaler* const wrk) {
   assert(!wrk->y_expand);
   if (yscale) {
     for (x_out = 0; x_out < x_out_max; ++x_out) {
-      const uint32_t frac = (uint32_t)MULT_FIX(frow[x_out], yscale);
-      const int v = (int)MULT_FIX_FLOOR(irow[x_out] - frac, wrk->fxy_scale);
-      assert(v >= 0 && v <= 255);
-      dst[x_out] = v;
+      const uint32_t frac = (uint32_t)MULT_FIX_FLOOR(frow[x_out], yscale);
+      const int v = (int)MULT_FIX(irow[x_out] - frac, wrk->fxy_scale);
+      dst[x_out] = (v > 255) ? 255u : (uint8_t)v;
       irow[x_out] = frac;   // new fractional start
     }
   } else {
     for (x_out = 0; x_out < x_out_max; ++x_out) {
       const int v = (int)MULT_FIX(irow[x_out], wrk->fxy_scale);
-      assert(v >= 0 && v <= 255);
-      dst[x_out] = v;
+      dst[x_out] = (v > 255) ? 255u : (uint8_t)v;
       irow[x_out] = 0;
     }
   }

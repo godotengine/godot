@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include "core/project_settings.h"
 
 WSLServer::PendingPeer::PendingPeer() {
+	use_ssl = false;
 	time = 0;
 	has_request = false;
 	response_sent = 0;
@@ -42,7 +43,7 @@ WSLServer::PendingPeer::PendingPeer() {
 	memset(req_buf, 0, sizeof(req_buf));
 }
 
-bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
+bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
@@ -79,11 +80,12 @@ bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");
 		for (int i = 0; i < protos.size(); i++) {
+			String proto = protos[i].strip_edges();
 			// Check if we have the given protocol
 			for (int j = 0; j < p_protocols.size(); j++) {
-				if (protos[i] != p_protocols[j])
+				if (proto != p_protocols[j])
 					continue;
-				protocol = protos[i];
+				protocol = proto;
 				break;
 			}
 			// Found a protocol
@@ -97,9 +99,19 @@ bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT)
 		return ERR_TIMEOUT;
+	if (use_ssl) {
+		Ref<StreamPeerSSL> ssl = static_cast<Ref<StreamPeerSSL>>(connection);
+		if (ssl.is_null())
+			return FAILED;
+		ssl->poll();
+		if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING)
+			return ERR_BUSY;
+		else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED)
+			return FAILED;
+	}
 	if (!has_request) {
 		int read = 0;
 		while (true) {
@@ -143,20 +155,23 @@ Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
 	return OK;
 }
 
-Error WSLServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_api) {
+Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp_api) {
 	ERR_FAIL_COND_V(is_listening(), ERR_ALREADY_IN_USE);
 
 	_is_multiplayer = gd_mp_api;
-	_protocols = p_protocols;
-	_server->listen(p_port);
-
-	return OK;
+	// Strip edges from protocols.
+	_protocols.resize(p_protocols.size());
+	String *pw = _protocols.ptrw();
+	for (int i = 0; i < p_protocols.size(); i++) {
+		pw[i] = p_protocols[i].strip_edges();
+	}
+	return _server->listen(p_port, bind_ip);
 }
 
 void WSLServer::poll() {
 
 	List<int> remove_ids;
-	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		Ref<WSLPeer> peer = (WSLPeer *)E->get().ptr();
 		peer->poll();
 		if (!peer->is_connected_to_host()) {
@@ -169,8 +184,8 @@ void WSLServer::poll() {
 	}
 	remove_ids.clear();
 
-	List<Ref<PendingPeer> > remove_peers;
-	for (List<Ref<PendingPeer> >::Element *E = _pending.front(); E; E = E->next()) {
+	List<Ref<PendingPeer>> remove_peers;
+	for (List<Ref<PendingPeer>>::Element *E = _pending.front(); E; E = E->next()) {
 		Ref<PendingPeer> ppeer = E->get();
 		Error err = ppeer->do_handshake(_protocols);
 		if (err == ERR_BUSY) {
@@ -185,17 +200,19 @@ void WSLServer::poll() {
 		WSLPeer::PeerData *data = memnew(struct WSLPeer::PeerData);
 		data->obj = this;
 		data->conn = ppeer->connection;
+		data->tcp = ppeer->tcp;
 		data->is_server = true;
 		data->id = id;
 
 		Ref<WSLPeer> ws_peer = memnew(WSLPeer);
 		ws_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
+		ws_peer->set_no_delay(true);
 
 		_peer_map[id] = ws_peer;
 		remove_peers.push_back(ppeer);
 		_on_connect(id, ppeer->protocol);
 	}
-	for (List<Ref<PendingPeer> >::Element *E = remove_peers.front(); E; E = E->next()) {
+	for (List<Ref<PendingPeer>>::Element *E = remove_peers.front(); E; E = E->next()) {
 		_pending.erase(E->get());
 	}
 	remove_peers.clear();
@@ -204,12 +221,21 @@ void WSLServer::poll() {
 		return;
 
 	while (_server->is_connection_available()) {
-		Ref<StreamPeer> conn = _server->take_connection();
+		Ref<StreamPeerTCP> conn = _server->take_connection();
 		if (is_refusing_new_connections())
 			continue; // Conn will go out-of-scope and be closed.
 
 		Ref<PendingPeer> peer = memnew(PendingPeer);
-		peer->connection = conn;
+		if (private_key.is_valid() && ssl_cert.is_valid()) {
+			Ref<StreamPeerSSL> ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+			ssl->set_blocking_handshake_enabled(false);
+			ssl->accept_stream(conn, private_key, ssl_cert, ca_chain);
+			peer->connection = ssl;
+			peer->use_ssl = true;
+		} else {
+			peer->connection = conn;
+		}
+		peer->tcp = conn;
 		peer->time = OS::get_singleton()->get_ticks_msec();
 		_pending.push_back(peer);
 	}
@@ -225,12 +251,13 @@ int WSLServer::get_max_packet_size() const {
 
 void WSLServer::stop() {
 	_server->stop();
-	for (Map<int, Ref<WebSocketPeer> >::Element *E = _peer_map.front(); E; E = E->next()) {
+	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		Ref<WSLPeer> peer = (WSLPeer *)E->get().ptr();
 		peer->close_now();
 	}
 	_pending.clear();
 	_peer_map.clear();
+	_protocols.clear();
 }
 
 bool WSLServer::has_peer(int p_id) const {
@@ -238,7 +265,7 @@ bool WSLServer::has_peer(int p_id) const {
 }
 
 Ref<WebSocketPeer> WSLServer::get_peer(int p_id) const {
-	ERR_FAIL_COND_V(!has_peer(p_id), NULL);
+	ERR_FAIL_COND_V(!has_peer(p_id), nullptr);
 	return _peer_map[p_id];
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,25 +30,28 @@
 
 #include "editor_plugin.h"
 
+#include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/filesystem_dock.h"
+#include "editor/project_settings_editor.h"
 #include "editor_resource_preview.h"
 #include "main/main.h"
 #include "plugins/canvas_item_editor_plugin.h"
-#include "plugins/spatial_editor_plugin.h"
-#include "scene/3d/camera.h"
+#include "plugins/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
 
-	Vector<Ref<Mesh> > meshes;
+	Vector<Ref<Mesh>> meshes;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
 		meshes.push_back(p_meshes[i]);
 	}
 
-	Vector<Ref<Texture> > textures = make_mesh_previews(meshes, NULL, p_preview_size);
+	Vector<Ref<Texture2D>> textures = make_mesh_previews(meshes, nullptr, p_preview_size);
 	Array ret;
 	for (int i = 0; i < textures.size(); i++) {
 		ret.push_back(textures[i]);
@@ -57,50 +60,49 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 	return ret;
 }
 
-Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
+Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
 
 	int size = p_preview_size;
 
-	RID scenario = VS::get_singleton()->scenario_create();
+	RID scenario = RS::get_singleton()->scenario_create();
 
-	RID viewport = VS::get_singleton()->viewport_create();
-	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ALWAYS);
-	VS::get_singleton()->viewport_set_vflip(viewport, true);
-	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	VS::get_singleton()->viewport_set_size(viewport, size, size);
-	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
-	VS::get_singleton()->viewport_set_active(viewport, true);
-	RID viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+	RID viewport = RS::get_singleton()->viewport_create();
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ALWAYS);
+	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
+	RS::get_singleton()->viewport_set_size(viewport, size, size);
+	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
+	RS::get_singleton()->viewport_set_active(viewport, true);
+	RID viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
 
-	RID camera = VS::get_singleton()->camera_create();
-	VS::get_singleton()->viewport_attach_camera(viewport, camera);
+	RID camera = RS::get_singleton()->camera_create();
+	RS::get_singleton()->viewport_attach_camera(viewport, camera);
 
-	RID light = VS::get_singleton()->directional_light_create();
-	RID light_instance = VS::get_singleton()->instance_create2(light, scenario);
+	RID light = RS::get_singleton()->directional_light_create();
+	RID light_instance = RS::get_singleton()->instance_create2(light, scenario);
 
-	RID light2 = VS::get_singleton()->directional_light_create();
-	VS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
-	RID light_instance2 = VS::get_singleton()->instance_create2(light2, scenario);
+	RID light2 = RS::get_singleton()->directional_light_create();
+	RS::get_singleton()->light_set_color(light2, Color(0.7, 0.7, 0.7));
+	RID light_instance2 = RS::get_singleton()->instance_create2(light2, scenario);
 
 	EditorProgress ep("mlib", TTR("Creating Mesh Previews"), p_meshes.size());
 
-	Vector<Ref<Texture> > textures;
+	Vector<Ref<Texture2D>> textures;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
 
 		Ref<Mesh> mesh = p_meshes[i];
 		if (!mesh.is_valid()) {
-			textures.push_back(Ref<Texture>());
+			textures.push_back(Ref<Texture2D>());
 			continue;
 		}
 
 		Transform mesh_xform;
-		if (p_transforms != NULL) {
+		if (p_transforms != nullptr) {
 			mesh_xform = (*p_transforms)[i];
 		}
 
-		RID inst = VS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
-		VS::get_singleton()->instance_set_transform(inst, mesh_xform);
+		RID inst = RS::get_singleton()->instance_create2(mesh->get_rid(), scenario);
+		RS::get_singleton()->instance_set_transform(inst, mesh_xform);
 
 		AABB aabb = mesh->get_aabb();
 		Vector3 ofs = aabb.position + aabb.size * 0.5;
@@ -111,7 +113,7 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		AABB rot_aabb = xform.xform(aabb);
 		float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
 		if (m == 0) {
-			textures.push_back(Ref<Texture>());
+			textures.push_back(Ref<Texture2D>());
 			continue;
 		}
 		xform.origin = -xform.basis.xform(ofs); //-ofs*m;
@@ -119,32 +121,32 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		xform.invert();
 		xform = mesh_xform * xform;
 
-		VS::get_singleton()->camera_set_transform(camera, xform * Transform(Basis(), Vector3(0, 0, 3)));
-		VS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
+		RS::get_singleton()->camera_set_transform(camera, xform * Transform(Basis(), Vector3(0, 0, 3)));
+		RS::get_singleton()->camera_set_orthogonal(camera, m * 2, 0.01, 1000.0);
 
-		VS::get_singleton()->instance_set_transform(light_instance, xform * Transform().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
-		VS::get_singleton()->instance_set_transform(light_instance2, xform * Transform().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
+		RS::get_singleton()->instance_set_transform(light_instance, xform * Transform().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
+		RS::get_singleton()->instance_set_transform(light_instance2, xform * Transform().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
 
 		ep.step(TTR("Thumbnail..."), i);
 		Main::iteration();
 		Main::iteration();
-		Ref<Image> img = VS::get_singleton()->texture_get_data(viewport_texture);
+		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		ERR_CONTINUE(!img.is_valid() || img->empty());
 		Ref<ImageTexture> it(memnew(ImageTexture));
 		it->create_from_image(img);
 
-		VS::get_singleton()->free(inst);
+		RS::get_singleton()->free(inst);
 
 		textures.push_back(it);
 	}
 
-	VS::get_singleton()->free(viewport);
-	VS::get_singleton()->free(light);
-	VS::get_singleton()->free(light_instance);
-	VS::get_singleton()->free(light2);
-	VS::get_singleton()->free(light_instance2);
-	VS::get_singleton()->free(camera);
-	VS::get_singleton()->free(scenario);
+	RS::get_singleton()->free(viewport);
+	RS::get_singleton()->free(light);
+	RS::get_singleton()->free(light_instance);
+	RS::get_singleton()->free(light2);
+	RS::get_singleton()->free(light_instance2);
+	RS::get_singleton()->free(camera);
+	RS::get_singleton()->free(scenario);
 
 	return textures;
 }
@@ -192,7 +194,7 @@ Array EditorInterface::get_open_scenes() const {
 
 	int scns_amount = scenes.size();
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == NULL)
+		if (scenes[idx_scn].root == nullptr)
 			continue;
 		ret.push_back(scenes[idx_scn].root->get_filename());
 	}
@@ -222,6 +224,10 @@ void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property
 
 EditorFileSystem *EditorInterface::get_resource_file_system() {
 	return EditorFileSystem::get_singleton();
+}
+
+FileSystemDock *EditorInterface::get_file_system_dock() {
+	return EditorNode::get_singleton()->get_filesystem_dock();
 }
 
 EditorSelection *EditorInterface::get_selection() {
@@ -272,7 +278,7 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
 }
 
-EditorInterface *EditorInterface::singleton = NULL;
+EditorInterface *EditorInterface::singleton = nullptr;
 
 void EditorInterface::_bind_methods() {
 
@@ -293,6 +299,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
+	ClassDB::bind_method(D_METHOD("get_file_system_dock"), &EditorInterface::get_file_system_dock);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
@@ -311,7 +318,7 @@ EditorInterface::EditorInterface() {
 }
 
 ///////////////////////////////////////////
-void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
+void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
 }
@@ -330,7 +337,7 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 }
 
 ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
-	ERR_FAIL_NULL_V(p_control, NULL);
+	ERR_FAIL_NULL_V(p_control, nullptr);
 	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
 }
 
@@ -364,24 +371,24 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
-			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
+			Node3DEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
 
-			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
+			Node3DEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			Node3DEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
 
-			SpatialEditor::get_singleton()->get_palette_split()->add_child(p_control);
-			SpatialEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
+			Node3DEditor::get_singleton()->get_palette_split()->add_child(p_control);
+			Node3DEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 
-			SpatialEditor::get_singleton()->get_shader_split()->add_child(p_control);
+			Node3DEditor::get_singleton()->get_shader_split()->add_child(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_MENU: {
@@ -438,18 +445,18 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
-			SpatialEditor::get_singleton()->remove_control_from_menu_panel(p_control);
+			Node3DEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT:
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
 
-			SpatialEditor::get_singleton()->get_palette_split()->remove_child(p_control);
+			Node3DEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 
-			SpatialEditor::get_singleton()->get_shader_split()->remove_child(p_control);
+			Node3DEditor::get_singleton()->get_shader_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_MENU: {
@@ -555,10 +562,10 @@ void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 // Updates the overlays of the 2D viewport or, if in 3D mode, of every 3D viewport.
 int EditorPlugin::update_overlays() const {
 
-	if (SpatialEditor::get_singleton()->is_visible()) {
+	if (Node3DEditor::get_singleton()->is_visible()) {
 		int count = 0;
-		for (uint32_t i = 0; i < SpatialEditor::VIEWPORTS_COUNT; i++) {
-			SpatialEditorViewport *vp = SpatialEditor::get_singleton()->get_editor_viewport(i);
+		for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
+			Node3DEditorViewport *vp = Node3DEditor::get_singleton()->get_editor_viewport(i);
 			if (vp->is_visible()) {
 				vp->update_surface();
 				count++;
@@ -572,7 +579,7 @@ int EditorPlugin::update_overlays() const {
 	}
 }
 
-bool EditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
+bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 
 	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_gui_input")) {
 		return get_script_instance()->call("forward_spatial_gui_input", p_camera, p_event);
@@ -602,13 +609,13 @@ String EditorPlugin::get_name() const {
 
 	return String();
 }
-const Ref<Texture> EditorPlugin::get_icon() const {
+const Ref<Texture2D> EditorPlugin::get_icon() const {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_plugin_icon")) {
 		return get_script_instance()->call("get_plugin_icon");
 	}
 
-	return Ref<Texture>();
+	return Ref<Texture2D>();
 }
 bool EditorPlugin::has_main_screen() const {
 
@@ -686,7 +693,7 @@ void EditorPlugin::apply_changes() {
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_breakpoints")) {
-		PoolStringArray arr = get_script_instance()->call("get_breakpoints");
+		PackedStringArray arr = get_script_instance()->call("get_breakpoints");
 		for (int i = 0; i < arr.size(); i++)
 			p_breakpoints->push_back(arr[i]);
 	}
@@ -717,12 +724,12 @@ void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporte
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
-void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
-	SpatialEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
+void EditorPlugin::add_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	Node3DEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
 }
 
-void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin) {
-	SpatialEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
+void EditorPlugin::remove_spatial_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
+	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
@@ -741,8 +748,8 @@ void EditorPlugin::remove_scene_import_plugin(const Ref<EditorSceneImporter> &p_
 	ResourceImporterScene::get_singleton()->remove_importer(p_importer);
 }
 
-int find(const PoolStringArray &a, const String &v) {
-	PoolStringArray::Read r = a.read();
+int find(const PackedStringArray &a, const String &v) {
+	const String *r = a.ptr();
 	for (int j = 0; j < a.size(); ++j) {
 		if (r[j] == v) {
 			return j;
@@ -858,9 +865,9 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_force_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_spatial_gui_input", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Camera3D"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_plugin_name"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::OBJECT, "get_plugin_icon"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "get_plugin_icon"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "has_main_screen"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("make_visible", PropertyInfo(Variant::BOOL, "visible")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("edit", PropertyInfo(Variant::OBJECT, "object")));
@@ -870,7 +877,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("clear"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("save_external_data"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("apply_changes"));
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_breakpoints"));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_breakpoints"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("set_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("get_window_layout", PropertyInfo(Variant::OBJECT, "layout", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "build"));
@@ -907,7 +914,7 @@ void EditorPlugin::_bind_methods() {
 }
 
 EditorPlugin::EditorPlugin() :
-		undo_redo(NULL),
+		undo_redo(nullptr),
 		input_event_forwarding_always_enabled(false),
 		force_draw_over_forwarding_enabled(false),
 		last_main_screen_name("") {

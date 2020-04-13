@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,8 +53,8 @@ void MultiMeshInstance2D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "multimesh", PROPERTY_HINT_RESOURCE_TYPE, "MultiMesh"), "set_multimesh", "get_multimesh");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_map", "get_normal_map");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "normal_map", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_normal_map", "get_normal_map");
 }
 
 void MultiMeshInstance2D::set_multimesh(const Ref<MultiMesh> &p_multimesh) {
@@ -68,7 +68,7 @@ Ref<MultiMesh> MultiMeshInstance2D::get_multimesh() const {
 	return multimesh;
 }
 
-void MultiMeshInstance2D::set_texture(const Ref<Texture> &p_texture) {
+void MultiMeshInstance2D::set_texture(const Ref<Texture2D> &p_texture) {
 
 	if (p_texture == texture)
 		return;
@@ -78,22 +78,23 @@ void MultiMeshInstance2D::set_texture(const Ref<Texture> &p_texture) {
 	_change_notify("texture");
 }
 
-Ref<Texture> MultiMeshInstance2D::get_texture() const {
+Ref<Texture2D> MultiMeshInstance2D::get_texture() const {
 
 	return texture;
 }
 
-void MultiMeshInstance2D::set_normal_map(const Ref<Texture> &p_texture) {
+void MultiMeshInstance2D::set_normal_map(const Ref<Texture2D> &p_texture) {
 
 	normal_map = p_texture;
 	update();
 }
 
-Ref<Texture> MultiMeshInstance2D::get_normal_map() const {
+Ref<Texture2D> MultiMeshInstance2D::get_normal_map() const {
 
 	return normal_map;
 }
 
+#ifdef TOOLS_ENABLED
 Rect2 MultiMeshInstance2D::_edit_get_rect() const {
 
 	if (multimesh.is_valid()) {
@@ -103,6 +104,7 @@ Rect2 MultiMeshInstance2D::_edit_get_rect() const {
 
 	return Node2D::_edit_get_rect();
 }
+#endif
 
 MultiMeshInstance2D::MultiMeshInstance2D() {
 }

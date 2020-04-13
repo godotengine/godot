@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,8 @@ Variant ArrayPropertyEdit::get_array() const {
 		return Array();
 	Variant arr = o->get(property);
 	if (!arr.is_array()) {
-		Variant::CallError ce;
-		arr = Variant::construct(default_type, NULL, 0, ce);
+		Callable::CallError ce;
+		arr = Variant::construct(default_type, nullptr, 0, ce);
 	}
 	return arr;
 }
@@ -104,13 +104,13 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			} else if (newsize > size) {
 
 				Variant init;
-				Variant::CallError ce;
+				Callable::CallError ce;
 				Variant::Type new_type = subtype;
 				if (new_type == Variant::NIL && size) {
 					new_type = arr.get(size - 1).get_type();
 				}
 				if (new_type != Variant::NIL) {
-					init = Variant::construct(new_type, NULL, 0, ce);
+					init = Variant::construct(new_type, nullptr, 0, ce);
 					for (int i = size; i < newsize; i++) {
 						ur->add_do_method(this, "_set_value", i, init);
 					}
@@ -139,8 +139,8 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 
 			Variant value = arr.get(idx);
 			if (value.get_type() != type && type >= 0 && type < Variant::VARIANT_MAX) {
-				Variant::CallError ce;
-				Variant new_value = Variant::construct(Variant::Type(type), NULL, 0, ce);
+				Callable::CallError ce;
+				Variant new_value = Variant::construct(Variant::Type(type), nullptr, 0, ce);
 				UndoRedo *ur = EditorNode::get_undo_redo();
 
 				ur->create_action(TTR("Change Array Value Type"));
@@ -267,9 +267,9 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 	default_type = p_deftype;
 
 	if (!p_hint_string.empty()) {
-		int hint_subtype_seperator = p_hint_string.find(":");
-		if (hint_subtype_seperator >= 0) {
-			String subtype_string = p_hint_string.substr(0, hint_subtype_seperator);
+		int hint_subtype_separator = p_hint_string.find(":");
+		if (hint_subtype_separator >= 0) {
+			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
 
 			int slash_pos = subtype_string.find("/");
 			if (slash_pos >= 0) {
@@ -277,7 +277,7 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 				subtype_string = subtype_string.substr(0, slash_pos);
 			}
 
-			subtype_hint_string = p_hint_string.substr(hint_subtype_seperator + 1, p_hint_string.size() - hint_subtype_seperator - 1);
+			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
 			subtype = Variant::Type(subtype_string.to_int());
 		}
 	}

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,6 @@
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
 #include "core/math/plane.h"
-#include "core/pool_vector.h"
 
 class Transform {
 public:
@@ -70,6 +69,7 @@ public:
 
 	void orthonormalize();
 	Transform orthonormalized() const;
+	bool is_equal_approx(const Transform &p_transform) const;
 
 	bool operator==(const Transform &p_transform) const;
 	bool operator!=(const Transform &p_transform) const;
@@ -83,8 +83,8 @@ public:
 	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
 	_FORCE_INLINE_ AABB xform_inv(const AABB &p_aabb) const;
 
-	_FORCE_INLINE_ PoolVector<Vector3> xform(const PoolVector<Vector3> &p_array) const;
-	_FORCE_INLINE_ PoolVector<Vector3> xform_inv(const PoolVector<Vector3> &p_array) const;
+	_FORCE_INLINE_ Vector<Vector3> xform(const Vector<Vector3> &p_array) const;
+	_FORCE_INLINE_ Vector<Vector3> xform_inv(const Vector<Vector3> &p_array) const;
 
 	void operator*=(const Transform &p_transform);
 	Transform operator*(const Transform &p_transform) const;
@@ -209,13 +209,13 @@ _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
 	return ret;
 }
 
-PoolVector<Vector3> Transform::xform(const PoolVector<Vector3> &p_array) const {
+Vector<Vector3> Transform::xform(const Vector<Vector3> &p_array) const {
 
-	PoolVector<Vector3> array;
+	Vector<Vector3> array;
 	array.resize(p_array.size());
 
-	PoolVector<Vector3>::Read r = p_array.read();
-	PoolVector<Vector3>::Write w = array.write();
+	const Vector3 *r = p_array.ptr();
+	Vector3 *w = array.ptrw();
 
 	for (int i = 0; i < p_array.size(); ++i) {
 		w[i] = xform(r[i]);
@@ -223,13 +223,13 @@ PoolVector<Vector3> Transform::xform(const PoolVector<Vector3> &p_array) const {
 	return array;
 }
 
-PoolVector<Vector3> Transform::xform_inv(const PoolVector<Vector3> &p_array) const {
+Vector<Vector3> Transform::xform_inv(const Vector<Vector3> &p_array) const {
 
-	PoolVector<Vector3> array;
+	Vector<Vector3> array;
 	array.resize(p_array.size());
 
-	PoolVector<Vector3>::Read r = p_array.read();
-	PoolVector<Vector3>::Write w = array.write();
+	const Vector3 *r = p_array.ptr();
+	Vector3 *w = array.ptrw();
 
 	for (int i = 0; i < p_array.size(); ++i) {
 		w[i] = xform_inv(r[i]);

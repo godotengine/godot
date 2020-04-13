@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JSONParseResult" inherits="Reference" category="Core" version="3.2">
+<class name="JSONParseResult" inherits="Reference" version="4.0">
 	<brief_description>
 		Data class wrapper for decoded JSON.
 	</brief_description>
@@ -12,13 +12,13 @@
 	</methods>
 	<members>
 		<member name="error" type="int" setter="set_error" getter="get_error" enum="Error">
-			The error type if the JSON source was not successfully parsed. See the [@GlobalScope] [code]ERR_*[/code] constants.
+			The error type if the JSON source was not successfully parsed. See the [enum Error] constants.
 		</member>
 		<member name="error_line" type="int" setter="set_error_line" getter="get_error_line" default="-1">
 			The line number where the error occurred if JSON source was not successfully parsed.
 		</member>
 		<member name="error_string" type="String" setter="set_error_string" getter="get_error_string" default="&quot;&quot;">
-			The error message if JSON source was not successfully parsed. See the [@GlobalScope] [code]ERR_*[/code] constants.
+			The error message if JSON source was not successfully parsed. See the [enum Error] constants.
 		</member>
 		<member name="result" type="Variant" setter="set_result" getter="get_result">
 			A [Variant] containing the parsed JSON. Use [method @GDScript.typeof] or the [code]is[/code] keyword to check if it is what you expect. For example, if the JSON source starts with curly braces ([code]{}[/code]), a [Dictionary] will be returned. If the JSON source starts with braces ([code][][/code]), an [Array] will be returned.

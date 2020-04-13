@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,12 @@
 #define S_ISREG(m) ((m)&S_IFREG)
 #endif
 
+#ifndef NO_FCNTL
+#include <fcntl.h>
+#else
+#include <sys/ioctl.h>
+#endif
+
 void FileAccessUnix::check_errors() const {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
@@ -70,7 +76,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	if (f)
 		fclose(f);
-	f = NULL;
+	f = nullptr;
 
 	path_src = p_path;
 	path = fix_path(p_path);
@@ -113,7 +119,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	f = fopen(path.utf8().get_data(), mode_string);
 
-	if (f == NULL) {
+	if (f == nullptr) {
 		switch (errno) {
 			case ENOENT: {
 				last_error = ERR_FILE_NOT_FOUND;
@@ -123,11 +129,24 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 			} break;
 		}
 		return last_error;
-	} else {
-		last_error = OK;
-		flags = p_mode_flags;
-		return OK;
 	}
+
+	// Set close on exec to avoid leaking it to subprocesses.
+	int fd = fileno(f);
+
+	if (fd != -1) {
+#if defined(NO_FCNTL)
+		unsigned long par = 0;
+		ioctl(fd, FIOCLEX, &par);
+#else
+		int opts = fcntl(fd, F_GETFD);
+		fcntl(fd, F_SETFD, opts | FD_CLOEXEC);
+#endif
+	}
+
+	last_error = OK;
+	flags = p_mode_flags;
+	return OK;
 }
 
 void FileAccessUnix::close() {
@@ -136,7 +155,7 @@ void FileAccessUnix::close() {
 		return;
 
 	fclose(f);
-	f = NULL;
+	f = nullptr;
 
 	if (close_notification_func) {
 		close_notification_func(path, flags);
@@ -156,7 +175,7 @@ void FileAccessUnix::close() {
 
 bool FileAccessUnix::is_open() const {
 
-	return (f != NULL);
+	return (f != nullptr);
 }
 
 String FileAccessUnix::get_path() const {
@@ -256,6 +275,7 @@ void FileAccessUnix::store_8(uint8_t p_dest) {
 void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
 
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
+	ERR_FAIL_COND(!p_src);
 	ERR_FAIL_COND((int)fwrite(p_src, 1, p_length, f) != p_length);
 }
 
@@ -332,10 +352,10 @@ FileAccess *FileAccessUnix::create_libc() {
 	return memnew(FileAccessUnix);
 }
 
-CloseNotificationFunc FileAccessUnix::close_notification_func = NULL;
+CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::FileAccessUnix() :
-		f(NULL),
+		f(nullptr),
 		flags(0),
 		last_error(OK) {
 }

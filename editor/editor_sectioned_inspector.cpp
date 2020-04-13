@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,14 +127,11 @@ public:
 	}
 
 	SectionedInspectorFilter() {
-		edited = NULL;
+		edited = nullptr;
 	}
 };
 
 void SectionedInspector::_bind_methods() {
-
-	ClassDB::bind_method("_section_selected", &SectionedInspector::_section_selected);
-	ClassDB::bind_method("_search_changed", &SectionedInspector::_search_changed);
 
 	ClassDB::bind_method("update_category_list", &SectionedInspector::update_category_list);
 }
@@ -145,7 +142,7 @@ void SectionedInspector::_section_selected() {
 		return;
 
 	selected_category = sections->get_selected()->get_metadata(0);
-	filter->set_section(selected_category, sections->get_selected()->get_children() == NULL);
+	filter->set_section(selected_category, sections->get_selected()->get_children() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
 }
 
@@ -177,11 +174,11 @@ String SectionedInspector::get_full_item_path(const String &p_item) {
 void SectionedInspector::edit(Object *p_object) {
 
 	if (!p_object) {
-		obj = -1;
+		obj = ObjectID();
 		sections->clear();
 
-		filter->set_edited(NULL);
-		inspector->edit(NULL);
+		filter->set_edited(nullptr);
+		inspector->edit(nullptr);
 
 		return;
 	}
@@ -245,6 +242,9 @@ void SectionedInspector::update_category_list() {
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
 
+		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize()))
+			continue;
+
 		int sp = pi.name.find("/");
 		if (sp == -1)
 			pi.name = "global/" + pi.name;
@@ -252,15 +252,12 @@ void SectionedInspector::update_category_list() {
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(sectionarr[sectionarr.size() - 1].capitalize()))
-			continue;
-
 		int sc = MIN(2, sectionarr.size() - 1);
 
 		for (int i = 0; i < sc; i++) {
 
 			TreeItem *parent = section_map[metasection];
-			parent->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+			parent->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -294,7 +291,7 @@ void SectionedInspector::register_search_box(LineEdit *p_box) {
 
 	search_box = p_box;
 	inspector->register_text_enter(p_box);
-	search_box->connect("text_changed", this, "_search_changed");
+	search_box->connect("text_changed", callable_mp(this, &SectionedInspector::_search_changed));
 }
 
 void SectionedInspector::_search_changed(const String &p_what) {
@@ -308,12 +305,11 @@ EditorInspector *SectionedInspector::get_inspector() {
 }
 
 SectionedInspector::SectionedInspector() :
-		obj(-1),
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)),
-		search_box(NULL) {
-	add_constant_override("autohide", 1); // Fixes the dragger always showing up
+		search_box(nullptr) {
+	add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);
@@ -333,7 +329,7 @@ SectionedInspector::SectionedInspector() :
 	right_vb->add_child(inspector, true);
 	inspector->set_use_doc_hints(true);
 
-	sections->connect("cell_selected", this, "_section_selected");
+	sections->connect("cell_selected", callable_mp(this, &SectionedInspector::_section_selected));
 }
 
 SectionedInspector::~SectionedInspector() {

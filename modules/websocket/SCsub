@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 # Thirdparty source files
 
 env_ws = env_modules.Clone()
 
-if env['builtin_wslay'] and not env["platform"] == "javascript": # already builtin for javascript
+if env["builtin_wslay"] and not env["platform"] == "javascript":  # already builtin for javascript
     wslay_dir = "#thirdparty/wslay/"
     wslay_sources = [
         "wslay_net.c",

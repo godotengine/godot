@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define TILE_SET_EDITOR_PLUGIN_H
 
 #include "editor/editor_node.h"
-#include "scene/2d/sprite.h"
+#include "scene/2d/sprite_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
@@ -114,7 +114,7 @@ class TileSetEditor : public HSplitContainer {
 	int option;
 	ToolButton *tileset_toolbar_buttons[TOOL_TILESET_MAX];
 	MenuButton *tileset_toolbar_tools;
-	Map<RID, Ref<Texture> > texture_map;
+	Map<RID, Ref<Texture2D>> texture_map;
 
 	bool creating_shape;
 	int dragging_point;
@@ -123,7 +123,7 @@ class TileSetEditor : public HSplitContainer {
 	Rect2 edited_region;
 	bool draw_edited_region;
 	Vector2 edited_shape_coord;
-	PoolVector2Array current_shape;
+	PackedVector2Array current_shape;
 	Map<Vector2i, SubtileData> current_tile_data;
 	Map<Vector2, uint32_t> bitmask_map_copy;
 
@@ -136,7 +136,7 @@ class TileSetEditor : public HSplitContainer {
 	Ref<NavigationPolygon> edited_navigation_shape;
 
 	int current_item_index;
-	Sprite *preview;
+	Sprite2D *preview;
 	ScrollContainer *scroll;
 	Label *empty_message;
 	Control *workspace_container;
@@ -165,10 +165,10 @@ class TileSetEditor : public HSplitContainer {
 	void update_texture_list();
 	void update_texture_list_icon();
 
-	void add_texture(Ref<Texture> p_texture);
-	void remove_texture(Ref<Texture> p_texture);
+	void add_texture(Ref<Texture2D> p_texture);
+	void remove_texture(Ref<Texture2D> p_texture);
 
-	Ref<Texture> get_current_texture();
+	Ref<Texture2D> get_current_texture();
 
 	static void _import_node(Node *p_node, Ref<TileSet> p_library);
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
@@ -178,7 +178,7 @@ class TileSetEditor : public HSplitContainer {
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
-	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
+	void _file_load_request(const Vector<String> &p_path, int p_at_pos = -1);
 
 protected:
 	static void _bind_methods();
@@ -195,7 +195,7 @@ private:
 	void _on_tileset_toolbar_button_pressed(int p_index);
 	void _on_tileset_toolbar_confirm();
 	void _on_texture_list_selected(int p_index);
-	void _on_textures_added(const PoolStringArray &p_paths);
+	void _on_textures_added(const PackedStringArray &p_paths);
 	void _on_edit_mode_changed(int p_edit_mode);
 	void _on_workspace_mode_changed(int p_workspace_mode);
 	void _on_workspace_overlay_draw();
@@ -244,6 +244,8 @@ private:
 	void update_workspace_tile_mode();
 	void update_workspace_minsize();
 	void update_edited_region(const Vector2 &end_point);
+	int get_grabbed_point(const Vector2 &p_mouse_pos, real_t grab_threshold);
+	bool is_within_grabbing_distance_of_first_point(const Vector2 &p_pos, real_t p_grab_threshold);
 
 	int get_current_tile() const;
 	void set_current_tile(int p_id);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 void RemoteTransform2D::_update_cache() {
 
-	cache = 0;
+	cache = ObjectID();
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
 		if (!node || this == node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
@@ -49,7 +49,7 @@ void RemoteTransform2D::_update_remote() {
 	if (!is_inside_tree())
 		return;
 
-	if (!cache)
+	if (cache.is_null())
 		return;
 
 	Node2D *n = Object::cast_to<Node2D>(ObjectDB::get_instance(cache));
@@ -119,7 +119,7 @@ void RemoteTransform2D::_notification(int p_what) {
 			if (!is_inside_tree())
 				break;
 
-			if (cache) {
+			if (cache.is_valid()) {
 
 				_update_remote();
 			}
@@ -225,6 +225,5 @@ RemoteTransform2D::RemoteTransform2D() {
 	update_remote_rotation = true;
 	update_remote_scale = true;
 
-	cache = 0;
 	set_notify_transform(true);
 }

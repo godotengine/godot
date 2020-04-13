@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-Import('env')
-Import('env_modules')
+Import("env")
+Import("env_modules")
 
 # Thirdparty sources
 
@@ -9,9 +9,7 @@ libvpx_dir = "#thirdparty/libvpx/"
 
 libvpx_sources = [
     "vp8/vp8_dx_iface.c",
-
     "vp8/common/generic/systemdependent.c",
-
     "vp8/common/alloccommon.c",
     "vp8/common/blockd.c",
     "vp8/common/copy_c.c",
@@ -37,16 +35,12 @@ libvpx_sources = [
     "vp8/common/swapyv12buffer.c",
     "vp8/common/treecoder.c",
     "vp8/common/vp8_loopfilter.c",
-
     "vp8/decoder/dboolhuff.c",
     "vp8/decoder/decodeframe.c",
     "vp8/decoder/decodemv.c",
     "vp8/decoder/detokenize.c",
     "vp8/decoder/onyxd_if.c",
-
-
     "vp9/vp9_dx_iface.c",
-
     "vp9/common/vp9_alloccommon.c",
     "vp9/common/vp9_blockd.c",
     "vp9/common/vp9_common_data.c",
@@ -69,21 +63,16 @@ libvpx_sources = [
     "vp9/common/vp9_seg_common.c",
     "vp9/common/vp9_thread_common.c",
     "vp9/common/vp9_tile_common.c",
-
     "vp9/decoder/vp9_decodeframe.c",
     "vp9/decoder/vp9_decodemv.c",
     "vp9/decoder/vp9_decoder.c",
     "vp9/decoder/vp9_detokenize.c",
     "vp9/decoder/vp9_dsubexp.c",
     "vp9/decoder/vp9_dthread.c",
-
-
     "vpx/src/vpx_codec.c",
     "vpx/src/vpx_decoder.c",
     "vpx/src/vpx_image.c",
     "vpx/src/vpx_psnr.c",
-
-
     "vpx_dsp/bitreader.c",
     "vpx_dsp/bitreader_buffer.c",
     "vpx_dsp/intrapred.c",
@@ -92,18 +81,11 @@ libvpx_sources = [
     "vpx_dsp/prob.c",
     "vpx_dsp/vpx_convolve.c",
     "vpx_dsp/vpx_dsp_rtcd.c",
-
-
     "vpx_mem/vpx_mem.c",
-
-
     "vpx_scale/vpx_scale_rtcd.c",
-
     "vpx_scale/generic/yv12config.c",
     "vpx_scale/generic/yv12extend.c",
-
-
-    "vpx_util/vpx_thread.c"
+    "vpx_util/vpx_thread.c",
 ]
 
 libvpx_sources_mt = [
@@ -114,29 +96,23 @@ libvpx_sources_intrin_x86 = [
     "vp8/common/x86/filter_x86.c",
     "vp8/common/x86/loopfilter_x86.c",
     "vp8/common/x86/vp8_asm_stubs.c",
-
-
-    "vpx_dsp/x86/vpx_asm_stubs.c"
+    "vpx_dsp/x86/vpx_asm_stubs.c",
 ]
 libvpx_sources_intrin_x86_mmx = [
     "vp8/common/x86/idct_blk_mmx.c",
 ]
 libvpx_sources_intrin_x86_sse2 = [
     "vp8/common/x86/idct_blk_sse2.c",
-
-
     "vp9/common/x86/vp9_idct_intrin_sse2.c",
-
-
     "vpx_dsp/x86/inv_txfm_sse2.c",
     "vpx_dsp/x86/loopfilter_sse2.c",
 ]
 libvpx_sources_intrin_x86_ssse3 = [
-    "vpx_dsp/x86/vpx_subpixel_8t_intrin_ssse3.c"
+    "vpx_dsp/x86/vpx_subpixel_8t_intrin_ssse3.c",
 ]
 libvpx_sources_intrin_x86_avx2 = [
     "vpx_dsp/x86/loopfilter_avx2.c",
-    "vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c"
+    "vpx_dsp/x86/vpx_subpixel_8t_intrin_avx2.c",
 ]
 libvpx_sources_x86asm = [
     "vp8/common/x86/copy_sse2.asm",
@@ -153,8 +129,6 @@ libvpx_sources_x86asm = [
     "vp8/common/x86/subpixel_sse2.asm",
     "vp8/common/x86/subpixel_ssse3.asm",
     "vp8/common/x86/vp8_loopfilter_mmx.asm",
-
-
     "vpx_dsp/x86/intrapred_sse2.asm",
     "vpx_dsp/x86/intrapred_ssse3.asm",
     "vpx_dsp/x86/inv_wht_sse2.asm",
@@ -163,21 +137,15 @@ libvpx_sources_x86asm = [
     "vpx_dsp/x86/vpx_subpixel_8t_ssse3.asm",
     "vpx_dsp/x86/vpx_subpixel_bilinear_sse2.asm",
     "vpx_dsp/x86/vpx_subpixel_bilinear_ssse3.asm",
-
-
-    "vpx_ports/emms.asm"
+    "vpx_ports/emms.asm",
 ]
 libvpx_sources_x86_64asm = [
     "vp8/common/x86/loopfilter_block_sse2_x86_64.asm",
-
-
-    "vpx_dsp/x86/inv_txfm_ssse3_x86_64.asm"
+    "vpx_dsp/x86/inv_txfm_ssse3_x86_64.asm",
 ]
 
 libvpx_sources_arm = [
     "vpx_ports/arm_cpudetect.c",
-
-
     "vp8/common/arm/loopfilter_arm.c",
 ]
 libvpx_sources_arm_neon = [
@@ -196,12 +164,8 @@ libvpx_sources_arm_neon = [
     "vp8/common/arm/neon/shortidct4x4llm_neon.c",
     "vp8/common/arm/neon/sixtappredict_neon.c",
     "vp8/common/arm/neon/vp8_loopfilter_neon.c",
-
-
     "vp9/common/arm/neon/vp9_iht4x4_add_neon.c",
     "vp9/common/arm/neon/vp9_iht8x8_add_neon.c",
-
-
     "vpx_dsp/arm/idct16x16_1_add_neon.c",
     "vpx_dsp/arm/idct16x16_add_neon.c",
     "vpx_dsp/arm/idct16x16_neon.c",
@@ -220,22 +184,22 @@ libvpx_sources_arm_neon = [
     "vpx_dsp/arm/vpx_convolve8_neon.c",
     "vpx_dsp/arm/vpx_convolve_avg_neon.c",
     "vpx_dsp/arm/vpx_convolve_copy_neon.c",
-    "vpx_dsp/arm/vpx_convolve_neon.c"
+    "vpx_dsp/arm/vpx_convolve_neon.c",
 ]
 libvpx_sources_arm_neon_gas = [
     "vpx_dsp/arm/gas/intrapred_neon_asm.s",
     "vpx_dsp/arm/gas/loopfilter_mb_neon.s",
-    "vpx_dsp/arm/gas/save_reg_neon.s"
+    "vpx_dsp/arm/gas/save_reg_neon.s",
 ]
 libvpx_sources_arm_neon_armasm_ms = [
     "vpx_dsp/arm/armasm_ms/intrapred_neon_asm.asm",
     "vpx_dsp/arm/armasm_ms/loopfilter_mb_neon.asm",
-    "vpx_dsp/arm/armasm_ms/save_reg_neon.asm"
+    "vpx_dsp/arm/armasm_ms/save_reg_neon.asm",
 ]
 libvpx_sources_arm_neon_gas_apple = [
     "vpx_dsp/arm/gas_apple/intrapred_neon_asm.s",
     "vpx_dsp/arm/gas_apple/loopfilter_mb_neon.s",
-    "vpx_dsp/arm/gas_apple/save_reg_neon.s"
+    "vpx_dsp/arm/gas_apple/save_reg_neon.s",
 ]
 
 libvpx_sources = [libvpx_dir + file for file in libvpx_sources]
@@ -258,25 +222,43 @@ env_libvpx = env_modules.Clone()
 env_libvpx.disable_warnings()
 env_libvpx.Prepend(CPPPATH=[libvpx_dir])
 
-webm_multithread = env["platform"] != 'javascript'
+webm_multithread = env["platform"] != "javascript"
 
 cpu_bits = env["bits"]
 webm_cpu_x86 = False
 webm_cpu_arm = False
-if env["platform"] == 'uwp':
-    if 'arm' in env["PROGSUFFIX"]:
+if env["platform"] == "uwp":
+    if "arm" in env["PROGSUFFIX"]:
         webm_cpu_arm = True
     else:
         webm_cpu_x86 = True
 else:
     import platform
-    is_x11_or_server_arm = ((env["platform"] == 'x11' or env["platform"] == 'server') and (platform.machine().startswith('arm') or platform.machine().startswith('aarch')))
-    is_ios_x86 = (env["platform"] == 'iphone' and ("arch" in env and env["arch"].startswith('x86')))
-    is_android_x86 = (env["platform"] == 'android' and env["android_arch"].startswith('x86'))
+
+    is_x11_or_server_arm = (env["platform"] == "linuxbsd" or env["platform"] == "server") and (
+        platform.machine().startswith("arm") or platform.machine().startswith("aarch")
+    )
+    is_ios_x86 = env["platform"] == "iphone" and ("arch" in env and env["arch"].startswith("x86"))
+    is_android_x86 = env["platform"] == "android" and env["android_arch"].startswith("x86")
     if is_android_x86:
-        cpu_bits = '32' if env["android_arch"] == 'x86' else '64'
-    webm_cpu_x86 = not is_x11_or_server_arm and (cpu_bits == '32' or cpu_bits == '64') and (env["platform"] == 'windows' or env["platform"] == 'x11' or env["platform"] == 'osx' or env["platform"] == 'haiku' or is_android_x86 or is_ios_x86)
-    webm_cpu_arm = is_x11_or_server_arm or (not is_ios_x86 and env["platform"] == 'iphone') or (not is_android_x86 and env["platform"] == 'android')
+        cpu_bits = "32" if env["android_arch"] == "x86" else "64"
+    webm_cpu_x86 = (
+        not is_x11_or_server_arm
+        and (cpu_bits == "32" or cpu_bits == "64")
+        and (
+            env["platform"] == "windows"
+            or env["platform"] == "linuxbsd"
+            or env["platform"] == "osx"
+            or env["platform"] == "haiku"
+            or is_android_x86
+            or is_ios_x86
+        )
+    )
+    webm_cpu_arm = (
+        is_x11_or_server_arm
+        or (not is_ios_x86 and env["platform"] == "iphone")
+        or (not is_android_x86 and env["platform"] == "android")
+    )
 
 if webm_cpu_x86:
     import subprocess
@@ -306,38 +288,43 @@ if webm_cpu_x86:
 webm_simd_optimizations = False
 
 if webm_cpu_x86:
-    if env["platform"] == 'windows' or env["platform"] == 'uwp':
-        env_libvpx["ASFORMAT"] = 'win'
-    elif env["platform"] == 'osx' or env["platform"] == "iphone":
-        env_libvpx["ASFORMAT"] = 'macho'
+    if env["platform"] == "windows" or env["platform"] == "uwp":
+        env_libvpx["ASFORMAT"] = "win"
+    elif env["platform"] == "osx" or env["platform"] == "iphone":
+        env_libvpx["ASFORMAT"] = "macho"
     else:
-        env_libvpx["ASFORMAT"] = 'elf'
+        env_libvpx["ASFORMAT"] = "elf"
     env_libvpx["ASFORMAT"] += cpu_bits
 
-    env_libvpx["AS"] = 'yasm'
-    env_libvpx["ASFLAGS"] = '-I' + libvpx_dir[1:] + ' -f $ASFORMAT -D $ASCPU'
-    env_libvpx["ASCOM"] = '$AS $ASFLAGS -o $TARGET $SOURCES'
+    env_libvpx["AS"] = "yasm"
+    env_libvpx["ASFLAGS"] = "-I" + libvpx_dir[1:] + " -f $ASFORMAT -D $ASCPU"
+    env_libvpx["ASCOM"] = "$AS $ASFLAGS -o $TARGET $SOURCES"
 
-    if cpu_bits == '32':
-        env_libvpx["ASCPU"] = 'X86_32'
-    elif cpu_bits == '64':
-        env_libvpx["ASCPU"] = 'X86_64'
+    if cpu_bits == "32":
+        env_libvpx["ASCPU"] = "X86_32"
+    elif cpu_bits == "64":
+        env_libvpx["ASCPU"] = "X86_64"
 
-    env_libvpx.Append(CPPDEFINES=['WEBM_X86ASM'])
+    env_libvpx.Append(CPPDEFINES=["WEBM_X86ASM"])
 
     webm_simd_optimizations = True
 
 if webm_cpu_arm:
-    if env["platform"] == 'iphone':
-        env_libvpx["ASFLAGS"] = '-arch armv7'
-    elif env["platform"] == 'android' and env["android_arch"] == 'armv7' or env["platform"] == 'x11' or env["platform"] == 'server':
-        env_libvpx["ASFLAGS"] = '-mfpu=neon'
-    elif env["platform"] == 'uwp':
-        env_libvpx["AS"] = 'armasm'
-        env_libvpx["ASFLAGS"] = ''
-        env_libvpx["ASCOM"] = '$AS $ASFLAGS -o $TARGET $SOURCES'
+    if env["platform"] == "iphone":
+        env_libvpx["ASFLAGS"] = "-arch armv7"
+    elif (
+        env["platform"] == "android"
+        and env["android_arch"] == "armv7"
+        or env["platform"] == "linuxbsd"
+        or env["platform"] == "server"
+    ):
+        env_libvpx["ASFLAGS"] = "-mfpu=neon"
+    elif env["platform"] == "uwp":
+        env_libvpx["AS"] = "armasm"
+        env_libvpx["ASFLAGS"] = ""
+        env_libvpx["ASCOM"] = "$AS $ASFLAGS -o $TARGET $SOURCES"
 
-    env_libvpx.Append(CPPDEFINES=['WEBM_ARMASM'])
+    env_libvpx.Append(CPPDEFINES=["WEBM_ARMASM"])
 
     webm_simd_optimizations = True
 
@@ -350,45 +337,49 @@ if webm_multithread:
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_mt)
 
 if webm_cpu_x86:
-    is_clang_or_gcc = ('gcc' in os.path.basename(env["CC"])) or ('clang' in os.path.basename(env["CC"])) or ("osxcross" in env)
+    is_clang_or_gcc = (
+        ("gcc" in os.path.basename(env["CC"])) or ("clang" in os.path.basename(env["CC"])) or ("osxcross" in env)
+    )
 
     env_libvpx_mmx = env_libvpx.Clone()
-    if cpu_bits == '32' and is_clang_or_gcc:
-        env_libvpx_mmx.Append(CCFLAGS=['-mmmx'])
+    if cpu_bits == "32" and is_clang_or_gcc:
+        env_libvpx_mmx.Append(CCFLAGS=["-mmmx"])
     env_libvpx_mmx.add_source_files(env.modules_sources, libvpx_sources_intrin_x86_mmx)
 
     env_libvpx_sse2 = env_libvpx.Clone()
-    if cpu_bits == '32' and is_clang_or_gcc:
-        env_libvpx_sse2.Append(CCFLAGS=['-msse2'])
+    if cpu_bits == "32" and is_clang_or_gcc:
+        env_libvpx_sse2.Append(CCFLAGS=["-msse2"])
     env_libvpx_sse2.add_source_files(env.modules_sources, libvpx_sources_intrin_x86_sse2)
 
     env_libvpx_ssse3 = env_libvpx.Clone()
     if is_clang_or_gcc:
-        env_libvpx_ssse3.Append(CCFLAGS=['-mssse3'])
+        env_libvpx_ssse3.Append(CCFLAGS=["-mssse3"])
     env_libvpx_ssse3.add_source_files(env.modules_sources, libvpx_sources_intrin_x86_ssse3)
 
     env_libvpx_avx2 = env_libvpx.Clone()
     if is_clang_or_gcc:
-        env_libvpx_avx2.Append(CCFLAGS=['-mavx2'])
+        env_libvpx_avx2.Append(CCFLAGS=["-mavx2"])
     env_libvpx_avx2.add_source_files(env.modules_sources, libvpx_sources_intrin_x86_avx2)
 
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_intrin_x86)
 
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_x86asm)
-    if cpu_bits == '64':
+    if cpu_bits == "64":
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_x86_64asm)
 elif webm_cpu_arm:
     env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm)
-    if env["platform"] == 'android':
+    if env["platform"] == "android":
         env_libvpx.Prepend(CPPPATH=[libvpx_dir + "third_party/android"])
         env_libvpx.add_source_files(env.modules_sources, [libvpx_dir + "third_party/android/cpu-features.c"])
 
     env_libvpx_neon = env_libvpx.Clone()
     env_libvpx_neon.add_source_files(env.modules_sources, libvpx_sources_arm_neon)
 
-    if env["platform"] == 'uwp':
+    if env["platform"] == "uwp":
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_armasm_ms)
-    elif env["platform"] == 'iphone':
+    elif env["platform"] == "iphone":
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas_apple)
-    elif (is_x11_or_server_arm and cpu_bits == '32') or (env["platform"] == 'android' and not env["android_arch"] == 'arm64v8'):
+    elif (is_x11_or_server_arm and cpu_bits == "32") or (
+        env["platform"] == "android" and not env["android_arch"] == "arm64v8"
+    ):
         env_libvpx.add_source_files(env.modules_sources, libvpx_sources_arm_neon_gas)

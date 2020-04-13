@@ -49,12 +49,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    These functions are not consistently available on all platforms,
    or the provided implementations behave too differently.
 */
+#pragma once
 #ifndef INCLUDED_AI_STRING_WORKERS_H
 #define INCLUDED_AI_STRING_WORKERS_H
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include <assimp/ai_assert.h>
 #include <assimp/defs.h>
-#include "StringComparison.h"
+#include <assimp/StringComparison.h>
 
 #include <string.h>
 #include <stdint.h>

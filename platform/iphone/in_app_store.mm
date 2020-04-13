@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,14 +85,14 @@ void InAppStore::_bind_methods() {
 	Dictionary ret;
 	ret["type"] = "product_info";
 	ret["result"] = "ok";
-	PoolStringArray titles;
-	PoolStringArray descriptions;
-	PoolRealArray prices;
-	PoolStringArray ids;
-	PoolStringArray localized_prices;
-	PoolStringArray currency_codes;
+	PackedStringArray titles;
+	PackedStringArray descriptions;
+	PackedFloat32Array prices;
+	PackedStringArray ids;
+	PackedStringArray localized_prices;
+	PackedStringArray currency_codes;
 
-	for (int i = 0; i < [products count]; i++) {
+	for (NSUInteger i = 0; i < [products count]; i++) {
 
 		SKProduct *product = [products objectAtIndex:i];
 
@@ -113,7 +113,7 @@ void InAppStore::_bind_methods() {
 	ret["localized_prices"] = localized_prices;
 	ret["currency_codes"] = currency_codes;
 
-	PoolStringArray invalid_ids;
+	PackedStringArray invalid_ids;
 
 	for (NSString *ipid in response.invalidProductIdentifiers) {
 
@@ -133,7 +133,7 @@ Error InAppStore::request_product_info(Variant p_params) {
 	Dictionary params = p_params;
 	ERR_FAIL_COND_V(!params.has("product_ids"), ERR_INVALID_PARAMETER);
 
-	PoolStringArray pids = params["product_ids"];
+	PackedStringArray pids = params["product_ids"];
 	printf("************ request product info! %i\n", pids.size());
 
 	NSMutableArray *array = [[[NSMutableArray alloc] initWithCapacity:pids.size()] autorelease];

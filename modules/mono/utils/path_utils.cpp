@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,7 +80,7 @@ String find_executable(const String &p_name) {
 
 String cwd() {
 #ifdef WINDOWS_ENABLED
-	const DWORD expected_size = ::GetCurrentDirectoryW(0, NULL);
+	const DWORD expected_size = ::GetCurrentDirectoryW(0, nullptr);
 
 	String buffer;
 	buffer.resize((int)expected_size);
@@ -90,7 +90,7 @@ String cwd() {
 	return buffer.simplify_path();
 #else
 	char buffer[PATH_MAX];
-	if (::getcwd(buffer, sizeof(buffer)) == NULL)
+	if (::getcwd(buffer, sizeof(buffer)) == nullptr)
 		return ".";
 
 	String result;
@@ -114,12 +114,12 @@ String realpath(const String &p_path) {
 	// Open file without read/write access
 	HANDLE hFile = ::CreateFileW(p_path.c_str(), 0,
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	if (hFile == INVALID_HANDLE_VALUE)
 		return p_path;
 
-	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, NULL, 0, FILE_NAME_NORMALIZED);
+	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, nullptr, 0, FILE_NAME_NORMALIZED);
 
 	if (expected_size == 0) {
 		::CloseHandle(hFile);
@@ -133,7 +133,7 @@ String realpath(const String &p_path) {
 	::CloseHandle(hFile);
 	return buffer.simplify_path();
 #elif UNIX_ENABLED
-	char *resolved_path = ::realpath(p_path.utf8().get_data(), NULL);
+	char *resolved_path = ::realpath(p_path.utf8().get_data(), nullptr);
 
 	if (!resolved_path)
 		return p_path;
@@ -168,6 +168,43 @@ String join(const String &p_a, const String &p_b, const String &p_c) {
 
 String join(const String &p_a, const String &p_b, const String &p_c, const String &p_d) {
 	return path::join(path::join(path::join(p_a, p_b), p_c), p_d);
+}
+
+String relative_to_impl(const String &p_path, const String &p_relative_to) {
+	// This function assumes arguments are normalized and absolute paths
+
+	if (p_path.begins_with(p_relative_to)) {
+		return p_path.substr(p_relative_to.length() + 1);
+	} else {
+		String base_dir = p_relative_to.get_base_dir();
+
+		if (base_dir.length() <= 2 && (base_dir.empty() || base_dir.ends_with(":")))
+			return p_path;
+
+		return String("..").plus_file(relative_to_impl(p_path, base_dir));
+	}
+}
+
+#ifdef WINDOWS_ENABLED
+String get_drive_letter(const String &p_norm_path) {
+	int idx = p_norm_path.find(":/");
+	if (idx != -1 && idx < p_norm_path.find("/"))
+		return p_norm_path.substr(0, idx + 1);
+	return String();
+}
+#endif
+
+String relative_to(const String &p_path, const String &p_relative_to) {
+	String relative_to_abs_norm = abspath(p_relative_to);
+	String path_abs_norm = abspath(p_path);
+
+#ifdef WINDOWS_ENABLED
+	if (get_drive_letter(relative_to_abs_norm) != get_drive_letter(path_abs_norm)) {
+		return path_abs_norm;
+	}
+#endif
+
+	return relative_to_impl(path_abs_norm, relative_to_abs_norm);
 }
 
 } // namespace path

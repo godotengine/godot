@@ -1,39 +1,51 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="CharFXTransform" inherits="Reference" category="Core" version="3.2">
+<class name="CharFXTransform" inherits="Reference" version="4.0">
 	<brief_description>
+		Controls how an individual character will be displayed in a [RichTextEffect].
 	</brief_description>
 	<description>
+		By setting various properties on this object, you can control how individual characters will be displayed in a [RichTextEffect].
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
+		<link>https://github.com/Eoin-ONeill-Yokai/Godot-Rich-Text-Effect-Test-Project</link>
 	</tutorials>
 	<methods>
-		<method name="get_value_or">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="key" type="String">
-			</argument>
-			<argument index="1" name="default_value" type="Variant">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="absolute_index" type="int" setter="set_absolute_index" getter="get_absolute_index" default="0">
+			The index of the current character (starting from 0). Setting this property won't affect drawing.
 		</member>
 		<member name="character" type="int" setter="set_character" getter="get_character" default="0">
+			The Unicode codepoint the character will use. This only affects non-whitespace characters. [method @GDScript.ord] can be useful here. For example, the following will replace all characters with asterisks:
+			[codeblock]
+			# `char_fx` is the CharFXTransform parameter from `_process_custom_fx()`.
+			# See the RichTextEffect documentation for details.
+			char_fx.character = ord("*")
+			[/codeblock]
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 0, 0, 0, 1 )">
+			The color the character will be drawn with.
 		</member>
 		<member name="elapsed_time" type="float" setter="set_elapsed_time" getter="get_elapsed_time" default="0.0">
+			The time elapsed since the [RichTextLabel] was added to the scene tree (in seconds). Time stops when the project is paused, unless the [RichTextLabel]'s [member Node.pause_mode] is set to [constant Node.PAUSE_MODE_PROCESS].
+			[b]Note:[/b] Time still passes while the [RichTextLabel] is hidden.
 		</member>
 		<member name="env" type="Dictionary" setter="set_environment" getter="get_environment" default="{}">
+			Contains the arguments passed in the opening BBCode tag. By default, arguments are strings; if their contents match a type such as [bool], [int] or [float], they will be converted automatically. Color codes in the form [code]#rrggbb[/code] or [code]#rgb[/code] will be converted to an opaque [Color]. String arguments may not contain spaces, even if they're quoted. If present, quotes will also be present in the final string.
+			For example, the opening BBCode tag [code][example foo=hello bar=true baz=42 color=#ffffff][/code] will map to the following [Dictionary]:
+			[codeblock]
+			{"foo": "hello", "bar": true, "baz": 42, "color": Color(1, 1, 1, 1)}
+			[/codeblock]
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+			The position offset the character will be drawn with (in pixels).
 		</member>
 		<member name="relative_index" type="int" setter="set_relative_index" getter="get_relative_index" default="0">
+			The index of the current character (starting from 0). Setting this property won't affect drawing.
 		</member>
 		<member name="visible" type="bool" setter="set_visibility" getter="is_visible" default="true">
+			If [code]true[/code], the character will be drawn. If [code]false[/code], the character will be hidden. Characters around hidden characters will reflow to take the space of hidden characters. If this is not desired, set their [member color] to [code]Color(1, 1, 1, 0)[/code] instead.
 		</member>
 	</members>
 	<constants>

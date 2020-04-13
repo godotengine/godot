@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 
 #include <zlib.h>
 
-ProjectSettings *ProjectSettings::singleton = NULL;
+ProjectSettings *ProjectSettings::singleton = nullptr;
 
 ProjectSettings *ProjectSettings::get_singleton() {
 
@@ -107,6 +107,10 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal == "") {
 			return "";
 		};
+		// Only strip the starting '/' from 'path' if its parent ('plocal') ends with '/'
+		if (plocal[plocal.length() - 1] == '/') {
+			sep += 1;
+		}
 		return plocal + path.substr(sep, path.size() - sep);
 	};
 }
@@ -202,7 +206,7 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 		name = feature_overrides[name];
 	}
 	if (!props.has(name)) {
-		WARN_PRINTS("Property not found: " + String(name));
+		WARN_PRINT("Property not found: " + String(name));
 		return false;
 	}
 	r_ret = props[name].variant;
@@ -379,8 +383,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			}
 		}
 
-		// Attempt with PCK bundled into executable
+#ifdef OSX_ENABLED
+		// Attempt to load PCK from macOS .app bundle resources
+		if (!found) {
+			if (_load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"))) {
+				found = true;
+			}
+		}
+#endif
 
+		// Attempt with PCK bundled into executable
 		if (!found) {
 			if (_load_resource_pack(exec_path)) {
 				found = true;
@@ -520,11 +532,13 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		d.resize(vlen);
 		f->get_buffer(d.ptrw(), vlen);
 		Variant value;
-		err = decode_variant(value, d.ptr(), d.size(), NULL, true);
+		err = decode_variant(value, d.ptr(), d.size(), nullptr, true);
 		ERR_CONTINUE_MSG(err != OK, "Error decoding property: " + key + ".");
 		set(key, value);
 	}
 
+	f->close();
+	memdelete(f);
 	return OK;
 }
 
@@ -557,7 +571,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
 			memdelete(f);
 			// If we're loading a project.godot from source code, we can operate some
@@ -565,7 +579,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			_convert_to_last_version(config_version);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
+			ERR_PRINT("Error parsing " + p_path + " at line " + itos(lines) + ": " + error_text + " File might be corrupted.");
 			memdelete(f);
 			return err;
 		}
@@ -598,7 +612,7 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 		return OK;
 	} else if (err_text != ERR_FILE_NOT_FOUND) {
 		// If the text-based file exists but can't be loaded, we want to know it
-		ERR_PRINTS("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
+		ERR_PRINT("Couldn't load file '" + p_text_path + "', error code " + itos(err_text) + ".");
 		return err_text;
 	}
 
@@ -638,7 +652,7 @@ Error ProjectSettings::save() {
 	return save_custom(get_resource_path().plus_file("project.godot"));
 }
 
-Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
@@ -649,7 +663,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 	int count = 0;
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -665,7 +679,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_string(key);
 
 		int len;
-		err = encode_variant(p_custom_features, NULL, len, false);
+		err = encode_variant(p_custom_features, nullptr, len, false);
 		if (err != OK) {
 			memdelete(file);
 			ERR_FAIL_V(err);
@@ -686,7 +700,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_32(count); //store how many properties are saved
 	}
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 
 		for (List<String>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -703,7 +717,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 			file->store_string(key);
 
 			int len;
-			err = encode_variant(value, NULL, len, true);
+			err = encode_variant(value, nullptr, len, true);
 			if (err != OK)
 				memdelete(file);
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
@@ -726,7 +740,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 	return OK;
 }
 
-Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom, const String &p_custom_features) {
+Error ProjectSettings::_save_settings_text(const String &p_file, const Map<String, List<String>> &props, const CustomMap &p_custom, const String &p_custom_features) {
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
@@ -747,7 +761,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 		file->store_string("custom_features=\"" + p_custom_features + "\"\n");
 	file->store_string("\n");
 
-	for (Map<String, List<String> >::Element *E = props.front(); E; E = E->next()) {
+	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
 
 		if (E != props.front())
 			file->store_string("\n");
@@ -767,10 +781,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 
 			String vstr;
 			VariantWriter::write_to_string(value, vstr);
-			if (F->get().find(" ") != -1)
-				file->store_string(F->get().quote() + "=" + vstr + "\n");
-			else
-				file->store_string(F->get() + "=" + vstr + "\n");
+			file->store_string(F->get().property_name_encode() + "=" + vstr + "\n");
 		}
 	}
 
@@ -827,7 +838,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		vclist.insert(vc);
 	}
 
-	Map<String, List<String> > props;
+	Map<String, List<String>> props;
 
 	for (Set<_VCSort>::Element *E = vclist.front(); E; E = E->next()) {
 
@@ -1012,14 +1023,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("audio/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
 
-	PoolStringArray extensions = PoolStringArray();
+	PackedStringArray extensions = PackedStringArray();
 	extensions.push_back("gd");
 	if (Engine::get_singleton()->has_singleton("GodotSharp"))
 		extensions.push_back("cs");
 	extensions.push_back("shader");
 
 	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
-	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::POOL_STRING_ARRAY, "editor/search_in_file_extensions");
+	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::PACKED_STRING_ARRAY, "editor/search_in_file_extensions");
 
 	GLOBAL_DEF("editor/script_templates_search_path", "res://script_templates");
 	custom_prop_info["editor/script_templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script_templates_search_path", PROPERTY_HINT_DIR);
@@ -1028,13 +1039,13 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_ENTER);
+	key->set_keycode(KEY_ENTER);
 	events.push_back(key);
 	key.instance();
-	key->set_scancode(KEY_KP_ENTER);
+	key->set_keycode(KEY_KP_ENTER);
 	events.push_back(key);
 	key.instance();
-	key->set_scancode(KEY_SPACE);
+	key->set_keycode(KEY_SPACE);
 	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_0);
@@ -1047,7 +1058,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_SPACE);
+	key->set_keycode(KEY_SPACE);
 	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_3);
@@ -1060,7 +1071,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_ESCAPE);
+	key->set_keycode(KEY_ESCAPE);
 	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_1);
@@ -1073,7 +1084,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_TAB);
+	key->set_keycode(KEY_TAB);
 	events.push_back(key);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_focus_next", action);
@@ -1083,7 +1094,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_TAB);
+	key->set_keycode(KEY_TAB);
 	key->set_shift(true);
 	events.push_back(key);
 	action["events"] = events;
@@ -1094,7 +1105,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_LEFT);
+	key->set_keycode(KEY_LEFT);
 	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_LEFT);
@@ -1107,7 +1118,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_RIGHT);
+	key->set_keycode(KEY_RIGHT);
 	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_RIGHT);
@@ -1120,7 +1131,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_UP);
+	key->set_keycode(KEY_UP);
 	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_UP);
@@ -1133,7 +1144,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_DOWN);
+	key->set_keycode(KEY_DOWN);
 	events.push_back(key);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_DOWN);
@@ -1146,7 +1157,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_PAGEUP);
+	key->set_keycode(KEY_PAGEUP);
 	events.push_back(key);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_page_up", action);
@@ -1156,7 +1167,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_PAGEDOWN);
+	key->set_keycode(KEY_PAGEDOWN);
 	events.push_back(key);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_page_down", action);
@@ -1166,7 +1177,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_HOME);
+	key->set_keycode(KEY_HOME);
 	events.push_back(key);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_home", action);
@@ -1176,7 +1187,7 @@ ProjectSettings::ProjectSettings() {
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
 	key.instance();
-	key->set_scancode(KEY_END);
+	key->set_keycode(KEY_END);
 	events.push_back(key);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_end", action);
@@ -1204,13 +1215,10 @@ ProjectSettings::ProjectSettings() {
 	Compression::gzip_level = GLOBAL_DEF("compression/formats/gzip/compression_level", Z_DEFAULT_COMPRESSION);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
 
-	// Would ideally be defined in an Android-specific file, but then it doesn't appear in the docs
-	GLOBAL_DEF("android/modules", "");
-
 	using_datapack = false;
 }
 
 ProjectSettings::~ProjectSettings() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }

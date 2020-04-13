@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ ResourceFormatLoaderPluginScript::ResourceFormatLoaderPluginScript(PluginScriptL
 	_language = language;
 }
 
-RES ResourceFormatLoaderPluginScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatLoaderPluginScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;
 
@@ -109,5 +109,5 @@ void ResourceFormatSaverPluginScript::get_recognized_extensions(const RES &p_res
 
 bool ResourceFormatSaverPluginScript::recognize(const RES &p_resource) const {
 
-	return Object::cast_to<PluginScript>(*p_resource) != NULL;
+	return Object::cast_to<PluginScript>(*p_resource) != nullptr;
 }

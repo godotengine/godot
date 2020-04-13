@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,8 +61,8 @@ class StringName {
 		_Data *prev;
 		_Data *next;
 		_Data() {
-			cname = NULL;
-			next = prev = NULL;
+			cname = nullptr;
+			next = prev = nullptr;
 			idx = 0;
 			hash = 0;
 		}
@@ -82,7 +82,7 @@ class StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 
-	static Mutex *lock;
+	static Mutex mutex;
 	static void setup();
 	static void cleanup();
 	static bool configured;

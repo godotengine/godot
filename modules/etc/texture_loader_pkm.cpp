@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@ struct ETC1Header {
 	uint16_t origHeight;
 };
 
-RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 
 	if (r_error)
 		*r_error = ERR_CANT_OPEN;
@@ -71,13 +71,12 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	h.origWidth = f->get_16();
 	h.origHeight = f->get_16();
 
-	PoolVector<uint8_t> src_data;
+	Vector<uint8_t> src_data;
 
 	uint32_t size = h.texWidth * h.texHeight / 2;
 	src_data.resize(size);
-	PoolVector<uint8_t>::Write wb = src_data.write();
-	f->get_buffer(wb.ptr(), size);
-	wb.release();
+	uint8_t *wb = src_data.ptrw();
+	f->get_buffer(wb, size);
 
 	int mipmaps = h.format;
 	int width = h.origWidth;
@@ -91,6 +90,8 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	if (r_error)
 		*r_error = OK;
 
+	f->close();
+	memdelete(f);
 	return texture;
 }
 
@@ -101,7 +102,7 @@ void ResourceFormatPKM::get_recognized_extensions(List<String> *p_extensions) co
 
 bool ResourceFormatPKM::handles_type(const String &p_type) const {
 
-	return ClassDB::is_parent_class(p_type, "Texture");
+	return ClassDB::is_parent_class(p_type, "Texture2D");
 }
 
 String ResourceFormatPKM::get_resource_type(const String &p_path) const {

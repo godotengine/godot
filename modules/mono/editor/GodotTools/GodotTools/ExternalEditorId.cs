@@ -6,6 +6,7 @@ namespace GodotTools
         VisualStudio, // TODO (Windows-only)
         VisualStudioForMac, // Mac-only
         MonoDevelop,
-        VsCode
+        VsCode,
+        Rider
     }
 }

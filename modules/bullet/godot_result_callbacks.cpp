@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -107,12 +107,12 @@ btScalar GodotAllConvexResultCallback::addSingleResult(btCollisionWorld::LocalCo
 
 	CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(convexResult.m_hitCollisionObject->getUserPointer());
 
-	PhysicsDirectSpaceState::ShapeResult &result = m_results[count];
+	PhysicsDirectSpaceState3D::ShapeResult &result = m_results[count];
 
 	result.shape = convexResult.m_localShapeInfo->m_triangleIndex; // "m_triangleIndex" Is a odd name but contains the compound shape ID
 	result.rid = gObj->get_self();
 	result.collider_id = gObj->get_instance_id();
-	result.collider = 0 == result.collider_id ? NULL : ObjectDB::get_instance(result.collider_id);
+	result.collider = result.collider_id.is_null() ? nullptr : ObjectDB::get_instance(result.collider_id);
 
 	++count;
 	return 1; // not used by bullet
@@ -207,7 +207,7 @@ btScalar GodotAllContactResultCallback::addSingleResult(btManifoldPoint &cp, con
 
 	if (cp.getDistance() <= 0) {
 
-		PhysicsDirectSpaceState::ShapeResult &result = m_results[m_count];
+		PhysicsDirectSpaceState3D::ShapeResult &result = m_results[m_count];
 		// Penetrated
 
 		CollisionObjectBullet *colObj;
@@ -220,7 +220,7 @@ btScalar GodotAllContactResultCallback::addSingleResult(btManifoldPoint &cp, con
 		}
 
 		result.collider_id = colObj->get_instance_id();
-		result.collider = 0 == result.collider_id ? NULL : ObjectDB::get_instance(result.collider_id);
+		result.collider = result.collider_id.is_null() ? nullptr : ObjectDB::get_instance(result.collider_id);
 		result.rid = colObj->get_self();
 		++m_count;
 	}

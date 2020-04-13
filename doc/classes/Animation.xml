@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Animation" inherits="Resource" category="Core" version="3.2">
+<class name="Animation" inherits="Resource" version="4.0">
 	<brief_description>
 		Contains data used to animate everything in the engine.
 	</brief_description>
@@ -14,7 +14,7 @@
 		animation.track_insert_key(track_index, 0.0, 0)
 		animation.track_insert_key(track_index, 0.5, 100)
 		[/codeblock]
-		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] or [AnimationTreePlayer] to be played back.
+		Animations are just data containers, and must be added to nodes such as an [AnimationPlayer] to be played back. Animation tracks have different types, each with its own set of dedicated methods. Check [enum TrackType] to see available types.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/animation/index.html</link>
@@ -32,73 +32,81 @@
 			</description>
 		</method>
 		<method name="animation_track_get_key_animation" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the animation name at the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_insert_key">
 			<return type="int">
 			</return>
-			<argument index="0" name="track" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
-			<argument index="2" name="animation" type="String">
+			<argument index="2" name="animation" type="StringName">
 			</argument>
 			<description>
+				Inserts a key with value [code]animation[/code] at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="animation_track_set_key_animation">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
-			<argument index="2" name="animation" type="String">
+			<argument index="2" name="animation" type="StringName">
 			</argument>
 			<description>
+				Sets the key identified by [code]key_idx[/code] to value [code]animation[/code]. The [code]track_idx[/code] must be the index of an Animation Track.
 			</description>
 		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the end offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				End offset is the number of seconds cut off at the ending of the audio stream.
 			</description>
 		</method>
 		<method name="audio_track_get_key_start_offset" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the start offset of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
+				Start offset is the number of seconds cut off at the beginning of the audio stream.
 			</description>
 		</method>
 		<method name="audio_track_get_key_stream" qualifiers="const">
 			<return type="Resource">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the audio stream of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_insert_key">
 			<return type="int">
 			</return>
-			<argument index="0" name="track" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
@@ -109,78 +117,86 @@
 			<argument index="4" name="end_offset" type="float" default="0">
 			</argument>
 			<description>
+				Inserts an Audio Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of an Audio Track.
+				[code]stream[/code] is the [AudioStream] resource to play. [code]start_offset[/code] is the number of seconds cut off at the beginning of the audio stream, while [code]end_offset[/code] is at the ending.
 			</description>
 		</method>
 		<method name="audio_track_set_key_end_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<argument index="2" name="offset" type="float">
 			</argument>
 			<description>
+				Sets the end offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_start_offset">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<argument index="2" name="offset" type="float">
 			</argument>
 			<description>
+				Sets the start offset of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="audio_track_set_key_stream">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<argument index="2" name="stream" type="Resource">
 			</argument>
 			<description>
+				Sets the stream of the key identified by [code]key_idx[/code] to value [code]offset[/code]. The [code]track_idx[/code] must be the index of an Audio Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the in handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_out_handle" qualifiers="const">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the out handle of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_value" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<description>
+				Returns the value of the key identified by [code]key_idx[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_insert_key">
 			<return type="int">
 			</return>
-			<argument index="0" name="track" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
@@ -191,52 +207,58 @@
 			<argument index="4" name="out_handle" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
+				Inserts a Bezier Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of a Bezier Track.
+				[code]in_handle[/code] is the left-side weight of the added Bezier curve point, [code]out_handle[/code] is the right-side one, while [code]value[/code] is the actual value at this point.
 			</description>
 		</method>
 		<method name="bezier_track_interpolate" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="track" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
 			<description>
+				Returns the interpolated value at the given [code]time[/code] (in seconds). The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_in_handle">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<argument index="2" name="in_handle" type="Vector2">
 			</argument>
 			<description>
+				Sets the in handle of the key identified by [code]key_idx[/code] to value [code]in_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_out_handle">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<argument index="2" name="out_handle" type="Vector2">
 			</argument>
 			<description>
+				Sets the out handle of the key identified by [code]key_idx[/code] to value [code]out_handle[/code]. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="bezier_track_set_key_value">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
+				Sets the value of the key identified by [code]key_idx[/code] to the given value. The [code]track_idx[/code] must be the index of a Bezier Track.
 			</description>
 		</method>
 		<method name="clear">
@@ -249,7 +271,7 @@
 		<method name="copy_track">
 			<return type="void">
 			</return>
-			<argument index="0" name="track" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="to_animation" type="Animation">
 			</argument>
@@ -274,9 +296,9 @@
 			</description>
 		</method>
 		<method name="method_track_get_key_indices" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time_sec" type="float">
 			</argument>
@@ -287,9 +309,9 @@
 			</description>
 		</method>
 		<method name="method_track_get_name" qualifiers="const">
-			<return type="String">
+			<return type="StringName">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -300,7 +322,7 @@
 		<method name="method_track_get_params" qualifiers="const">
 			<return type="Array">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -311,7 +333,7 @@
 		<method name="remove_track">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Removes a track by specifying the track index.
@@ -320,7 +342,7 @@
 		<method name="track_find_key" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
@@ -333,7 +355,7 @@
 		<method name="track_get_interpolation_loop_wrap" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the track at [code]idx[/code] wraps the interpolation loop. New tracks wrap the interpolation loop by default.
@@ -342,7 +364,7 @@
 		<method name="track_get_interpolation_type" qualifiers="const">
 			<return type="int" enum="Animation.InterpolationType">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Returns the interpolation type of a given track.
@@ -351,7 +373,7 @@
 		<method name="track_get_key_count" qualifiers="const">
 			<return type="int">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Returns the amount of keys in a given track.
@@ -360,7 +382,7 @@
 		<method name="track_get_key_time" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -371,7 +393,7 @@
 		<method name="track_get_key_transition" qualifiers="const">
 			<return type="float">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -382,7 +404,7 @@
 		<method name="track_get_key_value" qualifiers="const">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -393,7 +415,7 @@
 		<method name="track_get_path" qualifiers="const">
 			<return type="NodePath">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Gets the path of a track. For more information on the path format, see [method track_set_path].
@@ -402,7 +424,7 @@
 		<method name="track_get_type" qualifiers="const">
 			<return type="int" enum="Animation.TrackType">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Gets the type of a track.
@@ -411,7 +433,7 @@
 		<method name="track_insert_key">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
@@ -426,7 +448,7 @@
 		<method name="track_is_enabled" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the track at index [code]idx[/code] is enabled.
@@ -435,7 +457,7 @@
 		<method name="track_is_imported" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Returns [code]true[/code] if the given track is imported. Else, return [code]false[/code].
@@ -444,7 +466,7 @@
 		<method name="track_move_down">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Moves a track down.
@@ -453,7 +475,7 @@
 		<method name="track_move_to">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="to_idx" type="int">
 			</argument>
@@ -464,7 +486,7 @@
 		<method name="track_move_up">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Moves a track up.
@@ -473,7 +495,7 @@
 		<method name="track_remove_key">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -484,7 +506,7 @@
 		<method name="track_remove_key_at_position">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="position" type="float">
 			</argument>
@@ -495,7 +517,7 @@
 		<method name="track_set_enabled">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="enabled" type="bool">
 			</argument>
@@ -506,7 +528,7 @@
 		<method name="track_set_imported">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="imported" type="bool">
 			</argument>
@@ -517,7 +539,7 @@
 		<method name="track_set_interpolation_loop_wrap">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="interpolation" type="bool">
 			</argument>
@@ -528,7 +550,7 @@
 		<method name="track_set_interpolation_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="interpolation" type="int" enum="Animation.InterpolationType">
 			</argument>
@@ -539,7 +561,7 @@
 		<method name="track_set_key_time">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -552,7 +574,7 @@
 		<method name="track_set_key_transition">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key_idx" type="int">
 			</argument>
@@ -565,7 +587,7 @@
 		<method name="track_set_key_value">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="key" type="int">
 			</argument>
@@ -578,7 +600,7 @@
 		<method name="track_set_path">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="path" type="NodePath">
 			</argument>
@@ -590,7 +612,7 @@
 		<method name="track_swap">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="with_idx" type="int">
 			</argument>
@@ -601,7 +623,7 @@
 		<method name="transform_track_insert_key">
 			<return type="int">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time" type="float">
 			</argument>
@@ -618,7 +640,7 @@
 		<method name="transform_track_interpolate" qualifiers="const">
 			<return type="Array">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time_sec" type="float">
 			</argument>
@@ -627,9 +649,9 @@
 			</description>
 		</method>
 		<method name="value_track_get_key_indices" qualifiers="const">
-			<return type="PoolIntArray">
+			<return type="PackedInt32Array">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="time_sec" type="float">
 			</argument>
@@ -642,7 +664,7 @@
 		<method name="value_track_get_update_mode" qualifiers="const">
 			<return type="int" enum="Animation.UpdateMode">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<description>
 				Returns the update mode of a value track.
@@ -651,12 +673,12 @@
 		<method name="value_track_set_update_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="idx" type="int">
+			<argument index="0" name="track_idx" type="int">
 			</argument>
 			<argument index="1" name="mode" type="int" enum="Animation.UpdateMode">
 			</argument>
 			<description>
-				Sets the update mode ([code]UPDATE_*[/code]) of a value track.
+				Sets the update mode (see [enum UpdateMode]) of a value track.
 			</description>
 		</method>
 	</methods>
@@ -675,6 +697,7 @@
 	<signals>
 		<signal name="tracks_changed">
 			<description>
+				Emitted when there's a change in the list of tracks, e.g. tracks are added, moved or have changed paths.
 			</description>
 		</signal>
 	</signals>
@@ -689,10 +712,13 @@
 			Method tracks call functions with given arguments per key.
 		</constant>
 		<constant name="TYPE_BEZIER" value="3" enum="TrackType">
+			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
 		<constant name="TYPE_AUDIO" value="4" enum="TrackType">
+			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
 		<constant name="TYPE_ANIMATION" value="5" enum="TrackType">
+			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">
 			No interpolation (nearest value).
@@ -713,6 +739,7 @@
 			Update at the keyframes.
 		</constant>
 		<constant name="UPDATE_CAPTURE" value="3" enum="UpdateMode">
+			Same as linear interpolation, but also interpolates from the current value (i.e. dynamically at runtime) if the first key isn't at 0 seconds.
 		</constant>
 	</constants>
 </class>

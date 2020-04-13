@@ -40,8 +40,7 @@ namespace GodotTools.Ides
 
         protected ILogger Logger
         {
-            get => logger ?? (logger = new ConsoleLogger());
-            set => logger = value;
+            get => logger ?? (logger = new GodotLogger());
         }
 
         private void StartServer()
@@ -65,7 +64,7 @@ namespace GodotTools.Ides
 
         private void LaunchIde()
         {
-            var editor = (ExternalEditorId) GodotSharpEditor.Instance.GetEditorInterface()
+            var editor = (ExternalEditorId)GodotSharpEditor.Instance.GetEditorInterface()
                 .GetEditorSettings().GetSetting("mono/editor/external_editor");
 
             switch (editor)
@@ -73,6 +72,7 @@ namespace GodotTools.Ides
                 case ExternalEditorId.None:
                 case ExternalEditorId.VisualStudio:
                 case ExternalEditorId.VsCode:
+                case ExternalEditorId.Rider:
                     throw new NotSupportedException();
                 case ExternalEditorId.VisualStudioForMac:
                     goto case ExternalEditorId.MonoDevelop;
@@ -80,7 +80,7 @@ namespace GodotTools.Ides
                 {
                     MonoDevelop.Instance GetMonoDevelopInstance(string solutionPath)
                     {
-                        if (Utils.OS.IsOSX() && editor == ExternalEditorId.VisualStudioForMac)
+                        if (Utils.OS.IsOSX && editor == ExternalEditorId.VisualStudioForMac)
                         {
                             vsForMacInstance = vsForMacInstance ??
                                                new MonoDevelop.Instance(solutionPath, MonoDevelop.EditorId.VisualStudioForMac);

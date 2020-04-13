@@ -59,11 +59,7 @@ namespace FBX {
 
 FBXExportProperty::FBXExportProperty(bool v)
 : type('C')
-, data(1) {
-    data = {
-        uint8_t(v)
-    };
-}
+, data(1, uint8_t(v)) {}
 
 FBXExportProperty::FBXExportProperty(int16_t v)
 : type('Y')

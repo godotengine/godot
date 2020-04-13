@@ -9,6 +9,7 @@ buildscript {
     }
     dependencies {
         classpath libraries.androidGradlePlugin
+        classpath libraries.kotlinGradlePlugin
     }
 }
 
@@ -24,7 +25,7 @@ ext {
     sconsExt = org.gradle.internal.os.OperatingSystem.current().isWindows() ? ".bat" : ""
 
     supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
-    supportedTargets = ['release':"release", 'debug':"release_debug"]
+    supportedTargets = ["release", "debug"]
 
     // Used by gradle to specify which architecture to build for by default when running `./gradlew build`.
     // This command is usually used by Android Studio.
@@ -64,10 +65,10 @@ task copyReleaseBinaryToBin(type: Copy) {
 }
 
 /**
- * Copy the Godot android library archive debug file into the app debug libs directory.
+ * Copy the Godot android library archive debug file into the app module debug libs directory.
  * Depends on the library build task to ensure the AAR file is generated prior to copying.
  */
-task copyDebugAAR(type: Copy) {
+task copyDebugAARToAppModule(type: Copy) {
     dependsOn ':lib:assembleDebug'
     from('lib/build/outputs/aar')
     into('app/libs/debug')
@@ -75,13 +76,42 @@ task copyDebugAAR(type: Copy) {
 }
 
 /**
- * Copy the Godot android library archive release file into the app release libs directory.
+ * Copy the Godot android library archive debug file into the root bin directory.
  * Depends on the library build task to ensure the AAR file is generated prior to copying.
  */
-task copyReleaseAAR(type: Copy) {
+task copyDebugAARToBin(type: Copy) {
+    dependsOn ':lib:assembleDebug'
+    from('lib/build/outputs/aar')
+    into(binDir)
+    include('godot-lib.debug.aar')
+}
+
+/**
+ * Copy the Godot android library archive release file into the app module release libs directory.
+ * Depends on the library build task to ensure the AAR file is generated prior to copying.
+ */
+task copyReleaseAARToAppModule(type: Copy) {
     dependsOn ':lib:assembleRelease'
     from('lib/build/outputs/aar')
     into('app/libs/release')
+    include('godot-lib.release.aar')
+}
+
+task copyGodotPaymentPluginToAppModule(type: Copy) {
+    dependsOn ':plugins:godotpayment:assembleRelease'
+    from('plugins/godotpayment/build/outputs/aar')
+    into('app/libs/plugins')
+    include('GodotPayment.release.aar')
+}
+
+/**
+ * Copy the Godot android library archive release file into the root bin directory.
+ * Depends on the library build task to ensure the AAR file is generated prior to copying.
+ */
+task copyReleaseAARToBin(type: Copy) {
+    dependsOn ':lib:assembleRelease'
+    from('lib/build/outputs/aar')
+    into(binDir)
     include('godot-lib.release.aar')
 }
 
@@ -95,7 +125,7 @@ task zipCustomBuild(type: Zip) {
     doFirst {
         logger.lifecycle("Generating Godot custom build template")
     }
-    from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradle.properties','gradlew', 'gradlew.bat', 'gradle/**']))
+    from(fileTree(dir: 'app', excludes: ['**/build/**', '**/.gradle/**', '**/*.iml']), fileTree(dir: '.', includes: ['gradle.properties', 'gradlew', 'gradlew.bat', 'gradle/**']))
     include '**/*'
     archiveName 'android_source.zip'
     destinationDir(file(binDir))
@@ -106,23 +136,28 @@ task zipCustomBuild(type: Zip) {
  */
 task generateGodotTemplates(type: GradleBuild) {
     // We exclude these gradle tasks so we can run the scons command manually.
-    for (String buildType : supportedTargets.keySet()) {
+    for (String buildType : supportedTargets) {
         startParameter.excludedTaskNames += ":lib:" + getSconsTaskName(buildType)
     }
 
-    tasks = []
+    tasks = ["copyGodotPaymentPluginToAppModule"]
 
     // Only build the apks and aar files for which we have native shared libraries.
-    for (String target : supportedTargets.keySet()) {
+    for (String target : supportedTargets) {
         File targetLibs = new File("lib/libs/" + target)
-        if (targetLibs != null && targetLibs.isDirectory()) {
-            File[] targetLibsContents = targetLibs.listFiles()
-            if (targetLibsContents != null && targetLibsContents.length > 0) {
-                // Copy the generated aar library files to the custom build directory.
-                tasks += "copy" + target.capitalize() + "AAR"
-                // Copy the prebuilt binary templates to the bin directory.
-                tasks += "copy" + target.capitalize() + "BinaryToBin"
-            }
+        if (targetLibs != null
+            && targetLibs.isDirectory()
+            && targetLibs.listFiles() != null
+            && targetLibs.listFiles().length > 0) {
+            String capitalizedTarget = target.capitalize()
+            // Copy the generated aar library files to the custom build directory.
+            tasks += "copy" + capitalizedTarget + "AARToAppModule"
+            // Copy the generated aar library files to the bin directory.
+            tasks += "copy" + capitalizedTarget + "AARToBin"
+            // Copy the prebuilt binary templates to the bin directory.
+            tasks += "copy" + capitalizedTarget + "BinaryToBin"
+        } else {
+            logger.lifecycle("No native shared libs for target $target. Skipping build.")
         }
     }
 
@@ -133,20 +168,28 @@ task generateGodotTemplates(type: GradleBuild) {
  * Clean the generated artifacts.
  */
 task cleanGodotTemplates(type: Delete) {
-	// Delete the generated native libs
-	delete("lib/libs")
+    // Delete the generated native libs
+    delete("lib/libs")
 
-	// Delete the library generated AAR files
-	delete("lib/build/outputs/aar")
+    // Delete the library generated AAR files
+    delete("lib/build/outputs/aar")
 
-	// Delete the app libs directory contents
-	delete("app/libs")
+    // Delete the godotpayment libs directory contents
+    delete("plugins/godotpayment/libs")
 
-	// Delete the generated binary apks
-	delete("app/build/outputs/apk")
+    // Delete the generated godotpayment aar
+    delete("plugins/godotpayment/build/outputs/aar")
 
-	// Delete the Godot templates in the Godot bin directory
-	delete("$binDir/android_debug.apk")
-	delete("$binDir/android_release.apk")
-	delete("$binDir/android_source.zip")
+    // Delete the app libs directory contents
+    delete("app/libs")
+
+    // Delete the generated binary apks
+    delete("app/build/outputs/apk")
+
+    // Delete the Godot templates in the Godot bin directory
+    delete("$binDir/android_debug.apk")
+    delete("$binDir/android_release.apk")
+    delete("$binDir/android_source.zip")
+    delete("$binDir/godot-lib.debug.aar")
+    delete("$binDir/godot-lib.release.aar")
 }

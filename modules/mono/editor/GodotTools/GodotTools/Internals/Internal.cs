@@ -8,10 +8,10 @@ namespace GodotTools.Internals
     public static class Internal
     {
         public const string CSharpLanguageType = "CSharpScript";
-        public const string CSharpLanguageExtension = "cs";
+        public const string CSharpLanguageExtension = ".cs";
 
-        public static string UpdateApiAssembliesFromPrebuilt() =>
-            internal_UpdateApiAssembliesFromPrebuilt();
+        public static string UpdateApiAssembliesFromPrebuilt(string config) =>
+            internal_UpdateApiAssembliesFromPrebuilt(config);
 
         public static string FullTemplatesDir =>
             internal_FullTemplatesDir();
@@ -34,7 +34,7 @@ namespace GodotTools.Internals
 
         public static void ReloadAssemblies(bool softReload) => internal_ReloadAssemblies(softReload);
 
-        public static void ScriptEditorDebuggerReloadScripts() => internal_ScriptEditorDebuggerReloadScripts();
+        public static void EditorDebuggerNodeReloadScripts() => internal_EditorDebuggerNodeReloadScripts();
 
         public static bool ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus = true) =>
             internal_ScriptEditorEdit(resource, line, col, grabFocus);
@@ -52,10 +52,10 @@ namespace GodotTools.Internals
 
         public static void ScriptEditorDebugger_ReloadScripts() => internal_ScriptEditorDebugger_ReloadScripts();
 
-        // Internal Calls
+        #region Internal
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern string internal_UpdateApiAssembliesFromPrebuilt();
+        private static extern string internal_UpdateApiAssembliesFromPrebuilt(string config);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_FullTemplatesDir();
@@ -88,7 +88,7 @@ namespace GodotTools.Internals
         private static extern void internal_ReloadAssemblies(bool softReload);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_ScriptEditorDebuggerReloadScripts();
+        private static extern void internal_EditorDebuggerNodeReloadScripts();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_ScriptEditorEdit(Resource resource, int line, int col, bool grabFocus);
@@ -110,5 +110,7 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void internal_ScriptEditorDebugger_ReloadScripts();
+
+        #endregion
     }
 }

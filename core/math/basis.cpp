@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,17 +106,17 @@ Basis Basis::orthonormalized() const {
 }
 
 bool Basis::is_orthogonal() const {
-	Basis id;
+	Basis identity;
 	Basis m = (*this) * transposed();
 
-	return is_equal_approx(id, m);
+	return m.is_equal_approx(identity);
 }
 
 bool Basis::is_diagonal() const {
 	return (
-			Math::is_equal_approx(elements[0][1], 0) && Math::is_equal_approx(elements[0][2], 0) &&
-			Math::is_equal_approx(elements[1][0], 0) && Math::is_equal_approx(elements[1][2], 0) &&
-			Math::is_equal_approx(elements[2][0], 0) && Math::is_equal_approx(elements[2][1], 0));
+			Math::is_zero_approx(elements[0][1]) && Math::is_zero_approx(elements[0][2]) &&
+			Math::is_zero_approx(elements[1][0]) && Math::is_zero_approx(elements[1][2]) &&
+			Math::is_zero_approx(elements[2][0]) && Math::is_zero_approx(elements[2][1]));
 }
 
 bool Basis::is_rotation() const {
@@ -242,6 +242,18 @@ void Basis::scale_local(const Vector3 &p_scale) {
 	// performs a scaling in object-local coordinate system:
 	// M -> (M.S.Minv).M = M.S.
 	*this = scaled_local(p_scale);
+}
+
+float Basis::get_uniform_scale() const {
+	return (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
+}
+
+void Basis::make_scale_uniform() {
+	float l = (elements[0].length() + elements[1].length() + elements[2].length()) / 3.0;
+	for (int i = 0; i < 3; i++) {
+		elements[i].normalize();
+		elements[i] *= l;
+	}
 }
 
 Basis Basis::scaled_local(const Vector3 &p_scale) const {
@@ -557,16 +569,9 @@ void Basis::set_euler_yxz(const Vector3 &p_euler) {
 	*this = ymat * xmat * zmat;
 }
 
-bool Basis::is_equal_approx(const Basis &a, const Basis &b, real_t p_epsilon) const {
+bool Basis::is_equal_approx(const Basis &p_basis) const {
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (!Math::is_equal_approx(a.elements[i][j], b.elements[i][j], p_epsilon))
-				return false;
-		}
-	}
-
-	return true;
+	return elements[0].is_equal_approx(p_basis.elements[0]) && elements[1].is_equal_approx(p_basis.elements[1]) && elements[2].is_equal_approx(p_basis.elements[2]);
 }
 
 bool Basis::is_equal_approx_ratio(const Basis &a, const Basis &b, real_t p_epsilon) const {
@@ -746,8 +751,8 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		if ((xx > yy) && (xx > zz)) { // elements[0][0] is the largest diagonal term
 			if (xx < epsilon) {
 				x = 0;
-				y = 0.7071;
-				z = 0.7071;
+				y = Math_SQRT12;
+				z = Math_SQRT12;
 			} else {
 				x = Math::sqrt(xx);
 				y = xy / x;
@@ -755,9 +760,9 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 			}
 		} else if (yy > zz) { // elements[1][1] is the largest diagonal term
 			if (yy < epsilon) {
-				x = 0.7071;
+				x = Math_SQRT12;
 				y = 0;
-				z = 0.7071;
+				z = Math_SQRT12;
 			} else {
 				y = Math::sqrt(yy);
 				x = xy / y;
@@ -765,8 +770,8 @@ void Basis::get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 			}
 		} else { // elements[2][2] is the largest diagonal term so base result on this
 			if (zz < epsilon) {
-				x = 0.7071;
-				y = 0.7071;
+				x = Math_SQRT12;
+				y = Math_SQRT12;
 				z = 0;
 			} else {
 				z = Math::sqrt(zz);
@@ -807,7 +812,7 @@ void Basis::set_quat(const Quat &p_quat) {
 void Basis::set_axis_angle(const Vector3 &p_axis, real_t p_phi) {
 // Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_angle
 #ifdef MATH_CHECKS
-	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "Axis must be normalized.");
+	ERR_FAIL_COND_MSG(!p_axis.is_normalized(), "The axis Vector3 must be normalized.");
 #endif
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
 	real_t cosine = Math::cos(p_phi);

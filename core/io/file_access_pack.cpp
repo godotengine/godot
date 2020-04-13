@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,8 +33,6 @@
 #include "core/version.h"
 
 #include <stdio.h>
-
-#define PACK_VERSION 1
 
 Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 
@@ -100,18 +98,18 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 
 void PackedData::add_pack_source(PackSource *p_source) {
 
-	if (p_source != NULL) {
+	if (p_source != nullptr) {
 		sources.push_back(p_source);
 	}
 };
 
-PackedData *PackedData::singleton = NULL;
+PackedData *PackedData::singleton = nullptr;
 
 PackedData::PackedData() {
 
 	singleton = this;
 	root = memnew(PackedDir);
-	root->parent = NULL;
+	root->parent = nullptr;
 	disabled = false;
 
 	add_pack_source(memnew(PackedSourcePCK));
@@ -140,16 +138,14 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 	if (!f)
 		return false;
 
-	//printf("try open %ls!\n", p_path.c_str());
-
 	uint32_t magic = f->get_32();
 
-	if (magic != 0x43504447) {
+	if (magic != PACK_HEADER_MAGIC) {
 		//maybe at the end.... self contained exe
 		f->seek_end();
 		f->seek(f->get_position() - 4);
 		magic = f->get_32();
-		if (magic != 0x43504447) {
+		if (magic != PACK_HEADER_MAGIC) {
 
 			f->close();
 			memdelete(f);
@@ -161,7 +157,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 		f->seek(f->get_position() - ds - 8);
 
 		magic = f->get_32();
-		if (magic != 0x43504447) {
+		if (magic != PACK_HEADER_MAGIC) {
 
 			f->close();
 			memdelete(f);
@@ -172,9 +168,9 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
-	f->get_32(); // ver_rev
+	f->get_32(); // patch number, not used for validation.
 
-	if (version != PACK_VERSION) {
+	if (version != PACK_FORMAT_VERSION) {
 		f->close();
 		memdelete(f);
 		ERR_FAIL_V_MSG(false, "Pack version unsupported: " + itos(version) + ".");
@@ -458,7 +454,7 @@ Error DirAccessPack::change_dir(String p_dir) {
 	return OK;
 }
 
-String DirAccessPack::get_current_dir() {
+String DirAccessPack::get_current_dir(bool p_include_drive) {
 
 	PackedData::PackedDir *pd = current;
 	String p = current->name;

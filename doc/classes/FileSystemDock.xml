@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="FileSystemDock" inherits="VBoxContainer" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="can_drop_data_fw" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Variant">
+			</argument>
+			<argument index="2" name="arg2" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="drop_data_fw">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Variant">
+			</argument>
+			<argument index="2" name="arg2" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_drag_data_fw">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="arg0" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="Control">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="navigate_to_path">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="display_mode_changed">
+			<description>
+			</description>
+		</signal>
+		<signal name="file_removed">
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="files_moved">
+			<argument index="0" name="old_file" type="String">
+			</argument>
+			<argument index="1" name="new_file" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="folder_moved">
+			<argument index="0" name="old_folder" type="String">
+			</argument>
+			<argument index="1" name="new_file" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="folder_removed">
+			<argument index="0" name="folder" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="inherit">
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="instance">
+			<argument index="0" name="files" type="PackedStringArray">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

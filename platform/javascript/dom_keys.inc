@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -218,7 +218,7 @@
 #define DOM_VK_PA1 0xFD
 #define DOM_VK_WIN_OEM_CLEAR 0xFE
 
-int dom2godot_scancode(int dom_keycode) {
+int dom2godot_keycode(int dom_keycode) {
 
 	if (DOM_VK_0 <= dom_keycode && dom_keycode <= DOM_VK_Z) {
 		// ASCII intersection

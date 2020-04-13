@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorPlugin" inherits="Node" category="Core" version="3.2">
+<class name="EditorPlugin" inherits="Node" version="4.0">
 	<brief_description>
 		Used by the editor to extend its functionality.
 	</brief_description>
@@ -67,11 +67,11 @@
 			</argument>
 			<argument index="2" name="script" type="Script">
 			</argument>
-			<argument index="3" name="icon" type="Texture">
+			<argument index="3" name="icon" type="Texture2D">
 			</argument>
 			<description>
 				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
-				When given node or resource is selected, the base type will be instanced (ie, "Spatial", "Control", "Resource"), then the script will be loaded and set to this object.
+				When given node or resource is selected, the base type will be instanced (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
 				You can use the virtual method [method handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
@@ -111,7 +111,7 @@
 		<method name="add_spatial_gizmo_plugin">
 			<return type="void">
 			</return>
-			<argument index="0" name="plugin" type="EditorSpatialGizmoPlugin">
+			<argument index="0" name="plugin" type="EditorNode3DGizmoPlugin">
 			</argument>
 			<description>
 			</description>
@@ -229,7 +229,7 @@
 		<method name="forward_spatial_gui_input" qualifiers="virtual">
 			<return type="bool">
 			</return>
-			<argument index="0" name="camera" type="Camera">
+			<argument index="0" name="camera" type="Camera3D">
 			</argument>
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
@@ -253,7 +253,7 @@
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">
-			<return type="PoolStringArray">
+			<return type="PackedStringArray">
 			</return>
 			<description>
 				This is for editors that edit script-based objects. You can return a list of breakpoints in the format ([code]script:line[/code]), for example: [code]res://path_to_script.gd:25[/code].
@@ -267,15 +267,27 @@
 			</description>
 		</method>
 		<method name="get_plugin_icon" qualifiers="virtual">
-			<return type="Object">
+			<return type="Texture2D">
 			</return>
 			<description>
+				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
+				Ideally, the plugin icon should be white with a transparent background and 16x16 pixels in size.
+				[codeblock]
+				func get_plugin_icon():
+				    # You can use a custom icon:
+				    return preload("res://addons/my_plugin/my_plugin_icon.svg")
+				    # Or use a built-in icon:
+				    return get_editor_interface().get_base_control().get_icon("Node", "EditorIcons")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_plugin_name" qualifiers="virtual">
 			<return type="String">
 			</return>
 			<description>
+				Override this method in your plugin to provide the name of the plugin when displayed in the Godot editor.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
 			</description>
 		</method>
 		<method name="get_script_create_dialog">
@@ -438,7 +450,7 @@
 		<method name="remove_spatial_gizmo_plugin">
 			<return type="void">
 			</return>
-			<argument index="0" name="plugin" type="EditorSpatialGizmoPlugin">
+			<argument index="0" name="plugin" type="EditorNode3DGizmoPlugin">
 			</argument>
 			<description>
 			</description>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ static const char *uwp_capabilities[] = {
 	"internetClient",
 	"internetClientServer",
 	"privateNetworkClientServer",
-	NULL
+	nullptr
 };
 static const char *uwp_uap_capabilities[] = {
 	"appointments",
@@ -71,7 +71,7 @@ static const char *uwp_uap_capabilities[] = {
 	"userAccountInformation",
 	"videosLibrary",
 	"voipCall",
-	NULL
+	nullptr
 };
 static const char *uwp_device_capabilities[] = {
 	"bluetooth",
@@ -79,7 +79,7 @@ static const char *uwp_device_capabilities[] = {
 	"microphone",
 	"proximity",
 	"webcam",
-	NULL
+	nullptr
 };
 
 class AppxPackager {
@@ -478,7 +478,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 	// Data for compression
 	z_stream strm;
-	FileAccess *strm_f = NULL;
+	FileAccess *strm_f = nullptr;
 	Vector<uint8_t> strm_in;
 	strm_in.resize(BLOCK_SIZE);
 	Vector<uint8_t> strm_out;
@@ -517,7 +517,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 			int total_out_before = strm.total_out;
 
 			int err = deflate(&strm, Z_FULL_FLUSH);
-			ERR_FAIL_COND_V(err >= 0, ERR_BUG); // Negative means bug
+			ERR_FAIL_COND_V(err < 0, ERR_BUG); // Negative means bug
 
 			bh.compressed_size = strm.total_out - total_out_before;
 
@@ -641,7 +641,7 @@ void AppxPackager::finish() {
 
 	package->close();
 	memdelete(package);
-	package = NULL;
+	package = nullptr;
 }
 
 AppxPackager::AppxPackager() {}
@@ -670,7 +670,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		static const char *invalid_names[] = {
 			"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
 			"COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
-			NULL
+			nullptr
 		};
 
 		const char **t = invalid_names;
@@ -726,7 +726,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			"snow", "springGreen", "steelBlue", "tan", "teal", "thistle",
 			"tomato", "transparent", "turquoise", "violet", "wheat", "white",
 			"whiteSmoke", "yellow", "yellowGreen",
-			NULL
+			nullptr
 		};
 
 		const char **color = valid_colors;
@@ -876,22 +876,22 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	Vector<uint8_t> _get_image_data(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 
 		Vector<uint8_t> data;
-		StreamTexture *image = NULL;
+		StreamTexture *image = nullptr;
 
 		if (p_path.find("StoreLogo") != -1) {
-			image = p_preset->get("images/store_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/store_logo")));
+			image = p_preset->get("images/store_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/store_logo")));
 		} else if (p_path.find("Square44x44Logo") != -1) {
-			image = p_preset->get("images/square44x44_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square44x44_logo")));
+			image = p_preset->get("images/square44x44_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square44x44_logo")));
 		} else if (p_path.find("Square71x71Logo") != -1) {
-			image = p_preset->get("images/square71x71_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square71x71_logo")));
+			image = p_preset->get("images/square71x71_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square71x71_logo")));
 		} else if (p_path.find("Square150x150Logo") != -1) {
-			image = p_preset->get("images/square150x150_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square150x150_logo")));
+			image = p_preset->get("images/square150x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square150x150_logo")));
 		} else if (p_path.find("Square310x310Logo") != -1) {
-			image = p_preset->get("images/square310x310_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square310x310_logo")));
+			image = p_preset->get("images/square310x310_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/square310x310_logo")));
 		} else if (p_path.find("Wide310x150Logo") != -1) {
-			image = p_preset->get("images/wide310x150_logo").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/wide310x150_logo")));
+			image = p_preset->get("images/wide310x150_logo").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/wide310x150_logo")));
 		} else if (p_path.find("SplashScreen") != -1) {
-			image = p_preset->get("images/splash_screen").is_zero() ? NULL : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/splash_screen")));
+			image = p_preset->get("images/splash_screen").is_zero() ? nullptr : Object::cast_to<StreamTexture>(((Object *)p_preset->get("images/splash_screen")));
 		} else {
 			ERR_PRINT("Unable to load logo");
 		}
@@ -961,7 +961,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			".scn", // Binary scenes are usually already compressed
 			".stex", // Streamable textures are usually already compressed
 			// Trailer for easier processing
-			NULL
+			nullptr
 		};
 
 		for (const char **ext = unconditional_compress_ext; *ext; ++ext) {
@@ -1004,7 +1004,7 @@ public:
 		return list;
 	}
 
-	virtual Ref<Texture> get_logo() const {
+	virtual Ref<Texture2D> get_logo() const {
 		return logo;
 	}
 
@@ -1090,15 +1090,14 @@ public:
 	}
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+
 		String err;
-		bool valid = true;
+		bool valid = false;
+
+		// Look for export templates (first official, and if defined custom templates).
+
 		Platform arch = (Platform)(int)(p_preset->get("architecture/target"));
-
-		String custom_debug_binary = p_preset->get("custom_template/debug");
-		String custom_release_binary = p_preset->get("custom_template/release");
-
 		String platform_infix;
-
 		switch (arch) {
 			case EditorExportPlatformUWP::ARM: {
 				platform_infix = "arm";
@@ -1111,42 +1110,40 @@ public:
 			} break;
 		}
 
-		if (!exists_export_template("uwp_" + platform_infix + "_debug.zip", &err) || !exists_export_template("uwp_" + platform_infix + "_release.zip", &err)) {
-			valid = false;
-			r_missing_templates = true;
-		}
+		bool dvalid = exists_export_template("uwp_" + platform_infix + "_debug.zip", &err);
+		bool rvalid = exists_export_template("uwp_" + platform_infix + "_release.zip", &err);
 
-		if (!valid && custom_debug_binary == "" && custom_release_binary == "") {
-			if (!err.empty()) {
-				r_error = err;
+		if (p_preset->get("custom_template/debug") != "") {
+			dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+			if (!dvalid) {
+				err += TTR("Custom debug template not found.") + "\n";
 			}
-			return valid;
+		}
+		if (p_preset->get("custom_template/release") != "") {
+			rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+			if (!rvalid) {
+				err += TTR("Custom release template not found.") + "\n";
+			}
 		}
 
-		bool dvalid = true;
-		bool rvalid = true;
+		valid = dvalid || rvalid;
+		r_missing_templates = !valid;
 
-		if (!FileAccess::exists(custom_debug_binary)) {
-			dvalid = false;
-			err += TTR("Custom debug template not found.") + "\n";
-		}
+		// Validate the rest of the configuration.
 
-		if (!FileAccess::exists(custom_release_binary)) {
-			rvalid = false;
-			err += TTR("Custom release template not found.") + "\n";
-		}
-
-		if (dvalid || rvalid)
-			valid = true;
-
-		if (!valid) {
-			r_error = err;
-			return valid;
+		if (!_valid_resource_name(p_preset->get("package/short_name"))) {
+			valid = false;
+			err += TTR("Invalid package short name.") + "\n";
 		}
 
 		if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
 			valid = false;
 			err += TTR("Invalid package unique name.") + "\n";
+		}
+
+		if (!_valid_resource_name(p_preset->get("package/publisher_display_name"))) {
+			valid = false;
+			err += TTR("Invalid package publisher display name.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/product_guid"))) {
@@ -1179,7 +1176,7 @@ public:
 			err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 		}
 
-		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square150x150_logo"))), 150, 0)) {
+		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square150x150_logo"))), 150, 150)) {
 			valid = false;
 			err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 		}
@@ -1254,7 +1251,7 @@ public:
 		AppxPackager packager;
 		packager.init(fa_pack);
 
-		FileAccess *src_f = NULL;
+		FileAccess *src_f = nullptr;
 		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 		if (ep.step("Creating package...", 0)) {
@@ -1286,7 +1283,7 @@ public:
 			// get file name
 			unz_file_info info;
 			char fname[16834];
-			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, NULL, 0, NULL, 0);
+			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16834, nullptr, 0, nullptr, 0);
 
 			String path = fname;
 
@@ -1400,7 +1397,7 @@ public:
 		}
 
 		if (!FileAccess::exists(signtool_path)) {
-			ERR_PRINTS("Could not find signtool executable at " + signtool_path + ", aborting.");
+			ERR_PRINT("Could not find signtool executable at " + signtool_path + ", aborting.");
 			return ERR_FILE_NOT_FOUND;
 		}
 
@@ -1421,12 +1418,12 @@ public:
 		}
 
 		if (!FileAccess::exists(cert_path)) {
-			ERR_PRINTS("Could not find certificate file at " + cert_path + ", aborting.");
+			ERR_PRINT("Could not find certificate file at " + cert_path + ", aborting.");
 			return ERR_FILE_NOT_FOUND;
 		}
 
 		if (cert_alg < 0 || cert_alg > 2) {
-			ERR_PRINTS("Invalid certificate algorithm " + itos(cert_alg) + ", aborting.");
+			ERR_PRINT("Invalid certificate algorithm " + itos(cert_alg) + ", aborting.");
 			return ERR_INVALID_DATA;
 		}
 

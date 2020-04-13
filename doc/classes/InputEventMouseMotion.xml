@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputEventMouseMotion" inherits="InputEventMouse" category="Core" version="3.2">
+<class name="InputEventMouseMotion" inherits="InputEventMouse" version="4.0">
 	<brief_description>
 		Input event type for mouse motion events.
 	</brief_description>
 	<description>
-		Contains mouse motion information. Supports relative, absolute positions and speed. See [method Node._input].
+		Contains mouse and pen motion information. Supports relative, absolute positions and speed. See [method Node._input].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/inputs/mouse_and_input_coordinates.html</link>
@@ -12,11 +12,18 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="pressure" type="float" setter="set_pressure" getter="get_pressure" default="0.0">
+			Represents the pressure the user puts on the pen. Ranges from [code]0.0[/code] to [code]1.0[/code].
+		</member>
 		<member name="relative" type="Vector2" setter="set_relative" getter="get_relative" default="Vector2( 0, 0 )">
-			The mouse position relative to the previous position (position at the last frame).
+			The mouse position relative to the previous position (position at the last frame). 
+			[b]Note:[/b] Since [InputEventMouseMotion] is only emitted when the mouse moves, the last event won't have a relative position of [code]Vector2(0, 0)[/code] when the user stops moving the mouse.
 		</member>
 		<member name="speed" type="Vector2" setter="set_speed" getter="get_speed" default="Vector2( 0, 0 )">
 			The mouse speed in pixels per second.
+		</member>
+		<member name="tilt" type="Vector2" setter="set_tilt" getter="get_tilt" default="Vector2( 0, 0 )">
+			Represents the angles of tilt of the pen. Positive X-coordinate value indicates a tilt to the right. Positive Y-coordinate value indicates a tilt toward the user. Ranges from [code]-1.0[/code] to [code]1.0[/code] for both axes.
 		</member>
 	</members>
 	<constants>

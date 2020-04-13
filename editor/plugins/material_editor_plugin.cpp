@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,10 @@
 
 #include "material_editor_plugin.h"
 
+#include "editor/editor_scale.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/resources/particles_material.h"
+#include "scene/resources/sky_material.h"
 
 void MaterialEditor::_notification(int p_what) {
 
@@ -41,15 +44,15 @@ void MaterialEditor::_notification(int p_what) {
 		if (first_enter) {
 			//it's in propertyeditor so.. could be moved around
 
-			light_1_switch->set_normal_texture(get_icon("MaterialPreviewLight1", "EditorIcons"));
-			light_1_switch->set_pressed_texture(get_icon("MaterialPreviewLight1Off", "EditorIcons"));
-			light_2_switch->set_normal_texture(get_icon("MaterialPreviewLight2", "EditorIcons"));
-			light_2_switch->set_pressed_texture(get_icon("MaterialPreviewLight2Off", "EditorIcons"));
+			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
+			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
+			light_2_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight2", "EditorIcons"));
+			light_2_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight2Off", "EditorIcons"));
 
-			sphere_switch->set_normal_texture(get_icon("MaterialPreviewSphereOff", "EditorIcons"));
-			sphere_switch->set_pressed_texture(get_icon("MaterialPreviewSphere", "EditorIcons"));
-			box_switch->set_normal_texture(get_icon("MaterialPreviewCubeOff", "EditorIcons"));
-			box_switch->set_pressed_texture(get_icon("MaterialPreviewCube", "EditorIcons"));
+			sphere_switch->set_normal_texture(get_theme_icon("MaterialPreviewSphereOff", "EditorIcons"));
+			sphere_switch->set_pressed_texture(get_theme_icon("MaterialPreviewSphere", "EditorIcons"));
+			box_switch->set_normal_texture(get_theme_icon("MaterialPreviewCubeOff", "EditorIcons"));
+			box_switch->set_pressed_texture(get_theme_icon("MaterialPreviewCube", "EditorIcons"));
 
 			first_enter = false;
 		}
@@ -57,7 +60,7 @@ void MaterialEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture> checkerboard = get_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -92,6 +95,7 @@ void MaterialEditor::_button_pressed(Node *p_button) {
 		sphere_instance->hide();
 		box_switch->set_pressed(true);
 		sphere_switch->set_pressed(false);
+		EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_on_sphere", false);
 	}
 
 	if (p_button == sphere_switch) {
@@ -99,22 +103,21 @@ void MaterialEditor::_button_pressed(Node *p_button) {
 		sphere_instance->show();
 		box_switch->set_pressed(false);
 		sphere_switch->set_pressed(true);
+		EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_on_sphere", true);
 	}
 }
 
 void MaterialEditor::_bind_methods() {
-
-	ClassDB::bind_method(D_METHOD("_button_pressed"), &MaterialEditor::_button_pressed);
 }
 
 MaterialEditor::MaterialEditor() {
 
-	vc = memnew(ViewportContainer);
+	vc = memnew(SubViewportContainer);
 	vc->set_stretch(true);
 	add_child(vc);
 	vc->set_anchors_and_margins_preset(PRESET_WIDE);
-	viewport = memnew(Viewport);
-	Ref<World> world;
+	viewport = memnew(SubViewport);
+	Ref<World3D> world;
 	world.instance();
 	viewport->set_world(world); //use own world
 	vc->add_child(viewport);
@@ -122,25 +125,25 @@ MaterialEditor::MaterialEditor() {
 	viewport->set_transparent_background(true);
 	viewport->set_msaa(Viewport::MSAA_4X);
 
-	camera = memnew(Camera);
+	camera = memnew(Camera3D);
 	camera->set_transform(Transform(Basis(), Vector3(0, 0, 3)));
 	camera->set_perspective(45, 0.1, 10);
 	camera->make_current();
 	viewport->add_child(camera);
 
-	light1 = memnew(DirectionalLight);
+	light1 = memnew(DirectionalLight3D);
 	light1->set_transform(Transform().looking_at(Vector3(-1, -1, -1), Vector3(0, 1, 0)));
 	viewport->add_child(light1);
 
-	light2 = memnew(DirectionalLight);
+	light2 = memnew(DirectionalLight3D);
 	light2->set_transform(Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 	light2->set_color(Color(0.7, 0.7, 0.7));
 	viewport->add_child(light2);
 
-	sphere_instance = memnew(MeshInstance);
+	sphere_instance = memnew(MeshInstance3D);
 	viewport->add_child(sphere_instance);
 
-	box_instance = memnew(MeshInstance);
+	box_instance = memnew(MeshInstance3D);
 	viewport->add_child(box_instance);
 
 	Transform box_xform;
@@ -154,7 +157,6 @@ MaterialEditor::MaterialEditor() {
 	sphere_instance->set_mesh(sphere_mesh);
 	box_mesh.instance();
 	box_instance->set_mesh(box_mesh);
-	box_instance->hide();
 
 	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
 
@@ -169,13 +171,13 @@ MaterialEditor::MaterialEditor() {
 	sphere_switch->set_toggle_mode(true);
 	sphere_switch->set_pressed(true);
 	vb_shape->add_child(sphere_switch);
-	sphere_switch->connect("pressed", this, "_button_pressed", varray(sphere_switch));
+	sphere_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(sphere_switch));
 
 	box_switch = memnew(TextureButton);
 	box_switch->set_toggle_mode(true);
 	box_switch->set_pressed(false);
 	vb_shape->add_child(box_switch);
-	box_switch->connect("pressed", this, "_button_pressed", varray(box_switch));
+	box_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(box_switch));
 
 	hb->add_spacer();
 
@@ -185,14 +187,23 @@ MaterialEditor::MaterialEditor() {
 	light_1_switch = memnew(TextureButton);
 	light_1_switch->set_toggle_mode(true);
 	vb_light->add_child(light_1_switch);
-	light_1_switch->connect("pressed", this, "_button_pressed", varray(light_1_switch));
+	light_1_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(light_1_switch));
 
 	light_2_switch = memnew(TextureButton);
 	light_2_switch->set_toggle_mode(true);
 	vb_light->add_child(light_2_switch);
-	light_2_switch->connect("pressed", this, "_button_pressed", varray(light_2_switch));
+	light_2_switch->connect("pressed", callable_mp(this, &MaterialEditor::_button_pressed), varray(light_2_switch));
 
 	first_enter = true;
+
+	if (EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_on_sphere", true)) {
+		box_instance->hide();
+	} else {
+		box_instance->show();
+		sphere_instance->hide();
+		box_switch->set_pressed(true);
+		sphere_switch->set_pressed(false);
+	}
 }
 
 ///////////////////////
@@ -221,9 +232,11 @@ void EditorInspectorPluginMaterial::parse_begin(Object *p_object) {
 
 EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env.instance();
-	Ref<ProceduralSky> proc_sky = memnew(ProceduralSky(true));
-	env->set_sky(proc_sky);
-	env->set_background(Environment::BG_COLOR_SKY);
+	Ref<Sky> sky = memnew(Sky());
+	env->set_sky(sky);
+	env->set_background(Environment::BG_COLOR);
+	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
+	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
 }
 
 MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
@@ -233,18 +246,18 @@ MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
 	add_inspector_plugin(plugin);
 }
 
-String SpatialMaterialConversionPlugin::converts_to() const {
+String StandardMaterial3DConversionPlugin::converts_to() const {
 
 	return "ShaderMaterial";
 }
-bool SpatialMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+bool StandardMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) const {
 
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<StandardMaterial3D> mat = p_resource;
 	return mat.is_valid();
 }
-Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<StandardMaterial3D> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
@@ -253,24 +266,24 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 	Ref<Shader> shader;
 	shader.instance();
 
-	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
 	shader->set_code(code);
 
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
 	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
 
-		// Texture parameter has to be treated specially since SpatialMaterial saved it
+		// Texture parameter has to be treated specially since StandardMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
-		Ref<Texture> texture = mat->get_texture_by_name(E->get().name);
+		Ref<Texture2D> texture = mat->get_texture_by_name(E->get().name);
 		if (texture.is_valid()) {
 			smat->set_shader_param(E->get().name, texture);
 		} else {
-			Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+			Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
 			smat->set_shader_param(E->get().name, value);
 		}
 	}
@@ -299,17 +312,17 @@ Ref<Resource> ParticlesMaterialConversionPlugin::convert(const Ref<Resource> &p_
 	Ref<Shader> shader;
 	shader.instance();
 
-	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
 	shader->set_code(code);
 
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
 	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
 		smat->set_shader_param(E->get().name, value);
 	}
 
@@ -337,17 +350,131 @@ Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p
 	Ref<Shader> shader;
 	shader.instance();
 
-	String code = VS::get_singleton()->shader_get_code(mat->get_shader_rid());
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
 
 	shader->set_code(code);
 
 	smat->set_shader(shader);
 
 	List<PropertyInfo> params;
-	VS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
 
 	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
-		Variant value = VS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		smat->set_shader_param(E->get().name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}
+
+String ProceduralSkyMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool ProceduralSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<ProceduralSkyMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+
+	Ref<ProceduralSkyMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		smat->set_shader_param(E->get().name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}
+
+String PanoramaSkyMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool PanoramaSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<PanoramaSkyMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+
+	Ref<PanoramaSkyMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
+		smat->set_shader_param(E->get().name, value);
+	}
+
+	smat->set_render_priority(mat->get_render_priority());
+	return smat;
+}
+
+String PhysicalSkyMaterialConversionPlugin::converts_to() const {
+
+	return "ShaderMaterial";
+}
+bool PhysicalSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+
+	Ref<PhysicalSkyMaterial> mat = p_resource;
+	return mat.is_valid();
+}
+Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+
+	Ref<PhysicalSkyMaterial> mat = p_resource;
+	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+
+	Ref<ShaderMaterial> smat;
+	smat.instance();
+
+	Ref<Shader> shader;
+	shader.instance();
+
+	String code = RS::get_singleton()->shader_get_code(mat->get_shader_rid());
+
+	shader->set_code(code);
+
+	smat->set_shader(shader);
+
+	List<PropertyInfo> params;
+	RS::get_singleton()->shader_get_param_list(mat->get_shader_rid(), &params);
+
+	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
+		Variant value = RS::get_singleton()->material_get_param(mat->get_rid(), E->get().name);
 		smat->set_shader_param(E->get().name, value);
 	}
 

@@ -156,7 +156,7 @@ namespace Assimp
         void WriteAnimationCurveNode(
             StreamWriterLE& outstream,
             int64_t uid,
-            std::string name, // "T", "R", or "S"
+            const std::string& name, // "T", "R", or "S"
             aiVector3D default_value,
             std::string property_name, // "Lcl Translation" etc
             int64_t animation_layer_uid,

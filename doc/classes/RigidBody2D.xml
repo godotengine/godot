@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody2D" inherits="PhysicsBody2D" category="Core" version="3.2">
+<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.0">
 	<brief_description>
 		A body that is controlled by the 2D physics engine.
 	</brief_description>
@@ -16,7 +16,7 @@
 		<method name="_integrate_forces" qualifiers="virtual">
 			<return type="void">
 			</return>
-			<argument index="0" name="state" type="Physics2DDirectBodyState">
+			<argument index="0" name="state" type="PhysicsDirectBodyState2D">
 			</argument>
 			<description>
 				Allows you to read and safely modify the simulation state for the object. Use this instead of [method Node._physics_process] if you need to directly change the body's [code]position[/code] or other physics properties. By default, it works in addition to the usual physics behavior, but [member custom_integrator] allows you to disable the default behavior and write custom force integration for a body.
@@ -106,10 +106,10 @@
 			</argument>
 			<argument index="2" name="margin" type="float" default="0.08">
 			</argument>
-			<argument index="3" name="result" type="Physics2DTestMotionResult" default="null">
+			<argument index="3" name="result" type="PhysicsTestMotionResult2D" default="null">
 			</argument>
 			<description>
-				Returns [code]true[/code] if a collision would result from moving in the given vector. [code]margin[/code] increases the size of the shapes involved in the collision detection, and [code]result[/code] is an object of type [Physics2DTestMotionResult], which contains additional information about the collision (should there be one).
+				Returns [code]true[/code] if a collision would result from moving in the given vector. [code]margin[/code] increases the size of the shapes involved in the collision detection, and [code]result[/code] is an object of type [PhysicsTestMotionResult2D], which contains additional information about the collision (should there be one).
 			</description>
 		</method>
 	</methods>
@@ -126,10 +126,6 @@
 		<member name="applied_torque" type="float" setter="set_applied_torque" getter="get_applied_torque" default="0.0">
 			The body's total applied torque.
 		</member>
-		<member name="bounce" type="float" setter="set_bounce" getter="get_bounce">
-			The body's bounciness. Values range from [code]0[/code] (no bounce) to [code]1[/code] (full bounciness).
-			Deprecated, use [member PhysicsMaterial.bounce] instead via [member physics_material_override].
-		</member>
 		<member name="can_sleep" type="bool" setter="set_can_sleep" getter="is_able_to_sleep" default="true">
 			If [code]true[/code], the body will not calculate forces and will act as a static body if there is no movement. The body will wake up when other forces are applied via collisions or by using [method apply_impulse] or [method add_force].
 		</member>
@@ -145,10 +141,6 @@
 		</member>
 		<member name="custom_integrator" type="bool" setter="set_use_custom_integrator" getter="is_using_custom_integrator" default="false">
 			If [code]true[/code], internal force integration is disabled for this body. Aside from collision response, the body will only move as determined by the [method _integrate_forces] function.
-		</member>
-		<member name="friction" type="float" setter="set_friction" getter="get_friction">
-			The body's friction. Values range from [code]0[/code] (frictionless) to [code]1[/code] (maximum friction).
-			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
 			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s.
@@ -169,6 +161,8 @@
 			The body's mode. See [enum Mode] for possible values.
 		</member>
 		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
+			The physics material override for the body.
+			If a material is assigned to this property, it will be used instead of any other physics material, such as an inherited one.
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].

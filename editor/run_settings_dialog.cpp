@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,6 @@ String RunSettingsDialog::get_custom_arguments() const {
 
 void RunSettingsDialog::_bind_methods() {
 
-	ClassDB::bind_method("_run_mode_changed", &RunSettingsDialog::_run_mode_changed);
 	//ClassDB::bind_method("_browse_selected_file",&RunSettingsDialog::_browse_selected_file);
 }
 
@@ -81,7 +80,7 @@ RunSettingsDialog::RunSettingsDialog() {
 	vbc->add_margin_child(TTR("Run Mode:"), run_mode);
 	run_mode->add_item(TTR("Current Scene"));
 	run_mode->add_item(TTR("Main Scene"));
-	run_mode->connect("item_selected", this, "_run_mode_changed");
+	run_mode->connect("item_selected", callable_mp(this, &RunSettingsDialog::_run_mode_changed));
 	arguments = memnew(LineEdit);
 	vbc->add_margin_child(TTR("Main Scene Arguments:"), arguments);
 	arguments->set_editable(false);

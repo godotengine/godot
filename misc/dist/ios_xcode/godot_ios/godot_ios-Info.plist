@@ -28,6 +28,10 @@
 	<string>$version</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	$docs_in_place
+	<key>UIFileSharingEnabled</key>
+	$docs_sharing
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		$required_device_capabilities

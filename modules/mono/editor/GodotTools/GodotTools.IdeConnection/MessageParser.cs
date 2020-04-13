@@ -37,7 +37,7 @@ namespace GodotTools.IdeConnection
                 while (i < messageLine.Length)
                 {
                     @char = messageLine[i];
-                    
+
                     if (quoted && @char == '"')
                     {
                         i++;
@@ -60,10 +60,10 @@ namespace GodotTools.IdeConnection
                     {
                         stringBuilder.Append(@char);
                     }
-                    
+
                     i++;
                 }
-                
+
                 arguments.Add(stringBuilder.ToString());
                 stringBuilder.Clear();
 

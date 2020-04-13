@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 #include <string.h>
 
-RES ResourceFormatDummyTexture::load(const String &p_path, const String &p_original_path, Error *r_error) {
+RES ResourceFormatDummyTexture::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	unsigned int width = 8;
 	unsigned int height = 8;
 
@@ -43,7 +43,7 @@ RES ResourceFormatDummyTexture::load(const String &p_path, const String &p_origi
 	Image::Format fmt = Image::FORMAT_RGB8;
 	int rowsize = 3 * width;
 
-	PoolVector<uint8_t> dstbuff;
+	Vector<uint8_t> dstbuff;
 
 	dstbuff.resize(rowsize * height);
 
@@ -74,7 +74,7 @@ void ResourceFormatDummyTexture::get_recognized_extensions(List<String> *p_exten
 }
 
 bool ResourceFormatDummyTexture::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture");
+	return ClassDB::is_parent_class(p_type, "Texture2D");
 }
 
 String ResourceFormatDummyTexture::get_resource_type(const String &p_path) const {

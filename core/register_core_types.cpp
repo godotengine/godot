@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,14 +38,17 @@
 #include "core/crypto/hashing_context.h"
 #include "core/engine.h"
 #include "core/func_ref.h"
-#include "core/input_map.h"
+#include "core/input/input_filter.h"
+#include "core/input/input_map.h"
 #include "core/io/config_file.h"
+#include "core/io/dtls_server.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/multiplayer_api.h"
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/io/packet_peer.h"
+#include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
@@ -53,13 +56,13 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
+#include "core/io/udp_server.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
 #include "core/math/expression.h"
 #include "core/math/geometry.h"
 #include "core/math/random_number_generator.h"
 #include "core/math/triangle_mesh.h"
-#include "core/os/input.h"
 #include "core/os/main_loop.h"
 #include "core/packed_data_container.h"
 #include "core/path_remap.h"
@@ -75,19 +78,19 @@ static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 
-static _ResourceLoader *_resource_loader = NULL;
-static _ResourceSaver *_resource_saver = NULL;
-static _OS *_os = NULL;
-static _Engine *_engine = NULL;
-static _ClassDB *_classdb = NULL;
-static _Marshalls *_marshalls = NULL;
-static _JSON *_json = NULL;
+static _ResourceLoader *_resource_loader = nullptr;
+static _ResourceSaver *_resource_saver = nullptr;
+static _OS *_os = nullptr;
+static _Engine *_engine = nullptr;
+static _ClassDB *_classdb = nullptr;
+static _Marshalls *_marshalls = nullptr;
+static _JSON *_json = nullptr;
 
-static IP *ip = NULL;
+static IP *ip = nullptr;
 
-static _Geometry *_geometry = NULL;
+static _Geometry *_geometry = nullptr;
 
-extern Mutex *_global_mutex;
+extern Mutex _global_mutex;
 
 extern void register_global_constants();
 extern void unregister_global_constants();
@@ -96,11 +99,11 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
+	//consistency check
+	static_assert(sizeof(Callable) <= 16);
+
 	ObjectDB::setup();
 	ResourceCache::setup();
-	MemoryPool::setup();
-
-	_global_mutex = Mutex::create();
 
 	StringName::setup();
 	ResourceLoader::initialize();
@@ -135,6 +138,7 @@ void register_core_types() {
 
 	ClassDB::register_virtual_class<InputEvent>();
 	ClassDB::register_virtual_class<InputEventWithModifiers>();
+	ClassDB::register_virtual_class<InputEventFromWindow>();
 	ClassDB::register_class<InputEventKey>();
 	ClassDB::register_virtual_class<InputEventMouse>();
 	ClassDB::register_class<InputEventMouseButton>();
@@ -155,6 +159,9 @@ void register_core_types() {
 	ClassDB::register_class<StreamPeerTCP>();
 	ClassDB::register_class<TCP_Server>();
 	ClassDB::register_class<PacketPeerUDP>();
+	ClassDB::register_class<UDPServer>();
+	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
+	ClassDB::register_custom_instance_class<DTLSServer>();
 
 	// Crypto
 	ClassDB::register_class<HashingContext>();
@@ -179,8 +186,6 @@ void register_core_types() {
 	ClassDB::register_class<UndoRedo>();
 	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();
-
-	ClassDB::register_virtual_class<ResourceInteractiveLoader>();
 
 	ClassDB::register_class<ResourceFormatLoader>();
 	ClassDB::register_class<ResourceFormatSaver>();
@@ -244,7 +249,7 @@ void register_core_singletons() {
 	ClassDB::register_class<_ClassDB>();
 	ClassDB::register_class<_Marshalls>();
 	ClassDB::register_class<TranslationServer>();
-	ClassDB::register_virtual_class<Input>();
+	ClassDB::register_virtual_class<InputFilter>();
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
@@ -259,7 +264,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ClassDB", _classdb));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Marshalls", _Marshalls::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("TranslationServer", TranslationServer::get_singleton()));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", InputFilter::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
 }
@@ -311,11 +316,4 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
-
-	if (_global_mutex) {
-		memdelete(_global_mutex);
-		_global_mutex = NULL; //still needed at a few places
-	};
-
-	MemoryPool::cleanup();
 }

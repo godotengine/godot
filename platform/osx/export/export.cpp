@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,7 +74,7 @@ protected:
 public:
 	virtual String get_name() const { return "Mac OSX"; }
 	virtual String get_os_name() const { return "OSX"; }
-	virtual Ref<Texture> get_logo() const { return logo; }
+	virtual Ref<Texture2D> get_logo() const { return logo; }
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
 		List<String> list;
@@ -118,8 +118,8 @@ void EditorExportPlatformOSX::get_preset_features(const Ref<EditorExportPreset> 
 
 void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
@@ -130,12 +130,16 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
 
 #ifdef OSX_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/hardened_runtime"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "codesign/custom_options"), PackedStringArray()));
 #endif
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
@@ -143,7 +147,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 }
 
-void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
+void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, Vector<uint8_t> &p_dest) {
 
 	int src_len = p_size * p_size;
 
@@ -156,11 +160,11 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 
 	int i = 0;
 	while (i < src_len) {
-		uint8_t cur = p_source.read()[i * 4 + p_ch];
+		uint8_t cur = p_source.ptr()[i * 4 + p_ch];
 
 		if (i < src_len - 2) {
 
-			if ((p_source.read()[(i + 1) * 4 + p_ch] == cur) && (p_source.read()[(i + 2) * 4 + p_ch] == cur)) {
+			if ((p_source.ptr()[(i + 1) * 4 + p_ch] == cur) && (p_source.ptr()[(i + 2) * 4 + p_ch] == cur)) {
 				if (buf_size > 0) {
 					result.write[res_size++] = (uint8_t)(buf_size - 1);
 					copymem(&result.write[res_size], &buf, buf_size);
@@ -172,7 +176,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, PoolVector<uint8_t> &p_sour
 				bool hit_lim = true;
 
 				for (int j = 3; j <= lim; j++) {
-					if (p_source.read()[(i + j) * 4 + p_ch] != cur) {
+					if (p_source.ptr()[(i + j) * 4 + p_ch] != cur) {
 						hit_lim = false;
 						i = i + j - 1;
 						result.write[res_size++] = (uint8_t)(j - 3 + 0x80);
@@ -274,7 +278,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			DirAccess::remove_file_or_error(path);
 
 		} else {
-			PoolVector<uint8_t> src_data = copy->get_data();
+			Vector<uint8_t> src_data = copy->get_data();
 
 			//encode 24bit RGB RLE icon
 			{
@@ -298,7 +302,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 				data.resize(data.size() + len + 8);
 
 				for (int j = 0; j < len; j++) {
-					data.write[ofs + 8 + j] = src_data.read()[j * 4 + 3];
+					data.write[ofs + 8 + j] = src_data.ptr()[j * 4 + 3];
 				}
 				len += 8;
 				len = BSWAP32(len);
@@ -340,6 +344,12 @@ void EditorExportPlatformOSX::_fix_plist(const Ref<EditorExportPreset> &p_preset
 			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
 		} else if (lines[i].find("$highres") != -1) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "<true/>" : "<false/>") + "\n";
+		} else if (lines[i].find("$camera_usage_description") != -1) {
+			String description = p_preset->get("privacy/camera_usage_description");
+			strnew += lines[i].replace("$camera_usage_description", description) + "\n";
+		} else if (lines[i].find("$microphone_usage_description") != -1) {
+			String description = p_preset->get("privacy/microphone_usage_description");
+			strnew += lines[i].replace("$microphone_usage_description", description) + "\n";
 		} else {
 			strnew += lines[i] + "\n";
 		}
@@ -375,16 +385,27 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		args.push_back("--entitlements");
 		args.push_back(p_preset->get("codesign/entitlements"));
 	}
+
+	PackedStringArray user_args = p_preset->get("codesign/custom_options");
+	for (int i = 0; i < user_args.size(); i++) {
+		String user_arg = user_args[i].strip_edges();
+		if (!user_arg.empty()) {
+			args.push_back(user_arg);
+		}
+	}
+
 	args.push_back("-s");
 	args.push_back(p_preset->get("codesign/identity"));
+
 	args.push_back("-v"); /* provide some more feedback */
+
 	args.push_back(p_path);
 
 	String str;
-	Error err = OS::get_singleton()->execute("codesign", args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute("codesign", args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	print_line("codesign: " + str);
+	print_line("codesign (" + p_path + "): " + str);
 	if (str.find("no identity found") != -1) {
 		EditorNode::add_io_error("codesign: no identity found");
 		return FAILED;
@@ -414,7 +435,7 @@ Error EditorExportPlatformOSX::_create_dmg(const String &p_dmg_path, const Strin
 	args.push_back(p_app_path_name);
 
 	String str;
-	Error err = OS::get_singleton()->execute("hdiutil", args, true, NULL, &str, NULL, true);
+	Error err = OS::get_singleton()->execute("hdiutil", args, true, nullptr, &str, nullptr, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	print_line("hdiutil returned: " + str);
@@ -438,9 +459,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	EditorProgress ep("export", "Exporting for OSX", 3, true);
 
 	if (p_debug)
-		src_pkg_name = p_preset->get("custom_package/debug");
+		src_pkg_name = p_preset->get("custom_template/debug");
 	else
-		src_pkg_name = p_preset->get("custom_package/release");
+		src_pkg_name = p_preset->get("custom_template/release");
 
 	if (src_pkg_name == "") {
 		String err;
@@ -455,7 +476,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_BAD_PATH;
 	}
 
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	if (ep.step("Creating app", 0)) {
@@ -481,19 +502,22 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	else
 		pkg_name = "Unnamed";
 
+	String pkg_name_safe = OS::get_singleton()->get_safe_dir_name(pkg_name);
+
 	Error err = OK;
 	String tmp_app_path_name = "";
 	zlib_filefunc_def io2 = io;
-	FileAccess *dst_f = NULL;
+	FileAccess *dst_f = nullptr;
 	io2.opaque = &dst_f;
-	zipFile dst_pkg_zip = NULL;
+	zipFile dst_pkg_zip = nullptr;
 
+	DirAccess *tmp_app_path = nullptr;
 	String export_format = use_dmg() && p_path.ends_with("dmg") ? "dmg" : "zip";
 	if (export_format == "dmg") {
 		// We're on OSX so we can export to DMG, but first we create our application bundle
 		tmp_app_path_name = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".app");
 		print_line("Exporting to " + tmp_app_path_name);
-		DirAccess *tmp_app_path = DirAccess::create_for_path(tmp_app_path_name);
+		tmp_app_path = DirAccess::create_for_path(tmp_app_path_name);
 		if (!tmp_app_path) {
 			err = ERR_CANT_CREATE;
 		}
@@ -515,7 +539,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 	} else {
 		// Open our destination zip file
-		dst_pkg_zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
+		dst_pkg_zip = zipOpen2(p_path.utf8().get_data(), APPEND_STATUS_CREATE, nullptr, &io2);
 		if (!dst_pkg_zip) {
 			err = ERR_CANT_CREATE;
 		}
@@ -531,7 +555,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, NULL, 0, NULL, 0);
+		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 
@@ -590,25 +614,45 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if (data.size() > 0) {
+
+			if (file.find("/data.mono.osx.64.release_debug/") != -1) {
+				if (!p_debug) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; //skip
+				}
+				file = file.replace("/data.mono.osx.64.release_debug/", "/data_" + pkg_name_safe + "/");
+			}
+			if (file.find("/data.mono.osx.64.release/") != -1) {
+				if (p_debug) {
+					ret = unzGoToNextFile(src_pkg_zip);
+					continue; //skip
+				}
+				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name_safe + "/");
+			}
+
 			print_line("ADDING: " + file + " size: " + itos(data.size()));
 			total_size += data.size();
 
 			if (export_format == "dmg") {
 				// write it into our application bundle
 				file = tmp_app_path_name.plus_file(file);
-
-				// write the file, need to add chmod
-				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
-				if (f) {
-					f->store_buffer(data.ptr(), data.size());
-					f->close();
-					if (is_execute) {
-						// Chmod with 0755 if the file is executable
-						FileAccess::set_unix_permissions(file, 0755);
+				if (err == OK) {
+					err = tmp_app_path->make_dir_recursive(file.get_base_dir());
+				}
+				if (err == OK) {
+					// write the file, need to add chmod
+					FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
+					if (f) {
+						f->store_buffer(data.ptr(), data.size());
+						f->close();
+						if (is_execute) {
+							// Chmod with 0755 if the file is executable
+							FileAccess::set_unix_permissions(file, 0755);
+						}
+						memdelete(f);
+					} else {
+						err = ERR_CANT_CREATE;
 					}
-					memdelete(f);
-				} else {
-					err = ERR_CANT_CREATE;
 				}
 			} else {
 				// add it to our zip file
@@ -628,11 +672,11 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				zipOpenNewFileInZip(dst_pkg_zip,
 						file.utf8().get_data(),
 						&fi,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
@@ -648,7 +692,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	unzClose(src_pkg_zip);
 
 	if (!found_binary) {
-		ERR_PRINTS("Requested template binary '" + binary_to_use + "' not found. It might be missing from your template archive.");
+		ERR_PRINT("Requested template binary '" + binary_to_use + "' not found. It might be missing from your template archive.");
 		err = ERR_FILE_NOT_FOUND;
 	}
 
@@ -663,20 +707,20 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			err = save_pack(p_preset, pack_path, &shared_objects);
 
 			// see if we can code sign our new package
-			String identity = p_preset->get("codesign/identity");
+			bool sign_enabled = p_preset->get("codesign/enable");
 
 			if (err == OK) {
 				DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 				for (int i = 0; i < shared_objects.size(); i++) {
 					err = da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
-					if (err == OK && identity != "") {
+					if (err == OK && sign_enabled) {
 						err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
 					}
 				}
 				memdelete(da);
 			}
 
-			if (err == OK && identity != "") {
+			if (err == OK && sign_enabled) {
 				if (ep.step("Code signing bundle", 2)) {
 					return ERR_SKIP;
 				}
@@ -710,12 +754,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			if (err == OK) {
 				zipOpenNewFileInZip(dst_pkg_zip,
 						(pkg_name + ".app/Contents/Resources/" + pkg_name + ".pck").utf8().get_data(),
-						NULL,
-						NULL,
+						nullptr,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						0,
-						NULL,
+						nullptr,
 						Z_DEFLATED,
 						Z_DEFAULT_COMPRESSION);
 
@@ -747,12 +791,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 					zipOpenNewFileInZip(dst_pkg_zip,
 							(pkg_name + ".app/Contents/Frameworks/").plus_file(shared_objects[i].path.get_file()).utf8().get_data(),
-							NULL,
-							NULL,
+							nullptr,
+							nullptr,
 							0,
-							NULL,
+							nullptr,
 							0,
-							NULL,
+							nullptr,
 							Z_DEFLATED,
 							Z_DEFAULT_COMPRESSION);
 
@@ -767,7 +811,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	if (dst_pkg_zip) {
-		zipClose(dst_pkg_zip, NULL);
+		zipClose(dst_pkg_zip, nullptr);
 	}
 
 	return err;
@@ -775,33 +819,32 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	bool valid = false;
 	String err;
+	bool valid = false;
 
-	if (exists_export_template("osx.zip", &err)) {
-		valid = true;
-	}
+	// Look for export templates (first official, and if defined custom templates).
 
-	if (p_preset->get("custom_package/debug") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
-			valid = true;
-		} else {
+	bool dvalid = exists_export_template("osx.zip", &err);
+	bool rvalid = dvalid; // Both in the same ZIP.
+
+	if (p_preset->get("custom_template/debug") != "") {
+		dvalid = FileAccess::exists(p_preset->get("custom_template/debug"));
+		if (!dvalid) {
 			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
-
-	if (p_preset->get("custom_package/release") != "") {
-		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
-			valid = true;
-		} else {
+	if (p_preset->get("custom_template/release") != "") {
+		rvalid = FileAccess::exists(p_preset->get("custom_template/release"));
+		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 
+	valid = dvalid || rvalid;
+	r_missing_templates = !valid;
+
 	if (!err.empty())
 		r_error = err;
-
-	r_missing_templates = !valid;
 	return valid;
 }
 

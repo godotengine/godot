@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,7 @@ void Array::_unref() const {
 	if (_p->refcount.unref()) {
 		memdelete(_p);
 	}
-	_p = NULL;
+	_p = nullptr;
 }
 
 Variant &Array::operator[](int p_idx) {
@@ -308,9 +308,9 @@ struct _ArrayVariantSortCustom {
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
 
 		const Variant *args[2] = { &p_l, &p_r };
-		Variant::CallError err;
+		Callable::CallError err;
 		bool res = obj->call(func, args, 2, err);
-		if (err.error != Variant::CallError::CALL_OK)
+		if (err.error != Callable::CallError::CALL_OK)
 			res = false;
 		return res;
 	}
@@ -467,7 +467,7 @@ const void *Array::id() const {
 
 Array::Array(const Array &p_from) {
 
-	_p = NULL;
+	_p = nullptr;
 	_ref(p_from);
 }
 

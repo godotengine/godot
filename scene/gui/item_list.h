@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,11 +52,11 @@ public:
 private:
 	struct Item {
 
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		bool icon_transposed;
 		Rect2i icon_region;
 		Color icon_modulate;
-		Ref<Texture> tag_icon;
+		Ref<Texture2D> tag_icon;
 		String text;
 		bool selectable;
 		bool selected;
@@ -125,14 +125,14 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_item(const String &p_item, const Ref<Texture> &p_texture = Ref<Texture>(), bool p_selectable = true);
-	void add_icon_item(const Ref<Texture> &p_item, bool p_selectable = true);
+	void add_item(const String &p_item, const Ref<Texture2D> &p_texture = Ref<Texture2D>(), bool p_selectable = true);
+	void add_icon_item(const Ref<Texture2D> &p_item, bool p_selectable = true);
 
 	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
 
-	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
-	Ref<Texture> get_item_icon(int p_idx) const;
+	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_item_icon(int p_idx) const;
 
 	void set_item_icon_transposed(int p_idx, const bool transposed);
 	bool is_item_icon_transposed(int p_idx) const;
@@ -152,8 +152,8 @@ public:
 	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	Variant get_item_metadata(int p_idx) const;
 
-	void set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon);
-	Ref<Texture> get_item_tag_icon(int p_idx) const;
+	void set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon);
+	Ref<Texture2D> get_item_tag_icon(int p_idx) const;
 
 	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
 	bool is_item_tooltip_enabled(int p_idx) const;

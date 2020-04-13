@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,6 @@ struct Color {
 	uint64_t to_rgba64() const;
 	uint64_t to_argb64() const;
 	uint64_t to_abgr64() const;
-	float gray() const;
 	float get_h() const;
 	float get_s() const;
 	float get_v() const;
@@ -70,7 +69,12 @@ struct Color {
 	}
 
 	Color operator+(const Color &p_color) const;
-	void operator+=(const Color &p_color);
+	_FORCE_INLINE_ void operator+=(const Color &p_color) {
+		r = r + p_color.r;
+		g = g + p_color.g;
+		b = b + p_color.b;
+		a = a + p_color.a;
+	}
 
 	Color operator-() const;
 	Color operator-(const Color &p_color) const;
@@ -85,6 +89,8 @@ struct Color {
 	Color operator/(const real_t &rvalue) const;
 	void operator/=(const Color &p_color);
 	void operator/=(const real_t &rvalue);
+
+	bool is_equal_approx(const Color &p_color) const;
 
 	void invert();
 	void contrast();
@@ -233,4 +239,4 @@ bool Color::operator<(const Color &p_color) const {
 		return r < p_color.r;
 }
 
-#endif
+#endif // COLOR_H

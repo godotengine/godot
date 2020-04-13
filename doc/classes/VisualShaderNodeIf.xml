@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNodeIf" inherits="VisualShaderNode" category="Core" version="3.2">
+<class name="VisualShaderNodeIf" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Compares two floating-point numbers in order to return a required vector within the visual shader graph.
 	</brief_description>
 	<description>
+		First two ports are scalar floatin-point numbers to compare, third is tolerance comparison amount and last three ports represents a vectors returned if [code]a == b[/code], [code]a &gt; b[/code] and [code]a &lt; b[/code] respectively.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 	</methods>
-	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[ 0, 0.0, 1, 0.0, 2, 1e-05, 3, Vector3( 0, 0, 0 ), 4, Vector3( 0, 0, 0 ), 5, Vector3( 0, 0, 0 ) ]" />
-	</members>
 	<constants>
 	</constants>
 </class>

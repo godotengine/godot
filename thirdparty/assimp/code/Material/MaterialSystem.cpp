@@ -51,7 +51,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/types.h>
 #include <assimp/material.h>
 #include <assimp/DefaultLogger.hpp>
-#include <assimp/Macros.h>
 
 using namespace Assimp;
 
@@ -545,23 +544,7 @@ aiReturn aiMaterial::AddProperty (const aiString* pInput,
     unsigned int type,
     unsigned int index)
 {
-    // We don't want to add the whole buffer .. write a 32 bit length
-    // prefix followed by the zero-terminated UTF8 string.
-    // (HACK) I don't want to break the ABI now, but we definitely
-    // ought to change aiString::mLength to uint32_t one day.
-    if (sizeof(size_t) == 8) {
-        aiString copy = *pInput;
-        uint32_t* s = reinterpret_cast<uint32_t*>(&copy.length);
-        s[1] = static_cast<uint32_t>(pInput->length);
-
-        return AddBinaryProperty(s+1,
-            static_cast<unsigned int>(pInput->length+1+4),
-            pKey,
-            type,
-            index,
-            aiPTI_String);
-    }
-    ai_assert(sizeof(size_t)==4);
+    ai_assert(sizeof(ai_uint32)==4);
     return AddBinaryProperty(pInput,
         static_cast<unsigned int>(pInput->length+1+4),
         pKey,

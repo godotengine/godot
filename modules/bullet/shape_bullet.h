@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "core/math/geometry.h"
 #include "core/variant.h"
 #include "rid_bullet.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 
 #include <LinearMath/btAlignedObjectArray.h>
 #include <LinearMath/btScalar.h>
@@ -78,19 +78,19 @@ public:
 	virtual void set_data(const Variant &p_data) = 0;
 	virtual Variant get_data() const = 0;
 
-	virtual PhysicsServer::ShapeType get_type() const = 0;
+	virtual PhysicsServer3D::ShapeType get_type() const = 0;
 
 public:
 	static class btEmptyShape *create_shape_empty();
 	static class btStaticPlaneShape *create_shape_plane(const btVector3 &planeNormal, btScalar planeConstant);
 	static class btSphereShape *create_shape_sphere(btScalar radius);
 	static class btBoxShape *create_shape_box(const btVector3 &boxHalfExtents);
-	static class btCapsuleShapeZ *create_shape_capsule(btScalar radius, btScalar height);
+	static class btCapsuleShape *create_shape_capsule(btScalar radius, btScalar height);
 	static class btCylinderShape *create_shape_cylinder(btScalar radius, btScalar height);
 	/// IMPORTANT: Remember to delete the shape interface by calling: delete my_shape->getMeshInterface();
 	static class btConvexPointCloudShape *create_shape_convex(btAlignedObjectArray<btVector3> &p_vertices, const btVector3 &p_local_scaling = btVector3(1, 1, 1));
 	static class btScaledBvhTriangleMeshShape *create_shape_concave(btBvhTriangleMeshShape *p_mesh_shape, const btVector3 &p_local_scaling = btVector3(1, 1, 1));
-	static class btHeightfieldTerrainShape *create_shape_height_field(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
+	static class btHeightfieldTerrainShape *create_shape_height_field(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 	static class btRayShape *create_shape_ray(real_t p_length, bool p_slips_on_slope);
 };
 
@@ -103,7 +103,7 @@ public:
 
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
@@ -120,7 +120,7 @@ public:
 	_FORCE_INLINE_ real_t get_radius() { return radius; }
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
@@ -137,7 +137,7 @@ public:
 	_FORCE_INLINE_ const btVector3 &get_half_extents() { return half_extents; }
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
@@ -156,7 +156,7 @@ public:
 	_FORCE_INLINE_ real_t get_radius() { return radius; }
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
@@ -175,7 +175,7 @@ public:
 	_FORCE_INLINE_ real_t get_radius() { return radius; }
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin = 0);
 
 private:
@@ -192,7 +192,7 @@ public:
 	virtual void set_data(const Variant &p_data);
 	void get_vertices(Vector<Vector3> &out_vertices);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
@@ -203,24 +203,24 @@ class ConcavePolygonShapeBullet : public ShapeBullet {
 	class btBvhTriangleMeshShape *meshShape;
 
 public:
-	PoolVector<Vector3> faces;
+	Vector<Vector3> faces;
 
 	ConcavePolygonShapeBullet();
 	virtual ~ConcavePolygonShapeBullet();
 
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
-	void setup(PoolVector<Vector3> p_faces);
+	void setup(Vector<Vector3> p_faces);
 };
 
 class HeightMapShapeBullet : public ShapeBullet {
 
 public:
-	PoolVector<real_t> heights;
+	Vector<real_t> heights;
 	int width;
 	int depth;
 	real_t min_height;
@@ -230,11 +230,11 @@ public:
 
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:
-	void setup(PoolVector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
+	void setup(Vector<real_t> &p_heights, int p_width, int p_depth, real_t p_min_height, real_t p_max_height);
 };
 
 class RayShapeBullet : public ShapeBullet {
@@ -247,7 +247,7 @@ public:
 
 	virtual void set_data(const Variant &p_data);
 	virtual Variant get_data() const;
-	virtual PhysicsServer::ShapeType get_type() const;
+	virtual PhysicsServer3D::ShapeType get_type() const;
 	virtual btCollisionShape *create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge = 0);
 
 private:

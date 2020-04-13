@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +109,6 @@ class TileMapEditor : public VBoxContainer {
 
 	bool selection_active;
 	bool mouse_over;
-	bool show_tile_info;
 
 	bool flip_h;
 	bool flip_v;
@@ -124,7 +123,7 @@ class TileMapEditor : public VBoxContainer {
 	bool *bucket_cache_visited;
 	Rect2i bucket_cache_rect;
 	int bucket_cache_tile;
-	PoolVector<Vector2> bucket_cache;
+	Vector<Vector2> bucket_cache;
 	List<Point2i> bucket_queue;
 
 	struct CellOp {
@@ -165,10 +164,10 @@ class TileMapEditor : public VBoxContainer {
 
 	void _pick_tile(const Point2 &p_pos);
 
-	PoolVector<Vector2> _bucket_fill(const Point2i &p_start, bool erase = false, bool preview = false);
+	Vector<Vector2> _bucket_fill(const Point2i &p_start, bool erase = false, bool preview = false);
 
-	void _fill_points(const PoolVector<Vector2> &p_points, const Dictionary &p_op);
-	void _erase_points(const PoolVector<Vector2> &p_points);
+	void _fill_points(const Vector<Vector2> &p_points, const Dictionary &p_op);
+	void _erase_points(const Vector<Vector2> &p_points);
 
 	void _select(const Point2i &p_from, const Point2i &p_to);
 	void _erase_selection();
@@ -212,12 +211,14 @@ class TileMapEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	void _node_removed(Node *p_node);
 	static void _bind_methods();
 	CellOp _get_op_from_cell(const Point2i &p_pos);
 
 public:
 	HBoxContainer *get_toolbar() const { return toolbar; }
 	HBoxContainer *get_toolbar_right() const { return toolbar_right; }
+	Label *get_tile_info() const { return tile_info; }
 
 	bool forward_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);

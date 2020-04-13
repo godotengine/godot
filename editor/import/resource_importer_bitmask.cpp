@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,7 +75,7 @@ String ResourceImporterBitMap::get_preset_name(int p_idx) const {
 void ResourceImporterBitMap::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "create_from", PROPERTY_HINT_ENUM, "Black & White,Alpha"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.5));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.5));
 }
 
 Error ResourceImporterBitMap::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -94,7 +94,6 @@ Error ResourceImporterBitMap::import(const String &p_source_file, const String &
 	Ref<BitMap> bitmap;
 	bitmap.instance();
 	bitmap->create(Size2(w, h));
-	image->lock();
 
 	for (int i = 0; i < h; i++) {
 		for (int j = 0; j < w; j++) {

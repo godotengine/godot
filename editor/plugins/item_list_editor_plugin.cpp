@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #include "item_list_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/editor_scale.h"
 
 bool ItemListPlugin::_set(const StringName &p_name, const Variant &p_value) {
 
@@ -104,7 +105,7 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 		String base = itos(i) + "/";
 
 		p_list->push_back(PropertyInfo(Variant::STRING, base + "text"));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, base + "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 
 		int flags = get_flags();
 
@@ -162,7 +163,7 @@ void ItemListOptionButtonPlugin::erase(int p_idx) {
 
 ItemListOptionButtonPlugin::ItemListOptionButtonPlugin() {
 
-	ob = NULL;
+	ob = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -204,7 +205,7 @@ void ItemListPopupMenuPlugin::erase(int p_idx) {
 
 ItemListPopupMenuPlugin::ItemListPopupMenuPlugin() {
 
-	pp = NULL;
+	pp = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -243,7 +244,7 @@ void ItemListItemListPlugin::erase(int p_idx) {
 
 ItemListItemListPlugin::ItemListItemListPlugin() {
 
-	pp = NULL;
+	pp = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -253,7 +254,7 @@ ItemListItemListPlugin::ItemListItemListPlugin() {
 void ItemListEditor::_node_removed(Node *p_node) {
 
 	if (p_node == item_list) {
-		item_list = NULL;
+		item_list = nullptr;
 		hide();
 		dialog->hide();
 	}
@@ -263,11 +264,11 @@ void ItemListEditor::_notification(int p_notification) {
 
 	if (p_notification == NOTIFICATION_ENTER_TREE || p_notification == NOTIFICATION_THEME_CHANGED) {
 
-		add_button->set_icon(get_icon("Add", "EditorIcons"));
-		del_button->set_icon(get_icon("Remove", "EditorIcons"));
+		add_button->set_icon(get_theme_icon("Add", "EditorIcons"));
+		del_button->set_icon(get_theme_icon("Remove", "EditorIcons"));
 	} else if (p_notification == NOTIFICATION_READY) {
 
-		get_tree()->connect("node_removed", this, "_node_removed");
+		get_tree()->connect("node_removed", callable_mp(this, &ItemListEditor::_node_removed));
 	}
 }
 
@@ -301,7 +302,7 @@ void ItemListEditor::_delete_pressed() {
 
 void ItemListEditor::_edit_items() {
 
-	dialog->popup_centered(Vector2(300, 400) * EDSCALE);
+	dialog->popup_centered_clamped(Vector2(425, 1200) * EDSCALE, 0.8);
 }
 
 void ItemListEditor::edit(Node *p_item_list) {
@@ -310,7 +311,7 @@ void ItemListEditor::edit(Node *p_item_list) {
 
 	if (!item_list) {
 		selected_idx = -1;
-		property_editor->edit(NULL);
+		property_editor->edit(nullptr);
 		return;
 	}
 
@@ -328,7 +329,7 @@ void ItemListEditor::edit(Node *p_item_list) {
 	}
 
 	selected_idx = -1;
-	property_editor->edit(NULL);
+	property_editor->edit(nullptr);
 }
 
 bool ItemListEditor::handles(Object *p_object) const {
@@ -343,22 +344,17 @@ bool ItemListEditor::handles(Object *p_object) const {
 }
 
 void ItemListEditor::_bind_methods() {
-
-	ClassDB::bind_method("_node_removed", &ItemListEditor::_node_removed);
-	ClassDB::bind_method("_edit_items", &ItemListEditor::_edit_items);
-	ClassDB::bind_method("_add_button", &ItemListEditor::_add_pressed);
-	ClassDB::bind_method("_delete_button", &ItemListEditor::_delete_pressed);
 }
 
 ItemListEditor::ItemListEditor() {
 
 	selected_idx = -1;
-	item_list = NULL;
+	item_list = nullptr;
 
 	toolbar_button = memnew(ToolButton);
 	toolbar_button->set_text(TTR("Items"));
 	add_child(toolbar_button);
-	toolbar_button->connect("pressed", this, "_edit_items");
+	toolbar_button->connect("pressed", callable_mp(this, &ItemListEditor::_edit_items));
 
 	dialog = memnew(AcceptDialog);
 	dialog->set_title(TTR("Item List Editor"));
@@ -375,14 +371,14 @@ ItemListEditor::ItemListEditor() {
 	add_button = memnew(Button);
 	add_button->set_text(TTR("Add"));
 	hbc->add_child(add_button);
-	add_button->connect("pressed", this, "_add_button");
+	add_button->connect("pressed", callable_mp(this, &ItemListEditor::_add_pressed));
 
 	hbc->add_spacer();
 
 	del_button = memnew(Button);
 	del_button->set_text(TTR("Delete"));
 	hbc->add_child(del_button);
-	del_button->connect("pressed", this, "_delete_button");
+	del_button->connect("pressed", callable_mp(this, &ItemListEditor::_delete_pressed));
 
 	property_editor = memnew(EditorInspector);
 	vbc->add_child(property_editor);
@@ -412,7 +408,7 @@ void ItemListEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		item_list_editor->hide();
-		item_list_editor->edit(NULL);
+		item_list_editor->edit(nullptr);
 	}
 }
 

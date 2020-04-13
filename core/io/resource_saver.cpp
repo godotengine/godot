@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ Ref<ResourceFormatSaver> ResourceSaver::saver[MAX_SAVERS];
 
 int ResourceSaver::saver_count = 0;
 bool ResourceSaver::timestamp_on_save = false;
-ResourceSavedCallback ResourceSaver::save_callback = 0;
+ResourceSavedCallback ResourceSaver::save_callback = nullptr;
 
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 
@@ -61,10 +61,10 @@ bool ResourceFormatSaver::recognize(const RES &p_resource) const {
 void ResourceFormatSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_recognized_extensions")) {
-		PoolStringArray exts = get_script_instance()->call("get_recognized_extensions", p_resource);
+		PackedStringArray exts = get_script_instance()->call("get_recognized_extensions", p_resource);
 
 		{
-			PoolStringArray::Read r = exts.read();
+			const String *r = exts.ptr();
 			for (int i = 0; i < exts.size(); ++i) {
 				p_extensions->push_back(r[i]);
 			}
@@ -81,7 +81,7 @@ void ResourceFormatSaver::_bind_methods() {
 		ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "save", arg0, arg1, arg2));
 	}
 
-	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::POOL_STRING_ARRAY, "get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::PACKED_STRING_ARRAY, "get_recognized_extensions", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "recognize", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 }
 
@@ -218,10 +218,10 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 
 	Object *obj = ClassDB::instance(ibt);
 
-	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
+	ERR_FAIL_COND_V_MSG(obj == nullptr, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
 
 	ResourceFormatSaver *crl = Object::cast_to<ResourceFormatSaver>(obj);
-	crl->set_script(s.get_ref_ptr());
+	crl->set_script(s);
 	ResourceSaver::add_resource_format_saver(crl);
 
 	return true;
@@ -256,7 +256,7 @@ void ResourceSaver::add_custom_savers() {
 
 void ResourceSaver::remove_custom_savers() {
 
-	Vector<Ref<ResourceFormatSaver> > custom_savers;
+	Vector<Ref<ResourceFormatSaver>> custom_savers;
 	for (int i = 0; i < saver_count; ++i) {
 		if (saver[i]->get_script_instance()) {
 			custom_savers.push_back(saver[i]);

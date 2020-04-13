@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,14 +76,17 @@ struct GDScriptDataType {
 				if (p_variant.get_type() != Variant::OBJECT) {
 					return false;
 				}
-				Object *obj = p_variant.operator Object *();
-				if (obj) {
-					if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
-						// Try with underscore prefix
-						StringName underscore_native_type = "_" + native_type;
-						if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
-							return false;
-						}
+
+				Object *obj = p_variant.get_validated_object();
+				if (!obj) {
+					return false;
+				}
+
+				if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+					// Try with underscore prefix
+					StringName underscore_native_type = "_" + native_type;
+					if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
+						return false;
 					}
 				}
 				return true;
@@ -96,8 +99,13 @@ struct GDScriptDataType {
 				if (p_variant.get_type() != Variant::OBJECT) {
 					return false;
 				}
-				Object *obj = p_variant.operator Object *();
-				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
+
+				Object *obj = p_variant.get_validated_object();
+				if (!obj) {
+					return false;
+				}
+
+				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
 				bool valid = false;
 				while (base.is_valid()) {
 					if (base == script_type) {
@@ -257,8 +265,8 @@ private:
 
 	List<StackDebug> stack_debug;
 
-	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const;
-	_FORCE_INLINE_ String _get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const;
+	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant &static_ref, Variant *p_stack, String &r_error) const;
+	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
 	friend class GDScriptLanguage;
 
@@ -313,7 +321,7 @@ public:
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 
-	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const;
+	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int>> *r_stackvars) const;
 
 	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
 
@@ -331,7 +339,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
+	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
@@ -344,7 +352,7 @@ class GDScriptFunctionState : public Reference {
 	friend class GDScriptFunction;
 	GDScriptFunction *function;
 	GDScriptFunction::CallState state;
-	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Ref<GDScriptFunctionState> first_state;
 
 protected:

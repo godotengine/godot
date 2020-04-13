@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #include "core/variant.h"
 
+#include "../managed_callable.h"
 #include "gd_mono.h"
 #include "gd_mono_utils.h"
 
@@ -41,6 +42,11 @@ namespace GDMonoMarshal {
 template <typename T>
 T unbox(MonoObject *p_obj) {
 	return *(T *)mono_object_unbox(p_obj);
+}
+
+template <typename T>
+T *unbox_addr(MonoObject *p_obj) {
+	return (T *)mono_object_unbox(p_obj);
 }
 
 #define BOX_DOUBLE(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(double), &x)
@@ -57,7 +63,7 @@ T unbox(MonoObject *p_obj) {
 #define BOX_PTR(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(IntPtr), x)
 #define BOX_ENUM(m_enum_class, x) mono_value_box(mono_domain_get(), m_enum_class, &x)
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type);
+Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = nullptr);
 
 bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type);
 bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type);
@@ -75,7 +81,7 @@ _FORCE_INLINE_ String mono_string_to_godot_not_null(MonoString *p_mono_string) {
 }
 
 _FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
-	if (p_mono_string == NULL)
+	if (p_mono_string == nullptr)
 		return String();
 
 	return mono_string_to_godot_not_null(p_mono_string);
@@ -110,52 +116,93 @@ _FORCE_INLINE_ MonoObject *variant_to_mono_object(const Variant &p_var, const Ma
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj);
+Variant mono_object_to_variant(MonoObject *p_obj, const ManagedType &p_type);
+Variant mono_object_to_variant_no_err(MonoObject *p_obj, const ManagedType &p_type);
+
+/// Tries to convert the MonoObject* to Variant and then convert the Variant to String.
+/// If the MonoObject* cannot be converted to Variant, then 'ToString()' is called instead.
+String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
 Array mono_array_to_Array(MonoArray *p_array);
 
-// PoolIntArray
+// PackedInt32Array
 
-MonoArray *PoolIntArray_to_mono_array(const PoolIntArray &p_array);
-PoolIntArray mono_array_to_PoolIntArray(MonoArray *p_array);
+MonoArray *PackedInt32Array_to_mono_array(const PackedInt32Array &p_array);
+PackedInt32Array mono_array_to_PackedInt32Array(MonoArray *p_array);
 
-// PoolByteArray
+// PackedInt64Array
 
-MonoArray *PoolByteArray_to_mono_array(const PoolByteArray &p_array);
-PoolByteArray mono_array_to_PoolByteArray(MonoArray *p_array);
+MonoArray *PackedInt64Array_to_mono_array(const PackedInt64Array &p_array);
+PackedInt64Array mono_array_to_PackedInt64Array(MonoArray *p_array);
 
-// PoolRealArray
+// PackedByteArray
 
-MonoArray *PoolRealArray_to_mono_array(const PoolRealArray &p_array);
-PoolRealArray mono_array_to_PoolRealArray(MonoArray *p_array);
+MonoArray *PackedByteArray_to_mono_array(const PackedByteArray &p_array);
+PackedByteArray mono_array_to_PackedByteArray(MonoArray *p_array);
 
-// PoolStringArray
+// PackedFloat32Array
 
-MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array);
-PoolStringArray mono_array_to_PoolStringArray(MonoArray *p_array);
+MonoArray *PackedFloat32Array_to_mono_array(const PackedFloat32Array &p_array);
+PackedFloat32Array mono_array_to_PackedFloat32Array(MonoArray *p_array);
 
-// PoolColorArray
+// PackedFloat64Array
 
-MonoArray *PoolColorArray_to_mono_array(const PoolColorArray &p_array);
-PoolColorArray mono_array_to_PoolColorArray(MonoArray *p_array);
+MonoArray *PackedFloat64Array_to_mono_array(const PackedFloat64Array &p_array);
+PackedFloat64Array mono_array_to_PackedFloat64Array(MonoArray *p_array);
 
-// PoolVector2Array
+// PackedStringArray
 
-MonoArray *PoolVector2Array_to_mono_array(const PoolVector2Array &p_array);
-PoolVector2Array mono_array_to_PoolVector2Array(MonoArray *p_array);
+MonoArray *PackedStringArray_to_mono_array(const PackedStringArray &p_array);
+PackedStringArray mono_array_to_PackedStringArray(MonoArray *p_array);
 
-// PoolVector3Array
+// PackedColorArray
 
-MonoArray *PoolVector3Array_to_mono_array(const PoolVector3Array &p_array);
-PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array);
+MonoArray *PackedColorArray_to_mono_array(const PackedColorArray &p_array);
+PackedColorArray mono_array_to_PackedColorArray(MonoArray *p_array);
+
+// PackedVector2Array
+
+MonoArray *PackedVector2Array_to_mono_array(const PackedVector2Array &p_array);
+PackedVector2Array mono_array_to_PackedVector2Array(MonoArray *p_array);
+
+// PackedVector3Array
+
+MonoArray *PackedVector3Array_to_mono_array(const PackedVector3Array &p_array);
+PackedVector3Array mono_array_to_PackedVector3Array(MonoArray *p_array);
+
+#pragma pack(push, 1)
+
+struct M_Callable {
+	MonoObject *target;
+	MonoObject *method_string_name;
+	MonoDelegate *delegate;
+};
+
+struct M_SignalInfo {
+	MonoObject *owner;
+	MonoObject *name_string_name;
+};
+
+#pragma pack(pop)
+
+// Callable
+Callable managed_to_callable(const M_Callable &p_managed_callable);
+M_Callable callable_to_managed(const Callable &p_callable);
+
+// SignalInfo
+Signal managed_to_signal_info(const M_SignalInfo &p_managed_signal);
+M_SignalInfo signal_info_to_managed(const Signal &p_signal);
 
 // Structures
 
 namespace InteropLayout {
 
 enum {
+	MATCHES_int = (sizeof(int32_t) == sizeof(uint32_t)),
+
 	MATCHES_float = (sizeof(float) == sizeof(uint32_t)),
 
 	MATCHES_double = (sizeof(double) == sizeof(uint64_t)),
@@ -170,9 +217,17 @@ enum {
 					   offsetof(Vector2, x) == (sizeof(real_t) * 0) &&
 					   offsetof(Vector2, y) == (sizeof(real_t) * 1)),
 
+	MATCHES_Vector2i = (MATCHES_int && (sizeof(Vector2i) == (sizeof(int32_t) * 2)) &&
+						offsetof(Vector2i, x) == (sizeof(int32_t) * 0) &&
+						offsetof(Vector2i, y) == (sizeof(int32_t) * 1)),
+
 	MATCHES_Rect2 = (MATCHES_Vector2 && (sizeof(Rect2) == (sizeof(Vector2) * 2)) &&
 					 offsetof(Rect2, position) == (sizeof(Vector2) * 0) &&
 					 offsetof(Rect2, size) == (sizeof(Vector2) * 1)),
+
+	MATCHES_Rect2i = (MATCHES_Vector2i && (sizeof(Rect2i) == (sizeof(Vector2i) * 2)) &&
+					  offsetof(Rect2i, position) == (sizeof(Vector2i) * 0) &&
+					  offsetof(Rect2i, size) == (sizeof(Vector2i) * 1)),
 
 	MATCHES_Transform2D = (MATCHES_Vector2 && (sizeof(Transform2D) == (sizeof(Vector2) * 3))), // No field offset required, it stores an array
 
@@ -180,6 +235,11 @@ enum {
 					   offsetof(Vector3, x) == (sizeof(real_t) * 0) &&
 					   offsetof(Vector3, y) == (sizeof(real_t) * 1) &&
 					   offsetof(Vector3, z) == (sizeof(real_t) * 2)),
+
+	MATCHES_Vector3i = (MATCHES_int && (sizeof(Vector3i) == (sizeof(int32_t) * 3)) &&
+						offsetof(Vector3i, x) == (sizeof(int32_t) * 0) &&
+						offsetof(Vector3i, y) == (sizeof(int32_t) * 1) &&
+						offsetof(Vector3i, z) == (sizeof(int32_t) * 2)),
 
 	MATCHES_Basis = (MATCHES_Vector3 && (sizeof(Basis) == (sizeof(Vector3) * 3))), // No field offset required, it stores an array
 
@@ -211,8 +271,9 @@ enum {
 // In the future we may force this if we want to ref return these structs
 #ifdef GD_MONO_FORCE_INTEROP_STRUCT_COPY
 /* clang-format off */
-GD_STATIC_ASSERT(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
-				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&MATCHES_Plane);
+static_assert(MATCHES_Vector2 && MATCHES_Rect2 && MATCHES_Transform2D && MATCHES_Vector3 &&
+				MATCHES_Basis && MATCHES_Quat && MATCHES_Transform && MATCHES_AABB && MATCHES_Color &&
+				MATCHES_Plane && MATCHES_Vector2i && MATCHES_Rect2i && MATCHES_Vector3i);
 /* clang-format on */
 #endif
 
@@ -233,6 +294,19 @@ struct M_Vector2 {
 	}
 };
 
+struct M_Vector2i {
+	int32_t x, y;
+
+	static _FORCE_INLINE_ Vector2i convert_to(const M_Vector2i &p_from) {
+		return Vector2i(p_from.x, p_from.y);
+	}
+
+	static _FORCE_INLINE_ M_Vector2i convert_from(const Vector2i &p_from) {
+		M_Vector2i ret = { p_from.x, p_from.y };
+		return ret;
+	}
+};
+
 struct M_Rect2 {
 	M_Vector2 position;
 	M_Vector2 size;
@@ -244,6 +318,21 @@ struct M_Rect2 {
 
 	static _FORCE_INLINE_ M_Rect2 convert_from(const Rect2 &p_from) {
 		M_Rect2 ret = { M_Vector2::convert_from(p_from.position), M_Vector2::convert_from(p_from.size) };
+		return ret;
+	}
+};
+
+struct M_Rect2i {
+	M_Vector2i position;
+	M_Vector2i size;
+
+	static _FORCE_INLINE_ Rect2i convert_to(const M_Rect2i &p_from) {
+		return Rect2i(M_Vector2i::convert_to(p_from.position),
+				M_Vector2i::convert_to(p_from.size));
+	}
+
+	static _FORCE_INLINE_ M_Rect2i convert_from(const Rect2i &p_from) {
+		M_Rect2i ret = { M_Vector2i::convert_from(p_from.position), M_Vector2i::convert_from(p_from.size) };
 		return ret;
 	}
 };
@@ -276,6 +365,19 @@ struct M_Vector3 {
 
 	static _FORCE_INLINE_ M_Vector3 convert_from(const Vector3 &p_from) {
 		M_Vector3 ret = { p_from.x, p_from.y, p_from.z };
+		return ret;
+	}
+};
+
+struct M_Vector3i {
+	int32_t x, y, z;
+
+	static _FORCE_INLINE_ Vector3i convert_to(const M_Vector3i &p_from) {
+		return Vector3i(p_from.x, p_from.y, p_from.z);
+	}
+
+	static _FORCE_INLINE_ M_Vector3i convert_from(const Vector3i &p_from) {
+		M_Vector3i ret = { p_from.x, p_from.y, p_from.z };
 		return ret;
 	}
 };
@@ -405,9 +507,12 @@ struct M_Plane {
 	}
 
 DECL_TYPE_MARSHAL_TEMPLATES(Vector2)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector2i)
 DECL_TYPE_MARSHAL_TEMPLATES(Rect2)
+DECL_TYPE_MARSHAL_TEMPLATES(Rect2i)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform2D)
 DECL_TYPE_MARSHAL_TEMPLATES(Vector3)
+DECL_TYPE_MARSHAL_TEMPLATES(Vector3i)
 DECL_TYPE_MARSHAL_TEMPLATES(Basis)
 DECL_TYPE_MARSHAL_TEMPLATES(Quat)
 DECL_TYPE_MARSHAL_TEMPLATES(Transform)

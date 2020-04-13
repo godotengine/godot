@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,7 +98,7 @@ public:
 	/**
 	 * calculate tangents for mesh data from assimp data
 	 */
-	static void calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, PoolColorArray::Write &w) {
+	static void calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, Color *w) {
 		const aiVector3D normals = ai_mesh->mAnimMeshes[i]->mNormals[tri_index];
 		const Vector3 godot_normal = Vector3(normals.x, normals.y, normals.z);
 		const aiVector3D tangent = ai_mesh->mAnimMeshes[i]->mTangents[tri_index];
@@ -189,7 +189,7 @@ public:
 	}
 
 	/**
-     * Converts aiMatrix4x4 to godot Transform 
+     * Converts aiMatrix4x4 to godot Transform
     */
 	static const Transform assimp_matrix_transform(const aiMatrix4x4 p_matrix) {
 		aiMatrix4x4 matrix = p_matrix;
@@ -233,7 +233,7 @@ public:
 	static Transform _get_global_assimp_node_transform(const aiNode *p_current_node) {
 		aiNode const *current_node = p_current_node;
 		Transform xform;
-		while (current_node != NULL) {
+		while (current_node != nullptr) {
 			xform = assimp_matrix_transform(current_node->mTransformation) * xform;
 			current_node = current_node->mParent;
 		}
@@ -309,9 +309,7 @@ public:
 			if (r_found) {
 				return;
 			}
-			if (r_found == false) {
-				find_texture_path(r_p_path, dir, r_path, r_found, "." + exts[i]);
-			}
+			find_texture_path(r_p_path, dir, r_path, r_found, "." + exts[i]);
 		}
 	}
 
@@ -321,20 +319,21 @@ public:
 	  */
 	static void set_texture_mapping_mode(aiTextureMapMode *map_mode, Ref<ImageTexture> texture) {
 		ERR_FAIL_COND(texture.is_null());
-		ERR_FAIL_COND(map_mode == NULL);
-		aiTextureMapMode tex_mode = aiTextureMapMode::aiTextureMapMode_Wrap;
+		ERR_FAIL_COND(map_mode == nullptr);
+		// FIXME: Commented out during Vulkan port.
+		/*
+		aiTextureMapMode tex_mode = map_mode[0];
 
-		tex_mode = map_mode[0];
-
-		int32_t flags = Texture::FLAGS_DEFAULT;
+		int32_t flags = Texture2D::FLAGS_DEFAULT;
 		if (tex_mode == aiTextureMapMode_Wrap) {
 			//Default
 		} else if (tex_mode == aiTextureMapMode_Clamp) {
-			flags = flags & ~Texture::FLAG_REPEAT;
+			flags = flags & ~Texture2D::FLAG_REPEAT;
 		} else if (tex_mode == aiTextureMapMode_Mirror) {
-			flags = flags | Texture::FLAG_MIRRORED_REPEAT;
+			flags = flags | Texture2D::FLAG_MIRRORED_REPEAT;
 		}
 		texture->set_flags(flags);
+		*/
 	}
 
 	/**
@@ -342,7 +341,7 @@ public:
 	  */
 	static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path) {
 
-		Map<String, Ref<Image> >::Element *match = state.path_to_image_cache.find(p_path);
+		Map<String, Ref<Image>>::Element *match = state.path_to_image_cache.find(p_path);
 
 		// if our cache contains this image then don't bother
 		if (match) {
@@ -359,33 +358,34 @@ public:
 			print_verbose("Open Asset Import: Loading embedded texture " + filename);
 			if (tex->mHeight == 0) {
 				if (tex->CheckFormat("png")) {
+					ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, Ref<Image>());
 					Ref<Image> img = Image::_png_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
 					return img;
 				} else if (tex->CheckFormat("jpg")) {
+					ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, Ref<Image>());
 					Ref<Image> img = Image::_jpg_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 					ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
 					state.path_to_image_cache.insert(p_path, img);
 					return img;
 				} else if (tex->CheckFormat("dds")) {
-					ERR_EXPLAIN("Open Asset Import: Embedded dds not implemented");
-					ERR_FAIL_COND_V(true, Ref<Image>());
+					ERR_FAIL_COND_V_MSG(true, Ref<Image>(), "Open Asset Import: Embedded dds not implemented");
 				}
 			} else {
 				Ref<Image> img;
 				img.instance();
-				PoolByteArray arr;
+				PackedByteArray arr;
 				uint32_t size = tex->mWidth * tex->mHeight;
 				arr.resize(size);
-				memcpy(arr.write().ptr(), tex->pcData, size);
+				memcpy(arr.ptrw(), tex->pcData, size);
 				ERR_FAIL_COND_V(arr.size() % 4 != 0, Ref<Image>());
 				//ARGB8888 to RGBA8888
 				for (int32_t i = 0; i < arr.size() / 4; i++) {
-					arr.write().ptr()[(4 * i) + 3] = arr[(4 * i) + 0];
-					arr.write().ptr()[(4 * i) + 0] = arr[(4 * i) + 1];
-					arr.write().ptr()[(4 * i) + 1] = arr[(4 * i) + 2];
-					arr.write().ptr()[(4 * i) + 2] = arr[(4 * i) + 3];
+					arr.ptrw()[(4 * i) + 3] = arr[(4 * i) + 0];
+					arr.ptrw()[(4 * i) + 0] = arr[(4 * i) + 1];
+					arr.ptrw()[(4 * i) + 1] = arr[(4 * i) + 2];
+					arr.ptrw()[(4 * i) + 2] = arr[(4 * i) + 3];
 				}
 				img->create(tex->mWidth, tex->mHeight, true, Image::FORMAT_RGBA8, arr);
 				ERR_FAIL_COND_V(img.is_null(), Ref<Image>());
@@ -394,8 +394,10 @@ public:
 			}
 			return Ref<Image>();
 		} else {
-			Ref<Texture> texture = ResourceLoader::load(p_path);
+			Ref<Texture2D> texture = ResourceLoader::load(p_path);
+			ERR_FAIL_COND_V(texture.is_null(), Ref<Image>());
 			Ref<Image> image = texture->get_data();
+			ERR_FAIL_COND_V(image.is_null(), Ref<Image>());
 			state.path_to_image_cache.insert(p_path, image);
 			return image;
 		}
@@ -419,7 +421,8 @@ public:
 			if (image_state.raw_image.is_valid()) {
 				image_state.texture.instance();
 				image_state.texture->create_from_image(image_state.raw_image);
-				image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
+				// FIXME: Commented out during Vulkan port.
+				//image_state.texture->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
 				return true;
 			}
 		}
@@ -437,7 +440,7 @@ public:
 			String &path,
 			AssimpImageData &image_state) {
 		aiString ai_filename = aiString();
-		if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, NULL, NULL, NULL, NULL, image_state.map_mode)) {
+		if (AI_SUCCESS == ai_material->GetTexture(texture_type, 0, &ai_filename, nullptr, nullptr, nullptr, nullptr, image_state.map_mode)) {
 			return CreateAssimpTexture(state, ai_filename, filename, path, image_state);
 		}
 

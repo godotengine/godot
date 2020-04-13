@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,6 +81,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool saved_node_pos_dirty;
 
 	ConfirmationDialog *members_dialog;
+	PopupMenu *popup_menu;
 	MenuButton *tools;
 
 	bool preview_showed;
@@ -90,10 +91,20 @@ class VisualShaderEditor : public VBoxContainer {
 		COLLAPSE_ALL
 	};
 
+	enum NodeMenuOptions {
+		ADD,
+		SEPARATOR, // ignore
+		COPY,
+		PASTE,
+		DELETE,
+		DUPLICATE,
+	};
+
 	Tree *members;
 	AcceptDialog *alert;
 	LineEdit *node_filter;
 	RichTextLabel *node_desc;
+	Label *highend_label;
 
 	void _tools_menu_option(int p_idx);
 	void _show_members_dialog(bool at_mouse_pos);
@@ -103,7 +114,6 @@ class VisualShaderEditor : public VBoxContainer {
 	struct AddOption {
 		String name;
 		String category;
-		String sub_category;
 		String type;
 		String description;
 		int sub_func;
@@ -115,12 +125,12 @@ class VisualShaderEditor : public VBoxContainer {
 		float value;
 		bool highend;
 		bool is_custom;
+		int temp_idx;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
 			name = p_name;
 			type = p_type;
-			category = p_category;
-			sub_category = p_sub_category;
+			category = p_category + "/" + p_sub_category;
 			description = p_description;
 			sub_func = p_sub_func;
 			return_type = p_return_type;
@@ -134,8 +144,7 @@ class VisualShaderEditor : public VBoxContainer {
 		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
 			name = p_name;
 			type = p_type;
-			category = p_category;
-			sub_category = p_sub_category;
+			category = p_category + "/" + p_sub_category;
 			description = p_description;
 			sub_func = 0;
 			sub_func_str = p_sub_func;
@@ -145,6 +154,12 @@ class VisualShaderEditor : public VBoxContainer {
 			value = p_value;
 			highend = p_highend;
 			is_custom = false;
+		}
+	};
+	struct _OptionComparator {
+
+		_FORCE_INLINE_ bool operator()(const AddOption &a, const AddOption &b) const {
+			return a.category.count("/") > b.category.count("/") || (a.category + "/" + a.name).naturalnocasecmp_to(b.category + "/" + b.name) < 0;
 		}
 	};
 
@@ -176,7 +191,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _node_selected(Object *p_node);
 
 	void _delete_request(int);
-	void _on_nodes_delete();
+	void _delete_nodes();
 
 	void _removed_from_graph();
 
@@ -211,9 +226,9 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _clear_buffer();
 	void _copy_nodes();
-	void _paste_nodes();
+	void _paste_nodes(bool p_use_custom_position = false, const Vector2 &p_custom_position = Vector2());
 
-	Vector<Ref<VisualShaderNodePlugin> > plugins;
+	Vector<Ref<VisualShaderNodePlugin>> plugins;
 
 	void _mode_selected(int p_id);
 	void _rebuild();
@@ -245,6 +260,9 @@ class VisualShaderEditor : public VBoxContainer {
 	void _member_create();
 	void _member_cancel();
 
+	Vector2 menu_point;
+	void _node_menu_id_pressed(int p_idx);
+
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -264,7 +282,7 @@ public:
 	static VisualShaderEditor *get_singleton() { return singleton; }
 
 	void clear_custom_types();
-	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_sub_category);
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
 
 	virtual Size2 get_minimum_size() const;
 	void edit(VisualShader *p_visual_shader);

@@ -109,17 +109,18 @@ void VP8LoadFinalBytes(VP8BitReader* const br) {
 //------------------------------------------------------------------------------
 // Higher-level calls
 
-uint32_t VP8GetValue(VP8BitReader* const br, int bits) {
+uint32_t VP8GetValue(VP8BitReader* const br, int bits, const char label[]) {
   uint32_t v = 0;
   while (bits-- > 0) {
-    v |= VP8GetBit(br, 0x80) << bits;
+    v |= VP8GetBit(br, 0x80, label) << bits;
   }
   return v;
 }
 
-int32_t VP8GetSignedValue(VP8BitReader* const br, int bits) {
-  const int value = VP8GetValue(br, bits);
-  return VP8Get(br) ? -value : value;
+int32_t VP8GetSignedValue(VP8BitReader* const br, int bits,
+                          const char label[]) {
+  const int value = VP8GetValue(br, bits, label);
+  return VP8Get(br, label) ? -value : value;
 }
 
 //------------------------------------------------------------------------------
@@ -225,5 +226,80 @@ uint32_t VP8LReadBits(VP8LBitReader* const br, int n_bits) {
     return 0;
   }
 }
+
+//------------------------------------------------------------------------------
+// Bit-tracing tool
+
+#if (BITTRACE > 0)
+
+#include <stdlib.h>   // for atexit()
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_NUM_LABELS 32
+static struct {
+  const char* label;
+  int size;
+  int count;
+} kLabels[MAX_NUM_LABELS];
+
+static int last_label = 0;
+static int last_pos = 0;
+static const uint8_t* buf_start = NULL;
+static int init_done = 0;
+
+static void PrintBitTraces(void) {
+  int i;
+  int scale = 1;
+  int total = 0;
+  const char* units = "bits";
+#if (BITTRACE == 2)
+  scale = 8;
+  units = "bytes";
+#endif
+  for (i = 0; i < last_label; ++i) total += kLabels[i].size;
+  if (total < 1) total = 1;   // avoid rounding errors
+  printf("=== Bit traces ===\n");
+  for (i = 0; i < last_label; ++i) {
+    const int skip = 16 - (int)strlen(kLabels[i].label);
+    const int value = (kLabels[i].size + scale - 1) / scale;
+    assert(skip > 0);
+    printf("%s \%*s: %6d %s   \t[%5.2f%%] [count: %7d]\n",
+           kLabels[i].label, skip, "", value, units,
+           100.f * kLabels[i].size / total,
+           kLabels[i].count);
+  }
+  total = (total + scale - 1) / scale;
+  printf("Total: %d %s\n", total, units);
+}
+
+void BitTrace(const struct VP8BitReader* const br, const char label[]) {
+  int i, pos;
+  if (!init_done) {
+    memset(kLabels, 0, sizeof(kLabels));
+    atexit(PrintBitTraces);
+    buf_start = br->buf_;
+    init_done = 1;
+  }
+  pos = (int)(br->buf_ - buf_start) * 8 - br->bits_;
+  // if there's a too large jump, we've changed partition -> reset counter
+  if (abs(pos - last_pos) > 32) {
+    buf_start = br->buf_;
+    pos = 0;
+    last_pos = 0;
+  }
+  if (br->range_ >= 0x7f) pos += kVP8Log2Range[br->range_ - 0x7f];
+  for (i = 0; i < last_label; ++i) {
+    if (!strcmp(label, kLabels[i].label)) break;
+  }
+  if (i == MAX_NUM_LABELS) abort();   // overflow!
+  kLabels[i].label = label;
+  kLabels[i].size += pos - last_pos;
+  kLabels[i].count += 1;
+  if (i == last_label) ++last_label;
+  last_pos = pos;
+}
+
+#endif  // BITTRACE > 0
 
 //------------------------------------------------------------------------------

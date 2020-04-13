@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -198,11 +198,11 @@ void GameCenter::request_achievement_descriptions() {
 		ret["type"] = "achievement_descriptions";
 		if (error == nil) {
 			ret["result"] = "ok";
-			PoolStringArray names;
-			PoolStringArray titles;
-			PoolStringArray unachieved_descriptions;
-			PoolStringArray achieved_descriptions;
-			PoolIntArray maximum_points;
+			PackedStringArray names;
+			PackedStringArray titles;
+			PackedStringArray unachieved_descriptions;
+			PackedStringArray achieved_descriptions;
+			PackedInt32Array maximum_points;
 			Array hidden;
 			Array replayable;
 
@@ -253,8 +253,8 @@ void GameCenter::request_achievements() {
 		ret["type"] = "achievements";
 		if (error == nil) {
 			ret["result"] = "ok";
-			PoolStringArray names;
-			PoolRealArray percentages;
+			PackedStringArray names;
+			PackedFloat32Array percentages;
 
 			for (int i = 0; i < [achievements count]; i++) {
 

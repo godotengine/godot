@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include "test_ordered_hash_map.h"
 
 #include "core/ordered_hash_map.h"
 #include "core/os/os.h"
@@ -84,7 +86,7 @@ bool test_iteration() {
 	map.insert(123485, 1238888);
 	map.insert(123, 111111);
 
-	Vector<Pair<int, int> > expected;
+	Vector<Pair<int, int>> expected;
 	expected.push_back(Pair<int, int>(42, 84));
 	expected.push_back(Pair<int, int>(123, 111111));
 	expected.push_back(Pair<int, int>(0, 12934));
@@ -101,7 +103,7 @@ bool test_iteration() {
 }
 
 bool test_const_iteration(const OrderedHashMap<int, int> &map) {
-	Vector<Pair<int, int> > expected;
+	Vector<Pair<int, int>> expected;
 	expected.push_back(Pair<int, int>(42, 84));
 	expected.push_back(Pair<int, int>(123, 111111));
 	expected.push_back(Pair<int, int>(0, 12934));
@@ -139,7 +141,7 @@ TestFunc test_funcs[] = {
 	test_size,
 	test_iteration,
 	test_const_iteration,
-	0
+	nullptr
 
 };
 
@@ -166,6 +168,6 @@ MainLoop *test() {
 
 	OS::get_singleton()->print("Passed %i of %i tests\n", passed, count);
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestOrderedHashMap

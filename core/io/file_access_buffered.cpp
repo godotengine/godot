@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,7 +113,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 
 			int size = (cache.buffer.size() - (file.offset - cache.offset));
 			size = size - (size % 4);
-			//PoolVector<uint8_t>::Read read = cache.buffer.read();
+			//const uint8_t* read = cache.buffer.ptr();
 			//memcpy(p_dest, read.ptr() + (file.offset - cache.offset), size);
 			memcpy(p_dest, cache.buffer.ptr() + (file.offset - cache.offset), size);
 			p_dest += size;
@@ -145,7 +145,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 		}
 
 		int r = MIN(left, to_read);
-		//PoolVector<uint8_t>::Read read = cache.buffer.read();
+		//const uint8_t* read = cache.buffer.ptr();
 		//memcpy(p_dest+total_read, &read.ptr()[file.offset - cache.offset], r);
 		memcpy(p_dest + total_read, cache.buffer.ptr() + (file.offset - cache.offset), r);
 

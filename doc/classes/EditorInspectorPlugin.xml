@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspectorPlugin" inherits="Reference" category="Core" version="3.2">
+<class name="EditorInspectorPlugin" inherits="Reference" version="4.0">
 	<brief_description>
 		Plugin for adding custom property editors on inspector.
 	</brief_description>
 	<description>
 		This plugins allows adding custom property editors to [EditorInspector].
 		Plugins are registered via [method EditorPlugin.add_inspector_plugin].
-		When an object is edited, the [method can_handle] function is called and must return true if the object type is supported.
+		When an object is edited, the [method can_handle] function is called and must return [code]true[/code] if the object type is supported.
 		If supported, the function [method parse_begin] will be called, allowing to place custom controls at the beginning of the class.
 		Subsequently, the [method parse_category] and [method parse_property] are called for every category and property. They offer the ability to add custom controls to the inspector too.
 		Finally [method parse_end] will be called.
@@ -40,7 +40,7 @@
 			</return>
 			<argument index="0" name="label" type="String">
 			</argument>
-			<argument index="1" name="properties" type="PoolStringArray">
+			<argument index="1" name="properties" type="PackedStringArray">
 			</argument>
 			<argument index="2" name="editor" type="Control">
 			</argument>
@@ -54,7 +54,7 @@
 			<argument index="0" name="object" type="Object">
 			</argument>
 			<description>
-				Returns true if this object can be handled by this plugin.
+				Returns [code]true[/code] if this object can be handled by this plugin.
 			</description>
 		</method>
 		<method name="parse_begin" qualifiers="virtual">
@@ -100,7 +100,7 @@
 			<argument index="5" name="usage" type="int">
 			</argument>
 			<description>
-				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]
+				Called to allow adding property specific editors to the inspector. Usually these inherit [EditorProperty]. Returning [code]true[/code] removes the built-in editor for this property, otherwise allows to insert a custom editor before the built-in one.
 			</description>
 		</method>
 	</methods>

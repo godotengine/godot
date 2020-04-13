@@ -3,11 +3,19 @@
 CLANG_FORMAT=clang-format-8
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    # Check the whole commit range against $TRAVIS_BRANCH, the base merge branch
-    # We could use $TRAVIS_COMMIT_RANGE but it doesn't play well with force pushes
-    RANGE="$(git rev-parse $TRAVIS_BRANCH) HEAD"
+    # Travis only clones the PR branch and uses its HEAD commit as detached HEAD,
+    # so it's problematic when we want an exact commit range for format checks.
+    # We fetch upstream to ensure that we have the proper references to resolve.
+    # Ideally we would use $TRAVIS_COMMIT_RANGE but it doesn't play well with PR
+    # updates, as it only includes changes since the previous state of the PR.
+    if [ -z "$(git remote | grep upstream)" ]; then
+      git remote add upstream https://github.com/godotengine/godot \
+          --no-tags -f -t $TRAVIS_BRANCH
+    fi
+    RANGE="upstream/$TRAVIS_BRANCH HEAD"
 else
-    # Test only the last commit
+    # Test only the last commit, since $TRAVIS_COMMIT_RANGE wouldn't support
+    # force pushes.
     RANGE=HEAD
 fi
 
@@ -35,6 +43,6 @@ fi
 # a patch has been created, notify the user and exit
 printf "\n*** The following differences were found between the code to commit "
 printf "and the clang-format rules:\n\n"
-cat "$patch"
+pygmentize -l diff "$patch"
 printf "\n*** Aborting, please fix your commit(s) with 'git commit --amend' or 'git rebase -i <hash>'\n"
 exit 1

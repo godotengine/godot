@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,13 +80,13 @@ Variant nsobject_to_variant(NSObject *object) {
 		const char *str = [(NSString *)object UTF8String];
 		return String::utf8(str != NULL ? str : "");
 	} else if ([object isKindOfClass:[NSData class]]) {
-		PoolByteArray ret;
+		PackedByteArray ret;
 		NSData *data = (NSData *)object;
 		if ([data length] > 0) {
 			ret.resize([data length]);
 			{
-				PoolByteArray::Write w = ret.write();
-				copymem(w.ptr(), [data bytes], [data length]);
+				// PackedByteArray::Write w = ret.write();
+				copymem((void *)ret.ptr(), [data bytes], [data length]);
 			}
 		}
 		return ret;
@@ -184,10 +184,10 @@ NSObject *variant_to_nsobject(Variant v) {
 			[result addObject:value];
 		}
 		return result;
-	} else if (v.get_type() == Variant::POOL_BYTE_ARRAY) {
-		PoolByteArray arr = v;
-		PoolByteArray::Read r = arr.read();
-		NSData *result = [NSData dataWithBytes:r.ptr() length:arr.size()];
+	} else if (v.get_type() == Variant::PACKED_BYTE_ARRAY) {
+		PackedByteArray arr = v;
+		// PackedByteArray::Read r = arr.read();
+		NSData *result = [NSData dataWithBytes:arr.ptr() length:arr.size()];
 		return result;
 	}
 	WARN_PRINT(String("Could not add unsupported type to iCloud: '" + Variant::get_type_name(v.get_type()) + "'").utf8().get_data());
@@ -315,7 +315,7 @@ ICloud::ICloud() {
 						Dictionary ret;
 						ret["type"] = "key_value_changed";
 
-						//PoolStringArray result_keys;
+						//PackedStringArray result_keys;
 						//Array result_values;
 						Dictionary keyValues;
 						String reason = "";

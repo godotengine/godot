@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "core/class_db.h"
 #include "core/string_builder.h"
-#include "editor/doc/doc_data.h"
+#include "editor/doc_data.h"
 #include "editor/editor_help.h"
 
 #if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
@@ -107,8 +107,14 @@ class BindingsGenerator {
 		TypeReference type;
 
 		String name;
-		String default_argument;
 		DefaultParamMode def_param_mode;
+
+		/**
+		 * Determines the expression for the parameter default value.
+		 * Formatting elements:
+		 * %0 or %s: [cs_type] of the argument type
+		 */
+		String default_argument;
 
 		ArgumentInterface() {
 			def_param_mode = CONSTANT;
@@ -170,7 +176,33 @@ class BindingsGenerator {
 			is_virtual = false;
 			requires_object_call = false;
 			is_internal = false;
-			method_doc = NULL;
+			method_doc = nullptr;
+			is_deprecated = false;
+		}
+	};
+
+	struct SignalInterface {
+		String name;
+		StringName cname;
+
+		/**
+		 * Name of the C# method
+		 */
+		String proxy_name;
+
+		List<ArgumentInterface> arguments;
+
+		const DocData::MethodDoc *method_doc;
+
+		bool is_deprecated;
+		String deprecation_message;
+
+		void add_argument(const ArgumentInterface &argument) {
+			arguments.push_back(argument);
+		}
+
+		SignalInterface() {
+			method_doc = nullptr;
 			is_deprecated = false;
 		}
 	};
@@ -214,6 +246,14 @@ class BindingsGenerator {
 		 */
 		bool memory_own;
 
+		/**
+		 * This must be set to true for any struct bigger than 32-bits. Those cannot be passed/returned by value
+		 * with internal calls, so we must use pointers instead. Returns must be replace with out parameters.
+		 * In this case, [c_out] and [cs_out] must have a different format, explained below.
+		 * The Mono IL interpreter icall trampolines don't support passing structs bigger than 32-bits by value (at least not on WASM).
+		 */
+		bool ret_as_byref_arg;
+
 		// !! The comments of the following fields make reference to other fields via square brackets, e.g.: [field_name]
 		// !! When renaming those fields, make sure to rename their references in the comments
 
@@ -248,6 +288,14 @@ class BindingsGenerator {
 		 * %0: [c_type_out] of the return type
 		 * %1: name of the variable to be returned
 		 * %2: [name] of the return type
+		 * ---------------------------------------
+		 * If [ret_as_byref_arg] is true, the format is different. Instead of using a return statement,
+		 * the value must be assigned to a parameter. This type of this parameter is a pointer to [c_type_out].
+		 * Formatting elements:
+		 * %0: [c_type_out] of the return type
+		 * %1: name of the variable to be returned
+		 * %2: [name] of the return type
+		 * %3: name of the parameter that must be assigned the return value
 		 */
 		String c_out;
 
@@ -291,9 +339,10 @@ class BindingsGenerator {
 		 * One or more statements that determine how a variable of this type is returned from a method.
 		 * It must contain the return statement(s).
 		 * Formatting elements:
-		 * %0: internal method call statement
-		 * %1: [cs_type] of the return type
-		 * %2: [im_type_out] of the return type
+		 * %0: internal method name
+		 * %1: internal method call arguments without surrounding parenthesis
+		 * %2: [cs_type] of the return type
+		 * %3: [im_type_out] of the return type
 		 */
 		String cs_out;
 
@@ -319,6 +368,7 @@ class BindingsGenerator {
 		List<EnumInterface> enums;
 		List<PropertyInterface> properties;
 		List<MethodInterface> methods;
+		List<SignalInterface> signals_;
 
 		const MethodInterface *find_method_by_name(const StringName &p_cname) const {
 			for (const List<MethodInterface>::Element *E = methods.front(); E; E = E->next()) {
@@ -326,7 +376,7 @@ class BindingsGenerator {
 					return &E->get();
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 		const PropertyInterface *find_property_by_name(const StringName &p_cname) const {
@@ -335,7 +385,7 @@ class BindingsGenerator {
 					return &E->get();
 			}
 
-			return NULL;
+			return nullptr;
 		}
 
 		const PropertyInterface *find_property_by_proxy_name(const String &p_proxy_name) const {
@@ -344,7 +394,16 @@ class BindingsGenerator {
 					return &E->get();
 			}
 
-			return NULL;
+			return nullptr;
+		}
+
+		const MethodInterface *find_method_by_proxy_name(const String &p_proxy_name) const {
+			for (const List<MethodInterface>::Element *E = methods.front(); E; E = E->next()) {
+				if (E->get().proxy_name == p_proxy_name)
+					return &E->get();
+			}
+
+			return nullptr;
 		}
 
 	private:
@@ -417,7 +476,7 @@ class BindingsGenerator {
 
 			r_enum_itype.cs_type = r_enum_itype.proxy_name;
 			r_enum_itype.cs_in = "(int)%s";
-			r_enum_itype.cs_out = "return (%1)%0;";
+			r_enum_itype.cs_out = "return (%2)%0(%1);";
 			r_enum_itype.im_type_in = "int";
 			r_enum_itype.im_type_out = "int";
 			r_enum_itype.class_doc = &EditorHelp::get_doc_data()->class_list[r_enum_itype.proxy_name];
@@ -435,9 +494,11 @@ class BindingsGenerator {
 
 			memory_own = false;
 
+			ret_as_byref_arg = false;
+
 			c_arg_in = "%s";
 
-			class_doc = NULL;
+			class_doc = nullptr;
 		}
 	};
 
@@ -491,7 +552,7 @@ class BindingsGenerator {
 	List<InternalCall> core_custom_icalls;
 	List<InternalCall> editor_custom_icalls;
 
-	Map<StringName, List<StringName> > blacklisted_methods;
+	Map<StringName, List<StringName>> blacklisted_methods;
 
 	void _initialize_blacklisted_methods();
 
@@ -505,6 +566,8 @@ class BindingsGenerator {
 		StringName type_Reference;
 		StringName type_RID;
 		StringName type_String;
+		StringName type_StringName;
+		StringName type_NodePath;
 		StringName type_at_GlobalScope;
 		StringName enum_Error;
 
@@ -529,6 +592,8 @@ class BindingsGenerator {
 			type_Reference = StaticCString::create("Reference");
 			type_RID = StaticCString::create("RID");
 			type_String = StaticCString::create("String");
+			type_StringName = StaticCString::create("StringName");
+			type_NodePath = StaticCString::create("NodePath");
 			type_at_GlobalScope = StaticCString::create("@GlobalScope");
 			enum_Error = StaticCString::create("Error");
 
@@ -557,7 +622,7 @@ class BindingsGenerator {
 			if (it->get().name == p_name) return it;
 			it = it->next();
 		}
-		return NULL;
+		return nullptr;
 	}
 
 	const ConstantInterface *find_constant_by_name(const String &p_name, const List<ConstantInterface> &p_constants) const {
@@ -566,7 +631,7 @@ class BindingsGenerator {
 				return &E->get();
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	inline String get_unique_sig(const TypeInterface &p_type) {
@@ -604,6 +669,7 @@ class BindingsGenerator {
 
 	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output);
 	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output);
+	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output);
 
 	void _generate_global_constants(StringBuilder &p_output);
 
@@ -616,8 +682,8 @@ class BindingsGenerator {
 	void _initialize();
 
 public:
-	Error generate_cs_core_project(const String &p_proj_dir, Vector<String> &r_compile_files);
-	Error generate_cs_editor_project(const String &p_proj_dir, Vector<String> &r_compile_items);
+	Error generate_cs_core_project(const String &p_proj_dir);
+	Error generate_cs_editor_project(const String &p_proj_dir);
 	Error generate_cs_api(const String &p_output_dir);
 	Error generate_glue(const String &p_output_dir);
 

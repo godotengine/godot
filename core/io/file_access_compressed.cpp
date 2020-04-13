@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,6 +63,10 @@ Error FileAccessCompressed::open_after_magic(FileAccess *p_base) {
 	f = p_base;
 	cmode = (Compression::Mode)f->get_32();
 	block_size = f->get_32();
+	if (block_size == 0) {
+		f = nullptr; // Let the caller to handle the FileAccess object if failed to open as compressed file.
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Can't open compressed file '" + p_base->get_path() + "' with block size 0, it is corrupted.");
+	}
 	read_total = f->get_32();
 	int bc = (read_total / block_size) + 1;
 	int acc_ofs = f->get_position() + bc * 4;
@@ -105,7 +109,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	if (err != OK) {
 		//not openable
 
-		f = NULL;
+		f = nullptr;
 		return err;
 	}
 
@@ -125,13 +129,11 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 		char rmagic[5];
 		f->get_buffer((uint8_t *)rmagic, 4);
 		rmagic[4] = 0;
-		if (magic != rmagic) {
+		if (magic != rmagic || open_after_magic(f) != OK) {
 			memdelete(f);
-			f = NULL;
+			f = nullptr;
 			return ERR_FILE_UNRECOGNIZED;
 		}
-
-		open_after_magic(f);
 	}
 
 	return OK;
@@ -185,12 +187,12 @@ void FileAccessCompressed::close() {
 	}
 
 	memdelete(f);
-	f = NULL;
+	f = nullptr;
 }
 
 bool FileAccessCompressed::is_open() const {
 
-	return f != NULL;
+	return f != nullptr;
 }
 
 void FileAccessCompressed::seek(size_t p_position) {
@@ -390,20 +392,20 @@ Error FileAccessCompressed::_set_unix_permissions(const String &p_file, uint32_t
 FileAccessCompressed::FileAccessCompressed() :
 		cmode(Compression::MODE_ZSTD),
 		writing(false),
-		write_ptr(0),
+		write_ptr(nullptr),
 		write_buffer_size(0),
 		write_max(0),
 		block_size(0),
 		read_eof(false),
 		at_end(false),
-		read_ptr(NULL),
+		read_ptr(nullptr),
 		read_block(0),
 		read_block_count(0),
 		read_block_size(0),
 		read_pos(0),
 		read_total(0),
 		magic("GCMP"),
-		f(NULL) {
+		f(nullptr) {
 }
 
 FileAccessCompressed::~FileAccessCompressed() {

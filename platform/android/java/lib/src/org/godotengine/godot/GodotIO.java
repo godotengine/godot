@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,8 +52,6 @@ public class GodotIO {
 	AssetManager am;
 	Godot activity;
 	GodotEditText edit;
-
-	MediaPlayer mediaPlayer;
 
 	final int SCREEN_LANDSCAPE = 0;
 	final int SCREEN_PORTRAIT = 1;
@@ -491,9 +489,9 @@ public class GodotIO {
 		return (int)(metrics.density * 160f);
 	}
 
-	public void showKeyboard(String p_existing_text) {
+	public void showKeyboard(String p_existing_text, int p_max_input_length) {
 		if (edit != null)
-			edit.showKeyboard(p_existing_text);
+			edit.showKeyboard(p_existing_text, p_max_input_length);
 
 		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
 		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
@@ -530,44 +528,14 @@ public class GodotIO {
 				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
 			} break;
 		}
-	};
+	}
+
+	public int getScreenOrientation() {
+		return activity.getRequestedOrientation();
+	}
 
 	public void setEdit(GodotEditText _edit) {
 		edit = _edit;
-	}
-
-	public void playVideo(String p_path) {
-		Uri filePath = Uri.parse(p_path);
-		mediaPlayer = new MediaPlayer();
-
-		try {
-			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-			mediaPlayer.setDataSource(activity.getApplicationContext(), filePath);
-			mediaPlayer.prepare();
-			mediaPlayer.start();
-		} catch (IOException e) {
-			System.out.println("IOError while playing video");
-		}
-	}
-
-	public boolean isVideoPlaying() {
-		if (mediaPlayer != null) {
-			return mediaPlayer.isPlaying();
-		}
-		return false;
-	}
-
-	public void pauseVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.pause();
-		}
-	}
-
-	public void stopVideo() {
-		if (mediaPlayer != null) {
-			mediaPlayer.release();
-			mediaPlayer = null;
-		}
 	}
 
 	public static final int SYSTEM_DIR_DESKTOP = 0;

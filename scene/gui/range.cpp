@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,7 +100,6 @@ void Range::set_value(double p_val) {
 	shared->emit_value_changed();
 }
 void Range::set_min(double p_min) {
-
 	shared->min = p_min;
 	set_value(shared->val);
 
@@ -109,7 +108,6 @@ void Range::set_min(double p_min) {
 	update_configuration_warning();
 }
 void Range::set_max(double p_max) {
-
 	shared->max = p_max;
 	set_value(shared->val);
 
@@ -173,6 +171,8 @@ void Range::set_as_ratio(double p_value) {
 }
 double Range::get_as_ratio() const {
 
+	ERR_FAIL_COND_V_MSG(Math::is_equal_approx(get_max(), get_min()), 0.0, "Cannot get ratio when minimum and maximum value are equal.");
+
 	if (shared->exp_ratio && get_min() >= 0) {
 
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
@@ -213,6 +213,7 @@ void Range::unshare() {
 	nshared->val = shared->val;
 	nshared->step = shared->step;
 	nshared->page = shared->page;
+	nshared->exp_ratio = shared->exp_ratio;
 	nshared->allow_greater = shared->allow_greater;
 	nshared->allow_lesser = shared->allow_lesser;
 	_unref_shared();
@@ -235,7 +236,7 @@ void Range::_unref_shared() {
 		shared->owners.erase(this);
 		if (shared->owners.size() == 0) {
 			memdelete(shared);
-			shared = NULL;
+			shared = nullptr;
 		}
 	}
 }
@@ -266,15 +267,15 @@ void Range::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("share", "with"), &Range::_share);
 	ClassDB::bind_method(D_METHOD("unshare"), &Range::unshare);
 
-	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(Variant::REAL, "value")));
+	ADD_SIGNAL(MethodInfo("value_changed", PropertyInfo(Variant::FLOAT, "value")));
 	ADD_SIGNAL(MethodInfo("changed"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min_value"), "set_min", "get_min");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_value"), "set_max", "get_max");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "step"), "set_step", "get_step");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "page"), "set_page", "get_page");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "value"), "set_value", "get_value");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", 0), "set_as_ratio", "get_as_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "min_value"), "set_min", "get_min");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value"), "set_max", "get_max");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "step"), "set_step", "get_step");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "page"), "set_page", "get_page");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "value"), "set_value", "get_value");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ratio", PROPERTY_HINT_RANGE, "0,1,0.01", 0), "set_as_ratio", "get_as_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exp_edit"), "set_exp_ratio", "is_ratio_exp");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rounded"), "set_use_rounded_values", "is_using_rounded_values");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_greater"), "set_allow_greater", "is_greater_allowed");

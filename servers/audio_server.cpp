@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "audio_server.h"
+
+#include "core/debugger/engine_debugger.h"
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -36,17 +38,14 @@
 #include "scene/resources/audio_stream_sample.h"
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
+
 #ifdef TOOLS_ENABLED
-
 #define MARK_EDITED set_edited(true);
-
 #else
-
 #define MARK_EDITED
-
 #endif
 
-AudioDriver *AudioDriver::singleton = NULL;
+AudioDriver *AudioDriver::singleton = nullptr;
 AudioDriver *AudioDriver::get_singleton() {
 
 	return singleton;
@@ -85,26 +84,26 @@ double AudioDriver::get_time_to_next_mix() const {
 	return mix_buffer - total;
 }
 
-void AudioDriver::capture_buffer_init(int driver_buffer_frames) {
+void AudioDriver::input_buffer_init(int driver_buffer_frames) {
 
-	const int capture_buffer_channels = 2;
-	capture_buffer.resize(driver_buffer_frames * capture_buffer_channels * 4);
-	capture_position = 0;
-	capture_size = 0;
+	const int input_buffer_channels = 2;
+	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
+	input_position = 0;
+	input_size = 0;
 }
 
-void AudioDriver::capture_buffer_write(int32_t sample) {
+void AudioDriver::input_buffer_write(int32_t sample) {
 
-	if ((int)capture_position < capture_buffer.size()) {
-		capture_buffer.write()[capture_position++] = sample;
-		if ((int)capture_position >= capture_buffer.size()) {
-			capture_position = 0;
+	if ((int)input_position < input_buffer.size()) {
+		input_buffer.write[input_position++] = sample;
+		if ((int)input_position >= input_buffer.size()) {
+			input_position = 0;
 		}
-		if ((int)capture_size < capture_buffer.size()) {
-			capture_size++;
+		if ((int)input_size < input_buffer.size()) {
+			input_size++;
 		}
 	} else {
-		WARN_PRINTS("capture_buffer_write: Invalid capture_position=" + itos(capture_position) + " capture_buffer.size()=" + itos(capture_buffer.size()));
+		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
 }
 
@@ -154,8 +153,8 @@ AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
 	_last_mix_frames = 0;
-	capture_position = 0;
-	capture_size = 0;
+	input_position = 0;
+	input_size = 0;
 
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
@@ -216,7 +215,7 @@ void AudioDriverManager::initialize(int p_driver) {
 
 AudioDriver *AudioDriverManager::get_driver(int p_driver) {
 
-	ERR_FAIL_INDEX_V(p_driver, driver_count, NULL);
+	ERR_FAIL_INDEX_V(p_driver, driver_count, nullptr);
 	return drivers[p_driver];
 }
 
@@ -323,7 +322,7 @@ void AudioServer::_mix_step() {
 
 					bus->soloed = true;
 				} else {
-					bus = NULL;
+					bus = nullptr;
 				}
 
 			} while (bus);
@@ -337,8 +336,6 @@ void AudioServer::_mix_step() {
 
 		E->get().callback(E->get().userdata);
 	}
-
-	emit_signal("audio_mix_callback");
 
 	for (int i = buses.size() - 1; i >= 0; i--) {
 		//go bus by bus
@@ -391,7 +388,7 @@ void AudioServer::_mix_step() {
 
 		//process send
 
-		Bus *send = NULL;
+		Bus *send = nullptr;
 
 		if (i > 0) {
 			//everything has a send save for master bus
@@ -479,8 +476,8 @@ bool AudioServer::thread_has_channel_mix_buffer(int p_bus, int p_buffer) const {
 
 AudioFrame *AudioServer::thread_get_channel_mix_buffer(int p_bus, int p_buffer) {
 
-	ERR_FAIL_INDEX_V(p_bus, buses.size(), NULL);
-	ERR_FAIL_INDEX_V(p_buffer, buses[p_bus]->channels.size(), NULL);
+	ERR_FAIL_INDEX_V(p_bus, buses.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_buffer, buses[p_bus]->channels.size(), nullptr);
 
 	AudioFrame *data = buses.write[p_bus]->channels.write[p_buffer].buffer.ptrw();
 
@@ -975,7 +972,7 @@ void AudioServer::init() {
 
 	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST("audio/channel_disable_time", 2.0)) * get_mix_rate();
-	ProjectSettings::get_singleton()->set_custom_property_info("audio/channel_disable_time", PropertyInfo(Variant::REAL, "audio/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
+	ProjectSettings::get_singleton()->set_custom_property_info("audio/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
 	buffer_size = 1024; //hardcoded for now
 
 	init_channels_and_buffers();
@@ -996,7 +993,7 @@ void AudioServer::init() {
 
 void AudioServer::update() {
 #ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_profiling()) {
+	if (EngineDebugger::is_profiling("servers")) {
 
 		// Driver time includes server time + effects times
 		// Server time includes effects times
@@ -1034,7 +1031,8 @@ void AudioServer::update() {
 		values.push_back("audio_driver");
 		values.push_back(USEC_TO_SEC(driver_time));
 
-		ScriptDebugger::get_singleton()->add_profiling_frame_data("audio_thread", values);
+		values.push_front("audio_thread");
+		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
 
 	// Reset profiling times
@@ -1059,8 +1057,6 @@ void AudioServer::update() {
 
 		E->get().callback(E->get().userdata);
 	}
-
-	emit_signal("audio_update_callback");
 }
 
 void AudioServer::load_default_bus_layout() {
@@ -1133,47 +1129,7 @@ double AudioServer::get_time_since_last_mix() const {
 	return AudioDriver::get_singleton()->get_time_since_last_mix();
 }
 
-AudioServer *AudioServer::singleton = NULL;
-
-void *AudioServer::audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data) {
-
-	void *ad = memalloc(p_data_len);
-	ERR_FAIL_COND_V(!ad, NULL);
-	if (p_from_data) {
-		copymem(ad, p_from_data, p_data_len);
-	}
-
-	audio_data_lock->lock();
-	audio_data[ad] = p_data_len;
-	audio_data_total_mem += p_data_len;
-	audio_data_max_mem = MAX(audio_data_total_mem, audio_data_max_mem);
-	audio_data_lock->unlock();
-
-	return ad;
-}
-
-void AudioServer::audio_data_free(void *p_data) {
-
-	audio_data_lock->lock();
-	if (!audio_data.has(p_data)) {
-		audio_data_lock->unlock();
-		ERR_FAIL();
-	}
-
-	audio_data_total_mem -= audio_data[p_data];
-	audio_data.erase(p_data);
-	memfree(p_data);
-	audio_data_lock->unlock();
-}
-
-size_t AudioServer::audio_data_get_total_memory_usage() const {
-
-	return audio_data_total_mem;
-}
-size_t AudioServer::audio_data_get_max_memory_usage() const {
-
-	return audio_data_max_mem;
-}
+AudioServer *AudioServer::singleton = nullptr;
 
 void AudioServer::add_callback(AudioCallback p_callback, void *p_userdata) {
 	lock();
@@ -1306,14 +1262,6 @@ void AudioServer::set_device(String device) {
 	AudioDriver::get_singleton()->set_device(device);
 }
 
-Error AudioServer::capture_start() {
-	return AudioDriver::get_singleton()->capture_start();
-}
-
-Error AudioServer::capture_stop() {
-	return AudioDriver::get_singleton()->capture_stop();
-}
-
 Array AudioServer::capture_get_device_list() {
 
 	return AudioDriver::get_singleton()->capture_get_device_list();
@@ -1327,18 +1275,6 @@ String AudioServer::capture_get_device() {
 void AudioServer::capture_set_device(const String &p_name) {
 
 	AudioDriver::get_singleton()->capture_set_device(p_name);
-}
-
-PoolVector<int32_t> AudioServer::get_capture_buffer() {
-	return AudioDriver::get_singleton()->get_capture_buffer();
-}
-
-unsigned int AudioServer::get_capture_position() {
-	return AudioDriver::get_singleton()->get_capture_position();
-}
-
-unsigned int AudioServer::get_capture_size() {
-	return AudioDriver::get_singleton()->get_capture_size();
 }
 
 void AudioServer::_bind_methods() {
@@ -1401,28 +1337,18 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);
 	ClassDB::bind_method(D_METHOD("get_output_latency"), &AudioServer::get_output_latency);
 
-	ClassDB::bind_method(D_METHOD("capture_start"), &AudioServer::capture_start);
-	ClassDB::bind_method(D_METHOD("capture_stop"), &AudioServer::capture_stop);
-
 	ClassDB::bind_method(D_METHOD("capture_get_device_list"), &AudioServer::capture_get_device_list);
 	ClassDB::bind_method(D_METHOD("capture_get_device"), &AudioServer::capture_get_device);
 	ClassDB::bind_method(D_METHOD("capture_set_device", "name"), &AudioServer::capture_set_device);
-
-	ClassDB::bind_method(D_METHOD("get_capture_buffer"), &AudioServer::get_capture_buffer);
-	ClassDB::bind_method(D_METHOD("get_capture_position"), &AudioServer::get_capture_position);
-	ClassDB::bind_method(D_METHOD("get_capture_size"), &AudioServer::get_capture_size);
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "capture_device"), "capture_set_device", "capture_get_device");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
-	ADD_SIGNAL(MethodInfo("audio_mix_callback"));
-	ADD_SIGNAL(MethodInfo("audio_update_callback"));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);
@@ -1433,14 +1359,9 @@ void AudioServer::_bind_methods() {
 AudioServer::AudioServer() {
 
 	singleton = this;
-	audio_data_total_mem = 0;
-	audio_data_max_mem = 0;
-	audio_data_lock = Mutex::create();
 	mix_frames = 0;
 	channel_count = 0;
 	to_mix = 0;
-	output_latency = 0;
-	output_latency_ticks = 0;
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
 #endif
@@ -1451,8 +1372,7 @@ AudioServer::AudioServer() {
 
 AudioServer::~AudioServer() {
 
-	memdelete(audio_data_lock);
-	singleton = NULL;
+	singleton = nullptr;
 }
 
 /////////////////////////////////
@@ -1569,8 +1489,8 @@ void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/solo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/mute", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "bus/" + itos(i) + "/bypass_fx", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::REAL, "bus/" + itos(i) + "/volume_db", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
-		p_list->push_back(PropertyInfo(Variant::REAL, "bus/" + itos(i) + "/send", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/volume_db", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, "bus/" + itos(i) + "/send", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));
 
 		for (int j = 0; j < buses[i].effects.size(); j++) {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "bus/" + itos(i) + "/effect/" + itos(j) + "/effect", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));

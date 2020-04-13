@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Generate .ico, .icns and .zip set of icons for Steam
 
 # Make icons with transparent backgrounds and all sizes

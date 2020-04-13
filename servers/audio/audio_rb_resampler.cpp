@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -203,18 +203,18 @@ void AudioRBResampler::clear() {
 	//should be stopped at this point but just in case
 	memdelete_arr(rb);
 	memdelete_arr(read_buf);
-	rb = NULL;
+	rb = nullptr;
 	offset = 0;
 	rb_read_pos = 0;
 	rb_write_pos = 0;
-	read_buf = NULL;
+	read_buf = nullptr;
 }
 
 AudioRBResampler::AudioRBResampler() {
 
-	rb = NULL;
+	rb = nullptr;
 	offset = 0;
-	read_buf = NULL;
+	read_buf = nullptr;
 	rb_read_pos = 0;
 	rb_write_pos = 0;
 

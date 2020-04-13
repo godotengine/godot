@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,11 +49,11 @@ public:
 	};
 
 private:
-	Ref<Texture> normal;
-	Ref<Texture> pressed;
-	Ref<Texture> hover;
-	Ref<Texture> disabled;
-	Ref<Texture> focused;
+	Ref<Texture2D> normal;
+	Ref<Texture2D> pressed;
+	Ref<Texture2D> hover;
+	Ref<Texture2D> disabled;
+	Ref<Texture2D> focused;
 	Ref<BitMap> click_mask;
 	bool expand;
 	StretchMode stretch_mode;
@@ -69,18 +69,18 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_normal_texture(const Ref<Texture> &p_normal);
-	void set_pressed_texture(const Ref<Texture> &p_pressed);
-	void set_hover_texture(const Ref<Texture> &p_hover);
-	void set_disabled_texture(const Ref<Texture> &p_disabled);
-	void set_focused_texture(const Ref<Texture> &p_focused);
+	void set_normal_texture(const Ref<Texture2D> &p_normal);
+	void set_pressed_texture(const Ref<Texture2D> &p_pressed);
+	void set_hover_texture(const Ref<Texture2D> &p_hover);
+	void set_disabled_texture(const Ref<Texture2D> &p_disabled);
+	void set_focused_texture(const Ref<Texture2D> &p_focused);
 	void set_click_mask(const Ref<BitMap> &p_click_mask);
 
-	Ref<Texture> get_normal_texture() const;
-	Ref<Texture> get_pressed_texture() const;
-	Ref<Texture> get_hover_texture() const;
-	Ref<Texture> get_disabled_texture() const;
-	Ref<Texture> get_focused_texture() const;
+	Ref<Texture2D> get_normal_texture() const;
+	Ref<Texture2D> get_pressed_texture() const;
+	Ref<Texture2D> get_hover_texture() const;
+	Ref<Texture2D> get_disabled_texture() const;
+	Ref<Texture2D> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
 
 	bool get_expand() const;

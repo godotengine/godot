@@ -67,7 +67,20 @@ using namespace Assimp;
 // Constructor to be privately used by Importer
 BaseImporter::BaseImporter() AI_NO_EXCEPT
 : m_progress() {
-    // nothing to do here
+    /**
+    * Assimp Importer
+    * unit conversions available
+    * if you need another measurment unit add it below.
+    * it's currently defined in assimp that we prefer meters.
+    *
+    * NOTE: Initialised here rather than in the header file
+    * to workaround a VS2013 bug with brace initialisers
+    * */
+    importerUnits[ImporterUnits::M] = 1.0;
+    importerUnits[ImporterUnits::CM] = 0.01;
+    importerUnits[ImporterUnits::MM] = 0.001;
+    importerUnits[ImporterUnits::INCHES] = 0.0254;
+    importerUnits[ImporterUnits::FEET] = 0.3048;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -85,7 +98,7 @@ void BaseImporter::UpdateImporterScale( Importer* pImp )
     double activeScale = importerScale * fileScale;
 
     // Set active scaling
-    pImp->SetPropertyFloat( AI_CONFIG_APP_SCALE_KEY, activeScale);
+    pImp->SetPropertyFloat( AI_CONFIG_APP_SCALE_KEY, static_cast<float>( activeScale) );
 
     ASSIMP_LOG_DEBUG_F("UpdateImporterScale scale set: %f", activeScale );
 }

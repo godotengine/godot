@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,10 @@
 #include "script_language.h"
 
 #include "core/core_string_names.h"
+#include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/project_settings.h"
+#include <stdint.h>
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -39,14 +42,14 @@ int ScriptServer::_language_count = 0;
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 bool ScriptServer::languages_finished = false;
-ScriptEditRequestFunction ScriptServer::edit_request_func = NULL;
+ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
 
-		if (ScriptDebugger::get_singleton())
-			ScriptDebugger::get_singleton()->set_break_language(get_language());
+		if (EngineDebugger::is_active())
+			EngineDebugger::get_script_debugger()->set_break_language(get_language());
 	}
 }
 
@@ -133,7 +136,7 @@ bool ScriptServer::is_scripting_enabled() {
 
 ScriptLanguage *ScriptServer::get_language(int p_idx) {
 
-	ERR_FAIL_INDEX_V(p_idx, _language_count, NULL);
+	ERR_FAIL_INDEX_V(p_idx, _language_count, nullptr);
 
 	return _languages[p_idx];
 }
@@ -218,6 +221,7 @@ void ScriptServer::global_classes_clear() {
 }
 
 void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
+	ERR_FAIL_COND_MSG(p_class == p_base || (global_classes.has(p_base) && get_global_class_native_base(p_base) == p_class), "Cyclic inheritance in script class.");
 	GlobalScriptClass g;
 	g.language = p_language;
 	g.path = p_path;
@@ -252,7 +256,7 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 	return base;
 }
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
-	const StringName *K = NULL;
+	const StringName *K = nullptr;
 	List<StringName> classes;
 	while ((K = global_classes.next(K))) {
 		classes.push_back(*K);
@@ -280,7 +284,7 @@ void ScriptServer::save_global_classes() {
 }
 
 ////////////////////
-void ScriptInstance::get_property_state(List<Pair<StringName, Variant> > &state) {
+void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) {
 
 	List<PropertyInfo> pinfo;
 	get_property_list(&pinfo);
@@ -305,17 +309,17 @@ Variant ScriptInstance::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
-	Variant::CallError error;
+	Callable::CallError error;
 	return call(p_method, argptr, argc, error);
 }
 
 void ScriptInstance::call_multilevel(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	Variant::CallError ce;
+	Callable::CallError ce;
 	call(p_method, p_args, p_argcount, ce); // script may not support multilevel calls
 }
 
 void ScriptInstance::call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount) {
-	Variant::CallError ce;
+	Callable::CallError ce;
 	call(p_method, p_args, p_argcount, ce); // script may not support multilevel calls
 }
 
@@ -346,95 +350,12 @@ void ScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DEC
 ScriptInstance::~ScriptInstance() {
 }
 
-ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = NULL;
+ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
 ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
 	singleton = this;
 }
 
 void ScriptLanguage::frame() {
-}
-
-ScriptDebugger *ScriptDebugger::singleton = NULL;
-
-void ScriptDebugger::set_lines_left(int p_left) {
-
-	lines_left = p_left;
-}
-
-int ScriptDebugger::get_lines_left() const {
-
-	return lines_left;
-}
-
-void ScriptDebugger::set_depth(int p_depth) {
-
-	depth = p_depth;
-}
-
-int ScriptDebugger::get_depth() const {
-
-	return depth;
-}
-
-void ScriptDebugger::insert_breakpoint(int p_line, const StringName &p_source) {
-
-	if (!breakpoints.has(p_line))
-		breakpoints[p_line] = Set<StringName>();
-	breakpoints[p_line].insert(p_source);
-}
-
-void ScriptDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
-
-	if (!breakpoints.has(p_line))
-		return;
-
-	breakpoints[p_line].erase(p_source);
-	if (breakpoints[p_line].size() == 0)
-		breakpoints.erase(p_line);
-}
-bool ScriptDebugger::is_breakpoint(int p_line, const StringName &p_source) const {
-
-	if (!breakpoints.has(p_line))
-		return false;
-	return breakpoints[p_line].has(p_source);
-}
-bool ScriptDebugger::is_breakpoint_line(int p_line) const {
-
-	return breakpoints.has(p_line);
-}
-
-String ScriptDebugger::breakpoint_find_source(const String &p_source) const {
-
-	return p_source;
-}
-
-void ScriptDebugger::clear_breakpoints() {
-
-	breakpoints.clear();
-}
-
-void ScriptDebugger::idle_poll() {
-}
-
-void ScriptDebugger::line_poll() {
-}
-
-void ScriptDebugger::set_break_language(ScriptLanguage *p_lang) {
-
-	break_lang = p_lang;
-}
-
-ScriptLanguage *ScriptDebugger::get_break_language() const {
-
-	return break_lang;
-}
-
-ScriptDebugger::ScriptDebugger() {
-
-	singleton = this;
-	lines_left = -1;
-	depth = -1;
-	break_lang = NULL;
 }
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
@@ -641,6 +562,14 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 		*r_valid = false;
 
 	return Variant();
+}
+
+uint16_t PlaceHolderScriptInstance::get_rpc_method_id(const StringName &p_method) const {
+	return UINT16_MAX;
+}
+
+uint16_t PlaceHolderScriptInstance::get_rset_property_id(const StringName &p_method) const {
+	return UINT16_MAX;
 }
 
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :

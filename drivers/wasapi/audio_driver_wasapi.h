@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,9 +59,9 @@ class AudioDriverWASAPI : public AudioDriver {
 		String new_device;
 
 		AudioDeviceWASAPI() :
-				audio_client(NULL),
-				render_client(NULL),
-				capture_client(NULL),
+				audio_client(nullptr),
+				render_client(nullptr),
+				capture_client(nullptr),
 				active(false),
 				format_tag(0),
 				bits_per_sample(0),
@@ -75,7 +75,7 @@ class AudioDriverWASAPI : public AudioDriver {
 	AudioDeviceWASAPI audio_input;
 	AudioDeviceWASAPI audio_output;
 
-	Mutex *mutex;
+	Mutex mutex;
 	Thread *thread;
 
 	Vector<int32_t> samples_in;

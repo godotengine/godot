@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include "core/error_macros.h"
 #include "core/safe_refcount.h"
 
 #include <stddef.h>
@@ -142,7 +143,7 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	if (p_elements == 0)
 		return 0;
 	/** overloading operator new[] cannot be done , because it may not return the real allocated address (it may pad the 'element count' before the actual array). Because of that, it must be done by hand. This is the
-	same strategy used by std::vector, and the PoolVector class, so it should be safe.*/
+	same strategy used by std::vector, and the Vector class, so it should be safe.*/
 
 	size_t len = sizeof(T) * p_elements;
 	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
@@ -205,4 +206,4 @@ struct _GlobalNilClass {
 	static _GlobalNil _nil;
 };
 
-#endif
+#endif // MEMORY_H

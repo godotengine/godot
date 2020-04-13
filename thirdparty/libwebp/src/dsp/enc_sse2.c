@@ -777,7 +777,7 @@ static WEBP_INLINE void VR4_SSE2(uint8_t* dst,
   const __m128i ABCD0 = _mm_srli_si128(XABCD, 1);
   const __m128i abcd = _mm_avg_epu8(XABCD, ABCD0);
   const __m128i _XABCD = _mm_slli_si128(XABCD, 1);
-  const __m128i IXABCD = _mm_insert_epi16(_XABCD, I | (X << 8), 0);
+  const __m128i IXABCD = _mm_insert_epi16(_XABCD, (short)(I | (X << 8)), 0);
   const __m128i avg1 = _mm_avg_epu8(IXABCD, ABCD0);
   const __m128i lsb = _mm_and_si128(_mm_xor_si128(IXABCD, ABCD0), one);
   const __m128i avg2 = _mm_subs_epu8(avg1, lsb);

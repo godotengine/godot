@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,11 +77,11 @@ String InstancePlaceholder::get_instance_path() const {
 
 Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene> &p_custom_scene) {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NULL);
+	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	Node *base = get_parent();
 	if (!base)
-		return NULL;
+		return nullptr;
 
 	Ref<PackedScene> ps;
 	if (p_custom_scene.is_valid())
@@ -90,12 +90,12 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 		ps = ResourceLoader::load(path, "PackedScene");
 
 	if (!ps.is_valid())
-		return NULL;
+		return nullptr;
 	Node *scene = ps->instance();
 	if (!scene)
-		return NULL;
+		return nullptr;
 	scene->set_name(get_name());
-	int pos = get_position_in_parent();
+	int pos = get_index();
 
 	for (List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
 		scene->set(E->get().name, E->get().value);
@@ -112,15 +112,10 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	return scene;
 }
 
-void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_scene) {
-	//Deprecated by
-	create_instance(true, p_custom_scene);
-}
-
 Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 
 	Dictionary ret;
-	PoolStringArray order;
+	PackedStringArray order;
 
 	for (List<PropSet>::Element *E = stored_values.front(); E; E = E->next()) {
 		ret[E->get().name] = E->get().value;
@@ -138,7 +133,6 @@ void InstancePlaceholder::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_stored_values", "with_order"), &InstancePlaceholder::get_stored_values, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "replace", "custom_scene"), &InstancePlaceholder::create_instance, DEFVAL(false), DEFVAL(Variant()));
-	ClassDB::bind_method(D_METHOD("replace_by_instance", "custom_scene"), &InstancePlaceholder::replace_by_instance, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_instance_path"), &InstancePlaceholder::get_instance_path);
 }
 

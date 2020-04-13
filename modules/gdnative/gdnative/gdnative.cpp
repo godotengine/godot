@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ godot_variant GDAPI godot_method_bind_call(godot_method_bind *p_method_bind, god
 
 	Variant *ret_val = (Variant *)&ret;
 
-	Variant::CallError r_error;
+	Callable::CallError r_error;
 	*ret_val = mb->call(o, args, p_arg_count, r_error);
 
 	if (p_call_error) {
@@ -95,7 +95,7 @@ godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classnam
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
 	if (class_info)
 		return (godot_class_constructor)class_info->creation_func;
-	return NULL;
+	return nullptr;
 }
 
 godot_dictionary GDAPI godot_get_global_constants() {
@@ -166,8 +166,21 @@ void _gdnative_report_loading_error(const godot_object *p_library, const char *p
 	_err_print_error("gdnative_init", library->get_current_library_path().utf8().ptr(), 0, message.utf8().ptr());
 }
 
-bool GDAPI godot_is_instance_valid(const godot_object *p_object) {
-	return ObjectDB::instance_validate((Object *)p_object);
+godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id) {
+	return (godot_object *)ObjectDB::get_instance(ObjectID(p_instance_id));
+}
+
+void *godot_get_class_tag(const godot_string_name *p_class) {
+	StringName class_name = *(StringName *)p_class;
+	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(class_name);
+	return class_info ? class_info->class_ptr : nullptr;
+}
+
+godot_object *godot_object_cast_to(const godot_object *p_object, void *p_class_tag) {
+	if (!p_object) return nullptr;
+	Object *o = (Object *)p_object;
+
+	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : nullptr;
 }
 
 #ifdef __cplusplus

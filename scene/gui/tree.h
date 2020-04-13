@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,7 +66,7 @@ private:
 
 		TreeCellMode mode;
 
-		Ref<Texture> icon;
+		Ref<Texture2D> icon;
 		Rect2i icon_region;
 		String text;
 		String suffix;
@@ -97,7 +97,7 @@ private:
 		struct Button {
 			int id;
 			bool disabled;
-			Ref<Texture> texture;
+			Ref<Texture2D> texture;
 			Color color;
 			String tooltip;
 			Button() {
@@ -112,7 +112,7 @@ private:
 
 		Cell() {
 
-			custom_draw_obj = 0;
+			custom_draw_obj = ObjectID();
 			custom_button = false;
 			mode = TreeItem::CELL_MODE_STRING;
 			min = 0;
@@ -159,7 +159,7 @@ protected:
 	//bind helpers
 	Dictionary _get_range_config(int p_column) {
 		Dictionary d;
-		double min, max, step;
+		double min = 0.0, max = 0.0, step = 0.0;
 		get_range_config(p_column, min, max, step);
 		d["min"] = min;
 		d["max"] = max;
@@ -172,7 +172,7 @@ protected:
 		remove_child(Object::cast_to<TreeItem>(p_child));
 	}
 
-	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 public:
 	/* cell mode */
@@ -189,8 +189,8 @@ public:
 	void set_suffix(int p_column, String p_suffix);
 	String get_suffix(int p_column) const;
 
-	void set_icon(int p_column, const Ref<Texture> &p_icon);
-	Ref<Texture> get_icon(int p_column) const;
+	void set_icon(int p_column, const Ref<Texture2D> &p_icon);
+	Ref<Texture2D> get_icon(int p_column) const;
 
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
@@ -201,14 +201,14 @@ public:
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
 
-	void add_button(int p_column, const Ref<Texture> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
+	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
 	String get_button_tooltip(int p_column, int p_idx) const;
-	Ref<Texture> get_button(int p_column, int p_idx) const;
+	Ref<Texture2D> get_button(int p_column, int p_idx) const;
 	int get_button_id(int p_column, int p_idx) const;
 	void erase_button(int p_column, int p_idx);
 	int get_button_by_id(int p_column, int p_id) const;
-	void set_button(int p_column, int p_idx, const Ref<Texture> &p_button);
+	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
 	void set_button_color(int p_column, int p_idx, const Color &p_color);
 	void set_button_disabled(int p_column, int p_idx, bool p_disabled);
 	bool is_button_disabled(int p_column, int p_idx) const;
@@ -282,13 +282,15 @@ public:
 	void set_disable_folding(bool p_disable);
 	bool is_folding_disabled() const;
 
-	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	~TreeItem();
 };
 
 VARIANT_ENUM_CAST(TreeItem::TreeCellMode);
 VARIANT_ENUM_CAST(TreeItem::TextAlign);
+
+class VBoxContainer;
 
 class Tree : public Control {
 
@@ -359,6 +361,10 @@ private:
 	};
 
 	bool show_column_titles;
+
+	VBoxContainer *popup_editor_vb;
+
+	PopupPanel *popup_editor;
 	LineEdit *text_editor;
 	HSlider *value_editor;
 	bool updating_value_editor;
@@ -374,12 +380,12 @@ private:
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
-	//void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
+	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(const TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item);
-	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = NULL, bool *r_in_range = NULL, bool p_force_deselect = false);
+	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
 	int propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool p_doubleclick, TreeItem *p_item, int p_button, const Ref<InputEventWithModifiers> &p_mod);
-	void text_editor_enter(String p_text);
+	void _text_editor_enter(String p_text);
 	void _text_editor_modal_close();
 	void value_editor_changed(double p_value);
 
@@ -416,12 +422,12 @@ private:
 
 		Color title_button_color;
 
-		Ref<Texture> checked;
-		Ref<Texture> unchecked;
-		Ref<Texture> arrow_collapsed;
-		Ref<Texture> arrow;
-		Ref<Texture> select_arrow;
-		Ref<Texture> updown;
+		Ref<Texture2D> checked;
+		Ref<Texture2D> unchecked;
+		Ref<Texture2D> arrow_collapsed;
+		Ref<Texture2D> arrow;
+		Ref<Texture2D> select_arrow;
+		Ref<Texture2D> updown;
 
 		Color font_color;
 		Color font_color_selected;
@@ -577,7 +583,10 @@ public:
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1) const;
 	bool edit_selected();
 
-	TreeItem *search_item_text(const String &p_find, int *r_col = NULL, bool p_selectable = false);
+	// First item that starts with the text, from the current focused item down and wraps around.
+	TreeItem *search_item_text(const String &p_find, int *r_col = nullptr, bool p_selectable = false);
+	// First item that matches the whole text, from the first item down.
+	TreeItem *get_item_with_text(const String &p_find) const;
 
 	Point2 get_scroll() const;
 	void scroll_to_item(TreeItem *p_item);

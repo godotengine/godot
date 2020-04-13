@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Basis" category="Built-In Types" version="3.2">
+<class name="Basis" version="4.0">
 	<brief_description>
 		3×3 matrix datatype.
 	</brief_description>
@@ -64,20 +64,21 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles (in the YXZ convention: first Z, then X, and Y last). Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
+				Returns the basis's rotation in the form of Euler angles (in the YXZ convention: first Z, then X, and Y last). The returned vector contains the rotation angles in the format (X angle, Y angle, Z angle). See [method get_rotation_quat] if you need a quaternion instead.
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
 			<return type="int">
 			</return>
 			<description>
-				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1,0 or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to Godot source code.
+				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1, 0, or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to the Godot source code.
 			</description>
 		</method>
 		<method name="get_rotation_quat">
 			<return type="Quat">
 			</return>
 			<description>
+				Returns the basis's rotation in the form of a quaternion. See [method get_euler] if you need Euler angles, but keep in mind quaternions should generally be preferred to Euler angles.
 			</description>
 		</method>
 		<method name="get_scale">
@@ -99,9 +100,10 @@
 			</return>
 			<argument index="0" name="b" type="Basis">
 			</argument>
-			<argument index="1" name="epsilon" type="float" default="0.00001">
+			<argument index="1" name="epsilon" type="float" default="1e-05">
 			</argument>
 			<description>
+				Returns [code]true[/code] if this basis and [code]b[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="orthonormalized">
@@ -209,12 +211,16 @@
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+			The identity basis. This is identical to calling [code]Basis()[/code] without any parameters. This constant can be used to make your code clearer.
 		</constant>
 		<constant name="FLIP_X" value="Basis( -1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+			The basis that will flip something along the X axis when used in a transformation.
 		</constant>
 		<constant name="FLIP_Y" value="Basis( 1, 0, 0, 0, -1, 0, 0, 0, 1 )">
+			The basis that will flip something along the Y axis when used in a transformation.
 		</constant>
 		<constant name="FLIP_Z" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, -1 )">
+			The basis that will flip something along the Z axis when used in a transformation.
 		</constant>
 	</constants>
 </class>

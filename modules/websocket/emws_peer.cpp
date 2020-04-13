@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,12 +68,17 @@ Error EMWSPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 			bytes_array[i] = getValue($1+i, 'i8');
 		}
 
-		if ($3) {
-			sock.send(bytes_array.buffer);
-		} else {
-			var string = new TextDecoder("utf-8").decode(bytes_array);
-			sock.send(string);
+		try {
+			if ($3) {
+				sock.send(bytes_array.buffer);
+			} else {
+				var string = new TextDecoder("utf-8").decode(bytes_array);
+				sock.send(string);
+			}
+		} catch (e) {
+			return 1;
 		}
+		return 0;
 	}, peer_sock, p_buffer, p_buffer_size, is_bin);
 	/* clang-format on */
 
@@ -85,12 +90,11 @@ Error EMWSPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	if (_in_buffer.packets_left() == 0)
 		return ERR_UNAVAILABLE;
 
-	PoolVector<uint8_t>::Write rw = _packet_buffer.write();
 	int read = 0;
-	Error err = _in_buffer.read_packet(rw.ptr(), _packet_buffer.size(), &_is_string, read);
+	Error err = _in_buffer.read_packet(_packet_buffer.ptrw(), _packet_buffer.size(), &_is_string, read);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	*r_buffer = rw.ptr();
+	*r_buffer = _packet_buffer.ptr();
 	r_buffer_size = read;
 
 	return OK;
@@ -138,6 +142,11 @@ uint16_t EMWSPeer::get_connected_port() const {
 
 	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
+
+void EMWSPeer::set_no_delay(bool p_enabled) {
+
+	ERR_FAIL_MSG("'set_no_delay' is not supported in HTML5 export.");
+}
 
 EMWSPeer::EMWSPeer() {
 	peer_sock = -1;

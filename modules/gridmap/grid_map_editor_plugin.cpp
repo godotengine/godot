@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,22 +29,20 @@
 /*************************************************************************/
 
 #include "grid_map_editor_plugin.h"
-#include "core/os/input.h"
+#include "core/input/input_filter.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
-#include "editor/plugins/spatial_editor_plugin.h"
-#include "scene/3d/camera.h"
+#include "editor/plugins/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
 
 #include "core/math/geometry.h"
 #include "core/os/keyboard.h"
+#include "scene/main/window.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {
 
-	if (p_node == node) {
-		node = NULL;
-		hide();
-		mesh_library_palette->hide();
-	}
+	if (p_node == node)
+		node = nullptr;
 }
 
 void GridMapEditor::_configure() {
@@ -279,11 +277,12 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = Transform();
 	cursor_transform.origin = cursor_origin;
 	cursor_transform.basis.set_orthogonal_index(cursor_rot);
+	cursor_transform.basis *= node->get_cell_scale();
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
 	if (cursor_instance.is_valid()) {
-		VisualServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
-		VisualServer::get_singleton()->instance_set_visible(cursor_instance, cursor_visible);
+		RenderingServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
+		RenderingServer::get_singleton()->instance_set_visible(cursor_instance, cursor_visible);
 	}
 }
 
@@ -293,22 +292,22 @@ void GridMapEditor::_update_selection_transform() {
 
 	if (!selection.active) {
 
-		VisualServer::get_singleton()->instance_set_transform(selection_instance, xf_zero);
+		RenderingServer::get_singleton()->instance_set_transform(selection_instance, xf_zero);
 		for (int i = 0; i < 3; i++) {
-			VisualServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf_zero);
+			RenderingServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf_zero);
 		}
 		return;
 	}
 
 	Transform xf;
-	xf.scale(Vector3(1, 1, 1) * (Vector3(1, 1, 1) + (selection.end - selection.begin)) * node->get_cell_size());
+	xf.scale((Vector3(1, 1, 1) + (selection.end - selection.begin)) * node->get_cell_size());
 	xf.origin = selection.begin * node->get_cell_size();
 
-	VisualServer::get_singleton()->instance_set_transform(selection_instance, node->get_global_transform() * xf);
+	RenderingServer::get_singleton()->instance_set_transform(selection_instance, node->get_global_transform() * xf);
 
 	for (int i = 0; i < 3; i++) {
 		if (i != edit_axis || (edit_floor[edit_axis] < selection.begin[edit_axis]) || (edit_floor[edit_axis] > selection.end[edit_axis] + 1)) {
-			VisualServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf_zero);
+			RenderingServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf_zero);
 		} else {
 
 			Vector3 scale = (selection.end - selection.begin + Vector3(1, 1, 1));
@@ -323,7 +322,7 @@ void GridMapEditor::_update_selection_transform() {
 			xf2.basis.scale(scale);
 			xf2.origin = pos;
 
-			VisualServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf2);
+			RenderingServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf2);
 		}
 	}
 }
@@ -353,10 +352,17 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 	selection.click = p_begin;
 	selection.current = p_end;
 
-	_update_selection_transform();
+	if (is_visible_in_tree()) {
+		_update_selection_transform();
+	}
+
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_CLEAR), !selection.active);
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_CUT), !selection.active);
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_DUPLICATE), !selection.active);
+	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_SELECTION_FILL), !selection.active);
 }
 
-bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click) {
+bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click) {
 
 	if (!spatial_editor)
 		return false;
@@ -369,7 +375,7 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	if (input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE && !mesh_library->has_item(selected_palette))
 		return false;
 
-	Camera *camera = p_camera;
+	Camera3D *camera = p_camera;
 	Vector3 from = camera->project_ray_origin(p_point);
 	Vector3 normal = camera->project_ray_normal(p_point);
 	Transform local_xform = node->get_global_transform().affine_inverse();
@@ -410,7 +416,7 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 		}
 	}
 
-	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
+	RS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
 
 	if (cursor_instance.is_valid()) {
 
@@ -522,7 +528,7 @@ void GridMapEditor::_clear_clipboard_data() {
 
 	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
 
-		VisualServer::get_singleton()->free(E->get().instance);
+		RenderingServer::get_singleton()->free(E->get().instance);
 	}
 
 	clipboard_items.clear();
@@ -550,7 +556,7 @@ void GridMapEditor::_set_clipboard_data() {
 				item.cell_item = itm;
 				item.grid_offset = Vector3(i, j, k) - selection.begin;
 				item.orientation = node->get_cell_item_orientation(i, j, k);
-				item.instance = VisualServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
+				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
 
 				clipboard_items.push_back(item);
 			}
@@ -564,7 +570,7 @@ void GridMapEditor::_update_paste_indicator() {
 
 		Transform xf;
 		xf.basis.set_zero();
-		VisualServer::get_singleton()->instance_set_transform(paste_instance, xf);
+		RenderingServer::get_singleton()->instance_set_transform(paste_instance, xf);
 		return;
 	}
 
@@ -578,7 +584,7 @@ void GridMapEditor::_update_paste_indicator() {
 	xf.basis = rot * xf.basis;
 	xf.translate((-center * node->get_cell_size()) / scale);
 
-	VisualServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
+	RenderingServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
 
 	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
 
@@ -591,9 +597,9 @@ void GridMapEditor::_update_paste_indicator() {
 
 		Basis item_rot;
 		item_rot.set_orthogonal_index(item.orientation);
-		xf.basis = item_rot * xf.basis;
+		xf.basis = item_rot * xf.basis * node->get_cell_scale();
 
-		VisualServer::get_singleton()->instance_set_transform(item.instance, node->get_global_transform() * xf);
+		RenderingServer::get_singleton()->instance_set_transform(item.instance, node->get_global_transform() * xf);
 	}
 }
 
@@ -633,7 +639,7 @@ void GridMapEditor::_do_paste() {
 	_clear_clipboard_data();
 }
 
-bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event) {
+bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
 	if (!node) {
 		return false;
 	}
@@ -654,19 +660,20 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 		}
 
 		if (mb->is_pressed()) {
-			SpatialEditorViewport::NavigationScheme nav_scheme = (SpatialEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
-			if ((nav_scheme == SpatialEditorViewport::NAVIGATION_MAYA || nav_scheme == SpatialEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
+			Node3DEditorViewport::NavigationScheme nav_scheme = (Node3DEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+			if ((nav_scheme == Node3DEditorViewport::NAVIGATION_MAYA || nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
 				input_action = INPUT_NONE;
 			} else if (mb->get_button_index() == BUTTON_LEFT) {
 
+				bool can_edit = (node && node->get_mesh_library().is_valid());
 				if (input_action == INPUT_PASTE) {
 					_do_paste();
 					input_action = INPUT_NONE;
 					_update_paste_indicator();
-				} else if (mb->get_shift()) {
+				} else if (mb->get_shift() && can_edit) {
 					input_action = INPUT_SELECT;
 					last_selection = selection;
-				} else if (mb->get_command()) {
+				} else if (mb->get_command() && can_edit) {
 					input_action = INPUT_PICK;
 				} else {
 					input_action = INPUT_PAINT;
@@ -746,7 +753,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 
 	if (k.is_valid()) {
 		if (k->is_pressed()) {
-			if (k->get_scancode() == KEY_ESCAPE) {
+			if (k->get_keycode() == KEY_ESCAPE) {
 
 				if (input_action == INPUT_PASTE) {
 					_clear_clipboard_data();
@@ -767,12 +774,12 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 
 			if (k->get_shift() && selection.active && input_action != INPUT_PASTE) {
 
-				if (k->get_scancode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
+				if (k->get_keycode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
 					selection.click[edit_axis]--;
 					_validate_selection();
 					return true;
 				}
-				if (k->get_scancode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
+				if (k->get_keycode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
 					selection.click[edit_axis]++;
 					_validate_selection();
 					return true;
@@ -834,12 +841,30 @@ void GridMapEditor::_text_changed(const String &p_text) {
 
 void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 
-	Ref<InputEventKey> k = p_ie;
+	const Ref<InputEventKey> k = p_ie;
 
-	if (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_PAGEUP || k->get_scancode() == KEY_PAGEDOWN)) {
+	if (k.is_valid() && (k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_PAGEUP || k->get_keycode() == KEY_PAGEDOWN)) {
 
+		// Forward the key input to the ItemList so it can be scrolled
 		mesh_library_palette->call("_gui_input", k);
 		search_box->accept_event();
+	}
+}
+
+void GridMapEditor::_mesh_library_palette_input(const Ref<InputEvent> &p_ie) {
+
+	const Ref<InputEventMouseButton> mb = p_ie;
+
+	// Zoom in/out using Ctrl + mouse wheel
+	if (mb.is_valid() && mb->is_pressed() && mb->get_command()) {
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+			size_slider->set_value(size_slider->get_value() + 0.2);
+		}
+
+		if (mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+			size_slider->set_value(size_slider->get_value() - 0.2);
+		}
 	}
 }
 
@@ -871,7 +896,7 @@ void GridMapEditor::update_palette() {
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
 
 	if (mesh_library.is_null()) {
-		last_mesh_library = NULL;
+		last_mesh_library = nullptr;
 		search_box->set_text("");
 		search_box->set_editable(false);
 		info_message->show();
@@ -901,7 +926,7 @@ void GridMapEditor::update_palette() {
 	for (List<_CGMEItemSort>::Element *E = il.front(); E; E = E->next()) {
 		int id = E->get().id;
 		String name = mesh_library->get_item_name(id);
-		Ref<Texture> preview = mesh_library->get_item_preview(id);
+		Ref<Texture2D> preview = mesh_library->get_item_preview(id);
 
 		if (name == "") {
 			name = "#" + itos(id);
@@ -929,25 +954,26 @@ void GridMapEditor::update_palette() {
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
+	if (!p_gridmap && node)
+		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
 
 	node = p_gridmap;
-	VS *vs = VS::get_singleton();
 
 	input_action = INPUT_NONE;
 	selection.active = false;
 	_update_selection_transform();
 	_update_paste_indicator();
 
-	spatial_editor = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
+	spatial_editor = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());
 
 	if (!node) {
 		set_process(false);
 		for (int i = 0; i < 3; i++) {
-			VisualServer::get_singleton()->instance_set_visible(grid_instance[i], false);
+			RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], false);
 		}
 
 		if (cursor_instance.is_valid()) {
-			VisualServer::get_singleton()->instance_set_visible(cursor_instance, false);
+			RenderingServer::get_singleton()->instance_set_visible(cursor_instance, false);
 		}
 
 		return;
@@ -957,75 +983,13 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	set_process(true);
 
-	Vector3 edited_floor = p_gridmap->has_meta("_editor_floor_") ? p_gridmap->get_meta("_editor_floor_") : Variant();
 	clip_mode = p_gridmap->has_meta("_editor_clip_") ? ClipMode(p_gridmap->get_meta("_editor_clip_").operator int()) : CLIP_DISABLED;
 
-	for (int i = 0; i < 3; i++) {
-		if (vs->mesh_get_surface_count(grid[i]) > 0)
-			vs->mesh_remove_surface(grid[i], 0);
-		edit_floor[i] = edited_floor[i];
-	}
-
-	{
-
-		// Update grids.
-		indicator_mat.instance();
-		indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		indicator_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		indicator_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-		indicator_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
-
-		Vector<Vector3> grid_points[3];
-		Vector<Color> grid_colors[3];
-
-		float cell_size[3] = { p_gridmap->get_cell_size().x, p_gridmap->get_cell_size().y, p_gridmap->get_cell_size().z };
-
-		for (int i = 0; i < 3; i++) {
-
-			Vector3 axis;
-			axis[i] = 1;
-			Vector3 axis_n1;
-			axis_n1[(i + 1) % 3] = cell_size[(i + 1) % 3];
-			Vector3 axis_n2;
-			axis_n2[(i + 2) % 3] = cell_size[(i + 2) % 3];
-
-			for (int j = -GRID_CURSOR_SIZE; j <= GRID_CURSOR_SIZE; j++) {
-
-				for (int k = -GRID_CURSOR_SIZE; k <= GRID_CURSOR_SIZE; k++) {
-
-					Vector3 p = axis_n1 * j + axis_n2 * k;
-					float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / GRID_CURSOR_SIZE)), 2);
-
-					Vector3 pj = axis_n1 * (j + 1) + axis_n2 * k;
-					float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / GRID_CURSOR_SIZE)), 2);
-
-					Vector3 pk = axis_n1 * j + axis_n2 * (k + 1);
-					float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / GRID_CURSOR_SIZE)), 2);
-
-					grid_points[i].push_back(p);
-					grid_points[i].push_back(pk);
-					grid_colors[i].push_back(Color(1, 1, 1, trans));
-					grid_colors[i].push_back(Color(1, 1, 1, transk));
-
-					grid_points[i].push_back(p);
-					grid_points[i].push_back(pj);
-					grid_colors[i].push_back(Color(1, 1, 1, trans));
-					grid_colors[i].push_back(Color(1, 1, 1, transj));
-				}
-			}
-
-			Array d;
-			d.resize(VS::ARRAY_MAX);
-			d[VS::ARRAY_VERTEX] = grid_points[i];
-			d[VS::ARRAY_COLOR] = grid_colors[i];
-			VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[i], VisualServer::PRIMITIVE_LINES, d);
-			VisualServer::get_singleton()->mesh_surface_set_material(grid[i], 0, indicator_mat->get_rid());
-		}
-	}
-
+	_draw_grids(node->get_cell_size());
 	update_grid();
 	_update_clip();
+
+	node->connect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
 }
 
 void GridMapEditor::_update_clip() {
@@ -1047,7 +1011,7 @@ void GridMapEditor::update_grid() {
 	edit_grid_xform.basis = Basis();
 
 	for (int i = 0; i < 3; i++) {
-		VisualServer::get_singleton()->instance_set_visible(grid_instance[i], i == edit_axis);
+		RenderingServer::get_singleton()->instance_set_visible(grid_instance[i], i == edit_axis);
 	}
 
 	updating = true;
@@ -1055,42 +1019,96 @@ void GridMapEditor::update_grid() {
 	updating = false;
 }
 
+void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
+	Vector3 edited_floor = node->has_meta("_editor_floor_") ? node->get_meta("_editor_floor_") : Variant();
+
+	for (int i = 0; i < 3; i++) {
+		RS::get_singleton()->mesh_clear(grid[i]);
+		edit_floor[i] = edited_floor[i];
+	}
+
+	Vector<Vector3> grid_points[3];
+	Vector<Color> grid_colors[3];
+
+	for (int i = 0; i < 3; i++) {
+
+		Vector3 axis;
+		axis[i] = 1;
+		Vector3 axis_n1;
+		axis_n1[(i + 1) % 3] = cell_size[(i + 1) % 3];
+		Vector3 axis_n2;
+		axis_n2[(i + 2) % 3] = cell_size[(i + 2) % 3];
+
+		for (int j = -GRID_CURSOR_SIZE; j <= GRID_CURSOR_SIZE; j++) {
+
+			for (int k = -GRID_CURSOR_SIZE; k <= GRID_CURSOR_SIZE; k++) {
+
+				Vector3 p = axis_n1 * j + axis_n2 * k;
+				float trans = Math::pow(MAX(0, 1.0 - (Vector2(j, k).length() / GRID_CURSOR_SIZE)), 2);
+
+				Vector3 pj = axis_n1 * (j + 1) + axis_n2 * k;
+				float transj = Math::pow(MAX(0, 1.0 - (Vector2(j + 1, k).length() / GRID_CURSOR_SIZE)), 2);
+
+				Vector3 pk = axis_n1 * j + axis_n2 * (k + 1);
+				float transk = Math::pow(MAX(0, 1.0 - (Vector2(j, k + 1).length() / GRID_CURSOR_SIZE)), 2);
+
+				grid_points[i].push_back(p);
+				grid_points[i].push_back(pk);
+				grid_colors[i].push_back(Color(1, 1, 1, trans));
+				grid_colors[i].push_back(Color(1, 1, 1, transk));
+
+				grid_points[i].push_back(p);
+				grid_points[i].push_back(pj);
+				grid_colors[i].push_back(Color(1, 1, 1, trans));
+				grid_colors[i].push_back(Color(1, 1, 1, transj));
+			}
+		}
+
+		Array d;
+		d.resize(RS::ARRAY_MAX);
+		d[RS::ARRAY_VERTEX] = grid_points[i];
+		d[RS::ARRAY_COLOR] = grid_colors[i];
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(grid[i], RenderingServer::PRIMITIVE_LINES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(grid[i], 0, indicator_mat->get_rid());
+	}
+}
+
 void GridMapEditor::_notification(int p_what) {
 
 	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
-			get_tree()->connect("node_removed", this, "_node_removed");
-			mesh_library_palette->connect("item_selected", this, "_item_selected_cbk");
+			get_tree()->connect("node_removed", callable_mp(this, &GridMapEditor::_node_removed));
+			mesh_library_palette->connect("item_selected", callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			for (int i = 0; i < 3; i++) {
 
-				grid[i] = VS::get_singleton()->mesh_create();
-				grid_instance[i] = VS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
-				selection_level_instance[i] = VisualServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
+				grid[i] = RS::get_singleton()->mesh_create();
+				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
+				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
 			}
 
-			selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world()->get_scenario());
-			paste_instance = VisualServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world()->get_scenario());
+			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world()->get_scenario());
+			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world()->get_scenario());
 
 			_update_selection_transform();
 			_update_paste_indicator();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			get_tree()->disconnect("node_removed", this, "_node_removed");
+			get_tree()->disconnect("node_removed", callable_mp(this, &GridMapEditor::_node_removed));
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
 
-				VS::get_singleton()->free(grid_instance[i]);
-				VS::get_singleton()->free(grid[i]);
+				RS::get_singleton()->free(grid_instance[i]);
+				RS::get_singleton()->free(grid[i]);
 				grid_instance[i] = RID();
 				grid[i] = RID();
-				VisualServer::get_singleton()->free(selection_level_instance[i]);
+				RenderingServer::get_singleton()->free(selection_level_instance[i]);
 			}
 
-			VisualServer::get_singleton()->free(selection_instance);
-			VisualServer::get_singleton()->free(paste_instance);
+			RenderingServer::get_singleton()->free(selection_instance);
+			RenderingServer::get_singleton()->free(paste_instance);
 			selection_instance = RID();
 			paste_instance = RID();
 		} break;
@@ -1105,7 +1123,7 @@ void GridMapEditor::_notification(int p_what) {
 			if (xf != grid_xform) {
 				for (int i = 0; i < 3; i++) {
 
-					VS::get_singleton()->instance_set_transform(grid_instance[i], xf * edit_grid_xform);
+					RS::get_singleton()->instance_set_transform(grid_instance[i], xf * edit_grid_xform);
 				}
 				grid_xform = xf;
 			}
@@ -1122,15 +1140,15 @@ void GridMapEditor::_notification(int p_what) {
 				p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 				p = node->get_transform().xform(p); // plane to snap
 
-				SpatialEditorPlugin *sep = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
+				Node3DEditorPlugin *sep = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());
 				if (sep)
 					sep->snap_cursor_to_plane(p);
 			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_icon("GridMap", "EditorIcons"));
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
+			options->set_icon(get_theme_icon("GridMap", "EditorIcons"));
+			search_box->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 		} break;
 	}
 }
@@ -1141,7 +1159,7 @@ void GridMapEditor::_update_cursor_instance() {
 	}
 
 	if (cursor_instance.is_valid())
-		VisualServer::get_singleton()->free(cursor_instance);
+		RenderingServer::get_singleton()->free(cursor_instance);
 	cursor_instance = RID();
 
 	if (selected_palette >= 0) {
@@ -1150,8 +1168,8 @@ void GridMapEditor::_update_cursor_instance() {
 			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
 			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
 
-				cursor_instance = VisualServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
-				VisualServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
+				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
+				RenderingServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
 			}
 		}
 	}
@@ -1181,18 +1199,8 @@ void GridMapEditor::_floor_mouse_exited() {
 
 void GridMapEditor::_bind_methods() {
 
-	ClassDB::bind_method("_text_changed", &GridMapEditor::_text_changed);
-	ClassDB::bind_method("_sbox_input", &GridMapEditor::_sbox_input);
-	ClassDB::bind_method("_icon_size_changed", &GridMapEditor::_icon_size_changed);
-	ClassDB::bind_method("_menu_option", &GridMapEditor::_menu_option);
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
-	ClassDB::bind_method("_item_selected_cbk", &GridMapEditor::_item_selected_cbk);
-	ClassDB::bind_method("_floor_changed", &GridMapEditor::_floor_changed);
-	ClassDB::bind_method("_floor_mouse_exited", &GridMapEditor::_floor_mouse_exited);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
-	ClassDB::bind_method("_node_removed", &GridMapEditor::_node_removed);
-
-	ClassDB::bind_method(D_METHOD("_set_display_mode", "mode"), &GridMapEditor::_set_display_mode);
 }
 
 GridMapEditor::GridMapEditor(EditorNode *p_editor) {
@@ -1209,7 +1217,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	spatial_editor_hb = memnew(HBoxContainer);
 	spatial_editor_hb->set_h_size_flags(SIZE_EXPAND_FILL);
 	spatial_editor_hb->set_alignment(BoxContainer::ALIGN_END);
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
+	Node3DEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
 
 	spin_box_label = memnew(Label);
 	spin_box_label->set_text(TTR("Floor:"));
@@ -1219,12 +1227,12 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	floor->set_min(-32767);
 	floor->set_max(32767);
 	floor->set_step(1);
-	floor->get_line_edit()->add_constant_override("minimum_spaces", 16);
+	floor->get_line_edit()->add_theme_constant_override("minimum_spaces", 16);
 
 	spatial_editor_hb->add_child(floor);
-	floor->connect("value_changed", this, "_floor_changed");
-	floor->connect("mouse_exited", this, "_floor_mouse_exited");
-	floor->get_line_edit()->connect("mouse_exited", this, "_floor_mouse_exited");
+	floor->connect("value_changed", callable_mp(this, &GridMapEditor::_floor_changed));
+	floor->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
+	floor->get_line_edit()->connect("mouse_exited", callable_mp(this, &GridMapEditor::_floor_mouse_exited));
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 
@@ -1256,7 +1264,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KEY_MASK_SHIFT + KEY_D);
 	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, KEY_W);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Paste Selects", MENU_OPTION_PASTE_SELECTS);
+	options->get_popup()->add_check_item(TTR("Paste Selects"), MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_CTRL + KEY_C);
 	options->get_popup()->add_item(TTR("Cut Selection"), MENU_OPTION_SELECTION_CUT, KEY_MASK_CTRL + KEY_X);
@@ -1281,7 +1289,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
 	clip_mode = CLIP_DISABLED;
-	options->get_popup()->connect("id_pressed", this, "_menu_option");
+	options->get_popup()->connect("id_pressed", callable_mp(this, &GridMapEditor::_menu_option));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
@@ -1291,30 +1299,30 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter meshes"));
 	hb->add_child(search_box);
-	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("gui_input", this, "_sbox_input");
+	search_box->connect("text_changed", callable_mp(this, &GridMapEditor::_text_changed));
+	search_box->connect("gui_input", callable_mp(this, &GridMapEditor::_sbox_input));
 
 	mode_thumbnail = memnew(ToolButton);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
-	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_icon("FileThumbnail", "EditorIcons"));
+	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_theme_icon("FileThumbnail", "EditorIcons"));
 	hb->add_child(mode_thumbnail);
-	mode_thumbnail->connect("pressed", this, "_set_display_mode", varray(DISPLAY_THUMBNAIL));
+	mode_thumbnail->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_THUMBNAIL));
 
 	mode_list = memnew(ToolButton);
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(false);
-	mode_list->set_icon(p_editor->get_gui_base()->get_icon("FileList", "EditorIcons"));
+	mode_list->set_icon(p_editor->get_gui_base()->get_theme_icon("FileList", "EditorIcons"));
 	hb->add_child(mode_list);
-	mode_list->connect("pressed", this, "_set_display_mode", varray(DISPLAY_LIST));
+	mode_list->connect("pressed", callable_mp(this, &GridMapEditor::_set_display_mode), varray(DISPLAY_LIST));
 
 	size_slider = memnew(HSlider);
 	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
-	size_slider->set_min(0.1f);
+	size_slider->set_min(0.2f);
 	size_slider->set_max(4.0f);
 	size_slider->set_step(0.1f);
 	size_slider->set_value(1.0f);
-	size_slider->connect("value_changed", this, "_icon_size_changed");
+	size_slider->connect("value_changed", callable_mp(this, &GridMapEditor::_icon_size_changed));
 	add_child(size_slider);
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
@@ -1324,12 +1332,14 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mesh_library_palette = memnew(ItemList);
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
+	mesh_library_palette->connect("gui_input", callable_mp(this, &GridMapEditor::_mesh_library_palette_input));
 
 	info_message = memnew(Label);
 	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
 	info_message->set_valign(Label::VALIGN_CENTER);
 	info_message->set_align(Label::ALIGN_CENTER);
 	info_message->set_autowrap(true);
+	info_message->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
 	mesh_library_palette->add_child(info_message);
 
@@ -1343,15 +1353,15 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	lock_view = false;
 	cursor_rot = 0;
 
-	selection_mesh = VisualServer::get_singleton()->mesh_create();
-	paste_mesh = VisualServer::get_singleton()->mesh_create();
+	selection_mesh = RenderingServer::get_singleton()->mesh_create();
+	paste_mesh = RenderingServer::get_singleton()->mesh_create();
 
 	{
 		// Selection mesh create.
 
-		PoolVector<Vector3> lines;
-		PoolVector<Vector3> triangles;
-		PoolVector<Vector3> square[3];
+		Vector<Vector3> lines;
+		Vector<Vector3> triangles;
+		Vector<Vector3> square[3];
 
 		for (int i = 0; i < 6; i++) {
 
@@ -1421,53 +1431,59 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		}
 
 		Array d;
-		d.resize(VS::ARRAY_MAX);
+		d.resize(RS::ARRAY_MAX);
 
 		inner_mat.instance();
 		inner_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.2));
-		inner_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		inner_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+		inner_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		inner_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
-		d[VS::ARRAY_VERTEX] = triangles;
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, VS::PRIMITIVE_TRIANGLES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh, 0, inner_mat->get_rid());
+		d[RS::ARRAY_VERTEX] = triangles;
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, RS::PRIMITIVE_TRIANGLES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(selection_mesh, 0, inner_mat->get_rid());
 
 		outer_mat.instance();
 		outer_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.8));
 		outer_mat->set_on_top_of_alpha();
-		outer_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		outer_mat->set_line_width(3.0);
-		outer_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+
+		outer_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		outer_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 		selection_floor_mat.instance();
 		selection_floor_mat->set_albedo(Color(0.80, 0.80, 1.0, 1));
 		selection_floor_mat->set_on_top_of_alpha();
-		selection_floor_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		selection_floor_mat->set_line_width(3.0);
+		selection_floor_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 
-		d[VS::ARRAY_VERTEX] = lines;
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, VS::PRIMITIVE_LINES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh, 1, outer_mat->get_rid());
+		d[RS::ARRAY_VERTEX] = lines;
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, RS::PRIMITIVE_LINES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(selection_mesh, 1, outer_mat->get_rid());
 
-		d[VS::ARRAY_VERTEX] = triangles;
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(paste_mesh, VS::PRIMITIVE_TRIANGLES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(paste_mesh, 0, inner_mat->get_rid());
+		d[RS::ARRAY_VERTEX] = triangles;
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(paste_mesh, RS::PRIMITIVE_TRIANGLES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(paste_mesh, 0, inner_mat->get_rid());
 
-		d[VS::ARRAY_VERTEX] = lines;
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(paste_mesh, VS::PRIMITIVE_LINES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(paste_mesh, 1, outer_mat->get_rid());
+		d[RS::ARRAY_VERTEX] = lines;
+		RenderingServer::get_singleton()->mesh_add_surface_from_arrays(paste_mesh, RS::PRIMITIVE_LINES, d);
+		RenderingServer::get_singleton()->mesh_surface_set_material(paste_mesh, 1, outer_mat->get_rid());
 
 		for (int i = 0; i < 3; i++) {
-			d[VS::ARRAY_VERTEX] = square[i];
-			selection_level_mesh[i] = VS::get_singleton()->mesh_create();
-			VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_level_mesh[i], VS::PRIMITIVE_LINES, d);
-			VisualServer::get_singleton()->mesh_surface_set_material(selection_level_mesh[i], 0, selection_floor_mat->get_rid());
+			d[RS::ARRAY_VERTEX] = square[i];
+			selection_level_mesh[i] = RS::get_singleton()->mesh_create();
+			RenderingServer::get_singleton()->mesh_add_surface_from_arrays(selection_level_mesh[i], RS::PRIMITIVE_LINES, d);
+			RenderingServer::get_singleton()->mesh_surface_set_material(selection_level_mesh[i], 0, selection_floor_mat->get_rid());
 		}
 	}
 
-	selection.active = false;
+	_set_selection(false);
 	updating = false;
 	accumulated_floor_delta = 0.0;
+
+	indicator_mat.instance();
+	indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	indicator_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
 }
 
 GridMapEditor::~GridMapEditor() {
@@ -1477,24 +1493,24 @@ GridMapEditor::~GridMapEditor() {
 	for (int i = 0; i < 3; i++) {
 
 		if (grid[i].is_valid())
-			VisualServer::get_singleton()->free(grid[i]);
+			RenderingServer::get_singleton()->free(grid[i]);
 		if (grid_instance[i].is_valid())
-			VisualServer::get_singleton()->free(grid_instance[i]);
+			RenderingServer::get_singleton()->free(grid_instance[i]);
 		if (cursor_instance.is_valid())
-			VisualServer::get_singleton()->free(cursor_instance);
+			RenderingServer::get_singleton()->free(cursor_instance);
 		if (selection_level_instance[i].is_valid())
-			VisualServer::get_singleton()->free(selection_level_instance[i]);
+			RenderingServer::get_singleton()->free(selection_level_instance[i]);
 		if (selection_level_mesh[i].is_valid())
-			VisualServer::get_singleton()->free(selection_level_mesh[i]);
+			RenderingServer::get_singleton()->free(selection_level_mesh[i]);
 	}
 
-	VisualServer::get_singleton()->free(selection_mesh);
+	RenderingServer::get_singleton()->free(selection_mesh);
 	if (selection_instance.is_valid())
-		VisualServer::get_singleton()->free(selection_instance);
+		RenderingServer::get_singleton()->free(selection_instance);
 
-	VisualServer::get_singleton()->free(paste_mesh);
+	RenderingServer::get_singleton()->free(paste_mesh);
 	if (paste_instance.is_valid())
-		VisualServer::get_singleton()->free(paste_instance);
+		RenderingServer::get_singleton()->free(paste_instance);
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {
@@ -1503,10 +1519,10 @@ void GridMapEditorPlugin::_notification(int p_what) {
 
 		switch ((int)EditorSettings::get_singleton()->get("editors/grid_map/editor_side")) {
 			case 0: { // Left.
-				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
+				Node3DEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 0);
 			} break;
 			case 1: { // Right.
-				SpatialEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
+				Node3DEditor::get_singleton()->get_palette_split()->move_child(grid_map_editor, 1);
 			} break;
 		}
 	}
@@ -1532,7 +1548,7 @@ void GridMapEditorPlugin::make_visible(bool p_visible) {
 
 		grid_map_editor->spatial_editor_hb->hide();
 		grid_map_editor->hide();
-		grid_map_editor->edit(NULL);
+		grid_map_editor->edit(nullptr);
 		grid_map_editor->set_process(false);
 	}
 }

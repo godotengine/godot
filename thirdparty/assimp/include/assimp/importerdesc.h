@@ -48,11 +48,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef AI_IMPORTER_DESC_H_INC
 #define AI_IMPORTER_DESC_H_INC
 
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 
 /** Mixed set of flags for #aiImporterDesc, indicating some features
   *  common to many importers*/
-enum aiImporterFlags
-{
+enum aiImporterFlags {
     /** Indicates that there is a textual encoding of the
      *  file format; and that it is supported.*/
     aiImporterFlags_SupportTextFlavour = 0x1,
@@ -87,8 +90,7 @@ enum aiImporterFlags
  *  as importers/exporters are added to Assimp, so it might be useful
  *  to have a common mechanism to query some rough importer
  *  characteristics. */
-struct aiImporterDesc
-{
+struct aiImporterDesc {
     /** Full name of the importer (i.e. Blender3D importer)*/
     const char* mName;
 

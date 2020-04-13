@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="OptionButton" inherits="Button" category="Core" version="3.2">
+<class name="OptionButton" inherits="Button" version="4.0">
 	<brief_description>
 		Button control that provides selectable options when pressed.
 	</brief_description>
@@ -12,14 +12,14 @@
 		<method name="add_icon_item">
 			<return type="void">
 			</return>
-			<argument index="0" name="texture" type="Texture">
+			<argument index="0" name="texture" type="Texture2D">
 			</argument>
 			<argument index="1" name="label" type="String">
 			</argument>
 			<argument index="2" name="id" type="int" default="-1">
 			</argument>
 			<description>
-				Adds an item, with a [code]texture[/code] icon, text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, [code]id[/code] becomes the item index. New items are appended at the end.
+				Adds an item, with a [code]texture[/code] icon, text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, the item index will be used as the item's ID. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_item">
@@ -30,7 +30,7 @@
 			<argument index="1" name="id" type="int" default="-1">
 			</argument>
 			<description>
-				Adds an item, with text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, [code]id[/code] becomes the item index. New items are appended at the end.
+				Adds an item, with text [code]label[/code] and (optionally) [code]id[/code]. If no [code]id[/code] is passed, the item index will be used as the item's ID. New items are appended at the end.
 			</description>
 		</method>
 		<method name="add_separator">
@@ -44,18 +44,18 @@
 			<return type="void">
 			</return>
 			<description>
-				Clear all the items in the [OptionButton].
+				Clears all the items in the [OptionButton].
 			</description>
 		</method>
 		<method name="get_item_count" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the amount of items in the OptionButton.
+				Returns the amount of items in the OptionButton, including separators.
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
-			<return type="Texture">
+			<return type="Texture2D">
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
@@ -87,6 +87,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Retrieves the metadata of an item. Metadata may be any type and can be used to store extra information about an item, such as an external string ID.
 			</description>
 		</method>
 		<method name="get_item_text" qualifiers="const">
@@ -109,12 +110,14 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the ID of the selected item, or [code]0[/code] if no item is selected.
 			</description>
 		</method>
 		<method name="get_selected_metadata" qualifiers="const">
 			<return type="Variant">
 			</return>
 			<description>
+				Gets the metadata of the selected item. Metadata for items can be set using [method set_item_metadata].
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -123,6 +126,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the item at index [code]idx[/code] is disabled.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -131,6 +135,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+				Removes the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="select">
@@ -139,7 +144,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Select an item by index and make it the current item.
+				Selects an item by index and makes it the current item. This will work even if the item is disabled.
 			</description>
 		</method>
 		<method name="set_item_disabled">
@@ -150,6 +155,8 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
+				Sets whether the item at index [code]idx[/code] is disabled.
+				Disabled items are drawn differently in the dropdown and are not selectable by the user. If the current selected item is set as disabled, it will remain selected.
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -157,10 +164,10 @@
 			</return>
 			<argument index="0" name="idx" type="int">
 			</argument>
-			<argument index="1" name="texture" type="Texture">
+			<argument index="1" name="texture" type="Texture2D">
 			</argument>
 			<description>
-				Sets the icon of an item at index [code]idx[/code].
+				Sets the icon of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_id">
@@ -171,7 +178,7 @@
 			<argument index="1" name="id" type="int">
 			</argument>
 			<description>
-				Sets the ID of an item at index [code]idx[/code].
+				Sets the ID of the item at index [code]idx[/code].
 			</description>
 		</method>
 		<method name="set_item_metadata">
@@ -182,6 +189,7 @@
 			<argument index="1" name="metadata" type="Variant">
 			</argument>
 			<description>
+				Sets the metadata of an item. Metadata may be of any type and can be used to store extra information about an item, such as an external string ID.
 			</description>
 		</method>
 		<method name="set_item_text">
@@ -192,7 +200,7 @@
 			<argument index="1" name="text" type="String">
 			</argument>
 			<description>
-				Sets the text of an item at index [code]idx[/code].
+				Sets the text of the item at index [code]idx[/code].
 			</description>
 		</method>
 	</methods>
@@ -200,19 +208,20 @@
 		<member name="action_mode" type="int" setter="set_action_mode" getter="get_action_mode" override="true" enum="BaseButton.ActionMode" default="0" />
 		<member name="align" type="int" setter="set_text_align" getter="get_text_align" override="true" enum="Button.TextAlign" default="0" />
 		<member name="selected" type="int" setter="_select_int" getter="get_selected" default="-1">
+			The index of the currently selected item, or [code]-1[/code] if no item is selected.
 		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" override="true" default="true" />
 	</members>
 	<signals>
 		<signal name="item_focused">
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 				Emitted the when user navigates to an item using the [code]ui_up[/code] or [code]ui_down[/code] actions. The index of the item selected is passed as argument.
 			</description>
 		</signal>
 		<signal name="item_selected">
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 				Emitted when the current item has been changed by the user. The index of the item selected is passed as argument.
@@ -222,31 +231,44 @@
 	<constants>
 	</constants>
 	<theme_items>
-		<theme_item name="arrow" type="Texture">
+		<theme_item name="arrow" type="Texture2D">
+			The arrow icon to be drawn on the right end of the button.
 		</theme_item>
 		<theme_item name="arrow_margin" type="int" default="2">
+			The horizontal space between the arrow icon and the right edge of the button.
 		</theme_item>
 		<theme_item name="disabled" type="StyleBox">
+			[StyleBox] used when the [OptionButton] is disabled.
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
+			[StyleBox] used when the [OptionButton] is focused. It is displayed over the current [StyleBox], so using [StyleBoxEmpty] will just disable the focus visual effect.
 		</theme_item>
 		<theme_item name="font" type="Font">
+			[Font] of the [OptionButton]'s text.
 		</theme_item>
 		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+			Default text [Color] of the [OptionButton].
 		</theme_item>
 		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
+			Text [Color] used when the [OptionButton] is disabled.
 		</theme_item>
 		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+			Text [Color] used when the [OptionButton] is being hovered.
 		</theme_item>
 		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
+			Text [Color] used when the [OptionButton] is being pressed.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">
+			[StyleBox] used when the [OptionButton] is being hovered.
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="2">
+			The horizontal space between [OptionButton]'s icon and text.
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
+			Default [StyleBox] for the [OptionButton].
 		</theme_item>
 		<theme_item name="pressed" type="StyleBox">
+			[StyleBox] used when the [OptionButton] is being pressed.
 		</theme_item>
 	</theme_items>
 </class>

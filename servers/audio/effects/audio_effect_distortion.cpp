@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -172,10 +172,10 @@ void AudioEffectDistortion::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_post_gain"), &AudioEffectDistortion::get_post_gain);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Clip,ATan,LoFi,Overdrive,WaveShape"), "set_mode", "get_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01"), "set_pre_gain", "get_pre_gain");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_keep_hf_hz", "get_keep_hf_hz");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_post_gain", "get_post_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pre_gain", PROPERTY_HINT_RANGE, "-60,60,0.01"), "set_pre_gain", "get_pre_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "keep_hf_hz", PROPERTY_HINT_RANGE, "1,20500,1"), "set_keep_hf_hz", "get_keep_hf_hz");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "drive", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drive", "get_drive");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "post_gain", PROPERTY_HINT_RANGE, "-80,24,0.01"), "set_post_gain", "get_post_gain");
 
 	BIND_ENUM_CONSTANT(MODE_CLIP);
 	BIND_ENUM_CONSTANT(MODE_ATAN);

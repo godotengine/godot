@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PacketPeerUDP" inherits="PacketPeer" category="Core" version="3.2">
+<class name="PacketPeerUDP" inherits="PacketPeer" version="4.0">
 	<brief_description>
 		UDP packet peer.
 	</brief_description>
@@ -16,6 +16,18 @@
 				Closes the UDP socket the [PacketPeerUDP] is currently listening on.
 			</description>
 		</method>
+		<method name="connect_to_host">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="host" type="String">
+			</argument>
+			<argument index="1" name="port" type="int">
+			</argument>
+			<description>
+				Calling this method connects this UDP peer to the given [code]host[/code]/[code]port[/code] pair. UDP is in reality connectionless, so this option only means that incoming packets from different addresses are automatically discarded, and that outgoing packets are always sent to the connected address (future calls to [method set_dest_address] are not allowed). This method does not send any data to the remote peer, to do that, use [method PacketPeer.put_var] or [method PacketPeer.put_packet] as usual. See also [UDPServer].
+				Note: Connecting to the remote peer does not help to protect from malicious attacks like IP spoofing, etc. Think about using an encryption technique like SSL or DTLS if you feel like your application is transferring sensitive information.
+			</description>
+		</method>
 		<method name="get_packet_ip" qualifiers="const">
 			<return type="String">
 			</return>
@@ -28,6 +40,13 @@
 			</return>
 			<description>
 				Returns the port of the remote peer that sent the last packet(that was received with [method PacketPeer.get_packet] or [method PacketPeer.get_var]).
+			</description>
+		</method>
+		<method name="is_connected_to_host" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if the UDP socket is open and has been connected to a remote address. See [method connect_to_host].
 			</description>
 		</method>
 		<method name="is_listening" qualifiers="const">
@@ -47,6 +66,7 @@
 			<description>
 				Joins the multicast group specified by [code]multicast_address[/code] using the interface identified by [code]interface_name[/code].
 				You can join the same multicast group with multiple interfaces. Use [method IP.get_local_interfaces] to know which are available.
+				Note: Some Android devices might require the [code]CHANGE_WIFI_MULTICAST_STATE[/code] permission for multicast to work.
 			</description>
 		</method>
 		<method name="leave_multicast_group">
@@ -76,6 +96,16 @@
 				If [code]bind_address[/code] is set to any valid address (e.g. [code]"192.168.1.101"[/code], [code]"::1"[/code], etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
+		<method name="set_broadcast_enabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+				Enable or disable sending of broadcast packets (e.g. [code]set_dest_address("255.255.255.255", 4343)[/code]. This option is disabled by default.
+				Note: Some Android devices might require the [code]CHANGE_WIFI_MULTICAST_STATE[/code] permission and this option to be enabled to receive broadcast packets too.
+			</description>
+		</method>
 		<method name="set_dest_address">
 			<return type="int" enum="Error">
 			</return>
@@ -85,6 +115,7 @@
 			</argument>
 			<description>
 				Sets the destination address and port for sending packets and variables. A hostname will be resolved using DNS if needed.
+				Note: [method set_broadcast_enabled] must be enabled before sending packets to a broadcast address (e.g. [code]255.255.255.255[/code]).
 			</description>
 		</method>
 		<method name="wait">
