@@ -1932,6 +1932,7 @@ public:
 			ImageLoader::load_image(path, launcher_adaptive_icon_background_image);
 		}
 
+		Vector<String> invalid_abis(enabled_abis);
 		while (ret == UNZ_OK) {
 
 			//get filename
@@ -1977,6 +1978,7 @@ public:
 				bool enabled = false;
 				for (int i = 0; i < enabled_abis.size(); ++i) {
 					if (file.begins_with("lib/" + enabled_abis[i] + "/")) {
+						invalid_abis.erase(enabled_abis[i]);
 						enabled = true;
 						break;
 					}
@@ -2014,6 +2016,13 @@ public:
 			}
 
 			ret = unzGoToNextFile(pkg);
+		}
+
+		if (!invalid_abis.empty()) {
+			String unsupported_arch = String(", ").join(invalid_abis);
+			EditorNode::add_io_error("Missing libraries in the export template for the selected architectures: " + unsupported_arch + ".\n" +
+									 "Please build a template with all required libraries, or uncheck the missing architectures in the export preset.");
+			CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
 		}
 
 		if (ep.step("Adding files...", 1)) {
