@@ -1400,25 +1400,44 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 
 		_VariantCall::ConstructFunc &c = _VariantCall::construct_funcs[p_type];
 
-		for (List<_VariantCall::ConstructData>::Element *E = c.constructors.front(); E; E = E->next()) {
-			const _VariantCall::ConstructData &cd = E->get();
+		List<_VariantCall::ConstructData>::Element *E = c.constructors.front();
+		_VariantCall::ConstructData *cd = &(E->get());
+		Variant v;
 
-			if (cd.arg_count != p_argcount)
-				continue;
+		r_error.argument = -1;
+		bool has_convertible = false;
 
-			//validate parameters
-			for (int i = 0; i < cd.arg_count; i++) {
-				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
-					r_error.argument = i;
-					r_error.expected = cd.arg_types[i];
-					return Variant();
+		while (E) {
+			if (cd->arg_count == p_argcount) {
+				bool match = true;
+				bool all_convertible = true;
+				for (int i = 0; i < cd->arg_count; i++) {
+					if (!Variant::can_convert(p_args[i]->type, cd->arg_types[i])) {
+						all_convertible = false;
+						match = false;
+						r_error.argument = i;
+						r_error.expected = cd->arg_types[i];
+						break;
+					}
+					match &= p_args[i]->type == cd->arg_types[i];
+				}
+				if (all_convertible) {
+					has_convertible = true;
+					cd->func(v, p_args);
+					if (match) {
+						return v;
+					}
 				}
 			}
+			E = E->next();
+			cd = &(E->get());
+		}
 
-			Variant v;
-			cd.func(v, p_args);
+		if (has_convertible) {
 			return v;
+		} else if (r_error.argument != -1) {
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
+			return Variant();
 		}
 	}
 	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; //no such constructor
@@ -2210,6 +2229,7 @@ void register_variant_methods() {
 	_VariantCall::add_constructor(_VariantCall::Plane_init1, Variant::PLANE, "a", Variant::FLOAT, "b", Variant::FLOAT, "c", Variant::FLOAT, "d", Variant::FLOAT);
 	_VariantCall::add_constructor(_VariantCall::Plane_init2, Variant::PLANE, "v1", Variant::VECTOR3, "v2", Variant::VECTOR3, "v3", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Plane_init3, Variant::PLANE, "normal", Variant::VECTOR3, "d", Variant::FLOAT);
+	_VariantCall::add_constructor(_VariantCall::Plane_init4, Variant::PLANE, "normal", Variant::VECTOR3, "point", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Quat_init1, Variant::QUAT, "x", Variant::FLOAT, "y", Variant::FLOAT, "z", Variant::FLOAT, "w", Variant::FLOAT);
 	_VariantCall::add_constructor(_VariantCall::Quat_init2, Variant::QUAT, "axis", Variant::VECTOR3, "angle", Variant::FLOAT);
