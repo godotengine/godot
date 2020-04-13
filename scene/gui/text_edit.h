@@ -306,6 +306,7 @@ private:
 
 	List<TextOperation> undo_stack;
 	List<TextOperation>::Element *undo_stack_pos;
+	int undo_stack_max_size;
 
 	void _clear_redo();
 	void _do_text_op(const TextOperation &p_op, bool p_reverse);
@@ -712,6 +713,8 @@ public:
 	void undo();
 	void redo();
 	void clear_undo_history();
+	void set_undo_stack_max_size(int p_size);
+	int get_undo_stack_max_size() const;
 
 	void set_indent_using_spaces(const bool p_use_spaces);
 	bool is_indent_using_spaces() const;
