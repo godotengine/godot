@@ -306,6 +306,7 @@ private:
 
 	List<TextOperation> undo_stack;
 	List<TextOperation>::Element *undo_stack_pos;
+	int undo_stack_max_size;
 
 	void _clear_redo();
 	void _do_text_op(const TextOperation &p_op, bool p_reverse);
