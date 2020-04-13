@@ -448,13 +448,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_default->set_draw_center(true);
 
 	// Button and widgets
-	const float extra_spacing = EDITOR_GET("interface/theme/additional_spacing");
-
 	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
-	style_widget->set_default_margin(MARGIN_LEFT, (extra_spacing + 6) * EDSCALE);
-	style_widget->set_default_margin(MARGIN_TOP, (extra_spacing + default_margin_size) * EDSCALE);
-	style_widget->set_default_margin(MARGIN_RIGHT, (extra_spacing + 6) * EDSCALE);
-	style_widget->set_default_margin(MARGIN_BOTTOM, (extra_spacing + default_margin_size) * EDSCALE);
+	style_widget->set_default_margin(MARGIN_LEFT, 6 * EDSCALE);
+	style_widget->set_default_margin(MARGIN_TOP, default_margin_size * EDSCALE);
+	style_widget->set_default_margin(MARGIN_RIGHT, 6 * EDSCALE);
+	style_widget->set_default_margin(MARGIN_BOTTOM, default_margin_size * EDSCALE);
 	style_widget->set_bg_color(dark_color_1);
 	style_widget->set_border_color(dark_color_2);
 
@@ -504,8 +502,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Tabs
 
-	const int tab_default_margin_side = 10 * EDSCALE + extra_spacing * EDSCALE;
-	const int tab_default_margin_vertical = 5 * EDSCALE + extra_spacing * EDSCALE;
+	const int tab_default_margin_side = 10 * EDSCALE;
+	const int tab_default_margin_vertical = 5 * EDSCALE;
 
 	Ref<StyleBoxFlat> style_tab_selected = style_widget->duplicate();
 
@@ -684,7 +682,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon("GuiVisibilityHidden", "EditorIcons"));
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
-	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
+	theme->set_constant("vseparation", "PopupMenu", (default_margin_size + 1) * EDSCALE);
 
 	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(accent_color, 0.08), 2, 0, 2, 2);
 	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
@@ -722,8 +720,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("guide_color", "Tree", guide_color);
 	theme->set_color("relationship_line_color", "Tree", relationship_line_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
-	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
-	theme->set_constant("hseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("vseparation", "Tree", default_margin_size * EDSCALE);
+	theme->set_constant("hseparation", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("draw_relationship_lines", "Tree", relationship_line_opacity >= 0.01);
@@ -1115,7 +1113,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("port", "GraphNode", theme->get_icon("GuiGraphNodePort", "EditorIcons"));
 
 	// GridContainer
-	theme->set_constant("vseparation", "GridContainer", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("vseparation", "GridContainer", default_margin_size * EDSCALE);
 
 	// FileDialog
 	theme->set_icon("folder", "FileDialog", theme->get_icon("Folder", "EditorIcons"));
