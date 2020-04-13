@@ -902,7 +902,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 			Vector3 a = vertices[indices[j]];
 			Vector3 b = vertices[indices[(j + 1) % ic]];
 			Vector3 n = (a - b).cross(faces[i].plane.normal).normalized();
-			if (Plane(a, n).is_point_over(p_point)) {
+			if (Plane(n, a).is_point_over(p_point)) {
 				is_inside = false;
 				break;
 			}

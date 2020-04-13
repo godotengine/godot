@@ -107,7 +107,7 @@ Plane::Plane(const Vector3 &p_normal, real_t p_d) :
 		d(p_d) {
 }
 
-Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
+Plane::Plane(const Vector3 &p_normal, const Vector3 &p_point) :
 		normal(p_normal),
 		d(p_normal.dot(p_point)) {
 }

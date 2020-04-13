@@ -1363,7 +1363,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				//optimize min/max
 				Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 				int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, RS::INSTANCE_GEOMETRY_MASK);
-				Plane base(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2));
+				Plane base(-p_cam_transform.basis.get_axis(2), p_cam_transform.origin);
 				//check distance max and min
 
 				bool found_items = false;
@@ -1586,7 +1586,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 				// a pre pass will need to be needed to determine the actual z-near to be used
 
-				Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
+				Plane near_plane(-light_transform.basis.get_axis(2), light_transform.origin);
 
 				real_t cull_max = 0;
 				for (int j = 0; j < cull_count; j++) {
@@ -1740,7 +1740,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, z).normalized(), radius));
 
 					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, RS::INSTANCE_GEOMETRY_MASK);
-					Plane near_plane(light_transform.origin, light_transform.basis.get_axis(2) * z);
+					Plane near_plane(light_transform.basis.get_axis(2) * z, light_transform.origin);
 
 					for (int j = 0; j < cull_count; j++) {
 
@@ -1796,7 +1796,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 					int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, RS::INSTANCE_GEOMETRY_MASK);
 
-					Plane near_plane(xform.origin, -xform.basis.get_axis(2));
+					Plane near_plane(-xform.basis.get_axis(2), xform.origin);
 					for (int j = 0; j < cull_count; j++) {
 
 						Instance *instance = instance_shadow_cull_result[j];
@@ -1835,7 +1835,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 			Vector<Plane> planes = cm.get_projection_planes(light_transform);
 			int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, RS::INSTANCE_GEOMETRY_MASK);
 
-			Plane near_plane(light_transform.origin, -light_transform.basis.get_axis(2));
+			Plane near_plane(-light_transform.basis.get_axis(2), light_transform.origin);
 			for (int j = 0; j < cull_count; j++) {
 
 				Instance *instance = instance_shadow_cull_result[j];
@@ -2012,7 +2012,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 	Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 
-	Plane near_plane(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2).normalized());
+	Plane near_plane(-p_cam_transform.basis.get_axis(2).normalized(), p_cam_transform.origin);
 	float z_far = p_cam_projection.get_z_far();
 
 	/* STEP 2 - CULL */
@@ -2249,7 +2249,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 				Transform cam_xf = p_cam_transform;
 				float zn = p_cam_projection.get_z_near();
-				Plane p(cam_xf.origin + cam_xf.basis.get_axis(2) * -zn, -cam_xf.basis.get_axis(2)); //camera near plane
+				Plane p(-cam_xf.basis.get_axis(2), cam_xf.origin + cam_xf.basis.get_axis(2) * -zn); //camera near plane
 
 				// near plane half width and height
 				Vector2 vp_half_extents = p_cam_projection.get_viewport_half_extents();

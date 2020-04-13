@@ -167,7 +167,7 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 		Vector3 clip_normal = (edge0_B - edge1_B).cross(plane_B.normal).normalized();
 		// make a clip plane
 
-		Plane clip(edge0_B, clip_normal);
+		Plane clip(clip_normal, edge0_B);
 		// avoid double clip if A is edge
 		int dst_idx = 0;
 		bool edge = clipbuf_len == 2;

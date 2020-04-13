@@ -750,7 +750,7 @@ void ClippedCamera3D::_notification(int p_what) {
 		Vector3 cam_pos = get_global_transform().origin;
 		Vector3 parent_pos = parent->get_global_transform().origin;
 
-		Plane parent_plane(parent_pos, cam_fw);
+		Plane parent_plane(cam_fw, parent_pos);
 
 		if (parent_plane.is_point_over(cam_pos)) {
 			//cam is beyond parent plane
