@@ -1546,8 +1546,9 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 	RD::get_singleton()->free(filter.coefficient_buffer);
 
-	copy.shader.version_free(copy.shader_version);
 	bokeh.shader.version_free(bokeh.shader_version);
+	copy.shader.version_free(copy.shader_version);
+	copy_to_fb.shader.version_free(copy_to_fb.shader_version);
 	cube_to_dp.shader.version_free(cube_to_dp.shader_version);
 	cubemap_downsampler.shader.version_free(cubemap_downsampler.shader_version);
 	filter.shader.version_free(filter.shader_version);
