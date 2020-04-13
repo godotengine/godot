@@ -72,9 +72,12 @@ class SceneRewinder : public Node {
 	friend class ClientRewinder;
 	friend class NoNetRewinder;
 
+	real_t server_notify_state_interval;
+
 	Rewinder *rewinder;
 
-	uint32_t node_id;
+	uint32_t node_counter;
+	bool generate_id;
 	HashMap<ObjectID, NodeData> data;
 	Vector<CharacterNetController *> controllers;
 
@@ -87,6 +90,9 @@ public:
 	SceneRewinder();
 	~SceneRewinder();
 
+	void set_server_notify_state_interval(real_t p_interval);
+	real_t get_server_notify_state_interval() const;
+
 	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName());
 	void unregister_variable(Node *p_node, StringName p_variable);
 
@@ -95,8 +101,14 @@ public:
 	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 
-	/// Remove anything.
+	/// Can only be called on the server
 	void reset();
+	void __reset();
+	/// Can only be called on the server
+	void clear();
+	void __clear();
+
+	void _rpc_send_state(Variant p_snapshot);
 
 private:
 	void process();
@@ -128,39 +140,54 @@ protected:
 public:
 	Rewinder(SceneRewinder *p_node);
 
-	// TODO we need delta?
+	virtual void clear() = 0;
+
 	virtual void process(real_t p_delta) = 0;
+	virtual void receive_snapshot(Variant p_snapshot) = 0;
 };
 
 class NoNetRewinder : public Rewinder {
 public:
 	NoNetRewinder(SceneRewinder *p_node);
 
+	virtual void clear();
+
 	virtual void process(real_t p_delta);
+	virtual void receive_snapshot(Variant p_snapshot);
 };
 
 class ServerRewinder : public Rewinder {
+	real_t state_notifier_timer;
 	Vector<PeerData> peers_data;
 
 public:
 	ServerRewinder(SceneRewinder *p_node);
 
+	virtual void clear();
+
 	void on_peer_connected(int p_peer_id);
 	void on_peer_disconnected(int p_peer_id);
 
-	Variant generate_snapshot(int p_peer_index);
+	Variant generate_snapshot();
 
 	virtual void process(real_t p_delta);
+	virtual void receive_snapshot(Variant p_snapshot);
 };
 
 class ClientRewinder : public Rewinder {
+
+	HashMap<uint32_t, ObjectID> node_id_map;
+	HashMap<uint32_t, NodePath> node_paths;
 
 	std::deque<Snapshot> snapshots;
 
 public:
 	ClientRewinder(SceneRewinder *p_node);
 
+	virtual void clear();
+
 	virtual void process(real_t p_delta);
+	virtual void receive_snapshot(Variant p_snapshot);
 };
 
 #endif
