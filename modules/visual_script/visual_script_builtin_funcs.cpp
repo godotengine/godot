@@ -506,9 +506,11 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_CEIL: {
 			t = Variant::REAL;
 		} break;
-		case MATH_POSMOD:
-		case MATH_ROUND: {
+		case MATH_POSMOD: {
 			t = Variant::INT;
+		} break;
+		case MATH_ROUND: {
+			t = Variant::REAL;
 		} break;
 		case MATH_ABS: {
 			t = Variant::NIL;
