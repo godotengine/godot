@@ -371,14 +371,11 @@ GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
 	toolbar->add_child(memnew(VSeparator));
 
 	menu = memnew(MenuButton);
+	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->get_popup()->add_item(TTR("Generate Visibility Rect"), MENU_GENERATE_VISIBILITY_RECT);
-	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
 	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
-	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Convert to CPUParticles2D"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
-	menu->get_popup()->add_separator();
-	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	menu->set_text(TTR("GPUParticles2D"));
 	menu->set_switch_on_hover(true);
 	toolbar->add_child(menu);

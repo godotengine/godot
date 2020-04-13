@@ -104,9 +104,8 @@ CPUParticles3DEditor::CPUParticles3DEditor() {
 	particles_editor_hb->hide();
 
 	options->set_text(TTR("CPUParticles3D"));
-	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
-	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
+	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles3DEditor::_menu_option));
 }
 
