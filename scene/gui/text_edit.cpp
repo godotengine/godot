@@ -6222,6 +6222,17 @@ void TextEdit::set_undo_stack_max_size(int p_size) {
 	if (p_size < 0) {
 		p_size = 0;
 	}
+
+	// Pop front until undo stack no longer exceeds p_size.
+	while (undo_stack.size() > p_size) {
+		// Clear history if we're too far back.
+		if (undo_stack.front() == undo_stack_pos) {
+			clear_undo_history();
+			break;
+		}
+		undo_stack.pop_front();
+	}
+
 	undo_stack_max_size = p_size;
 }
 
