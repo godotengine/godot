@@ -11,6 +11,7 @@
 		settings.get(prop)
 		list_of_settings = settings.get_property_list()
 		[/codeblock]
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_editor_settings].
 	</description>
 	<tutorials>
 	</tutorials>
