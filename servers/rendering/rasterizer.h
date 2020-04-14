@@ -249,12 +249,15 @@ public:
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) = 0;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) = 0;
 
+	virtual RID decal_instance_create(RID p_decal) = 0;
+	virtual void decal_instance_set_transform(RID p_decal, const Transform &p_transform) = 0;
+
 	virtual RID gi_probe_instance_create(RID p_gi_probe) = 0;
 	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) = 0;
 	virtual bool gi_probe_needs_update(RID p_probe) const = 0;
 	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) = 0;
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
@@ -323,6 +326,9 @@ public:
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
+
+	virtual void texture_add_to_decal_atlas(RID p_texture) = 0;
+	virtual void texture_remove_from_decal_atlas(RID p_texture) = 0;
 
 	/* SHADER API */
 
@@ -503,6 +509,21 @@ public:
 
 	virtual void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) = 0;
 	virtual void skeleton_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) = 0;
+
+	/* DECAL API */
+
+	virtual RID decal_create() = 0;
+	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) = 0;
+	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) = 0;
+	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
+	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) = 0;
+	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) = 0;
+	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) = 0;
+	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) = 0;
+	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
+	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
+
+	virtual AABB decal_get_aabb(RID p_decal) const = 0;
 
 	/* GI PROBE API */
 

@@ -340,6 +340,20 @@ public:
 	BIND2(reflection_probe_set_cull_mask, RID, uint32_t)
 	BIND2(reflection_probe_set_resolution, RID, int)
 
+	/* DECAL API */
+
+	BIND0R(RID, decal_create)
+
+	BIND2(decal_set_extents, RID, const Vector3 &)
+	BIND3(decal_set_texture, RID, DecalTexture, RID)
+	BIND2(decal_set_emission_energy, RID, float)
+	BIND2(decal_set_albedo_mix, RID, float)
+	BIND2(decal_set_modulate, RID, const Color &)
+	BIND2(decal_set_cull_mask, RID, uint32_t)
+	BIND4(decal_set_distance_fade, RID, bool, float, float)
+	BIND3(decal_set_fade, RID, float, float)
+	BIND2(decal_set_normal_fade, RID, float)
+
 	/* BAKED LIGHT API */
 
 	BIND0R(RID, gi_probe_create)
