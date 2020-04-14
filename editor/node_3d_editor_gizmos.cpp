@@ -37,6 +37,7 @@
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/decal.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/light_3d.h"
@@ -2718,7 +2719,143 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
+///////////////////////////////
 
+////
+
+DecalGizmoPlugin::DecalGizmoPlugin() {
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/decal", Color(0.6, 0.5, 1.0));
+
+	create_material("decal_material", gizmo_color);
+
+	create_handle_material("handles");
+}
+
+bool DecalGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<Decal>(p_spatial) != nullptr;
+}
+
+String DecalGizmoPlugin::get_name() const {
+	return "Decal";
+}
+
+int DecalGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+
+	switch (p_idx) {
+		case 0: return "Extents X";
+		case 1: return "Extents Y";
+		case 2: return "Extents Z";
+	}
+
+	return "";
+}
+Variant DecalGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+	return decal->get_extents();
+}
+void DecalGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+	Transform gt = decal->get_global_transform();
+
+	Transform gi = gt.affine_inverse();
+
+	Vector3 extents = decal->get_extents();
+
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 16384) };
+
+	Vector3 axis;
+	axis[p_idx] = 1.0;
+
+	Vector3 ra, rb;
+	Geometry::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
+	float d = ra[p_idx];
+	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
+		d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
+	}
+
+	if (d < 0.001)
+		d = 0.001;
+
+	extents[p_idx] = d;
+	decal->set_extents(extents);
+}
+
+void DecalGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+
+	Vector3 restore = p_restore;
+
+	if (p_cancel) {
+		decal->set_extents(restore);
+		return;
+	}
+
+	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Change Decal Extents"));
+	ur->add_do_method(decal, "set_extents", decal->get_extents());
+	ur->add_undo_method(decal, "set_extents", restore);
+	ur->commit_action();
+}
+
+void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+
+	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_spatial_node());
+
+	p_gizmo->clear();
+
+	Vector<Vector3> lines;
+	Vector3 extents = decal->get_extents();
+
+	AABB aabb;
+	aabb.position = -extents;
+	aabb.size = extents * 2;
+
+	for (int i = 0; i < 12; i++) {
+		Vector3 a, b;
+		aabb.get_edge(i, a, b);
+		if (a.y == b.y) {
+			lines.push_back(a);
+			lines.push_back(b);
+		} else {
+			Vector3 ah = a.linear_interpolate(b, 0.2);
+			lines.push_back(a);
+			lines.push_back(ah);
+			Vector3 bh = b.linear_interpolate(a, 0.2);
+			lines.push_back(b);
+			lines.push_back(bh);
+		}
+	}
+
+	lines.push_back(Vector3(0, extents.y, 0));
+	lines.push_back(Vector3(0, extents.y * 1.2, 0));
+
+	Vector<Vector3> handles;
+
+	for (int i = 0; i < 3; i++) {
+
+		Vector3 ax;
+		ax[i] = aabb.position[i] + aabb.size[i];
+		handles.push_back(ax);
+	}
+
+	Ref<Material> material = get_material("decal_material", p_gizmo);
+
+	p_gizmo->add_lines(lines, material);
+
+	p_gizmo->add_handles(handles, get_material("handles"));
+}
+
+///////////////////////////////
 GIProbeGizmoPlugin::GIProbeGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/gi_probe", Color(0.5, 1, 0.6));
 

@@ -186,6 +186,7 @@
 #include "scene/3d/collision_polygon_3d.h"
 #include "scene/3d/collision_shape_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
+#include "scene/3d/decal.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/immediate_geometry_3d.h"
@@ -424,6 +425,7 @@ void register_scene_types() {
 	ClassDB::register_class<OmniLight3D>();
 	ClassDB::register_class<SpotLight3D>();
 	ClassDB::register_class<ReflectionProbe>();
+	ClassDB::register_class<Decal>();
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
 	//ClassDB::register_class<BakedLightmap>();

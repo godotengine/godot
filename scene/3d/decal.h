@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  rid.h                                                                */
+/*  decal.h                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,87 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RID_H
-#define RID_H
+#ifndef DECAL_H
+#define DECAL_H
 
-#include "core/typedefs.h"
+#include "scene/3d/visual_instance_3d.h"
+#include "scene/resources/texture.h"
+#include "servers/rendering_server.h"
 
-class RID_AllocBase;
-
-class RID {
-	friend class RID_AllocBase;
-	uint64_t _id;
+class Decal : public VisualInstance3D {
+	GDCLASS(Decal, VisualInstance3D);
 
 public:
-	_FORCE_INLINE_ bool operator==(const RID &p_rid) const {
+	enum DecalTexture {
+		TEXTURE_ALBEDO,
+		TEXTURE_NORMAL,
+		TEXTURE_ORM,
+		TEXTURE_EMISSION,
+		TEXTURE_MAX
+	};
 
-		return _id == p_rid._id;
-	}
-	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
+private:
+	RID decal;
+	Vector3 extents;
+	Ref<Texture2D> textures[TEXTURE_MAX];
+	float emission_energy;
+	float albedo_mix;
+	Color modulate;
+	uint32_t cull_mask;
+	float normal_fade;
+	float upper_fade;
+	float lower_fade;
+	bool distance_fade_enabled;
+	float distance_fade_begin;
+	float distance_fade_length;
 
-		return _id < p_rid._id;
-	}
-	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
+protected:
+	static void _bind_methods();
 
-		return _id <= p_rid._id;
-	}
-	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
+public:
+	void set_extents(const Vector3 &p_extents);
+	Vector3 get_extents() const;
 
-		return _id > p_rid._id;
-	}
-	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
+	void set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture);
+	Ref<Texture2D> get_texture(DecalTexture p_type) const;
 
-		return _id != p_rid._id;
-	}
-	_FORCE_INLINE_ bool is_valid() const { return _id != 0; }
-	_FORCE_INLINE_ bool is_null() const { return _id == 0; }
+	void set_emission_energy(float p_energy);
+	float get_emission_energy() const;
 
-	_FORCE_INLINE_ uint64_t get_id() const { return _id; }
+	void set_albedo_mix(float p_energy);
+	float get_albedo_mix() const;
 
-	_FORCE_INLINE_ RID() {
-		_id = 0;
-	}
+	void set_modulate(Color p_modulate);
+	Color get_modulate() const;
+
+	void set_upper_fade(float p_energy);
+	float get_upper_fade() const;
+
+	void set_lower_fade(float p_energy);
+	float get_lower_fade() const;
+
+	void set_normal_fade(float p_energy);
+	float get_normal_fade() const;
+
+	void set_enable_distance_fade(bool p_enable);
+	bool is_distance_fade_enabled() const;
+
+	void set_distance_fade_begin(float p_distance);
+	float get_distance_fade_begin() const;
+
+	void set_distance_fade_length(float p_length);
+	float get_distance_fade_length() const;
+
+	void set_cull_mask(uint32_t p_layers);
+	uint32_t get_cull_mask() const;
+
+	virtual AABB get_aabb() const;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+
+	Decal();
+	~Decal();
 };
 
-#endif // RID_H
+VARIANT_ENUM_CAST(Decal::DecalTexture);
+
+#endif // DECAL_H

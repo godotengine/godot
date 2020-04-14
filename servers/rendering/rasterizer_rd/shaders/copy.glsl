@@ -35,7 +35,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	// DOF.
 	float camera_z_far;
 	float camera_z_near;
-	uvec2 pad2;
+	uint pad2[2];
 }
 params;
 
