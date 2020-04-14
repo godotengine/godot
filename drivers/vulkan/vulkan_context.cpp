@@ -1503,4 +1503,6 @@ VulkanContext::~VulkanContext() {
 	if (queue_props) {
 		free(queue_props);
 	}
+	vkDestroyDevice(device, nullptr);
+	vkDestroyInstance(inst, nullptr);
 }
