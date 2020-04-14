@@ -279,6 +279,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float soft_shadow_scale;
 		uint32_t mask;
 		uint32_t pad[2];
+		float projector_rect[4];
 	};
 
 	struct DirectionalLightData {
