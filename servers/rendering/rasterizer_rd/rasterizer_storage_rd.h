@@ -178,6 +178,7 @@ private:
 	struct DecalAtlas {
 		struct Texture {
 
+			int panorama_to_dp_users;
 			int users;
 			Rect2 uv_rect;
 		};
@@ -599,8 +600,8 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy);
 
-	virtual void texture_add_to_decal_atlas(RID p_texture);
-	virtual void texture_remove_from_decal_atlas(RID p_texture);
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false);
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false);
 
 	RID decal_atlas_get_texture() const;
 	RID decal_atlas_get_texture_srgb() const;
@@ -962,6 +963,14 @@ public:
 		ERR_FAIL_COND_V(!light, 0);
 
 		return light->param[p_param];
+	}
+
+	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, RID());
+
+		return light->projector;
 	}
 
 	_FORCE_INLINE_ Color light_get_color(RID p_light) {

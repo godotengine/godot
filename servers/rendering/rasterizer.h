@@ -327,8 +327,8 @@ public:
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
 
-	virtual void texture_add_to_decal_atlas(RID p_texture) = 0;
-	virtual void texture_remove_from_decal_atlas(RID p_texture) = 0;
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 
 	/* SHADER API */
 
