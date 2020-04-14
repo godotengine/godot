@@ -193,23 +193,25 @@ public:
 			refprobes = (OrientedBoxData *)memrealloc(refprobes, sizeof(OrientedBoxData) * refprobe_max);
 		}
 
+		Transform xform = view_xform * p_transform;
+
 		OrientedBoxData &rp = refprobes[refprobe_count];
-		Vector3 origin = p_transform.origin;
+		Vector3 origin = xform.origin;
 		rp.position[0] = origin.x;
 		rp.position[1] = origin.y;
 		rp.position[2] = origin.z;
 
-		Vector3 x_axis = p_transform.basis.get_axis(0) * p_half_extents.x;
+		Vector3 x_axis = xform.basis.get_axis(0) * p_half_extents.x;
 		rp.x_axis[0] = x_axis.x;
 		rp.x_axis[1] = x_axis.y;
 		rp.x_axis[2] = x_axis.z;
 
-		Vector3 y_axis = p_transform.basis.get_axis(1) * p_half_extents.y;
+		Vector3 y_axis = xform.basis.get_axis(1) * p_half_extents.y;
 		rp.y_axis[0] = y_axis.x;
 		rp.y_axis[1] = y_axis.y;
 		rp.y_axis[2] = y_axis.z;
 
-		Vector3 z_axis = p_transform.basis.get_axis(2) * p_half_extents.z;
+		Vector3 z_axis = xform.basis.get_axis(2) * p_half_extents.z;
 		rp.z_axis[0] = z_axis.x;
 		rp.z_axis[1] = z_axis.y;
 		rp.z_axis[2] = z_axis.z;
@@ -230,34 +232,36 @@ public:
 		refprobe_count++;
 	}
 
-	_FORCE_INLINE_ void add_decal(const Transform &p_transform, const Vector2 &p_half_extents, float p_depth) {
+	_FORCE_INLINE_ void add_decal(const Transform &p_transform, const Vector3 &p_half_extents) {
 
 		if (unlikely(decal_count == decal_max)) {
 			decal_max = nearest_power_of_2_templated(decal_max + 1);
 			decals = (OrientedBoxData *)memrealloc(decals, sizeof(OrientedBoxData) * decal_max);
 		}
 
+		Transform xform = view_xform * p_transform;
+
 		OrientedBoxData &dc = decals[decal_count];
 
-		Vector3 z_axis = -p_transform.basis.get_axis(2) * p_depth * 0.5;
-		dc.z_axis[0] = z_axis.x;
-		dc.z_axis[1] = z_axis.y;
-		dc.z_axis[2] = z_axis.z;
-
-		Vector3 origin = p_transform.origin - z_axis;
+		Vector3 origin = xform.origin;
 		dc.position[0] = origin.x;
 		dc.position[1] = origin.y;
 		dc.position[2] = origin.z;
 
-		Vector3 x_axis = p_transform.basis.get_axis(0) * p_half_extents.x;
+		Vector3 x_axis = xform.basis.get_axis(0) * p_half_extents.x;
 		dc.x_axis[0] = x_axis.x;
 		dc.x_axis[1] = x_axis.y;
 		dc.x_axis[2] = x_axis.z;
 
-		Vector3 y_axis = p_transform.basis.get_axis(1) * p_half_extents.y;
+		Vector3 y_axis = xform.basis.get_axis(1) * p_half_extents.y;
 		dc.y_axis[0] = y_axis.x;
 		dc.y_axis[1] = y_axis.y;
 		dc.y_axis[2] = y_axis.z;
+
+		Vector3 z_axis = xform.basis.get_axis(2) * p_half_extents.z;
+		dc.z_axis[0] = z_axis.x;
+		dc.z_axis[1] = z_axis.y;
+		dc.z_axis[2] = z_axis.z;
 
 		AABB aabb;
 

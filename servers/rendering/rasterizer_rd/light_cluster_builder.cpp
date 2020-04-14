@@ -39,6 +39,7 @@ void LightClusterBuilder::begin(const Transform &p_view_transform, const CameraM
 	//reset counts
 	light_count = 0;
 	refprobe_count = 0;
+	decal_count = 0;
 	item_count = 0;
 	sort_id_count = 0;
 }

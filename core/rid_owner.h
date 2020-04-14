@@ -31,8 +31,13 @@
 #ifndef RID_OWNER_H
 #define RID_OWNER_H
 
+#include "core/list.h"
+#include "core/oa_hash_map.h"
+#include "core/os/memory.h"
 #include "core/print_string.h"
 #include "core/rid.h"
+#include "core/safe_refcount.h"
+#include "core/set.h"
 #include "core/spin_lock.h"
 #include <stdio.h>
 #include <typeinfo>
