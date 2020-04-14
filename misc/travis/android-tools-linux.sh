@@ -76,7 +76,7 @@ yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager --licenses > /dev/null
 echo "Installing: Android Build and Platform Tools ..."
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'tools' > /dev/null
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'platform-tools' > /dev/null
-yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'build-tools;28.0.3' > /dev/null
+yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'build-tools;29.0.3' > /dev/null
 echo
 
 EXPORT_VAL="export ANDROID_HOME=$ANDROID_SDK_PATH"
