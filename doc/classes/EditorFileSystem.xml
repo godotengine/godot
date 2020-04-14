@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This object holds information of all resources in the filesystem, their types, etc.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_resource_filesystem].
 	</description>
 	<tutorials>
 	</tutorials>
