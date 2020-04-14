@@ -2851,8 +2851,8 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 		src_layer_count *= 6;
 	}
 
-	ERR_FAIL_COND_V(src_tex->base_mipmap + p_base_mipmap + p_mipmaps > src_tex->mipmaps, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(src_tex->base_layer + p_base_layer + p_layers > src_layer_count, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_base_mipmap + p_mipmaps > src_tex->mipmaps, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_base_layer + p_layers > src_layer_count, ERR_INVALID_PARAMETER);
 
 	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
 
@@ -2888,9 +2888,9 @@ Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, 
 
 	VkImageSubresourceRange range;
 	range.aspectMask = src_tex->read_aspect_mask;
-	range.baseArrayLayer = p_base_layer;
+	range.baseArrayLayer = src_tex->base_layer + p_base_layer;
 	range.layerCount = p_layers;
-	range.baseMipLevel = p_base_mipmap;
+	range.baseMipLevel = src_tex->base_mipmap + p_base_mipmap;
 	range.levelCount = p_mipmaps;
 
 	vkCmdClearColorImage(command_buffer, src_tex->image, layout, &clear_color, 1, &range);

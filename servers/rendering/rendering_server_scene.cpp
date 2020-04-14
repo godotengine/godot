@@ -155,6 +155,20 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 		geom->reflection_dirty = true;
 
 		return E; //this element should make freeing faster
+	} else if (B->base_type == RS::INSTANCE_DECAL && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
+
+		InstanceDecalData *decal = static_cast<InstanceDecalData *>(B->base_data);
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
+
+		InstanceDecalData::PairInfo pinfo;
+		pinfo.geometry = A;
+		pinfo.L = geom->decals.push_back(B);
+
+		List<InstanceDecalData::PairInfo>::Element *E = decal->geometries.push_back(pinfo);
+
+		geom->decal_dirty = true;
+
+		return E; //this element should make freeing faster
 	} else if (B->base_type == RS::INSTANCE_LIGHTMAP_CAPTURE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
 
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(B->base_data);
@@ -233,6 +247,17 @@ void RenderingServerScene::_instance_unpair(void *p_self, OctreeElementID, Insta
 		reflection_probe->geometries.erase(E);
 
 		geom->reflection_dirty = true;
+	} else if (B->base_type == RS::INSTANCE_DECAL && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
+
+		InstanceDecalData *decal = static_cast<InstanceDecalData *>(B->base_data);
+		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(A->base_data);
+
+		List<InstanceDecalData::PairInfo>::Element *E = reinterpret_cast<List<InstanceDecalData::PairInfo>::Element *>(udata);
+
+		geom->decals.erase(E->get().L);
+		decal->geometries.erase(E);
+
+		geom->decal_dirty = true;
 	} else if (B->base_type == RS::INSTANCE_LIGHTMAP_CAPTURE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
 
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(B->base_data);
@@ -387,6 +412,12 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 					reflection_probe_render_list.remove(&reflection_probe->update_list);
 				}
 			} break;
+			case RS::INSTANCE_DECAL: {
+
+				InstanceDecalData *decal = static_cast<InstanceDecalData *>(instance->base_data);
+				RSG::scene_render->free(decal->instance);
+
+			} break;
 			case RS::INSTANCE_LIGHTMAP_CAPTURE: {
 
 				InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(instance->base_data);
@@ -475,6 +506,14 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 				instance->base_data = reflection_probe;
 
 				reflection_probe->instance = RSG::scene_render->reflection_probe_instance_create(p_base);
+			} break;
+			case RS::INSTANCE_DECAL: {
+
+				InstanceDecalData *decal = memnew(InstanceDecalData);
+				decal->owner = instance;
+				instance->base_data = decal;
+
+				decal->instance = RSG::scene_render->decal_instance_create(p_base);
 			} break;
 			case RS::INSTANCE_LIGHTMAP_CAPTURE: {
 
@@ -688,6 +727,12 @@ void RenderingServerScene::instance_set_visible(RID p_instance, bool p_visible) 
 		case RS::INSTANCE_REFLECTION_PROBE: {
 			if (instance->octree_id && instance->scenario) {
 				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << RS::INSTANCE_REFLECTION_PROBE, p_visible ? RS::INSTANCE_GEOMETRY_MASK : 0);
+			}
+
+		} break;
+		case RS::INSTANCE_DECAL: {
+			if (instance->octree_id && instance->scenario) {
+				instance->scenario->octree.set_pairable(instance->octree_id, p_visible, 1 << RS::INSTANCE_DECAL, p_visible ? RS::INSTANCE_GEOMETRY_MASK : 0);
 			}
 
 		} break;
@@ -943,6 +988,13 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 		reflection_probe->reflection_dirty = true;
 	}
 
+	if (p_instance->base_type == RS::INSTANCE_DECAL) {
+
+		InstanceDecalData *decal = static_cast<InstanceDecalData *>(p_instance->base_data);
+
+		RSG::scene_render->decal_instance_set_transform(decal->instance, p_instance->transform);
+	}
+
 	if (p_instance->base_type == RS::INSTANCE_GI_PROBE) {
 
 		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(p_instance->base_data);
@@ -1000,7 +1052,7 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 		uint32_t pairable_mask = 0;
 		bool pairable = false;
 
-		if (p_instance->base_type == RS::INSTANCE_LIGHT || p_instance->base_type == RS::INSTANCE_REFLECTION_PROBE || p_instance->base_type == RS::INSTANCE_LIGHTMAP_CAPTURE) {
+		if (p_instance->base_type == RS::INSTANCE_LIGHT || p_instance->base_type == RS::INSTANCE_REFLECTION_PROBE || p_instance->base_type == RS::INSTANCE_DECAL || p_instance->base_type == RS::INSTANCE_LIGHTMAP_CAPTURE) {
 
 			pairable_mask = p_instance->visible ? RS::INSTANCE_GEOMETRY_MASK : 0;
 			pairable = true;
@@ -1078,6 +1130,11 @@ void RenderingServerScene::_update_instance_aabb(Instance *p_instance) {
 		case RenderingServer::INSTANCE_REFLECTION_PROBE: {
 
 			new_aabb = RSG::storage->reflection_probe_get_aabb(p_instance->base);
+
+		} break;
+		case RenderingServer::INSTANCE_DECAL: {
+
+			new_aabb = RSG::storage->decal_get_aabb(p_instance->base);
 
 		} break;
 		case RenderingServer::INSTANCE_GI_PROBE: {
@@ -2020,6 +2077,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 	light_cull_count = 0;
 
 	reflection_probe_cull_count = 0;
+	decal_cull_count = 0;
 	gi_probe_cull_count = 0;
 
 	//light_samplers_culled=0;
@@ -2087,6 +2145,18 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 							reflection_probe_cull_count++;
 						}
 					}
+				}
+			}
+		} else if (ins->base_type == RS::INSTANCE_DECAL && ins->visible) {
+
+			if (decal_cull_count < MAX_DECALS_CULLED) {
+
+				InstanceDecalData *decal = static_cast<InstanceDecalData *>(ins->base_data);
+
+				if (!decal->geometries.empty()) {
+					//do not add this decal if no geometry is affected by it..
+					decal_instance_cull_result[decal_cull_count] = decal->instance;
+					decal_cull_count++;
 				}
 			}
 
@@ -2356,7 +2426,7 @@ void RenderingServerScene::_render_scene(RID p_render_buffers, const Transform p
 	/* PROCESS GEOMETRY AND DRAW SCENE */
 
 	RENDER_TIMESTAMP("Render Scene ");
-	RSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, gi_probe_instance_cull_result, gi_probe_cull_count, environment, camera_effects, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
+	RSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, gi_probe_instance_cull_result, gi_probe_cull_count, decal_instance_cull_result, decal_cull_count, environment, camera_effects, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
 void RenderingServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
@@ -2371,7 +2441,7 @@ void RenderingServerScene::render_empty_scene(RID p_render_buffers, RID p_scenar
 	else
 		environment = scenario->fallback_environment;
 	RENDER_TIMESTAMP("Render Empty Scene ");
-	RSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+	RSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
 

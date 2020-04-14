@@ -204,7 +204,29 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1
 	return uniform_set;
 }
 
-void RasterizerEffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance) {
+void RasterizerEffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y) {
+
+	zeromem(&copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+
+	copy_to_fb.push_constant.use_section = true;
+	copy_to_fb.push_constant.section[0] = p_uv_rect.position.x;
+	copy_to_fb.push_constant.section[1] = p_uv_rect.position.y;
+	copy_to_fb.push_constant.section[2] = p_uv_rect.size.x;
+	copy_to_fb.push_constant.section[3] = p_uv_rect.size.y;
+
+	if (p_flip_y) {
+		copy_to_fb.push_constant.flip_y = true;
+	}
+
+	RD::DrawListID draw_list = p_draw_list;
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[COPY_TO_FB_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+}
+
+void RasterizerEffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y, bool p_force_luminance, bool p_alpha_to_zero) {
 	zeromem(&copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
 
 	if (p_flip_y) {
@@ -213,9 +235,12 @@ void RasterizerEffectsRD::copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_fr
 	if (p_force_luminance) {
 		copy_to_fb.push_constant.force_luminance = true;
 	}
+	if (p_alpha_to_zero) {
+		copy_to_fb.push_constant.alpha_to_zero = true;
+	}
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, Vector<Color>(), 1.0, 0, p_rect);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipeline.get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[COPY_TO_FB_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
@@ -1220,7 +1245,9 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 		//use additive
 
-		copy_to_fb.pipeline.setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		for (int i = 0; i < COPY_TO_FB_MAX; i++) {
+			copy_to_fb.pipelines[i].setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
 	}
 
 	{
