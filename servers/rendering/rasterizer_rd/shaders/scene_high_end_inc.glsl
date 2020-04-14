@@ -153,7 +153,7 @@ struct LightData { //this structure needs to be as packed as possible
 	uint color_specular; //rgb color, a specular (8 bit unorm)
 	uint cone_attenuation_angle; // attenuation and angle, (16bit float)
 	uint shadow_color_enabled; //shadow rgb color, a>0.5 enabled (8bit unorm)
-	vec4 atlas_rect; // used for spot
+	vec4 atlas_rect; // rect in the shadow atlas
 	mat4 shadow_matrix;
 	float shadow_bias;
 	float shadow_normal_bias;
@@ -162,6 +162,7 @@ struct LightData { //this structure needs to be as packed as possible
 	float soft_shadow_scale; // scales the shadow kernel for blurrier shadows
 	uint mask;
 	uint pad[2];
+	vec4 projector_rect; //projector rect in srgb decal atlas
 };
 
 layout(set = 0, binding = 5, std430) restrict readonly buffer Lights {

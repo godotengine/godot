@@ -1841,6 +1841,30 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 				light_data.atlas_rect[2] = 0;
 				light_data.atlas_rect[3] = 0;
 
+				RID projector = storage->light_get_projector(base);
+
+				if (projector.is_valid()) {
+					Rect2 rect = storage->decal_atlas_get_texture_rect(projector);
+
+					if (type == RS::LIGHT_SPOT) {
+
+						light_data.projector_rect[0] = rect.position.x;
+						light_data.projector_rect[1] = rect.position.y + rect.size.height; //flip because shadow is flipped
+						light_data.projector_rect[2] = rect.size.width;
+						light_data.projector_rect[3] = -rect.size.height;
+					} else {
+						light_data.projector_rect[0] = rect.position.x;
+						light_data.projector_rect[1] = rect.position.y;
+						light_data.projector_rect[2] = rect.size.width;
+						light_data.projector_rect[3] = rect.size.height * 0.5; //used by dp, so needs to be half
+					}
+				} else {
+					light_data.projector_rect[0] = 0;
+					light_data.projector_rect[1] = 0;
+					light_data.projector_rect[2] = 0;
+					light_data.projector_rect[3] = 0;
+				}
+
 				if (p_using_shadows && p_shadow_atlas.is_valid() && shadow_atlas_owns_light_instance(p_shadow_atlas, li)) {
 					// fill in the shadow information
 
@@ -1892,17 +1916,11 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 					} else if (type == RS::LIGHT_SPOT) {
 
-						//used for clamping in this light type
-						light_data.atlas_rect[2] += light_data.atlas_rect[0];
-						light_data.atlas_rect[3] += light_data.atlas_rect[1];
-
 						Transform modelview = (p_camera_inverse_transform * light_transform).inverse();
 						CameraMatrix bias;
 						bias.set_light_bias();
-						CameraMatrix rectm;
-						rectm.set_light_atlas_rect(rect);
 
-						CameraMatrix shadow_mtx = rectm * bias * light_instance_get_shadow_camera(li, 0) * modelview;
+						CameraMatrix shadow_mtx = bias * light_instance_get_shadow_camera(li, 0) * modelview;
 						store_camera(shadow_mtx, light_data.shadow_matrix);
 
 						if (size > 0.0) {
