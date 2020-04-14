@@ -5469,7 +5469,7 @@ msgid "Use Scale Snap"
 msgstr "Esnetme Hizalaması Kullan"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Göreceli Yapış"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

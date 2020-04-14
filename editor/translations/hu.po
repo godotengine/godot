@@ -5723,7 +5723,7 @@ msgid "Use Scale Snap"
 msgstr "Illesztés Használata"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Relatív Illesztés"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

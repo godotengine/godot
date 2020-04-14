@@ -4559,9 +4559,9 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_USE_SCALE);
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_scale);
 		} break;
-		case SNAP_RELATIVE: {
+		case SNAP_GRID_RELATIVE: {
 			snap_relative = !snap_relative;
-			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+			int idx = snap_config_menu->get_popup()->get_item_index(SNAP_GRID_RELATIVE);
 			snap_config_menu->get_popup()->set_item_checked(idx, snap_relative);
 			viewport->update();
 		} break;
@@ -5289,7 +5289,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 
 	if (state.has("snap_relative")) {
 		snap_relative = state["snap_relative"];
-		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+		int idx = snap_config_menu->get_popup()->get_item_index(SNAP_GRID_RELATIVE);
 		snap_config_menu->get_popup()->set_item_checked(idx, snap_relative);
 	}
 
@@ -5608,7 +5608,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_scale_snap", TTR("Use Scale Snap")), SNAP_USE_SCALE);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_relative", TTR("Snap Relative")), SNAP_RELATIVE);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/snap_relative", TTR("Snap Grid Relative")), SNAP_GRID_RELATIVE);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_pixel_snap", TTR("Use Pixel Snap")), SNAP_USE_PIXEL);
 	p->add_submenu_item(TTR("Smart Snapping"), "SmartSnapping");
 

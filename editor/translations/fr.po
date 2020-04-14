@@ -5551,7 +5551,7 @@ msgid "Use Scale Snap"
 msgstr "Utiliser le magnétisme d'échelle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Alignement relatif"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

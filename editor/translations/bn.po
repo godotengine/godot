@@ -5862,7 +5862,7 @@ msgid "Use Scale Snap"
 msgstr "স্ন্যাপ ব্যবহার করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "আপেক্ষিক স্ন্যাপ"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

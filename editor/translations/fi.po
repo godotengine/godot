@@ -5434,7 +5434,7 @@ msgid "Use Scale Snap"
 msgstr "Käytä skaalauksen tarttumista"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Suhteellinen tarttuminen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

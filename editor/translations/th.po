@@ -5649,7 +5649,7 @@ msgid "Use Scale Snap"
 msgstr "จำกัดการเคลื่อนย้าย"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "จำกัดโดยใช้ตำแหน่งปัจจุบัน"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

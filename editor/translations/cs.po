@@ -5418,7 +5418,7 @@ msgid "Use Scale Snap"
 msgstr "Použít přichycování"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

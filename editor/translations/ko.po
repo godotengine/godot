@@ -5412,7 +5412,7 @@ msgid "Use Scale Snap"
 msgstr "스마트 스냅 사용"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "상대적인 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

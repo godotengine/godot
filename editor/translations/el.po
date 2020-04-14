@@ -5476,7 +5476,7 @@ msgid "Use Scale Snap"
 msgstr "Χρήση Κλιμακωτής Προσκόλλησης"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Σχετική Προσκόλληση"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

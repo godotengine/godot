@@ -5512,7 +5512,7 @@ msgid "Use Scale Snap"
 msgstr "Einrasten verwenden"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Relatives Einrasten benutzen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

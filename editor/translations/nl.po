@@ -5478,7 +5478,7 @@ msgid "Use Scale Snap"
 msgstr "In stappen verschalen"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Relatief kleven"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

@@ -5389,7 +5389,7 @@ msgid "Use Scale Snap"
 msgstr "使用缩放吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "相对吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

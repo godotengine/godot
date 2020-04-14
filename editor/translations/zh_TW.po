@@ -5682,7 +5682,7 @@ msgstr "使用吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "相對吸附"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp

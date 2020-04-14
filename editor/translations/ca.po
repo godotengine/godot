@@ -5532,7 +5532,7 @@ msgid "Use Scale Snap"
 msgstr "Utilitzar Ajustament"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap Relative"
+msgid "Snap Grid Relative"
 msgstr "Ajustament Relatiu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
