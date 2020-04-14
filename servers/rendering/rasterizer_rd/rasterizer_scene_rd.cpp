@@ -2104,6 +2104,21 @@ RasterizerSceneRD::ShadowMap *RasterizerSceneRD::_get_shadow_map(const Size2i &p
 
 	return &shadow_maps[p_size];
 }
+
+//////////////////////////
+
+RID RasterizerSceneRD::decal_instance_create(RID p_decal) {
+	DecalInstance di;
+	di.decal = p_decal;
+	return decal_instance_owner.make_rid(di);
+}
+
+void RasterizerSceneRD::decal_instance_set_transform(RID p_decal, const Transform &p_transform) {
+	DecalInstance *di = decal_instance_owner.getornull(p_decal);
+	ERR_FAIL_COND(!di);
+	di->transform = p_transform;
+}
+
 /////////////////////////////////
 
 RID RasterizerSceneRD::gi_probe_instance_create(RID p_base) {
@@ -3481,6 +3496,16 @@ void RasterizerSceneRD::_render_buffers_debug_draw(RID p_render_buffers, RID p_s
 		}
 	}
 
+	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS) {
+		RID decal_atlas = storage->decal_atlas_get_texture();
+
+		if (decal_atlas.is_valid()) {
+			Size2 rtsize = storage->render_target_get_size(rb->render_target);
+
+			effects->copy_to_fb_rect(decal_atlas, storage->render_target_get_rd_framebuffer(rb->render_target), Rect2i(Vector2(), rtsize / 2), false, false, true);
+		}
+	}
+
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
 		if (rb->luminance.current.is_valid()) {
 			Size2 rtsize = storage->render_target_get_size(rb->render_target);
@@ -3596,7 +3621,7 @@ RasterizerSceneRD::RenderBufferData *RasterizerSceneRD::render_buffers_get_data(
 	return rb->data;
 }
 
-void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	Color clear_color;
 	if (p_render_buffers.is_valid()) {
@@ -3607,7 +3632,7 @@ void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_ca
 		clear_color = storage->get_default_clear_color();
 	}
 
-	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
+	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_decal_cull_result, p_decal_cull_count, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
 
 	if (p_render_buffers.is_valid()) {
 		RENDER_TIMESTAMP("Tonemap");
@@ -3827,6 +3852,8 @@ bool RasterizerSceneRD::free(RID p_rid) {
 		//ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
+	} else if (decal_instance_owner.owns(p_rid)) {
+		decal_instance_owner.free(p_rid);
 	} else if (gi_probe_instance_owner.owns(p_rid)) {
 		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_rid);
 		if (gi_probe->texture.is_valid()) {

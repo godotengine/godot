@@ -20,9 +20,7 @@ layout(location = 2) in vec4 tangent_attrib;
 layout(location = 3) in vec4 color_attrib;
 #endif
 
-#if defined(UV_USED)
 layout(location = 4) in vec2 uv_attrib;
-#endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
 layout(location = 5) in vec2 uv2_attrib;
@@ -39,9 +37,7 @@ layout(location = 1) out vec3 normal_interp;
 layout(location = 2) out vec4 color_interp;
 #endif
 
-#if defined(UV_USED)
 layout(location = 3) out vec2 uv_interp;
-#endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
 layout(location = 4) out vec2 uv2_interp;
@@ -157,9 +153,7 @@ void main() {
 #endif
 	}
 
-#if defined(UV_USED)
 	uv_interp = uv_attrib;
-#endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
 	uv2_interp = uv2_attrib;
@@ -290,9 +284,7 @@ layout(location = 1) in vec3 normal_interp;
 layout(location = 2) in vec4 color_interp;
 #endif
 
-#if defined(UV_USED)
 layout(location = 3) in vec2 uv_interp;
-#endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
 layout(location = 4) in vec2 uv2_interp;
@@ -1609,9 +1601,7 @@ void main() {
 	}
 #endif
 
-#if defined(UV_USED)
 	vec2 uv = uv_interp;
-#endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
 	vec2 uv2 = uv2_interp;
@@ -1693,7 +1683,80 @@ FRAGMENT_SHADER_CODE
 		discard;
 	}
 #endif
+	/////////////////////// DECALS ////////////////////////////////
 
+#ifndef MODE_RENDER_DEPTH
+
+	uvec4 cluster_cell = texture(usampler3D(cluster_texture, material_samplers[SAMPLER_NEAREST_CLAMP]), vec3(screen_uv, (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near)));
+
+	{ // process decals
+
+		uint decal_count = cluster_cell.w >> CLUSTER_COUNTER_SHIFT;
+		uint decal_pointer = cluster_cell.w & CLUSTER_POINTER_MASK;
+
+		//do outside for performance and avoiding arctifacts
+		vec3 vertex_ddx = dFdx(vertex);
+		vec3 vertex_ddy = dFdy(vertex);
+
+		for (uint i = 0; i < decal_count; i++) {
+
+			uint decal_index = cluster_data.indices[decal_pointer + i];
+			if (!bool(decals.data[decal_index].mask & instances.data[instance_index].layer_mask)) {
+				continue; //not masked
+			}
+
+			vec3 uv_local = (decals.data[decal_index].xform * vec4(vertex, 1.0)).xyz;
+			if (any(lessThan(uv_local, vec3(0.0, -1.0, 0.0))) || any(greaterThan(uv_local, vec3(1.0)))) {
+				continue; //out of decal
+			}
+
+			//we need ddx/ddy for mipmaps, so simulate them
+			vec2 ddx = (decals.data[decal_index].xform * vec4(vertex_ddx, 0.0)).xz;
+			vec2 ddy = (decals.data[decal_index].xform * vec4(vertex_ddy, 0.0)).xz;
+
+			float fade = pow(1.0 - (uv_local.y > 0.0 ? uv_local.y : -uv_local.y), uv_local.y > 0.0 ? decals.data[decal_index].upper_fade : decals.data[decal_index].lower_fade);
+
+			if (decals.data[decal_index].normal_fade > 0.0) {
+				fade *= smoothstep(decals.data[decal_index].normal_fade, 1.0, dot(normal_interp, decals.data[decal_index].normal) * 0.5 + 0.5);
+			}
+
+			if (decals.data[decal_index].albedo_rect != vec4(0.0)) {
+				//has albedo
+				vec4 decal_albedo = textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].albedo_rect.zw + decals.data[decal_index].albedo_rect.xy, ddx * decals.data[decal_index].albedo_rect.zw, ddy * decals.data[decal_index].albedo_rect.zw);
+				decal_albedo *= decals.data[decal_index].modulate;
+				decal_albedo.a *= fade;
+				albedo = mix(albedo, decal_albedo.rgb, decal_albedo.a * decals.data[decal_index].albedo_mix);
+
+				if (decals.data[decal_index].normal_rect != vec4(0.0)) {
+
+					vec3 decal_normal = textureGrad(sampler2D(decal_atlas, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].normal_rect.zw + decals.data[decal_index].normal_rect.xy, ddx * decals.data[decal_index].normal_rect.zw, ddy * decals.data[decal_index].normal_rect.zw).xyz;
+					decal_normal.xy = decal_normal.xy * vec2(2.0, -2.0) - vec2(1.0, -1.0); //users prefer flipped y normal maps in most authoring software
+					decal_normal.z = sqrt(max(0.0, 1.0 - dot(decal_normal.xy, decal_normal.xy)));
+					//convert to view space, use xzy because y is up
+					decal_normal = (decals.data[decal_index].normal_xform * decal_normal.xzy).xyz;
+
+					normal = normalize(mix(normal, decal_normal, decal_albedo.a));
+				}
+
+				if (decals.data[decal_index].orm_rect != vec4(0.0)) {
+
+					vec3 decal_orm = textureGrad(sampler2D(decal_atlas, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].orm_rect.zw + decals.data[decal_index].orm_rect.xy, ddx * decals.data[decal_index].orm_rect.zw, ddy * decals.data[decal_index].orm_rect.zw).xyz;
+#if defined(AO_USED)
+					ao = mix(ao, decal_orm.r, decal_albedo.a);
+#endif
+					roughness = mix(roughness, decal_orm.g, decal_albedo.a);
+					metallic = mix(metallic, decal_orm.b, decal_albedo.a);
+				}
+			}
+
+			if (decals.data[decal_index].emission_rect != vec4(0.0)) {
+				//emission is additive, so its independent from albedo
+				emission += textureGrad(sampler2D(decal_atlas_srgb, material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), uv_local.xz * decals.data[decal_index].emission_rect.zw + decals.data[decal_index].emission_rect.xy, ddx * decals.data[decal_index].emission_rect.zw, ddy * decals.data[decal_index].emission_rect.zw).xyz * decals.data[decal_index].emission_energy * fade;
+			}
+		}
+	}
+
+#endif //not render depth
 	/////////////////////// LIGHTING //////////////////////////////
 
 	//apply energy conservation
@@ -1797,8 +1860,6 @@ FRAGMENT_SHADER_CODE
 		}
 	}
 #endif
-
-	uvec4 cluster_cell = texture(usampler3D(cluster_texture, material_samplers[SAMPLER_NEAREST_CLAMP]), vec3(screen_uv, (abs(vertex.z) - scene_data.z_near) / (scene_data.z_far - scene_data.z_near)));
 
 	{ // process reflections
 

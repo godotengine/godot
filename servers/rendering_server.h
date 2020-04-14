@@ -461,6 +461,27 @@ public:
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) = 0;
 	virtual void reflection_probe_set_resolution(RID p_probe, int p_resolution) = 0;
 
+	/* DECAL API */
+
+	enum DecalTexture {
+		DECAL_TEXTURE_ALBEDO,
+		DECAL_TEXTURE_NORMAL,
+		DECAL_TEXTURE_ORM,
+		DECAL_TEXTURE_EMISSION,
+		DECAL_TEXTURE_MAX
+	};
+
+	virtual RID decal_create() = 0;
+	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) = 0;
+	virtual void decal_set_texture(RID p_decal, DecalTexture p_type, RID p_texture) = 0;
+	virtual void decal_set_emission_energy(RID p_decal, float p_energy) = 0;
+	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) = 0;
+	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) = 0;
+	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) = 0;
+	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) = 0;
+	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) = 0;
+	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
+
 	/* GI PROBE API */
 
 	virtual RID gi_probe_create() = 0;
@@ -673,6 +694,7 @@ public:
 		VIEWPORT_DEBUG_DRAW_SSAO,
 		VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER,
 		VIEWPORT_DEBUG_DRAW_PSSM_SPLITS,
+		VIEWPORT_DEBUG_DRAW_DECAL_ATLAS,
 
 	};
 
@@ -864,6 +886,7 @@ public:
 		INSTANCE_PARTICLES,
 		INSTANCE_LIGHT,
 		INSTANCE_REFLECTION_PROBE,
+		INSTANCE_DECAL,
 		INSTANCE_GI_PROBE,
 		INSTANCE_LIGHTMAP_CAPTURE,
 		INSTANCE_MAX,
@@ -1163,6 +1186,7 @@ VARIANT_ENUM_CAST(RenderingServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowMode);
 VARIANT_ENUM_CAST(RenderingServer::LightDirectionalShadowDepthRangeMode);
 VARIANT_ENUM_CAST(RenderingServer::ReflectionProbeUpdateMode);
+VARIANT_ENUM_CAST(RenderingServer::DecalTexture);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);

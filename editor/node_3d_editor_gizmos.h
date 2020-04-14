@@ -285,6 +285,24 @@ public:
 	ReflectionProbeGizmoPlugin();
 };
 
+class DecalGizmoPlugin : public EditorNode3DGizmoPlugin {
+
+	GDCLASS(DecalGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorNode3DGizmo *p_gizmo);
+
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+
+	DecalGizmoPlugin();
+};
+
 class GIProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 	GDCLASS(GIProbeGizmoPlugin, EditorNode3DGizmoPlugin);
