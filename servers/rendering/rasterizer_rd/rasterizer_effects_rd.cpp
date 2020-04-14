@@ -204,7 +204,7 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1
 	return uniform_set;
 }
 
-void RasterizerEffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y) {
+void RasterizerEffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y, bool p_panorama) {
 
 	zeromem(&copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
 
@@ -219,7 +219,7 @@ void RasterizerEffectsRD::copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_f
 	}
 
 	RD::DrawListID draw_list = p_draw_list;
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[COPY_TO_FB_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy_to_fb.pipelines[p_panorama ? COPY_TO_FB_COPY_PANORAMA_TO_DP : COPY_TO_FB_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
 	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
 	RD::get_singleton()->draw_list_set_push_constant(draw_list, &copy_to_fb.push_constant, sizeof(CopyToFbPushConstant));
@@ -1238,6 +1238,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 	{
 		Vector<String> copy_modes;
 		copy_modes.push_back("\n");
+		copy_modes.push_back("\n#define MODE_PANORAMA_TO_DP\n");
 
 		copy_to_fb.shader.initialize(copy_modes);
 

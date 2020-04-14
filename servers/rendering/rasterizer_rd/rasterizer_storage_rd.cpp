@@ -3180,7 +3180,19 @@ void RasterizerStorageRD::light_set_projector(RID p_light, RID p_texture) {
 	Light *light = light_owner.getornull(p_light);
 	ERR_FAIL_COND(!light);
 
+	if (light->projector == p_texture) {
+		return;
+	}
+
+	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
+		texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+	}
+
 	light->projector = p_texture;
+
+	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
+		texture_add_to_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
+	}
 }
 
 void RasterizerStorageRD::light_set_negative(RID p_light, bool p_enable) {
@@ -4381,22 +4393,30 @@ RS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	return RS::INSTANCE_NONE;
 }
 
-void RasterizerStorageRD::texture_add_to_decal_atlas(RID p_texture) {
+void RasterizerStorageRD::texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	if (!decal_atlas.textures.has(p_texture)) {
 		DecalAtlas::Texture t;
 		t.users = 1;
+		t.panorama_to_dp_users = p_panorama_to_dp ? 1 : 0;
 		decal_atlas.textures[p_texture] = t;
 		decal_atlas.dirty = true;
 	} else {
 		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
 		t->users++;
+		if (p_panorama_to_dp) {
+			t->panorama_to_dp_users++;
+		}
 	}
 }
 
-void RasterizerStorageRD::texture_remove_from_decal_atlas(RID p_texture) {
+void RasterizerStorageRD::texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp) {
 	DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
 	ERR_FAIL_COND(!t);
 	t->users--;
+	if (p_panorama_to_dp) {
+		ERR_FAIL_COND(t->panorama_to_dp_users == 0);
+		t->panorama_to_dp_users--;
+	}
 	if (t->users == 0) {
 		decal_atlas.textures.erase(p_texture);
 		//do not mark it dirty, there is no need to since it remains working
@@ -4590,7 +4610,7 @@ void RasterizerStorageRD::_update_decal_atlas() {
 				while ((K = decal_atlas.textures.next(K))) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(*K);
 					Texture *src_tex = texture_owner.getornull(*K);
-					effects.copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list);
+					effects.copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
 				}
 
 				RD::get_singleton()->draw_list_end();
@@ -4732,6 +4752,7 @@ bool RasterizerStorageRD::free(RID p_rid) {
 
 	} else if (light_owner.owns(p_rid)) {
 
+		light_set_projector(p_rid, RID()); //clear projector
 		// delete the texture
 		Light *light = light_owner.getornull(p_rid);
 		light->instance_dependency.instance_notify_deleted(p_rid);
