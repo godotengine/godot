@@ -42,10 +42,11 @@ class CharacterNetController;
 struct VarData {
 	uint32_t id;
 	StringName name;
-	Variant old_val;
+	Variant value;
 	bool enabled;
 
 	VarData();
+	VarData(uint32_t p_id);
 	VarData(StringName p_name);
 	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled);
 
@@ -62,6 +63,9 @@ struct NodeData {
 
 	NodeData();
 	NodeData(uint32_t p_id, ObjectID p_instance_id);
+
+	void a(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled);
+	void update_variable();
 };
 
 class SceneRewinder : public Node {
@@ -129,8 +133,8 @@ struct PeerData {
 };
 
 struct Snapshot {
-	uint64_t snapshot_id;
-	Vector<NodeData> data;
+	uint64_t snapshot_id; // TODO do we need this?
+	HashMap<ObjectID, NodeData> data;
 };
 
 class Rewinder {
@@ -179,6 +183,7 @@ class ClientRewinder : public Rewinder {
 	HashMap<uint32_t, ObjectID> node_id_map;
 	HashMap<uint32_t, NodePath> node_paths;
 
+	Snapshot server_snapshot;
 	std::deque<Snapshot> snapshots;
 
 public:
@@ -188,6 +193,9 @@ public:
 
 	virtual void process(real_t p_delta);
 	virtual void receive_snapshot(Variant p_snapshot);
+
+private:
+	void parse_snapshot(Variant p_snapshot);
 };
 
 #endif

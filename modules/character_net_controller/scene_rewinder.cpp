@@ -37,6 +37,11 @@ VarData::VarData() :
 		id(0),
 		enabled(false) {}
 
+VarData::VarData(uint32_t p_id) :
+		id(p_id),
+		enabled(false) {
+}
+
 VarData::VarData(StringName p_name) :
 		id(0),
 		name(p_name),
@@ -46,7 +51,7 @@ VarData::VarData(StringName p_name) :
 VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled) :
 		id(p_id),
 		name(p_name),
-		old_val(p_val),
+		value(p_val),
 		enabled(p_enabled) {
 }
 
@@ -98,15 +103,15 @@ void SceneRewinder::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
-			clear();
-			reset();
+			__clear();
+			__reset();
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
-			clear();
+			__clear();
 
 			if (get_tree()->is_network_server()) {
 				get_multiplayer()->disconnect("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected));
@@ -260,7 +265,7 @@ void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable
 }
 
 void SceneRewinder::reset() {
-	if (get_tree() == nullptr || !get_tree()->has_network_peer()) {
+	if (dynamic_cast<NoNetRewinder *>(rewinder) != nullptr) {
 
 		__reset();
 	} else {
@@ -288,31 +293,28 @@ void SceneRewinder::__reset() {
 		rewinder = nullptr;
 	}
 
-	if (get_tree()) {
+	if (get_tree() == nullptr || get_tree()->get_network_peer().is_null()) {
+		rewinder = memnew(NoNetRewinder(this));
+		generate_id = true;
 
-		if (get_tree()->get_network_peer().is_null()) {
-			rewinder = memnew(NoNetRewinder(this));
-			generate_id = true;
+	} else if (get_tree()->is_network_server()) {
+		rewinder = memnew(ServerRewinder(this));
+		generate_id = true;
 
-		} else if (get_tree()->is_network_server()) {
-			rewinder = memnew(ServerRewinder(this));
-			generate_id = true;
-
-			get_multiplayer()->connect("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected));
-			get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &SceneRewinder::on_peer_disconnected));
-		} else {
-			rewinder = memnew(ClientRewinder(this));
-		}
-
-		// Always runs the SceneRewinder last.
-		const int lowest_priority_number = INT32_MAX;
-		set_process_priority(lowest_priority_number);
-		set_physics_process_internal(true);
+		get_multiplayer()->connect("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected));
+		get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &SceneRewinder::on_peer_disconnected));
+	} else {
+		rewinder = memnew(ClientRewinder(this));
 	}
+
+	// Always runs the SceneRewinder last.
+	const int lowest_priority_number = INT32_MAX;
+	set_process_priority(lowest_priority_number);
+	set_physics_process_internal(true);
 }
 
 void SceneRewinder::clear() {
-	if (get_tree() == nullptr || !get_tree()->has_network_peer()) {
+	if (dynamic_cast<NoNetRewinder *>(rewinder) != nullptr) {
 
 		__clear();
 	} else {
@@ -380,9 +382,9 @@ void SceneRewinder::process() {
 				continue;
 			}
 
-			const Variant old_val = object_vars[i].old_val;
+			const Variant old_val = object_vars[i].value;
 			const Variant new_val = node->get(object_vars[i].name);
-			object_vars[i].old_val = new_val;
+			object_vars[i].value = new_val;
 
 			if (old_val != new_val) {
 				node->emit_signal(get_changed_event_name(object_vars[i].name), old_val);
@@ -432,13 +434,10 @@ NoNetRewinder::NoNetRewinder(SceneRewinder *p_node) :
 void NoNetRewinder::clear() {
 }
 
-void NoNetRewinder::process(real_t p_delta) {
-	// Nothing to do?
+void NoNetRewinder::process(real_t _p_delta) {
 }
 
 void NoNetRewinder::receive_snapshot(Variant _p_snapshot) {
-	// Unreachable
-	CRASH_NOW();
 }
 
 ServerRewinder::ServerRewinder(SceneRewinder *p_node) :
@@ -502,7 +501,7 @@ Variant ServerRewinder::generate_snapshot() {
 			var_info.write[0] = vars[i].id;
 			var_info.write[1] = vars[i].name;
 			snapshot_data.push_back(var_info);
-			snapshot_data.push_back(vars[i].old_val);
+			snapshot_data.push_back(vars[i].value);
 		}
 
 		// Insert NIL.
@@ -529,7 +528,9 @@ void ServerRewinder::receive_snapshot(Variant _p_snapshot) {
 }
 
 ClientRewinder::ClientRewinder(SceneRewinder *p_node) :
-		Rewinder(p_node) {}
+		Rewinder(p_node) {
+	server_snapshot.snapshot_id = 0;
+}
 
 void ClientRewinder::clear() {
 	node_id_map.clear();
@@ -540,19 +541,15 @@ void ClientRewinder::process(real_t p_delta) {
 	// Store snapshots.
 	Snapshot snapshot;
 	snapshot.snapshot_id = 0;
-
-	for (
-			const ObjectID *key = scene_rewinder->data.next(nullptr);
-			key != nullptr;
-			key = scene_rewinder->data.next(key)) {
-
-		snapshot.data.push_back(scene_rewinder->data[*key]);
-	}
-
+	snapshot.data = scene_rewinder->data;
 	snapshots.push_back(snapshot);
 }
 
 void ClientRewinder::receive_snapshot(Variant p_snapshot) {
+	parse_snapshot(p_snapshot);
+}
+
+void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	// The packet data is an array that contains the informations to update the
 	// client snapshot.
 	//
@@ -572,11 +569,15 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 	const Vector<Variant> snapshot = p_snapshot;
 
 	Node *node = nullptr;
+	NodeData *rewinder_node_data;
+	NodeData *server_snapshot_node_data;
 	StringName variable_name;
+	int server_snap_variable_index = -1;
 
 	for (int i = 0; i < snapshot.size(); i += 1) {
 		Variant v = snapshot[i];
 		if (node == nullptr) {
+			// Take the node
 
 			uint32_t node_id(0);
 
@@ -639,45 +640,94 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 
 			ERR_FAIL_COND(node == nullptr);
 
-			if (!scene_rewinder->data.has(node->get_instance_id())) {
-				// The node is not yet tracked on client, so just add it.
-				scene_rewinder->data.set(
-						node->get_instance_id(),
-						NodeData(node_id, node->get_instance_id()));
-			} else {
-				if (scene_rewinder->data[node->get_instance_id()].id == 0) {
-					scene_rewinder->data[node->get_instance_id()].id = node_id;
-				} else {
-					ERR_FAIL_COND(scene_rewinder->data[node->get_instance_id()].id != node_id);
-				}
-			}
+			// Make sure this node is being tracked by the client.
+			scene_rewinder->data[node->get_instance_id()].id = node_id;
+			rewinder_node_data = scene_rewinder->data.getptr(node->get_instance_id());
+
+			// Make sure this node is part of the server node.
+			server_snapshot.data[node->get_instance_id()].id = node_id;
+			server_snapshot_node_data = server_snapshot.data.getptr(node->get_instance_id());
 
 		} else if (variable_name == StringName()) {
-			// Take the variable name or check if NIL
+			// Check if this is the end, or a new variable is submitted.
 
+			if (v.get_type() == Variant::NIL) {
+				// NIL found, so this node is done.
+				node = nullptr;
+				continue;
+			}
+
+			// Take the variable name.
+
+			uint32_t var_id;
 			if (v.is_array()) {
 				const Vector<Variant> var_data = v;
 				ERR_FAIL_COND(var_data.size() != 2);
 				ERR_FAIL_COND(var_data[0].get_type() != Variant::INT);
 				ERR_FAIL_COND(var_data[1].get_type() != Variant::STRING_NAME);
 
-				//const uint32_t var_id = var_data[0];
-				//const NodePath var_name = var_data[1];
+				var_id = var_data[0];
+				variable_name = var_data[1];
 
 			} else if (v.get_type() == Variant::INT) {
+				var_id = v;
 
-			} else if (v.get_type() == Variant::NIL) {
-				// NIL found, so this variable is done.
-				node = nullptr;
-				variable_name = StringName();
+				const int index = rewinder_node_data->vars.find(var_id);
+				variable_name = rewinder_node_data->vars[index].name;
+			} else {
+				ERR_FAIL_MSG("The snapshot received seems corrupted.");
 			}
-		} else {
-			// Take the variable value
 
-			// TODO do something here?
+			{
+				const int index = rewinder_node_data->vars.find(variable_name);
+
+				if (index == -1) {
+					rewinder_node_data->vars
+							.push_back(
+									VarData(
+											var_id,
+											variable_name,
+											Variant(),
+											false));
+				} else {
+					rewinder_node_data->vars
+							.write[index]
+							.id = var_id;
+				}
+			}
+
+			{
+				server_snap_variable_index = server_snapshot_node_data->vars
+													 .find(variable_name);
+
+				if (server_snap_variable_index == -1) {
+					server_snap_variable_index = server_snapshot_node_data->vars.size();
+
+					server_snapshot_node_data->vars
+							.push_back(
+									VarData(
+											var_id,
+											variable_name,
+											Variant(),
+											false));
+
+				} else {
+					server_snapshot_node_data->vars
+							.write[server_snap_variable_index]
+							.id = var_id;
+				}
+			}
+
+		} else {
+			// Take the variable value.
+
+			server_snapshot_node_data->vars
+					.write[server_snap_variable_index]
+					.value = v;
 
 			// Just reset the variable name so we can continue iterate.
 			variable_name = StringName();
+			server_snap_variable_index = -1;
 		}
 	}
 }
