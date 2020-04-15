@@ -282,7 +282,7 @@ String XRController3D::get_controller_name() const {
 		return String("Not connected");
 	};
 
-	return tracker->get_name();
+	return tracker->get_tracker_name();
 };
 
 int XRController3D::get_joystick_id() const {
@@ -480,7 +480,7 @@ String XRAnchor3D::get_anchor_name() const {
 		return String("Not connected");
 	};
 
-	return tracker->get_name();
+	return tracker->get_tracker_name();
 };
 
 bool XRAnchor3D::get_is_active() const {
