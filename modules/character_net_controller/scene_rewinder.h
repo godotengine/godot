@@ -56,16 +56,14 @@ struct VarData {
 struct NodeData {
 	uint32_t id;
 	ObjectID instance_id;
+	bool is_controller;
 	Vector<VarData> vars;
 
 	// This is valid to use only inside the process function.
 	Node *cached_node;
 
 	NodeData();
-	NodeData(uint32_t p_id, ObjectID p_instance_id);
-
-	void a(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled);
-	void update_variable();
+	NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller);
 };
 
 class SceneRewinder : public Node {
@@ -83,6 +81,7 @@ class SceneRewinder : public Node {
 	uint32_t node_counter;
 	bool generate_id;
 	HashMap<ObjectID, NodeData> data;
+	CharacterNetController *main_controller;
 	Vector<CharacterNetController *> controllers;
 
 public:
@@ -133,7 +132,10 @@ struct PeerData {
 };
 
 struct Snapshot {
-	uint64_t snapshot_id; // TODO do we need this?
+	// This is an utility variable that is used for fast comparisons.
+	uint64_t player_controller_input_id;
+	// TODO worth store the pointer instead of the Object ID?
+	HashMap<ObjectID, uint64_t> controllers_input_id;
 	HashMap<ObjectID, NodeData> data;
 };
 
@@ -163,6 +165,7 @@ public:
 class ServerRewinder : public Rewinder {
 	real_t state_notifier_timer;
 	Vector<PeerData> peers_data;
+	uint64_t snapshot_count;
 
 public:
 	ServerRewinder(SceneRewinder *p_node);
@@ -183,6 +186,9 @@ class ClientRewinder : public Rewinder {
 	HashMap<uint32_t, ObjectID> node_id_map;
 	HashMap<uint32_t, NodePath> node_paths;
 
+	// TODO can we get rid of this?
+	uint64_t server_snapshot_id;
+	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
 	std::deque<Snapshot> snapshots;
 
@@ -195,6 +201,7 @@ public:
 	virtual void receive_snapshot(Variant p_snapshot);
 
 private:
+	void process_recovery();
 	void parse_snapshot(Variant p_snapshot);
 };
 

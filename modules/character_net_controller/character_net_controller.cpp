@@ -75,7 +75,7 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_state_notify_interval", "interval"), &CharacterNetController::set_state_notify_interval);
 	ClassDB::bind_method(D_METHOD("get_state_notify_interval"), &CharacterNetController::get_state_notify_interval);
 
-	ClassDB::bind_method(D_METHOD("get_current_snapshot_id"), &CharacterNetController::get_current_snapshot_id);
+	ClassDB::bind_method(D_METHOD("get_current_snapshot_id"), &CharacterNetController::get_current_input_id);
 
 	ClassDB::bind_method(D_METHOD("input_buffer_add_bool", "bool", "compression_level"), &CharacterNetController::input_buffer_add_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 	ClassDB::bind_method(D_METHOD("input_buffer_read_bool", "compression_level"), &CharacterNetController::input_buffer_read_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
@@ -104,6 +104,11 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_frames_snapshot"), &CharacterNetController::_rpc_doll_send_frames_snapshot);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &CharacterNetController::_rpc_doll_notify_connection_status);
 	ClassDB::bind_method(D_METHOD("_rpc_send_player_state"), &CharacterNetController::_rpc_send_player_state);
+
+	ClassDB::bind_method(D_METHOD("is_server_controller"), &CharacterNetController::is_server_controller);
+	ClassDB::bind_method(D_METHOD("is_player_controller"), &CharacterNetController::is_player_controller);
+	ClassDB::bind_method(D_METHOD("is_doll_controller"), &CharacterNetController::is_doll_controller);
+	ClassDB::bind_method(D_METHOD("is_nonet_controller"), &CharacterNetController::is_nonet_controller);
 
 	BIND_VMETHOD(MethodInfo("collect_inputs", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta")));
@@ -210,7 +215,7 @@ real_t CharacterNetController::get_state_notify_interval() const {
 	return state_notify_interval;
 }
 
-uint64_t CharacterNetController::get_current_snapshot_id() const {
+uint64_t CharacterNetController::get_current_input_id() const {
 	return controller->get_current_snapshot_id();
 }
 
@@ -305,6 +310,34 @@ void CharacterNetController::replay_snapshots() {
 	controller->replay_snapshots();
 }
 
+bool CharacterNetController::is_server_controller() const {
+	ERR_FAIL_COND_V(get_tree() == nullptr, false);
+	if (controller)
+		return dynamic_cast<ServerController *>(controller);
+	return get_tree()->is_network_server();
+}
+
+bool CharacterNetController::is_player_controller() const {
+	ERR_FAIL_COND_V(get_tree() == nullptr, false);
+	if (controller)
+		return dynamic_cast<PlayerController *>(controller);
+	return get_tree()->is_network_server() == false && is_network_master();
+}
+
+bool CharacterNetController::is_doll_controller() const {
+	ERR_FAIL_COND_V(get_tree() == nullptr, false);
+	if (controller)
+		return dynamic_cast<DollController *>(controller);
+	return get_tree()->is_network_server() == false && is_network_master() == false;
+}
+
+bool CharacterNetController::is_nonet_controller() const {
+	ERR_FAIL_COND_V(get_tree() == nullptr, false);
+	if (controller)
+		return dynamic_cast<NoNetController *>(controller);
+	return get_tree()->get_network_peer().is_null();
+}
+
 void CharacterNetController::set_inputs_buffer(const BitArray &p_new_buffer) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
 }
@@ -371,7 +404,7 @@ void CharacterNetController::_notification(int p_what) {
 			emit_signal("control_process_done");
 
 		} break;
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
@@ -515,7 +548,7 @@ void PlayerInputsReference::set_inputs_buffer(const BitArray &p_new_buffer) {
 
 ServerController::ServerController(CharacterNetController *p_node) :
 		Controller(p_node),
-		current_packet_id(UINT64_MAX),
+		current_input_buffer_id(UINT64_MAX),
 		ghost_input_count(0),
 		network_tracer(p_node->get_network_traced_frames()),
 		optimal_snapshots_size(0.0),
@@ -527,7 +560,7 @@ ServerController::ServerController(CharacterNetController *p_node) :
 void ServerController::physics_process(real_t p_delta) {
 	const bool is_new_input = fetch_next_input();
 
-	if (unlikely(current_packet_id == UINT64_MAX)) {
+	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
 		// Skip this until the first input arrive.
 		return;
 	}
@@ -592,7 +625,7 @@ void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
 			const uint64_t snapshot_id = first_snapshot_id + inserted_snapshot_count;
 			inserted_snapshot_count += 1;
 
-			if (current_packet_id != UINT64_MAX && current_packet_id >= snapshot_id)
+			if (current_input_buffer_id != UINT64_MAX && current_input_buffer_id >= snapshot_id)
 				continue;
 
 			FrameSnapshotSkinny rfs;
@@ -634,17 +667,17 @@ void ServerController::replay_snapshots() {
 }
 
 uint64_t ServerController::get_current_snapshot_id() const {
-	return current_packet_id;
+	return current_input_buffer_id;
 }
 
 bool ServerController::fetch_next_input() {
 	bool is_new_input = true;
 
-	if (unlikely(current_packet_id == UINT64_MAX)) {
+	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
 		// As initial packet, anything is good.
 		if (snapshots.empty() == false) {
 			node->set_inputs_buffer(snapshots.front().inputs_buffer);
-			current_packet_id = snapshots.front().id;
+			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
 			network_tracer.notify_packet_arrived();
 		} else {
@@ -655,7 +688,7 @@ bool ServerController::fetch_next_input() {
 		// Search the next packet, the cycle is used to make sure to not stop
 		// with older packets arrived too late.
 
-		const uint64_t next_packet_id = current_packet_id + 1;
+		const uint64_t next_input_id = current_input_buffer_id + 1;
 
 		if (unlikely(snapshots.empty() == true)) {
 			// The input buffer is empty!
@@ -666,11 +699,11 @@ bool ServerController::fetch_next_input() {
 
 		} else {
 			// The input buffer is not empty, search the new input.
-			if (next_packet_id == snapshots.front().id) {
+			if (next_input_id == snapshots.front().id) {
 				// Wow, the next input is perfect!
 
 				node->set_inputs_buffer(snapshots.front().inputs_buffer);
-				current_packet_id = snapshots.front().id;
+				current_input_buffer_id = snapshots.front().id;
 				snapshots.pop_front();
 
 				ghost_input_count = 0;
@@ -715,7 +748,7 @@ bool ServerController::fetch_next_input() {
 				ghost_input_count += 1;
 
 				const int size = MIN(ghost_input_count, snapshots.size());
-				const uint64_t ghost_packet_id = next_packet_id + ghost_input_count;
+				const uint64_t ghost_packet_id = next_input_id + ghost_input_count;
 
 				bool recovered = false;
 				FrameSnapshotSkinny pi;
@@ -753,7 +786,7 @@ bool ServerController::fetch_next_input() {
 
 				if (recovered) {
 					node->set_inputs_buffer(pi.inputs_buffer);
-					current_packet_id = pi.id;
+					current_input_buffer_id = pi.id;
 					ghost_input_count = 0;
 					// print_line("Packet recovered"); // TODO how?
 				} else {
@@ -815,7 +848,7 @@ void ServerController::adjust_player_tick_rate(real_t p_delta) {
 }
 
 void ServerController::check_peers_player_state(real_t p_delta, bool is_new_input) {
-	if (current_packet_id == UINT64_MAX) {
+	if (current_input_buffer_id == UINT64_MAX) {
 		// Skip this until the first input arrive.
 		return;
 	}
@@ -842,7 +875,7 @@ void ServerController::check_peers_player_state(real_t p_delta, bool is_new_inpu
 		node->rpc_id(
 				peer_id,
 				"_rpc_send_player_state",
-				current_packet_id,
+				current_input_buffer_id,
 				data);
 	}
 
@@ -851,7 +884,7 @@ void ServerController::check_peers_player_state(real_t p_delta, bool is_new_inpu
 	node->rpc_id(
 			node->get_network_master(),
 			"_rpc_send_player_state",
-			current_packet_id,
+			current_input_buffer_id,
 			data);
 }
 
@@ -865,7 +898,7 @@ PlayerController::PlayerController(CharacterNetController *p_node) :
 		Controller(p_node),
 		time_bank(0.0),
 		tick_additional_speed(0.0),
-		snapshot_counter(0),
+		input_buffers_counter(0),
 		recover_snapshot_id(0),
 		recovered_snapshot_id(0) {
 }
@@ -907,13 +940,13 @@ void PlayerController::physics_process(real_t p_delta) {
 
 		if (accept_new_inputs) {
 
-			create_snapshot(snapshot_counter);
-			snapshot_counter += 1;
+			store_input_buffer(input_buffers_counter);
+			input_buffers_counter += 1;
 
 			// This must happens here because in case of bad internet connection
 			// the client accelerates the execution producing much more packets
 			// per second.
-			send_frame_snapshots_to_server();
+			send_frame_input_buffer_to_server();
 		}
 	}
 
@@ -948,14 +981,14 @@ void PlayerController::replay_snapshots() {
 }
 
 uint64_t PlayerController::get_current_snapshot_id() const {
-	return snapshot_counter;
+	return input_buffers_counter;
 }
 
 real_t PlayerController::get_pretended_delta() const {
 	return 1.0 / (static_cast<real_t>(Engine::get_singleton()->get_iterations_per_second()) + tick_additional_speed);
 }
 
-void PlayerController::create_snapshot(uint64_t p_id) {
+void PlayerController::store_input_buffer(uint64_t p_id) {
 	FrameSnapshot inputs;
 	inputs.id = p_id;
 	inputs.inputs_buffer = node->get_inputs_buffer().get_buffer();
@@ -964,13 +997,13 @@ void PlayerController::create_snapshot(uint64_t p_id) {
 	frames_snapshot.push_back(inputs);
 }
 
-void PlayerController::send_frame_snapshots_to_server() {
+void PlayerController::send_frame_input_buffer_to_server() {
 
 	// The packet is composed as follow:
 	// - The following four bytes for the first snapshot ID.
 	// - Array of snapshots:
 	// |-- First byte the amount of times this snapshot is duplicated in the packet.
-	// |-- snapshot inputs buffer.
+	// |-- input buffer.
 
 	const size_t snapshots_count = MIN(frames_snapshot.size(), static_cast<size_t>(node->get_max_redundant_inputs() + 1));
 	CRASH_COND(snapshots_count < 1); // Unreachable
@@ -1151,7 +1184,7 @@ void DollController::physics_process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta);
 	if (is_new_input) {
-		player_controller.create_snapshot(server_controller.current_packet_id);
+		player_controller.store_input_buffer(server_controller.current_input_buffer_id);
 	}
 
 	// Keeps the doll in sync with the server.
@@ -1178,7 +1211,7 @@ void DollController::replay_snapshots() {
 }
 
 uint64_t DollController::get_current_snapshot_id() const {
-	return server_controller.current_packet_id;
+	return server_controller.current_input_buffer_id;
 }
 
 void DollController::open_flow() {
@@ -1223,11 +1256,11 @@ void DollController::hard_reset_to_server_state() {
 	// Set the server `current_packet_id` to the previous `recover_snapshot`
 	// so the next frame the snapshot to recover is inserted naturally into
 	// the player controller `snapshots` array.
-	server_controller.current_packet_id = player_controller.recover_snapshot_id - 1;
+	server_controller.current_input_buffer_id = player_controller.recover_snapshot_id - 1;
 
 	// Drop all the snapshots that are older that the latest state update
 	// so to sync server and client back again.
-	while (server_controller.snapshots.size() > 0 && server_controller.snapshots.front().id < server_controller.current_packet_id) {
+	while (server_controller.snapshots.size() > 0 && server_controller.snapshots.front().id < server_controller.current_input_buffer_id) {
 		server_controller.snapshots.pop_front();
 	}
 

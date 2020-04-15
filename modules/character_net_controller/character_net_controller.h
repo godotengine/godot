@@ -149,7 +149,7 @@ public:
 	void set_state_notify_interval(real_t p_interval);
 	real_t get_state_notify_interval() const;
 
-	uint64_t get_current_snapshot_id() const;
+	uint64_t get_current_input_id() const;
 
 	/// Set bool
 	/// Returns the same data.
@@ -219,6 +219,11 @@ public:
 	void force_state_notify();
 
 	void replay_snapshots();
+
+	bool is_server_controller() const;
+	bool is_player_controller() const;
+	bool is_doll_controller() const;
+	bool is_nonet_controller() const;
 
 public:
 	void set_inputs_buffer(const BitArray &p_new_buffer);
@@ -314,7 +319,7 @@ struct Controller {
 };
 
 struct ServerController : public Controller {
-	uint64_t current_packet_id;
+	uint64_t current_input_buffer_id;
 	uint32_t ghost_input_count;
 	NetworkTracer network_tracer;
 	std::deque<FrameSnapshotSkinny> snapshots;
@@ -359,7 +364,7 @@ struct ServerController : public Controller {
 struct PlayerController : public Controller {
 	real_t time_bank;
 	real_t tick_additional_speed;
-	uint64_t snapshot_counter;
+	uint64_t input_buffers_counter;
 	std::deque<FrameSnapshot> frames_snapshot;
 	std::vector<uint8_t> cached_packet_data;
 	uint64_t recover_snapshot_id;
@@ -376,11 +381,11 @@ struct PlayerController : public Controller {
 
 	real_t get_pretended_delta() const;
 
-	void create_snapshot(uint64_t p_id);
+	void store_input_buffer(uint64_t p_id);
 
 	/// Sends an unreliable packet to the server, containing a packed array of
 	/// frame snapshots.
-	void send_frame_snapshots_to_server();
+	void send_frame_input_buffer_to_server();
 
 	void process_recovery();
 
