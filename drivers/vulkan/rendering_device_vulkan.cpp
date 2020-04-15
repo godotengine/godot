@@ -7274,6 +7274,11 @@ void RenderingDeviceVulkan::finalize() {
 		vertex_formats.erase(temp);
 	}
 
+	for (int i = 0; i < framebuffer_formats.size(); i++) {
+		vkDestroyRenderPass(device, framebuffer_formats[i].render_pass, nullptr);
+	}
+	framebuffer_formats.clear();
+
 	//all these should be clear at this point
 	ERR_FAIL_COND(descriptor_pools.size());
 	ERR_FAIL_COND(dependency_map.size());
