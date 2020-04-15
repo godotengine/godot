@@ -2007,6 +2007,7 @@ void RasterizerSceneHighEndRD::_setup_decals(const RID *p_decal_instances, int p
 		dd.normal_fade = storage->decal_get_normal_fade(decal);
 
 		RID albedo_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_ALBEDO);
+		RID emission_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
 		if (albedo_tex.is_valid()) {
 			Rect2 rect = storage->decal_atlas_get_texture_rect(albedo_tex);
 			dd.albedo_rect[0] = rect.position.x;
@@ -2015,6 +2016,9 @@ void RasterizerSceneHighEndRD::_setup_decals(const RID *p_decal_instances, int p
 			dd.albedo_rect[3] = rect.size.y;
 		} else {
 
+			if (!emission_tex.is_valid()) {
+				continue; //no albedo, no emission, no decal.
+			}
 			dd.albedo_rect[0] = 0;
 			dd.albedo_rect[1] = 0;
 			dd.albedo_rect[2] = 0;
@@ -2022,7 +2026,6 @@ void RasterizerSceneHighEndRD::_setup_decals(const RID *p_decal_instances, int p
 		}
 
 		RID normal_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_NORMAL);
-		RID emission_tex = storage->decal_get_texture(decal, RS::DECAL_TEXTURE_EMISSION);
 
 		if (normal_tex.is_valid()) {
 			Rect2 rect = storage->decal_atlas_get_texture_rect(normal_tex);
@@ -2033,13 +2036,7 @@ void RasterizerSceneHighEndRD::_setup_decals(const RID *p_decal_instances, int p
 
 			Basis normal_xform = p_camera_inverse_xform.basis * xform.basis.orthonormalized();
 			store_basis_3x4(normal_xform, dd.normal_xform);
-
-			//store normal xform
 		} else {
-
-			if (!emission_tex.is_valid()) {
-				continue; //no albedo, no emission, no decal.
-			}
 			dd.normal_rect[0] = 0;
 			dd.normal_rect[1] = 0;
 			dd.normal_rect[2] = 0;

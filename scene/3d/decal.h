@@ -75,7 +75,7 @@ public:
 	void set_emission_energy(float p_energy);
 	float get_emission_energy() const;
 
-	void set_albedo_mix(float p_energy);
+	void set_albedo_mix(float p_mix);
 	float get_albedo_mix() const;
 
 	void set_modulate(Color p_modulate);
@@ -84,10 +84,10 @@ public:
 	void set_upper_fade(float p_energy);
 	float get_upper_fade() const;
 
-	void set_lower_fade(float p_energy);
+	void set_lower_fade(float p_fade);
 	float get_lower_fade() const;
 
-	void set_normal_fade(float p_energy);
+	void set_normal_fade(float p_fade);
 	float get_normal_fade() const;
 
 	void set_enable_distance_fade(bool p_enable);
