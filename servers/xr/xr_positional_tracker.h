@@ -72,9 +72,9 @@ protected:
 
 public:
 	void set_type(XRServer::TrackerType p_type);
-	XRServer::TrackerType get_type() const;
+	XRServer::TrackerType get_tracker_type() const;
 	void set_name(const String &p_name);
-	StringName get_name() const;
+	StringName get_tracker_name() const;
 	int get_tracker_id() const;
 	void set_joy_id(int p_joy_id);
 	int get_joy_id() const;

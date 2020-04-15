@@ -38,9 +38,9 @@ void XRPositionalTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_RIGHT_HAND);
 
 	// this class is read only from GDScript, so we only have access to getters..
-	ClassDB::bind_method(D_METHOD("get_type"), &XRPositionalTracker::get_type);
+	ClassDB::bind_method(D_METHOD("get_tracker_type"), &XRPositionalTracker::get_tracker_type);
 	ClassDB::bind_method(D_METHOD("get_tracker_id"), &XRPositionalTracker::get_tracker_id);
-	ClassDB::bind_method(D_METHOD("get_name"), &XRPositionalTracker::get_name);
+	ClassDB::bind_method(D_METHOD("get_tracker_name"), &XRPositionalTracker::get_tracker_name);
 	ClassDB::bind_method(D_METHOD("get_joy_id"), &XRPositionalTracker::get_joy_id);
 	ClassDB::bind_method(D_METHOD("get_tracks_orientation"), &XRPositionalTracker::get_tracks_orientation);
 	ClassDB::bind_method(D_METHOD("get_orientation"), &XRPositionalTracker::get_orientation);
@@ -77,7 +77,7 @@ void XRPositionalTracker::set_type(XRServer::TrackerType p_type) {
 	};
 };
 
-XRServer::TrackerType XRPositionalTracker::get_type() const {
+XRServer::TrackerType XRPositionalTracker::get_tracker_type() const {
 	return type;
 };
 
@@ -85,7 +85,7 @@ void XRPositionalTracker::set_name(const String &p_name) {
 	name = p_name;
 };
 
-StringName XRPositionalTracker::get_name() const {
+StringName XRPositionalTracker::get_tracker_name() const {
 	return name;
 };
 
