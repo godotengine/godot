@@ -60,24 +60,24 @@ float Decal::get_emission_energy() const {
 	return emission_energy;
 }
 
-void Decal::set_albedo_mix(float p_energy) {
-	albedo_mix = p_energy;
+void Decal::set_albedo_mix(float p_mix) {
+	albedo_mix = p_mix;
 	RS::get_singleton()->decal_set_albedo_mix(decal, albedo_mix);
 }
 float Decal::get_albedo_mix() const {
 	return albedo_mix;
 }
 
-void Decal::set_upper_fade(float p_energy) {
-	upper_fade = p_energy;
+void Decal::set_upper_fade(float p_fade) {
+	upper_fade = p_fade;
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 float Decal::get_upper_fade() const {
 	return upper_fade;
 }
 
-void Decal::set_lower_fade(float p_energy) {
-	lower_fade = p_energy;
+void Decal::set_lower_fade(float p_fade) {
+	lower_fade = p_fade;
 	RS::get_singleton()->decal_set_fade(decal, upper_fade, lower_fade);
 }
 float Decal::get_lower_fade() const {
