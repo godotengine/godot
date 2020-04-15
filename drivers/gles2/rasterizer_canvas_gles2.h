@@ -203,9 +203,10 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 	struct FillState {
 		void reset() {
+			// don't reset members that need to be preserved after flushing
+			// half way through a list of commands
 			curr_batch = 0;
 			batch_tex_id = -1;
-			use_hardware_transform = true;
 			texpixel_size = Vector2(1, 1);
 		}
 		Batch *curr_batch;
@@ -213,6 +214,13 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		bool use_hardware_transform;
 		Vector2 texpixel_size;
 		Color final_modulate;
+		TransformMode transform_mode;
+		TransformMode orig_transform_mode;
+
+		// support for extra matrices
+		bool extra_matrix_sent; // whether sent on this item (in which case sofware transform can't be used untl end of item)
+		int transform_extra_command_number_p1; // plus one to allow fast checking against zero
+		Transform2D transform_combined; // final * extra
 	};
 
 public:
@@ -247,8 +255,8 @@ private:
 	bool _detect_batch_break(Item *p_ci);
 	void _software_transform_vertex(BatchVector2 &r_v, const Transform2D &p_tr) const;
 	void _software_transform_vertex(Vector2 &r_v, const Transform2D &p_tr) const;
-	TransformMode _find_transform_mode(bool p_use_hardware_transform, const Transform2D &p_tr, Transform2D &r_tr) const;
-	_FORCE_INLINE_ void _prefill_default_batch(FillState &r_fill_state, int p_command_num);
+	TransformMode _find_transform_mode(const Transform2D &p_tr) const;
+	_FORCE_INLINE_ void _prefill_default_batch(FillState &r_fill_state, int p_command_num, const Item &p_item);
 
 	// light scissoring
 	bool _light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect, Rect2 &r_cliprect) const;
@@ -262,12 +270,88 @@ public:
 
 //////////////////////////////////////////////////////////////
 
-_FORCE_INLINE_ void RasterizerCanvasGLES2::_prefill_default_batch(FillState &r_fill_state, int p_command_num) {
+// Default batches will not occur in software transform only items
+// EXCEPT IN THE CASE OF SINGLE RECTS (and this may well not occur, check the logic in prefill_join_item TYPE_RECT)
+// but can occur where transform commands have been sent during hardware batch
+_FORCE_INLINE_ void RasterizerCanvasGLES2::_prefill_default_batch(FillState &r_fill_state, int p_command_num, const Item &p_item) {
 	if (r_fill_state.curr_batch->type == Batch::BT_DEFAULT) {
-		// another default command, just add to the existing batch
-		r_fill_state.curr_batch->num_commands++;
+		// don't need to flush an extra transform command?
+		if (!r_fill_state.transform_extra_command_number_p1) {
+			// another default command, just add to the existing batch
+			r_fill_state.curr_batch->num_commands++;
+		} else {
+#ifdef DEBUG_ENABLED
+			if (r_fill_state.transform_extra_command_number_p1 != p_command_num) {
+				WARN_PRINT_ONCE("_prefill_default_batch : transform_extra_command_number_p1 != p_command_num");
+			}
+#endif
+			// we do have a pending extra transform command to flush
+			// either the extra transform is in the prior command, or not, in which case we need 2 batches
+			//			if (r_fill_state.transform_extra_command_number_p1 == p_command_num) {
+			// this should be most common case
+			r_fill_state.curr_batch->num_commands += 2;
+			//			} else {
+			//				// mad ordering .. does this even happen?
+			//				int extra_command = r_fill_state.transform_extra_command_number_p1 - 1; // plus 1 based
+
+			//				// send the extra to the GPU in a batch
+			//				r_fill_state.curr_batch = _batch_request_new();
+			//				r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
+			//				r_fill_state.curr_batch->first_command = extra_command;
+			//				r_fill_state.curr_batch->num_commands = 1;
+
+			//				// start default batch
+			//				r_fill_state.curr_batch = _batch_request_new();
+			//				r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
+			//				r_fill_state.curr_batch->first_command = p_command_num;
+			//				r_fill_state.curr_batch->num_commands = 1;
+			//			}
+
+			r_fill_state.transform_extra_command_number_p1 = 0; // mark as sent
+			r_fill_state.extra_matrix_sent = true;
+
+			// the original mode should always be hardware transform ..
+			// test this assumption
+			r_fill_state.transform_mode = r_fill_state.orig_transform_mode;
+
+			// do we need to restore anything else?
+		}
 	} else {
 		// end of previous different type batch, so start new default batch
+
+		// first consider whether there is a dirty extra matrix to send
+		if (r_fill_state.transform_extra_command_number_p1) {
+			// get which command the extra is in, and blank all the records as it no longer is stored CPU side
+			int extra_command = r_fill_state.transform_extra_command_number_p1 - 1; // plus 1 based
+			r_fill_state.transform_extra_command_number_p1 = 0;
+			r_fill_state.extra_matrix_sent = true;
+
+			// send the extra to the GPU in a batch
+			r_fill_state.curr_batch = _batch_request_new();
+			r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
+			r_fill_state.curr_batch->first_command = extra_command;
+			r_fill_state.curr_batch->num_commands = 1;
+
+			// revert to the original transform mode
+			// e.g. go back to NONE if we were in hardware transform mode
+			r_fill_state.transform_mode = r_fill_state.orig_transform_mode;
+
+			// reset the original transform if we are going back to software mode,
+			// because the extra is now done on the GPU...
+			// (any subsequent extras are sent directly to the GPU, no deferring)
+			if (r_fill_state.orig_transform_mode != TM_NONE) {
+				r_fill_state.transform_combined = p_item.final_transform;
+			}
+
+			// can possibly combine batch with the next one in some cases
+			// this is more efficient than having an extra batch especially for the extra
+			if ((extra_command + 1) == p_command_num) {
+				r_fill_state.curr_batch->num_commands = 2;
+				return;
+			}
+		}
+
+		// start default batch
 		r_fill_state.curr_batch = _batch_request_new();
 		r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
 		r_fill_state.curr_batch->first_command = p_command_num;
@@ -285,22 +369,16 @@ _FORCE_INLINE_ void RasterizerCanvasGLES2::_software_transform_vertex(Vector2 &r
 	r_v = p_tr.xform(r_v);
 }
 
-_FORCE_INLINE_ RasterizerCanvasGLES2::TransformMode RasterizerCanvasGLES2::_find_transform_mode(bool p_use_hardware_transform, const Transform2D &p_tr, Transform2D &r_tr) const {
-	if (!p_use_hardware_transform) {
-		r_tr = p_tr;
-
-		// decided whether to do translate only for software transform
-		if ((p_tr.elements[0].x == 1.0) &&
-				(p_tr.elements[0].y == 0.0) &&
-				(p_tr.elements[1].x == 0.0) &&
-				(p_tr.elements[1].y == 1.0)) {
-			return TM_TRANSLATE;
-		} else {
-			return TM_ALL;
-		}
+_FORCE_INLINE_ RasterizerCanvasGLES2::TransformMode RasterizerCanvasGLES2::_find_transform_mode(const Transform2D &p_tr) const {
+	// decided whether to do translate only for software transform
+	if ((p_tr.elements[0].x == 1.0) &&
+			(p_tr.elements[0].y == 0.0) &&
+			(p_tr.elements[1].x == 0.0) &&
+			(p_tr.elements[1].y == 1.0)) {
+		return TM_TRANSLATE;
 	}
 
-	return TM_NONE;
+	return TM_ALL;
 }
 
 #endif // RASTERIZERCANVASGLES2_H

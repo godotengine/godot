@@ -221,9 +221,7 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 	int command_count = p_item->commands.size();
 	Item::Command *const *commands = p_item->commands.ptr();
 
-	Transform2D transform;
-	TransformMode transform_mode = _find_transform_mode(r_fill_state.use_hardware_transform, p_item->final_transform, transform);
-
+	// just a local, might be more efficient in a register (check)
 	Vector2 texpixel_size = r_fill_state.texpixel_size;
 
 	// checking the color for not being white makes it 92/90 times faster in the case where it is white
@@ -252,7 +250,36 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 		switch (command->type) {
 
 			default: {
-				_prefill_default_batch(r_fill_state, command_num);
+				_prefill_default_batch(r_fill_state, command_num, *p_item);
+			} break;
+			case Item::Command::TYPE_TRANSFORM: {
+				// if the extra matrix has been sent already,
+				// break this extra matrix software path (as we don't want to unset it on the GPU etc)
+				if (r_fill_state.extra_matrix_sent) {
+					_prefill_default_batch(r_fill_state, command_num, *p_item);
+				} else {
+					// Extra matrix fast path.
+					// Instead of sending the command immediately, we store the modified transform (in combined)
+					// for software transform, and only flush this transform command if we NEED to (i.e. we want to
+					// render some default commands)
+					Item::CommandTransform *transform = static_cast<Item::CommandTransform *>(command);
+					const Transform2D &extra_matrix = transform->xform;
+
+					if (r_fill_state.use_hardware_transform) {
+						// if we are using hardware transform mode, we have already sent the final transform,
+						// so we only want to software transform the extra matrix
+						r_fill_state.transform_combined = extra_matrix;
+					} else {
+						r_fill_state.transform_combined = p_item->final_transform * extra_matrix;
+					}
+					// after a transform command, always use some form of software transform (either the combined final + extra, or just the extra)
+					// until we flush this dirty extra matrix because we need to render default commands.
+					r_fill_state.transform_mode = _find_transform_mode(r_fill_state.transform_combined);
+
+					// make a note of which command the dirty extra matrix is store in, so we can send it later
+					// if necessary
+					r_fill_state.transform_extra_command_number_p1 = command_num + 1; // plus 1 so we can test against zero
+				}
 			} break;
 			case Item::Command::TYPE_RECT: {
 
@@ -277,7 +304,7 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 						int command_num_next = command_num + 1;
 						if (command_num_next < command_count) {
 							Item::Command *command_next = commands[command_num_next];
-							if (command_next->type != Item::Command::TYPE_RECT) {
+							if ((command_next->type != Item::Command::TYPE_RECT) && (command_next->type != Item::Command::TYPE_TRANSFORM)) {
 								is_single_rect = true;
 							}
 						} else {
@@ -285,7 +312,7 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 						}
 						// if it is a rect on its own, do exactly the same as the default routine
 						if (is_single_rect) {
-							_prefill_default_batch(r_fill_state, command_num);
+							_prefill_default_batch(r_fill_state, command_num, *p_item);
 							break;
 						}
 					} // if use hardware transform
@@ -352,8 +379,8 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 				// fill the quad geometry
 				Vector2 mins = rect->rect.position;
 
-				if (transform_mode == TM_TRANSLATE) {
-					_software_transform_vertex(mins, transform);
+				if (r_fill_state.transform_mode == TM_TRANSLATE) {
+					_software_transform_vertex(mins, r_fill_state.transform_combined);
 				}
 
 				Vector2 maxs = mins + rect->rect.size;
@@ -385,11 +412,11 @@ bool RasterizerCanvasGLES2::prefill_joined_item(FillState &r_fill_state, int &r_
 					SWAP(bB->pos, bC->pos);
 				}
 
-				if (transform_mode == TM_ALL) {
-					_software_transform_vertex(bA->pos, transform);
-					_software_transform_vertex(bB->pos, transform);
-					_software_transform_vertex(bC->pos, transform);
-					_software_transform_vertex(bD->pos, transform);
+				if (r_fill_state.transform_mode == TM_ALL) {
+					_software_transform_vertex(bA->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bB->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bC->pos, r_fill_state.transform_combined);
+					_software_transform_vertex(bD->pos, r_fill_state.transform_combined);
 				}
 
 				// uvs
@@ -1452,6 +1479,7 @@ void RasterizerCanvasGLES2::render_joined_item_commands(const BItemJoined &p_bij
 	FillState fill_state;
 	fill_state.reset();
 	fill_state.use_hardware_transform = p_bij.use_hardware_transform();
+	fill_state.extra_matrix_sent = false;
 
 	for (unsigned int i = 0; i < p_bij.num_item_refs; i++) {
 		const BItemRef &ref = bdata.item_refs[p_bij.first_item_ref + i];
@@ -1461,6 +1489,23 @@ void RasterizerCanvasGLES2::render_joined_item_commands(const BItemJoined &p_bij
 		int command_count = item->commands.size();
 		int command_start = 0;
 
+		// ONCE OFF fill state setup, that will be retained over multiple calls to
+		// prefill_joined_item()
+		fill_state.transform_combined = item->final_transform;
+
+		// decide the initial transform mode, and make a backup
+		// in orig_transform_mode in case we need to switch back
+		if (!fill_state.use_hardware_transform) {
+			fill_state.transform_mode = _find_transform_mode(fill_state.transform_combined);
+		} else {
+			fill_state.transform_mode = TM_NONE;
+		}
+		fill_state.orig_transform_mode = fill_state.transform_mode;
+
+		// keep track of when we added an extra matrix
+		// so we can defer sending until we see a default command
+		fill_state.transform_extra_command_number_p1 = 0;
+
 		while (command_start < command_count) {
 			// fill as many batches as possible (until all done, or the vertex buffer is full)
 			bool bFull = prefill_joined_item(fill_state, command_start, item, p_current_clip, r_reclip, p_material);
@@ -1469,7 +1514,6 @@ void RasterizerCanvasGLES2::render_joined_item_commands(const BItemJoined &p_bij
 				// always pass first item (commands for default are always first item)
 				flush_render_batches(first_item, p_current_clip, r_reclip, p_material);
 				fill_state.reset();
-				fill_state.use_hardware_transform = p_bij.use_hardware_transform();
 			}
 		}
 	}
@@ -1799,7 +1843,7 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	}
 
 	// non rects will break the batching anyway, we don't want to record item changes, detect this
-	if (_detect_batch_break(p_ci)) {
+	if (!r_batch_break && _detect_batch_break(p_ci)) {
 		join = false;
 		r_batch_break = true;
 	}
@@ -1847,7 +1891,8 @@ bool RasterizerCanvasGLES2::_detect_batch_break(Item *p_ci) {
 				default: {
 					return true;
 				} break;
-				case Item::Command::TYPE_RECT: {
+				case Item::Command::TYPE_RECT:
+				case Item::Command::TYPE_TRANSFORM: {
 				} break;
 			} // switch
 
