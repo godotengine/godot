@@ -1503,6 +1503,15 @@ VulkanContext::~VulkanContext() {
 	if (queue_props) {
 		free(queue_props);
 	}
+	for (uint32_t i = 0; i < FRAME_LAG; i++) {
+		vkDestroyFence(device, fences[i], nullptr);
+		vkDestroySemaphore(device, image_acquired_semaphores[i], nullptr);
+		vkDestroySemaphore(device, draw_complete_semaphores[i], nullptr);
+		if (separate_present_queue) {
+			vkDestroySemaphore(device, image_ownership_semaphores[i], nullptr);
+		}
+	}
+	DestroyDebugUtilsMessengerEXT(inst, dbg_messenger, nullptr);
 	vkDestroyDevice(device, nullptr);
 	vkDestroyInstance(inst, nullptr);
 }
