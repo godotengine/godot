@@ -7961,6 +7961,10 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 			_set_error("The constructor can't return a value.", p_function->line);
 			return;
 		}
+		if (p_function->arguments.size() != 0) {
+			_set_error("The constructor can't receive any arguments.", p_function->line);
+			return;
+		}
 	}
 
 	if (p_function->return_type.has_type && (p_function->return_type.kind != DataType::BUILTIN || p_function->return_type.builtin_type != Variant::NIL)) {
