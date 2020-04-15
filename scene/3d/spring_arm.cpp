@@ -53,7 +53,7 @@ void SpringArm::_notification(int p_what) {
 				set_process_internal(false);
 			}
 			break;
-		case NOTIFICATION_INTERNAL_PROCESS:
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
 			process_spring();
 			break;
 	}
