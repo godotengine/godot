@@ -1444,7 +1444,7 @@ msgstr "Siirrä automaattisesti ladattavaa"
 msgid "Remove Autoload"
 msgstr "Poista automaattinen lataus"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Ota käyttöön"
 
@@ -2921,8 +2921,13 @@ msgid "Q&A"
 msgstr "Kysymykset ja vastaukset"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Ilmoita viasta"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Tuo uudelleen"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3976,7 +3981,8 @@ msgid "Reimport"
 msgstr "Tuo uudelleen"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Tallenna skenet, tuo uudelleen ja käynnistä uudelleen"
 
 #: editor/import_dock.cpp
@@ -6836,14 +6842,6 @@ msgid "Open Godot online documentation."
 msgstr "Avaa Godotin online-dokumentaatio."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Pyydä dokumentaatiota"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Auta parantamaan Godotin dokumentaatiota antamalla palautetta."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Etsi dokumentaatiosta."
 
@@ -7279,6 +7277,11 @@ msgid "This operation requires a single selected node."
 msgstr "Tämä toiminto vaatii yhden valitun solmun."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Ortogonaalinen"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Lukitse näkymän kierto"
 
@@ -7367,16 +7370,16 @@ msgid "Freelook Slow Modifier"
 msgstr "Liikkumisen hitauskerroin"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Näkymän kierto lukittu"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "Huom: näytetty FPS-lukema on editorin kuvataajuus.\n"
 "Sitä ei voi käyttää luotettavana pelin sisäisenä tehokkuuden ilmaisimena."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Näkymän kierto lukittu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -10882,6 +10885,12 @@ msgid "Script file already exists."
 msgstr "Skriptitiedosto on jo olemassa."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Luokan nimi:"
 
@@ -12661,6 +12670,10 @@ msgstr ""
 "saada koon. Muutoin tee siitä RenderTarget ja aseta sen sisäinen tekstuuri "
 "johonkin solmuun näkyväksi."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Virheellinen lähde esikatselulle."
@@ -12688,6 +12701,15 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Ilmoita viasta"
+
+#~ msgid "Request Docs"
+#~ msgstr "Pyydä dokumentaatiota"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Auta parantamaan Godotin dokumentaatiota antamalla palautetta."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Korvattu %d osuvuutta."

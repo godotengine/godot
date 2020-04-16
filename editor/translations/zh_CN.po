@@ -64,8 +64,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-03-08 22:33+0000\n"
-"Last-Translator: Revan Ji <jiruifancr@gmail.com>\n"
+"PO-Revision-Date: 2020-04-05 12:05+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -1481,7 +1481,7 @@ msgstr "移动Autoload"
 msgid "Remove Autoload"
 msgstr "移除Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "启用"
 
@@ -2919,8 +2919,13 @@ msgid "Q&A"
 msgstr "问答"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "问题跟踪器"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "重新导入"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3957,7 +3962,8 @@ msgid "Reimport"
 msgstr "重新导入"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "保存场景，重新导入，从头开始"
 
 #: editor/import_dock.cpp
@@ -6774,14 +6780,6 @@ msgid "Open Godot online documentation."
 msgstr "打开Godot在线文档。"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "请求文档"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "通过提供反馈帮助改进godot文档。"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "搜索文档。"
 
@@ -7215,6 +7213,11 @@ msgid "This operation requires a single selected node."
 msgstr "此操作只能应用于单个选中节点。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "正交"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "锁定视角旋转"
 
@@ -7303,16 +7306,16 @@ msgid "Freelook Slow Modifier"
 msgstr "缓慢自由视图速度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "锁定视角旋转"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "注意：显示的FPS值是编辑器的帧速率。\n"
 "它不能用于表现游戏中的实际性能。"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "锁定视角旋转"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -7906,7 +7909,7 @@ msgstr "字体"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr "Color(颜色)"
+msgstr "颜色"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -10740,6 +10743,12 @@ msgid "Script file already exists."
 msgstr "脚本文件已存在。"
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "类名："
 
@@ -12428,6 +12437,10 @@ msgstr ""
 "幕上显示其内容，使其成为子控件的所以它可以有一个尺寸大小值。否则请将其设置为 "
 "RenderTarget，并将其内部纹理分配给其它节点显示。"
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "预览的源资源无效。"
@@ -12455,6 +12468,15 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Issue Tracker"
+#~ msgstr "问题跟踪器"
+
+#~ msgid "Request Docs"
+#~ msgstr "请求文档"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "通过提供反馈帮助改进godot文档。"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "替换了%d项。"

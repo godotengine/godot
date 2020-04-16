@@ -25,12 +25,13 @@
 # Akhmad Zulfikar <azuldegratz@gmail.com>, 2020.
 # Ade Fikri Malihuddin <ade.fm97@gmail.com>, 2020.
 # zephyroths <ridho.hikaru@gmail.com>, 2020.
+# Richard Urban <redasuio1@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-08 22:33+0000\n"
-"Last-Translator: Sofyan Sugianto <sofyanartem@gmail.com>\n"
+"PO-Revision-Date: 2020-04-16 11:03+0000\n"
+"Last-Translator: Richard Urban <redasuio1@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -38,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1462,7 +1463,7 @@ msgstr "Pindahkan Autoload"
 msgid "Remove Autoload"
 msgstr "Hapus Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Aktifkan"
 
@@ -2947,8 +2948,13 @@ msgid "Q&A"
 msgstr "Tanya Jawab"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Pelacak Isu"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Impor ulang"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4000,7 +4006,8 @@ msgid "Reimport"
 msgstr "Impor ulang"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Simpan skena, impor ulang, dan mulai ulang"
 
 #: editor/import_dock.cpp
@@ -5874,7 +5881,6 @@ msgid "Couldn't create a single convex collision shape."
 msgstr "Tidak dapat membuat convex collision shape tunggal."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Shape"
 msgstr "Buat Bentuk Cembung"
 
@@ -5887,7 +5893,6 @@ msgid "Couldn't create any collision shapes."
 msgstr "Tidak dapat membuat bentuk collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
 msgstr "Buat Beberapa Bentuk Cembung"
 
@@ -5964,7 +5969,6 @@ msgstr ""
 "collision."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
 msgstr "Buat Saudara Tunggal Convex Collision"
 
@@ -6855,14 +6859,6 @@ msgid "Open Godot online documentation."
 msgstr "Buka dokumentasi daring Godot."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Minta Dokumentasi"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Bantu tingkatkan dokumentasi Godot dengan memberikan tanggapan."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Cari dokumentasi referensi."
 
@@ -7301,6 +7297,11 @@ msgid "This operation requires a single selected node."
 msgstr "Operasi ini membutuhkan satu node yang dipilih."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Kunci Rotasi Tampilan"
 
@@ -7389,16 +7390,16 @@ msgid "Freelook Slow Modifier"
 msgstr "Pengubah Lambat Tampilan Bebas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Rotasi Tampilan Terkunci"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "Catatan: Nilai FPS yang ditampilkan adalah framerate-nya editor.\n"
 "Tidak bisa digunakan sebagai indikasi kinerja gim yang dapat dihandalkan."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Rotasi Tampilan Terkunci"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -10914,6 +10915,12 @@ msgid "Script file already exists."
 msgstr "Berkas skrip sudah ada."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Nama Kelas:"
 
@@ -11298,7 +11305,6 @@ msgid "GridMap Paste Selection"
 msgstr "Rekat(Paste) Seleksi GridMap"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-#, fuzzy
 msgid "GridMap Paint"
 msgstr "Cat GridMap"
 
@@ -11716,7 +11722,7 @@ msgstr "Tidak dapat membuat fungsi dengan node fungsi."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Can't create function of nodes from nodes of multiple functions."
-msgstr ""
+msgstr "Tidak dapat membuat fungsi node dari node beberapa fungsi."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select at least one node with sequence port."
@@ -11881,19 +11887,19 @@ msgstr "Nama paket tidak ada."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Segmen paket panjangnya harus tidak boleh nol."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' is not allowed in Android application package names."
-msgstr ""
+msgstr "Karakter '%s' tidak diizinkan dalam penamaan paket aplikasi Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
-msgstr ""
+msgstr "Digit tidak boleh diletakkan sebagai karakter awal di segmen paket."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
-msgstr ""
+msgstr "Karakter '%s' tidak bisa dijadikan karakter awal dalam segmen paket."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
@@ -11939,7 +11945,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Kunci Publik untuk ekspansi APK tidak valid."
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
@@ -11950,6 +11956,8 @@ msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
+"Mencoba untuk membangun dari templat build khusus, tapi tidak ada informasi "
+"versinya. Silakan pasang ulang dari menu 'Proyek'."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11958,24 +11966,30 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
+"Versi build Android tidak cocok:\n"
+"   Templat terpasang: %s\n"
+"   Versi Godot: %s\n"
+"Silakan pasang ulang templat build Android dari menu 'Project'."
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
-msgstr ""
+msgstr "Membangun Proyek Android (gradle)"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
+"Pembangunan proyek Android gagal, periksa output untuk galatnya.\n"
+"Atau kunjungi docs.godotengine.org untuk dokumentasi build Android."
 
 #: platform/android/export/export.cpp
 msgid "No build apk generated at: "
-msgstr ""
+msgstr "Tak ada build apk yang dihasilkan di: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "Kurang identifier."
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
@@ -11984,6 +11998,7 @@ msgstr "Karakter '%s' tidak diizinkan dalam Identifier."
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
+"App Store Team ID tidak ditetapkan - tidak dapat mengonfigurasi proyek."
 
 #: platform/iphone/export/export.cpp
 msgid "Invalid Identifier:"
@@ -11991,19 +12006,19 @@ msgstr "Identifier tidak valid:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "Ikon yang dibutuhkan tidak ditentukan dalam preset."
 
 #: platform/javascript/export/export.cpp
 msgid "Stop HTTP Server"
-msgstr ""
+msgstr "Hentikan Server HTTP"
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
-msgstr ""
+msgstr "Jalankan di Peramban"
 
 #: platform/javascript/export/export.cpp
 msgid "Run exported HTML in the system's default browser."
-msgstr ""
+msgstr "Jalankan HTML yang diekspor dalam peramban baku sistem."
 
 #: platform/javascript/export/export.cpp
 msgid "Could not write file:"
@@ -12055,31 +12070,31 @@ msgstr "Warna latar belakang tidak valid."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Dimensi gambar Logo Store tidak valid (harus 50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Dimensi gambar logo persegi 44x44 tidak valid (harus 44x44)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Dimensi gambar logo persegi 71x71 tidak valid (harus 71x71)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Dimensi gambar logo persegi 150x150 tidak valid (harus 150x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Dimensi gambar logo persegi 310x310 tidak valid (harus 310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Dimensi gambar logo 310x150 lebarnya tidak valid (harus 310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Dimensi gambar splash screen tidak valid (harus 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -12104,6 +12119,10 @@ msgid ""
 "Consider adding a CollisionShape2D or CollisionPolygon2D as a child to "
 "define its shape."
 msgstr ""
+"Node ini tidak punya shape, jadi dia tidak bisa bertabrakan atau "
+"berinteraksi dengan objek lain.\n"
+"Pertimbangkan untuk menambahkan CollisionShape2D atau CollisionPolygon2D "
+"sebagai anak untuk mendefinisikan bentuknya."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -12145,6 +12164,8 @@ msgid ""
 "CPUParticles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"Animasi CPUParticles2D membutuhkan penggunaan CanvasItemMaterial dengan "
+"\"Animasi Partikel\" diaktifkan."
 
 #: scene/2d/light_2d.cpp
 msgid ""
@@ -12194,18 +12215,25 @@ msgid ""
 "Use the CPUParticles2D node instead. You can use the \"Convert to "
 "CPUParticles\" option for this purpose."
 msgstr ""
+"Partikel berbasis GPU tidak didukung oleh video driver GLES2.\n"
+"Gunakan node CPUParticles2D sebagai gantinya. Anda dapat menggunakan opsi "
+"\"Konversikan jadi CPUParticles\" untuk tujuan ini."
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
 "A material to process the particles is not assigned, so no behavior is "
 "imprinted."
 msgstr ""
+"Material untuk memproses partikel belum ditetapkan, jadi tidak ada perilaku "
+"yang dimunculkan."
 
 #: scene/2d/particles_2d.cpp
 msgid ""
 "Particles2D animation requires the usage of a CanvasItemMaterial with "
 "\"Particles Animation\" enabled."
 msgstr ""
+"Animasi Particles2D membutuhkan penggunaan CanvasItemMaterial dengan "
+"\"Animasi Partikel\" diaktifkan."
 
 #: scene/2d/path_2d.cpp
 msgid "PathFollow2D only works when set as a child of a Path2D node."
@@ -12219,6 +12247,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
+"Perubahan ukuran RigidBody2D (dalam mode karakter atau rigid/pejal) akan "
+"ditimpa oleh mesin fisika saat menjalankan.\n"
+"Sebagai gantinya, ubahlah ukuran di anakan collision shape-nya saja."
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -12227,16 +12258,19 @@ msgstr ""
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
-msgstr ""
+msgstr "Ikatan Bone2D ini harus diakhiri dengan node Skeleton2D."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
 msgstr ""
+"Bone2D hanya bekerja dengan Skeleton2D atau Bone2D lain sebagai node induk."
 
 #: scene/2d/skeleton_2d.cpp
 msgid ""
 "This bone lacks a proper REST pose. Go to the Skeleton2D node and set one."
 msgstr ""
+"Tulang ini tidak memiliki pose REST yang sesuai. Pergi ke node Skeleton2D "
+"dan tetapkan."
 
 #: scene/2d/tile_map.cpp
 msgid ""
@@ -12258,47 +12292,51 @@ msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr ""
+msgstr "ARVRCamera wajib memiliki node ARVROrigin sebagai induknya."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
-msgstr ""
+msgstr "ARVRController wajib memiliki node ARVROrigin sebagai induknya."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The controller ID must not be 0 or this controller won't be bound to an "
 "actual controller."
 msgstr ""
+"ID pengontrol tidak boleh 0 atau pengontrol ini tidak terikat ke pengontrol "
+"yang sebenarnya."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRAnchor must have an ARVROrigin node as its parent."
-msgstr ""
+msgstr "ARVRAnchor wajib memiliki node ARVROrigin sebagai induknya."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
 "The anchor ID must not be 0 or this anchor won't be bound to an actual "
 "anchor."
 msgstr ""
+"ID jangkar tidak boleh 0 atau jangkar ini tidak akan terikat ke jangkar "
+"aslinya."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVROrigin requires an ARVRCamera child node."
-msgstr ""
+msgstr "ARVROrigin membutuhkan node anak ARVRCamera."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
-msgstr ""
+msgstr "%d%%"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "(Time Left: %d:%02d s)"
-msgstr ""
+msgstr "(Waktu tersisa: %d:%02d s)"
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Meshes: "
-msgstr ""
+msgstr "Plotting Meshes: "
 
 #: scene/3d/baked_lightmap.cpp
 msgid "Plotting Lights:"
-msgstr ""
+msgstr "Plotting Lights:"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/gi_probe.cpp
 msgid "Finishing Plot"
@@ -12642,6 +12680,10 @@ msgstr ""
 "tidak, jadikan sebagai RenderTarget dan tetapkan tekstur internal nya ke "
 "beberapa node untuk ditampilkan."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Sumber tidak sah untuk pratinjau."
@@ -12669,6 +12711,15 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Pelacak Isu"
+
+#~ msgid "Request Docs"
+#~ msgstr "Minta Dokumentasi"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Bantu tingkatkan dokumentasi Godot dengan memberikan tanggapan."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "kejadian %d diganti."
