@@ -1481,7 +1481,7 @@ msgstr "KendindenYüklenme'yi Taşı"
 msgid "Remove Autoload"
 msgstr "KendindenYüklenme'yi Kaldır"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Etkin"
 
@@ -2961,8 +2961,13 @@ msgid "Q&A"
 msgstr "S&C"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Sorun İzleyici"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Yeniden İçe Aktar"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4013,7 +4018,8 @@ msgid "Reimport"
 msgstr "Yeniden İçe Aktar"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Sahneleri kaydet, tekrar içe aktar ve baştan başlat"
 
 #: editor/import_dock.cpp
@@ -6857,14 +6863,6 @@ msgid "Open Godot online documentation."
 msgstr "Çevrimiçi Godot dökümanlarını aç."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Belgeleri İste"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Dönüt vererek Godot belgelerini iyileştirmeye yardımcı olun."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Başvuru belgelerinde arama yap."
 
@@ -7300,6 +7298,11 @@ msgid "This operation requires a single selected node."
 msgstr "Bu işlem, seçilmiş tek bir düğüm gerektirir."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Dikey"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Dönüşü Görüntülemeyi kilitle"
 
@@ -7388,16 +7391,16 @@ msgid "Freelook Slow Modifier"
 msgstr "Serbestbakış Hız Değiştirici"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Dönme Kilitli Görünüm"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "Not: Gösterilen FPS değeri editörün çerçeve hızıdır.\n"
 "Oyun içi performansın gösteri olarak ele alınamaz."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Dönme Kilitli Görünüm"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -10911,6 +10914,12 @@ msgid "Script file already exists."
 msgstr "Betik dosyası zaten mevcut."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Sınıf İsmi:"
 
@@ -12682,6 +12691,10 @@ msgstr ""
 "yapın böylece bir boyut elde edebilir. Aksi takdirde, Görüntüleme için bunu "
 "bir RenderTarget yap ve dahili dokusunu herhangi bir düğüme ata."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Önizleme için geçersiz kaynak."
@@ -12709,6 +12722,15 @@ msgstr "varyings yalnızca vertex işlevinde atanabilir."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Sabit değerler değiştirilemez."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Sorun İzleyici"
+
+#~ msgid "Request Docs"
+#~ msgstr "Belgeleri İste"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Dönüt vererek Godot belgelerini iyileştirmeye yardımcı olun."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "%d değişiklik gerçekleştirildi."

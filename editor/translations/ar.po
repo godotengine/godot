@@ -33,12 +33,14 @@
 # traveller010 <manar.bushnaq.001@gmail.com>, 2019.
 # Ahmed Shahwan <dev.ahmed.shahwan@gmail.com>, 2019.
 # hshw <shw@tutanota.com>, 2020.
+# Youssef Harmal <the.coder.crab@gmail.com>, 2020.
+# Nabeel20 <nabeelandnizam@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-01-16 22:23+0000\n"
-"Last-Translator: hshw <shw@tutanota.com>\n"
+"PO-Revision-Date: 2020-04-15 14:29+0000\n"
+"Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -47,7 +49,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.10.2-dev\n"
+"X-Generator: Weblate 4.0-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -710,7 +712,7 @@ msgstr "رقم الخط:"
 #: editor/code_editor.cpp
 #, fuzzy
 msgid "%d replaced."
-msgstr "إستبدال"
+msgstr "تم إستبدال %d"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
@@ -747,7 +749,7 @@ msgstr "معياري"
 
 #: editor/code_editor.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
-msgstr ""
+msgstr "تحديد التبويب البرمجي"
 
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
@@ -915,7 +917,7 @@ msgstr "هل أنت(ي) متأكد(ة) أنك تود إزالة كل الإتص�
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr "إشارات"
+msgstr "الإشارات"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -1225,9 +1227,8 @@ msgid "The following files failed extraction from package:"
 msgstr "فشل استخراج الملفات التالية من الحزمة:"
 
 #: editor/editor_asset_installer.cpp
-#, fuzzy
 msgid "And %s more files."
-msgstr "%d مزيد من الملفات"
+msgstr "%s مزيد من الملفات"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1381,9 +1382,8 @@ msgid "Invalid file, not an audio bus layout."
 msgstr "ملف خطأ، ليس ملف نسق بيوس الصوت."
 
 #: editor/editor_audio_buses.cpp
-#, fuzzy
 msgid "Error saving file: %s"
-msgstr "خطأ في حفظ مجموعة البلاط!"
+msgstr "خطأ !خطأ في تسجيل الملف: s%"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Bus"
@@ -1469,7 +1469,7 @@ msgstr "نقل التحميل التلقائي"
 msgid "Remove Autoload"
 msgstr "ازالة التحميل التلقائي"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "تمكين"
 
@@ -1609,9 +1609,8 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom debug template not found."
-msgstr "ملف النموذج غير موجود:"
+msgstr "نمودج تصحيح الأخطاء غير موجود."
 
 #: editor/editor_export.cpp platform/android/export/export.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -1628,9 +1627,8 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "المُعدل"
+msgstr "معدل تلاثي الأبعاد"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1643,22 +1641,19 @@ msgstr "مكتبة الأصول"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
-msgstr ""
+msgstr "تعديل شجرة المشهد"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Dock"
-msgstr "إستيراد"
+msgstr "رصيف الاستيراد"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "وضع التحريك"
+msgstr "رصيف العقد"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "نظام الملفات"
+msgstr "رصيف نظام الملفات و الاستيراد"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -3010,8 +3005,13 @@ msgid "Q&A"
 msgstr "الأسئلة و الأجوبة"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "متتبع الأخطاء"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "إعادة إستيراد"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4100,7 +4100,7 @@ msgid "Reimport"
 msgstr "إعادة إستيراد"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -7090,14 +7090,6 @@ msgid "Open Godot online documentation."
 msgstr "فُتح مؤخراً"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -7552,6 +7544,10 @@ msgid "This operation requires a single selected node."
 msgstr "هذه العملية تتطلب عقدة واحدة محددة."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr ""
 
@@ -7642,13 +7638,13 @@ msgid "Freelook Slow Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid ""
-"Note: The FPS value displayed is the editor's framerate.\n"
-"It cannot be used as a reliable indication of in-game performance."
+msgid "View Rotation Locked"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9157,38 +9153,39 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
 msgstr ""
+"ثابت E  ويعادل القيمة (2.718282)، وهو يمثل الأساس في اللوغاريتم الطبيعي."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
-msgstr ""
+msgstr "ثابت إيبسلون (0.00001)، أصغر الأعداد على الإطلاق."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Phi constant (1.618034). Golden ratio."
-msgstr ""
+msgstr "ثابت فاي (1.618034)، ويمثل النسبة الذهبية ذاتها."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/4 constant (0.785398) or 45 degrees."
-msgstr ""
+msgstr "ثابت باي/4 (0.785398) أو 45 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/2 constant (1.570796) or 90 degrees."
-msgstr ""
+msgstr "ثابت باي/2 (1.570796) أو 90 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi constant (3.141593) or 180 degrees."
-msgstr ""
+msgstr "ثابت باي (3.141593) أو 180 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Tau constant (6.283185) or 360 degrees."
-msgstr ""
+msgstr "ثابت تاو Tau وقيمته (6.283185) أو 360 درجة."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sqrt2 constant (1.414214). Square root of 2."
-msgstr ""
+msgstr "ثابت جذر-العدد2 (1.414214)، أي قيمة جذر العدد 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "يحسب القيمة المطلقة لقيمة المَعلم."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
@@ -11166,6 +11163,12 @@ msgid "Script file already exists."
 msgstr "التحميل التلقائي '%s' موجود اصلا!"
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Class Name:"
 msgstr "إسم صنف"
@@ -12859,6 +12862,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "مصدر غير صالح للمعاينة."
@@ -12886,6 +12893,9 @@ msgstr "يمكن تعيين المتغيرات فقط في الذروة ."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "لا يمكن تعديل الثوابت."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "متتبع الأخطاء"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "إستبُدل %d حادثة(حوادث)."
