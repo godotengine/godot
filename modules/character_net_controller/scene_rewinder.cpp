@@ -61,13 +61,15 @@ bool VarData::operator==(const VarData &p_other) const {
 
 NodeData::NodeData() :
 		id(0),
-		is_controller(false) {
+		is_controller(false),
+		registered_process_count(-1) {
 }
 
 NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
 		id(p_id),
 		instance_id(p_instance_id),
-		is_controller(is_controller) {
+		is_controller(is_controller),
+		registered_process_count(-1) {
 }
 
 void SceneRewinder::_bind_methods() {
@@ -78,6 +80,9 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_server_notify_state_interval", "interval"), &SceneRewinder::set_server_notify_state_interval);
 	ClassDB::bind_method(D_METHOD("get_server_notify_state_interval"), &SceneRewinder::get_server_notify_state_interval);
 
+	ClassDB::bind_method(D_METHOD("set_comparison_tolerance", "tolerance"), &SceneRewinder::set_comparison_tolerance);
+	ClassDB::bind_method(D_METHOD("get_comparison_tolerance"), &SceneRewinder::get_comparison_tolerance);
+
 	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify"), &SceneRewinder::register_variable, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("unregister_variable", "node", "variable"), &SceneRewinder::unregister_variable);
 
@@ -86,11 +91,15 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_variable_changes", "node", "variable", "method"), &SceneRewinder::track_variable_changes);
 	ClassDB::bind_method(D_METHOD("untrack_variable_changes", "node", "variable", "method"), &SceneRewinder::untrack_variable_changes);
 
+	ClassDB::bind_method(D_METHOD("register_process", "node", "function"), &SceneRewinder::register_process);
+	ClassDB::bind_method(D_METHOD("unregister_process", "node", "function"), &SceneRewinder::unregister_process);
+
+	ClassDB::bind_method(D_METHOD("is_recovered"), &SceneRewinder::is_recovered);
+
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneRewinder::_rpc_send_state);
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "server_notify_state_interval", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001"), "set_server_notify_state_interval", "get_server_notify_state_interval");
-
-	ADD_SIGNAL(MethodInfo("sync_process", PropertyInfo(Variant::FLOAT, "delta")));
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "comparison_tolerance", PROPERTY_HINT_RANGE, "0.000001,0.01,0.000001"), "set_comparison_tolerance", "get_comparison_tolerance");
 }
 
 void SceneRewinder::_notification(int p_what) {
@@ -130,10 +139,17 @@ void SceneRewinder::_notification(int p_what) {
 
 SceneRewinder::SceneRewinder() :
 		server_notify_state_interval(1.0),
+		comparison_tolerance(0.0001),
 		rewinder(nullptr),
+		recover_in_progress(false),
 		node_counter(1),
 		generate_id(false),
 		main_controller(nullptr) {
+
+	// Adding user signal instead of the traditional signal so it is not visible
+	// into the editor and the user is not able to connect it from there.
+	// The user is forced to use the function `register_process`.
+	add_user_signal(MethodInfo("sync_process", PropertyInfo(Variant::FLOAT, "delta")));
 
 	rpc_config("__reset", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -155,46 +171,18 @@ real_t SceneRewinder::get_server_notify_state_interval() const {
 	return server_notify_state_interval;
 }
 
+void SceneRewinder::set_comparison_tolerance(real_t p_tolerance) {
+	comparison_tolerance = p_tolerance;
+}
+
+real_t SceneRewinder::get_comparison_tolerance() const {
+	return comparison_tolerance;
+}
+
 void SceneRewinder::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify) {
 
-	ERR_FAIL_COND(p_node == nullptr);
-
-	bool is_controller = false;
-	{
-		CharacterNetController *controller = Object::cast_to<CharacterNetController>(p_node);
-		if (controller) {
-			if (controller->has_scene_rewinder()) {
-				ERR_FAIL_COND_MSG(controller->get_scene_rewinder() != this, "This controller is associated with a different scene rewinder.");
-			} else {
-				// Unreachable.
-				CRASH_COND(controllers.find(controller) != -1);
-				controller->set_scene_rewinder(this);
-				controllers.push_back(controller);
-				is_controller = true;
-
-				if (controller->is_player_controller()) {
-					if (main_controller == nullptr) {
-						main_controller = controller;
-					} else {
-						WARN_PRINT("More local player net controllers are not fully tested. Please report any strange behaviour.");
-					}
-				}
-			}
-		}
-	}
-
-	NodeData *node_data = data.getptr(p_node->get_instance_id());
-	if (node_data == nullptr) {
-		const uint32_t node_id(generate_id ? node_counter : 0);
-		data.set(
-				p_node->get_instance_id(),
-				NodeData(node_id, p_node->get_instance_id(), is_controller));
-		node_counter += 1;
-		node_data = data.getptr(p_node->get_instance_id());
-	}
-
-	// Unreachable
-	CRASH_COND(node_data == nullptr);
+	NodeData *node_data = register_node(p_node);
+	ERR_FAIL_COND(node_data == nullptr);
 
 	const int id = node_data->vars.find(p_variable);
 	if (id == -1) {
@@ -211,8 +199,7 @@ void SceneRewinder::register_variable(Node *p_node, StringName p_variable, Strin
 
 	if (p_node->has_signal(get_changed_event_name(p_variable)) == false) {
 		p_node->add_user_signal(MethodInfo(
-				get_changed_event_name(p_variable),
-				PropertyInfo(Variant::NIL, "old_value")));
+				get_changed_event_name(p_variable)));
 	}
 
 	track_variable_changes(p_node, p_variable, p_on_change_notify);
@@ -279,6 +266,30 @@ void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable
 				get_changed_event_name(p_variable),
 				Callable(p_node, p_method));
 	}
+}
+
+void SceneRewinder::register_process(Node *p_node, StringName p_function) {
+	if (!is_connected("sync_process", Callable(p_node, p_function))) {
+		connect("sync_process", Callable(p_node, p_function));
+
+		NodeData *node_data = register_node(p_node);
+		ERR_FAIL_COND(node_data == nullptr);
+		node_data->registered_process_count += 1;
+	}
+}
+
+void SceneRewinder::unregister_process(Node *p_node, StringName p_function) {
+	if (is_connected("sync_process", Callable(p_node, p_function))) {
+		disconnect("sync_process", Callable(p_node, p_function));
+
+		NodeData *node_data = register_node(p_node);
+		ERR_FAIL_COND(node_data == nullptr);
+		node_data->registered_process_count -= 1;
+	}
+}
+
+bool SceneRewinder::is_recovered() const {
+	return recover_in_progress;
 }
 
 void SceneRewinder::reset() {
@@ -373,6 +384,140 @@ void SceneRewinder::_rpc_send_state(Variant p_snapshot) {
 	rewinder->receive_snapshot(p_snapshot);
 }
 
+NodeData *SceneRewinder::register_node(Node *p_node) {
+	ERR_FAIL_COND_V(p_node == nullptr, nullptr);
+
+	bool is_controller = false;
+	{
+		CharacterNetController *controller = Object::cast_to<CharacterNetController>(p_node);
+		if (controller) {
+			if (controller->has_scene_rewinder()) {
+				ERR_FAIL_COND_V_MSG(controller->get_scene_rewinder() != this, nullptr, "This controller is associated with a different scene rewinder.");
+			} else {
+				// Unreachable.
+				CRASH_COND(controllers.find(controller) != -1);
+				controller->set_scene_rewinder(this);
+				controllers.push_back(controller);
+				is_controller = true;
+
+				if (controller->is_player_controller()) {
+					if (main_controller == nullptr) {
+						main_controller = controller;
+					} else {
+						WARN_PRINT("More local player net controllers are not fully tested. Please report any strange behaviour.");
+					}
+				}
+			}
+		}
+	}
+
+	NodeData *node_data = data.getptr(p_node->get_instance_id());
+	if (node_data == nullptr) {
+		const uint32_t node_id(generate_id ? ++node_counter : 0);
+		data.set(
+				p_node->get_instance_id(),
+				NodeData(node_id, p_node->get_instance_id(), is_controller));
+		node_data = data.getptr(p_node->get_instance_id());
+		node_data->registered_process_count = 0;
+	}
+	return node_data;
+}
+
+bool SceneRewinder::vec2_evaluation(const Vector2 a, const Vector2 b) {
+	return (a - b).length_squared() <= (comparison_tolerance * comparison_tolerance);
+}
+
+bool SceneRewinder::vec3_evaluation(const Vector3 a, const Vector3 b) {
+	return (a - b).length_squared() <= (comparison_tolerance * comparison_tolerance);
+}
+
+bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2) {
+	if (v_1.get_type() != v_2.get_type()) {
+		return false;
+	}
+
+	// Custom evaluation methods
+	if (v_1.get_type() == Variant::FLOAT) {
+		const real_t a(v_1);
+		const real_t b(v_2);
+		return ABS(a - b) <= comparison_tolerance;
+	} else if (v_1.get_type() == Variant::VECTOR2) {
+		return vec2_evaluation(v_1, v_2);
+	} else if (v_1.get_type() == Variant::RECT2) {
+		const Rect2 a(v_1);
+		const Rect2 b(v_2);
+		if (vec2_evaluation(a.position, b.position)) {
+			if (vec2_evaluation(a.size, b.size)) {
+				return true;
+			}
+		}
+		return false;
+	} else if (v_1.get_type() == Variant::TRANSFORM2D) {
+		const Transform2D a(v_1);
+		const Transform2D b(v_2);
+		if (vec2_evaluation(a.elements[0], b.elements[0])) {
+			if (vec2_evaluation(a.elements[1], b.elements[1])) {
+				if (vec2_evaluation(a.elements[2], b.elements[2])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	} else if (v_1.get_type() == Variant::VECTOR3) {
+		return vec3_evaluation(v_1, v_2);
+	} else if (v_1.get_type() == Variant::QUAT) {
+		const Quat a(v_1);
+		const Quat b(v_2);
+		const Quat r(a - b); // Element wise subtraction.
+		return ABS(r.x + r.y + r.z + r.w) <= comparison_tolerance;
+	} else if (v_1.get_type() == Variant::PLANE) {
+		const Plane a(v_1);
+		const Plane b(v_2);
+		if (ABS(a.d - b.d) <= comparison_tolerance) {
+			if (vec3_evaluation(a.normal, b.normal)) {
+				return true;
+			}
+		}
+		return false;
+	} else if (v_1.get_type() == Variant::AABB) {
+		const AABB a(v_1);
+		const AABB b(v_2);
+		if (vec3_evaluation(a.position, b.position)) {
+			if (vec3_evaluation(a.size, b.size)) {
+				return true;
+			}
+		}
+		return false;
+	} else if (v_1.get_type() == Variant::BASIS) {
+		const Basis a(v_1);
+		const Basis b(v_2);
+		if (vec3_evaluation(a.elements[0], b.elements[0])) {
+			if (vec3_evaluation(a.elements[1], b.elements[1])) {
+				if (vec3_evaluation(a.elements[2], b.elements[2])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	} else if (v_1.get_type() == Variant::TRANSFORM) {
+		const Transform a(v_1);
+		const Transform b(v_2);
+		if (vec3_evaluation(a.origin, b.origin)) {
+			if (vec3_evaluation(a.basis.elements[0], b.basis.elements[0])) {
+				if (vec3_evaluation(a.basis.elements[1], b.basis.elements[1])) {
+					if (vec3_evaluation(a.basis.elements[2], b.basis.elements[2])) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	// Default evaluation methods
+	return v_1 == v_2;
+}
+
 void SceneRewinder::process() {
 
 	const real_t delta = get_physics_process_delta_time();
@@ -403,8 +548,8 @@ void SceneRewinder::process() {
 			const Variant new_val = node->get(object_vars[i].name);
 			object_vars[i].value = new_val;
 
-			if (old_val != new_val) {
-				node->emit_signal(get_changed_event_name(object_vars[i].name), old_val);
+			if (!rewinder_variant_evaluation(old_val, new_val)) {
+				node->emit_signal(get_changed_event_name(object_vars[i].name));
 			}
 		}
 	}
@@ -591,10 +736,12 @@ void ClientRewinder::clear() {
 
 void ClientRewinder::process(real_t p_delta) {
 
+	// TODO what happens during the client input saturated phases?
+	// TODO How to handle the client input speed up and slow down?
+
 	ERR_FAIL_COND_MSG(scene_rewinder->main_controller == nullptr, "Snapshot creation fail, Make sure to track a NetController.");
 
 	// Store snapshots.
-	// TODO what happens during the client input saturated phases?
 	Snapshot snapshot;
 
 	// Store the player controller input ID
@@ -610,14 +757,14 @@ void ClientRewinder::process(real_t p_delta) {
 	snapshot.data = scene_rewinder->data;
 	snapshots.push_back(snapshot);
 
-	process_recovery();
+	process_recovery(p_delta);
 }
 
 void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 	parse_snapshot(p_snapshot);
 }
 
-void ClientRewinder::process_recovery() {
+void ClientRewinder::process_recovery(real_t p_delta) {
 	if (server_snapshot_id <= recovered_snapshot_id) {
 		// Nothing to recover.
 		return;
@@ -628,20 +775,87 @@ void ClientRewinder::process_recovery() {
 	// so the comparison is done between two snapshots that have the same player
 	// NetController input ID.
 
-	Snapshot s;
-	s.player_controller_input_id = 0;
-
-	while (snapshots.empty() == false && snapshots.front().player_controller_input_id <= server_snapshot.player_controller_input_id) {
-		s = snapshots.front();
+	while (snapshots.empty() == false && snapshots.front().player_controller_input_id < server_snapshot.player_controller_input_id) {
 		snapshots.pop_front();
 	}
 
 	// Unreachable
-	ERR_FAIL_COND(s.player_controller_input_id != server_snapshot.player_controller_input_id);
+	ERR_FAIL_COND(snapshots.empty());
+	ERR_FAIL_COND(snapshots.front().player_controller_input_id != server_snapshot.player_controller_input_id);
+
+	scene_rewinder->recover_in_progress = true;
+	const Snapshot &client_snapshot = snapshots.front();
+
+	bool rewind = false;
 
 	// We found the client snapshot. Let's compare.
+	for (
+			const ObjectID *key = server_snapshot.data.next(nullptr);
+			key != nullptr;
+			key = server_snapshot.data.next(key)) {
+
+		const NodeData &s_data = server_snapshot.data.get(*key);
+		const VarData *s_vars = s_data.vars.ptr();
+		Object *obj = ObjectDB::get_instance(s_data.instance_id);
+
+		bool different = false;
+
+		const NodeData *c_data = client_snapshot.data.getptr(*key);
+		if (c_data == nullptr) {
+			// The client snapshot doesn't have this node, so it's considere
+			// different. Apply the server values.
+			for (int i = 0; i < s_data.vars.size(); i += 1) {
+				obj->set(s_vars[i].name, s_vars[i].value);
+				obj->emit_signal(scene_rewinder->get_changed_event_name(s_vars[i].name));
+			}
+			different = true;
+		} else {
+			// Compare the vars
+
+			const VarData *c_vars = c_data->vars.ptr();
+			for (int i = 0; i < s_data.vars.size(); i += 1) {
+				const int c_var_index = c_data->vars.find(s_vars[i].id);
+				if (c_var_index == -1) {
+					// Variable not found, just set it.
+					obj->set(s_vars[i].name, s_vars[i].value);
+					obj->emit_signal(scene_rewinder->get_changed_event_name(s_vars[i].name));
+					different = true;
+				} else {
+					// Variable found compare.
+					if (!scene_rewinder->rewinder_variant_evaluation(s_vars[i].value, c_vars[i].value)) {
+						obj->set(s_vars[i].name, s_vars[i].value);
+						obj->emit_signal(scene_rewinder->get_changed_event_name(s_vars[i].name));
+						different = true;
+					}
+				}
+			}
+		}
+
+		if (different) {
+			// This snapshot is different, check if we need to rewind.
+			const NodeData &sr_node_data = scene_rewinder->data.get(s_data.instance_id);
+			if (sr_node_data.is_controller || sr_node_data.registered_process_count > 0) {
+				// Rewinds whenever a discrepancy is found on a controlle or a
+				// processed node.
+				rewind = true;
+			}
+		}
+	}
+
+	if (rewind) {
+		// TODO integrate isle rewinding optimization.
+
+		//  TODO just a test.
+		const int frames_to_rewind = scene_rewinder->main_controller->get_current_input_id() - client_snapshot.player_controller_input_id;
+
+		for (int i = 0; i < frames_to_rewind; i += 1) {
+			scene_rewinder->emit_signal("sync_process", p_delta);
+		}
+	}
 
 	recovered_snapshot_id = server_snapshot_id;
+	snapshots.pop_front();
+	scene_rewinder->recover_in_progress = false;
 }
 
 void ClientRewinder::parse_snapshot(Variant p_snapshot) {

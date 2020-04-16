@@ -57,6 +57,7 @@ struct NodeData {
 	uint32_t id;
 	ObjectID instance_id;
 	bool is_controller;
+	int registered_process_count;
 	Vector<VarData> vars;
 
 	// This is valid to use only inside the process function.
@@ -75,8 +76,10 @@ class SceneRewinder : public Node {
 	friend class NoNetRewinder;
 
 	real_t server_notify_state_interval;
+	real_t comparison_tolerance;
 
 	Rewinder *rewinder;
+	bool recover_in_progress;
 
 	uint32_t node_counter;
 	bool generate_id;
@@ -96,6 +99,9 @@ public:
 	void set_server_notify_state_interval(real_t p_interval);
 	real_t get_server_notify_state_interval() const;
 
+	void set_comparison_tolerance(real_t p_tolerance);
+	real_t get_comparison_tolerance() const;
+
 	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName());
 	void unregister_variable(Node *p_node, StringName p_variable);
 
@@ -103,6 +109,11 @@ public:
 
 	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
+
+	void register_process(Node *p_node, StringName p_function);
+	void unregister_process(Node *p_node, StringName p_function);
+
+	bool is_recovered() const;
 
 	/// Can only be called on the server
 	void reset();
@@ -118,6 +129,12 @@ private:
 
 	void on_peer_connected(int p_peer_id);
 	void on_peer_disconnected(int p_peer_id);
+
+	NodeData *register_node(Node *p_node);
+
+	bool vec2_evaluation(const Vector2 a, const Vector2 b);
+	bool vec3_evaluation(const Vector3 a, const Vector3 b);
+	bool rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2);
 };
 
 struct PeerData {
@@ -135,6 +152,7 @@ struct Snapshot {
 	// This is an utility variable that is used for fast comparisons.
 	uint64_t player_controller_input_id;
 	// TODO worth store the pointer instead of the Object ID?
+	// TODO copy on write?
 	HashMap<ObjectID, uint64_t> controllers_input_id;
 	HashMap<ObjectID, NodeData> data;
 };
@@ -201,7 +219,7 @@ public:
 	virtual void receive_snapshot(Variant p_snapshot);
 
 private:
-	void process_recovery();
+	void process_recovery(real_t p_delta);
 	void parse_snapshot(Variant p_snapshot);
 };
 
