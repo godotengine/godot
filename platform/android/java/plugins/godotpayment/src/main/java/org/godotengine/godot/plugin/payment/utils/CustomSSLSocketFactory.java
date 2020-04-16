@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-package org.godotengine.godot.utils;
+package org.godotengine.godot.plugin.payment.utils;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
