@@ -149,6 +149,8 @@ public:
 			uint32_t surface_switch_count;
 			uint32_t shader_rebind_count;
 			uint32_t vertices_count;
+			uint32_t _2d_item_count;
+			uint32_t _2d_draw_call_count;
 
 			void reset() {
 				object_count = 0;
@@ -157,6 +159,8 @@ public:
 				surface_switch_count = 0;
 				shader_rebind_count = 0;
 				vertices_count = 0;
+				_2d_item_count = 0;
+				_2d_draw_call_count = 0;
 			}
 		} render, render_final, snap;
 

@@ -620,6 +620,8 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 	int num_elements = p_batch.num_commands * 6;
 	glDrawElements(GL_TRIANGLES, num_elements, GL_UNSIGNED_SHORT, (void *)offset);
 
+	storage->info.render._2d_draw_call_count++;
+
 	switch (tex.tile_mode) {
 		case BatchTex::TILE_FORCE_REPEAT: {
 			state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, false);
@@ -718,6 +720,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 								}
 #endif
 							}
+							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_RECT: {
@@ -911,6 +914,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 							}
 
 							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, false);
+							storage->info.render._2d_draw_call_count++;
 
 						} break;
 
@@ -1086,6 +1090,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 
 							glBindBuffer(GL_ARRAY_BUFFER, 0);
 							glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+							storage->info.render._2d_draw_call_count++;
 
 						} break;
 
@@ -1117,6 +1122,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 							_bind_canvas_texture(RID(), RID());
 
 							_draw_polygon(indices, num_points * 3, num_points + 1, points, NULL, &circle->color, true);
+							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_POLYGON: {
@@ -1149,6 +1155,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 								glDisable(GL_LINE_SMOOTH);
 							}
 #endif
+							storage->info.render._2d_draw_call_count++;
 						} break;
 						case Item::Command::TYPE_MESH: {
 
@@ -1212,6 +1219,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 								}
 							}
 
+							storage->info.render._2d_draw_call_count++;
 						} break;
 						case Item::Command::TYPE_MULTIMESH: {
 							Item::CommandMultiMesh *mmesh = static_cast<Item::CommandMultiMesh *>(command);
@@ -1335,6 +1343,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_INSTANCE_CUSTOM, false);
 							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_INSTANCING, false);
 
+							storage->info.render._2d_draw_call_count++;
 						} break;
 						case Item::Command::TYPE_POLYLINE: {
 							Item::CommandPolyLine *pline = static_cast<Item::CommandPolyLine *>(command);
@@ -1386,6 +1395,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 									glDisable(GL_LINE_SMOOTH);
 #endif
 							}
+							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_PRIMITIVE: {
@@ -1415,6 +1425,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 							}
 
 							_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), primitive->colors.ptr(), primitive->uvs.ptr());
+							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_TRANSFORM: {
@@ -1906,6 +1917,8 @@ bool RasterizerCanvasGLES2::_detect_batch_break(Item *p_ci) {
 // Legacy non-batched implementation for regression testing.
 // Should be removed after testing phase to avoid duplicate codepaths.
 void RasterizerCanvasGLES2::_canvas_render_item(Item *p_ci, RenderItemState &r_ris) {
+	storage->info.render._2d_item_count++;
+
 	if (r_ris.current_clip != p_ci->final_clip_owner) {
 
 		r_ris.current_clip = p_ci->final_clip_owner;
@@ -2268,6 +2281,8 @@ void RasterizerCanvasGLES2::_canvas_render_item(Item *p_ci, RenderItemState &r_r
 }
 
 void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderItemState &r_ris) {
+
+	storage->info.render._2d_item_count++;
 
 	// all the joined items will share the same state with the first item
 	Item *ci = bdata.item_refs[p_bij.first_item_ref].item;

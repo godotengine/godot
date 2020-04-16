@@ -63,6 +63,8 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(RENDER_SHADER_CHANGES_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_SURFACE_CHANGES_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_DRAW_CALLS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_2D_ITEMS_IN_FRAME);
+	BIND_ENUM_CONSTANT(RENDER_2D_DRAW_CALLS_IN_FRAME);
 	BIND_ENUM_CONSTANT(RENDER_VIDEO_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_TEXTURE_MEM_USED);
 	BIND_ENUM_CONSTANT(RENDER_VERTEX_MEM_USED);
@@ -109,6 +111,8 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"raster/shader_changes",
 		"raster/surface_changes",
 		"raster/draw_calls",
+		"2d/items",
+		"2d/draw_calls",
 		"video/video_mem",
 		"video/texture_mem",
 		"video/vertex_mem",
@@ -147,6 +151,8 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
 		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
 		case RENDER_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
+		case RENDER_2D_ITEMS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
+		case RENDER_2D_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
 		case RENDER_VIDEO_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VIDEO_MEM_USED);
 		case RENDER_TEXTURE_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);
 		case RENDER_VERTEX_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VERTEX_MEM_USED);
@@ -179,6 +185,8 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
 		MONITOR_TYPE_MEMORY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
