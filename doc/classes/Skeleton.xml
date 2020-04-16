@@ -38,6 +38,12 @@
 				Clear all the bones in this skeleton.
 			</description>
 		</method>
+		<method name="clear_bones_global_pose_override">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="find_bone" qualifiers="const">
 			<return type="int">
 			</return>
