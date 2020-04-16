@@ -30,8 +30,9 @@
 
 package org.godotengine.godot.plugin;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import java.util.Arrays;
 
