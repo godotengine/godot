@@ -10,7 +10,7 @@
 # sayyed hamed nasib <cghamed752@chmail.ir>, 2017.
 # Behrooz Kashani <bkashani@gmail.com>, 2018.
 # Mahdi <sadisticwarlock@gmail.com>, 2018.
-# hpn33 <hamed.hpn332@gmail.com>, 2019.
+# hpn33 <hamed.hpn332@gmail.com>, 2019, 2020.
 # Focus <saeeddashticlash@gmail.com>, 2019.
 # anonymous <noreply@weblate.org>, 2020.
 # mohamad por <mohamad24xx@gmail.com>, 2020.
@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-08 22:33+0000\n"
-"Last-Translator: mohamad por <mohamad24xx@gmail.com>\n"
+"PO-Revision-Date: 2020-04-09 07:52+0000\n"
+"Last-Translator: hpn33 <hamed.hpn332@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -31,10 +31,9 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
-#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"نوع آرگومان برای متد ()convert ‌ نامعتبر است ،‌ از ثابت های  *_TYPE‌ استفاده "
+"نوع ورودی برای متد ()convert ‌ نامعتبر است ،‌ از ثابت های  *_TYPE‌ استفاده "
 "کنید ."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
@@ -1497,7 +1496,7 @@ msgstr ""
 msgid "Remove Autoload"
 msgstr ""
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr ""
 
@@ -2984,7 +2983,12 @@ msgid "Q&A"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "وارد کردن دوباره"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
@@ -4071,7 +4075,7 @@ msgid "Reimport"
 msgstr "وارد کردن دوباره"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -7017,14 +7021,6 @@ msgid "Open Godot online documentation."
 msgstr "شمارش ها"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -7483,6 +7479,10 @@ msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Lock View Rotation"
 msgstr "بومی‌سازی"
@@ -7578,15 +7578,15 @@ msgid "Freelook Slow Modifier"
 msgstr "غلطاندن به پایین."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Rotation Locked"
+msgstr "بومی‌سازی"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "View Rotation Locked"
-msgstr "بومی‌سازی"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -11119,6 +11119,12 @@ msgid "Script file already exists."
 msgstr "پیش از این وجود داشته است"
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Class Name:"
 msgstr "کلاس:"
@@ -12898,6 +12904,10 @@ msgstr ""
 "به صورت مستقیم در صفحه‌نمایش نمایش دهد، آن را یک فرزند یک Control قرار دهید "
 "تا بتواند یک اندازه بگیرد. در غیر اینصورت، آن را یک RenderTarget قرار دهید و "
 "بافت داخلی آن را برای نمایش به تعدادی گره تخصیص دهید."
+
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy

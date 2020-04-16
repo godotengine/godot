@@ -44,12 +44,13 @@
 # nickfla1 <lanterniniflavio@gmail.com>, 2019.
 # Fabio Iotti <fabiogiopla@gmail.com>, 2020.
 # Douglas Fiedler <dognew@gmail.com>, 2020.
+# E440QF <ettore.beltra@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-27 07:01+0000\n"
-"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
+"PO-Revision-Date: 2020-04-08 16:36+0000\n"
+"Last-Translator: E440QF <ettore.beltra@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -1484,7 +1485,7 @@ msgstr "Sposta Autoload"
 msgid "Remove Autoload"
 msgstr "Rimuovi Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Abilita"
 
@@ -2983,8 +2984,13 @@ msgid "Q&A"
 msgstr "Domande e risposte"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Tracciatore segnalazioni"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Reimporta"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4043,7 +4049,8 @@ msgid "Reimport"
 msgstr "Reimporta"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Salva scene, importa nuovamente e riavvia"
 
 #: editor/import_dock.cpp
@@ -6918,14 +6925,6 @@ msgid "Open Godot online documentation."
 msgstr "Apri la documentazione online di Godot."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Documentazione richiesta"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Aiutate a migliorare la documentazione di Godot fornendo feedback."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Cerca Riferimenti nella documentazione."
 
@@ -7361,6 +7360,11 @@ msgid "This operation requires a single selected node."
 msgstr "Questa operazione richiede un solo nodo selezionato."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Ortogonale"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Blocca Rotazione Vista"
 
@@ -7449,6 +7453,10 @@ msgid "Freelook Slow Modifier"
 msgstr "Modificatore Vista Libera Velocità Lenta"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Rotazione Vista Bloccata"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7456,10 +7464,6 @@ msgstr ""
 "Nota: Il valore di FPS mostrato è relativo al framerate dell'editor.\n"
 "Non può essere usato come indicatore affidabile delle performance durante il "
 "gioco."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Rotazione Vista Bloccata"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -10975,6 +10979,12 @@ msgid "Script file already exists."
 msgstr "Il file di script esiste già."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Nome Classe:"
 
@@ -12477,6 +12487,7 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"ConcavePolygonShape non supporta RigidBody in modalità diverse da static."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -12774,6 +12785,10 @@ msgstr ""
 "Control, in modo che possa ottenere una dimensione. Altrimenti, renderlo un "
 "RenderTarget e assegnare alla sua texture interna qualche nodo da mostrare."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Fonte non valida per l'anteprima."
@@ -12801,6 +12816,15 @@ msgstr "Varyings può essere assegnato soltanto nella funzione del vertice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Le constanti non possono essere modificate."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Tracciatore segnalazioni"
+
+#~ msgid "Request Docs"
+#~ msgstr "Documentazione richiesta"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Aiutate a migliorare la documentazione di Godot fornendo feedback."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Rimpiazzate %d occorrenze."
