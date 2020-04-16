@@ -44,8 +44,7 @@ class Array {
 	void _ref(const Array &p_from) const;
 	void _unref() const;
 
-	int _clamp_index(int p_index) const;
-	static int _fix_slice_index(int p_index, int p_arr_len, int p_top_mod);
+	int _adjust_slice_index(int p_length, int *p_begin, int *p_end, int p_step) const;
 
 public:
 	Variant &operator[](int p_idx);

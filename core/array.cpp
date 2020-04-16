@@ -223,63 +223,58 @@ Array Array::duplicate(bool p_deep) const {
 	return new_arr;
 }
 
-int Array::_fix_slice_index(int p_index, int p_arr_len, int p_top_mod) {
-	p_index = CLAMP(p_index, -p_arr_len, p_arr_len + p_top_mod);
-	if (p_index < 0) {
-		p_index = (p_index % p_arr_len + p_arr_len) % p_arr_len; // positive modulo
-	}
-	return p_index;
-}
+int Array::_adjust_slice_index(int p_length, int *p_begin, int *p_end, int p_step) const {
 
-int Array::_clamp_index(int p_index) const {
-	return CLAMP(p_index, -size() + 1, size() - 1);
-}
-
-#define ARRAY_GET_DEEP(idx, is_deep) is_deep ? get(idx).duplicate(is_deep) : get(idx)
-
-Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
-	Array new_arr;
-
-	if (empty()) // Don't try to slice empty arrays.
-		return new_arr;
-
-	p_begin = Array::_fix_slice_index(p_begin, size(), -1); // can't start out of range
-	p_end = Array::_fix_slice_index(p_end, size(), 0);
-
-	int x = p_begin;
-	int new_arr_i = 0;
-
-	ERR_FAIL_COND_V(p_step == 0, new_arr);
-	if (Array::_clamp_index(p_begin) == Array::_clamp_index(p_end)) { // don't include element twice
-		new_arr.resize(1);
-		// new_arr[0] = 1;
-		new_arr[0] = ARRAY_GET_DEEP(Array::_clamp_index(p_begin), p_deep);
-		return new_arr;
-	} else {
-		int element_count = ceil((int)MAX(0, (p_end - p_begin) / p_step)) + 1;
-		if (element_count == 1) { // delta going in wrong direction to reach end
-			new_arr.resize(0);
-			return new_arr;
+	if (*p_begin < 0) {
+		*p_begin += p_length;
+		if (*p_begin < 0) {
+			*p_begin = (p_step < 0) ? -1 : 0;
 		}
-		new_arr.resize(element_count);
+	} else if (*p_begin >= p_length) {
+		*p_begin = (p_step < 0) ? p_length - 1 : p_length;
 	}
 
-	// if going backwards, have to have a different terminating condition
+	if (*p_end < 0) {
+		*p_end += p_length;
+		if (*p_end < 0) {
+			*p_end = (p_step < 0) ? -1 : 0;
+		}
+	} else if (*p_end >= p_length) {
+		*p_end = (p_step < 0) ? p_length - 1 : p_length;
+	}
+
 	if (p_step < 0) {
-		while (x >= p_end) {
-			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
-			x += p_step;
-			new_arr_i += 1;
+		if (*p_end < *p_begin) {
+			return (*p_begin - *p_end - 1) / (-p_step) + 1;
 		}
-	} else if (p_step > 0) {
-		while (x <= p_end) {
-			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
-			x += p_step;
-			new_arr_i += 1;
+	} else {
+		if (*p_begin < *p_end) {
+			return (*p_end - *p_begin - 1) / p_step + 1;
 		}
 	}
 
-	return new_arr;
+	return 0;
+}
+
+Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const {
+	Array result;
+	int slicelength, cur, i;
+
+	ERR_FAIL_COND_V_MSG(p_step == 0, result, "Slice step cannot be zero.");
+
+	if (empty())
+		return result;
+
+	slicelength = _adjust_slice_index(size(), &p_begin, &p_end, p_step);
+	if (slicelength <= 0)
+		return result;
+
+	result.resize(slicelength);
+	for (cur = p_begin, i = 0; i < slicelength; cur += p_step, i++) {
+		result[i] = p_deep ? get(cur).duplicate(cur) : get(cur);
+	}
+
+	return result;
 }
 
 struct _ArrayVariantSort {
