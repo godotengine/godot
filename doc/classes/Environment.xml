@@ -265,18 +265,25 @@
 			Represents the size of the [enum BGMode] enum.
 		</constant>
 		<constant name="AMBIENT_SOURCE_BG" value="0" enum="AmbientSource">
+			Gather ambient light from whichever source is specified as the background.
 		</constant>
 		<constant name="AMBIENT_SOURCE_DISABLED" value="1" enum="AmbientSource">
+			Disable ambient light.
 		</constant>
 		<constant name="AMBIENT_SOURCE_COLOR" value="2" enum="AmbientSource">
+			Specify a specific [Color] for ambient light.
 		</constant>
 		<constant name="AMBIENT_SOURCE_SKY" value="3" enum="AmbientSource">
+			Gather ambient light from the [Sky] regardless of what the background is.
 		</constant>
 		<constant name="REFLECTION_SOURCE_BG" value="0" enum="ReflectionSource">
+			Use the background for reflections.
 		</constant>
 		<constant name="REFLECTION_SOURCE_DISABLED" value="1" enum="ReflectionSource">
+			Disable reflections.
 		</constant>
 		<constant name="REFLECTION_SOURCE_SKY" value="2" enum="ReflectionSource">
+			Use the [Sky] for reflections regardless of what the background is.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_ADDITIVE" value="0" enum="GlowBlendMode">
 			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
@@ -291,6 +298,7 @@
 			Replace glow blending mode. Replaces all pixels' color by the glow value. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness.
 		</constant>
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
+			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
 		</constant>
 		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
 			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
@@ -314,7 +322,7 @@
 			2×2 blur for the screen-space ambient occlusion effect.
 		</constant>
 		<constant name="SSAO_BLUR_3x3" value="3" enum="SSAOBlur">
-			3×3 blur for the screen-space ambient occlusion effect (slowest).
+			3×3 blur for the screen-space ambient occlusion effect. Increases the radius of the blur for a smoother look, but can result in checkerboard-like artifacts.
 		</constant>
 	</constants>
 </class>

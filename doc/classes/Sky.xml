@@ -49,7 +49,7 @@
 			Represents the size of the [enum RadianceSize] enum.
 		</constant>
 		<constant name="PROCESS_MODE_QUALITY" value="0" enum="ProcessMode">
-			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime.
+			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/quality/reflections/ggx_samples].
 		</constant>
 		<constant name="PROCESS_MODE_REALTIME" value="1" enum="ProcessMode">
 			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times.
