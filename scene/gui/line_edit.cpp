@@ -301,7 +301,6 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					if (OS::get_singleton()->has_virtual_keyboard())
 						OS::get_singleton()->hide_virtual_keyboard();
 
-					return;
 				} break;
 
 				case KEY_BACKSPACE: {

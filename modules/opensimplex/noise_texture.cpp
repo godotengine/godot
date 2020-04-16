@@ -135,14 +135,19 @@ void NoiseTexture::_queue_update() {
 
 Ref<Image> NoiseTexture::_generate_texture() {
 
-	if (noise.is_null()) return Ref<Image>();
+	// Prevent memdelete due to unref() on other thread.
+	Ref<OpenSimplexNoise> ref_noise = noise;
+
+	if (ref_noise.is_null()) {
+		return Ref<Image>();
+	}
 
 	Ref<Image> image;
 
 	if (seamless) {
-		image = noise->get_seamless_image(size.x);
+		image = ref_noise->get_seamless_image(size.x);
 	} else {
-		image = noise->get_image(size.x, size.y);
+		image = ref_noise->get_image(size.x, size.y);
 	}
 
 	if (as_normalmap) {

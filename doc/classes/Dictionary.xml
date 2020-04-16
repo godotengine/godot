@@ -4,8 +4,9 @@
 		Dictionary type.
 	</brief_description>
 	<description>
-		Dictionary type. Associative container which contains values referenced by unique keys. Dictionary are composed of pairs of keys (which must be unique) and values. You can define a dictionary by placing a comma separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
-		Erasing elements while iterating over them [b]is not supported[/b].
+		Dictionary type. Associative container which contains values referenced by unique keys. Dictionaries are composed of pairs of keys (which must be unique) and values. Dictionaries will preserve the insertion order when adding elements, even though this may not be reflected when printing the dictionary. In other programming languages, this data structure is sometimes referred to as an hash map or associative array.
+		You can define a dictionary by placing a comma-separated list of [code]key: value[/code] pairs in curly braces [code]{}[/code].
+		Erasing elements while iterating over them [b]is not supported[/b] and will result in undefined behavior.
 		Creating a dictionary:
 		[codeblock]
 		var my_dir = {} # Creates an empty dictionary.
@@ -16,15 +17,16 @@
 		    key3: value3,
 		}
 		[/codeblock]
-		You can access values of a dictionary by referencing appropriate key in above example [code]points_dir["White"][/code] would return value of 50.
+		You can access a dictionary's values by referencing the appropriate key. In the above example, [code]points_dir["White"][/code] will return [code]50[/code]. You can also write [code]points_dir.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
 		[codeblock]
 		export(String, "White", "Yellow", "Orange") var my_color
 		var points_dir = {"White": 50, "Yellow": 75, "Orange": 100}
 
 		func _ready():
+		    # We can't use dot syntax here as `my_color` is a variable.
 		    var points = points_dir[my_color]
 		[/codeblock]
-		In the above code [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
+		In the above code, [code]points[/code] will be assigned the value that is paired with the appropriate color selected in [code]my_color[/code].
 		Dictionaries can contain more complex data:
 		[codeblock]
 		my_dir = {"First Array": [1, 2, 3, 4]} # Assigns an Array to a String key.
@@ -36,9 +38,17 @@
 		[/codeblock]
 		Finally, dictionaries can contain different types of keys and values in the same dictionary:
 		[codeblock]
-		var my_dir = {"String Key": 5, 4: [1, 2, 3], 7: "Hello"} # This is a valid dictionary.
+		# This is a valid dictionary.
+		# To access the string "Nested value" below, use `my_dir.sub_dir.sub_key` or `my_dir["sub_dir"]["sub_key"]`.
+		# Indexing styles can be mixed and matched depending on your needs.
+		var my_dir = {
+		    "String Key": 5,
+		    4: [1, 2, 3],
+		    7: "Hello",
+		    "sub_dir": {"sub_key": "Nested value"},
+		}
 		[/codeblock]
-		[b]Note:[/b] Unlike [Array]s you can't compare dictionaries directly:
+		[b]Note:[/b] Unlike [Array]s, you can't compare dictionaries directly:
 		[codeblock]
 		array1 = [1, 2, 3]
 		array2 = [1, 2, 3]
@@ -76,7 +86,7 @@
 			<argument index="0" name="deep" type="bool" default="false">
 			</argument>
 			<description>
-				Creates a copy of the dictionary, and returns it.
+				Creates a copy of the dictionary, and returns it. The [code]deep[/code] parameter causes inner dictionaries and arrays to be copied recursively, but does not apply to objects.
 			</description>
 		</method>
 		<method name="empty">

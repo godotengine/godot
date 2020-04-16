@@ -166,8 +166,9 @@ void Slider::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			Size2i size = get_size();
 			Ref<StyleBox> style = get_stylebox("slider");
-			Ref<StyleBox> grabber_area = get_stylebox("grabber_area");
-			Ref<Texture> grabber = get_icon(editable ? ((mouse_inside || has_focus()) ? "grabber_highlight" : "grabber") : "grabber_disabled");
+			bool highlighted = mouse_inside || has_focus();
+			Ref<StyleBox> grabber_area = get_stylebox(highlighted ? "grabber_area_highlight" : "grabber_area");
+			Ref<Texture> grabber = get_icon(editable ? (highlighted ? "grabber_highlight" : "grabber") : "grabber_disabled");
 			Ref<Texture> tick = get_icon("tick");
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
 

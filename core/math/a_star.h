@@ -43,6 +43,7 @@
 class AStar : public Reference {
 
 	GDCLASS(AStar, Reference);
+	friend class AStar2D;
 
 	struct Point {
 
@@ -124,8 +125,8 @@ class AStar : public Reference {
 protected:
 	static void _bind_methods();
 
-	virtual float _estimate_cost(int p_from_id, int p_to_id);
-	virtual float _compute_cost(int p_from_id, int p_to_id);
+	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
+	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
 public:
 	int get_available_point_id() const;
@@ -166,8 +167,13 @@ class AStar2D : public Reference {
 	GDCLASS(AStar2D, Reference);
 	AStar astar;
 
+	bool _solve(AStar::Point *begin_point, AStar::Point *end_point);
+
 protected:
 	static void _bind_methods();
+
+	virtual real_t _estimate_cost(int p_from_id, int p_to_id);
+	virtual real_t _compute_cost(int p_from_id, int p_to_id);
 
 public:
 	int get_available_point_id() const;

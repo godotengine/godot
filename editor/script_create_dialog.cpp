@@ -687,6 +687,8 @@ void ScriptCreateDialog::_update_dialog() {
 
 	// Is Script created or loaded from existing file?
 
+	builtin_warning_label->set_visible(is_built_in);
+
 	if (is_built_in) {
 		get_ok()->set_text(TTR("Create"));
 		parent_name->set_editable(true);
@@ -764,6 +766,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	path_error_label = memnew(Label);
 	vb->add_child(path_error_label);
+
+	builtin_warning_label = memnew(Label);
+	builtin_warning_label->set_text(
+			TTR("Note: Built-in scripts have some limitations and can't be edited using an external editor."));
+	vb->add_child(builtin_warning_label);
+	builtin_warning_label->set_autowrap(true);
+	builtin_warning_label->hide();
 
 	status_panel = memnew(PanelContainer);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);

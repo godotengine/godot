@@ -34,8 +34,8 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import java.lang.ref.WeakReference;
-import org.godotengine.godot.utils.HttpRequester;
-import org.godotengine.godot.utils.RequestParams;
+import org.godotengine.godot.plugin.payment.utils.HttpRequester;
+import org.godotengine.godot.plugin.payment.utils.RequestParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 

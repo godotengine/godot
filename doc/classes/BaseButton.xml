@@ -60,6 +60,7 @@
 		</member>
 		<member name="keep_pressed_outside" type="bool" setter="set_keep_pressed_outside" getter="is_keep_pressed_outside" default="false">
 			If [code]true[/code], the button stays pressed when moving the cursor outside the button while pressing it.
+			[b]Note:[/b] This property only affects the button's visual appearance. Signals will be emitted at the same moment regardless of this property's value.
 		</member>
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if [member toggle_mode] is active).

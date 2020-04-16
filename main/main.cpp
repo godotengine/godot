@@ -427,6 +427,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	I = args.front();
 	while (I) {
+#ifdef OSX_ENABLED
+		// Ignore the process serial number argument passed by macOS Gatekeeper.
+		// Otherwise, Godot would try to open a non-existent project on the first start and abort.
+		if (I->get().begins_with("-psn_")) {
+			I = I->next();
+			continue;
+		}
+#endif
 
 		List<String>::Element *N = I->next();
 
@@ -1574,7 +1582,7 @@ bool Main::start() {
 			return false;
 		}
 
-		if (script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
+		if (script_res->can_instance()) {
 
 			StringName instance_type = script_res->get_instance_base_type();
 			Object *obj = ClassDB::instance(instance_type);
@@ -1582,7 +1590,7 @@ bool Main::start() {
 			if (!script_loop) {
 				if (obj)
 					memdelete(obj);
-				ERR_FAIL_V_MSG(false, "Can't load script '" + script + "', it does not inherit from a MainLoop type.");
+				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
 			script_loop->set_init_script(script_res);

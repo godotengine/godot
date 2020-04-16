@@ -1515,7 +1515,7 @@ msgstr "Premakni SamodejnoNalaganje"
 msgid "Remove Autoload"
 msgstr "Odstrani SamodejnoNalaganje"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Omogoči"
 
@@ -3066,8 +3066,13 @@ msgid "Q&A"
 msgstr "V&O"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Sledilnik Napak"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Ponovno Uvozi"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4155,7 +4160,7 @@ msgid "Reimport"
 msgstr "Ponovno Uvozi"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -7140,14 +7145,6 @@ msgid "Open Godot online documentation."
 msgstr "Odpri Nedavne"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr ""
 
@@ -7599,6 +7596,10 @@ msgid "This operation requires a single selected node."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr ""
 
@@ -7689,13 +7690,13 @@ msgid "Freelook Slow Modifier"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid ""
-"Note: The FPS value displayed is the editor's framerate.\n"
-"It cannot be used as a reliable indication of in-game performance."
+msgid "View Rotation Locked"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
+msgid ""
+"Note: The FPS value displayed is the editor's framerate.\n"
+"It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -11215,6 +11216,12 @@ msgid "Script file already exists."
 msgstr "SamodejnoNalaganje '%s' že obstaja!"
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Class Name:"
 msgstr "Razred:"
@@ -12926,6 +12933,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
@@ -12955,6 +12966,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstante ni možno spreminjati."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Sledilnik Napak"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Zamenjana %d ponovitev/e."

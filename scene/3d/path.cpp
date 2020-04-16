@@ -317,16 +317,14 @@ void PathFollow::set_offset(float p_offset) {
 	offset = p_offset;
 
 	if (path) {
-		if (path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
+		if (path->get_curve().is_valid()) {
 			float path_length = path->get_curve()->get_baked_length();
 
 			if (loop) {
-				while (offset > path_length)
-					offset -= path_length;
-
-				while (offset < 0)
-					offset += path_length;
-
+				offset = Math::fposmod(offset, path_length);
+				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
+					offset = path_length;
+				}
 			} else {
 				offset = CLAMP(offset, 0, path_length);
 			}

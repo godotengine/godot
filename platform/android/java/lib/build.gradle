@@ -12,7 +12,6 @@ def pathToRootDir = "../../../../"
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         minSdkVersion versions.minSdk

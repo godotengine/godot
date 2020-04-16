@@ -3034,13 +3034,6 @@ void Tree::_notification(int p_what) {
 			draw_item(Point2(), draw_ofs, draw_size, root);
 		}
 
-		int ofs = 0;
-
-		for (int i = 0; i < (columns.size() - 1 - 1); i++) {
-
-			ofs += get_column_width(i);
-		}
-
 		if (show_column_titles) {
 
 			//title buttons
