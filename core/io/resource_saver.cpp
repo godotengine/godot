@@ -123,7 +123,7 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 #ifdef TOOLS_ENABLED
 
 			((Resource *)p_resource.ptr())->set_edited(false);
-			if (timestamp_on_save) {
+			if (timestamp_on_save && !ProjectSettings::get_singleton()->is_using_datapack()) {
 				uint64_t mt = FileAccess::get_modified_time(p_path);
 
 				((Resource *)p_resource.ptr())->set_last_modified_time(mt);
