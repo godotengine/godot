@@ -70,12 +70,14 @@
 # Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
 # Pierre Stempin <pierre.stempin@gmail.com>, 2019.
 # Pierre Caye <pierrecaye@laposte.net>, 2020.
+# Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2020.
+# anonymous <noreply@weblate.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-27 07:01+0000\n"
-"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
+"PO-Revision-Date: 2020-04-03 09:09+0000\n"
+"Last-Translator: anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -93,7 +95,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Attendu chaîne de longueur 1 (un caractère)."
+msgstr "Une chaîne de caractères de longueur 1 est attendue (un caractère)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -1518,7 +1520,7 @@ msgstr "Déplacer l'AutoLoad"
 msgid "Remove Autoload"
 msgstr "Supprimer l'AutoLoad"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Activer"
 
@@ -3022,8 +3024,13 @@ msgid "Q&A"
 msgstr "Questions et réponses"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Traqueur de problèmes"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Réimporter"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4085,7 +4092,8 @@ msgid "Reimport"
 msgstr "Réimporter"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Sauvegarde des scènes, réimportation et redémarrage"
 
 #: editor/import_dock.cpp
@@ -6966,14 +6974,6 @@ msgid "Open Godot online documentation."
 msgstr "Ouvrir la documentation de Godot en ligne."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Demande de documentation"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Aider à améliorer la documentation de Godot en donnant vos réactions."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Rechercher dans la documentation de référence."
 
@@ -7413,6 +7413,11 @@ msgstr ""
 "sélectionné."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Orthogonale"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Verrouiller la rotation de la vue"
 
@@ -7501,6 +7506,10 @@ msgid "Freelook Slow Modifier"
 msgstr "Modificateur de vitesse de la vue libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Verrouiller la rotation de la vue"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7508,10 +7517,6 @@ msgstr ""
 "Note : La valeur FPS affichée est la fréquence d'images de l'éditeur.\n"
 "Il ne doit pas être utilisé comme un indicateur fiable de la performance en "
 "jeu."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Verrouiller la rotation de la vue"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -10496,7 +10501,7 @@ msgstr "Valeur par laquelle le compteur est incrémenté pour chaque nœud"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr "Remplissage"
+msgstr "Remplissage(Padding)"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -11032,6 +11037,12 @@ msgstr "Va charger un fichier de script existant."
 #: editor/script_create_dialog.cpp
 msgid "Script file already exists."
 msgstr "Le fichier de script existe déjà."
+
+#: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -12543,6 +12554,8 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"ConcavePolygonShape ne supporte pas RigidBody dans un autre mode que le mode "
+"statique."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -12851,6 +12864,10 @@ msgstr ""
 "nœud de type Control afin qu'il en obtienne une taille. Sinon, faites-en une "
 "RenderTarget et assignez sa texture à un nœud pouvant l'afficher."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Source invalide pour la prévisualisation."
@@ -12878,6 +12895,16 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Traqueur de problèmes"
+
+#~ msgid "Request Docs"
+#~ msgstr "Demande de documentation"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr ""
+#~ "Aider à améliorer la documentation de Godot en donnant vos réactions."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "%d occurrence(s) remplacée(s)."
