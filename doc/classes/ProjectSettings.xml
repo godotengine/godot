@@ -982,6 +982,15 @@
 		<member name="rendering/quality/2d/use_pixel_snap" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], forces snapping of polygons to pixels in 2D rendering. May help in some pixel art styles.
 		</member>
+		<member name="rendering/quality/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
+			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
+		</member>
+		<member name="rendering/quality/depth_of_field/depth_of_field_bokeh_shape" type="int" setter="" getter="" default="1">
+			Sets the depth of field shape. Can be Box, Hexagon, or Circle. Box is the fastest. Circle is the most realistic, but also the most expensive to compute.
+		</member>
+		<member name="rendering/quality/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], jitters DOF samples to make effect slightly blurrier and hide lines created from low sample rates. This can result in a slightly grainy appearance when used with a low number of samples.
+		</member>
 		<member name="rendering/quality/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables depth pre-pass for some GPU vendors (usually mobile), as their architecture already does this.
 		</member>
@@ -998,7 +1007,7 @@
 			Quality setting for shadows cast by [DirectionalLight3D]s. Higher quality settings use more samples when reading from shadow maps and are thus slower. Low quality settings may result in shadows looking grainy.
 		</member>
 		<member name="rendering/quality/directional_shadow/soft_shadow_quality.mobile" type="int" setter="" getter="" default="0">
-		Lower-end override for [member rendering/quality/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
+			Lower-end override for [member rendering/quality/directional_shadow/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/quality/driver/driver_name" type="String" setter="" getter="" default="&quot;Vulkan&quot;">
 			The video driver to use ("GLES2" or "Vulkan").
@@ -1006,32 +1015,17 @@
 			[b]FIXME:[/b] No longer valid after DisplayServer split:
 			In such cases, this property is not updated, so use [code]OS.get_current_video_driver[/code] to query it at run-time.
 		</member>
-		<member name="rendering/quality/filters/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="2">
-		</member>
-		<member name="rendering/quality/filters/depth_of_field_bokeh_shape" type="int" setter="" getter="" default="1">
-		</member>
-		<member name="rendering/quality/filters/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
-		</member>
-		<member name="rendering/quality/filters/max_anisotropy" type="int" setter="" getter="" default="4">
-		</member>
-		<member name="rendering/quality/filters/msaa" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use. MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
-			[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend.
-		</member>
-		<member name="rendering/quality/filters/screen_space_roughness_limiter" type="int" setter="" getter="" default="0">
-		</member>
-		<member name="rendering/quality/filters/screen_space_roughness_limiter_curve" type="float" setter="" getter="" default="1.0">
-		</member>
-		<member name="rendering/quality/filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
-		</member>
 		<member name="rendering/quality/gi_probes/anisotropic" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], take additional samples when rendering objects affected by a [GIProbe] to reduce artifacts from only sampling in one direction.
 		</member>
 		<member name="rendering/quality/gi_probes/quality" type="int" setter="" getter="" default="1">
+			Sets the number of cone samples taken when rendering objects affected by [GIProbe]s.
 		</member>
 		<member name="rendering/quality/glow/upscale_mode" type="int" setter="" getter="" default="1">
+			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
 		</member>
 		<member name="rendering/quality/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
+			Lower-end override for [member rendering/quality/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/quality/intended_usage/framebuffer_allocation" type="int" setter="" getter="" default="2">
 			Strategy used for framebuffer allocation. The simpler it is, the less resources it uses (but the less features it supports). If set to "2D Without Sampling" or "3D Without Effects", sample buffers will not be allocated. This means [code]SCREEN_TEXTURE[/code] and [code]DEPTH_TEXTURE[/code] will not be available in shaders and post-processing effects will not be available in the [Environment].
@@ -1066,7 +1060,22 @@
 		<member name="rendering/quality/reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/quality/reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
+		<member name="rendering/quality/screen_filters/msaa" type="int" setter="" getter="" default="0">
+			Sets the number of MSAA samples to use. MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
+			[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend.
+		</member>
+		<member name="rendering/quality/screen_filters/screen_space_aa" type="int" setter="" getter="" default="0">
+			Sets the screen-space antialiasing mode for the default screen [Viewport]. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
+			Another way to combat specular aliasing is to enable [member rendering/quality/screen_filters/screen_space_roughness_limiter].
+		</member>
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter" type="int" setter="" getter="" default="0">
+			Enables the screen-space roughness limiter which increases material roughness in areas with a high normal frequency (i.e. when normals change a lot from pixel to pixel). This helps to reduce the amount of specular aliasing in a scene. Specular aliasing looks like random bright pixels that occur in reflections.
+		</member>
+		<member name="rendering/quality/screen_filters/screen_space_roughness_limiter_curve" type="float" setter="" getter="" default="1.0">
+			Curves the amount of the roughness limited effect. A higher value limits the effect to very sharply curved surfaces, while a lower threshold extends the effect to smoother surfaces.
+		</member>
 		<member name="rendering/quality/screen_space_reflection/roughness_quality" type="int" setter="" getter="" default="1">
+			Sets the quality for rough screen-space reflections. Turning off will make all screen space reflections sharp, while higher values make rough reflections look better.
 		</member>
 		<member name="rendering/quality/shading/force_blinn_over_ggx" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses faster but lower-quality Blinn model to generate blurred reflections instead of the GGX model.
@@ -1111,14 +1120,26 @@
 			Lower-end override for [member rendering/quality/shadows/soft_shadow_quality] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/quality/ssao/half_size" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], screen-space ambient occlusion will be rendered at half size and then upscaled before being added to the scene. This is significantly faster but may miss small details.
 		</member>
 		<member name="rendering/quality/ssao/quality" type="int" setter="" getter="" default="1">
+			Sets the quality of the screen-space ambient occlusion effect. Higher values take more samples and so will result in better quality, at the cost of performance.
 		</member>
 		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale" type="float" setter="" getter="" default="0.01">
+			Scales the depth over which the subsurface scattering effect is applied. A high value may allow light to scatter into a part of the mesh or another mesh that is close in screen space but far in depth.
 		</member>
 		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_quality" type="int" setter="" getter="" default="1">
+			Sets the quality of the subsurface scattering effect. Higher values are slower but look nicer.
 		</member>
 		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_scale" type="float" setter="" getter="" default="0.05">
+			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
+		</member>
+		<member name="rendering/quality/texture_filters/max_anisotropy" type="int" setter="" getter="" default="4">
+			Sets the maximum number of samples to take when using anisotropic filtering on textures. A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute.
+			Only power of two values are valid ([code]1[/code], [code]2[/code], [code]4[/code], [code]8[/code], [code]16[/code]). A value of [code]1[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+		</member>
+		<member name="rendering/quality/texture_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.

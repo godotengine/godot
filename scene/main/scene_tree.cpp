@@ -1422,7 +1422,7 @@ SceneTree::SceneTree() {
 	current_scene = nullptr;
 
 	int msaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/msaa", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"));
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
 	int ssaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/screen_space_aa", 0);

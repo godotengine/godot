@@ -4,12 +4,12 @@
 		Server for anything visible.
 	</brief_description>
 	<description>
-		Server for anything visible. The visual server is the API backend for everything visible. The whole scene system mounts on it to display.
-		The visual server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
-		The visual server can be used to bypass the scene system entirely.
+		Server for anything visible. The rendering server is the API backend for everything visible. The whole scene system mounts on it to display.
+		The rendering server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
+		The rendering server can be used to bypass the scene system entirely.
 		Resources are created using the [code]*_create[/code] functions.
 		All objects are drawn to a viewport. You can use the [Viewport] attached to the [SceneTree] or you can create one yourself with [method viewport_create]. When using a custom scenario or canvas, the scenario or canvas needs to be attached to the viewport using [method viewport_set_scenario] or [method viewport_attach_canvas].
-		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the visual server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world]. Otherwise, a scenario can be created with [method scenario_create].
+		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the rendering server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world]. Otherwise, a scenario can be created with [method scenario_create].
 		Similarly in 2D, a canvas is needed to draw all canvas items.
 		In 3D, all visible objects are comprised of a resource and an instance. A resource can be a mesh, a particle system, a light, or any other 3D object. In order to be visible resources must be attached to an instance using [method instance_set_base]. The instance must also be attached to the scenario using [method instance_set_scenario] in order to be visible.
 		In 2D, all visible objects are some form of canvas item. In order to be visible, a canvas item needs to be the child of a canvas attached to a viewport, or it needs to be the child of another canvas item that is eventually attached to the canvas.
@@ -1113,7 +1113,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Initializes the visual server. This function is called internally by platform-dependent code during engine initialization. If called from a running game, it will not do anything.
+				Initializes the rendering server. This function is called internally by platform-dependent code during engine initialization. If called from a running game, it will not do anything.
 			</description>
 		</method>
 		<method name="instance_attach_object_instance_id">
@@ -3307,6 +3307,7 @@
 			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="12" enum="LightParam">
+			Proportion of shadow max distance where the shadow will start to fade out.
 		</constant>
 		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="13" enum="LightParam">
 			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
@@ -3314,10 +3315,15 @@
 		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="14" enum="LightParam">
 			Bias the shadow lookup to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="15" enum="LightParam">
-			Increases bias on further splits to fix self-shadowing that only occurs far away from the camera.
+		<constant name="LIGHT_PARAM_SHADOW_PANCAKE_SIZE" value="15" enum="LightParam">
+			Sets the size of the directional shadow pancake. The pancake offsets the start of the shadow's camera frustum to provide a higher effective depth resolution for the shadow. However, a high pancake size can cause artifacts in the shadows of large objects that are close to the edge of the frustum. Reducing the pancake size can help. Setting the size to [code]0[/code] turns off the pancaking effect.
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="16" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="16" enum="LightParam">
+			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
+		</constant>
+		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="17" enum="LightParam">
+		</constant>
+		<constant name="LIGHT_PARAM_MAX" value="18" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
@@ -3383,22 +3389,16 @@
 			Multisample antialiasing is disabled.
 		</constant>
 		<constant name="VIEWPORT_MSAA_2X" value="1" enum="ViewportMSAA">
-			Multisample antialiasing is set to 2×.
+			Multisample antialiasing uses 2 samples per pixel.
 		</constant>
 		<constant name="VIEWPORT_MSAA_4X" value="2" enum="ViewportMSAA">
-			Multisample antialiasing is set to 4×.
+			Multisample antialiasing uses 4 samples per pixel.
 		</constant>
 		<constant name="VIEWPORT_MSAA_8X" value="3" enum="ViewportMSAA">
-			Multisample antialiasing is set to 8×.
+			Multisample antialiasing uses 8 samples per pixel.
 		</constant>
 		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
-			Multisample antialiasing is set to 16×.
-		</constant>
-		<constant name="VIEWPORT_MSAA_EXT_2X" value="5" enum="ViewportMSAA">
-			Multisample antialiasing is set to 2× on external texture. Special mode for GLES2 Android VR (Oculus Quest and Go).
-		</constant>
-		<constant name="VIEWPORT_MSAA_EXT_4X" value="6" enum="ViewportMSAA">
-			Multisample antialiasing is set to 4× on external texture. Special mode for GLES2 Android VR (Oculus Quest and Go).
+			Multisample antialiasing uses 16 samples per pixel.
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 			Number of objects drawn in a single frame.
@@ -3425,37 +3425,52 @@
 			Debug draw is disabled. Default setting.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_UNSHADED" value="1" enum="ViewportDebugDraw">
-			Debug draw sets objects to unshaded.
+			Objects are displayed without light information.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_LIGHTING" value="2" enum="ViewportDebugDraw">
+			Objects are displayed with only light information.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_OVERDRAW" value="3" enum="ViewportDebugDraw">
-			Overwrites clear color to [code](0,0,0,0)[/code].
+			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_WIREFRAME" value="4" enum="ViewportDebugDraw">
 			Debug draw draws objects in wireframe.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="ViewportDebugDraw">
+			Normal buffer is drawn instead of regular scene so you can see the per-pixel normals that will be used by post-processing effects.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="ViewportDebugDraw">
+			Objects are displayed with only the albedo value from [GIProbe]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="ViewportDebugDraw">
+			Objects are displayed with only the lighting value from [GIProbe]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="ViewportDebugDraw">
+			Objects are displayed with only the emission color from [GIProbe]s.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="ViewportDebugDraw">
+			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="ViewportDebugDraw">
+			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_SSAO" value="12" enum="ViewportDebugDraw">
+			Draws the screen space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER" value="13" enum="ViewportDebugDraw">
+			Draws the roughness limiter post process over the Viewport so you can see where it has an effect. It must be enabled in [member ProjectSettings.rendering/quality/screen_filters/screen_space_roughness_limiter] to work.
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="14" enum="ViewportDebugDraw">
+			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
 		</constant>
 		<constant name="SKY_MODE_QUALITY" value="0" enum="SkyMode">
+			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/quality/reflections/ggx_samples].
 		</constant>
 		<constant name="SKY_MODE_REALTIME" value="1" enum="SkyMode">
+			Uses the fast filtering algorithm to process the radiance map. In general this results in lower quality, but substantially faster run times.
+			[b]Note:[/b] The fast filtering algorithm is limited to 256x256 cubemaps, so [member Sky.radiance_size] must be set to [constant Sky.RADIANCE_SIZE_256].
 		</constant>
 		<constant name="ENV_BG_CLEAR_COLOR" value="0" enum="EnvironmentBG">
 			Use the clear color as background.
@@ -3479,28 +3494,40 @@
 			Represents the size of the [enum EnvironmentBG] enum.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_BG" value="0" enum="EnvironmentAmbientSource">
+			Gather ambient light from whichever source is specified as the background.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_DISABLED" value="1" enum="EnvironmentAmbientSource">
+			Disable ambient light.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_COLOR" value="2" enum="EnvironmentAmbientSource">
+			Specify a specific [Color] for ambient light.
 		</constant>
 		<constant name="ENV_AMBIENT_SOURCE_SKY" value="3" enum="EnvironmentAmbientSource">
+			Gather ambient light from the [Sky] regardless of what the background is.
 		</constant>
 		<constant name="ENV_REFLECTION_SOURCE_BG" value="0" enum="EnvironmentReflectionSource">
+			Use the background for reflections.
 		</constant>
 		<constant name="ENV_REFLECTION_SOURCE_DISABLED" value="1" enum="EnvironmentReflectionSource">
+			Disable reflections.
 		</constant>
 		<constant name="ENV_REFLECTION_SOURCE_SKY" value="2" enum="EnvironmentReflectionSource">
+			Use the [Sky] for reflections regardless of what the background is.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_ADDITIVE" value="0" enum="EnvironmentGlowBlendMode">
+			Additive glow blending mode. Mostly used for particles, glows (bloom), lens flare, bright sources.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_SCREEN" value="1" enum="EnvironmentGlowBlendMode">
+			Screen glow blending mode. Increases brightness, used frequently with bloom.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_SOFTLIGHT" value="2" enum="EnvironmentGlowBlendMode">
+			Soft light glow blending mode. Modifies contrast, exposes shadows and highlights (vivid bloom).
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_REPLACE" value="3" enum="EnvironmentGlowBlendMode">
+			Replace glow blending mode. Replaces all pixels' color by the glow value. This can be used to simulate a full-screen blur effect by tweaking the glow parameters to match the original image's brightness.
 		</constant>
 		<constant name="ENV_GLOW_BLEND_MODE_MIX" value="4" enum="EnvironmentGlowBlendMode">
+			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
 		</constant>
 		<constant name="ENV_TONE_MAPPER_LINEAR" value="0" enum="EnvironmentToneMapper">
 			Output color as they came in.
@@ -3533,23 +3560,31 @@
 			Medium quality screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_HIGH" value="2" enum="EnvironmentSSAOQuality">
-			Highest quality screen space ambient occlusion.
+			High quality screen space ambient occlusion.
 		</constant>
 		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
+			Highest quality screen space ambient occlusion.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_VERY_LOW" value="0" enum="DOFBlurQuality">
+			Lowest quality DOF blur. This is the fastest setting, but you may be able to see filtering artifacts.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_LOW" value="1" enum="DOFBlurQuality">
+			Low quality DOF blur.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_MEDIUM" value="2" enum="DOFBlurQuality">
+			Medium quality DOF blur.
 		</constant>
 		<constant name="DOF_BLUR_QUALITY_HIGH" value="3" enum="DOFBlurQuality">
+			Highest quality DOF blur. Results in the smoothest looking blur by taking the most samples, but is also significantly slower.
 		</constant>
 		<constant name="DOF_BOKEH_BOX" value="0" enum="DOFBokehShape">
+			Calculate the DOF blur using a box filter. The fastest option, but results in obvious lines in blur pattern.
 		</constant>
 		<constant name="DOF_BOKEH_HEXAGON" value="1" enum="DOFBokehShape">
+			Calculates DOF blur using a hexagon shaped filter.
 		</constant>
 		<constant name="DOF_BOKEH_CIRCLE" value="2" enum="DOFBokehShape">
+			Calculates DOF blur using a circle shaped filter. Best quality and most realistic, but slowest. Use only for areas where a lot of performance can be dedicated to post-processing (e.g. cutscenes).
 		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
 			Do not use a debug mode.
@@ -3584,13 +3619,13 @@
 		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
 			The instance is a reflection probe.
 		</constant>
-		<constant name="INSTANCE_GI_PROBE" value="7" enum="InstanceType">
+		<constant name="INSTANCE_GI_PROBE" value="8" enum="InstanceType">
 			The instance is a GI probe.
 		</constant>
-		<constant name="INSTANCE_LIGHTMAP_CAPTURE" value="8" enum="InstanceType">
+		<constant name="INSTANCE_LIGHTMAP_CAPTURE" value="9" enum="InstanceType">
 			The instance is a lightmap capture.
 		</constant>
-		<constant name="INSTANCE_MAX" value="9" enum="InstanceType">
+		<constant name="INSTANCE_MAX" value="10" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
@@ -3600,6 +3635,7 @@
 			Allows the instance to be used in baked lighting.
 		</constant>
 		<constant name="INSTANCE_FLAG_USE_DYNAMIC_GI" value="1" enum="InstanceFlags">
+			Allows the instance to be used with dynamic global illumination. 
 		</constant>
 		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="2" enum="InstanceFlags">
 			When set, manually requests to draw geometry on next frame.
@@ -3629,30 +3665,43 @@
 			The nine patch gets filled with tiles where needed and stretches them a bit if needed.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_DEFAULT" value="0" enum="CanvasItemTextureFilter">
+			Uses the default filter mode for this [Viewport].
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="1" enum="CanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="2" enum="CanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="CanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="4" enum="CanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="CanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="6" enum="CanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_FILTER_MAX" value="7" enum="CanvasItemTextureFilter">
+			Max value for [enum CanvasItemTextureFilter] enum.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT" value="0" enum="CanvasItemTextureRepeat">
+			Uses the default repeat mode for this [Viewport].
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="1" enum="CanvasItemTextureRepeat">
+			Disables textures repeating. Instead, when reading UVs outside the 0-1 range, the value will be clamped to the edge of the texture, resulting in a stretched out look at the borders of the texture.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_ENABLED" value="2" enum="CanvasItemTextureRepeat">
+			Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MIRROR" value="3" enum="CanvasItemTextureRepeat">
+			Flip the texture when repeating so that the edge lines up instead of abruptly changing.
 		</constant>
 		<constant name="CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="4" enum="CanvasItemTextureRepeat">
+			Max value for [enum CanvasItemTextureRepeat] enum.
 		</constant>
 		<constant name="CANVAS_LIGHT_MODE_ADD" value="0" enum="CanvasLightMode">
 			Adds light color additive to the canvas.
@@ -3676,6 +3725,7 @@
 			Use PCF13 filtering to filter canvas light shadows.
 		</constant>
 		<constant name="CANVAS_LIGHT_FILTER_MAX" value="3" enum="CanvasLightShadowFilter">
+			Max value of the [enum CanvasLightShadowFilter] enum.
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_DISABLED" value="0" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is disabled.
