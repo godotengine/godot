@@ -43,12 +43,15 @@
 # Dario <darlex259@gmail.com>, 2019.
 # Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2019.
 # Julián Luini <jluini@gmail.com>, 2020.
+# anonymous <noreply@weblate.org>, 2020.
+# Victor S. <victorstancioiu@gmail.com>, 2020.
+# henry rujano herrera <rujhen@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-11 12:20+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2020-04-16 11:03+0000\n"
+"Last-Translator: anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -56,12 +59,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para convert(), utiliza constantes TYPE_*."
+msgstr ""
+"Tipo de argumento inválido para 'convert()', utiliza constantes TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -76,7 +80,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Entrada inválida %i (no pasó) en la expresión"
+msgstr "Entrada inválida %i (no se pasó) en la expresión"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -638,7 +642,7 @@ msgstr "Usar Curvas Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizar Animación"
+msgstr "Optimizador de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -841,7 +845,7 @@ msgstr "Eliminar"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Añadir Argumento de Llamada Extra:"
+msgstr "Añadir un Argumento de Llamada Extra:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -1488,7 +1492,7 @@ msgstr "Mover Autoload"
 msgid "Remove Autoload"
 msgstr "Eliminar Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Activar"
 
@@ -2990,8 +2994,13 @@ msgid "Q&A"
 msgstr "Preguntas y respuestas"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Registro de problemas"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Reimportar"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3003,7 +3012,7 @@ msgstr "Acerca de"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Reproducir el proyecto."
+msgstr "Ejecutar el proyecto."
 
 #: editor/editor_node.cpp
 msgid "Play"
@@ -4051,7 +4060,8 @@ msgid "Reimport"
 msgstr "Reimportar"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Guardar escenas, reimportar y reiniciar"
 
 #: editor/import_dock.cpp
@@ -5264,7 +5274,7 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
-"Cuando esté activo, los nodos de Control en movimiento cambian sus anclas en "
+"Cuando esté activo, moviendo los nodos de Control cambiará sus anclas en "
 "lugar de sus márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -6921,14 +6931,6 @@ msgid "Open Godot online documentation."
 msgstr "Abrir la documentación en línea de Godot."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Solicitar Documentos"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Ayuda a mejorar la documentación de Godot aportando retroalimentación."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Buscar en la documentación de referencia."
 
@@ -7365,6 +7367,11 @@ msgid "This operation requires a single selected node."
 msgstr "Esta operación requiere un solo nodo seleccionado."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Ortogonal"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Bloquear Rotación de Vista"
 
@@ -7453,16 +7460,16 @@ msgid "Freelook Slow Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Bloquear Rotación de Vista"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "Nota: El valor FPS que se muestra es la velocidad de fotogramas del editor.\n"
 "No se puede utilizar como un indicador fiable del rendimiento en el juego."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Bloquear Rotación de Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -7823,7 +7830,7 @@ msgstr "Añadir Textura desde Archivo"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr "Añadir Frames de un Sprite Sheet"
+msgstr "Añadir Frames desde un Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -8457,11 +8464,11 @@ msgstr "Editar Índice Z de Tile"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Convex"
-msgstr "Crear Convexo"
+msgstr "Hacerlo Convexo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Concave"
-msgstr "Crear Cóncavo"
+msgstr "Hacerlo Cóncavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Collision Polygon"
@@ -9447,7 +9454,7 @@ msgstr "Editar Propiedad Visual"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
-msgstr "Cambiar Modo de Visual Shader"
+msgstr "El Modo de Visual Shader ha cambiado"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -9518,7 +9525,7 @@ msgid ""
 "Only one preset per platform may be marked as runnable."
 msgstr ""
 "Si se selecciona, la plantilla estará disponible para su uso en un "
-"despliegue con “un click”.\n"
+"despliegue con un clic.\n"
 "Sólo se puede marcar como ejecutable una plantilla por plataforma."
 
 #: editor/project_export.cpp
@@ -10977,6 +10984,12 @@ msgid "Script file already exists."
 msgstr "El archivo de script ya existe."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Nombre de Clase:"
 
@@ -11430,7 +11443,7 @@ msgstr "Eliminar Rotación del Cursor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Paste Selects"
-msgstr "Pegar Seleccionados"
+msgstr "Pegar Selecciona"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -12020,7 +12033,7 @@ msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
-"Intentando construir a partir de una plantilla personalizada, pero no existe "
+"Se intentó construir a partir de una plantilla personalizada, pero no existe "
 "información de la versión para ello. Por favor, reinstala desde el menú "
 "'Proyecto'."
 
@@ -12785,6 +12798,10 @@ msgstr ""
 "bien, conviértalo en un RenderTarget y asigne su textura interna a algún "
 "nodo para que se muestre."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Fuente inválida para la vista previa."
@@ -12812,6 +12829,16 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Registro de problemas"
+
+#~ msgid "Request Docs"
+#~ msgstr "Solicitar Documentos"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr ""
+#~ "Ayuda a mejorar la documentación de Godot aportando retroalimentación."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "%d ocurrencia(s) reemplazada(s)."

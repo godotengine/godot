@@ -1455,7 +1455,7 @@ msgstr "Přemístit Autoload"
 msgid "Remove Autoload"
 msgstr "Odstranit Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Povolit"
 
@@ -2933,8 +2933,13 @@ msgid "Q&A"
 msgstr "Otázky a odpovědi"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Sledování chyb"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "Znovu importovat"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3972,7 +3977,7 @@ msgid "Reimport"
 msgstr "Znovu importovat"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -6828,14 +6833,6 @@ msgid "Open Godot online documentation."
 msgstr "Otevřít online dokumentaci Godotu."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Požádat o dokumentaci"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Hledat v referenční dokumentaci."
 
@@ -7282,6 +7279,11 @@ msgstr "Tato operace vyžaduje jeden vybraný uzel."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "Ortogonální"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Lock View Rotation"
 msgstr "Zobrazit informace"
 
@@ -7372,15 +7374,15 @@ msgid "Freelook Slow Modifier"
 msgstr "Rychlost volného pohledu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Rotation Locked"
+msgstr "Zobrazit informace"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "View Rotation Locked"
-msgstr "Zobrazit informace"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -10904,6 +10906,12 @@ msgid "Script file already exists."
 msgstr "Soubor skriptu již existuje."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Jméno třídy:"
 
@@ -12648,6 +12656,10 @@ msgstr ""
 "mohl získat velikost. Jinak ho nastavte jako render target a přiřaďte jeho "
 "vnitřní texturu nějakému uzlu k zobrazení."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
@@ -12677,6 +12689,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Sledování chyb"
+
+#~ msgid "Request Docs"
+#~ msgstr "Požádat o dokumentaci"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Nahrazeno %d výskytů."

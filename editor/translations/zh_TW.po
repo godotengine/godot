@@ -1521,7 +1521,7 @@ msgstr "移動 Autoload"
 msgid "Remove Autoload"
 msgstr "刪除 Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "啟用"
 
@@ -3062,8 +3062,12 @@ msgstr "Q&A"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Issue Tracker"
-msgstr "問題追蹤器"
+msgid "Report a Bug"
+msgstr "重新導入"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4155,7 +4159,8 @@ msgid "Reimport"
 msgstr "重新導入"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+#, fuzzy
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "保存場景，重新導入並重新啟動"
 
 #: editor/import_dock.cpp
@@ -7125,15 +7130,6 @@ msgid "Open Godot online documentation."
 msgstr "打開 Godot 線上文檔"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "請求檔案"
-
-#: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "通過提供回饋幫助改進 Godot 文檔"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "搜索參考文檔。"
 
@@ -7589,6 +7585,11 @@ msgid "This operation requires a single selected node."
 msgstr "此操作需要單個選定的節點。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "正交"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "鎖定視圖旋轉"
 
@@ -7680,14 +7681,14 @@ msgid "Freelook Slow Modifier"
 msgstr "自由視圖速度調節"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "視圖旋轉已鎖定"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr "注意: 顯示的FPS值是編輯器的幀率。 它不能用于表現遊戲內的實際性能"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "視圖旋轉已鎖定"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -11230,6 +11231,12 @@ msgid "Script file already exists."
 msgstr "Autoload「%s」已經存在!"
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Class Name:"
 msgstr "Class:"
@@ -12956,6 +12963,10 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
@@ -12986,6 +12997,17 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Issue Tracker"
+#~ msgstr "問題追蹤器"
+
+#~ msgid "Request Docs"
+#~ msgstr "請求檔案"
+
+#, fuzzy
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "通過提供回饋幫助改進 Godot 文檔"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "取代了 %d 個。"
