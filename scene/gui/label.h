@@ -94,6 +94,7 @@ private:
 
 	WordCache *word_cache;
 	int total_char_cache;
+	int total_space_cache;
 	int visible_chars;
 	int lines_skipped;
 	int max_lines_visible;
