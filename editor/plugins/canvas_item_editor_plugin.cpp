@@ -66,21 +66,23 @@ class SnapDialog : public ConfirmationDialog {
 
 	friend class CanvasItemEditor;
 
-	SpinBox *grid_offset_x;
-	SpinBox *grid_offset_y;
-	SpinBox *grid_step_x;
-	SpinBox *grid_step_y;
-	SpinBox *primary_grid_steps;
-	SpinBox *rotation_offset;
-	SpinBox *rotation_step;
-	SpinBox *scale_step;
+	EditorSpinSlider *grid_offset_x;
+	EditorSpinSlider *grid_offset_y;
+	EditorSpinSlider *grid_step_x;
+	EditorSpinSlider *grid_step_y;
+	EditorSpinSlider *primary_grid_steps;
+	EditorSpinSlider *rotation_offset;
+	EditorSpinSlider *rotation_step;
+	EditorSpinSlider *scale_step;
 
 public:
 	SnapDialog() {
-		const int SPIN_BOX_GRID_RANGE = 16384;
-		const int SPIN_BOX_ROTATION_RANGE = 360;
-		const float SPIN_BOX_SCALE_MIN = 0.01f;
-		const float SPIN_BOX_SCALE_MAX = 100;
+		const int GRID_RANGE = 16384;
+		const int ROTATION_RANGE = 360;
+		const float SCALE_MIN = 0.01f;
+		const float SCALE_MAX = 100;
+		static const char *desc_x = "x";
+		static const char *desc_y = "y";
 
 		Label *label;
 		VBoxContainer *container;
@@ -97,46 +99,46 @@ public:
 		container->add_child(child_container);
 
 		label = memnew(Label);
-		label->set_text(TTR("Grid Offset:"));
+		label->set_text(TTR("Grid Offset (px)"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		grid_offset_x = memnew(SpinBox);
-		grid_offset_x->set_min(-SPIN_BOX_GRID_RANGE);
-		grid_offset_x->set_max(SPIN_BOX_GRID_RANGE);
+		grid_offset_x = memnew(EditorSpinSlider);
+		grid_offset_x->set_min(-GRID_RANGE);
+		grid_offset_x->set_max(GRID_RANGE);
 		grid_offset_x->set_allow_lesser(true);
 		grid_offset_x->set_allow_greater(true);
-		grid_offset_x->set_suffix("px");
+		grid_offset_x->set_label(desc_x);
 		grid_offset_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(grid_offset_x);
 
-		grid_offset_y = memnew(SpinBox);
-		grid_offset_y->set_min(-SPIN_BOX_GRID_RANGE);
-		grid_offset_y->set_max(SPIN_BOX_GRID_RANGE);
+		grid_offset_y = memnew(EditorSpinSlider);
+		grid_offset_y->set_min(-GRID_RANGE);
+		grid_offset_y->set_max(GRID_RANGE);
 		grid_offset_y->set_allow_lesser(true);
 		grid_offset_y->set_allow_greater(true);
-		grid_offset_y->set_suffix("px");
+		grid_offset_y->set_label(desc_y);
 		grid_offset_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(grid_offset_y);
 
 		label = memnew(Label);
-		label->set_text(TTR("Grid Step:"));
+		label->set_text(TTR("Grid Step (px)"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		grid_step_x = memnew(SpinBox);
+		grid_step_x = memnew(EditorSpinSlider);
 		grid_step_x->set_min(0.01);
-		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
+		grid_step_x->set_max(GRID_RANGE);
 		grid_step_x->set_allow_greater(true);
-		grid_step_x->set_suffix("px");
+		grid_step_x->set_label(desc_x);
 		grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_x);
 
-		grid_step_y = memnew(SpinBox);
+		grid_step_y = memnew(EditorSpinSlider);
 		grid_step_y->set_min(0.01);
-		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
+		grid_step_y->set_max(GRID_RANGE);
 		grid_step_y->set_allow_greater(true);
-		grid_step_y->set_suffix("px");
+		grid_step_y->set_label(desc_y);
 		grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_y);
 
@@ -145,16 +147,15 @@ public:
 		container->add_child(child_container);
 
 		label = memnew(Label);
-		label->set_text(TTR("Primary Line Every:"));
-		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		label->set_text(TTR("Primary Line Every (steps)"));
 		child_container->add_child(label);
+		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		primary_grid_steps = memnew(SpinBox);
+		primary_grid_steps = memnew(EditorSpinSlider);
 		primary_grid_steps->set_min(0);
 		primary_grid_steps->set_step(1);
 		primary_grid_steps->set_max(100);
 		primary_grid_steps->set_allow_greater(true);
-		primary_grid_steps->set_suffix(TTR("steps"));
 		primary_grid_steps->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(primary_grid_steps);
 
@@ -167,26 +168,24 @@ public:
 		container->add_child(child_container);
 
 		label = memnew(Label);
-		label->set_text(TTR("Rotation Offset:"));
+		label->set_text(TTR("Rotation Offset (deg)"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		rotation_offset = memnew(SpinBox);
-		rotation_offset->set_min(-SPIN_BOX_ROTATION_RANGE);
-		rotation_offset->set_max(SPIN_BOX_ROTATION_RANGE);
-		rotation_offset->set_suffix("deg");
+		rotation_offset = memnew(EditorSpinSlider);
+		rotation_offset->set_min(-ROTATION_RANGE);
+		rotation_offset->set_max(ROTATION_RANGE);
 		rotation_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(rotation_offset);
 
 		label = memnew(Label);
-		label->set_text(TTR("Rotation Step:"));
+		label->set_text(TTR("Rotation Step (deg)"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		rotation_step = memnew(SpinBox);
-		rotation_step->set_min(-SPIN_BOX_ROTATION_RANGE);
-		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
-		rotation_step->set_suffix("deg");
+		rotation_step = memnew(EditorSpinSlider);
+		rotation_step->set_min(-ROTATION_RANGE);
+		rotation_step->set_max(ROTATION_RANGE);
 		rotation_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(rotation_step);
 
@@ -195,17 +194,18 @@ public:
 		child_container = memnew(GridContainer);
 		child_container->set_columns(2);
 		container->add_child(child_container);
+
 		label = memnew(Label);
-		label->set_text(TTR("Scale Step:"));
+		label->set_text(TTR("Scale Step"));
 		child_container->add_child(label);
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-		scale_step = memnew(SpinBox);
-		scale_step->set_min(SPIN_BOX_SCALE_MIN);
-		scale_step->set_max(SPIN_BOX_SCALE_MAX);
+		scale_step = memnew(EditorSpinSlider);
+		scale_step->set_min(SCALE_MIN);
+		scale_step->set_max(SCALE_MAX);
 		scale_step->set_allow_greater(true);
-		scale_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		scale_step->set_step(0.01f);
+		scale_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		child_container->add_child(scale_step);
 	}
 
