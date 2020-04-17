@@ -244,7 +244,7 @@ void SectionedInspector::update_category_list() {
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(property_prefix) && !filter.is_subsequence_ofi(settings_name) && !filter.is_subsequence_ofi(property_prefix.replace("/", " ").capitalize()) && !filter.is_subsequence_ofi(settings_name.replace("/", " ").capitalize())) 
+		if (!filter.empty() && !filter.is_subsequence_ofi(property_prefix) && !filter.is_subsequence_ofi(settings_name) && !filter.is_subsequence_ofi(property_prefix.replace("/", " ").capitalize()) && !filter.is_subsequence_ofi(settings_name.replace("/", " ").capitalize()))
 			continue;
 
 		int sp = pi.name.find("/");
@@ -283,8 +283,16 @@ void SectionedInspector::update_category_list() {
 	}
 
 	if (section_map.has(selected_category)) {
-		print_line(selected_category);
 		section_map[selected_category]->select(0);
+	} else {
+		for (Map<String, TreeItem *>::Element *E = section_map.front(); E; E = E->next()) {
+			String section_name = E->key();
+			TreeItem *section = E->get();
+			if (!section_name.empty() && section->is_selectable(0)) {
+				section->select(0);
+				break;
+			}
+		}
 	}
 
 	inspector->update_tree();
