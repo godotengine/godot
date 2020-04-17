@@ -1784,6 +1784,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					sky_light_data.color[2] = light_data.color[2];
 
 					sky_light_data.enabled = true;
+					sky_light_data.size = light_data.softshadow_angle;
 					sky_scene_state.directional_light_count++;
 				}
 
