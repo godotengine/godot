@@ -303,18 +303,22 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT0_DIRECTION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT0_ENERGY"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT0_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT0_SIZE"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT1_ENABLED"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT1_DIRECTION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT1_ENERGY"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT1_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT1_SIZE"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT2_ENABLED"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT2_DIRECTION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT2_ENERGY"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT2_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT2_SIZE"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT3_ENABLED"] = constt(ShaderLanguage::TYPE_BOOL);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT3_DIRECTION"] = constt(ShaderLanguage::TYPE_VEC3);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT3_ENERGY"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT3_COLOR"] = constt(ShaderLanguage::TYPE_VEC3);
+	shader_modes[RS::SHADER_SKY].functions["global"].built_ins["LIGHT3_SIZE"] = constt(ShaderLanguage::TYPE_FLOAT);
 
 	shader_modes[RS::SHADER_SKY].functions["fragment"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[RS::SHADER_SKY].functions["fragment"].built_ins["ALPHA"] = ShaderLanguage::TYPE_FLOAT;
