@@ -21,8 +21,12 @@ env.CommandNoCache(
     run_in_subprocess(input_builders.make_default_controller_mappings),
 )
 
-env.add_source_files(env.core_sources, "*.cpp")
+local_sources = env.glob_files('*.cpp') + env.glob_files('*.h')
+env.add_project_sources(local_sources)
+env.add_objects_from_sources(env.core_objects, local_sources)
 
 # Don't warn about duplicate entry here, we need it registered manually for first build,
 # even if later builds will pick it up twice due to above *.cpp globbing.
-env.add_source_files(env.core_sources, "#core/input/default_controller_mappings.gen.cpp", warn_duplicates=False)
+mappings_gen_files = ["#core/input/default_controller_mappings.gen.cpp"]
+env.add_project_sources(mappings_gen_files)
+env.add_objects_from_sources(env.core_objects, mappings_gen_files, warn_duplicates=False)

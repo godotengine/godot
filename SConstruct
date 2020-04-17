@@ -77,6 +77,9 @@ env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_module_version_string = methods.add_module_version_string
 
+env_base.__class__.glob_files = methods.glob_files
+env_base.__class__.add_objects_from_sources = methods.add_objects_from_sources
+
 env_base.__class__.add_source_files = methods.add_source_files
 env_base.__class__.use_windows_spawn_fix = methods.use_windows_spawn_fix
 
@@ -85,6 +88,9 @@ env_base.__class__.add_library = methods.add_library
 env_base.__class__.add_program = methods.add_program
 env_base.__class__.CommandNoCache = methods.CommandNoCache
 env_base.__class__.disable_warnings = methods.disable_warnings
+
+env_base.__class__.project_sources = []
+env_base.__class__.add_project_sources = methods.add_project_sources
 
 env_base["x86_libtheora_opt_gcc"] = False
 env_base["x86_libtheora_opt_vc"] = False
@@ -274,31 +280,6 @@ if selected_platform in platform_list:
         env["verbose"] = True
         env["warnings"] = "extra"
         env["werror"] = True
-
-    if env["vsproj"]:
-        env.vs_incs = []
-        env.vs_srcs = []
-
-        def AddToVSProject(sources):
-            for x in sources:
-                if type(x) == type(""):
-                    fname = env.File(x).path
-                else:
-                    fname = env.File(x)[0].path
-                pieces = fname.split(".")
-                if len(pieces) > 0:
-                    basename = pieces[0]
-                    basename = basename.replace("\\\\", "/")
-                    if os.path.isfile(basename + ".h"):
-                        env.vs_incs = env.vs_incs + [basename + ".h"]
-                    elif os.path.isfile(basename + ".hpp"):
-                        env.vs_incs = env.vs_incs + [basename + ".hpp"]
-                    if os.path.isfile(basename + ".c"):
-                        env.vs_srcs = env.vs_srcs + [basename + ".c"]
-                    elif os.path.isfile(basename + ".cpp"):
-                        env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
-
-        env.AddToVSProject = AddToVSProject
 
     env.extra_suffix = ""
 

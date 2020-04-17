@@ -3,7 +3,51 @@ import re
 import glob
 import subprocess
 
+header_file_exts = ['.h']
 
+def get_root_dir():
+    return os.path.dirname(os.path.realpath(__file__))
+
+def resolve_path(path):
+    if path.startswith('#'):
+        return os.path.normpath(os.path.join(get_root_dir(), path[1:]))
+    return path
+
+def glob_files(self, path):
+    glob_path = ""
+    if path.startswith('#'):
+        glob_path = os.path.join(get_root_dir(), path[1:])
+    else:
+        dir_path = self.Dir(".").abspath
+        glob_path = os.path.join(dir_path, path)
+
+    globbed_files = glob.glob(os.path.normpath(glob_path)) 
+    globbed_files = ['#' + os.path.relpath(os.path.abspath(g), get_root_dir()) for g in globbed_files]
+    return sorted(globbed_files)
+
+def add_project_sources(self, files):
+    for file in files:
+        self.project_sources.append(resolve_path(file))
+    return
+
+def add_objects_from_sources(self, objects, files, warn_duplicates=True):
+    # Add each path as compiled Object following environment (self) configuration
+    for path in files:
+        path = resolve_path(path)
+        # Cant create object files from headers!
+        if os.path.splitext(path)[1] in header_file_exts:
+            continue
+
+        obj = self.Object(path)
+        if obj in objects:
+            if warn_duplicates:
+                print('WARNING: Object "{}" already included in environment sources.'.format(obj))
+            else:
+                continue
+        objects.append(obj)
+
+
+## FUNCTION TO BE DELETED
 def add_source_files(self, sources, files, warn_duplicates=True):
     # Convert string to list of absolute paths (including expanding wildcard)
     if isinstance(files, (str, bytes)):
@@ -490,12 +534,16 @@ def generate_vs_project(env, num_jobs):
             result = " ^& ".join(common_build_prefix + [commands])
             return result
 
-        env.AddToVSProject(env.core_sources)
-        env.AddToVSProject(env.main_sources)
-        env.AddToVSProject(env.modules_sources)
-        env.AddToVSProject(env.scene_sources)
-        env.AddToVSProject(env.servers_sources)
-        env.AddToVSProject(env.editor_sources)
+        env.vs_incs = []
+        env.vs_srcs = []
+
+        for f in env.project_sources:
+            f = os.path.relpath(f, get_root_dir())
+            if os.path.splitext(f)[1] in header_file_exts:
+                env.vs_incs.append(f)
+            else:
+                env.vs_srcs.append(f)
+
 
         # windows allows us to have spaces in paths, so we need
         # to double quote off the directory. However, the path ends

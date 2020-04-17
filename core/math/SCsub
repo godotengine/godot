@@ -2,6 +2,6 @@
 
 Import("env")
 
-env_math = env.Clone()
-
-env_math.add_source_files(env.core_sources, "*.cpp")
+local_sources = env.glob_files('*.cpp') + env.glob_files('*.h')
+env.add_project_sources(local_sources)
+env.add_objects_from_sources(env.core_objects, local_sources)

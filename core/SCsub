@@ -6,8 +6,7 @@ import core_builders
 import make_binders
 from platform_methods import run_in_subprocess
 
-env.core_sources = []
-
+env.core_objects = []
 
 # Generate AES256 script encryption key
 import os
@@ -48,31 +47,49 @@ env_thirdparty.disable_warnings()
 thirdparty_misc_dir = "#thirdparty/misc/"
 thirdparty_misc_sources = [
     # C sources
+    "fastlz.h",
     "fastlz.c",
+    "smaz.h",
     "smaz.c",
     # C++ sources
+    "hq2x.h",
     "hq2x.cpp",
+    "pcg.h",
     "pcg.cpp",
+    "triangulator.h",
     "triangulator.cpp",
+    "clipper.h",
     "clipper.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
-env_thirdparty.add_source_files(env.core_sources, thirdparty_misc_sources)
+env.add_project_sources(thirdparty_misc_sources)
+env_thirdparty.add_objects_from_sources(env.core_objects, thirdparty_misc_sources)
 
 # Zlib library, can be unbundled
 if env["builtin_zlib"]:
     thirdparty_zlib_dir = "#thirdparty/zlib/"
     thirdparty_zlib_sources = [
+        "adler32.h",
         "adler32.c",
+        "compress.h",
         "compress.c",
+        "crc32.h",
         "crc32.c",
+        "deflate.h",
         "deflate.c",
+        "infback.h",
         "infback.c",
+        "inffast.h",
         "inffast.c",
+        "inflate.h",
         "inflate.c",
+        "inftrees.h",
         "inftrees.c",
+        "trees.h",
         "trees.c",
+        "uncompr.h",
         "uncompr.c",
+        "zutil.h",
         "zutil.c",
     ]
     thirdparty_zlib_sources = [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
@@ -83,18 +100,23 @@ if env["builtin_zlib"]:
     if env["target"] == "debug":
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
 
-    env_thirdparty.add_source_files(env.core_sources, thirdparty_zlib_sources)
+    env.add_project_sources(thirdparty_zlib_sources)
+    env_thirdparty.add_objects_from_sources(env.core_objects, thirdparty_zlib_sources)
 
 # Minizip library, could be unbundled in theory
 # However, our version has some custom modifications, so it won't compile with the system one
 thirdparty_minizip_dir = "#thirdparty/minizip/"
 thirdparty_minizip_sources = [
+    "ioapi.h",
     "ioapi.c",
+    "unzip.h",
     "unzip.c",
+    "zip.h",
     "zip.c",
 ]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
-env_thirdparty.add_source_files(env.core_sources, thirdparty_minizip_sources)
+env.add_project_sources(thirdparty_minizip_sources)
+env_thirdparty.add_objects_from_sources(env.core_objects, thirdparty_minizip_sources)
 
 # Zstd library, can be unbundled in theory
 # though we currently use some private symbols
@@ -102,29 +124,53 @@ env_thirdparty.add_source_files(env.core_sources, thirdparty_minizip_sources)
 if env["builtin_zstd"]:
     thirdparty_zstd_dir = "#thirdparty/zstd/"
     thirdparty_zstd_sources = [
+        "common/debug.h",
         "common/debug.c",
+        "common/entropy_common.h",
         "common/entropy_common.c",
+        "common/error_private.h",
         "common/error_private.c",
+        "common/fse_decompress.h",
         "common/fse_decompress.c",
+        "common/pool.h",
         "common/pool.c",
+        "common/threading.h",
         "common/threading.c",
+        "common/xxhash.h",
         "common/xxhash.c",
+        "common/zstd_common.h",
         "common/zstd_common.c",
+        "compress/fse_compress.h",
         "compress/fse_compress.c",
+        "compress/hist.h",
         "compress/hist.c",
+        "compress/huf_compress.h",
         "compress/huf_compress.c",
+        "compress/zstd_compress.h",
         "compress/zstd_compress.c",
+        "compress/zstd_double_fast.h",
         "compress/zstd_double_fast.c",
+        "compress/zstd_fast.h",
         "compress/zstd_fast.c",
+        "compress/zstd_lazy.h",
         "compress/zstd_lazy.c",
+        "compress/zstd_ldm.h",
         "compress/zstd_ldm.c",
+        "compress/zstd_opt.h",
         "compress/zstd_opt.c",
+        "compress/zstdmt_compress.h",
         "compress/zstdmt_compress.c",
+        "compress/zstd_compress_literals.h",
         "compress/zstd_compress_literals.c",
+        "compress/zstd_compress_sequences.h",
         "compress/zstd_compress_sequences.c",
+        "decompress/huf_decompress.h",
         "decompress/huf_decompress.c",
+        "decompress/zstd_ddict.h",
         "decompress/zstd_ddict.c",
+        "decompress/zstd_decompress_block.h",
         "decompress/zstd_decompress_block.c",
+        "decompress/zstd_decompress.h",
         "decompress/zstd_decompress.c",
     ]
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
@@ -135,11 +181,14 @@ if env["builtin_zstd"]:
     # Also needed in main env includes will trigger warnings
     env.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
 
-    env_thirdparty.add_source_files(env.core_sources, thirdparty_zstd_sources)
+    env.add_project_sources(thirdparty_zstd_sources)
+    env_thirdparty.add_objects_from_sources(env.core_objects, thirdparty_zstd_sources)
 
 
 # Godot's own sources
-env.add_source_files(env.core_sources, "*.cpp")
+local_sources = env.glob_files('*.cpp') + env.glob_files('*.h')
+env.add_project_sources(local_sources)
+env.add_objects_from_sources(env.core_objects, local_sources)
 
 # Certificates
 env.Depends(
@@ -151,6 +200,7 @@ env.CommandNoCache(
     "#thirdparty/certs/ca-certificates.crt",
     run_in_subprocess(core_builders.make_certs_header),
 )
+env.add_project_sources(["#core/io/certs_compressed.gen.h"])
 
 # Make binders
 env.CommandNoCache(
@@ -158,6 +208,7 @@ env.CommandNoCache(
     "make_binders.py",
     run_in_subprocess(make_binders.run),
 )
+env.add_project_sources(["method_bind.gen.inc", "method_bind_ext.gen.inc", "method_bind_free_func.gen.inc"])
 
 # Authors
 env.Depends("#core/authors.gen.h", "../AUTHORS.md")
@@ -184,5 +235,5 @@ SConscript("bind/SCsub")
 
 
 # Build it all as a library
-lib = env.add_library("core", env.core_sources)
+lib = env.add_library("core", env.core_objects)
 env.Prepend(LIBS=[lib])
