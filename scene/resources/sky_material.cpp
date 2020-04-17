@@ -111,16 +111,6 @@ float ProceduralSkyMaterial::get_ground_energy() const {
 	return ground_energy;
 }
 
-void ProceduralSkyMaterial::set_sun_angle_min(float p_angle) {
-
-	sun_angle_min = p_angle;
-	RS::get_singleton()->material_set_param(_get_material(), "sun_angle_min", Math::deg2rad(sun_angle_min));
-}
-float ProceduralSkyMaterial::get_sun_angle_min() const {
-
-	return sun_angle_min;
-}
-
 void ProceduralSkyMaterial::set_sun_angle_max(float p_angle) {
 
 	sun_angle_max = p_angle;
@@ -181,9 +171,6 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ground_energy", "energy"), &ProceduralSkyMaterial::set_ground_energy);
 	ClassDB::bind_method(D_METHOD("get_ground_energy"), &ProceduralSkyMaterial::get_ground_energy);
 
-	ClassDB::bind_method(D_METHOD("set_sun_angle_min", "degrees"), &ProceduralSkyMaterial::set_sun_angle_min);
-	ClassDB::bind_method(D_METHOD("get_sun_angle_min"), &ProceduralSkyMaterial::get_sun_angle_min);
-
 	ClassDB::bind_method(D_METHOD("set_sun_angle_max", "degrees"), &ProceduralSkyMaterial::set_sun_angle_max);
 	ClassDB::bind_method(D_METHOD("get_sun_angle_max"), &ProceduralSkyMaterial::get_sun_angle_max);
 
@@ -203,7 +190,6 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ground_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_ground_energy", "get_ground_energy");
 
 	ADD_GROUP("Sun", "sun_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_min", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_min", "get_sun_angle_min");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_max", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_max", "get_sun_angle_max");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
 }
@@ -220,8 +206,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	code += "uniform vec4 ground_horizon_color : hint_color = vec4(0.37, 0.33, 0.31, 1.0);\n";
 	code += "uniform float ground_curve : hint_range(0, 1) = 0.02;\n";
 	code += "uniform float ground_energy = 1.0;\n\n";
-	code += "uniform float sun_angle_min = 0.01;\n";
-	code += "uniform float sun_angle_max = 1.0;\n";
+	code += "uniform float sun_angle_max = 1.74;\n";
 	code += "uniform float sun_curve : hint_range(0, 1) = 0.05;\n\n";
 	code += "const float PI = 3.1415926535897932384626433833;\n\n";
 	code += "void fragment() {\n";
@@ -231,37 +216,37 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	code += "\tsky *= sky_energy;\n";
 	code += "\tif (LIGHT0_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT0_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT0_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT0_COLOR * LIGHT0_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT0_SIZE) / (sun_angle_max - LIGHT0_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT0_COLOR * LIGHT0_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
 	code += "\tif (LIGHT1_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT1_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT1_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT1_COLOR * LIGHT1_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT1_SIZE) / (sun_angle_max - LIGHT1_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT1_COLOR * LIGHT1_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
 	code += "\tif (LIGHT2_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT2_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT2_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT2_COLOR * LIGHT2_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT2_SIZE) / (sun_angle_max - LIGHT2_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT2_COLOR * LIGHT2_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
 	code += "\tif (LIGHT3_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT3_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT3_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT3_COLOR * LIGHT3_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT3_SIZE) / (sun_angle_max - LIGHT3_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT3_COLOR * LIGHT3_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
@@ -287,7 +272,6 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_ground_curve(0.02);
 	set_ground_energy(1.0);
 
-	set_sun_angle_min(1.0);
 	set_sun_angle_max(100.0);
 	set_sun_curve(0.05);
 }
@@ -535,7 +519,6 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "const vec3 UP = vec3( 0.0, 1.0, 0.0 );\n\n";
 
 	code += "// Sun constants\n";
-	code += "const float SOL_SIZE = 0.00872663806;\n";
 	code += "const float SUN_ENERGY = 1000.0;\n\n";
 
 	code += "// optical length at zenith for molecules\n";
@@ -591,8 +574,8 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "\tLin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));\n\n";
 
 	code += "\t// Solar disk and out-scattering\n";
-	code += "\tfloat sunAngularDiameterCos = cos(SOL_SIZE * sun_disk_scale);\n";
-	code += "\tfloat sunAngularDiameterCos2 = cos(SOL_SIZE * sun_disk_scale*0.5);\n";
+	code += "\tfloat sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);\n";
+	code += "\tfloat sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale*0.5);\n";
 	code += "\tfloat sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);\n";
 	code += "\tvec3 L0 = (sun_energy * 1900.0 * extinction) * sundisk * LIGHT0_COLOR;\n";
 	code += "\t// Note: Add nightime here: L0 += night_sky * extinction\n\n";
