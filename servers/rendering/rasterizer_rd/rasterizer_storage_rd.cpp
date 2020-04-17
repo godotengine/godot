@@ -31,6 +31,7 @@
 #include "rasterizer_storage_rd.h"
 
 #include "core/engine.h"
+#include "core/io/resource_loader.h"
 #include "core/project_settings.h"
 #include "servers/rendering/shader_language.h"
 
@@ -921,6 +922,7 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 			Material *material = E->get();
 			if (shader->data) {
 				material->data = material_data_request_func[new_type](shader->data);
+				material->data->self = material->self;
 				material->data->set_next_pass(material->next_pass);
 				material->data->set_render_priority(material->priority);
 			}
@@ -1021,8 +1023,8 @@ void RasterizerStorageRD::_material_queue_update(Material *material, bool p_unif
 	material->update_next = material_update_list;
 	material_update_list = material;
 	material->update_requested = true;
-	material->uniform_dirty = p_uniform;
-	material->texture_dirty = p_texture;
+	material->uniform_dirty = material->uniform_dirty || p_uniform;
+	material->texture_dirty = material->texture_dirty || p_texture;
 }
 
 void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
@@ -1059,6 +1061,7 @@ void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
 	ERR_FAIL_COND(shader->data == nullptr);
 
 	material->data = material_data_request_func[shader->type](shader->data);
+	material->data->self = p_material;
 	material->data->set_next_pass(material->next_pass);
 	material->data->set_render_priority(material->priority);
 	//updating happens later
@@ -1142,6 +1145,19 @@ bool RasterizerStorageRD::material_casts_shadows(RID p_material) {
 		}
 	}
 	return true; //by default everything casts shadows
+}
+
+void RasterizerStorageRD::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
+
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+	if (material->shader && material->shader->data) {
+		material->shader->data->get_instance_param_list(r_parameters);
+
+		if (material->next_pass.is_valid()) {
+			material_get_instance_shader_parameters(material->next_pass, r_parameters);
+		}
+	}
 }
 
 void RasterizerStorageRD::material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) {
@@ -1631,10 +1647,35 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 
 void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
 
+	bool uses_global_buffer = false;
+
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_uniforms.front(); E; E = E->next()) {
 
 		if (E->get().order < 0)
 			continue; // texture, does not go here
+
+		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue; //instance uniforms don't appear in the bufferr
+		}
+
+		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
+			//this is a global variable, get the index to it
+			RasterizerStorageRD *rs = base_singleton;
+
+			GlobalVariables::Variable *gv = rs->global_variables.variables.getptr(E->key());
+			uint32_t index = 0;
+			if (gv) {
+				index = gv->buffer_index;
+			} else {
+				WARN_PRINT("Shader uses global uniform '" + E->key() + "', but it was removed at some point. Material will not display correctly.");
+			}
+
+			uint32_t offset = p_uniform_offsets[E->get().order];
+			uint32_t *intptr = (uint32_t *)&p_buffer[offset];
+			*intptr = index;
+			uses_global_buffer = true;
+			continue;
+		}
 
 		//regular uniform
 		uint32_t offset = p_uniform_offsets[E->get().order];
@@ -1664,6 +1705,38 @@ void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringNa
 			}
 		}
 	}
+
+	if (uses_global_buffer != (global_buffer_E != nullptr)) {
+		RasterizerStorageRD *rs = base_singleton;
+		if (uses_global_buffer) {
+			global_buffer_E = rs->global_variables.materials_using_buffer.push_back(self);
+		} else {
+			rs->global_variables.materials_using_buffer.erase(global_buffer_E);
+			global_buffer_E = nullptr;
+		}
+	}
+}
+
+RasterizerStorageRD::MaterialData::~MaterialData() {
+	if (global_buffer_E) {
+		//unregister global buffers
+		RasterizerStorageRD *rs = base_singleton;
+		rs->global_variables.materials_using_buffer.erase(global_buffer_E);
+	}
+
+	if (global_texture_E) {
+		//unregister global textures
+		RasterizerStorageRD *rs = base_singleton;
+
+		for (Map<StringName, uint64_t>::Element *E = used_global_textures.front(); E; E = E->next()) {
+			GlobalVariables::Variable *v = rs->global_variables.variables.getptr(E->key());
+			if (v) {
+				v->texture_materials.erase(self);
+			}
+		}
+		//unregister material from those using global textures
+		rs->global_variables.materials_using_texture.erase(global_texture_E);
+	}
 }
 
 void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
@@ -1675,22 +1748,57 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 	Texture *normal_detect_texture = nullptr;
 #endif
 
+	bool uses_global_textures = false;
+	global_textures_pass++;
+
 	for (int i = 0; i < p_texture_uniforms.size(); i++) {
 
 		const StringName &uniform_name = p_texture_uniforms[i].name;
 
 		RID texture;
 
-		const Map<StringName, Variant>::Element *V = p_parameters.find(uniform_name);
-		if (V) {
-			texture = V->get();
-		}
+		if (p_texture_uniforms[i].global) {
 
-		if (!texture.is_valid()) {
-			const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
-			if (W) {
+			RasterizerStorageRD *rs = base_singleton;
 
-				texture = W->get();
+			uses_global_textures = true;
+
+			GlobalVariables::Variable *v = rs->global_variables.variables.getptr(uniform_name);
+			if (v) {
+				if (v->buffer_index >= 0) {
+					WARN_PRINT("Shader uses global uniform texture '" + String(uniform_name) + "', but it changed type and is no longer a texture!.");
+
+				} else {
+
+					Map<StringName, uint64_t>::Element *E = used_global_textures.find(uniform_name);
+					if (!E) {
+						E = used_global_textures.insert(uniform_name, global_textures_pass);
+						v->texture_materials.insert(self);
+					} else {
+						E->get() = global_textures_pass;
+					}
+
+					texture = v->override.get_type() != Variant::NIL ? v->override : v->value;
+				}
+
+			} else {
+				WARN_PRINT("Shader uses global uniform texture '" + String(uniform_name) + "', but it was removed at some point. Material will not display correctly.");
+			}
+		} else {
+			if (!texture.is_valid()) {
+
+				const Map<StringName, Variant>::Element *V = p_parameters.find(uniform_name);
+				if (V) {
+					texture = V->get();
+				}
+			}
+
+			if (!texture.is_valid()) {
+				const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
+				if (W) {
+
+					texture = W->get();
+				}
 			}
 		}
 
@@ -1753,6 +1861,36 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 		roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
 	}
 #endif
+	{
+		//for textures no longer used, unregister them
+		List<Map<StringName, uint64_t>::Element *> to_delete;
+		RasterizerStorageRD *rs = base_singleton;
+
+		for (Map<StringName, uint64_t>::Element *E = used_global_textures.front(); E; E = E->next()) {
+			if (E->get() != global_textures_pass) {
+				to_delete.push_back(E);
+
+				GlobalVariables::Variable *v = rs->global_variables.variables.getptr(E->key());
+				if (v) {
+					v->texture_materials.erase(self);
+				}
+			}
+		}
+
+		while (to_delete.front()) {
+			used_global_textures.erase(to_delete.front()->get());
+			to_delete.pop_front();
+		}
+		//handle registering/unregistering global textures
+		if (uses_global_textures != (global_texture_E != nullptr)) {
+			if (uses_global_textures) {
+				global_texture_E = rs->global_variables.materials_using_texture.push_back(self);
+			} else {
+				rs->global_variables.materials_using_texture.erase(global_texture_E);
+				global_texture_E = nullptr;
+			}
+		}
+	}
 }
 
 void RasterizerStorageRD::material_force_update_textures(RID p_material, ShaderType p_shader_type) {
@@ -4627,7 +4765,685 @@ void RasterizerStorageRD::_update_decal_atlas() {
 	}
 }
 
+int32_t RasterizerStorageRD::_global_variable_allocate(uint32_t p_elements) {
+
+	int32_t idx = 0;
+	while (idx + p_elements <= global_variables.buffer_size) {
+		if (global_variables.buffer_usage[idx].elements == 0) {
+			bool valid = true;
+			for (uint32_t i = 1; i < p_elements; i++) {
+				if (global_variables.buffer_usage[idx + i].elements > 0) {
+					valid = false;
+					idx += i + global_variables.buffer_usage[idx + i].elements;
+					break;
+				}
+			}
+
+			if (!valid) {
+				continue; //if not valid, idx is in new position
+			}
+
+			return idx;
+		} else {
+			idx += global_variables.buffer_usage[idx].elements;
+		}
+	}
+
+	return -1;
+}
+
+void RasterizerStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value) {
+
+	switch (p_type) {
+		case RS::GLOBAL_VAR_TYPE_BOOL: {
+
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			bool b = p_value;
+			bv.x = b ? 1.0 : 0.0;
+			bv.y = 0.0;
+			bv.z = 0.0;
+			bv.w = 0.0;
+
+		} break;
+		case RS::GLOBAL_VAR_TYPE_BVEC2: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			uint32_t bvec = p_value;
+			bv.x = (bvec & 1) ? 1.0 : 0.0;
+			bv.y = (bvec & 2) ? 1.0 : 0.0;
+			bv.z = 0.0;
+			bv.w = 0.0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_BVEC3: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			uint32_t bvec = p_value;
+			bv.x = (bvec & 1) ? 1.0 : 0.0;
+			bv.y = (bvec & 2) ? 1.0 : 0.0;
+			bv.z = (bvec & 4) ? 1.0 : 0.0;
+			bv.w = 0.0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_BVEC4: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			uint32_t bvec = p_value;
+			bv.x = (bvec & 1) ? 1.0 : 0.0;
+			bv.y = (bvec & 2) ? 1.0 : 0.0;
+			bv.z = (bvec & 4) ? 1.0 : 0.0;
+			bv.w = (bvec & 8) ? 1.0 : 0.0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_INT: {
+			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			int32_t v = p_value;
+			bv.x = v;
+			bv.y = 0;
+			bv.z = 0;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_IVEC2: {
+			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			Vector2i v = p_value;
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = 0;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_IVEC3: {
+			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			Vector3i v = p_value;
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = v.z;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_IVEC4: {
+			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			Vector<int32_t> v = p_value;
+			bv.x = v.size() >= 1 ? v[0] : 0;
+			bv.y = v.size() >= 2 ? v[1] : 0;
+			bv.z = v.size() >= 3 ? v[2] : 0;
+			bv.w = v.size() >= 4 ? v[3] : 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_RECT2I: {
+			GlobalVariables::ValueInt &bv = *(GlobalVariables::ValueInt *)&global_variables.buffer_values[p_index];
+			Rect2i v = p_value;
+			bv.x = v.position.x;
+			bv.y = v.position.y;
+			bv.z = v.size.x;
+			bv.w = v.size.y;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_UINT: {
+			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			uint32_t v = p_value;
+			bv.x = v;
+			bv.y = 0;
+			bv.z = 0;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_UVEC2: {
+			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			Vector2i v = p_value;
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = 0;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_UVEC3: {
+			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			Vector3i v = p_value;
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = v.z;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_UVEC4: {
+			GlobalVariables::ValueUInt &bv = *(GlobalVariables::ValueUInt *)&global_variables.buffer_values[p_index];
+			Vector<int32_t> v = p_value;
+			bv.x = v.size() >= 1 ? v[0] : 0;
+			bv.y = v.size() >= 2 ? v[1] : 0;
+			bv.z = v.size() >= 3 ? v[2] : 0;
+			bv.w = v.size() >= 4 ? v[3] : 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_FLOAT: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			float v = p_value;
+			bv.x = v;
+			bv.y = 0;
+			bv.z = 0;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_VEC2: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			Vector2 v = p_value;
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = 0;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_VEC3: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			Vector3 v = p_value;
+			bv.x = v.x;
+			bv.y = v.y;
+			bv.z = v.z;
+			bv.w = 0;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_VEC4: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			Plane v = p_value;
+			bv.x = v.normal.x;
+			bv.y = v.normal.y;
+			bv.z = v.normal.z;
+			bv.w = v.d;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_COLOR: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			Color v = p_value;
+			bv.x = v.r;
+			bv.y = v.g;
+			bv.z = v.b;
+			bv.w = v.a;
+
+			GlobalVariables::Value &bv_linear = global_variables.buffer_values[p_index + 1];
+			v = v.to_linear();
+			bv_linear.x = v.r;
+			bv_linear.y = v.g;
+			bv_linear.z = v.b;
+			bv_linear.w = v.a;
+
+		} break;
+		case RS::GLOBAL_VAR_TYPE_RECT2: {
+			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
+			Rect2 v = p_value;
+			bv.x = v.position.x;
+			bv.y = v.position.y;
+			bv.z = v.size.x;
+			bv.w = v.size.y;
+		} break;
+		case RS::GLOBAL_VAR_TYPE_MAT2: {
+			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			Vector<float> m2 = p_value;
+			if (m2.size() < 4) {
+				m2.resize(4);
+			}
+			bv[0].x = m2[0];
+			bv[0].y = m2[1];
+			bv[0].z = 0;
+			bv[0].w = 0;
+
+			bv[1].x = m2[2];
+			bv[1].y = m2[3];
+			bv[1].z = 0;
+			bv[1].w = 0;
+
+		} break;
+		case RS::GLOBAL_VAR_TYPE_MAT3: {
+
+			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			Basis v = p_value;
+			bv[0].x = v.elements[0][0];
+			bv[0].y = v.elements[1][0];
+			bv[0].z = v.elements[2][0];
+			bv[0].w = 0;
+
+			bv[1].x = v.elements[0][1];
+			bv[1].y = v.elements[1][1];
+			bv[1].z = v.elements[2][1];
+			bv[1].w = 0;
+
+			bv[2].x = v.elements[0][2];
+			bv[2].y = v.elements[1][2];
+			bv[2].z = v.elements[2][2];
+			bv[2].w = 0;
+
+		} break;
+		case RS::GLOBAL_VAR_TYPE_MAT4: {
+
+			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+
+			Vector<float> m2 = p_value;
+			if (m2.size() < 16) {
+				m2.resize(16);
+			}
+
+			bv[0].x = m2[0];
+			bv[0].y = m2[1];
+			bv[0].z = m2[2];
+			bv[0].w = m2[3];
+
+			bv[1].x = m2[4];
+			bv[1].y = m2[5];
+			bv[1].z = m2[6];
+			bv[1].w = m2[7];
+
+			bv[2].x = m2[8];
+			bv[2].y = m2[9];
+			bv[2].z = m2[10];
+			bv[2].w = m2[11];
+
+			bv[3].x = m2[12];
+			bv[3].y = m2[13];
+			bv[3].z = m2[14];
+			bv[3].w = m2[15];
+
+		} break;
+		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: {
+
+			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			Transform2D v = p_value;
+			bv[0].x = v.elements[0][0];
+			bv[0].y = v.elements[0][1];
+			bv[0].z = 0;
+			bv[0].w = 0;
+
+			bv[1].x = v.elements[1][0];
+			bv[1].y = v.elements[1][1];
+			bv[1].z = 0;
+			bv[1].w = 0;
+
+			bv[2].x = v.elements[2][0];
+			bv[2].y = v.elements[2][1];
+			bv[2].z = 1;
+			bv[2].w = 0;
+
+		} break;
+		case RS::GLOBAL_VAR_TYPE_TRANSFORM: {
+
+			GlobalVariables::Value *bv = &global_variables.buffer_values[p_index];
+			Transform v = p_value;
+			bv[0].x = v.basis.elements[0][0];
+			bv[0].y = v.basis.elements[1][0];
+			bv[0].z = v.basis.elements[2][0];
+			bv[0].w = 0;
+
+			bv[1].x = v.basis.elements[0][1];
+			bv[1].y = v.basis.elements[1][1];
+			bv[1].z = v.basis.elements[2][1];
+			bv[1].w = 0;
+
+			bv[2].x = v.basis.elements[0][2];
+			bv[2].y = v.basis.elements[1][2];
+			bv[2].z = v.basis.elements[2][2];
+			bv[2].w = 0;
+
+			bv[2].x = v.origin.x;
+			bv[2].y = v.origin.y;
+			bv[2].z = v.origin.z;
+			bv[2].w = 1;
+
+		} break;
+		default: {
+			ERR_FAIL();
+		}
+	}
+}
+
+void RasterizerStorageRD::_global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements) {
+
+	int32_t prev_chunk = -1;
+
+	for (int32_t i = 0; i < p_elements; i++) {
+		int32_t chunk = (p_index + i) / GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
+		if (chunk != prev_chunk) {
+			if (!global_variables.buffer_dirty_regions[chunk]) {
+				global_variables.buffer_dirty_regions[chunk] = true;
+				global_variables.buffer_dirty_region_count++;
+			}
+		}
+
+		prev_chunk = chunk;
+	}
+}
+
+void RasterizerStorageRD::global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) {
+
+	ERR_FAIL_COND(global_variables.variables.has(p_name));
+	GlobalVariables::Variable gv;
+	gv.type = p_type;
+	gv.value = p_value;
+	gv.buffer_index = -1;
+
+	if (p_type >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
+		//is texture
+		global_variables.must_update_texture_materials = true; //normally ther are no
+	} else {
+
+		gv.buffer_elements = 1;
+		if (p_type == RS::GLOBAL_VAR_TYPE_COLOR || p_type == RS::GLOBAL_VAR_TYPE_MAT2) {
+			//color needs to elements to store srgb and linear
+			gv.buffer_elements = 2;
+		}
+		if (p_type == RS::GLOBAL_VAR_TYPE_MAT3 || p_type == RS::GLOBAL_VAR_TYPE_TRANSFORM_2D) {
+			//color needs to elements to store srgb and linear
+			gv.buffer_elements = 3;
+		}
+		if (p_type == RS::GLOBAL_VAR_TYPE_MAT4 || p_type == RS::GLOBAL_VAR_TYPE_TRANSFORM) {
+			//color needs to elements to store srgb and linear
+			gv.buffer_elements = 4;
+		}
+
+		//is vector, allocate in buffer and update index
+		gv.buffer_index = _global_variable_allocate(gv.buffer_elements);
+		ERR_FAIL_COND_MSG(gv.buffer_index < 0, vformat("Failed allocating global variable '%s' out of buffer memory. Consider increasing it in the Project Settings.", String(p_name)));
+		global_variables.buffer_usage[gv.buffer_index].elements = gv.buffer_elements;
+		_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.value);
+		_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
+
+		global_variables.must_update_buffer_materials = true; //normally ther are no
+	}
+
+	global_variables.variables[p_name] = gv;
+}
+
+void RasterizerStorageRD::global_variable_remove(const StringName &p_name) {
+	if (!global_variables.variables.has(p_name)) {
+		return;
+	}
+	GlobalVariables::Variable &gv = global_variables.variables[p_name];
+
+	if (gv.buffer_index >= 0) {
+		global_variables.buffer_usage[gv.buffer_index].elements = 0;
+		global_variables.must_update_buffer_materials = true;
+	} else {
+		global_variables.must_update_texture_materials = true;
+	}
+
+	global_variables.variables.erase(p_name);
+}
+Vector<StringName> RasterizerStorageRD::global_variable_get_list() const {
+
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		ERR_FAIL_V_MSG(Vector<StringName>(), "This function should never be used outside the editor, it can severely damage performance.");
+	}
+
+	const StringName *K = NULL;
+	Vector<StringName> names;
+	while ((K = global_variables.variables.next(K))) {
+		names.push_back(*K);
+	}
+	names.sort_custom<StringName::AlphCompare>();
+	return names;
+}
+
+void RasterizerStorageRD::global_variable_set(const StringName &p_name, const Variant &p_value) {
+	ERR_FAIL_COND(!global_variables.variables.has(p_name));
+	GlobalVariables::Variable &gv = global_variables.variables[p_name];
+	gv.value = p_value;
+	if (gv.override.get_type() == Variant::NIL) {
+		if (gv.buffer_index >= 0) {
+			//buffer
+			_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.value);
+			_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
+		} else {
+			//texture
+			for (Set<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
+				Material *material = material_owner.getornull(E->get());
+				ERR_CONTINUE(!material);
+				_material_queue_update(material, false, true);
+			}
+		}
+	}
+}
+void RasterizerStorageRD::global_variable_set_override(const StringName &p_name, const Variant &p_value) {
+	if (!global_variables.variables.has(p_name)) {
+		return; //variable may not exist
+	}
+	GlobalVariables::Variable &gv = global_variables.variables[p_name];
+
+	gv.override = p_value;
+
+	if (gv.buffer_index >= 0) {
+		//buffer
+		if (gv.override.get_type() == Variant::NIL) {
+			_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.value);
+		} else {
+			_global_variable_store_in_buffer(gv.buffer_index, gv.type, gv.override);
+		}
+
+		_global_variable_mark_buffer_dirty(gv.buffer_index, gv.buffer_elements);
+	} else {
+		//texture
+		//texture
+		for (Set<RID>::Element *E = gv.texture_materials.front(); E; E = E->next()) {
+			Material *material = material_owner.getornull(E->get());
+			ERR_CONTINUE(!material);
+			_material_queue_update(material, false, true);
+		}
+	}
+}
+
+Variant RasterizerStorageRD::global_variable_get(const StringName &p_name) const {
+
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		ERR_FAIL_V_MSG(Variant(), "This function should never be used outside the editor, it can severely damage performance.");
+	}
+
+	if (!global_variables.variables.has(p_name)) {
+		return Variant();
+	}
+
+	return global_variables.variables[p_name].value;
+}
+
+RS::GlobalVariableType RasterizerStorageRD::global_variable_get_type_internal(const StringName &p_name) const {
+
+	if (!global_variables.variables.has(p_name)) {
+		return RS::GLOBAL_VAR_TYPE_MAX;
+	}
+
+	return global_variables.variables[p_name].type;
+}
+
+RS::GlobalVariableType RasterizerStorageRD::global_variable_get_type(const StringName &p_name) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		ERR_FAIL_V_MSG(RS::GLOBAL_VAR_TYPE_MAX, "This function should never be used outside the editor, it can severely damage performance.");
+	}
+
+	return global_variable_get_type_internal(p_name);
+}
+
+void RasterizerStorageRD::global_variables_load_settings(bool p_load_textures) {
+
+	List<PropertyInfo> settings;
+	ProjectSettings::get_singleton()->get_property_list(&settings);
+
+	for (List<PropertyInfo>::Element *E = settings.front(); E; E = E->next()) {
+		if (E->get().name.begins_with("shader_globals/")) {
+			StringName name = E->get().name.get_slice("/", 1);
+			Dictionary d = ProjectSettings::get_singleton()->get(E->get().name);
+
+			ERR_CONTINUE(!d.has("type"));
+			ERR_CONTINUE(!d.has("value"));
+
+			String type = d["type"];
+
+			static const char *global_var_type_names[RS::GLOBAL_VAR_TYPE_MAX] = {
+				"bool",
+				"bvec2",
+				"bvec3",
+				"bvec4",
+				"int",
+				"ivec2",
+				"ivec3",
+				"ivec4",
+				"rect2i",
+				"uint",
+				"uvec2",
+				"uvec3",
+				"uvec4",
+				"float",
+				"vec2",
+				"vec3",
+				"vec4",
+				"color",
+				"rect2",
+				"mat2",
+				"mat3",
+				"mat4",
+				"transform_2d",
+				"transform",
+				"sampler2D",
+				"sampler2DArray",
+				"sampler3D",
+				"samplerCube",
+			};
+
+			RS::GlobalVariableType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
+
+			for (int i = 0; i < RS::GLOBAL_VAR_TYPE_MAX; i++) {
+				if (global_var_type_names[i] == type) {
+					gvtype = RS::GlobalVariableType(i);
+					break;
+				}
+			}
+
+			ERR_CONTINUE(gvtype == RS::GLOBAL_VAR_TYPE_MAX); //type invalid
+
+			Variant value = d["value"];
+
+			if (gvtype >= RS::GLOBAL_VAR_TYPE_SAMPLER2D) {
+				//textire
+				if (!p_load_textures) {
+					value = RID();
+					continue;
+				}
+
+				String path = value;
+				RES resource = ResourceLoader::load(path);
+				ERR_CONTINUE(resource.is_null());
+				value = resource;
+			}
+
+			if (global_variables.variables.has(name)) {
+				//has it, update it
+				global_variable_set(name, value);
+			} else {
+				global_variable_add(name, gvtype, value);
+			}
+		}
+	}
+}
+
+void RasterizerStorageRD::global_variables_clear() {
+	global_variables.variables.clear(); //not right but for now enough
+}
+
+RID RasterizerStorageRD::global_variables_get_storage_buffer() const {
+	return global_variables.buffer;
+}
+
+int32_t RasterizerStorageRD::global_variables_instance_allocate(RID p_instance) {
+	ERR_FAIL_COND_V(global_variables.instance_buffer_pos.has(p_instance), -1);
+	int32_t pos = _global_variable_allocate(ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
+	global_variables.instance_buffer_pos[p_instance] = pos; //save anyway
+	ERR_FAIL_COND_V_MSG(pos < 0, -1, "Too many instances using shader instance variables. Increase buffer size in Project Settings.");
+	global_variables.buffer_usage[pos].elements = ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES;
+	return pos;
+}
+
+void RasterizerStorageRD::global_variables_instance_free(RID p_instance) {
+	ERR_FAIL_COND(!global_variables.instance_buffer_pos.has(p_instance));
+	int32_t pos = global_variables.instance_buffer_pos[p_instance];
+	if (pos >= 0) {
+		global_variables.buffer_usage[pos].elements = 0;
+	}
+	global_variables.instance_buffer_pos.erase(p_instance);
+}
+void RasterizerStorageRD::global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) {
+
+	if (!global_variables.instance_buffer_pos.has(p_instance)) {
+		return; //just not allocated, ignore
+	}
+	int32_t pos = global_variables.instance_buffer_pos[p_instance];
+
+	if (pos < 0) {
+		return; //again, not allocated, ignore
+	}
+	ERR_FAIL_INDEX(p_index, ShaderLanguage::MAX_INSTANCE_UNIFORM_INDICES);
+	ERR_FAIL_COND_MSG(p_value.get_type() > Variant::COLOR, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
+
+	ShaderLanguage::DataType datatype_from_value[Variant::COLOR + 1] = {
+		ShaderLanguage::TYPE_MAX, //nil
+		ShaderLanguage::TYPE_BOOL, //bool
+		ShaderLanguage::TYPE_INT, //int
+		ShaderLanguage::TYPE_FLOAT, //float
+		ShaderLanguage::TYPE_MAX, //string
+		ShaderLanguage::TYPE_VEC2, //vec2
+		ShaderLanguage::TYPE_IVEC2, //vec2i
+		ShaderLanguage::TYPE_VEC4, //rect2
+		ShaderLanguage::TYPE_IVEC4, //rect2i
+		ShaderLanguage::TYPE_VEC3, // vec3
+		ShaderLanguage::TYPE_IVEC3, //vec3i
+		ShaderLanguage::TYPE_MAX, //xform2d not supported here
+		ShaderLanguage::TYPE_VEC4, //plane
+		ShaderLanguage::TYPE_VEC4, //quat
+		ShaderLanguage::TYPE_MAX, //aabb not supported here
+		ShaderLanguage::TYPE_MAX, //basis not supported here
+		ShaderLanguage::TYPE_MAX, //xform not supported here
+		ShaderLanguage::TYPE_VEC4 //color
+	};
+
+	ShaderLanguage::DataType datatype = datatype_from_value[p_value.get_type()];
+
+	ERR_FAIL_COND_MSG(datatype == ShaderLanguage::TYPE_MAX, "Unsupported variant type for instance parameter: " + Variant::get_type_name(p_value.get_type())); //anything greater not supported
+
+	pos += p_index;
+
+	_fill_std140_variant_ubo_value(datatype, p_value, (uint8_t *)&global_variables.buffer_values[pos], true); //instances always use linear color in this renderer
+	_global_variable_mark_buffer_dirty(pos, 1);
+}
+
+void RasterizerStorageRD::_update_global_variables() {
+
+	if (global_variables.buffer_dirty_region_count > 0) {
+		uint32_t total_regions = global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
+		if (total_regions / global_variables.buffer_dirty_region_count <= 4) {
+			// 25% of regions dirty, just update all buffer
+			RD::get_singleton()->buffer_update(global_variables.buffer, 0, sizeof(GlobalVariables::Value) * global_variables.buffer_size, global_variables.buffer_values);
+			zeromem(global_variables.buffer_dirty_regions, sizeof(bool) * total_regions);
+		} else {
+			uint32_t region_byte_size = sizeof(GlobalVariables::Value) * GlobalVariables::BUFFER_DIRTY_REGION_SIZE;
+
+			for (uint32_t i = 0; i < total_regions; i++) {
+				if (global_variables.buffer_dirty_regions[i]) {
+
+					RD::get_singleton()->buffer_update(global_variables.buffer, i * region_byte_size, region_byte_size, global_variables.buffer_values);
+
+					global_variables.buffer_dirty_regions[i] = false;
+				}
+			}
+		}
+
+		global_variables.buffer_dirty_region_count = 0;
+	}
+
+	if (global_variables.must_update_buffer_materials) {
+		// only happens in the case of a buffer variable added or removed,
+		// so not often.
+		for (List<RID>::Element *E = global_variables.materials_using_buffer.front(); E; E = E->next()) {
+			Material *material = material_owner.getornull(E->get());
+			ERR_CONTINUE(!material); //wtf
+
+			_material_queue_update(material, true, false);
+		}
+
+		global_variables.must_update_buffer_materials = false;
+	}
+
+	if (global_variables.must_update_texture_materials) {
+		// only happens in the case of a buffer variable added or removed,
+		// so not often.
+		for (List<RID>::Element *E = global_variables.materials_using_texture.front(); E; E = E->next()) {
+			Material *material = material_owner.getornull(E->get());
+			ERR_CONTINUE(!material); //wtf
+
+			_material_queue_update(material, false, true);
+			print_line("update material texture?");
+		}
+
+		global_variables.must_update_texture_materials = false;
+	}
+}
+
 void RasterizerStorageRD::update_dirty_resources() {
+	_update_global_variables(); //must do before materials, so it can queue them for update
 	_update_queued_materials();
 	_update_dirty_multimeshes();
 	_update_dirty_skeletons();
@@ -4806,11 +5622,26 @@ String RasterizerStorageRD::get_captured_timestamp_name(uint32_t p_index) const 
 	return RD::get_singleton()->get_captured_timestamp_name(p_index);
 }
 
+RasterizerStorageRD *RasterizerStorageRD::base_singleton = nullptr;
+
 RasterizerStorageRD::RasterizerStorageRD() {
+
+	base_singleton = this;
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
 		shader_data_request_func[i] = nullptr;
 	}
+
+	static_assert(sizeof(GlobalVariables::Value) == 16);
+
+	global_variables.buffer_size = GLOBAL_GET("rendering/high_end/global_shader_variables_buffer_size");
+	global_variables.buffer_size = MAX(4096, global_variables.buffer_size);
+	global_variables.buffer_values = memnew_arr(GlobalVariables::Value, global_variables.buffer_size);
+	zeromem(global_variables.buffer_values, sizeof(GlobalVariables::Value) * global_variables.buffer_size);
+	global_variables.buffer_usage = memnew_arr(GlobalVariables::ValueUsage, global_variables.buffer_size);
+	global_variables.buffer_dirty_regions = memnew_arr(bool, global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
+	zeromem(global_variables.buffer_dirty_regions, sizeof(bool) * global_variables.buffer_size / GlobalVariables::BUFFER_DIRTY_REGION_SIZE);
+	global_variables.buffer = RD::get_singleton()->storage_buffer_create(sizeof(GlobalVariables::Value) * global_variables.buffer_size);
 
 	material_update_list = nullptr;
 	{ //create default textures
@@ -5164,6 +5995,11 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 RasterizerStorageRD::~RasterizerStorageRD() {
+
+	memdelete_arr(global_variables.buffer_values);
+	memdelete_arr(global_variables.buffer_usage);
+	memdelete_arr(global_variables.buffer_dirty_regions);
+	RD::get_singleton()->free(global_variables.buffer);
 
 	//def textures
 	for (int i = 0; i < DEFAULT_RD_TEXTURE_MAX; i++) {

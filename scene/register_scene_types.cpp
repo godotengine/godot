@@ -177,6 +177,8 @@
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
 
+#include "scene/main/shader_globals_override.h"
+
 #ifndef _3D_DISABLED
 #include "scene/3d/area_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
@@ -402,6 +404,8 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationNodeTimeScale>();
 	ClassDB::register_class<AnimationNodeTimeSeek>();
 	ClassDB::register_class<AnimationNodeTransition>();
+
+	ClassDB::register_class<ShaderGlobalsOverride>(); //can be used in any shader
 
 	OS::get_singleton()->yield(); //may take time to init
 

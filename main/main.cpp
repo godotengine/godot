@@ -1481,6 +1481,15 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		// We could add more, and make the CLI arg require a comma-separated list of profilers.
 		EngineDebugger::get_singleton()->profiler_enable("scripts", true);
 	}
+
+	if (!project_manager) {
+		// If not running the project manager, and now that the engine is
+		// able to load resources, load the global shader variables.
+		// If running on editor, dont load the textures because the editor
+		// may want to import them first. Editor will reload those later.
+		rendering_server->global_variables_load_settings(!editor);
+	}
+
 	_start_success = true;
 	locale = String();
 
@@ -2279,6 +2288,9 @@ void Main::cleanup() {
 
 	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
 	RenderingServer::get_singleton()->sync();
+
+	//clear global shader variables before scene and other graphics stuff is deinitialized.
+	rendering_server->global_variables_clear();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
