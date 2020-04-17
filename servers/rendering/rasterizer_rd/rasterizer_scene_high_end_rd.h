@@ -152,6 +152,8 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		virtual void set_code(const String &p_Code);
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		void get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const;
+
 		virtual bool is_param_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
@@ -361,7 +363,7 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		float transform[16];
 		float normal_transform[16];
 		uint32_t flags;
-		uint32_t instance_ofs; //instance_offset in instancing/skeleton buffer
+		uint32_t instance_uniforms_ofs; //instance_offset in instancing/skeleton buffer
 		uint32_t gi_offset; //GI information when using lightmapping (VCT or lightmap)
 		uint32_t mask;
 	};

@@ -134,7 +134,7 @@ struct InstanceData {
 	mat4 transform;
 	mat4 normal_transform;
 	uint flags;
-	uint instance_ofs; //instance_offset in instancing/skeleton buffer
+	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
 	uint gi_offset; //GI information when using lightmapping (VCT or lightmap)
 	uint layer_mask;
 };
@@ -286,6 +286,11 @@ layout(set = 0, binding = 14, std430) restrict readonly buffer ClusterData {
 cluster_data;
 
 layout(set = 0, binding = 15) uniform texture2D directional_shadow_atlas;
+
+layout(set = 0, binding = 16, std430) restrict readonly buffer GlobalVariableData {
+	vec4 data[];
+}
+global_variables;
 
 // decal atlas
 

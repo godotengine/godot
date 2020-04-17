@@ -378,6 +378,10 @@ void RasterizerSceneHighEndRD::ShaderData::get_param_list(List<PropertyInfo> *p_
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 
+		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+			continue;
+		}
+
 		if (E->get().texture_order >= 0) {
 			order[E->get().texture_order + 100000] = E->key();
 		} else {
@@ -390,6 +394,23 @@ void RasterizerSceneHighEndRD::ShaderData::get_param_list(List<PropertyInfo> *p_
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
 		pi.name = E->get();
 		p_param_list->push_back(pi);
+	}
+}
+
+void RasterizerSceneHighEndRD::ShaderData::get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const {
+
+	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
+
+		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		RasterizerStorage::InstanceShaderParam p;
+		p.info = ShaderLanguage::uniform_to_property_info(E->get());
+		p.info.name = E->key(); //supply name
+		p.index = E->get().instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E->get().default_value, E->get().type, E->get().hint);
+		p_param_list->push_back(p);
 	}
 }
 
@@ -828,6 +849,7 @@ void RasterizerSceneHighEndRD::_fill_instances(RenderList::Element **p_elements,
 		store_transform(Transform(e->instance->transform.basis.inverse().transposed()), id.normal_transform);
 		id.flags = 0;
 		id.mask = e->instance->layer_mask;
+		id.instance_uniforms_ofs = e->instance->instance_allocated_shader_parameters_offset >= 0 ? e->instance->instance_allocated_shader_parameters_offset : 0;
 
 		if (e->instance->base_type == RS::INSTANCE_MULTIMESH) {
 			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH;
@@ -2707,6 +2729,14 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 			uniforms.push_back(u);
 		}
 
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 16;
+			u.ids.push_back(storage->global_variables_get_storage_buffer());
+			uniforms.push_back(u);
+		}
+
 		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, SCENE_UNIFORM_SET);
 	}
 }
@@ -3083,6 +3113,8 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
+		actions.global_buffer_array_variable = "global_variables.data";
+		actions.instance_uniform_index_variable = "instances.data[instance_index].instance_uniforms_ofs";
 
 		shader.compiler.initialize(actions);
 	}

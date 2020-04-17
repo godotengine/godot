@@ -108,9 +108,18 @@ private:
 	float lod_min_hysteresis;
 	float lod_max_hysteresis;
 
+	mutable HashMap<StringName, Variant> instance_uniforms;
+	mutable HashMap<StringName, StringName> instance_uniform_property_remap;
+
 	float extra_cull_margin;
 
+	const StringName *_instance_uniform_get_remap(const StringName p_name) const;
+
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -138,6 +147,9 @@ public:
 
 	void set_extra_cull_margin(float p_margin);
 	float get_extra_cull_margin() const;
+
+	void set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value);
+	Variant get_shader_instance_uniform(const StringName &p_uniform) const;
 
 	void set_custom_aabb(AABB aabb);
 

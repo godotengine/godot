@@ -58,6 +58,11 @@ params;
 
 layout(set = 0, binding = 0) uniform sampler material_samplers[12];
 
+layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalVariableData {
+	vec4 data[];
+}
+global_variables;
+
 #ifdef USE_MATERIAL_UNIFORMS
 layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
 	/* clang-format off */

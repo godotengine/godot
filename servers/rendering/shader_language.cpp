@@ -194,6 +194,8 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"SEMICOLON",
 	"PERIOD",
 	"UNIFORM",
+	"INSTANCE",
+	"GLOBAL",
 	"VARYING",
 	"IN",
 	"OUT",
@@ -207,6 +209,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_BLACK_ALBEDO_TEXTURE",
 	"HINT_COLOR",
 	"HINT_RANGE",
+	"HINT_INSTANCE_INDEX",
 	"FILTER_NEAREST",
 	"FILTER_LINEAR",
 	"FILTER_NEAREST_MIPMAP",
@@ -300,6 +303,8 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_CF_RETURN, "return" },
 	{ TK_CF_DISCARD, "discard" },
 	{ TK_UNIFORM, "uniform" },
+	{ TK_INSTANCE, "instance" },
+	{ TK_GLOBAL, "global" },
 	{ TK_VARYING, "varying" },
 	{ TK_ARG_IN, "in" },
 	{ TK_ARG_OUT, "out" },
@@ -319,6 +324,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo" },
 	{ TK_HINT_COLOR, "hint_color" },
 	{ TK_HINT_RANGE, "hint_range" },
+	{ TK_HINT_INSTANCE_INDEX, "instance_index" },
 	{ TK_FILTER_NEAREST, "filter_nearest" },
 	{ TK_FILTER_LINEAR, "filter_linear" },
 	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap" },
@@ -864,6 +870,7 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 		case TYPE_USAMPLER3D: return "usampler3D";
 		case TYPE_SAMPLERCUBE: return "samplerCube";
 		case TYPE_STRUCT: return "struct";
+		case TYPE_MAX: return "invalid";
 	}
 
 	return "";
@@ -2678,6 +2685,8 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_VOID:
 				break;
+			case ShaderLanguage::TYPE_MAX:
+				break;
 		}
 		return value;
 	}
@@ -2774,6 +2783,8 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_STRUCT: {
 			// FIXME: Implement this.
 		} break;
+		case ShaderLanguage::TYPE_MAX:
+			break;
 	}
 	return pi;
 }
@@ -2821,6 +2832,8 @@ uint32_t ShaderLanguage::get_type_size(DataType p_type) {
 			return 4; //not really, but useful for indices
 		case TYPE_STRUCT:
 			// FIXME: Implement.
+			return 0;
+		case ShaderLanguage::TYPE_MAX:
 			return 0;
 	}
 	return 0;
@@ -5685,6 +5698,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 	int texture_uniforms = 0;
 	int uniforms = 0;
+	int instance_index = 0;
+	ShaderNode::Uniform::Scope uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
 	while (tk.type != TK_EOF) {
 
@@ -5853,6 +5868,27 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				shader->vstructs.push_back(st); // struct's order is important!
 
 			} break;
+			case TK_GLOBAL: {
+
+				tk = _get_token();
+				if (tk.type != TK_UNIFORM) {
+					_set_error("Expected 'uniform' after 'global'");
+					return ERR_PARSE_ERROR;
+				}
+				uniform_scope = ShaderNode::Uniform::SCOPE_GLOBAL;
+			};
+				[[fallthrough]];
+			case TK_INSTANCE: {
+				if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
+					tk = _get_token();
+					if (tk.type != TK_UNIFORM) {
+						_set_error("Expected 'uniform' after 'instance'");
+						return ERR_PARSE_ERROR;
+					}
+					uniform_scope = ShaderNode::Uniform::SCOPE_INSTANCE;
+				}
+			};
+				[[fallthrough]];
 			case TK_UNIFORM:
 			case TK_VARYING: {
 
@@ -5910,24 +5946,49 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 				if (uniform) {
 
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_GLOBAL) {
+						//validate global uniform
+						DataType gvtype = global_var_get_type_func(name);
+						if (gvtype == TYPE_MAX) {
+							_set_error("Global uniform '" + String(name) + "' does not exist. Create it in Project Settings.");
+							return ERR_PARSE_ERROR;
+						}
+
+						if (type != gvtype) {
+							_set_error("Global uniform '" + String(name) + "' must be of type '" + get_datatype_name(gvtype) + "'.");
+							return ERR_PARSE_ERROR;
+						}
+					}
 					ShaderNode::Uniform uniform2;
 
 					if (is_sampler_type(type)) {
+						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
+							_set_error("Uniforms with 'instance' qualifiers can't be of sampler type.");
+							return ERR_PARSE_ERROR;
+						}
 						uniform2.texture_order = texture_uniforms++;
 						uniform2.order = -1;
 						if (_validate_datatype(type) != OK) {
 							return ERR_PARSE_ERROR;
 						}
 					} else {
+						if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL && (type == TYPE_MAT2 || type == TYPE_MAT3 || type == TYPE_MAT4)) {
+							_set_error("Uniforms with 'instance' qualifiers can't be of matrix type.");
+							return ERR_PARSE_ERROR;
+						}
+
 						uniform2.texture_order = -1;
 						uniform2.order = uniforms++;
 					}
 					uniform2.type = type;
+					uniform2.scope = uniform_scope;
 					uniform2.precision = precision;
 
 					//todo parse default value
 
 					tk = _get_token();
+
+					int custom_instance_index = -1;
 
 					if (tk.type == TK_COLON) {
 						//hint
@@ -6039,7 +6100,45 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								}
 
 								if (tk.type != TK_PARENTHESIS_CLOSE) {
-									_set_error("Expected ','");
+									_set_error("Expected ')'");
+									return ERR_PARSE_ERROR;
+								}
+							} else if (tk.type == TK_HINT_INSTANCE_INDEX) {
+
+								if (custom_instance_index != -1) {
+									_set_error("Can only specify 'instance_index' once.");
+									return ERR_PARSE_ERROR;
+								}
+
+								tk = _get_token();
+								if (tk.type != TK_PARENTHESIS_OPEN) {
+									_set_error("Expected '(' after 'instance_index'");
+									return ERR_PARSE_ERROR;
+								}
+
+								tk = _get_token();
+
+								if (tk.type == TK_OP_SUB) {
+									_set_error("The instance index can't be negative.");
+									return ERR_PARSE_ERROR;
+								}
+
+								if (tk.type != TK_INT_CONSTANT) {
+									_set_error("Expected integer constant");
+									return ERR_PARSE_ERROR;
+								}
+
+								custom_instance_index = tk.constant;
+
+								if (custom_instance_index >= MAX_INSTANCE_UNIFORM_INDICES) {
+									_set_error("Allowed instance uniform indices are 0-" + itos(MAX_INSTANCE_UNIFORM_INDICES - 1));
+									return ERR_PARSE_ERROR;
+								}
+
+								tk = _get_token();
+
+								if (tk.type != TK_PARENTHESIS_CLOSE) {
+									_set_error("Expected ')'");
 									return ERR_PARSE_ERROR;
 								}
 							} else if (tk.type == TK_FILTER_LINEAR) {
@@ -6072,6 +6171,20 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						} while (tk.type == TK_COMMA);
 					}
 
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE) {
+						if (custom_instance_index >= 0) {
+							uniform2.instance_index = custom_instance_index;
+						} else {
+							uniform2.instance_index = instance_index++;
+							if (instance_index > MAX_INSTANCE_UNIFORM_INDICES) {
+								_set_error("Too many 'instance' uniforms in shader, maximum supported is " + itos(MAX_INSTANCE_UNIFORM_INDICES));
+								return ERR_PARSE_ERROR;
+							}
+						}
+					}
+
+					//reset scope for next uniform
+
 					if (tk.type == TK_OP_ASSIGN) {
 
 						Node *expr = _parse_and_reduce_expression(nullptr, Map<StringName, BuiltInInfo>());
@@ -6094,6 +6207,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					}
 
 					shader->uniforms[name] = uniform2;
+					//reset scope for next uniform
+					uniform_scope = ShaderNode::Uniform::SCOPE_LOCAL;
 
 					if (tk.type != TK_SEMICOLON) {
 						_set_error("Expected ';'");
@@ -6639,11 +6754,12 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	return String();
 }
 
-Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types) {
+Error ShaderLanguage::compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func) {
 
 	clear();
 
 	code = p_code;
+	global_var_get_type_func = p_global_variable_type_func;
 
 	nodes = nullptr;
 
@@ -6656,13 +6772,14 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
 
 	clear();
 
 	code = p_code;
 
 	nodes = nullptr;
+	global_var_get_type_func = p_global_variable_type_func;
 
 	shader = alloc_node<ShaderNode>();
 	_parse_shader(p_functions, p_render_modes, p_shader_types);

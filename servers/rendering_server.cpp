@@ -1565,6 +1565,42 @@ Array RenderingServer::_mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_su
 	return arr;
 }
 #endif
+
+ShaderLanguage::DataType RenderingServer::global_variable_type_get_shader_datatype(GlobalVariableType p_type) {
+
+	switch (p_type) {
+		case RS::GLOBAL_VAR_TYPE_BOOL: return ShaderLanguage::TYPE_BOOL;
+		case RS::GLOBAL_VAR_TYPE_BVEC2: return ShaderLanguage::TYPE_BVEC2;
+		case RS::GLOBAL_VAR_TYPE_BVEC3: return ShaderLanguage::TYPE_BVEC3;
+		case RS::GLOBAL_VAR_TYPE_BVEC4: return ShaderLanguage::TYPE_BVEC4;
+		case RS::GLOBAL_VAR_TYPE_INT: return ShaderLanguage::TYPE_INT;
+		case RS::GLOBAL_VAR_TYPE_IVEC2: return ShaderLanguage::TYPE_IVEC2;
+		case RS::GLOBAL_VAR_TYPE_IVEC3: return ShaderLanguage::TYPE_IVEC3;
+		case RS::GLOBAL_VAR_TYPE_IVEC4: return ShaderLanguage::TYPE_IVEC4;
+		case RS::GLOBAL_VAR_TYPE_RECT2I: return ShaderLanguage::TYPE_IVEC4;
+		case RS::GLOBAL_VAR_TYPE_UINT: return ShaderLanguage::TYPE_UINT;
+		case RS::GLOBAL_VAR_TYPE_UVEC2: return ShaderLanguage::TYPE_UVEC2;
+		case RS::GLOBAL_VAR_TYPE_UVEC3: return ShaderLanguage::TYPE_UVEC3;
+		case RS::GLOBAL_VAR_TYPE_UVEC4: return ShaderLanguage::TYPE_UVEC4;
+		case RS::GLOBAL_VAR_TYPE_FLOAT: return ShaderLanguage::TYPE_FLOAT;
+		case RS::GLOBAL_VAR_TYPE_VEC2: return ShaderLanguage::TYPE_VEC2;
+		case RS::GLOBAL_VAR_TYPE_VEC3: return ShaderLanguage::TYPE_VEC3;
+		case RS::GLOBAL_VAR_TYPE_VEC4: return ShaderLanguage::TYPE_VEC4;
+		case RS::GLOBAL_VAR_TYPE_COLOR: return ShaderLanguage::TYPE_VEC4;
+		case RS::GLOBAL_VAR_TYPE_RECT2: return ShaderLanguage::TYPE_VEC4;
+		case RS::GLOBAL_VAR_TYPE_MAT2: return ShaderLanguage::TYPE_MAT2;
+		case RS::GLOBAL_VAR_TYPE_MAT3: return ShaderLanguage::TYPE_MAT3;
+		case RS::GLOBAL_VAR_TYPE_MAT4: return ShaderLanguage::TYPE_MAT4;
+		case RS::GLOBAL_VAR_TYPE_TRANSFORM_2D: return ShaderLanguage::TYPE_MAT3;
+		case RS::GLOBAL_VAR_TYPE_TRANSFORM: return ShaderLanguage::TYPE_MAT4;
+		case RS::GLOBAL_VAR_TYPE_SAMPLER2D: return ShaderLanguage::TYPE_SAMPLER2D;
+		case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: return ShaderLanguage::TYPE_SAMPLER2DARRAY;
+		case RS::GLOBAL_VAR_TYPE_SAMPLER3D: return ShaderLanguage::TYPE_SAMPLER3D;
+		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: return ShaderLanguage::TYPE_SAMPLERCUBE;
+		default: return ShaderLanguage::TYPE_MAX; //invalid or not found
+	}
+}
+
 void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_sync"), &RenderingServer::sync);
@@ -1921,6 +1957,13 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_occluder_polygon_set_shape_as_lines", "occluder_polygon", "shape"), &RenderingServer::canvas_occluder_polygon_set_shape_as_lines);
 	ClassDB::bind_method(D_METHOD("canvas_occluder_polygon_set_cull_mode", "occluder_polygon", "mode"), &RenderingServer::canvas_occluder_polygon_set_cull_mode);
 
+	ClassDB::bind_method(D_METHOD("global_variable_add", "name", "type", "default_value"), &RenderingServer::global_variable_add);
+	ClassDB::bind_method(D_METHOD("global_variable_remove", "name"), &RenderingServer::global_variable_remove);
+	ClassDB::bind_method(D_METHOD("global_variable_get_list"), &RenderingServer::global_variable_get_list);
+	ClassDB::bind_method(D_METHOD("global_variable_set", "name", "value"), &RenderingServer::global_variable_set);
+	ClassDB::bind_method(D_METHOD("global_variable_get", "name"), &RenderingServer::global_variable_get);
+	ClassDB::bind_method(D_METHOD("global_variable_get_type", "name"), &RenderingServer::global_variable_get_type);
+
 	ClassDB::bind_method(D_METHOD("black_bars_set_margins", "left", "top", "right", "bottom"), &RenderingServer::black_bars_set_margins);
 	ClassDB::bind_method(D_METHOD("black_bars_set_images", "left", "top", "right", "bottom"), &RenderingServer::black_bars_set_images);
 
@@ -2206,6 +2249,36 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE);
 	BIND_ENUM_CONSTANT(CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE);
 
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BOOL);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC2);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC3);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_BVEC4);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_INT);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_IVEC2);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_IVEC3);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_IVEC4);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_RECT2I);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UINT);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UVEC2);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UVEC3);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_UVEC4);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_FLOAT);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_VEC2);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_VEC3);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_VEC4);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_COLOR);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_RECT2);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAT2);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAT3);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAT4);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_TRANSFORM_2D);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_TRANSFORM);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLER2D);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLER2DARRAY);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLER3D);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_SAMPLERCUBE);
+	BIND_ENUM_CONSTANT(GLOBAL_VAR_TYPE_MAX);
+
 	BIND_ENUM_CONSTANT(INFO_OBJECTS_IN_FRAME);
 	BIND_ENUM_CONSTANT(INFO_VERTICES_IN_FRAME);
 	BIND_ENUM_CONSTANT(INFO_MATERIAL_CHANGES_IN_FRAME);
@@ -2370,6 +2443,8 @@ RenderingServer::RenderingServer() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_scale", PropertyInfo(Variant::FLOAT, "rendering/quality/subsurface_scattering/subsurface_scattering_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
 	GLOBAL_DEF("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", 0.01);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", PropertyInfo(Variant::FLOAT, "rendering/quality/subsurface_scattering/subsurface_scattering_depth_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001"));
+
+	GLOBAL_DEF("rendering/high_end/global_shader_variables_buffer_size", 65536);
 }
 
 RenderingServer::~RenderingServer() {
