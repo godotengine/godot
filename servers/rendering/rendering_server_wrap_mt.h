@@ -532,6 +532,11 @@ public:
 	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
 
+	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
+	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
+	FUNC2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
+	FUNC2SC(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+
 	/* CANVAS (2D) */
 
 	FUNCRID(canvas)
@@ -624,6 +629,18 @@ public:
 	FUNC2(canvas_occluder_polygon_set_shape_as_lines, RID, const Vector<Vector2> &)
 
 	FUNC2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
+
+	/* GLOBAL VARIABLES */
+
+	FUNC3(global_variable_add, const StringName &, GlobalVariableType, const Variant &)
+	FUNC1(global_variable_remove, const StringName &)
+	FUNC0RC(Vector<StringName>, global_variable_get_list)
+	FUNC2(global_variable_set, const StringName &, const Variant &)
+	FUNC2(global_variable_set_override, const StringName &, const Variant &)
+	FUNC1RC(GlobalVariableType, global_variable_get_type, const StringName &)
+	FUNC1RC(Variant, global_variable_get, const StringName &)
+	FUNC1(global_variables_load_settings, bool)
+	FUNC0(global_variables_clear)
 
 	/* BLACK BARS */
 

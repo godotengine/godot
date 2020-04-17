@@ -207,6 +207,8 @@ public:
 	StringName window_input;
 
 	StringName theme_changed;
+	StringName shader_overrides_group;
+	StringName shader_overrides_group_active;
 
 	enum {
 		MAX_MATERIALS = 32

@@ -32,6 +32,8 @@
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "rasterizer_storage_rd.h"
+#include "servers/rendering_server.h"
 
 #define SL ShaderLanguage
 
@@ -91,6 +93,9 @@ static int _get_datatype_size(SL::DataType p_type) {
 		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
 		case SL::TYPE_STRUCT: return 0;
+		case SL::TYPE_MAX: {
+			ERR_FAIL_V(0);
+		};
 	}
 
 	ERR_FAIL_V(0);
@@ -131,6 +136,9 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 		case SL::TYPE_USAMPLER3D: return 16;
 		case SL::TYPE_SAMPLERCUBE: return 16;
 		case SL::TYPE_STRUCT: return 0;
+		case SL::TYPE_MAX: {
+			ERR_FAIL_V(0);
+		}
 	}
 
 	ERR_FAIL_V(0);
@@ -341,6 +349,71 @@ void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const S
 	}
 }
 
+static String _get_global_variable_from_type_and_index(const String &p_buffer, const String &p_index, ShaderLanguage::DataType p_type) {
+	switch (p_type) {
+		case ShaderLanguage::TYPE_BOOL: {
+			return "(" + p_buffer + "[" + p_index + "].x != 0.0)";
+		}
+		case ShaderLanguage::TYPE_BVEC2: {
+			return "(" + p_buffer + "[" + p_index + "].xy != vec2(0.0))";
+		}
+		case ShaderLanguage::TYPE_BVEC3: {
+			return "(" + p_buffer + "[" + p_index + "].xyz != vec3(0.0))";
+		}
+		case ShaderLanguage::TYPE_BVEC4: {
+			return "(" + p_buffer + "[" + p_index + "].xyzw != vec4(0.0))";
+		}
+		case ShaderLanguage::TYPE_INT: {
+			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].x)";
+		}
+		case ShaderLanguage::TYPE_IVEC2: {
+			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xy)";
+		}
+		case ShaderLanguage::TYPE_IVEC3: {
+			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xyz)";
+		}
+		case ShaderLanguage::TYPE_IVEC4: {
+			return "floatBitsToInt(" + p_buffer + "[" + p_index + "].xyzw)";
+		}
+		case ShaderLanguage::TYPE_UINT: {
+			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].x)";
+		}
+		case ShaderLanguage::TYPE_UVEC2: {
+			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xy)";
+		}
+		case ShaderLanguage::TYPE_UVEC3: {
+			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xyz)";
+		}
+		case ShaderLanguage::TYPE_UVEC4: {
+			return "floatBitsToUInt(" + p_buffer + "[" + p_index + "].xyzw)";
+		}
+		case ShaderLanguage::TYPE_FLOAT: {
+			return "(" + p_buffer + "[" + p_index + "].x)";
+		}
+		case ShaderLanguage::TYPE_VEC2: {
+			return "(" + p_buffer + "[" + p_index + "].xy)";
+		}
+		case ShaderLanguage::TYPE_VEC3: {
+			return "(" + p_buffer + "[" + p_index + "].xyz)";
+		}
+		case ShaderLanguage::TYPE_VEC4: {
+			return "(" + p_buffer + "[" + p_index + "].xyzw)";
+		}
+		case ShaderLanguage::TYPE_MAT2: {
+			return "mat2(" + p_buffer + "[" + p_index + "].xy," + p_buffer + "[" + p_index + "+1].xy)";
+		}
+		case ShaderLanguage::TYPE_MAT3: {
+			return "mat3(" + p_buffer + "[" + p_index + "].xyz," + p_buffer + "[" + p_index + "+1].xyz," + p_buffer + "[" + p_index + "+2].xyz)";
+		}
+		case ShaderLanguage::TYPE_MAT4: {
+			return "mat4(" + p_buffer + "[" + p_index + "].xyzw," + p_buffer + "[" + p_index + "+1].xyzw," + p_buffer + "[" + p_index + "+2].xyzw," + p_buffer + "[" + p_index + "+3].xyzw)";
+		}
+		default: {
+			ERR_FAIL_V("void");
+		}
+	}
+}
+
 String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning) {
 
 	String code;
@@ -408,10 +481,17 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			int max_uniforms = 0;
 
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = pnode->uniforms.front(); E; E = E->next()) {
-				if (SL::is_sampler_type(E->get().type))
+
+				if (SL::is_sampler_type(E->get().type)) {
 					max_texture_uniforms++;
-				else
+				} else {
+
+					if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
+						continue; //instances are indexed directly, dont need index uniforms
+					}
+
 					max_uniforms++;
+				}
 			}
 
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
@@ -428,12 +508,25 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 				String ucode;
 
+				if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
+					//insert, but don't generate any code.
+					p_actions.uniforms->insert(E->key(), E->get());
+					continue; //instances are indexed directly, dont need index uniforms
+				}
 				if (SL::is_sampler_type(E->get().type)) {
 					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + E->get().texture_order) + ") uniform ";
 				}
 
-				ucode += _prestr(E->get().precision);
-				ucode += _typestr(E->get().type);
+				bool is_buffer_global = !SL::is_sampler_type(E->get().type) && E->get().scope == SL::ShaderNode::Uniform::SCOPE_GLOBAL;
+
+				if (is_buffer_global) {
+					//this is an integer to index the global table
+					ucode += _typestr(ShaderLanguage::TYPE_UINT);
+				} else {
+					ucode += _prestr(E->get().precision);
+					ucode += _typestr(E->get().type);
+				}
+
 				ucode += " " + _mkid(E->key());
 				ucode += ";\n";
 				if (SL::is_sampler_type(E->get().type)) {
@@ -446,6 +539,10 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					texture.type = E->get().type;
 					texture.filter = E->get().filter;
 					texture.repeat = E->get().repeat;
+					texture.global = E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL;
+					if (texture.global) {
+						r_gen_code.uses_global_textures = true;
+					}
 
 					r_gen_code.texture_uniforms.write[E->get().texture_order] = texture;
 				} else {
@@ -455,8 +552,14 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 						uses_uniforms = true;
 					}
 					uniform_defines.write[E->get().order] = ucode;
-					uniform_sizes.write[E->get().order] = _get_datatype_size(E->get().type);
-					uniform_alignments.write[E->get().order] = _get_datatype_alignment(E->get().type);
+					if (is_buffer_global) {
+						//globals are indices into the global table
+						uniform_sizes.write[E->get().order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
+						uniform_alignments.write[E->get().order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
+					} else {
+						uniform_sizes.write[E->get().order] = _get_datatype_size(E->get().type);
+						uniform_alignments.write[E->get().order] = _get_datatype_alignment(E->get().type);
+					}
 				}
 
 				p_actions.uniforms->insert(E->key(), E->get());
@@ -690,9 +793,29 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			if (p_default_actions.renames.has(vnode->name))
 				code = p_default_actions.renames[vnode->name];
 			else {
-				code = _mkid(vnode->name);
-				if (actions.base_uniform_string != String() && shader->uniforms.has(vnode->name) && shader->uniforms[vnode->name].texture_order < 0) {
-					code = actions.base_uniform_string + code;
+				if (shader->uniforms.has(vnode->name)) {
+					//its a uniform!
+					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
+					if (u.texture_order >= 0) {
+						code = _mkid(vnode->name); //texture, use as is
+					} else {
+						//a scalar or vector
+						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
+							code = actions.base_uniform_string + _mkid(vnode->name); //texture, use as is
+							//global variable, this means the code points to an index to the global table
+							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+							//instance variable, index it as such
+							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
+							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
+						} else {
+							//regular uniform, index from UBO
+							code = actions.base_uniform_string + _mkid(vnode->name);
+						}
+					}
+
+				} else {
+					code = _mkid(vnode->name); //its something else (local var most likely) use as is
 				}
 			}
 
@@ -1037,9 +1160,14 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 	return code;
 }
 
+ShaderLanguage::DataType ShaderCompilerRD::_get_variable_type(const StringName &p_type) {
+	RS::GlobalVariableType gvt = ((RasterizerStorageRD *)(RasterizerStorage::base_singleton))->global_variable_get_type_internal(p_type);
+	return RS::global_variable_type_get_shader_datatype(gvt);
+}
+
 Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 
-	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderTypes::get_singleton()->get_types());
+	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderTypes::get_singleton()->get_types(), _get_variable_type);
 
 	if (err != OK) {
 
@@ -1060,6 +1188,7 @@ Error ShaderCompilerRD::compile(RS::ShaderMode p_mode, const String &p_code, Ide
 	r_gen_code.light = String();
 	r_gen_code.uses_fragment_time = false;
 	r_gen_code.uses_vertex_time = false;
+	r_gen_code.uses_global_textures = false;
 
 	used_name_defines.clear();
 	used_rmode_defines.clear();
