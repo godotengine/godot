@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
 	</description>
 	<tutorials>
 	</tutorials>
