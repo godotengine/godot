@@ -70,7 +70,6 @@ private:
 	StringName _get_base_type() const;
 
 	MethodInfo method_cache;
-	void _update_method_cache();
 
 	void _set_argument_cache(const Dictionary &p_cache);
 	Dictionary _get_argument_cache() const;
@@ -125,6 +124,8 @@ public:
 
 	void set_rpc_call_mode(RPCCallMode p_mode);
 	RPCCallMode get_rpc_call_mode() const;
+
+	void _update_method_cache();
 
 	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 
