@@ -61,6 +61,7 @@ name is available.
     David Sichma (DavidSichma)
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
+    Dominik Jasiński (dreamsComeTrue)
     DualMatrix
     Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
@@ -104,6 +105,7 @@ name is available.
     Kelly Thomas (KellyThomas)
     Kostadin Damyanov (Max-Might)
     K. S. Ernest (iFire) Lee (fire)
+    lawnjelly
     Leon Krause (eska014)
     Lucien Menassol (Kanabenki)
     m4nu3lf
@@ -118,6 +120,7 @@ name is available.
     Martin Sjursen (binbitten)
     marynate
     Masoud BH (masoudbh3)
+    Mateo Kuruk Miccino (kuruk-mm)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
     merumelu
@@ -157,6 +160,7 @@ name is available.
     Shiqing (kawa-yoiko)
     Simon Wenner (swenner)
     Swarnim Arun (minraws)
+    Thakee Nathees (ThakeeNathees)
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo Schwarzer (timoschwarzer)
