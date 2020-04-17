@@ -106,13 +106,13 @@ private:
 	SpinBox *cursor_metric_edit;
 
 	Vector<Metric> frame_metrics;
+	int total_metrics;
 	int last_metric;
 
 	int max_functions;
 
 	bool updating_frame;
 
-	//int cursor_metric;
 	int hover_metric;
 
 	float graph_height;
@@ -139,13 +139,13 @@ private:
 	void _graph_tex_draw();
 	void _graph_tex_input(const Ref<InputEvent> &p_ev);
 
-	int _get_cursor_index() const;
-
 	Color _get_color_from_signature(const StringName &p_signature) const;
 
 	void _cursor_metric_changed(double);
 
 	void _combo_changed(int);
+
+	Metric _get_frame_metric(int index);
 
 protected:
 	void _notification(int p_what);
