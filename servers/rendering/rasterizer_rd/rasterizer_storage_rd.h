@@ -52,6 +52,8 @@ public:
 		virtual void set_code(const String &p_Code) = 0;
 		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
 		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
+
+		virtual void get_instance_param_list(List<InstanceShaderParam> *p_param_list) const = 0;
 		virtual bool is_param_texture(const StringName &p_param) const = 0;
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
@@ -69,7 +71,15 @@ public:
 		virtual void set_render_priority(int p_priority) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;
 		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
-		virtual ~MaterialData() {}
+		virtual ~MaterialData();
+
+	private:
+		friend class RasterizerStorageRD;
+		RID self;
+		List<RID>::Element *global_buffer_E = nullptr;
+		List<RID>::Element *global_texture_E = nullptr;
+		uint64_t global_textures_pass = 0;
+		Map<StringName, uint64_t> used_global_textures;
 	};
 	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
 
@@ -555,6 +565,73 @@ private:
 	void _update_render_target(RenderTarget *rt);
 	void _create_render_target_backbuffer(RenderTarget *rt);
 
+	/* GLOBAL SHADER VARIABLES */
+
+	struct GlobalVariables {
+
+		enum {
+			BUFFER_DIRTY_REGION_SIZE = 1024
+		};
+		struct Variable {
+			Set<RID> texture_materials; // materials using this
+
+			RS::GlobalVariableType type;
+			Variant value;
+			Variant override;
+			int32_t buffer_index; //for vectors
+			int32_t buffer_elements; //for vectors
+		};
+
+		HashMap<StringName, Variable> variables;
+
+		struct Value {
+			float x;
+			float y;
+			float z;
+			float w;
+		};
+
+		struct ValueInt {
+			int32_t x;
+			int32_t y;
+			int32_t z;
+			int32_t w;
+		};
+
+		struct ValueUInt {
+			uint32_t x;
+			uint32_t y;
+			uint32_t z;
+			uint32_t w;
+		};
+
+		struct ValueUsage {
+			uint32_t elements = 0;
+		};
+
+		List<RID> materials_using_buffer;
+		List<RID> materials_using_texture;
+
+		RID buffer;
+		Value *buffer_values;
+		ValueUsage *buffer_usage;
+		bool *buffer_dirty_regions;
+		uint32_t buffer_dirty_region_count = 0;
+
+		uint32_t buffer_size;
+
+		bool must_update_texture_materials = false;
+		bool must_update_buffer_materials = false;
+
+		HashMap<RID, int32_t> instance_buffer_pos;
+
+	} global_variables;
+
+	int32_t _global_variable_allocate(uint32_t p_elements);
+	void _global_variable_store_in_buffer(int32_t p_index, RS::GlobalVariableType p_type, const Variant &p_value);
+	void _global_variable_mark_buffer_dirty(int32_t p_index, int32_t p_elements);
+
+	void _update_global_variables();
 	/* EFFECTS */
 
 	RasterizerEffectsRD effects;
@@ -674,6 +751,8 @@ public:
 
 	bool material_is_animated(RID p_material);
 	bool material_casts_shadows(RID p_material);
+
+	void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters);
 
 	void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance);
 	void material_force_update_textures(RID p_material, ShaderType p_shader_type);
@@ -1246,6 +1325,27 @@ public:
 
 	virtual bool particles_is_inactive(RID p_particles) const { return false; }
 
+	/* GLOBAL VARIABLES API */
+
+	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value);
+	virtual void global_variable_remove(const StringName &p_name);
+	virtual Vector<StringName> global_variable_get_list() const;
+
+	virtual void global_variable_set(const StringName &p_name, const Variant &p_value);
+	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value);
+	virtual Variant global_variable_get(const StringName &p_name) const;
+	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const;
+	RS::GlobalVariableType global_variable_get_type_internal(const StringName &p_name) const;
+
+	virtual void global_variables_load_settings(bool p_load_textures = true);
+	virtual void global_variables_clear();
+
+	virtual int32_t global_variables_instance_allocate(RID p_instance);
+	virtual void global_variables_instance_free(RID p_instance);
+	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value);
+
+	RID global_variables_get_storage_buffer() const;
+
 	/* RENDER TARGET API */
 
 	RID render_target_create();
@@ -1295,7 +1395,7 @@ public:
 	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
 	virtual String get_captured_timestamp_name(uint32_t p_index) const;
 
-	static RasterizerStorage *base_singleton;
+	static RasterizerStorageRD *base_singleton;
 
 	RasterizerEffectsRD *get_effects();
 

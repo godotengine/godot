@@ -2135,6 +2135,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	tab_container->add_child(autoload_settings);
 	autoload_settings->connect("autoload_changed", callable_mp(this, &ProjectSettingsEditor::_settings_changed));
 
+	shaders_global_variables_editor = memnew(ShaderGlobalsEditor);
+	shaders_global_variables_editor->set_name(TTR("Shader Globals"));
+	tab_container->add_child(shaders_global_variables_editor);
+	shaders_global_variables_editor->connect("globals_changed", callable_mp(this, &ProjectSettingsEditor::_settings_changed));
+
 	plugin_settings = memnew(EditorPluginSettings);
 	plugin_settings->set_name(TTR("Plugins"));
 	tab_container->add_child(plugin_settings);

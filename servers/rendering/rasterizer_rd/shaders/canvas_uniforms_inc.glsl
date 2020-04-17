@@ -132,6 +132,11 @@ layout(set = 2, binding = 6) uniform sampler shadow_sampler;
 
 #endif
 
+layout(set = 2, binding = 7, std430) restrict readonly buffer GlobalVariableData {
+	vec4 data[];
+}
+global_variables;
+
 /* SET3: Render Target Data */
 
 #ifdef SCREEN_TEXTURE_USED

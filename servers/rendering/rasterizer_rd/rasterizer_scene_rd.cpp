@@ -926,6 +926,10 @@ void RasterizerSceneRD::SkyShaderData::get_param_list(List<PropertyInfo> *p_para
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
 
+		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL || E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
 		if (E->get().texture_order >= 0) {
 			order[E->get().texture_order + 100000] = E->key();
 		} else {
@@ -938,6 +942,23 @@ void RasterizerSceneRD::SkyShaderData::get_param_list(List<PropertyInfo> *p_para
 		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
 		pi.name = E->get();
 		p_param_list->push_back(pi);
+	}
+}
+
+void RasterizerSceneRD::SkyShaderData::get_instance_param_list(List<RasterizerStorage::InstanceShaderParam> *p_param_list) const {
+
+	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
+
+		if (E->get().scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		RasterizerStorage::InstanceShaderParam p;
+		p.info = ShaderLanguage::uniform_to_property_info(E->get());
+		p.info.name = E->key(); //supply name
+		p.index = E->get().instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E->get().default_value, E->get().type, E->get().hint);
+		p_param_list->push_back(p);
 	}
 }
 
@@ -4217,6 +4238,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
+		actions.global_buffer_array_variable = "global_variables.data";
 
 		sky_shader.compiler.initialize(actions);
 	}
@@ -4251,6 +4273,14 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 			ids_ptr[9] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 			ids_ptr[10] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 			ids_ptr[11] = storage->sampler_rd_get_default(RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			uniforms.push_back(u);
+		}
+
+		{
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 1;
+			u.ids.push_back(storage->global_variables_get_storage_buffer());
 			uniforms.push_back(u);
 		}
 

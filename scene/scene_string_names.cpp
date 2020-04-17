@@ -202,4 +202,7 @@ SceneStringNames::SceneStringNames() {
 	parameters_base_path = "parameters/";
 
 	tracks_changed = "tracks_changed";
+
+	shader_overrides_group = StaticCString::create("_shader_overrides_group_");
+	shader_overrides_group_active = StaticCString::create("_shader_overrides_group_active_");
 }

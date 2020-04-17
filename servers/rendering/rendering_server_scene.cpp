@@ -968,6 +968,67 @@ void RenderingServerScene::instance_geometry_set_draw_range(RID p_instance, floa
 void RenderingServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) {
 }
 
+void RenderingServerScene::instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value) {
+
+	Instance *instance = instance_owner.getornull(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter>::Element *E = instance->instance_shader_parameters.find(p_parameter);
+
+	if (!E) {
+		RasterizerScene::InstanceBase::InstanceShaderParameter isp;
+		isp.index = -1;
+		isp.info = PropertyInfo();
+		isp.value = p_value;
+		instance->instance_shader_parameters[p_parameter] = isp;
+	} else {
+		E->get().value = p_value;
+		if (E->get().index >= 0 && instance->instance_allocated_shader_parameters) {
+			//update directly
+			RSG::storage->global_variables_instance_update(p_instance, E->get().index, p_value);
+		}
+	}
+}
+
+Variant RenderingServerScene::instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const {
+
+	const Instance *instance = const_cast<RenderingServerScene *>(this)->instance_owner.getornull(p_instance);
+	ERR_FAIL_COND_V(!instance, Variant());
+
+	if (instance->instance_shader_parameters.has(p_parameter)) {
+		return instance->instance_shader_parameters[p_parameter].value;
+	}
+	return Variant();
+}
+
+Variant RenderingServerScene::instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const {
+
+	const Instance *instance = const_cast<RenderingServerScene *>(this)->instance_owner.getornull(p_instance);
+	ERR_FAIL_COND_V(!instance, Variant());
+
+	if (instance->instance_shader_parameters.has(p_parameter)) {
+		return instance->instance_shader_parameters[p_parameter].default_value;
+	}
+	return Variant();
+}
+
+void RenderingServerScene::instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const {
+	const Instance *instance = const_cast<RenderingServerScene *>(this)->instance_owner.getornull(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	const_cast<RenderingServerScene *>(this)->update_dirty_instances();
+
+	Vector<StringName> names;
+	for (Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter>::Element *E = instance->instance_shader_parameters.front(); E; E = E->next()) {
+		names.push_back(E->key());
+	}
+	names.sort_custom<StringName::AlphCompare>();
+	for (int i = 0; i < names.size(); i++) {
+		PropertyInfo pinfo = instance->instance_shader_parameters[names[i]].info;
+		p_parameters->push_back(pinfo);
+	}
+}
+
 void RenderingServerScene::_update_instance(Instance *p_instance) {
 
 	p_instance->version++;
@@ -2761,6 +2822,35 @@ void RenderingServerScene::render_probes() {
 	}
 }
 
+void RenderingServerScene::_update_instance_shader_parameters_from_material(Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material) {
+
+	List<RasterizerStorage::InstanceShaderParam> plist;
+	RSG::storage->material_get_instance_shader_parameters(p_material, &plist);
+	for (List<RasterizerStorage::InstanceShaderParam>::Element *E = plist.front(); E; E = E->next()) {
+		StringName name = E->get().info.name;
+		if (isparams.has(name)) {
+			if (isparams[name].info.type != E->get().info.type) {
+				WARN_PRINT("More than one material in instance export the same instance shader uniform '" + E->get().info.name + "', but they do it with different data types. Only the first one (in order) will display correctly.");
+			}
+			if (isparams[name].index != E->get().index) {
+				WARN_PRINT("More than one material in instance export the same instance shader uniform '" + E->get().info.name + "', but they do it with different indices. Only the first one (in order) will display correctly.");
+			}
+			continue; //first one found always has priority
+		}
+
+		RasterizerScene::InstanceBase::InstanceShaderParameter isp;
+		isp.index = E->get().index;
+		isp.info = E->get().info;
+		isp.default_value = E->get().default_value;
+		if (existing_isparams.has(name)) {
+			isp.value = existing_isparams[name].value;
+		} else {
+			isp.value = E->get().default_value;
+		}
+		isparams[name] = isp;
+	}
+}
+
 void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 
 	if (p_instance->update_aabb) {
@@ -2800,12 +2890,18 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 
 			bool can_cast_shadows = true;
 			bool is_animated = false;
+			Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> isparams;
 
 			if (p_instance->cast_shadows == RS::SHADOW_CASTING_SETTING_OFF) {
 				can_cast_shadows = false;
-			} else if (p_instance->material_override.is_valid()) {
-				can_cast_shadows = RSG::storage->material_casts_shadows(p_instance->material_override);
+			}
+
+			if (p_instance->material_override.is_valid()) {
+				if (!RSG::storage->material_casts_shadows(p_instance->material_override)) {
+					can_cast_shadows = false;
+				}
 				is_animated = RSG::storage->material_is_animated(p_instance->material_override);
+				_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, p_instance->material_override);
 			} else {
 
 				if (p_instance->base_type == RS::INSTANCE_MESH) {
@@ -2829,6 +2925,8 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 								if (RSG::storage->material_is_animated(mat)) {
 									is_animated = true;
 								}
+
+								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 
 								RSG::storage->material_update_dependency(mat, p_instance);
 							}
@@ -2862,6 +2960,8 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 									is_animated = true;
 								}
 
+								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
+
 								RSG::storage->material_update_dependency(mat, p_instance);
 							}
 						}
@@ -2876,10 +2976,16 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 
 					RID mat = RSG::storage->immediate_get_material(p_instance->base);
 
-					can_cast_shadows = !mat.is_valid() || RSG::storage->material_casts_shadows(mat);
+					if (!(!mat.is_valid() || RSG::storage->material_casts_shadows(mat))) {
+						can_cast_shadows = false;
+					}
 
 					if (mat.is_valid() && RSG::storage->material_is_animated(mat)) {
 						is_animated = true;
+					}
+
+					if (mat.is_valid()) {
+						_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
 					}
 
 					if (mat.is_valid()) {
@@ -2915,6 +3021,8 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 									is_animated = true;
 								}
 
+								_update_instance_shader_parameters_from_material(isparams, p_instance->instance_shader_parameters, mat);
+
 								RSG::storage->material_update_dependency(mat, p_instance);
 							}
 						}
@@ -2937,6 +3045,22 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 			}
 
 			geom->material_is_animated = is_animated;
+			p_instance->instance_shader_parameters = isparams;
+
+			if (p_instance->instance_allocated_shader_parameters != (p_instance->instance_shader_parameters.size() > 0)) {
+				p_instance->instance_allocated_shader_parameters = (p_instance->instance_shader_parameters.size() > 0);
+				if (p_instance->instance_allocated_shader_parameters) {
+					p_instance->instance_allocated_shader_parameters_offset = RSG::storage->global_variables_instance_allocate(p_instance->self);
+					for (Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter>::Element *E = p_instance->instance_shader_parameters.front(); E; E = E->next()) {
+						if (E->get().value.get_type() != Variant::NIL) {
+							RSG::storage->global_variables_instance_update(p_instance->self, E->get().index, E->get().value);
+						}
+					}
+				} else {
+					RSG::storage->global_variables_instance_free(p_instance->self);
+					p_instance->instance_allocated_shader_parameters_offset = -1;
+				}
+			}
 		}
 
 		if (p_instance->skeleton.is_valid()) {
@@ -2998,6 +3122,10 @@ bool RenderingServerScene::free(RID p_rid) {
 		instance_geometry_set_material_override(p_rid, RID());
 		instance_attach_skeleton(p_rid, RID());
 
+		if (instance->instance_allocated_shader_parameters) {
+			//free the used shader parameters
+			RSG::storage->global_variables_instance_free(instance->self);
+		}
 		update_dirty_instances(); //in case something changed this
 
 		instance_owner.free(p_rid);

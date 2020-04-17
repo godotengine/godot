@@ -193,6 +193,12 @@ void ShaderTextEditor::_check_shader_mode() {
 	}
 }
 
+static ShaderLanguage::DataType _get_global_variable_type(const StringName &p_variable) {
+
+	RS::GlobalVariableType gvt = RS::get_singleton()->global_variable_get_type(p_variable);
+	return RS::global_variable_type_get_shader_datatype(gvt);
+}
+
 void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) {
 
 	_check_shader_mode();
@@ -200,7 +206,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 	ShaderLanguage sl;
 	String calltip;
 
-	sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
+	sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type, r_options, calltip);
 
 	get_text_edit()->set_code_hint(calltip);
 }
@@ -215,7 +221,7 @@ void ShaderTextEditor::_validate_script() {
 
 	ShaderLanguage sl;
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types());
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), _get_global_variable_type);
 
 	if (err != OK) {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();

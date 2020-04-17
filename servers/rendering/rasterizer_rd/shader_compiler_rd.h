@@ -57,6 +57,7 @@ public:
 			ShaderLanguage::ShaderNode::Uniform::Hint hint;
 			ShaderLanguage::TextureFilter filter;
 			ShaderLanguage::TextureRepeat repeat;
+			bool global;
 		};
 
 		Vector<Texture> texture_uniforms;
@@ -70,6 +71,7 @@ public:
 		String fragment;
 		String light;
 
+		bool uses_global_textures;
 		bool uses_fragment_time;
 		bool uses_vertex_time;
 	};
@@ -86,6 +88,8 @@ public:
 		int base_texture_binding_index = 0;
 		int texture_layout_set = 0;
 		String base_uniform_string;
+		String global_buffer_array_variable;
+		String instance_uniform_index_variable;
 		uint32_t base_varying_index = 0;
 	};
 
@@ -112,6 +116,8 @@ private:
 	Set<StringName> internal_functions;
 
 	DefaultIdentifierActions actions;
+
+	static ShaderLanguage::DataType _get_variable_type(const StringName &p_type);
 
 public:
 	Error compile(RS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);

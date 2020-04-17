@@ -167,6 +167,17 @@ public:
 		AABB aabb;
 		AABB transformed_aabb;
 
+		struct InstanceShaderParameter {
+			int32_t index = -1;
+			Variant value;
+			Variant default_value;
+			PropertyInfo info;
+		};
+
+		Map<StringName, InstanceShaderParameter> instance_shader_parameters;
+		bool instance_allocated_shader_parameters = false;
+		int32_t instance_allocated_shader_parameters_offset = -1;
+
 		virtual void dependency_deleted(RID p_dependency) = 0;
 		virtual void dependency_changed(bool p_aabb, bool p_dependencies) = 0;
 
@@ -356,6 +367,14 @@ public:
 
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
+
+	struct InstanceShaderParam {
+		PropertyInfo info;
+		int index;
+		Variant default_value;
+	};
+
+	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) = 0;
 
 	virtual void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) = 0;
 
@@ -634,6 +653,24 @@ public:
 
 	virtual int particles_get_draw_passes(RID p_particles) const = 0;
 	virtual RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const = 0;
+
+	/* GLOBAL VARIABLES */
+
+	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) = 0;
+	virtual void global_variable_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_variable_get_list() const = 0;
+
+	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
+	virtual Variant global_variable_get(const StringName &p_name) const = 0;
+	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
+
+	virtual void global_variables_load_settings(bool p_load_textures = true) = 0;
+	virtual void global_variables_clear() = 0;
+
+	virtual int32_t global_variables_instance_allocate(RID p_instance) = 0;
+	virtual void global_variables_instance_free(RID p_instance) = 0;
+	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) = 0;
 
 	/* RENDER TARGET */
 

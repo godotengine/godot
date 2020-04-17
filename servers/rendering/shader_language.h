@@ -143,6 +143,8 @@ public:
 		TK_SEMICOLON,
 		TK_PERIOD,
 		TK_UNIFORM,
+		TK_INSTANCE,
+		TK_GLOBAL,
 		TK_VARYING,
 		TK_ARG_IN,
 		TK_ARG_OUT,
@@ -162,6 +164,7 @@ public:
 		TK_HINT_BLACK_ALBEDO_TEXTURE,
 		TK_HINT_COLOR,
 		TK_HINT_RANGE,
+		TK_HINT_INSTANCE_INDEX,
 		TK_FILTER_NEAREST,
 		TK_FILTER_LINEAR,
 		TK_FILTER_NEAREST_MIPMAP,
@@ -216,6 +219,7 @@ public:
 		TYPE_USAMPLER3D,
 		TYPE_SAMPLERCUBE,
 		TYPE_STRUCT,
+		TYPE_MAX
 	};
 
 	enum DataPrecision {
@@ -315,6 +319,10 @@ public:
 		REPEAT_DISABLE,
 		REPEAT_ENABLE,
 		REPEAT_DEFAULT,
+	};
+
+	enum {
+		MAX_INSTANCE_UNIFORM_INDICES = 16
 	};
 
 	struct Node {
@@ -650,15 +658,23 @@ public:
 				HINT_MAX
 			};
 
+			enum Scope {
+				SCOPE_LOCAL,
+				SCOPE_INSTANCE,
+				SCOPE_GLOBAL,
+			};
+
 			int order;
 			int texture_order;
 			DataType type;
 			DataPrecision precision;
 			Vector<ConstantNode::Value> default_value;
+			Scope scope;
 			Hint hint;
 			TextureFilter filter;
 			TextureRepeat repeat;
 			float hint_range[3];
+			int instance_index;
 
 			Uniform() :
 					order(0),
@@ -667,7 +683,8 @@ public:
 					precision(PRECISION_DEFAULT),
 					hint(HINT_NONE),
 					filter(FILTER_DEFAULT),
-					repeat(REPEAT_DEFAULT) {
+					repeat(REPEAT_DEFAULT),
+					instance_index(0) {
 				hint_range[0] = 0.0f;
 				hint_range[1] = 1.0f;
 				hint_range[2] = 0.001f;
@@ -764,6 +781,8 @@ public:
 	};
 	static bool has_builtin(const Map<StringName, ShaderLanguage::FunctionInfo> &p_functions, const StringName &p_name);
 
+	typedef DataType (*GlobalVariableGetTypeFunc)(const StringName &p_name);
+
 private:
 	struct KeyWord {
 		TokenType token;
@@ -771,6 +790,8 @@ private:
 	};
 
 	static const KeyWord keyword_list[];
+
+	GlobalVariableGetTypeFunc global_var_get_type_func;
 
 	bool error_set;
 	String error_str;
@@ -884,8 +905,8 @@ public:
 	void clear();
 
 	static String get_shader_type(const String &p_code);
-	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
+	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, GlobalVariableGetTypeFunc p_global_variable_type_func, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();
