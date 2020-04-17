@@ -866,8 +866,8 @@ public:
 	float environment_get_bg_energy(RID p_env) const;
 	int environment_get_canvas_max_layer(RID p_env) const;
 	Color environment_get_ambient_light_color(RID p_env) const;
-	RS::EnvironmentAmbientSource environment_get_ambient_light_ambient_source(RID p_env) const;
-	float environment_get_ambient_light_ambient_energy(RID p_env) const;
+	RS::EnvironmentAmbientSource environment_get_ambient_source(RID p_env) const;
+	float environment_get_ambient_light_energy(RID p_env) const;
 	float environment_get_ambient_sky_contribution(RID p_env) const;
 	RS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
 	Color environment_get_ao_color(RID p_env) const;
