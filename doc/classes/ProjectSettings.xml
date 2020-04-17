@@ -969,6 +969,30 @@
 		<member name="rendering/environment/default_environment" type="String" setter="" getter="" default="&quot;&quot;">
 			[Environment] that will be used as a fallback environment in case a scene does not specify its own environment. The default environment is loaded in at scene load time regardless of whether you have set an environment or not. If you do not rely on the fallback environment, it is best to delete [code]default_env.tres[/code], or to specify a different default environment here.
 		</member>
+		<member name="rendering/gles2/batching/batch_buffer_size" type="int" setter="" getter="" default="16384">
+			Size of buffer reserved for batched vertices. Larger size enables larger batches, but there are diminishing returns for the memory used.
+		</member>
+		<member name="rendering/gles2/batching/colored_vertex_format_threshold" type="float" setter="" getter="" default="0.25">
+			Including color in the vertex format has a cost, however, not including color prevents batching across color changes. This threshold determines the ratio of [code]number of vertex color changes / total number of vertices[/code] above which vertices will be translated to colored format. A value of 0 will always use colored vertices, 1 will never use colored vertices.
+		</member>
+		<member name="rendering/gles2/batching/light_scissor_area_threshold" type="float" setter="" getter="" default="1.0">
+			Sets the proportion of the screen area that must be saved by a scissor operation in order to activate light scissoring. This can prevent parts of items being rendered outside the light area. Lower values scissor more aggressively. A value of 1 scissors none of the items, a value of 0 scissors every item. This can reduce fill rate requirements in scenes with a lot of lighting.
+		</member>
+		<member name="rendering/gles2/batching/max_join_item_commands" type="int" setter="" getter="" default="16">
+			Sets the number of commands to lookahead to determine whether to batch render items. A value of 1 can join items consisting of single commands, 0 turns off joining. Higher values are in theory more likely to join, however this has diminishing returns and has a runtime cost so a small value is recommended.
+		</member>
+		<member name="rendering/gles2/batching/use_batching" type="bool" setter="" getter="" default="true">
+			Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
+		</member>
+		<member name="rendering/gles2/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
+			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
+		</member>
+		<member name="rendering/gles2/debug/flash_batching" type="bool" setter="" getter="" default="false">
+			[b]Experimental[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
+		</member>
+		<member name="rendering/gles2/debug/use_batching_in_editor" type="bool" setter="" getter="" default="true">
+			[b]Experimental[/b] Switches on batching within the editor. Use with caution - note that if your editor does not render correctly you may need to edit your [code]project.godot[/code] and remove the use_batching_in_editor setting manually.
+		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">
 			Max buffer size for blend shapes. Any blend shape bigger than this will not work.
 		</member>

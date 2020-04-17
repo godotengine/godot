@@ -349,6 +349,8 @@ void VisualServerViewport::draw_viewports() {
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
 			vp->render_info[VS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_2D_ITEMS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_2D_ITEMS_IN_FRAME);
+			vp->render_info[VS::VIEWPORT_RENDER_INFO_2D_DRAW_CALLS_IN_FRAME] = VSG::storage->get_captured_render_info(VS::INFO_2D_DRAW_CALLS_IN_FRAME);
 
 			if (vp->viewport_to_screen_rect != Rect2() && (!vp->viewport_render_direct_to_screen || !VSG::rasterizer->is_low_end())) {
 				//copy to screen if set as such

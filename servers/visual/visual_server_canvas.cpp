@@ -42,11 +42,13 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Tra
 
 	_render_canvas_item(p_canvas_item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
 
+	VSG::canvas_render->canvas_render_items_begin(p_modulate, p_lights, p_transform);
 	for (int i = 0; i < z_range; i++) {
 		if (!z_list[i])
 			continue;
 		VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_modulate, p_lights, p_transform);
 	}
+	VSG::canvas_render->canvas_render_items_end();
 }
 
 void _collect_ysort_children(VisualServerCanvas::Item *p_canvas_item, Transform2D p_transform, VisualServerCanvas::Item *p_material_owner, const Color p_modulate, VisualServerCanvas::Item **r_items, int &r_index) {
@@ -259,6 +261,7 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 			_render_canvas_item(ci[i].item, p_transform, p_clip_rect, Color(1, 1, 1, 1), 0, z_list, z_last_list, NULL, NULL);
 		}
 
+		VSG::canvas_render->canvas_render_items_begin(p_canvas->modulate, p_lights, p_transform);
 		for (int i = 0; i < z_range; i++) {
 			if (!z_list[i])
 				continue;
@@ -269,6 +272,7 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 
 			VSG::canvas_render->canvas_render_items(z_list[i], VS::CANVAS_ITEM_Z_MIN + i, p_canvas->modulate, p_lights, p_transform);
 		}
+		VSG::canvas_render->canvas_render_items_end();
 	} else {
 
 		for (int i = 0; i < l; i++) {
