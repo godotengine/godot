@@ -80,6 +80,7 @@ class SceneRewinder : public Node {
 
 	Rewinder *rewinder;
 	bool recover_in_progress;
+	bool rewinding_in_progress;
 
 	uint32_t node_counter;
 	bool generate_id;
@@ -114,6 +115,7 @@ public:
 	void unregister_process(Node *p_node, StringName p_function);
 
 	bool is_recovered() const;
+	bool is_rewinding() const;
 
 	/// Can only be called on the server
 	void reset();
@@ -126,6 +128,8 @@ public:
 
 private:
 	void process();
+
+	void pull_variable_changes(Vector<ObjectID> *r_null_objects = nullptr);
 
 	void on_peer_connected(int p_peer_id);
 	void on_peer_disconnected(int p_peer_id);
@@ -155,6 +159,17 @@ struct Snapshot {
 	// TODO copy on write?
 	HashMap<ObjectID, uint64_t> controllers_input_id;
 	HashMap<ObjectID, NodeData> data;
+};
+
+class ControllerRewinder {
+	CharacterNetController *controller;
+	int frames_to_skip;
+	bool finished;
+
+public:
+	void init(CharacterNetController *p_controller, int p_frames, uint64_t p_recovered_snapshot_input_id);
+	void advance(int p_i, real_t p_delta);
+	bool has_finished() const;
 };
 
 class Rewinder {
@@ -219,7 +234,13 @@ public:
 	virtual void receive_snapshot(Variant p_snapshot);
 
 private:
+	void store_snapshot();
+	void update_snapshot(int p_snapshot_index);
+
 	void process_recovery(real_t p_delta);
+	bool recovery_compare_snapshot(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot);
+	void recovery_apply_server_snapshot(const Snapshot &p_server_snapshot);
+	void recovery_rewind(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot, real_t p_delta);
 	void parse_snapshot(Variant p_snapshot);
 };
 

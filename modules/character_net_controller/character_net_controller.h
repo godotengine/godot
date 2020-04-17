@@ -219,6 +219,8 @@ public:
 	void force_state_notify();
 
 	void replay_snapshots();
+	int forget_input_till(uint64_t p_input_id);
+	bool replay_process_next_instant(int p_i, real_t p_delta);
 
 	bool is_server_controller() const;
 	bool is_player_controller() const;
@@ -315,6 +317,8 @@ struct Controller {
 	/// recover its player state.
 	virtual void player_state_check(uint64_t p_id, Variant p_data) = 0;
 	virtual void replay_snapshots() = 0;
+	virtual int forget_input_till(uint64_t p_input_id) = 0;
+	virtual bool replay_process_next_instant(int p_i, real_t p_delta) = 0;
 	virtual uint64_t get_current_snapshot_id() const = 0;
 };
 
@@ -335,6 +339,8 @@ struct ServerController : public Controller {
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual int forget_input_till(uint64_t p_input_id);
+	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
 	/// Fetch the next inputs, returns true if the input is new.
@@ -377,6 +383,8 @@ struct PlayerController : public Controller {
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual int forget_input_till(uint64_t p_input_id);
+	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
 	real_t get_pretended_delta() const;
@@ -417,6 +425,8 @@ struct DollController : public Controller {
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual int forget_input_till(uint64_t p_input_id);
+	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
 	void open_flow();
@@ -440,6 +450,8 @@ struct NoNetController : public Controller {
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
+	virtual int forget_input_till(uint64_t p_input_id);
+	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 };
 

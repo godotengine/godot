@@ -310,6 +310,14 @@ void CharacterNetController::replay_snapshots() {
 	controller->replay_snapshots();
 }
 
+int CharacterNetController::forget_input_till(uint64_t p_input_id) {
+	return controller->forget_input_till(p_input_id);
+}
+
+bool CharacterNetController::replay_process_next_instant(int p_i, real_t p_delta) {
+	return controller->replay_process_next_instant(p_i, p_delta);
+}
+
 bool CharacterNetController::is_server_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller)
@@ -666,6 +674,16 @@ void ServerController::replay_snapshots() {
 	ERR_PRINT("The method `replay_snapshots` must not be called on server. Be sure why it happened.");
 }
 
+int ServerController::forget_input_till(uint64_t p_input_id) {
+	ERR_PRINT("The method `forget_input_till` must not be called on server. Be sure why it happened.");
+	return 0;
+}
+
+bool ServerController::replay_process_next_instant(int p_i, real_t p_delta) {
+	ERR_PRINT("The method `replay_process_next_instant` must not be called on server. Be sure why it happened.");
+	return false;
+}
+
 uint64_t ServerController::get_current_snapshot_id() const {
 	return current_input_buffer_id;
 }
@@ -965,6 +983,8 @@ void PlayerController::player_state_check(uint64_t p_snapshot_id, Variant p_data
 }
 
 void PlayerController::replay_snapshots() {
+	// TODO remove this
+	CRASH_NOW();
 	const real_t delta = node->get_physics_process_delta_time();
 
 	for (size_t i = 0; i < frames_snapshot.size(); i += 1) {
@@ -977,6 +997,29 @@ void PlayerController::replay_snapshots() {
 
 		// Update snapshot transform
 		frames_snapshot[i].custom_data = node->call("create_snapshot");
+	}
+}
+
+int PlayerController::forget_input_till(uint64_t p_input_id) {
+	// Remove inputs.
+	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= p_input_id) {
+		frames_snapshot.pop_front();
+	}
+	return frames_snapshot.size();
+}
+
+bool PlayerController::replay_process_next_instant(int p_i, real_t p_delta) {
+	const size_t i = p_i;
+	if (i <= frames_snapshot.size()) {
+
+		// Set snapshot inputs.
+		node->set_inputs_buffer(frames_snapshot[i].inputs_buffer);
+
+		node->get_inputs_buffer_mut().begin_read();
+		node->call("controller_process", p_delta);
+		return (i + 1) < frames_snapshot.size();
+	} else {
+		return false;
 	}
 }
 
@@ -1127,6 +1170,9 @@ void PlayerController::send_frame_input_buffer_to_server() {
 }
 
 void PlayerController::process_recovery() {
+	// TODO remove this
+	return;
+
 	if (recover_snapshot_id <= recovered_snapshot_id) {
 		// Nothing to do.
 		return;
@@ -1208,6 +1254,14 @@ void DollController::player_state_check(uint64_t p_snapshot_id, Variant p_data) 
 
 void DollController::replay_snapshots() {
 	player_controller.replay_snapshots();
+}
+
+int DollController::forget_input_till(uint64_t p_input_id) {
+	return player_controller.forget_input_till(p_input_id);
+}
+
+bool DollController::replay_process_next_instant(int p_i, real_t p_delta) {
+	return player_controller.replay_process_next_instant(p_i, p_delta);
 }
 
 uint64_t DollController::get_current_snapshot_id() const {
@@ -1292,6 +1346,16 @@ void NoNetController::player_state_check(uint64_t p_snapshot_id, Variant p_data)
 
 void NoNetController::replay_snapshots() {
 	// Nothing to do.
+}
+
+int NoNetController::forget_input_till(uint64_t p_input_id) {
+	// Nothing to do.
+	return 0;
+}
+
+bool NoNetController::replay_process_next_instant(int p_i, real_t p_delta) {
+	// Nothing to do.
+	return false;
 }
 
 uint64_t NoNetController::get_current_snapshot_id() const {
