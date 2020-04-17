@@ -1499,7 +1499,7 @@ void PhysicsServer3DSW::flush_queries() {
 		values.push_back(USEC_TO_SEC(OS::get_singleton()->get_ticks_usec() - time_beg));
 
 		values.push_front("physics");
-		EngineDebugger::profiler_add_frame_data("server", values);
+		EngineDebugger::profiler_add_frame_data("servers", values);
 	}
 #endif
 };
