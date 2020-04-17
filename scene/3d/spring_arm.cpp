@@ -45,12 +45,12 @@ void SpringArm::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_process_internal(true);
+				set_physics_process_internal(true);
 			}
 			break;
 		case NOTIFICATION_EXIT_TREE:
 			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_process_internal(false);
+				set_physics_process_internal(false);
 			}
 			break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS:
