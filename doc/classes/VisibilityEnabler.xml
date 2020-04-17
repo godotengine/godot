@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisibilityEnabler" inherits="VisibilityNotifier" version="3.2">
 	<brief_description>
-		Enables certain nodes only when visible.
+		Enables certain nodes only when approximately visible.
 	</brief_description>
 	<description>
 		The VisibilityEnabler will disable [RigidBody] and [AnimationPlayer] nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler itself.
-		Note that VisibilityEnabler will not affect nodes added after scene initialization.
+		[b]Note:[/b] VisibilityEnabler uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account. If you need exact visibility checking, use another method such as adding an [Area] node as a child of a [Camera] node.
+		[b]Note:[/b] VisibilityEnabler will not affect nodes added after scene initialization.
 	</description>
 	<tutorials>
 	</tutorials>

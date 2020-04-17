@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisibilityNotifier2D" inherits="Node2D" version="3.2">
 	<brief_description>
-		Detects when the node is visible on screen.
+		Detects approximately when the node is visible on screen.
 	</brief_description>
 	<description>
 		The VisibilityNotifier2D detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a viewport.
+		[b]Note:[/b] VisibilityNotifier2D uses an approximate heuristic for performance reasons. If you need exact visibility checking, use another method such as adding an [Area2D] node as a child of a [Camera2D] node.
 	</description>
 	<tutorials>
 	</tutorials>
