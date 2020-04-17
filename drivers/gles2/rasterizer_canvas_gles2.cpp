@@ -60,9 +60,13 @@ RasterizerCanvasGLES2::BatchData::BatchData() {
 	settings_colored_vertex_format_threshold = 0.0f;
 	settings_batch_buffer_num_verts = 0;
 	scissor_threshold_area = 0.0f;
+	diagnose_frame = false;
+	next_diagnose_tick = 10000;
+	diagnose_frame_number = 9999999999; // some high number
 
 	settings_use_batching_original_choice = false;
 	settings_flash_batching = false;
+	settings_diagnose_frame = false;
 	settings_scissor_lights = false;
 	settings_scissor_threshold = -1.0f;
 }
@@ -640,6 +644,32 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 	// may not be necessary .. state change optimization still TODO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void RasterizerCanvasGLES2::diagnose_batches(Item::Command *const *p_commands) {
+	int num_batches = bdata.batches.size();
+
+	for (int batch_num = 0; batch_num < num_batches; batch_num++) {
+		const Batch &batch = bdata.batches[batch_num];
+		bdata.frame_string += "\t\tbatch ";
+
+		switch (batch.type) {
+			case Batch::BT_RECT: {
+				bdata.frame_string += "R ";
+				bdata.frame_string += itos(batch.num_commands);
+				bdata.frame_string += " [" + itos(batch.batch_texture_id) + "]";
+				if (batch.num_commands > 1) {
+					bdata.frame_string += " MULTI\n";
+				} else {
+					bdata.frame_string += "\n";
+				}
+			} break;
+			default: {
+				bdata.frame_string += "D ";
+				bdata.frame_string += itos(batch.num_commands) + "\n";
+			} break;
+		}
+	}
 }
 
 void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material) {
@@ -1562,6 +1592,10 @@ void RasterizerCanvasGLES2::flush_render_batches(Item *p_first_item, Item *p_cur
 
 	Item::Command *const *commands = p_first_item->commands.ptr();
 
+	if (bdata.diagnose_frame) {
+		diagnose_batches(commands);
+	}
+
 	render_batches(commands, p_current_clip, r_reclip, p_material);
 }
 
@@ -1637,6 +1671,33 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z) {
 	}
 }
 
+void RasterizerCanvasGLES2::canvas_begin() {
+	// diagnose_frame?
+	if (bdata.settings_diagnose_frame) {
+		bdata.diagnose_frame = false;
+
+		uint32_t tick = OS::get_singleton()->get_ticks_msec();
+		uint64_t frame = Engine::get_singleton()->get_frames_drawn();
+
+		if (tick >= bdata.next_diagnose_tick) {
+			bdata.next_diagnose_tick = tick + 10000;
+
+			// the plus one is prevent starting diagnosis half way through frame
+			bdata.diagnose_frame_number = frame + 1;
+		}
+
+		if (frame == bdata.diagnose_frame_number) {
+			bdata.diagnose_frame = true;
+		}
+
+		if (bdata.diagnose_frame) {
+			bdata.frame_string = "canvas_begin FRAME " + itos(frame) + "\n";
+		}
+	}
+
+	RasterizerCanvasBaseGLES2::canvas_begin();
+}
+
 void RasterizerCanvasGLES2::canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
 	// if we are debugging, flash each frame between batching renderer and old version to compare for regressions
 	if (bdata.settings_flash_batching) {
@@ -1666,6 +1727,10 @@ void RasterizerCanvasGLES2::canvas_render_items_end() {
 		return;
 	}
 
+	if (bdata.diagnose_frame) {
+		bdata.frame_string += "items\n";
+	}
+
 	// batching render is deferred until after going through all the z_indices, joining all the items
 	canvas_render_items_implementation(0, 0, _render_item_state.item_group_modulate,
 			_render_item_state.item_group_light,
@@ -1673,6 +1738,10 @@ void RasterizerCanvasGLES2::canvas_render_items_end() {
 
 	bdata.items_joined.reset();
 	bdata.item_refs.reset();
+
+	if (bdata.diagnose_frame) {
+		print_line(bdata.frame_string);
+	}
 }
 
 void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform) {
@@ -2284,6 +2353,10 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 	storage->info.render._2d_item_count++;
 
+	if (bdata.diagnose_frame) {
+		bdata.frame_string += "\tjoined_item " + itos(p_bij.num_item_refs) + " refs\n";
+	}
+
 	// all the joined items will share the same state with the first item
 	Item *ci = bdata.item_refs[p_bij.first_item_ref].item;
 
@@ -2798,6 +2871,12 @@ void RasterizerCanvasGLES2::initialize() {
 		bdata.settings_flash_batching = false;
 	}
 
+	// frame diagnosis. print out the batches every nth frame
+	bdata.settings_diagnose_frame = false;
+	if (!Engine::get_singleton()->is_editor_hint() && bdata.settings_use_batching) {
+		bdata.settings_diagnose_frame = GLOBAL_GET("rendering/gles2/debug/diagnose_frame");
+	}
+
 	// the maximum num quads in a batch is limited by GLES2. We can have only 16 bit indices,
 	// which means we can address a vertex buffer of max size 65535. 4 vertices are needed per quad.
 
@@ -2823,7 +2902,8 @@ void RasterizerCanvasGLES2::initialize() {
 		batching_options_string += "\tcolored_vertex_format_threshold " + String(Variant(bdata.settings_colored_vertex_format_threshold)) + "\n";
 		batching_options_string += "\tbatch_buffer_size " + itos(bdata.settings_batch_buffer_num_verts) + "\n";
 		batching_options_string += "\tlight_scissor_area_threshold " + String(Variant(bdata.settings_scissor_threshold)) + "\n";
-		batching_options_string += "\tdebug_flash " + String(Variant(bdata.settings_flash_batching));
+		batching_options_string += "\tdebug_flash " + String(Variant(bdata.settings_flash_batching)) + "\n";
+		batching_options_string += "\tdiagnose_frame " + String(Variant(bdata.settings_diagnose_frame));
 	} else {
 		batching_options_string += "OFF";
 	}

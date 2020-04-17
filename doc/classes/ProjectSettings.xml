@@ -984,10 +984,13 @@
 		<member name="rendering/gles2/batching/use_batching" type="bool" setter="" getter="" default="true">
 			Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
 		</member>
+		<member name="rendering/gles2/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
+			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
+		</member>
 		<member name="rendering/gles2/debug/flash_batching" type="bool" setter="" getter="" default="false">
 			[b]Experimental[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
 		</member>
-		<member name="rendering/gles2/debug/use_batching_in_editor" type="bool" setter="" getter="" default="false">
+		<member name="rendering/gles2/debug/use_batching_in_editor" type="bool" setter="" getter="" default="true">
 			[b]Experimental[/b] Switches on batching within the editor. Use with caution - note that if your editor does not render correctly you may need to edit your [code]project.godot[/code] and remove the use_batching_in_editor setting manually.
 		</member>
 		<member name="rendering/limits/buffers/blend_shape_max_buffer_size_kb" type="int" setter="" getter="" default="4096">

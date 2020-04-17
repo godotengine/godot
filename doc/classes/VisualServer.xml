@@ -4601,7 +4601,13 @@
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
 			Number of draw calls during this frame.
 		</constant>
-		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
+		<constant name="VIEWPORT_RENDER_INFO_2D_ITEMS_IN_FRAME" value="6" enum="ViewportRenderInfo">
+			Number of 2d items drawn this frame.
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_2D_DRAW_CALLS_IN_FRAME" value="7" enum="ViewportRenderInfo">
+			Number of 2d draw calls during this frame.
+		</constant>
+		<constant name="VIEWPORT_RENDER_INFO_MAX" value="8" enum="ViewportRenderInfo">
 			Represents the size of the [enum ViewportRenderInfo] enum.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
@@ -4748,16 +4754,22 @@
 		<constant name="INFO_DRAW_CALLS_IN_FRAME" value="5" enum="RenderInfo">
 			The amount of draw calls in frame.
 		</constant>
-		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6" enum="RenderInfo">
+		<constant name="INFO_2D_ITEMS_IN_FRAME" value="6" enum="RenderInfo">
+			The amount of 2d items in the frame.
+		</constant>
+		<constant name="INFO_2D_DRAW_CALLS_IN_FRAME" value="7" enum="RenderInfo">
+			The amount of 2d draw calls in frame.
+		</constant>
+		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="8" enum="RenderInfo">
 			Unimplemented in the GLES2 and GLES3 rendering backends, always returns 0.
 		</constant>
-		<constant name="INFO_VIDEO_MEM_USED" value="7" enum="RenderInfo">
+		<constant name="INFO_VIDEO_MEM_USED" value="9" enum="RenderInfo">
 			The amount of video memory used, i.e. texture and vertex memory combined.
 		</constant>
-		<constant name="INFO_TEXTURE_MEM_USED" value="8" enum="RenderInfo">
+		<constant name="INFO_TEXTURE_MEM_USED" value="10" enum="RenderInfo">
 			The amount of texture memory used.
 		</constant>
-		<constant name="INFO_VERTEX_MEM_USED" value="9" enum="RenderInfo">
+		<constant name="INFO_VERTEX_MEM_USED" value="11" enum="RenderInfo">
 			The amount of vertex memory used.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features">

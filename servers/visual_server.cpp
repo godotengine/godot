@@ -2422,6 +2422,7 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/gles2/batching/light_scissor_area_threshold", 1.0f);
 	GLOBAL_DEF("rendering/gles2/batching/batch_buffer_size", 16384);
 	GLOBAL_DEF("rendering/gles2/debug/flash_batching", false);
+	GLOBAL_DEF("rendering/gles2/debug/diagnose_frame", false);
 	GLOBAL_DEF_RST("rendering/gles2/debug/use_batching_in_editor", true);
 
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/max_join_item_commands", PropertyInfo(Variant::INT, "rendering/gles2/batching/max_join_item_commands", PROPERTY_HINT_RANGE, "0,65535"));

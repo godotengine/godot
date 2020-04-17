@@ -169,10 +169,17 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		// measured in pixels, recalculated each frame
 		float scissor_threshold_area;
 
+		// diagnose this frame, every nTh frame when settings_diagnose_frame is on
+		bool diagnose_frame;
+		String frame_string;
+		uint32_t next_diagnose_tick;
+		uint64_t diagnose_frame_number;
+
 		// global settings
 		bool settings_use_batching; // the current use_batching (affected by flash)
 		bool settings_use_batching_original_choice; // the choice entered in project settings
 		bool settings_flash_batching; // for regression testing, flash between non-batched and batched renderer
+		bool settings_diagnose_frame; // print out batches to help optimize / regression test
 		int settings_max_join_item_commands;
 		float settings_colored_vertex_format_threshold;
 		int settings_batch_buffer_num_verts;
@@ -227,6 +234,7 @@ public:
 	virtual void canvas_render_items_begin(const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
 	virtual void canvas_render_items_end();
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
+	virtual void canvas_begin();
 
 private:
 	// legacy codepath .. to remove after testing
@@ -262,6 +270,9 @@ private:
 	bool _light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect, Rect2 &r_cliprect) const;
 	bool _light_scissor_begin(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const;
 	void _calculate_scissor_threshold_area();
+
+	// debug
+	void diagnose_batches(Item::Command *const *p_commands);
 
 public:
 	void initialize();
