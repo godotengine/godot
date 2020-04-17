@@ -98,6 +98,8 @@ public:
 
 #define BIND0R(m_r, m_name) \
 	m_r m_name() { return BINDBASE->m_name(); }
+#define BIND0RC(m_r, m_name) \
+	m_r m_name() const { return BINDBASE->m_name(); }
 #define BIND1R(m_r, m_name, m_type1) \
 	m_r m_name(m_type1 arg1) { return BINDBASE->m_name(arg1); }
 #define BIND1RC(m_r, m_name, m_type1) \
@@ -111,8 +113,12 @@ public:
 #define BIND4RC(m_r, m_name, m_type1, m_type2, m_type3, m_type4) \
 	m_r m_name(m_type1 arg1, m_type2 arg2, m_type3 arg3, m_type4 arg4) const { return BINDBASE->m_name(arg1, arg2, arg3, arg4); }
 
+#define BIND0(m_name) \
+	void m_name() { DISPLAY_CHANGED BINDBASE->m_name(); }
 #define BIND1(m_name, m_type1) \
 	void m_name(m_type1 arg1) { DISPLAY_CHANGED BINDBASE->m_name(arg1); }
+#define BIND1C(m_name, m_type1) \
+	void m_name(m_type1 arg1) const { DISPLAY_CHANGED BINDBASE->m_name(arg1); }
 #define BIND2(m_name, m_type1, m_type2) \
 	void m_name(m_type1 arg1, m_type2 arg2) { DISPLAY_CHANGED BINDBASE->m_name(arg1, arg2); }
 #define BIND2C(m_name, m_type1, m_type2) \
@@ -620,6 +626,11 @@ public:
 	BIND5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	BIND2(instance_geometry_set_as_instance_lod, RID, RID)
 
+	BIND3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
+	BIND2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
+	BIND2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
+	BIND2C(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+
 #undef BINDBASE
 //from now on, calls forwarded to this singleton
 #define BINDBASE RSG::canvas
@@ -716,6 +727,23 @@ public:
 	BIND2(canvas_occluder_polygon_set_shape_as_lines, RID, const Vector<Vector2> &)
 
 	BIND2(canvas_occluder_polygon_set_cull_mode, RID, CanvasOccluderPolygonCullMode)
+
+	/* GLOBAL VARIABLES */
+
+#undef BINDBASE
+//from now on, calls forwarded to this singleton
+#define BINDBASE RSG::storage
+
+	BIND3(global_variable_add, const StringName &, GlobalVariableType, const Variant &)
+	BIND1(global_variable_remove, const StringName &)
+	BIND0RC(Vector<StringName>, global_variable_get_list)
+	BIND2(global_variable_set, const StringName &, const Variant &)
+	BIND2(global_variable_set_override, const StringName &, const Variant &)
+	BIND1RC(GlobalVariableType, global_variable_get_type, const StringName &)
+	BIND1RC(Variant, global_variable_get, const StringName &)
+
+	BIND1(global_variables_load_settings, bool)
+	BIND0(global_variables_clear)
 
 	/* BLACK BARS */
 

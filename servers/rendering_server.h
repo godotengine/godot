@@ -38,6 +38,7 @@
 #include "core/rid.h"
 #include "core/variant.h"
 #include "servers/display_server.h"
+#include "servers/rendering/shader_language.h"
 
 class RenderingServer : public Object {
 
@@ -950,6 +951,11 @@ public:
 	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) = 0;
 
+	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
+	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
+	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
+	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+
 	/* CANVAS (2D) */
 
 	virtual RID canvas_create() = 0;
@@ -1090,6 +1096,55 @@ public:
 	};
 	virtual void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, CanvasOccluderPolygonCullMode p_mode) = 0;
 
+	/* GLOBAL VARIABLES */
+
+	enum GlobalVariableType {
+		GLOBAL_VAR_TYPE_BOOL,
+		GLOBAL_VAR_TYPE_BVEC2,
+		GLOBAL_VAR_TYPE_BVEC3,
+		GLOBAL_VAR_TYPE_BVEC4,
+		GLOBAL_VAR_TYPE_INT,
+		GLOBAL_VAR_TYPE_IVEC2,
+		GLOBAL_VAR_TYPE_IVEC3,
+		GLOBAL_VAR_TYPE_IVEC4,
+		GLOBAL_VAR_TYPE_RECT2I,
+		GLOBAL_VAR_TYPE_UINT,
+		GLOBAL_VAR_TYPE_UVEC2,
+		GLOBAL_VAR_TYPE_UVEC3,
+		GLOBAL_VAR_TYPE_UVEC4,
+		GLOBAL_VAR_TYPE_FLOAT,
+		GLOBAL_VAR_TYPE_VEC2,
+		GLOBAL_VAR_TYPE_VEC3,
+		GLOBAL_VAR_TYPE_VEC4,
+		GLOBAL_VAR_TYPE_COLOR,
+		GLOBAL_VAR_TYPE_RECT2,
+		GLOBAL_VAR_TYPE_MAT2,
+		GLOBAL_VAR_TYPE_MAT3,
+		GLOBAL_VAR_TYPE_MAT4,
+		GLOBAL_VAR_TYPE_TRANSFORM_2D,
+		GLOBAL_VAR_TYPE_TRANSFORM,
+		GLOBAL_VAR_TYPE_SAMPLER2D,
+		GLOBAL_VAR_TYPE_SAMPLER2DARRAY,
+		GLOBAL_VAR_TYPE_SAMPLER3D,
+		GLOBAL_VAR_TYPE_SAMPLERCUBE,
+		GLOBAL_VAR_TYPE_MAX
+	};
+
+	virtual void global_variable_add(const StringName &p_name, GlobalVariableType p_type, const Variant &p_value) = 0;
+	virtual void global_variable_remove(const StringName &p_name) = 0;
+	virtual Vector<StringName> global_variable_get_list() const = 0;
+
+	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) = 0;
+	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) = 0;
+
+	virtual Variant global_variable_get(const StringName &p_name) const = 0;
+	virtual GlobalVariableType global_variable_get_type(const StringName &p_name) const = 0;
+
+	virtual void global_variables_load_settings(bool p_load_textures) = 0;
+	virtual void global_variables_clear() = 0;
+
+	static ShaderLanguage::DataType global_variable_type_get_shader_datatype(GlobalVariableType p_type);
+
 	/* BLACK BARS */
 
 	virtual void black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) = 0;
@@ -1217,6 +1272,7 @@ VARIANT_ENUM_CAST(RenderingServer::CanvasItemTextureRepeat);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightMode);
 VARIANT_ENUM_CAST(RenderingServer::CanvasLightShadowFilter);
 VARIANT_ENUM_CAST(RenderingServer::CanvasOccluderPolygonCullMode);
+VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);
 VARIANT_ENUM_CAST(RenderingServer::RenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
 

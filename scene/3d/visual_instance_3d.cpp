@@ -217,6 +217,62 @@ float GeometryInstance3D::get_lod_max_hysteresis() const {
 void GeometryInstance3D::_notification(int p_what) {
 }
 
+const StringName *GeometryInstance3D::_instance_uniform_get_remap(const StringName p_name) const {
+	StringName *r = instance_uniform_property_remap.getptr(p_name);
+	if (!r) {
+		String s = p_name;
+		if (s.begins_with("shader_params/")) {
+			StringName name = s.replace("shader_params/", "");
+			instance_uniform_property_remap[p_name] = name;
+			return instance_uniform_property_remap.getptr(p_name);
+		}
+
+		return nullptr;
+	}
+
+	return r;
+}
+
+bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) {
+	const StringName *r = _instance_uniform_get_remap(p_name);
+	if (r) {
+		set_shader_instance_uniform(*r, p_value);
+		return true;
+	}
+
+	return false;
+}
+
+bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
+	const StringName *r = _instance_uniform_get_remap(p_name);
+	if (r) {
+		r_ret = get_shader_instance_uniform(*r);
+		return true;
+	}
+
+	return false;
+}
+void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
+	List<PropertyInfo> pinfo;
+	RS::get_singleton()->instance_geometry_get_shader_parameter_list(get_instance(), &pinfo);
+	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+		PropertyInfo pi = E->get();
+		bool has_def_value = false;
+		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), pi.name);
+		if (def_value.get_type() != Variant::NIL) {
+			has_def_value = true;
+		}
+		if (instance_uniforms.has(pi.name)) {
+			pi.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | (has_def_value ? (PROPERTY_USAGE_CHECKABLE | PROPERTY_USAGE_CHECKED) : 0);
+		} else {
+			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : 0); //do not save if not changed
+		}
+
+		pi.name = "shader_params/" + pi.name;
+		p_list->push_back(pi);
+	}
+}
+
 void GeometryInstance3D::set_flag(Flags p_flag, bool p_value) {
 
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
@@ -258,6 +314,22 @@ float GeometryInstance3D::get_extra_cull_margin() const {
 	return extra_cull_margin;
 }
 
+void GeometryInstance3D::set_shader_instance_uniform(const StringName &p_uniform, const Variant &p_value) {
+
+	if (p_value.get_type() == Variant::NIL) {
+		Variant def_value = RS::get_singleton()->instance_geometry_get_shader_parameter_default_value(get_instance(), p_uniform);
+		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, def_value);
+		instance_uniforms.erase(p_value);
+	} else {
+		instance_uniforms[p_uniform] = p_value;
+		RS::get_singleton()->instance_geometry_set_shader_parameter(get_instance(), p_uniform, p_value);
+	}
+}
+
+Variant GeometryInstance3D::get_shader_instance_uniform(const StringName &p_uniform) const {
+
+	return RS::get_singleton()->instance_geometry_get_shader_parameter(get_instance(), p_uniform);
+}
 void GeometryInstance3D::set_custom_aabb(AABB aabb) {
 
 	RS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
@@ -279,6 +351,9 @@ void GeometryInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_lod_max_distance", "mode"), &GeometryInstance3D::set_lod_max_distance);
 	ClassDB::bind_method(D_METHOD("get_lod_max_distance"), &GeometryInstance3D::get_lod_max_distance);
+
+	ClassDB::bind_method(D_METHOD("set_shader_instance_uniform", "uniform", "value"), &GeometryInstance3D::set_shader_instance_uniform);
+	ClassDB::bind_method(D_METHOD("get_shader_instance_uniform", "uniform"), &GeometryInstance3D::get_shader_instance_uniform);
 
 	ClassDB::bind_method(D_METHOD("set_lod_min_hysteresis", "mode"), &GeometryInstance3D::set_lod_min_hysteresis);
 	ClassDB::bind_method(D_METHOD("get_lod_min_hysteresis"), &GeometryInstance3D::get_lod_min_hysteresis);

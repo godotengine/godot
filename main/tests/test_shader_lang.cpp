@@ -342,7 +342,7 @@ MainLoop *test() {
 	Set<String> types;
 	types.insert("spatial");
 
-	Error err = sl.compile(code, dt, rm, types);
+	Error err = sl.compile(code, dt, rm, types, NULL);
 
 	if (err) {
 
