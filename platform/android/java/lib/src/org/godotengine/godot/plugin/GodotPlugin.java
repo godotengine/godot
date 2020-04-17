@@ -288,7 +288,7 @@ public abstract class GodotPlugin {
 				}
 			}
 
-			runOnGLThread(new Runnable() {
+			runOnRenderThread(new Runnable() {
 				@Override
 				public void run() {
 					nativeEmitSignal(getPluginName(), signalName, signalArgs);
