@@ -92,7 +92,7 @@
 			</argument>
 			<argument index="1" name="replace_files" type="bool" default="true">
 			</argument>
-			<argument index="2" name="destination" type="String" default="">
+			<argument index="2" name="destination" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
 				Loads the contents of the .pck or .zip file specified by [code]pack[/code] into the resource filesystem ([code]res://[/code]) at the [code]destination[/code] path, if given. Returns [code]true[/code] on success.
