@@ -12,6 +12,7 @@ import sys
 # Local
 import methods
 import gles_builders
+import version
 from platform_methods import run_in_subprocess
 
 # Scan possible build platforms
@@ -72,6 +73,7 @@ env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.module_version_string = ""
 env_base.msvc = False
+env_base.stable_release = version.status == "stable"
 
 env_base.__class__.disable_module = methods.disable_module
 
@@ -126,7 +128,7 @@ opts.Add(BoolVariable("xaudio2", "Enable the XAudio2 audio driver", False))
 opts.Add(BoolVariable("verbose", "Enable verbose output for the compilation", False))
 opts.Add(BoolVariable("progress", "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable("warnings", "Level of compilation warnings", "all", ("extra", "all", "moderate", "no")))
-opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", True))
+opts.Add(BoolVariable("werror", "Treat compiler warnings as errors", not env_base.stable_release))
 opts.Add(BoolVariable("dev", "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all generated binary files", "")
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
