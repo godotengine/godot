@@ -1179,12 +1179,12 @@ Color RasterizerSceneRD::environment_get_ambient_light_color(RID p_env) const {
 	ERR_FAIL_COND_V(!env, Color());
 	return env->ambient_light;
 }
-RS::EnvironmentAmbientSource RasterizerSceneRD::environment_get_ambient_light_ambient_source(RID p_env) const {
+RS::EnvironmentAmbientSource RasterizerSceneRD::environment_get_ambient_source(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, RS::ENV_AMBIENT_SOURCE_BG);
 	return env->ambient_source;
 }
-float RasterizerSceneRD::environment_get_ambient_light_ambient_energy(RID p_env) const {
+float RasterizerSceneRD::environment_get_ambient_light_energy(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->ambient_light_energy;
