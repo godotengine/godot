@@ -33,6 +33,8 @@
 
 #include "core/error_list.h"
 #include "core/map.h"
+#include "core/os/mutex.h"
+#include "core/rid_owner.h"
 #include "core/ustring.h"
 #include "servers/display_server.h"
 #include <vulkan/vulkan.h>
@@ -104,6 +106,14 @@ class VulkanContext {
 			presentMode = VK_PRESENT_MODE_FIFO_KHR;
 		}
 	};
+
+	struct LocalDevice {
+		bool waiting = false;
+		VkDevice device;
+		VkQueue queue;
+	};
+
+	RID_Owner<LocalDevice, true> local_device_owner;
 
 	Map<DisplayServer::WindowID, Window> windows;
 	uint32_t swapchainImageCount;
@@ -193,6 +203,12 @@ public:
 	void window_destroy(DisplayServer::WindowID p_window_id);
 	VkFramebuffer window_get_framebuffer(DisplayServer::WindowID p_window = 0);
 	VkRenderPass window_get_render_pass(DisplayServer::WindowID p_window = 0);
+
+	RID local_device_create();
+	VkDevice local_device_get_vk_device(RID p_local_device);
+	void local_device_push_command_buffers(RID p_local_device, const VkCommandBuffer *p_buffers, int p_count);
+	void local_device_sync(RID p_local_device);
+	void local_device_free(RID p_local_device);
 
 	VkFormat get_screen_format() const;
 	VkPhysicalDeviceLimits get_device_limits() const;
