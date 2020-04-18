@@ -869,6 +869,9 @@ void Image::resize_to_po2(bool p_square) {
 
 	int w = next_power_of_2(width);
 	int h = next_power_of_2(height);
+	if (p_square) {
+		w = h = MAX(w, h);
+	}
 
 	if (w == width && h == height) {
 
