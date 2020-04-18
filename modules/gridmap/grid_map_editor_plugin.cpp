@@ -556,7 +556,7 @@ void GridMapEditor::_set_clipboard_data() {
 				item.cell_item = itm;
 				item.grid_offset = Vector3(i, j, k) - selection.begin;
 				item.orientation = node->get_cell_item_orientation(i, j, k);
-				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
+				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
 
 				clipboard_items.push_back(item);
 			}
@@ -1083,12 +1083,12 @@ void GridMapEditor::_notification(int p_what) {
 			for (int i = 0; i < 3; i++) {
 
 				grid[i] = RS::get_singleton()->mesh_create();
-				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world()->get_scenario());
-				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world()->get_scenario());
+				grid_instance[i] = RS::get_singleton()->instance_create2(grid[i], get_tree()->get_root()->get_world_3d()->get_scenario());
+				selection_level_instance[i] = RenderingServer::get_singleton()->instance_create2(selection_level_mesh[i], get_tree()->get_root()->get_world_3d()->get_scenario());
 			}
 
-			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world()->get_scenario());
-			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world()->get_scenario());
+			selection_instance = RenderingServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
+			paste_instance = RenderingServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world_3d()->get_scenario());
 
 			_update_selection_transform();
 			_update_paste_indicator();
@@ -1168,7 +1168,7 @@ void GridMapEditor::_update_cursor_instance() {
 			Ref<Mesh> mesh = node->get_mesh_library()->get_item_mesh(selected_palette);
 			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
 
-				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
+				cursor_instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world_3d()->get_scenario());
 				RenderingServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
 			}
 		}
