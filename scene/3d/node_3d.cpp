@@ -507,12 +507,12 @@ bool Node3D::is_set_as_toplevel() const {
 	return data.toplevel;
 }
 
-Ref<World3D> Node3D::get_world() const {
+Ref<World3D> Node3D::get_world_3d() const {
 
 	ERR_FAIL_COND_V(!is_inside_world(), Ref<World3D>());
 	ERR_FAIL_COND_V(!data.viewport, Ref<World3D>());
 
-	return data.viewport->find_world();
+	return data.viewport->find_world_3d();
 }
 
 void Node3D::_propagate_visibility_changed() {
@@ -756,7 +756,7 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Node3D::is_set_as_toplevel);
 	ClassDB::bind_method(D_METHOD("set_disable_scale", "disable"), &Node3D::set_disable_scale);
 	ClassDB::bind_method(D_METHOD("is_scale_disabled"), &Node3D::is_scale_disabled);
-	ClassDB::bind_method(D_METHOD("get_world"), &Node3D::get_world);
+	ClassDB::bind_method(D_METHOD("get_world_3d"), &Node3D::get_world_3d);
 
 	ClassDB::bind_method(D_METHOD("force_update_transform"), &Node3D::force_update_transform);
 

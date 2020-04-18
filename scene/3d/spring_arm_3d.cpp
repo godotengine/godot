@@ -147,7 +147,7 @@ void SpringArm3D::process_spring() {
 	if (shape.is_null()) {
 		motion = Vector3(cast_direction * (spring_length));
 		PhysicsDirectSpaceState3D::RayResult r;
-		bool intersected = get_world()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
+		bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(get_global_transform().origin, get_global_transform().origin + motion, r, excluded_objects, mask);
 		if (intersected) {
 			float dist = get_global_transform().origin.distance_to(r.position);
 			dist -= margin;
@@ -155,7 +155,7 @@ void SpringArm3D::process_spring() {
 		}
 	} else {
 		motion = Vector3(cast_direction * spring_length);
-		get_world()->get_direct_space_state()->cast_motion(shape->get_rid(), get_global_transform(), motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
+		get_world_3d()->get_direct_space_state()->cast_motion(shape->get_rid(), get_global_transform(), motion, 0, motion_delta, motion_delta_unsafe, excluded_objects, mask);
 	}
 
 	current_spring_length = spring_length * motion_delta;
