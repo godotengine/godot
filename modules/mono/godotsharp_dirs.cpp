@@ -40,7 +40,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "mono_gd/support/mono-support.h"
+#include "mono_gd/support/android_support.h"
 #endif
 
 #include "mono_gd/gd_mono.h"
