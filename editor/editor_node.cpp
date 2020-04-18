@@ -3735,6 +3735,25 @@ Ref<ImageTexture> EditorNode::_load_custom_class_icon(const String &p_path) cons
 	return nullptr;
 }
 
+void EditorNode::_set_current_scene_as_main(const String &p_str) {
+	Node *scene = editor_data.get_edited_scene_root();
+
+	if (!scene) {
+		show_accept(TTR("There is no defined scene to run."), TTR("OK"));
+		return;
+	}
+
+	if (scene->get_filename() == "") {
+		current_option = -1;
+		_menu_option_confirm(FILE_SAVE_BEFORE_RUN, false);
+		return;
+	}
+
+	pick_main_scene->hide();
+	current_option = SETTINGS_PICK_MAIN_SCENE;
+	_dialog_action(scene->get_filename());
+}
+
 Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, nullptr);
 
@@ -6795,6 +6814,8 @@ EditorNode::EditorNode() {
 	gui_base->add_child(pick_main_scene);
 	pick_main_scene->get_ok()->set_text(TTR("Select"));
 	pick_main_scene->connect("confirmed", callable_mp(this, &EditorNode::_menu_option), varray(SETTINGS_PICK_MAIN_SCENE));
+	pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
+	pick_main_scene->connect("custom_action", callable_mp(this, &EditorNode::_set_current_scene_as_main));
 
 	for (int i = 0; i < _init_callbacks.size(); i++)
 		_init_callbacks[i]();
