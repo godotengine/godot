@@ -44,7 +44,7 @@ void CollisionObject3D::_notification(int p_what) {
 			else
 				PhysicsServer3D::get_singleton()->body_set_state(rid, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
 
-			RID space = get_world()->get_space();
+			RID space = get_world_3d()->get_space();
 			if (area) {
 				PhysicsServer3D::get_singleton()->area_set_space(rid, space);
 			} else

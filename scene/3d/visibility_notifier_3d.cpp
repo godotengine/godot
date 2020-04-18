@@ -68,7 +68,7 @@ void VisibilityNotifier3D::set_aabb(const AABB &p_aabb) {
 	aabb = p_aabb;
 
 	if (is_inside_world()) {
-		get_world()->_update_notifier(this, get_global_transform().xform(aabb));
+		get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
 	}
 
 	_change_notify("aabb");
@@ -85,15 +85,15 @@ void VisibilityNotifier3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 
-			get_world()->_register_notifier(this, get_global_transform().xform(aabb));
+			get_world_3d()->_register_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			get_world()->_update_notifier(this, get_global_transform().xform(aabb));
+			get_world_3d()->_update_notifier(this, get_global_transform().xform(aabb));
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
-			get_world()->_remove_notifier(this);
+			get_world_3d()->_remove_notifier(this);
 		} break;
 	}
 }

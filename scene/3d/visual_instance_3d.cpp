@@ -60,8 +60,8 @@ void VisualInstance3D::_notification(int p_what) {
 			if (skeleton)
 				RenderingServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
 			*/
-			ERR_FAIL_COND(get_world().is_null());
-			RenderingServer::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
+			ERR_FAIL_COND(get_world_3d().is_null());
+			RenderingServer::get_singleton()->instance_set_scenario(instance, get_world_3d()->get_scenario());
 			_update_visibility();
 
 		} break;

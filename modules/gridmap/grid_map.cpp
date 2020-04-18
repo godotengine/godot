@@ -80,7 +80,7 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 			RS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 			RS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
 			if (is_inside_tree()) {
-				RS::get_singleton()->instance_set_scenario(bm.instance, get_world()->get_scenario());
+				RS::get_singleton()->instance_set_scenario(bm.instance, get_world_3d()->get_scenario());
 				RS::get_singleton()->instance_set_transform(bm.instance, get_global_transform());
 			}
 			baked_meshes.push_back(bm);
@@ -536,7 +536,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 			RS::get_singleton()->instance_set_base(instance, mm);
 
 			if (is_inside_tree()) {
-				RS::get_singleton()->instance_set_scenario(instance, get_world()->get_scenario());
+				RS::get_singleton()->instance_set_scenario(instance, get_world_3d()->get_scenario());
 				RS::get_singleton()->instance_set_transform(instance, get_global_transform());
 			}
 
@@ -577,15 +577,15 @@ void GridMap::_octant_enter_world(const OctantKey &p_key) {
 	ERR_FAIL_COND(!octant_map.has(p_key));
 	Octant &g = *octant_map[p_key];
 	PhysicsServer3D::get_singleton()->body_set_state(g.static_body, PhysicsServer3D::BODY_STATE_TRANSFORM, get_global_transform());
-	PhysicsServer3D::get_singleton()->body_set_space(g.static_body, get_world()->get_space());
+	PhysicsServer3D::get_singleton()->body_set_space(g.static_body, get_world_3d()->get_space());
 
 	if (g.collision_debug_instance.is_valid()) {
-		RS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world()->get_scenario());
+		RS::get_singleton()->instance_set_scenario(g.collision_debug_instance, get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_transform(g.collision_debug_instance, get_global_transform());
 	}
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
-		RS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, get_world()->get_scenario());
+		RS::get_singleton()->instance_set_scenario(g.multimesh_instances[i].instance, get_world_3d()->get_scenario());
 		RS::get_singleton()->instance_set_transform(g.multimesh_instances[i].instance, get_global_transform());
 	}
 
@@ -684,7 +684,7 @@ void GridMap::_notification(int p_what) {
 			}
 
 			for (int i = 0; i < baked_meshes.size(); i++) {
-				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, get_world()->get_scenario());
+				RS::get_singleton()->instance_set_scenario(baked_meshes[i].instance, get_world_3d()->get_scenario());
 				RS::get_singleton()->instance_set_transform(baked_meshes[i].instance, get_global_transform());
 			}
 
@@ -1054,7 +1054,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		RS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 		RS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
 		if (is_inside_tree()) {
-			RS::get_singleton()->instance_set_scenario(bm.instance, get_world()->get_scenario());
+			RS::get_singleton()->instance_set_scenario(bm.instance, get_world_3d()->get_scenario());
 			RS::get_singleton()->instance_set_transform(bm.instance, get_global_transform());
 		}
 
