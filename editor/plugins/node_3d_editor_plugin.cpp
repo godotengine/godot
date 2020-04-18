@@ -4261,6 +4261,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, Edito
 
 	spatial_editor = p_spatial_editor;
 	SubViewportContainer *c = memnew(SubViewportContainer);
+	c->odd_size_only = true;
 	subviewport_container = c;
 	c->set_stretch(true);
 	add_child(c);
