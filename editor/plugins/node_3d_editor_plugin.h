@@ -241,6 +241,12 @@ public:
 		NAVIGATION_MODO,
 	};
 
+	enum FreelookNavigationScheme {
+		FREELOOK_DEFAULT,
+		FREELOOK_PARTIALLY_AXIS_LOCKED,
+		FREELOOK_FULLY_AXIS_LOCKED,
+	};
+
 private:
 	float cpu_time_history[FRAME_TIME_HISTORY];
 	int cpu_time_history_index;
