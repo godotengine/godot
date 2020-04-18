@@ -60,5 +60,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 }
 
 RenderingDevice::RenderingDevice() {
-	singleton = this;
+	if (singleton == nullptr) { // there may be more rendering devices later
+		singleton = this;
+	}
 }
