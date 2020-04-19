@@ -5336,17 +5336,19 @@ bool RenderingDeviceVulkan::compute_pipeline_is_valid(RID p_pipeline) {
 
 int RenderingDeviceVulkan::screen_get_width(DisplayServer::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
-
+	ERR_FAIL_COND_V_MSG(local_device.is_valid(), -1, "Local devices have no screen");
 	return context->window_get_width(p_screen);
 }
 int RenderingDeviceVulkan::screen_get_height(DisplayServer::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(local_device.is_valid(), -1, "Local devices have no screen");
 
 	return context->window_get_height(p_screen);
 }
 RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::screen_get_framebuffer_format() const {
 
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(local_device.is_valid(), INVALID_ID, "Local devices have no screen");
 
 	//very hacky, but not used often per frame so I guess ok
 	VkFormat vkformat = context->get_screen_format();
@@ -5376,6 +5378,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::screen_get_framebuff
 RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(DisplayServer::WindowID p_screen, const Color &p_clear_color) {
 
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(local_device.is_valid(), INVALID_ID, "Local devices have no screen");
 
 	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
@@ -6695,75 +6698,104 @@ void RenderingDeviceVulkan::free(RID p_id) {
 	_free_dependencies(p_id); //recursively erase dependencies first, to avoid potential API problems
 	_free_internal(p_id);
 }
-void RenderingDeviceVulkan::swap_buffers() {
 
-	_THREAD_SAFE_METHOD_
+void RenderingDeviceVulkan::_finalize_command_bufers() {
 
-	{ //finalize frame
-
-		if (draw_list) {
-			ERR_PRINT("Found open draw list at the end of the frame, this should never happen (further drawing will likely not work).");
-		}
-
-		if (compute_list) {
-			ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
-		}
-
-		{ //complete the setup buffer (that needs to be processed before anything else)
-			vkEndCommandBuffer(frames[frame].setup_command_buffer);
-			vkEndCommandBuffer(frames[frame].draw_command_buffer);
-		}
-		screen_prepared = false;
+	if (draw_list) {
+		ERR_PRINT("Found open draw list at the end of the frame, this should never happen (further drawing will likely not work).");
 	}
 
+	if (compute_list) {
+		ERR_PRINT("Found open compute list at the end of the frame, this should never happen (further compute will likely not work).");
+	}
+
+	{ //complete the setup buffer (that needs to be processed before anything else)
+		vkEndCommandBuffer(frames[frame].setup_command_buffer);
+		vkEndCommandBuffer(frames[frame].draw_command_buffer);
+	}
+}
+
+void RenderingDeviceVulkan::_begin_frame() {
+
+	//erase pending resources
+	_free_pending_resources(frame);
+
+	//create setup command buffer and set as the setup buffer
+
+	{
+		VkCommandBufferBeginInfo cmdbuf_begin;
+		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdbuf_begin.pNext = nullptr;
+		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		cmdbuf_begin.pInheritanceInfo = nullptr;
+
+		VkResult err = vkResetCommandBuffer(frames[frame].setup_command_buffer, 0);
+		ERR_FAIL_COND_MSG(err, "vkResetCommandBuffer failed with error " + itos(err) + ".");
+
+		err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
+		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+		err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
+		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+
+		if (local_device.is_null()) {
+			context->append_command_buffer(frames[frame].draw_command_buffer);
+			context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
+		}
+	}
+
+	//advance current frame
+	frames_drawn++;
+	//advance staging buffer if used
+	if (staging_buffer_used) {
+		staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
+		staging_buffer_used = false;
+	}
+
+	if (frames[frame].timestamp_count) {
+		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
+		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
+	}
+
+	frames[frame].timestamp_result_count = frames[frame].timestamp_count;
+	frames[frame].timestamp_count = 0;
+	frames[frame].index = Engine::get_singleton()->get_frames_drawn();
+}
+
+void RenderingDeviceVulkan::swap_buffers() {
+
+	ERR_FAIL_COND_MSG(local_device.is_valid(), "Local devices can't swap buffers.");
+	_THREAD_SAFE_METHOD_
+
+	_finalize_command_bufers();
+
+	screen_prepared = false;
 	//swap buffers
 	context->swap_buffers();
 
-	{ //advance frame
+	frame = (frame + 1) % frame_count;
 
-		frame = (frame + 1) % frame_count;
+	_begin_frame();
+}
 
-		//erase pending resources
-		_free_pending_resources(frame);
+void RenderingDeviceVulkan::submit() {
+	ERR_FAIL_COND_MSG(local_device.is_null(), "Only local devices can submit and sync.");
+	ERR_FAIL_COND_MSG(local_device_processing, "device already submitted, call sync to wait until done.");
 
-		//create setup command buffer and set as the setup buffer
+	_finalize_command_bufers();
 
-		{
-			VkCommandBufferBeginInfo cmdbuf_begin;
-			cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			cmdbuf_begin.pNext = nullptr;
-			cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-			cmdbuf_begin.pInheritanceInfo = nullptr;
+	VkCommandBuffer command_buffers[2] = { frames[frame].setup_command_buffer, frames[frame].draw_command_buffer };
+	context->local_device_push_command_buffers(local_device, command_buffers, 2);
+	local_device_processing = true;
+}
 
-			VkResult err = vkResetCommandBuffer(frames[frame].setup_command_buffer, 0);
-			ERR_FAIL_COND_MSG(err, "vkResetCommandBuffer failed with error " + itos(err) + ".");
+void RenderingDeviceVulkan::sync() {
 
-			err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
-			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-			context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
-			err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
-			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-			context->append_command_buffer(frames[frame].draw_command_buffer);
-		}
+	ERR_FAIL_COND_MSG(local_device.is_null(), "Only local devices can submit and sync.");
+	ERR_FAIL_COND_MSG(!local_device_processing, "sync can only be called after a submit");
 
-		//advance current frame
-		frames_drawn++;
-		//advance staging buffer if used
-		if (staging_buffer_used) {
-			staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
-			staging_buffer_used = false;
-		}
-
-		if (frames[frame].timestamp_count) {
-			vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-			SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
-			SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
-		}
-
-		frames[frame].timestamp_result_count = frames[frame].timestamp_count;
-		frames[frame].timestamp_count = 0;
-		frames[frame].index = Engine::get_singleton()->get_frames_drawn();
-	}
+	context->local_device_sync(local_device);
+	_begin_frame();
 }
 
 void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
@@ -6882,14 +6914,21 @@ uint32_t RenderingDeviceVulkan::get_frame_delay() const {
 
 void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 
+	if (local_device.is_valid() && !p_current_frame) {
+		return; //flushign previous frames has no effect with local device
+	}
 	//not doing this crashes RADV (undefined behavior)
 	if (p_current_frame) {
 		vkEndCommandBuffer(frames[frame].setup_command_buffer);
 		vkEndCommandBuffer(frames[frame].draw_command_buffer);
 	}
-	context->flush(p_current_frame, p_current_frame);
-	//re-create the setup command
-	if (p_current_frame) {
+
+	if (local_device.is_valid()) {
+
+		VkCommandBuffer command_buffers[2] = { frames[frame].setup_command_buffer, frames[frame].draw_command_buffer };
+		context->local_device_push_command_buffers(local_device, command_buffers, 2);
+		context->local_device_sync(local_device);
+
 		VkCommandBufferBeginInfo cmdbuf_begin;
 		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdbuf_begin.pNext = nullptr;
@@ -6898,27 +6937,48 @@ void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 
 		VkResult err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
 		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-		context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
-	}
-
-	if (p_current_frame) {
-		VkCommandBufferBeginInfo cmdbuf_begin;
-		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		cmdbuf_begin.pNext = nullptr;
-		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		cmdbuf_begin.pInheritanceInfo = nullptr;
-
-		VkResult err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
+		err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
 		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-		context->append_command_buffer(frames[frame].draw_command_buffer);
+
+	} else {
+		context->flush(p_current_frame, p_current_frame);
+		//re-create the setup command
+		if (p_current_frame) {
+			VkCommandBufferBeginInfo cmdbuf_begin;
+			cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdbuf_begin.pNext = nullptr;
+			cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			cmdbuf_begin.pInheritanceInfo = nullptr;
+
+			VkResult err = vkBeginCommandBuffer(frames[frame].setup_command_buffer, &cmdbuf_begin);
+			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+			context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
+		}
+
+		if (p_current_frame) {
+			VkCommandBufferBeginInfo cmdbuf_begin;
+			cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdbuf_begin.pNext = nullptr;
+			cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			cmdbuf_begin.pInheritanceInfo = nullptr;
+
+			VkResult err = vkBeginCommandBuffer(frames[frame].draw_command_buffer, &cmdbuf_begin);
+			ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+			context->append_command_buffer(frames[frame].draw_command_buffer);
+		}
 	}
 }
 
-void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
+void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_device) {
 
 	context = p_context;
 	device = p_context->get_device();
-	frame_count = p_context->get_swapchain_image_count() + 1; //always need one extra to ensure it's unused at any time, without having to use a fence for this.
+	if (p_local_device) {
+		frame_count = 1;
+		local_device = p_context->local_device_create();
+	} else {
+		frame_count = p_context->get_swapchain_image_count() + 1; //always need one extra to ensure it's unused at any time, without having to use a fence for this.
+	}
 	limits = p_context->get_device_limits();
 	max_timestamp_query_elements = 256;
 
@@ -6999,11 +7059,13 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 
 		VkResult err = vkBeginCommandBuffer(frames[0].setup_command_buffer, &cmdbuf_begin);
 		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-		context->set_setup_buffer(frames[0].setup_command_buffer); //append now so it's added before everything else
 
 		err = vkBeginCommandBuffer(frames[0].draw_command_buffer, &cmdbuf_begin);
 		ERR_FAIL_COND_MSG(err, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
-		context->append_command_buffer(frames[0].draw_command_buffer);
+		if (local_device.is_null()) {
+			context->set_setup_buffer(frames[0].setup_command_buffer); //append now so it's added before everything else
+			context->append_command_buffer(frames[0].draw_command_buffer);
+		}
 	}
 
 	staging_buffer_block_size = GLOBAL_DEF("rendering/vulkan/staging_buffer/block_size_kb", 256);
@@ -7285,6 +7347,19 @@ void RenderingDeviceVulkan::finalize() {
 	ERR_FAIL_COND(reverse_dependency_map.size());
 }
 
+RenderingDevice *RenderingDeviceVulkan::create_local_device() {
+	RenderingDeviceVulkan *rd = memnew(RenderingDeviceVulkan);
+	rd->initialize(context, true);
+	return rd;
+}
+
 RenderingDeviceVulkan::RenderingDeviceVulkan() {
 	screen_prepared = false;
+}
+
+RenderingDeviceVulkan::~RenderingDeviceVulkan() {
+	if (local_device.is_valid()) {
+		finalize();
+		context->local_device_free(local_device);
+	}
 }

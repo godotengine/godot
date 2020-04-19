@@ -952,10 +952,12 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	uint32_t max_timestamp_query_elements;
 
-	Frame *frames; //frames available, they are cycled (usually 3)
+	Frame *frames; //frames available, for main device they are cycled (usually 3), for local devices only 1
 	int frame; //current frame
 	int frame_count; //total amount of frames
 	uint64_t frames_drawn;
+	RID local_device;
+	bool local_device_processing = false;
 
 	void _free_pending_resources(int p_frame);
 
@@ -970,6 +972,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	template <class T>
 	void _free_rids(T &p_owner, const char *p_type);
+
+	void _finalize_command_bufers();
+	void _begin_frame();
 
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
@@ -1121,14 +1126,20 @@ public:
 	virtual int limit_get(Limit p_limit);
 
 	virtual void prepare_screen_for_drawing();
-	void initialize(VulkanContext *p_context);
+	void initialize(VulkanContext *p_context, bool p_local_device = false);
 	void finalize();
 
-	virtual void swap_buffers();
+	virtual void swap_buffers(); //for main device
+
+	virtual void submit(); //for local device
+	virtual void sync(); //for local device
 
 	virtual uint32_t get_frame_delay() const;
 
+	virtual RenderingDevice *create_local_device();
+
 	RenderingDeviceVulkan();
+	~RenderingDeviceVulkan();
 };
 
 #endif // RENDERING_DEVICE_VULKAN_H
