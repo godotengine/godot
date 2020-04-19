@@ -241,8 +241,19 @@ void SectionedInspector::update_category_list() {
 
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
-
-		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize()))
+		
+		//get the fulls tring
+		String pi_name=pi.name;
+		//get the path up until the last term after the /
+		String prop_stuff = pi_name.substr(0, pi_name.find_last("/"));
+		//get the last term after the /
+		String setti_stuff= pi_name.substr(pi_name.find_last("/")+1);
+		
+		//properly filter
+		if (!filter.empty() 
+			&& !filter.is_subsequence_ofi(prop_stuff) && !filter.is_subsequence_ofi(setti_stuff) 
+			&& !filter.is_subsequence_ofi(prop_stuff.replace("/", " ").capitalize()) 
+			&& !filter.is_subsequence_ofi(setti_stuff.replace("/", " ").capitalize()))
 			continue;
 
 		int sp = pi.name.find("/");
@@ -282,6 +293,15 @@ void SectionedInspector::update_category_list() {
 
 	if (section_map.has(selected_category)) {
 		section_map[selected_category]->select(0);
+	}else {
+		for (Map<String, TreeItem *>::Element *E = section_map.front(); E; E = E->next()) {
+			String sect_stuff = E->key();
+			TreeItem *tree_stuff = E->get();
+			if (!sect_stuff.empty() && tree_stuff->is_selectable(0)) {
+				tree_stuff->select(0);
+				break;
+			}
+		}
 	}
 
 	inspector->update_tree();
