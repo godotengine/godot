@@ -1620,7 +1620,8 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z) {
 
 	// join is whether to join to the previous batch.
 	// batch_break is whether to PREVENT the next batch from joining with us
-	bool batch_break = false;
+	// batch_break must be preserved over z_indices,
+	// so is stored in _render_item_state.join_batch_break
 
 	while (p_item_list) {
 
@@ -1628,7 +1629,7 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z) {
 
 		bool join;
 
-		if (batch_break) {
+		if (_render_item_state.join_batch_break) {
 			// always start a new batch for this item
 			join = false;
 
@@ -1637,9 +1638,9 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z) {
 			// even though we know join is false.
 			// also we need to run try_join_item for every item because it keeps the state up to date,
 			// if we didn't run it the state would be out of date.
-			try_join_item(ci, _render_item_state, batch_break);
+			try_join_item(ci, _render_item_state, _render_item_state.join_batch_break);
 		} else {
-			join = try_join_item(ci, _render_item_state, batch_break);
+			join = try_join_item(ci, _render_item_state, _render_item_state.join_batch_break);
 		}
 
 		// assume the first item will always return no join
@@ -1720,6 +1721,10 @@ void RasterizerCanvasGLES2::canvas_render_items_begin(const Color &p_modulate, L
 	_render_item_state.item_group_modulate = p_modulate;
 	_render_item_state.item_group_light = p_light;
 	_render_item_state.item_group_base_transform = p_base_transform;
+
+	// batch break must be preserved over the different z indices,
+	// to prevent joining to an item on a previous index if not allowed
+	_render_item_state.join_batch_break = false;
 }
 
 void RasterizerCanvasGLES2::canvas_render_items_end() {

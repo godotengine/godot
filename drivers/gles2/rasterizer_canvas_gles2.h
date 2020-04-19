@@ -200,6 +200,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 		// used for joining items only
 		BItemJoined *joined_item;
+		bool join_batch_break;
 
 		// 'item group' is data over a single call to canvas_render_items
 		int item_group_z;
