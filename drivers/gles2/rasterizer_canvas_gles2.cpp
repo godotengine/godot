@@ -85,6 +85,19 @@ void RasterizerCanvasGLES2::RenderItemState::reset() {
 	joined_item = nullptr;
 }
 
+// just translate the color into something easily readable and not too verbose
+String RasterizerCanvasGLES2::BatchColor::to_string() const {
+	String sz = "{";
+	const float *data = get_data();
+	for (int c = 0; c < 4; c++) {
+		float f = data[c];
+		int val = ((f * 255.0f) + 0.5f);
+		sz += String(Variant(val)) + " ";
+	}
+	sz += "}";
+	return sz;
+}
+
 RasterizerStorageGLES2::Texture *RasterizerCanvasGLES2::_get_canvas_texture(const RID &p_texture) const {
 	if (p_texture.is_valid()) {
 
@@ -494,37 +507,44 @@ void RasterizerCanvasGLES2::_batch_translate_to_colored() {
 	for (int n = 0; n < bdata.batches.size(); n++) {
 		const Batch &source_batch = bdata.batches[n];
 
-		bool needs_new_batch;
+		bool needs_new_batch = true;
 
 		if (dest_batch) {
-			// is the dest batch the same except for the color?
-			if ((dest_batch->batch_texture_id == source_batch.batch_texture_id) && (dest_batch->type == source_batch.type)) {
-				// add to previous batch
-				dest_batch->num_commands += source_batch.num_commands;
-				needs_new_batch = false;
+			if (dest_batch->type == source_batch.type) {
+				if (source_batch.type == Batch::BT_RECT) {
+					if (dest_batch->batch_texture_id == source_batch.batch_texture_id) {
+						// add to previous batch
+						dest_batch->num_commands += source_batch.num_commands;
+						needs_new_batch = false;
 
-				// create the colored verts (only if not default)
-				if (source_batch.type != Batch::BT_DEFAULT) {
-					int first_vert = source_batch.first_quad * 4;
-					int end_vert = 4 * (source_batch.first_quad + source_batch.num_commands);
+						// create the colored verts (only if not default)
+						int first_vert = source_batch.first_quad * 4;
+						int end_vert = 4 * (source_batch.first_quad + source_batch.num_commands);
 
-					for (int v = first_vert; v < end_vert; v++) {
-						const BatchVertex &bv = bdata.vertices[v];
-						BatchVertexColored *cv = bdata.vertices_colored.request();
+						for (int v = first_vert; v < end_vert; v++) {
+							const BatchVertex &bv = bdata.vertices[v];
+							BatchVertexColored *cv = bdata.vertices_colored.request();
 #ifdef DEBUG_ENABLED
-						CRASH_COND(!cv);
+							CRASH_COND(!cv);
 #endif
-						cv->pos = bv.pos;
-						cv->uv = bv.uv;
-						cv->col = source_batch.color;
-					}
+							cv->pos = bv.pos;
+							cv->uv = bv.uv;
+							cv->col = source_batch.color;
+						}
+					} // textures match
+				} else {
+					// default
+					// we can still join, but only under special circumstances
+					// does this ever happen? not sure at this stage, but left for future expansion
+					uint32_t source_last_command = source_batch.first_command + source_batch.num_commands;
+					if (source_last_command == dest_batch->first_command) {
+						dest_batch->num_commands += source_batch.num_commands;
+						needs_new_batch = false;
+					} // if the commands line up exactly
 				}
-			} else {
-				needs_new_batch = true;
-			}
-		} else {
-			needs_new_batch = true;
-		}
+			} // if both batches are the same type
+
+		} // if dest batch is valid
 
 		if (needs_new_batch) {
 			dest_batch = bdata.batches_temp.request();
@@ -646,8 +666,68 @@ void RasterizerCanvasGLES2::_batch_render_rects(const Batch &p_batch, Rasterizer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+#ifdef DEBUG_ENABLED
+String RasterizerCanvasGLES2::get_command_type_string(const Item::Command &p_command) const {
+	String sz = "";
+
+	switch (p_command.type) {
+		default:
+			break;
+		case Item::Command::TYPE_LINE: {
+			sz = "l";
+		} break;
+		case Item::Command::TYPE_POLYLINE: {
+			sz = "PL";
+		} break;
+		case Item::Command::TYPE_RECT: {
+			sz = "r";
+		} break;
+		case Item::Command::TYPE_NINEPATCH: {
+			sz = "n";
+		} break;
+		case Item::Command::TYPE_PRIMITIVE: {
+			sz = "PR";
+		} break;
+		case Item::Command::TYPE_POLYGON: {
+			sz = "p";
+		} break;
+		case Item::Command::TYPE_MESH: {
+			sz = "m";
+		} break;
+		case Item::Command::TYPE_MULTIMESH: {
+			sz = "MM";
+		} break;
+		case Item::Command::TYPE_PARTICLES: {
+			sz = "PA";
+		} break;
+		case Item::Command::TYPE_CIRCLE: {
+			sz = "c";
+		} break;
+		case Item::Command::TYPE_TRANSFORM: {
+			sz = "t";
+
+			// add a bit more info in debug build
+			const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(&p_command);
+			const Transform2D &mat = transform->xform;
+
+			sz += " ";
+			sz += String(Variant(mat.elements[2]));
+			sz += " ";
+		} break;
+		case Item::Command::TYPE_CLIP_IGNORE: {
+			sz = "CI";
+		} break;
+	} // switch
+
+	return sz;
+}
+
 void RasterizerCanvasGLES2::diagnose_batches(Item::Command *const *p_commands) {
 	int num_batches = bdata.batches.size();
+
+	BatchColor curr_color;
+	curr_color.set(Color(-1, -1, -1, -1));
+	bool first_color_change = true;
 
 	for (int batch_num = 0; batch_num < num_batches; batch_num++) {
 		const Batch &batch = bdata.batches[batch_num];
@@ -656,21 +736,42 @@ void RasterizerCanvasGLES2::diagnose_batches(Item::Command *const *p_commands) {
 		switch (batch.type) {
 			case Batch::BT_RECT: {
 				bdata.frame_string += "R ";
+				bdata.frame_string += itos(batch.first_command) + "-";
 				bdata.frame_string += itos(batch.num_commands);
 				bdata.frame_string += " [" + itos(batch.batch_texture_id) + "]";
+
+				bdata.frame_string += " " + batch.color.to_string();
+
 				if (batch.num_commands > 1) {
-					bdata.frame_string += " MULTI\n";
-				} else {
-					bdata.frame_string += "\n";
+					bdata.frame_string += " MULTI";
 				}
+				if (curr_color != batch.color) {
+					curr_color = batch.color;
+					if (!first_color_change) {
+						bdata.frame_string += " color";
+					} else {
+						first_color_change = false;
+					}
+				}
+				bdata.frame_string += "\n";
 			} break;
 			default: {
 				bdata.frame_string += "D ";
-				bdata.frame_string += itos(batch.num_commands) + "\n";
+				bdata.frame_string += itos(batch.first_command) + "-";
+				bdata.frame_string += itos(batch.num_commands) + " ";
+
+				int num_show = MIN(batch.num_commands, 16);
+				for (int n = 0; n < num_show; n++) {
+					const Item::Command &comm = *p_commands[batch.first_command + n];
+					bdata.frame_string += get_command_type_string(comm) + " ";
+				}
+
+				bdata.frame_string += "\n";
 			} break;
 		}
 	}
 }
+#endif
 
 void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material) {
 
@@ -1592,9 +1693,11 @@ void RasterizerCanvasGLES2::flush_render_batches(Item *p_first_item, Item *p_cur
 
 	Item::Command *const *commands = p_first_item->commands.ptr();
 
+#ifdef DEBUG_ENABLED
 	if (bdata.diagnose_frame) {
 		diagnose_batches(commands);
 	}
+#endif
 
 	render_batches(commands, p_current_clip, r_reclip, p_material);
 }
