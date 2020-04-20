@@ -40,6 +40,9 @@
 #include "core/version.h"
 #include "scene/resources/theme.h"
 
+// Used for a hack preserving Mono properties on non-Mono builds.
+#include "modules/modules_enabled.gen.h"
+
 void DocData::merge_from(const DocData &p_data) {
 
 	for (Map<String, ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
@@ -154,6 +157,23 @@ void DocData::merge_from(const DocData &p_data) {
 				break;
 			}
 		}
+
+#ifndef MODULE_MONO_ENABLED
+		// The Mono module defines some properties that we want to keep when
+		// re-generating docs with a non-Mono build, to prevent pointless diffs
+		// (and loss of descriptions) depending on the config of the doc writer.
+		// We use a horrible hack to force keeping the relevant properties,
+		// hardcoded below. At least it's an ad hoc hack... ¯\_(ツ)_/¯
+		// Don't show this to your kids.
+		if (c.name == "@GlobalScope") {
+			// Retrieve GodotSharp singleton.
+			for (int j = 0; j < cf.properties.size(); j++) {
+				if (cf.properties[j].name == "GodotSharp") {
+					c.properties.push_back(cf.properties[j]);
+				}
+			}
+		}
+#endif
 	}
 }
 
