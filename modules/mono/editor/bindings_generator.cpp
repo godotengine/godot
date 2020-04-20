@@ -2383,7 +2383,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		for (const List<PropertyInfo>::Element *E = property_list.front(); E; E = E->next()) {
 			const PropertyInfo &property = E->get();
 
-			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_CATEGORY)
+			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY)
 				continue;
 
 			PropertyInterface iprop;

@@ -1420,6 +1420,9 @@
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
 			Used to categorize properties together in the editor.
 		</constant>
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="512" enum="PropertyUsageFlags">
+			Used to group properties together in the editor in a subgroup (under a group).
+		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
 			The property does not save its state in [PackedScene].
 		</constant>
