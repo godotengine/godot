@@ -382,13 +382,17 @@ void NetworkedMultiplayerENet::poll() {
 						if (target == 1) {
 							// To myself and only myself
 							incoming_packets.push_back(packet);
-						} else if (!server_relay) {
-							// No other destination is allowed when server is not relaying
-							continue;
 						} else if (target == 0) {
-							// Re-send to everyone but sender :|
-
+							// Send to server
 							incoming_packets.push_back(packet);
+
+							// If server_relayed is disabled, then continue
+							if (!server_relay) {
+								// Only sent to server
+								continue;
+							}
+
+							// Re-send to everyone but sender :|
 							// And make copies for sending
 							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
@@ -401,17 +405,18 @@ void NetworkedMultiplayerENet::poll() {
 							}
 
 						} else if (target < 0) {
-							// To all but one
+							// Send to all but one if server_relay is enabled
+							if (server_relay) {
+								// And make copies for sending
+								for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
 
-							// And make copies for sending
-							for (Map<int, ENetPeer *>::Element *E = peer_map.front(); E; E = E->next()) {
+									if (uint32_t(E->key()) == source || E->key() == -target) // Do not resend to self, also do not send to excluded
+										continue;
 
-								if (uint32_t(E->key()) == source || E->key() == -target) // Do not resend to self, also do not send to excluded
-									continue;
+									ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
 
-								ENetPacket *packet2 = enet_packet_create(packet.packet->data, packet.packet->dataLength, packet.packet->flags);
-
-								enet_peer_send(E->get(), event.channelID, packet2);
+									enet_peer_send(E->get(), event.channelID, packet2);
+								}
 							}
 
 							if (-target != 1) {
@@ -421,9 +426,8 @@ void NetworkedMultiplayerENet::poll() {
 								// Server is excluded, erase packet
 								enet_packet_destroy(packet.packet);
 							}
-
-						} else {
-							// To someone else, specifically
+						} else if (server_relay) {
+							// Only send to a specific client if server_relay is enabled
 							ERR_CONTINUE(!peer_map.has(target));
 							enet_peer_send(peer_map[target], event.channelID, packet.packet);
 						}
