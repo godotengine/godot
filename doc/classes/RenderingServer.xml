@@ -947,6 +947,58 @@
 				Returns the id of a white texture. Creates one if none exists.
 			</description>
 		</method>
+		<method name="global_variable_add">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="type" type="int" enum="RenderingServer.GlobalVariableType">
+			</argument>
+			<argument index="2" name="default_value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_get" qualifiers="const">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_get_list" qualifiers="const">
+			<return type="PackedStringArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_get_type" qualifiers="const">
+			<return type="int" enum="RenderingServer.GlobalVariableType">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_remove">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="global_variable_set">
+			<return type="void">
+			</return>
+			<argument index="0" name="name" type="StringName">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="has_changed" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -3110,12 +3162,6 @@
 		<constant name="MAX_CURSORS" value="8">
 			Unused enum in Godot 3.x.
 		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
-			The minimum renderpriority of all materials.
-		</constant>
-		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
-			The maximum renderpriority of all materials.
-		</constant>
 		<constant name="TEXTURE_LAYERED_2D_ARRAY" value="0" enum="TextureLayeredType">
 		</constant>
 		<constant name="TEXTURE_LAYERED_CUBEMAP" value="1" enum="TextureLayeredType">
@@ -3148,6 +3194,12 @@
 		</constant>
 		<constant name="SHADER_MAX" value="4" enum="ShaderMode">
 			Represents the size of the [enum ShaderMode] enum.
+		</constant>
+		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
+			The minimum renderpriority of all materials.
+		</constant>
+		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
+			The maximum renderpriority of all materials.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array is a vertex array.
@@ -3224,13 +3276,13 @@
 		<constant name="ARRAY_COMPRESS_INDEX" value="131072" enum="ArrayFormat">
 			Flag used to mark a compressed index array.
 		</constant>
+		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
+			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
+		</constant>
 		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="262144" enum="ArrayFormat">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="1048576" enum="ArrayFormat">
-		</constant>
-		<constant name="ARRAY_COMPRESS_DEFAULT" value="31744" enum="ArrayFormat">
-			Used to set flags [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV] and [constant ARRAY_COMPRESS_TEX_UV2] quickly.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -3353,6 +3405,16 @@
 		<constant name="REFLECTION_PROBE_UPDATE_ALWAYS" value="1" enum="ReflectionProbeUpdateMode">
 			Reflection probe will update each frame. This mode is necessary to capture moving objects.
 		</constant>
+		<constant name="DECAL_TEXTURE_ALBEDO" value="0" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_NORMAL" value="1" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_ORM" value="2" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_EMISSION" value="3" enum="DecalTexture">
+		</constant>
+		<constant name="DECAL_TEXTURE_MAX" value="4" enum="DecalTexture">
+		</constant>
 		<constant name="PARTICLES_DRAW_ORDER_INDEX" value="0" enum="ParticlesDrawOrder">
 			Draw particles in the order that they appear in the particles array.
 		</constant>
@@ -3399,6 +3461,14 @@
 		</constant>
 		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
 			Multisample antialiasing uses 16 samples per pixel.
+		</constant>
+		<constant name="VIEWPORT_MSAA_MAX" value="5" enum="ViewportMSAA">
+		</constant>
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_DISABLED" value="0" enum="ViewportScreenSpaceAA">
+		</constant>
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_FXAA" value="1" enum="ViewportScreenSpaceAA">
+		</constant>
+		<constant name="VIEWPORT_SCREEN_SPACE_AA_MAX" value="2" enum="ViewportScreenSpaceAA">
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="ViewportRenderInfo">
 			Number of objects drawn in a single frame.
@@ -3464,6 +3534,8 @@
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_PSSM_SPLITS" value="14" enum="ViewportDebugDraw">
 			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order they will be colored red, green, blue, yellow.
+		</constant>
+		<constant name="VIEWPORT_DEBUG_DRAW_DECAL_ATLAS" value="15" enum="ViewportDebugDraw">
 		</constant>
 		<constant name="SKY_MODE_QUALITY" value="0" enum="SkyMode">
 			Uses high quality importance sampling to process the radiance map. In general, this results in much higher quality than [constant Sky.PROCESS_MODE_REALTIME] but takes much longer to generate. This should not be used if you plan on changing the sky at runtime. If you are finding that the reflection is not blurry enough and is showing sparkles or fireflies, try increasing [member ProjectSettings.rendering/quality/reflections/ggx_samples].
@@ -3541,6 +3613,14 @@
 		<constant name="ENV_TONE_MAPPER_ACES" value="3" enum="EnvironmentToneMapper">
 			Use the ACES tonemapper.
 		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_DISABLED" value="0" enum="EnvironmentSSRRoughnessQuality">
+		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_LOW" value="1" enum="EnvironmentSSRRoughnessQuality">
+		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_MEDIUM" value="2" enum="EnvironmentSSRRoughnessQuality">
+		</constant>
+		<constant name="ENV_SSR_ROUGNESS_QUALITY_HIGH" value="3" enum="EnvironmentSSRRoughnessQuality">
+		</constant>
 		<constant name="ENV_SSAO_BLUR_DISABLED" value="0" enum="EnvironmentSSAOBlur">
 			Disables the blur set for SSAO. Will make SSAO look noisier.
 		</constant>
@@ -3565,6 +3645,14 @@
 		<constant name="ENV_SSAO_QUALITY_ULTRA" value="3" enum="EnvironmentSSAOQuality">
 			Highest quality screen space ambient occlusion.
 		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_DISABLED" value="0" enum="SubSurfaceScatteringQuality">
+		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_LOW" value="1" enum="SubSurfaceScatteringQuality">
+		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_MEDIUM" value="2" enum="SubSurfaceScatteringQuality">
+		</constant>
+		<constant name="SUB_SURFACE_SCATTERING_QUALITY_HIGH" value="3" enum="SubSurfaceScatteringQuality">
+		</constant>
 		<constant name="DOF_BLUR_QUALITY_VERY_LOW" value="0" enum="DOFBlurQuality">
 			Lowest quality DOF blur. This is the fastest setting, but you may be able to see filtering artifacts.
 		</constant>
@@ -3585,6 +3673,18 @@
 		</constant>
 		<constant name="DOF_BOKEH_CIRCLE" value="2" enum="DOFBokehShape">
 			Calculates DOF blur using a circle shaped filter. Best quality and most realistic, but slowest. Use only for areas where a lot of performance can be dedicated to post-processing (e.g. cutscenes).
+		</constant>
+		<constant name="SHADOW_QUALITY_HARD" value="0" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_LOW" value="1" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_MEDIUM" value="2" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_HIGH" value="3" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_SOFT_ULTRA" value="4" enum="ShadowQuality">
+		</constant>
+		<constant name="SHADOW_QUALITY_MAX" value="5" enum="ShadowQuality">
 		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0" enum="ScenarioDebugMode">
 			Do not use a debug mode.
@@ -3619,6 +3719,9 @@
 		<constant name="INSTANCE_REFLECTION_PROBE" value="6" enum="InstanceType">
 			The instance is a reflection probe.
 		</constant>
+		<constant name="INSTANCE_DECAL" value="7" enum="InstanceType">
+			The instance is a decal.
+		</constant>
 		<constant name="INSTANCE_GI_PROBE" value="8" enum="InstanceType">
 			The instance is a GI probe.
 		</constant>
@@ -3635,7 +3738,7 @@
 			Allows the instance to be used in baked lighting.
 		</constant>
 		<constant name="INSTANCE_FLAG_USE_DYNAMIC_GI" value="1" enum="InstanceFlags">
-			Allows the instance to be used with dynamic global illumination. 
+			Allows the instance to be used with dynamic global illumination.
 		</constant>
 		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="2" enum="InstanceFlags">
 			When set, manually requests to draw geometry on next frame.
@@ -3735,6 +3838,64 @@
 		</constant>
 		<constant name="CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE" value="2" enum="CanvasOccluderPolygonCullMode">
 			Culling of the canvas occluder is counterclockwise.
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BOOL" value="0" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BVEC2" value="1" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BVEC3" value="2" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_BVEC4" value="3" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_INT" value="4" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_IVEC2" value="5" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_IVEC3" value="6" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_IVEC4" value="7" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_RECT2I" value="8" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UINT" value="9" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UVEC2" value="10" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UVEC3" value="11" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_UVEC4" value="12" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_FLOAT" value="13" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_VEC2" value="14" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_VEC3" value="15" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_VEC4" value="16" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_COLOR" value="17" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_RECT2" value="18" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAT2" value="19" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAT3" value="20" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAT4" value="21" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM_2D" value="22" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_TRANSFORM" value="23" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2D" value="24" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER2DARRAY" value="25" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLER3D" value="26" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_SAMPLERCUBE" value="27" enum="GlobalVariableType">
+		</constant>
+		<constant name="GLOBAL_VAR_TYPE_MAX" value="28" enum="GlobalVariableType">
 		</constant>
 		<constant name="INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 			The amount of objects in the frame.

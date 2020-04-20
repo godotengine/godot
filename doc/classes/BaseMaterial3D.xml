@@ -440,7 +440,7 @@
 			Texture specifying per-pixel detail normal.
 		</constant>
 		<constant name="TEXTURE_ORM" value="17" enum="TextureParam">
-			Texture holding, ambient occlusion, roughness, and metallic.
+			Texture holding ambient occlusion, roughness, and metallic.
 		</constant>
 		<constant name="TEXTURE_MAX" value="18" enum="TextureParam">
 			Represents the size of the [enum TextureParam] enum.

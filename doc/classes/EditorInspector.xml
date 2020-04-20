@@ -26,6 +26,12 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="property_deleted">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
 		<signal name="property_edited">
 			<argument index="0" name="property" type="String">
 			</argument>
