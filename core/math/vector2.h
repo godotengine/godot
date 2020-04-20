@@ -123,12 +123,6 @@ struct Vector2 {
 
 	real_t angle() const;
 
-	void set_rotation(real_t p_radians) {
-
-		x = Math::cos(p_radians);
-		y = Math::sin(p_radians);
-	}
-
 	_FORCE_INLINE_ Vector2 abs() const {
 
 		return Vector2(Math::abs(x), Math::abs(y));
