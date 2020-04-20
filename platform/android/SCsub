@@ -18,6 +18,7 @@ android_files = [
     'jni_utils.cpp',
     'android_keys_utils.cpp',
     'plugin/godot_plugin_jni.cpp',
+    'android_proxy.cpp',
     #'power_android.cpp'
 ]
 
