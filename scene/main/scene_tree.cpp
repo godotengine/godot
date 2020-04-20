@@ -1383,13 +1383,16 @@ SceneTree::SceneTree() {
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
 
-	int msaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/msaa", 0);
+	const int msaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/msaa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/msaa", PROPERTY_HINT_ENUM, "Disabled (Fastest),2x (Fast),4x (Average),8x (Slow),16x (Slower)"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
-	int ssaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/screen_space_aa", 0);
+	const int ssaa_mode = GLOBAL_DEF("rendering/quality/screen_filters/screen_space_aa", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_aa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"));
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
+
+	const bool use_debanding = GLOBAL_DEF("rendering/quality/screen_filters/use_debanding", false);
+	root->set_use_debanding(use_debanding);
 
 	{ //load default fallback environment
 		//get possible extensions
