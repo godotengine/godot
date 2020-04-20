@@ -700,6 +700,7 @@ void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, 
 	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
 
 	tonemap.push_constant.use_fxaa = p_settings.use_fxaa;
+	tonemap.push_constant.use_debanding = p_settings.use_debanding;
 	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 

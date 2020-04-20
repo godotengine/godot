@@ -5314,6 +5314,7 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 			tonemap.use_fxaa = true;
 		}
 
+		tonemap.use_debanding = rb->use_debanding;
 		tonemap.texture_size = Vector2i(rb->width, rb->height);
 
 		if (env) {
@@ -5693,13 +5694,14 @@ float RasterizerSceneRD::render_buffers_get_volumetric_fog_detail_spread(RID p_r
 	return rb->volumetric_fog->spread;
 }
 
-void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa) {
+void RasterizerSceneRD::render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_debanding) {
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	rb->width = p_width;
 	rb->height = p_height;
 	rb->render_target = p_render_target;
 	rb->msaa = p_msaa;
 	rb->screen_space_aa = p_screen_space_aa;
+	rb->use_debanding = p_use_debanding;
 	_free_render_buffer_data(rb);
 
 	{
