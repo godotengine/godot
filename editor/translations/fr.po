@@ -2230,7 +2230,7 @@ msgstr "Nouvelle Fenêtre"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr "Les ressources importés ne peuvent pas être sauvegarder."
+msgstr "Les ressources importés ne peuvent pas être sauvegardées."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
