@@ -9,7 +9,6 @@ def get_doc_classes():
         "@GDScript",
         "GDScript",
         "GDScriptFunctionState",
-        "GDScriptNativeClass",
     ]
 
 def get_doc_path():

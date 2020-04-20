@@ -243,6 +243,12 @@ void DocData::generate(bool p_basic_types) {
 		Set<StringName> setters_getters;
 
 		String name = classes.front()->get();
+		if (!ClassDB::is_class_exposed(name)) {
+			print_verbose(vformat("Class '%s' is not exposed, skipping.", name));
+			classes.pop_front();
+			continue;
+		}
+
 		String cname = name;
 		if (cname.begins_with("_")) //proxy class
 			cname = cname.substr(1, name.length());

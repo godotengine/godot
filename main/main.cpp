@@ -1131,9 +1131,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/fps/force_fps", PropertyInfo(Variant::INT, "debug/settings/fps/force_fps", PROPERTY_HINT_RANGE, "0,120,1,or_greater"));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
+	GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
 
-	if (!OS::get_singleton()->_verbose_stdout) //overridden
-		OS::get_singleton()->_verbose_stdout = GLOBAL_DEF("debug/settings/stdout/verbose_stdout", false);
+	if (!OS::get_singleton()->_verbose_stdout) { // Not manually overridden.
+		OS::get_singleton()->_verbose_stdout = GLOBAL_GET("debug/settings/stdout/verbose_stdout");
+	}
 
 	if (frame_delay == 0) {
 		frame_delay = GLOBAL_DEF("application/run/frame_delay_msec", 0);
