@@ -30,16 +30,15 @@
 
 #include "file_access_pack.h"
 
-#include "core/project_settings.h"
 #include "core/version.h"
 
 #include <stdio.h>
 
-Error PackedData::add_pack(const String &p_path, bool p_replace_files, const String &p_destination) {
+Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 
 	for (int i = 0; i < sources.size(); i++) {
 
-		if (sources[i]->try_open_pack(p_path, p_replace_files, p_destination)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files)) {
 
 			return OK;
 		};
@@ -90,7 +89,7 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 			}
 		}
 		String filename = path.get_file();
-		// Don't add as a file if the path points to a directory.
+		// Don't add as a file if the path points to a directory
 		if (!filename.empty()) {
 			cd->files.insert(filename);
 		}
@@ -133,7 +132,7 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, const String &p_destination) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f)
@@ -199,24 +198,6 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 		String path;
 		path.parse_utf8(cs.ptr());
-		if (p_destination != "") {
-			String destination = ProjectSettings::get_singleton()->localize_path(p_destination);
-			ERR_FAIL_COND_V_MSG(!destination.begins_with("res://"), false, "The destination path must be within the resource filesystem (res://).");
-
-			if (!destination.ends_with("/")) {
-				destination += "/";
-			}
-
-			DirAccess *dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-			if (!dir->dir_exists(destination)) {
-				memdelete(dir);
-
-				ERR_FAIL_V_MSG(false, vformat("The destination path \"%s\" does not exist.", destination));
-			}
-			memdelete(dir);
-
-			path = path.replace_first("res://", destination);
-		}
 
 		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
