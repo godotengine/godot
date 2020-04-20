@@ -51,7 +51,9 @@ bool gles3_available = true;
 int gl_view_base_fb;
 static String keyboard_text;
 static GLView *_instance = NULL;
-
+id _get_view_instance(){
+	return _instance;
+};
 static bool video_found_error = false;
 static bool video_playing = false;
 static CMTime video_current_time;
