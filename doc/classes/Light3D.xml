@@ -99,6 +99,9 @@
 		<constant name="PARAM_RANGE" value="3" enum="Param">
 			Constant for accessing [member OmniLight3D.omni_range] or [member SpotLight3D.spot_range].
 		</constant>
+		<constant name="PARAM_SIZE" value="4" enum="Param">
+			Constant for accessing [member light_size].
+		</constant>
 		<constant name="PARAM_ATTENUATION" value="5" enum="Param">
 			Constant for accessing [member OmniLight3D.omni_attenuation] or [member SpotLight3D.spot_attenuation].
 		</constant>

@@ -86,7 +86,6 @@ public:
 	};
 
 	enum CubeMapLayer {
-
 		CUBEMAP_LAYER_LEFT,
 		CUBEMAP_LAYER_RIGHT,
 		CUBEMAP_LAYER_BOTTOM,
@@ -158,7 +157,6 @@ public:
 	/* SHADER API */
 
 	enum ShaderMode {
-
 		SHADER_SPATIAL,
 		SHADER_CANVAS_ITEM,
 		SHADER_PARTICLES,
@@ -182,8 +180,8 @@ public:
 	enum {
 		MATERIAL_RENDER_PRIORITY_MIN = -128,
 		MATERIAL_RENDER_PRIORITY_MAX = 127,
-
 	};
+
 	virtual RID material_create() = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
@@ -198,7 +196,6 @@ public:
 	/* MESH API */
 
 	enum ArrayType {
-
 		ARRAY_VERTEX = 0,
 		ARRAY_NORMAL = 1,
 		ARRAY_TANGENT = 2,
@@ -230,12 +227,10 @@ public:
 		ARRAY_COMPRESS_TEX_UV = 1 << (ARRAY_TEX_UV + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_TEX_UV2 = 1 << (ARRAY_TEX_UV2 + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_INDEX = 1 << (ARRAY_INDEX + ARRAY_COMPRESS_BASE),
+		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2,
 
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
-
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2
-
 	};
 
 	enum PrimitiveType {
@@ -378,7 +373,6 @@ public:
 	};
 
 	enum LightParam {
-
 		LIGHT_PARAM_ENERGY,
 		LIGHT_PARAM_INDIRECT_ENERGY,
 		LIGHT_PARAM_SPECULAR,
@@ -599,7 +593,8 @@ public:
 	};
 
 	virtual void particles_set_collision(RID p_particles,ParticlesCollisionMode p_mode,const Transform&, p_xform,const RID p_depth_tex,const RID p_normal_tex)=0;
-*/
+	*/
+
 	/* VIEWPORT TARGET API */
 
 	virtual RID viewport_create() = 0;
@@ -623,7 +618,6 @@ public:
 	virtual void viewport_set_update_mode(RID p_viewport, ViewportUpdateMode p_mode) = 0;
 
 	enum ViewportClearMode {
-
 		VIEWPORT_CLEAR_ALWAYS,
 		VIEWPORT_CLEAR_NEVER,
 		VIEWPORT_CLEAR_ONLY_NEXT_FRAME
@@ -664,18 +658,19 @@ public:
 	enum ViewportScreenSpaceAA {
 		VIEWPORT_SCREEN_SPACE_AA_DISABLED,
 		VIEWPORT_SCREEN_SPACE_AA_FXAA,
+		VIEWPORT_SCREEN_SPACE_AA_MAX,
 	};
+
 	virtual void viewport_set_screen_space_aa(RID p_viewport, ViewportScreenSpaceAA p_mode) = 0;
 
 	enum ViewportRenderInfo {
-
 		VIEWPORT_RENDER_INFO_OBJECTS_IN_FRAME,
 		VIEWPORT_RENDER_INFO_VERTICES_IN_FRAME,
 		VIEWPORT_RENDER_INFO_MATERIAL_CHANGES_IN_FRAME,
 		VIEWPORT_RENDER_INFO_SHADER_CHANGES_IN_FRAME,
 		VIEWPORT_RENDER_INFO_SURFACE_CHANGES_IN_FRAME,
 		VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME,
-		VIEWPORT_RENDER_INFO_MAX
+		VIEWPORT_RENDER_INFO_MAX,
 	};
 
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) = 0;
@@ -697,7 +692,6 @@ public:
 		VIEWPORT_DEBUG_DRAW_ROUGHNESS_LIMITER,
 		VIEWPORT_DEBUG_DRAW_PSSM_SPLITS,
 		VIEWPORT_DEBUG_DRAW_DECAL_ATLAS,
-
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
@@ -725,7 +719,6 @@ public:
 	virtual RID environment_create() = 0;
 
 	enum EnvironmentBG {
-
 		ENV_BG_CLEAR_COLOR,
 		ENV_BG_COLOR,
 		ENV_BG_SKY,
@@ -768,6 +761,7 @@ public:
 		ENV_GLOW_BLEND_MODE_REPLACE,
 		ENV_GLOW_BLEND_MODE_MIX,
 	};
+
 	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) = 0;
 
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) = 0;
@@ -872,7 +866,6 @@ public:
 		SCENARIO_DEBUG_WIREFRAME,
 		SCENARIO_DEBUG_OVERDRAW,
 		SCENARIO_DEBUG_SHADELESS,
-
 	};
 
 	virtual void scenario_set_debug(RID p_scenario, ScenarioDebugMode p_debug_mode) = 0;
@@ -883,7 +876,6 @@ public:
 	/* INSTANCING API */
 
 	enum InstanceType {
-
 		INSTANCE_NONE,
 		INSTANCE_MESH,
 		INSTANCE_MULTIMESH,
@@ -1094,6 +1086,7 @@ public:
 		CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE,
 		CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE,
 	};
+
 	virtual void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon, CanvasOccluderPolygonCullMode p_mode) = 0;
 
 	/* GLOBAL VARIABLES */
@@ -1167,7 +1160,6 @@ public:
 	/* STATUS INFORMATION */
 
 	enum RenderInfo {
-
 		INFO_OBJECTS_IN_FRAME,
 		INFO_VERTICES_IN_FRAME,
 		INFO_MATERIAL_CHANGES_IN_FRAME,
@@ -1250,6 +1242,7 @@ VARIANT_ENUM_CAST(RenderingServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
+VARIANT_ENUM_CAST(RenderingServer::ViewportScreenSpaceAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
@@ -1258,10 +1251,13 @@ VARIANT_ENUM_CAST(RenderingServer::EnvironmentAmbientSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentReflectionSource);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentGlowBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentToneMapper);
-VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSRRoughnessQuality);
 VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOBlur);
+VARIANT_ENUM_CAST(RenderingServer::EnvironmentSSAOQuality);
+VARIANT_ENUM_CAST(RenderingServer::SubSurfaceScatteringQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBlurQuality);
 VARIANT_ENUM_CAST(RenderingServer::DOFBokehShape);
+VARIANT_ENUM_CAST(RenderingServer::ShadowQuality);
 VARIANT_ENUM_CAST(RenderingServer::ScenarioDebugMode);
 VARIANT_ENUM_CAST(RenderingServer::InstanceType);
 VARIANT_ENUM_CAST(RenderingServer::InstanceFlags);
@@ -1276,7 +1272,7 @@ VARIANT_ENUM_CAST(RenderingServer::GlobalVariableType);
 VARIANT_ENUM_CAST(RenderingServer::RenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::Features);
 
-//typedef RenderingServer VS; // makes it easier to use
+// Alias to make it easier to use.
 #define RS RenderingServer
 
-#endif
+#endif // RENDERING_SERVER_H
