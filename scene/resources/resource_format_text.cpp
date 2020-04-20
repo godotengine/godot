@@ -120,18 +120,23 @@ Error ResourceLoaderText::_parse_sub_resource(VariantParser::Stream *p_stream, R
 
 	int index = token.value;
 
-	String path = local_path + "::" + itos(index);
-
-	if (!ignore_resource_parsing) {
-
-		if (!ResourceCache::has(path)) {
-			r_err_str = "Can't load cached sub-resource: " + path;
-			return ERR_PARSE_ERROR;
-		}
-
-		r_res = RES(ResourceCache::get(path));
+	if (use_nocache) {
+		r_res = int_resources[index];
 	} else {
-		r_res = RES();
+
+		String path = local_path + "::" + itos(index);
+
+		if (!ignore_resource_parsing) {
+
+			if (!ResourceCache::has(path)) {
+				r_err_str = "Can't load cached sub-resource: " + path;
+				return ERR_PARSE_ERROR;
+			}
+
+			r_res = RES(ResourceCache::get(path));
+		} else {
+			r_res = RES();
+		}
 	}
 
 	VariantParser::get_token(p_stream, token, line, r_err_str);
@@ -535,7 +540,7 @@ Error ResourceLoaderText::load() {
 
 		Ref<Resource> res;
 
-		if (!ResourceCache::has(path)) { //only if it doesn't exist
+		if (use_nocache || !ResourceCache::has(path)) { //only if it doesn't exist
 
 			Object *obj = ClassDB::instance(type);
 			if (!obj) {
@@ -556,8 +561,10 @@ Error ResourceLoaderText::load() {
 			}
 
 			res = Ref<Resource>(r);
-			resource_cache.push_back(res);
-			res->set_path(path);
+			int_resources[id] = res;
+			if (!use_nocache) {
+				res->set_path(path);
+			}
 		}
 
 		resource_current++;
@@ -643,10 +650,12 @@ Error ResourceLoaderText::load() {
 					_printerr();
 				} else {
 					error = OK;
-					if (!ResourceCache::has(res_path)) {
-						resource->set_path(res_path);
+					if (!use_nocache) {
+						if (!ResourceCache::has(res_path)) {
+							resource->set_path(res_path);
+						}
+						resource->set_as_translation_remapped(translation_remapped);
 					}
-					resource->set_as_translation_remapped(translation_remapped);
 				}
 				return error;
 			}
@@ -691,7 +700,7 @@ Error ResourceLoaderText::load() {
 		error = OK;
 		//get it here
 		resource = packed_scene;
-		if (!ResourceCache::has(res_path)) {
+		if (!use_nocache && !ResourceCache::has(res_path)) {
 			packed_scene->set_path(res_path);
 		}
 
@@ -725,6 +734,9 @@ void ResourceLoaderText::set_translation_remapped(bool p_remapped) {
 }
 
 ResourceLoaderText::ResourceLoaderText() {
+
+	use_nocache = false;
+
 	resources_total = 0;
 	resource_current = 0;
 	use_sub_threads = false;
@@ -1285,7 +1297,7 @@ String ResourceLoaderText::recognize(FileAccess *p_f) {
 
 /////////////////////
 
-RES ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES ResourceFormatLoaderText::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 
 	if (r_error)
 		*r_error = ERR_CANT_OPEN;
@@ -1298,6 +1310,7 @@ RES ResourceFormatLoaderText::load(const String &p_path, const String &p_origina
 
 	ResourceLoaderText loader;
 	String path = p_original_path != "" ? p_original_path : p_path;
+	loader.use_nocache = p_no_cache;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.progress = r_progress;

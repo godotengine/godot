@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineDepthStencilState" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="back_op_compare" type="int" setter="set_back_op_compare" getter="get_back_op_compare" enum="RenderingDevice.CompareOperator" default="7">
+		</member>
+		<member name="back_op_compare_mask" type="int" setter="set_back_op_compare_mask" getter="get_back_op_compare_mask" default="0">
+		</member>
+		<member name="back_op_depth_fail" type="int" setter="set_back_op_depth_fail" getter="get_back_op_depth_fail" enum="RenderingDevice.StencilOperation" default="1">
+		</member>
+		<member name="back_op_fail" type="int" setter="set_back_op_fail" getter="get_back_op_fail" enum="RenderingDevice.StencilOperation" default="1">
+		</member>
+		<member name="back_op_pass" type="int" setter="set_back_op_pass" getter="get_back_op_pass" enum="RenderingDevice.StencilOperation" default="1">
+		</member>
+		<member name="back_op_reference" type="int" setter="set_back_op_reference" getter="get_back_op_reference" default="0">
+		</member>
+		<member name="back_op_write_mask" type="int" setter="set_back_op_write_mask" getter="get_back_op_write_mask" default="0">
+		</member>
+		<member name="depth_compare_operator" type="int" setter="set_depth_compare_operator" getter="get_depth_compare_operator" enum="RenderingDevice.CompareOperator" default="7">
+		</member>
+		<member name="depth_range_max" type="float" setter="set_depth_range_max" getter="get_depth_range_max" default="0.0">
+		</member>
+		<member name="depth_range_min" type="float" setter="set_depth_range_min" getter="get_depth_range_min" default="0.0">
+		</member>
+		<member name="enable_depth_range" type="bool" setter="set_enable_depth_range" getter="get_enable_depth_range" default="false">
+		</member>
+		<member name="enable_depth_test" type="bool" setter="set_enable_depth_test" getter="get_enable_depth_test" default="false">
+		</member>
+		<member name="enable_depth_write" type="bool" setter="set_enable_depth_write" getter="get_enable_depth_write" default="false">
+		</member>
+		<member name="enable_stencil" type="bool" setter="set_enable_stencil" getter="get_enable_stencil" default="false">
+		</member>
+		<member name="front_op_compare" type="int" setter="set_front_op_compare" getter="get_front_op_compare" enum="RenderingDevice.CompareOperator" default="7">
+		</member>
+		<member name="front_op_compare_mask" type="int" setter="set_front_op_compare_mask" getter="get_front_op_compare_mask" default="0">
+		</member>
+		<member name="front_op_depth_fail" type="int" setter="set_front_op_depth_fail" getter="get_front_op_depth_fail" enum="RenderingDevice.StencilOperation" default="1">
+		</member>
+		<member name="front_op_fail" type="int" setter="set_front_op_fail" getter="get_front_op_fail" enum="RenderingDevice.StencilOperation" default="1">
+		</member>
+		<member name="front_op_pass" type="int" setter="set_front_op_pass" getter="get_front_op_pass" enum="RenderingDevice.StencilOperation" default="1">
+		</member>
+		<member name="front_op_reference" type="int" setter="set_front_op_reference" getter="get_front_op_reference" default="0">
+		</member>
+		<member name="front_op_write_mask" type="int" setter="set_front_op_write_mask" getter="get_front_op_write_mask" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

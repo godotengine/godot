@@ -493,7 +493,7 @@ Error GDNative::get_symbol(StringName p_procedure_name, void *&r_handle, bool p_
 	return result;
 }
 
-RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES GDNativeLibraryResourceLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 	Ref<GDNativeLibrary> lib;
 	lib.instance();
 
