@@ -76,6 +76,8 @@ public:
 
 	NSMenu *apple_menu = nullptr;
 	NSMenu *dock_menu = nullptr;
+	NSMenu *window_menu = nullptr;
+	NSMenu *help_menu = nullptr;
 	Map<String, NSMenu *> submenu;
 
 	struct KeyEvent {
@@ -178,33 +180,60 @@ public:
 	bool drop_events;
 	bool in_dispatch_input_event = false;
 
+	void _fill_apple_menu();
+	void _fill_window_menu();
+
 public:
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
-	virtual void global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant()) override;
-	virtual void global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant()) override;
-	virtual void global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu) override;
-	virtual void global_menu_add_separator(const String &p_menu_root) override;
+	virtual void global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), int p_id = -1, Key p_accel = Key::NONE, int p_idx = -1) override;
+	virtual void global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), int p_id = -1, Key p_accel = Key::NONE, int p_idx = -1) override;
+	virtual void global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), int p_id = -1, Key p_accel = Key::NONE, int p_idx = -1) override;
+	virtual void global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), int p_id = -1, Key p_accel = Key::NONE, int p_idx = -1) override;
+	virtual void global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback = Callable(), int p_id = -1, Key p_accel = Key::NONE, int p_idx = -1) override;
+	virtual void global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback = Callable(), int p_id = -1, Key p_accel = Key::NONE, int p_idx = -1) override;
+	virtual void global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state = 0, const Callable &p_callback = Callable(), int p_id = -1, Key p_accel = Key::NONE, int p_idx = -1) override;
+	virtual void global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_idx = -1) override;
+	virtual void global_menu_add_separator(const String &p_menu_root, int p_idx = -1) override;
+
+	virtual int global_menu_get_item_idx_from_text(const String &p_menu_root, const String &p_text) const override;
+	virtual int global_menu_get_item_index(const String &p_menu_root, int p_id) const override;
 
 	virtual bool global_menu_is_item_checked(const String &p_menu_root, int p_idx) const override;
 	virtual bool global_menu_is_item_checkable(const String &p_menu_root, int p_idx) const override;
+	virtual bool global_menu_is_item_radio_checkable(const String &p_menu_root, int p_idx) const override;
 	virtual Callable global_menu_get_item_callback(const String &p_menu_root, int p_idx) override;
-	virtual Variant global_menu_get_item_tag(const String &p_menu_root, int p_idx) override;
+	virtual int global_menu_get_item_id(const String &p_menu_root, int p_idx) override;
 	virtual String global_menu_get_item_text(const String &p_menu_root, int p_idx) override;
 	virtual String global_menu_get_item_submenu(const String &p_menu_root, int p_idx) override;
+	virtual Key global_menu_get_item_accelerator(const String &p_menu_root, int p_idx) override;
+	virtual bool global_menu_is_item_disabled(const String &p_menu_root, int p_idx) const override;
+	virtual String global_menu_get_item_tooltip(const String &p_menu_root, int p_idx) override;
+	virtual int global_menu_get_item_state(const String &p_menu_root, int p_idx) const override;
+	virtual int global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const override;
+	virtual Variant global_menu_get_item_metadata(const String &p_menu_root, int p_idx) const override;
+	virtual Ref<Texture2D> global_menu_get_item_icon(const String &p_menu_root, int p_idx) const override;
 
 	virtual void global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked) override;
 	virtual void global_menu_set_item_checkable(const String &p_menu_root, int p_idx, bool p_checkable) override;
+	virtual void global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable) override;
 	virtual void global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback) override;
-	virtual void global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag) override;
+	virtual void global_menu_set_item_id(const String &p_menu_root, int p_idx, int p_id) override;
 	virtual void global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text) override;
 	virtual void global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu) override;
+	virtual void global_menu_set_item_accelerator(const String &p_menu_root, int p_idx, Key p_keycode) override;
+	virtual void global_menu_set_item_disabled(const String &p_menu_root, int p_idx, bool p_disabled) override;
+	virtual void global_menu_set_item_tooltip(const String &p_menu_root, int p_idx, const String &p_tooltip) override;
+	virtual void global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state) override;
+	virtual void global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states) override;
+	virtual void global_menu_set_item_metadata(const String &p_menu_root, int p_idx, const Variant &p_meta) override;
+	virtual void global_menu_set_item_icon(const String &p_menu_root, int p_idx, const Ref<Texture2D> &p_icon) override;
 
 	virtual int global_menu_get_item_count(const String &p_menu_root) const override;
 
 	virtual void global_menu_remove_item(const String &p_menu_root, int p_idx) override;
-	virtual void global_menu_clear(const String &p_menu_root) override;
+	virtual void global_menu_clear(const String &p_menu_root, bool p_restore_default = true) override;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;

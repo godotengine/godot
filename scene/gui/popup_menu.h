@@ -130,6 +130,12 @@ class PopupMenu : public Popup {
 	ScrollContainer *scroll_container;
 	Control *control;
 
+	String _global_menu_root;
+	String _global_menu_name;
+
+	void _update_menu();
+	void _update_global_menu();
+
 	void _draw_items();
 	void _draw_background();
 
@@ -186,6 +192,7 @@ public:
 	void set_item_shortcut(int p_idx, const Ref<Shortcut> &p_shortcut, bool p_global = false);
 	void set_item_h_offset(int p_idx, int p_offset);
 	void set_item_multistate(int p_idx, int p_state);
+	void set_item_max_states(int p_idx, int p_max_states);
 	void toggle_item_multistate(int p_idx);
 	void set_item_shortcut_disabled(int p_idx, bool p_disabled);
 
@@ -211,6 +218,7 @@ public:
 	String get_item_tooltip(int p_idx) const;
 	Ref<Shortcut> get_item_shortcut(int p_idx) const;
 	int get_item_state(int p_idx) const;
+	int get_item_max_states(int p_idx) const;
 
 	int get_current_index() const;
 
@@ -251,6 +259,10 @@ public:
 	bool get_allow_search() const;
 
 	virtual void popup(const Rect2 &p_bounds = Rect2());
+
+	virtual void attach_to_global_menu(const String &p_menu_root, const String &p_label, const String &p_submenu_name = String());
+	virtual void detach_from_global_menu();
+	virtual bool is_attached_to_global_menu() const;
 
 	void take_mouse_focus();
 

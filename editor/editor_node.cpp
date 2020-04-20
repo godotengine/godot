@@ -6298,6 +6298,7 @@ EditorNode::EditorNode() {
 	file_menu->set_switch_on_hover(true);
 	file_menu->set_text(TTR("Scene"));
 	file_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+	file_menu->get_popup()->attach_to_global_menu("_main", TTR("Scene"));
 	left_menu_hb->add_child(file_menu);
 
 	prev_scene = memnew(Button);
@@ -6414,6 +6415,7 @@ EditorNode::EditorNode() {
 	project_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
 	project_menu->set_text(TTR("Project"));
 	project_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+	project_menu->get_popup()->attach_to_global_menu("_main", TTR("Project"));
 	left_menu_hb->add_child(project_menu);
 
 	p = project_menu->get_popup();
@@ -6464,6 +6466,7 @@ EditorNode::EditorNode() {
 	debug_menu->set_switch_on_hover(true);
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+	debug_menu->get_popup()->attach_to_global_menu("_main", TTR("Debug"));
 	left_menu_hb->add_child(debug_menu);
 
 	menu_hb->add_spacer();
@@ -6473,6 +6476,7 @@ EditorNode::EditorNode() {
 	settings_menu->set_switch_on_hover(true);
 	settings_menu->set_text(TTR("Editor"));
 	settings_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+	settings_menu->get_popup()->attach_to_global_menu("_main", TTR("Editor"));
 	left_menu_hb->add_child(settings_menu);
 
 	p = settings_menu->get_popup();
@@ -6526,6 +6530,7 @@ EditorNode::EditorNode() {
 	help_menu->set_switch_on_hover(true);
 	help_menu->set_text(TTR("Help"));
 	help_menu->add_theme_style_override("hover", gui_base->get_theme_stylebox(SNAME("MenuHover"), SNAME("EditorStyles")));
+	help_menu->get_popup()->attach_to_global_menu("_main", TTR("Help"));
 	left_menu_hb->add_child(help_menu);
 
 	p = help_menu->get_popup();

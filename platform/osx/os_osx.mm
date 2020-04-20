@@ -133,7 +133,7 @@
 
 - (NSMenu *)applicationDockMenu:(NSApplication *)sender {
 	if (DS_OSX) {
-		return DS_OSX->_get_dock_menu();
+		return DS_OSX->dock_menu;
 	} else {
 		return nullptr;
 	}

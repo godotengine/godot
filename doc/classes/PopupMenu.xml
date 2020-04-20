@@ -174,6 +174,16 @@
 				An [code]id[/code] can optionally be provided. If no [code]id[/code] is provided, one will be created from the index.
 			</description>
 		</method>
+		<method name="attach_to_global_menu">
+			<return type="void" />
+			<argument index="0" name="menu_root" type="String" />
+			<argument index="1" name="label" type="String" />
+			<argument index="2" name="menu_name" type="String" default="&quot;&quot;" />
+			<description>
+				Adds [PopupMenu] to the global menu as a submenu of [code]menu_root[/code]. If [code]menu_name[/code] is not specified, [code]label[/code] will be used instead. [code]menu_name[/code] must be unique.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="clear">
 			<return type="void" />
 			<description>
@@ -185,6 +195,13 @@
 			<argument index="0" name="index" type="int" />
 			<description>
 				Removes all OpenType features form the item's text.
+			</description>
+		</method>
+		<method name="detach_from_global_menu">
+			<return type="void" />
+			<description>
+				Removes [PopupMenu] from the global menu.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="get_current_index" qualifiers="const">
@@ -228,11 +245,25 @@
 				Returns item's text language code.
 			</description>
 		</method>
+		<method name="get_item_max_states" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns number of states of an multistate item. See [method add_multistate_item] for details.
+			</description>
+		</method>
 		<method name="get_item_metadata" qualifiers="const">
 			<return type="Variant" />
 			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the metadata of the specified item, which might be of any type. You can set it with [method set_item_metadata], which provides a simple way of assigning context data to items.
+			</description>
+		</method>
+		<method name="get_item_multistate" qualifiers="const">
+			<return type="int" />
+			<argument index="0" name="index" type="int" />
+			<description>
+				Returns the state of a multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 		<method name="get_item_opentype_feature" qualifiers="const">
@@ -276,6 +307,13 @@
 			<argument index="0" name="index" type="int" />
 			<description>
 				Returns the tooltip associated with the item at the given [code]index[/code].
+			</description>
+		</method>
+		<method name="is_attached_to_global_menu" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if [PopupMenu] is attached to the global menu.
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="is_item_checkable" qualifiers="const">
@@ -403,6 +441,14 @@
 			<argument index="1" name="language" type="String" />
 			<description>
 				Sets language code of item's text used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
+			</description>
+		</method>
+		<method name="set_item_max_states">
+			<return type="void" />
+			<argument index="0" name="index" type="int" />
+			<argument index="1" name="max_states" type="int" />
+			<description>
+				Sets number of states of an multistate item. See [method add_multistate_item] for details.
 			</description>
 		</method>
 		<method name="set_item_metadata">
