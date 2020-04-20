@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDUniform" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_id">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_ids">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_ids" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="binding" type="int" setter="set_binding" getter="get_binding" default="0">
+		</member>
+		<member name="type" type="int" setter="set_type" getter="get_type" enum="RenderingDevice.UniformType" default="3">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

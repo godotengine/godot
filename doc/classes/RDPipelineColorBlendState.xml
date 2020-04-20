@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDPipelineColorBlendState" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_attachment">
+			<return type="void">
+			</return>
+			<argument index="0" name="atachment" type="RDPipelineColorBlendStateAttachment">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_blend_mix_attachment">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="add_no_blend_attachment">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_attachments">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_attachments" qualifiers="const">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="blend_constant" type="Color" setter="set_blend_constant" getter="get_blend_constant" default="Color( 0, 0, 0, 1 )">
+		</member>
+		<member name="enable_logic_op" type="bool" setter="set_enable_logic_op" getter="get_enable_logic_op" default="false">
+		</member>
+		<member name="logic_op" type="int" setter="set_logic_op" getter="get_logic_op" enum="RenderingDevice.LogicOperation" default="0">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

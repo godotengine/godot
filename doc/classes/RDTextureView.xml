@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDTextureView" inherits="Reference" version="4.0">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="format_override" type="int" setter="set_format_override" getter="get_format_override" enum="RenderingDevice.DataFormat" default="226">
+		</member>
+		<member name="swizzle_a" type="int" setter="set_swizzle_a" getter="get_swizzle_a" enum="RenderingDevice.TextureSwizzle" default="6">
+		</member>
+		<member name="swizzle_b" type="int" setter="set_swizzle_b" getter="get_swizzle_b" enum="RenderingDevice.TextureSwizzle" default="5">
+		</member>
+		<member name="swizzle_g" type="int" setter="set_swizzle_g" getter="get_swizzle_g" enum="RenderingDevice.TextureSwizzle" default="4">
+		</member>
+		<member name="swizzle_r" type="int" setter="set_swizzle_r" getter="get_swizzle_r" enum="RenderingDevice.TextureSwizzle" default="3">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
