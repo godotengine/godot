@@ -34,6 +34,19 @@
 #include "core/object.h"
 #include "servers/display_server.h"
 
+class RDTextureFormat;
+class RDTextureView;
+class RDAttachments;
+class RDSamplerState;
+class RDVertexDescriptions;
+class RDShaderSource;
+class RDShaderBytecode;
+class RDUniforms;
+class RDPipelineRasterizationState;
+class RDPipelineMultisampleState;
+class RDPipelineDepthStencilState;
+class RDPipelineColorBlendState;
+
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
 public:
@@ -65,10 +78,14 @@ private:
 
 	static RenderingDevice *singleton;
 
+protected:
+	static void _bind_methods();
+
 public:
 	//base numeric ID for all types
 	enum {
-		INVALID_ID = -1
+		INVALID_ID = -1,
+		INVALID_FORMAT_ID = -1
 	};
 
 	/*****************/
@@ -595,7 +612,7 @@ public:
 		UNIFORM_TYPE_IMAGE_BUFFER, //texel buffer, (imageBuffer type), for compute mostly
 		UNIFORM_TYPE_UNIFORM_BUFFER, //regular uniform buffer (or UBO).
 		UNIFORM_TYPE_STORAGE_BUFFER, //storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly
-		UNIFORM_TYPE_INPUT_ATTACHMENT, //used for sub-pass read/write, for compute mostly
+		UNIFORM_TYPE_INPUT_ATTACHMENT, //used for sub-pass read/write, for mobile mostly
 		UNIFORM_TYPE_MAX
 	};
 
@@ -796,8 +813,8 @@ public:
 			}
 		};
 
-		StencilOperationState stencil_operation_front;
-		StencilOperationState stencil_operation_back;
+		StencilOperationState front_op;
+		StencilOperationState back_op;
 
 		PipelineDepthStencilState() {
 			enable_depth_test = false;
@@ -884,8 +901,8 @@ public:
 		DYNAMIC_STATE_STENCIL_REFERENCE = (1 << 6),
 	};
 
-	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0) = 0;
 	virtual bool render_pipeline_is_valid(RID p_pipeline) = 0;
+	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0) = 0;
 
 	/**************************/
 	/**** COMPUTE PIPELINE ****/
@@ -932,7 +949,7 @@ public:
 	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) = 0;
 	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array) = 0;
 	virtual void draw_list_set_line_width(DrawListID p_list, float p_width) = 0;
-	virtual void draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size) = 0;
+	virtual void draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size) = 0;
 
 	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0) = 0;
 
@@ -950,7 +967,7 @@ public:
 	virtual ComputeListID compute_list_begin() = 0;
 	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) = 0;
 	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
-	virtual void compute_list_set_push_constant(ComputeListID p_list, void *p_data, uint32_t p_data_size) = 0;
+	virtual void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size) = 0;
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
 	virtual void compute_list_add_barrier(ComputeListID p_list) = 0;
 
@@ -1031,7 +1048,59 @@ public:
 
 	static RenderingDevice *get_singleton();
 	RenderingDevice();
+
+protected:
+	//binders to script API
+	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const Array &p_data = Array());
+	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
+	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
+
+	FramebufferFormatID _framebuffer_format_create(const Array &p_attachments);
+	RID _framebuffer_create(const Array &p_textures, FramebufferFormatID p_format_check = INVALID_ID);
+	RID _sampler_create(const Ref<RDSamplerState> &p_state);
+	VertexFormatID _vertex_format_create(const Array &p_vertex_formats);
+	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Array &p_src_buffers);
+
+	Ref<RDShaderBytecode> _shader_compile_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
+	RID _shader_create(const Ref<RDShaderBytecode> &p_bytecode);
+
+	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
+
+	Error _buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false);
+
+	RID _render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags = 0);
+
+	Vector<int64_t> _draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
+	void _draw_list_set_push_constant(DrawListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
+	void _compute_list_set_push_constant(ComputeListID p_list, const Vector<uint8_t> &p_data, uint32_t p_data_size);
 };
+
+VARIANT_ENUM_CAST(RenderingDevice::ShaderStage)
+VARIANT_ENUM_CAST(RenderingDevice::ShaderLanguage)
+VARIANT_ENUM_CAST(RenderingDevice::CompareOperator)
+VARIANT_ENUM_CAST(RenderingDevice::DataFormat)
+VARIANT_ENUM_CAST(RenderingDevice::TextureType)
+VARIANT_ENUM_CAST(RenderingDevice::TextureSamples)
+VARIANT_ENUM_CAST(RenderingDevice::TextureUsageBits)
+VARIANT_ENUM_CAST(RenderingDevice::TextureSwizzle)
+VARIANT_ENUM_CAST(RenderingDevice::TextureSliceType)
+VARIANT_ENUM_CAST(RenderingDevice::SamplerFilter)
+VARIANT_ENUM_CAST(RenderingDevice::SamplerRepeatMode)
+VARIANT_ENUM_CAST(RenderingDevice::SamplerBorderColor)
+VARIANT_ENUM_CAST(RenderingDevice::VertexFrequency)
+VARIANT_ENUM_CAST(RenderingDevice::IndexBufferFormat)
+VARIANT_ENUM_CAST(RenderingDevice::UniformType)
+VARIANT_ENUM_CAST(RenderingDevice::RenderPrimitive)
+VARIANT_ENUM_CAST(RenderingDevice::PolygonCullMode)
+VARIANT_ENUM_CAST(RenderingDevice::PolygonFrontFace)
+VARIANT_ENUM_CAST(RenderingDevice::StencilOperation)
+VARIANT_ENUM_CAST(RenderingDevice::LogicOperation)
+VARIANT_ENUM_CAST(RenderingDevice::BlendFactor)
+VARIANT_ENUM_CAST(RenderingDevice::BlendOperation)
+VARIANT_ENUM_CAST(RenderingDevice::PipelineDynamicStateFlags)
+VARIANT_ENUM_CAST(RenderingDevice::InitialAction)
+VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
+VARIANT_ENUM_CAST(RenderingDevice::Limit)
 
 typedef RenderingDevice RD;
 

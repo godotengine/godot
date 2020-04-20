@@ -62,7 +62,10 @@
 #include "physics_3d/physics_server_3d_sw.h"
 #include "physics_server_2d.h"
 #include "physics_server_3d.h"
+#include "rendering/rasterizer.h"
 #include "rendering/rendering_device.h"
+#include "rendering/rendering_device_binds.h"
+
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
 #include "xr/xr_interface.h"
@@ -161,6 +164,22 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectSpectrumAnalyzer>();
 		ClassDB::register_virtual_class<AudioEffectSpectrumAnalyzerInstance>();
 	}
+
+	ClassDB::register_virtual_class<RenderingDevice>();
+	ClassDB::register_class<RDTextureFormat>();
+	ClassDB::register_class<RDTextureView>();
+	ClassDB::register_class<RDAttachmentFormat>();
+	ClassDB::register_class<RDSamplerState>();
+	ClassDB::register_class<RDVertexDescription>();
+	ClassDB::register_class<RDUniform>();
+	ClassDB::register_class<RDPipelineRasterizationState>();
+	ClassDB::register_class<RDPipelineMultisampleState>();
+	ClassDB::register_class<RDPipelineDepthStencilState>();
+	ClassDB::register_class<RDPipelineColorBlendStateAttachment>();
+	ClassDB::register_class<RDPipelineColorBlendState>();
+	ClassDB::register_class<RDShaderSource>();
+	ClassDB::register_class<RDShaderBytecode>();
+	ClassDB::register_class<RDShaderFile>();
 
 	ClassDB::register_class<CameraFeed>();
 

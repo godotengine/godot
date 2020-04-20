@@ -1080,7 +1080,7 @@ public:
 	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array);
 	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array);
 	virtual void draw_list_set_line_width(DrawListID p_list, float p_width);
-	virtual void draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size);
+	virtual void draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size);
 
 	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 
@@ -1096,7 +1096,7 @@ public:
 	virtual ComputeListID compute_list_begin();
 	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline);
 	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index);
-	virtual void compute_list_set_push_constant(ComputeListID p_list, void *p_data, uint32_t p_data_size);
+	virtual void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size);
 	virtual void compute_list_add_barrier(ComputeListID p_list);
 
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);

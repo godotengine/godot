@@ -337,12 +337,16 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 				} break;
 				case OBJECT_INTERNAL_RESOURCE: {
 					uint32_t index = f->get_32();
-					String path = res_path + "::" + itos(index);
-					RES res = ResourceLoader::load(path);
-					if (res.is_null()) {
-						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
+					if (use_nocache) {
+						r_v = internal_resources[index].cache;
+					} else {
+						String path = res_path + "::" + itos(index);
+						RES res = ResourceLoader::load(path);
+						if (res.is_null()) {
+							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
+						}
+						r_v = res;
 					}
-					r_v = res;
 
 				} break;
 				case OBJECT_EXTERNAL_RESOURCE: {
@@ -716,22 +720,24 @@ Error ResourceLoaderBinary::load() {
 
 		if (!main) {
 
-			path = internal_resources[i].path;
-			if (path.begins_with("local://")) {
-				path = path.replace_first("local://", "");
-				subindex = path.to_int();
-				path = res_path + "::" + path;
-			}
+			if (!use_nocache) {
+				path = internal_resources[i].path;
+				if (path.begins_with("local://")) {
+					path = path.replace_first("local://", "");
+					subindex = path.to_int();
+					path = res_path + "::" + path;
+				}
 
-			if (ResourceCache::has(path)) {
-				//already loaded, don't do anything
-				stage++;
-				error = OK;
-				continue;
+				if (ResourceCache::has(path)) {
+					//already loaded, don't do anything
+					stage++;
+					error = OK;
+					continue;
+				}
 			}
 		} else {
 
-			if (!ResourceCache::has(res_path))
+			if (!use_nocache && !ResourceCache::has(res_path))
 				path = res_path;
 		}
 
@@ -757,8 +763,14 @@ Error ResourceLoaderBinary::load() {
 
 		RES res = RES(r);
 
-		r->set_path(path);
+		if (path != String()) {
+			r->set_path(path);
+		}
 		r->set_subindex(subindex);
+
+		if (!main) {
+			internal_resources.write[i].cache = res;
+		}
 
 		int pc = f->get_32();
 
@@ -1013,6 +1025,7 @@ ResourceLoaderBinary::ResourceLoaderBinary() :
 		importmd_ofs(0),
 		error(OK) {
 
+	use_nocache = false;
 	progress = nullptr;
 	use_sub_threads = false;
 }
@@ -1023,7 +1036,7 @@ ResourceLoaderBinary::~ResourceLoaderBinary() {
 		memdelete(f);
 }
 
-RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;
@@ -1034,6 +1047,7 @@ RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_origi
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot open file '" + p_path + "'.");
 
 	ResourceLoaderBinary loader;
+	loader.use_nocache = p_no_cache;
 	loader.use_sub_threads = p_use_sub_threads;
 	loader.progress = r_progress;
 	String path = p_original_path != "" ? p_original_path : p_path;
