@@ -592,22 +592,16 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 		Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
 		const Vector3 *vr = vertices.ptr();
 		Vector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
-		const Vector2 *uvr;
+		const Vector2 *uvr = nullptr;
 		Vector<Vector3> normals = a[Mesh::ARRAY_NORMAL];
-		const Vector3 *nr;
+		const Vector3 *nr = nullptr;
 		Vector<int> index = a[Mesh::ARRAY_INDEX];
 
-		bool read_uv = false;
-		bool read_normals = false;
-
 		if (uv.size()) {
-
 			uvr = uv.ptr();
-			read_uv = true;
 		}
 
 		if (normals.size()) {
-			read_normals = true;
 			nr = normals.ptr();
 		}
 
@@ -626,13 +620,13 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 					vtxs[k] = p_xform.xform(vr[ir[j * 3 + k]]);
 				}
 
-				if (read_uv) {
+				if (uvr) {
 					for (int k = 0; k < 3; k++) {
 						uvs[k] = uvr[ir[j * 3 + k]];
 					}
 				}
 
-				if (read_normals) {
+				if (nr) {
 					for (int k = 0; k < 3; k++) {
 						normal[k] = nr[ir[j * 3 + k]];
 					}
@@ -659,13 +653,13 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 					vtxs[k] = p_xform.xform(vr[j * 3 + k]);
 				}
 
-				if (read_uv) {
+				if (uvr) {
 					for (int k = 0; k < 3; k++) {
 						uvs[k] = uvr[j * 3 + k];
 					}
 				}
 
-				if (read_normals) {
+				if (nr) {
 					for (int k = 0; k < 3; k++) {
 						normal[k] = nr[j * 3 + k];
 					}
