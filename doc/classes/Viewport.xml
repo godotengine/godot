@@ -192,8 +192,10 @@
 			If [code]true[/code], the viewport will process 3D audio streams.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
+			Sets the default filter mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureFilter] for options.
 		</member>
 		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" enum="Viewport.DefaultCanvasItemTextureRepeat" default="0">
+			Sets the default repeat mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureRepeat] for options.
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
@@ -222,6 +224,9 @@
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
+		</member>
+		<member name="screen_space_aa" type="int" setter="set_screen_space_aa" getter="get_screen_space_aa" enum="Viewport.ScreenSpaceAA" default="0">
+			Sets the screen-space antialiasing method used. Screen-space antialiasing works by selectively blurring edges in a post-process shader. It differs from MSAA which takes multiple coverage samples while rendering objects. Screen-space AA methods are typically faster than MSAA and will smooth out specular aliasing, but tend to make scenes appear blurry.
 		</member>
 		<member name="shadow_atlas_quad_0" type="int" setter="set_shadow_atlas_quadrant_subdiv" getter="get_shadow_atlas_quadrant_subdiv" enum="Viewport.ShadowAtlasQuadrantSubdiv" default="2">
 			The subdivision amount of the first quadrant on the shadow atlas.
@@ -316,27 +321,42 @@
 			Objects are displayed without light information.
 		</constant>
 		<constant name="DEBUG_DRAW_OVERDRAW" value="3" enum="DebugDraw">
-			Objected are displayed semi-transparent with additive blending so you can see where they intersect.
+			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
 			Objects are displayed in wireframe style.
 		</constant>
 		<constant name="DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="DebugDraw">
+			Objects are displayed with only the albedo value from [GIProbe]s.
 		</constant>
 		<constant name="DEBUG_DRAW_GI_PROBE_LIGHTING" value="7" enum="DebugDraw">
+			Objects are displayed with only the lighting value from [GIProbe]s.
 		</constant>
 		<constant name="DEBUG_DRAW_GI_PROBE_EMISSION" value="8" enum="DebugDraw">
+			Objects are displayed with only the emission color from [GIProbe]s.
 		</constant>
 		<constant name="DEBUG_DRAW_SHADOW_ATLAS" value="9" enum="DebugDraw">
+			Draws the shadow atlas that stores shadows from [OmniLight3D]s and [SpotLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS" value="10" enum="DebugDraw">
+			Draws the shadow atlas that stores shadows from [DirectionalLight3D]s in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="DEBUG_DRAW_SCENE_LUMINANCE" value="11" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_SSAO" value="12" enum="DebugDraw">
+			Draws the screen-space ambient occlusion texture instead of the scene so that you can clearly see how it is affecting objects. In order for this display mode to work, you must have [member Environment.ssao_enabled] set in your [WorldEnvironment].
+		</constant>
+		<constant name="DEBUG_DRAW_ROUGHNESS_LIMITER" value="13" enum="DebugDraw">
+			Draws the roughness limiter post process over the Viewport so you can see where it has an effect. It must be enabled in [member ProjectSettings.rendering/quality/screen_filters/screen_space_roughness_limiter] to work.
+		</constant>
+		<constant name="DEBUG_DRAW_PSSM_SPLITS" value="14" enum="DebugDraw">
+			Colors each PSSM split for the [DirectionalLight3D]s in the scene a different color so you can see where the splits are. In order, they will be colored red, green, blue, and yellow.
+		</constant>
+		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15" enum="DebugDraw">
+			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
-			Multisample anti-aliasing mode disabled. This is the default value.
+			Multisample antialiasing mode disabled. This is the default value, and also the fastest setting.
 		</constant>
 		<constant name="MSAA_2X" value="1" enum="MSAA">
 			Use 2x Multisample Antialiasing.
@@ -350,23 +370,41 @@
 		<constant name="MSAA_16X" value="4" enum="MSAA">
 			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
 		</constant>
+		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
+			Do not perform any antialiasing in the full screen post-process.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
+			Use fast approximate antialiasing. FXAA is a popular screen-space antialising method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
+			Max enum for screen-space antialiasing effects.
+		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR" value="1" enum="DefaultCanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="2" enum="DefaultCanvasItemTextureFilter">
+			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="3" enum="DefaultCanvasItemTextureFilter">
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_MAX" value="4" enum="DefaultCanvasItemTextureFilter">
+			Max value for [enum DefaultCanvasItemTextureFilter] enum.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED" value="0" enum="DefaultCanvasItemTextureRepeat">
+			Disables textures repeating. Instead, when reading UVs outside the 0-1 range, the value will be clamped to the edge of the texture, resulting in a stretched out look at the borders of the texture.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED" value="1" enum="DefaultCanvasItemTextureRepeat">
+			Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR" value="2" enum="DefaultCanvasItemTextureRepeat">
+			Flip the texture when repeating so that the edge lines up instead of abruptly changing.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MAX" value="3" enum="DefaultCanvasItemTextureRepeat">
+			Max value for [enum DefaultCanvasItemTextureRepeat] enum.
 		</constant>
 	</constants>
 </class>
