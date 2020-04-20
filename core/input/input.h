@@ -127,15 +127,6 @@ private:
 
 	int mouse_from_touch_index;
 
-	struct VibrationInfo {
-		float weak_magnitude;
-		float strong_magnitude;
-		float duration; // Duration in seconds
-		uint64_t timestamp;
-	};
-
-	Map<int, VibrationInfo> joy_vibration;
-
 	struct SpeedTrack {
 
 		uint64_t last_tick;
@@ -232,6 +223,15 @@ private:
 	EventDispatchFunc event_dispatch_function;
 
 protected:
+	struct VibrationInfo {
+		float weak_magnitude;
+		float strong_magnitude;
+		float duration; // Duration in seconds
+		uint64_t timestamp;
+	};
+
+	Map<int, VibrationInfo> joy_vibration;
+
 	static void _bind_methods();
 
 public:
