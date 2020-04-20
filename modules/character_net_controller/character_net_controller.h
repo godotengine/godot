@@ -220,6 +220,7 @@ public:
 
 	void replay_snapshots();
 	int forget_input_till(uint64_t p_input_id);
+	uint64_t get_next_instant_id(int p_i) const;
 	bool replay_process_next_instant(int p_i, real_t p_delta);
 
 	bool is_server_controller() const;
@@ -318,6 +319,7 @@ struct Controller {
 	virtual void player_state_check(uint64_t p_id, Variant p_data) = 0;
 	virtual void replay_snapshots() = 0;
 	virtual int forget_input_till(uint64_t p_input_id) = 0;
+	virtual uint64_t get_next_instant_id(int p_i) const = 0;
 	virtual bool replay_process_next_instant(int p_i, real_t p_delta) = 0;
 	virtual uint64_t get_current_snapshot_id() const = 0;
 };
@@ -340,6 +342,7 @@ struct ServerController : public Controller {
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
+	virtual uint64_t get_next_instant_id(int p_i) const;
 	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
@@ -384,6 +387,7 @@ struct PlayerController : public Controller {
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
+	virtual uint64_t get_next_instant_id(int p_i) const;
 	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
@@ -426,6 +430,7 @@ struct DollController : public Controller {
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
+	virtual uint64_t get_next_instant_id(int p_i) const;
 	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
@@ -451,6 +456,7 @@ struct NoNetController : public Controller {
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
 	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
+	virtual uint64_t get_next_instant_id(int p_i) const;
 	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 };

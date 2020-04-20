@@ -37,11 +37,6 @@ VarData::VarData() :
 		id(0),
 		enabled(false) {}
 
-VarData::VarData(uint32_t p_id) :
-		id(p_id),
-		enabled(false) {
-}
-
 VarData::VarData(StringName p_name) :
 		id(0),
 		name(p_name),
@@ -70,6 +65,19 @@ NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
 		instance_id(p_instance_id),
 		is_controller(is_controller),
 		registered_process_count(-1) {
+}
+
+int NodeData::find_var_by_id(uint32_t p_id) const {
+	if (p_id == 0) {
+		return -1;
+	}
+	const VarData *v = vars.ptr();
+	for (int i = 0; i < vars.size(); i += 0) {
+		if (v[i].id == p_id) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 void SceneRewinder::_bind_methods() {
@@ -568,11 +576,6 @@ void SceneRewinder::pull_variable_changes(Vector<ObjectID> *r_null_objects) {
 			const Variant new_val = node->get(object_vars[i].name);
 
 			if (!rewinder_variant_evaluation(old_val, new_val)) {
-				// TODO just a test, remove this.
-				if (is_rewinding()) {
-					print_line(old_val);
-					print_line(new_val);
-				}
 				object_vars[i].value = new_val;
 				node->emit_signal(get_changed_event_name(object_vars[i].name));
 			}
@@ -609,7 +612,8 @@ void ControllerRewinder::init(
 		int p_frames,
 		uint64_t p_recovered_snapshot_input_id) {
 
-	const bool rewinding_disabled = p_recovered_snapshot_input_id == UINT64_MAX;
+	recovered_snapshot_input_id = p_recovered_snapshot_input_id;
+	const bool rewinding_disabled = recovered_snapshot_input_id == UINT64_MAX;
 
 	controller = p_controller;
 	frames_to_skip = p_frames;
@@ -627,9 +631,34 @@ void ControllerRewinder::advance(int p_i, real_t p_delta) {
 		return;
 	}
 
+	// TODO please do this only if debug is enabled
+	CRASH_COND(controller->get_next_instant_id(p_i) != get_processed_input_id(p_i));
+
 	const bool has_next = controller->replay_process_next_instant(p_i, p_delta);
 	if (has_next == false) {
 		finished = true;
+	}
+}
+
+CharacterNetController *ControllerRewinder::get_controller() const {
+	return controller;
+}
+
+uint64_t ControllerRewinder::get_processed_input_id(int p_i) const {
+	const bool rewinding_disabled = recovered_snapshot_input_id == UINT64_MAX;
+	if (rewinding_disabled) {
+		return UINT64_MAX;
+	} else {
+		if (p_i >= frames_to_skip) {
+			return (p_i - frames_to_skip) + recovered_snapshot_input_id;
+		} else {
+			const uint64_t frames_to_now = (frames_to_skip - p_i);
+			if (frames_to_now > recovered_snapshot_input_id) {
+				return recovered_snapshot_input_id - frames_to_now;
+			} else {
+				return UINT64_MAX;
+			}
+		}
 	}
 }
 
@@ -807,21 +836,34 @@ void ClientRewinder::store_snapshot() {
 	// Store snapshots.
 	Snapshot snapshot;
 
-	// Store the player controller input ID
+	// Store the player controller input ID.
 	snapshot.player_controller_input_id = scene_rewinder->main_controller->get_current_input_id();
 
 	// Store the controllers input ID
 	const CharacterNetController *const *controllers_ptr = scene_rewinder->controllers.ptr();
 	for (int i = 0; i < scene_rewinder->controllers.size(); i += 1) {
-		snapshot.controllers_input_id[controllers_ptr[i]->get_instance_id()] =
-				controllers_ptr[i]->get_current_input_id();
+		snapshot.controllers_input_id.set(
+				controllers_ptr[i]->get_instance_id(),
+				controllers_ptr[i]->get_current_input_id());
 	}
 
+	// Store the current node data
 	snapshot.data = scene_rewinder->data;
+
+	// Archive the snapshot.
 	snapshots.push_back(snapshot);
 }
 
-void ClientRewinder::update_snapshot(int p_snapshot_index) {
+void ClientRewinder::update_snapshot(
+		int p_snapshot_index,
+		ControllerRewinder *p_rewinders,
+		int p_rewinder_count) {
+
+	for (int r = 0; r < p_rewinder_count; r += 1) {
+		const uint64_t i = p_rewinders[r].get_processed_input_id(p_snapshot_index);
+		snapshots[p_snapshot_index].controllers_input_id[p_rewinders[r].get_controller()->get_instance_id()] = i;
+	}
+
 	ERR_FAIL_COND(size_t(p_snapshot_index) >= snapshots.size());
 	snapshots[p_snapshot_index].data = scene_rewinder->data;
 }
@@ -832,45 +874,49 @@ void ClientRewinder::process_recovery(real_t p_delta) {
 		return;
 	}
 
-	// Compare the server snapshot with the client snapshot.
-	// The scene state is relative to the NetController player input ID,
-	// so the comparison is done between two snapshots that have the same player
-	// NetController input ID.
-
+	// Drop all the snapshots that are older than the delivered server snapshot.
 	while (snapshots.empty() == false && snapshots.front().player_controller_input_id < server_snapshot.player_controller_input_id) {
 		snapshots.pop_front();
 	}
 
-	ERR_FAIL_COND(snapshots.empty()); // Unreachable
+	if (snapshots.empty()) {
+		// Nothing to do.
+		return;
+	}
 
+	// The next snapshot is the one we are searching for.
 	const Snapshot &client_snapshot = snapshots.front();
 	ERR_FAIL_COND(client_snapshot.player_controller_input_id != server_snapshot.player_controller_input_id);
 
 	// Client snapshot found.
 	scene_rewinder->recover_in_progress = true;
 
-	const bool need_full_recovery = recovery_compare_snapshot(
+	const bool need_rewind = compare_and_recovery(
 			server_snapshot,
 			client_snapshot);
 
-	if (need_full_recovery) {
+	if (need_rewind) {
 		scene_rewinder->rewinding_in_progress = true;
-		recovery_apply_server_snapshot(server_snapshot);
 		recovery_rewind(server_snapshot, client_snapshot, p_delta);
 		scene_rewinder->rewinding_in_progress = false;
 	}
 
+	scene_rewinder->recover_in_progress = false;
 	recovered_snapshot_id = server_snapshot_id;
 	snapshots.pop_front();
-	scene_rewinder->recover_in_progress = false;
 }
 
-bool ClientRewinder::recovery_compare_snapshot(
+bool ClientRewinder::compare_and_recovery(
 		const Snapshot &p_server_snapshot,
 		const Snapshot &p_client_snapshot) {
 
 	// Compare the server snapshot with the client snapshot and apply the server
 	// value if the difference found doesn't need a full recovery.
+	// Note: the full recovery sets the entire server snapshot, so just return
+	// `true` is enough.
+
+	bool need_rewind = false;
+
 	for (
 			const ObjectID *key = p_server_snapshot.data.next(nullptr);
 			key != nullptr;
@@ -878,92 +924,102 @@ bool ClientRewinder::recovery_compare_snapshot(
 
 		const NodeData &s_data = p_server_snapshot.data.get(*key);
 		const VarData *s_vars = s_data.vars.ptr();
-		// Can we avoid this?
-		Object *obj = ObjectDB::get_instance(s_data.instance_id);
 
-		const NodeData &sr_node_data = scene_rewinder->data.get(s_data.instance_id);
-		const bool sensible = sr_node_data.is_controller || sr_node_data.registered_process_count > 0;
+		NodeData *rew_node_data = scene_rewinder->data.getptr(s_data.instance_id);
+		// Unreachable, because once received the server snapshot, the algorithm
+		// make sure that the `scene_rewinder` has the node.
+		CRASH_COND(rew_node_data == nullptr);
+
+		Node *node = rew_node_data->cached_node;
+		if (node == nullptr) {
+			continue;
+		}
+
+		VarData *rew_vars = rew_node_data->vars.ptrw();
+
+		// Check if this node is sensible to changes, so a rewind is needed.
+		const bool sensible =
+				rew_node_data->is_controller ||
+				(rew_node_data->registered_process_count > 0);
 
 		const NodeData *c_data = p_client_snapshot.data.getptr(*key);
 		if (c_data == nullptr) {
-			// The client snapshot doesn't have this node, so it's considere
-			// different. Apply the server values.
-			if (sensible) {
-				return true;
-			} else {
-				for (int i = 0; i < s_data.vars.size(); i += 1) {
-					obj->set(s_vars[i].name, s_vars[i].value);
-					obj->emit_signal(scene_rewinder->get_changed_event_name(s_vars[i].name));
-				}
+			// The client snapshot at that time was not tracking this node, so
+			// it's considered different. Just apply the server values.
+			for (int s_var_index = 0; s_var_index < s_data.vars.size(); s_var_index += 1) {
+				node->set(s_vars[s_var_index].name, s_vars[s_var_index].value);
+				node->emit_signal(scene_rewinder->get_changed_event_name(s_vars[s_var_index].name));
+
+				const int rew_var_index = rew_node_data->vars.find(s_vars[s_var_index].name);
+				// Unreachable, because when the snapshot is received the
+				// algorithm make sure the `scene_rewinder` is traking the
+				// variable.
+				CRASH_COND(rew_var_index <= -1);
+				rew_vars[rew_var_index].value = s_vars[s_var_index].value;
 			}
+
+			if (sensible) {
+				need_rewind = true;
+			}
+
 		} else {
-			// Compare vars
+			// Compare vars.
+			bool different = false;
 			const VarData *c_vars = c_data->vars.ptr();
-			for (int i = 0; i < s_data.vars.size(); i += 1) {
-				const int c_var_index = c_data->vars.find(s_vars[i].id);
+
+			for (int s_var_index = 0; s_var_index < s_data.vars.size(); s_var_index += 1) {
+				const int c_var_index = c_data->vars.find(s_vars[s_var_index].name);
 				if (c_var_index == -1) {
 					// Variable not found, this is considered a difference.
-					if (sensible) {
-						return true;
-					} else {
-						obj->set(s_vars[i].name, s_vars[i].value);
-						obj->emit_signal(scene_rewinder->get_changed_event_name(s_vars[i].name));
-					}
+					different = true;
 				} else {
 					// Variable found compare.
-					if (!scene_rewinder->rewinder_variant_evaluation(s_vars[i].value, c_vars[i].value)) {
-						// Variables differents.
-						if (sensible) {
-							return true;
-						} else {
-							obj->set(s_vars[i].name, s_vars[i].value);
-							obj->emit_signal(scene_rewinder->get_changed_event_name(s_vars[i].name));
-						}
+					different = !scene_rewinder->rewinder_variant_evaluation(s_vars[s_var_index].value, c_vars[c_var_index].value);
+					if (different) {
+						print_line(s_vars[s_var_index].value);
+						print_line(c_vars[c_var_index].value);
+					}
+				}
+
+				if (different) {
+					node->set(s_vars[s_var_index].name, s_vars[s_var_index].value);
+					node->emit_signal(scene_rewinder->get_changed_event_name(s_vars[s_var_index].name));
+
+					const int rew_var_index = rew_node_data->vars.find(s_vars[s_var_index].name);
+					// Unreachable, because when the snapshot is received the
+					// algorithm make sure the `scene_rewinder` is traking the
+					// variable.
+					CRASH_COND(rew_var_index <= -1);
+					rew_vars[rew_var_index].value = s_vars[s_var_index].value;
+
+					if (sensible) {
+						need_rewind = true;
 					}
 				}
 			}
 		}
 	}
 
-	return false;
-}
-
-void ClientRewinder::recovery_apply_server_snapshot(const Snapshot &p_server_snapshot) {
-	for (
-			const ObjectID *key = p_server_snapshot.data.next(nullptr);
-			key != nullptr;
-			key = p_server_snapshot.data.next(key)) {
-
-		const NodeData &s_data = p_server_snapshot.data.get(*key);
-
-		Node *node = scene_rewinder->data[*key].cached_node;
-		scene_rewinder->data[*key].vars = s_data.vars;
-
-		if (node == nullptr)
-			continue;
-
-		const VarData *s_vars = s_data.vars.ptr();
-
-		for (int i = 0; i < s_data.vars.size(); i += 1) {
-			node->set(s_vars[i].name, s_vars[i].value);
-			node->emit_signal(scene_rewinder->get_changed_event_name(s_vars[i].name));
-		}
-	}
+	return need_rewind;
 }
 
 void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot, real_t p_delta) {
 	// TODO integrate isle rewinding optimization.
 
+	// Rewind the scene, -1 because the first one is the snapshot that we are
+	// recovering.
+	const int snapshot_count = snapshots.size() - 1;
+
 	const int controller_size = scene_rewinder->controllers.size();
 	CharacterNetController *const *controllers = scene_rewinder->controllers.ptr();
 
-	// Initialize the rewinders
+	// Initialize the rewinders.
 	ControllerRewinder *rewinders = memnew_arr(ControllerRewinder, controller_size);
 
 	for (int i = 0; i < controller_size; i += 1) {
 
 		int frames_to_skip = 0; // Hard reset by default
-		uint64_t rewind_input_id = UINT64_MAX;
+		uint64_t rewind_input_id = UINT64_MAX; // Rewind disabled by default.
 
 		const uint64_t *server_input_id = p_server_snapshot
 												  .controllers_input_id
@@ -973,37 +1029,46 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 			const uint64_t siid = *server_input_id;
 			rewind_input_id = siid;
 
-			const uint64_t *client_input_id = p_client_snapshot
-													  .controllers_input_id
-													  .getptr(controllers[i]->get_instance_id());
+			// Check if we can avoid timeline jumps for dolls.
+			if (scene_rewinder->main_controller != controllers[i]) {
 
-			if (scene_rewinder->main_controller != controllers[i] && client_input_id != nullptr) {
-				// This is not the main controller, so it's allowed to move
-				// fluidly;
-				const uint64_t ciid = *client_input_id;
+				const uint64_t *client_input_id = p_client_snapshot
+														  .controllers_input_id
+														  .getptr(controllers[i]->get_instance_id());
 
-				frames_to_skip = siid - ciid;
-				// TODO please make this customizable
-				const int tolerance = 10;
-				if (frames_to_skip < 0 || frames_to_skip > tolerance) {
-					// Hard reset
-					frames_to_skip = 0;
-				} else {
-					// Fluid timeline navigation allowed.
-					// Nothing to do.
+				if (client_input_id != nullptr) {
+					const uint64_t ciid = *client_input_id;
+
+					frames_to_skip = siid - ciid;
+
+					// TODO please make this customizable
+					// Process the tolerance.
+					const int tolerance = 10;
+					if (frames_to_skip < 0 || frames_to_skip > tolerance) {
+						// Hard reset
+						frames_to_skip = 0;
+					} else {
+						// Fluid timeline navigation allowed.
+						// Nothing to do.
+					}
 				}
+			}
+			// TODO use a DEBUG_ENABLED to avoid this in production
+			else {
+
+				// Just a verification check.
+				const int main_controller_snapshot_count = scene_rewinder->main_controller->forget_input_till(siid);
+				// Unreachable because on the `snapshots` and the
+				// `main_controller_snapshots` are created locally by the same
+				// process.
+				CRASH_COND(main_controller_snapshot_count != int(snapshot_count));
 			}
 		}
 
 		rewinders[i].init(controllers[i], frames_to_skip, rewind_input_id);
 	}
 
-	// Rewind the scene.
-	const int snapshot_count = snapshots.size();
-
-	// From 1 to skip the first snapshot because it's the snapshot that we are
-	// applying.
-	for (int i = 1; i < snapshot_count; i += 1) {
+	for (int i = 0; i < snapshot_count; i += 1) {
 		// Process the environment
 		scene_rewinder->emit_signal("sync_process", p_delta);
 
@@ -1014,7 +1079,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 
 		// Update the snapshot.
 		scene_rewinder->pull_variable_changes();
-		update_snapshot(i);
+		update_snapshot(i + 1, rewinders, controller_size);
 	}
 
 #ifdef DEBUG_ENABLED
@@ -1154,25 +1219,27 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 					Object::cast_to<CharacterNetController>(node) != nullptr;
 
 			// Make sure this node is being tracked locally.
-			if (!scene_rewinder->data.has(node->get_instance_id())) {
+			rewinder_node_data = scene_rewinder->data.getptr(node->get_instance_id());
+			if (rewinder_node_data == nullptr) {
 				scene_rewinder->data.set(
 						node->get_instance_id(),
 						NodeData(node_id,
 								node->get_instance_id(),
 								is_controller));
+				rewinder_node_data = scene_rewinder->data.getptr(node->get_instance_id());
 			}
-			rewinder_node_data = scene_rewinder->data.getptr(node->get_instance_id());
 			rewinder_node_data->id = node_id;
 
 			// Make sure this node is part of the server node.
-			if (!server_snapshot.data.has(node->get_instance_id())) {
+			server_snapshot_node_data = server_snapshot.data.getptr(node->get_instance_id());
+			if (server_snapshot_node_data == nullptr) {
 				server_snapshot.data.set(
 						node->get_instance_id(),
 						NodeData(node_id,
 								node->get_instance_id(),
 								is_controller));
+				server_snapshot_node_data = server_snapshot.data.getptr(node->get_instance_id());
 			}
-			server_snapshot_node_data = server_snapshot.data.getptr(node->get_instance_id());
 			server_snapshot_node_data->id = node_id;
 
 			if (is_controller) {
@@ -1236,7 +1303,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 
 				var_id = v;
 
-				const int index = rewinder_node_data->vars.find(var_id);
+				const int index = rewinder_node_data->find_var_by_id(var_id);
 				if (index == -1) {
 					WARN_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer, this is not supposed to happen.");
 

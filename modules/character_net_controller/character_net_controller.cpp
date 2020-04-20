@@ -314,6 +314,10 @@ int CharacterNetController::forget_input_till(uint64_t p_input_id) {
 	return controller->forget_input_till(p_input_id);
 }
 
+uint64_t CharacterNetController::get_next_instant_id(int p_i) const {
+	return controller->get_next_instant_id(p_i);
+}
+
 bool CharacterNetController::replay_process_next_instant(int p_i, real_t p_delta) {
 	return controller->replay_process_next_instant(p_i, p_delta);
 }
@@ -679,6 +683,11 @@ int ServerController::forget_input_till(uint64_t p_input_id) {
 	return 0;
 }
 
+uint64_t ServerController::get_next_instant_id(int p_i) const {
+	ERR_PRINT("The method `get_next_instant_id` must not be called on server. Be sure why it happened.");
+	return UINT64_MAX;
+}
+
 bool ServerController::replay_process_next_instant(int p_i, real_t p_delta) {
 	ERR_PRINT("The method `replay_process_next_instant` must not be called on server. Be sure why it happened.");
 	return false;
@@ -1008,6 +1017,15 @@ int PlayerController::forget_input_till(uint64_t p_input_id) {
 	return frames_snapshot.size();
 }
 
+uint64_t PlayerController::get_next_instant_id(int p_i) const {
+	const size_t i = p_i;
+	if (size_t(i) <= frames_snapshot.size()) {
+		return frames_snapshot[i].id;
+	} else {
+		return UINT64_MAX;
+	}
+}
+
 bool PlayerController::replay_process_next_instant(int p_i, real_t p_delta) {
 	const size_t i = p_i;
 	if (i <= frames_snapshot.size()) {
@@ -1260,6 +1278,10 @@ int DollController::forget_input_till(uint64_t p_input_id) {
 	return player_controller.forget_input_till(p_input_id);
 }
 
+uint64_t DollController::get_next_instant_id(int p_i) const {
+	return player_controller.get_next_instant_id(p_i);
+}
+
 bool DollController::replay_process_next_instant(int p_i, real_t p_delta) {
 	return player_controller.replay_process_next_instant(p_i, p_delta);
 }
@@ -1351,6 +1373,11 @@ void NoNetController::replay_snapshots() {
 int NoNetController::forget_input_till(uint64_t p_input_id) {
 	// Nothing to do.
 	return 0;
+}
+
+uint64_t NoNetController::get_next_instant_id(int p_i) const {
+	// Nothing to do.
+	return UINT64_MAX;
 }
 
 bool NoNetController::replay_process_next_instant(int p_i, real_t p_delta) {

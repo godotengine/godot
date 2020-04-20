@@ -46,7 +46,6 @@ struct VarData {
 	bool enabled;
 
 	VarData();
-	VarData(uint32_t p_id);
 	VarData(StringName p_name);
 	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled);
 
@@ -65,6 +64,9 @@ struct NodeData {
 
 	NodeData();
 	NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller);
+
+	// Returns the index to access the variable.
+	int find_var_by_id(uint32_t p_id) const;
 };
 
 class SceneRewinder : public Node {
@@ -168,6 +170,7 @@ struct Snapshot {
 
 class ControllerRewinder {
 	CharacterNetController *controller;
+	uint64_t recovered_snapshot_input_id;
 	int frames_to_skip;
 	bool finished;
 
@@ -175,6 +178,8 @@ public:
 	void init(CharacterNetController *p_controller, int p_frames, uint64_t p_recovered_snapshot_input_id);
 	void advance(int p_i, real_t p_delta);
 	bool has_finished() const;
+	CharacterNetController *get_controller() const;
+	uint64_t get_processed_input_id(int p_i) const;
 };
 
 class Rewinder {
@@ -240,11 +245,10 @@ public:
 
 private:
 	void store_snapshot();
-	void update_snapshot(int p_snapshot_index);
+	void update_snapshot(int p_snapshot_index, ControllerRewinder *p_rewinders, int p_rewinder_count);
 
 	void process_recovery(real_t p_delta);
-	bool recovery_compare_snapshot(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot);
-	void recovery_apply_server_snapshot(const Snapshot &p_server_snapshot);
+	bool compare_and_recovery(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot);
 	void recovery_rewind(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot, real_t p_delta);
 	void parse_snapshot(Variant p_snapshot);
 };
