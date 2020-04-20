@@ -3995,7 +3995,7 @@ void RasterizerSceneGLES2::initialize() {
 			//maximum compatibility, renderbuffer and RGBA shadow
 			glGenRenderbuffers(1, &directional_shadow.depth);
 			glBindRenderbuffer(GL_RENDERBUFFER, directional_shadow.depth);
-			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_internalformat, directional_shadow.size, directional_shadow.size);
+			glRenderbufferStorage(GL_RENDERBUFFER, storage->config.depth_buffer_internalformat, directional_shadow.size, directional_shadow.size);
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, directional_shadow.depth);
 
 			glGenTextures(1, &directional_shadow.color);
