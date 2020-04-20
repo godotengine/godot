@@ -39,6 +39,7 @@
 #include "core/method_ptrcall.h"
 #include "core/object.h"
 #include "core/type_info.h"
+#include "core/typedefs.h"
 #include "core/variant.h"
 
 #include <stdio.h>

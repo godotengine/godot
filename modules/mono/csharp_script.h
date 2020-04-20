@@ -194,6 +194,8 @@ public:
 	virtual bool is_tool() const { return tool; }
 	virtual bool is_valid() const { return valid; }
 
+	bool inherits_script(const Ref<Script> &p_script) const;
+
 	virtual Ref<Script> get_base_script() const;
 	virtual ScriptLanguage *get_language() const;
 

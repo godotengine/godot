@@ -1691,14 +1691,14 @@ bool TileMap::is_centered_textures_enabled() const {
 	return centered_textures;
 }
 
-Array TileMap::get_used_cells() const {
+TypedArray<Vector2i> TileMap::get_used_cells() const {
 
-	Array a;
+	TypedArray<Vector2i> a;
 	a.resize(tile_map.size());
 	int i = 0;
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
 
-		Vector2 p(E->key().x, E->key().y);
+		Vector2i p(E->key().x, E->key().y);
 		a[i++] = p;
 	}
 
