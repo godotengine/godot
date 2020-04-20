@@ -328,7 +328,7 @@ public:
 	void set_centered_textures(bool p_enable);
 	bool is_centered_textures_enabled() const;
 
-	Array get_used_cells() const;
+	TypedArray<Vector2i> get_used_cells() const;
 	Array get_used_cells_by_id(int p_id) const;
 	Rect2 get_used_rect(); // Not const because of cache
 

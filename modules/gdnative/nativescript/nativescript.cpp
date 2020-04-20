@@ -111,6 +111,13 @@ void NativeScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 
 #endif
 
+bool NativeScript::inherits_script(const Ref<Script> &p_script) const {
+#ifndef _MSC_VER
+#warning inheritance needs to be implemented in NativeScript
+#endif
+	return false;
+}
+
 void NativeScript::set_class_name(String p_class_name) {
 	class_name = p_class_name;
 }

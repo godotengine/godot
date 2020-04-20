@@ -198,7 +198,12 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 	const Color text_color = get_theme_color("default_color", "RichTextLabel");
 	const Color type_color = get_theme_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
 	class_desc->push_color(type_color);
+	bool add_array = false;
 	if (can_ref) {
+		if (t.ends_with("[]")) {
+			add_array = true;
+			t = t.replace("[]", "");
+		}
 		if (p_enum.empty()) {
 			class_desc->push_meta("#" + t); //class
 		} else {
@@ -206,8 +211,15 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		}
 	}
 	class_desc->add_text(t);
-	if (can_ref)
+	if (can_ref) {
 		class_desc->pop();
+		if (add_array) {
+			class_desc->add_text(" ");
+			class_desc->push_meta("#Array"); //class
+			class_desc->add_text("[]");
+			class_desc->pop();
+		}
+	}
 	class_desc->pop();
 }
 
