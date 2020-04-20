@@ -757,8 +757,16 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("AnimationTreePlayer", "AnimationTree");
 
 	// Renamed in 4.0.
+	// Keep alphabetical ordering to easily locate classes and avoid duplicates.
 	ClassDB::add_compatibility_class("AnimatedSprite", "AnimatedSprite2D");
 	ClassDB::add_compatibility_class("Area", "Area3D");
+	ClassDB::add_compatibility_class("ARVRCamera", "XRCamera3D");
+	ClassDB::add_compatibility_class("ARVRController", "XRController3D");
+	ClassDB::add_compatibility_class("ARVRAnchor", "XRAnchor3D");
+	ClassDB::add_compatibility_class("ARVRInterface", "XRInterface");
+	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
+	ClassDB::add_compatibility_class("ARVRPositionalTracker", "XRPositionalTracker");
+	ClassDB::add_compatibility_class("ARVRServer", "XRServer");
 	ClassDB::add_compatibility_class("BoneAttachment", "BoneAttachment3D");
 	ClassDB::add_compatibility_class("BoxShape", "BoxShape3D");
 	ClassDB::add_compatibility_class("BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D");
@@ -806,6 +814,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation2DServer", "NavigationServer2D");
 	ClassDB::add_compatibility_class("NavigationServer", "NavigationServer3D");
 	ClassDB::add_compatibility_class("OmniLight", "OmniLight3D");
+	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
 	ClassDB::add_compatibility_class("Particles", "GPUParticles3D");
 	ClassDB::add_compatibility_class("Particles2D", "GPUParticles2D");
 	ClassDB::add_compatibility_class("Path", "Path3D");
@@ -827,6 +836,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("PhysicsShapeQueryResult", "PhysicsShapeQueryResult3D");
 	ClassDB::add_compatibility_class("PinJoint", "PinJoint3D");
 	ClassDB::add_compatibility_class("PlaneShape", "WorldMarginShape3D");
+	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
 	ClassDB::add_compatibility_class("ProximityGroup", "ProximityGroup3D");
 	ClassDB::add_compatibility_class("RayCast", "RayCast3D");
 	ClassDB::add_compatibility_class("RayShape", "RayShape3D");
@@ -857,12 +867,6 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("World", "World3D");
-	ClassDB::add_compatibility_class("ProceduralSky", "Sky");
-	ClassDB::add_compatibility_class("PanoramaSky", "Sky");
-	ClassDB::add_compatibility_class("ARVRCamera", "XRCamera3D");
-	ClassDB::add_compatibility_class("ARVROrigin", "XROrigin3D");
-	ClassDB::add_compatibility_class("ARVRController", "XRController3D");
-	ClassDB::add_compatibility_class("ARVRAnchor", "XRAnchor3D");
 
 #endif
 
