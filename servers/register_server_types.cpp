@@ -62,6 +62,7 @@
 #include "physics_3d/physics_server_3d_sw.h"
 #include "physics_server_2d.h"
 #include "physics_server_3d.h"
+#include "rendering/rendering_device.h"
 #include "rendering_server.h"
 #include "servers/rendering/shader_types.h"
 #include "xr/xr_interface.h"
@@ -100,17 +101,17 @@ void register_server_types() {
 	ClassDB::register_virtual_class<DisplayServer>();
 	ClassDB::register_virtual_class<RenderingServer>();
 	ClassDB::register_class<AudioServer>();
-	ClassDB::register_virtual_class<PhysicsServer3D>();
 	ClassDB::register_virtual_class<PhysicsServer2D>();
+	ClassDB::register_virtual_class<PhysicsServer3D>();
+	ClassDB::register_virtual_class<NavigationServer2D>();
+	ClassDB::register_virtual_class<NavigationServer3D>();
 	ClassDB::register_class<XRServer>();
 	ClassDB::register_class<CameraServer>();
 
+	ClassDB::register_virtual_class<RenderingDevice>();
+
 	ClassDB::register_virtual_class<XRInterface>();
 	ClassDB::register_class<XRPositionalTracker>();
-
-	ClassDB::add_compatibility_class("ARVRServer", "XRServer");
-	ClassDB::add_compatibility_class("ARVRInterface", "XRInterface");
-	ClassDB::add_compatibility_class("ARVRPositionalTracker", "XRPositionalTracker");
 
 	ClassDB::register_virtual_class<AudioStream>();
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
