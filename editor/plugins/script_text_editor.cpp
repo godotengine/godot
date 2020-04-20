@@ -172,7 +172,7 @@ void ScriptTextEditor::_update_member_keywords() {
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 		String name = E->get().name;
-		if (E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_GROUP)
+		if (E->get().usage & PROPERTY_USAGE_CATEGORY || E->get().usage & PROPERTY_USAGE_GROUP || E->get().usage & PROPERTY_USAGE_SUBGROUP)
 			continue;
 		if (name.find("/") != -1)
 			continue;

@@ -7364,7 +7364,7 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		}
 	}
 
-#define IS_USAGE_MEMBER(m_usage) (!(m_usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_CATEGORY)))
+#define IS_USAGE_MEMBER(m_usage) (!(m_usage & (PROPERTY_USAGE_GROUP | PROPERTY_USAGE_SUBGROUP | PROPERTY_USAGE_CATEGORY)))
 
 	// Check other script types
 	while (scr.is_valid()) {
