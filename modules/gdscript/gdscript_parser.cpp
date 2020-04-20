@@ -3674,6 +3674,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						_set_error("A constant named \"" + String(name) + "\" already exists in the outer class scope (at line" + itos(outer_class->constant_expressions[name].expression->line) + ").");
 						return;
 					}
+					for (int i = 0; i < outer_class->variables.size(); i++) {
+						if (outer_class->variables[i].identifier == name) {
+							_set_error("A variable named \"" + String(name) + "\" already exists in the outer class scope (at line " + itos(outer_class->variables[i].line) + ").");
+							return;
+						}
+					}
 
 					outer_class = outer_class->owner;
 				}
