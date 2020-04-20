@@ -293,6 +293,33 @@
 		<constant name="SHADOW_ATLAS_QUADRANT_SUBDIV_MAX" value="7" enum="ShadowAtlasQuadrantSubdiv">
 			Represents the size of the [enum ShadowAtlasQuadrantSubdiv] enum.
 		</constant>
+		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
+			Multisample antialiasing mode disabled. This is the default value, and also the fastest setting.
+		</constant>
+		<constant name="MSAA_2X" value="1" enum="MSAA">
+			Use 2x Multisample Antialiasing.
+		</constant>
+		<constant name="MSAA_4X" value="2" enum="MSAA">
+			Use 4x Multisample Antialiasing.
+		</constant>
+		<constant name="MSAA_8X" value="3" enum="MSAA">
+			Use 8x Multisample Antialiasing. Likely unsupported on low-end and older hardware.
+		</constant>
+		<constant name="MSAA_16X" value="4" enum="MSAA">
+			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
+		</constant>
+		<constant name="MSAA_MAX" value="5" enum="MSAA">
+			Represents the size of the [enum MSAA] enum.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
+			Do not perform any antialiasing in the full screen post-process.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
+			Use fast approximate antialiasing. FXAA is a popular screen-space antialising method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
+			Represents the size of the [enum ScreenSpaceAA] enum.
+		</constant>
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 			Amount of objects in frame.
 		</constant>
@@ -320,11 +347,15 @@
 		<constant name="DEBUG_DRAW_UNSHADED" value="1" enum="DebugDraw">
 			Objects are displayed without light information.
 		</constant>
+		<constant name="DEBUG_DRAW_LIGHTING" value="2" enum="DebugDraw">
+		</constant>
 		<constant name="DEBUG_DRAW_OVERDRAW" value="3" enum="DebugDraw">
 			Objects are displayed semi-transparent with additive blending so you can see where they are drawing over top of one another. A higher overdraw means you are wasting performance on drawing pixels that are being hidden behind others.
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
 			Objects are displayed in wireframe style.
+		</constant>
+		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
 		</constant>
 		<constant name="DEBUG_DRAW_GI_PROBE_ALBEDO" value="6" enum="DebugDraw">
 			Objects are displayed with only the albedo value from [GIProbe]s.
@@ -354,30 +385,6 @@
 		</constant>
 		<constant name="DEBUG_DRAW_DECAL_ATLAS" value="15" enum="DebugDraw">
 			Draws the decal atlas used by [Decal]s and light projector textures in the upper left quadrant of the [Viewport].
-		</constant>
-		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
-			Multisample antialiasing mode disabled. This is the default value, and also the fastest setting.
-		</constant>
-		<constant name="MSAA_2X" value="1" enum="MSAA">
-			Use 2x Multisample Antialiasing.
-		</constant>
-		<constant name="MSAA_4X" value="2" enum="MSAA">
-			Use 4x Multisample Antialiasing.
-		</constant>
-		<constant name="MSAA_8X" value="3" enum="MSAA">
-			Use 8x Multisample Antialiasing. Likely unsupported on low-end and older hardware.
-		</constant>
-		<constant name="MSAA_16X" value="4" enum="MSAA">
-			Use 16x Multisample Antialiasing. Likely unsupported on medium and low-end hardware.
-		</constant>
-		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
-			Do not perform any antialiasing in the full screen post-process.
-		</constant>
-		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
-			Use fast approximate antialiasing. FXAA is a popular screen-space antialising method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
-		</constant>
-		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
-			Max enum for screen-space antialiasing effects.
 		</constant>
 		<constant name="DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST" value="0" enum="DefaultCanvasItemTextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.

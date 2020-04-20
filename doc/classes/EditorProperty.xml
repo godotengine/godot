@@ -78,6 +78,8 @@
 		<member name="checked" type="bool" setter="set_checked" getter="is_checked" default="false">
 			Used by the inspector, when the property is checked.
 		</member>
+		<member name="deletable" type="bool" setter="set_deletable" getter="is_deletable" default="false">
+		</member>
 		<member name="draw_red" type="bool" setter="set_draw_red" getter="is_draw_red" default="false">
 			Used by the inspector, when the property must draw with error color.
 		</member>
@@ -126,6 +128,12 @@
 			</argument>
 			<description>
 				Emitted when a property was checked. Used internally.
+			</description>
+		</signal>
+		<signal name="property_deleted">
+			<argument index="0" name="property" type="StringName">
+			</argument>
+			<description>
 			</description>
 		</signal>
 		<signal name="property_keyed">
