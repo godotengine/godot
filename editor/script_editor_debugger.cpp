@@ -2307,17 +2307,17 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 		hbc->add_child(memnew(VSeparator));
 
-		step = memnew(ToolButton);
-		hbc->add_child(step);
-		step->set_tooltip(TTR("Step Into"));
-		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
-		step->connect("pressed", this, "debug_step");
-
 		next = memnew(ToolButton);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
 		next->connect("pressed", this, "debug_next");
+
+		step = memnew(ToolButton);
+		hbc->add_child(step);
+		step->set_tooltip(TTR("Step Into"));
+		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
+		step->connect("pressed", this, "debug_step");
 
 		hbc->add_child(memnew(VSeparator));
 
