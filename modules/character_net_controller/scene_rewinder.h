@@ -129,6 +129,8 @@ public:
 private:
 	void process();
 
+	// Read the node variables and store the value if is different from the
+	// previous one. Emit a signal for each changed variable.
 	void pull_variable_changes(Vector<ObjectID> *r_null_objects = nullptr);
 
 	void on_peer_connected(int p_peer_id);
@@ -136,8 +138,11 @@ private:
 
 	NodeData *register_node(Node *p_node);
 
+	// Returns true when the vectors are the same.
 	bool vec2_evaluation(const Vector2 a, const Vector2 b);
+	// Returns true when the vectors are the same.
 	bool vec3_evaluation(const Vector3 a, const Vector3 b);
+	// Returns true when the variants are the same.
 	bool rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2);
 };
 

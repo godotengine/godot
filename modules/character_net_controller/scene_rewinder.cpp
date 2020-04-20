@@ -312,6 +312,7 @@ void SceneRewinder::reset() {
 
 void SceneRewinder::__reset() {
 
+	set_physics_process_internal(false);
 	generate_id = false;
 
 	if (get_tree()) {
@@ -475,7 +476,7 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 		const Quat a(v_1);
 		const Quat b(v_2);
 		const Quat r(a - b); // Element wise subtraction.
-		return ABS(r.x + r.y + r.z + r.w) <= comparison_tolerance;
+		return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (comparison_tolerance * comparison_tolerance);
 	} else if (v_1.get_type() == Variant::PLANE) {
 		const Plane a(v_1);
 		const Plane b(v_2);
@@ -559,7 +560,7 @@ void SceneRewinder::pull_variable_changes(Vector<ObjectID> *r_null_objects) {
 		VarData *object_vars = data.get(*key).vars.ptrw();
 
 		for (int i = 0; i < var_count; i += 1) {
-			if (object_vars->enabled == false) {
+			if (object_vars[i].enabled == false) {
 				continue;
 			}
 
@@ -567,7 +568,7 @@ void SceneRewinder::pull_variable_changes(Vector<ObjectID> *r_null_objects) {
 			const Variant new_val = node->get(object_vars[i].name);
 
 			if (!rewinder_variant_evaluation(old_val, new_val)) {
-				// TODO remove this:
+				// TODO just a test, remove this.
 				if (is_rewinding()) {
 					print_line(old_val);
 					print_line(new_val);
@@ -704,7 +705,7 @@ Variant ServerRewinder::generate_snapshot() {
 			key = scene_rewinder->data.next(key)) {
 
 		const NodeData &node_data = scene_rewinder->data.get(*key);
-		if (node_data.cached_node->is_inside_tree() == false) {
+		if (node_data.cached_node == nullptr || node_data.cached_node->is_inside_tree() == false) {
 			continue;
 		}
 
@@ -713,6 +714,7 @@ Variant ServerRewinder::generate_snapshot() {
 		snap_node_data.resize(2);
 		snap_node_data.write[0] = node_data.id;
 		snap_node_data.write[1] = node_data.cached_node->get_path();
+
 		snapshot_data.push_back(snap_node_data);
 
 		// Set the input ID if this is a controller.
@@ -721,7 +723,7 @@ Variant ServerRewinder::generate_snapshot() {
 			CRASH_COND(controller == nullptr); // Unreachable
 
 			if (unlikely(controller->get_current_input_id() == UINT64_MAX)) {
-				// The first ID id is not yet arrived.
+				// The first ID id is not yet arrived, so just put a 0.
 				snapshot_data.push_back(0);
 			} else {
 				snapshot_data.push_back(controller->get_current_input_id());
@@ -741,6 +743,7 @@ Variant ServerRewinder::generate_snapshot() {
 			var_info.resize(2);
 			var_info.write[0] = vars[i].id;
 			var_info.write[1] = vars[i].name;
+
 			snapshot_data.push_back(var_info);
 			snapshot_data.push_back(vars[i].value);
 		}
@@ -1063,24 +1066,31 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	StringName variable_name;
 	int server_snap_variable_index = -1;
 
+	// Make sure the Snapshot ID is here.
 	ERR_FAIL_COND(raw_snapshot.size() < 1);
 	ERR_FAIL_COND(raw_snapshot_ptr[0].get_type() != Variant::INT);
 
 	const uint64_t snapshot_id = raw_snapshot_ptr[0];
 
+	// Make sure this snapshot is expected.
 	ERR_FAIL_COND(snapshot_id <= server_snapshot_id);
 
 	server_snapshot_id = snapshot_id;
+	// We espect that the player_controller is updated by this new snapshot,
+	// at the end we will check if it's 0.
 	server_snapshot.player_controller_input_id = 0;
 
-	for (int i = 1; i < raw_snapshot.size(); i += 1) {
-		Variant v = raw_snapshot_ptr[i];
+	// Start from 1 to skip the snapshot ID.
+	for (int snap_data_index = 1; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
+		const Variant v = raw_snapshot_ptr[snap_data_index];
 		if (node == nullptr) {
-			// Take the node
+			// Node is null so we expect `v` has the node info.
 
 			uint32_t node_id(0);
 
 			if (v.is_array()) {
+				// Node info are in verbose form, extract it.
+
 				const Vector<Variant> node_data = v;
 				ERR_FAIL_COND(node_data.size() != 2);
 				ERR_FAIL_COND(node_data[0].get_type() != Variant::INT);
@@ -1089,63 +1099,61 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				node_id = node_data[0];
 				const NodePath node_path = node_data[1];
 
-				node = scene_rewinder->get_tree()->get_root()->get_node(node_path);
-
+				// Associate the ID with the path.
 				node_paths.set(node_id, node_path);
 
-				if (node == nullptr) {
-					// This node does't exist yet, so skip it entirely.
-					for (i += 1; i < raw_snapshot.size(); i += 1) {
-						if (raw_snapshot_ptr[i].get_type() == Variant::NIL) {
-							break;
-						}
-					}
-					continue;
-				}
+				node = scene_rewinder->get_tree()->get_root()->get_node(node_path);
 
-				node_id_map.set(node_id, node->get_instance_id());
-
-			} else {
-				ERR_FAIL_COND(v.get_type() != Variant::INT);
+			} else if (v.get_type() == Variant::INT) {
+				// Node info are in short form.
 
 				node_id = v;
-				if (node_id_map.has(node_id)) {
-					Object *obj = ObjectDB::get_instance(node_id_map[node_id]);
-					ERR_FAIL_COND(obj == nullptr);
+
+				const ObjectID *object_id = node_id_map.getptr(node_id);
+				if (object_id != nullptr) {
+					Object *const obj = ObjectDB::get_instance(*object_id);
 					node = Object::cast_to<Node>(obj);
-				} else {
+					if (node == nullptr) {
+						// This node doesn't exist anymore.
+						node_id_map.erase(node_id);
+					}
+				}
+
+				if (node == nullptr) {
 					// The node instance for this node ID was not found, try
 					// to find it now.
 
 					if (node_paths.has(node_id) == false) {
-						WARN_PRINT("The node with ID `" + itos(node_id) + "` is not know by this peer.");
+						WARN_PRINT("The node with ID `" + itos(node_id) + "` is not know by this peer, this is not supposed to happen.");
 						// TODO notify the server so it sends a full snapshot, and so fix this issue.
-						continue;
+					} else {
+						const NodePath node_path = node_paths[node_id];
+						node = scene_rewinder->get_tree()->get_root()->get_node(node_path);
 					}
-
-					const NodePath node_path = node_paths[node_id];
-					node = scene_rewinder->get_tree()->get_root()->get_node(node_path);
-
-					if (node == nullptr) {
-						// This node does't exist yet, so skip it entirely, again.
-						for (i += 1; i < raw_snapshot.size(); i += 1) {
-							if (raw_snapshot_ptr[i].get_type() == Variant::NIL) {
-								break;
-							}
-						}
-						continue;
-					}
-
-					node_id_map.set(node_id, node->get_instance_id());
 				}
+			} else {
+				// The arrived snapshot does't seems to be in the expected form.
+				ERR_FAIL_MSG("Snapshot is corrupted.");
 			}
 
-			ERR_FAIL_COND(node == nullptr);
+			if (node == nullptr) {
+				// This node does't exist; skip it entirely.
+				for (snap_data_index += 1; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
+					if (raw_snapshot_ptr[snap_data_index].get_type() == Variant::NIL) {
+						break;
+					}
+				}
+				continue;
+
+			} else {
+				// The node is found, make sure to update the instance ID.
+				node_id_map.set(node_id, node->get_instance_id());
+			}
 
 			const bool is_controller =
 					Object::cast_to<CharacterNetController>(node) != nullptr;
 
-			// Make sure this node is being tracked by the client.
+			// Make sure this node is being tracked locally.
 			if (!scene_rewinder->data.has(node->get_instance_id())) {
 				scene_rewinder->data.set(
 						node->get_instance_id(),
@@ -1168,21 +1176,22 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 			server_snapshot_node_data->id = node_id;
 
 			if (is_controller) {
-				// This is a controller, take the ID.
-				ERR_FAIL_COND(i + 1 >= raw_snapshot.size());
-				i += 1;
-				const uint64_t input_id = raw_snapshot_ptr[i];
+				// This is a controller, so the next data is the input ID.
+				ERR_FAIL_COND(snap_data_index + 1 >= raw_snapshot.size());
+				snap_data_index += 1;
+				const uint64_t input_id = raw_snapshot_ptr[snap_data_index];
 				server_snapshot.controllers_input_id[node->get_instance_id()] = input_id;
 
 				if (node == scene_rewinder->main_controller) {
-					// This is the main controller, store the ID in the
+					// This is the main controller, store the ID also in the
 					// utility variable.
 					server_snapshot.player_controller_input_id = input_id;
 				}
 			}
 
 		} else if (variable_name == StringName()) {
-			// Check if this is the end, or a new variable is submitted.
+			// When the node is known and the `variable_name` not, we expect a
+			// new variable or the end pf this node data.
 
 			if (v.get_type() == Variant::NIL) {
 				// NIL found, so this node is done.
@@ -1190,10 +1199,12 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				continue;
 			}
 
-			// Take the variable name.
+			// This is a new variable, so let's take the variable name.
 
 			uint32_t var_id;
 			if (v.is_array()) {
+				// The variable info are stored in verbose mode.
+
 				const Vector<Variant> var_data = v;
 				ERR_FAIL_COND(var_data.size() != 2);
 				ERR_FAIL_COND(var_data[0].get_type() != Variant::INT);
@@ -1205,27 +1216,41 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				const int index = rewinder_node_data->vars.find(variable_name);
 
 				if (index == -1) {
+					// The variable is not known locally, so just add it so
+					// to store the variable ID.
+					const bool enabled = false;
 					rewinder_node_data->vars
 							.push_back(
 									VarData(
 											var_id,
 											variable_name,
 											Variant(),
-											false));
+											enabled));
 				} else {
+					// The variable is known, just make sure that it has the
+					// same server ID.
 					rewinder_node_data->vars.write[index].id = var_id;
 				}
 			} else if (v.get_type() == Variant::INT) {
+				// The variable is stored in the compact form.
+
 				var_id = v;
 
 				const int index = rewinder_node_data->vars.find(var_id);
 				if (index == -1) {
-					WARN_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer.");
+					WARN_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer, this is not supposed to happen.");
+
 					// TODO please notify the server that this peer need a full snapshot.
+
+					// Skip the next data since it should be the value, but we
+					// can't store it.
+					snap_data_index += 1;
 					continue;
+				} else {
+					variable_name = rewinder_node_data->vars[index].name;
+					rewinder_node_data->vars.write[index].id = var_id;
 				}
-				variable_name = rewinder_node_data->vars[index].name;
-				rewinder_node_data->vars.write[index].id = var_id;
+
 			} else {
 				ERR_FAIL_MSG("The snapshot received seems corrupted.");
 			}
@@ -1234,15 +1259,17 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 												 .find(variable_name);
 
 			if (server_snap_variable_index == -1) {
+				// The server snapshot seems not contains this yet.
 				server_snap_variable_index = server_snapshot_node_data->vars.size();
 
+				const bool enabled = true;
 				server_snapshot_node_data->vars
 						.push_back(
 								VarData(
 										var_id,
 										variable_name,
 										Variant(),
-										false));
+										enabled));
 
 			} else {
 				server_snapshot_node_data->vars
@@ -1251,7 +1278,8 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 			}
 
 		} else {
-			// Take the variable value.
+			// The node is known, also the variable name is known, so the value
+			// is expected.
 
 			server_snapshot_node_data->vars
 					.write[server_snap_variable_index]
@@ -1263,5 +1291,6 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 		}
 	}
 
+	// Just make sure that the local player input got set as expected.
 	ERR_FAIL_COND_MSG(server_snapshot.player_controller_input_id == 0, "The player controller ID was not part of the received snapshot. It will not be considered.");
 }
