@@ -2683,6 +2683,7 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 			LocalVarNode *local_var = branch->body->variables[e->key()];
 			local_var->assign = e->value();
 			local_var->set_datatype(local_var->assign->get_datatype());
+			local_var->assignments++;
 
 			IdentifierNode *id2 = alloc_node<IdentifierNode>();
 			id2->name = local_var->name;
