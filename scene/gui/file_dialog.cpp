@@ -272,7 +272,7 @@ void FileDialog::_action_pressed() {
 		}
 
 		if (dir_access->file_exists(f)) {
-			confirm_save->set_text(RTR("File Exists, Overwrite?"));
+			confirm_save->set_text(RTR("File exists, overwrite?"));
 			confirm_save->popup_centered(Size2(200, 80));
 		} else {
 			emit_signal("file_selected", f);
