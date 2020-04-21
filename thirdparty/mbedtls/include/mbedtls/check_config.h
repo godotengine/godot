@@ -546,6 +546,23 @@
 #error "MBEDTLS_SSL_PROTO_TLS1_2 defined, but not all prerequisites"
 #endif
 
+#if (defined(MBEDTLS_SSL_PROTO_SSL3) || defined(MBEDTLS_SSL_PROTO_TLS1) ||  \
+     defined(MBEDTLS_SSL_PROTO_TLS1_1) || defined(MBEDTLS_SSL_PROTO_TLS1_2)) && \
+    !(defined(MBEDTLS_KEY_EXCHANGE_RSA_ENABLED) ||                          \
+      defined(MBEDTLS_KEY_EXCHANGE_DHE_RSA_ENABLED) ||                      \
+      defined(MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED) ||                    \
+      defined(MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED) ||                  \
+      defined(MBEDTLS_KEY_EXCHANGE_ECDH_RSA_ENABLED) ||                     \
+      defined(MBEDTLS_KEY_EXCHANGE_ECDH_ECDSA_ENABLED) ||                   \
+      defined(MBEDTLS_KEY_EXCHANGE_PSK_ENABLED) ||                          \
+      defined(MBEDTLS_KEY_EXCHANGE_DHE_PSK_ENABLED) ||                      \
+      defined(MBEDTLS_KEY_EXCHANGE_RSA_PSK_ENABLED) ||                      \
+      defined(MBEDTLS_KEY_EXCHANGE_ECDHE_PSK_ENABLED) ||                    \
+      defined(MBEDTLS_KEY_EXCHANGE_ECJPAKE_ENABLED) )
+#error "One or more versions of the TLS protocol are enabled " \
+        "but no key exchange methods defined with MBEDTLS_KEY_EXCHANGE_xxxx"
+#endif
+
 #if defined(MBEDTLS_SSL_PROTO_DTLS)     && \
     !defined(MBEDTLS_SSL_PROTO_TLS1_1)  && \
     !defined(MBEDTLS_SSL_PROTO_TLS1_2)
@@ -667,6 +684,10 @@
     !defined(MBEDTLS_OID_C) || !defined(MBEDTLS_ASN1_WRITE_C) ||       \
     !defined(MBEDTLS_PK_WRITE_C) )
 #error "MBEDTLS_X509_CREATE_C defined, but not all prerequisites"
+#endif
+
+#if defined(MBEDTLS_CERTS_C) && !defined(MBEDTLS_X509_USE_C)
+#error "MBEDTLS_CERTS_C defined, but not all prerequisites"
 #endif
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C) && ( !defined(MBEDTLS_X509_USE_C) )

@@ -1417,6 +1417,19 @@ static int ssl_parse_hello_verify_request( mbedtls_ssl_context *ssl )
 
     MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> parse hello verify request" ) );
 
+    /* Check that there is enough room for:
+     * - 2 bytes of version
+     * - 1 byte of cookie_len
+     */
+    if( mbedtls_ssl_hs_hdr_len( ssl ) + 3 > ssl->in_msglen )
+    {
+        MBEDTLS_SSL_DEBUG_MSG( 1,
+            ( "incoming HelloVerifyRequest message is too short" ) );
+        mbedtls_ssl_send_alert_message( ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL,
+                                    MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR );
+        return( MBEDTLS_ERR_SSL_BAD_HS_SERVER_HELLO );
+    }
+
     /*
      * struct {
      *   ProtocolVersion server_version;
@@ -1445,8 +1458,6 @@ static int ssl_parse_hello_verify_request( mbedtls_ssl_context *ssl )
     }
 
     cookie_len = *p++;
-    MBEDTLS_SSL_DEBUG_BUF( 3, "cookie", p, cookie_len );
-
     if( ( ssl->in_msg + ssl->in_msglen ) - p < cookie_len )
     {
         MBEDTLS_SSL_DEBUG_MSG( 1,
@@ -1455,6 +1466,7 @@ static int ssl_parse_hello_verify_request( mbedtls_ssl_context *ssl )
                                     MBEDTLS_SSL_ALERT_MSG_DECODE_ERROR );
         return( MBEDTLS_ERR_SSL_BAD_HS_SERVER_HELLO );
     }
+    MBEDTLS_SSL_DEBUG_BUF( 3, "cookie", p, cookie_len );
 
     mbedtls_free( ssl->handshake->verify_cookie );
 
