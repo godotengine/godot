@@ -1004,8 +1004,6 @@ int mbedtls_ssl_derive_keys( mbedtls_ssl_context *ssl )
 #if defined(MBEDTLS_SSL_HW_RECORD_ACCEL)
     if( mbedtls_ssl_hw_record_init != NULL )
     {
-        int ret = 0;
-
         MBEDTLS_SSL_DEBUG_MSG( 2, ( "going for mbedtls_ssl_hw_record_init()" ) );
 
         if( ( ret = mbedtls_ssl_hw_record_init( ssl, key1, key2, transform->keylen,
@@ -2885,15 +2883,18 @@ static void ssl_dtls_replay_reset( mbedtls_ssl_context *ssl );
 /*
  * Swap transform_out and out_ctr with the alternative ones
  */
-static void ssl_swap_epochs( mbedtls_ssl_context *ssl )
+static int ssl_swap_epochs( mbedtls_ssl_context *ssl )
 {
     mbedtls_ssl_transform *tmp_transform;
     unsigned char tmp_out_ctr[8];
+#if defined(MBEDTLS_SSL_HW_RECORD_ACCEL)
+    int ret;
+#endif /* MBEDTLS_SSL_HW_RECORD_ACCEL */
 
     if( ssl->transform_out == ssl->handshake->alt_transform_out )
     {
         MBEDTLS_SSL_DEBUG_MSG( 3, ( "skip swap epochs" ) );
-        return;
+        return( 0 );
     }
 
     MBEDTLS_SSL_DEBUG_MSG( 3, ( "swap epochs" ) );
@@ -2920,7 +2921,9 @@ static void ssl_swap_epochs( mbedtls_ssl_context *ssl )
             return( MBEDTLS_ERR_SSL_HW_ACCEL_FAILED );
         }
     }
-#endif
+#endif /* MBEDTLS_SSL_HW_RECORD_ACCEL */
+
+    return( 0 );
 }
 
 /*
@@ -2957,7 +2960,8 @@ int mbedtls_ssl_flight_transmit( mbedtls_ssl_context *ssl )
 
         ssl->handshake->cur_msg = ssl->handshake->flight;
         ssl->handshake->cur_msg_p = ssl->handshake->flight->p + 12;
-        ssl_swap_epochs( ssl );
+        if( ( ret = ssl_swap_epochs( ssl ) ) != 0 )
+            return( ret );
 
         ssl->handshake->retransmit_state = MBEDTLS_SSL_RETRANS_SENDING;
     }
@@ -2980,7 +2984,8 @@ int mbedtls_ssl_flight_transmit( mbedtls_ssl_context *ssl )
         if( is_finished && ssl->handshake->cur_msg_p == ( cur->p + 12 ) )
         {
             MBEDTLS_SSL_DEBUG_MSG( 2, ( "swap epochs to send finished message" ) );
-            ssl_swap_epochs( ssl );
+            if( ( ret = ssl_swap_epochs( ssl ) ) != 0 )
+                return( ret );
         }
 
         ret = ssl_get_remaining_payload_in_datagram( ssl );
@@ -3017,7 +3022,10 @@ int mbedtls_ssl_flight_transmit( mbedtls_ssl_context *ssl )
             if( ( max_frag_len < 12 ) || ( max_frag_len == 12 && hs_len != 0 ) )
             {
                 if( is_finished )
-                    ssl_swap_epochs( ssl );
+                {
+                    if( ( ret = ssl_swap_epochs( ssl ) ) != 0 )
+                        return( ret );
+                }
 
                 if( ( ret = mbedtls_ssl_flush_output( ssl ) ) != 0 )
                     return( ret );
@@ -3997,17 +4005,23 @@ static int ssl_handle_possible_reconnect( mbedtls_ssl_context *ssl )
 
     if( ret == MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED )
     {
+        int send_ret;
+        MBEDTLS_SSL_DEBUG_MSG( 1, ( "sending HelloVerifyRequest" ) );
+        MBEDTLS_SSL_DEBUG_BUF( 4, "output record sent to network",
+                                  ssl->out_buf, len );
         /* Don't check write errors as we can't do anything here.
          * If the error is permanent we'll catch it later,
          * if it's not, then hopefully it'll work next time. */
-        (void) ssl->f_send( ssl->p_bio, ssl->out_buf, len );
+        send_ret = ssl->f_send( ssl->p_bio, ssl->out_buf, len );
+        MBEDTLS_SSL_DEBUG_RET( 2, "ssl->f_send", send_ret );
+        (void) send_ret;
 
         return( MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED );
     }
 
     if( ret == 0 )
     {
-        /* Got a valid cookie, partially reset context */
+        MBEDTLS_SSL_DEBUG_MSG( 1, ( "cookie is valid, resetting context" ) );
         if( ( ret = ssl_session_reset_int( ssl, 1 ) ) != 0 )
         {
             MBEDTLS_SSL_DEBUG_RET( 1, "reset", ret );
