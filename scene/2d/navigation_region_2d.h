@@ -55,10 +55,10 @@ class NavigationPolygon : public Resource {
 protected:
 	static void _bind_methods();
 
-	void _set_polygons(const Array &p_array);
+	void _set_polygons(const TypedArray<Vector<int32_t>> &p_array);
 	Array _get_polygons() const;
 
-	void _set_outlines(const Array &p_array);
+	void _set_outlines(const TypedArray<Vector<int32_t>> &p_array);
 	Array _get_outlines() const;
 
 public:

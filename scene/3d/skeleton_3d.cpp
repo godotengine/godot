@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "core/message_queue.h"
 #include "core/project_settings.h"
+#include "core/type_info.h"
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/surface_tool.h"
 
@@ -770,7 +771,7 @@ void _pb_start_simulation(const Skeleton3D *p_skeleton, Node *p_node, const Vect
 	}
 }
 
-void Skeleton3D::physical_bones_start_simulation_on(const Array &p_bones) {
+void Skeleton3D::physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones) {
 	set_physics_process_internal(false);
 
 	Vector<int> sim_bones;
@@ -780,12 +781,9 @@ void Skeleton3D::physical_bones_start_simulation_on(const Array &p_bones) {
 		sim_bones.resize(p_bones.size());
 		int c = 0;
 		for (int i = sim_bones.size() - 1; 0 <= i; --i) {
-			Variant::Type type = p_bones.get(i).get_type();
-			if (Variant::STRING == type || Variant::STRING_NAME == type) {
-				int bone_id = find_bone(p_bones.get(i));
-				if (bone_id != -1)
-					sim_bones.write[c++] = bone_id;
-			}
+			int bone_id = find_bone(p_bones[i]);
+			if (bone_id != -1)
+				sim_bones.write[c++] = bone_id;
 		}
 		sim_bones.resize(c);
 	}
