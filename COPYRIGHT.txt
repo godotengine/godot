@@ -133,7 +133,7 @@ License: Expat
 
 Files: ./thirdparty/enet/
 Comment: ENet
-Copyright: 2002-2016, Lee Salzman
+Copyright: 2002-2020, Lee Salzman
 License: Expat
 
 Files: ./thirdparty/etc2comp/
