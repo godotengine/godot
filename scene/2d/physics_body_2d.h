@@ -67,7 +67,7 @@ public:
 	void set_collision_layer_bit(int p_bit, bool p_value);
 	bool get_collision_layer_bit(int p_bit) const;
 
-	Array get_collision_exceptions();
+	TypedArray<PhysicsBody2D> get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
 
@@ -256,7 +256,7 @@ public:
 	void add_force(const Vector2 &p_offset, const Vector2 &p_force);
 	void add_torque(float p_torque);
 
-	Array get_colliding_bodies() const; //function for script
+	TypedArray<Node2D> get_colliding_bodies() const; //function for script
 
 	virtual String get_configuration_warning() const;
 

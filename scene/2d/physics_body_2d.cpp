@@ -139,7 +139,7 @@ PhysicsBody2D::PhysicsBody2D(PhysicsServer2D::BodyMode p_mode) :
 	set_pickable(false);
 }
 
-Array PhysicsBody2D::get_collision_exceptions() {
+TypedArray<PhysicsBody2D> PhysicsBody2D::get_collision_exceptions() {
 	List<RID> exceptions;
 	PhysicsServer2D::get_singleton()->body_get_collision_exceptions(get_rid(), &exceptions);
 	Array ret;
@@ -739,11 +739,11 @@ RigidBody2D::CCDMode RigidBody2D::get_continuous_collision_detection_mode() cons
 	return ccd_mode;
 }
 
-Array RigidBody2D::get_colliding_bodies() const {
+TypedArray<Node2D> RigidBody2D::get_colliding_bodies() const {
 
 	ERR_FAIL_COND_V(!contact_monitor, Array());
 
-	Array ret;
+	TypedArray<Node2D> ret;
 	ret.resize(contact_monitor->body_map.size());
 	int idx = 0;
 	for (const Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {

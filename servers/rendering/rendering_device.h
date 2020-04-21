@@ -32,13 +32,14 @@
 #define RENDERING_DEVICE_H
 
 #include "core/object.h"
+#include "core/typed_array.h"
 #include "servers/display_server.h"
 
 class RDTextureFormat;
 class RDTextureView;
-class RDAttachments;
+class RDAttachmentFormat;
 class RDSamplerState;
-class RDVertexDescriptions;
+class RDVertexAttribute;
 class RDShaderSource;
 class RDShaderBytecode;
 class RDUniforms;
@@ -547,13 +548,13 @@ public:
 		VERTEX_FREQUENCY_INSTANCE,
 	};
 
-	struct VertexDescription {
+	struct VertexAttribute {
 		uint32_t location; //shader location
 		uint32_t offset;
 		DataFormat format;
 		uint32_t stride;
 		VertexFrequency frequency;
-		VertexDescription() {
+		VertexAttribute() {
 			location = 0;
 			offset = 0;
 			stride = 0;
@@ -566,7 +567,7 @@ public:
 	typedef int64_t VertexFormatID;
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
-	virtual VertexFormatID vertex_format_create(const Vector<VertexDescription> &p_vertex_formats) = 0;
+	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats) = 0;
 	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers) = 0;
 
 	enum IndexBufferFormat {
@@ -1051,15 +1052,15 @@ public:
 
 protected:
 	//binders to script API
-	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const Array &p_data = Array());
+	RID _texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data = Array());
 	RID _texture_create_shared(const Ref<RDTextureView> &p_view, RID p_with_texture);
 	RID _texture_create_shared_from_slice(const Ref<RDTextureView> &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 
-	FramebufferFormatID _framebuffer_format_create(const Array &p_attachments);
+	FramebufferFormatID _framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments);
 	RID _framebuffer_create(const Array &p_textures, FramebufferFormatID p_format_check = INVALID_ID);
 	RID _sampler_create(const Ref<RDSamplerState> &p_state);
-	VertexFormatID _vertex_format_create(const Array &p_vertex_formats);
-	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Array &p_src_buffers);
+	VertexFormatID _vertex_format_create(const TypedArray<RDVertexAttribute> &p_vertex_formats);
+	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers);
 
 	Ref<RDShaderBytecode> _shader_compile_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
 	RID _shader_create(const Ref<RDShaderBytecode> &p_bytecode);

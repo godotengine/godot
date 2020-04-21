@@ -184,8 +184,8 @@ public:
 	void set_collision_layer_bit(int p_bit, bool p_value);
 	bool get_collision_layer_bit(int p_bit) const;
 
-	Array get_overlapping_bodies() const;
-	Array get_overlapping_areas() const; //function for script
+	TypedArray<Node3D> get_overlapping_bodies() const;
+	TypedArray<Area3D> get_overlapping_areas() const; //function for script
 
 	bool overlaps_area(Node *p_area) const;
 	bool overlaps_body(Node *p_body) const;
