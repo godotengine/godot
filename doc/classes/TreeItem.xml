@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Control for a single item inside a [Tree]. May have child [TreeItem]s and be styled as well as contain buttons.
+		You can remove a [TreeItem] by using [method Object.free].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -350,7 +351,7 @@
 			<argument index="0" name="child" type="Object">
 			</argument>
 			<description>
-				Removes the given child TreeItem.
+				Removes the given child [TreeItem] and all its children from the [Tree]. Note that it doesn't free the item from memory, so it can be reused later. To completely remove a [TreeItem] use [method Object.free].
 			</description>
 		</method>
 		<method name="select">
