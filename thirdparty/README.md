@@ -189,6 +189,8 @@ Files extracted from upstream source:
 
 - `jpgd*.{c,h}`
 
+Patches in the `patches` directory should be re-applied after updates.
+
 
 ## libogg
 
