@@ -1381,6 +1381,10 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 							codegen.opcodes.push_back(0);
 							codegen.opcodes.write[else_addr] = codegen.opcodes.size();
 
+							codegen.opcodes.push_back(GDScriptFunction::OPCODE_LINE);
+							codegen.opcodes.push_back(cf->body_else->line);
+							codegen.current_line = cf->body_else->line;
+
 							Error err2 = _parse_block(codegen, cf->body_else, p_stack_level, p_break_addr, p_continue_addr);
 							if (err2)
 								return err2;
