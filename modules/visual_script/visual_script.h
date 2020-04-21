@@ -272,6 +272,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	bool inherits_script(const Ref<Script> &p_script) const;
+
 	// TODO: Remove it in future when breaking changes are acceptable
 	StringName get_default_func() const;
 	void add_function(const StringName &p_name);

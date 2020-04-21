@@ -2693,9 +2693,9 @@ void Node::queue_delete() {
 	}
 }
 
-Array Node::_get_children() const {
+TypedArray<Node> Node::_get_children() const {
 
-	Array arr;
+	TypedArray<Node> arr;
 	int cc = get_child_count();
 	arr.resize(cc);
 	for (int i = 0; i < cc; i++)

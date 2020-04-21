@@ -135,6 +135,8 @@ public:
 
 	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
 
+	virtual bool inherits_script(const Ref<Script> &p_script) const = 0;
+
 	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
 	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return nullptr; }
