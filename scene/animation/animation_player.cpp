@@ -950,13 +950,13 @@ void AnimationPlayer::_animation_process(float p_delta) {
 				play(queued.front()->get());
 				String new_name = playback.assigned;
 				queued.pop_front();
-				if (end_notify)
+				if (end_notify || playback.seeked)
 					emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
 			} else {
 				//stop();
 				playing = false;
 				_set_process(false);
-				if (end_notify)
+				if (end_notify || playback.seeked)
 					emit_signal(SceneStringNames::get_singleton()->animation_finished, playback.assigned);
 			}
 			end_reached = false;
