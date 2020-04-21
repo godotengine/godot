@@ -36,14 +36,6 @@
 #include <stdint.h>
 #include <algorithm>
 
-// Don't go below 2 so to take into account internet latency
-#define MIN_SNAPSHOTS_SIZE 2
-
-#define MAX_ADDITIONAL_TICK_SPEED 2.0
-
-// 2%
-#define TICK_SPEED_CHANGE_NOTIF_THRESHOLD 4
-
 void CharacterNetController::_bind_methods() {
 
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_0);
@@ -54,23 +46,8 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_player_snapshot_storage_size", "size"), &CharacterNetController::set_player_snapshot_storage_size);
 	ClassDB::bind_method(D_METHOD("get_player_snapshot_storage_size"), &CharacterNetController::get_player_snapshot_storage_size);
 
-	ClassDB::bind_method(D_METHOD("set_network_traced_frames", "size"), &CharacterNetController::set_network_traced_frames);
-	ClassDB::bind_method(D_METHOD("get_network_traced_frames"), &CharacterNetController::get_network_traced_frames);
-
 	ClassDB::bind_method(D_METHOD("set_max_redundant_inputs", "max_redundand_inputs"), &CharacterNetController::set_max_redundant_inputs);
 	ClassDB::bind_method(D_METHOD("get_max_redundant_inputs"), &CharacterNetController::get_max_redundant_inputs);
-
-	ClassDB::bind_method(D_METHOD("set_server_snapshot_storage_size", "size"), &CharacterNetController::set_server_snapshot_storage_size);
-	ClassDB::bind_method(D_METHOD("get_server_snapshot_storage_size"), &CharacterNetController::get_server_snapshot_storage_size);
-
-	ClassDB::bind_method(D_METHOD("set_optimal_size_acceleration", "acceleration"), &CharacterNetController::set_optimal_size_acceleration);
-	ClassDB::bind_method(D_METHOD("get_optimal_size_acceleration"), &CharacterNetController::get_optimal_size_acceleration);
-
-	ClassDB::bind_method(D_METHOD("set_missing_snapshots_max_tollerance", "tollerance"), &CharacterNetController::set_missing_snapshots_max_tollerance);
-	ClassDB::bind_method(D_METHOD("get_missing_snapshots_max_tollerance"), &CharacterNetController::get_missing_snapshots_max_tollerance);
-
-	ClassDB::bind_method(D_METHOD("set_tick_acceleration", "acceleration"), &CharacterNetController::set_tick_acceleration);
-	ClassDB::bind_method(D_METHOD("get_tick_acceleration"), &CharacterNetController::get_tick_acceleration);
 
 	ClassDB::bind_method(D_METHOD("set_state_notify_interval", "interval"), &CharacterNetController::set_state_notify_interval);
 	ClassDB::bind_method(D_METHOD("get_state_notify_interval"), &CharacterNetController::get_state_notify_interval);
@@ -100,7 +77,6 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("replay_snapshots"), &CharacterNetController::replay_snapshots);
 
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_frames_snapshot"), &CharacterNetController::_rpc_server_send_frames_snapshot);
-	ClassDB::bind_method(D_METHOD("_rpc_player_send_tick_additional_speed"), &CharacterNetController::_rpc_player_send_tick_additional_speed);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_frames_snapshot"), &CharacterNetController::_rpc_doll_send_frames_snapshot);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &CharacterNetController::_rpc_doll_notify_connection_status);
 	ClassDB::bind_method(D_METHOD("_rpc_send_player_state"), &CharacterNetController::_rpc_send_player_state);
@@ -118,12 +94,7 @@ void CharacterNetController::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("process_recovery", PropertyInfo(Variant::INT, "snapshot_id"), PropertyInfo(Variant::ARRAY, "server_snapshot"), PropertyInfo(Variant::ARRAY, "client_snapshot")))
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_snapshot_storage_size", "get_player_snapshot_storage_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "network_traced_frames", PROPERTY_HINT_RANGE, "100,10000,1"), "set_network_traced_frames", "get_network_traced_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_snapshot_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_snapshot_storage_size", "get_server_snapshot_storage_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "missing_snapshots_max_tollerance", PROPERTY_HINT_RANGE, "3,50,1"), "set_missing_snapshots_max_tollerance", "get_missing_snapshots_max_tollerance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "state_notify_interval", PROPERTY_HINT_RANGE, "0.0001,10.0,0.0001"), "set_state_notify_interval", "get_state_notify_interval");
 
 	ADD_SIGNAL(MethodInfo("control_process_start"));
@@ -134,18 +105,13 @@ void CharacterNetController::_bind_methods() {
 
 CharacterNetController::CharacterNetController() :
 		player_snapshot_storage_size(300),
-		network_traced_frames(1200),
 		max_redundant_inputs(50),
-		server_snapshot_storage_size(30),
-		optimal_size_acceleration(2.5),
-		missing_snapshots_max_tollerance(4),
-		tick_acceleration(2.0),
 		state_notify_interval(1.0),
 		controller(nullptr),
-		scene_rewinder(nullptr) {
+		scene_rewinder(nullptr),
+		packet_missing(false) {
 
 	rpc_config("_rpc_server_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_player_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_player_state", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -159,52 +125,12 @@ int CharacterNetController::get_player_snapshot_storage_size() const {
 	return player_snapshot_storage_size;
 }
 
-void CharacterNetController::set_network_traced_frames(int p_size) {
-	network_traced_frames = p_size;
-}
-
-int CharacterNetController::get_network_traced_frames() const {
-	return network_traced_frames;
-}
-
 void CharacterNetController::set_max_redundant_inputs(int p_max) {
 	max_redundant_inputs = p_max;
 }
 
 int CharacterNetController::get_max_redundant_inputs() const {
 	return max_redundant_inputs;
-}
-
-void CharacterNetController::set_server_snapshot_storage_size(int p_size) {
-	server_snapshot_storage_size = p_size;
-}
-
-int CharacterNetController::get_server_snapshot_storage_size() const {
-	return server_snapshot_storage_size;
-}
-
-void CharacterNetController::set_optimal_size_acceleration(real_t p_acceleration) {
-	optimal_size_acceleration = p_acceleration;
-}
-
-real_t CharacterNetController::get_optimal_size_acceleration() const {
-	return optimal_size_acceleration;
-}
-
-void CharacterNetController::set_missing_snapshots_max_tollerance(int p_tollerance) {
-	missing_snapshots_max_tollerance = p_tollerance;
-}
-
-int CharacterNetController::get_missing_snapshots_max_tollerance() const {
-	return missing_snapshots_max_tollerance;
-}
-
-void CharacterNetController::set_tick_acceleration(real_t p_acceleration) {
-	tick_acceleration = p_acceleration;
-}
-
-real_t CharacterNetController::get_tick_acceleration() const {
-	return tick_acceleration;
 }
 
 void CharacterNetController::set_state_notify_interval(real_t p_interval) {
@@ -350,6 +276,20 @@ bool CharacterNetController::is_nonet_controller() const {
 	return get_tree()->get_network_peer().is_null();
 }
 
+int CharacterNetController::server_get_inputs_count() const {
+	if (controller)
+		return is_server_controller() ? static_cast<ServerController *>(controller)->get_inputs_count() : 0;
+	return 0;
+}
+
+void CharacterNetController::set_packet_missing(bool p_missing) {
+	packet_missing = p_missing;
+}
+
+bool CharacterNetController::get_packet_missing() const {
+	return packet_missing;
+}
+
 void CharacterNetController::set_inputs_buffer(const BitArray &p_new_buffer) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
 }
@@ -379,12 +319,6 @@ void CharacterNetController::_rpc_server_send_frames_snapshot(Vector<uint8_t> p_
 	controller->receive_snapshots(p_data);
 }
 
-void CharacterNetController::_rpc_player_send_tick_additional_speed(int p_additional_tick_speed) {
-	ERR_FAIL_COND(is_network_master() == false);
-
-	static_cast<PlayerController *>(controller)->receive_tick_additional_speed(p_additional_tick_speed);
-}
-
 void CharacterNetController::_rpc_doll_send_frames_snapshot(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND(get_tree()->is_network_server() == true);
 	ERR_FAIL_COND(is_network_master() == true);
@@ -408,14 +342,14 @@ void CharacterNetController::_rpc_send_player_state(uint64_t p_snapshot_id, Vari
 	controller->player_state_check(p_snapshot_id, p_data);
 }
 
+void CharacterNetController::process(real_t p_delta) {
+	emit_signal("control_process_start");
+	controller->physics_process(p_delta);
+	emit_signal("control_process_done");
+}
+
 void CharacterNetController::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			emit_signal("control_process_start");
-			controller->physics_process(get_physics_process_delta_time());
-			emit_signal("control_process_done");
-
-		} break;
 		case NOTIFICATION_READY: {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
@@ -436,8 +370,6 @@ void CharacterNetController::_notification(int p_what) {
 				controller = memnew(DollController(this));
 			}
 
-			set_physics_process_internal(true);
-
 			ERR_FAIL_COND_MSG(has_method("collect_inputs") == false, "In your script you must inherit the virtual method `collect_inputs` to correctly use the `PlayerNetController`.");
 			ERR_FAIL_COND_MSG(has_method("controller_process") == false, "In your script you must inherit the virtual method `controller_process` to correctly use the `PlayerNetController`.");
 			ERR_FAIL_COND_MSG(has_method("are_inputs_different") == false, "In your script you must inherit the virtual method `are_inputs_different` to correctly use the `PlayerNetController`.");
@@ -449,7 +381,6 @@ void CharacterNetController::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
-			set_physics_process_internal(false);
 			memdelete(controller);
 			controller = NULL;
 
@@ -562,10 +493,6 @@ ServerController::ServerController(CharacterNetController *p_node) :
 		Controller(p_node),
 		current_input_buffer_id(UINT64_MAX),
 		ghost_input_count(0),
-		network_tracer(p_node->get_network_traced_frames()),
-		optimal_snapshots_size(0.0),
-		client_tick_additional_speed(0.0),
-		client_tick_additional_speed_compressed(0),
 		peers_state_checker_time(0.0) {
 }
 
@@ -579,7 +506,6 @@ void ServerController::physics_process(real_t p_delta) {
 
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta);
-	adjust_player_tick_rate(p_delta);
 	check_peers_player_state(p_delta, is_new_input);
 }
 
@@ -697,8 +623,13 @@ uint64_t ServerController::get_current_snapshot_id() const {
 	return current_input_buffer_id;
 }
 
+int ServerController::get_inputs_count() const {
+	return snapshots.size();
+}
+
 bool ServerController::fetch_next_input() {
 	bool is_new_input = true;
+	bool is_packet_missing = false;
 
 	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
 		// As initial packet, anything is good.
@@ -706,11 +637,12 @@ bool ServerController::fetch_next_input() {
 			node->set_inputs_buffer(snapshots.front().inputs_buffer);
 			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
-			network_tracer.notify_packet_arrived();
 		} else {
 			is_new_input = false;
-			network_tracer.notify_missing_packet();
 		}
+		// Never notify a packet is missing untill the first one is not yet
+		// arrived.
+		is_packet_missing = false;
 	} else {
 		// Search the next packet, the cycle is used to make sure to not stop
 		// with older packets arrived too late.
@@ -720,7 +652,7 @@ bool ServerController::fetch_next_input() {
 		if (unlikely(snapshots.empty() == true)) {
 			// The input buffer is empty!
 			is_new_input = false;
-			network_tracer.notify_missing_packet();
+			is_packet_missing = true;
 			ghost_input_count += 1;
 			//print_line("Input buffer is void, i'm using the previous one!"); // TODO Replace with?
 
@@ -734,7 +666,7 @@ bool ServerController::fetch_next_input() {
 				snapshots.pop_front();
 
 				ghost_input_count = 0;
-				network_tracer.notify_packet_arrived();
+				is_packet_missing = false;
 			} else {
 				// The next packet is not here. This can happen when:
 				// - The packet is lost or not yet arrived.
@@ -771,7 +703,7 @@ bool ServerController::fetch_next_input() {
 				// For this reason we keep track the amount of missing packets
 				// using `ghost_input_count`.
 
-				network_tracer.notify_missing_packet();
+				is_packet_missing = true;
 				ghost_input_count += 1;
 
 				const int size = MIN(ghost_input_count, snapshots.size());
@@ -824,57 +756,15 @@ bool ServerController::fetch_next_input() {
 		}
 	}
 
+	node->set_packet_missing(is_packet_missing);
+
 	return is_new_input;
 }
 
-void ServerController::adjust_player_tick_rate(real_t p_delta) {
-	const int miss_packets = network_tracer.get_missing_packets();
-
-	{
-		// The first step to establish the client speed up amount is to define the
-		// optimal `frames_inputs` size.
-		// This size is increased and decreased using an acceleration, so any speed
-		// change is spread across a long period rather a little one.
-		// Keep in mind that internet may be really fluctuating.
-		const real_t acceleration_level = CLAMP(
-				(static_cast<real_t>(miss_packets) - static_cast<real_t>(snapshots.size())) /
-						static_cast<real_t>(node->get_missing_snapshots_max_tollerance()),
-				-2.0,
-				2.0);
-		optimal_snapshots_size += acceleration_level * static_cast<real_t>(node->get_optimal_size_acceleration()) * p_delta;
-		optimal_snapshots_size = CLAMP(optimal_snapshots_size, MIN_SNAPSHOTS_SIZE, node->get_server_snapshot_storage_size());
-	}
-
-	{
-		// The client speed is determined using an acceleration so to have much more
-		// control over it and avoid nervous changes.
-		const real_t acceleration_level = CLAMP((optimal_snapshots_size - snapshots.size()) / node->get_server_snapshot_storage_size(), -1.0, 1.0);
-		const real_t acc = acceleration_level * node->get_tick_acceleration() * p_delta;
-		const real_t damp = client_tick_additional_speed * -0.9;
-
-		// The damping is fully applyied only if it points in the opposite `acc`
-		// direction.
-		// I want to cut down the oscilations when the target is the same for a while,
-		// but I need to move fast toward new targets when they appear.
-		client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
-		client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
-
-		int new_speed = 100 * (client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED);
-
-		if (ABS(client_tick_additional_speed_compressed - new_speed) >= TICK_SPEED_CHANGE_NOTIF_THRESHOLD) {
-			client_tick_additional_speed_compressed = new_speed;
-
-			// TODO Send bytes please.
-			// TODO consider to send this unreliably each X sec
-			node->rpc_id(
-					node->get_network_master(),
-					"_rpc_player_send_tick_additional_speed",
-					client_tick_additional_speed_compressed);
-		}
-	}
-}
-
 void ServerController::check_peers_player_state(real_t p_delta, bool is_new_input) {
+	// TODO remove this function.
+	return;
+
 	if (current_input_buffer_id == UINT64_MAX) {
 		// Skip this until the first input arrive.
 		return;
@@ -923,8 +813,6 @@ void ServerController::force_state_notify() {
 
 PlayerController::PlayerController(CharacterNetController *p_node) :
 		Controller(p_node),
-		time_bank(0.0),
-		tick_additional_speed(0.0),
 		input_buffers_counter(0),
 		recover_snapshot_id(0),
 		recovered_snapshot_id(0) {
@@ -932,52 +820,34 @@ PlayerController::PlayerController(CharacterNetController *p_node) :
 
 void PlayerController::physics_process(real_t p_delta) {
 
-	// On `Master` side we may want to speed up input_packet
-	// generation, for this reason here I'm performing a sub tick.
-	// Also keep in mind that we are just pretending that the time
-	// is advancing faster, for this reason we are still using
-	// `delta` to move the player.
+	// We need to know if we can accept a new input because in case of bad
+	// internet connection we can't keep accumulates inputs up to infinite
+	// otherwise the server will difer too much from the client and we
+	// introduce virtual lag.
+	const bool accept_new_inputs = frames_snapshot.size() < static_cast<size_t>(node->get_player_snapshot_storage_size());
 
-	const real_t pretended_delta = get_pretended_delta();
-
-	time_bank += p_delta;
-	uint32_t sub_ticks = static_cast<uint32_t>(time_bank / pretended_delta);
-	time_bank -= static_cast<real_t>(sub_ticks) * pretended_delta;
-
-	while (sub_ticks > 0) {
-		sub_ticks -= 1;
-
-		// We need to know if we can accept a new input because in case of bad
-		// internet connection we can't keep accumulates inputs up to infinite
-		// otherwise the server will difer too much from the client and we
-		// introduce virtual lag.
-		const bool accept_new_inputs = frames_snapshot.size() < static_cast<size_t>(node->get_player_snapshot_storage_size());
-
-		if (accept_new_inputs) {
-			node->get_inputs_buffer_mut().begin_write();
-			node->call("collect_inputs", p_delta);
-		}
-
-		node->get_inputs_buffer_mut().dry();
-		node->get_inputs_buffer_mut().begin_read();
-
-		// The physics process is always emitted, because we still need to simulate
-		// the character motion even if we don't store the player inputs.
-		node->call("controller_process", p_delta);
-
-		if (accept_new_inputs) {
-
-			store_input_buffer(input_buffers_counter);
-			input_buffers_counter += 1;
-
-			// This must happens here because in case of bad internet connection
-			// the client accelerates the execution producing much more packets
-			// per second.
-			send_frame_input_buffer_to_server();
-		}
+	if (accept_new_inputs) {
+		node->get_inputs_buffer_mut().begin_write();
+		node->call("collect_inputs", p_delta);
 	}
 
-	process_recovery();
+	node->get_inputs_buffer_mut().dry();
+	node->get_inputs_buffer_mut().begin_read();
+
+	// The physics process is always emitted, because we still need to simulate
+	// the character motion even if we don't store the player inputs.
+	node->call("controller_process", p_delta);
+
+	if (accept_new_inputs) {
+
+		store_input_buffer(input_buffers_counter);
+		input_buffers_counter += 1;
+
+		// This must happens here because in case of bad internet connection
+		// the client accelerates the execution producing much more packets
+		// per second.
+		send_frame_input_buffer_to_server();
+	}
 }
 
 void PlayerController::receive_snapshots(Vector<uint8_t> p_data) {
@@ -1043,10 +913,6 @@ bool PlayerController::replay_process_next_instant(int p_i, real_t p_delta) {
 
 uint64_t PlayerController::get_current_snapshot_id() const {
 	return input_buffers_counter;
-}
-
-real_t PlayerController::get_pretended_delta() const {
-	return 1.0 / (static_cast<real_t>(Engine::get_singleton()->get_iterations_per_second()) + tick_additional_speed);
 }
 
 void PlayerController::store_input_buffer(uint64_t p_id) {
@@ -1214,11 +1080,6 @@ void PlayerController::process_recovery() {
 	recovered_snapshot_id = recover_snapshot_id;
 
 	node->call("process_recovery", recover_snapshot_id, recover_state_data, fs.custom_data);
-}
-
-void PlayerController::receive_tick_additional_speed(int p_speed) {
-	tick_additional_speed = (static_cast<real_t>(p_speed) / 100.0) * MAX_ADDITIONAL_TICK_SPEED;
-	tick_additional_speed = CLAMP(tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
 }
 
 DollController::DollController(CharacterNetController *p_node) :

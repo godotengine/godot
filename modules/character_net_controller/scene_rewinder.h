@@ -31,6 +31,7 @@
 #include "scene/main/node.h"
 
 #include "core/hash_map.h"
+#include "net_utilities.h"
 #include <deque>
 
 #ifndef SCENE_REWINDER_H
@@ -77,6 +78,33 @@ class SceneRewinder : public Node {
 	friend class ClientRewinder;
 	friend class NoNetRewinder;
 
+	/// Used to set the amount of traced frames to determine the connection healt trend.
+	///
+	/// This parameter depends a lot on the physics iteration per second, and
+	/// an optimal parameter, with 60 physics iteration per second, is 1200;
+	/// that is equivalent of the latest 20 seconds frames.
+	///
+	/// A smaller value will make the recovery mechanism too noisy and so useless,
+	/// on the other hand a too big value will make the recovery mechanism too
+	/// slow.
+	int network_traced_frames;
+
+	/// Max tolerance for missing snapshots in the `network_traced_frames`.
+	int missing_snapshots_max_tolerance;
+
+	/// Used to control the `Master` tick acceleration.
+	real_t tick_acceleration;
+
+	/// The `server_snapshot_storage_size` is dynamically updated and its size
+	/// change at a rate that can be controlled by this parameter.
+	real_t optimal_size_acceleration;
+
+	/// The server is behing several frames behind the client, the maxim amount
+	/// of these frames is defined by the value of this parameter.
+	///
+	/// To prevent introducing virtual lag.
+	int server_snapshot_storage_size;
+
 	real_t server_notify_state_interval;
 	real_t comparison_tolerance;
 
@@ -90,6 +118,9 @@ class SceneRewinder : public Node {
 	CharacterNetController *main_controller;
 	Vector<CharacterNetController *> controllers;
 
+	real_t time_bank;
+	real_t tick_additional_speed;
+
 public:
 	static void _bind_methods();
 
@@ -98,6 +129,21 @@ public:
 public:
 	SceneRewinder();
 	~SceneRewinder();
+
+	void set_network_traced_frames(int p_size);
+	int get_network_traced_frames() const;
+
+	void set_missing_snapshots_max_tolerance(int p_tolerance);
+	int get_missing_snapshots_max_tolerance() const;
+
+	void set_tick_acceleration(real_t p_acceleration);
+	real_t get_tick_acceleration() const;
+
+	void set_optimal_size_acceleration(real_t p_acceleration);
+	real_t get_optimal_size_acceleration() const;
+
+	void set_server_snapshot_storage_size(int p_size);
+	int get_server_snapshot_storage_size() const;
 
 	void set_server_notify_state_interval(real_t p_interval);
 	real_t get_server_notify_state_interval() const;
@@ -127,9 +173,12 @@ public:
 	void __clear();
 
 	void _rpc_send_state(Variant p_snapshot);
+	void _rpc_send_tick_additional_speed(int p_speed);
 
 private:
 	void process();
+
+	real_t get_pretended_delta() const;
 
 	// Read the node variables and store the value if is different from the
 	// previous one. Emit a signal for each changed variable.
@@ -150,11 +199,14 @@ private:
 
 struct PeerData {
 	int peer;
-	// List of nodes which the server sent the variable information.
-	Vector<uint32_t> nodes_know_variables;
+	real_t optimal_snapshots_size;
+	real_t client_tick_additional_speed;
+	// It goes from -100 to 100
+	int client_tick_additional_speed_compressed;
+	NetworkTracer network_tracer;
 
 	PeerData();
-	PeerData(int p_peer);
+	PeerData(int p_peer, int traced_frames);
 
 	bool operator==(const PeerData &p_other) const;
 };
@@ -192,6 +244,7 @@ public:
 	virtual void clear() = 0;
 
 	virtual void process(real_t p_delta) = 0;
+	virtual void post_process(real_t p_delta) = 0;
 	virtual void receive_snapshot(Variant p_snapshot) = 0;
 };
 
@@ -202,6 +255,7 @@ public:
 	virtual void clear();
 
 	virtual void process(real_t p_delta);
+	virtual void post_process(real_t p_delta);
 	virtual void receive_snapshot(Variant p_snapshot);
 };
 
@@ -221,7 +275,22 @@ public:
 	Variant generate_snapshot();
 
 	virtual void process(real_t p_delta);
+	virtual void post_process(real_t p_delta);
 	virtual void receive_snapshot(Variant p_snapshot);
+
+private:
+	/// This function updates the `tick_additional_speed` so that the `frames_inputs`
+	/// size is enough to reduce the missing packets to 0.
+	///
+	/// When the internet connection is bad, the packets need more time to arrive.
+	/// To heal this problem, the server tells the client to speed up a little bit
+	/// so it send the inputs a bit earlier than the usual.
+	///
+	/// If the `frames_inputs` size is too big the input lag between the client and
+	/// the server is artificial and no more dependent on the internet. For this
+	/// reason the server tells the client to slowdown so to keep the `frames_inputs`
+	/// size moderate to the needs.
+	void adjust_player_tick_rate(real_t p_delta);
 };
 
 class ClientRewinder : public Rewinder {
@@ -241,6 +310,7 @@ public:
 	virtual void clear();
 
 	virtual void process(real_t p_delta);
+	virtual void post_process(real_t p_delta);
 	virtual void receive_snapshot(Variant p_snapshot);
 
 private:
