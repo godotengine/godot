@@ -144,12 +144,12 @@ the GLES version Godot targets.
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
-- Version: 1.04
+- Version: 2.00 (1eb17d558b9d3b7442d256642a5745974e9eeb1e, 2020)
 - License: Public domain
 
 Files extracted from upstream source:
 
-- `jpgd.{c,h}`
+- `jpgd*.{c,h}`
 
 
 ## libogg
