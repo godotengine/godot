@@ -273,7 +273,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 	Vector<uint8_t> polygon_buffer;
 	polygon_buffer.resize(buffer_size * sizeof(float));
-	Vector<RD::VertexDescription> descriptions;
+	Vector<RD::VertexAttribute> descriptions;
 	descriptions.resize(4);
 	Vector<RID> buffers;
 	buffers.resize(4);
@@ -284,7 +284,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 		uint32_t *uptr = (uint32_t *)r;
 		uint32_t base_offset = 0;
 		{ //vertices
-			RD::VertexDescription vd;
+			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 			vd.offset = base_offset * sizeof(float);
 			vd.location = RS::ARRAY_VERTEX;
@@ -304,7 +304,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 		//colors
 		if ((uint32_t)p_colors.size() == vertex_count || p_colors.size() == 1) {
-			RD::VertexDescription vd;
+			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			vd.offset = base_offset * sizeof(float);
 			vd.location = RS::ARRAY_COLOR;
@@ -332,7 +332,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			}
 			base_offset += 4;
 		} else {
-			RD::VertexDescription vd;
+			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			vd.offset = 0;
 			vd.location = RS::ARRAY_COLOR;
@@ -344,7 +344,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 		//uvs
 		if ((uint32_t)p_uvs.size() == vertex_count) {
-			RD::VertexDescription vd;
+			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 			vd.offset = base_offset * sizeof(float);
 			vd.location = RS::ARRAY_TEX_UV;
@@ -360,7 +360,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			}
 			base_offset += 2;
 		} else {
-			RD::VertexDescription vd;
+			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
 			vd.offset = 0;
 			vd.location = RS::ARRAY_TEX_UV;
@@ -372,7 +372,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 		//bones
 		if ((uint32_t)p_indices.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
-			RD::VertexDescription vd;
+			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
 			vd.offset = base_offset * sizeof(float);
 			vd.location = RS::ARRAY_BONES;
@@ -401,7 +401,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 			base_offset += 4;
 		} else {
-			RD::VertexDescription vd;
+			RD::VertexAttribute vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
 			vd.offset = 0;
 			vd.location = RS::ARRAY_BONES;
@@ -2423,8 +2423,8 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		}
 
 		//pipelines
-		Vector<RD::VertexDescription> vf;
-		RD::VertexDescription vd;
+		Vector<RD::VertexAttribute> vf;
+		RD::VertexAttribute vd;
 		vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
 		vd.location = 0;
 		vd.offset = 0;

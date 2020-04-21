@@ -416,7 +416,7 @@ bool Area3D::is_monitoring() const {
 	return monitoring;
 }
 
-Array Area3D::get_overlapping_bodies() const {
+TypedArray<Node3D> Area3D::get_overlapping_bodies() const {
 
 	ERR_FAIL_COND_V(!monitoring, Array());
 	Array ret;
@@ -451,7 +451,7 @@ bool Area3D::is_monitorable() const {
 	return monitorable;
 }
 
-Array Area3D::get_overlapping_areas() const {
+TypedArray<Area3D> Area3D::get_overlapping_areas() const {
 
 	ERR_FAIL_COND_V(!monitoring, Array());
 	Array ret;

@@ -332,7 +332,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<Buffer, true> vertex_buffer_owner;
 
 	struct VertexDescriptionKey {
-		Vector<VertexDescription> vertex_formats;
+		Vector<VertexAttribute> vertex_formats;
 		bool operator==(const VertexDescriptionKey &p_key) const {
 			int vdc = vertex_formats.size();
 			int vdck = p_key.vertex_formats.size();
@@ -340,11 +340,11 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			if (vdc != vdck) {
 				return false;
 			} else {
-				const VertexDescription *a_ptr = vertex_formats.ptr();
-				const VertexDescription *b_ptr = p_key.vertex_formats.ptr();
+				const VertexAttribute *a_ptr = vertex_formats.ptr();
+				const VertexAttribute *b_ptr = p_key.vertex_formats.ptr();
 				for (int i = 0; i < vdc; i++) {
-					const VertexDescription &a = a_ptr[i];
-					const VertexDescription &b = b_ptr[i];
+					const VertexAttribute &a = a_ptr[i];
+					const VertexAttribute &b = b_ptr[i];
 
 					if (a.location != b.location) {
 						return false;
@@ -369,9 +369,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t hash() const {
 			int vdc = vertex_formats.size();
 			uint32_t h = hash_djb2_one_32(vdc);
-			const VertexDescription *ptr = vertex_formats.ptr();
+			const VertexAttribute *ptr = vertex_formats.ptr();
 			for (int i = 0; i < vdc; i++) {
-				const VertexDescription &vd = ptr[i];
+				const VertexAttribute &vd = ptr[i];
 				h = hash_djb2_one_32(vd.location, h);
 				h = hash_djb2_one_32(vd.offset, h);
 				h = hash_djb2_one_32(vd.format, h);
@@ -393,7 +393,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	HashMap<VertexDescriptionKey, VertexFormatID, VertexDescriptionHash> vertex_format_cache;
 
 	struct VertexDescriptionCache {
-		Vector<VertexDescription> vertex_formats;
+		Vector<VertexAttribute> vertex_formats;
 		VkVertexInputBindingDescription *bindings;
 		VkVertexInputAttributeDescription *attributes;
 		VkPipelineVertexInputStateCreateInfo create_info;
@@ -1016,7 +1016,7 @@ public:
 	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
 	// Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
-	virtual VertexFormatID vertex_format_create(const Vector<VertexDescription> &p_vertex_formats);
+	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats);
 	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers);
 
 	virtual RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false);

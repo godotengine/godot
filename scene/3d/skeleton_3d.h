@@ -222,7 +222,7 @@ private:
 
 public:
 	void physical_bones_stop_simulation();
-	void physical_bones_start_simulation_on(const Array &p_bones);
+	void physical_bones_start_simulation_on(const TypedArray<StringName> &p_bones);
 	void physical_bones_add_collision_exception(RID p_exception);
 	void physical_bones_remove_collision_exception(RID p_exception);
 #endif // _3D_DISABLED

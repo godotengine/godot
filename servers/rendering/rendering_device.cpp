@@ -61,7 +61,7 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 	return compile_function(p_stage, p_source_code, p_language, r_error);
 }
 
-RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const Array &p_data) {
+RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
 
 	ERR_FAIL_COND_V(p_format.is_null(), RID());
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
@@ -86,7 +86,7 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 	return texture_create_shared_from_slice(p_view->base, p_with_texture, p_layer, p_mipmap, p_slice_type);
 }
 
-RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const Array &p_attachments) {
+RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments) {
 
 	Vector<AttachmentFormat> attachments;
 	attachments.resize(p_attachments.size());
@@ -111,20 +111,20 @@ RID RenderingDevice::_sampler_create(const Ref<RDSamplerState> &p_state) {
 	return sampler_create(p_state->base);
 }
 
-RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const Array &p_vertex_formats) {
+RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const TypedArray<RDVertexAttribute> &p_vertex_formats) {
 
-	Vector<VertexDescription> descriptions;
+	Vector<VertexAttribute> descriptions;
 	descriptions.resize(p_vertex_formats.size());
 
 	for (int i = 0; i < p_vertex_formats.size(); i++) {
-		Ref<RDVertexDescription> af = p_vertex_formats[i];
+		Ref<RDVertexAttribute> af = p_vertex_formats[i];
 		ERR_FAIL_COND_V(af.is_null(), INVALID_FORMAT_ID);
 		descriptions.write[i] = af->base;
 	}
 	return vertex_format_create(descriptions);
 }
 
-RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Array &p_src_buffers) {
+RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers) {
 
 	Vector<RID> buffers = Variant(p_src_buffers);
 
@@ -194,6 +194,10 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 	PipelineMultisampleState multisample_state;
 	if (p_multisample_state.is_valid()) {
 		multisample_state = p_multisample_state->base;
+		for (int i = 0; i < p_multisample_state->sample_masks.size(); i++) {
+			int64_t mask = p_multisample_state->sample_masks[i];
+			multisample_state.sample_mask.push_back(mask);
+		}
 	}
 
 	PipelineDepthStencilState depth_stencil_state;
@@ -204,6 +208,12 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 	PipelineColorBlendState color_blend_state;
 	if (p_blend_state.is_valid()) {
 		color_blend_state = p_blend_state->base;
+		for (int i = 0; i < p_blend_state->attachments.size(); i++) {
+			Ref<RDPipelineColorBlendStateAttachment> attachment = p_blend_state->attachments[i];
+			if (attachment.is_valid()) {
+				color_blend_state.attachments.push_back(attachment->base);
+			}
+		}
 	}
 
 	return render_pipeline_create(p_shader, p_framebuffer_format, p_vertex_format, p_render_primitive, rasterization_state, multisample_state, depth_stencil_state, color_blend_state, p_dynamic_state_flags);

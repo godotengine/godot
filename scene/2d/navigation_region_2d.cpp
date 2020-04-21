@@ -95,7 +95,7 @@ Vector<Vector2> NavigationPolygon::get_vertices() const {
 	return vertices;
 }
 
-void NavigationPolygon::_set_polygons(const Array &p_array) {
+void NavigationPolygon::_set_polygons(const TypedArray<Vector<int32_t>> &p_array) {
 
 	{
 		MutexLock lock(navmesh_generation);
@@ -118,7 +118,7 @@ Array NavigationPolygon::_get_polygons() const {
 	return ret;
 }
 
-void NavigationPolygon::_set_outlines(const Array &p_array) {
+void NavigationPolygon::_set_outlines(const TypedArray<Vector<int32_t>> &p_array) {
 
 	outlines.resize(p_array.size());
 	for (int i = 0; i < p_array.size(); i++) {
