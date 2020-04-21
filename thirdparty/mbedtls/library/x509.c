@@ -1063,7 +1063,7 @@ cleanup:
     mbedtls_x509_crt_free( &clicert );
 #else
     ((void) verbose);
-#endif /* MBEDTLS_CERTS_C && MBEDTLS_SHA1_C */
+#endif /* MBEDTLS_CERTS_C && MBEDTLS_SHA256_C */
     return( ret );
 }
 
