@@ -1,5 +1,5 @@
 // basisu_backend.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -139,6 +139,8 @@ namespace basisu
 
 	struct basisu_backend_output
 	{
+		basist::basis_tex_format m_tex_format;
+
 		bool m_etc1s;
 
 		uint32_t m_num_endpoints;
@@ -160,6 +162,7 @@ namespace basisu
 
 		void clear()
 		{
+			m_tex_format = basist::basis_tex_format::cETC1S;
 			m_etc1s = false;
 
 			m_num_endpoints = 0;

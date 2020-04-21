@@ -1,5 +1,5 @@
 // basisu_frontend.cpp
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ namespace basisu
 	const uint32_t cMaxCodebookCreationThreads = 8;
 
 	const uint32_t BASISU_MAX_ENDPOINT_REFINEMENT_STEPS = 3;
-	const uint32_t BASISU_MAX_SELECTOR_REFINEMENT_STEPS = 3;
+	//const uint32_t BASISU_MAX_SELECTOR_REFINEMENT_STEPS = 3;
 
 	const uint32_t BASISU_ENDPOINT_PARENT_CODEBOOK_SIZE = 16;
 	const uint32_t BASISU_SELECTOR_PARENT_CODEBOOK_SIZE = 16;
@@ -837,7 +837,7 @@ namespace basisu
 				continue;
 #endif
 
-			const uint32_t new_endpoint_cluster_index = (uint32_t)m_endpoint_clusters.size();
+			//const uint32_t new_endpoint_cluster_index = (uint32_t)m_endpoint_clusters.size();
 
 			enlarge_vector(m_endpoint_clusters, 1)->push_back(training_vector_index);
 			enlarge_vector(m_endpoint_cluster_etc_params, 1);
@@ -1085,7 +1085,7 @@ namespace basisu
 
 				for (uint32_t block_index = first_index; block_index < last_index; block_index++)
 				{
-					const bool is_flipped = true;
+					//const bool is_flipped = true;
 			
 					const uint32_t cluster_index = block_clusters[block_index][0];
 					BASISU_FRONTEND_VERIFY(cluster_index == block_clusters[block_index][1]);
@@ -1938,7 +1938,7 @@ namespace basisu
 
 						const uint32_t block_index = training_vector_index >> 1;
 						const uint32_t subblock_index = training_vector_index & 1;
-						const bool is_flipped = true;
+						//const bool is_flipped = true;
 
 						etc_block &blk = m_encoded_blocks[block_index];
 

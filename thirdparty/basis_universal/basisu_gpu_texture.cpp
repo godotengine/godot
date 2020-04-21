@@ -1,5 +1,5 @@
 // basisu_gpu_texture.cpp
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,38 +16,10 @@
 #include "basisu_enc.h"
 #include "basisu_pvrtc1_4.h"
 #include "basisu_astc_decomp.h"
+#include "basisu_bc7enc.h"
 
 namespace basisu
 {
-	const int8_t g_etc2_eac_tables[16][8] = 
-	{
-		{ -3, -6, -9, -15, 2, 5, 8, 14 }, { -3, -7, -10, -13, 2, 6, 9, 12 }, { -2, -5, -8, -13, 1, 4, 7, 12 }, { -2, -4, -6, -13, 1, 3, 5, 12 },
-		{ -3, -6, -8, -12, 2, 5, 7, 11 }, { -3, -7, -9, -11, 2, 6, 8, 10 }, { -4, -7, -8, -11, 3, 6, 7, 10 }, { -3, -5, -8, -11, 2, 4, 7, 10 },
-		{ -2, -6, -8, -10, 1, 5, 7, 9 }, { -2, -5, -8, -10, 1, 4, 7, 9 }, { -2, -4, -8, -10, 1, 3, 7, 9 }, { -2, -5, -7, -10, 1, 4, 6, 9 },
-		{ -3, -4, -7, -10, 2, 3, 6, 9 }, { -1, -2, -3, -10, 0, 1, 2, 9 }, { -4, -6, -8, -9, 3, 5, 7, 8 }, { -3, -5, -7, -9, 2, 4, 6, 8 }
-	};
-
-	struct eac_a8_block
-	{
-		uint16_t m_base : 8;
-		uint16_t m_table : 4;
-		uint16_t m_multiplier : 4;
-
-		uint8_t m_selectors[6];
-
-		inline uint32_t get_selector(uint32_t x, uint32_t y, uint64_t selector_bits) const
-		{
-			assert((x < 4) && (y < 4));
-			return static_cast<uint32_t>((selector_bits >> (45 - (y + x * 4) * 3)) & 7);
-		}
-				
-		inline uint64_t get_selector_bits() const
-		{
-			uint64_t pixels = ((uint64_t)m_selectors[0] << 40) | ((uint64_t)m_selectors[1] << 32) | ((uint64_t)m_selectors[2] << 24) |	((uint64_t)m_selectors[3] << 16) | ((uint64_t)m_selectors[4] << 8) | m_selectors[5];
-			return pixels;
-		}
-	};
-		
 	void unpack_etc2_eac(const void *pBlock_bits, color_rgba *pPixels)
 	{
 		static_assert(sizeof(eac_a8_block) == 8, "sizeof(eac_a8_block) == 8");
@@ -317,6 +289,191 @@ namespace basisu
 		}
 	}
 
+	// BC7 mode 0-7 decompression.
+	// Instead of one monster routine to unpack all the BC7 modes, we're lumping the 3 subset, 2 subset, 1 subset, and dual plane modes together into simple shared routines.
+
+	static inline uint32_t bc7_dequant(uint32_t val, uint32_t pbit, uint32_t val_bits) { assert(val < (1U << val_bits)); assert(pbit < 2); assert(val_bits >= 4 && val_bits <= 8); const uint32_t total_bits = val_bits + 1; val = (val << 1) | pbit; val <<= (8 - total_bits); val |= (val >> total_bits); assert(val <= 255); return val; }
+	static inline uint32_t bc7_dequant(uint32_t val, uint32_t val_bits) { assert(val < (1U << val_bits)); assert(val_bits >= 4 && val_bits <= 8); val <<= (8 - val_bits); val |= (val >> val_bits); assert(val <= 255); return val; }
+
+	static inline uint32_t bc7_interp2(uint32_t l, uint32_t h, uint32_t w) { assert(w < 4); return (l * (64 - basist::g_bc7_weights2[w]) + h * basist::g_bc7_weights2[w] + 32) >> 6; }
+	static inline uint32_t bc7_interp3(uint32_t l, uint32_t h, uint32_t w) { assert(w < 8); return (l * (64 - basist::g_bc7_weights3[w]) + h * basist::g_bc7_weights3[w] + 32) >> 6; }
+	static inline uint32_t bc7_interp4(uint32_t l, uint32_t h, uint32_t w) { assert(w < 16); return (l * (64 - basist::g_bc7_weights4[w]) + h * basist::g_bc7_weights4[w] + 32) >> 6; }
+	static inline uint32_t bc7_interp(uint32_t l, uint32_t h, uint32_t w, uint32_t bits)
+	{
+		assert(l <= 255 && h <= 255);
+		switch (bits)
+		{
+		case 2: return bc7_interp2(l, h, w);
+		case 3: return bc7_interp3(l, h, w);
+		case 4: return bc7_interp4(l, h, w);
+		default: 
+			break;
+		}
+		return 0;
+	}
+		
+	bool unpack_bc7_mode0_2(uint32_t mode, const void* pBlock_bits, color_rgba* pPixels)
+	{
+		//const uint32_t SUBSETS = 3;
+		const uint32_t ENDPOINTS = 6;
+		const uint32_t COMPS = 3;
+		const uint32_t WEIGHT_BITS = (mode == 0) ? 3 : 2;
+		const uint32_t ENDPOINT_BITS = (mode == 0) ? 4 : 5;
+		const uint32_t PBITS = (mode == 0) ? 6 : 0;
+		const uint32_t WEIGHT_VALS = 1 << WEIGHT_BITS;
+		
+		uint32_t bit_offset = 0;
+		const uint8_t* pBuf = static_cast<const uint8_t*>(pBlock_bits);
+
+		if (read_bits32(pBuf, bit_offset, mode + 1) != (1U << mode)) return false;
+
+		const uint32_t part = read_bits32(pBuf, bit_offset, (mode == 0) ? 4 : 6);
+
+		color_rgba endpoints[ENDPOINTS];
+		for (uint32_t c = 0; c < COMPS; c++)
+			for (uint32_t e = 0; e < ENDPOINTS; e++)
+				endpoints[e][c] = (uint8_t)read_bits32(pBuf, bit_offset, ENDPOINT_BITS);
+
+		uint32_t pbits[6];
+		for (uint32_t p = 0; p < PBITS; p++)
+			pbits[p] = read_bits32(pBuf, bit_offset, 1);
+
+		uint32_t weights[16];
+		for (uint32_t i = 0; i < 16; i++)
+			weights[i] = read_bits32(pBuf, bit_offset, ((!i) || (i == basist::g_bc7_table_anchor_index_third_subset_1[part]) || (i == basist::g_bc7_table_anchor_index_third_subset_2[part])) ? (WEIGHT_BITS - 1) : WEIGHT_BITS);
+
+		assert(bit_offset == 128);
+
+		for (uint32_t e = 0; e < ENDPOINTS; e++)
+			for (uint32_t c = 0; c < 4; c++)
+				endpoints[e][c] = (uint8_t)((c == 3) ? 255 : (PBITS ? bc7_dequant(endpoints[e][c], pbits[e], ENDPOINT_BITS) : bc7_dequant(endpoints[e][c], ENDPOINT_BITS)));
+
+		color_rgba block_colors[3][8];
+		for (uint32_t s = 0; s < 3; s++)
+			for (uint32_t i = 0; i < WEIGHT_VALS; i++)
+			{
+				for (uint32_t c = 0; c < 3; c++)
+					block_colors[s][i][c] = (uint8_t)bc7_interp(endpoints[s * 2 + 0][c], endpoints[s * 2 + 1][c], i, WEIGHT_BITS);
+				block_colors[s][i][3] = 255;
+			}
+
+		for (uint32_t i = 0; i < 16; i++)
+			pPixels[i] = block_colors[basist::g_bc7_partition3[part * 16 + i]][weights[i]];
+
+		return true;
+	}
+
+	bool unpack_bc7_mode1_3_7(uint32_t mode, const void* pBlock_bits, color_rgba* pPixels)
+	{
+		//const uint32_t SUBSETS = 2;
+		const uint32_t ENDPOINTS = 4;
+		const uint32_t COMPS = (mode == 7) ? 4 : 3;
+		const uint32_t WEIGHT_BITS = (mode == 1) ? 3 : 2;
+		const uint32_t ENDPOINT_BITS = (mode == 7) ? 5 : ((mode == 1) ? 6 : 7);
+		const uint32_t PBITS = (mode == 1) ? 2 : 4;
+		const uint32_t SHARED_PBITS = (mode == 1) ? true : false;
+		const uint32_t WEIGHT_VALS = 1 << WEIGHT_BITS;
+		
+		uint32_t bit_offset = 0;
+		const uint8_t* pBuf = static_cast<const uint8_t*>(pBlock_bits);
+
+		if (read_bits32(pBuf, bit_offset, mode + 1) != (1U << mode)) return false;
+
+		const uint32_t part = read_bits32(pBuf, bit_offset, 6);
+
+		color_rgba endpoints[ENDPOINTS];
+		for (uint32_t c = 0; c < COMPS; c++)
+			for (uint32_t e = 0; e < ENDPOINTS; e++)
+				endpoints[e][c] = (uint8_t)read_bits32(pBuf, bit_offset, ENDPOINT_BITS);
+		
+		uint32_t pbits[4];
+		for (uint32_t p = 0; p < PBITS; p++)
+			pbits[p] = read_bits32(pBuf, bit_offset, 1);
+						
+		uint32_t weights[16];
+		for (uint32_t i = 0; i < 16; i++)
+			weights[i] = read_bits32(pBuf, bit_offset, ((!i) || (i == basist::g_bc7_table_anchor_index_second_subset[part])) ? (WEIGHT_BITS - 1) : WEIGHT_BITS);
+		
+		assert(bit_offset == 128);
+
+		for (uint32_t e = 0; e < ENDPOINTS; e++)
+			for (uint32_t c = 0; c < 4; c++)
+				endpoints[e][c] = (uint8_t)((c == ((mode == 7U) ? 4U : 3U)) ? 255 : bc7_dequant(endpoints[e][c], pbits[SHARED_PBITS ? (e >> 1) : e], ENDPOINT_BITS));
+		
+		color_rgba block_colors[2][8];
+		for (uint32_t s = 0; s < 2; s++)
+			for (uint32_t i = 0; i < WEIGHT_VALS; i++)
+			{
+				for (uint32_t c = 0; c < COMPS; c++)
+					block_colors[s][i][c] = (uint8_t)bc7_interp(endpoints[s * 2 + 0][c], endpoints[s * 2 + 1][c], i, WEIGHT_BITS);
+				block_colors[s][i][3] = (COMPS == 3) ? 255 : block_colors[s][i][3];
+			}
+
+		for (uint32_t i = 0; i < 16; i++)
+			pPixels[i] = block_colors[basist::g_bc7_partition2[part * 16 + i]][weights[i]];
+
+		return true;
+	}
+
+	bool unpack_bc7_mode4_5(uint32_t mode, const void* pBlock_bits, color_rgba* pPixels)
+	{
+		const uint32_t ENDPOINTS = 2;
+		const uint32_t COMPS = 4;
+		const uint32_t WEIGHT_BITS = 2;
+		const uint32_t A_WEIGHT_BITS = (mode == 4) ? 3 : 2;
+		const uint32_t ENDPOINT_BITS = (mode == 4) ? 5 : 7;
+		const uint32_t A_ENDPOINT_BITS = (mode == 4) ? 6 : 8;
+		//const uint32_t WEIGHT_VALS = 1 << WEIGHT_BITS;
+		//const uint32_t A_WEIGHT_VALS = 1 << A_WEIGHT_BITS;
+
+		uint32_t bit_offset = 0;
+		const uint8_t* pBuf = static_cast<const uint8_t*>(pBlock_bits);
+
+		if (read_bits32(pBuf, bit_offset, mode + 1) != (1U << mode)) return false;
+
+		const uint32_t comp_rot = read_bits32(pBuf, bit_offset, 2);
+		const uint32_t index_mode = (mode == 4) ? read_bits32(pBuf, bit_offset, 1) : 0;
+
+		color_rgba endpoints[ENDPOINTS];
+		for (uint32_t c = 0; c < COMPS; c++)
+			for (uint32_t e = 0; e < ENDPOINTS; e++)
+				endpoints[e][c] = (uint8_t)read_bits32(pBuf, bit_offset, (c == 3) ? A_ENDPOINT_BITS : ENDPOINT_BITS);
+		
+		const uint32_t weight_bits[2] = { index_mode ? A_WEIGHT_BITS : WEIGHT_BITS,  index_mode ? WEIGHT_BITS : A_WEIGHT_BITS };
+		
+		uint32_t weights[16], a_weights[16];
+		
+		for (uint32_t i = 0; i < 16; i++)
+			(index_mode ? a_weights : weights)[i] = read_bits32(pBuf, bit_offset, weight_bits[index_mode] - ((!i) ? 1 : 0));
+
+		for (uint32_t i = 0; i < 16; i++)
+			(index_mode ? weights : a_weights)[i] = read_bits32(pBuf, bit_offset, weight_bits[1 - index_mode] - ((!i) ? 1 : 0));
+
+		assert(bit_offset == 128);
+
+		for (uint32_t e = 0; e < ENDPOINTS; e++)
+			for (uint32_t c = 0; c < 4; c++)
+				endpoints[e][c] = (uint8_t)bc7_dequant(endpoints[e][c], (c == 3) ? A_ENDPOINT_BITS : ENDPOINT_BITS);
+
+		color_rgba block_colors[8];
+		for (uint32_t i = 0; i < (1U << weight_bits[0]); i++)
+			for (uint32_t c = 0; c < 3; c++)
+				block_colors[i][c] = (uint8_t)bc7_interp(endpoints[0][c], endpoints[1][c], i, weight_bits[0]);
+
+		for (uint32_t i = 0; i < (1U << weight_bits[1]); i++)
+			block_colors[i][3] = (uint8_t)bc7_interp(endpoints[0][3], endpoints[1][3], i, weight_bits[1]);
+
+		for (uint32_t i = 0; i < 16; i++)
+		{
+			pPixels[i] = block_colors[weights[i]];
+			pPixels[i].a = block_colors[a_weights[i]].a;
+			if (comp_rot >= 1)
+				std::swap(pPixels[i].a, pPixels[i].m_comps[comp_rot - 1]);
+		}
+
+		return true;
+	}
+
 	struct bc7_mode_6
 	{
 		struct
@@ -364,9 +521,6 @@ namespace basisu
 		};
 	};
 
-	static const uint32_t g_bc7_weights4[16] = { 0, 4, 9, 13, 17, 21, 26, 30, 34, 38, 43, 47, 51, 55, 60, 64 };
-	
-	// The transcoder only outputs mode 6 at the moment, so this is easy.
 	bool unpack_bc7_mode6(const void *pBlock_bits, color_rgba *pPixels)
 	{
 		static_assert(sizeof(bc7_mode_6) == 16, "sizeof(bc7_mode_6) == 16");
@@ -388,7 +542,7 @@ namespace basisu
 		color_rgba vals[16];
 		for (uint32_t i = 0; i < 16; i++)
 		{
-			const uint32_t w = g_bc7_weights4[i];
+			const uint32_t w = basist::g_bc7_weights4[i];
 			const uint32_t iw = 64 - w;
 			vals[i].set_noclamp_rgba( 
 				(r0 * iw + r1 * w + 32) >> 6, 
@@ -420,183 +574,37 @@ namespace basisu
 		return true;
 	}
 
-	static inline uint32_t get_block_bits(const uint8_t* pBytes, uint32_t bit_ofs, uint32_t bits_wanted)
+	bool unpack_bc7(const void *pBlock, color_rgba *pPixels)
 	{
-		assert(bits_wanted < 32);
+		const uint32_t first_byte = static_cast<const uint8_t*>(pBlock)[0];
 
-		uint32_t v = 0;
-		uint32_t total_bits = 0;
-
-		while (total_bits < bits_wanted)
+		for (uint32_t mode = 0; mode <= 7; mode++)
 		{
-			uint32_t k = pBytes[bit_ofs >> 3];
-			k >>= (bit_ofs & 7);
-			uint32_t num_bits_in_byte = 8 - (bit_ofs & 7);
-
-			v |= (k << total_bits);
-			total_bits += num_bits_in_byte;
-			bit_ofs += num_bits_in_byte;
-		}
-
-		return v & ((1 << bits_wanted) - 1);
-	}
-						
-	struct bc7_mode_5
-	{
-		union
-		{
-			struct
+			if (first_byte & (1U << mode))
 			{
-				uint64_t m_mode : 6;
-				uint64_t m_rot : 2;
-				
-				uint64_t m_r0 : 7;
-				uint64_t m_r1 : 7;
-				uint64_t m_g0 : 7;
-				uint64_t m_g1 : 7;
-				uint64_t m_b0 : 7;
-				uint64_t m_b1 : 7;
-				uint64_t m_a0 : 8;
-				uint64_t m_a1_0 : 6;
-
-			} m_lo;
-
-			uint64_t m_lo_bits;
-		};
-
-		union
-		{
-			struct
-			{
-				uint64_t m_a1_1 : 2;
-
-				// bit 2
-				uint64_t m_c00 : 1;
-				uint64_t m_c10 : 2;
-				uint64_t m_c20 : 2;
-				uint64_t m_c30 : 2;
-
-				uint64_t m_c01 : 2;
-				uint64_t m_c11 : 2;
-				uint64_t m_c21 : 2;
-				uint64_t m_c31 : 2;
-
-				uint64_t m_c02 : 2;
-				uint64_t m_c12 : 2;
-				uint64_t m_c22 : 2;
-				uint64_t m_c32 : 2;
-
-				uint64_t m_c03 : 2;
-				uint64_t m_c13 : 2;
-				uint64_t m_c23 : 2;
-				uint64_t m_c33 : 2;
-
-				// bit 33
-				uint64_t m_a00 : 1;
-				uint64_t m_a10 : 2;
-				uint64_t m_a20 : 2;
-				uint64_t m_a30 : 2;
-
-				uint64_t m_a01 : 2;
-				uint64_t m_a11 : 2;
-				uint64_t m_a21 : 2;
-				uint64_t m_a31 : 2;
-
-				uint64_t m_a02 : 2;
-				uint64_t m_a12 : 2;
-				uint64_t m_a22 : 2;
-				uint64_t m_a32 : 2;
-
-				uint64_t m_a03 : 2;
-				uint64_t m_a13 : 2;
-				uint64_t m_a23 : 2;
-				uint64_t m_a33 : 2;
-
-			} m_hi;
-
-			uint64_t m_hi_bits;
-		};
-
-		color_rgba get_low_color() const
-		{
-			return color_rgba(cNoClamp,
-				(int)((m_lo.m_r0 << 1) | (m_lo.m_r0 >> 6)),
-				(int)((m_lo.m_g0 << 1) | (m_lo.m_g0 >> 6)),
-				(int)((m_lo.m_b0 << 1) | (m_lo.m_b0 >> 6)),
-				m_lo.m_a0);
-		}
-
-		color_rgba get_high_color() const
-		{
-			return color_rgba(cNoClamp,
-				(int)((m_lo.m_r1 << 1) | (m_lo.m_r1 >> 6)),
-				(int)((m_lo.m_g1 << 1) | (m_lo.m_g1 >> 6)),
-				(int)((m_lo.m_b1 << 1) | (m_lo.m_b1 >> 6)),
-				(int)m_lo.m_a1_0 | ((int)m_hi.m_a1_1 << 6));
-		}
-
-		void get_block_colors(color_rgba* pColors) const
-		{
-			const color_rgba low_color(get_low_color());
-			const color_rgba high_color(get_high_color());
-
-			for (uint32_t i = 0; i < 4; i++)
-			{
-				static const uint32_t s_bc7_weights2[4] = { 0, 21, 43, 64 };
-
-				pColors[i].set_noclamp_rgba(
-					(low_color.r * (64 - s_bc7_weights2[i]) + high_color.r * s_bc7_weights2[i] + 32) >> 6,
-					(low_color.g * (64 - s_bc7_weights2[i]) + high_color.g * s_bc7_weights2[i] + 32) >> 6,
-					(low_color.b * (64 - s_bc7_weights2[i]) + high_color.b * s_bc7_weights2[i] + 32) >> 6,
-					(low_color.a * (64 - s_bc7_weights2[i]) + high_color.a * s_bc7_weights2[i] + 32) >> 6);
+				switch (mode)
+				{
+				case 0:
+				case 2:
+					return unpack_bc7_mode0_2(mode, pBlock, pPixels);
+				case 1:
+				case 3:
+				case 7:
+					return unpack_bc7_mode1_3_7(mode, pBlock, pPixels);
+				case 4:
+				case 5:
+					return unpack_bc7_mode4_5(mode, pBlock, pPixels);
+				case 6:
+					return unpack_bc7_mode6(pBlock, pPixels);
+				default:
+					break;
+				}
 			}
-		} 
-
-		uint32_t get_selector(uint32_t idx, bool alpha) const
-		{
-			const uint32_t size = (idx == 0) ? 1 : 2;
-
-			uint32_t ofs = alpha ? 97 : 66;
-			
-			if (idx)
-				ofs += 1 + 2 * (idx - 1);
-
-			return get_block_bits(reinterpret_cast<const uint8_t*>(this), ofs, size);
-		}
-	};
-
-	bool unpack_bc7_mode5(const void* pBlock_bits, color_rgba* pPixels)
-	{
-		static_assert(sizeof(bc7_mode_5) == 16, "sizeof(bc7_mode_5) == 16");
-
-		const bc7_mode_5& block = *static_cast<const bc7_mode_5*>(pBlock_bits);
-
-		if (block.m_lo.m_mode != (1 << 5))
-			return false;
-				
-		color_rgba block_colors[4];
-		block.get_block_colors(block_colors);
-
-		const uint32_t rot = block.m_lo.m_rot;
-
-		for (uint32_t i = 0; i < 16; i++)
-		{
-			const uint32_t cs = block.get_selector(i, false);
-
-			color_rgba c(block_colors[cs]);
-
-			const uint32_t as = block.get_selector(i, true);
-			c.a = block_colors[as].a;
-
-			if (rot > 0)
-				std::swap(c[3], c[rot - 1]);
-
-			pPixels[i] = c;
 		}
 
-		return true;
+		return false;
 	}
-
+	
 	struct fxt1_block
 	{
 		union
@@ -903,13 +911,14 @@ namespace basisu
 		etc2_eac_r11 m_c[2];
 	};
 
-	static void unpack_etc2_eac_r(const etc2_eac_r11* p, color_rgba* pPixels, uint32_t c)
+	void unpack_etc2_eac_r(const void *p, color_rgba* pPixels, uint32_t c)
 	{
-		const uint64_t sels = p->get_sels();
+		const etc2_eac_r11* pBlock = static_cast<const etc2_eac_r11*>(p);
+		const uint64_t sels = pBlock->get_sels();
 
-		const int base = (int)p->m_base * 8 + 4;
-		const int mul = p->m_mul ? ((int)p->m_mul * 8) : 1;
-		const int table = (int)p->m_table;
+		const int base = (int)pBlock->m_base * 8 + 4;
+		const int mul = pBlock->m_mul ? ((int)pBlock->m_mul * 8) : 1;
+		const int table = (int)pBlock->m_table;
 
 		for (uint32_t y = 0; y < 4; y++)
 		{
@@ -923,7 +932,8 @@ namespace basisu
 				val = clamp<int>(val, 0, 2047);
 
 				// Convert to 8-bits with rounding
-				pPixels[x + y * 4].m_comps[c] = static_cast<uint8_t>((val * 255 + 1024) / 2047);
+				//pPixels[x + y * 4].m_comps[c] = static_cast<uint8_t>((val * 255 + 1024) / 2047);
+				pPixels[x + y * 4].m_comps[c] = static_cast<uint8_t>((val * 255 + 1023) / 2047);
 
 			} // x
 		} // y
@@ -937,6 +947,11 @@ namespace basisu
 
 			unpack_etc2_eac_r(pBlock, pPixels, c);
 		}
+	}
+	
+	void unpack_uastc(const void* p, color_rgba* pPixels)
+	{
+		basist::unpack_uastc(*static_cast<const basist::uastc_block*>(p), (basist::color32 *)pPixels, false);
 	}
 	
 	// Unpacks to RGBA, R, RG, or A
@@ -966,14 +981,7 @@ namespace basisu
 		}
 		case texture_format::cBC7:
 		{
-			// We only support modes 5 and 6.
-			if (!unpack_bc7_mode5(pBlock, pPixels))
-			{
-				if (!unpack_bc7_mode6(pBlock, pPixels))
-					return false;
-			}
-
-			break;
+			return unpack_bc7(pBlock, pPixels);
 		}
 		// Full ETC2 color blocks (planar/T/H modes) is currently unsupported in basisu, but we do support ETC2 with alpha (using ETC1 for color)
 		case texture_format::cETC2_RGB:
@@ -1030,6 +1038,11 @@ namespace basisu
 		case texture_format::cETC2_RG11_EAC:
 		{
 			unpack_etc2_eac_rg(pBlock, pPixels);
+			break;
+		}
+		case texture_format::cUASTC4x4:
+		{
+			unpack_uastc(pBlock, pPixels);
 			break;
 		}
 		default:
@@ -1113,6 +1126,7 @@ namespace basisu
 		KTX_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02,
 		KTX_COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0,
 		KTX_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 0x93D0,
+		KTX_COMPRESSED_RGBA_UASTC_4x4_KHR = 0x94CC, // TODO - Use proper value!
 		KTX_ATC_RGB_AMD = 0x8C92,
 		KTX_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE,
 		KTX_COMPRESSED_RGB_FXT1_3DFX = 0x86B0,
@@ -1305,6 +1319,12 @@ namespace basisu
 			base_internal_fmt = KTX_RG;
 			break;
 		}
+		case texture_format::cUASTC4x4:
+		{
+			internal_fmt = KTX_COMPRESSED_RGBA_UASTC_4x4_KHR;
+			base_internal_fmt = KTX_RGBA;
+			break;
+		}
 		case texture_format::cFXT1_RGB:
 		{
 			internal_fmt = KTX_COMPRESSED_RGB_FXT1_3DFX;
@@ -1415,7 +1435,7 @@ namespace basisu
 		return write_compressed_texture_file(pFilename, v, false);
 	}
 
-	const uint32_t OUT_FILE_MAGIC = 'TEXC';
+	//const uint32_t OUT_FILE_MAGIC = 'TEXC';
 	struct out_file_header 
 	{
 		packed_uint<4> m_magic;
@@ -1428,7 +1448,11 @@ namespace basisu
 	bool write_3dfx_out_file(const char* pFilename, const gpu_image& gi)
 	{
 		out_file_header hdr;
-		hdr.m_magic = OUT_FILE_MAGIC;
+		//hdr.m_magic = OUT_FILE_MAGIC;
+		hdr.m_magic.m_bytes[0] = 67;
+		hdr.m_magic.m_bytes[1] = 88;
+		hdr.m_magic.m_bytes[2] = 69;
+		hdr.m_magic.m_bytes[3] = 84;
 		hdr.m_pad = 0;
 		hdr.m_width = gi.get_blocks_x() * 8;
 		hdr.m_height = gi.get_blocks_y() * 4;

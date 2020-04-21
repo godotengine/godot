@@ -1,5 +1,5 @@
 // basisu.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 // Important: If compiling with gcc, be sure strict aliasing is disabled: -fno-strict-aliasing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -79,9 +79,9 @@
 #define strcasecmp _stricmp
 #endif
 
-// Set to one to enable debug printf()'s when any errors occur, for development/debugging.
-#ifndef BASISU_DEVEL_MESSAGES
-#define BASISU_DEVEL_MESSAGES 0
+// Set to one to enable debug printf()'s when any errors occur, for development/debugging. Especially useful for WebGL development.
+#ifndef BASISU_FORCE_DEVEL_MESSAGES
+#define BASISU_FORCE_DEVEL_MESSAGES 0
 #endif
 
 #define BASISU_NOTE_UNUSED(x) (void)(x)
@@ -92,7 +92,7 @@
 #define BASISU_STRINGIZE(x) #x
 #define BASISU_STRINGIZE2(x) BASISU_STRINGIZE(x)
 
-#if BASISU_DEVEL_MESSAGES
+#if BASISU_FORCE_DEVEL_MESSAGES
 	#define BASISU_DEVEL_ERROR(...) do { basisu::debug_printf(__VA_ARGS__); } while(0)
 #else
 	#define BASISU_DEVEL_ERROR(...)
@@ -125,9 +125,25 @@ namespace basisu
 
 	template <typename S> inline S maximum(S a, S b) { return (a > b) ? a : b; }
 	template <typename S> inline S maximum(S a, S b, S c) { return maximum(maximum(a, b), c); }
+	template <typename S> inline S maximum(S a, S b, S c, S d) { return maximum(maximum(maximum(a, b), c), d); }
 	
 	template <typename S> inline S minimum(S a, S b) {	return (a < b) ? a : b; }
 	template <typename S> inline S minimum(S a, S b, S c) {	return minimum(minimum(a, b), c); }
+	template <typename S> inline S minimum(S a, S b, S c, S d) { return minimum(minimum(minimum(a, b), c), d); }
+
+	inline float clampf(float value, float low, float high) { if (value < low) value = low; else if (value > high) value = high;	return value; }
+	inline float saturate(float value) { return clampf(value, 0, 1.0f); }
+	inline uint8_t minimumub(uint8_t a, uint8_t b) { return (a < b) ? a : b; }
+	inline uint32_t minimumu(uint32_t a, uint32_t b) { return (a < b) ? a : b; }
+	inline int32_t minimumi(int32_t a, int32_t b) { return (a < b) ? a : b; }
+	inline float minimumf(float a, float b) { return (a < b) ? a : b; }
+	inline uint8_t maximumub(uint8_t a, uint8_t b) { return (a > b) ? a : b; }
+	inline uint32_t maximumu(uint32_t a, uint32_t b) { return (a > b) ? a : b; }
+	inline int32_t maximumi(int32_t a, int32_t b) { return (a > b) ? a : b; }
+	inline float maximumf(float a, float b) { return (a > b) ? a : b; }
+	inline int squarei(int i) { return i * i; }
+	inline float squaref(float i) { return i * i; }
+	template<typename T> inline T square(T a) { return a * a; }
 
 	template <typename S> inline S clamp(S value, S low, S high) { return (value < low) ? low : ((value > high) ? high : value); }
 
@@ -137,12 +153,10 @@ namespace basisu
 	template<typename T> inline void clear_vector(T &vec) { vec.erase(vec.begin(), vec.end()); }		
 	template<typename T> inline typename T::value_type *enlarge_vector(T &vec, size_t n) { size_t cs = vec.size(); vec.resize(cs + n); return &vec[cs]; }
 
-	template<typename S> inline S square(S val) { return val * val; }
-
 	inline bool is_pow2(uint32_t x) { return x && ((x & (x - 1U)) == 0U); }
 	inline bool is_pow2(uint64_t x) { return x && ((x & (x - 1U)) == 0U); }
 
-	template<typename T> inline T open_range_check(T v, T minv, T maxv) { assert(v >= minv && v < maxv); return v; }
+	template<typename T> inline T open_range_check(T v, T minv, T maxv) { assert(v >= minv && v < maxv); BASISU_NOTE_UNUSED(minv); BASISU_NOTE_UNUSED(maxv); return v; }
 	template<typename T> inline T open_range_check(T v, T maxv) { assert(v < maxv); BASISU_NOTE_UNUSED(maxv); return v; }
 
 	inline uint32_t total_bits(uint32_t v) { uint32_t l = 0; for ( ; v > 0U; ++l) v >>= 1; return l; }
@@ -256,6 +270,7 @@ namespace basisu
 		inline packed_uint(const packed_uint& other) { *this = other; }
 
 		inline packed_uint& operator= (uint32_t v) { for (uint32_t i = 0; i < NumBytes; i++) m_bytes[i] = static_cast<uint8_t>(v >> (i * 8)); return *this; }
+		inline packed_uint& operator= (const packed_uint& rhs) { memcpy(m_bytes, rhs.m_bytes, sizeof(m_bytes)); return *this; }
 
 		inline operator uint32_t() const
 		{
@@ -308,15 +323,15 @@ namespace basisu
 		// Block-based formats
 		cETC1,			// ETC1
 		cETC1S,			// ETC1 (subset: diff colors only, no subblocks)
-		cETC2_RGB,		// ETC2 color block
-		cETC2_RGBA,		// ETC2 alpha block followed by ETC2 color block
+		cETC2_RGB,		// ETC2 color block (basisu doesn't support ETC2 planar/T/H modes - just basic ETC1)
+		cETC2_RGBA,		// ETC2 EAC alpha block followed by ETC2 color block
 		cETC2_ALPHA,	// ETC2 EAC alpha block 
 		cBC1,				// DXT1
-		cBC3,				// DXT5 (DXT5A block followed by a DXT1 block)
+		cBC3,				// DXT5 (BC4/DXT5A block followed by a BC1/DXT1 block)
 		cBC4,				// DXT5A
-		cBC5,				// 3DC/DXN (two DXT5A blocks)
+		cBC5,				// 3DC/DXN (two BC4/DXT5A blocks)
 		cBC7,
-		cASTC4x4,		
+		cASTC4x4,		// LDR only
 		cPVRTC1_4_RGB,
 		cPVRTC1_4_RGBA,
 		cATC_RGB,
@@ -325,6 +340,7 @@ namespace basisu
 		cPVRTC2_4_RGBA,
 		cETC2_R11_EAC,
 		cETC2_RG11_EAC,
+		cUASTC4x4,		
 		
 		// Uncompressed/raw pixels
 		cRGBA32,

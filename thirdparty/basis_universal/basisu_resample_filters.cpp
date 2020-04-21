@@ -1,5 +1,5 @@
 // basisu_resampler_filters.cpp
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -283,7 +283,7 @@ namespace basisu
 		return sum;
 	}
 
-	static const float KAISER_ALPHA = 4.0;
+	//static const float KAISER_ALPHA = 4.0;
 	static double kaiser(double alpha, double half_width, double x)
 	{
 		const double ratio = (x / half_width);

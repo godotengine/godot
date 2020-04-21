@@ -1,5 +1,5 @@
 // basisu_enc.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,16 +22,20 @@
 #include <functional>
 #include <thread>
 #include <unordered_map>
+#include <ostream>
 
 #if !defined(_WIN32) || defined(__MINGW32__)
 #include <libgen.h>
 #endif
 
+// This module is really just a huge grab bag of classes and helper functions needed by the encoder.
+
 namespace basisu
 {
 	extern uint8_t g_hamming_dist[256];
 
-	// Encoder library initialization
+	// Encoder library initialization.
+	// This function MUST be called before encoding anything!
 	void basisu_encoder_init();
 
 	void error_printf(const char *pFmt, ...);
@@ -42,7 +46,67 @@ namespace basisu
 	{
 		return (uint8_t)((i & 0xFFFFFF00U) ? (~(i >> 31)) : i);
 	}
-	
+
+	inline int32_t clampi(int32_t value, int32_t low, int32_t high) 
+	{ 
+		if (value < low) 
+			value = low; 
+		else if (value > high) 
+			value = high; 
+		return value; 
+	}
+
+	inline uint8_t mul_8(uint32_t v, uint32_t a)
+	{
+		v = v * a + 128; 
+		return (uint8_t)((v + (v >> 8)) >> 8);
+	}
+	inline uint64_t read_bits(const uint8_t* pBuf, uint32_t& bit_offset, uint32_t codesize)
+	{
+		assert(codesize <= 64);
+		uint64_t bits = 0;
+		uint32_t total_bits = 0;
+
+		while (total_bits < codesize)
+		{
+			uint32_t byte_bit_offset = bit_offset & 7;
+			uint32_t bits_to_read = minimum<int>(codesize - total_bits, 8 - byte_bit_offset);
+
+			uint32_t byte_bits = pBuf[bit_offset >> 3] >> byte_bit_offset;
+			byte_bits &= ((1 << bits_to_read) - 1);
+
+			bits |= ((uint64_t)(byte_bits) << total_bits);
+
+			total_bits += bits_to_read;
+			bit_offset += bits_to_read;
+		}
+
+		return bits;
+	}
+
+	inline uint32_t read_bits32(const uint8_t* pBuf, uint32_t& bit_offset, uint32_t codesize)
+	{
+		assert(codesize <= 32);
+		uint32_t bits = 0;
+		uint32_t total_bits = 0;
+
+		while (total_bits < codesize)
+		{
+			uint32_t byte_bit_offset = bit_offset & 7;
+			uint32_t bits_to_read = minimum<int>(codesize - total_bits, 8 - byte_bit_offset);
+
+			uint32_t byte_bits = pBuf[bit_offset >> 3] >> byte_bit_offset;
+			byte_bits &= ((1 << bits_to_read) - 1);
+
+			bits |= (byte_bits << total_bits);
+
+			total_bits += bits_to_read;
+			bit_offset += bits_to_read;
+		}
+
+		return bits;
+	}
+				
 	// Hashing
 	
 	inline uint32_t bitmix32c(uint32_t v) 
@@ -68,6 +132,16 @@ namespace basisu
 		return v;
 	}
 
+	inline uint32_t wang_hash(uint32_t seed)
+	{
+		 seed = (seed ^ 61) ^ (seed >> 16);
+		 seed *= 9;
+		 seed = seed ^ (seed >> 4);
+		 seed *= 0x27d4eb2d;
+		 seed = seed ^ (seed >> 15);
+		 return seed;
+	}
+
 	uint32_t hash_hsieh(const uint8_t* pBuf, size_t len);
 
 	template <typename Key>
@@ -77,6 +151,71 @@ namespace basisu
 		{
 			return hash_hsieh(reinterpret_cast<const uint8_t *>(&k), sizeof(k));
 		}
+	};
+	class running_stat
+	{
+	public:
+		running_stat() :
+			m_n(0),
+			m_old_m(0), m_new_m(0), m_old_s(0), m_new_s(0)
+		{
+		}
+		void clear()
+		{
+			m_n = 0;
+		}
+		void push(double x)
+		{
+			m_n++;
+			if (m_n == 1)
+			{
+				m_old_m = m_new_m = x;
+				m_old_s = 0.0;
+				m_min = x;
+				m_max = x;
+			}
+			else
+			{
+				m_new_m = m_old_m + (x - m_old_m) / m_n;
+				m_new_s = m_old_s + (x - m_old_m) * (x - m_new_m);
+				m_old_m = m_new_m;
+				m_old_s = m_new_s;
+				m_min = std::min(x, m_min);
+				m_max = std::max(x, m_max);
+			}
+		}
+		uint32_t get_num() const
+		{
+			return m_n;
+		}
+		double get_mean() const
+		{
+			return (m_n > 0) ? m_new_m : 0.0;
+		}
+
+		double get_variance() const
+		{
+			return ((m_n > 1) ? m_new_s / (m_n - 1) : 0.0);
+		}
+
+		double get_std_dev() const
+		{
+			return sqrt(get_variance());
+		}
+
+		double get_min() const
+		{
+			return m_min;
+		}
+
+		double get_max() const
+		{
+			return m_max;
+		}
+
+	private:
+		uint32_t m_n;
+		double m_old_m, m_new_m, m_old_s, m_new_s, m_min, m_max;
 	};
 
 	// Linear algebra
@@ -117,7 +256,7 @@ namespace basisu
 		inline vec &set(const vec<OtherN, OtherT> &other)
 		{
 			uint32_t i;
-			if (static_cast<void *>(&other) == static_cast<void *>(this))
+			if ((const void *)(&other) == (const void *)(this))
 				return *this;
 			const uint32_t m = minimum(OtherN, N);
 			for (i = 0; i < m; i++)
@@ -357,6 +496,7 @@ namespace basisu
 		BASISU_NO_EQUALS_OR_COPY_CONSTRUCT(job_pool);
 
 	public:
+		// num_threads is the TOTAL number of job pool threads, including the calling thread! So 2=1 new thread, 3=2 new threads, etc.
 		job_pool(uint32_t num_threads);
 		~job_pool();
 				
@@ -419,7 +559,7 @@ namespace basisu
 			return *this;
 		}
 	};
-		
+				
 	class color_rgba
 	{
 	public:
@@ -439,6 +579,25 @@ namespace basisu
 		inline color_rgba()
 		{
 			static_assert(sizeof(*this) == 4, "sizeof(*this) != 4");
+			static_assert(sizeof(*this) == sizeof(basist::color32), "sizeof(*this) != sizeof(basist::color32)");
+		}
+
+		// Not too hot about this idea.
+		inline color_rgba(const basist::color32& other) :
+			r(other.r),
+			g(other.g),
+			b(other.b),
+			a(other.a)
+		{
+		}
+
+		color_rgba& operator= (const basist::color32& rhs)
+		{
+			r = rhs.r;
+			g = rhs.g;
+			b = rhs.b;
+			a = rhs.a;
+			return *this;
 		}
 
 		inline color_rgba(int y)
@@ -562,6 +721,14 @@ namespace basisu
 		inline int get_601_luma() const { return (19595U * m_comps[0] + 38470U * m_comps[1] + 7471U * m_comps[2] + 32768U) >> 16U; }
 		inline int get_709_luma() const { return (13938U * m_comps[0] + 46869U * m_comps[1] + 4729U * m_comps[2] + 32768U) >> 16U; } 
 		inline int get_luma(bool luma_601) const { return luma_601 ? get_601_luma() : get_709_luma(); }
+
+		inline basist::color32 get_color32() const
+		{
+			return basist::color32(r, g, b, a);
+		}
+
+		static color_rgba comp_min(const color_rgba& a, const color_rgba& b) { return color_rgba(std::min(a[0], b[0]), std::min(a[1], b[1]), std::min(a[2], b[2]), std::min(a[3], b[3])); }
+		static color_rgba comp_max(const color_rgba& a, const color_rgba& b) { return color_rgba(std::max(a[0], b[0]), std::max(a[1], b[1]), std::max(a[2], b[2]), std::max(a[3], b[3])); }
 	};
 
 	typedef std::vector<color_rgba> color_rgba_vec;
@@ -619,6 +786,13 @@ namespace basisu
 		}
 		else
 			return color_distance(e1, e2, alpha);
+	}
+
+	static inline uint32_t color_distance_la(const color_rgba& a, const color_rgba& b)
+	{
+		const int dl = a.r - b.r;
+		const int da = a.a - b.a;
+		return dl * dl + da * da;
 	}
 
 	// String helpers
@@ -1238,7 +1412,7 @@ namespace basisu
 
 		bool prep_split(const tsvq_node &node, TrainingVectorType &l_child_result, TrainingVectorType &r_child_result) const
 		{
-			const uint32_t N = TrainingVectorType::num_elements;
+			//const uint32_t N = TrainingVectorType::num_elements;
 
 			if (2 == node.m_training_vecs.size())
 			{
@@ -2106,6 +2280,12 @@ namespace basisu
 			resize(w, h, p);
 		}
 
+		image(const uint8_t *pImage, uint32_t width, uint32_t height, uint32_t comps) :
+			m_width(0), m_height(0), m_pitch(0)
+		{
+			init(pImage, width, height, comps);
+		}
+
 		image(const image &other) :
 			m_width(0), m_height(0), m_pitch(0)
 		{
@@ -2152,6 +2332,47 @@ namespace basisu
 			for (uint32_t i = 0; i < m_pixels.size(); i++)
 				m_pixels[i] = c;
 			return *this;
+		}
+
+		void init(const uint8_t *pImage, uint32_t width, uint32_t height, uint32_t comps)
+		{
+			assert(comps >= 1 && comps <= 4);
+			
+			resize(width, height);
+
+			for (uint32_t y = 0; y < height; y++)
+			{
+				for (uint32_t x = 0; x < width; x++)
+				{
+					const uint8_t *pSrc = &pImage[(x + y * width) * comps];
+					color_rgba &dst = (*this)(x, y);
+
+					if (comps == 1)
+					{
+						dst.r = pSrc[0];
+						dst.g = pSrc[0];
+						dst.b = pSrc[0];
+						dst.a = 255;
+					}
+					else if (comps == 2)
+					{
+						dst.r = pSrc[0];
+						dst.g = pSrc[0];
+						dst.b = pSrc[0];
+						dst.a = pSrc[1];
+					}
+					else
+					{
+						dst.r = pSrc[0];
+						dst.g = pSrc[1];
+						dst.b = pSrc[2];
+						if (comps == 4)
+							dst.a = pSrc[3];
+						else
+							dst.a = 255;
+					}
+				}
+			}
 		}
 
 		image &fill_box(uint32_t x, uint32_t y, uint32_t w, uint32_t h, const color_rgba &c)
@@ -2634,10 +2855,26 @@ namespace basisu
 	};
 
 	// Image saving/loading/resampling
-
+		
 	bool load_png(const char* pFilename, image& img);
 	inline bool load_png(const std::string &filename, image &img) { return load_png(filename.c_str(), img); }
 
+	bool load_bmp(const char* pFilename, image& img);
+	inline bool load_bmp(const std::string &filename, image &img) { return load_bmp(filename.c_str(), img); }
+		
+	bool load_tga(const char* pFilename, image& img);
+	inline bool load_tga(const std::string &filename, image &img) { return load_tga(filename.c_str(), img); }
+
+	bool load_jpg(const char *pFilename, image& img);
+	inline bool load_jpg(const std::string &filename, image &img) { return load_jpg(filename.c_str(), img); }
+	
+	// Currently loads .BMP, .PNG, or .TGA.
+	bool load_image(const char* pFilename, image& img);
+	inline bool load_image(const std::string &filename, image &img) { return load_image(filename.c_str(), img); }
+
+	uint8_t *read_tga(const uint8_t *pBuf, uint32_t buf_size, int &width, int &height, int &n_chans);
+	uint8_t *read_tga(const char *pFilename, int &width, int &height, int &n_chans);
+		
 	enum
 	{
 		cImageSaveGrayscale = 1,
@@ -2799,7 +3036,7 @@ namespace basisu
 	}
 
 	void fill_buffer_with_random_bytes(void *pBuf, size_t size, uint32_t seed = 1);
-
+		
 } // namespace basisu
 
 

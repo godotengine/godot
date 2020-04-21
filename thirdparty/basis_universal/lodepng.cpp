@@ -29,6 +29,7 @@ Rename this file to lodepng.cpp to use it for C++, or to lodepng.c to use it for
 */
 
 #ifdef _MSC_VER
+#define _CRT_SECURE_NO_DEPRECATE
 #pragma warning (disable : 4201)
 
 #ifndef BASISU_NO_ITERATOR_DEBUG_LEVEL
@@ -200,6 +201,7 @@ static void uivector_init(uivector* p) {
 /*returns 1 if success, 0 if failure ==> nothing done*/
 static unsigned uivector_push_back(uivector* p, unsigned c) {
   if(!uivector_resize(p, p->size + 1)) return 0;
+  if (!p->data) return 0;
   p->data[p->size - 1] = c;
   return 1;
 }

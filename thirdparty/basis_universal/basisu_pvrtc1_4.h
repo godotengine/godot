@@ -1,5 +1,5 @@
 // basisu_pvrtc1_4.cpp
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -87,6 +87,14 @@ namespace basisu
 			return (m_modulation >> ((y * 4 + x) * 2)) & 3;
 		}
 
+		inline void set_modulation(uint32_t x, uint32_t y, uint32_t s)
+		{
+			assert((x < 4) && (y < 4) && (s < 4));
+			uint32_t n = (y * 4 + x) * 2;
+			m_modulation = (m_modulation & (~(3 << n))) | (s << n);
+			assert(get_modulation(x, y) == s);
+		}
+
 		// Scaled by 8
 		inline const uint32_t* get_scaled_modulation_values(bool block_uses_transparent_modulation) const
 		{
@@ -107,7 +115,7 @@ namespace basisu
 		}
 
 		// opaque endpoints:	554, 555
-		// transparent endpoints: 3443 or 3444
+		// transparent endpoints: 3443, 3444
 		inline void set_endpoint_raw(uint32_t endpoint_index, const color_rgba& c, bool opaque_endpoint)
 		{
 			assert(endpoint_index < 2);
@@ -352,7 +360,93 @@ namespace basisu
 
 			return result;
 		}
-						
+
+		inline void set_modulation(uint32_t x, uint32_t y, uint32_t s)
+		{
+			assert((x < m_width) && (y < m_height));
+			return m_blocks(x >> 2, y >> 2).set_modulation(x & 3, y & 3, s);
+		}
+
+		inline uint64_t map_pixel(uint32_t x, uint32_t y, const color_rgba& c, bool perceptual, bool alpha_is_significant, bool record = true)
+		{
+			color_rgba v[4];
+			get_interpolated_colors(x, y, v);
+
+			uint64_t best_dist = color_distance(perceptual, c, v[0], alpha_is_significant);
+			uint32_t best_v = 0;
+			for (uint32_t i = 1; i < 4; i++)
+			{
+				uint64_t dist = color_distance(perceptual, c, v[i], alpha_is_significant);
+				if (dist < best_dist)
+				{
+					best_dist = dist;
+					best_v = i;
+				}
+			}
+
+			if (record)
+				set_modulation(x, y, best_v);
+
+			return best_dist;
+		}
+
+		inline uint64_t remap_pixels_influenced_by_endpoint(uint32_t bx, uint32_t by, const image& orig_img, bool perceptual, bool alpha_is_significant)
+		{
+			uint64_t total_error = 0;
+
+			for (int yd = -3; yd <= 3; yd++)
+			{
+				const int y = wrap_y((int)by * 4 + 2 + yd);
+
+				for (int xd = -3; xd <= 3; xd++)
+				{
+					const int x = wrap_x((int)bx * 4 + 2 + xd);
+
+					total_error += map_pixel(x, y, orig_img(x, y), perceptual, alpha_is_significant);
+				}
+			}
+
+			return total_error;
+		}
+
+		inline uint64_t evaluate_1x1_endpoint_error(uint32_t bx, uint32_t by, const image& orig_img, bool perceptual, bool alpha_is_significant, uint64_t threshold_error = 0) const
+		{
+			uint64_t total_error = 0;
+
+			for (int yd = -3; yd <= 3; yd++)
+			{
+				const int y = wrap_y((int)by * 4 + 2 + yd);
+
+				for (int xd = -3; xd <= 3; xd++)
+				{
+					const int x = wrap_x((int)bx * 4 + 2 + xd);
+
+					total_error += color_distance(perceptual, get_pixel(x, y), orig_img(x, y), alpha_is_significant);
+
+					if ((threshold_error) && (total_error >= threshold_error))
+						return total_error;
+				}
+			}
+
+			return total_error;
+		}
+
+		uint64_t local_endpoint_optimization_opaque(uint32_t bx, uint32_t by, const image& orig_img, bool perceptual);
+
+		inline uint64_t map_all_pixels(const image& img, bool perceptual, bool alpha_is_significant)
+		{
+			assert(m_width == img.get_width());
+			assert(m_height == img.get_height());
+
+			uint64_t total_error = 0;
+			for (uint32_t y = 0; y < img.get_height(); y++)
+				for (uint32_t x = 0; x < img.get_width(); x++)
+					total_error += map_pixel(x, y, img(x, y), perceptual, alpha_is_significant);
+
+			return total_error;
+		}
+	
+	public:						
 		uint32_t m_width, m_height;
 		pvrtc4_block_vector2D m_blocks;
 		uint32_t m_block_width, m_block_height;

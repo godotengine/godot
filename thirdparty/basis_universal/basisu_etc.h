@@ -1,5 +1,5 @@
 // basis_etc.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -256,6 +256,27 @@ namespace basisu
 
 			const uint32_t etc1_val = g_selector_index_to_etc1[val];
 
+			const uint32_t lsb = etc1_val & 1;
+			const uint32_t msb = etc1_val >> 1;
+
+			p[0] &= ~mask;
+			p[0] |= (lsb << byte_bit_ofs);
+
+			p[-2] &= ~mask;
+			p[-2] |= (msb << byte_bit_ofs);
+		}
+
+		// Selector "etc1_val" ranges from 0-3 and is a direct (raw) ETC1 selector.
+		inline void set_raw_selector(uint32_t x, uint32_t y, uint32_t etc1_val)
+		{
+			assert((x | y | etc1_val) < 4);
+			const uint32_t bit_index = x * 4 + y;
+
+			uint8_t* p = &m_bytes[7 - (bit_index >> 3)];
+
+			const uint32_t byte_bit_ofs = bit_index & 7;
+			const uint32_t mask = 1 << byte_bit_ofs;
+						
 			const uint32_t lsb = etc1_val & 1;
 			const uint32_t msb = etc1_val >> 1;
 
@@ -622,6 +643,23 @@ namespace basisu
 			return true;
 		}
 
+		bool set_block_color5_clamp(const color_rgba &c0_unscaled, const color_rgba &c1_unscaled)
+		{
+			set_diff_bit(true);
+			set_base5_color(pack_color5(c0_unscaled, false));
+
+			int dr = c1_unscaled.r - c0_unscaled.r;
+			int dg = c1_unscaled.g - c0_unscaled.g;
+			int db = c1_unscaled.b - c0_unscaled.b;
+			
+			dr = clamp<int>(dr, cETC1ColorDeltaMin, cETC1ColorDeltaMax);
+			dg = clamp<int>(dg, cETC1ColorDeltaMin, cETC1ColorDeltaMax);
+			db = clamp<int>(db, cETC1ColorDeltaMin, cETC1ColorDeltaMax);
+						
+			set_delta3_color(pack_delta3(dr, dg, db));
+
+			return true;
+		}
 		color_rgba get_selector_color(uint32_t x, uint32_t y, uint32_t s) const
 		{
 			color_rgba block_colors[4];
@@ -1042,5 +1080,77 @@ namespace basisu
 	{
 		etc1_optimizer m_optimizer;
 	};
+	
+	void pack_etc1_solid_color_init();
+	uint64_t pack_etc1_block_solid_color(etc_block& block, const uint8_t* pColor);
 
+	// ETC EAC
+	extern const int8_t g_etc2_eac_tables[16][8];
+	extern const int8_t g_etc2_eac_tables8[16][8];
+
+	const uint32_t ETC2_EAC_MIN_VALUE_SELECTOR = 3, ETC2_EAC_MAX_VALUE_SELECTOR = 7;
+
+	struct eac_a8_block
+	{
+		uint16_t m_base : 8;
+		uint16_t m_table : 4;
+		uint16_t m_multiplier : 4;
+
+		uint8_t m_selectors[6];
+
+		inline uint32_t get_selector(uint32_t x, uint32_t y, uint64_t selector_bits) const
+		{
+			assert((x < 4) && (y < 4));
+			return static_cast<uint32_t>((selector_bits >> (45 - (y + x * 4) * 3)) & 7);
+		}
+
+		inline uint64_t get_selector_bits() const
+		{
+			uint64_t pixels = ((uint64_t)m_selectors[0] << 40) | ((uint64_t)m_selectors[1] << 32) | ((uint64_t)m_selectors[2] << 24) | ((uint64_t)m_selectors[3] << 16) | ((uint64_t)m_selectors[4] << 8) | m_selectors[5];
+			return pixels;
+		}
+
+		inline void set_selector_bits(uint64_t pixels)
+		{
+			m_selectors[0] = (uint8_t)(pixels >> 40);
+			m_selectors[1] = (uint8_t)(pixels >> 32);
+			m_selectors[2] = (uint8_t)(pixels >> 24);
+			m_selectors[3] = (uint8_t)(pixels >> 16);
+			m_selectors[4] = (uint8_t)(pixels >> 8);
+			m_selectors[5] = (uint8_t)(pixels);
+		}
+
+		void set_selector(uint32_t x, uint32_t y, uint32_t s)
+		{
+			assert((x < 4) && (y < 4) && (s < 8));
+
+			const uint32_t ofs = 45 - (y + x * 4) * 3;
+
+			uint64_t pixels = get_selector_bits();
+
+			pixels &= ~(7ULL << ofs);
+			pixels |= (static_cast<uint64_t>(s) << ofs);
+
+			set_selector_bits(pixels);
+		}
+	};
+
+	struct etc2_rgba_block
+	{
+		eac_a8_block m_alpha;
+		etc_block m_rgb;
+	};
+
+	struct pack_eac_a8_results
+	{
+		uint32_t m_base;
+		uint32_t m_table;
+		uint32_t m_multiplier;
+		uint8_vec m_selectors;
+		uint8_vec m_selectors_temp;
+	};
+
+	uint64_t pack_eac_a8(pack_eac_a8_results& results, const uint8_t* pPixels, uint32_t num_pixels, uint32_t base_search_rad, uint32_t mul_search_rad, uint32_t table_mask = UINT32_MAX);
+	void pack_eac_a8(eac_a8_block* pBlock, const uint8_t* pPixels, uint32_t base_search_rad, uint32_t mul_search_rad, uint32_t table_mask = UINT32_MAX);
+		
 } // namespace basisu

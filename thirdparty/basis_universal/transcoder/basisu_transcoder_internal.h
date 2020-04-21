@@ -1,5 +1,5 @@
 // basisu_transcoder_internal.h - Universal texture format transcoder library.
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Important: If compiling with gcc, be sure strict aliasing is disabled: -fno-strict-aliasing
 //
@@ -20,8 +20,8 @@
 #pragma warning (disable: 4127) //  conditional expression is constant
 #endif
 
-#define BASISD_LIB_VERSION 107
-#define BASISD_VERSION_STRING "01.11"
+#define BASISD_LIB_VERSION 112
+#define BASISD_VERSION_STRING "01.12"
 
 #ifdef _DEBUG
 #define BASISD_BUILD_DEBUG
@@ -45,38 +45,44 @@ namespace basist
 	enum class block_format
 	{
 		cETC1,								// ETC1S RGB 
+		cETC2_RGBA,							// full ETC2 EAC RGBA8 block
 		cBC1,									// DXT1 RGB 
+		cBC3,									// BC4 block followed by a four color BC1 block
 		cBC4,									// DXT5A (alpha block only)
+		cBC5,									// two BC4 blocks
 		cPVRTC1_4_RGB,						// opaque-only PVRTC1 4bpp
 		cPVRTC1_4_RGBA,					// PVRTC1 4bpp RGBA
-		cBC7_M6_OPAQUE_ONLY,				// RGB BC7 mode 6
+		cBC7,									// Full BC7 block, any mode
 		cBC7_M5_COLOR,						// RGB BC7 mode 5 color (writes an opaque mode 5 block)
 		cBC7_M5_ALPHA,						// alpha portion of BC7 mode 5 (cBC7_M5_COLOR output data must have been written to the output buffer first to set the mode/rot fields etc.)
 		cETC2_EAC_A8,						// alpha block of ETC2 EAC (first 8 bytes of the 16-bit ETC2 EAC RGBA format)
 		cASTC_4x4,							// ASTC 4x4 (either color-only or color+alpha). Note that the transcoder always currently assumes sRGB is not enabled when outputting ASTC 
 												// data. If you use a sRGB ASTC format you'll get ~1 LSB of additional error, because of the different way ASTC decoders scale 8-bit endpoints to 16-bits during unpacking.
+		
 		cATC_RGB,
 		cATC_RGBA_INTERPOLATED_ALPHA,
 		cFXT1_RGB,							// Opaque-only, has oddball 8x4 pixel block size
+
+		cPVRTC2_4_RGB,
+		cPVRTC2_4_RGBA,
+
+		cETC2_EAC_R11,
+		cETC2_EAC_RG11,
 												
 		cIndices,							// Used internally: Write 16-bit endpoint and selector indices directly to output (output block must be at least 32-bits)
 
 		cRGB32,								// Writes RGB components to 32bpp output pixels
 		cRGBA32,								// Writes RGB255 components to 32bpp output pixels
 		cA32,									// Writes alpha component to 32bpp output pixels
-
+				
 		cRGB565,
 		cBGR565,
 		
 		cRGBA4444_COLOR,
 		cRGBA4444_ALPHA,
 		cRGBA4444_COLOR_OPAQUE,
-
-		cPVRTC2_4_RGB,
-		cPVRTC2_4_RGBA,
-
-		cETC2_EAC_R11,
-		
+		cRGBA4444,
+						
 		cTotalBlockFormats
 	};
 
@@ -635,6 +641,11 @@ namespace basist
 		return (uint8_t)((i & 0xFFFFFF00U) ? (~(i >> 31)) : i);
 	}
 
+	enum eNoClamp
+	{
+		cNoClamp = 0
+	};
+
 	struct color32
 	{
 		union
@@ -655,8 +666,12 @@ namespace basist
 		color32() { }
 
 		color32(uint32_t vr, uint32_t vg, uint32_t vb, uint32_t va) { set(vr, vg, vb, va); }
+		color32(eNoClamp unused, uint32_t vr, uint32_t vg, uint32_t vb, uint32_t va) { (void)unused; set_noclamp_rgba(vr, vg, vb, va); }
 
 		void set(uint32_t vr, uint32_t vg, uint32_t vb, uint32_t va) { c[0] = static_cast<uint8_t>(vr); c[1] = static_cast<uint8_t>(vg); c[2] = static_cast<uint8_t>(vb); c[3] = static_cast<uint8_t>(va); }
+
+		void set_noclamp_rgb(uint32_t vr, uint32_t vg, uint32_t vb) { c[0] = static_cast<uint8_t>(vr); c[1] = static_cast<uint8_t>(vg); c[2] = static_cast<uint8_t>(vb); }
+		void set_noclamp_rgba(uint32_t vr, uint32_t vg, uint32_t vb, uint32_t va) { set(vr, vg, vb, va); }
 
 		void set_clamped(int vr, int vg, int vb, int va) { c[0] = clamp255(vr); c[1] = clamp255(vg);	c[2] = clamp255(vb); c[3] = clamp255(va); }
 
@@ -664,6 +679,9 @@ namespace basist
 		uint8_t &operator[] (uint32_t idx) { assert(idx < 4); return c[idx]; }
 
 		bool operator== (const color32&rhs) const { return m == rhs.m; }
+
+		static color32 comp_min(const color32& a, const color32& b) { return color32(cNoClamp, std::min(a[0], b[0]), std::min(a[1], b[1]), std::min(a[2], b[2]), std::min(a[3], b[3])); }
+		static color32 comp_max(const color32& a, const color32& b) { return color32(cNoClamp, std::max(a[0], b[0]), std::max(a[1], b[1]), std::max(a[2], b[2]), std::max(a[3], b[3])); }
 	};
 
 	struct endpoint

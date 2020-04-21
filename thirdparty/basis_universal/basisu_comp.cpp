@@ -1,5 +1,5 @@
 // basisu_comp.cpp
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 #include "basisu_comp.h"
 #include "basisu_enc.h"
 #include <unordered_set>
+#include <atomic>
+#define MINIZ_NO_ZLIB_APIS
+#include "basisu_miniz.h"
 
 #define BASISU_USE_STB_IMAGE_RESIZE_FOR_MIPMAP_GEN 0
 #define DEBUG_CROP_TEXTURE_TO_64x64 (0)
@@ -24,10 +27,10 @@
 namespace basisu
 {
    basis_compressor::basis_compressor() :
-		m_total_blocks(0),
-		m_auto_global_sel_pal(false),
 		m_basis_file_size(0),
 		m_basis_bits_per_texel(0),
+		m_total_blocks(0),
+		m_auto_global_sel_pal(false),
 		m_any_source_image_has_alpha(false)
 	{
 		debug_printf("basis_compressor::basis_compressor\n");
@@ -53,6 +56,7 @@ namespace basisu
 			debug_printf("Source images: %u, source filenames: %u, source alpha filenames: %i\n", 
 				(uint32_t)m_params.m_source_images.size(), (uint32_t)m_params.m_source_filenames.size(), (uint32_t)m_params.m_source_alpha_filenames.size());
 
+			PRINT_BOOL_VALUE(m_uastc);
 			PRINT_BOOL_VALUE(m_y_flip);
 			PRINT_BOOL_VALUE(m_debug);
 			PRINT_BOOL_VALUE(m_debug_images);
@@ -69,6 +73,7 @@ namespace basisu
 			PRINT_BOOL_VALUE(m_check_for_alpha)
 			PRINT_BOOL_VALUE(m_force_alpha)
 			PRINT_BOOL_VALUE(m_seperate_rg_to_color_alpha);
+			PRINT_BOOL_VALUE(m_renormalize);
 			PRINT_BOOL_VALUE(m_multithreading);
 			PRINT_BOOL_VALUE(m_disable_hierarchical_endpoint_codebooks);
 			
@@ -96,6 +101,13 @@ namespace basisu
 			debug_printf("m_tex_type: %u\n", m_params.m_tex_type);
 			debug_printf("m_userdata0: 0x%X, m_userdata1: 0x%X\n", m_params.m_userdata0, m_params.m_userdata1);
 			debug_printf("m_us_per_frame: %i (%f fps)\n", m_params.m_us_per_frame, m_params.m_us_per_frame ? 1.0f / (m_params.m_us_per_frame / 1000000.0f) : 0);
+			debug_printf("m_pack_uastc_flags: 0x%X\n", m_params.m_pack_uastc_flags);
+			
+			PRINT_BOOL_VALUE(m_rdo_uastc);
+			PRINT_FLOAT_VALUE(m_rdo_uastc_quality_scalar);
+			PRINT_INT_VALUE(m_rdo_uastc_dict_size);
+			PRINT_FLOAT_VALUE(m_rdo_uastc_max_allowed_rms_increase_ratio);
+			PRINT_FLOAT_VALUE(m_rdo_uastc_skip_block_rms_thresh);
 						
 #undef PRINT_BOOL_VALUE
 #undef PRINT_INT_VALUE
@@ -122,14 +134,26 @@ namespace basisu
 		if (!validate_texture_type_constraints())
 			return cECFailedValidating;
 
-		if (!process_frontend())
+		if (!extract_source_blocks())
 			return cECFailedFrontEnd;
 
-		if (!extract_frontend_texture_data())
-			return cECFailedFontendExtract;
+		if (m_params.m_uastc)
+		{
+			error_code ec = encode_slices_to_uastc();
+			if (ec != cECSuccess)
+				return ec;
+		}
+		else
+		{
+			if (!process_frontend())
+				return cECFailedFrontEnd;
 
-		if (!process_backend())
-			return cECFailedBackend;
+			if (!extract_frontend_texture_data())
+				return cECFailedFontendExtract;
+
+			if (!process_backend())
+				return cECFailedBackend;
+		}
 
 		if (!create_basis_file_and_transcode())
 			return cECFailedCreateBasisFile;
@@ -137,6 +161,99 @@ namespace basisu
 		if (!write_output_files_and_compute_stats())
 			return cECFailedWritingOutput;
 
+		return cECSuccess;
+	}
+
+	basis_compressor::error_code basis_compressor::encode_slices_to_uastc()
+	{
+		debug_printf("basis_compressor::encode_slices_to_uastc\n");
+
+		m_uastc_slice_textures.resize(m_slice_descs.size());
+		for (uint32_t slice_index = 0; slice_index < m_slice_descs.size(); slice_index++)
+			m_uastc_slice_textures[slice_index].init(texture_format::cUASTC4x4, m_slice_descs[slice_index].m_orig_width, m_slice_descs[slice_index].m_orig_height);
+
+		m_uastc_backend_output.m_tex_format = basist::basis_tex_format::cUASTC4x4;
+		m_uastc_backend_output.m_etc1s = false;
+		m_uastc_backend_output.m_slice_desc = m_slice_descs;
+		m_uastc_backend_output.m_slice_image_data.resize(m_slice_descs.size());
+		m_uastc_backend_output.m_slice_image_crcs.resize(m_slice_descs.size());
+				
+		for (uint32_t slice_index = 0; slice_index < m_slice_descs.size(); slice_index++)
+		{
+			gpu_image& tex = m_uastc_slice_textures[slice_index];
+			basisu_backend_slice_desc& slice_desc = m_slice_descs[slice_index];
+			(void)slice_desc;
+
+			const uint32_t num_blocks_x = tex.get_blocks_x();
+			const uint32_t num_blocks_y = tex.get_blocks_y();
+			const uint32_t total_blocks = tex.get_total_blocks();
+			const image& source_image = m_slice_images[slice_index];
+			
+			std::atomic<uint32_t> total_blocks_processed;
+			total_blocks_processed = 0;
+
+			const uint32_t N = 256;
+			for (uint32_t block_index_iter = 0; block_index_iter < total_blocks; block_index_iter += N)
+			{
+				const uint32_t first_index = block_index_iter;
+				const uint32_t last_index = minimum<uint32_t>(total_blocks, block_index_iter + N);
+
+				m_params.m_pJob_pool->add_job([this, first_index, last_index, num_blocks_x, num_blocks_y, total_blocks, &source_image, &tex, &total_blocks_processed]
+					{
+						BASISU_NOTE_UNUSED(num_blocks_y);
+						
+						for (uint32_t block_index = first_index; block_index < last_index; block_index++)
+						{
+							const uint32_t block_x = block_index % num_blocks_x;
+							const uint32_t block_y = block_index / num_blocks_x;
+
+							color_rgba block_pixels[4][4];
+
+							source_image.extract_block_clamped((color_rgba*)block_pixels, block_x * 4, block_y * 4, 4, 4);
+
+							basist::uastc_block& dest_block = *(basist::uastc_block*)tex.get_block_ptr(block_x, block_y);
+
+							encode_uastc(&block_pixels[0][0].r, dest_block, m_params.m_pack_uastc_flags);
+
+							total_blocks_processed++;
+							
+							uint32_t val = total_blocks_processed;
+							if ((val & 16383) == 16383)
+							{
+								debug_printf("basis_compressor::encode_slices_to_uastc: %3.1f%% done\n", static_cast<float>(val) * 100.0f / total_blocks);
+							}
+
+						}
+					});
+
+			} // block_index_iter
+
+			m_params.m_pJob_pool->wait_for_all();
+
+			if (m_params.m_rdo_uastc)
+			{
+				uastc_rdo_params rdo_params;
+				rdo_params.m_quality_scaler = m_params.m_rdo_uastc_quality_scalar;
+				rdo_params.m_max_allowed_rms_increase_ratio = m_params.m_rdo_uastc_max_allowed_rms_increase_ratio;
+				rdo_params.m_skip_block_rms_thresh = m_params.m_rdo_uastc_skip_block_rms_thresh;
+				rdo_params.m_lz_dict_size = m_params.m_rdo_uastc_dict_size;
+								
+				bool status = uastc_rdo(tex.get_total_blocks(), (basist::uastc_block*)tex.get_ptr(),
+					(const color_rgba *)m_source_blocks[slice_desc.m_first_block_index].m_pixels, rdo_params, m_params.m_pack_uastc_flags, m_params.m_pJob_pool,
+					m_params.m_pJob_pool ? std::min<uint32_t>(4, (uint32_t)m_params.m_pJob_pool->get_total_threads()) : 0);
+				if (!status)
+				{
+					return cECFailedUASTCRDOPostProcess;
+				}
+			}
+
+			m_uastc_backend_output.m_slice_image_data[slice_index].resize(tex.get_size_in_bytes());
+			memcpy(&m_uastc_backend_output.m_slice_image_data[slice_index][0], tex.get_ptr(), tex.get_size_in_bytes());
+			
+			m_uastc_backend_output.m_slice_image_crcs[slice_index] = basist::crc16(tex.get_ptr(), tex.get_size_in_bytes(), 0);
+						
+		} // slice_index
+				
 		return cECSuccess;
 	}
 
@@ -247,7 +364,7 @@ namespace basisu
 				pSource_filename = m_params.m_source_filenames[source_file_index].c_str();
 
 				// Load the source image
-				if (!load_png(pSource_filename, file_image))
+				if (!load_image(pSource_filename, file_image))
 				{
 					error_printf("Failed reading source image: %s\n", pSource_filename);
 					return false;
@@ -262,7 +379,7 @@ namespace basisu
 
 					image alpha_data;
 
-					if (!load_png(pSource_alpha_image, alpha_data))
+					if (!load_image(pSource_alpha_image, alpha_data))
 					{
 						error_printf("Failed reading source image: %s\n", pSource_alpha_image);
 						return false;
@@ -281,6 +398,9 @@ namespace basisu
 			{
 				file_image = m_params.m_source_images[source_file_index];
 			}
+
+			if (m_params.m_renormalize)
+				file_image.renormalize_normal_map();
 
 			if (m_params.m_seperate_rg_to_color_alpha)
 			{
@@ -349,6 +469,7 @@ namespace basisu
 			image &file_image = source_images[source_file_index];
 			const std::string &source_filename = source_filenames[source_file_index];
 
+			// Now, for each source image, create the slices corresponding to that image.
 			std::vector<image> slices;
 			
 			slices.reserve(32);
@@ -364,9 +485,9 @@ namespace basisu
 			for (uint32_t i = 0; i < slices.size(); i++)
 				mip_indices[i] = i;
 						
-			if (m_any_source_image_has_alpha)
+			if ((m_any_source_image_has_alpha) && (!m_params.m_uastc))
 			{
-				// If source has alpha, then even mips will have RGB, and odd mips will have alpha in RGB. 
+				// For ETC1S, if source has alpha, then even mips will have RGB, and odd mips will have alpha in RGB. 
 				std::vector<image> alpha_slices;
 				uint_vec new_mip_indices;
 
@@ -403,18 +524,29 @@ namespace basisu
 						
 			for (uint32_t slice_index = 0; slice_index < slices.size(); slice_index++)
 			{
-				const bool is_alpha_slice = m_any_source_image_has_alpha && ((slice_index & 1) != 0);
-
-				image &slice_image = slices[slice_index];
+				image& slice_image = slices[slice_index];
 				const uint32_t orig_width = slice_image.get_width();
 				const uint32_t orig_height = slice_image.get_height();
+
+				bool is_alpha_slice = false;
+				if (m_any_source_image_has_alpha)
+				{
+					if (m_params.m_uastc)
+					{
+						is_alpha_slice = slice_image.has_alpha();
+					}
+					else
+					{
+						is_alpha_slice = (slice_index & 1) != 0;
+					}
+				}
 
 				// Enlarge the source image to 4x4 block boundaries, duplicating edge pixels if necessary to avoid introducing extra colors into blocks.
 				slice_image.crop_dup_borders(slice_image.get_block_width(4) * 4, slice_image.get_block_height(4) * 4);
 
 				if (m_params.m_debug_images)
 				{
-					save_png(string_format("basis_debug_source_image_%u_%u.png", source_file_index, slice_index).c_str(), slice_image);
+					save_png(string_format("basis_debug_source_image_%u_slice_%u.png", source_file_index, slice_index).c_str(), slice_image);
 				}
 
 				enlarge_vector(m_stats, 1);
@@ -505,28 +637,31 @@ namespace basisu
 
 			if (m_any_source_image_has_alpha)
 			{
-				// Alpha slices must be at odd slice indices
-				if (slice_desc.m_alpha)
+				if (!m_params.m_uastc)
 				{
-					if ((i & 1) == 0)
-						return false;
-					
-					const basisu_backend_slice_desc &prev_slice_desc = m_slice_descs[i - 1];
+					// For ETC1S, alpha slices must be at odd slice indices.
+					if (slice_desc.m_alpha)
+					{
+						if ((i & 1) == 0)
+							return false;
 
-					// Make sure previous slice has this image's color data
-					if (prev_slice_desc.m_source_file_index != slice_desc.m_source_file_index)
-						return false;
-					if (prev_slice_desc.m_alpha)
-						return false;
-					if (prev_slice_desc.m_mip_index != slice_desc.m_mip_index)
-						return false;
-					if (prev_slice_desc.m_num_blocks_x != slice_desc.m_num_blocks_x)
-						return false;
-					if (prev_slice_desc.m_num_blocks_y != slice_desc.m_num_blocks_y)
+						const basisu_backend_slice_desc& prev_slice_desc = m_slice_descs[i - 1];
+
+						// Make sure previous slice has this image's color data
+						if (prev_slice_desc.m_source_file_index != slice_desc.m_source_file_index)
+							return false;
+						if (prev_slice_desc.m_alpha)
+							return false;
+						if (prev_slice_desc.m_mip_index != slice_desc.m_mip_index)
+							return false;
+						if (prev_slice_desc.m_num_blocks_x != slice_desc.m_num_blocks_x)
+							return false;
+						if (prev_slice_desc.m_num_blocks_y != slice_desc.m_num_blocks_y)
+							return false;
+					}
+					else if (i & 1)
 						return false;
 				}
-				else if (i & 1)
-					return false;
 			}
 			else if (slice_desc.m_alpha)
 			{
@@ -610,26 +745,33 @@ namespace basisu
 		return true;
 	}
 
-	bool basis_compressor::process_frontend()
+	bool basis_compressor::extract_source_blocks()
 	{
-		debug_printf("basis_compressor::process_frontend\n");
-				
+		debug_printf("basis_compressor::extract_source_blocks\n");
+
 		m_source_blocks.resize(m_total_blocks);
-				
+
 		for (uint32_t slice_index = 0; slice_index < m_slice_images.size(); slice_index++)
 		{
-			const basisu_backend_slice_desc &slice_desc = m_slice_descs[slice_index];
+			const basisu_backend_slice_desc& slice_desc = m_slice_descs[slice_index];
 
 			const uint32_t num_blocks_x = slice_desc.m_num_blocks_x;
 			const uint32_t num_blocks_y = slice_desc.m_num_blocks_y;
 
-			const image &source_image = m_slice_images[slice_index];
+			const image& source_image = m_slice_images[slice_index];
 
 			for (uint32_t block_y = 0; block_y < num_blocks_y; block_y++)
 				for (uint32_t block_x = 0; block_x < num_blocks_x; block_x++)
 					source_image.extract_block_clamped(m_source_blocks[slice_desc.m_first_block_index + block_x + block_y * num_blocks_x].get_ptr(), block_x * 4, block_y * 4, 4, 4);
 		}
-				
+
+		return true;
+	}
+
+	bool basis_compressor::process_frontend()
+	{
+		debug_printf("basis_compressor::process_frontend\n");
+						
 #if 0
 		// TODO
 		basis_etc1_pack_params pack_params;
@@ -925,19 +1067,26 @@ namespace basisu
 	{
 		debug_printf("basis_compressor::create_basis_file_and_transcode\n");
 
-		const basisu_backend_output &encoded_output = m_backend.get_output();
+		const basisu_backend_output& encoded_output = m_params.m_uastc ? m_uastc_backend_output : m_backend.get_output();
 
 		if (!m_basis_file.init(encoded_output, m_params.m_tex_type, m_params.m_userdata0, m_params.m_userdata1, m_params.m_y_flip, m_params.m_us_per_frame))
 		{
-			error_printf("basis_compressor::write_output_files_and_compute_stats: basisu_backend:init() failed!\n");
+			error_printf("basis_compressor::create_basis_file_and_transcode: basisu_backend:init() failed!\n");
 			return false;
 		}
-
+	
 		const uint8_vec &comp_data = m_basis_file.get_compressed_data();
 
 		m_output_basis_file = comp_data;
 
-		// Verify the compressed data by transcoding it to ETC1/BC1 and validating the CRC's.
+		interval_timer tm;
+		tm.start();
+
+		basist::basisu_transcoder_init();
+
+		debug_printf("basist::basisu_transcoder_init: Took %f ms\n", tm.get_elapsed_ms());
+
+		// Verify the compressed data by transcoding it to ASTC (or ETC1)/BC7 and validating the CRC's.
 		basist::basisu_transcoder decoder(m_params.m_pSel_codebook);
 		if (!decoder.validate_file_checksums(&comp_data[0], (uint32_t)comp_data.size(), true))
 		{
@@ -948,10 +1097,9 @@ namespace basisu
 		m_decoded_output_textures.resize(m_slice_descs.size());
 		m_decoded_output_textures_unpacked.resize(m_slice_descs.size());
 
-		m_decoded_output_textures_bc1.resize(m_slice_descs.size());
-		m_decoded_output_textures_unpacked_bc1.resize(m_slice_descs.size());
-
-		interval_timer tm;
+		m_decoded_output_textures_bc7.resize(m_slice_descs.size());
+		m_decoded_output_textures_unpacked_bc7.resize(m_slice_descs.size());
+								
 		tm.start();
 
 		if (!decoder.start_transcoding(&comp_data[0], (uint32_t)comp_data.size()))
@@ -970,74 +1118,72 @@ namespace basisu
 		for (uint32_t i = 0; i < m_slice_descs.size(); i++)
 		{
 			gpu_image decoded_texture;
-			decoded_texture.init(texture_format::cETC1, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
+			decoded_texture.init(m_params.m_uastc ? texture_format::cASTC4x4 : texture_format::cETC1, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
 						
 			tm.start();
+
+			basist::block_format format = m_params.m_uastc ? basist::block_format::cASTC_4x4 : basist::block_format::cETC1;
+			uint32_t bytes_per_block = m_params.m_uastc ? 16 : 8;
 						
 			if (!decoder.transcode_slice(&comp_data[0], (uint32_t)comp_data.size(), i,
-				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, basist::block_format::cETC1, 8))
+				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, format, bytes_per_block))
 			{
-				error_printf("Transcoding failed to ETC1 on slice %u!\n", i);
+				error_printf("Transcoding failed on slice %u!\n", i);
 				return false;
 			}
 
 			total_time_etc1 += tm.get_elapsed_secs();
 
-			uint32_t image_crc16 = basist::crc16(decoded_texture.get_ptr(), decoded_texture.get_size_in_bytes(), 0);
-			if (image_crc16 != m_backend.get_output().m_slice_image_crcs[i])
+			if (encoded_output.m_tex_format == basist::basis_tex_format::cETC1S)
 			{
-				error_printf("Decoded image data CRC check failed on slice %u!\n", i);
-				return false;
+				uint32_t image_crc16 = basist::crc16(decoded_texture.get_ptr(), decoded_texture.get_size_in_bytes(), 0);
+				if (image_crc16 != encoded_output.m_slice_image_crcs[i])
+				{
+					error_printf("Decoded image data CRC check failed on slice %u!\n", i);
+					return false;
+				}
+				debug_printf("Decoded image data CRC check succeeded on slice %i\n", i);
 			}
-			debug_printf("Decoded image data CRC check succeeded on slice %i\n", i);
 
 			m_decoded_output_textures[i] = decoded_texture;
 
 			total_orig_pixels += m_slice_descs[i].m_orig_width * m_slice_descs[i].m_orig_height;
 			total_texels += m_slice_descs[i].m_width * m_slice_descs[i].m_height;
 		}
-
-		tm.start();
-				
-		basist::basisu_transcoder_init();
-
-		debug_printf("basist::basisu_transcoder_init: Took %f ms\n", tm.get_elapsed_ms());
-				
-		double total_time_bc1 = 0;
+								
+		double total_time_bc7 = 0;
 
 		for (uint32_t i = 0; i < m_slice_descs.size(); i++)
 		{
 			gpu_image decoded_texture;
-			decoded_texture.init(texture_format::cBC1, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
+			decoded_texture.init(texture_format::cBC7, m_slice_descs[i].m_width, m_slice_descs[i].m_height);
 
 			tm.start();
 
 			if (!decoder.transcode_slice(&comp_data[0], (uint32_t)comp_data.size(), i,
-				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, basist::block_format::cBC1, 8))
+				reinterpret_cast<etc_block *>(decoded_texture.get_ptr()), m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y, basist::block_format::cBC7, 16))
 			{
-				error_printf("Transcoding failed to BC1 on slice %u!\n", i);
+				error_printf("Transcoding failed to BC7 on slice %u!\n", i);
 				return false;
 			}
 
-			total_time_bc1 += tm.get_elapsed_secs();
+			total_time_bc7 += tm.get_elapsed_secs();
 
-			m_decoded_output_textures_bc1[i] = decoded_texture;
+			m_decoded_output_textures_bc7[i] = decoded_texture;
 		}
 
 		for (uint32_t i = 0; i < m_slice_descs.size(); i++)
 		{
 			m_decoded_output_textures[i].unpack(m_decoded_output_textures_unpacked[i]);
-			m_decoded_output_textures_bc1[i].unpack(m_decoded_output_textures_unpacked_bc1[i]);
+			m_decoded_output_textures_bc7[i].unpack(m_decoded_output_textures_unpacked_bc7[i]);
 		}
 
-		debug_printf("Transcoded to ETC1 in %3.3fms, %f texels/sec\n", total_time_etc1 * 1000.0f, total_orig_pixels / total_time_etc1);
+		debug_printf("Transcoded to %s in %3.3fms, %f texels/sec\n", m_params.m_uastc ? "ASTC" : "ETC1", total_time_etc1 * 1000.0f, total_orig_pixels / total_time_etc1);
 
-		debug_printf("Transcoded to BC1 in %3.3fms, %f texels/sec\n", total_time_bc1 * 1000.0f, total_orig_pixels / total_time_bc1);
+		debug_printf("Transcoded to BC7 in %3.3fms, %f texels/sec\n", total_time_bc7 * 1000.0f, total_orig_pixels / total_time_bc7);
 
 		debug_printf("Total .basis output file size: %u, %3.3f bits/texel\n", comp_data.size(), comp_data.size() * 8.0f / total_orig_pixels);
-
-		m_output_blocks.resize(0);
-
+				
 		uint32_t total_orig_texels = 0;
 		for (uint32_t slice_index = 0; slice_index < m_slice_descs.size(); slice_index++)
 		{
@@ -1046,10 +1192,9 @@ namespace basisu
 			total_orig_texels += slice_desc.m_orig_width * slice_desc.m_orig_height;
 
 			const uint32_t total_blocks = slice_desc.m_num_blocks_x * slice_desc.m_num_blocks_y;
+			BASISU_NOTE_UNUSED(total_blocks);
 
 			assert(m_decoded_output_textures[slice_index].get_total_blocks() == total_blocks);
-
-			memcpy(enlarge_vector(m_output_blocks, total_blocks), m_decoded_output_textures[slice_index].get_ptr(), sizeof(etc_block) * total_blocks);
 		}
 
 		m_basis_file_size = (uint32_t)comp_data.size();
@@ -1062,9 +1207,11 @@ namespace basisu
 	{
 		debug_printf("basis_compressor::write_output_files_and_compute_stats\n");
 
+		//const basisu_backend_output& encoded_output = m_params.m_uastc ? m_uastc_backend_output : m_backend.get_output();
+
+		const uint8_vec& comp_data = m_basis_file.get_compressed_data();
 		if (m_params.m_write_output_basis_files)
 		{
-			const uint8_vec &comp_data = m_basis_file.get_compressed_data();
 
 			const std::string& basis_filename = m_params.m_out_filename;
 
@@ -1075,6 +1222,27 @@ namespace basisu
 			}
 
 			printf("Wrote output .basis file \"%s\"\n", basis_filename.c_str());
+		}
+		size_t comp_size = 0;
+		if ((m_params.m_compute_stats) && (m_params.m_uastc) && (comp_data.size()))
+		{
+			void* pComp_data = tdefl_compress_mem_to_heap(&comp_data[0], comp_data.size(), &comp_size, TDEFL_MAX_PROBES_MASK);// TDEFL_DEFAULT_MAX_PROBES);
+			size_t decomp_size = 0;
+			void* pDecomp_data = tinfl_decompress_mem_to_heap(pComp_data, comp_size, &decomp_size, 0);
+			if ((decomp_size != comp_data.size()) || (memcmp(pDecomp_data, &comp_data[0], decomp_size) != 0))
+			{
+				printf("basis_compressor::create_basis_file_and_transcode:: miniz compression or decompression failed!\n");
+				return false;
+			}
+			mz_free(pComp_data);
+			mz_free(pDecomp_data);
+			uint32_t total_texels = 0;
+			for (uint32_t i = 0; i < m_slice_descs.size(); i++)
+				total_texels += (m_slice_descs[i].m_num_blocks_x * m_slice_descs[i].m_num_blocks_y) * 16;
+			debug_printf(".basis file size: %u, LZ compressed file size: %u, %3.2f bits/texel\n",
+				(uint32_t)comp_data.size(),
+				(uint32_t)comp_size,
+				comp_size * 8.0f / total_texels);
 		}
 
 		m_stats.resize(m_slice_descs.size());
@@ -1097,75 +1265,119 @@ namespace basisu
 
 				image_metrics em;
 								
-				// ---- .basis ETC1S stats
-				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 0);
-				em.print(".basis ETC1S 709 Luma:         ");
-								
-				s.m_basis_etc1s_luma_709_psnr = static_cast<float>(em.m_psnr);
-				s.m_basis_etc1s_luma_709_ssim = static_cast<float>(em.m_ssim);
-
-				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 0, true, true);
-				em.print(".basis ETC1S 601 Luma:         ");
-
-				s.m_basis_etc1s_luma_601_psnr = static_cast<float>(em.m_psnr);
-
+				// ---- .basis stats
 				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 3);
-				em.print(".basis ETC1S RGB Avg:          ");
+				em.print(".basis RGB Avg:          ");
+				s.m_basis_rgb_avg_psnr = em.m_psnr;
 
-				s.m_basis_etc1s_rgb_avg_psnr = em.m_psnr;
+				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 4);
+				em.print(".basis RGBA Avg:         ");
+				s.m_basis_rgba_avg_psnr = em.m_psnr;
 
-				if (m_slice_descs.size() == 1)
+				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 1);
+				em.print(".basis R   Avg:          ");
+				
+				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 1, 1);
+				em.print(".basis G   Avg:          ");
+				
+				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 2, 1);
+				em.print(".basis B   Avg:          ");
+
+				if (m_params.m_uastc)
 				{
-					debug_printf(".basis Luma 709 PSNR per bit/texel*10000: %3.3f\n", 10000.0f * s.m_basis_etc1s_luma_709_psnr / ((m_backend.get_output().get_output_size_estimate() * 8.0f) / (slice_desc.m_orig_width * slice_desc.m_orig_height)));
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 3, 1);
+					em.print(".basis A   Avg:          ");
+
+					s.m_basis_a_avg_psnr = em.m_psnr;
 				}
 
-				// ---- .basis BC1 stats
-				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc1[slice_index], 0, 0);
-				em.print(".basis BC1 709 Luma:           ");
+				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 0);
+				em.print(".basis 709 Luma:         ");
+				s.m_basis_luma_709_psnr = static_cast<float>(em.m_psnr);
+				s.m_basis_luma_709_ssim = static_cast<float>(em.m_ssim);
+
+				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked[slice_index], 0, 0, true, true);
+				em.print(".basis 601 Luma:         ");
+				s.m_basis_luma_601_psnr = static_cast<float>(em.m_psnr);
 								
-				s.m_basis_bc1_luma_709_psnr = static_cast<float>(em.m_psnr);
-				s.m_basis_bc1_luma_709_ssim = static_cast<float>(em.m_ssim);
+				if (m_slice_descs.size() == 1)
+				{
+					const uint32_t output_size = comp_size ? (uint32_t)comp_size : (uint32_t)comp_data.size();
+					debug_printf(".basis RGB PSNR per bit/texel*10000: %3.3f\n", 10000.0f * s.m_basis_rgb_avg_psnr / ((output_size * 8.0f) / (slice_desc.m_orig_width * slice_desc.m_orig_height)));
+					debug_printf(".basis Luma 709 PSNR per bit/texel*10000: %3.3f\n", 10000.0f * s.m_basis_luma_709_psnr / ((output_size * 8.0f) / (slice_desc.m_orig_width * slice_desc.m_orig_height)));
+				}
 
-				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc1[slice_index], 0, 0, true, true);
-				em.print(".basis BC1 601 Luma:           ");
+				{
+					// ---- BC7 stats
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 3);
+					em.print("BC7 RGB Avg:             ");
+					s.m_bc7_rgb_avg_psnr = em.m_psnr;
 
-				s.m_basis_bc1_luma_601_psnr = static_cast<float>(em.m_psnr);
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 4);
+					em.print("BC7 RGBA Avg:            ");
+					s.m_bc7_rgba_avg_psnr = em.m_psnr;
 
-				em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc1[slice_index], 0, 3);
-				em.print(".basis BC1 RGB Avg:            ");
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 1);
+					em.print("BC7 R   Avg:             ");
 
-				s.m_basis_bc1_rgb_avg_psnr = static_cast<float>(em.m_psnr);
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 1, 1);
+					em.print("BC7 G   Avg:             ");
 
-				// ---- Nearly best possible ETC1S stats
-				em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 0);
-				em.print("Unquantized ETC1S 709 Luma:    ");
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 2, 1);
+					em.print("BC7 B   Avg:             ");
 
-				s.m_best_luma_709_psnr = static_cast<float>(em.m_psnr);
-				s.m_best_luma_709_ssim = static_cast<float>(em.m_ssim);
+					if (m_params.m_uastc)
+					{
+						em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 3, 1);
+						em.print("BC7 A   Avg:             ");
 
-				em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 0, true, true);
-				em.print("Unquantized ETC1S 601 Luma:    ");
+						s.m_bc7_a_avg_psnr = em.m_psnr;
+					}
 
-				s.m_best_luma_601_psnr = static_cast<float>(em.m_psnr);
-				
-				em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 3);
-				em.print("Unquantized ETC1S RGB Avg:     ");
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 0);
+					em.print("BC7 709 Luma:            ");
+					s.m_bc7_luma_709_psnr = static_cast<float>(em.m_psnr);
+					s.m_bc7_luma_709_ssim = static_cast<float>(em.m_ssim);
 
-				s.m_best_rgb_avg_psnr = static_cast<float>(em.m_psnr);
+					em.calc(m_slice_images[slice_index], m_decoded_output_textures_unpacked_bc7[slice_index], 0, 0, true, true);
+					em.print("BC7 601 Luma:            ");
+					s.m_bc7_luma_601_psnr = static_cast<float>(em.m_psnr);
+				}
+
+				if (!m_params.m_uastc)
+				{
+					// ---- Nearly best possible ETC1S stats
+					em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 0);
+					em.print("Unquantized ETC1S 709 Luma:    ");
+
+					s.m_best_etc1s_luma_709_psnr = static_cast<float>(em.m_psnr);
+					s.m_best_etc1s_luma_709_ssim = static_cast<float>(em.m_ssim);
+
+					em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 0, true, true);
+					em.print("Unquantized ETC1S 601 Luma:    ");
+
+					s.m_best_etc1s_luma_601_psnr = static_cast<float>(em.m_psnr);
+
+					em.calc(m_slice_images[slice_index], m_best_etc1s_images_unpacked[slice_index], 0, 3);
+					em.print("Unquantized ETC1S RGB Avg:     ");
+
+					s.m_best_etc1s_rgb_avg_psnr = static_cast<float>(em.m_psnr);
+				}
 			}
 		
-			if (m_frontend.get_params().m_debug_images)
-			{
-				std::string out_basename;
-				if (m_params.m_out_filename.size())
-					string_get_filename(m_params.m_out_filename.c_str(), out_basename);
-				else if (m_params.m_source_filenames.size())
-					string_get_filename(m_params.m_source_filenames[slice_desc.m_source_file_index].c_str(), out_basename);
-								
-				string_remove_extension(out_basename);
-				out_basename = "basis_debug_" + out_basename + string_format("_slice_%u", slice_index);
+			std::string out_basename;
+			if (m_params.m_out_filename.size())
+				string_get_filename(m_params.m_out_filename.c_str(), out_basename);
+			else if (m_params.m_source_filenames.size())
+				string_get_filename(m_params.m_source_filenames[slice_desc.m_source_file_index].c_str(), out_basename);
 
+			string_remove_extension(out_basename);
+			out_basename = "basis_debug_" + out_basename + string_format("_slice_%u", slice_index);
+
+			if ((!m_params.m_uastc) && (m_frontend.get_params().m_debug_images))
+			{
 				// Write "best" ETC1S debug images
+				if (!m_params.m_uastc)
 				{
 					gpu_image best_etc1s_gpu_image(m_best_etc1s_images[slice_index]);
 					best_etc1s_gpu_image.override_dimensions(slice_desc.m_orig_width, slice_desc.m_orig_height);
@@ -1175,27 +1387,30 @@ namespace basisu
 					best_etc1s_gpu_image.unpack(best_etc1s_unpacked);
 					save_png(out_basename + "_best_etc1s.png", best_etc1s_unpacked);
 				}
+			}
 
-				// Write decoded ETC1S debug images
+			if (m_params.m_debug_images)
+			{
+				// Write decoded ETC1S/ASTC debug images
 				{
-					gpu_image decoded_etc1s(m_decoded_output_textures[slice_index]);
-					decoded_etc1s.override_dimensions(slice_desc.m_orig_width, slice_desc.m_orig_height);
-					write_compressed_texture_file((out_basename + "_decoded_etc1s.ktx").c_str(), decoded_etc1s);
+					gpu_image decoded_etc1s_or_astc(m_decoded_output_textures[slice_index]);
+					decoded_etc1s_or_astc.override_dimensions(slice_desc.m_orig_width, slice_desc.m_orig_height);
+					write_compressed_texture_file((out_basename + "_transcoded_etc1s_astc.ktx").c_str(), decoded_etc1s_or_astc);
 
 					image temp(m_decoded_output_textures_unpacked[slice_index]);
 					temp.crop(slice_desc.m_orig_width, slice_desc.m_orig_height);
-					save_png(out_basename + "_decoded_etc1s.png", temp);
+					save_png(out_basename + "_transcoded_etc1s_astc.png", temp);
 				}
-				
-				// Write decoded BC1 debug images
-				{
-					gpu_image decoded_bc1(m_decoded_output_textures_bc1[slice_index]);
-					decoded_bc1.override_dimensions(slice_desc.m_orig_width, slice_desc.m_orig_height);
-					write_compressed_texture_file((out_basename + "_decoded_bc1.ktx").c_str(), decoded_bc1);
 
-					image temp(m_decoded_output_textures_unpacked_bc1[slice_index]);
+				// Write decoded BC7 debug images
+				{
+					gpu_image decoded_bc7(m_decoded_output_textures_bc7[slice_index]);
+					decoded_bc7.override_dimensions(slice_desc.m_orig_width, slice_desc.m_orig_height);
+					write_compressed_texture_file((out_basename + "_transcoded_bc7.ktx").c_str(), decoded_bc7);
+
+					image temp(m_decoded_output_textures_unpacked_bc7[slice_index]);
 					temp.crop(slice_desc.m_orig_width, slice_desc.m_orig_height);
-					save_png(out_basename + "_decoded_bc1.png", temp);
+					save_png(out_basename + "_transcoded_bc7.png", temp);
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 // basisu_enc.cpp
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,10 +18,14 @@
 #include "basisu_resampler_filters.h"
 #include "basisu_etc.h"
 #include "transcoder/basisu_transcoder.h"
+#include "basisu_bc7enc.h"
+#include "apg_bmp.h"
+#include "jpgd.h"
 
 #if defined(_WIN32)
 // For QueryPerformanceCounter/QueryPerformanceFrequency
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <windows.h>
 #endif
 
@@ -54,6 +58,9 @@ namespace basisu
 	void basisu_encoder_init()
 	{
 		basist::basisu_transcoder_init();
+		pack_etc1_solid_color_init();
+		//uastc_init();
+		bc7enc_compress_block_init(); // must be after uastc_init()
 	}
 
 	void error_printf(const char *pFmt, ...)
@@ -108,7 +115,7 @@ namespace basisu
 #else
 #error TODO
 #endif
-
+				
 	interval_timer::interval_timer() : m_start_time(0), m_stop_time(0), m_started(false), m_stopped(false)
 	{
 		if (!g_timer_freq)
@@ -169,6 +176,113 @@ namespace basisu
 		return ticks * g_timer_freq;
 	}
 		
+	const uint32_t MAX_32BIT_ALLOC_SIZE = 250000000;
+
+	bool load_bmp(const char* pFilename, image& img)
+	{
+		int w = 0, h = 0;
+		unsigned int n_chans = 0;
+		unsigned char* pImage_data = apg_bmp_read(pFilename, &w, &h, &n_chans);
+				
+		if ((!pImage_data) || (!w) || (!h) || ((n_chans != 3) && (n_chans != 4)))
+		{
+			error_printf("Failed loading .BMP image \"%s\"!\n", pFilename);
+
+			if (pImage_data)
+				apg_bmp_free(pImage_data);
+						
+			return false;
+		}
+
+		if (sizeof(void *) == sizeof(uint32_t))
+		{
+			if ((w * h * n_chans) > MAX_32BIT_ALLOC_SIZE)
+			{
+				error_printf("Image \"%s\" is too large (%ux%u) to process in a 32-bit build!\n", pFilename, w, h);
+
+				if (pImage_data)
+					apg_bmp_free(pImage_data);
+
+				return false;
+			}
+		}
+		
+		img.resize(w, h);
+
+		const uint8_t *pSrc = pImage_data;
+		for (int y = 0; y < h; y++)
+		{
+			color_rgba *pDst = &img(0, y);
+
+			for (int x = 0; x < w; x++)
+			{
+				pDst->r = pSrc[0];
+				pDst->g = pSrc[1];
+				pDst->b = pSrc[2];
+				pDst->a = (n_chans == 3) ? 255 : pSrc[3];
+
+				pSrc += n_chans;
+				++pDst;
+			}
+		}
+
+		apg_bmp_free(pImage_data);
+
+		return true;
+	}
+		
+	bool load_tga(const char* pFilename, image& img)
+	{
+		int w = 0, h = 0, n_chans = 0;
+		uint8_t* pImage_data = read_tga(pFilename, w, h, n_chans);
+				
+		if ((!pImage_data) || (!w) || (!h) || ((n_chans != 3) && (n_chans != 4)))
+		{
+			error_printf("Failed loading .TGA image \"%s\"!\n", pFilename);
+
+			if (pImage_data)
+				free(pImage_data);
+						
+			return false;
+		}
+
+		if (sizeof(void *) == sizeof(uint32_t))
+		{
+			if ((w * h * n_chans) > MAX_32BIT_ALLOC_SIZE)
+			{
+				error_printf("Image \"%s\" is too large (%ux%u) to process in a 32-bit build!\n", pFilename, w, h);
+
+				if (pImage_data)
+					free(pImage_data);
+
+				return false;
+			}
+		}
+		
+		img.resize(w, h);
+
+		const uint8_t *pSrc = pImage_data;
+		for (int y = 0; y < h; y++)
+		{
+			color_rgba *pDst = &img(0, y);
+
+			for (int x = 0; x < w; x++)
+			{
+				pDst->r = pSrc[0];
+				pDst->g = pSrc[1];
+				pDst->b = pSrc[2];
+				pDst->a = (n_chans == 3) ? 255 : pSrc[3];
+
+				pSrc += n_chans;
+				++pDst;
+			}
+		}
+
+		free(pImage_data);
+
+		return true;
+	}
+		
 	bool load_png(const char* pFilename, image& img)
 	{
 		std::vector<uint8_t> buffer;
@@ -187,10 +301,9 @@ namespace basisu
 				return false;
 
 			const uint32_t exepected_alloc_size = w * h * sizeof(uint32_t);
-			
+	
 			// If the file is too large on 32-bit builds then just bail now, to prevent causing a memory exception.
-			const uint32_t MAX_ALLOC_SIZE = 250000000;
-			if (exepected_alloc_size >= MAX_ALLOC_SIZE)
+			if (exepected_alloc_size >= MAX_32BIT_ALLOC_SIZE)
 			{
 				error_printf("Image \"%s\" is too large (%ux%u) to process in a 32-bit build!\n", pFilename, w, h);
 				return false;
@@ -213,10 +326,49 @@ namespace basisu
 
 		return true;
 	}
+
+	bool load_jpg(const char *pFilename, image& img)
+	{
+		int width = 0, height = 0, actual_comps = 0;
+		uint8_t *pImage_data = jpgd::decompress_jpeg_image_from_file(pFilename, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagLinearChromaFiltering);
+		if (!pImage_data)
+			return false;
+		
+		img.init(pImage_data, width, height, 4);
+		
+		free(pImage_data);
+
+		return true;
+	}
+
+	bool load_image(const char* pFilename, image& img)
+	{
+		std::string ext(string_get_extension(std::string(pFilename)));
+
+		if (ext.length() == 0)
+			return false;
+
+		const char *pExt = ext.c_str();
+
+		if (strcasecmp(pExt, "png") == 0)
+			return load_png(pFilename, img);
+		if (strcasecmp(pExt, "bmp") == 0)
+			return load_bmp(pFilename, img);
+		if (strcasecmp(pExt, "tga") == 0)
+			return load_tga(pFilename, img);
+		if ( (strcasecmp(pExt, "jpg") == 0) || (strcasecmp(pExt, "jfif") == 0) || (strcasecmp(pExt, "jpeg") == 0) )
+			return load_jpg(pFilename, img);
+
+		return false;
+	}
 	
-	bool save_png(const char* pFilename, const image & img, uint32_t image_save_flags, uint32_t grayscale_comp)
+	bool save_png(const char* pFilename, const image &img, uint32_t image_save_flags, uint32_t grayscale_comp)
 	{
 		if (!img.get_total_pixels())
+			return false;
+
+		const uint32_t MAX_PNG_IMAGE_DIM = 32768;
+		if ((img.get_width() > MAX_PNG_IMAGE_DIM) || (img.get_height() > MAX_PNG_IMAGE_DIM))
 			return false;
 
 		std::vector<uint8_t> out;
@@ -231,16 +383,17 @@ namespace basisu
 				for (uint32_t x = 0; x < img.get_width(); x++)
 					*pDst++ = img(x, y)[grayscale_comp];
 
-			err = lodepng::encode(out, (const uint8_t*)& g_pixels[0], img.get_width(), img.get_height(), LCT_GREY, 8);
+			err = lodepng::encode(out, (const uint8_t*)&g_pixels[0], img.get_width(), img.get_height(), LCT_GREY, 8);
 		}
 		else
 		{
 			bool has_alpha = img.has_alpha();
 			if ((!has_alpha) || ((image_save_flags & cImageSaveIgnoreAlpha) != 0))
 			{
-				uint8_vec rgb_pixels(img.get_width() * 3 * img.get_height());
+				const uint64_t total_bytes = (uint64_t)img.get_width() * 3U * (uint64_t)img.get_height();
+				uint8_vec rgb_pixels(total_bytes);
 				uint8_t *pDst = &rgb_pixels[0];
-
+								
 				for (uint32_t y = 0; y < img.get_height(); y++)
 				{
 					for (uint32_t x = 0; x < img.get_width(); x++)
@@ -1171,9 +1324,9 @@ namespace basisu
 			total_values *= (double)clamp<uint32_t>(total_chans, 1, 4);
 
 		m_mean = (float)clamp<double>(sum / total_values, 0.0f, 255.0);
-		m_mean_squared = (float)clamp<double>(sum2 / total_values, 0.0f, 255.0 * 255.0);
+		m_mean_squared = (float)clamp<double>(sum2 / total_values, 0.0f, 255.0f * 255.0f);
 		m_rms = (float)sqrt(m_mean_squared);
-		m_psnr = m_rms ? (float)clamp<double>(log10(255.0 / m_rms) * 20.0, 0.0f, 300.0f) : 1e+10f;
+		m_psnr = m_rms ? (float)clamp<double>(log10(255.0 / m_rms) * 20.0f, 0.0f, 100.0f) : 100.0f;
 	}
 
 	void fill_buffer_with_random_bytes(void *pBuf, size_t size, uint32_t seed)
@@ -1253,8 +1406,8 @@ namespace basisu
 	}
 
 	job_pool::job_pool(uint32_t num_threads) : 
-		m_kill_flag(false),
-		m_num_active_jobs(0)
+		m_num_active_jobs(0),
+		m_kill_flag(false)
 	{
 		assert(num_threads >= 1U);
 
@@ -1373,4 +1526,429 @@ namespace basisu
 		debug_printf("job_pool::job_thread: exiting\n");
 	}
 
+	// .TGA image loading
+	#pragma pack(push)
+	#pragma pack(1)
+	struct tga_header
+	{
+		uint8_t			m_id_len;
+		uint8_t			m_cmap;
+		uint8_t			m_type;
+		packed_uint<2>	m_cmap_first;
+		packed_uint<2> m_cmap_len;
+		uint8_t			m_cmap_bpp;
+		packed_uint<2> m_x_org;
+		packed_uint<2> m_y_org;
+		packed_uint<2> m_width;
+		packed_uint<2> m_height;
+		uint8_t			m_depth;
+		uint8_t			m_desc;
+	};
+	#pragma pack(pop)
+
+	const uint32_t MAX_TGA_IMAGE_SIZE = 16384;
+
+	enum tga_image_type
+	{
+		cITPalettized = 1,
+		cITRGB = 2,
+		cITGrayscale = 3
+	};
+
+	uint8_t *read_tga(const uint8_t *pBuf, uint32_t buf_size, int &width, int &height, int &n_chans)
+	{
+		width = 0;
+		height = 0;
+		n_chans = 0;
+
+		if (buf_size <= sizeof(tga_header))
+			return nullptr;
+
+		const tga_header &hdr = *reinterpret_cast<const tga_header *>(pBuf);
+
+		if ((!hdr.m_width) || (!hdr.m_height) || (hdr.m_width > MAX_TGA_IMAGE_SIZE) || (hdr.m_height > MAX_TGA_IMAGE_SIZE))
+			return nullptr;
+
+		if (hdr.m_desc >> 6)
+			return nullptr;
+
+		// Simple validation
+		if ((hdr.m_cmap != 0) && (hdr.m_cmap != 1))
+			return nullptr;
+		
+		if (hdr.m_cmap)
+		{
+			if ((hdr.m_cmap_bpp == 0) || (hdr.m_cmap_bpp > 32))
+				return nullptr;
+
+			// Nobody implements CMapFirst correctly, so we're not supporting it. Never seen it used, either.
+			if (hdr.m_cmap_first != 0)
+				return nullptr;
+		}
+
+		const bool x_flipped = (hdr.m_desc & 0x10) != 0;
+		const bool y_flipped = (hdr.m_desc & 0x20) == 0;
+
+		bool rle_flag = false;
+		int file_image_type = hdr.m_type;
+		if (file_image_type > 8)
+		{
+			file_image_type -= 8;
+			rle_flag = true;
+		}
+
+		const tga_image_type image_type = static_cast<tga_image_type>(file_image_type);
+
+		switch (file_image_type)
+		{
+		case cITRGB:
+			if (hdr.m_depth == 8)
+				return nullptr;
+			break;
+		case cITPalettized:
+			if ((hdr.m_depth != 8) || (hdr.m_cmap != 1) || (hdr.m_cmap_len == 0))
+				return nullptr;
+			break;
+		case cITGrayscale:
+			if ((hdr.m_cmap != 0) || (hdr.m_cmap_len != 0))
+				return nullptr;
+			if ((hdr.m_depth != 8) && (hdr.m_depth != 16))
+				return nullptr;
+			break;
+		default:
+			return nullptr;
+		}
+
+		uint32_t tga_bytes_per_pixel = 0;
+
+		switch (hdr.m_depth)
+		{
+		case 32:
+			tga_bytes_per_pixel = 4;
+			n_chans = 4;
+			break;
+		case 24:
+			tga_bytes_per_pixel = 3;
+			n_chans = 3;
+			break;
+		case 16:
+		case 15:
+			tga_bytes_per_pixel = 2;
+			// For compatibility with stb_image_write.h
+			n_chans = ((file_image_type == cITGrayscale) && (hdr.m_depth == 16)) ? 4 : 3;
+			break;
+		case 8:
+			tga_bytes_per_pixel = 1;
+			// For palettized RGBA support, which both FreeImage and stb_image support.
+			n_chans = ((file_image_type == cITPalettized) && (hdr.m_cmap_bpp == 32)) ? 4 : 3;
+			break;
+		default:
+			return nullptr;
+		}
+
+		const uint32_t bytes_per_line = hdr.m_width * tga_bytes_per_pixel;
+
+		const uint8_t *pSrc = pBuf + sizeof(tga_header);
+		uint32_t bytes_remaining = buf_size - sizeof(tga_header);
+
+		if (hdr.m_id_len)
+		{
+			if (bytes_remaining < hdr.m_id_len)
+				return nullptr;
+			pSrc += hdr.m_id_len;
+			bytes_remaining += hdr.m_id_len;
+		}
+
+		color_rgba pal[256];
+		for (uint32_t i = 0; i < 256; i++)
+			pal[i].set(0, 0, 0, 255);
+
+		if ((hdr.m_cmap) && (hdr.m_cmap_len))
+		{
+			if (image_type == cITPalettized)
+			{
+				// Note I cannot find any files using 32bpp palettes in the wild (never seen any in ~30 years).
+				if ( ((hdr.m_cmap_bpp != 32) && (hdr.m_cmap_bpp != 24) && (hdr.m_cmap_bpp != 15) && (hdr.m_cmap_bpp != 16)) || (hdr.m_cmap_len > 256) )
+					return nullptr;
+
+				if (hdr.m_cmap_bpp == 32)
+				{
+					const uint32_t pal_size = hdr.m_cmap_len * 4;
+					if (bytes_remaining < pal_size)
+						return nullptr;
+
+					for (uint32_t i = 0; i < hdr.m_cmap_len; i++)
+					{
+						pal[i].r = pSrc[i * 4 + 2];
+						pal[i].g = pSrc[i * 4 + 1];
+						pal[i].b = pSrc[i * 4 + 0];
+						pal[i].a = pSrc[i * 4 + 3];
+					}
+
+					bytes_remaining -= pal_size;
+					pSrc += pal_size;
+				}
+				else if (hdr.m_cmap_bpp == 24)
+				{
+					const uint32_t pal_size = hdr.m_cmap_len * 3;
+					if (bytes_remaining < pal_size)
+						return nullptr;
+
+					for (uint32_t i = 0; i < hdr.m_cmap_len; i++)
+					{
+						pal[i].r = pSrc[i * 3 + 2];
+						pal[i].g = pSrc[i * 3 + 1];
+						pal[i].b = pSrc[i * 3 + 0];
+						pal[i].a = 255;
+					}
+
+					bytes_remaining -= pal_size;
+					pSrc += pal_size;
+				}
+				else
+				{
+					const uint32_t pal_size = hdr.m_cmap_len * 2;
+					if (bytes_remaining < pal_size)
+						return nullptr;
+
+					for (uint32_t i = 0; i < hdr.m_cmap_len; i++)
+					{
+						const uint32_t v = pSrc[i * 2 + 0] | (pSrc[i * 2 + 1] << 8);
+
+						pal[i].r = (((v >> 10) & 31) * 255 + 15) / 31;
+						pal[i].g = (((v >> 5) & 31) * 255 + 15) / 31;
+						pal[i].b = ((v & 31) * 255 + 15) / 31;
+						pal[i].a = 255;
+					}
+
+					bytes_remaining -= pal_size;
+					pSrc += pal_size;
+				}
+			}
+			else
+			{
+				const uint32_t bytes_to_skip = (hdr.m_cmap_bpp >> 3) * hdr.m_cmap_len;
+				if (bytes_remaining < bytes_to_skip)
+					return nullptr;
+				pSrc += bytes_to_skip;
+				bytes_remaining += bytes_to_skip;
+			}
+		}
+		
+		width = hdr.m_width;
+		height = hdr.m_height;
+
+		const uint32_t source_pitch = width * tga_bytes_per_pixel;
+		const uint32_t dest_pitch = width * n_chans;
+		
+		uint8_t *pImage = (uint8_t *)malloc(dest_pitch * height);
+		if (!pImage)
+			return nullptr;
+
+		std::vector<uint8_t> input_line_buf;
+		if (rle_flag)
+			input_line_buf.resize(source_pitch);
+
+		int run_type = 0, run_remaining = 0;
+		uint8_t run_pixel[4];
+		memset(run_pixel, 0, sizeof(run_pixel));
+
+		for (int y = 0; y < height; y++)
+		{
+			const uint8_t *pLine_data;
+
+			if (rle_flag)
+			{
+				int pixels_remaining = width;
+				uint8_t *pDst = &input_line_buf[0];
+
+				do 
+				{
+					if (!run_remaining)
+					{
+						if (bytes_remaining < 1)
+						{
+							free(pImage);
+							return nullptr;
+						}
+
+						int v = *pSrc++;
+						bytes_remaining--;
+
+						run_type = v & 0x80;
+						run_remaining = (v & 0x7F) + 1;
+
+						if (run_type)
+						{
+							if (bytes_remaining < tga_bytes_per_pixel)
+							{
+								free(pImage);
+								return nullptr;
+							}
+
+							memcpy(run_pixel, pSrc, tga_bytes_per_pixel);
+							pSrc += tga_bytes_per_pixel;
+							bytes_remaining -= tga_bytes_per_pixel;
+						}
+					}
+
+					const uint32_t n = std::min<uint32_t>(pixels_remaining, run_remaining);
+					pixels_remaining -= n;
+					run_remaining -= n;
+
+					if (run_type)
+					{
+						for (uint32_t i = 0; i < n; i++)
+							for (uint32_t j = 0; j < tga_bytes_per_pixel; j++)
+								*pDst++ = run_pixel[j];
+					}
+					else
+					{
+						const uint32_t bytes_wanted = n * tga_bytes_per_pixel;
+
+						if (bytes_remaining < bytes_wanted)
+						{
+							free(pImage);
+							return nullptr;
+						}
+
+						memcpy(pDst, pSrc, bytes_wanted);
+						pDst += bytes_wanted;
+
+						pSrc += bytes_wanted;
+						bytes_remaining -= bytes_wanted;
+					}
+
+				} while (pixels_remaining);
+
+				assert((pDst - &input_line_buf[0]) == width * tga_bytes_per_pixel);
+
+				pLine_data = &input_line_buf[0];
+			}
+			else
+			{
+				if (bytes_remaining < source_pitch)
+				{
+					free(pImage);
+					return nullptr;
+				}
+
+				pLine_data = pSrc;
+				bytes_remaining -= source_pitch;
+				pSrc += source_pitch;
+			}
+
+			// Convert to 24bpp RGB or 32bpp RGBA.
+			uint8_t *pDst = pImage + (y_flipped ? (height - 1 - y) : y) * dest_pitch + (x_flipped ? (width - 1) * n_chans : 0);
+			const int dst_stride = x_flipped ? -((int)n_chans) : n_chans;
+
+			switch (hdr.m_depth)
+			{
+			case 32:
+				assert(tga_bytes_per_pixel == 4 && n_chans == 4);
+				for (int i = 0; i < width; i++, pLine_data += 4, pDst += dst_stride)
+				{
+					pDst[0] = pLine_data[2];
+					pDst[1] = pLine_data[1];
+					pDst[2] = pLine_data[0];
+					pDst[3] = pLine_data[3];
+				}
+				break;
+			case 24:
+				assert(tga_bytes_per_pixel == 3 && n_chans == 3);
+				for (int i = 0; i < width; i++, pLine_data += 3, pDst += dst_stride)
+				{
+					pDst[0] = pLine_data[2];
+					pDst[1] = pLine_data[1];
+					pDst[2] = pLine_data[0];
+				}
+				break;
+			case 16:
+			case 15:
+				if (image_type == cITRGB)
+				{
+					assert(tga_bytes_per_pixel == 2 && n_chans == 3);
+					for (int i = 0; i < width; i++, pLine_data += 2, pDst += dst_stride)
+					{
+						const uint32_t v = pLine_data[0] | (pLine_data[1] << 8);
+						pDst[0] = (((v >> 10) & 31) * 255 + 15) / 31;
+						pDst[1] = (((v >> 5) & 31) * 255 + 15) / 31;
+						pDst[2] = ((v & 31) * 255 + 15) / 31;
+					}
+				}
+				else
+				{
+					assert(image_type == cITGrayscale && tga_bytes_per_pixel == 2 && n_chans == 4);
+					for (int i = 0; i < width; i++, pLine_data += 2, pDst += dst_stride)
+					{
+						pDst[0] = pLine_data[0];
+						pDst[1] = pLine_data[0];
+						pDst[2] = pLine_data[0];
+						pDst[3] = pLine_data[1];
+					}
+				}
+				break;
+			case 8:
+				assert(tga_bytes_per_pixel == 1);
+				if (image_type == cITPalettized)
+				{
+					if (hdr.m_cmap_bpp == 32)
+					{
+						assert(n_chans == 4);
+						for (int i = 0; i < width; i++, pLine_data++, pDst += dst_stride)
+						{
+							const uint32_t c = *pLine_data;
+							pDst[0] = pal[c].r;
+							pDst[1] = pal[c].g;
+							pDst[2] = pal[c].b;
+							pDst[3] = pal[c].a;
+						}
+					}
+					else
+					{
+						assert(n_chans == 3);
+						for (int i = 0; i < width; i++, pLine_data++, pDst += dst_stride)
+						{
+							const uint32_t c = *pLine_data;
+							pDst[0] = pal[c].r;
+							pDst[1] = pal[c].g;
+							pDst[2] = pal[c].b;
+						}
+					}
+				}
+				else
+				{
+					assert(n_chans == 3);
+					for (int i = 0; i < width; i++, pLine_data++, pDst += dst_stride)
+					{
+						const uint8_t c = *pLine_data;
+						pDst[0] = c;
+						pDst[1] = c;
+						pDst[2] = c;
+					}
+				}
+				break;
+			default:
+				assert(0);
+				break;
+			}
+		} // y
+
+		return pImage;
+	}
+
+	uint8_t *read_tga(const char *pFilename, int &width, int &height, int &n_chans)
+	{
+		width = height = n_chans = 0;
+
+		uint8_vec filedata;
+		if (!read_file_to_vec(pFilename, filedata))
+			return nullptr;
+
+		if (!filedata.size() || (filedata.size() > UINT32_MAX))
+			return nullptr;
+		
+		return read_tga(&filedata[0], (uint32_t)filedata.size(), width, height, n_chans);
+	}
+		
 } // namespace basisu

@@ -1,5 +1,5 @@
 // basisu_comp.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #include "basisu_basis_file.h"
 #include "transcoder/basisu_global_selector_palette.h"
 #include "transcoder/basisu_transcoder.h"
+#include "basisu_uastc_enc.h"
 
 namespace basisu
 {
@@ -52,43 +53,52 @@ namespace basisu
 			m_filename.clear();
 			m_width = 0;
 			m_height = 0;
+						
+			m_basis_rgb_avg_psnr = 0.0f;
+			m_basis_rgba_avg_psnr = 0.0f;
+			m_basis_a_avg_psnr = 0.0f;
+			m_basis_luma_709_psnr = 0.0f;
+			m_basis_luma_601_psnr = 0.0f;
+			m_basis_luma_709_ssim = 0.0f;
 
-			m_basis_etc1s_rgb_avg_psnr = 0.0f;
-			m_basis_etc1s_luma_709_psnr = 0.0f;
-			m_basis_etc1s_luma_601_psnr = 0.0f;
-			m_basis_etc1s_luma_709_ssim = 0.0f;
-
-			m_basis_bc1_rgb_avg_psnr = 0.0f;
-			m_basis_bc1_luma_709_psnr = 0.0f;
-			m_basis_bc1_luma_601_psnr = 0.0f;
-			m_basis_bc1_luma_709_ssim = 0.0f;
-
-			m_best_rgb_avg_psnr = 0.0f;
-			m_best_luma_709_psnr = 0.0f;
-			m_best_luma_601_psnr = 0.0f;
-			m_best_luma_709_ssim = 0.0f;
+			m_bc7_rgb_avg_psnr = 0.0f;
+			m_bc7_rgba_avg_psnr = 0.0f;
+			m_bc7_a_avg_psnr = 0.0f;
+			m_bc7_luma_709_psnr = 0.0f;
+			m_bc7_luma_601_psnr = 0.0f;
+			m_bc7_luma_709_ssim = 0.0f;
+						
+			m_best_etc1s_rgb_avg_psnr = 0.0f;
+			m_best_etc1s_luma_709_psnr = 0.0f;
+			m_best_etc1s_luma_601_psnr = 0.0f;
+			m_best_etc1s_luma_709_ssim = 0.0f;
 		}
 
 		std::string m_filename;
 		uint32_t m_width;
 		uint32_t m_height;
 
-		// .basis compressed
-		float m_basis_etc1s_rgb_avg_psnr;
-		float m_basis_etc1s_luma_709_psnr;
-		float m_basis_etc1s_luma_601_psnr;
-		float m_basis_etc1s_luma_709_ssim;
-		
-		float m_basis_bc1_rgb_avg_psnr;
-		float m_basis_bc1_luma_709_psnr;
-		float m_basis_bc1_luma_601_psnr;
-		float m_basis_bc1_luma_709_ssim;
+		// .basis compressed (ETC1S or UASTC statistics)
+		float m_basis_rgb_avg_psnr;
+		float m_basis_rgba_avg_psnr;
+		float m_basis_a_avg_psnr;
+		float m_basis_luma_709_psnr;
+		float m_basis_luma_601_psnr;
+		float m_basis_luma_709_ssim;
 
-		// Normal (highest quality) compressed ETC1S
-		float m_best_rgb_avg_psnr;
-		float m_best_luma_709_psnr;
-		float m_best_luma_601_psnr;
-		float m_best_luma_709_ssim;
+		// BC7 statistics
+		float m_bc7_rgb_avg_psnr;
+		float m_bc7_rgba_avg_psnr;
+		float m_bc7_a_avg_psnr;
+		float m_bc7_luma_709_psnr;
+		float m_bc7_luma_601_psnr;
+		float m_bc7_luma_709_ssim;
+		
+		// Highest achievable quality ETC1S statistics
+		float m_best_etc1s_rgb_avg_psnr;
+		float m_best_etc1s_luma_709_psnr;
+		float m_best_etc1s_luma_601_psnr;
+		float m_best_etc1s_luma_709_ssim;
 	};
 
 	template<bool def>
@@ -175,18 +185,23 @@ namespace basisu
 	struct basis_compressor_params
 	{
 		basis_compressor_params() :
+			m_pSel_codebook(NULL),
+			m_compression_level((int)BASISU_DEFAULT_COMPRESSION_LEVEL, 0, (int)BASISU_MAX_COMPRESSION_LEVEL),
+			m_selector_rdo_thresh(BASISU_DEFAULT_SELECTOR_RDO_THRESH, 0.0f, 1e+10f),
+			m_endpoint_rdo_thresh(BASISU_DEFAULT_ENDPOINT_RDO_THRESH, 0.0f, 1e+10f),
 			m_hybrid_sel_cb_quality_thresh(BASISU_DEFAULT_HYBRID_SEL_CB_QUALITY_THRESH, 0.0f, 1e+10f),
 			m_global_pal_bits(8, 0, ETC1_GLOBAL_SELECTOR_CODEBOOK_MAX_PAL_BITS),
 			m_global_mod_bits(8, 0, basist::etc1_global_palette_entry_modifier::cTotalBits),
-			m_endpoint_rdo_thresh(BASISU_DEFAULT_ENDPOINT_RDO_THRESH, 0.0f, 1e+10f),
-			m_selector_rdo_thresh(BASISU_DEFAULT_SELECTOR_RDO_THRESH, 0.0f, 1e+10f),
-			m_pSel_codebook(NULL),
+			m_mip_scale(1.0f, .000125f, 4.0f),
+			m_mip_smallest_dimension(1, 1, 16384),
 			m_max_endpoint_clusters(512),
 			m_max_selector_clusters(512),
 			m_quality_level(-1),
-			m_mip_scale(1.0f, .000125f, 4.0f),
-			m_mip_smallest_dimension(1, 1, 16384),
-			m_compression_level((int)BASISU_DEFAULT_COMPRESSION_LEVEL, 0, (int)BASISU_MAX_COMPRESSION_LEVEL),
+			m_pack_uastc_flags(cPackUASTCLevelDefault),
+			m_rdo_uastc_quality_scalar(1.0f, 0.001f, 10.0f),
+			m_rdo_uastc_dict_size(32768, 256, 65536),
+			m_rdo_uastc_max_allowed_rms_increase_ratio(UASTC_RDO_DEFAULT_MAX_ALLOWED_RMS_INCREASE_RATIO, .01f, 100.0f),
+			m_rdo_uastc_skip_block_rms_thresh(UASTC_RDO_DEFAULT_SKIP_BLOCK_RMS_THRESH, .01f, 100.0f),
 			m_pJob_pool(nullptr)
 		{
 			clear();
@@ -195,6 +210,8 @@ namespace basisu
 		void clear()
 		{
 			m_pSel_codebook = NULL;
+
+			m_uastc.clear();
 
 			m_source_filenames.clear();
 			m_source_alpha_filenames.clear();
@@ -220,6 +237,7 @@ namespace basisu
 			m_force_alpha.clear();
 			m_multithreading.clear();
 			m_seperate_rg_to_color_alpha.clear();
+			m_renormalize.clear();
 			m_hybrid_sel_cb_quality_thresh.clear();
 			m_global_pal_bits.clear();
 			m_global_mod_bits.clear();
@@ -247,11 +265,20 @@ namespace basisu
 			m_userdata1 = 0;
 			m_us_per_frame = 0;
 
+			m_pack_uastc_flags = cPackUASTCLevelDefault;
+			m_rdo_uastc.clear();
+			m_rdo_uastc_quality_scalar.clear();
+			m_rdo_uastc_max_allowed_rms_increase_ratio.clear();
+			m_rdo_uastc_skip_block_rms_thresh.clear();
+
 			m_pJob_pool = nullptr;
 		}
-
+				
 		// Pointer to the global selector codebook, or nullptr to not use a global selector codebook
 		const basist::etc1_global_selector_codebook *m_pSel_codebook;
+
+		// True to generate UASTC .basis file data, otherwise ETC1S.
+		bool_param<false> m_uastc;
 
 		// If m_read_source_images is true, m_source_filenames (and optionally m_source_alpha_filenames) contains the filenames of PNG images to read. 
 		// Otherwise, the compressor processes the images in m_source_images.
@@ -313,6 +340,8 @@ namespace basisu
 		// Split the R channel to RGB and the G channel to alpha, then write a basis file with alpha channels
 		bool_param<false> m_seperate_rg_to_color_alpha;
 
+		bool_param<false> m_renormalize;
+
 		bool_param<false> m_disable_hierarchical_endpoint_codebooks;
 
 		// Global/hybrid selector codebook parameters
@@ -343,6 +372,14 @@ namespace basisu
 		uint32_t m_userdata1;
 		uint32_t m_us_per_frame;
 
+		// cPackUASTCLevelDefault, etc.
+		uint32_t m_pack_uastc_flags;
+		bool_param<false> m_rdo_uastc;
+		param<float> m_rdo_uastc_quality_scalar;
+		param<int> m_rdo_uastc_dict_size;
+		param<float> m_rdo_uastc_max_allowed_rms_increase_ratio;
+		param<float> m_rdo_uastc_skip_block_rms_thresh;
+
 		job_pool *m_pJob_pool;
 	};
 	
@@ -360,25 +397,26 @@ namespace basisu
 			cECSuccess = 0,
 			cECFailedReadingSourceImages,
 			cECFailedValidating,
+			cECFailedEncodeUASTC,
 			cECFailedFrontEnd,
 			cECFailedFontendExtract,
 			cECFailedBackend,
 			cECFailedCreateBasisFile,
-			cECFailedWritingOutput
+			cECFailedWritingOutput,
+			cECFailedUASTCRDOPostProcess
 		};
 
 		error_code process();
 
 		const uint8_vec &get_output_basis_file() const { return m_output_basis_file; }
-		const etc_block_vec &get_output_blocks() const { return m_output_blocks; }
-
+		
 		const std::vector<image_stats> &get_stats() const { return m_stats; }
 
 		uint32_t get_basis_file_size() const { return m_basis_file_size; }
 		double get_basis_bits_per_texel() const { return m_basis_bits_per_texel; }
 
 		bool get_any_source_image_has_alpha() const { return m_any_source_image_has_alpha; }
-
+				
 	private:
 		basis_compressor_params m_params;
 		
@@ -408,20 +446,24 @@ namespace basisu
 
 		std::vector<gpu_image> m_decoded_output_textures;
 		std::vector<image> m_decoded_output_textures_unpacked;
-		std::vector<gpu_image> m_decoded_output_textures_bc1;
-		std::vector<image> m_decoded_output_textures_unpacked_bc1;
+		std::vector<gpu_image> m_decoded_output_textures_bc7;
+		std::vector<image> m_decoded_output_textures_unpacked_bc7;
 
 		uint8_vec m_output_basis_file;
-		etc_block_vec m_output_blocks;
+		
+		std::vector<gpu_image> m_uastc_slice_textures;
+		basisu_backend_output m_uastc_backend_output;
 
 		bool m_any_source_image_has_alpha;
 
 		bool read_source_images();
+		bool extract_source_blocks();
 		bool process_frontend();
 		bool extract_frontend_texture_data();
 		bool process_backend();
 		bool create_basis_file_and_transcode();
 		bool write_output_files_and_compute_stats();
+		error_code encode_slices_to_uastc();
 		bool generate_mipmaps(const image &img, std::vector<image> &mips, bool has_alpha);
 		bool validate_texture_type_constraints();
 	};

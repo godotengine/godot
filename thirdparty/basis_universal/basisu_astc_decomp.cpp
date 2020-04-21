@@ -1256,7 +1256,7 @@ void interpolateWeights (TexelWeightPair* dst, const deUint32 (&unquantizedWeigh
 	const int		numWeightsPerTexel	= blockMode.isDualPlane ? 2 : 1;
 	const deUint32	scaleX				= (1024 + blockWidth/2) / (blockWidth-1);
 	const deUint32	scaleY				= (1024 + blockHeight/2) / (blockHeight-1);
-	DE_ASSERT(blockMode.weightGridWidth*blockMode.weightGridHeight*numWeightsPerTexel <= DE_LENGTH_OF_ARRAY(unquantizedWeights));
+	DE_ASSERT(blockMode.weightGridWidth*blockMode.weightGridHeight*numWeightsPerTexel <= (int)DE_LENGTH_OF_ARRAY(unquantizedWeights));
 	for (int texelY = 0; texelY < blockHeight; texelY++)
 	{
 		for (int texelX = 0; texelX < blockWidth; texelX++)

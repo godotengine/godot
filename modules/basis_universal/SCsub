@@ -10,6 +10,7 @@ env_basisu = env_modules.Clone()
 thirdparty_dir = "#thirdparty/basis_universal/"
 tool_sources = [
     "basisu_astc_decomp.cpp",
+    "basisu_bc7enc.cpp",
     "basisu_backend.cpp",
     "basisu_basis_file.cpp",
     "basisu_comp.cpp",
@@ -22,6 +23,8 @@ tool_sources = [
     "basisu_resample_filters.cpp",
     "basisu_resampler.cpp",
     "basisu_ssim.cpp",
+    "basisu_uastc_enc.cpp",
+    "jpgd.cpp",
     "lodepng.cpp",
 ]
 tool_sources = [thirdparty_dir + file for file in tool_sources]

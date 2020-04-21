@@ -1,5 +1,5 @@
 // basisu_transcoder.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 // Important: If compiling with gcc, be sure strict aliasing is disabled: -fno-strict-aliasing
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +15,13 @@
 // limitations under the License.
 #pragma once
 
-// Set BASISU_DEVEL_MESSAGES to 1 to enable debug printf()'s whenever an error occurs, for easier debugging during development.
-//#define BASISU_DEVEL_MESSAGES 1
+// Set BASISU_FORCE_DEVEL_MESSAGES to 1 to enable debug printf()'s whenever an error occurs, for easier debugging during development.
+#ifndef BASISU_FORCE_DEVEL_MESSAGES
+#define BASISU_FORCE_DEVEL_MESSAGES 0
+#endif
 
 #include "basisu_transcoder_internal.h"
+#include "basisu_transcoder_uastc.h"
 #include "basisu_global_selector_palette.h"
 #include "basisu_file_headers.h"
 
@@ -45,12 +48,11 @@ namespace basist
 		cTFBC3_RGBA = 3, 							// Opaque+alpha, BC4 followed by a BC1 block, alpha channel will be opaque for opaque .basis files
 		cTFBC4_R = 4,								// Red only, alpha slice is transcoded to output if cDecodeFlagsTranscodeAlphaDataToOpaqueFormats flag is specified
 		cTFBC5_RG = 5,								// XY: Two BC4 blocks, X=R and Y=Alpha, .basis file should have alpha data (if not Y will be all 255's)
-		cTFBC7_M6_RGB = 6,						// Opaque only, RGB or alpha if cDecodeFlagsTranscodeAlphaDataToOpaqueFormats flag is specified. Highest quality of all the non-ETC1 formats.
-		cTFBC7_M5_RGBA = 7,						// Opaque+alpha, alpha channel will be opaque for opaque .basis files
-
+		cTFBC7_RGBA = 6,							// RGB or RGBA, mode 5 for ETC1S, modes (1,2,3,5,6,7) for UASTC
+				
 		// PVRTC1 4bpp (mobile, PowerVR devices)
 		cTFPVRTC1_4_RGB = 8,						// Opaque only, RGB or alpha if cDecodeFlagsTranscodeAlphaDataToOpaqueFormats flag is specified, nearly lowest quality of any texture format.
-		cTFPVRTC1_4_RGBA = 9,					// Opaque+alpha, most useful for simple opacity maps. If .basis file doens't have alpha cTFPVRTC1_4_RGB will be used instead. Lowest quality of any supported texture format.
+		cTFPVRTC1_4_RGBA = 9,					// Opaque+alpha, most useful for simple opacity maps. If .basis file doesn't have alpha cTFPVRTC1_4_RGB will be used instead. Lowest quality of any supported texture format.
 
 		// ASTC (mobile, Intel devices, hopefully all desktop GPU's one day)
 		cTFASTC_4x4_RGBA = 10,					// Opaque+alpha, ASTC 4x4, alpha channel will be opaque for opaque .basis files. Transcoder uses RGB/RGBA/L/LA modes, void extent, and up to two ([0,47] and [0,255]) endpoint precisions.
@@ -85,26 +87,49 @@ namespace basist
 		cTFBC3 = cTFBC3_RGBA,
 		cTFBC4 = cTFBC4_R,
 		cTFBC5 = cTFBC5_RG,
-		cTFBC7_M6_OPAQUE_ONLY = cTFBC7_M6_RGB,
-		cTFBC7_M5 = cTFBC7_M5_RGBA,
+		
+		// Previously, the caller had some control over which BC7 mode the transcoder output. We've simplified this due to UASTC, which supports numerous modes.
+		cTFBC7_M6_RGB = cTFBC7_RGBA,			// Opaque only, RGB or alpha if cDecodeFlagsTranscodeAlphaDataToOpaqueFormats flag is specified. Highest quality of all the non-ETC1 formats.
+		cTFBC7_M5_RGBA = cTFBC7_RGBA,			// Opaque+alpha, alpha channel will be opaque for opaque .basis files
+		cTFBC7_M6_OPAQUE_ONLY = cTFBC7_RGBA,
+		cTFBC7_M5 = cTFBC7_RGBA,
+		cTFBC7_ALT = 7,
+
 		cTFASTC_4x4 = cTFASTC_4x4_RGBA,
+		
 		cTFATC_RGBA_INTERPOLATED_ALPHA = cTFATC_RGBA,
 	};
 
-	uint32_t basis_get_bytes_per_block(transcoder_texture_format fmt);
+	// For compressed texture formats, this returns the # of bytes per block. For uncompressed, it returns the # of bytes per pixel.
+	// NOTE: Previously, this function was called basis_get_bytes_per_block(), and it always returned 16*bytes_per_pixel for uncompressed formats which was confusing.
+	uint32_t basis_get_bytes_per_block_or_pixel(transcoder_texture_format fmt);
+
+	// Returns format's name in ASCII
 	const char* basis_get_format_name(transcoder_texture_format fmt);
+
+	// Returns true if the format supports an alpha channel.
 	bool basis_transcoder_format_has_alpha(transcoder_texture_format fmt);
+
+	// Returns the basisu::texture_format corresponding to the specified transcoder_texture_format.
 	basisu::texture_format basis_get_basisu_texture_format(transcoder_texture_format fmt);
+
+	// Returns the texture type's name in ASCII.
 	const char* basis_get_texture_type_name(basis_texture_type tex_type);
 	
+	// Returns true if the transcoder texture type is an uncompressed (raw pixel) format.
 	bool basis_transcoder_format_is_uncompressed(transcoder_texture_format tex_type);
+
+	// Returns the # of bytes per pixel for uncompressed formats, or 0 for block texture formats.
 	uint32_t basis_get_uncompressed_bytes_per_pixel(transcoder_texture_format fmt);
 	
+	// Returns the block width for the specified texture format, which is currently either 4 or 8 for FXT1.
 	uint32_t basis_get_block_width(transcoder_texture_format tex_type);
+	
+	// Returns the block height for the specified texture format, which is currently always 4.
 	uint32_t basis_get_block_height(transcoder_texture_format tex_type);
 
 	// Returns true if the specified format was enabled at compile time.
-	bool basis_is_format_supported(transcoder_texture_format tex_type);
+	bool basis_is_format_supported(transcoder_texture_format tex_type, basis_tex_format fmt = basis_tex_format::cETC1S);
 		
 	class basisu_transcoder;
 
@@ -125,12 +150,12 @@ namespace basist
 	};
 	
 	// Low-level helper class that does the actual transcoding.
-	class basisu_lowlevel_transcoder
+	class basisu_lowlevel_etc1s_transcoder
 	{
 		friend class basisu_transcoder;
 	
 	public:
-		basisu_lowlevel_transcoder(const basist::etc1_global_selector_codebook *pGlobal_sel_codebook);
+		basisu_lowlevel_etc1s_transcoder(const basist::etc1_global_selector_codebook *pGlobal_sel_codebook);
 
 		bool decode_palettes(
 			uint32_t num_endpoints, const uint8_t *pEndpoints_data, uint32_t endpoints_data_size,
@@ -141,6 +166,17 @@ namespace basist
 		bool transcode_slice(void *pDst_blocks, uint32_t num_blocks_x, uint32_t num_blocks_y, const uint8_t *pImage_data, uint32_t image_data_size, block_format fmt, 
 			uint32_t output_block_or_pixel_stride_in_bytes, bool bc1_allow_threecolor_blocks, const basis_file_header &header, const basis_slice_desc& slice_desc, uint32_t output_row_pitch_in_blocks_or_pixels = 0,
 			basisu_transcoder_state *pState = nullptr, bool astc_transcode_alpha = false, void* pAlpha_blocks = nullptr, uint32_t output_rows_in_pixels = 0);
+
+		void clear()
+		{
+			m_endpoints.clear();
+			m_selectors.clear();
+			m_endpoint_pred_model.clear();
+			m_delta_endpoint_model.clear();
+			m_selector_model.clear();
+			m_selector_history_buf_rle_model.clear();
+			m_selector_history_buf_size = 0;
+		}
 
 	private:
 		typedef std::vector<endpoint> endpoint_vec;
@@ -156,6 +192,38 @@ namespace basist
 		uint32_t m_selector_history_buf_size;
 		
 		basisu_transcoder_state m_def_state;
+	};
+
+	enum
+	{
+		// PVRTC1: decode non-pow2 ETC1S texture level to the next larger power of 2 (not implemented yet, but we're going to support it). Ignored if the slice's dimensions are already a power of 2.
+		cDecodeFlagsPVRTCDecodeToNextPow2 = 2,
+
+		// When decoding to an opaque texture format, if the basis file has alpha, decode the alpha slice instead of the color slice to the output texture format.
+		// This is primarily to allow decoding of textures with alpha to multiple ETC1 textures (one for color, another for alpha).
+		cDecodeFlagsTranscodeAlphaDataToOpaqueFormats = 4,
+
+		// Forbid usage of BC1 3 color blocks (we don't support BC1 punchthrough alpha yet).
+		// This flag is used internally when decoding to BC3.
+		cDecodeFlagsBC1ForbidThreeColorBlocks = 8,
+
+		// The output buffer contains alpha endpoint/selector indices. 
+		// Used internally when decoding formats like ASTC that require both color and alpha data to be available when transcoding to the output format.
+		cDecodeFlagsOutputHasAlphaIndices = 16,
+
+		cDecodeFlagsHighQuality = 32
+	};
+
+	class basisu_lowlevel_uastc_transcoder
+	{
+		friend class basisu_transcoder;
+
+	public:
+		basisu_lowlevel_uastc_transcoder();
+
+		bool transcode_slice(void* pDst_blocks, uint32_t num_blocks_x, uint32_t num_blocks_y, const uint8_t* pImage_data, uint32_t image_data_size, block_format fmt,
+			uint32_t output_block_or_pixel_stride_in_bytes, bool bc1_allow_threecolor_blocks, const basis_file_header& header, const basis_slice_desc& slice_desc, uint32_t output_row_pitch_in_blocks_or_pixels = 0,
+			basisu_transcoder_state* pState = nullptr, uint32_t output_rows_in_pixels = 0, int channel0 = -1, int channel1 = -1, uint32_t decode_flags = 0);
 	};
 
 	struct basisu_slice_info
@@ -251,10 +319,12 @@ namespace basist
 
 		uint32_t m_userdata0;
 		uint32_t m_userdata1;
-		
-		bool m_etc1s;					// always true for basis universal
+
+		basis_tex_format m_tex_format; // ETC1S, UASTC, etc.
+				
 		bool m_y_flipped;				// true if the image was Y flipped
-		bool m_has_alpha_slices;	// true if the texture has alpha slices (even slices RGB, odd slices alpha)
+		bool m_etc1s;					// true if the file is ETC1S
+		bool m_has_alpha_slices;	// true if the texture has alpha slices (for ETC1S: even slices RGB, odd slices alpha)
 	};
 
 	// High-level transcoder class which accepts .basis file data and allows the caller to query information about the file and transcode image levels to various texture formats.
@@ -280,6 +350,8 @@ namespace basist
 		// Note that the number of mipmap levels for each image may differ, and that images may have different resolutions.
 		uint32_t get_total_images(const void *pData, uint32_t data_size) const;
 
+		basis_tex_format get_tex_format(const void* pData, uint32_t data_size) const;
+
 		// Returns the number of mipmap levels in an image.
 		uint32_t get_total_image_levels(const void *pData, uint32_t data_size, uint32_t image_index) const;
 		
@@ -296,30 +368,14 @@ namespace basist
 		bool get_file_info(const void *pData, uint32_t data_size, basisu_file_info &file_info) const;
 				
 		// start_transcoding() must be called before calling transcode_slice() or transcode_image_level().
-		// This decompresses the selector/endpoint codebooks, so ideally you would only call this once per .basis file (not each image/mipmap level).
-		bool start_transcoding(const void *pData, uint32_t data_size) const;
+		// For ETC1S files, this call decompresses the selector/endpoint codebooks, so ideally you would only call this once per .basis file (not each image/mipmap level).
+		bool start_transcoding(const void *pData, uint32_t data_size);
+		
+		bool stop_transcoding();
 		
 		// Returns true if start_transcoding() has been called.
-		bool get_ready_to_transcode() const { return m_lowlevel_decoder.m_endpoints.size() > 0; }
-
-		enum 
-		{
-			// PVRTC1: decode non-pow2 ETC1S texture level to the next larger power of 2 (not implemented yet, but we're going to support it). Ignored if the slice's dimensions are already a power of 2.
-			cDecodeFlagsPVRTCDecodeToNextPow2 = 2,	
-			
-			// When decoding to an opaque texture format, if the basis file has alpha, decode the alpha slice instead of the color slice to the output texture format.
-			// This is primarily to allow decoding of textures with alpha to multiple ETC1 textures (one for color, another for alpha).
-			cDecodeFlagsTranscodeAlphaDataToOpaqueFormats = 4,
-
-			// Forbid usage of BC1 3 color blocks (we don't support BC1 punchthrough alpha yet).
-			// This flag is used internally when decoding to BC3.
-			cDecodeFlagsBC1ForbidThreeColorBlocks = 8,
-
-			// The output buffer contains alpha endpoint/selector indices. 
-			// Used internally when decoding formats like ASTC that require both color and alpha data to be available when transcoding to the output format.
-			cDecodeFlagsOutputHasAlphaIndices = 16
-		};
-								
+		bool get_ready_to_transcode() const { return m_ready_to_transcode; }
+											
 		// transcode_image_level() decodes a single mipmap level from the .basis file to any of the supported output texture formats.
 		// It'll first find the slice(s) to transcode, then call transcode_slice() one or two times to decode both the color and alpha texture data (or RG texture data from two slices for BC5).
 		// If the .basis file doesn't have alpha slices, the output alpha blocks will be set to fully opaque (all 255's).
@@ -352,10 +408,14 @@ namespace basist
 		// - basisu_transcoder_init() must have been called first to initialize the transcoder lookup tables before calling this function.
 		bool transcode_slice(const void *pData, uint32_t data_size, uint32_t slice_index, 
 			void *pOutput_blocks, uint32_t output_blocks_buf_size_in_blocks_or_pixels,
-			block_format fmt, uint32_t output_block_stride_in_bytes, uint32_t decode_flags = 0, uint32_t output_row_pitch_in_blocks_or_pixels = 0, basisu_transcoder_state * pState = nullptr, void* pAlpha_blocks = nullptr, uint32_t output_rows_in_pixels = 0) const;
+			block_format fmt, uint32_t output_block_stride_in_bytes, uint32_t decode_flags = 0, uint32_t output_row_pitch_in_blocks_or_pixels = 0, basisu_transcoder_state * pState = nullptr, void* pAlpha_blocks = nullptr, 
+			uint32_t output_rows_in_pixels = 0, int channel0 = -1, int channel1 = -1) const;
 
 	private:
-		mutable basisu_lowlevel_transcoder m_lowlevel_decoder;
+		mutable basisu_lowlevel_etc1s_transcoder m_lowlevel_etc1s_decoder;
+		mutable basisu_lowlevel_uastc_transcoder m_lowlevel_uastc_decoder;
+
+		bool m_ready_to_transcode;
 
 		int find_first_slice_index(const void* pData, uint32_t data_size, uint32_t image_index, uint32_t level_index) const;
 		

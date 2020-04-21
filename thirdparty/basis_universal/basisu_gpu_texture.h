@@ -1,5 +1,5 @@
 // basisu_gpu_texture.h
-// Copyright (C) 2019 Binomial LLC. All Rights Reserved.
+// Copyright (C) 2019-2020 Binomial LLC. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 
 namespace basisu
 {
-	// GPU texture image
-
+	// GPU texture "image"
 	class gpu_image
 	{
 	public:
@@ -133,22 +132,23 @@ namespace basisu
 	bool write_compressed_texture_file(const char *pFilename, const gpu_image &g);
 	
 	bool write_3dfx_out_file(const char* pFilename, const gpu_image& gi);
-	// GPU texture block unpacking
 
+	// GPU texture block unpacking
 	void unpack_etc2_eac(const void *pBlock_bits, color_rgba *pPixels);
 	bool unpack_bc1(const void *pBlock_bits, color_rgba *pPixels, bool set_alpha);
 	void unpack_bc4(const void *pBlock_bits, uint8_t *pPixels, uint32_t stride);
 	bool unpack_bc3(const void *pBlock_bits, color_rgba *pPixels);
 	void unpack_bc5(const void *pBlock_bits, color_rgba *pPixels);
 	bool unpack_bc7_mode6(const void *pBlock_bits, color_rgba *pPixels);
-	bool unpack_bc7_mode5(const void* pBlock_bits, color_rgba* pPixels);
+	bool unpack_bc7(const void* pBlock_bits, color_rgba* pPixels);
 	void unpack_atc(const void* pBlock_bits, color_rgba* pPixels);
 	bool unpack_fxt1(const void* p, color_rgba* pPixels);
 	bool unpack_pvrtc2(const void* p, color_rgba* pPixels);
+	void unpack_etc2_eac_r(const void *p, color_rgba* pPixels, uint32_t c);
 	void unpack_etc2_eac_rg(const void* p, color_rgba* pPixels);
 
-	// unpack_block() is only capable of unpacking texture data created by the transcoder. 
-	// For some texture formats (like BC7, or ETC2) it's not a complete implementation.
+	// unpack_block() is primarily intended to unpack texture data created by the transcoder.
+	// For some texture formats (like ETC2 RGB, PVRTC2, FXT1) it's not a complete implementation.
 	bool unpack_block(texture_format fmt, const void *pBlock, color_rgba *pPixels);
 			
 } // namespace basisu
