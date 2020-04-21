@@ -351,51 +351,55 @@ bool Vector3::operator!=(const Vector3 &p_v) const {
 }
 
 bool Vector3::operator<(const Vector3 &p_v) const {
-
 	if (Math::is_equal_approx(x, p_v.x)) {
-		if (Math::is_equal_approx(y, p_v.y))
+		if (Math::is_equal_approx(y, p_v.y)) {
+			if (Math::is_equal_approx(z, p_v.z)) {
+				return false;
+			}
 			return z < p_v.z;
-		else
-			return y < p_v.y;
-	} else {
-		return x < p_v.x;
+		}
+		return y < p_v.y;
 	}
+	return x < p_v.x;
 }
 
 bool Vector3::operator>(const Vector3 &p_v) const {
-
 	if (Math::is_equal_approx(x, p_v.x)) {
-		if (Math::is_equal_approx(y, p_v.y))
+		if (Math::is_equal_approx(y, p_v.y)) {
+			if (Math::is_equal_approx(z, p_v.z)) {
+				return false;
+			}
 			return z > p_v.z;
-		else
-			return y > p_v.y;
-	} else {
-		return x > p_v.x;
+		}
+		return y > p_v.y;
 	}
+	return x > p_v.x;
 }
 
 bool Vector3::operator<=(const Vector3 &p_v) const {
-
 	if (Math::is_equal_approx(x, p_v.x)) {
-		if (Math::is_equal_approx(y, p_v.y))
-			return z <= p_v.z;
-		else
-			return y < p_v.y;
-	} else {
-		return x < p_v.x;
+		if (Math::is_equal_approx(y, p_v.y)) {
+			if (Math::is_equal_approx(z, p_v.z)) {
+				return true;
+			}
+			return z < p_v.z;
+		}
+		return y < p_v.y;
 	}
+	return x < p_v.x;
 }
 
 bool Vector3::operator>=(const Vector3 &p_v) const {
-
 	if (Math::is_equal_approx(x, p_v.x)) {
-		if (Math::is_equal_approx(y, p_v.y))
-			return z >= p_v.z;
-		else
-			return y > p_v.y;
-	} else {
-		return x > p_v.x;
+		if (Math::is_equal_approx(y, p_v.y)) {
+			if (Math::is_equal_approx(z, p_v.z)) {
+				return true;
+			}
+			return z > p_v.z;
+		}
+		return y > p_v.y;
 	}
+	return x > p_v.x;
 }
 
 _FORCE_INLINE_ Vector3 vec3_cross(const Vector3 &p_a, const Vector3 &p_b) {
