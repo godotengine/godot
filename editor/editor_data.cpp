@@ -1066,9 +1066,9 @@ Array EditorSelection::_get_transformable_selected_nodes() {
 	return ret;
 }
 
-Array EditorSelection::get_selected_nodes() {
+TypedArray<Node> EditorSelection::get_selected_nodes() {
 
-	Array ret;
+	TypedArray<Node> ret;
 
 	for (Map<Node *, Object *>::Element *E = selection.front(); E; E = E->next()) {
 

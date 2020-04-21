@@ -170,7 +170,7 @@ void register_server_types() {
 	ClassDB::register_class<RDTextureView>();
 	ClassDB::register_class<RDAttachmentFormat>();
 	ClassDB::register_class<RDSamplerState>();
-	ClassDB::register_class<RDVertexDescription>();
+	ClassDB::register_class<RDVertexAttribute>();
 	ClassDB::register_class<RDUniform>();
 	ClassDB::register_class<RDPipelineRasterizationState>();
 	ClassDB::register_class<RDPipelineMultisampleState>();

@@ -142,10 +142,10 @@ protected:
 	}
 };
 
-class RDVertexDescription : public Reference {
-	GDCLASS(RDVertexDescription, Reference)
+class RDVertexAttribute : public Reference {
+	GDCLASS(RDVertexAttribute, Reference)
 	friend class RenderingDevice;
-	RD::VertexDescription base;
+	RD::VertexAttribute base;
 
 public:
 	RD_SETGET(uint32_t, location)
@@ -156,11 +156,11 @@ public:
 
 protected:
 	static void _bind_methods() {
-		RD_BIND(Variant::INT, RDVertexDescription, location);
-		RD_BIND(Variant::INT, RDVertexDescription, offset);
-		RD_BIND(Variant::INT, RDVertexDescription, format);
-		RD_BIND(Variant::INT, RDVertexDescription, stride);
-		RD_BIND(Variant::INT, RDVertexDescription, frequency);
+		RD_BIND(Variant::INT, RDVertexAttribute, location);
+		RD_BIND(Variant::INT, RDVertexAttribute, offset);
+		RD_BIND(Variant::INT, RDVertexAttribute, format);
+		RD_BIND(Variant::INT, RDVertexAttribute, stride);
+		RD_BIND(Variant::INT, RDVertexAttribute, frequency);
 	}
 };
 class RDShaderSource : public Reference {
@@ -412,6 +412,7 @@ class RDPipelineMultisampleState : public Reference {
 	friend class RenderingDevice;
 
 	RD::PipelineMultisampleState base;
+	TypedArray<int64_t> sample_masks;
 
 public:
 	RD_SETGET(RD::TextureSamples, sample_count)
@@ -420,24 +421,10 @@ public:
 	RD_SETGET(bool, enable_alpha_to_coverage)
 	RD_SETGET(bool, enable_alpha_to_one)
 
-	void add_sample_mask(uint32_t p_sample_mask) { base.sample_mask.push_back(p_sample_mask); }
-	void clear_sample_masks() { base.sample_mask.clear(); }
-	Vector<int64_t> get_sample_masks() const {
-		Vector<int64_t> sample_masks;
-		for (int i = 0; i < base.sample_mask.size(); i++) {
-			sample_masks.push_back(base.sample_mask[i]);
-		}
-		return sample_masks;
-	}
+	void set_sample_masks(const TypedArray<int64_t> &p_masks) { sample_masks = p_masks; }
+	TypedArray<int64_t> get_sample_masks() const { return sample_masks; }
 
 protected:
-	void _set_sample_masks(const Vector<int64_t> &p_masks) {
-		base.sample_mask.clear();
-		for (int i = 0; i < p_masks.size(); i++) {
-			int64_t mask = p_masks[i];
-			base.sample_mask.push_back(mask);
-		}
-	}
 	static void _bind_methods() {
 		RD_BIND(Variant::INT, RDPipelineMultisampleState, sample_count);
 		RD_BIND(Variant::BOOL, RDPipelineMultisampleState, enable_sample_shading);
@@ -445,11 +432,9 @@ protected:
 		RD_BIND(Variant::BOOL, RDPipelineMultisampleState, enable_alpha_to_coverage);
 		RD_BIND(Variant::BOOL, RDPipelineMultisampleState, enable_alpha_to_one);
 
-		ClassDB::bind_method(D_METHOD("add_sample_mask", "mask"), &RDPipelineMultisampleState::add_sample_mask);
-		ClassDB::bind_method(D_METHOD("clear_sample_masks"), &RDPipelineMultisampleState::clear_sample_masks);
-		ClassDB::bind_method(D_METHOD("_set_sample_masks", "sample_masks"), &RDPipelineMultisampleState::_set_sample_masks);
+		ClassDB::bind_method(D_METHOD("set_sample_masks", "masks"), &RDPipelineMultisampleState::set_sample_masks);
 		ClassDB::bind_method(D_METHOD("get_sample_masks"), &RDPipelineMultisampleState::get_sample_masks);
-		ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "_sample_masks", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_sample_masks", "get_sample_masks");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "sample_masks", PROPERTY_HINT_ARRAY_TYPE, "int"), "set_sample_masks", "get_sample_masks");
 	}
 };
 
@@ -514,6 +499,7 @@ protected:
 
 class RDPipelineColorBlendStateAttachment : public Reference {
 	GDCLASS(RDPipelineColorBlendStateAttachment, Reference)
+	friend class RenderingDevice;
 	RD::PipelineColorBlendState::Attachment base;
 
 public:
@@ -529,10 +515,6 @@ public:
 	RD_SETGET(bool, write_b)
 	RD_SETGET(bool, write_a)
 
-	void set_as_disabled() {
-		base = RD::PipelineColorBlendState::Attachment();
-	}
-
 	void set_as_mix() {
 
 		base = RD::PipelineColorBlendState::Attachment();
@@ -545,6 +527,9 @@ public:
 
 protected:
 	static void _bind_methods() {
+
+		ClassDB::bind_method(D_METHOD("set_as_mix"), &RDPipelineColorBlendStateAttachment::set_as_mix);
+
 		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, enable_blend);
 		RD_BIND(Variant::INT, RDPipelineColorBlendStateAttachment, src_color_blend_factor);
 		RD_BIND(Variant::INT, RDPipelineColorBlendStateAttachment, dst_color_blend_factor);
@@ -564,49 +549,19 @@ class RDPipelineColorBlendState : public Reference {
 	friend class RenderingDevice;
 	RD::PipelineColorBlendState base;
 
-	Vector<Ref<RDPipelineColorBlendStateAttachment>> attachments;
+	TypedArray<RDPipelineColorBlendStateAttachment> attachments;
 
 public:
 	RD_SETGET(bool, enable_logic_op)
 	RD_SETGET(RD::LogicOperation, logic_op)
 	RD_SETGET(Color, blend_constant)
 
-	void add_attachment(const Ref<RDPipelineColorBlendStateAttachment> &p_attachment) {
-		attachments.push_back(p_attachment);
+	void set_attachments(const TypedArray<RDPipelineColorBlendStateAttachment> &p_attachments) {
+		attachments.push_back(p_attachments);
 	}
 
-	void add_no_blend_attachment() {
-		Ref<RDPipelineColorBlendStateAttachment> attachment;
-		attachment.instance();
-		attachment->set_as_disabled();
-		add_attachment(attachment);
-	}
-
-	void add_blend_mix_attachment() {
-		Ref<RDPipelineColorBlendStateAttachment> attachment;
-		attachment.instance();
-		attachment->set_as_mix();
-		add_attachment(attachment);
-	}
-
-	void clear_attachments() {
-		attachments.clear();
-	}
-
-	Array get_attachments() const {
-		Array ret;
-		for (int i = 0; i < attachments.size(); i++) {
-			ret.push_back(attachments[i]);
-		}
-		return ret;
-	}
-	void _set_attachments(const Array &p_attachments) {
-		attachments.clear();
-		for (int i = 0; i < p_attachments.size(); i++) {
-			Ref<RDPipelineColorBlendStateAttachment> attachment = p_attachments[i];
-			ERR_FAIL_COND(!attachment.is_valid());
-			attachments.push_back(attachment);
-		}
+	TypedArray<RDPipelineColorBlendStateAttachment> get_attachments() const {
+		return attachments;
 	}
 
 protected:
@@ -615,13 +570,9 @@ protected:
 		RD_BIND(Variant::INT, RDPipelineColorBlendState, logic_op);
 		RD_BIND(Variant::COLOR, RDPipelineColorBlendState, blend_constant);
 
-		ClassDB::bind_method(D_METHOD("add_attachment", "atachment"), &RDPipelineColorBlendState::add_attachment);
-		ClassDB::bind_method(D_METHOD("add_no_blend_attachment"), &RDPipelineColorBlendState::add_no_blend_attachment);
-		ClassDB::bind_method(D_METHOD("add_blend_mix_attachment"), &RDPipelineColorBlendState::add_blend_mix_attachment);
-		ClassDB::bind_method(D_METHOD("clear_attachments"), &RDPipelineColorBlendState::clear_attachments);
-		ClassDB::bind_method(D_METHOD("_set_attachments", "attachments"), &RDPipelineColorBlendState::_set_attachments);
+		ClassDB::bind_method(D_METHOD("set_attachments", "atachments"), &RDPipelineColorBlendState::set_attachments);
 		ClassDB::bind_method(D_METHOD("get_attachments"), &RDPipelineColorBlendState::get_attachments);
-		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_attachments", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "_set_attachments", "get_attachments");
+		ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "attachments", PROPERTY_HINT_ARRAY_TYPE, "RDPipelineColorBlendStateAttachment"), "set_attachments", "get_attachments");
 	}
 };
 

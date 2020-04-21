@@ -110,7 +110,7 @@ bool PhysicsBody3D::get_collision_layer_bit(int p_bit) const {
 	return get_collision_layer() & (1 << p_bit);
 }
 
-Array PhysicsBody3D::get_collision_exceptions() {
+TypedArray<PhysicsBody3D> PhysicsBody3D::get_collision_exceptions() {
 	List<RID> exceptions;
 	PhysicsServer3D::get_singleton()->body_get_collision_exceptions(get_rid(), &exceptions);
 	Array ret;

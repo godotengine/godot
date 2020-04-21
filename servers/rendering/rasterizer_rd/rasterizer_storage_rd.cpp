@@ -2341,14 +2341,14 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 
 	Mesh::Surface::Version &v = s->versions[version];
 
-	Vector<RD::VertexDescription> attributes;
+	Vector<RD::VertexAttribute> attributes;
 	Vector<RID> buffers;
 
 	uint32_t stride = 0;
 
 	for (int i = 0; i < RS::ARRAY_WEIGHTS; i++) {
 
-		RD::VertexDescription vd;
+		RD::VertexAttribute vd;
 		RID buffer;
 		vd.location = i;
 

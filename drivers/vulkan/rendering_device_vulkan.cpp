@@ -3327,7 +3327,7 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 }
 
 // Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
-RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(const Vector<VertexDescription> &p_vertex_formats) {
+RenderingDevice::VertexFormatID RenderingDeviceVulkan::vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -3402,7 +3402,7 @@ RID RenderingDeviceVulkan::vertex_array_create(uint32_t p_vertex_count, VertexFo
 
 		//validate with buffer
 		{
-			const VertexDescription &atf = vd.vertex_formats[i];
+			const VertexAttribute &atf = vd.vertex_formats[i];
 
 			uint32_t element_size = get_format_vertex_size(atf.format);
 			ERR_FAIL_COND_V(element_size == 0, RID()); //should never happens since this was prevalidated

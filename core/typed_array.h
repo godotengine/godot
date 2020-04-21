@@ -17,6 +17,9 @@ public:
 	_FORCE_INLINE_ void operator=(const Array &p_array) {
 		_assign(p_array);
 	}
+	_FORCE_INLINE_ TypedArray(const Variant &p_variant) :
+			Array(Array(p_variant), Variant::OBJECT, T::get_class_static(), Variant()) {
+	}
 	_FORCE_INLINE_ TypedArray(const Array &p_array) :
 			Array(p_array, Variant::OBJECT, T::get_class_static(), Variant()) {
 	}
@@ -27,19 +30,22 @@ public:
 
 //specialization for the rest of variant types
 
-#define MAKE_TYPED_ARRAY(m_type, m_variant_type)                          \
-	template <>                                                           \
-	class TypedArray<m_type> : public Array {                             \
-	public:                                                               \
-		_FORCE_INLINE_ void operator=(const Array &p_array) {             \
-			_assign(p_array);                                             \
-		}                                                                 \
-		_FORCE_INLINE_ TypedArray(const Array &p_array) :                 \
-				Array(p_array, m_variant_type, StringName(), Variant()) { \
-		}                                                                 \
-		_FORCE_INLINE_ TypedArray() {                                     \
-			set_typed(m_variant_type, StringName(), Variant());           \
-		}                                                                 \
+#define MAKE_TYPED_ARRAY(m_type, m_variant_type)                                   \
+	template <>                                                                    \
+	class TypedArray<m_type> : public Array {                                      \
+	public:                                                                        \
+		_FORCE_INLINE_ void operator=(const Array &p_array) {                      \
+			_assign(p_array);                                                      \
+		}                                                                          \
+		_FORCE_INLINE_ TypedArray(const Variant &p_variant) :                      \
+				Array(Array(p_variant), m_variant_type, StringName(), Variant()) { \
+		}                                                                          \
+		_FORCE_INLINE_ TypedArray(const Array &p_array) :                          \
+				Array(p_array, m_variant_type, StringName(), Variant()) {          \
+		}                                                                          \
+		_FORCE_INLINE_ TypedArray() {                                              \
+			set_typed(m_variant_type, StringName(), Variant());                    \
+		}                                                                          \
 	};
 
 MAKE_TYPED_ARRAY(bool, Variant::BOOL)

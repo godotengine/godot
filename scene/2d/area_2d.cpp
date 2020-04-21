@@ -435,10 +435,10 @@ bool Area2D::is_monitorable() const {
 	return monitorable;
 }
 
-Array Area2D::get_overlapping_bodies() const {
+TypedArray<Node2D> Area2D::get_overlapping_bodies() const {
 
 	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
-	Array ret;
+	TypedArray<Node2D> ret;
 	ret.resize(body_map.size());
 	int idx = 0;
 	for (const Map<ObjectID, BodyState>::Element *E = body_map.front(); E; E = E->next()) {
@@ -453,10 +453,10 @@ Array Area2D::get_overlapping_bodies() const {
 	return ret;
 }
 
-Array Area2D::get_overlapping_areas() const {
+TypedArray<Area2D> Area2D::get_overlapping_areas() const {
 
 	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
-	Array ret;
+	TypedArray<Area2D> ret;
 	ret.resize(area_map.size());
 	int idx = 0;
 	for (const Map<ObjectID, AreaState>::Element *E = area_map.front(); E; E = E->next()) {

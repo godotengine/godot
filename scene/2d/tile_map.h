@@ -329,7 +329,7 @@ public:
 	bool is_centered_textures_enabled() const;
 
 	TypedArray<Vector2i> get_used_cells() const;
-	Array get_used_cells_by_id(int p_id) const;
+	TypedArray<Vector2i> get_used_cells_by_id(int p_id) const;
 	Rect2 get_used_rect(); // Not const because of cache
 
 	void set_occluder_light_mask(int p_mask);

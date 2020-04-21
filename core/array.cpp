@@ -121,12 +121,37 @@ void Array::_assign(const Array &p_array) {
 	} else if (_p->typed.type == Variant::NIL) { //from typed to untyped, must copy, but this is cheap anyway
 		_p->array = p_array._p->array;
 	} else if (p_array._p->typed.type == Variant::NIL) { //from untyped to typed, must try to check if they are all valid
-		for (int i = 0; i < p_array._p->array.size(); i++) {
-			if (!_p->typed.validate(p_array._p->array[i], "assign")) {
-				return;
+		if (_p->typed.type == Variant::OBJECT) {
+			//for objects, it needs full validation, either can be converted or fail
+			for (int i = 0; i < p_array._p->array.size(); i++) {
+				if (!_p->typed.validate(p_array._p->array[i], "assign")) {
+					return;
+				}
 			}
+			_p->array = p_array._p->array; //then just copy, which is cheap anyway
+
+		} else {
+			//for non objects, we need to check if there is a valid conversion, which needs to happen one by one, so this is the worst case.
+			Vector<Variant> new_array;
+			new_array.resize(p_array._p->array.size());
+			for (int i = 0; i < p_array._p->array.size(); i++) {
+				Variant src_val = p_array._p->array[i];
+				if (src_val.get_type() == _p->typed.type) {
+					new_array.write[i] = src_val;
+				} else if (Variant::can_convert_strict(src_val.get_type(), _p->typed.type)) {
+					Variant *ptr = &src_val;
+					Callable::CallError ce;
+					new_array.write[i] = Variant::construct(_p->typed.type, (const Variant **)&ptr, 1, ce, true);
+					if (ce.error != Callable::CallError::CALL_OK) {
+						ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+					}
+				} else {
+					ERR_FAIL_MSG("Unable to convert array index " + itos(i) + " from '" + Variant::get_type_name(src_val.get_type()) + "' to '" + Variant::get_type_name(_p->typed.type) + "'.");
+				}
+			}
+
+			_p->array = new_array;
 		}
-		_p->array = p_array._p->array; //then just copy, which is cheap anyway
 	} else if (_p->typed.can_reference(p_array._p->typed)) { //same type or compatible
 		_ref(p_array);
 	} else {

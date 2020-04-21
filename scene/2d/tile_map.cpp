@@ -1705,13 +1705,13 @@ TypedArray<Vector2i> TileMap::get_used_cells() const {
 	return a;
 }
 
-Array TileMap::get_used_cells_by_id(int p_id) const {
+TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_id) const {
 
-	Array a;
+	TypedArray<Vector2i> a;
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
 
 		if (E->value().id == p_id) {
-			Vector2 p(E->key().x, E->key().y);
+			Vector2i p(E->key().x, E->key().y);
 			a.push_back(p);
 		}
 	}
