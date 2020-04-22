@@ -2370,6 +2370,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 			if (vertex_lit != prev_vertex_lit) {
 				state.scene_shader.set_conditional(SceneShaderGLES2::USE_VERTEX_LIGHTING, vertex_lit);
 				prev_vertex_lit = vertex_lit;
+				rebind = true;
 			}
 
 			if (!unshaded && !accum_pass && e->refprobe_0_index != RenderList::MAX_REFLECTION_PROBES) {
@@ -2459,8 +2460,8 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON, false);
 					state.scene_shader.set_conditional(SceneShaderGLES2::USE_SKELETON_SOFTWARE, false);
 				}
-				rebind = true;
 			}
+			rebind = true;
 		}
 
 		if (e->owner != prev_owner || e->geometry != prev_geometry || skeleton != prev_skeleton) {
