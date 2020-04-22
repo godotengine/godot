@@ -168,13 +168,13 @@ namespace GodotTools.Export
 
             // Add dependency assemblies
 
-            var dependencies = new Godot.Collections.Dictionary<string, string>();
+            var assemblies = new Godot.Collections.Dictionary<string, string>();
 
             string projectDllName = GodotSharpEditor.ProjectAssemblyName;
             string projectDllSrcDir = Path.Combine(GodotSharpDirs.ResTempAssembliesBaseDir, buildConfig);
             string projectDllSrcPath = Path.Combine(projectDllSrcDir, $"{projectDllName}.dll");
 
-            dependencies[projectDllName] = projectDllSrcPath;
+            assemblies[projectDllName] = projectDllSrcPath;
 
             if (platform == OS.Platforms.Android)
             {
@@ -184,15 +184,15 @@ namespace GodotTools.Export
                 if (!File.Exists(monoAndroidAssemblyPath))
                     throw new FileNotFoundException("Assembly not found: 'Mono.Android'", monoAndroidAssemblyPath);
 
-                dependencies["Mono.Android"] = monoAndroidAssemblyPath;
+                assemblies["Mono.Android"] = monoAndroidAssemblyPath;
             }
 
             string bclDir = DeterminePlatformBclDir(platform);
 
-            var initialDependencies = dependencies.Duplicate();
-            internal_GetExportedAssemblyDependencies(initialDependencies, buildConfig, bclDir, dependencies);
+            var initialAssemblies = assemblies.Duplicate();
+            internal_GetExportedAssemblyDependencies(initialAssemblies, buildConfig, bclDir, assemblies);
 
-            AddI18NAssemblies(dependencies, bclDir);
+            AddI18NAssemblies(assemblies, bclDir);
 
             string outputDataDir = null;
 
@@ -211,20 +211,32 @@ namespace GodotTools.Export
                     Directory.CreateDirectory(outputDataGameAssembliesDir);
             }
 
-            foreach (var dependency in dependencies)
+            foreach (var assembly in assemblies)
             {
-                string dependSrcPath = dependency.Value;
+                void AddToAssembliesDir(string fileSrcPath)
+                {
+                    if (assembliesInsidePck)
+                    {
+                        string fileDstPath = Path.Combine(resAssembliesDir, fileSrcPath.GetFile());
+                        AddFile(fileSrcPath, fileDstPath);
+                    }
+                    else
+                    {
+                        Debug.Assert(outputDataDir != null);
+                        string fileDstPath = Path.Combine(outputDataDir, "Assemblies", fileSrcPath.GetFile());
+                        File.Copy(fileSrcPath, fileDstPath);
+                    }
+                }
 
-                if (assembliesInsidePck)
-                {
-                    string dependDstPath = Path.Combine(resAssembliesDir, dependSrcPath.GetFile());
-                    AddFile(dependSrcPath, dependDstPath);
-                }
-                else
-                {
-                    string dependDstPath = Path.Combine(outputDataDir, "Assemblies", dependSrcPath.GetFile());
-                    File.Copy(dependSrcPath, dependDstPath);
-                }
+                string assemblySrcPath = assembly.Value;
+
+                string assemblyPathWithoutExtension = Path.ChangeExtension(assemblySrcPath, null);
+                string pdbSrcPath = assemblyPathWithoutExtension + ".pdb";
+
+                AddToAssembliesDir(assemblySrcPath);
+
+                if (File.Exists(pdbSrcPath))
+                    AddToAssembliesDir(pdbSrcPath);
             }
 
             // AOT compilation
@@ -254,7 +266,7 @@ namespace GodotTools.Export
                     ToolchainPath = aotToolchainPath
                 };
 
-                AotBuilder.CompileAssemblies(this, aotOpts, features, platform, isDebug, bclDir, outputDir, outputDataDir, dependencies);
+                AotBuilder.CompileAssemblies(this, aotOpts, features, platform, isDebug, bclDir, outputDir, outputDataDir, assemblies);
             }
         }
 
@@ -366,7 +378,7 @@ namespace GodotTools.Export
                     if (PlatformRequiresCustomBcl(platform))
                         throw new FileNotFoundException($"Missing BCL (Base Class Library) for platform: {platform}");
 
-                    platformBclDir = typeof(object).Assembly.Location; // Use the one we're running on
+                    platformBclDir = typeof(object).Assembly.Location.GetBaseDir(); // Use the one we're running on
                 }
             }
 
@@ -425,7 +437,7 @@ namespace GodotTools.Export
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_GetExportedAssemblyDependencies(Godot.Collections.Dictionary<string, string> initialDependencies,
-            string buildConfig, string customBclDir, Godot.Collections.Dictionary<string, string> dependencies);
+        private static extern void internal_GetExportedAssemblyDependencies(Godot.Collections.Dictionary<string, string> initialAssemblies,
+            string buildConfig, string customBclDir, Godot.Collections.Dictionary<string, string> dependencyAssemblies);
     }
 }
