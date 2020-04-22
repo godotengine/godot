@@ -125,6 +125,7 @@ String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
+MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_class);
 Array mono_array_to_Array(MonoArray *p_array);
 
 // PoolIntArray
