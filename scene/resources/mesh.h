@@ -238,6 +238,7 @@ public:
 	void regen_normalmaps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
+	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 	virtual void reload_from_file();
 
