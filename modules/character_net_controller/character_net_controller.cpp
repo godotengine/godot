@@ -343,9 +343,13 @@ void CharacterNetController::_rpc_send_player_state(uint64_t p_snapshot_id, Vari
 }
 
 void CharacterNetController::process(real_t p_delta) {
-	emit_signal("control_process_start");
-	controller->physics_process(p_delta);
-	emit_signal("control_process_done");
+	if (controller) {
+		// This is called by the `sceneRewinder` that it's not aware about the
+		// controller state; so check that the controller is not null.
+		emit_signal("control_process_start");
+		controller->physics_process(p_delta);
+		emit_signal("control_process_done");
+	}
 }
 
 void CharacterNetController::_notification(int p_what) {
@@ -829,6 +833,8 @@ void PlayerController::physics_process(real_t p_delta) {
 	if (accept_new_inputs) {
 		node->get_inputs_buffer_mut().begin_write();
 		node->call("collect_inputs", p_delta);
+	} else {
+		WARN_PRINT("It's not possible to accept new inputs. Is this lagging?");
 	}
 
 	node->get_inputs_buffer_mut().dry();

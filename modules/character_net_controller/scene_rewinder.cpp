@@ -304,7 +304,7 @@ void SceneRewinder::unregister_variable(Node *p_node, StringName p_variable) {
 		if (controller) {
 			ERR_FAIL_COND_MSG(controller->get_scene_rewinder() != this, "This controller is associated with this scene rewinder.");
 			controller->set_scene_rewinder(nullptr);
-			controllers.erase(controller);
+			controllers.erase(controller->get_instance_id());
 
 			if (main_controller == controller) {
 				main_controller = nullptr;
@@ -497,9 +497,9 @@ NodeData *SceneRewinder::register_node(Node *p_node) {
 				ERR_FAIL_COND_V_MSG(controller->get_scene_rewinder() != this, nullptr, "This controller is associated with a different scene rewinder.");
 			} else {
 				// Unreachable.
-				CRASH_COND(controllers.find(controller) != -1);
+				CRASH_COND(controllers.find(controller->get_instance_id()) != -1);
 				controller->set_scene_rewinder(this);
-				controllers.push_back(controller);
+				controllers.push_back(controller->get_instance_id());
 				is_controller = true;
 
 				if (controller->is_player_controller()) {
@@ -620,7 +620,31 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 	return v_1 == v_2;
 }
 
+void SceneRewinder::cache_controllers() {
+	cached_controllers.clear();
+	const ObjectID *ids = controllers.ptr();
+
+	std::vector<ObjectID> null_objcts;
+
+	for (int c = 0; c < controllers.size(); c += 1) {
+		CharacterNetController *controller = static_cast<CharacterNetController *>(
+				ObjectDB::get_instance(ids[c]));
+
+		if (controller) {
+			cached_controllers.push_back(controller);
+		} else {
+			null_objcts.push_back(ids[c]);
+		}
+	}
+
+	for (size_t n = 0; n < null_objcts.size(); n += 1) {
+		controllers.erase(null_objcts[n]);
+	}
+}
+
 void SceneRewinder::process() {
+
+	cache_controllers();
 
 	// Due to some lag we may want to speed up the input_packet
 	// generation, for this reason here I'm performing a sub tick.
@@ -642,9 +666,8 @@ void SceneRewinder::process() {
 
 		if (is_pretended == false) {
 			// This is a legit iteration, so step all controllers.
-			CharacterNetController *const *controllers_raw = controllers.ptr();
-			for (int c = 0; c < controllers.size(); c += 1) {
-				controllers_raw[c]->process(delta);
+			for (size_t c = 0; c < cached_controllers.size(); c += 1) {
+				cached_controllers[c]->process(delta);
 			}
 		} else {
 			// Step only the main controller because we don't want that the dolls
@@ -936,7 +959,6 @@ void ServerRewinder::receive_snapshot(Variant _p_snapshot) {
 void ServerRewinder::adjust_player_tick_rate(real_t p_delta) {
 
 	PeerData *peers = peers_data.ptrw();
-	CharacterNetController *const *controllers = scene_rewinder->controllers.ptr();
 
 	for (int p = 0; p < peers_data.size(); p += 1) {
 
@@ -944,9 +966,9 @@ void ServerRewinder::adjust_player_tick_rate(real_t p_delta) {
 		CharacterNetController *controller = nullptr;
 
 		// TODO exist a safe way to not iterate each time?
-		for (int c = 0; c < scene_rewinder->controllers.size(); c += 1) {
-			if (peer->peer == controllers[c]->get_network_master()) {
-				controller = controllers[c];
+		for (size_t c = 0; c < scene_rewinder->cached_controllers.size(); c += 1) {
+			if (peer->peer == scene_rewinder->cached_controllers[c]->get_network_master()) {
+				controller = scene_rewinder->cached_controllers[c];
 				break;
 			}
 		}
@@ -1044,11 +1066,10 @@ void ClientRewinder::store_snapshot() {
 	snapshot.player_controller_input_id = scene_rewinder->main_controller->get_stored_input_id(-1);
 
 	// Store the controllers input ID
-	const CharacterNetController *const *controllers_ptr = scene_rewinder->controllers.ptr();
-	for (int i = 0; i < scene_rewinder->controllers.size(); i += 1) {
+	for (size_t i = 0; i < scene_rewinder->cached_controllers.size(); i += 1) {
 		snapshot.controllers_input_id.set(
-				controllers_ptr[i]->get_instance_id(),
-				controllers_ptr[i]->get_stored_input_id(-1));
+				scene_rewinder->cached_controllers[i]->get_instance_id(),
+				scene_rewinder->cached_controllers[i]->get_stored_input_id(-1));
 	}
 
 	// Store the current node data
@@ -1111,11 +1132,9 @@ void ClientRewinder::process_recovery(real_t p_delta) {
 	} else {
 		// The things done till now are fine. So just drop the controller
 		// inputs till now.
-		const int c_size = scene_rewinder->controllers.size();
-		CharacterNetController *const *controllers = scene_rewinder->controllers.ptr();
-		for (int c = 0; c < c_size; c += 1) {
-			const uint64_t checked_id = server_snapshot.controllers_input_id[controllers[c]->get_instance_id()];
-			controllers[c]->forget_input_till(checked_id);
+		for (size_t c = 0; c < scene_rewinder->cached_controllers.size(); c += 1) {
+			const uint64_t checked_id = server_snapshot.controllers_input_id[scene_rewinder->cached_controllers[c]->get_instance_id()];
+			scene_rewinder->cached_controllers[c]->forget_input_till(checked_id);
 		}
 	}
 
@@ -1222,32 +1241,32 @@ bool ClientRewinder::compare_and_recovery(
 void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot, real_t p_delta) {
 	// TODO integrate isle rewinding optimization.
 
-	const int controller_size = scene_rewinder->controllers.size();
-	CharacterNetController *const *controllers = scene_rewinder->controllers.ptr();
+	const size_t controller_size = scene_rewinder->cached_controllers.size();
 
 	// Initialize the rewinders.
 	ControllerRewinder *rewinders = memnew_arr(ControllerRewinder, controller_size);
 	ControllerRewinder *main_controller_rewinder = nullptr;
 
-	for (int i = 0; i < controller_size; i += 1) {
+	for (size_t i = 0; i < controller_size; i += 1) {
 
 		int frames_to_skip = 0; // Hard reset by default
 		uint64_t rewind_input_id = UINT64_MAX; // Rewind disabled by default.
 
 		const uint64_t *server_input_id = p_server_snapshot
 												  .controllers_input_id
-												  .getptr(controllers[i]->get_instance_id());
+												  .getptr(scene_rewinder->cached_controllers[i]->get_instance_id());
 
 		if (server_input_id != nullptr) {
 			const uint64_t siid = *server_input_id;
 			rewind_input_id = siid;
 
 			// Check if we can avoid timeline jumps for dolls.
-			if (scene_rewinder->main_controller != controllers[i]) {
+			if (scene_rewinder->main_controller != scene_rewinder->cached_controllers[i]) {
 
 				const uint64_t *client_input_id = p_client_snapshot
 														  .controllers_input_id
-														  .getptr(controllers[i]->get_instance_id());
+														  .getptr(
+																  scene_rewinder->cached_controllers[i]->get_instance_id());
 
 				// TODO verify this code
 				if (client_input_id != nullptr) {
@@ -1281,7 +1300,10 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 			}
 		}
 
-		rewinders[i].init(controllers[i], frames_to_skip, rewind_input_id);
+		rewinders[i].init(
+				scene_rewinder->cached_controllers[i],
+				frames_to_skip,
+				rewind_input_id);
 	}
 
 	// Unreachable, it's not suppposed to arrive here if the main_rewinder is
@@ -1296,7 +1318,9 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 	}
 #endif
 
-	for (int i = 0; main_controller_rewinder->has_finished() == false; i += 1) {
+	// - 1 because there is still the recovering snapshot.
+	const int frames_to_rewind = snapshots.size() - 1;
+	for (int i = 0; i < frames_to_rewind; i += 1) {
 		const int snapshot_index = i + 1;
 
 #ifdef DEBUG_ENABLED
@@ -1307,7 +1331,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 #endif
 
 		// Process the controllers
-		for (int c = 0; c < controller_size; c += 1) {
+		for (size_t c = 0; c < controller_size; c += 1) {
 			rewinders[c].advance(i, p_delta);
 		}
 
@@ -1324,7 +1348,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 	}
 
 #ifdef DEBUG_ENABLED
-	for (int c = 0; c < controller_size; c += 1) {
+	for (size_t c = 0; c < controller_size; c += 1) {
 		CRASH_COND(rewinders[c].has_finished() == false);
 	}
 #endif

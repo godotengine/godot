@@ -33,6 +33,7 @@
 #include "core/hash_map.h"
 #include "net_utilities.h"
 #include <deque>
+#include <vector>
 
 #ifndef SCENE_REWINDER_H
 #define SCENE_REWINDER_H
@@ -116,7 +117,9 @@ class SceneRewinder : public Node {
 	bool generate_id;
 	HashMap<ObjectID, NodeData> data;
 	CharacterNetController *main_controller;
-	Vector<CharacterNetController *> controllers;
+
+	Vector<ObjectID> controllers;
+	std::vector<CharacterNetController *> cached_controllers;
 
 	real_t time_bank;
 	real_t tick_additional_speed;
@@ -177,6 +180,8 @@ public:
 
 private:
 	void process();
+
+	void cache_controllers();
 
 	real_t get_pretended_delta() const;
 
