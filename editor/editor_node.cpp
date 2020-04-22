@@ -2835,6 +2835,12 @@ void EditorNode::_update_file_menu_closed() {
 	pop->set_item_disabled(pop->get_item_index(FILE_OPEN_PREV), false);
 }
 
+void EditorNode::_inspector_property_changed(const String &p_name) {
+	if (p_name == "script") {
+		node_dock->update_lists();
+	}
+}
+
 Control *EditorNode::get_viewport() {
 
 	return viewport;
@@ -6430,7 +6436,10 @@ EditorNode::EditorNode() {
 	// Instantiate and place editor docks
 
 	scene_tree_dock = memnew(SceneTreeDock(this, scene_root, editor_selection, editor_data));
+
 	inspector_dock = memnew(InspectorDock(this, editor_data));
+	get_inspector()->connect("property_changed", callable_mp(this, &EditorNode::_inspector_property_changed));
+
 	import_dock = memnew(ImportDock);
 	node_dock = memnew(NodeDock);
 

@@ -473,6 +473,8 @@ private:
 	void _show_messages();
 	void _vp_resized();
 
+	void _inspector_property_changed(const String &p_path = "");
+
 	int _save_external_resources();
 
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
