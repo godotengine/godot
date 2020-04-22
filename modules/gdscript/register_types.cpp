@@ -35,11 +35,13 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "gdscript.h"
+#include "gdscript_cache.h"
 #include "gdscript_tokenizer.h"
 
 GDScriptLanguage *script_language_gd = NULL;
 Ref<ResourceFormatLoaderGDScript> resource_loader_gd;
 Ref<ResourceFormatSaverGDScript> resource_saver_gd;
+GDScriptCache *gds_cache = NULL;
 
 #ifdef TOOLS_ENABLED
 
@@ -164,6 +166,8 @@ void register_gdscript_types() {
 	resource_saver_gd.instance();
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
 
+	gds_cache = memnew(GDScriptCache);
+
 #ifdef TOOLS_ENABLED
 	ScriptEditor::register_create_syntax_highlighter_function(GDScriptSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
@@ -171,6 +175,10 @@ void register_gdscript_types() {
 }
 
 void unregister_gdscript_types() {
+
+	if (gds_cache) {
+		memdelete(gds_cache);
+	}
 
 	ScriptServer::unregister_language(script_language_gd);
 
