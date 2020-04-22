@@ -153,7 +153,12 @@ EndProject";
             var result = regex.Replace(input,m => dict[m.Value]);
 
             if (result != input)
+            {
+                // Save a copy of the solution before replacing it
+                FileUtils.SaveBackupCopy(slnPath);
+
                 File.WriteAllText(slnPath, result);
+            }
         }
     }
 }
