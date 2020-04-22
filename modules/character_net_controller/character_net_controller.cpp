@@ -829,9 +829,6 @@ void PlayerController::physics_process(real_t p_delta) {
 	if (accept_new_inputs) {
 		node->get_inputs_buffer_mut().begin_write();
 		node->call("collect_inputs", p_delta);
-	} else {
-		// TODO remove this
-		print_line("aa");
 	}
 
 	node->get_inputs_buffer_mut().dry();

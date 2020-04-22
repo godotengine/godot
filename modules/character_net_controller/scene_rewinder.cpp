@@ -484,7 +484,6 @@ void SceneRewinder::_rpc_send_tick_additional_speed(int p_speed) {
 
 	tick_additional_speed = (static_cast<real_t>(p_speed) / 100.0) * MAX_ADDITIONAL_TICK_SPEED;
 	tick_additional_speed = CLAMP(tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
-	print_line(itos(tick_additional_speed));
 }
 
 NodeData *SceneRewinder::register_node(Node *p_node) {
@@ -638,9 +637,6 @@ void SceneRewinder::process() {
 	time_bank -= static_cast<real_t>(sub_ticks) * pretended_delta;
 
 	bool is_pretended = false;
-
-	// TODO fix the additional time before removing this.
-	sub_ticks = 1;
 
 	while (sub_ticks > 0) {
 
@@ -976,14 +972,14 @@ void ServerRewinder::adjust_player_tick_rate(real_t p_delta) {
 							static_cast<real_t>(scene_rewinder->get_missing_snapshots_max_tolerance()),
 					-2.0,
 					2.0);
-			peer->optimal_snapshots_size += acceleration_level * static_cast<real_t>(scene_rewinder->get_optimal_size_acceleration()) * p_delta;
+			peer->optimal_snapshots_size += acceleration_level * scene_rewinder->get_optimal_size_acceleration() * p_delta;
 			peer->optimal_snapshots_size = CLAMP(peer->optimal_snapshots_size, MIN_SNAPSHOTS_SIZE, scene_rewinder->get_server_snapshot_storage_size());
 		}
 
 		{
 			// The client speed is determined using an acceleration so to have much
 			// more control over it, and avoid nervous changes.
-			const real_t acceleration_level = CLAMP((peer->optimal_snapshots_size - inputs_count) / scene_rewinder->get_server_snapshot_storage_size(), -1.0, 1.0);
+			const real_t acceleration_level = CLAMP((peer->optimal_snapshots_size - static_cast<real_t>(inputs_count)) / scene_rewinder->get_server_snapshot_storage_size(), -1.0, 1.0);
 			const real_t acc = acceleration_level * scene_rewinder->get_tick_acceleration() * p_delta;
 			const real_t damp = peer->client_tick_additional_speed * -0.9;
 
@@ -1198,14 +1194,6 @@ bool ClientRewinder::compare_and_recovery(
 				} else {
 					// Variable found compare.
 					different = !scene_rewinder->rewinder_variant_evaluation(s_vars[s_var_index].value, c_vars[c_var_index].value);
-					// TODO a test
-					if (different) {
-						print_line("Different");
-					} else {
-						print_line("Equals");
-					}
-					print_line(s_vars[s_var_index].value);
-					print_line(c_vars[c_var_index].value);
 				}
 
 				if (different) {
@@ -1263,19 +1251,29 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 
 				// TODO verify this code
 				if (client_input_id != nullptr) {
+					// The doll on the client is likely behind the server,
+					// but it's not bring in line with it to avoid time jumps
+					// each rewinding.
+
+					// Usually ciid is smaller than siid; means that the doll
+					// has not yet processed the input that on server is already
+					// processed.
 					const uint64_t ciid = *client_input_id;
 
-					frames_to_skip = siid - ciid;
+					const int relative = siid - ciid;
 
 					// TODO please make this customizable
-					// Process the tolerance.
 					const int tolerance = 10;
-					if (frames_to_skip < 0 || frames_to_skip > tolerance) {
-						// Hard reset
+					if (relative < 0 || relative > tolerance) {
+						// - Relative is negative when the client has processed
+						//   the inputs before the server
+						// - Relative is more than the tolerance when the client
+						//   is too behind the server.
+						// In both cases, hard reset.
 						frames_to_skip = 0;
 					} else {
-						// Fluid timeline navigation allowed.
-						// Nothing to do.
+						// Relative is inside the allowed range, fluid rewinding.
+						frames_to_skip = relative;
 					}
 				}
 			} else {
