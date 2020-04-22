@@ -638,12 +638,12 @@ uint16_t GDScript::get_rpc_method_id(const StringName &p_method) const {
 }
 
 StringName GDScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
-	ERR_FAIL_COND_V(p_rpc_method_id >= rpc_functions.size(), StringName());
+	if (p_rpc_method_id >= rpc_functions.size()) return StringName();
 	return rpc_functions[p_rpc_method_id].name;
 }
 
 MultiplayerAPI::RPCMode GDScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
-	ERR_FAIL_COND_V(p_rpc_method_id >= rpc_functions.size(), MultiplayerAPI::RPC_MODE_DISABLED);
+	if (p_rpc_method_id >= rpc_functions.size()) return MultiplayerAPI::RPC_MODE_DISABLED;
 	return rpc_functions[p_rpc_method_id].mode;
 }
 
@@ -665,12 +665,12 @@ uint16_t GDScript::get_rset_property_id(const StringName &p_variable) const {
 }
 
 StringName GDScript::get_rset_property(const uint16_t p_rset_member_id) const {
-	ERR_FAIL_COND_V(p_rset_member_id >= rpc_variables.size(), StringName());
+	if (p_rset_member_id >= rpc_variables.size()) return StringName();
 	return rpc_variables[p_rset_member_id].name;
 }
 
 MultiplayerAPI::RPCMode GDScript::get_rset_mode_by_id(const uint16_t p_rset_member_id) const {
-	ERR_FAIL_COND_V(p_rset_member_id >= rpc_variables.size(), MultiplayerAPI::RPC_MODE_DISABLED);
+	if (p_rset_member_id >= rpc_variables.size()) return MultiplayerAPI::RPC_MODE_DISABLED;
 	return rpc_variables[p_rset_member_id].mode;
 }
 
