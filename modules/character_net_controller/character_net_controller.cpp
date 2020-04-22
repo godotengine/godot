@@ -109,7 +109,8 @@ CharacterNetController::CharacterNetController() :
 		state_notify_interval(1.0),
 		controller(nullptr),
 		scene_rewinder(nullptr),
-		packet_missing(false) {
+		packet_missing(false),
+		has_player_new_input(false) {
 
 	rpc_config("_rpc_server_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -276,12 +277,6 @@ bool CharacterNetController::is_nonet_controller() const {
 	return get_tree()->get_network_peer().is_null();
 }
 
-int CharacterNetController::server_get_inputs_count() const {
-	if (controller)
-		return is_server_controller() ? static_cast<ServerController *>(controller)->get_inputs_count() : 0;
-	return 0;
-}
-
 void CharacterNetController::set_packet_missing(bool p_missing) {
 	packet_missing = p_missing;
 }
@@ -351,6 +346,20 @@ void CharacterNetController::process(real_t p_delta) {
 		controller->physics_process(p_delta);
 		emit_signal("control_process_done");
 	}
+}
+
+int CharacterNetController::server_get_inputs_count() const {
+	if (controller)
+		return is_server_controller() ? static_cast<ServerController *>(controller)->get_inputs_count() : 0;
+	return 0;
+}
+
+void CharacterNetController::player_set_has_new_input(bool p_has) {
+	has_player_new_input = p_has;
+}
+
+bool CharacterNetController::player_has_new_input() const {
+	return has_player_new_input;
 }
 
 void CharacterNetController::_notification(int p_what) {
@@ -829,7 +838,7 @@ void PlayerController::physics_process(real_t p_delta) {
 	// internet connection we can't keep accumulates inputs up to infinite
 	// otherwise the server will difer too much from the client and we
 	// introduce virtual lag.
-	const bool accept_new_inputs = frames_snapshot.size() < static_cast<size_t>(node->get_player_snapshot_storage_size());
+	const bool accept_new_inputs = can_accept_new_inputs();
 
 	if (accept_new_inputs) {
 		node->get_inputs_buffer_mut().begin_write();
@@ -852,6 +861,8 @@ void PlayerController::physics_process(real_t p_delta) {
 
 		send_frame_input_buffer_to_server();
 	}
+
+	node->player_set_has_new_input(accept_new_inputs);
 }
 
 void PlayerController::receive_snapshots(Vector<uint8_t> p_data) {
@@ -1094,6 +1105,10 @@ void PlayerController::process_recovery() {
 	recovered_snapshot_id = recover_snapshot_id;
 
 	node->call("process_recovery", recover_snapshot_id, recover_state_data, fs.custom_data);
+}
+
+bool PlayerController::can_accept_new_inputs() const {
+	return frames_snapshot.size() < static_cast<size_t>(node->get_player_snapshot_storage_size());
 }
 
 DollController::DollController(CharacterNetController *p_node) :

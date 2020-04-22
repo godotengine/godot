@@ -93,6 +93,7 @@ private:
 	Vector<int> disabled_doll_peers;
 
 	bool packet_missing;
+	bool has_player_new_input;
 
 public:
 	static void _bind_methods();
@@ -188,8 +189,6 @@ public:
 	bool is_doll_controller() const;
 	bool is_nonet_controller() const;
 
-	int server_get_inputs_count() const;
-
 public:
 	void set_packet_missing(bool p_missing);
 	bool get_packet_missing() const;
@@ -211,6 +210,11 @@ public:
 	void _rpc_send_player_state(uint64_t p_snapshot_id, Variant p_data);
 
 	void process(real_t p_delta);
+
+	int server_get_inputs_count() const;
+
+	void player_set_has_new_input(bool p_has);
+	bool player_has_new_input() const;
 
 private:
 	virtual void _notification(int p_what);
@@ -345,6 +349,8 @@ struct PlayerController : public Controller {
 	void send_frame_input_buffer_to_server();
 
 	void process_recovery();
+
+	bool can_accept_new_inputs() const;
 };
 
 /// The doll controller is kind of special controller, it's using a

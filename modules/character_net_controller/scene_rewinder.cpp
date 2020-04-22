@@ -1059,11 +1059,18 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 void ClientRewinder::store_snapshot() {
 	ERR_FAIL_COND_MSG(scene_rewinder->main_controller == nullptr, "Snapshot creation fail, Make sure to track a NetController.");
 
-	// Store snapshots.
+	if (scene_rewinder->main_controller->player_has_new_input() == false) {
+		// Never store if the player is not accepting new inputs.
+		return;
+	}
+
+	// Store snapshots, only if the `main_controller` accept new inputs.
 	Snapshot snapshot;
 
-	// Store the player controller input ID.
 	snapshot.player_controller_input_id = scene_rewinder->main_controller->get_stored_input_id(-1);
+#ifdef DEBUG_ENABLED
+	CRASH_COND(snapshot.player_controller_input_id == UINT64_MAX);
+#endif
 
 	// Store the controllers input ID
 	for (size_t i = 0; i < scene_rewinder->cached_controllers.size(); i += 1) {
@@ -1090,9 +1097,6 @@ void ClientRewinder::update_snapshot(
 	// Update the snapshot ID
 	for (int r = 0; r < p_rewinder_count; r += 1) {
 		const uint64_t id = p_rewinders[r].get_processed_input_id(p_i);
-		// TODO make sure this never happens
-		if (id == UINT64_MAX) continue;
-		CRASH_COND(id == UINT64_MAX);
 		snapshots[p_snapshot_index].controllers_input_id[p_rewinders[r].get_controller()->get_instance_id()] = id;
 	}
 
@@ -1114,6 +1118,12 @@ void ClientRewinder::process_recovery(real_t p_delta) {
 		// Nothing to do.
 		return;
 	}
+
+#ifdef DEBUG_ENABLED
+	// Can't happen, because no snapshots are taken when the client don't accept
+	// inputs.
+	CRASH_COND(snapshots.front().player_controller_input_id == UINT64_MAX);
+#endif
 
 	// The next snapshot is the one we are searching for.
 	const Snapshot &client_snapshot = snapshots.front();
@@ -1261,6 +1271,11 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 			const uint64_t siid = *server_input_id;
 			rewind_input_id = siid;
 
+#ifdef DEBUG_ENABLED
+			// The parser make sure this never happens
+			CRASH_COND(siid == UINT64_MAX);
+#endif
+
 			// Check if we can avoid timeline jumps for dolls.
 			if (scene_rewinder->main_controller != scene_rewinder->cached_controllers[i]) {
 
@@ -1280,20 +1295,25 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 					// processed.
 					const uint64_t ciid = *client_input_id;
 
-					const int relative = siid - ciid;
+					if (ciid != UINT64_MAX) {
+						const int relative = siid - ciid;
 
-					// TODO please make this customizable
-					const int tolerance = 10;
-					if (relative < 0 || relative > tolerance) {
-						// - Relative is negative when the client has processed
-						//   the inputs before the server
-						// - Relative is more than the tolerance when the client
-						//   is too behind the server.
-						// In both cases, hard reset.
-						frames_to_skip = 0;
+						// TODO please make this customizable
+						const int tolerance = 10;
+						if (relative < 0 || relative > tolerance) {
+							// - Relative is negative when the client has processed
+							//   the inputs before the server
+							// - Relative is more than the tolerance when the client
+							//   is too behind the server.
+							// In both cases, hard reset.
+							frames_to_skip = 0;
+						} else {
+							// Relative is inside the allowed range, fluid rewinding.
+							frames_to_skip = relative;
+						}
 					} else {
-						// Relative is inside the allowed range, fluid rewinding.
-						frames_to_skip = relative;
+						// Hard reset, since we miss some frames and doesn't
+						// worth try to avoid time jumps anyway.
 					}
 				}
 			} else {
@@ -1399,9 +1419,10 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	ERR_FAIL_COND(snapshot_id <= server_snapshot_id);
 
 	server_snapshot_id = snapshot_id;
+
 	// We espect that the player_controller is updated by this new snapshot,
-	// at the end we will check if it's 0.
-	server_snapshot.player_controller_input_id = 0;
+	// so make sure it's done so.
+	const uint64_t old_controller_input_id = server_snapshot.player_controller_input_id;
 
 	// Start from 1 to skip the snapshot ID.
 	for (int snap_data_index = 1; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
@@ -1505,6 +1526,8 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				ERR_FAIL_COND(snap_data_index + 1 >= raw_snapshot.size());
 				snap_data_index += 1;
 				const uint64_t input_id = raw_snapshot_ptr[snap_data_index];
+				ERR_FAIL_COND_MSG(input_id == UINT64_MAX, "The server is always able to send input_id, so this snapshot seems corrupted.");
+
 				server_snapshot.controllers_input_id[node->get_instance_id()] = input_id;
 
 				if (node == scene_rewinder->main_controller) {
@@ -1617,5 +1640,5 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	}
 
 	// Just make sure that the local player input got set as expected.
-	ERR_FAIL_COND_MSG(server_snapshot.player_controller_input_id == 0, "The player controller ID was not part of the received snapshot. It will not be considered.");
+	ERR_FAIL_COND_MSG(server_snapshot.player_controller_input_id == old_controller_input_id, "The player controller ID was not part of the received snapshot. It will not be considered.");
 }
