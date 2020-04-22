@@ -320,14 +320,14 @@ void CharacterNetController::_rpc_server_send_frames_snapshot(Vector<uint8_t> p_
 }
 
 void CharacterNetController::_rpc_doll_send_frames_snapshot(Vector<uint8_t> p_data) {
-	ERR_FAIL_COND(get_tree()->is_network_server() == true);
-	ERR_FAIL_COND(is_network_master() == true);
+	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
+	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 
 	controller->receive_snapshots(p_data);
 }
 void CharacterNetController::_rpc_doll_notify_connection_status(bool p_open) {
-	ERR_FAIL_COND(get_tree()->is_network_server() == true);
-	ERR_FAIL_COND(is_network_master() == true);
+	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
+	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 
 	if (p_open) {
 		static_cast<DollController *>(controller)->open_flow();
@@ -337,7 +337,8 @@ void CharacterNetController::_rpc_doll_notify_connection_status(bool p_open) {
 }
 
 void CharacterNetController::_rpc_send_player_state(uint64_t p_snapshot_id, Variant p_data) {
-	ERR_FAIL_COND(get_tree()->is_network_server() == true);
+	// TODO this function must disappear
+	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 
 	controller->player_state_check(p_snapshot_id, p_data);
 }

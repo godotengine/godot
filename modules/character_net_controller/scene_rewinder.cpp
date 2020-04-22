@@ -1091,6 +1091,7 @@ void ClientRewinder::update_snapshot(
 	for (int r = 0; r < p_rewinder_count; r += 1) {
 		const uint64_t id = p_rewinders[r].get_processed_input_id(p_i);
 		// TODO make sure this never happens
+		if (id == UINT64_MAX) continue;
 		CRASH_COND(id == UINT64_MAX);
 		snapshots[p_snapshot_index].controllers_input_id[p_rewinders[r].get_controller()->get_instance_id()] = id;
 	}
