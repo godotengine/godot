@@ -89,6 +89,8 @@ public:
 	void set_stack_size(int p_size);
 	int get_stack_size() const;
 
+	void _update_callable_nodes();
+
 	void set_return_type_enabled(bool p_returns);
 	bool is_return_type_enabled() const;
 

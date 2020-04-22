@@ -2828,34 +2828,6 @@ void VisualScriptEditor::_remove_node(int p_id) {
 void VisualScriptEditor::_node_ports_changed(const String &p_func, int p_id) {
 
 	_update_graph(p_id);
-
-	//Updates the callable nodes of the selected function node
-	Ref<VisualScriptNode> node = script->get_node(p_func, p_id);
-
-	if (Object::cast_to<VisualScriptFunction>(node.ptr())) {
-
-		Ref<VisualScriptFunction> vsf = node;
-		List<StringName> funcs;
-		script->get_function_list(&funcs);
-
-		for (List<StringName>::Element *F = funcs.front(); F; F = F->next()) {
-
-			List<int> ids;
-			script->get_node_list(F->get(), &ids);
-
-			for (List<int>::Element *E = ids.front(); E; E = E->next()) {
-				Ref<VisualScriptNode> vsn = script->get_node(F->get(), E->get());
-				if (Object::cast_to<VisualScriptFunctionCall>(vsn.ptr())) {
-					Ref<VisualScriptFunctionCall> vsfc = vsn;
-					if (vsfc->get_function() == p_func) {
-						vsfc->_update_method_cache();
-						vsfc->_change_notify();
-						vsfc->emit_signal("ports_changed");
-					}
-				}
-			}
-		}
-	}
 }
 
 bool VisualScriptEditor::node_has_sequence_connections(const StringName &p_func, int p_id) {
