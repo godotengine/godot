@@ -67,10 +67,15 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 			b = p_c.b;
 			a = p_c.a;
 		}
+		bool operator==(const BatchColor &p_c) const {
+			return (r == p_c.r) && (g == p_c.g) && (b == p_c.b) && (a == p_c.a);
+		}
+		bool operator!=(const BatchColor &p_c) const { return (*this == p_c) == false; }
 		bool equals(const Color &p_c) const {
 			return (r == p_c.r) && (g == p_c.g) && (b == p_c.b) && (a == p_c.a);
 		}
 		const float *get_data() const { return &r; }
+		String to_string() const;
 	};
 
 	struct BatchVertex {
@@ -272,8 +277,11 @@ private:
 	bool _light_scissor_begin(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect) const;
 	void _calculate_scissor_threshold_area();
 
-	// debug
+	// no need to compile these in in release, they are unneeded outside the editor and only add to executable size
+#ifdef DEBUG_ENABLED
 	void diagnose_batches(Item::Command *const *p_commands);
+	String get_command_type_string(const Item::Command &p_command) const;
+#endif
 
 public:
 	void initialize();
@@ -299,31 +307,14 @@ _FORCE_INLINE_ void RasterizerCanvasGLES2::_prefill_default_batch(FillState &r_f
 #endif
 			// we do have a pending extra transform command to flush
 			// either the extra transform is in the prior command, or not, in which case we need 2 batches
-			//			if (r_fill_state.transform_extra_command_number_p1 == p_command_num) {
-			// this should be most common case
 			r_fill_state.curr_batch->num_commands += 2;
-			//			} else {
-			//				// mad ordering .. does this even happen?
-			//				int extra_command = r_fill_state.transform_extra_command_number_p1 - 1; // plus 1 based
-
-			//				// send the extra to the GPU in a batch
-			//				r_fill_state.curr_batch = _batch_request_new();
-			//				r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
-			//				r_fill_state.curr_batch->first_command = extra_command;
-			//				r_fill_state.curr_batch->num_commands = 1;
-
-			//				// start default batch
-			//				r_fill_state.curr_batch = _batch_request_new();
-			//				r_fill_state.curr_batch->type = Batch::BT_DEFAULT;
-			//				r_fill_state.curr_batch->first_command = p_command_num;
-			//				r_fill_state.curr_batch->num_commands = 1;
-			//			}
 
 			r_fill_state.transform_extra_command_number_p1 = 0; // mark as sent
 			r_fill_state.extra_matrix_sent = true;
 
 			// the original mode should always be hardware transform ..
 			// test this assumption
+			//CRASH_COND(r_fill_state.orig_transform_mode != TM_NONE);
 			r_fill_state.transform_mode = r_fill_state.orig_transform_mode;
 
 			// do we need to restore anything else?
