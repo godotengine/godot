@@ -240,8 +240,8 @@ int CharacterNetController::forget_input_till(uint64_t p_input_id) {
 	return controller->forget_input_till(p_input_id);
 }
 
-uint64_t CharacterNetController::get_next_instant_id(int p_i) const {
-	return controller->get_next_instant_id(p_i);
+uint64_t CharacterNetController::get_stored_input_id(int p_i) const {
+	return controller->get_stored_input_id(p_i);
 }
 
 bool CharacterNetController::replay_process_next_instant(int p_i, real_t p_delta) {
@@ -609,8 +609,8 @@ int ServerController::forget_input_till(uint64_t p_input_id) {
 	return 0;
 }
 
-uint64_t ServerController::get_next_instant_id(int p_i) const {
-	ERR_PRINT("The method `get_next_instant_id` must not be called on server. Be sure why it happened.");
+uint64_t ServerController::get_stored_input_id(int p_i) const {
+	ERR_PRINT("The method `get_input_id` must not be called on server. Be sure why it happened.");
 	return UINT64_MAX;
 }
 
@@ -829,6 +829,9 @@ void PlayerController::physics_process(real_t p_delta) {
 	if (accept_new_inputs) {
 		node->get_inputs_buffer_mut().begin_write();
 		node->call("collect_inputs", p_delta);
+	} else {
+		// TODO remove this
+		print_line("aa");
 	}
 
 	node->get_inputs_buffer_mut().dry();
@@ -843,9 +846,6 @@ void PlayerController::physics_process(real_t p_delta) {
 		store_input_buffer(input_buffers_counter);
 		input_buffers_counter += 1;
 
-		// This must happens here because in case of bad internet connection
-		// the client accelerates the execution producing much more packets
-		// per second.
 		send_frame_input_buffer_to_server();
 	}
 }
@@ -884,21 +884,31 @@ int PlayerController::forget_input_till(uint64_t p_input_id) {
 	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= p_input_id) {
 		frames_snapshot.pop_front();
 	}
+	// Unreachable, because the next input have always the next `p_input_id` on client.
+	CRASH_COND(frames_snapshot.empty() == false && (p_input_id + 1) != frames_snapshot.front().id);
 	return frames_snapshot.size();
 }
 
-uint64_t PlayerController::get_next_instant_id(int p_i) const {
-	const size_t i = p_i;
-	if (size_t(i) <= frames_snapshot.size()) {
-		return frames_snapshot[i].id;
+uint64_t PlayerController::get_stored_input_id(int p_i) const {
+	if (p_i < 0) {
+		if (frames_snapshot.empty() == false) {
+			return frames_snapshot.back().id;
+		} else {
+			return UINT64_MAX;
+		}
 	} else {
-		return UINT64_MAX;
+		const size_t i = p_i;
+		if (i < frames_snapshot.size()) {
+			return frames_snapshot[i].id;
+		} else {
+			return UINT64_MAX;
+		}
 	}
 }
 
 bool PlayerController::replay_process_next_instant(int p_i, real_t p_delta) {
 	const size_t i = p_i;
-	if (i <= frames_snapshot.size()) {
+	if (i < frames_snapshot.size()) {
 
 		// Set snapshot inputs.
 		node->set_inputs_buffer(frames_snapshot[i].inputs_buffer);
@@ -1139,8 +1149,8 @@ int DollController::forget_input_till(uint64_t p_input_id) {
 	return player_controller.forget_input_till(p_input_id);
 }
 
-uint64_t DollController::get_next_instant_id(int p_i) const {
-	return player_controller.get_next_instant_id(p_i);
+uint64_t DollController::get_stored_input_id(int p_i) const {
+	return player_controller.get_stored_input_id(p_i);
 }
 
 bool DollController::replay_process_next_instant(int p_i, real_t p_delta) {
@@ -1236,7 +1246,7 @@ int NoNetController::forget_input_till(uint64_t p_input_id) {
 	return 0;
 }
 
-uint64_t NoNetController::get_next_instant_id(int p_i) const {
+uint64_t NoNetController::get_stored_input_id(int p_i) const {
 	// Nothing to do.
 	return UINT64_MAX;
 }

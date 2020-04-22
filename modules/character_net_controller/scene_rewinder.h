@@ -220,13 +220,12 @@ struct Snapshot {
 	HashMap<ObjectID, NodeData> data;
 };
 
-class ControllerRewinder {
+struct ControllerRewinder {
 	CharacterNetController *controller;
 	uint64_t recovered_snapshot_input_id;
 	int frames_to_skip;
 	bool finished;
 
-public:
 	void init(CharacterNetController *p_controller, int p_frames, uint64_t p_recovered_snapshot_input_id);
 	void advance(int p_i, real_t p_delta);
 	bool has_finished() const;
@@ -315,7 +314,7 @@ public:
 
 private:
 	void store_snapshot();
-	void update_snapshot(int p_snapshot_index, ControllerRewinder *p_rewinders, int p_rewinder_count);
+	void update_snapshot(int p_i, int p_snapshot_index, ControllerRewinder *p_rewinders, int p_rewinder_count);
 
 	void process_recovery(real_t p_delta);
 	bool compare_and_recovery(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot);
