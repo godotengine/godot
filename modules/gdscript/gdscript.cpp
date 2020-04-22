@@ -37,6 +37,7 @@
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
+#include "gdscript_cache.h"
 #include "gdscript_compiler.h"
 
 ///////////////////////////
@@ -2225,33 +2226,7 @@ Ref<GDScript> GDScriptLanguage::get_orphan_subclass(const String &p_qualified_na
 
 RES ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
 
-	if (r_error)
-		*r_error = ERR_FILE_CANT_OPEN;
-
-	GDScript *script = memnew(GDScript);
-
-	Ref<GDScript> scriptres(script);
-
-	if (p_path.ends_with(".gde") || p_path.ends_with(".gdc")) {
-
-		script->set_script_path(p_original_path); // script needs this.
-		script->set_path(p_original_path);
-		Error err = script->load_byte_code(p_path);
-		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load byte code from file '" + p_path + "'.");
-
-	} else {
-		Error err = script->load_source_code(p_path);
-		ERR_FAIL_COND_V_MSG(err != OK, RES(), "Cannot load source code from file '" + p_path + "'.");
-
-		script->set_script_path(p_original_path); // script needs this.
-		script->set_path(p_original_path);
-
-		script->reload();
-	}
-	if (r_error)
-		*r_error = OK;
-
-	return scriptres;
+	return GDScriptCache::get_full_script(p_path, r_error, p_original_path, true);
 }
 
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
