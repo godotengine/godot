@@ -63,6 +63,7 @@ RasterizerCanvasGLES2::BatchData::BatchData() {
 	diagnose_frame = false;
 	next_diagnose_tick = 10000;
 	diagnose_frame_number = 9999999999; // some high number
+	join_across_z_indices = true;
 
 	settings_use_batching_original_choice = false;
 	settings_flash_batching = false;
@@ -731,7 +732,7 @@ void RasterizerCanvasGLES2::diagnose_batches(Item::Command *const *p_commands) {
 
 	for (int batch_num = 0; batch_num < num_batches; batch_num++) {
 		const Batch &batch = bdata.batches[batch_num];
-		bdata.frame_string += "\t\tbatch ";
+		bdata.frame_string += "\t\t\tbatch ";
 
 		switch (batch.type) {
 			case Batch::BT_RECT: {
@@ -1726,6 +1727,12 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z) {
 	// batch_break must be preserved over z_indices,
 	// so is stored in _render_item_state.join_batch_break
 
+	// if z ranged lights are present, sometimes we have to disable joining over z_indices.
+	// we do this here
+	if (!bdata.join_across_z_indices) {
+		_render_item_state.join_batch_break = true;
+	}
+
 	while (p_item_list) {
 
 		Item *ci = p_item_list;
@@ -1752,6 +1759,7 @@ void RasterizerCanvasGLES2::join_items(Item *p_item_list, int p_z) {
 			_render_item_state.joined_item->first_item_ref = bdata.item_refs.size();
 			_render_item_state.joined_item->num_item_refs = 1;
 			_render_item_state.joined_item->bounding_rect = ci->global_rect_cache;
+			_render_item_state.joined_item->z_index = p_z;
 
 			// add the reference
 			BItemRef *r = bdata.item_refs.request_with_grow();
@@ -1828,6 +1836,20 @@ void RasterizerCanvasGLES2::canvas_render_items_begin(const Color &p_modulate, L
 	// batch break must be preserved over the different z indices,
 	// to prevent joining to an item on a previous index if not allowed
 	_render_item_state.join_batch_break = false;
+
+	// whether to join across z indices depends on whether there are z ranged lights.
+	// joined z_index items can be wrongly classified with z ranged lights.
+	bdata.join_across_z_indices = true;
+
+	while (p_light) {
+		if ((p_light->z_min != VS::CANVAS_ITEM_Z_MIN) || (p_light->z_max != VS::CANVAS_ITEM_Z_MAX)) {
+			// prevent joining across z indices. This would have caused visual regressions
+			bdata.join_across_z_indices = false;
+			break;
+		}
+
+		p_light = p_light->next_ptr;
+	}
 }
 
 void RasterizerCanvasGLES2::canvas_render_items_end() {
@@ -2461,9 +2483,14 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 	storage->info.render._2d_item_count++;
 
+#ifdef DEBUG_ENABLED
 	if (bdata.diagnose_frame) {
 		bdata.frame_string += "\tjoined_item " + itos(p_bij.num_item_refs) + " refs\n";
+		if (p_bij.z_index != 0) {
+			bdata.frame_string += "\t\t(z " + itos(p_bij.z_index) + ")\n";
+		}
 	}
+#endif
 
 	// all the joined items will share the same state with the first item
 	Item *ci = bdata.item_refs[p_bij.first_item_ref].item;
@@ -2714,7 +2741,10 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 
 			// use the bounding rect of the joined items, NOT only the bounding rect of the first item.
 			// note this is a cost of batching, the light culling will be less effective
-			if (ci->light_mask & light->item_mask && r_ris.item_group_z >= light->z_min && r_ris.item_group_z <= light->z_max && p_bij.bounding_rect.intersects_transformed(light->xform_cache, light->rect_cache)) {
+
+			// note that the r_ris.item_group_z will be out of date because we are using deferred rendering till canvas_render_items_end()
+			// so we have to test z against the stored value in the joined item
+			if (ci->light_mask & light->item_mask && p_bij.z_index >= light->z_min && p_bij.z_index <= light->z_max && p_bij.bounding_rect.intersects_transformed(light->xform_cache, light->rect_cache)) {
 
 				//intersects this light
 

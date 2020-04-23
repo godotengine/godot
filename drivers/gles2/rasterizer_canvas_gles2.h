@@ -122,6 +122,10 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 		Rect2 bounding_rect;
 
+		// note the z_index  may only be correct for the first of the joined item references
+		// this has implications for light culling with z ranged lights.
+		int z_index;
+
 		// we are always splitting items with lots of commands,
 		// and items with unhandled primitives (default)
 		bool use_hardware_transform() const { return num_item_refs == 1; }
@@ -179,6 +183,10 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		String frame_string;
 		uint32_t next_diagnose_tick;
 		uint64_t diagnose_frame_number;
+
+		// whether to join items across z_indices - this can interfere with z ranged lights,
+		// so has to be disabled in some circumstances
+		bool join_across_z_indices;
 
 		// global settings
 		bool settings_use_batching; // the current use_batching (affected by flash)
