@@ -183,26 +183,91 @@ private:
 		TYPE_MAX,
 	};
 
+	enum SDLJoyButton {
+		SDL_INVALID_BUTTON = -1,
+		SDL_BUTTON_A,
+		SDL_BUTTON_B,
+		SDL_BUTTON_X,
+		SDL_BUTTON_Y,
+		SDL_BUTTON_BACK,
+		SDL_BUTTON_GUIDE,
+		SDL_BUTTON_START,
+		SDL_BUTTON_LEFTSTICK,
+		SDL_BUTTON_RIGHTSTICK,
+		SDL_BUTTON_LEFTSHOULDER,
+		SDL_BUTTON_RIGHTSHOULDER,
+		SDL_BUTTON_DPAD_UP,
+		SDL_BUTTON_DPAD_DOWN,
+		SDL_BUTTON_DPAD_LEFT,
+		SDL_BUTTON_DPAD_RIGHT,
+		SDL_BUTTON_MAX
+	};
+
+	enum SDLJoyAxis {
+		SDL_INVALID_AXIS = -1,
+		SDL_AXIS_LEFTX,
+		SDL_AXIS_LEFTY,
+		SDL_AXIS_RIGHTX,
+		SDL_AXIS_RIGHTY,
+		SDL_AXIS_TRIGGERLEFT,
+		SDL_AXIS_TRIGGERRIGHT,
+		SDL_AXIS_MAX,
+	};
+
+	enum JoyAxisRange {
+		NEGATIVE_HALF_AXIS = -1,
+		FULL_AXIS = 0,
+		POSITIVE_HALF_AXIS = 1
+	};
+
 	struct JoyEvent {
 		int type;
 		int index;
 		int value;
 	};
 
-	struct JoyDeviceMapping {
+	struct SDLExtendedJoyBind {
+		JoyType inputType;
+		union {
+			int button;
 
-		String uid;
-		String name;
-		Map<int, JoyEvent> buttons;
-		Map<int, JoyEvent> axis;
-		JoyEvent hat[HAT_MAX];
+			struct {
+				int axis;
+				JoyAxisRange range;
+			} axis;
+
+			struct {
+				int hat;
+				HatMask hat_mask;
+			} hat;
+
+		} input;
+
+		JoyType outputType;
+		union {
+			SDLJoyButton button;
+
+			struct {
+				SDLJoyAxis axis;
+				JoyAxisRange range;
+			} axis;
+
+		} output;
 	};
 
-	JoyEvent hat_map_default[HAT_MAX];
+	struct JoyDeviceMapping {
+		String uid;
+		String name;
+		Vector<SDLExtendedJoyBind> bindings;
+	};
 
 	Vector<JoyDeviceMapping> map_db;
 
-	JoyEvent _find_to_event(String p_to);
+	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis);
+	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[HAT_MAX]);
+	SDLJoyButton _get_output_button(String output);
+	SDLJoyAxis _get_output_axis(String output);
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
 	float _handle_deadzone(int p_device, int p_axis, float p_value);
