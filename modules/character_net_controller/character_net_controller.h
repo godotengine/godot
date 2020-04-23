@@ -68,7 +68,6 @@ private:
 	///
 	/// With 60 iteration per seconds a good value is `300`, but is adviced to
 	/// perform some tests until you find a better suitable value for your needs.
-	// TODO move this in the SceneRewinder
 	int player_input_storage_size;
 
 	/// Amount of time an inputs is re-sent to each node.
@@ -202,9 +201,6 @@ public:
 	void _rpc_doll_send_frames_snapshot(Vector<uint8_t> p_data);
 	void _rpc_doll_notify_connection_status(bool p_open);
 
-	/* On all peers rpc functions. */
-	void _rpc_send_player_state(uint64_t p_snapshot_id, Variant p_data);
-
 	void process(real_t p_delta);
 
 	int server_get_inputs_count() const;
@@ -262,7 +258,6 @@ struct FrameSnapshotSkinny {
 struct FrameSnapshot {
 	uint64_t id;
 	BitArray inputs_buffer;
-	Variant custom_data;
 	uint64_t similarity;
 };
 
@@ -283,7 +278,6 @@ struct Controller {
 	virtual void player_state_check(uint64_t p_id, Variant p_data) = 0;
 	virtual void replay_snapshots() = 0;
 	virtual int forget_input_till(uint64_t p_input_id) = 0;
-	// TODO do we need this?
 	virtual uint64_t get_stored_input_id(int p_i) const = 0;
 	virtual bool replay_process_next_instant(int p_i, real_t p_delta) = 0;
 	virtual uint64_t get_current_snapshot_id() const = 0;
@@ -310,10 +304,6 @@ struct ServerController : public Controller {
 
 	/// Fetch the next inputs, returns true if the input is new.
 	bool fetch_next_input();
-
-	/// This function is executed on server, and call a client function that
-	/// checks if the player state is consistent between client and server.
-	void check_peers_player_state(real_t p_delta, bool is_new_input);
 };
 
 struct PlayerController : public Controller {
@@ -341,8 +331,6 @@ struct PlayerController : public Controller {
 	/// Sends an unreliable packet to the server, containing a packed array of
 	/// frame snapshots.
 	void send_frame_input_buffer_to_server();
-
-	void process_recovery();
 
 	bool can_accept_new_inputs() const;
 };

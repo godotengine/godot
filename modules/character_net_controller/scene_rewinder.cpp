@@ -41,6 +41,8 @@
 // 2%
 #define TICK_SPEED_CHANGE_NOTIF_THRESHOLD 4
 
+// TODO add back the DOLL disabling
+
 VarData::VarData() :
 		id(0),
 		enabled(false) {}

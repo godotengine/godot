@@ -77,7 +77,6 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_frames_snapshot"), &CharacterNetController::_rpc_server_send_frames_snapshot);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_frames_snapshot"), &CharacterNetController::_rpc_doll_send_frames_snapshot);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &CharacterNetController::_rpc_doll_notify_connection_status);
-	ClassDB::bind_method(D_METHOD("_rpc_send_player_state"), &CharacterNetController::_rpc_send_player_state);
 
 	ClassDB::bind_method(D_METHOD("is_server_controller"), &CharacterNetController::is_server_controller);
 	ClassDB::bind_method(D_METHOD("is_player_controller"), &CharacterNetController::is_player_controller);
@@ -88,15 +87,11 @@ void CharacterNetController::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference")));
 	BIND_VMETHOD(MethodInfo(Variant::INT, "count_inputs_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference")));
-	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "create_snapshot"));
-	BIND_VMETHOD(MethodInfo("process_recovery", PropertyInfo(Variant::INT, "snapshot_id"), PropertyInfo(Variant::ARRAY, "server_snapshot"), PropertyInfo(Variant::ARRAY, "client_snapshot")))
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "state_notify_interval", PROPERTY_HINT_RANGE, "0.0001,10.0,0.0001"), "set_state_notify_interval", "get_state_notify_interval");
 
-	ADD_SIGNAL(MethodInfo("control_process_start"));
-	ADD_SIGNAL(MethodInfo("control_process_done"));
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_opened"));
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_closed"));
 }
@@ -113,7 +108,6 @@ CharacterNetController::CharacterNetController() :
 	rpc_config("_rpc_server_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_send_player_state", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
 void CharacterNetController::set_player_input_storage_size(int p_size) {
@@ -323,20 +317,11 @@ void CharacterNetController::_rpc_doll_notify_connection_status(bool p_open) {
 	}
 }
 
-void CharacterNetController::_rpc_send_player_state(uint64_t p_snapshot_id, Variant p_data) {
-	// TODO this function must disappear
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
-
-	controller->player_state_check(p_snapshot_id, p_data);
-}
-
 void CharacterNetController::process(real_t p_delta) {
 	if (controller) {
 		// This is called by the `sceneRewinder` that it's not aware about the
 		// controller state; so check that the controller is not null.
-		emit_signal("control_process_start");
 		controller->physics_process(p_delta);
-		emit_signal("control_process_done");
 	}
 }
 
@@ -380,8 +365,6 @@ void CharacterNetController::_notification(int p_what) {
 			ERR_FAIL_COND_MSG(has_method("controller_process") == false, "In your script you must inherit the virtual method `controller_process` to correctly use the `PlayerNetController`.");
 			ERR_FAIL_COND_MSG(has_method("are_inputs_different") == false, "In your script you must inherit the virtual method `are_inputs_different` to correctly use the `PlayerNetController`.");
 			ERR_FAIL_COND_MSG(has_method("count_inputs_size") == false, "In your script you must inherit the virtual method `count_inputs_size` to correctly use the `PlayerNetController`.");
-			ERR_FAIL_COND_MSG(has_method("create_snapshot") == false, "In your script you must inherit the virtual method `create_snapshot` to correctly use the `PlayerNetController`.");
-			ERR_FAIL_COND_MSG(has_method("process_recovery") == false, "In your script you must inherit the virtual method `process_recovery` to correctly use the `PlayerNetController`.");
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
@@ -503,7 +486,7 @@ ServerController::ServerController(CharacterNetController *p_node) :
 }
 
 void ServerController::physics_process(real_t p_delta) {
-	const bool is_new_input = fetch_next_input();
+	fetch_next_input();
 
 	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
 		// Skip this until the first input arrive.
@@ -512,7 +495,6 @@ void ServerController::physics_process(real_t p_delta) {
 
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta);
-	check_peers_player_state(p_delta, is_new_input);
 }
 
 bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSnapshotSkinny &p_snap_b) {
@@ -660,7 +642,7 @@ bool ServerController::fetch_next_input() {
 			is_new_input = false;
 			is_packet_missing = true;
 			ghost_input_count += 1;
-			//print_line("Input buffer is void, i'm using the previous one!"); // TODO Replace with?
+			WARN_PRINT("Input buffer is void, i'm using the previous one!");
 
 		} else {
 			// The input buffer is not empty, search the new input.
@@ -753,10 +735,10 @@ bool ServerController::fetch_next_input() {
 					node->set_inputs_buffer(pi.inputs_buffer);
 					current_input_buffer_id = pi.id;
 					ghost_input_count = 0;
-					// print_line("Packet recovered"); // TODO how?
+					WARN_PRINT("Packet recovered");
 				} else {
 					is_new_input = false;
-					// print_line("Packet still missing"); // TODO how?
+					WARN_PRINT("Packet still missing");
 				}
 			}
 		}
@@ -765,50 +747,6 @@ bool ServerController::fetch_next_input() {
 	node->set_packet_missing(is_packet_missing);
 
 	return is_new_input;
-}
-
-void ServerController::check_peers_player_state(real_t p_delta, bool is_new_input) {
-	// TODO remove this function.
-	return;
-
-	if (current_input_buffer_id == UINT64_MAX) {
-		// Skip this until the first input arrive.
-		return;
-	}
-
-	peers_state_checker_time += p_delta;
-	if (peers_state_checker_time < node->get_state_notify_interval() || is_new_input == false) {
-		// Not yet the time to check.
-		return;
-	}
-
-	peers_state_checker_time = 0.0;
-
-	Variant data = node->call("create_snapshot");
-
-	// Notify the active dolls.
-	const Vector<int> &peers = node->get_active_doll_peers();
-	for (int i = 0; i < peers.size(); i += 1) {
-
-		// This is an active peer, Let's send the data.
-		const int peer_id = peers[i];
-
-		// TODO Try to encode things in a more compact form, or improve variant compression even more
-		// Notify the dolls.
-		node->rpc_id(
-				peer_id,
-				"_rpc_send_player_state",
-				current_input_buffer_id,
-				data);
-	}
-
-	// TODO Try to encode things in a more compact form, or improve variant compression even more
-	// Notify the player.
-	node->rpc_id(
-			node->get_network_master(),
-			"_rpc_send_player_state",
-			current_input_buffer_id,
-			data);
 }
 
 PlayerController::PlayerController(CharacterNetController *p_node) :
@@ -876,7 +814,6 @@ void PlayerController::replay_snapshots() {
 		node->call("controller_process", delta);
 
 		// Update snapshot transform
-		frames_snapshot[i].custom_data = node->call("create_snapshot");
 	}
 }
 
@@ -930,7 +867,6 @@ void PlayerController::store_input_buffer(uint64_t p_id) {
 	FrameSnapshot inputs;
 	inputs.id = p_id;
 	inputs.inputs_buffer = node->get_inputs_buffer().get_buffer();
-	inputs.custom_data = node->call("create_snapshot");
 	inputs.similarity = UINT64_MAX;
 	frames_snapshot.push_back(inputs);
 }
@@ -1064,35 +1000,6 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	node->rpc_unreliable_id(server_peer_id, "_rpc_server_send_frames_snapshot", packet_data);
 }
 
-void PlayerController::process_recovery() {
-	// TODO remove this
-	return;
-
-	if (recover_snapshot_id <= recovered_snapshot_id) {
-		// Nothing to do.
-		return;
-	}
-
-	FrameSnapshot fs;
-	fs.id = 0;
-
-	// Pop the snapshots until we arrive to the `recover_snapshot_id`
-	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= recover_snapshot_id) {
-		fs = frames_snapshot.front();
-		frames_snapshot.pop_front();
-	}
-
-	if (fs.id != recover_snapshot_id) {
-		// `recover_snapshot_id` is already checked
-		// or not yet received if this is a doll, so just pospone this.
-		return;
-	}
-
-	recovered_snapshot_id = recover_snapshot_id;
-
-	node->call("process_recovery", recover_snapshot_id, recover_state_data, fs.custom_data);
-}
-
 bool PlayerController::can_accept_new_inputs() const {
 	return frames_snapshot.size() < static_cast<size_t>(node->get_player_input_storage_size());
 }
@@ -1129,8 +1036,6 @@ void DollController::physics_process(real_t p_delta) {
 
 	// Keeps the doll in sync with the server.
 	soft_reset_to_server_state();
-
-	player_controller.process_recovery();
 }
 
 void DollController::receive_snapshots(Vector<uint8_t> p_data) {
