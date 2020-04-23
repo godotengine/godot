@@ -39,6 +39,87 @@
 #include "editor/editor_settings.h"
 #endif
 
+static const char *_joy_buttons[JOY_SDL_BUTTONS + 1] = {
+	"a",
+	"b",
+	"x",
+	"y",
+	"back",
+	"guide",
+	"start",
+	"leftstick",
+	"rightstick",
+	"leftshoulder",
+	"rightshoulder",
+	"dpup",
+	"dpdown",
+	"dpleft",
+	"dpright",
+	nullptr
+};
+
+static const char *_joy_button_names[JOY_BUTTON_MAX] = {
+	"Face Bottom",
+	"Face Right",
+	"Face Left",
+	"Face Top",
+	"Select",
+	"Guide",
+	"Start",
+	"Left Stick",
+	"Right Stick",
+	"Left Shoulder",
+	"Right Shoulder",
+	"D-Pad Up",
+	"D-Pad Down",
+	"D-Pad Left",
+	"D-Pad Right",
+	"Button 15",
+	"Button 16",
+	"Button 17",
+	"Button 18",
+	"Button 19",
+	"Button 20",
+	"Button 21",
+	"Button 22",
+	"Button 23",
+	"Button 24",
+	"Button 25",
+	"Button 26",
+	"Button 27",
+	"Button 28",
+	"Button 29",
+	"Button 30",
+	"Button 31",
+	"Button 32",
+	"Button 33",
+	"Button 34",
+	"Button 35"
+};
+
+static const char *_joy_axes[JOY_SDL_AXES + 1] = {
+	"leftx",
+	"lefty",
+	"rightx",
+	"righty",
+	"lefttrigger",
+	"righttrigger",
+	nullptr
+};
+
+static const char *_joy_axis_names[JOY_AXIS_MAX] = {
+	"Left Stick X",
+	"Left Stick Y",
+	"Right Stick X",
+	"Right Stick Y",
+	"Left Trigger",
+	"Right Trigger",
+	"Joystick 3 Stick X",
+	"Joystick 3 Stick Y",
+	"Joystick 4 Stick X",
+	"Joystick 4 Stick Y"
+};
+
 Input *Input::singleton = nullptr;
 
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
@@ -336,13 +417,12 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 	} else {
 		js.connected = false;
 		for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-
-			if (i < JOY_AXIS_MAX)
-				set_joy_axis(p_idx, i, 0.0f);
-
 			int c = _combine_device(i, p_idx);
 			joy_buttons_pressed.erase(c);
-		};
+		}
+		for (int i = 0; i < JOY_AXIS_MAX; i++) {
+			set_joy_axis(p_idx, i, 0.0f);
+		}
 	};
 	joy_names[p_idx] = js;
 
@@ -892,23 +972,17 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis);
 
 	if (map.type == TYPE_BUTTON) {
-		//send axis event for triggers
-		if (map.index == JOY_L2 || map.index == JOY_R2) {
-			float value = p_value.min == 0 ? p_value.value : 0.5f + p_value.value / 2.0f;
-			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
-			_axis_event(p_device, axis, value);
-		}
 
-		if (map.index == JOY_DPAD_UP || map.index == JOY_DPAD_DOWN) {
+		if (map.index == JOY_BUTTON_DPAD_UP || map.index == JOY_BUTTON_DPAD_DOWN) {
 			bool pressed = p_value.value != 0.0f;
-			int button = p_value.value < 0 ? JOY_DPAD_UP : JOY_DPAD_DOWN;
+			int button = p_value.value < 0 ? JOY_BUTTON_DPAD_UP : JOY_BUTTON_DPAD_DOWN;
 
 			if (!pressed) {
-				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_UP, p_device))) {
-					_button_event(p_device, JOY_DPAD_UP, false);
+				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_UP, p_device))) {
+					_button_event(p_device, JOY_BUTTON_DPAD_UP, false);
 				}
-				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_DOWN, p_device))) {
-					_button_event(p_device, JOY_DPAD_DOWN, false);
+				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_DOWN, p_device))) {
+					_button_event(p_device, JOY_BUTTON_DPAD_DOWN, false);
 				}
 			}
 			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
@@ -917,16 +991,17 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 			_button_event(p_device, button, true);
 			return;
 		}
-		if (map.index == JOY_DPAD_LEFT || map.index == JOY_DPAD_RIGHT) {
+
+		if (map.index == JOY_BUTTON_DPAD_LEFT || map.index == JOY_BUTTON_DPAD_RIGHT) {
 			bool pressed = p_value.value != 0.0f;
-			int button = p_value.value < 0 ? JOY_DPAD_LEFT : JOY_DPAD_RIGHT;
+			int button = p_value.value < 0 ? JOY_BUTTON_DPAD_LEFT : JOY_BUTTON_DPAD_RIGHT;
 
 			if (!pressed) {
-				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_LEFT, p_device))) {
-					_button_event(p_device, JOY_DPAD_LEFT, false);
+				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_LEFT, p_device))) {
+					_button_event(p_device, JOY_BUTTON_DPAD_LEFT, false);
 				}
-				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_RIGHT, p_device))) {
-					_button_event(p_device, JOY_DPAD_RIGHT, false);
+				if (joy_buttons_pressed.has(_combine_device(JOY_BUTTON_DPAD_RIGHT, p_device))) {
+					_button_event(p_device, JOY_BUTTON_DPAD_RIGHT, false);
 				}
 			}
 			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
@@ -935,12 +1010,14 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 			_button_event(p_device, button, true);
 			return;
 		}
+
 		float deadzone = p_value.min == 0 ? 0.5f : 0.0f;
 		bool pressed = p_value.value > deadzone;
 		if (pressed == joy_buttons_pressed.has(_combine_device(map.index, p_device))) {
 			// button already pressed or released, this is an axis bounce value
 			return;
 		}
+
 		_button_event(p_device, map.index, pressed);
 		return;
 	}
@@ -961,19 +1038,19 @@ void Input::joy_hat(int p_device, int p_val) {
 	JoyEvent map[HAT_MAX];
 
 	map[HAT_UP].type = TYPE_BUTTON;
-	map[HAT_UP].index = SDL_BUTTON_DPAD_UP;
+	map[HAT_UP].index = JOY_BUTTON_DPAD_UP;
 	map[HAT_UP].value = 0;
 
 	map[HAT_RIGHT].type = TYPE_BUTTON;
-	map[HAT_RIGHT].index = SDL_BUTTON_DPAD_RIGHT;
+	map[HAT_RIGHT].index = JOY_BUTTON_DPAD_RIGHT;
 	map[HAT_RIGHT].value = 0;
 
 	map[HAT_DOWN].type = TYPE_BUTTON;
-	map[HAT_DOWN].index = SDL_BUTTON_DPAD_DOWN;
+	map[HAT_DOWN].index = JOY_BUTTON_DPAD_DOWN;
 	map[HAT_DOWN].value = 0;
 
 	map[HAT_LEFT].type = TYPE_BUTTON;
-	map[HAT_LEFT].index = SDL_BUTTON_DPAD_LEFT;
+	map[HAT_LEFT].index = JOY_BUTTON_DPAD_LEFT;
 	map[HAT_LEFT].value = 0;
 
 	if (joy.mapping != -1) {
@@ -1027,7 +1104,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const SDLExtendedJoyBind binding = mapping.bindings[i];
+		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_BUTTON && binding.input.button == p_button) {
 			event.type = binding.outputType;
 			switch (binding.outputType) {
@@ -1051,7 +1128,7 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, i
 	event.type = TYPE_MAX;
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const SDLExtendedJoyBind binding = mapping.bindings[i];
+		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
 			event.type = binding.outputType;
 			switch (binding.outputType) {
@@ -1072,7 +1149,7 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, i
 void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[]) {
 
 	for (int i = 0; i < mapping.bindings.size(); i++) {
-		const SDLExtendedJoyBind binding = mapping.bindings[i];
+		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_HAT && binding.input.hat.hat == p_hat) {
 
 			int index;
@@ -1109,51 +1186,22 @@ void Input::_get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, J
 	}
 }
 
-static const char *sdl_buttons[] = {
-	"a",
-	"b",
-	"x",
-	"y",
-	"back",
-	"guide",
-	"start",
-	"leftstick",
-	"rightstick",
-	"leftshoulder",
-	"rightshoulder",
-	"dpup",
-	"dpdown",
-	"dpleft",
-	"dpright",
-	nullptr
-};
+JoyButtonList Input::_get_output_button(String output) {
 
-Input::SDLJoyButton Input::_get_output_button(String output) {
-
-	for (int i = 0; sdl_buttons[i]; i++) {
-		if (output == sdl_buttons[i])
-			return SDLJoyButton(i);
+	for (int i = 0; _joy_buttons[i]; i++) {
+		if (output == _joy_buttons[i])
+			return JoyButtonList(i);
 	}
-	return SDLJoyButton::SDL_INVALID_BUTTON;
+	return JoyButtonList::JOY_INVALID_BUTTON;
 }
 
-static const char *sdl_axes[] = {
-	"leftx",
-	"lefty",
-	"rightx",
-	"righty",
-	"lefttrigger",
-	"righttrigger",
-	nullptr
-};
+JoyAxisList Input::_get_output_axis(String output) {
 
-Input::SDLJoyAxis Input::_get_output_axis(String output) {
-
-	for (int i = 0; sdl_axes[i]; i++) {
-		if (output == sdl_axes[i])
-			return SDLJoyAxis(i);
+	for (int i = 0; _joy_axes[i]; i++) {
+		if (output == _joy_axes[i])
+			return JoyAxisList(i);
 	}
-	return SDLJoyAxis::SDL_INVALID_AXIS;
+	return JoyAxisList::JOY_INVALID_AXIS;
 }
 
 void Input::parse_mapping(String p_mapping) {
@@ -1208,18 +1256,18 @@ void Input::parse_mapping(String p_mapping) {
 		if (input[input.length() - 1] == '~')
 			invert_axis = true;
 
-		SDLJoyButton output_button = _get_output_button(output);
-		SDLJoyAxis output_axis = _get_output_axis(output);
-		ERR_CONTINUE_MSG(output_button == SDL_INVALID_BUTTON && output_axis == SDL_INVALID_AXIS,
+		JoyButtonList output_button = _get_output_button(output);
+		JoyAxisList output_axis = _get_output_axis(output);
+		ERR_CONTINUE_MSG(output_button == JOY_INVALID_BUTTON && output_axis == JOY_INVALID_AXIS,
 				String(entry[idx] + "\nUnrecognised output string: " + output));
-		ERR_CONTINUE_MSG(output_button != SDL_INVALID_BUTTON && output_axis != SDL_INVALID_AXIS,
+		ERR_CONTINUE_MSG(output_button != JOY_INVALID_BUTTON && output_axis != JOY_INVALID_AXIS,
 				String("BUG: Output string matched both button and axis: " + output));
 
-		SDLExtendedJoyBind binding;
-		if (output_button != SDL_INVALID_BUTTON) {
+		JoyBinding binding;
+		if (output_button != JOY_INVALID_BUTTON) {
 			binding.outputType = TYPE_BUTTON;
 			binding.output.button = output_button;
-		} else if (output_axis != SDL_INVALID_AXIS) {
+		} else if (output_axis != JOY_INVALID_AXIS) {
 			binding.outputType = TYPE_AXIS;
 			binding.output.axis.axis = output_axis;
 			binding.output.axis.range = output_range;
@@ -1316,50 +1364,18 @@ Array Input::get_connected_joypads() {
 	return ret;
 }
 
-static const char *_buttons[JOY_BUTTON_MAX] = {
-	"Face Button Bottom",
-	"Face Button Right",
-	"Face Button Left",
-	"Face Button Top",
-	"L",
-	"R",
-	"L2",
-	"R2",
-	"L3",
-	"R3",
-	"Select",
-	"Start",
-	"DPAD Up",
-	"DPAD Down",
-	"DPAD Left",
-	"DPAD Right"
-};
-
-static const char *_axes[JOY_AXIS_MAX] = {
-	"Left Stick X",
-	"Left Stick Y",
-	"Right Stick X",
-	"Right Stick Y",
-	"",
-	"",
-	"L2",
-	"R2",
-	"",
-	""
-};
-
 String Input::get_joy_button_string(int p_button) {
-	ERR_FAIL_INDEX_V(p_button, JOY_BUTTON_MAX, "");
-	return _buttons[p_button];
+	ERR_FAIL_INDEX_V(p_button, JOY_BUTTON_MAX, "Invalid button");
+	return _joy_button_names[p_button];
 }
 
 int Input::get_joy_button_index_from_string(String p_button) {
 	for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-		if (p_button == _buttons[i]) {
+		if (p_button == _joy_button_names[i]) {
 			return i;
 		}
 	}
-	ERR_FAIL_V(-1);
+	ERR_FAIL_V(JOY_INVALID_BUTTON);
 }
 
 int Input::get_unused_joy_id() {
@@ -1372,17 +1388,17 @@ int Input::get_unused_joy_id() {
 }
 
 String Input::get_joy_axis_string(int p_axis) {
-	ERR_FAIL_INDEX_V(p_axis, JOY_AXIS_MAX, "");
-	return _axes[p_axis];
+	ERR_FAIL_INDEX_V(p_axis, JOY_AXIS_MAX, "Invalid axis");
+	return _joy_axis_names[p_axis];
 }
 
 int Input::get_joy_axis_index_from_string(String p_axis) {
 	for (int i = 0; i < JOY_AXIS_MAX; i++) {
-		if (p_axis == _axes[i]) {
+		if (p_axis == _joy_axis_names[i]) {
 			return i;
 		}
 	}
-	ERR_FAIL_V(-1);
+	ERR_FAIL_V(JOY_INVALID_AXIS);
 }
 
 Input::Input() {
