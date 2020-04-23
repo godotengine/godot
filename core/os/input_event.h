@@ -328,7 +328,7 @@ protected:
 
 public:
 	void set_factor(float p_factor);
-	float get_factor();
+	float get_factor() const;
 
 	void set_button_index(int p_index);
 	int get_button_index() const;
