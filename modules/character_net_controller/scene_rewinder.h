@@ -91,12 +91,13 @@ class SceneRewinder : public Node {
 	int network_traced_frames;
 
 	/// Max tolerance for missing snapshots in the `network_traced_frames`.
-	int missing_snapshots_max_tolerance;
+	int missing_input_max_tolerance;
 
-	/// Used to control the `Master` tick acceleration.
+	/// Used to control the `player` tick acceleration, so to produce more
+	/// inputs.
 	real_t tick_acceleration;
 
-	/// The `server_snapshot_storage_size` is dynamically updated and its size
+	/// The "optimal input size" is dynamically updated and its size
 	/// change at a rate that can be controlled by this parameter.
 	real_t optimal_size_acceleration;
 
@@ -104,10 +105,14 @@ class SceneRewinder : public Node {
 	/// of these frames is defined by the value of this parameter.
 	///
 	/// To prevent introducing virtual lag.
-	int server_snapshot_storage_size;
+	int server_input_storage_size;
+
+	/// How much frames the doll is allowed to be processed out of sync.
+	/// This is useful to avoid time jumps each rewinding.
+	int out_of_sync_frames_tolerance;
 
 	real_t server_notify_state_interval;
-	real_t comparison_tolerance;
+	real_t comparison_float_tolerance;
 
 	Rewinder *rewinder;
 	bool recover_in_progress;
@@ -145,14 +150,17 @@ public:
 	void set_optimal_size_acceleration(real_t p_acceleration);
 	real_t get_optimal_size_acceleration() const;
 
-	void set_server_snapshot_storage_size(int p_size);
-	int get_server_snapshot_storage_size() const;
+	void set_server_input_storage_size(int p_size);
+	int get_server_input_storage_size() const;
+
+	void set_out_of_sync_frames_tolerance(int p_tolerance);
+	int get_out_of_sync_frames_tolerance() const;
 
 	void set_server_notify_state_interval(real_t p_interval);
 	real_t get_server_notify_state_interval() const;
 
-	void set_comparison_tolerance(real_t p_tolerance);
-	real_t get_comparison_tolerance() const;
+	void set_comparison_float_tolerance(real_t p_tolerance);
+	real_t get_comparison_float_tolerance() const;
 
 	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName());
 	void unregister_variable(Node *p_node, StringName p_variable);

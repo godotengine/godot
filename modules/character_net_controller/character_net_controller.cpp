@@ -43,8 +43,8 @@ void CharacterNetController::_bind_methods() {
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_2);
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_3);
 
-	ClassDB::bind_method(D_METHOD("set_player_snapshot_storage_size", "size"), &CharacterNetController::set_player_snapshot_storage_size);
-	ClassDB::bind_method(D_METHOD("get_player_snapshot_storage_size"), &CharacterNetController::get_player_snapshot_storage_size);
+	ClassDB::bind_method(D_METHOD("set_player_input_storage_size", "size"), &CharacterNetController::set_player_input_storage_size);
+	ClassDB::bind_method(D_METHOD("get_player_input_storage_size"), &CharacterNetController::get_player_input_storage_size);
 
 	ClassDB::bind_method(D_METHOD("set_max_redundant_inputs", "max_redundand_inputs"), &CharacterNetController::set_max_redundant_inputs);
 	ClassDB::bind_method(D_METHOD("get_max_redundant_inputs"), &CharacterNetController::get_max_redundant_inputs);
@@ -93,7 +93,7 @@ void CharacterNetController::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "create_snapshot"));
 	BIND_VMETHOD(MethodInfo("process_recovery", PropertyInfo(Variant::INT, "snapshot_id"), PropertyInfo(Variant::ARRAY, "server_snapshot"), PropertyInfo(Variant::ARRAY, "client_snapshot")))
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_snapshot_storage_size", "get_player_snapshot_storage_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "state_notify_interval", PROPERTY_HINT_RANGE, "0.0001,10.0,0.0001"), "set_state_notify_interval", "get_state_notify_interval");
 
@@ -104,7 +104,7 @@ void CharacterNetController::_bind_methods() {
 }
 
 CharacterNetController::CharacterNetController() :
-		player_snapshot_storage_size(300),
+		player_input_storage_size(300),
 		max_redundant_inputs(50),
 		state_notify_interval(1.0),
 		controller(nullptr),
@@ -118,12 +118,12 @@ CharacterNetController::CharacterNetController() :
 	rpc_config("_rpc_send_player_state", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
-void CharacterNetController::set_player_snapshot_storage_size(int p_size) {
-	player_snapshot_storage_size = p_size;
+void CharacterNetController::set_player_input_storage_size(int p_size) {
+	player_input_storage_size = p_size;
 }
 
-int CharacterNetController::get_player_snapshot_storage_size() const {
-	return player_snapshot_storage_size;
+int CharacterNetController::get_player_input_storage_size() const {
+	return player_input_storage_size;
 }
 
 void CharacterNetController::set_max_redundant_inputs(int p_max) {
@@ -827,6 +827,7 @@ void ServerController::force_state_notify() {
 
 PlayerController::PlayerController(CharacterNetController *p_node) :
 		Controller(p_node),
+		current_input_id(0),
 		input_buffers_counter(0),
 		recover_snapshot_id(0),
 		recovered_snapshot_id(0) {
@@ -841,6 +842,8 @@ void PlayerController::physics_process(real_t p_delta) {
 	const bool accept_new_inputs = can_accept_new_inputs();
 
 	if (accept_new_inputs) {
+		current_input_id = input_buffers_counter;
+		input_buffers_counter += 1;
 		node->get_inputs_buffer_mut().begin_write();
 		node->call("collect_inputs", p_delta);
 	} else {
@@ -855,10 +858,7 @@ void PlayerController::physics_process(real_t p_delta) {
 	node->call("controller_process", p_delta);
 
 	if (accept_new_inputs) {
-
-		store_input_buffer(input_buffers_counter);
-		input_buffers_counter += 1;
-
+		store_input_buffer(current_input_id);
 		send_frame_input_buffer_to_server();
 	}
 
@@ -937,7 +937,7 @@ bool PlayerController::replay_process_next_instant(int p_i, real_t p_delta) {
 }
 
 uint64_t PlayerController::get_current_snapshot_id() const {
-	return input_buffers_counter;
+	return current_input_id;
 }
 
 void PlayerController::store_input_buffer(uint64_t p_id) {
@@ -1108,7 +1108,7 @@ void PlayerController::process_recovery() {
 }
 
 bool PlayerController::can_accept_new_inputs() const {
-	return frames_snapshot.size() < static_cast<size_t>(node->get_player_snapshot_storage_size());
+	return frames_snapshot.size() < static_cast<size_t>(node->get_player_input_storage_size());
 }
 
 DollController::DollController(CharacterNetController *p_node) :

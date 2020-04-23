@@ -105,14 +105,17 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_optimal_size_acceleration", "acceleration"), &SceneRewinder::set_optimal_size_acceleration);
 	ClassDB::bind_method(D_METHOD("get_optimal_size_acceleration"), &SceneRewinder::get_optimal_size_acceleration);
 
-	ClassDB::bind_method(D_METHOD("set_server_snapshot_storage_size", "size"), &SceneRewinder::set_server_snapshot_storage_size);
-	ClassDB::bind_method(D_METHOD("get_server_snapshot_storage_size"), &SceneRewinder::get_server_snapshot_storage_size);
+	ClassDB::bind_method(D_METHOD("set_server_input_storage_size", "size"), &SceneRewinder::set_server_input_storage_size);
+	ClassDB::bind_method(D_METHOD("get_server_input_storage_size"), &SceneRewinder::get_server_input_storage_size);
+
+	ClassDB::bind_method(D_METHOD("set_out_of_sync_frames_tolerance", "tolerance"), &SceneRewinder::set_out_of_sync_frames_tolerance);
+	ClassDB::bind_method(D_METHOD("get_out_of_sync_frames_tolerance"), &SceneRewinder::get_out_of_sync_frames_tolerance);
 
 	ClassDB::bind_method(D_METHOD("set_server_notify_state_interval", "interval"), &SceneRewinder::set_server_notify_state_interval);
 	ClassDB::bind_method(D_METHOD("get_server_notify_state_interval"), &SceneRewinder::get_server_notify_state_interval);
 
-	ClassDB::bind_method(D_METHOD("set_comparison_tolerance", "tolerance"), &SceneRewinder::set_comparison_tolerance);
-	ClassDB::bind_method(D_METHOD("get_comparison_tolerance"), &SceneRewinder::get_comparison_tolerance);
+	ClassDB::bind_method(D_METHOD("set_comparison_float_tolerance", "tolerance"), &SceneRewinder::set_comparison_float_tolerance);
+	ClassDB::bind_method(D_METHOD("get_comparison_float_tolerance"), &SceneRewinder::get_comparison_float_tolerance);
 
 	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify"), &SceneRewinder::register_variable, DEFVAL(StringName()));
 	ClassDB::bind_method(D_METHOD("unregister_variable", "node", "variable"), &SceneRewinder::unregister_variable);
@@ -137,10 +140,11 @@ void SceneRewinder::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "missing_snapshots_max_tolerance", PROPERTY_HINT_RANGE, "3,50,1"), "set_missing_snapshots_max_tolerance", "get_missing_snapshots_max_tolerance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_snapshot_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_snapshot_storage_size", "get_server_snapshot_storage_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_input_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_input_storage_size", "get_server_input_storage_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "out_of_sync_frames_tolerance", PROPERTY_HINT_RANGE, "1,500,1"), "set_out_of_sync_frames_tolerance", "get_out_of_sync_frames_tolerance");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "server_notify_state_interval", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001"), "set_server_notify_state_interval", "get_server_notify_state_interval");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "comparison_tolerance", PROPERTY_HINT_RANGE, "0.000001,0.01,0.000001"), "set_comparison_tolerance", "get_comparison_tolerance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "comparison_float_tolerance", PROPERTY_HINT_RANGE, "0.000001,0.01,0.000001"), "set_comparison_float_tolerance", "get_comparison_float_tolerance");
 }
 
 void SceneRewinder::_notification(int p_what) {
@@ -180,12 +184,13 @@ void SceneRewinder::_notification(int p_what) {
 
 SceneRewinder::SceneRewinder() :
 		network_traced_frames(1200),
-		missing_snapshots_max_tolerance(4),
+		missing_input_max_tolerance(4),
 		tick_acceleration(2.0),
 		optimal_size_acceleration(2.5),
-		server_snapshot_storage_size(30),
+		server_input_storage_size(30),
+		out_of_sync_frames_tolerance(20),
 		server_notify_state_interval(1.0),
-		comparison_tolerance(0.0001),
+		comparison_float_tolerance(0.001),
 		rewinder(nullptr),
 		recover_in_progress(false),
 		rewinding_in_progress(false),
@@ -222,11 +227,11 @@ int SceneRewinder::get_network_traced_frames() const {
 }
 
 void SceneRewinder::set_missing_snapshots_max_tolerance(int p_tolerance) {
-	missing_snapshots_max_tolerance = p_tolerance;
+	missing_input_max_tolerance = p_tolerance;
 }
 
 int SceneRewinder::get_missing_snapshots_max_tolerance() const {
-	return missing_snapshots_max_tolerance;
+	return missing_input_max_tolerance;
 }
 
 void SceneRewinder::set_tick_acceleration(real_t p_acceleration) {
@@ -245,12 +250,20 @@ real_t SceneRewinder::get_optimal_size_acceleration() const {
 	return optimal_size_acceleration;
 }
 
-void SceneRewinder::set_server_snapshot_storage_size(int p_size) {
-	server_snapshot_storage_size = p_size;
+void SceneRewinder::set_server_input_storage_size(int p_size) {
+	server_input_storage_size = p_size;
 }
 
-int SceneRewinder::get_server_snapshot_storage_size() const {
-	return server_snapshot_storage_size;
+int SceneRewinder::get_server_input_storage_size() const {
+	return server_input_storage_size;
+}
+
+void SceneRewinder::set_out_of_sync_frames_tolerance(int p_tolerance) {
+	out_of_sync_frames_tolerance = p_tolerance;
+}
+
+int SceneRewinder::get_out_of_sync_frames_tolerance() const {
+	return out_of_sync_frames_tolerance;
 }
 
 void SceneRewinder::set_server_notify_state_interval(real_t p_interval) {
@@ -261,12 +274,12 @@ real_t SceneRewinder::get_server_notify_state_interval() const {
 	return server_notify_state_interval;
 }
 
-void SceneRewinder::set_comparison_tolerance(real_t p_tolerance) {
-	comparison_tolerance = p_tolerance;
+void SceneRewinder::set_comparison_float_tolerance(real_t p_tolerance) {
+	comparison_float_tolerance = p_tolerance;
 }
 
-real_t SceneRewinder::get_comparison_tolerance() const {
-	return comparison_tolerance;
+real_t SceneRewinder::get_comparison_float_tolerance() const {
+	return comparison_float_tolerance;
 }
 
 void SceneRewinder::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify) {
@@ -526,11 +539,11 @@ NodeData *SceneRewinder::register_node(Node *p_node) {
 }
 
 bool SceneRewinder::vec2_evaluation(const Vector2 a, const Vector2 b) {
-	return (a - b).length_squared() <= (comparison_tolerance * comparison_tolerance);
+	return (a - b).length_squared() <= (comparison_float_tolerance * comparison_float_tolerance);
 }
 
 bool SceneRewinder::vec3_evaluation(const Vector3 a, const Vector3 b) {
-	return (a - b).length_squared() <= (comparison_tolerance * comparison_tolerance);
+	return (a - b).length_squared() <= (comparison_float_tolerance * comparison_float_tolerance);
 }
 
 bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2) {
@@ -542,7 +555,7 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 	if (v_1.get_type() == Variant::FLOAT) {
 		const real_t a(v_1);
 		const real_t b(v_2);
-		return ABS(a - b) <= comparison_tolerance;
+		return ABS(a - b) <= comparison_float_tolerance;
 	} else if (v_1.get_type() == Variant::VECTOR2) {
 		return vec2_evaluation(v_1, v_2);
 	} else if (v_1.get_type() == Variant::RECT2) {
@@ -571,11 +584,11 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 		const Quat a(v_1);
 		const Quat b(v_2);
 		const Quat r(a - b); // Element wise subtraction.
-		return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (comparison_tolerance * comparison_tolerance);
+		return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (comparison_float_tolerance * comparison_float_tolerance);
 	} else if (v_1.get_type() == Variant::PLANE) {
 		const Plane a(v_1);
 		const Plane b(v_2);
-		if (ABS(a.d - b.d) <= comparison_tolerance) {
+		if (ABS(a.d - b.d) <= comparison_float_tolerance) {
 			if (vec3_evaluation(a.normal, b.normal)) {
 				return true;
 			}
@@ -995,13 +1008,13 @@ void ServerRewinder::adjust_player_tick_rate(real_t p_delta) {
 					-2.0,
 					2.0);
 			peer->optimal_snapshots_size += acceleration_level * scene_rewinder->get_optimal_size_acceleration() * p_delta;
-			peer->optimal_snapshots_size = CLAMP(peer->optimal_snapshots_size, MIN_SNAPSHOTS_SIZE, scene_rewinder->get_server_snapshot_storage_size());
+			peer->optimal_snapshots_size = CLAMP(peer->optimal_snapshots_size, MIN_SNAPSHOTS_SIZE, scene_rewinder->get_server_input_storage_size());
 		}
 
 		{
 			// The client speed is determined using an acceleration so to have much
 			// more control over it, and avoid nervous changes.
-			const real_t acceleration_level = CLAMP((peer->optimal_snapshots_size - static_cast<real_t>(inputs_count)) / scene_rewinder->get_server_snapshot_storage_size(), -1.0, 1.0);
+			const real_t acceleration_level = CLAMP((peer->optimal_snapshots_size - static_cast<real_t>(inputs_count)) / scene_rewinder->get_server_input_storage_size(), -1.0, 1.0);
 			const real_t acc = acceleration_level * scene_rewinder->get_tick_acceleration() * p_delta;
 			const real_t damp = peer->client_tick_additional_speed * -0.9;
 
@@ -1039,6 +1052,7 @@ void ClientRewinder::clear() {
 	node_paths.clear();
 	server_snapshot_id = 0;
 	recovered_snapshot_id = 0;
+	server_snapshot.player_controller_input_id = 0;
 	server_snapshot.controllers_input_id.clear();
 	server_snapshot.data.clear();
 	snapshots.clear();
@@ -1067,8 +1081,9 @@ void ClientRewinder::store_snapshot() {
 	// Store snapshots, only if the `main_controller` accept new inputs.
 	Snapshot snapshot;
 
-	snapshot.player_controller_input_id = scene_rewinder->main_controller->get_stored_input_id(-1);
+	snapshot.player_controller_input_id = scene_rewinder->main_controller->get_current_input_id();
 #ifdef DEBUG_ENABLED
+	CRASH_COND(snapshot.player_controller_input_id != scene_rewinder->main_controller->get_stored_input_id(-1));
 	CRASH_COND(snapshot.player_controller_input_id == UINT64_MAX);
 #endif
 
@@ -1097,7 +1112,13 @@ void ClientRewinder::update_snapshot(
 	// Update the snapshot ID
 	for (int r = 0; r < p_rewinder_count; r += 1) {
 		const uint64_t id = p_rewinders[r].get_processed_input_id(p_i);
-		snapshots[p_snapshot_index].controllers_input_id[p_rewinders[r].get_controller()->get_instance_id()] = id;
+		if (id == UINT64_MAX) {
+			// When id is UINT64_MAX the previous input ID is taken.
+			const uint64_t prev_id = snapshots[p_snapshot_index - 1].controllers_input_id[p_rewinders[r].get_controller()->get_instance_id()];
+			snapshots[p_snapshot_index].controllers_input_id[p_rewinders[r].get_controller()->get_instance_id()] = prev_id;
+		} else {
+			snapshots[p_snapshot_index].controllers_input_id[p_rewinders[r].get_controller()->get_instance_id()] = id;
+		}
 	}
 
 	snapshots[p_snapshot_index].data = scene_rewinder->data;
@@ -1285,7 +1306,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 																  scene_rewinder->cached_controllers[i]->get_instance_id());
 
 				// TODO verify this code
-				if (client_input_id != nullptr) {
+				if (client_input_id != nullptr && (*client_input_id) == UINT64_MAX) {
 					// The doll on the client is likely behind the server,
 					// but it's not bring in line with it to avoid time jumps
 					// each rewinding.
@@ -1295,25 +1316,19 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 					// processed.
 					const uint64_t ciid = *client_input_id;
 
-					if (ciid != UINT64_MAX) {
-						const int relative = siid - ciid;
+					const int relative = siid - ciid;
 
-						// TODO please make this customizable
-						const int tolerance = 10;
-						if (relative < 0 || relative > tolerance) {
-							// - Relative is negative when the client has processed
-							//   the inputs before the server
-							// - Relative is more than the tolerance when the client
-							//   is too behind the server.
-							// In both cases, hard reset.
-							frames_to_skip = 0;
-						} else {
-							// Relative is inside the allowed range, fluid rewinding.
-							frames_to_skip = relative;
-						}
+					const int tolerance = scene_rewinder->get_out_of_sync_frames_tolerance();
+					if (relative < 0 || relative > tolerance) {
+						// - Relative is negative when the client has processed
+						//   the inputs before the server
+						// - Relative is more than the tolerance when the client
+						//   is too behind the server.
+						// In both cases, hard reset.
+						frames_to_skip = 0;
 					} else {
-						// Hard reset, since we miss some frames and doesn't
-						// worth try to avoid time jumps anyway.
+						// Relative is inside the allowed range, fluid rewinding.
+						frames_to_skip = relative;
 					}
 				}
 			} else {

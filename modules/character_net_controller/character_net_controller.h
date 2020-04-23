@@ -69,7 +69,7 @@ private:
 	/// With 60 iteration per seconds a good value is `300`, but is adviced to
 	/// perform some tests until you find a better suitable value for your needs.
 	// TODO move this in the SceneRewinder
-	int player_snapshot_storage_size;
+	int player_input_storage_size;
 
 	/// Amount of time an inputs is re-sent to each node.
 	/// Resend inputs is necessary because the packets may be lost since they
@@ -101,8 +101,8 @@ public:
 public:
 	CharacterNetController();
 
-	void set_player_snapshot_storage_size(int p_size);
-	int get_player_snapshot_storage_size() const;
+	void set_player_input_storage_size(int p_size);
+	int get_player_input_storage_size() const;
 
 	void set_max_redundant_inputs(int p_max);
 	int get_max_redundant_inputs() const;
@@ -324,6 +324,7 @@ struct ServerController : public Controller {
 };
 
 struct PlayerController : public Controller {
+	uint64_t current_input_id;
 	uint64_t input_buffers_counter;
 	std::deque<FrameSnapshot> frames_snapshot;
 	std::vector<uint8_t> cached_packet_data;
