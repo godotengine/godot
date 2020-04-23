@@ -15,10 +15,7 @@ namespace Godot.Collections
 
         public override bool IsInvalid
         {
-            get
-            {
-                return handle == IntPtr.Zero;
-            }
+            get { return handle == IntPtr.Zero; }
         }
 
         protected override bool ReleaseHandle()
@@ -43,7 +40,8 @@ namespace Godot.Collections
             if (collection == null)
                 throw new NullReferenceException($"Parameter '{nameof(collection)} cannot be null.'");
 
-            MarshalUtils.EnumerableToArray(collection, GetPtr());
+            foreach (object element in collection)
+                Add(element);
         }
 
         internal Array(ArraySafeHandle handle)
@@ -272,14 +270,8 @@ namespace Godot.Collections
 
         public T this[int index]
         {
-            get
-            {
-                return (T)Array.godot_icall_Array_At_Generic(GetPtr(), index, elemTypeEncoding, elemTypeClass);
-            }
-            set
-            {
-                objectArray[index] = value;
-            }
+            get { return (T)Array.godot_icall_Array_At_Generic(GetPtr(), index, elemTypeEncoding, elemTypeClass); }
+            set { objectArray[index] = value; }
         }
 
         public int IndexOf(T item)
@@ -301,18 +293,12 @@ namespace Godot.Collections
 
         public int Count
         {
-            get
-            {
-                return objectArray.Count;
-            }
+            get { return objectArray.Count; }
         }
 
         public bool IsReadOnly
         {
-            get
-            {
-                return objectArray.IsReadOnly;
-            }
+            get { return objectArray.IsReadOnly; }
         }
 
         public void Add(T item)
