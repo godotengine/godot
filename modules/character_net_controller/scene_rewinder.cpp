@@ -815,7 +815,7 @@ void ControllerRewinder::advance(int p_i, real_t p_delta) {
 		return;
 	}
 
-	const bool has_next = controller->replay_process_next_instant(p_i, p_delta);
+	const bool has_next = controller->process_instant(p_i, p_delta);
 	if (has_next == false) {
 		finished = true;
 	}

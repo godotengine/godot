@@ -72,8 +72,6 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &CharacterNetController::set_doll_peer_active);
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &CharacterNetController::_on_peer_connection_change);
 
-	ClassDB::bind_method(D_METHOD("replay_snapshots"), &CharacterNetController::replay_snapshots);
-
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_frames_snapshot"), &CharacterNetController::_rpc_server_send_frames_snapshot);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_send_frames_snapshot"), &CharacterNetController::_rpc_doll_send_frames_snapshot);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &CharacterNetController::_rpc_doll_notify_connection_status);
@@ -219,10 +217,6 @@ void CharacterNetController::update_active_doll_peers() {
 	}
 }
 
-void CharacterNetController::replay_snapshots() {
-	controller->replay_snapshots();
-}
-
 int CharacterNetController::forget_input_till(uint64_t p_input_id) {
 	return controller->forget_input_till(p_input_id);
 }
@@ -231,8 +225,8 @@ uint64_t CharacterNetController::get_stored_input_id(int p_i) const {
 	return controller->get_stored_input_id(p_i);
 }
 
-bool CharacterNetController::replay_process_next_instant(int p_i, real_t p_delta) {
-	return controller->replay_process_next_instant(p_i, p_delta);
+bool CharacterNetController::process_instant(int p_i, real_t p_delta) {
+	return controller->process_instant(p_i, p_delta);
 }
 
 bool CharacterNetController::is_server_controller() const {
@@ -588,10 +582,6 @@ void ServerController::player_state_check(uint64_t p_id, Variant p_data) {
 	ERR_PRINT("The method `player_state_check` must not be called on server. Be sure why it happened.");
 }
 
-void ServerController::replay_snapshots() {
-	ERR_PRINT("The method `replay_snapshots` must not be called on server. Be sure why it happened.");
-}
-
 int ServerController::forget_input_till(uint64_t p_input_id) {
 	ERR_PRINT("The method `forget_input_till` must not be called on server. Be sure why it happened.");
 	return 0;
@@ -602,8 +592,8 @@ uint64_t ServerController::get_stored_input_id(int p_i) const {
 	return UINT64_MAX;
 }
 
-bool ServerController::replay_process_next_instant(int p_i, real_t p_delta) {
-	ERR_PRINT("The method `replay_process_next_instant` must not be called on server. Be sure why it happened.");
+bool ServerController::process_instant(int p_i, real_t p_delta) {
+	ERR_PRINT("The method `process_instant` must not be called on server. Be sure why it happened.");
 	return false;
 }
 
@@ -800,23 +790,6 @@ void PlayerController::player_state_check(uint64_t p_snapshot_id, Variant p_data
 	}
 }
 
-void PlayerController::replay_snapshots() {
-	// TODO remove this
-	CRASH_NOW();
-	const real_t delta = node->get_physics_process_delta_time();
-
-	for (size_t i = 0; i < frames_snapshot.size(); i += 1) {
-
-		// Set snapshot inputs.
-		node->set_inputs_buffer(frames_snapshot[i].inputs_buffer);
-
-		node->get_inputs_buffer_mut().begin_read();
-		node->call("controller_process", delta);
-
-		// Update snapshot transform
-	}
-}
-
 int PlayerController::forget_input_till(uint64_t p_input_id) {
 	// Remove inputs.
 	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= p_input_id) {
@@ -844,7 +817,7 @@ uint64_t PlayerController::get_stored_input_id(int p_i) const {
 	}
 }
 
-bool PlayerController::replay_process_next_instant(int p_i, real_t p_delta) {
+bool PlayerController::process_instant(int p_i, real_t p_delta) {
 	const size_t i = p_i;
 	if (i < frames_snapshot.size()) {
 
@@ -1051,10 +1024,6 @@ void DollController::player_state_check(uint64_t p_snapshot_id, Variant p_data) 
 	is_server_state_update_received = true;
 }
 
-void DollController::replay_snapshots() {
-	player_controller.replay_snapshots();
-}
-
 int DollController::forget_input_till(uint64_t p_input_id) {
 	return player_controller.forget_input_till(p_input_id);
 }
@@ -1063,8 +1032,8 @@ uint64_t DollController::get_stored_input_id(int p_i) const {
 	return player_controller.get_stored_input_id(p_i);
 }
 
-bool DollController::replay_process_next_instant(int p_i, real_t p_delta) {
-	return player_controller.replay_process_next_instant(p_i, p_delta);
+bool DollController::process_instant(int p_i, real_t p_delta) {
+	return player_controller.process_instant(p_i, p_delta);
 }
 
 uint64_t DollController::get_current_snapshot_id() const {
@@ -1147,10 +1116,6 @@ void NoNetController::player_state_check(uint64_t p_snapshot_id, Variant p_data)
 	// Nothing to do.
 }
 
-void NoNetController::replay_snapshots() {
-	// Nothing to do.
-}
-
 int NoNetController::forget_input_till(uint64_t p_input_id) {
 	// Nothing to do.
 	return 0;
@@ -1161,7 +1126,7 @@ uint64_t NoNetController::get_stored_input_id(int p_i) const {
 	return UINT64_MAX;
 }
 
-bool NoNetController::replay_process_next_instant(int p_i, real_t p_delta) {
+bool NoNetController::process_instant(int p_i, real_t p_delta) {
 	// Nothing to do.
 	return false;
 }

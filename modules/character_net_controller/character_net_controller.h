@@ -174,10 +174,9 @@ public:
 	void _on_peer_connection_change(int p_peer_id);
 	void update_active_doll_peers();
 
-	void replay_snapshots();
 	int forget_input_till(uint64_t p_input_id);
 	uint64_t get_stored_input_id(int p_i) const;
-	bool replay_process_next_instant(int p_i, real_t p_delta);
+	bool process_instant(int p_i, real_t p_delta);
 
 	bool is_server_controller() const;
 	bool is_player_controller() const;
@@ -276,10 +275,9 @@ struct Controller {
 	/// The peers can check if the state is the same or not and in this case
 	/// recover its player state.
 	virtual void player_state_check(uint64_t p_id, Variant p_data) = 0;
-	virtual void replay_snapshots() = 0;
 	virtual int forget_input_till(uint64_t p_input_id) = 0;
 	virtual uint64_t get_stored_input_id(int p_i) const = 0;
-	virtual bool replay_process_next_instant(int p_i, real_t p_delta) = 0;
+	virtual bool process_instant(int p_i, real_t p_delta) = 0;
 	virtual uint64_t get_current_snapshot_id() const = 0;
 };
 
@@ -294,10 +292,9 @@ struct ServerController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
+	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
 	int get_inputs_count() const;
@@ -320,10 +317,9 @@ struct PlayerController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
+	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
 	void store_input_buffer(uint64_t p_id);
@@ -359,10 +355,9 @@ struct DollController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
+	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 
 	void open_flow();
@@ -385,10 +380,9 @@ struct NoNetController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
 	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual void replay_snapshots();
 	virtual int forget_input_till(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
-	virtual bool replay_process_next_instant(int p_i, real_t p_delta);
+	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
 };
 
