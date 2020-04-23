@@ -96,7 +96,7 @@
 			<argument index="1" name="axis" type="int">
 			</argument>
 			<description>
-				Returns the current value of the joypad axis at given index (see [enum JoystickList]).
+				Returns the current value of the joypad axis at given index (see [enum JoyAxisList]).
 			</description>
 		</method>
 		<method name="get_joy_axis_index_from_string">
@@ -114,7 +114,7 @@
 			<argument index="0" name="axis_index" type="int">
 			</argument>
 			<description>
-				Receives a [enum JoystickList] axis and returns its equivalent name as a string.
+				Receives a [enum JoyAxisList] axis and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_button_index_from_string">
@@ -132,7 +132,7 @@
 			<argument index="0" name="button_index" type="int">
 			</argument>
 			<description>
-				Receives a gamepad button from [enum JoystickList] and returns its equivalent name as a string.
+				Receives a gamepad button from [enum JoyButtonList] and returns its equivalent name as a string.
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -235,7 +235,7 @@
 			<argument index="1" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoystickList]).
+				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButtonList]).
 			</description>
 		</method>
 		<method name="is_joy_known">
@@ -244,7 +244,7 @@
 			<argument index="0" name="device" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices exactly as defined in [enum JoystickList]. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
+				Returns [code]true[/code] if the system knows the specified device. This means that it sets all button and axis indices. Unknown joypads are not expected to match these constants, but you can still retrieve events from them.
 			</description>
 		</method>
 		<method name="is_key_pressed" qualifiers="const">

@@ -145,7 +145,7 @@ private:
 		StringName name;
 		StringName uid;
 		bool connected;
-		bool last_buttons[JOY_BUTTON_MAX + 19]; //apparently SDL specifies 35 possible buttons on android
+		bool last_buttons[JOY_BUTTON_MAX];
 		float last_axis[JOY_AXIS_MAX];
 		float filter;
 		int last_hat;
@@ -154,11 +154,9 @@ private:
 
 		Joypad() {
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
-
 				last_axis[i] = 0.0f;
 			}
-			for (int i = 0; i < JOY_BUTTON_MAX + 19; i++) {
-
+			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
 				last_buttons[i] = false;
 			}
 			connected = false;
@@ -183,37 +181,6 @@ private:
 		TYPE_MAX,
 	};
 
-	enum SDLJoyButton {
-		SDL_INVALID_BUTTON = -1,
-		SDL_BUTTON_A,
-		SDL_BUTTON_B,
-		SDL_BUTTON_X,
-		SDL_BUTTON_Y,
-		SDL_BUTTON_BACK,
-		SDL_BUTTON_GUIDE,
-		SDL_BUTTON_START,
-		SDL_BUTTON_LEFTSTICK,
-		SDL_BUTTON_RIGHTSTICK,
-		SDL_BUTTON_LEFTSHOULDER,
-		SDL_BUTTON_RIGHTSHOULDER,
-		SDL_BUTTON_DPAD_UP,
-		SDL_BUTTON_DPAD_DOWN,
-		SDL_BUTTON_DPAD_LEFT,
-		SDL_BUTTON_DPAD_RIGHT,
-		SDL_BUTTON_MAX
-	};
-
-	enum SDLJoyAxis {
-		SDL_INVALID_AXIS = -1,
-		SDL_AXIS_LEFTX,
-		SDL_AXIS_LEFTY,
-		SDL_AXIS_RIGHTX,
-		SDL_AXIS_RIGHTY,
-		SDL_AXIS_TRIGGERLEFT,
-		SDL_AXIS_TRIGGERRIGHT,
-		SDL_AXIS_MAX,
-	};
-
 	enum JoyAxisRange {
 		NEGATIVE_HALF_AXIS = -1,
 		FULL_AXIS = 0,
@@ -226,7 +193,7 @@ private:
 		int value;
 	};
 
-	struct SDLExtendedJoyBind {
+	struct JoyBinding {
 		JoyType inputType;
 		union {
 			int button;
@@ -245,10 +212,10 @@ private:
 
 		JoyType outputType;
 		union {
-			SDLJoyButton button;
+			JoyButtonList button;
 
 			struct {
-				SDLJoyAxis axis;
+				JoyAxisList axis;
 				JoyAxisRange range;
 			} axis;
 
@@ -258,7 +225,7 @@ private:
 	struct JoyDeviceMapping {
 		String uid;
 		String name;
-		Vector<SDLExtendedJoyBind> bindings;
+		Vector<JoyBinding> bindings;
 	};
 
 	Vector<JoyDeviceMapping> map_db;
@@ -266,8 +233,8 @@ private:
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button);
 	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis);
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[HAT_MAX]);
-	SDLJoyButton _get_output_button(String output);
-	SDLJoyAxis _get_output_axis(String output);
+	JoyButtonList _get_output_button(String output);
+	JoyAxisList _get_output_axis(String output);
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
 	float _handle_deadzone(int p_device, int p_axis, float p_value);

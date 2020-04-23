@@ -24666,7 +24666,7 @@ msgstr ""
 #: doc/classes/Input.xml:99
 msgid ""
 "Returns the current value of the joypad axis at given index (see [enum "
-"JoystickList])."
+"JoyAxisList])."
 msgstr ""
 
 #: doc/classes/Input.xml:108
@@ -24675,7 +24675,7 @@ msgstr ""
 
 #: doc/classes/Input.xml:117
 msgid ""
-"Receives a [enum JoystickList] axis and returns its equivalent name as a "
+"Receives a [enum JoyAxisList] axis and returns its equivalent name as a "
 "string."
 msgstr ""
 
@@ -24685,7 +24685,7 @@ msgstr ""
 
 #: doc/classes/Input.xml:135
 msgid ""
-"Receives a gamepad button from [enum JoystickList] and returns its "
+"Receives a gamepad button from [enum JoyButtonList] and returns its "
 "equivalent name as a string."
 msgstr ""
 
@@ -24760,15 +24760,14 @@ msgstr ""
 #: doc/classes/Input.xml:238
 msgid ""
 "Returns [code]true[/code] if you are pressing the joypad button (see [enum "
-"JoystickList])."
+"JoyButtonList])."
 msgstr ""
 
 #: doc/classes/Input.xml:247
 msgid ""
 "Returns [code]true[/code] if the system knows the specified device. This "
-"means that it sets all button and axis indices exactly as defined in [enum "
-"JoystickList]. Unknown joypads are not expected to match these constants, "
-"but you can still retrieve events from them."
+"means that it sets all button and axis indices. Unknown joypads are not "
+"expected to match these constants, but you can still retrieve events from them."
 msgstr ""
 
 #: doc/classes/Input.xml:256
@@ -25160,7 +25159,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputEventJoypadButton.xml:16
-msgid "Button identifier. One of the [enum JoystickList] button constants."
+msgid "Button identifier. One of the [enum JoyButtonList] button constants."
 msgstr ""
 
 #: doc/classes/InputEventJoypadButton.xml:19
@@ -25188,7 +25187,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/InputEventJoypadMotion.xml:16
-msgid "Axis identifier. Use one of the [enum JoystickList] axis constants."
+msgid "Axis identifier. Use one of the [enum JoyAxisList] axis constants."
 msgstr ""
 
 #: doc/classes/InputEventJoypadMotion.xml:19
@@ -57956,8 +57955,7 @@ msgstr ""
 #: doc/classes/XRController3D.xml:65
 msgid ""
 "Returns [code]true[/code] if the button at index [code]button[/code] is "
-"pressed. See [enum JoystickList], in particular the [code]JOY_VR_*[/code] "
-"constants."
+"pressed. See [enum JoyButtonList]."
 msgstr ""
 
 #: doc/classes/XRController3D.xml:71

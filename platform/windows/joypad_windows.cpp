@@ -347,12 +347,12 @@ void JoypadWindows::process_joypads() {
 				button_mask = button_mask * 2;
 			}
 
-			input->joy_axis(joy.id, JOY_AXIS_0, axis_correct(joy.state.Gamepad.sThumbLX, true));
-			input->joy_axis(joy.id, JOY_AXIS_1, axis_correct(joy.state.Gamepad.sThumbLY, true, false, true));
-			input->joy_axis(joy.id, JOY_AXIS_2, axis_correct(joy.state.Gamepad.sThumbRX, true));
-			input->joy_axis(joy.id, JOY_AXIS_3, axis_correct(joy.state.Gamepad.sThumbRY, true, false, true));
-			input->joy_axis(joy.id, JOY_AXIS_4, axis_correct(joy.state.Gamepad.bLeftTrigger, true, true));
-			input->joy_axis(joy.id, JOY_AXIS_5, axis_correct(joy.state.Gamepad.bRightTrigger, true, true));
+			input->joy_axis(joy.id, JOY_AXIS_LEFT_X, axis_correct(joy.state.Gamepad.sThumbLX, true));
+			input->joy_axis(joy.id, JOY_AXIS_LEFT_Y, axis_correct(joy.state.Gamepad.sThumbLY, true, false, true));
+			input->joy_axis(joy.id, JOY_AXIS_RIGHT_X, axis_correct(joy.state.Gamepad.sThumbRX, true));
+			input->joy_axis(joy.id, JOY_AXIS_RIGHT_Y, axis_correct(joy.state.Gamepad.sThumbRY, true, false, true));
+			input->joy_axis(joy.id, JOY_AXIS_TRIGGER_LEFT, axis_correct(joy.state.Gamepad.bLeftTrigger, true, true));
+			input->joy_axis(joy.id, JOY_AXIS_TRIGGER_RIGHT, axis_correct(joy.state.Gamepad.bRightTrigger, true, true));
 			joy.last_packet = joy.state.dwPacketNumber;
 		}
 		uint64_t timestamp = input->get_joy_vibration_timestamp(joy.id);

@@ -43,37 +43,45 @@
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
-static const char *_button_names[JOY_BUTTON_MAX] = {
-	"DualShock Cross, Xbox A, Nintendo B",
-	"DualShock Circle, Xbox B, Nintendo A",
-	"DualShock Square, Xbox X, Nintendo Y",
-	"DualShock Triangle, Xbox Y, Nintendo X",
-	"L, L1",
-	"R, R1",
-	"L2",
-	"R2",
-	"L3",
-	"R3",
-	"Select, DualShock Share, Nintendo -",
-	"Start, DualShock Options, Nintendo +",
+static const char *_button_descriptions[JOY_SDL_BUTTONS] = {
+	"Face Bottom, DualShock Cross, Xbox A, Nintendo B",
+	"Face Right, DualShock Circle, Xbox B, Nintendo A",
+	"Face Left, DualShock Square, Xbox X, Nintendo Y",
+	"Face Top, DualShock Triangle, Xbox Y, Nintendo X",
+	"DualShock Select, Xbox Back, Nintendo -",
+	"Home, DualShock PS, Guide",
+	"Start, Nintendo +",
+	"Left Stick, DualShock L3, Xbox L/LS",
+	"Right Stick, DualShock R3, Xbox R/RS",
+	"Left Shoulder, DualShock L1, Xbox LB",
+	"Right Shoulder, DualShock R1, Xbox RB",
 	"D-Pad Up",
 	"D-Pad Down",
 	"D-Pad Left",
 	"D-Pad Right"
 };
 
-static const char *_axis_names[JOY_AXIS_MAX * 2] = {
-	" (Left Stick Left)",
-	" (Left Stick Right)",
-	" (Left Stick Up)",
-	" (Left Stick Down)",
-	" (Right Stick Left)",
-	" (Right Stick Right)",
-	" (Right Stick Up)",
-	" (Right Stick Down)",
-	"", "", "", "",
-	"", " (L2)",
-	"", " (R2)"
+static const char *_axis_descriptions[JOY_AXIS_MAX * 2] = {
+	"Left Stick Left",
+	"Left Stick Right",
+	"Left Stick Up",
+	"Left Stick Down",
+	"Right Stick Left",
+	"Right Stick Right",
+	"Right Stick Up",
+	"Right Stick Down",
+	"Joystick 2 Left",
+	"Joystick 2 Right, Left Trigger, L2, LT",
+	"Joystick 2 Up",
+	"Joystick 2 Down, Right Trigger, R2, RT",
+	"Joystick 3 Left",
+	"Joystick 3 Right",
+	"Joystick 3 Up",
+	"Joystick 3 Down",
+	"Joystick 4 Left",
+	"Joystick 4 Right",
+	"Joystick 4 Up",
+	"Joystick 4 Down",
 };
 
 void ProjectSettingsEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
@@ -527,9 +535,9 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			device_index_label->set_text(TTR("Joypad Axis Index:"));
 			device_index->clear();
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
-
-				String desc = _axis_names[i];
-				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + ((i & 1) ? "+" : "-") + desc);
+				String desc = TTR("Axis") + " " + itos(i / 2) + " " + ((i & 1) ? "+" : "-") +
+							  " (" + TTR(_axis_descriptions[i]) + ")";
+				device_index->add_item(desc);
 			}
 			device_input->popup_centered(Size2(350, 95) * EDSCALE);
 
@@ -548,10 +556,11 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 
 			device_index_label->set_text(TTR("Joypad Button Index:"));
 			device_index->clear();
-
 			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-
-				device_index->add_item(itos(i) + ": " + String(_button_names[i]));
+				String desc = TTR("Button") + " " + itos(i);
+				if (i < JOY_SDL_BUTTONS)
+					desc += " (" + TTR(_button_descriptions[i]) + ")";
+				device_index->add_item(desc);
 			}
 			device_input->popup_centered(Size2(350, 95) * EDSCALE);
 
@@ -792,9 +801,10 @@ void ProjectSettingsEditor::_update_actions() {
 
 			if (jb.is_valid()) {
 
-				String str = _get_device_string(jb->get_device()) + ", " + TTR("Button") + " " + itos(jb->get_button_index());
-				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_BUTTON_MAX) {
-					str += String() + " (" + _button_names[jb->get_button_index()] + ")";
+				String str = _get_device_string(jb->get_device()) + ", " +
+							 TTR("Button") + " " + itos(jb->get_button_index());
+				if (jb->get_button_index() >= 0 && jb->get_button_index() < JOY_SDL_BUTTONS) {
+					str += String() + " (" + TTR(_button_descriptions[jb->get_button_index()]) + ")";
 				}
 
 				action2->set_text(0, str);
@@ -835,8 +845,9 @@ void ProjectSettingsEditor::_update_actions() {
 
 				int ax = jm->get_axis();
 				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
-				String desc = _axis_names[n];
-				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc;
+				String str = _get_device_string(jm->get_device()) + ", " +
+							 TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") +
+							 " (" + _axis_descriptions[n] + ")";
 				action2->set_text(0, str);
 				action2->set_icon(0, input_editor->get_theme_icon("JoyAxis", "EditorIcons"));
 			}
