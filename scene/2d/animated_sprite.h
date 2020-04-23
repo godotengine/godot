@@ -136,7 +136,6 @@ class AnimatedSprite : public Node2D {
 	bool centered;
 	Point2 offset;
 
-	bool is_over;
 	float timeout;
 
 	bool hflip;

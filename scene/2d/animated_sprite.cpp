@@ -384,6 +384,7 @@ void AnimatedSprite::_notification(int p_what) {
 				return; //do nothing
 
 			float remaining = get_process_delta_time();
+			bool has_finished = false;
 
 			while (remaining) {
 
@@ -392,41 +393,49 @@ void AnimatedSprite::_notification(int p_what) {
 					timeout = _get_frame_duration();
 
 					int fc = frames->get_frame_count(animation);
-					if ((!backwards && frame >= fc - 1) || (backwards && frame <= 0)) {
-						if (frames->get_animation_loop(animation)) {
-							if (backwards)
-								frame = fc - 1;
-							else
-								frame = 0;
-
-							emit_signal(SceneStringNames::get_singleton()->animation_finished);
-						} else {
-							if (backwards)
-								frame = 0;
-							else
-								frame = fc - 1;
-
-							if (!is_over) {
-								is_over = true;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
-							}
-						}
-					} else {
-						if (backwards)
-							frame--;
-						else
-							frame++;
-					}
 
 					update();
 					_change_notify("frame");
 					emit_signal(SceneStringNames::get_singleton()->frame_changed);
+
+					if (backwards) {
+
+						if (frames->get_animation_loop(animation)) {
+							frame = Math::fposmod((float)frame - 1, (float)fc);
+
+						} else {
+							frame = MAX(frame - 1, 0);
+						}
+
+						if (frame == 0) {
+							has_finished = true;
+						}
+
+					} else {
+
+						if (frames->get_animation_loop(animation)) {
+							frame = (frame + 1) % fc;
+
+						} else {
+							frame = MIN(frame + 1, fc - 1);
+						}
+
+						if (frame == fc - 1) {
+							has_finished = true;
+						}
+					}
 				}
 
 				float to_process = MIN(timeout, remaining);
 				remaining -= to_process;
 				timeout -= to_process;
 			}
+
+			if (has_finished) {
+
+				emit_signal(SceneStringNames::get_singleton()->animation_finished);
+			}
+
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -643,7 +652,6 @@ void AnimatedSprite::_reset_timeout() {
 		return;
 
 	timeout = _get_frame_duration();
-	is_over = false;
 }
 
 void AnimatedSprite::set_animation(const StringName &p_animation) {
@@ -735,5 +743,4 @@ AnimatedSprite::AnimatedSprite() {
 	backwards = false;
 	animation = "default";
 	timeout = 0;
-	is_over = false;
 }
