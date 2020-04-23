@@ -84,6 +84,7 @@ void CachedData::clear_corlib_cache() {
 	class_IntPtr = nullptr;
 
 	class_System_Collections_IEnumerable = nullptr;
+	class_System_Collections_ICollection = nullptr;
 	class_System_Collections_IDictionary = nullptr;
 
 #ifdef DEBUG_ENABLED
@@ -171,21 +172,17 @@ void CachedData::clear_godot_api_cache() {
 
 	methodthunk_MarshalUtils_TypeIsGenericArray.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericDictionary.nullify();
+	methodthunk_MarshalUtils_TypeIsSystemGenericList.nullify();
+	methodthunk_MarshalUtils_TypeIsSystemGenericDictionary.nullify();
+	methodthunk_MarshalUtils_TypeIsGenericIEnumerable.nullify();
+	methodthunk_MarshalUtils_TypeIsGenericICollection.nullify();
+	methodthunk_MarshalUtils_TypeIsGenericIDictionary.nullify();
 
 	methodthunk_MarshalUtils_ArrayGetElementType.nullify();
 	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes.nullify();
 
-	methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType.nullify();
-	methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType.nullify();
-	methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType_with_info.nullify();
-	methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType_with_info.nullify();
-
 	methodthunk_MarshalUtils_MakeGenericArrayType.nullify();
 	methodthunk_MarshalUtils_MakeGenericDictionaryType.nullify();
-
-	methodthunk_MarshalUtils_EnumerableToArray.nullify();
-	methodthunk_MarshalUtils_IDictionaryToDictionary.nullify();
-	methodthunk_MarshalUtils_GenericIDictionaryToDictionary.nullify();
 
 	// End of MarshalUtils methods
 
@@ -213,6 +210,7 @@ void update_corlib_cache() {
 	CACHE_CLASS_AND_CHECK(IntPtr, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_intptr_class()));
 
 	CACHE_CLASS_AND_CHECK(System_Collections_IEnumerable, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IEnumerable"));
+	CACHE_CLASS_AND_CHECK(System_Collections_ICollection, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "ICollection"));
 	CACHE_CLASS_AND_CHECK(System_Collections_IDictionary, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IDictionary"));
 
 #ifdef DEBUG_ENABLED
@@ -297,21 +295,17 @@ void update_godot_api_cache() {
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericArray, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericArray", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsSystemGenericList, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsSystemGenericList", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsSystemGenericDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsSystemGenericDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIEnumerable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIEnumerable", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericICollection, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericICollection", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIDictionary", 1));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, GODOT_API_CLASS(MarshalUtils)->get_method("ArrayGetElementType", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, GODOT_API_CLASS(MarshalUtils)->get_method("DictionaryGetKeyValueTypes", 3));
 
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIEnumerableIsAssignableFromType, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIEnumerableIsAssignableFromType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryIsAssignableFromType, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIDictionaryIsAssignableFromType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIEnumerableIsAssignableFromType_with_info, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIEnumerableIsAssignableFromType", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryIsAssignableFromType_with_info, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIDictionaryIsAssignableFromType", 3));
-
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericArrayType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericArrayType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericDictionaryType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericDictionaryType", 2));
-
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, EnumerableToArray, GODOT_API_CLASS(MarshalUtils)->get_method("EnumerableToArray", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IDictionaryToDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("IDictionaryToDictionary", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryToDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIDictionaryToDictionary", 2));
 
 	// End of MarshalUtils methods
 
