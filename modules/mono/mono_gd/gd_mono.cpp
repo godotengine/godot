@@ -1387,7 +1387,10 @@ bool _GodotSharp::is_runtime_initialized() {
 
 void _GodotSharp::_reload_assemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
-	CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
+	// This method may be called more than once with `call_deferred`, so we need to check
+	// again if reloading is needed to avoid reloading multiple times unnecessarily.
+	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed())
+		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
 #endif
 }
 
