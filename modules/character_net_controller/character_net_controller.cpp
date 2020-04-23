@@ -49,9 +49,6 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_redundant_inputs", "max_redundand_inputs"), &CharacterNetController::set_max_redundant_inputs);
 	ClassDB::bind_method(D_METHOD("get_max_redundant_inputs"), &CharacterNetController::get_max_redundant_inputs);
 
-	ClassDB::bind_method(D_METHOD("set_state_notify_interval", "interval"), &CharacterNetController::set_state_notify_interval);
-	ClassDB::bind_method(D_METHOD("get_state_notify_interval"), &CharacterNetController::get_state_notify_interval);
-
 	ClassDB::bind_method(D_METHOD("get_current_snapshot_id"), &CharacterNetController::get_current_input_id);
 
 	ClassDB::bind_method(D_METHOD("input_buffer_add_bool", "bool", "compression_level"), &CharacterNetController::input_buffer_add_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
@@ -88,7 +85,6 @@ void CharacterNetController::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "state_notify_interval", PROPERTY_HINT_RANGE, "0.0001,10.0,0.0001"), "set_state_notify_interval", "get_state_notify_interval");
 
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_opened"));
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_closed"));
@@ -97,7 +93,6 @@ void CharacterNetController::_bind_methods() {
 CharacterNetController::CharacterNetController() :
 		player_input_storage_size(300),
 		max_redundant_inputs(50),
-		state_notify_interval(1.0),
 		controller(nullptr),
 		scene_rewinder(nullptr),
 		packet_missing(false),
@@ -122,14 +117,6 @@ void CharacterNetController::set_max_redundant_inputs(int p_max) {
 
 int CharacterNetController::get_max_redundant_inputs() const {
 	return max_redundant_inputs;
-}
-
-void CharacterNetController::set_state_notify_interval(real_t p_interval) {
-	state_notify_interval = p_interval;
-}
-
-real_t CharacterNetController::get_state_notify_interval() const {
-	return state_notify_interval;
 }
 
 uint64_t CharacterNetController::get_current_input_id() const {
@@ -475,8 +462,7 @@ void PlayerInputsReference::set_inputs_buffer(const BitArray &p_new_buffer) {
 ServerController::ServerController(CharacterNetController *p_node) :
 		Controller(p_node),
 		current_input_buffer_id(UINT64_MAX),
-		ghost_input_count(0),
-		peers_state_checker_time(0.0) {
+		ghost_input_count(0) {
 }
 
 void ServerController::physics_process(real_t p_delta) {

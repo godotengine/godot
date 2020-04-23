@@ -70,17 +70,10 @@ private:
 	/// perform some tests until you find a better suitable value for your needs.
 	int player_input_storage_size;
 
-	/// Amount of time an inputs is re-sent to each node.
+	/// Amount of time an inputs is re-sent to each peer.
 	/// Resend inputs is necessary because the packets may be lost since they
 	/// are sent in an unreliable way.
 	int max_redundant_inputs;
-
-	/// Interval in seconds of when the server sends the player states to the
-	/// peers.
-	///
-	/// This must be enough to allow the clients to adjust its position, so must
-	/// be tweek with the adjustment speed.
-	real_t state_notify_interval;
 
 	Controller *controller;
 	InputsBuffer inputs_buffer;
@@ -105,9 +98,6 @@ public:
 
 	void set_max_redundant_inputs(int p_max);
 	int get_max_redundant_inputs() const;
-
-	void set_state_notify_interval(real_t p_interval);
-	real_t get_state_notify_interval() const;
 
 	uint64_t get_current_input_id() const;
 
@@ -280,7 +270,6 @@ struct ServerController : public Controller {
 	uint64_t current_input_buffer_id;
 	uint32_t ghost_input_count;
 	std::deque<FrameSnapshotSkinny> snapshots;
-	real_t peers_state_checker_time;
 
 	ServerController(CharacterNetController *p_node);
 

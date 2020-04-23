@@ -101,7 +101,7 @@ class SceneRewinder : public Node {
 	/// change at a rate that can be controlled by this parameter.
 	real_t optimal_size_acceleration;
 
-	/// The server is behing several frames behind the client, the maxim amount
+	/// The server is several frames behind the client, the maxim amount
 	/// of these frames is defined by the value of this parameter.
 	///
 	/// To prevent introducing virtual lag.
