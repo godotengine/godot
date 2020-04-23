@@ -48,8 +48,8 @@ void main() {
 	frag_color.a = 0.0;
 #ifdef MODE_SSR
 
-	vec4 ssr = texture(ssr, uv_interp);
-	frag_color.rgb = mix(frag_color.rgb, ssr.rgb, ssr.a);
+	vec4 ssr_color = texture(ssr, uv_interp);
+	frag_color.rgb = mix(frag_color.rgb, ssr_color.rgb, ssr_color.a);
 #endif
 
 #ifdef MODE_MERGE
