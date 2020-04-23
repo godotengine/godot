@@ -39,3 +39,14 @@ before_build:
 
 build_script:
   - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
+
+  - git rev-parse --short=9 HEAD>VERSION_HASH.txt
+  - set /P VERSION_HASH=<VERSION_HASH.txt
+  - cd bin
+  - 7z a -mx9 godot.windows.opt.tools.64-%VERSION_HASH%.zip *.exe
+  - cd ..
+  - echo.
+  - "echo Download compiled editor binary for Windows 64-bit (link is valid for 14 days after this build was completed):"
+  # Upload the compiled binary to transfer.sh for testing purposes.
+  # The URL is valid for 14 days and can be viewed in the CI log.
+  - curl.exe --upload-file bin/godot.windows.opt.tools.64-%VERSION_HASH%.zip https://transfer.sh/godot.windows.opt.tools.64-%VERSION_HASH%.zip
