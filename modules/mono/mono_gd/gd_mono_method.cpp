@@ -30,12 +30,13 @@
 
 #include "gd_mono_method.h"
 
+#include <mono/metadata/attrdefs.h>
+#include <mono/metadata/debug-helpers.h>
+
 #include "gd_mono_cache.h"
 #include "gd_mono_class.h"
 #include "gd_mono_marshal.h"
 #include "gd_mono_utils.h"
-
-#include <mono/metadata/attrdefs.h>
 
 void GDMonoMethod::_update_signature() {
 	// Apparently MonoMethodSignature needs not to be freed.

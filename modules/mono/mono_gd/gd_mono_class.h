@@ -31,8 +31,6 @@
 #ifndef GD_MONO_CLASS_H
 #define GD_MONO_CLASS_H
 
-#include <mono/metadata/debug-helpers.h>
-
 #include "core/map.h"
 #include "core/ustring.h"
 
@@ -107,7 +105,8 @@ public:
 	static MonoType *get_mono_type(MonoClass *p_mono_class);
 
 	String get_full_name() const;
-	MonoType *get_mono_type();
+	String get_type_desc() const;
+	MonoType *get_mono_type() const;
 
 	uint32_t get_flags() const;
 	bool is_static() const;
@@ -137,6 +136,7 @@ public:
 	void fetch_methods_with_godot_api_checks(GDMonoClass *p_native_base);
 
 	bool implements_interface(GDMonoClass *p_interface);
+	bool has_public_parameterless_ctor();
 
 	GDMonoMethod *get_method(const StringName &p_name, int p_params_count = 0);
 	GDMonoMethod *get_method(MonoMethod *p_raw_method);
