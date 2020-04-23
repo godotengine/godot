@@ -37,6 +37,7 @@
 #include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
+#include "visual_script_func_nodes.h"
 
 //////////////////////////////////////////
 ////////////////FUNCTION//////////////////
@@ -59,6 +60,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 		}
 		ports_changed_notify();
 		_change_notify();
+		_update_callable_nodes();
 		return true;
 	}
 	if (String(p_name).begins_with("argument_")) {
@@ -70,6 +72,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 			Variant::Type new_type = Variant::Type(int(p_value));
 			arguments.write[idx].type = new_type;
 			ports_changed_notify();
+			_update_callable_nodes();
 
 			return true;
 		}
@@ -78,6 +81,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 
 			arguments.write[idx].name = p_value;
 			ports_changed_notify();
+			_update_callable_nodes();
 			return true;
 		}
 	}
@@ -100,6 +104,7 @@ bool VisualScriptFunction::_set(const StringName &p_name, const Variant &p_value
 	if (p_name == "sequenced/sequenced") {
 		sequenced = p_value;
 		ports_changed_notify();
+		_update_callable_nodes();
 		return true;
 	}
 
@@ -353,6 +358,34 @@ void VisualScriptFunction::set_stack_size(int p_size) {
 int VisualScriptFunction::get_stack_size() const {
 
 	return stack_size;
+}
+
+void VisualScriptFunction::_update_callable_nodes() {
+	Ref<VisualScript> vs = get_visual_script();
+
+	if (vs.ptr()) {
+		List<StringName> funcs;
+		vs->get_function_list(&funcs);
+
+		for (List<StringName>::Element *F = funcs.front(); F; F = F->next()) { // loop through all the functions
+
+			List<int> ids;
+			vs->get_node_list(F->get(), &ids);
+
+			for (List<int>::Element *E = ids.front(); E; E = E->next()) {
+				Ref<VisualScriptNode> node = vs->get_node(F->get(), E->get());
+
+				if (Object::cast_to<VisualScriptFunctionCall>(node.ptr())) {
+					Ref<VisualScriptFunctionCall> vsfc = node;
+					if (vsfc->get_function() == this->get_name()) { //Only update the callable nodes of this function node
+						vsfc->_update_method_cache();
+						vsfc->_change_notify();
+						vsfc->emit_signal("ports_changed");
+					}
+				}
+			}
+		}
+	}
 }
 
 //////////////////////////////////////////
