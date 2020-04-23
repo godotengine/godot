@@ -175,10 +175,6 @@ public:
 	void _on_peer_connection_change(int p_peer_id);
 	void update_active_doll_peers();
 
-	/// This must be called on server whenever the character state is changed
-	/// by anything not happened on client.
-	void force_state_notify();
-
 	void replay_snapshots();
 	int forget_input_till(uint64_t p_input_id);
 	uint64_t get_stored_input_id(int p_i) const;
@@ -318,9 +314,6 @@ struct ServerController : public Controller {
 	/// This function is executed on server, and call a client function that
 	/// checks if the player state is consistent between client and server.
 	void check_peers_player_state(real_t p_delta, bool is_new_input);
-
-	/// Forces the state check to be notified on next frame.
-	void force_state_notify();
 };
 
 struct PlayerController : public Controller {

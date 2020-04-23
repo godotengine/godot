@@ -131,6 +131,8 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_recovered"), &SceneRewinder::is_recovered);
 	ClassDB::bind_method(D_METHOD("is_rewinding"), &SceneRewinder::is_rewinding);
 
+	ClassDB::bind_method(D_METHOD("force_state_notify"), &SceneRewinder::force_state_notify);
+
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneRewinder::__clear);
 	ClassDB::bind_method(D_METHOD("__reset"), &SceneRewinder::__reset);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneRewinder::_rpc_send_state);
@@ -397,6 +399,14 @@ bool SceneRewinder::is_recovered() const {
 
 bool SceneRewinder::is_rewinding() const {
 	return rewinding_in_progress;
+}
+
+void SceneRewinder::force_state_notify() {
+	ServerRewinder *r = dynamic_cast<ServerRewinder *>(rewinder);
+	ERR_FAIL_COND_MSG(r == nullptr, "This function can be called only on server.");
+	// + 1.0 is just a ridiculous high number to be sure to avoid float
+	// precision error.
+	r->state_notifier_timer = get_server_notify_state_interval() + 1.0;
 }
 
 void SceneRewinder::reset() {

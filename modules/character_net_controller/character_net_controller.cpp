@@ -72,8 +72,6 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &CharacterNetController::set_doll_peer_active);
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &CharacterNetController::_on_peer_connection_change);
 
-	ClassDB::bind_method(D_METHOD("force_state_notify"), &CharacterNetController::force_state_notify);
-
 	ClassDB::bind_method(D_METHOD("replay_snapshots"), &CharacterNetController::replay_snapshots);
 
 	ClassDB::bind_method(D_METHOD("_rpc_server_send_frames_snapshot"), &CharacterNetController::_rpc_server_send_frames_snapshot);
@@ -225,12 +223,6 @@ void CharacterNetController::update_active_doll_peers() {
 			active_doll_peers.push_back(peer_id);
 		}
 	}
-}
-
-void CharacterNetController::force_state_notify() {
-	ERR_FAIL_COND(get_tree()->is_network_server() == false);
-
-	static_cast<ServerController *>(controller)->force_state_notify();
 }
 
 void CharacterNetController::replay_snapshots() {
@@ -817,12 +809,6 @@ void ServerController::check_peers_player_state(real_t p_delta, bool is_new_inpu
 			"_rpc_send_player_state",
 			current_input_buffer_id,
 			data);
-}
-
-void ServerController::force_state_notify() {
-	// + 1.0 is just a ridiculous high number to be sure to avoid float
-	// precision error.
-	peers_state_checker_time = node->get_state_notify_interval() + 1.0;
 }
 
 PlayerController::PlayerController(CharacterNetController *p_node) :

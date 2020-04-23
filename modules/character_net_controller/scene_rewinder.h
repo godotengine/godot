@@ -176,6 +176,9 @@ public:
 	bool is_recovered() const;
 	bool is_rewinding() const;
 
+	/// This function works only on server.
+	void force_state_notify();
+
 	/// Can only be called on the server
 	void reset();
 	void __reset();
@@ -261,6 +264,8 @@ public:
 };
 
 class NoNetRewinder : public Rewinder {
+	friend class SceneRewinder;
+
 public:
 	NoNetRewinder(SceneRewinder *p_node);
 
@@ -272,6 +277,8 @@ public:
 };
 
 class ServerRewinder : public Rewinder {
+	friend class SceneRewinder;
+
 	real_t state_notifier_timer;
 	Vector<PeerData> peers_data;
 	uint64_t snapshot_count;
@@ -306,6 +313,7 @@ private:
 };
 
 class ClientRewinder : public Rewinder {
+	friend class SceneRewinder;
 
 	HashMap<uint32_t, ObjectID> node_id_map;
 	HashMap<uint32_t, NodePath> node_paths;
