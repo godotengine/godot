@@ -31,6 +31,7 @@
 #include "gd_mono_class.h"
 
 #include <mono/metadata/attrdefs.h>
+#include <mono/metadata/debug-helpers.h>
 
 #include "gd_mono_assembly.h"
 #include "gd_mono_cache.h"
@@ -55,7 +56,11 @@ String GDMonoClass::get_full_name() const {
 	return get_full_name(mono_class);
 }
 
-MonoType *GDMonoClass::get_mono_type() {
+String GDMonoClass::get_type_desc() const {
+	return GDMonoUtils::get_type_desc(get_mono_type());
+}
+
+MonoType *GDMonoClass::get_mono_type() const {
 	// Careful, you cannot compare two MonoType*.
 	// There is mono_metadata_type_equal, how is this different from comparing two MonoClass*?
 	return get_mono_type(mono_class);
@@ -264,6 +269,12 @@ bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
 	return mono_class_implements_interface(mono_class, p_interface->get_mono_ptr());
 }
 
+bool GDMonoClass::has_public_parameterless_ctor() {
+
+	GDMonoMethod *ctor = get_method(".ctor", 0);
+	return ctor && ctor->get_visibility() == IMonoClassMember::PUBLIC;
+}
+
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {
 
 	MethodKey key = MethodKey(p_name, p_params_count);
@@ -327,6 +338,9 @@ GDMonoMethod *GDMonoClass::get_method_with_desc(const String &p_description, boo
 	MonoMethodDesc *desc = mono_method_desc_new(p_description.utf8().get_data(), p_include_namespace);
 	MonoMethod *method = mono_method_desc_search_in_class(desc, mono_class);
 	mono_method_desc_free(desc);
+
+	if (!method)
+		return nullptr;
 
 	ERR_FAIL_COND_V(mono_method_get_class(method) != mono_class, nullptr);
 
