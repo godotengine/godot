@@ -731,7 +731,7 @@ void PlayerController::physics_process(real_t p_delta) {
 
 	// We need to know if we can accept a new input because in case of bad
 	// internet connection we can't keep accumulates inputs up to infinite
-	// otherwise the server will difer too much from the client and we
+	// otherwise the server will differ too much from the client and we
 	// introduce virtual lag.
 	const bool accept_new_inputs = can_accept_new_inputs();
 

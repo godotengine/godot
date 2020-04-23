@@ -81,7 +81,7 @@ private:
 	SceneRewinder *scene_rewinder;
 
 	Vector<int> active_doll_peers;
-	// Disabled peers is used to stop information propagation to a particular pear.
+	// Disabled peers is used to stop information propagation to a particular peer.
 	Vector<int> disabled_doll_peers;
 
 	bool packet_missing;
