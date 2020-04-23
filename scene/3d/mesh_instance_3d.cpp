@@ -307,19 +307,22 @@ Ref<Material> MeshInstance3D::get_surface_material(int p_surface) const {
 
 Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 
-	if (get_material_override() != Ref<Material>()) {
-		return get_material_override();
-	} else if (p_surface < materials.size()) {
-		return materials[p_surface];
-	} else {
-		Ref<Mesh> mesh = get_mesh();
+	Ref<Material> material_override = get_material_override();
+	if (material_override.is_valid()) {
+		return material_override;
+	}
 
-		if (mesh.is_null() || p_surface >= mesh->get_surface_count()) {
-			return Ref<Material>();
-		}
+	Ref<Material> surface_material = get_surface_material(p_surface);
+	if (surface_material.is_valid()) {
+		return surface_material;
+	}
 
+	Ref<Mesh> mesh = get_mesh();
+	if (mesh.is_valid()) {
 		return mesh->surface_get_material(p_surface);
 	}
+
+	return Ref<Material>();
 }
 
 void MeshInstance3D::_mesh_changed() {
