@@ -176,6 +176,7 @@ Vector3 CharacterNetController::input_buffer_read_normalized_vector3(InputCompre
 	return inputs_buffer.read_normalized_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
+// TODO support this with the new SceneRewinder
 void CharacterNetController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "You can set doll activation only on server");
 	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equals to the Master `peer_id`, so it's not allowed.");

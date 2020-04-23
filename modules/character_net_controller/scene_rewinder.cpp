@@ -368,7 +368,7 @@ void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable
 void SceneRewinder::register_controller(Node *p_controller) {
 	CharacterNetController *c = Object::cast_to<CharacterNetController>(p_controller);
 	ERR_FAIL_COND(c == nullptr);
-	_register_controller(c);
+	register_node(p_controller);
 }
 
 void SceneRewinder::unregister_controller(Node *p_controller) {
@@ -378,7 +378,6 @@ void SceneRewinder::unregister_controller(Node *p_controller) {
 }
 
 void SceneRewinder::_register_controller(CharacterNetController *p_controller) {
-
 	if (p_controller->has_scene_rewinder()) {
 		ERR_FAIL_COND_MSG(p_controller->get_scene_rewinder() != this, "This controller is associated with a different scene rewinder.");
 	} else {
@@ -1075,9 +1074,8 @@ void ServerRewinder::adjust_player_tick_rate(real_t p_delta) {
 }
 
 ClientRewinder::ClientRewinder(SceneRewinder *p_node) :
-		Rewinder(p_node),
-		server_snapshot_id(0),
-		recovered_snapshot_id(0) {
+		Rewinder(p_node) {
+	clear();
 }
 
 void ClientRewinder::clear() {
@@ -1168,10 +1166,7 @@ void ClientRewinder::process_recovery(real_t p_delta) {
 		snapshots.pop_front();
 	}
 
-	if (snapshots.empty()) {
-		// Nothing to do.
-		return;
-	}
+	ERR_FAIL_COND(snapshots.empty());
 
 #ifdef DEBUG_ENABLED
 	// Can't happen, because no snapshots are taken when the client don't accept
@@ -1462,15 +1457,13 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	ERR_FAIL_COND(raw_snapshot_ptr[0].get_type() != Variant::INT);
 
 	const uint64_t snapshot_id = raw_snapshot_ptr[0];
+	uint64_t player_controller_input_id = UINT64_MAX;
 
 	// Make sure this snapshot is expected.
 	ERR_FAIL_COND(snapshot_id <= server_snapshot_id);
 
-	server_snapshot_id = snapshot_id;
-
 	// We espect that the player_controller is updated by this new snapshot,
 	// so make sure it's done so.
-	const uint64_t old_controller_input_id = server_snapshot.player_controller_input_id;
 
 	// Start from 1 to skip the snapshot ID.
 	for (int snap_data_index = 1; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
@@ -1581,7 +1574,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				if (node == scene_rewinder->main_controller) {
 					// This is the main controller, store the ID also in the
 					// utility variable.
-					server_snapshot.player_controller_input_id = input_id;
+					player_controller_input_id = input_id;
 				}
 			}
 
@@ -1687,6 +1680,9 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 		}
 	}
 
-	// Just make sure that the local player input got set as expected.
-	ERR_FAIL_COND_MSG(server_snapshot.player_controller_input_id == old_controller_input_id, "The player controller ID was not part of the received snapshot. It will not be considered.");
+	// Just make sure that the local player input ID was received.
+	ERR_FAIL_COND_MSG(player_controller_input_id == UINT64_MAX, "The player controller ID was not part of the received snapshot, this snapshot is corrupted.");
+
+	server_snapshot_id = snapshot_id;
+	server_snapshot.player_controller_input_id = player_controller_input_id;
 }
