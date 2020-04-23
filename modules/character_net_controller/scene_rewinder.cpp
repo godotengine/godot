@@ -823,7 +823,7 @@ void ControllerRewinder::init(
 	frames_to_skip = p_frames;
 
 	if (rewinding_disabled == false) {
-		const int remaining_inputs = controller->forget_input_till(p_recovered_snapshot_input_id);
+		const int remaining_inputs = controller->notify_input_checked(p_recovered_snapshot_input_id);
 		finished = remaining_inputs <= 0;
 	} else {
 		finished = true;
@@ -916,6 +916,9 @@ Variant ServerRewinder::generate_snapshot() {
 	//              the first time.
 
 	// TODO: in this moment the snapshot is the same for anyone. Optimize.
+	// TODO, make sure the generated snapshot only includes enabled controllers.
+	// Using the function `Controller::get_active_doll_peers()` is possible to
+	// know the active controllers.
 
 	snapshot_count += 1;
 
@@ -1194,7 +1197,7 @@ void ClientRewinder::process_recovery(real_t p_delta) {
 		// inputs till now.
 		for (size_t c = 0; c < scene_rewinder->cached_controllers.size(); c += 1) {
 			const uint64_t checked_id = server_snapshot.controllers_input_id[scene_rewinder->cached_controllers[c]->get_instance_id()];
-			scene_rewinder->cached_controllers[c]->forget_input_till(checked_id);
+			scene_rewinder->cached_controllers[c]->notify_input_checked(checked_id);
 		}
 	}
 

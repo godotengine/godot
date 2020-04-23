@@ -174,7 +174,7 @@ public:
 	void _on_peer_connection_change(int p_peer_id);
 	void update_active_doll_peers();
 
-	int forget_input_till(uint64_t p_input_id);
+	int notify_input_checked(uint64_t p_input_id);
 	uint64_t get_stored_input_id(int p_i) const;
 	bool process_instant(int p_i, real_t p_delta);
 
@@ -194,10 +194,10 @@ public:
 	bool has_scene_rewinder() const;
 
 	/* On server rpc functions. */
-	void _rpc_server_send_frames_snapshot(Vector<uint8_t> p_data);
+	void _rpc_server_send_inputs(Vector<uint8_t> p_data);
 
 	/* On puppet rpc functions. */
-	void _rpc_doll_send_frames_snapshot(Vector<uint8_t> p_data);
+	void _rpc_doll_send_inputs(Vector<uint8_t> p_data);
 	void _rpc_doll_notify_connection_status(bool p_open);
 
 	void process(real_t p_delta);
@@ -270,12 +270,7 @@ struct Controller {
 
 	virtual void physics_process(real_t p_delta) = 0;
 	virtual void receive_snapshots(Vector<uint8_t> p_data) = 0;
-
-	/// The server call this function on all peers with on server state.
-	/// The peers can check if the state is the same or not and in this case
-	/// recover its player state.
-	virtual void player_state_check(uint64_t p_id, Variant p_data) = 0;
-	virtual int forget_input_till(uint64_t p_input_id) = 0;
+	virtual int notify_input_checked(uint64_t p_input_id) = 0;
 	virtual uint64_t get_stored_input_id(int p_i) const = 0;
 	virtual bool process_instant(int p_i, real_t p_delta) = 0;
 	virtual uint64_t get_current_snapshot_id() const = 0;
@@ -291,8 +286,7 @@ struct ServerController : public Controller {
 
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
-	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual int forget_input_till(uint64_t p_input_id);
+	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
@@ -308,16 +302,12 @@ struct PlayerController : public Controller {
 	uint64_t input_buffers_counter;
 	std::deque<FrameSnapshot> frames_snapshot;
 	std::vector<uint8_t> cached_packet_data;
-	uint64_t recover_snapshot_id;
-	uint64_t recovered_snapshot_id;
-	Variant recover_state_data;
 
 	PlayerController(CharacterNetController *p_node);
 
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
-	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual int forget_input_till(uint64_t p_input_id);
+	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
@@ -348,14 +338,14 @@ struct DollController : public Controller {
 	PlayerController player_controller;
 	bool is_server_communication_detected;
 	bool is_server_state_update_received;
+	uint64_t last_checked_input_id;
 	bool is_flow_open;
 
 	DollController(CharacterNetController *p_node);
 
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
-	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual int forget_input_till(uint64_t p_input_id);
+	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;
@@ -379,8 +369,7 @@ struct NoNetController : public Controller {
 
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_snapshots(Vector<uint8_t> p_data);
-	virtual void player_state_check(uint64_t p_snapshot_id, Variant p_data);
-	virtual int forget_input_till(uint64_t p_input_id);
+	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_snapshot_id() const;

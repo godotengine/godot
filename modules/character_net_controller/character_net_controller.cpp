@@ -72,8 +72,8 @@ void CharacterNetController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &CharacterNetController::set_doll_peer_active);
 	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &CharacterNetController::_on_peer_connection_change);
 
-	ClassDB::bind_method(D_METHOD("_rpc_server_send_frames_snapshot"), &CharacterNetController::_rpc_server_send_frames_snapshot);
-	ClassDB::bind_method(D_METHOD("_rpc_doll_send_frames_snapshot"), &CharacterNetController::_rpc_doll_send_frames_snapshot);
+	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &CharacterNetController::_rpc_server_send_inputs);
+	ClassDB::bind_method(D_METHOD("_rpc_doll_send_inputs"), &CharacterNetController::_rpc_doll_send_inputs);
 	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &CharacterNetController::_rpc_doll_notify_connection_status);
 
 	ClassDB::bind_method(D_METHOD("is_server_controller"), &CharacterNetController::is_server_controller);
@@ -103,8 +103,8 @@ CharacterNetController::CharacterNetController() :
 		packet_missing(false),
 		has_player_new_input(false) {
 
-	rpc_config("_rpc_server_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_doll_send_frames_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_doll_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
@@ -176,7 +176,6 @@ Vector3 CharacterNetController::input_buffer_read_normalized_vector3(InputCompre
 	return inputs_buffer.read_normalized_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-// TODO support this with the new SceneRewinder
 void CharacterNetController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "You can set doll activation only on server");
 	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equals to the Master `peer_id`, so it's not allowed.");
@@ -218,8 +217,8 @@ void CharacterNetController::update_active_doll_peers() {
 	}
 }
 
-int CharacterNetController::forget_input_till(uint64_t p_input_id) {
-	return controller->forget_input_till(p_input_id);
+int CharacterNetController::notify_input_checked(uint64_t p_input_id) {
+	return controller->notify_input_checked(p_input_id);
 }
 
 uint64_t CharacterNetController::get_stored_input_id(int p_i) const {
@@ -282,20 +281,20 @@ bool CharacterNetController::has_scene_rewinder() const {
 	return scene_rewinder;
 }
 
-void CharacterNetController::_rpc_server_send_frames_snapshot(Vector<uint8_t> p_data) {
+void CharacterNetController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND(get_tree()->is_network_server() == false);
 
 	const Vector<int> &peers = get_active_doll_peers();
 	for (int i = 0; i < peers.size(); i += 1) {
 		// This is an active doll, Let's send the data.
 		const int peer_id = peers[i];
-		rpc_unreliable_id(peer_id, "_rpc_doll_send_frames_snapshot", p_data);
+		rpc_unreliable_id(peer_id, "_rpc_doll_send_inputs", p_data);
 	}
 
 	controller->receive_snapshots(p_data);
 }
 
-void CharacterNetController::_rpc_doll_send_frames_snapshot(Vector<uint8_t> p_data) {
+void CharacterNetController::_rpc_doll_send_inputs(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 
@@ -579,12 +578,8 @@ void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND_MSG(ofs != data_len, "At the end was detected that the arrived packet has an unexpected size.");
 }
 
-void ServerController::player_state_check(uint64_t p_id, Variant p_data) {
-	ERR_PRINT("The method `player_state_check` must not be called on server. Be sure why it happened.");
-}
-
-int ServerController::forget_input_till(uint64_t p_input_id) {
-	ERR_PRINT("The method `forget_input_till` must not be called on server. Be sure why it happened.");
+int ServerController::notify_input_checked(uint64_t p_input_id) {
+	ERR_PRINT("The method `notify_input_checked` must not be called on server. Be sure why it happened.");
 	return 0;
 }
 
@@ -743,9 +738,7 @@ bool ServerController::fetch_next_input() {
 PlayerController::PlayerController(CharacterNetController *p_node) :
 		Controller(p_node),
 		current_input_id(0),
-		input_buffers_counter(0),
-		recover_snapshot_id(0),
-		recovered_snapshot_id(0) {
+		input_buffers_counter(0) {
 }
 
 void PlayerController::physics_process(real_t p_delta) {
@@ -784,14 +777,7 @@ void PlayerController::receive_snapshots(Vector<uint8_t> p_data) {
 	ERR_PRINT("The player is not supposed to receive snapshots. Check why this happened.");
 }
 
-void PlayerController::player_state_check(uint64_t p_snapshot_id, Variant p_data) {
-	if (p_snapshot_id > recover_snapshot_id && p_snapshot_id > recovered_snapshot_id) {
-		recover_snapshot_id = p_snapshot_id;
-		recover_state_data = p_data;
-	}
-}
-
-int PlayerController::forget_input_till(uint64_t p_input_id) {
+int PlayerController::notify_input_checked(uint64_t p_input_id) {
 	// Remove inputs.
 	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= p_input_id) {
 		frames_snapshot.pop_front();
@@ -971,7 +957,7 @@ void PlayerController::send_frame_input_buffer_to_server() {
 			ofs);
 
 	const int server_peer_id = 1;
-	node->rpc_unreliable_id(server_peer_id, "_rpc_server_send_frames_snapshot", packet_data);
+	node->rpc_unreliable_id(server_peer_id, "_rpc_server_send_inputs", packet_data);
 }
 
 bool PlayerController::can_accept_new_inputs() const {
@@ -984,6 +970,7 @@ DollController::DollController(CharacterNetController *p_node) :
 		player_controller(p_node),
 		is_server_communication_detected(false),
 		is_server_state_update_received(false),
+		last_checked_input_id(0),
 		is_flow_open(true) {
 }
 
@@ -1018,15 +1005,12 @@ void DollController::receive_snapshots(Vector<uint8_t> p_data) {
 	server_controller.receive_snapshots(p_data);
 }
 
-void DollController::player_state_check(uint64_t p_snapshot_id, Variant p_data) {
-	if (is_flow_open == false)
-		return;
-	player_controller.player_state_check(p_snapshot_id, p_data);
-	is_server_state_update_received = true;
-}
-
-int DollController::forget_input_till(uint64_t p_input_id) {
-	return player_controller.forget_input_till(p_input_id);
+int DollController::notify_input_checked(uint64_t p_input_id) {
+	if (is_flow_open) {
+		last_checked_input_id = p_input_id;
+		is_server_state_update_received = true;
+	}
+	return player_controller.notify_input_checked(p_input_id);
 }
 
 uint64_t DollController::get_stored_input_id(int p_i) const {
@@ -1063,7 +1047,7 @@ void DollController::soft_reset_to_server_state() {
 	for (std::deque<FrameSnapshotSkinny>::const_reverse_iterator it = server_controller.snapshots.rbegin();
 			it != server_controller.snapshots.rend();
 			it += 1) {
-		if (it->id == player_controller.recover_snapshot_id) {
+		if (it->id == last_checked_input_id) {
 			reset = true;
 			break;
 		}
@@ -1080,10 +1064,10 @@ void DollController::hard_reset_to_server_state() {
 	// Drop the current frame_snapshot since are now useless.
 	player_controller.frames_snapshot.clear();
 
-	// Set the server `current_packet_id` to the previous `recover_snapshot`
-	// so the next frame the snapshot to recover is inserted naturally into
+	// Set the server `current_packet_id` to the previous `last_recovered_input_id`
+	// so the next frame the input to recover is inserted naturally into
 	// the player controller `snapshots` array.
-	server_controller.current_input_buffer_id = player_controller.recover_snapshot_id - 1;
+	server_controller.current_input_buffer_id = last_checked_input_id - 1;
 
 	// Drop all the snapshots that are older that the latest state update
 	// so to sync server and client back again.
@@ -1113,11 +1097,7 @@ void NoNetController::receive_snapshots(Vector<uint8_t> p_data) {
 	// Nothing to do.
 }
 
-void NoNetController::player_state_check(uint64_t p_snapshot_id, Variant p_data) {
-	// Nothing to do.
-}
-
-int NoNetController::forget_input_till(uint64_t p_input_id) {
+int NoNetController::notify_input_checked(uint64_t p_input_id) {
 	// Nothing to do.
 	return 0;
 }
