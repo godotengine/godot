@@ -281,6 +281,13 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
+			GDMonoClass *array_type_class = GDMono::get_singleton()->get_class(array_type->eklass);
+			if (CACHED_CLASS(GodotObject)->is_assignable_from(array_type_class)) {
+				MonoArray *managed = GDMonoMarshal::Array_to_mono_array(p_value.operator ::Array(), array_type_class);
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
 			ERR_FAIL_MSG("Attempted to convert Variant to a managed array of unmarshallable element type.");
 		} break;
 

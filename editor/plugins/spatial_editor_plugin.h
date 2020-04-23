@@ -828,12 +828,11 @@ public:
 	static const int HIDDEN = 1;
 	static const int ON_TOP = 2;
 
-private:
+protected:
 	int current_state;
 	List<EditorSpatialGizmo *> current_gizmos;
 	HashMap<String, Vector<Ref<SpatialMaterial> > > materials;
 
-protected:
 	static void _bind_methods();
 	virtual bool has_gizmo(Spatial *p_spatial);
 	virtual Ref<EditorSpatialGizmo> create_gizmo(Spatial *p_spatial);

@@ -1,4 +1,5 @@
 using Godot;
+using GodotTools.Core;
 using GodotTools.Export;
 using GodotTools.Utils;
 using System;
@@ -450,13 +451,27 @@ namespace GodotTools
                 {
                     // Migrate solution from old configuration names to: Debug, ExportDebug and ExportRelease
                     DotNetSolution.MigrateFromOldConfigNames(GodotSharpDirs.ProjectSlnPath);
-                    // Migrate csproj from old configuration names to: Debug, ExportDebug and ExportRelease
-                    ProjectUtils.MigrateFromOldConfigNames(GodotSharpDirs.ProjectCsProjPath);
 
-                    // Apply the other fixes after configurations are migrated
+                    var msbuildProject = ProjectUtils.Open(GodotSharpDirs.ProjectCsProjPath)
+                                         ?? throw new Exception("Cannot open C# project");
+
+                    // NOTE: The order in which changes are made to the project is important
+
+                    // Migrate csproj from old configuration names to: Debug, ExportDebug and ExportRelease
+                    ProjectUtils.MigrateFromOldConfigNames(msbuildProject);
+
+                    // Apply the other fixes only after configurations have been migrated
 
                     // Make sure the existing project has Api assembly references configured correctly
-                    ProjectUtils.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
+                    ProjectUtils.FixApiHintPath(msbuildProject);
+
+                    if (msbuildProject.HasUnsavedChanges)
+                    {
+                        // Save a copy of the project before replacing it
+                        FileUtils.SaveBackupCopy(GodotSharpDirs.ProjectCsProjPath);
+
+                        msbuildProject.Save();
+                    }
                 }
                 catch (Exception e)
                 {

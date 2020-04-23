@@ -2683,6 +2683,7 @@ void GDScriptParser::_transform_match_statment(MatchNode *p_match_statement) {
 			LocalVarNode *local_var = branch->body->variables[e->key()];
 			local_var->assign = e->value();
 			local_var->set_datatype(local_var->assign->get_datatype());
+			local_var->assignments++;
 
 			IdentifierNode *id2 = alloc_node<IdentifierNode>();
 			id2->name = local_var->name;
@@ -3672,6 +3673,12 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					if (outer_class->constant_expressions.has(name)) {
 						_set_error("A constant named \"" + String(name) + "\" already exists in the outer class scope (at line" + itos(outer_class->constant_expressions[name].expression->line) + ").");
 						return;
+					}
+					for (int i = 0; i < outer_class->variables.size(); i++) {
+						if (outer_class->variables[i].identifier == name) {
+							_set_error("A variable named \"" + String(name) + "\" already exists in the outer class scope (at line " + itos(outer_class->variables[i].line) + ").");
+							return;
+						}
 					}
 
 					outer_class = outer_class->owner;
@@ -6568,6 +6575,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							node_type = _reduce_identifier_type(&base_type, member_id->name, op->line, true);
 #ifdef DEBUG_ENABLED
 							if (!node_type.has_type) {
+								_mark_line_as_unsafe(op->line);
 								_add_warning(GDScriptWarning::UNSAFE_PROPERTY_ACCESS, op->line, member_id->name.operator String(), base_type.to_string());
 							}
 #endif // DEBUG_ENABLED

@@ -128,11 +128,7 @@ void gd_mono_profiler_init() {
 	}
 }
 
-#if defined(DEBUG_ENABLED)
-
 void gd_mono_debug_init() {
-
-	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
 
 	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
 
@@ -158,6 +154,10 @@ void gd_mono_debug_init() {
 		return; // Exported games don't use the project settings to setup the debugger agent
 #endif
 
+	// Debugging enabled
+
+	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
+
 	// --debugger-agent=help
 	const char *options[] = {
 		"--soft-breakpoints",
@@ -166,7 +166,6 @@ void gd_mono_debug_init() {
 	mono_jit_parse_options(2, (char **)options);
 }
 
-#endif // defined(DEBUG_ENABLED)
 #endif // !defined(JAVASCRIPT_ENABLED)
 
 #if defined(JAVASCRIPT_ENABLED)
@@ -174,6 +173,7 @@ MonoDomain *gd_initialize_mono_runtime() {
 	const char *vfs_prefix = "managed";
 	int enable_debugging = 0;
 
+	// TODO: Provide a way to enable debugging on WASM release builds.
 #ifdef DEBUG_ENABLED
 	enable_debugging = 1;
 #endif
@@ -184,9 +184,7 @@ MonoDomain *gd_initialize_mono_runtime() {
 }
 #else
 MonoDomain *gd_initialize_mono_runtime() {
-#ifdef DEBUG_ENABLED
 	gd_mono_debug_init();
-#endif
 
 #if defined(IPHONE_ENABLED) || defined(ANDROID_ENABLED)
 	// I don't know whether this actually matters or not
@@ -1388,7 +1386,10 @@ bool _GodotSharp::is_runtime_initialized() {
 
 void _GodotSharp::_reload_assemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
-	CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
+	// This method may be called more than once with `call_deferred`, so we need to check
+	// again if reloading is needed to avoid reloading multiple times unnecessarily.
+	if (CSharpLanguage::get_singleton()->is_assembly_reloading_needed())
+		CSharpLanguage::get_singleton()->reload_assemblies(p_soft_reload);
 #endif
 }
 

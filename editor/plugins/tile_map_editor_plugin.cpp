@@ -57,17 +57,18 @@ void TileMapEditor::_notification(int p_what) {
 
 		} break;
 
+		case NOTIFICATION_ENTER_TREE: {
+
+			get_tree()->connect("node_removed", this, "_node_removed");
+			FALLTHROUGH;
+		}
+
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
 			if (is_visible_in_tree()) {
 				_update_palette();
 			}
-			FALLTHROUGH;
-		}
 
-		case NOTIFICATION_ENTER_TREE: {
-
-			get_tree()->connect("node_removed", this, "_node_removed");
 			paint_button->set_icon(get_icon("Edit", "EditorIcons"));
 			bucket_fill_button->set_icon(get_icon("Bucket", "EditorIcons"));
 			picker_button->set_icon(get_icon("ColorPick", "EditorIcons"));
