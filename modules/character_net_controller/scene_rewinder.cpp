@@ -127,6 +127,9 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_variable_changes", "node", "variable", "method"), &SceneRewinder::track_variable_changes);
 	ClassDB::bind_method(D_METHOD("untrack_variable_changes", "node", "variable", "method"), &SceneRewinder::untrack_variable_changes);
 
+	ClassDB::bind_method(D_METHOD("register_controller", "controller"), &SceneRewinder::register_controller);
+	ClassDB::bind_method(D_METHOD("unregister_controller", "controller"), &SceneRewinder::unregister_controller);
+
 	ClassDB::bind_method(D_METHOD("register_process", "node", "function"), &SceneRewinder::register_process);
 	ClassDB::bind_method(D_METHOD("unregister_process", "node", "function"), &SceneRewinder::unregister_process);
 
@@ -316,19 +319,6 @@ void SceneRewinder::unregister_variable(Node *p_node, StringName p_variable) {
 	if (data.has(p_node->get_instance_id()) == false) return;
 	if (data[p_node->get_instance_id()].vars.find(p_variable) == -1) return;
 
-	{
-		CharacterNetController *controller = Object::cast_to<CharacterNetController>(p_node);
-		if (controller) {
-			ERR_FAIL_COND_MSG(controller->get_scene_rewinder() != this, "This controller is associated with this scene rewinder.");
-			controller->set_scene_rewinder(nullptr);
-			controllers.erase(controller->get_instance_id());
-
-			if (main_controller == controller) {
-				main_controller = nullptr;
-			}
-		}
-	}
-
 	// Disconnects the eventual connected methods
 	List<Connection> connections;
 	p_node->get_signal_connection_list(get_changed_event_name(p_variable), &connections);
@@ -372,6 +362,48 @@ void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable
 		p_node->disconnect(
 				get_changed_event_name(p_variable),
 				Callable(p_node, p_method));
+	}
+}
+
+void SceneRewinder::register_controller(Node *p_controller) {
+	CharacterNetController *c = Object::cast_to<CharacterNetController>(p_controller);
+	ERR_FAIL_COND(c == nullptr);
+	_register_controller(c);
+}
+
+void SceneRewinder::unregister_controller(Node *p_controller) {
+	CharacterNetController *c = Object::cast_to<CharacterNetController>(p_controller);
+	ERR_FAIL_COND(c == nullptr);
+	_unregister_controller(c);
+}
+
+void SceneRewinder::_register_controller(CharacterNetController *p_controller) {
+
+	if (p_controller->has_scene_rewinder()) {
+		ERR_FAIL_COND_MSG(p_controller->get_scene_rewinder() != this, "This controller is associated with a different scene rewinder.");
+	} else {
+		// Unreachable.
+		CRASH_COND(controllers.find(p_controller->get_instance_id()) != -1);
+		p_controller->set_scene_rewinder(this);
+		controllers.push_back(p_controller->get_instance_id());
+
+		if (p_controller->is_player_controller()) {
+			if (main_controller == nullptr) {
+				main_controller = p_controller;
+			} else {
+				WARN_PRINT("Multiple local player net controllers are not fully tested. Please report any strange behaviour.");
+			}
+		}
+	}
+}
+
+void SceneRewinder::_unregister_controller(CharacterNetController *p_controller) {
+	ERR_FAIL_COND_MSG(p_controller->get_scene_rewinder() != this, "This controller is associated with this scene rewinder.");
+	p_controller->set_scene_rewinder(nullptr);
+	controllers.erase(p_controller->get_instance_id());
+
+	if (main_controller == p_controller) {
+		main_controller = nullptr;
 	}
 }
 
@@ -521,19 +553,8 @@ NodeData *SceneRewinder::register_node(Node *p_node) {
 			if (controller->has_scene_rewinder()) {
 				ERR_FAIL_COND_V_MSG(controller->get_scene_rewinder() != this, nullptr, "This controller is associated with a different scene rewinder.");
 			} else {
-				// Unreachable.
-				CRASH_COND(controllers.find(controller->get_instance_id()) != -1);
-				controller->set_scene_rewinder(this);
-				controllers.push_back(controller->get_instance_id());
 				is_controller = true;
-
-				if (controller->is_player_controller()) {
-					if (main_controller == nullptr) {
-						main_controller = controller;
-					} else {
-						WARN_PRINT("More local player net controllers are not fully tested. Please report any strange behaviour.");
-					}
-				}
+				_register_controller(controller);
 			}
 		}
 	}

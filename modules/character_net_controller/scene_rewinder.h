@@ -170,6 +170,12 @@ public:
 	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 
+	void register_controller(Node *p_controller);
+	void unregister_controller(Node *p_controller);
+
+	void _register_controller(CharacterNetController *p_controller);
+	void _unregister_controller(CharacterNetController *p_controller);
+
 	void register_process(Node *p_node, StringName p_function);
 	void unregister_process(Node *p_node, StringName p_function);
 
