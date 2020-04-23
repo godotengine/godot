@@ -90,7 +90,9 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
-        doNotStrip '**/*.so'
+
+        // Should be uncommented for development purpose within Android Studio
+        // doNotStrip '**/*.so'
     }
 
     // Both signing and zip-aligning will be done at export time
