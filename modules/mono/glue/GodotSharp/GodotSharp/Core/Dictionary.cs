@@ -15,10 +15,7 @@ namespace Godot.Collections
 
         public override bool IsInvalid
         {
-            get
-            {
-                return handle == IntPtr.Zero;
-            }
+            get { return handle == IntPtr.Zero; }
         }
 
         protected override bool ReleaseHandle()
@@ -45,7 +42,8 @@ namespace Godot.Collections
             if (dictionary == null)
                 throw new NullReferenceException($"Parameter '{nameof(dictionary)} cannot be null.'");
 
-            MarshalUtils.IDictionaryToDictionary(dictionary, GetPtr());
+            foreach (DictionaryEntry entry in dictionary)
+                Add(entry.Key, entry.Value);
         }
 
         internal Dictionary(DictionarySafeHandle handle)
@@ -330,14 +328,8 @@ namespace Godot.Collections
 
         public TValue this[TKey key]
         {
-            get
-            {
-                return (TValue)Dictionary.godot_icall_Dictionary_GetValue_Generic(objectDict.GetPtr(), key, valTypeEncoding, valTypeClass);
-            }
-            set
-            {
-                objectDict[key] = value;
-            }
+            get { return (TValue)Dictionary.godot_icall_Dictionary_GetValue_Generic(objectDict.GetPtr(), key, valTypeEncoding, valTypeClass); }
+            set { objectDict[key] = value; }
         }
 
         public ICollection<TKey> Keys
@@ -385,18 +377,12 @@ namespace Godot.Collections
 
         public int Count
         {
-            get
-            {
-                return objectDict.Count;
-            }
+            get { return objectDict.Count; }
         }
 
         public bool IsReadOnly
         {
-            get
-            {
-                return objectDict.IsReadOnly;
-            }
+            get { return objectDict.IsReadOnly; }
         }
 
         public void Add(KeyValuePair<TKey, TValue> item)
@@ -440,7 +426,8 @@ namespace Godot.Collections
 
         public bool Remove(KeyValuePair<TKey, TValue> item)
         {
-            return Dictionary.godot_icall_Dictionary_Remove(GetPtr(), item.Key, item.Value); ;
+            return Dictionary.godot_icall_Dictionary_Remove(GetPtr(), item.Key, item.Value);
+            ;
         }
 
         // IEnumerable<KeyValuePair<TKey, TValue>>
