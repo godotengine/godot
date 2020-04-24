@@ -331,7 +331,8 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 				binds.write[j] = props[c.binds[j]];
 		}
 
-		cfrom->connect(snames[c.signal], Callable(cto, snames[c.method]), binds, CONNECT_PERSIST | c.flags);
+		Array connect_args = Variant(varray(snames[c.signal], Callable(cto, snames[c.method]), binds, CONNECT_PERSIST | c.flags));
+		cfrom->callv("connect", connect_args);
 	}
 
 	//Node *s = ret_nodes[0];

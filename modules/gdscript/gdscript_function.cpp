@@ -1307,10 +1307,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 #endif
 
+					String signal = argname->operator String();
+					Array connect_args = Variant(varray(signal, Callable(gdfs.ptr(), "_signal_callback"), varray(gdfs), Object::CONNECT_ONESHOT));
 #ifdef DEBUG_ENABLED
 					bool was_freed;
 					Object *obj = argobj->get_validated_object_with_check(was_freed);
-					String signal = argname->operator String();
 
 					if (was_freed) {
 						err_text = "First argument of yield() is a previously freed instance.";
@@ -1327,16 +1328,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					Error err = obj->connect_compat(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
-					if (err != OK) {
+					Variant err = obj->callv("connect", connect_args);
+					if ((int)err != OK) {
 						err_text = "Error connecting to signal: " + signal + " during yield().";
 						OPCODE_BREAK;
 					}
 #else
 					Object *obj = argobj->operator Object *();
-					String signal = argname->operator String();
 
-					obj->connect_compat(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+					obj->callv("connect", connect_args);
 #endif
 				}
 
