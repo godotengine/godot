@@ -1301,6 +1301,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					Object *obj = argobj->operator Object *();
 					String signal = argname->operator String();
 
+					Array connect_args = Variant(varray(signal, gdfs, "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT));
 #ifdef DEBUG_ENABLED
 					if (!obj) {
 						err_text = "First argument of yield() is null.";
@@ -1318,13 +1319,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					Error err = obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
-					if (err != OK) {
+					Variant err = obj->callv("connect", connect_args);
+					if ((int)err != OK) {
 						err_text = "Error connecting to signal: " + signal + " during yield().";
 						OPCODE_BREAK;
 					}
 #else
-					obj->connect(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+					obj->callv("connect", connect_args);
 #endif
 				}
 
