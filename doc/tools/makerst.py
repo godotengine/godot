@@ -973,11 +973,14 @@ def format_table(f, data, remove_empty_columns=False):  # type: (TextIO, Iterabl
     f.write("\n")
 
 
-def make_type(t, state):  # type: (str, State) -> str
-    if t in state.classes:
-        return ":ref:`{0}<class_{0}>`".format(t)
-    print_error("Unresolved type '{}', file: {}".format(t, state.current_class), state)
-    return t
+def make_type(klass, state):  # type: (str, State) -> str
+    link_type = klass
+    if link_type.endswith("[]"):  # Typed array, strip [] to link to contained type.
+        link_type = link_type[:-2]
+    if link_type in state.classes:
+        return ":ref:`{}<class_{}>`".format(klass, link_type)
+    print_error("Unresolved type '{}', file: {}".format(klass, state.current_class), state)
+    return klass
 
 
 def make_enum(t, state):  # type: (str, State) -> str

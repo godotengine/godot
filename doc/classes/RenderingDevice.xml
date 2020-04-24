@@ -296,7 +296,7 @@
 		<method name="framebuffer_format_create">
 			<return type="int">
 			</return>
-			<argument index="0" name="attachments" type="Array">
+			<argument index="0" name="attachments" type="RDAttachmentFormat[]">
 			</argument>
 			<description>
 			</description>
@@ -386,9 +386,9 @@
 			</argument>
 			<argument index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat">
 			</argument>
-			<argument index="2" name="data" type="PackedByteArray">
+			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
 			</argument>
-			<argument index="3" name="arg3" type="bool" default="PackedByteArray(  )">
+			<argument index="3" name="arg3" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -576,7 +576,7 @@
 			</argument>
 			<argument index="1" name="view" type="RDTextureView">
 			</argument>
-			<argument index="2" name="data" type="Array" default="[  ]">
+			<argument index="2" name="data" type="PackedByteArray[]" default="[  ]">
 			</argument>
 			<description>
 			</description>
@@ -712,7 +712,7 @@
 		<method name="vertex_format_create">
 			<return type="int">
 			</return>
-			<argument index="0" name="vertex_descriptions" type="Array">
+			<argument index="0" name="vertex_descriptions" type="RDVertexAttribute[]">
 			</argument>
 			<description>
 			</description>

@@ -221,7 +221,7 @@
 			</description>
 		</method>
 		<method name="get_children" qualifiers="const">
-			<return type="Array">
+			<return type="Node[]">
 			</return>
 			<description>
 				Returns an array of references to node's children.
