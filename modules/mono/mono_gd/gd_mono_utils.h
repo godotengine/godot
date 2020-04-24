@@ -53,21 +53,17 @@ namespace Marshal {
 
 bool type_is_generic_array(MonoReflectionType *p_reftype);
 bool type_is_generic_dictionary(MonoReflectionType *p_reftype);
+bool type_is_system_generic_list(MonoReflectionType *p_reftype);
+bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
+bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
+bool type_is_generic_icollection(MonoReflectionType *p_reftype);
+bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
 
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype);
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype);
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
-
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
 GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
-
-Array enumerable_to_array(MonoObject *p_enumerable);
-Dictionary idictionary_to_dictionary(MonoObject *p_idictionary);
-Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary);
 
 } // namespace Marshal
 
@@ -107,6 +103,9 @@ MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class);
 MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class);
 
 MonoDomain *create_domain(const String &p_friendly_name);
+
+String get_type_desc(MonoType *p_type);
+String get_type_desc(MonoReflectionType *p_reftype);
 
 String get_exception_name_and_message(MonoException *p_exc);
 void set_exception_message(MonoException *p_exc, String message);

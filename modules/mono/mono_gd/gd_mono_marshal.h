@@ -122,6 +122,14 @@ Variant mono_object_to_variant_no_err(MonoObject *p_obj, const ManagedType &p_ty
 /// If the MonoObject* cannot be converted to Variant, then 'ToString()' is called instead.
 String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 
+// System.Collections.Generic
+
+MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+
+MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
