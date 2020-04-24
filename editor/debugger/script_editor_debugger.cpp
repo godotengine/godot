@@ -149,39 +149,74 @@ void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
 }
 
 void ScriptEditorDebugger::_file_selected(const String &p_file) {
-	Error err;
-	FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
-	if (err != OK) {
-		ERR_PRINT("Failed to open " + p_file);
-		return;
-	}
-	Vector<String> line;
-	line.resize(Performance::MONITOR_MAX);
+	switch (file_dialog_purpose) {
+		case SAVE_MONITORS_CSV: {
+			Error err;
+			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
-	// signatures
-	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-		line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
-	}
-	file->store_csv_line(line);
+			if (err != OK) {
+				ERR_PRINT("Failed to open " + p_file);
+				return;
+			}
+			Vector<String> line;
+			line.resize(Performance::MONITOR_MAX);
 
-	// values
-	List<Vector<float>>::Element *E = perf_history.back();
-	while (E) {
+			// signatures
+			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+				line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
+			}
+			file->store_csv_line(line);
 
-		Vector<float> &perf_data = E->get();
-		for (int i = 0; i < perf_data.size(); i++) {
+			// values
+			List<Vector<float>>::Element *E = perf_history.back();
+			while (E) {
 
-			line.write[i] = String::num_real(perf_data[i]);
-		}
-		file->store_csv_line(line);
-		E = E->prev();
-	}
-	file->store_string("\n");
+				Vector<float> &perf_data = E->get();
+				for (int i = 0; i < perf_data.size(); i++) {
 
-	Vector<Vector<String>> profiler_data = profiler->get_data_as_csv();
-	for (int i = 0; i < profiler_data.size(); i++) {
-		file->store_csv_line(profiler_data[i]);
+					line.write[i] = String::num_real(perf_data[i]);
+				}
+				file->store_csv_line(line);
+				E = E->prev();
+			}
+			file->store_string("\n");
+
+			Vector<Vector<String>> profiler_data = profiler->get_data_as_csv();
+			for (int i = 0; i < profiler_data.size(); i++) {
+				file->store_csv_line(profiler_data[i]);
+			}
+		} break;
+		case SAVE_VRAM_CSV: {
+			Error err;
+			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
+
+			if (err != OK) {
+				ERR_PRINT("Failed to open " + p_file);
+				return;
+			}
+
+			Vector<String> headers;
+			headers.resize(vmem_tree->get_columns());
+			for (int i = 0; i < vmem_tree->get_columns(); ++i) {
+				headers.write[i] = vmem_tree->get_column_title(i);
+			}
+			file->store_csv_line(headers);
+
+			if (vmem_tree->get_root()) {
+				TreeItem *ti = vmem_tree->get_root()->get_children();
+				while (ti) {
+					Vector<String> values;
+					values.resize(vmem_tree->get_columns());
+					for (int i = 0; i < vmem_tree->get_columns(); ++i) {
+						values.write[i] = ti->get_text(i);
+					}
+					file->store_csv_line(values);
+
+					ti = ti->get_next();
+				}
+			}
+		} break;
 	}
 }
 
@@ -231,6 +266,15 @@ void ScriptEditorDebugger::_remote_object_property_updated(ObjectID p_id, const 
 void ScriptEditorDebugger::_video_mem_request() {
 
 	_put_msg("core:memory", Array());
+}
+
+void ScriptEditorDebugger::_video_mem_export() {
+
+	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog->clear_filters();
+	file_dialog_purpose = SAVE_VRAM_CSV;
+	file_dialog->popup_centered_ratio();
 }
 
 Size2 ScriptEditorDebugger::get_minimum_size() const {
@@ -766,6 +810,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			error_tree->connect("item_selected", callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			vmem_refresh->set_icon(get_theme_icon("Reload", "EditorIcons"));
+			vmem_export->set_icon(get_theme_icon("Save", "EditorIcons"));
 
 			reason->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
 
@@ -840,6 +885,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			dobreak->set_icon(get_theme_icon("Pause", "EditorIcons"));
 			docontinue->set_icon(get_theme_icon("DebugContinue", "EditorIcons"));
 			vmem_refresh->set_icon(get_theme_icon("Reload", "EditorIcons"));
+			vmem_export->set_icon(get_theme_icon("Save", "EditorIcons"));
 		} break;
 	}
 }
@@ -981,6 +1027,7 @@ void ScriptEditorDebugger::_export_csv() {
 
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+	file_dialog_purpose = SAVE_MONITORS_CSV;
 	file_dialog->popup_centered_ratio();
 }
 
@@ -1701,8 +1748,12 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(ToolButton);
 		vmem_hb->add_child(vmem_refresh);
+		vmem_export = memnew(ToolButton);
+		vmem_export->set_tooltip(TTR("Export list to a CSV file"));
+		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
+		vmem_export->connect("pressed", callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
 		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
