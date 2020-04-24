@@ -754,14 +754,17 @@ public:
 
 		for (Map<int, List<float> >::Element *E = key_ofs_map.front(); E; E = E->next()) {
 
+			int key = 0;
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
 
 				float key_ofs = F->get();
-				if (from != key_ofs)
+				if (from != key_ofs) {
+					key++;
 					continue;
+				}
 
 				int track = E->key();
-				key_ofs_map[track][key_ofs] = to;
+				key_ofs_map[track][key] = to;
 
 				if (setting)
 					return;
