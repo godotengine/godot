@@ -1717,7 +1717,7 @@ public:
 				valid = false;
 			} else {
 				Error errn;
-				DirAccessRef da = DirAccess::open(sdk_path.plus_file("tools"), &errn);
+				DirAccessRef da = DirAccess::open(sdk_path.plus_file("platform-tools"), &errn);
 				if (errn != OK) {
 					err += TTR("Invalid Android SDK path for custom build in Editor Settings.") + "\n";
 					valid = false;
