@@ -29,9 +29,22 @@ matrix:
           packages:
             - clang-format-8
 
+    - name: Linux editor (release_debug, GCC 9)
+      stage: build
+      env: PLATFORM=linuxbsd TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="use_static_cpp=yes warnings=extra werror=yes"
+      os: linux
+      compiler: gcc-9
+      addons:
+        apt:
+          sources:
+            - sourceline: "ppa:ubuntu-toolchain-r/test"
+          packages:
+            - &gcc9_deps [gcc-9, g++-9]
+            - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev, p7zip-full]
+
     - name: Linux editor (debug, GCC 9, with Mono)
       stage: build
-      env: PLATFORM=linuxbsd TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
+      env: PLATFORM=linuxbsd TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no use_static_cpp=yes warnings=extra werror=yes"
       os: linux
       compiler: gcc-9
       addons:
@@ -41,8 +54,8 @@ matrix:
               key_url: "https://raw.githubusercontent.com/travis-ci/apt-source-safelist/master/keys/mono.asc"
             - sourceline: "ppa:ubuntu-toolchain-r/test"
           packages:
-            - &gcc9_deps [gcc-9, g++-9]
-            - &linux_deps [libasound2-dev, libgl1-mesa-dev, libglu1-mesa-dev, libx11-dev, libxcursor-dev, libxi-dev, libxinerama-dev, libxrandr-dev]
+            - *gcc9_deps
+            - *linux_deps
             - &linux_mono_deps [mono-devel, msbuild, nuget]
 
     - name: Linux export template (release, Clang 7)
@@ -65,9 +78,9 @@ matrix:
           packages:
             - openjdk-8-jdk
 
-    - name: macOS editor (debug, Clang)
+    - name: macOS editor (release_debug, Clang)
       stage: build
-      env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
+      env: PLATFORM=osx TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: osx
       osx_image: xcode11.3
       compiler: clang
@@ -75,6 +88,7 @@ matrix:
         homebrew:
           packages:
             - scons
+            - p7zip
           update: true
 
 # TODO: iOS MoltenVK support
@@ -152,5 +166,28 @@ script:
         git clone --depth 1 "https://github.com/godotengine/godot-tests.git";
         sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.linuxbsd.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;
         godot-tests/tests/project_export/test_project.sh "bin/godot_server.linuxbsd.opt.tools.64";
+      fi;
+
+      if [[ "$TOOLS" == "yes" && "$TARGET" == "release_debug" ]]; then
+        VERSION_HASH="$(git rev-parse --short=9 HEAD)";
+        pushd bin/;
+
+        if [[ "$PLATFORM" == "osx" ]]; then
+          cp -r ../misc/dist/osx_tools.app/ Godot.app/;
+          mkdir -p Godot.app/Contents/MacOS/;
+          mv godot.osx.opt.tools.64 Godot.app/Contents/MacOS/Godot;
+          7z a -mx9 "godot.osx.opt.tools.64-$VERSION_HASH.zip" Godot.app/;
+        else
+          7z a -mx9 "godot.linuxbsd.opt.tools.64-$VERSION_HASH.zip" godot.linuxbsd.opt.tools.64;
+        fi;
+        
+        popd;
+        echo -e "\nDownload compiled editor binary for $PLATFORM 64-bit (link is valid for 14 days after this build was completed):\n";
+        curl --upload-file "bin/godot.$PLATFORM.opt.tools.64-$VERSION_HASH.zip" "https://transfer.sh/godot.$PLATFORM.opt.tools.64-$VERSION_HASH.zip";
+        echo -e "\n\n";
+
+        if [[ "$PLATFORM" == "linuxbsd" ]]; then
+          echo -e "This build was compiled on Ubuntu 18.04 and will only run on distributions as new or newer.";
+        fi
       fi
     fi
