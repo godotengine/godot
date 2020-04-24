@@ -21,6 +21,16 @@ allprojects {
         mavenCentral()
         google()
         jcenter()
+
+        // Godot user plugins custom maven repos
+        String[] mavenRepos = getGodotPluginsMavenRepos()
+        if (mavenRepos != null && mavenRepos.size() > 0) {
+            for (String repoUrl : mavenRepos) {
+                maven {
+                    url repoUrl
+                }
+            }
+        }
     }
 }
 
@@ -43,9 +53,17 @@ dependencies {
     // Godot prebuilt plugins
     implementation fileTree(dir: 'libs/plugins', include: ["GodotPayment*.aar"])
 
-    // Godot user plugins dependencies
-    String pluginsDir = getGodotPluginsDirectory()
-    String[] pluginsBinaries = getGodotPluginsBinaries()
+    // Godot user plugins remote dependencies
+    String[] remoteDeps = getGodotPluginsRemoteBinaries()
+    if (remoteDeps != null && remoteDeps.size() > 0) {
+        for (String dep : remoteDeps) {
+            implementation dep
+        }
+    }
+
+    // Godot user plugins local dependencies
+    String pluginsDir = getGodotPluginsLocalDirectory()
+    String[] pluginsBinaries = getGodotPluginsLocalBinaries()
     if (pluginsDir != null && !pluginsDir.isEmpty() &&
         pluginsBinaries != null && pluginsBinaries.size() > 0) {
         implementation fileTree(dir: pluginsDir, include: pluginsBinaries)
