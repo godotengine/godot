@@ -81,7 +81,7 @@ void CharacterNetController::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("collect_inputs", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "are_inputs_different", PropertyInfo(Variant::OBJECT, "inputs_A", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference"), PropertyInfo(Variant::OBJECT, "inputs_B", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference")));
-	BIND_VMETHOD(MethodInfo(Variant::INT, "count_inputs_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "count_input_size", PropertyInfo(Variant::OBJECT, "inputs", PROPERTY_HINT_TYPE_STRING, "PlayerInputsReference")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
@@ -345,7 +345,7 @@ void CharacterNetController::_notification(int p_what) {
 			ERR_FAIL_COND_MSG(has_method("collect_inputs") == false, "In your script you must inherit the virtual method `collect_inputs` to correctly use the `PlayerNetController`.");
 			ERR_FAIL_COND_MSG(has_method("controller_process") == false, "In your script you must inherit the virtual method `controller_process` to correctly use the `PlayerNetController`.");
 			ERR_FAIL_COND_MSG(has_method("are_inputs_different") == false, "In your script you must inherit the virtual method `are_inputs_different` to correctly use the `PlayerNetController`.");
-			ERR_FAIL_COND_MSG(has_method("count_inputs_size") == false, "In your script you must inherit the virtual method `count_inputs_size` to correctly use the `PlayerNetController`.");
+			ERR_FAIL_COND_MSG(has_method("count_input_size") == false, "In your script you must inherit the virtual method `count_input_size` to correctly use the `PlayerNetController`.");
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
@@ -519,7 +519,7 @@ void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
 
 		// Validate snapshot
 		pir.inputs_buffer.seek(ofs * 8);
-		const int snapshot_size_in_bits = node->call("count_inputs_size", &pir);
+		const int snapshot_size_in_bits = node->call("count_input_size", &pir);
 		// Pad to 8 bits.
 		const int snapshot_size =
 				Math::ceil((static_cast<float>(snapshot_size_in_bits)) / 8.0);

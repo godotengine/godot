@@ -185,6 +185,8 @@ public:
 	/// This function works only on server.
 	void force_state_notify();
 
+	// TODO this MUST disapper and __reset MUST be called automatically when the
+	// connection status of the game instance change
 	/// Can only be called on the server
 	void reset();
 	void __reset();
