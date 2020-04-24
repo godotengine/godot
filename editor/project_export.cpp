@@ -133,6 +133,12 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	_edit_preset(EditorExport::get_singleton()->get_export_preset_count() - 1);
 }
 
+void ProjectExportDialog::_force_update_current_preset_parameters() {
+	// Force the parameters section to refresh its UI.
+	parameters->edit(nullptr);
+	_update_current_preset();
+}
+
 void ProjectExportDialog::_update_current_preset() {
 	_edit_preset(presets->get_current());
 }
@@ -1101,6 +1107,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", callable_mp(this, &ProjectExportDialog::_update_parameters));
+	EditorExport::get_singleton()->connect("export_presets_updated", callable_mp(this, &ProjectExportDialog::_force_update_current_preset_parameters));
 
 	// Resources export parameters.
 

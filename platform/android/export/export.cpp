@@ -44,6 +44,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "platform/android/logo.gen.h"
+#include "platform/android/plugin/godot_plugin_config.h"
 #include "platform/android/run_icon.gen.h"
 
 #include <string.h>
@@ -252,16 +253,45 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		EditorProgress *ep;
 	};
 
+	Vector<PluginConfig> plugins;
+	volatile bool plugins_changed;
+	Mutex plugins_lock;
 	Vector<Device> devices;
 	volatile bool devices_changed;
 	Mutex device_lock;
-	Thread *device_thread;
+	Thread *check_for_changes_thread;
 	volatile bool quit_request;
 
-	static void _device_poll_thread(void *ud) {
+	static void _check_for_changes_poll_thread(void *ud) {
 		EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
 		while (!ea->quit_request) {
+			// Check for plugins updates
+			{
+				// Nothing to do if we already know the plugins have changed.
+				if (!ea->plugins_changed) {
+					Vector<PluginConfig> loaded_plugins = get_plugins();
+
+					MutexLock lock(ea->plugins_lock);
+
+					if (ea->plugins.size() != loaded_plugins.size()) {
+						ea->plugins_changed = true;
+					} else {
+						for (int i = 0; i < ea->plugins.size(); i++) {
+							if (ea->plugins[i].name != loaded_plugins[i].name) {
+								ea->plugins_changed = true;
+								break;
+							}
+						}
+					}
+
+					if (ea->plugins_changed) {
+						ea->plugins = loaded_plugins;
+					}
+				}
+			}
+
+			// Check for devices updates
 			String adb = EditorSettings::get_singleton()->get("export/android/adb");
 			if (FileAccess::exists(adb)) {
 				String devices;
@@ -573,6 +603,73 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		return abis;
 	}
 
+	/// List the gdap files in the directory specified by the p_path parameter.
+	static Vector<String> list_gdap_files(const String &p_path) {
+		Vector<String> dir_files;
+		DirAccessRef da = DirAccess::open(p_path);
+		if (da) {
+			da->list_dir_begin();
+			while (true) {
+				String file = da->get_next();
+				if (file == "") {
+					break;
+				}
+
+				if (da->current_is_dir() || da->current_is_hidden()) {
+					continue;
+				}
+
+				if (file.ends_with(PLUGIN_CONFIG_EXT)) {
+					dir_files.push_back(file);
+				}
+			}
+			da->list_dir_end();
+		}
+
+		return dir_files;
+	}
+
+	static Vector<PluginConfig> get_plugins() {
+		Vector<PluginConfig> loaded_plugins;
+
+		String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/plugins");
+
+		// Add the prebuilt plugins
+		loaded_plugins.append_array(get_prebuilt_plugins(plugins_dir));
+
+		if (DirAccess::exists(plugins_dir)) {
+			Vector<String> plugins_filenames = list_gdap_files(plugins_dir);
+
+			if (!plugins_filenames.empty()) {
+				Ref<ConfigFile> config_file = memnew(ConfigFile);
+				for (int i = 0; i < plugins_filenames.size(); i++) {
+					PluginConfig config = load_plugin_config(config_file, plugins_dir.plus_file(plugins_filenames[i]));
+					if (config.valid_config) {
+						loaded_plugins.push_back(config);
+					} else {
+						print_error("Invalid plugin config file " + plugins_filenames[i]);
+					}
+				}
+			}
+		}
+
+		return loaded_plugins;
+	}
+
+	static Vector<PluginConfig> get_enabled_plugins(const Ref<EditorExportPreset> &p_presets) {
+		Vector<PluginConfig> enabled_plugins;
+		Vector<PluginConfig> all_plugins = get_plugins();
+		for (int i = 0; i < all_plugins.size(); i++) {
+			PluginConfig plugin = all_plugins[i];
+			bool enabled = p_presets->get("plugins/" + plugin.name);
+			if (enabled) {
+				enabled_plugins.push_back(plugin);
+			}
+		}
+
+		return enabled_plugins;
+	}
+
 	static Error store_in_apk(APKExportData *ed, const String &p_path, const Vector<uint8_t> &p_data, int compression_method = Z_DEFLATED) {
 		zip_fileinfo zipfi = get_zip_fileinfo();
 		zipOpenNewFileInZip(ed->apk,
@@ -674,7 +771,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		int xr_mode_index = p_preset->get("xr_features/xr_mode");
 
-		String plugins = p_preset->get("custom_template/plugins");
+		String plugins_names = get_plugins_names(get_enabled_plugins(p_preset));
 
 		Vector<String> perms;
 
@@ -829,9 +926,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 						}
 
-						if (tname == "meta-data" && attrname == "value" && value == "custom_template_plugins_value") {
+						if (tname == "meta-data" && attrname == "value" && value == "plugins_value" && !plugins_names.empty()) {
 							// Update the meta-data 'android:value' attribute with the list of enabled plugins.
-							string_table.write[attr_value] = plugins;
+							string_table.write[attr_value] = plugins_names;
 						}
 
 						iofs += 20;
@@ -1354,7 +1451,14 @@ public:
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_template/use_custom_build"), false));
-		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/plugins", PROPERTY_HINT_PLACEHOLDER_TEXT, "Plugin1,Plugin2,..."), ""));
+
+		Vector<PluginConfig> plugins_configs = get_plugins();
+		for (int i = 0; i < plugins_configs.size(); i++) {
+			print_verbose("Found Android plugin " + plugins_configs[i].name);
+			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "plugins/" + plugins_configs[i].name), false));
+		}
+		plugins_changed = false;
+
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "version/code", PROPERTY_HINT_RANGE, "1,4096,1,or_greater"), 1));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "version/name"), "1.0"));
@@ -1407,6 +1511,15 @@ public:
 
 	virtual Ref<Texture2D> get_logo() const {
 		return logo;
+	}
+
+	virtual bool should_update_export_options() {
+		bool export_options_changed = plugins_changed;
+		if (export_options_changed) {
+			// don't clear unless we're reporting true, to avoid race
+			plugins_changed = false;
+		}
+		return export_options_changed;
 	}
 
 	virtual bool poll_export() {
@@ -1755,18 +1868,22 @@ public:
 #endif
 
 			String build_path = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/build");
-			String plugins_dir = ProjectSettings::get_singleton()->get_resource_path().plus_file("android/plugins");
 
 			build_command = build_path.plus_file(build_command);
 
 			String package_name = get_package_name(p_preset->get("package/unique_name"));
-			String plugins = p_preset->get("custom_template/plugins");
+
+			Vector<PluginConfig> enabled_plugins = get_enabled_plugins(p_preset);
+			String local_plugins_binaries = get_plugins_binaries(BINARY_TYPE_LOCAL, enabled_plugins);
+			String remote_plugins_binaries = get_plugins_binaries(BINARY_TYPE_REMOTE, enabled_plugins);
+			String custom_maven_repos = get_plugins_custom_maven_repos(enabled_plugins);
 
 			List<String> cmdline;
 			cmdline.push_back("build");
 			cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
-			cmdline.push_back("-Pcustom_template_plugins_dir=" + plugins_dir); // argument to specify the plugins directory.
-			cmdline.push_back("-Pcustom_template_plugins=" + plugins); // argument to specify the list of plugins to enable.
+			cmdline.push_back("-Pplugins_local_binaries=" + local_plugins_binaries); // argument to specify the list of plugins local dependencies.
+			cmdline.push_back("-Pplugins_remote_binaries=" + remote_plugins_binaries); // argument to specify the list of plugins remote dependencies.
+			cmdline.push_back("-Pplugins_maven_repos=" + custom_maven_repos); // argument to specify the list of custom maven repos for the plugins dependencies.
 			cmdline.push_back("-p"); // argument to specify the start directory.
 			cmdline.push_back(build_path); // start directory.
 			/*{ used for debug
@@ -2283,14 +2400,15 @@ public:
 		run_icon->create_from_image(img);
 
 		devices_changed = true;
+		plugins_changed = true;
 		quit_request = false;
-		device_thread = Thread::create(_device_poll_thread, this);
+		check_for_changes_thread = Thread::create(_check_for_changes_poll_thread, this);
 	}
 
 	~EditorExportPlatformAndroid() {
 		quit_request = true;
-		Thread::wait_to_finish(device_thread);
-		memdelete(device_thread);
+		Thread::wait_to_finish(check_for_changes_thread);
+		memdelete(check_for_changes_thread);
 	}
 };
 
