@@ -7,40 +7,10 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="add_attachment">
-			<return type="void">
-			</return>
-			<argument index="0" name="atachment" type="RDPipelineColorBlendStateAttachment">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="add_blend_mix_attachment">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="add_no_blend_attachment">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="clear_attachments">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_attachments" qualifiers="const">
-			<return type="Array">
-			</return>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
+		<member name="attachments" type="RDPipelineColorBlendStateAttachment[]" setter="set_attachments" getter="get_attachments" default="[  ]">
+		</member>
 		<member name="blend_constant" type="Color" setter="set_blend_constant" getter="get_blend_constant" default="Color( 0, 0, 0, 1 )">
 		</member>
 		<member name="enable_logic_op" type="bool" setter="set_enable_logic_op" getter="get_enable_logic_op" default="false">

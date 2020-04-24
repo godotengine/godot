@@ -157,7 +157,7 @@
 		<method name="physical_bones_start_simulation">
 			<return type="void">
 			</return>
-			<argument index="0" name="bones" type="Array" default="[  ]">
+			<argument index="0" name="bones" type="StringName[]" default="[  ]">
 			</argument>
 			<description>
 			</description>
