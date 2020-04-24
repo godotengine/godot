@@ -7,6 +7,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="set_as_mix">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="alpha_blend_op" type="int" setter="set_alpha_blend_op" getter="get_alpha_blend_op" enum="RenderingDevice.BlendOperation" default="0">

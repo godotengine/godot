@@ -81,7 +81,7 @@
 			</description>
 		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
-			<return type="Array">
+			<return type="Node2D[]">
 			</return>
 			<description>
 				Returns a list of the bodies colliding with this one. Use [member contacts_reported] to set the maximum number reported. You must also set [member contact_monitor] to [code]true[/code].

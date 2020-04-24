@@ -27,7 +27,7 @@
 			</description>
 		</method>
 		<method name="get_selected_nodes">
-			<return type="Array">
+			<return type="Node[]">
 			</return>
 			<description>
 				Gets the list of selected nodes.

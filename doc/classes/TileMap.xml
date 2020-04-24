@@ -74,14 +74,14 @@
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
-			<return type="Array">
+			<return type="Vector2i[]">
 			</return>
 			<description>
 				Returns a [Vector2] array with the positions of all cells containing a tile from the tileset (i.e. a tile index different from [code]-1[/code]).
 			</description>
 		</method>
 		<method name="get_used_cells_by_id" qualifiers="const">
-			<return type="Array">
+			<return type="Vector2i[]">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
