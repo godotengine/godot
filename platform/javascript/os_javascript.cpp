@@ -73,10 +73,10 @@ static bool is_canvas_focused() {
 
 static Point2 compute_position_in_canvas(int x, int y) {
 	int canvas_x = EM_ASM_INT({
-		return document.getElementById('canvas').getBoundingClientRect().x;
+		return document.getElementById('canvas').getBoundingClientRect().left;
 	});
 	int canvas_y = EM_ASM_INT({
-		return document.getElementById('canvas').getBoundingClientRect().y;
+		return document.getElementById('canvas').getBoundingClientRect().top;
 	});
 	int canvas_width;
 	int canvas_height;
