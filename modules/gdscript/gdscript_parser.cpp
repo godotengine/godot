@@ -746,6 +746,13 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			if (tokenizer->get_token() == GDScriptTokenizer::TK_CURSOR) {
 				_make_completable_call(0);
 				completion_node = op;
+
+				if (op->arguments[0]->type == GDScriptParser::Node::Type::TYPE_BUILT_IN_FUNCTION) {
+					BuiltInFunctionNode *bn = static_cast<BuiltInFunctionNode *>(op->arguments[0]);
+					if (bn->function == GDScriptFunctions::Function::RESOURCE_LOAD) {
+						completion_type = COMPLETION_RESOURCE_PATH;
+					}
+				}
 			}
 			if (!replaced) {
 				if (!_parse_arguments(op, op->arguments, p_static, true, p_parsing_constant))
