@@ -2150,7 +2150,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 	}
 
 	const GDScriptParser::ClassNode *clss = p_context._class;
-	bool _static = !p_context.function || p_context.function->_static;
+	bool _static = p_context.function && p_context.function->_static;
 
 	while (clss) {
 		GDScriptCompletionContext c = p_context;
