@@ -21,6 +21,9 @@
 		<member name="ClassDB" type="ClassDB" setter="" getter="">
 			The [ClassDB] singleton.
 		</member>
+		<member name="DisplayServer" type="DisplayServer" setter="" getter="">
+			The [DisplayServer] singleton.
+		</member>
 		<member name="Engine" type="Engine" setter="" getter="">
 			The [Engine] singleton.
 		</member>

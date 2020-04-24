@@ -28,14 +28,14 @@
 			</description>
 		</method>
 		<method name="get_overlapping_areas" qualifiers="const">
-			<return type="Array">
+			<return type="Area3D[]">
 			</return>
 			<description>
 				Returns a list of intersecting [Area3D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.
 			</description>
 		</method>
 		<method name="get_overlapping_bodies" qualifiers="const">
-			<return type="Array">
+			<return type="Node3D[]">
 			</return>
 			<description>
 				Returns a list of intersecting [PhysicsBody3D]s. For performance reasons (collisions are all processed at the same time) this list is modified once during the physics step, not immediately after objects are moved. Consider using signals instead.

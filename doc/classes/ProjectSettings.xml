@@ -806,6 +806,18 @@
 		<member name="memory/limits/multithreaded_server/rid_pool_prealloc" type="int" setter="" getter="" default="60">
 			This is used by servers when used in multi-threading mode (servers and visual). RIDs are preallocated to avoid stalling the server requesting them on threads. If servers get stalled too often when loading resources in a thread, increase this number.
 		</member>
+		<member name="mono/debugger_agent/port" type="int" setter="" getter="" default="23685">
+		</member>
+		<member name="mono/debugger_agent/wait_for_debugger" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="mono/debugger_agent/wait_timeout" type="int" setter="" getter="" default="3000">
+		</member>
+		<member name="mono/profiler/args" type="String" setter="" getter="" default="&quot;log:calls,alloc,sample,output=output.mlpd&quot;">
+		</member>
+		<member name="mono/profiler/enabled" type="bool" setter="" getter="" default="false">
+		</member>
+		<member name="mono/unhandled_exception_policy" type="int" setter="" getter="" default="0">
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
