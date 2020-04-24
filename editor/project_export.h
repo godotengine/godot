@@ -123,6 +123,7 @@ private:
 	void _delete_preset_confirm();
 	void _update_export_all();
 
+	void _force_update_current_preset_parameters();
 	void _update_current_preset();
 	void _update_presets();
 

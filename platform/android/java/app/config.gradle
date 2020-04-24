@@ -28,39 +28,68 @@ ext.getExportPackageName = { ->
     return appId
 }
 
+final String PLUGIN_VALUE_SEPARATOR_REGEX = "\\|"
+
 /**
- * Parse the project properties for the 'custom_template_plugins' property and return
+ * Parse the project properties for the 'plugins_maven_repos' property and return the list
+ * of maven repos.
+ */
+ext.getGodotPluginsMavenRepos = { ->
+    Set<String> mavenRepos = []
+
+    // Retrieve the list of maven repos.
+    if (project.hasProperty("plugins_maven_repos")) {
+        String mavenReposProperty = project.property("plugins_maven_repos")
+        if (mavenReposProperty != null && !mavenReposProperty.trim().isEmpty()) {
+            for (String mavenRepoUrl : mavenReposProperty.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+                mavenRepos += mavenRepoUrl.trim()
+            }
+        }
+    }
+
+    return mavenRepos
+}
+
+/**
+ * Parse the project properties for the 'plugins_remote_binaries' property and return
+ * it for inclusion in the build dependencies.
+ */
+ext.getGodotPluginsRemoteBinaries = { ->
+    Set<String> remoteDeps = []
+
+    // Retrieve the list of remote plugins binaries.
+    if (project.hasProperty("plugins_remote_binaries")) {
+        String remoteDepsList = project.property("plugins_remote_binaries")
+        if (remoteDepsList != null && !remoteDepsList.trim().isEmpty()) {
+            for (String dep: remoteDepsList.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+                remoteDeps += dep.trim()
+            }
+        }
+    }
+    return remoteDeps
+}
+
+/**
+ * Parse the project properties for the 'plugins_local_binaries' property and return
  * their binaries for inclusion in the build dependencies.
  *
- * The listed plugins must have their binaries in the project plugins directory.
+ * Returns the prebuilt plugins if the 'plugins_local_binaries' property is unavailable.
  */
-ext.getGodotPluginsBinaries = { ->
-    String[] binDeps = []
+ext.getGodotPluginsLocalBinaries = { ->
+    // Set the prebuilt plugins as default. If custom build is enabled,
+    // the 'plugins_local_binaries' will be defined so we can use it instead.
+    Set<String> binDeps = ["libs/plugins/GodotPayment.release.aar"]
 
-    // Retrieve the list of enabled plugins.
-    if (project.hasProperty("custom_template_plugins")) {
-        String pluginsList = project.property("custom_template_plugins")
+    // Retrieve the list of local plugins binaries.
+    if (project.hasProperty("plugins_local_binaries")) {
+        binDeps.clear()
+        String pluginsList = project.property("plugins_local_binaries")
         if (pluginsList != null && !pluginsList.trim().isEmpty()) {
-            for (String plugin : pluginsList.split(",")) {
-                binDeps += plugin.trim() + "*.aar"
+            for (String plugin : pluginsList.split(PLUGIN_VALUE_SEPARATOR_REGEX)) {
+                binDeps += plugin.trim()
             }
         }
     }
 
     return binDeps
-}
-
-/**
- * Parse the project properties for the 'custom_template_plugins_dir' property and return
- * its value.
- *
- * The returned value is the directory containing user plugins.
- */
-ext.getGodotPluginsDirectory = { ->
-    // The plugins directory is provided by the 'custom_template_plugins_dir' property.
-    String pluginsDir = project.hasProperty("custom_template_plugins_dir")
-        ? project.property("custom_template_plugins_dir")
-        : ""
-
-    return pluginsDir
 }
