@@ -6,7 +6,7 @@
 ##################################################################
 # SETTINGS
 # Set path to black binary.
-BLACK=`which black`
+BLACK=`which black 2>/dev/null`
 BLACK_OPTIONS="-l 120"
 
 # Remove any older patches from previous commits. Set to true or false.
@@ -18,7 +18,7 @@ FILE_EXTS="py"
 
 # Use pygmentize instead of cat to parse diff with highlighting.
 # Install it with `pip install pygments` (Linux) or `easy_install Pygments` (Mac)
-PYGMENTIZE=`which pygmentize`
+PYGMENTIZE=`which pygmentize 2>/dev/null`
 if [ ! -z "$PYGMENTIZE" ]; then
   READER="pygmentize -l diff"
 else
@@ -26,13 +26,13 @@ else
 fi
 
 # Path to zenity
-ZENITY=`which zenity`
+ZENITY=`which zenity 2>/dev/null`
 
 # Path to xmessage
-XMSG=`which xmessage`
+XMSG=`which xmessage 2>/dev/null`
 
 # Path to powershell (Windows only)
-PWSH=`which powershell`
+PWSH=`which powershell 2>/dev/null`
 
 ##################################################################
 # There should be no need to change anything below this line.
