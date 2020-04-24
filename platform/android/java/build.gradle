@@ -140,7 +140,7 @@ task generateGodotTemplates(type: GradleBuild) {
         startParameter.excludedTaskNames += ":lib:" + getSconsTaskName(buildType)
     }
 
-    tasks = ["copyGodotPaymentPluginToAppModule"]
+    tasks = []
 
     // Only build the apks and aar files for which we have native shared libraries.
     for (String target : supportedTargets) {
@@ -161,6 +161,7 @@ task generateGodotTemplates(type: GradleBuild) {
         }
     }
 
+    dependsOn 'copyGodotPaymentPluginToAppModule'
     finalizedBy 'zipCustomBuild'
 }
 
