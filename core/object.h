@@ -34,10 +34,15 @@
 #include "core/hash_map.h"
 #include "core/list.h"
 #include "core/map.h"
+#include "core/object_id.h"
 #include "core/os/rw_lock.h"
 #include "core/set.h"
 #include "core/variant.h"
 #include "core/vmap.h"
+
+#ifdef DEBUG_ENABLED
+#include <atomic> // For ObjectRC*
+#endif
 
 #define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant()
 #define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5
@@ -397,7 +402,7 @@ public:                                                        \
 private:
 
 class ScriptInstance;
-typedef uint64_t ObjectID;
+class ObjectRC;
 
 class Object {
 public:
@@ -477,6 +482,9 @@ private:
 	int _predelete_ok;
 	Set<Object *> change_receptors;
 	ObjectID _instance_id;
+#ifdef DEBUG_ENABLED
+	std::atomic<ObjectRC *> _rc;
+#endif
 	bool _predelete();
 	void _postinitialize();
 	bool _can_translate;
@@ -586,6 +594,10 @@ public:
 		static int ptr;
 		return &ptr;
 	}
+
+#ifdef DEBUG_ENABLED
+	ObjectRC *_use_rc();
+#endif
 
 	bool _is_gpl_reversed() const { return false; }
 

@@ -44,13 +44,14 @@
 #include "core/math/transform_2d.h"
 #include "core/math/vector3.h"
 #include "core/node_path.h"
+#include "core/object_id.h"
 #include "core/pool_vector.h"
 #include "core/ref_ptr.h"
 #include "core/rid.h"
 #include "core/ustring.h"
 
-class RefPtr;
 class Object;
+class ObjectRC;
 class Node; // helper
 class Control; // helper
 
@@ -70,6 +71,13 @@ typedef PoolVector<Color> PoolColorArray;
 #define GCC_ALIGNED_8 __attribute__((aligned(8)))
 #else
 #define GCC_ALIGNED_8
+#endif
+
+#ifdef DEBUG_ENABLED
+// Ideally, an inline member of ObjectRC, but would cause circular includes
+#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().rc ? (m_variant)._get_obj().rc->get_ptr() : reinterpret_cast<Ref<Reference> *>((m_variant)._get_obj().ref.get_data())->ptr())
+#else
+#define _OBJ_PTR(m_variant) ((m_variant)._get_obj().obj)
 #endif
 
 class Variant {
@@ -127,7 +135,21 @@ private:
 
 	struct ObjData {
 
+#ifdef DEBUG_ENABLED
+		// Will be null for every type deriving from Reference as they have their
+		// own reference count mechanism
+		ObjectRC *rc;
+		// This is for allowing debug build to check for instance ID validity,
+		// so warnings are shown in debug builds when a stray Variant (one pointing
+		// to a released Object) would have happened.
+		// If it's zero, that means the Variant is has a legit null object value,
+		// thus not needing instance id validation.
+		ObjectID instance_id;
+#else
 		Object *obj;
+#endif
+		// Always initialized, but will be null if the Ref<> assigned was null
+		// or this Variant is not even holding a Reference-derived object
 		RefPtr ref;
 	};
 

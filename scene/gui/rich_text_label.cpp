@@ -2884,15 +2884,15 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 
 		Vector<String> values = parts[1].split(",", false);
 
-		RegEx color = RegEx();
+		RegEx color;
 		color.compile("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
-		RegEx nodepath = RegEx();
+		RegEx nodepath;
 		nodepath.compile("^\\$");
-		RegEx boolean = RegEx();
+		RegEx boolean;
 		boolean.compile("^(true|false)$");
-		RegEx decimal = RegEx();
+		RegEx decimal;
 		decimal.compile("^-?^.?\\d+(\\.\\d+?)?$");
-		RegEx numerical = RegEx();
+		RegEx numerical;
 		numerical.compile("^\\d+$");
 
 		for (int j = 0; j < values.size(); j++) {
