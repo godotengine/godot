@@ -657,7 +657,7 @@ FindReplaceBar::FindReplaceBar() {
 // be handled too late if they weren't handled here.
 void CodeTextEditor::_input(const Ref<InputEvent> &event) {
 	const Ref<InputEventKey> key_event = event;
-	if (!key_event.is_valid() || !key_event->is_pressed()) {
+	if (!key_event.is_valid() || !key_event->is_pressed() || !text_editor->has_focus()) {
 		return;
 	}
 
