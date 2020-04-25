@@ -2779,6 +2779,8 @@ void ProjectListFilter::add_filter_option() {
 void ProjectListFilter::add_search_box() {
 	search_box = memnew(LineEdit);
 	search_box->set_placeholder(TTR("Search"));
+	search_box->set_tooltip(
+			TTR("The search box filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 	search_box->connect("text_changed", callable_mp(this, &ProjectListFilter::_search_text_changed));
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_child(search_box);
