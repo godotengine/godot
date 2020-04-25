@@ -2499,7 +2499,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
 	if (audio_driver.is_empty()) { // Specified in project.godot.
-		audio_driver = GLOBAL_GET("audio/driver/driver");
+		if (project_manager) {
+			// The project manager doesn't need to play sound (TTS audio output is not emitted by Godot, but by the system itself).
+			// Disable audio output so it doesn't appear in the list of applications outputting sound in the OS.
+			// On macOS, this also prevents the project manager from inhibiting suspend.
+			audio_driver = "Dummy";
+		} else {
+			audio_driver = GLOBAL_GET("audio/driver/driver");
+		}
 	}
 
 	// Make sure that dummy is the last one, which it is assumed to be by design.
