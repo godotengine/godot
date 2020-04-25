@@ -315,7 +315,6 @@ public:
 
 	void set_current_scene(Node *p_scene);
 	Node *get_current_scene() const;
-	Error change_scene(const String &p_path);
 	Error change_scene_to(const Ref<PackedScene> &p_scene);
 	Error reload_current_scene();
 
@@ -327,8 +326,6 @@ public:
 	void add_current_scene(Node *p_current);
 
 	static SceneTree *get_singleton() { return singleton; }
-
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	//network API
 

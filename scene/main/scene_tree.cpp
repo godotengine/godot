@@ -1087,15 +1087,6 @@ void SceneTree::_change_scene(Node *p_to) {
 	}
 }
 
-Error SceneTree::change_scene(const String &p_path) {
-	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
-	if (new_scene.is_null()) {
-		return ERR_CANT_OPEN;
-	}
-
-	return change_scene_to(new_scene);
-}
-
 Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 	Node *new_scene = nullptr;
 	if (p_scene.is_valid()) {
@@ -1109,8 +1100,12 @@ Error SceneTree::change_scene_to(const Ref<PackedScene> &p_scene) {
 
 Error SceneTree::reload_current_scene() {
 	ERR_FAIL_COND_V(!current_scene, ERR_UNCONFIGURED);
-	String fname = current_scene->get_scene_file_path();
-	return change_scene(fname);
+	const Ref<PackedScene> packed_scene = ResourceLoader::load(current_scene->get_scene_file_path());
+	if (packed_scene.is_null()) {
+		return ERR_CANT_OPEN;
+	}
+
+	return change_scene_to(packed_scene);
 }
 
 void SceneTree::add_current_scene(Node *p_current) {
@@ -1222,7 +1217,6 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_current_scene", "child_node"), &SceneTree::set_current_scene);
 	ClassDB::bind_method(D_METHOD("get_current_scene"), &SceneTree::get_current_scene);
 
-	ClassDB::bind_method(D_METHOD("change_scene", "path"), &SceneTree::change_scene);
 	ClassDB::bind_method(D_METHOD("change_scene_to", "packed_scene"), &SceneTree::change_scene_to);
 
 	ClassDB::bind_method(D_METHOD("reload_current_scene"), &SceneTree::reload_current_scene);
@@ -1275,37 +1269,6 @@ void SceneTree::_call_idle_callbacks() {
 void SceneTree::add_idle_callback(IdleCallback p_callback) {
 	ERR_FAIL_COND(idle_callback_count >= MAX_IDLE_CALLBACKS);
 	idle_callbacks[idle_callback_count++] = p_callback;
-}
-
-void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	if (p_function == "change_scene") {
-		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-		List<String> directories;
-		directories.push_back(dir_access->get_current_dir());
-
-		while (!directories.is_empty()) {
-			dir_access->change_dir(directories.back()->get());
-			directories.pop_back();
-
-			dir_access->list_dir_begin();
-			String filename = dir_access->get_next();
-
-			while (filename != "") {
-				if (filename == "." || filename == "..") {
-					filename = dir_access->get_next();
-					continue;
-				}
-
-				if (dir_access->dir_exists(filename)) {
-					directories.push_back(dir_access->get_current_dir().plus_file(filename));
-				} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
-					r_options->push_back("\"" + dir_access->get_current_dir().plus_file(filename) + "\"");
-				}
-
-				filename = dir_access->get_next();
-			}
-		}
-	}
 }
 
 SceneTree::SceneTree() {
