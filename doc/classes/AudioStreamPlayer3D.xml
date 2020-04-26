@@ -108,7 +108,7 @@
 		<member name="unit_db" type="float" setter="set_unit_db" getter="get_unit_db" default="0.0">
 			The base sound level unaffected by dampening, in decibels.
 		</member>
-		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" default="1.0">
+		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" default="10.0">
 			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
 		</member>
 	</members>

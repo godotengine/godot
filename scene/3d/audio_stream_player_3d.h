@@ -98,7 +98,7 @@ private:
 
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
 	float unit_db = 0.0;
-	float unit_size = 1.0;
+	float unit_size = 10.0;
 	float max_db = 3.0;
 	float pitch_scale = 1.0;
 	bool autoplay = false;
