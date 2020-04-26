@@ -1922,6 +1922,10 @@ void ScriptEditor::_update_script_names() {
 			if (new_cur_tab == -1 && sedata[i].index == cur_tab) {
 				new_cur_tab = i;
 			}
+			// Update index of sd entries for sorted order
+			_ScriptEditorItemData sd = sedata[i];
+			sd.index = i;
+			sedata.set(i, sd);
 		}
 		tab_container->set_current_tab(new_prev_tab);
 		tab_container->set_current_tab(new_cur_tab);
