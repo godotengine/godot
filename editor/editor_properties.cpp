@@ -2401,7 +2401,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 
 			Object *inst = ClassDB::instance(orig_type);
 
-			Ref<Resource> res = Ref<Resource>(Object::cast_to<Resource>(inst));
+			Ref<Resource> res = Object::cast_to<Resource>(inst);
 
 			ERR_FAIL_COND(res.is_null());
 

@@ -533,7 +533,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 	} else {
 
-		Ref<Animation> new_anim = Ref<Animation>(memnew(Animation));
+		Ref<Animation> new_anim = memnew(Animation);
 		new_anim->set_name(new_name);
 
 		undo_redo->create_action(TTR("Add Animation"));

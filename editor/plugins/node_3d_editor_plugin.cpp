@@ -3623,10 +3623,10 @@ void Node3DEditorViewport::_create_preview(const Vector<String> &files) const {
 		String path = files[i];
 		RES res = ResourceLoader::load(path);
 		ERR_CONTINUE(res.is_null());
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
-		if (mesh != nullptr || scene != nullptr) {
-			if (mesh != nullptr) {
+		Ref<PackedScene> scene = Object::cast_to<PackedScene>(*res);
+		Ref<Mesh> mesh = Object::cast_to<Mesh>(*res);
+		if (mesh.is_valid() || scene.is_valid()) {
+			if (mesh.is_valid()) {
 				MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 				mesh_instance->set_mesh(mesh);
 				preview_node->add_child(mesh_instance);
@@ -3674,13 +3674,13 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 	RES res = ResourceLoader::load(path);
 	ERR_FAIL_COND_V(res.is_null(), false);
 
-	Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-	Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
+	Ref<PackedScene> scene = Object::cast_to<PackedScene>(*res);
+	Ref<Mesh> mesh = Object::cast_to<Mesh>(*res);
 
 	Node *instanced_scene = nullptr;
 
-	if (mesh != nullptr || scene != nullptr) {
-		if (mesh != nullptr) {
+	if (mesh.is_valid() || scene.is_valid()) {
+		if (mesh.is_valid()) {
 			MeshInstance3D *mesh_instance = memnew(MeshInstance3D);
 			mesh_instance->set_mesh(mesh);
 			mesh_instance->set_name(path.get_file().get_basename());
@@ -3744,9 +3744,9 @@ void Node3DEditorViewport::_perform_drop_data() {
 		if (res.is_null()) {
 			continue;
 		}
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		Ref<Mesh> mesh = Ref<Mesh>(Object::cast_to<Mesh>(*res));
-		if (mesh != nullptr || scene != nullptr) {
+		Ref<PackedScene> scene = Object::cast_to<PackedScene>(*res);
+		Ref<Mesh> mesh = Object::cast_to<Mesh>(*res);
+		if (mesh.is_valid() || scene.is_valid()) {
 			bool success = _create_instance(target_node, path, drop_pos);
 			if (!success) {
 				error_files.push_back(path);

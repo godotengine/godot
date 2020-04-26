@@ -5898,7 +5898,7 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		RES res = ResourceLoader::load(path);
 		ERR_FAIL_COND(res.is_null());
 		Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
+		Ref<PackedScene> scene = Object::cast_to<PackedScene>(*res);
 		if (texture != nullptr || scene != nullptr) {
 			if (texture != nullptr) {
 				Sprite2D *sprite = memnew(Sprite2D);
@@ -6076,7 +6076,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (res.is_null()) {
 			continue;
 		}
-		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
+		Ref<PackedScene> scene = Object::cast_to<PackedScene>(*res);
 		if (scene != nullptr && scene.is_valid()) {
 			if (!target_node) {
 				// Without root node act the same as "Load Inherited Scene"
@@ -6140,7 +6140,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				}
 				String type = res->get_class();
 				if (type == "PackedScene") {
-					Ref<PackedScene> sdata = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
+					Ref<PackedScene> sdata = Object::cast_to<PackedScene>(*res);
 					Node *instanced_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 					if (!instanced_scene) {
 						continue;

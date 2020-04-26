@@ -3372,7 +3372,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 
 	if (ResourceCache::has(lpath)) {
 		//used from somewhere else? no problem! update state and replace sdata
-		Ref<PackedScene> ps = Ref<PackedScene>(Object::cast_to<PackedScene>(ResourceCache::get(lpath)));
+		Ref<PackedScene> ps = Object::cast_to<PackedScene>(ResourceCache::get(lpath));
 		if (ps.is_valid()) {
 			ps->replace_state(sdata->get_state());
 			ps->set_last_modified_time(sdata->get_last_modified_time());
@@ -5024,7 +5024,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 		Ref<Image> img = pic->get_data();
 		img = img->duplicate();
 		img->resize(48, 48); //meh
-		Ref<ImageTexture> resized_pic = Ref<ImageTexture>(memnew(ImageTexture));
+		Ref<ImageTexture> resized_pic = memnew(ImageTexture);
 		resized_pic->create_from_image(img);
 		preview = resized_pic;
 	}

@@ -1170,7 +1170,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 
 								String meshid2 = names[i];
 								if (collada.state.mesh_data_map.has(meshid2)) {
-									Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+									Ref<ArrayMesh> mesh = memnew(ArrayMesh);
 									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
 									mesh->set_name(meshdata.name);
 									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, nullptr, Vector<Ref<ArrayMesh>>(), false);
@@ -1435,7 +1435,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones, bool p_im
 
 void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones, bool p_import_value_tracks) {
 
-	Ref<Animation> animation = Ref<Animation>(memnew(Animation));
+	Ref<Animation> animation = memnew(Animation);
 
 	if (p_clip == -1) {
 		animation->set_name("default");

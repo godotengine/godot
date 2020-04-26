@@ -839,7 +839,7 @@ Ref<Texture2D> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, cons
 		prev_y = y;
 	}
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	Ref<ImageTexture> ptex = memnew(ImageTexture);
 
 	ptex->create_from_image(img_ref);
 	return ptex;

@@ -2359,6 +2359,6 @@ void register_android_exporter() {
 	EDITOR_DEF("export/android/timestamping_authority_url", "");
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
 
-	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>(memnew(EditorExportPlatformAndroid));
+	Ref<EditorExportPlatformAndroid> exporter = memnew(EditorExportPlatformAndroid);
 	EditorExport::get_singleton()->add_export_platform(exporter);
 }

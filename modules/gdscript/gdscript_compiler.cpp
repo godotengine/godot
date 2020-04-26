@@ -147,7 +147,7 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 				class_type = class_type->owner;
 			}
 
-			Ref<GDScript> script = Ref<GDScript>(main_script);
+			Ref<GDScript> script = main_script;
 			while (names.back()) {
 				if (!script->subclasses.has(names.back()->get())) {
 					ERR_PRINT("Parser bug: Cannot locate datatype class.");

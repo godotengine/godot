@@ -220,7 +220,7 @@ void VisualShaderEditor::update_custom_nodes() {
 			Ref<Resource> res = ResourceLoader::load(script_path);
 			ERR_FAIL_COND(res.is_null());
 			ERR_FAIL_COND(!res->is_class("Script"));
-			Ref<Script> script = Ref<Script>(res);
+			Ref<Script> script = res;
 
 			Ref<VisualShaderNodeCustom> ref;
 			ref.instance();
@@ -1560,7 +1560,7 @@ void VisualShaderEditor::_connection_from_empty(const String &p_to, int p_to_slo
 void VisualShaderEditor::_delete_request(int which) {
 
 	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
-	Ref<VisualShaderNode> node = Ref<VisualShaderNode>(visual_shader->get_node(type, which));
+	Ref<VisualShaderNode> node = visual_shader->get_node(type, which);
 
 	undo_redo->create_action(TTR("Delete Node"));
 	undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, which);
