@@ -2342,6 +2342,8 @@ void ScriptEditor::_editor_settings_changed() {
 
 	members_overview_enabled = EditorSettings::get_singleton()->get("text_editor/script_list/show_members_overview");
 	help_overview_enabled = EditorSettings::get_singleton()->get("text_editor/help/show_help_index");
+	list_split->set_visible(EditorSettings::get_singleton()->get("text_editor/script_list/show_scripts_panel"));
+
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 
@@ -3223,6 +3225,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	overview_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	list_split->add_child(overview_vbox);
+	list_split->set_visible(EditorSettings::get_singleton()->get("text_editor/script_list/show_scripts_panel"));
 	buttons_hbox = memnew(HBoxContainer);
 	overview_vbox->add_child(buttons_hbox);
 

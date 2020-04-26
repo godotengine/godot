@@ -461,6 +461,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["text_editor/appearance/line_length_guideline_column"] = PropertyInfo(Variant::INT, "text_editor/appearance/line_length_guideline_column", PROPERTY_HINT_RANGE, "20, 160, 1");
 
 	// Script list
+	_initial_set("text_editor/script_list/show_scripts_panel", true);
 	_initial_set("text_editor/script_list/show_members_overview", true);
 
 	// Files
