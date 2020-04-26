@@ -252,6 +252,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 
 		String current_line = lines[i];
 		current_line = current_line.replace("$GODOT_BASENAME", p_name);
+		current_line = current_line.replace("$GODOT_PROJECT_NAME", ProjectSettings::get_singleton()->get_setting("application/config/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
 		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
 		str_export += current_line + "\n";
