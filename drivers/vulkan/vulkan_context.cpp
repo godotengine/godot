@@ -165,16 +165,17 @@ VkBool32 VulkanContext::_check_layers(uint32_t check_count, const char **check_n
 Error VulkanContext::_create_validation_layers() {
 
 	VkResult err;
+	const char *instance_validation_layers_alt1[] = { "VK_LAYER_KHRONOS_validation" };
+	const char *instance_validation_layers_alt2[] = { "VK_LAYER_LUNARG_standard_validation" };
+	const char *instance_validation_layers_alt3[] = { "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects" };
+
 	uint32_t instance_layer_count = 0;
-	uint32_t validation_layer_count = 0;
-	const char *instance_validation_layers_alt1[] = { "VK_LAYER_LUNARG_standard_validation" };
-	const char *instance_validation_layers_alt2[] = { "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation",
-		"VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation",
-		"VK_LAYER_GOOGLE_unique_objects" };
-	VkBool32 validation_found = 0;
 	err = vkEnumerateInstanceLayerProperties(&instance_layer_count, nullptr);
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
-	const char **instance_validation_layers = instance_validation_layers_alt1;
+
+	VkBool32 validation_found = 0;
+	uint32_t validation_layer_count = 0;
+	const char **instance_validation_layers = nullptr;
 	if (instance_layer_count > 0) {
 		VkLayerProperties *instance_layers = (VkLayerProperties *)malloc(sizeof(VkLayerProperties) * instance_layer_count);
 		err = vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers);
@@ -183,27 +184,33 @@ Error VulkanContext::_create_validation_layers() {
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
 
-		validation_found = _check_layers(ARRAY_SIZE(instance_validation_layers_alt1), instance_validation_layers,
-				instance_layer_count, instance_layers);
-		if (validation_found) {
-			enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt1);
-			enabled_layers[0] = "VK_LAYER_LUNARG_standard_validation";
-			validation_layer_count = 1;
-		} else {
-			// use alternative set of validation layers
-			instance_validation_layers = instance_validation_layers_alt2;
-			enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
-			validation_found = _check_layers(ARRAY_SIZE(instance_validation_layers_alt2), instance_validation_layers,
-					instance_layer_count, instance_layers);
+		validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt1);
+		instance_validation_layers = instance_validation_layers_alt1;
+		validation_found = _check_layers(validation_layer_count, instance_validation_layers, instance_layer_count, instance_layers);
+
+		// use alternative (deprecated, removed in SDK 1.1.126.0) set of validation layers
+		if (!validation_found) {
 			validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
-			for (uint32_t i = 0; i < validation_layer_count; i++) {
-				enabled_layers[i] = instance_validation_layers[i];
-			}
+			instance_validation_layers = instance_validation_layers_alt2;
+			validation_found = _check_layers(validation_layer_count, instance_validation_layers, instance_layer_count, instance_layers);
 		}
+
+		// use alternative (deprecated, removed in SDK 1.1.121.1) set of validation layers
+		if (!validation_found) {
+			validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt3);
+			instance_validation_layers = instance_validation_layers_alt3;
+			validation_found = _check_layers(validation_layer_count, instance_validation_layers, instance_layer_count, instance_layers);
+		}
+
 		free(instance_layers);
 	}
 
-	if (!validation_found) {
+	if (validation_found) {
+		enabled_layer_count = validation_layer_count;
+		for (uint32_t i = 0; i < validation_layer_count; i++) {
+			enabled_layers[i] = instance_validation_layers[i];
+		}
+	} else {
 		return ERR_CANT_CREATE;
 	}
 
