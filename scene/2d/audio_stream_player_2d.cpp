@@ -315,7 +315,7 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 	}
 
 	if (stream_playback.is_valid()) {
-		active = true;
+		//active = true; // setseek needs set *before* active, but that is done in the physics thread
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);
