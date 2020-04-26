@@ -55,6 +55,10 @@
 #include <QuartzCore/CAMetalLayer.h>
 #endif
 
+#ifndef NSAppKitVersionNumber10_14
+#define NSAppKitVersionNumber10_14 1671
+#endif
+
 #define DS_OSX ((DisplayServerOSX *)(DisplayServerOSX::get_singleton()))
 
 static void _get_key_modifier_state(unsigned int p_osx_state, Ref<InputEventWithModifiers> r_state) {
