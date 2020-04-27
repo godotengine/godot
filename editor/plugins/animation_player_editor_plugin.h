@@ -61,6 +61,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_REMOVE_ANIM,
 		TOOL_COPY_ANIM,
 		TOOL_PASTE_ANIM,
+		TOOL_PASTE_ANIM_REF,
 		TOOL_EDIT_RESOURCE
 	};
 
@@ -183,6 +184,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
+	void _animation_paste(Ref<Animation> p_anim);
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
 	void _dialog_action(String p_file);
