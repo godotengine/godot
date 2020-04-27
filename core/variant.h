@@ -139,12 +139,6 @@ private:
 		// Will be null for every type deriving from Reference as they have their
 		// own reference count mechanism
 		ObjectRC *rc;
-		// This is for allowing debug build to check for instance ID validity,
-		// so warnings are shown in debug builds when a stray Variant (one pointing
-		// to a released Object) would have happened.
-		// If it's zero, that means the Variant is has a legit null object value,
-		// thus not needing instance id validation.
-		ObjectID instance_id;
 #else
 		Object *obj;
 #endif

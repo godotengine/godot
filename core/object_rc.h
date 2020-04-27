@@ -46,6 +46,11 @@ class ObjectRC {
 	std::atomic<uint32_t> _users;
 
 public:
+	// This is for allowing debug builds to check for instance ID validity,
+	// so warnings are shown in debug builds when a stray Variant (one pointing
+	// to a released Object) would have happened.
+	const ObjectID instance_id;
+
 	_FORCE_INLINE_ void increment() {
 		_users.fetch_add(1, std::memory_order_relaxed);
 	}
@@ -63,7 +68,8 @@ public:
 		return _ptr.load(std::memory_order_acquire);
 	}
 
-	_FORCE_INLINE_ ObjectRC(Object *p_object) {
+	_FORCE_INLINE_ ObjectRC(Object *p_object) :
+			instance_id(p_object->get_instance_id()) {
 		// 1 (the Object) + 1 (the first user)
 		_users.store(2, std::memory_order_relaxed);
 		_ptr.store(p_object, std::memory_order_release);

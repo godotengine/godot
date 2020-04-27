@@ -1098,7 +1098,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 		Object *obj = _OBJ_PTR(*this);
 		if (!obj) {
 #ifdef DEBUG_ENABLED
-			if (ScriptDebugger::get_singleton() && _get_obj().instance_id != 0 && !ObjectDB::get_instance(_get_obj().instance_id)) {
+			if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
 				WARN_PRINT("Attempted call on stray pointer object.");
 			}
 #endif
@@ -1275,7 +1275,7 @@ bool Variant::has_method(const StringName &p_method) const {
 		Object *obj = _OBJ_PTR(*this);
 		if (!obj) {
 #ifdef DEBUG_ENABLED
-			if (ScriptDebugger::get_singleton() && _get_obj().instance_id != 0 && !ObjectDB::get_instance(_get_obj().instance_id)) {
+			if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
 				WARN_PRINT("Attempted method check on stray pointer object.");
 			}
 #endif
