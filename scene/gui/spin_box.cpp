@@ -68,6 +68,15 @@ void SpinBox::_text_submitted(const String &p_string) {
 	_value_changed(0);
 }
 
+void SpinBox::_text_changed(const String &p_string) {
+	int cursor_pos = line_edit->get_caret_column();
+
+	_text_submitted(p_string);
+
+	// Line edit 'set_text' method resets the cursor position so we need to undo that.
+	line_edit->set_caret_column(cursor_pos);
+}
+
 LineEdit *SpinBox::get_line_edit() {
 	return line_edit;
 }
@@ -244,6 +253,24 @@ String SpinBox::get_prefix() const {
 	return prefix;
 }
 
+void SpinBox::set_update_on_text_changed(bool p_update) {
+	if (update_on_text_changed == p_update) {
+		return;
+	}
+
+	update_on_text_changed = p_update;
+
+	if (p_update) {
+		line_edit->connect("text_changed", callable_mp(this, &SpinBox::_text_changed), Vector<Variant>(), CONNECT_DEFERRED);
+	} else {
+		line_edit->disconnect("text_changed", callable_mp(this, &SpinBox::_text_changed));
+	}
+}
+
+bool SpinBox::get_update_on_text_changed() const {
+	return update_on_text_changed;
+}
+
 void SpinBox::set_editable(bool p_editable) {
 	line_edit->set_editable(p_editable);
 }
@@ -267,11 +294,14 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
+	ClassDB::bind_method(D_METHOD("set_update_on_text_changed"), &SpinBox::set_update_on_text_changed);
+	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("apply"), &SpinBox::apply);
 	ClassDB::bind_method(D_METHOD("get_line_edit"), &SpinBox::get_line_edit);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_align", "get_align");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 }
@@ -284,7 +314,6 @@ SpinBox::SpinBox() {
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	line_edit->set_align(LineEdit::ALIGN_LEFT);
 
-	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_submitted", callable_mp(this, &SpinBox::_text_submitted), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));
