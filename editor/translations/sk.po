@@ -9,12 +9,11 @@
 # Michal <alladinsiffon@gmail.com>, 2019.
 # Richard <rgarlik@gmail.com>, 2019.
 # Richard Urban <redasuio1@gmail.com>, 2020.
-# anonymous <noreply@weblate.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-16 11:03+0000\n"
+"PO-Revision-Date: 2020-04-23 20:21+0000\n"
 "Last-Translator: Richard Urban <redasuio1@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
@@ -23,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.0.1-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1679,112 +1678,105 @@ msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
+"Profil '%s' už existuje. Najprv ho Vymažte ako začnete Importovať, import je "
+"prerušený."
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
-msgstr ""
+msgstr "Error pri ukladaní profilu do cesty: '%s'."
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
-msgstr ""
+msgstr "Unset"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "Vytvoriť adresár"
+msgstr "Aktuálny Profil:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Make Current"
-msgstr ""
+msgstr "Spraviť Aktuálny"
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
-msgstr ""
+msgstr "Nový"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
 #: editor/project_manager.cpp
 msgid "Import"
-msgstr ""
+msgstr "Import"
 
 #: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
-msgstr ""
+msgstr "Export"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "Filter:"
+msgstr "Profily k dispozícii:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Class Options"
-msgstr "Popis:"
+msgstr "Možnosti pre Class"
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
-msgstr ""
+msgstr "Nové profilové meno:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Erase Profile"
-msgstr "Všetky vybrané"
+msgstr "Vymazať Profil"
 
 #: editor/editor_feature_profile.cpp
 msgid "Godot Feature Profile"
-msgstr ""
+msgstr "Godot Feature Profil"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Profile(s)"
-msgstr ""
+msgstr "Importovať Profil(y)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Export Profile"
-msgstr ""
+msgstr "Exportovať Profil"
 
 #: editor/editor_feature_profile.cpp
 msgid "Manage Editor Feature Profiles"
-msgstr ""
+msgstr "Spravovať Feature Profily Editora"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select Current Folder"
-msgstr "Vytvoriť adresár"
+msgstr "Vybrať Aktuálny Priečinok"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File Exists, Overwrite?"
-msgstr ""
+msgstr "Súbor Existuje, Predpísať?"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Select This Folder"
-msgstr "Vytvoriť adresár"
+msgstr "Vybrať Tento Priečinok"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "Copy Path"
-msgstr ""
+msgstr "Skopírovať Cestu"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Open in File Manager"
-msgstr "Otvoriť súbor"
+msgstr "Otvoriť v File Manažérovy"
 
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
 #: editor/filesystem_dock.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "Show in File Manager"
-msgstr "Otvoriť súbor"
+msgstr "Ukázať v File Manažérovy"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Folder..."
-msgstr "Vytvoriť adresár"
+msgstr "Nový Priečinok..."
 
 #: editor/editor_file_dialog.cpp editor/find_in_files.cpp
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
-msgstr ""
+msgstr "Obnoviť"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Recognized"
@@ -1792,7 +1784,7 @@ msgstr "Všetko rozpoznané"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "All Files (*)"
-msgstr ""
+msgstr "Všetky Súbory (*)"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Open a File"
@@ -1823,74 +1815,71 @@ msgstr "Uložiť súbor"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
-msgstr ""
+msgstr "Ísť Naspäť"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Forward"
-msgstr ""
+msgstr "Ísť Dopredu"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Up"
-msgstr ""
+msgstr "Ísť Hore"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr ""
+msgstr "Prepnúť Skryté Súbory"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr ""
+msgstr "Prepnúť Obľúbené"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
-msgstr ""
+msgstr "Prepnúť Mode"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
-msgstr ""
+msgstr "Zamerať Cestu"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
-msgstr ""
+msgstr "Posunúť obľúbené Vyššie"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Down"
-msgstr ""
+msgstr "Posunúť Obľúbené Nižšie"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Vytvoriť adresár"
+msgstr "Ísť do predchádzajúceho priečinka."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Vytvoriť adresár"
+msgstr "Ísť do ďalšieho priečinka."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Vytvoriť adresár"
+msgstr "Ísť do parent folder."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Refresh files."
-msgstr ""
+msgstr "Obnoviť súbory."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
-msgstr ""
+msgstr "(Od)obľúbiť aktuálny priečinok."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
-msgstr ""
+msgstr "Prepnúť viditeľnosť skrytých súborov."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
-msgstr ""
+msgstr "Zobraziť veci ako mriežku náhľadov."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a list."
-msgstr ""
+msgstr "Zobraziť veci ako list."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Directories & Files:"
@@ -1900,7 +1889,7 @@ msgstr "Priečinky a Súbory:"
 #: editor/plugins/style_box_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Preview:"
-msgstr ""
+msgstr "Ako to bude vyzerať:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "File:"
@@ -1908,25 +1897,27 @@ msgstr "Súbor:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr ""
+msgstr "Musíte použiť platné rozšírenie."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
-msgstr ""
+msgstr "SkenZdrojov"
 
 #: editor/editor_file_system.cpp
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
 msgstr ""
+"Sú tu viacero importérov pre rozličné typy ukazujúce do súboru, import "
+"prerušený"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr ""
+msgstr "(Re)Importovanie Asset-ov"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
-msgstr ""
+msgstr "Top"
 
 #: editor/editor_help.cpp
 msgid "Class:"
@@ -1935,175 +1926,164 @@ msgstr "Trieda:"
 #: editor/editor_help.cpp editor/scene_tree_editor.cpp
 #: editor/script_create_dialog.cpp
 msgid "Inherits:"
-msgstr ""
+msgstr "Inherit-y:"
 
 #: editor/editor_help.cpp
 msgid "Inherited by:"
-msgstr ""
+msgstr "Zdedené používateľom:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Description"
-msgstr "Popis:"
+msgstr "Popisok"
 
 #: editor/editor_help.cpp
 msgid "Online Tutorials"
-msgstr ""
+msgstr "Online Tutoriáli"
 
 #: editor/editor_help.cpp
 msgid "Properties"
-msgstr ""
+msgstr "Vlastnosti"
 
 #: editor/editor_help.cpp
 msgid "override:"
-msgstr ""
+msgstr "Predpísať:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "default:"
-msgstr "Načítať predvolené"
+msgstr "Štandard:"
 
 #: editor/editor_help.cpp
 msgid "Methods"
-msgstr ""
+msgstr "Metódy"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties"
-msgstr "Filter:"
+msgstr "Vlastnosti Témy"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Enumerations"
-msgstr "Popis:"
+msgstr "Výpočty"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Constants"
-msgstr "Konštanty:"
+msgstr "Konštanty"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Descriptions"
-msgstr "Popis:"
+msgstr "Popisok Vlastnosti"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "Hodnota:"
+msgstr "(hodnota)"
 
 #: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Zatiaľ tu není žiadny popisok pre túto vlastnosť. Prosím pomôžte nám pomocou "
+"[color=$color][url=$url]prispetím jedného[/url][/color]!"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Method Descriptions"
-msgstr "Popis:"
+msgstr "Popisky Metód"
 
 #: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
+"Zatiaľ tu není žiadny popisok pre túto metódu. Prosím pomôžte nám pomocou "
+"[color=$color][url=$url]prispetím jedného[/url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr ""
+msgstr "Vyhľadať Pomoc"
 
 #: editor/editor_help_search.cpp
 msgid "Case Sensitive"
-msgstr ""
+msgstr "Rozlišuje malé a veľké písmená"
 
 #: editor/editor_help_search.cpp
 msgid "Show Hierarchy"
-msgstr ""
+msgstr "Ukázať Hierarchiu"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
-msgstr ""
+msgstr "Zobraziť Všetko"
 
 #: editor/editor_help_search.cpp
 msgid "Classes Only"
-msgstr ""
+msgstr "Iba Class-y"
 
 #: editor/editor_help_search.cpp
 msgid "Methods Only"
-msgstr ""
+msgstr "Iba Metódy"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Signals Only"
-msgstr "Signály:"
+msgstr "Iba Signály"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Constants Only"
-msgstr "Konštanty:"
+msgstr "Iba Konštanty"
 
 #: editor/editor_help_search.cpp
 msgid "Properties Only"
-msgstr ""
+msgstr "Iba Vlastnosti"
 
 #: editor/editor_help_search.cpp
 msgid "Theme Properties Only"
-msgstr ""
+msgstr "Iba Vlastnosti Témy"
 
 #: editor/editor_help_search.cpp
 msgid "Member Type"
-msgstr ""
+msgstr "Typ Člena"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Class"
-msgstr "Trieda:"
+msgstr "Class"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Method"
-msgstr "Prejdite na Metódu"
+msgstr "Metóda"
 
 #: editor/editor_help_search.cpp editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Signal"
-msgstr "Signály"
+msgstr "Signál"
 
 #: editor/editor_help_search.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
-msgstr ""
+msgstr "Konštant"
 
 #: editor/editor_help_search.cpp
 msgid "Property"
-msgstr ""
+msgstr "Vlastnosť"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Theme Property"
-msgstr "Filter:"
+msgstr "Vlastnosť Témy"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
-msgstr ""
+msgstr "Vlastnosť:"
 
 #: editor/editor_inspector.cpp
 msgid "Set"
-msgstr ""
+msgstr "Nastaviť"
 
 #: editor/editor_inspector.cpp
 msgid "Set Multiple:"
-msgstr ""
+msgstr "Nastaviť Viac:"
 
 #: editor/editor_log.cpp
 msgid "Output:"
-msgstr ""
+msgstr "Output:"
 
 #: editor/editor_log.cpp editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Copy Selection"
-msgstr "Odstrániť výber"
+msgstr "Skopírovať Výber"
 
 #: editor/editor_log.cpp editor/editor_network_profiler.cpp
 #: editor/editor_profiler.cpp editor/editor_properties.cpp
@@ -2113,177 +2093,182 @@ msgstr "Odstrániť výber"
 #: modules/gdnative/gdnative_library_editor_plugin.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Clear"
-msgstr ""
+msgstr "Vyčistiť"
 
 #: editor/editor_log.cpp
-#, fuzzy
 msgid "Clear Output"
-msgstr "Popis:"
+msgstr "Vyčistiť Output"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: editor/editor_profiler.cpp
 msgid "Stop"
-msgstr ""
+msgstr "Stop"
 
 #: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
 #: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
 msgid "Start"
-msgstr ""
+msgstr "Štart"
 
 #: editor/editor_network_profiler.cpp
 msgid "%s/s"
-msgstr ""
+msgstr "%s/s"
 
 #: editor/editor_network_profiler.cpp
 msgid "Down"
-msgstr ""
+msgstr "Dole"
 
 #: editor/editor_network_profiler.cpp
 msgid "Up"
-msgstr ""
+msgstr "Hore"
 
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 msgid "Node"
-msgstr ""
+msgstr "Node"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
-msgstr ""
+msgstr "Prichádzajúce RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RSET"
-msgstr ""
+msgstr "Prichádzajúci RSET"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RPC"
-msgstr ""
+msgstr "Vychádzajúce RPC"
 
 #: editor/editor_network_profiler.cpp
 msgid "Outgoing RSET"
-msgstr ""
+msgstr "Vychádzajúci RSET"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr ""
+msgstr "Nové Okno"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr ""
+msgstr "Importované zdroje nemôžu byť uložené."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Error saving resource!"
-msgstr ""
+msgstr "Error pri ukladaní prostriedku!"
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
 "Make it unique first."
 msgstr ""
+"Tento prostriedok nemôže byť uložený lebo nepatrí editovanej scéne. Najprv "
+"ho spravte jedinečným."
 
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 msgid "Save Resource As..."
-msgstr ""
+msgstr "Uložiť Prostriedok Ako..."
 
 #: editor/editor_node.cpp
 msgid "Can't open file for writing:"
-msgstr ""
+msgstr "Nie je možné otvoriť súbor pre písanie:"
 
 #: editor/editor_node.cpp
 msgid "Requested file format unknown:"
-msgstr ""
+msgstr "Požadovaný formát súboru je neznámy:"
 
 #: editor/editor_node.cpp
 msgid "Error while saving."
-msgstr ""
+msgstr "Error pri ukladaní."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Can't open '%s'. The file could have been moved or deleted."
-msgstr ""
+msgstr "Nedá sa otvoriť '%s'. Súbor mohol byť presunutý alebo vymazaný."
 
 #: editor/editor_node.cpp
 msgid "Error while parsing '%s'."
-msgstr ""
+msgstr "Error pri analýze '%s'."
 
 #: editor/editor_node.cpp
 msgid "Unexpected end of file '%s'."
-msgstr ""
+msgstr "Neočakávaný koniec súboru '%s'."
 
 #: editor/editor_node.cpp
 msgid "Missing '%s' or its dependencies."
-msgstr ""
+msgstr "Chýba '%s' alebo jeho závislosti."
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
-msgstr ""
+msgstr "Error pri načítavaní '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
-msgstr ""
+msgstr "Ukladanie Scény"
 
 #: editor/editor_node.cpp
 msgid "Analyzing"
-msgstr ""
+msgstr "Analyzovanie"
 
 #: editor/editor_node.cpp
 msgid "Creating Thumbnail"
-msgstr ""
+msgstr "Vytváranie Náhľadu"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a tree root."
-msgstr ""
+msgstr "Tátu operáciu nie je možné vykonať bez tree root-u."
 
 #: editor/editor_node.cpp
 msgid ""
 "This scene can't be saved because there is a cyclic instancing inclusion.\n"
 "Please resolve it and then attempt to save again."
 msgstr ""
+"Táto scéna nemôže byť uložená lebo je tu cyklické instancovanie inklúzie.\n"
+"Prosím vyriešte to a skúste to znova."
 
 #: editor/editor_node.cpp
 msgid ""
 "Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
 "be satisfied."
 msgstr ""
+"Nedá sa uložiť scéna. Pravdepodobne (inštancie alebo dedičstvo) nemôžu byť "
+"spokojné."
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "Can't overwrite scene that is still open!"
-msgstr ""
+msgstr "Scéna sa nedá predpísať keď je stále otvorená!"
 
 #: editor/editor_node.cpp
 msgid "Can't load MeshLibrary for merging!"
-msgstr ""
+msgstr "Nedá sa načítať MeshLibrary lebo sa spája!"
 
 #: editor/editor_node.cpp
 msgid "Error saving MeshLibrary!"
-msgstr ""
+msgstr "Error pri ukladaní MeshLibrary!"
 
 #: editor/editor_node.cpp
 msgid "Can't load TileSet for merging!"
-msgstr ""
+msgstr "Nedá sa načítať TileSet lebo sa spája!"
 
 #: editor/editor_node.cpp
 msgid "Error saving TileSet!"
-msgstr ""
+msgstr "Error pri ukladaní TileSet-u!"
 
 #: editor/editor_node.cpp
 msgid "Error trying to save layout!"
-msgstr ""
+msgstr "Error pri ukladaní layout-i!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr ""
+msgstr "Predvolený editor layout je prepísaný."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
-msgstr ""
+msgstr "Meno Layout-u sa nenašlo!"
 
 #: editor/editor_node.cpp
 msgid "Restored default layout to base settings."
-msgstr ""
+msgstr "Obnovené predvolené rozloženie na základné nastavenia."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2291,18 +2276,26 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Tento prostriedok patrí scéne ktorá bola importovaná, takže není "
+"editovateľný.\n"
+"Prosím prečítajte si dokumentáciu na importovanie scén aby ste tomu viac "
+"pochopili."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it won't be kept when saving the current scene."
 msgstr ""
+"Tento prostriedok patrí scéne ktorá bola inštancovaná alebo zdedená.\n"
+"Zmeny sa nezanechajú po uložení aktuálnej scény."
 
 #: editor/editor_node.cpp
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
+"Tento prostriedok bol importovaný, takže není editovateľný. Zmeňte jeho "
+"nastavenia v import panely a potom stlačťe re-import."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2311,6 +2304,11 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
+"Táto scéna bola importovaná, takže sa zmeny neuložia.\n"
+"Jej inštancovaním alebo zdedením povolíte to že môžete robiť zmeny v tejto "
+"scéne.\n"
+"Prosím prečítajte si dokumentáciu na importovanie scén aby ste tomu viac "
+"pochopili."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2318,203 +2316,215 @@ msgid ""
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
+"Toto je remote objekt, takže sa zmeny neuložia.\n"
+"Prosím prečítajte si dokumentáciu o debbugging aby ste tomu viac pochopili."
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
-msgstr ""
+msgstr "Nieje definovaná žiadna scéna na spustenie."
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
-msgstr ""
+msgstr "Aktuálna scéna sa nikdy neuložila, prosím uložte ju pred spustením."
 
 #: editor/editor_node.cpp
 msgid "Could not start subprocess!"
-msgstr ""
+msgstr "Subprocess sa nedá spustiť!"
 
 #: editor/editor_node.cpp editor/filesystem_dock.cpp
 msgid "Open Scene"
-msgstr ""
+msgstr "Otvoriť Scénu"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
-msgstr ""
+msgstr "Otvoriť Base Scene"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Open..."
-msgstr "Otvoriť"
+msgstr "Rýchle Otvorenie..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
-msgstr ""
+msgstr "Rýchle Otvorenie Scény..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Script..."
-msgstr ""
+msgstr "Rýchle Otvorenie Scriptu..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Close"
-msgstr "Uložiť súbor"
+msgstr "Uložiť & Zatvoriť"
 
 #: editor/editor_node.cpp
 msgid "Save changes to '%s' before closing?"
-msgstr ""
+msgstr "Chcete uložiť zmeny do '%s' pred zatvorením?"
 
 #: editor/editor_node.cpp
 msgid "Saved %s modified resource(s)."
-msgstr ""
+msgstr "Uložené %s upravené zdroje."
 
 #: editor/editor_node.cpp
 msgid "A root node is required to save the scene."
-msgstr ""
+msgstr "Na uloženie scény je potrebný root node."
 
 #: editor/editor_node.cpp
 msgid "Save Scene As..."
-msgstr ""
+msgstr "Uložiť Scénu Ako..."
 
 #: editor/editor_node.cpp
 msgid "No"
-msgstr ""
+msgstr "Nie"
 
 #: editor/editor_node.cpp
 msgid "Yes"
-msgstr ""
+msgstr "ÁNO"
 
 #: editor/editor_node.cpp
 msgid "This scene has never been saved. Save before running?"
 msgstr ""
+"Táto scéna ešte nikdy nebola uložená. Chcete ju uložiť predtým ako ju "
+"zapnete?"
 
 #: editor/editor_node.cpp editor/scene_tree_dock.cpp
 msgid "This operation can't be done without a scene."
-msgstr ""
+msgstr "Táto operácia nemôže byť dokončená bez scény."
 
 #: editor/editor_node.cpp
 msgid "Export Mesh Library"
-msgstr ""
+msgstr "Exportovať Mesh Library"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a root node."
-msgstr ""
+msgstr "Táto operácia nemôže byť dokončená bez root node-u."
 
 #: editor/editor_node.cpp
 msgid "Export Tile Set"
-msgstr ""
+msgstr "Exportovať Tile Set"
 
 #: editor/editor_node.cpp
 msgid "This operation can't be done without a selected node."
-msgstr ""
+msgstr "Táto operácia nemôže byť dokončená bez vybraného node-u."
 
 #: editor/editor_node.cpp
 msgid "Current scene not saved. Open anyway?"
-msgstr ""
+msgstr "Aktuálna scéna sa neuložila. Chcete ju aj tak otvoriť?"
 
 #: editor/editor_node.cpp
 msgid "Can't reload a scene that was never saved."
-msgstr ""
+msgstr "Nemožno načítať scénu, ktorá nikdy nebola uložená."
 
 #: editor/editor_node.cpp
 msgid "Revert"
-msgstr ""
+msgstr "Revert"
 
 #: editor/editor_node.cpp
 msgid "This action cannot be undone. Revert anyway?"
-msgstr ""
+msgstr "Túto akciu nie je možné vrátiť späť. Chcete Revertovatť aj tak?"
 
 #: editor/editor_node.cpp
 msgid "Quick Run Scene..."
-msgstr ""
+msgstr "Rýchle Spustenie Scény..."
 
 #: editor/editor_node.cpp
 msgid "Quit"
-msgstr ""
+msgstr "Odísť"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr ""
+msgstr "Odísť z editora?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
-msgstr ""
+msgstr "Otvoriť Manažéra Projektov?"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save & Quit"
-msgstr "Uložiť súbor"
+msgstr "Uložiť & Ukončiť"
 
 #: editor/editor_node.cpp
 msgid "Save changes to the following scene(s) before quitting?"
-msgstr ""
+msgstr "Uložiť zmeny do nasledujúcich scén pred ukončením?"
 
 #: editor/editor_node.cpp
 msgid "Save changes the following scene(s) before opening Project Manager?"
-msgstr ""
+msgstr "Uložiť zmeny nasledujúcich scén pred otvorením Manažéra Projektov?"
 
 #: editor/editor_node.cpp
 msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
+"Táto možnosť je zastaraná. Situácie, v ktorých je potrebné obnovenie, sa "
+"teraz považujú za chybu. Prosím, nahláste."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
-msgstr ""
+msgstr "Vyberte hlavnú scénu"
 
 #: editor/editor_node.cpp
 msgid "Close Scene"
-msgstr ""
+msgstr "Zavrieť Scénu"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reopen Closed Scene"
-msgstr "Otvoriť súbor(y)"
+msgstr "Preotvoriť Zatvorenú Scénu"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
+"Addon plugin nie je možné povoliť pri: '% s' analýze konfigurácie zlyhalo."
 
 #: editor/editor_node.cpp
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr ""
+"Nepodarilo sa nájsť script field pre addon plugin v: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr ""
+msgstr "Nepodarilo sa načítať addon script z cesty: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
+"Nepodarilo sa nájsť addon script z cesty: '%s' Vyzerá to tak že by mohol byť "
+"problém v kóde, prosím skontrolujte syntax."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
+"Nepodarilo sa načítať addon script z cesty: '%s' Base type není EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
+"Nepodarilo sa načítať addon script z cesty: '%s' Script není v tool móde."
 
 #: editor/editor_node.cpp
 msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
+"Scéna '%s' bola automaticky importovaná, takže nemôže byť modifikovaná.\n"
+"Aby ste v nej mohli spraviť úpravy, môžete vytvoriť novú zdedenú scénu."
 
 #: editor/editor_node.cpp
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to "
 "open the scene, then save it inside the project path."
 msgstr ""
+"Error pri načítavaní, musí byť vo vnútri projektovej cesty. Použite 'Import' "
+"aby ste otvorili scénu, a potom ju uložte do projektovej cesty."
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr ""
+msgstr "Scéna '%s' má zničené závislosti:"
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
-msgstr ""
+msgstr "Vyčistiť Posledné Scény"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2522,6 +2532,9 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Ešte ste nedefinovali hlavnú scénu, chcete nejakú vybrať?\n"
+"Neskôr ju môžete zmeniť v \"Nastaveniach Projektu\" pod kategóriou "
+"'application'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2529,6 +2542,9 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Vybraná scéna '%s' neexistuje, vybrať platnú?\n"
+"Neskôr ju môžete zmeniť v \"Nastaveniach Projekta\" pod kategóriou "
+"'application'."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2536,147 +2552,147 @@ msgid ""
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
+"Vybraná scéna '%s' není scene file, vybrať platnú scénu?\n"
+"Neskôr ju môžete zmeniť v \"Nastaveniach Projekta\" pod kategóriou "
+"'application'."
 
 #: editor/editor_node.cpp
 msgid "Save Layout"
-msgstr ""
+msgstr "Uložiť Layout"
 
 #: editor/editor_node.cpp
 msgid "Delete Layout"
-msgstr ""
+msgstr "Odstrániť Layout"
 
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr ""
+msgstr "Predvolené"
 
 #: editor/editor_node.cpp editor/editor_properties.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "Show in FileSystem"
-msgstr ""
+msgstr "Ukázať v FileSystéme"
 
 #: editor/editor_node.cpp
 msgid "Play This Scene"
-msgstr ""
+msgstr "Spustiť Túto Scénu"
 
 #: editor/editor_node.cpp
 msgid "Close Tab"
-msgstr ""
+msgstr "Zavrieť Kartu"
 
 #: editor/editor_node.cpp
 msgid "Undo Close Tab"
-msgstr ""
+msgstr "Naspäť Otvoriť Kartu"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
-msgstr ""
+msgstr "Zavrieť Ostatné Karty"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
-msgstr ""
+msgstr "Zavrieť Karty na Pravo"
 
 #: editor/editor_node.cpp
 msgid "Close All Tabs"
-msgstr ""
+msgstr "Zatvoriť všetky Karty"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
-msgstr ""
+msgstr "Prepnúť Kartu Scény"
 
 #: editor/editor_node.cpp
 msgid "%d more files or folders"
-msgstr ""
+msgstr "%d viac súborov alebo priečinkov"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "%d more folders"
-msgstr "Vytvoriť adresár"
+msgstr "%d viac priečinkov"
 
 #: editor/editor_node.cpp
 msgid "%d more files"
-msgstr ""
+msgstr "%d viac súborov"
 
 #: editor/editor_node.cpp
 msgid "Dock Position"
-msgstr ""
+msgstr "Pozícia Dock-u"
 
 #: editor/editor_node.cpp
 msgid "Distraction Free Mode"
-msgstr ""
+msgstr "Režim bez rozptyľovania"
 
 #: editor/editor_node.cpp
 msgid "Toggle distraction-free mode."
-msgstr ""
+msgstr "Prepnúť režim bez rozptyľovania."
 
 #: editor/editor_node.cpp
 msgid "Add a new scene."
-msgstr ""
+msgstr "Pridať novú scénu."
 
 #: editor/editor_node.cpp
 msgid "Scene"
-msgstr ""
+msgstr "Scéna"
 
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
-msgstr ""
+msgstr "Ísť do naposledy otvorenej scény."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "Kopírovať"
+msgstr "Kopírovať Text"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
-msgstr ""
+msgstr "Ďalšia karta"
 
 #: editor/editor_node.cpp
 msgid "Previous tab"
-msgstr ""
+msgstr "Minulá karta"
 
 #: editor/editor_node.cpp
 msgid "Filter Files..."
-msgstr ""
+msgstr "Filtrovať Súbory..."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
-msgstr ""
+msgstr "Operácie zo súbormi scén."
 
 #: editor/editor_node.cpp
 msgid "New Scene"
-msgstr ""
+msgstr "Nová Scéna"
 
 #: editor/editor_node.cpp
 msgid "New Inherited Scene..."
-msgstr ""
+msgstr "Nové Zdedené Scény..."
 
 #: editor/editor_node.cpp
 msgid "Open Scene..."
-msgstr ""
+msgstr "Otvoriť Scénu..."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Open Recent"
-msgstr ""
+msgstr "Otvoriť Posledné"
 
 #: editor/editor_node.cpp
 msgid "Save Scene"
-msgstr ""
+msgstr "Uložiť Scénu"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Save All Scenes"
-msgstr "Uložiť súbor"
+msgstr "Uložiť Všetky Scény"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr ""
+msgstr "Konvertovať Do..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
-msgstr ""
+msgstr "MeshLibrary..."
 
 #: editor/editor_node.cpp
 msgid "TileSet..."
-msgstr ""
+msgstr "TileSet..."
 
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -2686,80 +2702,81 @@ msgstr "Späť"
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Redo"
-msgstr ""
+msgstr "Prerobiť"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr ""
+msgstr "Vrátiť Scénu"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
-msgstr ""
+msgstr "Zmiešanosti projektových alebo scénových wide tool-ov."
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 #: editor/script_create_dialog.cpp
 msgid "Project"
-msgstr ""
+msgstr "Projekt"
 
 #: editor/editor_node.cpp
 msgid "Project Settings..."
-msgstr ""
+msgstr "Nastavenia Projektu..."
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Version Control"
-msgstr ""
+msgstr "Kontrola Verzie"
 
 #: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
 msgid "Set Up Version Control"
-msgstr ""
+msgstr "Nastaviť Kontrolu Verizie"
 
 #: editor/editor_node.cpp
 msgid "Shut Down Version Control"
-msgstr ""
+msgstr "Vypnúť Kontrolu Verzie"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Export..."
-msgstr "Upraviť..."
+msgstr "Export..."
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template..."
-msgstr ""
+msgstr "Inštalovať Android Build Template..."
 
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
-msgstr ""
+msgstr "Otvoriť Project Data Folder"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
-msgstr ""
+msgstr "Nástroje"
 
 #: editor/editor_node.cpp
 msgid "Orphan Resource Explorer..."
-msgstr ""
+msgstr "Orphan Resource Explorer..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr ""
+msgstr "Odísť do Listu Projektov"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
 msgid "Debug"
-msgstr ""
+msgstr "Debug"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
-msgstr ""
+msgstr "Deploy-ovanie z Remote Debug-om"
 
 #: editor/editor_node.cpp
 msgid ""
 "When exporting or deploying, the resulting executable will attempt to "
 "connect to the IP of this computer in order to be debugged."
 msgstr ""
+"Pri exportovaní alebo deploy-ovaní, súbor resulting executable sa pokúsi o "
+"pripojenie do IP vášho počítača aby mohol byť debugg-ovaný."
 
 #: editor/editor_node.cpp
 msgid "Small Deploy with Network FS"
-msgstr ""
+msgstr "Malý Deploy z Network FS"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2770,30 +2787,39 @@ msgid ""
 "On Android, deploy will use the USB cable for faster performance. This "
 "option speeds up testing for games with a large footprint."
 msgstr ""
+"Keď bude povolená táto možnosť, export alebo deploy vyprodukujú menej \n"
+"súboru executable.\n"
+"Filesystém bude z projektu poskytovaný editorom v sieti. Na Androide, pre "
+"deploy budete potrebovať USB kábel \n"
+"rýchlejší výkon. Táto možnosť zrýchľuje proces testovania."
 
 #: editor/editor_node.cpp
 msgid "Visible Collision Shapes"
-msgstr ""
+msgstr "Viditeľné Tvary Kolízie"
 
 #: editor/editor_node.cpp
 msgid ""
 "Collision shapes and raycast nodes (for 2D and 3D) will be visible on the "
 "running game if this option is turned on."
 msgstr ""
+"Tvary Kolízie a raycast node-y (pre 2D a 3D) budú viditeľné po spustení hry "
+"ak budete mať zapnutú túto možnosť."
 
 #: editor/editor_node.cpp
 msgid "Visible Navigation"
-msgstr ""
+msgstr "Viditeľná Navigácia"
 
 #: editor/editor_node.cpp
 msgid ""
 "Navigation meshes and polygons will be visible on the running game if this "
 "option is turned on."
 msgstr ""
+"Navigačné mesh-e a polygony budú viditeľné po spustení hry ak budete mať "
+"zapnutú túto možnosť."
 
 #: editor/editor_node.cpp
 msgid "Sync Scene Changes"
-msgstr ""
+msgstr "Zmeny Synchronizácie Scény"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2802,10 +2828,14 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Keď zapnete túto možnosť, akékoľvek zmeny v scéne v editore budú náhradné so "
+"spustenou hrou.\n"
+"Keď je použitá na diaľku v zariadení, je to viac efektívne z network "
+"filesystémom."
 
 #: editor/editor_node.cpp
 msgid "Sync Script Changes"
-msgstr ""
+msgstr "Zmeny Synchronizácie Scriptu"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2814,60 +2844,62 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
+"Keď je zapnutá táto Možnosť, akýkoľvek uložený script bude znovu načítaný v "
+"spustenej hre.\n"
+"Keď je použitá na diaľku zo zariadenia, toto je viac efektívnejšie z network "
+"filesystémom."
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
 msgstr "Editor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor Settings..."
-msgstr "Prechody"
+msgstr "Nastavenia Editora..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr ""
+msgstr "Layout Editora"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
-msgstr ""
+msgstr "Spraviť Snímku Obrazovky"
 
 #: editor/editor_node.cpp
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr ""
+msgstr "Snímky obrázky sú uložené v Editor Data/Settings Folder."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr ""
+msgstr "Prepnúť na Celú Obrazovku"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
-msgstr ""
+msgstr "Prepnúť Systémovú Konzolu"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr ""
+msgstr "Otvoriť Editor Data/Settings Folder"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr ""
+msgstr "Otvoriť priečinok Editor Data"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr ""
+msgstr "Otvoriť Priečinok Editor Settings"
 
 #: editor/editor_node.cpp
 msgid "Manage Editor Features..."
-msgstr ""
+msgstr "Spravovať Funkcie Editora..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Export Templates..."
-msgstr "Všetky vybrané"
+msgstr "Spravovať Export Templates..."
 
 #: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
-msgstr ""
+msgstr "Pomoc"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2876,24 +2908,24 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
-msgstr ""
+msgstr "Vyhľadať"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
-msgstr ""
+msgstr "Online Dokumentácie"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr ""
+msgstr "Q&A"
 
 #: editor/editor_node.cpp
 msgid "Report a Bug"
-msgstr ""
+msgstr "Nahlásiť Bugy"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Poslať spätnú väzbu Dokumentácie"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -2905,95 +2937,92 @@ msgstr "O nás"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr ""
+msgstr "Spustiť projekt."
 
 #: editor/editor_node.cpp
 msgid "Play"
-msgstr ""
+msgstr "Spustiť"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene execution for debugging."
-msgstr ""
+msgstr "Pozastavenie vykonávania scény kvôli debugg-ovaniu."
 
 #: editor/editor_node.cpp
 msgid "Pause Scene"
-msgstr ""
+msgstr "Pozastaviť Scénu"
 
 #: editor/editor_node.cpp
 msgid "Stop the scene."
-msgstr ""
+msgstr "Zastaviť scénu."
 
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
-msgstr ""
+msgstr "Spustiť editovanú scénu."
 
 #: editor/editor_node.cpp
 msgid "Play Scene"
-msgstr ""
+msgstr "Spustiť Scénu"
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "Spustiť vlastnú scénu"
 
 #: editor/editor_node.cpp
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "Spustiť Vlastnú Scénu"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr ""
+msgstr "Zmena video driver-u vyžaduje reštart editora."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
-#, fuzzy
 msgid "Save & Restart"
-msgstr "Uložiť súbor"
+msgstr "Uložiť & Reštartovať"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
-msgstr ""
+msgstr "Otáča sa, keď sa okno editora redistribuuje."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "Priebežný"
+msgstr "Aktualizovať priebežne"
 
 #: editor/editor_node.cpp
 msgid "Update When Changed"
-msgstr ""
+msgstr "Aktualizovať po Zmene"
 
 #: editor/editor_node.cpp
 msgid "Hide Update Spinner"
-msgstr ""
+msgstr "Skryť aktualizáciu Spinner"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
-msgstr ""
+msgstr "FileSystém"
 
 #: editor/editor_node.cpp
 msgid "Inspector"
-msgstr ""
+msgstr "Inšpektor"
 
 #: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
-msgstr ""
+msgstr "Expandovať Spodný Panel"
 
 #: editor/editor_node.cpp
 msgid "Output"
-msgstr ""
+msgstr "Výstup"
 
 #: editor/editor_node.cpp
 msgid "Don't Save"
-msgstr ""
+msgstr "Neukladať"
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
-msgstr ""
+msgstr "Android build template chýba, prosím nainštalujte príslušné šablóny."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Templates"
-msgstr "Všetky vybrané"
+msgstr "Spravovať Šablóny"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -9853,6 +9882,13 @@ msgid ""
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -10971,6 +11007,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Exportovať Profil"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"

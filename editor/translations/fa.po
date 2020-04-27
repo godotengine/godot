@@ -11,15 +11,14 @@
 # Behrooz Kashani <bkashani@gmail.com>, 2018.
 # Mahdi <sadisticwarlock@gmail.com>, 2018.
 # hpn33 <hamed.hpn332@gmail.com>, 2019, 2020.
-# Focus <saeeddashticlash@gmail.com>, 2019.
-# anonymous <noreply@weblate.org>, 2020.
+# Focus <saeeddashticlash@gmail.com>, 2019, 2020.
 # mohamad por <mohamad24xx@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-09 07:52+0000\n"
-"Last-Translator: hpn33 <hamed.hpn332@gmail.com>\n"
+"PO-Revision-Date: 2020-04-23 20:21+0000\n"
+"Last-Translator: Focus <saeeddashticlash@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
 "Language: fa\n"
@@ -27,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1257,7 +1256,7 @@ msgstr ""
 #: editor/editor_asset_installer.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Success!"
-msgstr ""
+msgstr "موفقیت!"
 
 #: editor/editor_asset_installer.cpp
 #, fuzzy
@@ -1352,7 +1351,7 @@ msgstr "حذف اثر"
 
 #: editor/editor_audio_buses.cpp
 msgid "Audio"
-msgstr ""
+msgstr "صدا"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus"
@@ -2905,6 +2904,7 @@ msgid ""
 msgstr ""
 
 #: editor/editor_node.cpp editor/script_create_dialog.cpp
+#, fuzzy
 msgid "Editor"
 msgstr "ویرایشگر"
 
@@ -4641,7 +4641,7 @@ msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation"
-msgstr ""
+msgstr "انیمیشن"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 #, fuzzy
@@ -10102,6 +10102,13 @@ msgid ""
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -10428,7 +10435,7 @@ msgstr "بارگیری خودکار"
 
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
-msgstr ""
+msgstr "پلاگین ها"
 
 #: editor/property_editor.cpp
 msgid "Preset..."
@@ -11258,6 +11265,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "صدور پروژه"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
