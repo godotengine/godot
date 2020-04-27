@@ -10,14 +10,13 @@
 # Lakshmi-Jayakumar <lakshmi.jayakumar.tkm@gmail.com>, 2019.
 # Devashishsingh98 <devashishsingh98@gmail.com>, 2019.
 # Shirious <sad3119823@gmail.com>, 2020.
-# anonymous <noreply@weblate.org>, 2020.
 # Abhay Patel <Traumaticbean@protonmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-03 09:50+0000\n"
-"Last-Translator: Suryansh5545 <suryanshpathak5545@gmail.com>\n"
+"PO-Revision-Date: 2020-04-24 06:48+0000\n"
+"Last-Translator: Shirious <sad3119823@gmail.com>\n"
 "Language-Team: Hindi <https://hosted.weblate.org/projects/godot-engine/godot/"
 "hi/>\n"
 "Language: hi\n"
@@ -25,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2332,9 +2331,8 @@ msgid "Open Base Scene"
 msgstr "ओपन बेस सीन"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Open..."
-msgstr "खोलो इसे"
+msgstr "तुरंत खोलिये..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
@@ -2457,9 +2455,8 @@ msgid "Close Scene"
 msgstr "क्लोज सीन"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reopen Closed Scene"
-msgstr "खोलो इसे"
+msgstr "बंद सीन फिर से खोलें"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
@@ -2564,14 +2561,12 @@ msgid "Play This Scene"
 msgstr "इस दृश्य को खेलो"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close Tab"
-msgstr "बंद करे"
+msgstr "टैब बंद करे"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo Close Tab"
-msgstr "बंद करे"
+msgstr "बंद टैब अनकिया करें"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
@@ -2582,9 +2577,8 @@ msgid "Close Tabs to the Right"
 msgstr "टैब को दाईं ओर बंद करें"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close All Tabs"
-msgstr "बंद करे"
+msgstr "सभी टैब बंद करे"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2627,9 +2621,8 @@ msgid "Go to previously opened scene."
 msgstr "पहले खोले गए दृश्य में जाएं।"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "सभी खंड"
+msgstr "टेक्स्ट कौपी कीजिये"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -2731,18 +2724,16 @@ msgid "Install Android Build Template..."
 msgstr "एंड्रॉयड बिल्ड टेम्पलेट स्थापित करें..."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open Project Data Folder"
-msgstr "परियोजना के संस्थापक"
+msgstr "प्रोजेक्ट डेटा फ़ोल्डर खोलिये"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "उपकरण"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Orphan Resource Explorer..."
-msgstr "Orphan Resource Explorer"
+msgstr "असहाय रेसोर्स खोजकर्ता..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2842,9 +2833,8 @@ msgid "Editor"
 msgstr "संपादक"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Editor Settings..."
-msgstr "अनुवाद में बदलाव करें:"
+msgstr "एडीटर सेटिन्गस..."
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
@@ -2910,11 +2900,11 @@ msgstr "Q&A"
 
 #: editor/editor_node.cpp
 msgid "Report a Bug"
-msgstr ""
+msgstr "प्रोग्राम में त्रुटि की शिकायत करें"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Docs की प्रतिक्रिया भेजें"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3103,9 +3093,8 @@ msgid "Warning!"
 msgstr "चेतावनी!"
 
 #: editor/editor_path.cpp
-#, fuzzy
 msgid "No sub-resources found."
-msgstr "संसाधन"
+msgstr "सब-रिसोर्स नहीं मिला."
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3116,9 +3105,8 @@ msgid "Thumbnail..."
 msgstr "थंबनेल..."
 
 #: editor/editor_plugin_settings.cpp
-#, fuzzy
 msgid "Main Script:"
-msgstr "निर्भरता संपादक"
+msgstr "मेन स्क्रिप्ट:"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -3190,9 +3178,8 @@ msgid "Calls"
 msgstr "कॉल"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "परिवर्तन वक्र चयन"
+msgstr "टेक्स्ट संपादित करें:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -3215,9 +3202,8 @@ msgid "Assign..."
 msgstr "सौंपना..."
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Invalid RID"
-msgstr "गलत फॉण्ट का आकार |"
+msgstr "अमान्य RID"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3469,9 +3455,8 @@ msgid "Download Complete."
 msgstr "पूरा डाउनलोड करें।"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Cannot remove temporary file:"
-msgstr "निकाला नहीं जा सकता:"
+msgstr "अल्पकालिक फ़ाइल निकाली नहीं जा सक्ती:"
 
 #: editor/export_template_manager.cpp
 msgid ""
@@ -3610,19 +3595,19 @@ msgstr "बशर्ते नाम में अमान्य पात्�
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
-msgstr ""
+msgstr "इस नाम से फ़ाइल या फ़ोल्डर पहले से मौजूद."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr ""
+msgstr "नाम मे अमान्य अक्षर मौजूद."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
-msgstr ""
+msgstr "फ़ाइल का नाम बदल रहे है:"
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming folder:"
-msgstr ""
+msgstr "फ़ोल्डर का नाम बदल रहे है:"
 
 #: editor/filesystem_dock.cpp
 msgid "Duplicating file:"
@@ -3634,11 +3619,11 @@ msgstr "डुप्लिकेटिंग फ़ोल्डर:"
 
 #: editor/filesystem_dock.cpp
 msgid "New Inherited Scene"
-msgstr ""
+msgstr "नई उत्तराधिकार प्राप्त सीन"
 
 #: editor/filesystem_dock.cpp
 msgid "Set As Main Scene"
-msgstr ""
+msgstr "मेन सीन सेट करे"
 
 #: editor/filesystem_dock.cpp
 msgid "Open Scenes"
@@ -3658,7 +3643,7 @@ msgstr "पसंदीदा से निकालें"
 
 #: editor/filesystem_dock.cpp
 msgid "Edit Dependencies..."
-msgstr ""
+msgstr "निर्भरित फ़ाइलें संपादित करें..."
 
 #: editor/filesystem_dock.cpp
 msgid "View Owners..."
@@ -9730,6 +9715,13 @@ msgid ""
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -10831,6 +10823,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "‍एक्सपोर्ट प्रोफ़ाइल"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"

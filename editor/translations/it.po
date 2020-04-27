@@ -45,12 +45,13 @@
 # Fabio Iotti <fabiogiopla@gmail.com>, 2020.
 # Douglas Fiedler <dognew@gmail.com>, 2020.
 # E440QF <ettore.beltra@gmail.com>, 2020.
+# Giuseppe Lucido <giuseppe.lucido@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-08 16:36+0000\n"
-"Last-Translator: E440QF <ettore.beltra@gmail.com>\n"
+"PO-Revision-Date: 2020-04-27 08:25+0000\n"
+"Last-Translator: Micila Micillotto <micillotto@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2984,13 +2985,12 @@ msgid "Q&A"
 msgstr "Domande e risposte"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Reimporta"
+msgstr "Riporta un Bug"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Invia opinione sui documenti"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4049,9 +4049,8 @@ msgid "Reimport"
 msgstr "Reimporta"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr "Salva scene, importa nuovamente e riavvia"
+msgstr "Salva scene, re-importa e riavvia"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -6030,7 +6029,6 @@ msgstr ""
 "collisioni."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
 msgstr "Crea Singolo Fratello di Collisione Convessa"
 
@@ -7360,9 +7358,8 @@ msgid "This operation requires a single selected node."
 msgstr "Questa operazione richiede un solo nodo selezionato."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Ortogonale"
+msgstr "Ortogonale Automatico Abilitato"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9991,6 +9988,13 @@ msgstr ""
 "Al momento non hai nessun progetto.\n"
 "Ti piacerebbe esplorare gli esempi ufficiali nella libreria degli Asset?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Tasto "
@@ -10983,6 +10987,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Note: Gli script pre-installati hanno alcune limitazioni e non possono "
+"essere modificati utilizzando un editor esterno."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11103,6 +11109,11 @@ msgstr "Lista di Utilizzo Memoria Video per Risorsa:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Totale:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Esporta profilo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12788,6 +12799,8 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"La dimensione del Viewport deve essere maggiore di 0 affinché qualcosa sia "
+"visibile."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

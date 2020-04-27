@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-18 00:10+0000\n"
+"PO-Revision-Date: 2020-04-20 05:51+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2945,13 +2945,12 @@ msgid "Q&A"
 msgstr "Запитання та відповіді"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Переімпортувати"
+msgstr "Повідомити про ваду"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Надіслати відгук щодо документації"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4006,7 +4005,6 @@ msgid "Reimport"
 msgstr "Переімпортувати"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Зберегти сцени, повторно імпортувати і перезапустити"
 
@@ -7307,9 +7305,8 @@ msgid "This operation requires a single selected node."
 msgstr "Ця операція вимагає одного обраного вузла."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Ортогонально"
+msgstr "Увімкнено автоматичну ортогоналізацію"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9934,6 +9931,13 @@ msgstr ""
 "Зараз проєктів немає.\n"
 "Хочете вивчити проєкти офіційних прикладів з бібліотеки даних?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Клавіша "
@@ -10927,6 +10931,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Зауваження: для вбудованих скриптів передбачено певні обмеження — їх не "
+"можна редагувати у зовнішньому редакторі."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11047,6 +11053,11 @@ msgstr "Список використання відеопам'яті за ре�
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Загалом:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Експорт профілю"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12728,6 +12739,8 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
+"за 0."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
