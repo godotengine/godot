@@ -251,6 +251,8 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(String, ends_with);
 	VCALL_LOCALMEM1R(String, is_subsequence_of);
 	VCALL_LOCALMEM1R(String, is_subsequence_ofi);
+	VCALL_LOCALMEM1R(String, is_substring_of);
+	VCALL_LOCALMEM1R(String, is_substring_ofi);
 	VCALL_LOCALMEM0R(String, bigrams);
 	VCALL_LOCALMEM1R(String, similarity);
 	VCALL_LOCALMEM2R(String, format);
@@ -1727,6 +1729,8 @@ void register_variant_methods() {
 	ADDFUNC1R(STRING, BOOL, String, ends_with, STRING, "text", varray());
 	ADDFUNC1R(STRING, BOOL, String, is_subsequence_of, STRING, "text", varray());
 	ADDFUNC1R(STRING, BOOL, String, is_subsequence_ofi, STRING, "text", varray());
+	ADDFUNC1R(STRING, BOOL, String, is_substring_of, STRING, "text", varray());
+	ADDFUNC1R(STRING, BOOL, String, is_substring_ofi, STRING, "text", varray());
 	ADDFUNC0R(STRING, PACKED_STRING_ARRAY, String, bigrams, varray());
 	ADDFUNC1R(STRING, FLOAT, String, similarity, STRING, "text", varray());
 

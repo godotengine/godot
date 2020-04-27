@@ -556,7 +556,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this string is a subsequence of the given string.
+				Returns [code]true[/code] if this string is a subsequence of the given string. Gaps or interwoven characters are omitted during check (useful for example in "fuzzy" searches).
 			</description>
 		</method>
 		<method name="is_subsequence_ofi">
@@ -565,9 +565,27 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
+				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case. Gaps or interwoven characters are omitted during check (useful for example in "fuzzy" searches).
 			</description>
 		</method>
+		<method name="is_substring_of">
+			<return type="bool">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this string is a substring of the given string. Current String must be literal slice, without any gaps or interwoven characters, of [code]text[/code] in question to match.
+			</description>
+		</method>
+		<method name="is_substring_ofi">
+			<return type="bool">
+			</return>
+			<argument index="0" name="text" type="String">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this string is a substring of the given string, without considering case. Current String must be literal slice, without any gaps or interwoven characters, of [code]text[/code] in question to match.
+			</description>
+		</method>		
 		<method name="is_valid_filename">
 			<return type="bool">
 			</return>

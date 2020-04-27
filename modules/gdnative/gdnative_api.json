@@ -4652,7 +4652,23 @@
           ["const godot_string *", "p_self"],
           ["const godot_string *", "p_string"]
         ]
+			},
+      {
+        "name": "godot_string_is_substring_of",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["const godot_string *", "p_self"],
+          ["const godot_string *", "p_string"]
+        ]
       },
+      {
+        "name": "godot_string_is_substring_ofi",
+        "return_type": "godot_bool",
+        "arguments": [
+          ["const godot_string *", "p_self"],
+          ["const godot_string *", "p_string"]
+        ]
+      },			
       {
         "name": "godot_string_lpad",
         "return_type": "godot_string",
