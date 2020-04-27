@@ -416,7 +416,7 @@ void InputEventMouseButton::set_factor(float p_factor) {
 	factor = p_factor;
 }
 
-float InputEventMouseButton::get_factor() {
+float InputEventMouseButton::get_factor() const {
 
 	return factor;
 }

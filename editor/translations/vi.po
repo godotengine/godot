@@ -9866,6 +9866,13 @@ msgstr ""
 "Hiện giờ bạn không có project nào.\n"
 "Bạn có muốn xem các project official ví dụ trên Asset Library không?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -10995,6 +11002,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Xuất hồ sơ"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"

@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This object is used to generate previews for resources of files.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_resource_previewer].
 	</description>
 	<tutorials>
 	</tutorials>

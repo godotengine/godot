@@ -91,7 +91,7 @@
 			Decides if audio should pause when source is outside of [member max_distance] range.
 		</member>
 		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
-			Changes the pitch and the tempo of the audio.
+			The pitch and the tempo of the audio, as a multiplier of the audio sample's sample rate.
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
 			If [code]true[/code], audio is playing.

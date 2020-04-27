@@ -43,15 +43,14 @@
 # Dario <darlex259@gmail.com>, 2019.
 # Adolfo Jayme Barrientos <fitojb@ubuntu.com>, 2019.
 # Julián Luini <jluini@gmail.com>, 2020.
-# anonymous <noreply@weblate.org>, 2020.
 # Victor S. <victorstancioiu@gmail.com>, 2020.
 # henry rujano herrera <rujhen@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-16 11:03+0000\n"
-"Last-Translator: anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-04-23 20:21+0000\n"
+"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -59,7 +58,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.1-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -642,7 +641,7 @@ msgstr "Usar Curvas Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
-msgstr "Optimizador de Animación"
+msgstr "Optimizar Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Max. Linear Error:"
@@ -845,7 +844,7 @@ msgstr "Eliminar"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr "Añadir un Argumento de Llamada Extra:"
+msgstr "Añadir Argumento de Llamada Extra:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
@@ -2994,13 +2993,12 @@ msgid "Q&A"
 msgstr "Preguntas y respuestas"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Reimportar"
+msgstr "Reportar un Bug"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Enviar Feedback de la Documentación"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3012,7 +3010,7 @@ msgstr "Acerca de"
 
 #: editor/editor_node.cpp
 msgid "Play the project."
-msgstr "Ejecutar el proyecto."
+msgstr "Reproducir el proyecto."
 
 #: editor/editor_node.cpp
 msgid "Play"
@@ -4060,9 +4058,8 @@ msgid "Reimport"
 msgstr "Reimportar"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr "Guardar escenas, reimportar y reiniciar"
+msgstr "Guardar Escenas, Reimportar y Reiniciar"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -5274,8 +5271,8 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
-"Cuando esté activo, moviendo los nodos de Control cambiará sus anclas en "
-"lugar de sus márgenes."
+"Cuando está activo, el movimiento de los nodos de Control cambian sus "
+"anclajes en lugar de sus márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Left"
@@ -7367,9 +7364,8 @@ msgid "This operation requires a single selected node."
 msgstr "Esta operación requiere un solo nodo seleccionado."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Ortogonal"
+msgstr "Auto Ortogonal Activado"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9995,6 +9991,13 @@ msgstr ""
 "Actualmente no tienes ningún proyecto.\n"
 "¿Quieres explorar proyectos de ejemplo oficiales en la Biblioteca de Assets?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Tecla "
@@ -10988,6 +10991,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Nota: Los scripts integrados tienen algunas limitaciones y no pueden ser "
+"editados usando un editor externo."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11108,6 +11113,11 @@ msgstr "Lista de uso de memoria de video por recurso:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Total:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Exportar Perfil"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11443,7 +11453,7 @@ msgstr "Eliminar Rotación del Cursor"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Paste Selects"
-msgstr "Pegar Selecciona"
+msgstr "Pegar Seleccionados"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
@@ -12801,6 +12811,8 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"El tamaño del Viewport debe ser mayor que 0 para poder renderizar cualquier "
+"cosa."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

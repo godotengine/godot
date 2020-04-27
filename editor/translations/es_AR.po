@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-11 12:20+0000\n"
+"PO-Revision-Date: 2020-04-23 20:21+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -8390,7 +8390,7 @@ msgstr "Crear Polígono Cóncavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Polygon Convex"
-msgstr "Crear Polígono Convexo"
+msgstr "Hacer el Polígono Convexo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -9950,6 +9950,13 @@ msgstr ""
 "Actualmente no tenés ningún proyecto.\n"
 "¿Te gustaría explorar los ejemplos oficiales en la Biblioteca de Assets?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Tecla "
@@ -11064,6 +11071,11 @@ msgstr "Lista de Uso de Memoria de Video por Recurso:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Total:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Exportar Perfil"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
