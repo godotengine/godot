@@ -244,6 +244,7 @@ public:
 	bool is_key_pressed(int p_keycode) const;
 	bool is_mouse_button_pressed(int p_button) const;
 	bool is_joy_button_pressed(int p_device, int p_button) const;
+	bool is_action_empty() const;
 	bool is_action_pressed(const StringName &p_action) const;
 	bool is_action_just_pressed(const StringName &p_action) const;
 	bool is_action_just_released(const StringName &p_action) const;
