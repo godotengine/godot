@@ -4017,7 +4017,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				if (!_enter_indent_block(block)) {
 
-					_set_error("Indented block expected.");
+					_set_error(vformat("Indented block expected after declaration of \"%s\" function.", function->name));
 					return;
 				}
 
