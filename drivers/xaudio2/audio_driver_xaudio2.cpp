@@ -139,6 +139,11 @@ int AudioDriverXAudio2::get_mix_rate() const {
 	return mix_rate;
 }
 
+int AudioDriverXAudio2::get_mix_buffer_size() const {
+
+	return buffer_size;
+}
+
 AudioDriver::SpeakerMode AudioDriverXAudio2::get_speaker_mode() const {
 
 	return speaker_mode;

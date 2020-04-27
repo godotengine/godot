@@ -173,6 +173,14 @@ int AudioDriverJavaScript::get_mix_rate() const {
 	/* clang-format on */
 }
 
+int AudioDriverJavascript::get_mix_buffer_size() const {
+
+	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
+	if (channel_count != 0)
+		return memarr_len(internal_buffer) / channel_count;
+	return DEFAULT_MIX_BUFFER_SIZE;
+}
+
 AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const {
 
 	/* clang-format off */
@@ -203,6 +211,14 @@ void AudioDriverJavaScript::finish() {
 		internal_buffer = nullptr;
 	}
 	_driver_id = 0;
+}
+
+float AudioDriverjavascript::get_latency() {
+
+	int mix_rate = get_mix_rate();
+	if (mix_rate != 0)
+		return (float)buffer_length / (float)mix_rate;
+	return 0.f;
 }
 
 Error AudioDriverJavaScript::capture_start() {

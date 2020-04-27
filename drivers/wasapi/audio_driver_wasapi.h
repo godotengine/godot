@@ -109,6 +109,8 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
+	virtual int get_mix_buffer_size() const;
+	virtual float get_latency();
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual Array get_device_list();
 	virtual String get_device();

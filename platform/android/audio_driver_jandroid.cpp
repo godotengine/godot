@@ -159,6 +159,11 @@ int AudioDriverAndroid::get_mix_rate() const {
 	return mix_rate;
 }
 
+int AudioDriverAndroid::get_mix_buffer_size() const {
+
+	return audioBufferFrames;
+}
+
 AudioDriver::SpeakerMode AudioDriverAndroid::get_speaker_mode() const {
 
 	return SPEAKER_MODE_STEREO;
@@ -186,6 +191,13 @@ void AudioDriverAndroid::finish() {
 	}
 
 	active = false;
+}
+
+float AudioDriverAndroid::get_latency() {
+
+	if (mix_rate != 0)
+		return (float)audioBufferFrames / (float)mix_rate;
+	return 0.f;
 }
 
 void AudioDriverAndroid::set_pause(bool p_pause) {

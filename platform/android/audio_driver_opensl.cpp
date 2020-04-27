@@ -321,6 +321,11 @@ int AudioDriverOpenSL::get_mix_rate() const {
 	return 44100; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
 }
 
+int AudioDriverOpenSL::get_mix_buffer_size() const {
+
+	return buffer_size;
+}
+
 AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const {
 
 	return SPEAKER_MODE_STEREO;
@@ -341,6 +346,11 @@ void AudioDriverOpenSL::unlock() {
 void AudioDriverOpenSL::finish() {
 
 	(*sl)->Destroy(sl);
+}
+
+float AudioDriverOpenSL::get_latency() {
+
+	return (float)buffer_size / 44100.1f; // hardcoded for Android, as selected by SL_SAMPLINGRATE_44_1
 }
 
 void AudioDriverOpenSL::set_pause(bool p_pause) {
