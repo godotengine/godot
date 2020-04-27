@@ -305,7 +305,7 @@ public:
 	virtual void goto_line(int p_line, bool p_with_error = false);
 	virtual void set_executing_line(int p_line);
 	virtual void clear_executing_line();
-	virtual void trim_trailing_whitespace();
+	virtual void trim_trailing_whitespace(bool p_exclude_current_line = false);
 	virtual void insert_final_newline();
 	virtual void convert_indent_to_spaces();
 	virtual void convert_indent_to_tabs();
