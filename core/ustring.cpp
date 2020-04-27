@@ -823,13 +823,15 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 	Vector<String> ret;
 	const int len = length();
 	int remaining_len = len;
+	String split_str_accum;
+	String sub_part_left;
 
 	while (true) {
 
-		if (remaining_len < p_splitter.length() || (p_maxsplit > 0 && p_maxsplit == ret.size())) {
+		if (remaining_len < p_splitter.length()) {
 			// no room for another splitter or hit max splits, push what's left and we're done
 			if (p_allow_empty || remaining_len > 0) {
-				ret.push_back(substr(0, remaining_len));
+				sub_part_left = substr(0, remaining_len);
 			}
 			break;
 		}
@@ -838,19 +840,37 @@ Vector<String> String::rsplit(const String &p_splitter, bool p_allow_empty, int 
 
 		if (left_edge < 0) {
 			// no more splitters, we're done
-			ret.push_back(substr(0, remaining_len));
+			sub_part_left = substr(0, remaining_len);
 			break;
 		}
 
 		int substr_start = left_edge + p_splitter.length();
 		if (p_allow_empty || substr_start < remaining_len) {
-			ret.push_back(substr(substr_start, remaining_len - substr_start));
+			String sub_part = substr(substr_start, remaining_len - substr_start);
+
+			if (p_maxsplit > 0 && p_maxsplit <= ret.size()) {
+				split_str_accum += sub_part;
+				split_str_accum += p_splitter;
+			} else {
+				ret.push_back(sub_part);
+			}
 		}
 
 		remaining_len = left_edge;
 	}
 
-	ret.invert();
+	if (!sub_part_left.empty()) {
+		if (p_maxsplit > 0 && p_maxsplit <= ret.size()) {
+			split_str_accum += sub_part_left;
+		} else {
+			ret.push_back(sub_part_left);
+		}
+	}
+
+	// If 'p_maxsplit' is used, add remaining items at tail as one long String - reversed and delimiter-separated
+	if (!split_str_accum.empty())
+		ret.push_back(split_str_accum);
+
 	return ret;
 }
 
