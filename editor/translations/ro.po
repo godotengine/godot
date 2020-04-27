@@ -10105,6 +10105,13 @@ msgstr ""
 "Dorești să explorezi exemplele de proiecte oficiale din Librăria de Asset-"
 "uri?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr ""
@@ -11243,6 +11250,11 @@ msgstr ""
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr ""
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Exportă Profil"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"

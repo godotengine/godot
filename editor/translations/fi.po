@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-14 15:05+0000\n"
+"PO-Revision-Date: 2020-04-20 05:51+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2921,13 +2921,12 @@ msgid "Q&A"
 msgstr "Kysymykset ja vastaukset"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Tuo uudelleen"
+msgstr "Raportoi bugi"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Lähetä palautetta ohjeesta"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3981,7 +3980,6 @@ msgid "Reimport"
 msgstr "Tuo uudelleen"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Tallenna skenet, tuo uudelleen ja käynnistä uudelleen"
 
@@ -5543,7 +5541,7 @@ msgstr "Näytä origo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr "Näytä näyttöikkuna"
+msgstr "Näytä näyttöruutu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
@@ -7277,9 +7275,8 @@ msgid "This operation requires a single selected node."
 msgstr "Tämä toiminto vaatii yhden valitun solmun."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Ortogonaalinen"
+msgstr "Automaattinen ortogonaalinen päällä"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9895,6 +9892,13 @@ msgstr ""
 "Sinulla ei ole tällä hetkellä yhtään projekteja.\n"
 "Haluaisitko selata virallisia esimerkkiprojekteja Asset-kirjastosta?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Näppäin "
@@ -10889,6 +10893,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Huom: sisäänrakennetuilla skripteillä on joitakin rajoituksia, eikä niitä "
+"voi muokata ulkoisella editorilla."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11009,6 +11015,11 @@ msgstr "Lista näyttömuistin käytöstä resurssikohtaisesti:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Yhteensä:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Vie profiili"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12673,6 +12684,7 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"Näyttöruudun koko on oltava suurempi kuin 0, jotta mitään renderöidään."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

@@ -43,12 +43,13 @@
 # HALİL ATAŞ <halillatass@gmail.com>, 2019.
 # Zsosu Ktosu <zktosu@gmail.com>, 2020.
 # Mesut Aslan <kontinyu@gmail.com>, 2020.
+# Kaan Genç <kaan@kaangenc.me>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-11 12:20+0000\n"
-"Last-Translator: Mesut Aslan <kontinyu@gmail.com>\n"
+"PO-Revision-Date: 2020-04-23 20:21+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2961,13 +2962,12 @@ msgid "Q&A"
 msgstr "S&C"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Yeniden İçe Aktar"
+msgstr "Hata Bildir"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Belgelendirme Hatası Bildir"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4018,7 +4018,6 @@ msgid "Reimport"
 msgstr "Yeniden İçe Aktar"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Sahneleri kaydet, tekrar içe aktar ve baştan başlat"
 
@@ -5904,16 +5903,15 @@ msgstr "Tekil Dışbükey Şekil Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Can't create multiple convex collision shapes for the scene root."
-msgstr ""
+msgstr "Sahne kökü için birden fazla dışbükey çarpışma şekli oluşturulamaz."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Couldn't create any collision shapes."
 msgstr "Herhangi bir çarpışma şekli oluşturulamadı."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Shapes"
-msgstr "Dışbükey Şekil[ler] Oluştur"
+msgstr "Dışbükey Şekilleri Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5969,6 +5967,9 @@ msgid ""
 "automatically.\n"
 "This is the most accurate (but slowest) option for collision detection."
 msgstr ""
+"Bir StaticBody oluşturur ve otomatik olarak çokgen tabanlı bir çarpışma "
+"şekli atar.\n"
+"Bu, çarpışma tespiti için en doğru (ancak en yavaş) seçenektir."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
@@ -5983,7 +5984,6 @@ msgstr ""
 "Bu en hassas (fakat en yavaş) çarpışma algılama seçeneğidir."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
 msgstr "Dışbükey Çarpışma Komşusu Oluştur"
 
@@ -5992,17 +5992,20 @@ msgid ""
 "Creates a single convex collision shape.\n"
 "This is the fastest (but least accurate) option for collision detection."
 msgstr ""
+"Tek bir dışbükey çarpışma şekli oluşturur.\n"
+"Bu, çarpışma tespiti için en hızlı (ancak en az doğru) seçenektir."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Dışbükey Çarpışma Komşusu Oluştur"
+msgstr "Dışbükey Çarpışma Komşuları Oluştur"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
 "Creates a polygon-based collision shape.\n"
 "This is a performance middle-ground between the two above options."
 msgstr ""
+"Poligon bazlı bir çarpışma şekli oluştur.\n"
+"Bu performans açısından üstteki iki seçeneğin arasındadır."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Outline Mesh..."
@@ -6015,6 +6018,10 @@ msgid ""
 "This can be used instead of the SpatialMaterial Grow property when using "
 "that property isn't possible."
 msgstr ""
+"Durgun bir anahat kafesi oluşturur. Anahat kafesi normalleri otomatik olarak "
+"döndürülecekdir.\n"
+"Bu SpatialMaterial Grow özelliği kullanılamadığı zaman onun yerine "
+"kullanılabilir."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "View UV1"
@@ -7298,9 +7305,8 @@ msgid "This operation requires a single selected node."
 msgstr "Bu işlem, seçilmiş tek bir düğüm gerektirir."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Dikey"
+msgstr "Otomatik Dikey Etkinleştirildi"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9585,32 +9591,27 @@ msgid "Export With Debug"
 msgstr "Hata Ayıklama İle Dışa Aktar"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "The path specified doesn't exist."
-msgstr "Yol mevcut değil."
+msgstr "Belirtilen yol mevcut değil."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Paket dosyası açılırken hata oluştu, zip formatında değil."
+msgstr "Paket dosyası açılırken hata (ZIP formatında değil)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
-msgstr "Geçersiz '.zip' proje dosyası, 'project.godot' dosyası içermiyor."
+msgstr "Geçersiz \".zip\" proje dosyası; \"project.godot\" dosyası içermiyor."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Lütfen boş bir klasör seçin."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Lütfen bir 'project.godot' veya '.zip' dosyası seçin."
+msgstr "Lütfen bir \"project.godot\" veya \".zip\" dosyası seçin."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "This directory already contains a Godot project."
 msgstr "Bu dizinde zaten bir Godot projesi var."
 
@@ -9919,6 +9920,13 @@ msgid ""
 msgstr ""
 "Herhangi bir projen yok.\n"
 "Varlık Kütüphanesi'ndeki resmî örnek projeleri incelemek ister misin?"
+
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10309,9 +10317,8 @@ msgid "Suffix"
 msgstr "Son Ek"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Use Regular Expressions"
-msgstr "Düzenli İfadeler"
+msgstr "Düzenli İfadeler Kullan"
 
 #: editor/rename_dialog.cpp
 msgid "Advanced Options"
@@ -10350,9 +10357,8 @@ msgstr ""
 "Sayaç seçeneklerini karşılaştırın."
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Per-level Counter"
-msgstr "Seviye Başına sayaç"
+msgstr "Seviye Başına Sayaç"
 
 #: editor/rename_dialog.cpp
 msgid "If set the counter restarts for each group of child nodes"
@@ -10391,12 +10397,10 @@ msgid "Keep"
 msgstr "Tut"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "PascalCase to snake_case"
 msgstr "DeveŞekilli'den alt_tireli'ye dönüştür"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "snake_case to PascalCase"
 msgstr "alt_tireli'den DeveŞekilli'ye dönüştür"
 
@@ -10417,9 +10421,8 @@ msgid "Reset"
 msgstr "Sıfırla"
 
 #: editor/rename_dialog.cpp
-#, fuzzy
 msgid "Regular Expression Error"
-msgstr "Düzenli İfadeler"
+msgstr "Düzenli İfade Hatası"
 
 #: editor/rename_dialog.cpp
 #, fuzzy
@@ -10889,9 +10892,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Geçersiz devralınan üst ad veya yol."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Betik geçerli."
+msgstr "Betik yolu/adı geçerli."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -10918,6 +10920,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Not: Gömülü betikler bazı sınırlandırmalara mahsustur ve dış bir düzenleyici "
+"ile düzenlenemezler."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -10988,7 +10992,6 @@ msgid "Copy Error"
 msgstr "Hatayı Kopyala"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Video RAM"
 msgstr "Görüntü Belleği"
 
@@ -11039,6 +11042,11 @@ msgstr "Kaynağa Göre İzleti Belleği Kullanımının Dizelgesi:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Toplam:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Profil Dışa Aktar"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12392,6 +12400,7 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"ConcavePolygonShape static dışında bir modda RigidBody'i desteklemiyor."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -12694,6 +12703,7 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"Herhangi bir şeyi işlemek için görüntükapısı boyutu 0'dan büyük olmalıdır."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

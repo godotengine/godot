@@ -12,7 +12,7 @@
 # Guilherme Felipe C G Silva <guilhermefelipecgs@gmail.com>, 2017, 2018, 2019.
 # João Victor Lima <victordevtb@outlook.com>, 2018.
 # João Vitor de Oliveira Carlos <lopogax@gmail.com>, 2018.
-# Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016, 2019.
+# Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016, 2019, 2020.
 # jonathan railarem <railarem@gmail.com>, 2017.
 # Lucas Silva <lucasb.hpp@gmail.com>, 2018.
 # Luiz G. Correia <luizgabriell2.0@gmail.com>, 2017.
@@ -28,7 +28,7 @@
 # Michel G. Souza <Michelgomesdes@hotmail.com>, 2018.
 # Caio Northfleet <caio.northfleet@gmail.com>, 2018.
 # Henrique Combochi <henrique.combochi@gmail.com>, 2018, 2019.
-# Gabriel Carvalho <billlmaster@gmail.com>, 2018, 2019.
+# Gabriel Carvalho <billlmaster@gmail.com>, 2018, 2019, 2020.
 # miketangogamer <miketangogamer@gmail.com>, 2018.
 # Eduardo Abreu <eduo.abreu@gmail.com>, 2018, 2019.
 # Bruno Miranda Da Silva <brunofreezee@gmail.com>, 2018.
@@ -74,7 +74,7 @@
 # Rafael Silveira <res883@gmail.com>, 2019.
 # Luigi <luigimendeszanchett@gmail.com>, 2019.
 # Nicolas Abril <nicolas.abril@protonmail.ch>, 2019.
-# johnnybigoode <jamarson@gmail.com>, 2019.
+# johnnybigoode <jamarson@gmail.com>, 2019, 2020.
 # Zeero <igcdzeero@gmail.com>, 2019.
 # Gian Penna <gianfrancopen@gmail.com>, 2020.
 # sribgui <sribgui@gmail.com>, 2020.
@@ -82,15 +82,16 @@
 # Michael Leocádio <aeronmike@gmail.com>, 2020.
 # Z <rainromes@gmail.com>, 2020.
 # Leonardo Dimano <leodimano@live.com>, 2020.
-# anonymous <noreply@weblate.org>, 2020.
 # Guilherme Souza Reis de Melo Lopes <gsrmlopes@gmail.com>, 2020.
 # Richard Urban <redasuio1@gmail.com>, 2020.
+# Wellyngton R Weller <well.weller@hotmail.com>, 2020.
+# Lucas Araujo <lucassants2808@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-04-16 11:03+0000\n"
-"Last-Translator: Richard Urban <redasuio1@gmail.com>\n"
+"PO-Revision-Date: 2020-04-27 08:25+0000\n"
+"Last-Translator: johnnybigoode <jamarson@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -98,16 +99,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.0.1-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para converter(), use TYPE_* constantes."
+msgstr "Tipo de argumento inválido para converter(), use TYPE_* constantes."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Esperado uma string de comprimento 1 (um caractere)."
+msgstr "Esperado uma corda de comprimento 1 (um caractere)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -735,11 +736,11 @@ msgstr "Selecionar Todos/Nenhum"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
-msgstr "Adicionar Amostra de uma Trilha de Áudio"
+msgstr "Adicionar Trilha de Clipes de Áudio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr "Mudar Deslocamento de Início da Amostra da Trilha de Áudio"
+msgstr "Mudar Deslocamento do Início do Clip de Trilha de Audio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
@@ -3006,13 +3007,12 @@ msgid "Q&A"
 msgstr "Perguntas & Respostas"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Reimportar"
+msgstr "Reportar bug"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Enviar Feedback de Docs"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3123,14 +3123,13 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
-"Isso irá configurar seu projeto para compilações customizadas do Android "
-"instalando o template raíz em \"res://android/build\".\n"
-"Em seguida, você pode aplicar modificações e compilar seu próprio APK "
-"customizado na exportação (adicionando módulos, alterando o AndroidManifest."
-"xml, etc.).\n"
-"Note que para fazer uma compilação customizada em vez de usar APKs pre-"
-"compilados, a opção \"Usar compilação customizada\" deve estar ativa nas "
-"predefinições de exportação do Android."
+"Isso vai configurar seu projeto para construções customizadas do Android, "
+"instalando o modelo de fonte para \"res://android/build\".\n"
+"Você pode então aplicar modificações e construir seu próprio APK na guia "
+"Exportação (Adicionando módulos, trocando o AndroidManifest.xml, etc.).\n"
+"Note que para fazer uma construção customizada, em vez de usar APKs pre-"
+"construídos, a opção \"Usar construção customizada\" deve estar ativa nas "
+"predefinições de exportação Android."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3662,7 +3661,7 @@ msgstr "Selecionar o Arquivo de Modelo"
 
 #: editor/export_template_manager.cpp
 msgid "Godot Export Templates"
-msgstr "Modelos de Exportação do Godot"
+msgstr "Modelos de Exportação"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -4071,7 +4070,6 @@ msgid "Reimport"
 msgstr "Reimportar"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Salvar cenas, reimportar e reiniciar"
 
@@ -4338,7 +4336,7 @@ msgstr "Abrir Editor"
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Open Animation Node"
-msgstr "Abrir Nó de Animação"
+msgstr "Abrir Animação de Nós"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Triangle already exists."
@@ -5065,7 +5063,7 @@ msgstr "Download deste asset já está em progresso!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Recently Updated"
-msgstr "Atualizado recentemente"
+msgstr "Atualizado Recentemente"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Least Recently Updated"
@@ -5274,7 +5272,7 @@ msgid ""
 "Children of containers have their anchors and margins values overridden by "
 "their parent."
 msgstr ""
-"Filhos de contêineres tem suas posições e margens sobrescritos pelos seus "
+"Filhos de contêineres tem suas posições e tamanhos sobrescritos pelos seus "
 "pais."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5328,27 +5326,27 @@ msgstr "Centro"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Left Wide"
-msgstr "Esquerda Largo"
+msgstr "Largura Esquerda"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Wide"
-msgstr "Superior Largo"
+msgstr "Largura Superior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Right Wide"
-msgstr "Direita Largo"
+msgstr "Largura Direita"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Wide"
-msgstr "Inferior Largo"
+msgstr "Largura inferior"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
-msgstr "Centro Vertical Largo"
+msgstr "Largura Centro Vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "HCenter Wide"
-msgstr "Centro Horizontal Largo"
+msgstr "Largura Centro Horizontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Full Rect"
@@ -5376,8 +5374,8 @@ msgid ""
 "Game Camera Override\n"
 "Overrides game camera with editor viewport camera."
 msgstr ""
-"Substituir Câmera do Jogo\n"
-"Substitui a câmera do jogo com a câmera de visualização do editor."
+"Sobrepor câmera de Jogo\n"
+"Sobrepõe a câmera de jogo com a janela de exibição da câmera."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5385,8 +5383,8 @@ msgid ""
 "Game Camera Override\n"
 "No game instance running."
 msgstr ""
-"Substituir Câmera do Jogo\n"
-"Nenhuma instância de jogo em execução."
+"Sobrepor câmera de Jogo\n"
+"Sem instancia de jogo rodando."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5657,11 +5655,11 @@ msgstr "Visualizar Canvas Scale"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr "Máscara de Translação para inserir chaves."
+msgstr "Mascara de tradução para inserção de chaves"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
-msgstr "Máscara de Rotação para inserir chaves."
+msgstr "Mascara de rotação para inserção de chaves."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
@@ -7370,9 +7368,8 @@ msgid "This operation requires a single selected node."
 msgstr "Essa operação requer um único nó selecionado."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Ortogonal"
+msgstr "Ortogonal automático habilitado"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9988,6 +9985,13 @@ msgstr ""
 "Você não tem nenhum projeto no momento.\n"
 "Gostaria de explorar projetos de exemplo oficiais na Asset Library?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Chave "
@@ -10979,6 +10983,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Nota: Os scripts internos têm algumas limitações e não podem ser editados "
+"usando um editor externo."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11099,6 +11105,11 @@ msgstr "Lista de Uso Memória de Vídeo por Recurso:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Total:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Exportar Perfil"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12765,6 +12776,7 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"O tamanho da viewport deve ser maior do que 0 para renderizar qualquer coisa."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

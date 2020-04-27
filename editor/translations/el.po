@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-23 03:47+0000\n"
+"PO-Revision-Date: 2020-04-20 05:51+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2951,13 +2951,12 @@ msgid "Q&A"
 msgstr "Ερωτήσεις & Απαντήσεις"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "Επανεισαγωγή"
+msgstr "Αναφορά Σφάλματος"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "Αποστολή Σχολίων Τεκμηρίωσης"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4018,9 +4017,8 @@ msgid "Reimport"
 msgstr "Επανεισαγωγή"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr "Αποθήκευση σκηνών, επανεισαγωγή και επανεκκίνηση"
+msgstr "Αποθήκευση Σκηνών, Επανεισαγωγή και Επανεκκίνηση"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -7334,9 +7332,8 @@ msgid "This operation requires a single selected node."
 msgstr "Αυτή η λειτουργία απαιτεί έναν μόνο επιλεγμένο κόμβο."
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "Αξονομετρική"
+msgstr "Αυτόματη Αξονομετρική Ενεργή"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9958,6 +9955,13 @@ msgstr ""
 "Δεν έχετε κανένα έργο.\n"
 "Θέλετε να εξερευνήσετε μερικά επίσημα παραδείγματα στην βιβλιοθήκη πόρων;"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Κλειδί "
@@ -10955,6 +10959,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"Σημείωση: Οι ενσωματωμένες δέσμες ενεργειών έχουν περιορισμούς και δεν "
+"μπορούν να ανοιχτούν σε εξωτερικό επεξεργαστή."
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11077,6 +11083,11 @@ msgstr "Λίστα χρήσης βίντεο-μνήμης ανά πόρο:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Συνολικά:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "Εξαγωγή Προφίλ"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12762,6 +12773,8 @@ msgstr ""
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
 msgstr ""
+"Το μέγεθος της οπτικής γωνίας πρέπει να είναι μεγαλύτερο του 0 για να γίνει "
+"απόδοση."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

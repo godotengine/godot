@@ -64,8 +64,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-04-05 12:05+0000\n"
-"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
+"PO-Revision-Date: 2020-04-24 15:30+0000\n"
+"Last-Translator: Revan Ji <jiruifancr@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -73,7 +73,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2919,13 +2919,12 @@ msgid "Q&A"
 msgstr "问答"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "重新导入"
+msgstr "报告问题"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "发送文档反馈"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3962,9 +3961,8 @@ msgid "Reimport"
 msgstr "重新导入"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr "保存场景，重新导入，从头开始"
+msgstr "保存场景、重新导入，然后重启"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -5681,7 +5679,7 @@ msgstr "从像素捕获"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "Emission Colors(发射颜色)"
+msgstr "Emission Colors(自发光颜色)"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -9770,6 +9768,13 @@ msgstr ""
 "你目前没有任何项目。 \n"
 "是否查看素材库中的官方示例项目？"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "键 "
@@ -10746,7 +10751,7 @@ msgstr "脚本文件已存在。"
 msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
-msgstr ""
+msgstr "注意：内置脚本有其局限性，并且不能使用外部编辑器编辑。"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -10867,6 +10872,11 @@ msgstr "占用显存的资源列表:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "合计:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "导出配置文件"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12439,7 +12449,7 @@ msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
-msgstr ""
+msgstr "Viewport大小大于0时才能进行渲染。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
