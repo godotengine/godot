@@ -1084,6 +1084,27 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="slerp_angle">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Spherically interpolates between two angles (in radians) by a normalized value.
+				Can be used to smoothly rotate towards a desired angle.
+				[codeblock]
+				extends Sprite
+				var turn_speed = 5
+				func _process(delta):
+				    var mouse_angle = position.direction_to(get_global_mouse_position()).angle()
+				    rotation = slerp_angle(rotation, mouse_angle, turn_speed * delta)
+				[/codeblock]
+			</description>
+		</method>
 		<method name="smoothstep">
 			<return type="float">
 			</return>
@@ -1414,7 +1435,7 @@
 		<constant name="INF" value="inf">
 			A positive infinity. (For negative infinity, use -INF).
 		</constant>
-		<constant name="NAN" value="nan">
+		<constant name="NAN" value="-nan(ind)">
 			Macro constant that expands to an expression of type float that represents a NaN.
 			The NaN values are used to identify undefined or non-representable values for floating-point elements, such as the square root of negative numbers or the result of 0/0.
 		</constant>

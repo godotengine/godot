@@ -106,6 +106,7 @@ const char *VisualScriptBuiltinFunc::func_name[VisualScriptBuiltinFunc::FUNC_MAX
 	"smoothstep",
 	"posmod",
 	"lerp_angle",
+	"slerp_angle",
 	"ord",
 };
 
@@ -211,6 +212,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 			return 2;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
+		case MATH_SLERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP:
 		case MATH_MOVE_TOWARD:
@@ -323,6 +325,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		} break;
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
+		case MATH_SLERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP: {
 			if (p_idx == 0)
@@ -536,6 +539,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case MATH_STEPIFY:
 		case MATH_LERP:
 		case MATH_LERP_ANGLE:
+		case MATH_SLERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_RANGE_LERP:
 		case MATH_SMOOTHSTEP:
@@ -867,6 +871,13 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp_angle((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case VisualScriptBuiltinFunc::MATH_SLERP_ANGLE: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::slerp_angle((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_INVERSE_LERP: {
 
@@ -1406,6 +1417,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(MATH_SMOOTHSTEP);
 	BIND_ENUM_CONSTANT(MATH_POSMOD);
 	BIND_ENUM_CONSTANT(MATH_LERP_ANGLE);
+	BIND_ENUM_CONSTANT(MATH_SLERP_ANGLE);
 	BIND_ENUM_CONSTANT(TEXT_ORD);
 	BIND_ENUM_CONSTANT(FUNC_MAX);
 }
@@ -1461,6 +1473,7 @@ void register_visual_script_builtin_func_node() {
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/stepify", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_STEPIFY>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/lerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_LERP_ANGLE>);
+	VisualScriptLanguage::singleton->add_register_func("functions/built_in/slerp_angle", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SLERP_ANGLE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/inverse_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_INVERSE_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/range_lerp", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_RANGE_LERP>);
 	VisualScriptLanguage::singleton->add_register_func("functions/built_in/smoothstep", create_builtin_func_node<VisualScriptBuiltinFunc::MATH_SMOOTHSTEP>);

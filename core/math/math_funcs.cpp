@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "math_funcs.h"
+#include "vector2.h"
 
 #include "core/error_macros.h"
 
@@ -97,6 +98,54 @@ double Math::dectime(double p_value, double p_amount, double p_step) {
 	if (val < 0.0)
 		val = 0.0;
 	return val * sgn;
+}
+
+double Math::slerp_angle(double p_from, double p_to, double p_weight) {
+
+	const Vector2 start(Math::cos(p_from), Math::sin(p_from));
+	const Vector2 end(Math::cos(p_to), Math::sin(p_to));
+
+	real_t dot = start.dot(end);
+
+	// Clamp dot to [-1,1].
+	dot = (dot < -1.0) ? -1.0 : ((dot > 1.0) ? 1.0 : dot);
+
+	Vector2 result;
+
+	if (dot > 0.9995) {
+		// Linearly interpolate to avoid numerical precision issues.
+		result = Vector2::linear_interpolate(start, end, p_weight).normalized();
+	} else {
+		const real_t angle = p_weight * Math::acos(dot);
+		const Vector2 to_end = (end - start * dot).normalized();
+		result = start * Math::cos(angle) + to_end * Math::sin(angle);
+	}
+
+	return Math::atan2(result.y, result.x);
+}
+
+float Math::slerp_angle(float p_from, float p_to, float p_weight) {
+
+	const Vector2 start(Math::cos(p_from), Math::sin(p_from));
+	const Vector2 end(Math::cos(p_to), Math::sin(p_to));
+
+	real_t dot = start.dot(end);
+
+	// Clamp dot to [-1,1].
+	dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot);
+
+	Vector2 result;
+
+	if (dot > 0.9995f) {
+		// Linearly interpolate to avoid numerical precision issues.
+		result = Vector2::linear_interpolate(start, end, p_weight).normalized();
+	} else {
+		const real_t angle = p_weight * Math::acos(dot);
+		const Vector2 to_end = (end - start * dot).normalized();
+		result = start * Math::cos(angle) + to_end * Math::sin(angle);
+	}
+
+	return Math::atan2(result.y, result.x);
 }
 
 double Math::ease(double p_x, double p_c) {

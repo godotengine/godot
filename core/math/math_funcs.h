@@ -267,6 +267,9 @@ public:
 		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
 	}
 
+	static double slerp_angle(double p_from, double p_to, double p_weight);
+	static float slerp_angle(float p_from, float p_to, float p_weight);
+
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);

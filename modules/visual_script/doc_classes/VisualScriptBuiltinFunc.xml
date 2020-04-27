@@ -217,9 +217,15 @@
 		</constant>
 		<constant name="MATH_LERP_ANGLE" value="66" enum="BuiltinFunc">
 		</constant>
-		<constant name="TEXT_ORD" value="67" enum="BuiltinFunc">
+		<constant name="MATH_SLERP_ANGLE" value="67" enum="BuiltinFunc">
+			Spherically interpolates between two angles (in radians) by a normalized value.
+			[codeblock]
+			rotation = slerp_angle(rotation, target_rotation, turn_speed * delta)
+			[/codeblock]
 		</constant>
-		<constant name="FUNC_MAX" value="68" enum="BuiltinFunc">
+		<constant name="TEXT_ORD" value="68" enum="BuiltinFunc">
+		</constant>
+		<constant name="FUNC_MAX" value="69" enum="BuiltinFunc">
 			Represents the size of the [enum BuiltinFunc] enum.
 		</constant>
 	</constants>
