@@ -23,12 +23,15 @@ btDeformableBackwardEulerObjective::btDeformableBackwardEulerObjective(btAligned
 , m_backupVelocity(backup_v)
 , m_implicit(false)
 {
-    m_preconditioner = new MassPreconditioner(m_softBodies);
+    m_massPreconditioner = new MassPreconditioner(m_softBodies);
+    m_KKTPreconditioner = new KKTPreconditioner(m_softBodies, m_projection, m_lf, m_dt, m_implicit);
+    m_preconditioner = m_KKTPreconditioner;
 }
 
 btDeformableBackwardEulerObjective::~btDeformableBackwardEulerObjective()
 {
-    delete m_preconditioner;
+    delete m_KKTPreconditioner;
+    delete m_massPreconditioner;
 }
 
 void btDeformableBackwardEulerObjective::reinitialize(bool nodeUpdated, btScalar dt)
@@ -47,7 +50,7 @@ void btDeformableBackwardEulerObjective::reinitialize(bool nodeUpdated, btScalar
         m_lf[i]->reinitialize(nodeUpdated);
     }
     m_projection.reinitialize(nodeUpdated);
-    m_preconditioner->reinitialize(nodeUpdated);
+//    m_preconditioner->reinitialize(nodeUpdated);
 }
 
 void btDeformableBackwardEulerObjective::setDt(btScalar dt)
@@ -78,6 +81,33 @@ void btDeformableBackwardEulerObjective::multiply(const TVStack& x, TVStack& b) 
         if (m_implicit)
         {
              m_lf[i]->addScaledElasticForceDifferential(-m_dt*m_dt, x, b);
+        }
+    }
+    int offset = m_nodes.size();
+    for (int i = offset; i < b.size(); ++i)
+    {
+        b[i].setZero();
+    }
+    // add in the lagrange multiplier terms
+    
+    for (int c = 0; c < m_projection.m_lagrangeMultipliers.size(); ++c)
+    {
+        // C^T * lambda
+        const LagrangeMultiplier& lm = m_projection.m_lagrangeMultipliers[c];
+        for (int i = 0; i < lm.m_num_nodes; ++i)
+        {
+            for (int j = 0; j < lm.m_num_constraints; ++j)
+            {
+                b[lm.m_indices[i]] += x[offset+c][j] * lm.m_weights[i] * lm.m_dirs[j];
+            }
+        }
+        // C * x
+        for (int d = 0; d < lm.m_num_constraints; ++d)
+        {
+            for (int i = 0; i < lm.m_num_nodes; ++i)
+            {
+                b[offset+c][d] += lm.m_weights[i] * x[lm.m_indices[i]].dot(lm.m_dirs[d]);
+            }
         }
     }
 }
@@ -134,7 +164,7 @@ void btDeformableBackwardEulerObjective::computeResidual(btScalar dt, TVStack &r
             m_lf[i]->addScaledDampingForce(dt, residual);
         }
     }
-    m_projection.project(residual);
+//    m_projection.project(residual);
 }
 
 btScalar btDeformableBackwardEulerObjective::computeNorm(const TVStack& residual) const
@@ -186,9 +216,9 @@ void btDeformableBackwardEulerObjective::initialGuess(TVStack& dv, const TVStack
 }
 
 //set constraints as projections
-void btDeformableBackwardEulerObjective::setConstraints()
+void btDeformableBackwardEulerObjective::setConstraints(const btContactSolverInfo& infoGlobal)
 {
-    m_projection.setConstraints();
+    m_projection.setConstraints(infoGlobal);
 }
 
 void btDeformableBackwardEulerObjective::applyDynamicFriction(TVStack& r)

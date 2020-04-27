@@ -26,7 +26,8 @@ enum btDeformableLagrangianForceType
     BT_MASSSPRING_FORCE = 2,
     BT_COROTATED_FORCE = 3,
     BT_NEOHOOKEAN_FORCE = 4,
-    BT_LINEAR_ELASTICITY_FORCE = 5
+    BT_LINEAR_ELASTICITY_FORCE = 5,
+    BT_MOUSE_PICKING_FORCE = 6
 };
 
 static inline double randomDouble(double low, double high)
@@ -52,6 +53,9 @@ public:
     
     // add damping df
     virtual void addScaledDampingForceDifferential(btScalar scale, const TVStack& dv, TVStack& df) = 0;
+    
+    // build diagonal of A matrix
+    virtual void buildDampingForceDifferentialDiagonal(btScalar scale, TVStack& diagA) = 0;
     
     // add elastic df
     virtual void addScaledElasticForceDifferential(btScalar scale, const TVStack& dx, TVStack& df) = 0;
@@ -83,6 +87,11 @@ public:
     virtual void addSoftBody(btSoftBody* psb)
     {
         m_softBodies.push_back(psb);
+    }
+    
+    virtual void removeSoftBody(btSoftBody* psb)
+    {
+        m_softBodies.remove(psb);
     }
     
     virtual void setIndices(const btAlignedObjectArray<btSoftBody::Node*>* nodes)
