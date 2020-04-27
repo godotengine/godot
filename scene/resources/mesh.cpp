@@ -1359,7 +1359,7 @@ void ArrayMesh::regen_normalmaps() {
 }
 
 //dirty hack
-bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) = nullptr;
+bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y, int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache);
 
 struct ArrayMeshLightmapSurface {
 
@@ -1370,6 +1370,13 @@ struct ArrayMeshLightmapSurface {
 };
 
 Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texel_size) {
+	int *cache_data = nullptr;
+	unsigned int cache_size = 0;
+	bool use_cache = false; // Don't use cache
+	return lightmap_unwrap_cached(cache_data, cache_size, use_cache, p_base_transform, p_texel_size);
+}
+
+Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform, float p_texel_size) {
 
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
@@ -1377,11 +1384,18 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	Vector<float> vertices;
 	Vector<float> normals;
 	Vector<int> indices;
-	Vector<int> face_materials;
 	Vector<float> uv;
-	Vector<Pair<int, int>> uv_index;
+	Vector<Pair<int, int>> uv_indices;
 
-	Vector<ArrayMeshLightmapSurface> surfaces;
+	Vector<ArrayMeshLightmapSurface> lightmap_surfaces;
+
+	// Keep only the scale
+	Transform transform = p_base_transform;
+	transform.origin = Vector3();
+	transform.looking_at(Vector3(1, 0, 0), Vector3(0, 1, 0));
+
+	Basis normal_basis = transform.basis.inverse().transposed();
+
 	for (int i = 0; i < get_surface_count(); i++) {
 		ArrayMeshLightmapSurface s;
 		s.primitive = surface_get_primitive_type(i);
@@ -1405,12 +1419,12 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 
 		vertices.resize((vertex_ofs + vc) * 3);
 		normals.resize((vertex_ofs + vc) * 3);
-		uv_index.resize(vertex_ofs + vc);
+		uv_indices.resize(vertex_ofs + vc);
 
 		for (int j = 0; j < vc; j++) {
 
-			Vector3 v = p_base_transform.xform(r[j]);
-			Vector3 n = p_base_transform.basis.xform(rn[j]).normalized();
+			Vector3 v = transform.xform(r[j]);
+			Vector3 n = normal_basis.xform(rn[j]).normalized();
 
 			vertices.write[(j + vertex_ofs) * 3 + 0] = v.x;
 			vertices.write[(j + vertex_ofs) * 3 + 1] = v.y;
@@ -1418,7 +1432,7 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 			normals.write[(j + vertex_ofs) * 3 + 0] = n.x;
 			normals.write[(j + vertex_ofs) * 3 + 1] = n.y;
 			normals.write[(j + vertex_ofs) * 3 + 2] = n.z;
-			uv_index.write[j + vertex_ofs] = Pair<int, int>(i, j);
+			uv_indices.write[j + vertex_ofs] = Pair<int, int>(i, j);
 		}
 
 		Vector<int> rindices = arrays[Mesh::ARRAY_INDEX];
@@ -1433,7 +1447,6 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 				indices.push_back(vertex_ofs + j * 3 + 0);
 				indices.push_back(vertex_ofs + j * 3 + 1);
 				indices.push_back(vertex_ofs + j * 3 + 2);
-				face_materials.push_back(i);
 			}
 
 		} else {
@@ -1445,11 +1458,10 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 				indices.push_back(vertex_ofs + ri[j * 3 + 0]);
 				indices.push_back(vertex_ofs + ri[j * 3 + 1]);
 				indices.push_back(vertex_ofs + ri[j * 3 + 2]);
-				face_materials.push_back(i);
 			}
 		}
 
-		surfaces.push_back(s);
+		lightmap_surfaces.push_back(s);
 	}
 
 	//unwrap
@@ -1462,7 +1474,7 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	int size_x;
 	int size_y;
 
-	bool ok = array_mesh_lightmap_unwrap_callback(p_texel_size, vertices.ptr(), normals.ptr(), vertices.size() / 3, indices.ptr(), face_materials.ptr(), indices.size(), &gen_uvs, &gen_vertices, &gen_vertex_count, &gen_indices, &gen_index_count, &size_x, &size_y);
+	bool ok = array_mesh_lightmap_unwrap_callback(p_texel_size, vertices.ptr(), normals.ptr(), vertices.size() / 3, indices.ptr(), indices.size(), &gen_uvs, &gen_vertices, &gen_vertex_count, &gen_indices, &gen_index_count, &size_x, &size_y, r_cache_data, r_cache_size, r_used_cache);
 
 	if (!ok) {
 		return ERR_CANT_CREATE;
@@ -1474,11 +1486,11 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	//create surfacetools for each surface..
 	Vector<Ref<SurfaceTool>> surfaces_tools;
 
-	for (int i = 0; i < surfaces.size(); i++) {
+	for (int i = 0; i < lightmap_surfaces.size(); i++) {
 		Ref<SurfaceTool> st;
 		st.instance();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
-		st->set_material(surfaces[i].material);
+		st->set_material(lightmap_surfaces[i].material);
 		surfaces_tools.push_back(st); //stay there
 	}
 
@@ -1486,37 +1498,37 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 	//go through all indices
 	for (int i = 0; i < gen_index_count; i += 3) {
 
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 0]], uv_index.size(), ERR_BUG);
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 1]], uv_index.size(), ERR_BUG);
-		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 2]], uv_index.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 0]], uv_indices.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 1]], uv_indices.size(), ERR_BUG);
+		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 2]], uv_indices.size(), ERR_BUG);
 
-		ERR_FAIL_COND_V(uv_index[gen_vertices[gen_indices[i + 0]]].first != uv_index[gen_vertices[gen_indices[i + 1]]].first || uv_index[gen_vertices[gen_indices[i + 0]]].first != uv_index[gen_vertices[gen_indices[i + 2]]].first, ERR_BUG);
+		ERR_FAIL_COND_V(uv_indices[gen_vertices[gen_indices[i + 0]]].first != uv_indices[gen_vertices[gen_indices[i + 1]]].first || uv_indices[gen_vertices[gen_indices[i + 0]]].first != uv_indices[gen_vertices[gen_indices[i + 2]]].first, ERR_BUG);
 
-		int surface = uv_index[gen_vertices[gen_indices[i + 0]]].first;
+		int surface = uv_indices[gen_vertices[gen_indices[i + 0]]].first;
 
 		for (int j = 0; j < 3; j++) {
 
-			SurfaceTool::Vertex v = surfaces[surface].vertices[uv_index[gen_vertices[gen_indices[i + j]]].second];
+			SurfaceTool::Vertex v = lightmap_surfaces[surface].vertices[uv_indices[gen_vertices[gen_indices[i + j]]].second];
 
-			if (surfaces[surface].format & ARRAY_FORMAT_COLOR) {
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_COLOR) {
 				surfaces_tools.write[surface]->add_color(v.color);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_TEX_UV) {
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TEX_UV) {
 				surfaces_tools.write[surface]->add_uv(v.uv);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_NORMAL) {
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_NORMAL) {
 				surfaces_tools.write[surface]->add_normal(v.normal);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_TANGENT) {
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_TANGENT) {
 				Plane t;
 				t.normal = v.tangent;
 				t.d = v.binormal.dot(v.normal.cross(v.tangent)) < 0 ? -1 : 1;
 				surfaces_tools.write[surface]->add_tangent(t);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_BONES) {
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_BONES) {
 				surfaces_tools.write[surface]->add_bones(v.bones);
 			}
-			if (surfaces[surface].format & ARRAY_FORMAT_WEIGHTS) {
+			if (lightmap_surfaces[surface].format & ARRAY_FORMAT_WEIGHTS) {
 				surfaces_tools.write[surface]->add_weights(v.weights);
 			}
 
@@ -1527,19 +1539,21 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 		}
 	}
 
-	//free stuff
-	::free(gen_vertices);
-	::free(gen_indices);
-	::free(gen_uvs);
-
 	//generate surfaces
 
 	for (int i = 0; i < surfaces_tools.size(); i++) {
 		surfaces_tools.write[i]->index();
-		surfaces_tools.write[i]->commit(Ref<ArrayMesh>((ArrayMesh *)this), surfaces[i].format);
+		surfaces_tools.write[i]->commit(Ref<ArrayMesh>((ArrayMesh *)this), lightmap_surfaces[i].format);
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));
+
+	if (!r_used_cache) {
+		//free stuff
+		::free(gen_vertices);
+		::free(gen_indices);
+		::free(gen_uvs);
+	}
 
 	return OK;
 }
