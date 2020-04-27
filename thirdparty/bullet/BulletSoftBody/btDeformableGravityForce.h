@@ -50,6 +50,8 @@ public:
     {
     }
     
+    virtual void buildDampingForceDifferentialDiagonal(btScalar scale, TVStack& diagA){}
+    
     virtual void addScaledGravityForce(btScalar scale, TVStack& force)
     {
         int numNodes = getNumNodes();

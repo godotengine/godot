@@ -46,7 +46,7 @@ struct btContactSolverInfoData
 	btScalar m_sor;          //successive over-relaxation term
 	btScalar m_erp;          //error reduction for non-contact constraints
 	btScalar m_erp2;         //error reduction for contact constraints
-    btScalar m_deformable_erp;          //error reduction for deformable constraints
+	btScalar m_deformable_erp;          //error reduction for deformable constraints
 	btScalar m_globalCfm;    //constraint force mixing for contacts and non-contacts
 	btScalar m_frictionERP;  //error reduction for friction constraints
 	btScalar m_frictionCFM;  //constraint force mixing for friction constraints
@@ -67,6 +67,7 @@ struct btContactSolverInfoData
 	bool m_jointFeedbackInWorldSpace;
 	bool m_jointFeedbackInJointFrame;
 	int m_reportSolverAnalytics;
+	int m_numNonContactInnerIterations;
 };
 
 struct btContactSolverInfo : public btContactSolverInfoData
@@ -82,7 +83,7 @@ struct btContactSolverInfo : public btContactSolverInfoData
 		m_numIterations = 10;
 		m_erp = btScalar(0.2);
 		m_erp2 = btScalar(0.2);
-        m_deformable_erp = btScalar(0.);
+		m_deformable_erp = btScalar(0.1);
 		m_globalCfm = btScalar(0.);
 		m_frictionERP = btScalar(0.2);  //positional friction 'anchors' are disabled by default
 		m_frictionCFM = btScalar(0.);
@@ -104,6 +105,7 @@ struct btContactSolverInfo : public btContactSolverInfoData
 		m_jointFeedbackInWorldSpace = false;
 		m_jointFeedbackInJointFrame = false;
 		m_reportSolverAnalytics = 0;
+		m_numNonContactInnerIterations = 1;   // the number of inner iterations for solving motor constraint in a single iteration of the constraint solve
 	}
 };
 

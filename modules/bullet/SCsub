@@ -175,6 +175,7 @@ if env["builtin_bullet"]:
         "BulletSoftBody/btDeformableContactProjection.cpp",
         "BulletSoftBody/btDeformableMultiBodyDynamicsWorld.cpp",
         "BulletSoftBody/btDeformableContactConstraint.cpp",
+        "BulletSoftBody/poly34.cpp",
         # clew
         "clew/clew.c",
         # LinearMath
