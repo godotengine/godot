@@ -7,7 +7,7 @@
 # Daisuke Saito <d.saito@coriginate.com>, 2017, 2018.
 # h416 <shinichiro.hirama@gmail.com>, 2017.
 # hopping tappy (たっぴさん) <hopping.tappy@gmail.com>, 2016-2017, 2018.
-# Jun Shiozawa <haresecret@gmail.com>, 2017, 2018.
+# Jun Shiozawa <haresecret@gmail.com>, 2017, 2018, 2020.
 # Lexi Grafen <shfeedly@gmail.com>, 2017.
 # NoahDigital <taku_58@hotmail.com>, 2017.
 # Shinsuke Masuda <shinsuke.masuda@gmail.com>, 2018.
@@ -35,8 +35,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-15 14:29+0000\n"
-"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
+"PO-Revision-Date: 2020-04-27 08:25+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -297,7 +297,7 @@ msgstr "時間 (秒): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "トラックを有効にする"
+msgstr "トラックを有効 / 無効"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -1210,7 +1210,7 @@ msgstr "コンポーネント"
 
 #: editor/editor_about.cpp
 msgid "Licenses"
-msgstr "ライセンス"
+msgstr "ライセンス文書"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Error opening package file, not in ZIP format."
@@ -1251,7 +1251,7 @@ msgstr "インストール"
 
 #: editor/editor_asset_installer.cpp
 msgid "Package Installer"
-msgstr "パッケージインストーラー"
+msgstr "パッケージインストーラ"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
@@ -1271,15 +1271,15 @@ msgstr "オーディオバスのボリュームを変更"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Solo"
-msgstr "オーディオバスのソロを切り替え"
+msgstr "オーディオバスのソロをオン / オフ"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Mute"
-msgstr "オーディオバスのミュートを切り替え"
+msgstr "オーディオバスのミュートをオン / オフ"
 
 #: editor/editor_audio_buses.cpp
 msgid "Toggle Audio Bus Bypass Effects"
-msgstr "オーディオバスのバイパスエフェクトを切り替え"
+msgstr "オーディオバスのバイパスエフェクトをオン / オフ"
 
 #: editor/editor_audio_buses.cpp
 msgid "Select Audio Bus Send"
@@ -1287,7 +1287,7 @@ msgstr "オーディオバスの出力先を選択"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Audio Bus Effect"
-msgstr "オーディオバスエフェクトを追加"
+msgstr "オーディオバス エフェクトを追加"
 
 #: editor/editor_audio_buses.cpp
 msgid "Move Bus Effect"
@@ -1458,7 +1458,7 @@ msgstr "自動読込みの名前変更"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Toggle AutoLoad Globals"
-msgstr "グローバルの自動読込みを切り替え"
+msgstr "グローバルの自動読込みをオン / オフ"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Move Autoload"
@@ -1858,11 +1858,11 @@ msgstr "上へ"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
-msgstr "隠しファイルの切り替え"
+msgstr "隠しファイルをオン / オフ"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr "お気に入りの切り替え"
+msgstr "お気に入りのオン / オフ"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
@@ -1902,7 +1902,7 @@ msgstr "現在のフォルダをお気に入りにする/お気に入りから�
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
-msgstr "隠しファイルの表示/非表示を切り替えます。"
+msgstr "隠しファイルの表示 / 非表示を切り替えます。"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -2902,11 +2902,11 @@ msgstr "スクリーンショットはEditor Data / Settingsフォルダに保�
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
-msgstr "フルスクリーン切り替え"
+msgstr "フルスクリーンの有効化 / 無効化"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
-msgstr "システムコンソールの切り替え"
+msgstr "システムコンソールの有効化 / 無効化"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2951,13 +2951,12 @@ msgid "Q&A"
 msgstr "Q&A"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Report a Bug"
-msgstr "再インポート"
+msgstr "バグを報告"
 
 #: editor/editor_node.cpp
 msgid "Send Docs Feedback"
-msgstr ""
+msgstr "ドキュメントのフィードバックを送る"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4008,9 +4007,8 @@ msgid "Reimport"
 msgstr "再インポート"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "Save Scenes, Re-Import, and Restart"
-msgstr "シーンを保存して、再インポートして再起動してください"
+msgstr "シーンを保存し、再インポートしてから、再起動します"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -4309,7 +4307,7 @@ msgstr "三角形が存在しないため、ブレンドできません。"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Toggle Auto Triangles"
-msgstr "三角形の自動作成に切り替え"
+msgstr "三角形の自動作成をオン / オフ"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Create triangles by connecting points."
@@ -4437,7 +4435,7 @@ msgstr "フィルタリングを有効化"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Toggle Autoplay"
-msgstr "自動再生の切り替え"
+msgstr "自動再生の有効化 / 無効化"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "New Animation Name:"
@@ -4723,8 +4721,8 @@ msgstr "選択したノードまたはトランジションを除去。"
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Toggle autoplay this animation on start, restart or seek to zero."
 msgstr ""
-"このアニメーションの自動再生の開始、再起動、またはゼロへのシークを切り替えま"
-"す。"
+"開始、再スタート、またはゼロへのシーク時における、このアニメーションの自動再"
+"生をオン / オフにします。"
 
 #: editor/plugins/animation_state_machine_editor.cpp
 msgid "Set the end animation. This is useful for sub-transitions."
@@ -5378,7 +5376,7 @@ msgstr "選択モード"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
-msgstr "ドラッグ:回転"
+msgstr "ドラッグ: 回転"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+Drag: Move"
@@ -5432,7 +5430,7 @@ msgstr "定規モード"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle smart snapping."
-msgstr "スマートスナッピングを切り替える。"
+msgstr "スマート スナッピングをオン / オフ。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Smart Snap"
@@ -5440,7 +5438,7 @@ msgstr "スマートスナップを使う"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
-msgstr "グリッドスナッピングを切り替える。"
+msgstr "グリッド スナッピングをオン / オフ。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
@@ -5693,7 +5691,7 @@ msgstr "ハンドルを設定する"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Load Emission Mask"
-msgstr "発光(Emission)マスクを読み込む"
+msgstr "放射マスクを読み込む"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/cpu_particles_editor_plugin.cpp
@@ -6272,7 +6270,7 @@ msgstr "曲線を分割する"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move Point in Curve"
-msgstr "曲線内のポイントを移動"
+msgstr "曲線内の点を移動"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Move In-Control in Curve"
@@ -7064,7 +7062,7 @@ msgstr "コンテキストヘルプ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Bookmark"
-msgstr "ブックマークの切り替え"
+msgstr "ブックマークをつける / 外す"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Next Bookmark"
@@ -7089,7 +7087,7 @@ msgstr "行に移動..."
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr "ブレークポイントを切り替え"
+msgstr "ブレークポイントをつける / 外す"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
@@ -7296,9 +7294,8 @@ msgid "This operation requires a single selected node."
 msgstr "単一の選択されたノードがないと、この操作は行えません。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "平行投影"
+msgstr "自動平行投影 有効"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -7472,7 +7469,7 @@ msgstr "選択にフォーカス"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
-msgstr "フリールックの切り替え"
+msgstr "フリールックのオン / オフ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7594,7 +7591,7 @@ msgstr "無名のギズモ"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
-msgstr "Mesh2Dを作成"
+msgstr "Mesh2Dを生成"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Mesh2D Preview"
@@ -7891,7 +7888,7 @@ msgstr "現在のエディタテーマから作成"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Toggle Button"
-msgstr "ボタンの切り替え"
+msgstr "切り替えボタン"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Disabled Button"
@@ -7971,7 +7968,7 @@ msgstr "サブツリー"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has,Many,Options"
-msgstr "ありますよ,たくさん,オプション"
+msgstr "Has,Many,Options"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -9631,7 +9628,7 @@ msgstr "プロジェクトに名前を付けてください."
 
 #: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr "プロジェクトパスが無効です(何かを変更しましたか?)。"
+msgstr "無効なプロジェクトパスです (なにか変更がありましたか？)。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9762,13 +9759,13 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
-"次のプロジェクト設定ファイルには、作成に使用したGodotのバージョンは指定されて"
-"いません。\n"
+"次のプロジェクト設定ファイルには、作成に使用されたGodotのバージョンが指定され"
+"ていません。\n"
 "\n"
 "%s\n"
 "\n"
 "ファイルを開くと、Godotの現在の設定ファイル形式に変換されます。\n"
-"警告:以前のバージョンのエンジンではプロジェクトを開けません。"
+"警告: 以前のバージョンのエンジンではプロジェクトを開けなくなります。"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9908,6 +9905,13 @@ msgstr ""
 "プロジェクトが何も登録されていません。\n"
 "アセットライブラリで公式のサンプルプロジェクトをチェックしますか？"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "キー "
@@ -10018,7 +10022,7 @@ msgstr "入力アクションを消去"
 
 #: editor/project_settings_editor.cpp
 msgid "Erase Input Action Event"
-msgstr "入力アクションイベントを消去"
+msgstr "入力アクション イベントを消去"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Event"
@@ -10026,7 +10030,7 @@ msgstr "イベントを追加"
 
 #: editor/project_settings_editor.cpp
 msgid "Button"
-msgstr "\\ Button"
+msgstr "Button"
 
 #: editor/project_settings_editor.cpp
 msgid "Left Button."
@@ -10266,7 +10270,7 @@ msgstr "ファイル読み込みエラー: リソースではありません!"
 
 #: editor/property_editor.cpp
 msgid "Pick a Node"
-msgstr "ノードを選択する"
+msgstr "ノードを選ぶ"
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
@@ -10606,8 +10610,8 @@ msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
 msgstr ""
-"新しいシーンを保存できませんでした。 おそらく依存関係(インスタンス)を満たすこ"
-"とができませんでした。"
+"新しいシーンを保存できませんでした。 おそらく依存関係(インスタンス)を満たせて"
+"いません。"
 
 #: editor/scene_tree_dock.cpp
 msgid "Error saving scene."
@@ -10707,11 +10711,11 @@ msgstr "継承をクリアしますか? (元に戻せません!)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Visible"
-msgstr "表示の切り替え"
+msgstr "表示 / 非表示の切り替え"
 
 #: editor/scene_tree_editor.cpp
 msgid "Unlock Node"
-msgstr "ノードのロック解除"
+msgstr "ノードをロック解除"
 
 #: editor/scene_tree_editor.cpp
 msgid "Button Group"
@@ -10839,7 +10843,7 @@ msgstr "エラー - ファイルシステムにスクリプトを作成できま
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
-msgstr "%s からのスクリプトの読み込み中にエラーが発生しました"
+msgstr "%s からのスクリプトを読み込み中にエラー"
 
 #: editor/script_create_dialog.cpp
 msgid "Overrides"
@@ -10851,7 +10855,7 @@ msgstr "N/A"
 
 #: editor/script_create_dialog.cpp
 msgid "Open Script / Choose Location"
-msgstr "スクリプトを開く/場所を選択する"
+msgstr "スクリプトを開く / 場所を選択する"
 
 #: editor/script_create_dialog.cpp
 msgid "Open Script"
@@ -10867,7 +10871,7 @@ msgstr "無効なクラス名。"
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid inherited parent name or path."
-msgstr "継承された親の名前またはパスが無効です。"
+msgstr "継承する親の名前、またはパスが無効です。"
 
 #: editor/script_create_dialog.cpp
 msgid "Script path/name is valid."
@@ -10898,6 +10902,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
+"注: 組み込みスクリプトにはいくつか制約があり、また外部のエディタでは編集でき"
+"ません。"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -11020,6 +11026,11 @@ msgid "Total:"
 msgstr "合計:"
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "プロファイルのエクスポート"
+
+#: editor/script_editor_debugger.cpp
 msgid "Resource Path"
 msgstr "リソースのパス(ResourcePath)"
 
@@ -11061,11 +11072,11 @@ msgstr "数値データをCSVとしてエクスポート"
 
 #: editor/settings_config_dialog.cpp
 msgid "Erase Shortcut"
-msgstr "ショートカットの消去"
+msgstr "ショートカットを消去"
 
 #: editor/settings_config_dialog.cpp
 msgid "Restore Shortcut"
-msgstr "ショートカットの復元"
+msgstr "ショートカットを復元"
 
 #: editor/settings_config_dialog.cpp
 msgid "Change Shortcut"
@@ -12192,8 +12203,8 @@ msgid ""
 "CPUParticles\" option for this purpose."
 msgstr ""
 "GPUベースのパーティクルは、GLES2ビデオドライバではサポートされていません。\n"
-"代わりにCPUParticles2Dノードを使用してください。 この目的のために \"Convert "
-"to CPUParticles\" オプションを使用することができます。"
+"代わりにCPUParticles2Dノードを使用してください。この目的のために \"CPUパー"
+"ティクルに変換\" オプションを使用できます。"
 
 #: scene/2d/particles_2d.cpp scene/3d/particles.cpp
 msgid ""
@@ -12222,9 +12233,9 @@ msgid ""
 "by the physics engine when running.\n"
 "Change the size in children collision shapes instead."
 msgstr ""
-"RigidBody2D(キャラクタモードまたはリジッドモード)に対するサイズ変更は、実行時"
-"に物理エンジンによってオーバーライドされます。\n"
-"代わりに、子の衝突シェイプのサイズを変更してください。"
+"RigidBody2D (CharacterモードまたはRigidモード) に対するサイズ変更は、実行時に"
+"物理エンジンによって上書きされます。\n"
+"代わりに、子のコリジョン シェイプのサイズを変更してください。"
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
@@ -12429,8 +12440,8 @@ msgid ""
 "\" option for this purpose."
 msgstr ""
 "GPUベースのパーティクルは、GLES2ビデオドライバではサポートされていません。\n"
-"代わりにCPUParticlesノードを使用してください。 この目的のために \"Convert to "
-"CPUParticles\"オプションを使用することができます。"
+"代わりにCPUParticlesノードを使用してください。この目的のために \"CPUパーティ"
+"クルに変換\" オプションを使用できます。"
 
 #: scene/3d/particles.cpp
 msgid ""
@@ -12678,7 +12689,7 @@ msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
-msgstr ""
+msgstr "レンダーするにはビューポートのサイズが 0 より大きい必要があります。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
