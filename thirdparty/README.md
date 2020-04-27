@@ -40,8 +40,11 @@ Files extracted from upstream source:
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
-- Version: 2.89
+- Version: 2.90 (master cd8cf7521cbb8b7808126a6adebd47bb83ea166a)
 - License: zlib
+
+Important: Synced with a pre-release version of bullet 2.90 from the master branch.
+Commit hash: cd8cf7521cbb8b7808126a6adebd47bb83ea166a
 
 Files extracted from upstream source:
 

@@ -136,8 +136,13 @@ void btRigidBody::setGravity(const btVector3& acceleration)
 
 void btRigidBody::setDamping(btScalar lin_damping, btScalar ang_damping)
 {
-	m_linearDamping = btClamped(lin_damping, (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
-	m_angularDamping = btClamped(ang_damping, (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
+#ifdef BT_USE_OLD_DAMPING_METHOD
+	m_linearDamping = btMax(lin_damping, btScalar(0.0));
+	m_angularDamping = btMax(ang_damping, btScalar(0.0));
+#else
+	m_linearDamping = btClamped(lin_damping, btScalar(0.0), btScalar(1.0));
+	m_angularDamping = btClamped(ang_damping, btScalar(0.0), btScalar(1.0));
+#endif
 }
 
 ///applyDamping damps the velocity, using the given m_linearDamping and m_angularDamping
@@ -146,10 +151,9 @@ void btRigidBody::applyDamping(btScalar timeStep)
 	//On new damping: see discussion/issue report here: http://code.google.com/p/bullet/issues/detail?id=74
 	//todo: do some performance comparisons (but other parts of the engine are probably bottleneck anyway
 
-//#define USE_OLD_DAMPING_METHOD 1
-#ifdef USE_OLD_DAMPING_METHOD
-	m_linearVelocity *= GEN_clamped((btScalar(1.) - timeStep * m_linearDamping), (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
-	m_angularVelocity *= GEN_clamped((btScalar(1.) - timeStep * m_angularDamping), (btScalar)btScalar(0.0), (btScalar)btScalar(1.0));
+#ifdef BT_USE_OLD_DAMPING_METHOD
+	m_linearVelocity *= btMax((btScalar(1.0) - timeStep * m_linearDamping), btScalar(0.0));
+	m_angularVelocity *= btMax((btScalar(1.0) - timeStep * m_angularDamping), btScalar(0.0));
 #else
 	m_linearVelocity *= btPow(btScalar(1) - m_linearDamping, timeStep);
 	m_angularVelocity *= btPow(btScalar(1) - m_angularDamping, timeStep);
@@ -380,6 +384,9 @@ void btRigidBody::integrateVelocities(btScalar step)
 	{
 		m_angularVelocity *= (MAX_ANGVEL / step) / angvel;
 	}
+	#if defined(BT_CLAMP_VELOCITY_TO) && BT_CLAMP_VELOCITY_TO > 0
+	clampVelocity(m_angularVelocity);
+	#endif
 }
 
 btQuaternion btRigidBody::getOrientation() const
