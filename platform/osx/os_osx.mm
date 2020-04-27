@@ -35,6 +35,7 @@
 #include "dir_access_osx.h"
 #include "display_server_osx.h"
 #include "main/main.h"
+#include "version.h"
 
 #include <dlfcn.h>
 #include <libproc.h>

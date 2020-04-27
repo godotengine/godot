@@ -36,6 +36,7 @@
 #include "core/os/keyboard.h"
 #include "main/main.h"
 #include "scene/resources/texture.h"
+#include "version.h"
 
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
