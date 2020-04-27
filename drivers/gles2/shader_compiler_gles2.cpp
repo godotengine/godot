@@ -488,12 +488,15 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (p_default_actions.usage_defines.has(var_node->name) && !used_name_defines.has(var_node->name)) {
 				String define = p_default_actions.usage_defines[var_node->name];
+				String node_name = define.substr(1, define.length());
 
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[node_name];
 				}
 
-				r_gen_code.custom_defines.push_back(define.utf8());
+				if (!used_name_defines.has(node_name)) {
+					r_gen_code.custom_defines.push_back(define.utf8());
+				}
 				used_name_defines.insert(var_node->name);
 			}
 
@@ -550,12 +553,15 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (p_default_actions.usage_defines.has(arr_node->name) && !used_name_defines.has(arr_node->name)) {
 				String define = p_default_actions.usage_defines[arr_node->name];
+				String node_name = define.substr(1, define.length());
 
 				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+					define = p_default_actions.usage_defines[node_name];
 				}
 
-				r_gen_code.custom_defines.push_back(define.utf8());
+				if (!used_name_defines.has(node_name)) {
+					r_gen_code.custom_defines.push_back(define.utf8());
+				}
 				used_name_defines.insert(arr_node->name);
 			}
 
@@ -726,12 +732,15 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 					if (p_default_actions.usage_defines.has(var_node->name) && !used_name_defines.has(var_node->name)) {
 						String define = p_default_actions.usage_defines[var_node->name];
+						String node_name = define.substr(1, define.length());
 
 						if (define.begins_with("@")) {
-							define = p_default_actions.usage_defines[define.substr(1, define.length())];
+							define = p_default_actions.usage_defines[node_name];
 						}
 
-						r_gen_code.custom_defines.push_back(define.utf8());
+						if (!used_name_defines.has(node_name)) {
+							r_gen_code.custom_defines.push_back(define.utf8());
+						}
 						used_name_defines.insert(var_node->name);
 					}
 
