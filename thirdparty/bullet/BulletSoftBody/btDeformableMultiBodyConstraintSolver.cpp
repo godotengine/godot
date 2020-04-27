@@ -32,7 +32,7 @@ btScalar btDeformableMultiBodyConstraintSolver::solveDeformableGroupIterations(b
             m_leastSquaresResidual = solveSingleIteration(iteration, bodies, numBodies, manifoldPtr, numManifolds, constraints, numConstraints, infoGlobal, debugDrawer);
             // solver body velocity -> rigid body velocity
             solverBodyWriteBack(infoGlobal);
-            btScalar deformableResidual = m_deformableSolver->solveContactConstraints(deformableBodies,numDeformableBodies);
+            btScalar deformableResidual = m_deformableSolver->solveContactConstraints(deformableBodies,numDeformableBodies, infoGlobal);
             // update rigid body velocity in rigid/deformable contact
             m_leastSquaresResidual = btMax(m_leastSquaresResidual, deformableResidual);
             // solver body velocity <- rigid body velocity
@@ -112,7 +112,7 @@ void btDeformableMultiBodyConstraintSolver::solveGroupCacheFriendlySplitImpulseI
     if (infoGlobal.m_splitImpulse)
     {
         {
-            m_deformableSolver->splitImpulseSetup(infoGlobal);
+//            m_deformableSolver->splitImpulseSetup(infoGlobal);
             for (iteration = 0; iteration < infoGlobal.m_numIterations; iteration++)
             {
                 btScalar leastSquaresResidual = 0.f;
@@ -127,8 +127,8 @@ void btDeformableMultiBodyConstraintSolver::solveGroupCacheFriendlySplitImpulseI
                         leastSquaresResidual = btMax(leastSquaresResidual, residual * residual);
                     }
                     // solve the position correction between deformable and rigid/multibody
-                    btScalar residual = m_deformableSolver->solveSplitImpulse(infoGlobal);
-                    leastSquaresResidual = btMax(leastSquaresResidual, residual * residual);
+//                    btScalar residual = m_deformableSolver->solveSplitImpulse(infoGlobal);
+//                    leastSquaresResidual = btMax(leastSquaresResidual, residual * residual);
                 }
                 if (leastSquaresResidual <= infoGlobal.m_leastSquaresResidualThreshold || iteration >= (infoGlobal.m_numIterations - 1))
                 {
