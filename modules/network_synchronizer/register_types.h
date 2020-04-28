@@ -28,17 +28,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
-
-#include "character_net_controller.h"
-#include "scene_rewinder.h"
-
-void register_character_net_controller_types() {
-
-	ClassDB::register_class<PlayerInputsReference>();
-	ClassDB::register_class<CharacterNetController>();
-	ClassDB::register_class<SceneRewinder>();
-}
-
-void unregister_character_net_controller_types() {
-}
+void register_network_synchronizer_types();
+void unregister_network_synchronizer_types();

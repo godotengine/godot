@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  character_net_controller.cpp                                         */
+/*  networked_controller.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "character_net_controller.h"
+#include "networked_controller.h"
 
 #include "core/engine.h"
 #include "core/io/marshalls.h"
@@ -36,47 +36,47 @@
 #include <stdint.h>
 #include <algorithm>
 
-void CharacterNetController::_bind_methods() {
+void NetworkedController::_bind_methods() {
 
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_0);
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_1);
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_2);
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_3);
 
-	ClassDB::bind_method(D_METHOD("set_player_input_storage_size", "size"), &CharacterNetController::set_player_input_storage_size);
-	ClassDB::bind_method(D_METHOD("get_player_input_storage_size"), &CharacterNetController::get_player_input_storage_size);
+	ClassDB::bind_method(D_METHOD("set_player_input_storage_size", "size"), &NetworkedController::set_player_input_storage_size);
+	ClassDB::bind_method(D_METHOD("get_player_input_storage_size"), &NetworkedController::get_player_input_storage_size);
 
-	ClassDB::bind_method(D_METHOD("set_max_redundant_inputs", "max_redundand_inputs"), &CharacterNetController::set_max_redundant_inputs);
-	ClassDB::bind_method(D_METHOD("get_max_redundant_inputs"), &CharacterNetController::get_max_redundant_inputs);
+	ClassDB::bind_method(D_METHOD("set_max_redundant_inputs", "max_redundand_inputs"), &NetworkedController::set_max_redundant_inputs);
+	ClassDB::bind_method(D_METHOD("get_max_redundant_inputs"), &NetworkedController::get_max_redundant_inputs);
 
-	ClassDB::bind_method(D_METHOD("get_current_snapshot_id"), &CharacterNetController::get_current_input_id);
+	ClassDB::bind_method(D_METHOD("get_current_input_id"), &NetworkedController::get_current_input_id);
 
-	ClassDB::bind_method(D_METHOD("input_buffer_add_bool", "bool", "compression_level"), &CharacterNetController::input_buffer_add_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_bool", "compression_level"), &CharacterNetController::input_buffer_read_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_add_bool", "bool", "compression_level"), &NetworkedController::input_buffer_add_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_read_bool", "compression_level"), &NetworkedController::input_buffer_read_bool, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 
-	ClassDB::bind_method(D_METHOD("input_buffer_add_int", "int", "compression_level"), &CharacterNetController::input_buffer_add_int, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_int", "compression_level"), &CharacterNetController::input_buffer_read_int, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_add_int", "int", "compression_level"), &NetworkedController::input_buffer_add_int, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_read_int", "compression_level"), &NetworkedController::input_buffer_read_int, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 
-	ClassDB::bind_method(D_METHOD("input_buffer_add_unit_real", "unit_real", "compression_level"), &CharacterNetController::input_buffer_add_unit_real, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_unit_real", "compression_level"), &CharacterNetController::input_buffer_read_unit_real, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_add_unit_real", "unit_real", "compression_level"), &NetworkedController::input_buffer_add_unit_real, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_read_unit_real", "compression_level"), &NetworkedController::input_buffer_read_unit_real, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 
-	ClassDB::bind_method(D_METHOD("input_buffer_add_normalized_vector2", "vector", "compression_level"), &CharacterNetController::input_buffer_add_normalized_vector2, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_normalized_vector2", "compression_level"), &CharacterNetController::input_buffer_read_normalized_vector2, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_add_normalized_vector2", "vector", "compression_level"), &NetworkedController::input_buffer_add_normalized_vector2, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_read_normalized_vector2", "compression_level"), &NetworkedController::input_buffer_read_normalized_vector2, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 
-	ClassDB::bind_method(D_METHOD("input_buffer_add_normalized_vector3", "vector", "compression_level"), &CharacterNetController::input_buffer_add_normalized_vector3, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("input_buffer_read_normalized_vector3", "compression_level"), &CharacterNetController::input_buffer_read_normalized_vector3, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_add_normalized_vector3", "vector", "compression_level"), &NetworkedController::input_buffer_add_normalized_vector3, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("input_buffer_read_normalized_vector3", "compression_level"), &NetworkedController::input_buffer_read_normalized_vector3, DEFVAL(InputCompressionLevel::INPUT_COMPRESSION_LEVEL_1));
 
-	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &CharacterNetController::set_doll_peer_active);
-	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &CharacterNetController::_on_peer_connection_change);
+	ClassDB::bind_method(D_METHOD("set_doll_peer_active", "peer_id", "active"), &NetworkedController::set_doll_peer_active);
+	ClassDB::bind_method(D_METHOD("_on_peer_connection_change", "peer_id"), &NetworkedController::_on_peer_connection_change);
 
-	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &CharacterNetController::_rpc_server_send_inputs);
-	ClassDB::bind_method(D_METHOD("_rpc_doll_send_inputs"), &CharacterNetController::_rpc_doll_send_inputs);
-	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &CharacterNetController::_rpc_doll_notify_connection_status);
+	ClassDB::bind_method(D_METHOD("_rpc_server_send_inputs"), &NetworkedController::_rpc_server_send_inputs);
+	ClassDB::bind_method(D_METHOD("_rpc_doll_send_inputs"), &NetworkedController::_rpc_doll_send_inputs);
+	ClassDB::bind_method(D_METHOD("_rpc_doll_notify_connection_status"), &NetworkedController::_rpc_doll_notify_connection_status);
 
-	ClassDB::bind_method(D_METHOD("is_server_controller"), &CharacterNetController::is_server_controller);
-	ClassDB::bind_method(D_METHOD("is_player_controller"), &CharacterNetController::is_player_controller);
-	ClassDB::bind_method(D_METHOD("is_doll_controller"), &CharacterNetController::is_doll_controller);
-	ClassDB::bind_method(D_METHOD("is_nonet_controller"), &CharacterNetController::is_nonet_controller);
+	ClassDB::bind_method(D_METHOD("is_server_controller"), &NetworkedController::is_server_controller);
+	ClassDB::bind_method(D_METHOD("is_player_controller"), &NetworkedController::is_player_controller);
+	ClassDB::bind_method(D_METHOD("is_doll_controller"), &NetworkedController::is_doll_controller);
+	ClassDB::bind_method(D_METHOD("is_nonet_controller"), &NetworkedController::is_nonet_controller);
 
 	BIND_VMETHOD(MethodInfo("collect_inputs", PropertyInfo(Variant::FLOAT, "delta")));
 	BIND_VMETHOD(MethodInfo("controller_process", PropertyInfo(Variant::FLOAT, "delta")));
@@ -90,7 +90,7 @@ void CharacterNetController::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_closed"));
 }
 
-CharacterNetController::CharacterNetController() :
+NetworkedController::NetworkedController() :
 		player_input_storage_size(300),
 		max_redundant_inputs(50),
 		controller(nullptr),
@@ -103,67 +103,67 @@ CharacterNetController::CharacterNetController() :
 	rpc_config("_rpc_doll_notify_connection_status", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
-void CharacterNetController::set_player_input_storage_size(int p_size) {
+void NetworkedController::set_player_input_storage_size(int p_size) {
 	player_input_storage_size = p_size;
 }
 
-int CharacterNetController::get_player_input_storage_size() const {
+int NetworkedController::get_player_input_storage_size() const {
 	return player_input_storage_size;
 }
 
-void CharacterNetController::set_max_redundant_inputs(int p_max) {
+void NetworkedController::set_max_redundant_inputs(int p_max) {
 	max_redundant_inputs = p_max;
 }
 
-int CharacterNetController::get_max_redundant_inputs() const {
+int NetworkedController::get_max_redundant_inputs() const {
 	return max_redundant_inputs;
 }
 
-uint64_t CharacterNetController::get_current_input_id() const {
-	return controller->get_current_snapshot_id();
+uint64_t NetworkedController::get_current_input_id() const {
+	return controller->get_current_input_id();
 }
 
-bool CharacterNetController::input_buffer_add_bool(bool p_input, InputCompressionLevel _p_compression) {
+bool NetworkedController::input_buffer_add_bool(bool p_input, InputCompressionLevel _p_compression) {
 	return inputs_buffer.add_bool(p_input);
 }
 
-bool CharacterNetController::input_buffer_read_bool(InputCompressionLevel _p_compression) {
+bool NetworkedController::input_buffer_read_bool(InputCompressionLevel _p_compression) {
 	return inputs_buffer.read_bool();
 }
 
-int64_t CharacterNetController::input_buffer_add_int(int64_t p_input, InputCompressionLevel p_compression) {
+int64_t NetworkedController::input_buffer_add_int(int64_t p_input, InputCompressionLevel p_compression) {
 	return inputs_buffer.add_int(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-int64_t CharacterNetController::input_buffer_read_int(InputCompressionLevel p_compression) {
+int64_t NetworkedController::input_buffer_read_int(InputCompressionLevel p_compression) {
 	return inputs_buffer.read_int(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-real_t CharacterNetController::input_buffer_add_unit_real(real_t p_input, InputCompressionLevel p_compression) {
+real_t NetworkedController::input_buffer_add_unit_real(real_t p_input, InputCompressionLevel p_compression) {
 	return inputs_buffer.add_unit_real(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-real_t CharacterNetController::input_buffer_read_unit_real(InputCompressionLevel p_compression) {
+real_t NetworkedController::input_buffer_read_unit_real(InputCompressionLevel p_compression) {
 	return inputs_buffer.read_unit_real(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-Vector2 CharacterNetController::input_buffer_add_normalized_vector2(Vector2 p_input, InputCompressionLevel p_compression) {
+Vector2 NetworkedController::input_buffer_add_normalized_vector2(Vector2 p_input, InputCompressionLevel p_compression) {
 	return inputs_buffer.add_normalized_vector2(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-Vector2 CharacterNetController::input_buffer_read_normalized_vector2(InputCompressionLevel p_compression) {
+Vector2 NetworkedController::input_buffer_read_normalized_vector2(InputCompressionLevel p_compression) {
 	return inputs_buffer.read_normalized_vector2(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-Vector3 CharacterNetController::input_buffer_add_normalized_vector3(Vector3 p_input, InputCompressionLevel p_compression) {
+Vector3 NetworkedController::input_buffer_add_normalized_vector3(Vector3 p_input, InputCompressionLevel p_compression) {
 	return inputs_buffer.add_normalized_vector3(p_input, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-Vector3 CharacterNetController::input_buffer_read_normalized_vector3(InputCompressionLevel p_compression) {
+Vector3 NetworkedController::input_buffer_read_normalized_vector3(InputCompressionLevel p_compression) {
 	return inputs_buffer.read_normalized_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-void CharacterNetController::set_doll_peer_active(int p_peer_id, bool p_active) {
+void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "You can set doll activation only on server");
 	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equals to the Master `peer_id`, so it's not allowed.");
 
@@ -183,15 +183,15 @@ void CharacterNetController::set_doll_peer_active(int p_peer_id, bool p_active) 
 	}
 }
 
-const Vector<int> &CharacterNetController::get_active_doll_peers() const {
+const Vector<int> &NetworkedController::get_active_doll_peers() const {
 	return active_doll_peers;
 }
 
-void CharacterNetController::_on_peer_connection_change(int p_peer_id) {
+void NetworkedController::_on_peer_connection_change(int p_peer_id) {
 	update_active_doll_peers();
 }
 
-void CharacterNetController::update_active_doll_peers() {
+void NetworkedController::update_active_doll_peers() {
 	// Unreachable
 	CRASH_COND(get_tree()->is_network_server() == false);
 	active_doll_peers.clear();
@@ -204,71 +204,71 @@ void CharacterNetController::update_active_doll_peers() {
 	}
 }
 
-int CharacterNetController::notify_input_checked(uint64_t p_input_id) {
+int NetworkedController::notify_input_checked(uint64_t p_input_id) {
 	return controller->notify_input_checked(p_input_id);
 }
 
-uint64_t CharacterNetController::get_stored_input_id(int p_i) const {
+uint64_t NetworkedController::get_stored_input_id(int p_i) const {
 	return controller->get_stored_input_id(p_i);
 }
 
-bool CharacterNetController::process_instant(int p_i, real_t p_delta) {
+bool NetworkedController::process_instant(int p_i, real_t p_delta) {
 	return controller->process_instant(p_i, p_delta);
 }
 
-bool CharacterNetController::is_server_controller() const {
+bool NetworkedController::is_server_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller)
 		return dynamic_cast<ServerController *>(controller);
 	return get_tree()->is_network_server();
 }
 
-bool CharacterNetController::is_player_controller() const {
+bool NetworkedController::is_player_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller)
 		return dynamic_cast<PlayerController *>(controller);
 	return get_tree()->is_network_server() == false && is_network_master();
 }
 
-bool CharacterNetController::is_doll_controller() const {
+bool NetworkedController::is_doll_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller)
 		return dynamic_cast<DollController *>(controller);
 	return get_tree()->is_network_server() == false && is_network_master() == false;
 }
 
-bool CharacterNetController::is_nonet_controller() const {
+bool NetworkedController::is_nonet_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller)
 		return dynamic_cast<NoNetController *>(controller);
 	return get_tree()->get_network_peer().is_null();
 }
 
-void CharacterNetController::set_packet_missing(bool p_missing) {
+void NetworkedController::set_packet_missing(bool p_missing) {
 	packet_missing = p_missing;
 }
 
-bool CharacterNetController::get_packet_missing() const {
+bool NetworkedController::get_packet_missing() const {
 	return packet_missing;
 }
 
-void CharacterNetController::set_inputs_buffer(const BitArray &p_new_buffer) {
+void NetworkedController::set_inputs_buffer(const BitArray &p_new_buffer) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
 }
 
-void CharacterNetController::set_scene_rewinder(SceneRewinder *p_rewinder) {
+void NetworkedController::set_scene_rewinder(SceneRewinder *p_rewinder) {
 	scene_rewinder = p_rewinder;
 }
 
-SceneRewinder *CharacterNetController::get_scene_rewinder() const {
+SceneRewinder *NetworkedController::get_scene_rewinder() const {
 	return scene_rewinder;
 }
 
-bool CharacterNetController::has_scene_rewinder() const {
+bool NetworkedController::has_scene_rewinder() const {
 	return scene_rewinder;
 }
 
-void CharacterNetController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
+void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND(get_tree()->is_network_server() == false);
 
 	const Vector<int> &peers = get_active_doll_peers();
@@ -278,16 +278,17 @@ void CharacterNetController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
 		rpc_unreliable_id(peer_id, "_rpc_doll_send_inputs", p_data);
 	}
 
-	controller->receive_snapshots(p_data);
+	controller->receive_inputs(p_data);
 }
 
-void CharacterNetController::_rpc_doll_send_inputs(Vector<uint8_t> p_data) {
+void NetworkedController::_rpc_doll_send_inputs(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 
-	controller->receive_snapshots(p_data);
+	controller->receive_inputs(p_data);
 }
-void CharacterNetController::_rpc_doll_notify_connection_status(bool p_open) {
+
+void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
 
@@ -298,7 +299,7 @@ void CharacterNetController::_rpc_doll_notify_connection_status(bool p_open) {
 	}
 }
 
-void CharacterNetController::process(real_t p_delta) {
+void NetworkedController::process(real_t p_delta) {
 	if (controller) {
 		// This is called by the `sceneRewinder` that it's not aware about the
 		// controller state; so check that the controller is not null.
@@ -306,21 +307,21 @@ void CharacterNetController::process(real_t p_delta) {
 	}
 }
 
-int CharacterNetController::server_get_inputs_count() const {
+int NetworkedController::server_get_inputs_count() const {
 	if (controller)
 		return is_server_controller() ? static_cast<ServerController *>(controller)->get_inputs_count() : 0;
 	return 0;
 }
 
-void CharacterNetController::player_set_has_new_input(bool p_has) {
+void NetworkedController::player_set_has_new_input(bool p_has) {
 	has_player_new_input = p_has;
 }
 
-bool CharacterNetController::player_has_new_input() const {
+bool NetworkedController::player_has_new_input() const {
 	return has_player_new_input;
 }
 
-void CharacterNetController::_notification(int p_what) {
+void NetworkedController::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			if (Engine::get_singleton()->is_editor_hint())
@@ -333,8 +334,8 @@ void CharacterNetController::_notification(int p_what) {
 				controller = memnew(NoNetController(this));
 			} else if (get_tree()->is_network_server()) {
 				controller = memnew(ServerController(this));
-				get_multiplayer()->connect("network_peer_connected", callable_mp(this, &CharacterNetController::_on_peer_connection_change));
-				get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &CharacterNetController::_on_peer_connection_change));
+				get_multiplayer()->connect("network_peer_connected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
+				get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
 				update_active_doll_peers();
 			} else if (is_network_master()) {
 				controller = memnew(PlayerController(this));
@@ -355,99 +356,99 @@ void CharacterNetController::_notification(int p_what) {
 			controller = NULL;
 
 			if (get_tree()->is_network_server()) {
-				get_multiplayer()->disconnect("network_peer_connected", callable_mp(this, &CharacterNetController::_on_peer_connection_change));
-				get_multiplayer()->disconnect("network_peer_disconnected", callable_mp(this, &CharacterNetController::_on_peer_connection_change));
+				get_multiplayer()->disconnect("network_peer_connected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
+				get_multiplayer()->disconnect("network_peer_disconnected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
 			}
 		} break;
 	}
 }
 
 void PlayerInputsReference::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("read_bool", "compression_level"), &PlayerInputsReference::read_bool, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_int", "compression_level"), &PlayerInputsReference::read_int, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_unit_real", "compression_level"), &PlayerInputsReference::read_unit_real, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_normalized_vector2", "compression_level"), &PlayerInputsReference::read_normalized_vector2, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("read_normalized_vector3", "compression_level"), &PlayerInputsReference::read_normalized_vector3, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_bool", "compression_level"), &PlayerInputsReference::read_bool, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_int", "compression_level"), &PlayerInputsReference::read_int, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_unit_real", "compression_level"), &PlayerInputsReference::read_unit_real, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_normalized_vector2", "compression_level"), &PlayerInputsReference::read_normalized_vector2, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("read_normalized_vector3", "compression_level"), &PlayerInputsReference::read_normalized_vector3, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
 
-	ClassDB::bind_method(D_METHOD("skip_bool", "compression_level"), &PlayerInputsReference::skip_bool, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_int", "compression_level"), &PlayerInputsReference::skip_int, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_unit_real", "compression_level"), &PlayerInputsReference::skip_unit_real, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_normalized_vector2", "compression_level"), &PlayerInputsReference::skip_normalized_vector2, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("skip_normalized_vector3", "compression_level"), &PlayerInputsReference::skip_normalized_vector3, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("skip_bool", "compression_level"), &PlayerInputsReference::skip_bool, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("skip_int", "compression_level"), &PlayerInputsReference::skip_int, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("skip_unit_real", "compression_level"), &PlayerInputsReference::skip_unit_real, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("skip_normalized_vector2", "compression_level"), &PlayerInputsReference::skip_normalized_vector2, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("skip_normalized_vector3", "compression_level"), &PlayerInputsReference::skip_normalized_vector3, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
 
-	ClassDB::bind_method(D_METHOD("get_bool_size", "compression_level"), &PlayerInputsReference::get_bool_size, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_int_size", "compression_level"), &PlayerInputsReference::get_int_size, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_unit_real_size", "compression_level"), &PlayerInputsReference::get_unit_real_size, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_normalized_vector2_size", "compression_level"), &PlayerInputsReference::get_normalized_vector2_size, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
-	ClassDB::bind_method(D_METHOD("get_normalized_vector3_size", "compression_level"), &PlayerInputsReference::get_normalized_vector3_size, DEFVAL(CharacterNetController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("get_bool_size", "compression_level"), &PlayerInputsReference::get_bool_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("get_int_size", "compression_level"), &PlayerInputsReference::get_int_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("get_unit_real_size", "compression_level"), &PlayerInputsReference::get_unit_real_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("get_normalized_vector2_size", "compression_level"), &PlayerInputsReference::get_normalized_vector2_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
+	ClassDB::bind_method(D_METHOD("get_normalized_vector3_size", "compression_level"), &PlayerInputsReference::get_normalized_vector3_size, DEFVAL(NetworkedController::INPUT_COMPRESSION_LEVEL_1));
 }
 
 int PlayerInputsReference::get_size() const {
 	return inputs_buffer.get_buffer_size();
 }
 
-bool PlayerInputsReference::read_bool(CharacterNetController::InputCompressionLevel _p_compression) {
+bool PlayerInputsReference::read_bool(NetworkedController::InputCompressionLevel _p_compression) {
 	return inputs_buffer.read_bool();
 }
 
-int64_t PlayerInputsReference::read_int(CharacterNetController::InputCompressionLevel p_compression) {
+int64_t PlayerInputsReference::read_int(NetworkedController::InputCompressionLevel p_compression) {
 	return inputs_buffer.read_int(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-real_t PlayerInputsReference::read_unit_real(CharacterNetController::InputCompressionLevel p_compression) {
+real_t PlayerInputsReference::read_unit_real(NetworkedController::InputCompressionLevel p_compression) {
 	return inputs_buffer.read_unit_real(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-Vector2 PlayerInputsReference::read_normalized_vector2(CharacterNetController::InputCompressionLevel p_compression) {
+Vector2 PlayerInputsReference::read_normalized_vector2(NetworkedController::InputCompressionLevel p_compression) {
 	return inputs_buffer.read_normalized_vector2(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-Vector3 PlayerInputsReference::read_normalized_vector3(CharacterNetController::InputCompressionLevel p_compression) {
+Vector3 PlayerInputsReference::read_normalized_vector3(NetworkedController::InputCompressionLevel p_compression) {
 	return inputs_buffer.read_normalized_vector3(static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-void PlayerInputsReference::skip_bool(CharacterNetController::InputCompressionLevel p_compression) {
+void PlayerInputsReference::skip_bool(NetworkedController::InputCompressionLevel p_compression) {
 	const int bits = get_bool_size(p_compression);
 	inputs_buffer.skip(bits);
 }
 
-void PlayerInputsReference::skip_int(CharacterNetController::InputCompressionLevel p_compression) {
+void PlayerInputsReference::skip_int(NetworkedController::InputCompressionLevel p_compression) {
 	const int bits = get_int_size(p_compression);
 	inputs_buffer.skip(bits);
 }
 
-void PlayerInputsReference::skip_unit_real(CharacterNetController::InputCompressionLevel p_compression) {
+void PlayerInputsReference::skip_unit_real(NetworkedController::InputCompressionLevel p_compression) {
 	const int bits = get_unit_real_size(p_compression);
 	inputs_buffer.skip(bits);
 }
 
-void PlayerInputsReference::skip_normalized_vector2(CharacterNetController::InputCompressionLevel p_compression) {
+void PlayerInputsReference::skip_normalized_vector2(NetworkedController::InputCompressionLevel p_compression) {
 	const int bits = get_normalized_vector2_size(p_compression);
 	inputs_buffer.skip(bits);
 }
 
-void PlayerInputsReference::skip_normalized_vector3(CharacterNetController::InputCompressionLevel p_compression) {
+void PlayerInputsReference::skip_normalized_vector3(NetworkedController::InputCompressionLevel p_compression) {
 	const int bits = get_normalized_vector3_size(p_compression);
 	inputs_buffer.skip(bits);
 }
 
-int PlayerInputsReference::get_bool_size(CharacterNetController::InputCompressionLevel p_compression) const {
+int PlayerInputsReference::get_bool_size(NetworkedController::InputCompressionLevel p_compression) const {
 	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_BOOL, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-int PlayerInputsReference::get_int_size(CharacterNetController::InputCompressionLevel p_compression) const {
+int PlayerInputsReference::get_int_size(NetworkedController::InputCompressionLevel p_compression) const {
 	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_INT, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-int PlayerInputsReference::get_unit_real_size(CharacterNetController::InputCompressionLevel p_compression) const {
+int PlayerInputsReference::get_unit_real_size(NetworkedController::InputCompressionLevel p_compression) const {
 	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_UNIT_REAL, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-int PlayerInputsReference::get_normalized_vector2_size(CharacterNetController::InputCompressionLevel p_compression) const {
+int PlayerInputsReference::get_normalized_vector2_size(NetworkedController::InputCompressionLevel p_compression) const {
 	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_NORMALIZED_VECTOR2, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
-int PlayerInputsReference::get_normalized_vector3_size(CharacterNetController::InputCompressionLevel p_compression) const {
+int PlayerInputsReference::get_normalized_vector3_size(NetworkedController::InputCompressionLevel p_compression) const {
 	return InputsBuffer::get_bit_taken(InputsBuffer::DATA_TYPE_NORMALIZED_VECTOR3, static_cast<InputsBuffer::CompressionLevel>(p_compression));
 }
 
@@ -459,7 +460,7 @@ void PlayerInputsReference::set_inputs_buffer(const BitArray &p_new_buffer) {
 	inputs_buffer.get_buffer_mut().get_bytes_mut() = p_new_buffer.get_bytes();
 }
 
-ServerController::ServerController(CharacterNetController *p_node) :
+ServerController::ServerController(NetworkedController *p_node) :
 		Controller(p_node),
 		current_input_buffer_id(UINT64_MAX),
 		ghost_input_count(0) {
@@ -481,13 +482,13 @@ bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSna
 	return p_snap_a.id < p_snap_b.id;
 }
 
-void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
+void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 
 	// The packet is composed as follow:
-	// - The following four bytes for the first snapshot ID.
-	// - Array of snapshots:
-	// |-- First byte the amount of times this snapshot is duplicated in the packet.
-	// |-- snapshot inputs buffer.
+	// - The following four bytes for the first input ID.
+	// - Array of inputs:
+	// |-- First byte the amount of times this input is duplicated in the packet.
+	// |-- inputs buffer.
 	//
 	// Let's decode it!
 
@@ -496,10 +497,10 @@ void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
 	int ofs = 0;
 
 	ERR_FAIL_COND(data_len < 4);
-	const uint32_t first_snapshot_id = decode_uint32(p_data.ptr() + ofs);
+	const uint32_t first_input_id = decode_uint32(p_data.ptr() + ofs);
 	ofs += 4;
 
-	uint64_t inserted_snapshot_count = 0;
+	uint64_t inserted_input_count = 0;
 
 	BitArray bit_array;
 	bit_array.resize_in_bytes(data_len);
@@ -517,25 +518,25 @@ void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
 		const uint8_t duplication = p_data[ofs];
 		ofs += 1;
 
-		// Validate snapshot
+		// Validate input
 		pir.inputs_buffer.seek(ofs * 8);
-		const int snapshot_size_in_bits = node->call("count_input_size", &pir);
+		const int input_size_in_bits = node->call("count_input_size", &pir);
 		// Pad to 8 bits.
-		const int snapshot_size =
-				Math::ceil((static_cast<float>(snapshot_size_in_bits)) / 8.0);
-		ERR_FAIL_COND_MSG(ofs + snapshot_size > data_len, "The arrived packet size doesn't meet the expected size.");
+		const int input_size =
+				Math::ceil((static_cast<float>(input_size_in_bits)) / 8.0);
+		ERR_FAIL_COND_MSG(ofs + input_size > data_len, "The arrived packet size doesn't meet the expected size.");
 
 		// The input is valid, populate the buffer.
 		for (int sub = 0; sub <= duplication; sub += 1) {
 
-			const uint64_t snapshot_id = first_snapshot_id + inserted_snapshot_count;
-			inserted_snapshot_count += 1;
+			const uint64_t input_id = first_input_id + inserted_input_count;
+			inserted_input_count += 1;
 
-			if (current_input_buffer_id != UINT64_MAX && current_input_buffer_id >= snapshot_id)
+			if (current_input_buffer_id != UINT64_MAX && current_input_buffer_id >= input_id)
 				continue;
 
 			FrameSnapshotSkinny rfs;
-			rfs.id = snapshot_id;
+			rfs.id = input_id;
 
 			const bool found = std::binary_search(
 					snapshots.begin(),
@@ -544,11 +545,11 @@ void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
 					is_remote_frame_A_older);
 
 			if (!found) {
-				rfs.inputs_buffer.get_bytes_mut().resize(snapshot_size);
+				rfs.inputs_buffer.get_bytes_mut().resize(input_size);
 				copymem(
 						rfs.inputs_buffer.get_bytes_mut().ptrw(),
 						p_data.ptr() + ofs,
-						snapshot_size);
+						input_size);
 
 				snapshots.push_back(rfs);
 
@@ -558,7 +559,7 @@ void ServerController::receive_snapshots(Vector<uint8_t> p_data) {
 		}
 
 		// We can now advance the offset.
-		ofs += snapshot_size;
+		ofs += input_size;
 	}
 
 	ERR_FAIL_COND_MSG(ofs != data_len, "At the end was detected that the arrived packet has an unexpected size.");
@@ -579,7 +580,7 @@ bool ServerController::process_instant(int p_i, real_t p_delta) {
 	return false;
 }
 
-uint64_t ServerController::get_current_snapshot_id() const {
+uint64_t ServerController::get_current_input_id() const {
 	return current_input_buffer_id;
 }
 
@@ -721,7 +722,7 @@ bool ServerController::fetch_next_input() {
 	return is_new_input;
 }
 
-PlayerController::PlayerController(CharacterNetController *p_node) :
+PlayerController::PlayerController(NetworkedController *p_node) :
 		Controller(p_node),
 		current_input_id(UINT64_MAX),
 		input_buffers_counter(0) {
@@ -759,7 +760,7 @@ void PlayerController::physics_process(real_t p_delta) {
 	node->player_set_has_new_input(accept_new_inputs);
 }
 
-void PlayerController::receive_snapshots(Vector<uint8_t> p_data) {
+void PlayerController::receive_inputs(Vector<uint8_t> p_data) {
 	ERR_PRINT("The player is not supposed to receive snapshots. Check why this happened.");
 }
 
@@ -805,7 +806,7 @@ bool PlayerController::process_instant(int p_i, real_t p_delta) {
 	}
 }
 
-uint64_t PlayerController::get_current_snapshot_id() const {
+uint64_t PlayerController::get_current_input_id() const {
 	return current_input_id;
 }
 
@@ -820,13 +821,13 @@ void PlayerController::store_input_buffer(uint64_t p_id) {
 void PlayerController::send_frame_input_buffer_to_server() {
 
 	// The packet is composed as follow:
-	// - The following four bytes for the first snapshot ID.
-	// - Array of snapshots:
-	// |-- First byte the amount of times this snapshot is duplicated in the packet.
+	// - The following four bytes for the first input ID.
+	// - Array of inputs:
+	// |-- First byte the amount of times this input is duplicated in the packet.
 	// |-- input buffer.
 
-	const size_t snapshots_count = MIN(frames_snapshot.size(), static_cast<size_t>(node->get_max_redundant_inputs() + 1));
-	CRASH_COND(snapshots_count < 1); // Unreachable
+	const size_t inputs_count = MIN(frames_snapshot.size(), static_cast<size_t>(node->get_max_redundant_inputs() + 1));
+	CRASH_COND(inputs_count < 1); // Unreachable
 
 #define MAKE_ROOM(p_size)                                              \
 	if (cached_packet_data.size() < static_cast<size_t>(ofs + p_size)) \
@@ -836,11 +837,11 @@ void PlayerController::send_frame_input_buffer_to_server() {
 
 	// Let's store the ID of the first snapshot.
 	MAKE_ROOM(4);
-	const uint64_t first_snapshot_id = frames_snapshot[frames_snapshot.size() - snapshots_count].id;
-	ofs += encode_uint32(first_snapshot_id, cached_packet_data.data() + ofs);
+	const uint64_t first_input_id = frames_snapshot[frames_snapshot.size() - inputs_count].id;
+	ofs += encode_uint32(first_input_id, cached_packet_data.data() + ofs);
 
-	uint64_t previous_snapshot_id = UINT64_MAX;
-	uint64_t previous_snapshot_similarity = UINT64_MAX;
+	uint64_t previous_input_id = UINT64_MAX;
+	uint64_t previous_input_similarity = UINT64_MAX;
 	int previous_buffer_size = 0;
 	uint8_t duplication_count = 0;
 
@@ -849,21 +850,21 @@ void PlayerController::send_frame_input_buffer_to_server() {
 	PlayerInputsReference pir_B(node->get_inputs_buffer());
 
 	// Compose the packets
-	for (size_t i = frames_snapshot.size() - snapshots_count; i < frames_snapshot.size(); i += 1) {
+	for (size_t i = frames_snapshot.size() - inputs_count; i < frames_snapshot.size(); i += 1) {
 
 		bool is_similar = false;
 
-		if (previous_snapshot_id == UINT64_MAX) {
-			// This happens for the first snapshot of the packet.
+		if (previous_input_id == UINT64_MAX) {
+			// This happens for the first input of the packet.
 			// Just write it.
 			is_similar = false;
 		} else if (duplication_count == UINT8_MAX) {
 			// Prevent to overflow the `uint8_t`.
 			is_similar = false;
 		} else {
-			if (frames_snapshot[i].similarity != previous_snapshot_id) {
+			if (frames_snapshot[i].similarity != previous_input_id) {
 				if (frames_snapshot[i].similarity == UINT64_MAX) {
-					// This snapshot was never compared, let's do it now.
+					// This input was never compared, let's do it now.
 					pir_B.set_inputs_buffer(frames_snapshot[i].inputs_buffer);
 
 					pir_A.begin();
@@ -872,14 +873,14 @@ void PlayerController::send_frame_input_buffer_to_server() {
 					const bool are_different = pir_A.get_size() != pir_B.get_size() || node->call("are_inputs_different", &pir_A, &pir_B);
 					is_similar = are_different == false;
 
-				} else if (frames_snapshot[i].similarity == previous_snapshot_similarity) {
-					// This snapshot is similar to the previous one, the thing is
-					// that the similarity check was done on an older snapshot.
+				} else if (frames_snapshot[i].similarity == previous_input_similarity) {
+					// This input is similar to the previous one, the thing is
+					// that the similarity check was done on an older input.
 					// Fortunatelly we are able to compare the similarity id
 					// and detect its similarity correctly.
 					is_similar = true;
 				} else {
-					// This snapshot is simply different from the previous one.
+					// This input is simply different from the previous one.
 					is_similar = false;
 				}
 			} else {
@@ -889,17 +890,17 @@ void PlayerController::send_frame_input_buffer_to_server() {
 		}
 
 		if (is_similar) {
-			// This snapshot is similar to the previous one, so just duplicate it.
+			// This input is similar to the previous one, so just duplicate it.
 			duplication_count += 1;
 			// In this way, we don't need to compare these frames again.
-			frames_snapshot[i].similarity = previous_snapshot_id;
+			frames_snapshot[i].similarity = previous_input_id;
 
 		} else {
-			// This snapshot is different from the previous one, so let's
+			// This input is different from the previous one, so let's
 			// finalize the previous and start another one.
 
-			if (previous_snapshot_id != UINT64_MAX) {
-				// We can finally finalize the previous snapshot
+			if (previous_input_id != UINT64_MAX) {
+				// We can finally finalize the previous input
 				cached_packet_data[ofs - previous_buffer_size - 1] = duplication_count;
 			}
 
@@ -920,9 +921,9 @@ void PlayerController::send_frame_input_buffer_to_server() {
 					buffer_size);
 			ofs += buffer_size;
 
-			// Let's see if we can duplicate this snapshot.
-			previous_snapshot_id = frames_snapshot[i].id;
-			previous_snapshot_similarity = frames_snapshot[i].similarity;
+			// Let's see if we can duplicate this input.
+			previous_input_id = frames_snapshot[i].id;
+			previous_input_similarity = frames_snapshot[i].similarity;
 			previous_buffer_size = buffer_size;
 
 			pir_A.set_inputs_buffer(frames_snapshot[i].inputs_buffer);
@@ -950,7 +951,7 @@ bool PlayerController::can_accept_new_inputs() const {
 	return frames_snapshot.size() < static_cast<size_t>(node->get_player_input_storage_size());
 }
 
-DollController::DollController(CharacterNetController *p_node) :
+DollController::DollController(NetworkedController *p_node) :
 		Controller(p_node),
 		server_controller(p_node),
 		player_controller(p_node),
@@ -985,10 +986,10 @@ void DollController::physics_process(real_t p_delta) {
 	soft_reset_to_server_state();
 }
 
-void DollController::receive_snapshots(Vector<uint8_t> p_data) {
+void DollController::receive_inputs(Vector<uint8_t> p_data) {
 	if (is_flow_open == false)
 		return;
-	server_controller.receive_snapshots(p_data);
+	server_controller.receive_inputs(p_data);
 }
 
 int DollController::notify_input_checked(uint64_t p_input_id) {
@@ -1007,7 +1008,7 @@ bool DollController::process_instant(int p_i, real_t p_delta) {
 	return player_controller.process_instant(p_i, p_delta);
 }
 
-uint64_t DollController::get_current_snapshot_id() const {
+uint64_t DollController::get_current_input_id() const {
 	return server_controller.current_input_buffer_id;
 }
 
@@ -1065,7 +1066,7 @@ void DollController::hard_reset_to_server_state() {
 	// state back in sync.
 }
 
-NoNetController::NoNetController(CharacterNetController *p_node) :
+NoNetController::NoNetController(NetworkedController *p_node) :
 		Controller(p_node),
 		frame_id(0) {
 }
@@ -1079,7 +1080,7 @@ void NoNetController::physics_process(real_t p_delta) {
 	frame_id += 1;
 }
 
-void NoNetController::receive_snapshots(Vector<uint8_t> p_data) {
+void NoNetController::receive_inputs(Vector<uint8_t> p_data) {
 	// Nothing to do.
 }
 
@@ -1098,6 +1099,6 @@ bool NoNetController::process_instant(int p_i, real_t p_delta) {
 	return false;
 }
 
-uint64_t NoNetController::get_current_snapshot_id() const {
+uint64_t NoNetController::get_current_input_id() const {
 	return frame_id;
 }

@@ -39,7 +39,7 @@
 #define SCENE_REWINDER_H
 
 class Rewinder;
-class CharacterNetController;
+class NetworkedController;
 
 struct VarData {
 	uint32_t id;
@@ -121,10 +121,10 @@ class SceneRewinder : public Node {
 	uint32_t node_counter;
 	bool generate_id;
 	HashMap<ObjectID, NodeData> data;
-	CharacterNetController *main_controller;
+	NetworkedController *main_controller;
 
 	Vector<ObjectID> controllers;
-	std::vector<CharacterNetController *> cached_controllers;
+	std::vector<NetworkedController *> cached_controllers;
 
 	real_t time_bank;
 	real_t tick_additional_speed;
@@ -173,8 +173,8 @@ public:
 	void register_controller(Node *p_controller);
 	void unregister_controller(Node *p_controller);
 
-	void _register_controller(CharacterNetController *p_controller);
-	void _unregister_controller(CharacterNetController *p_controller);
+	void _register_controller(NetworkedController *p_controller);
+	void _unregister_controller(NetworkedController *p_controller);
 
 	void register_process(Node *p_node, StringName p_function);
 	void unregister_process(Node *p_node, StringName p_function);
@@ -250,15 +250,15 @@ struct Snapshot {
 };
 
 struct ControllerRewinder {
-	CharacterNetController *controller;
+	NetworkedController *controller;
 	uint64_t recovered_snapshot_input_id;
 	int frames_to_skip;
 	bool finished;
 
-	void init(CharacterNetController *p_controller, int p_frames, uint64_t p_recovered_snapshot_input_id);
+	void init(NetworkedController *p_controller, int p_frames, uint64_t p_recovered_snapshot_input_id);
 	void advance(int p_i, real_t p_delta);
 	bool has_finished() const;
-	CharacterNetController *get_controller() const;
+	NetworkedController *get_controller() const;
 	uint64_t get_processed_input_id(int p_i) const;
 };
 

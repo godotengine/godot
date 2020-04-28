@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  character_net_controller.h                                           */
+/*  networked_controller.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -36,14 +36,14 @@
 #include <deque>
 #include <vector>
 
-#ifndef CHARACTER_NET_CONTROLLER_H
-#define CHARACTER_NET_CONTROLLER_H
+#ifndef NETWORKED_CONTROLLER_H
+#define NETWORKED_CONTROLLER_H
 
 struct Controller;
 class SceneRewinder;
 
-class CharacterNetController : public Node {
-	GDCLASS(CharacterNetController, Node);
+class NetworkedController : public Node {
+	GDCLASS(NetworkedController, Node);
 
 public:
 	enum InputCompressionLevel {
@@ -54,7 +54,7 @@ public:
 	};
 
 private:
-	/// The snapshot storage size is used to cap the amount of inputs collected by
+	/// The input storage size is used to cap the amount of inputs collected by
 	/// the `Master`.
 	///
 	/// The server sends a message, to all the connected peers, notifing its
@@ -91,7 +91,7 @@ public:
 	static void _bind_methods();
 
 public:
-	CharacterNetController();
+	NetworkedController();
 
 	void set_player_input_storage_size(int p_size);
 	int get_player_input_storage_size() const;
@@ -201,7 +201,7 @@ private:
 	virtual void _notification(int p_what);
 };
 
-VARIANT_ENUM_CAST(CharacterNetController::InputCompressionLevel)
+VARIANT_ENUM_CAST(NetworkedController::InputCompressionLevel)
 
 class PlayerInputsReference : public Object {
 	GDCLASS(PlayerInputsReference, Object);
@@ -217,23 +217,23 @@ public:
 
 	int get_size() const;
 
-	bool read_bool(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	int64_t read_int(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	real_t read_unit_real(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	Vector2 read_normalized_vector2(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	Vector3 read_normalized_vector3(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
+	bool read_bool(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	int64_t read_int(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	real_t read_unit_real(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	Vector2 read_normalized_vector2(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	Vector3 read_normalized_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 
-	void skip_bool(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_int(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_unit_real(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_normalized_vector2(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
-	void skip_normalized_vector3(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1);
+	void skip_bool(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	void skip_int(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	void skip_unit_real(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	void skip_normalized_vector2(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
+	void skip_normalized_vector3(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1);
 
-	int get_bool_size(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_int_size(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_unit_real_size(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_normalized_vector2_size(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1) const;
-	int get_normalized_vector3_size(CharacterNetController::InputCompressionLevel p_compression = CharacterNetController::INPUT_COMPRESSION_LEVEL_1) const;
+	int get_bool_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
+	int get_int_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
+	int get_unit_real_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
+	int get_normalized_vector2_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
+	int get_normalized_vector3_size(NetworkedController::InputCompressionLevel p_compression = NetworkedController::INPUT_COMPRESSION_LEVEL_1) const;
 
 	void begin();
 	void set_inputs_buffer(const BitArray &p_new_buffer);
@@ -251,19 +251,19 @@ struct FrameSnapshot {
 };
 
 struct Controller {
-	CharacterNetController *node;
+	NetworkedController *node;
 
-	Controller(CharacterNetController *p_node) :
+	Controller(NetworkedController *p_node) :
 			node(p_node) {}
 
 	virtual ~Controller() {}
 
 	virtual void physics_process(real_t p_delta) = 0;
-	virtual void receive_snapshots(Vector<uint8_t> p_data) = 0;
+	virtual void receive_inputs(Vector<uint8_t> p_data) = 0;
 	virtual int notify_input_checked(uint64_t p_input_id) = 0;
 	virtual uint64_t get_stored_input_id(int p_i) const = 0;
 	virtual bool process_instant(int p_i, real_t p_delta) = 0;
-	virtual uint64_t get_current_snapshot_id() const = 0;
+	virtual uint64_t get_current_input_id() const = 0;
 };
 
 struct ServerController : public Controller {
@@ -271,14 +271,14 @@ struct ServerController : public Controller {
 	uint32_t ghost_input_count;
 	std::deque<FrameSnapshotSkinny> snapshots;
 
-	ServerController(CharacterNetController *p_node);
+	ServerController(NetworkedController *p_node);
 
 	virtual void physics_process(real_t p_delta);
-	virtual void receive_snapshots(Vector<uint8_t> p_data);
+	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_snapshot_id() const;
+	virtual uint64_t get_current_input_id() const;
 
 	int get_inputs_count() const;
 
@@ -292,14 +292,14 @@ struct PlayerController : public Controller {
 	std::deque<FrameSnapshot> frames_snapshot;
 	std::vector<uint8_t> cached_packet_data;
 
-	PlayerController(CharacterNetController *p_node);
+	PlayerController(NetworkedController *p_node);
 
 	virtual void physics_process(real_t p_delta);
-	virtual void receive_snapshots(Vector<uint8_t> p_data);
+	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_snapshot_id() const;
+	virtual uint64_t get_current_input_id() const;
 
 	void store_input_buffer(uint64_t p_id);
 
@@ -330,14 +330,14 @@ struct DollController : public Controller {
 	uint64_t last_checked_input_id;
 	bool is_flow_open;
 
-	DollController(CharacterNetController *p_node);
+	DollController(NetworkedController *p_node);
 
 	virtual void physics_process(real_t p_delta);
-	virtual void receive_snapshots(Vector<uint8_t> p_data);
+	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_snapshot_id() const;
+	virtual uint64_t get_current_input_id() const;
 
 	void open_flow();
 	void close_flow();
@@ -350,18 +350,18 @@ struct DollController : public Controller {
 
 /// This controller is used when the game instance is not a peer of any kind.
 /// This controller keeps the workflow as usual so it's possible to use the
-/// `CharacterNetController` even without network.
+/// `NetworkedController` even without network.
 struct NoNetController : public Controller {
 	uint64_t frame_id;
 
-	NoNetController(CharacterNetController *p_node);
+	NoNetController(NetworkedController *p_node);
 
 	virtual void physics_process(real_t p_delta);
-	virtual void receive_snapshots(Vector<uint8_t> p_data);
+	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
-	virtual uint64_t get_current_snapshot_id() const;
+	virtual uint64_t get_current_input_id() const;
 };
 
 #endif

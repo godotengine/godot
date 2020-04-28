@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  character_net_controller.cpp                                         */
+/*  scene_rewinder.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,7 +30,7 @@
 
 #include "scene_rewinder.h"
 
-#include "character_net_controller.h"
+#include "networked_controller.h"
 #include "scene/main/window.h"
 
 // Don't go below 2 so to take into account internet latency
@@ -366,18 +366,18 @@ void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable
 }
 
 void SceneRewinder::register_controller(Node *p_controller) {
-	CharacterNetController *c = Object::cast_to<CharacterNetController>(p_controller);
+	NetworkedController *c = Object::cast_to<NetworkedController>(p_controller);
 	ERR_FAIL_COND(c == nullptr);
 	register_node(p_controller);
 }
 
 void SceneRewinder::unregister_controller(Node *p_controller) {
-	CharacterNetController *c = Object::cast_to<CharacterNetController>(p_controller);
+	NetworkedController *c = Object::cast_to<NetworkedController>(p_controller);
 	ERR_FAIL_COND(c == nullptr);
 	_unregister_controller(c);
 }
 
-void SceneRewinder::_register_controller(CharacterNetController *p_controller) {
+void SceneRewinder::_register_controller(NetworkedController *p_controller) {
 	if (p_controller->has_scene_rewinder()) {
 		ERR_FAIL_COND_MSG(p_controller->get_scene_rewinder() != this, "This controller is associated with a different scene rewinder.");
 	} else {
@@ -396,7 +396,7 @@ void SceneRewinder::_register_controller(CharacterNetController *p_controller) {
 	}
 }
 
-void SceneRewinder::_unregister_controller(CharacterNetController *p_controller) {
+void SceneRewinder::_unregister_controller(NetworkedController *p_controller) {
 	ERR_FAIL_COND_MSG(p_controller->get_scene_rewinder() != this, "This controller is associated with this scene rewinder.");
 	p_controller->set_scene_rewinder(nullptr);
 	controllers.erase(p_controller->get_instance_id());
@@ -547,7 +547,7 @@ NodeData *SceneRewinder::register_node(Node *p_node) {
 
 	bool is_controller = false;
 	{
-		CharacterNetController *controller = Object::cast_to<CharacterNetController>(p_node);
+		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node);
 		if (controller) {
 			if (controller->has_scene_rewinder()) {
 				ERR_FAIL_COND_V_MSG(controller->get_scene_rewinder() != this, nullptr, "This controller is associated with a different scene rewinder.");
@@ -680,7 +680,7 @@ void SceneRewinder::cache_controllers() {
 	std::vector<ObjectID> null_objcts;
 
 	for (int c = 0; c < controllers.size(); c += 1) {
-		CharacterNetController *controller = static_cast<CharacterNetController *>(
+		NetworkedController *controller = static_cast<NetworkedController *>(
 				ObjectDB::get_instance(ids[c]));
 
 		if (controller) {
@@ -720,6 +720,8 @@ void SceneRewinder::process() {
 
 	while (sub_ticks > 0) {
 
+		emit_signal("sync_process", delta);
+
 		if (is_pretended == false) {
 			// This is a legit iteration, so step all controllers.
 			for (size_t c = 0; c < cached_controllers.size(); c += 1) {
@@ -729,11 +731,10 @@ void SceneRewinder::process() {
 			// Step only the main controller because we don't want that the dolls
 			// are speed up too (This because we don't want to consume client
 			// inputs too fast).
+			// This may be a problem in some cases when the result of the doll
+			// depends on the state of the world that is still processing.
 			main_controller->process(delta);
 		}
-
-		// The world is always processed // TODO put this before the controllers.
-		emit_signal("sync_process", delta);
 
 		Vector<ObjectID> null_objects;
 
@@ -861,7 +862,7 @@ Snapshot::operator String() const {
 }
 
 void ControllerRewinder::init(
-		CharacterNetController *p_controller,
+		NetworkedController *p_controller,
 		int p_frames,
 		uint64_t p_recovered_snapshot_input_id) {
 
@@ -890,7 +891,7 @@ void ControllerRewinder::advance(int p_i, real_t p_delta) {
 	}
 }
 
-CharacterNetController *ControllerRewinder::get_controller() const {
+NetworkedController *ControllerRewinder::get_controller() const {
 	return controller;
 }
 
@@ -995,7 +996,7 @@ Variant ServerRewinder::generate_snapshot() {
 		if (node_data.is_controller) {
 			// This is a controller, make sure we can already sync it.
 
-			CharacterNetController *controller = Object::cast_to<CharacterNetController>(node_data.cached_node);
+			NetworkedController *controller = Object::cast_to<NetworkedController>(node_data.cached_node);
 			CRASH_COND(controller == nullptr); // Unreachable
 
 			if (unlikely(controller->get_current_input_id() == UINT64_MAX)) {
@@ -1067,7 +1068,7 @@ void ServerRewinder::adjust_player_tick_rate(real_t p_delta) {
 	for (int p = 0; p < peers_data.size(); p += 1) {
 
 		PeerData *peer = peers + p;
-		CharacterNetController *controller = nullptr;
+		NetworkedController *controller = nullptr;
 
 		// TODO exist a safe way to not iterate each time?
 		for (size_t c = 0; c < scene_rewinder->cached_controllers.size(); c += 1) {
@@ -1157,13 +1158,7 @@ void ClientRewinder::post_process(real_t p_delta) {
 }
 
 void ClientRewinder::receive_snapshot(Variant p_snapshot) {
-	// TODO
-	print_line("-----------------------------------------------------");
-	print_line(p_snapshot);
-
 	parse_snapshot(p_snapshot);
-
-	print_line(server_snapshot);
 }
 
 void ClientRewinder::store_snapshot() {
@@ -1464,13 +1459,13 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 		CRASH_COND(main_controller_input_id != snapshots[snapshot_index].player_controller_input_id);
 #endif
 
+		// Process the environment
+		scene_rewinder->emit_signal("sync_process", p_delta);
+
 		// Process the controllers
 		for (size_t c = 0; c < controller_size; c += 1) {
 			rewinders[c].advance(i, p_delta);
 		}
-
-		// Process the environment
-		scene_rewinder->emit_signal("sync_process", p_delta);
 
 		// Update the snapshot.
 		scene_rewinder->pull_variable_changes();
@@ -1606,7 +1601,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 			}
 
 			const bool is_controller =
-					Object::cast_to<CharacterNetController>(node) != nullptr;
+					Object::cast_to<NetworkedController>(node) != nullptr;
 
 			// Make sure this node is being tracked locally.
 			rewinder_node_data = scene_rewinder->data.getptr(node->get_instance_id());
