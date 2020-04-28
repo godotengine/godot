@@ -77,6 +77,7 @@ private:
 	uint32_t num_bytes_received;
 	uint32_t num_packets_sent;
 	uint32_t num_bytes_sent;
+	bool track_packet_stats;
 
 	ENetEvent event;
 	ENetPeer *peer;
@@ -172,6 +173,8 @@ public:
 	uint32_t get_num_packets_sent() const;
 	uint32_t get_num_bytes_sent() const;
 	void clear_packet_stats();
+	void set_track_packet_stats(bool p_enable);
+	bool is_track_packet_stats_enabled();
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();

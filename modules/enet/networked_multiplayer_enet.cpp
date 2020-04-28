@@ -525,8 +525,10 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 	*r_buffer = (const uint8_t *)(&current_packet.packet->data[8]);
 	r_buffer_size = current_packet.packet->dataLength - 8;
 
-	this->num_packets_received++;
-	this->num_bytes_received += current_packet.packet->dataLength - 8;
+	if (track_packet_stats) {
+		num_packets_received++;
+		num_bytes_received += current_packet.packet->dataLength - 8;
+	}
 
 	return OK;
 }
@@ -573,8 +575,10 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	encode_uint32(target_peer, &packet->data[4]); // Dest ID
 	copymem(&packet->data[8], p_buffer, p_buffer_size);
 
-	this->num_packets_sent++;
-	this->num_bytes_sent += p_buffer_size;
+	if (track_packet_stats) {
+		num_packets_sent++;
+		num_bytes_sent += p_buffer_size;
+	}
 
 	if (server) {
 
@@ -876,6 +880,14 @@ void NetworkedMultiplayerENet::clear_packet_stats() {
 	num_bytes_sent = 0;
 }
 
+void NetworkedMultiplayerENet::set_track_packet_stats(bool p_enable) {
+	track_packet_stats = p_enable;
+}
+
+bool NetworkedMultiplayerENet::is_track_packet_stats_enabled() {
+	return track_packet_stats;
+}
+
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
@@ -904,6 +916,8 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_num_packets_sent"), &NetworkedMultiplayerENet::get_num_packets_sent);
 	ClassDB::bind_method(D_METHOD("get_num_bytes_sent"), &NetworkedMultiplayerENet::get_num_bytes_sent);
 	ClassDB::bind_method(D_METHOD("clear_packet_stats"), &NetworkedMultiplayerENet::clear_packet_stats);
+	ClassDB::bind_method(D_METHOD("set_track_packet_stats"), &NetworkedMultiplayerENet::set_track_packet_stats);
+	ClassDB::bind_method(D_METHOD("is_track_packet_stats_enabled"), &NetworkedMultiplayerENet::is_track_packet_stats_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel"), "set_transfer_channel", "get_transfer_channel");
@@ -940,6 +954,7 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 
 	bind_ip = IP_Address("*");
 
+	track_packet_stats = false;
 	clear_packet_stats();
 }
 

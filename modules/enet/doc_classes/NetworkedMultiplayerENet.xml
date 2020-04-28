@@ -139,7 +139,22 @@
 				Clear the packet sent/received stats.
 			</description>
 		</method>
-
+		<method name="set_track_packet_stats">
+			<return type="void">
+			</return>
+			<argument index="0" name="p_enable" type="bool">
+			</argument>
+			<description>
+				Enable or disable packet statistics tracking.
+			</description>
+		</method>
+		<method name="is_track_packet_stats_enabled">
+			<return type="bool">
+			</return>
+			<description>
+				Return if packet statistics tracking is enabled.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered" default="false">
