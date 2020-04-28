@@ -30,7 +30,7 @@
 
 #include "touch_screen_button.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/os/os.h"
 #include "scene/main/window.h"
@@ -290,7 +290,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 
 	if (action != StringName()) {
 
-		InputFilter::get_singleton()->action_press(action);
+		Input::get_singleton()->action_press(action);
 		Ref<InputEventAction> iea;
 		iea.instance();
 		iea->set_action(action);
@@ -308,7 +308,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 
 	if (action != StringName()) {
 
-		InputFilter::get_singleton()->action_release(action);
+		Input::get_singleton()->action_release(action);
 		if (!p_exiting_tree) {
 
 			Ref<InputEventAction> iea;

@@ -128,7 +128,7 @@ void OS_OSX::initialize_core() {
 }
 
 void OS_OSX::initialize_joypads() {
-	joypad_osx = memnew(JoypadOSX(InputFilter::get_singleton()));
+	joypad_osx = memnew(JoypadOSX(Input::get_singleton()));
 }
 
 void OS_OSX::initialize() {

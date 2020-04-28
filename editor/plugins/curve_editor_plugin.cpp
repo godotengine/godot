@@ -32,7 +32,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "core/core_string_names.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 
@@ -210,7 +210,7 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 					else
 						tangent = 9999 * (dir.y >= 0 ? 1 : -1);
 
-					bool link = !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
+					bool link = !Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 
 					if (_selected_tangent == TANGENT_LEFT) {
 						curve.set_point_left_tangent(_selected_point, tangent);

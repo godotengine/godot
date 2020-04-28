@@ -30,7 +30,7 @@
 
 #include "spin_box.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/math/expression.h"
 
 Size2 SpinBox::get_minimum_size() const {
@@ -77,7 +77,7 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_range_click_timeout() {
 
-	if (!drag.enabled && InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
 		bool up = get_local_mouse_position().y < (get_size().height / 2);
 		set_value(get_value() + (up ? get_step() : -get_step()));
@@ -149,7 +149,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (drag.enabled) {
 			drag.enabled = false;
-			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			warp_mouse(drag.capture_pos);
 		}
 		drag.allowed = false;
@@ -166,7 +166,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 			set_value(CLAMP(drag.base_val + get_step() * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 
-			InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_CAPTURED);
+			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 			drag.enabled = true;
 			drag.base_val = get_value();
 			drag.diff_y = 0;

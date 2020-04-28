@@ -30,7 +30,7 @@
 
 #include "display_server.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "scene/resources/texture.h"
 
 DisplayServer *DisplayServer::singleton = nullptr;
@@ -164,7 +164,7 @@ float DisplayServer::screen_get_scale(int p_screen) const {
 
 bool DisplayServer::screen_is_touchscreen(int p_screen) const {
 	//return false;
-	return InputFilter::get_singleton() && InputFilter::get_singleton()->is_emulating_touch_from_mouse();
+	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 
 void DisplayServer::screen_set_keep_on(bool p_enable) {
@@ -563,31 +563,31 @@ DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driv
 	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_flags, p_resolution, r_error);
 }
 
-void DisplayServer::_input_set_mouse_mode(InputFilter::MouseMode p_mode) {
+void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
 	singleton->mouse_set_mode(MouseMode(p_mode));
 }
-InputFilter::MouseMode DisplayServer::_input_get_mouse_mode() {
-	return InputFilter::MouseMode(singleton->mouse_get_mode());
+Input::MouseMode DisplayServer::_input_get_mouse_mode() {
+	return Input::MouseMode(singleton->mouse_get_mode());
 }
 
 void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->mouse_warp_to_position(p_to_pos);
 }
 
-InputFilter::CursorShape DisplayServer::_input_get_current_cursor_shape() {
-	return (InputFilter::CursorShape)singleton->cursor_get_shape();
+Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
+	return (Input::CursorShape)singleton->cursor_get_shape();
 }
-void DisplayServer::_input_set_custom_mouse_cursor_func(const RES &p_image, InputFilter::CursorShape p_shape, const Vector2 &p_hostspot) {
+void DisplayServer::_input_set_custom_mouse_cursor_func(const RES &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
 }
 
 DisplayServer::DisplayServer() {
 	singleton = this;
-	InputFilter::set_mouse_mode_func = _input_set_mouse_mode;
-	InputFilter::get_mouse_mode_func = _input_get_mouse_mode;
-	InputFilter::warp_mouse_func = _input_warp;
-	InputFilter::get_current_cursor_shape_func = _input_get_current_cursor_shape;
-	InputFilter::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
+	Input::set_mouse_mode_func = _input_set_mouse_mode;
+	Input::get_mouse_mode_func = _input_get_mouse_mode;
+	Input::warp_mouse_func = _input_warp;
+	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
+	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
 }
 DisplayServer::~DisplayServer() {
 }

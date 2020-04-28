@@ -30,7 +30,7 @@
 
 #include "os.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/midi_driver.h"

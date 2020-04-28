@@ -30,7 +30,7 @@
 
 #include "midi_driver.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 
 uint8_t MIDIDriver::last_received_message = 0x00;
@@ -117,7 +117,7 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 			break;
 	}
 
-	InputFilter *id = InputFilter::get_singleton();
+	Input *id = Input::get_singleton();
 	id->parse_input_event(event);
 }
 

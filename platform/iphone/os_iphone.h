@@ -33,7 +33,7 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "game_center.h"

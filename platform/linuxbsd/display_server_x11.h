@@ -35,7 +35,7 @@
 
 #include "servers/display_server.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"

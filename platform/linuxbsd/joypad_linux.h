@@ -33,7 +33,7 @@
 #define JOYPAD_LINUX_H
 
 #ifdef JOYDEV_ENABLED
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 
@@ -41,7 +41,7 @@ struct input_absinfo;
 
 class JoypadLinux {
 public:
-	JoypadLinux(InputFilter *in);
+	JoypadLinux(Input *in);
 	~JoypadLinux();
 	void process_joypads();
 
@@ -53,7 +53,7 @@ private:
 	};
 
 	struct Joypad {
-		InputFilter::JoyAxis curr_axis[MAX_ABS];
+		Input::JoyAxis curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
 		int dpad;
@@ -74,7 +74,7 @@ private:
 	bool exit_udev;
 	Mutex joy_mutex;
 	Thread *joy_thread;
-	InputFilter *input;
+	Input *input;
 	Joypad joypads[JOYPADS_MAX];
 	Vector<String> attached_devices;
 
@@ -95,7 +95,7 @@ private:
 	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
-	InputFilter::JoyAxis axis_correct(const input_absinfo *p_abs, int p_value) const;
+	Input::JoyAxis axis_correct(const input_absinfo *p_abs, int p_value) const;
 };
 
 #endif

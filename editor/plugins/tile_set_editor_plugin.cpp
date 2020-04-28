@@ -30,7 +30,7 @@
 
 #include "tile_set_editor_plugin.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -1113,7 +1113,7 @@ void TileSetEditor::_on_workspace_draw() {
 
 void TileSetEditor::_on_workspace_process() {
 
-	if (InputFilter::get_singleton()->is_key_pressed(KEY_ALT) || tools[VISIBLE_INFO]->is_pressed()) {
+	if (Input::get_singleton()->is_key_pressed(KEY_ALT) || tools[VISIBLE_INFO]->is_pressed()) {
 		if (!tile_names_visible) {
 			tile_names_visible = true;
 			workspace_overlay->update();
@@ -1395,7 +1395,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							if ((mb->get_button_index() == BUTTON_RIGHT || mb->get_button_index() == BUTTON_LEFT) && current_tile_region.has_point(mb->get_position())) {
 								dragging = true;
 								erasing = (mb->get_button_index() == BUTTON_RIGHT);
-								alternative = InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
+								alternative = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 								Vector2 coord((int)((mb->get_position().x - current_tile_region.position.x) / (spacing + size.x)), (int)((mb->get_position().y - current_tile_region.position.y) / (spacing + size.y)));
 								Vector2 pos(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 								pos = mb->get_position() - (pos + current_tile_region.position);

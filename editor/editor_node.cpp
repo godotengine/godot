@@ -32,7 +32,7 @@
 
 #include "core/bind/core_bind.h"
 #include "core/class_db.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"
@@ -2366,7 +2366,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case EDIT_UNDO: {
 
-			if (InputFilter::get_singleton()->get_mouse_button_mask() & 0x7) {
+			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message("Can't undo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				String action = editor_data.get_undo_redo().get_current_action_name();
@@ -2380,7 +2380,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case EDIT_REDO: {
 
-			if (InputFilter::get_singleton()->get_mouse_button_mask() & 0x7) {
+			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message("Can't redo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				if (!editor_data.get_undo_redo().redo()) {
@@ -5566,7 +5566,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 
 EditorNode::EditorNode() {
 
-	InputFilter::get_singleton()->set_use_accumulated_input(true);
+	Input::get_singleton()->set_use_accumulated_input(true);
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 
 	RenderingServer::get_singleton()->set_debug_generate_wireframes(true);
@@ -5582,7 +5582,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
 	ResourceLoader::clear_path_remaps();
 
-	InputFilter *id = InputFilter::get_singleton();
+	Input *id = Input::get_singleton();
 
 	if (id) {
 
@@ -5593,7 +5593,7 @@ EditorNode::EditorNode() {
 			}
 		}
 
-		if (!found_touchscreen && InputFilter::get_singleton()) {
+		if (!found_touchscreen && Input::get_singleton()) {
 			//only if no touchscreen ui hint, set emulation
 			id->set_emulate_touch_from_mouse(false); //just disable just in case
 		}
