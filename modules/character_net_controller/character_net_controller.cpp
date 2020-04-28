@@ -723,7 +723,7 @@ bool ServerController::fetch_next_input() {
 
 PlayerController::PlayerController(CharacterNetController *p_node) :
 		Controller(p_node),
-		current_input_id(0),
+		current_input_id(UINT64_MAX),
 		input_buffers_counter(0) {
 }
 

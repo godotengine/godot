@@ -665,6 +665,14 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 	return v_1 == v_2;
 }
 
+bool SceneRewinder::is_client() const {
+	if (rewinder) {
+		return nullptr != dynamic_cast<ClientRewinder *>(rewinder);
+	} else {
+		return false;
+	}
+}
+
 void SceneRewinder::cache_controllers() {
 	cached_controllers.clear();
 	const ObjectID *ids = controllers.ptr();
@@ -698,14 +706,17 @@ void SceneRewinder::process() {
 	// is advancing faster, for this reason we are still using
 	// `delta` to step the controllers.
 
-	const real_t delta = get_physics_process_delta_time();
-	const real_t pretended_delta = get_pretended_delta();
-
-	time_bank += delta;
-	uint32_t sub_ticks = static_cast<uint32_t>(time_bank / pretended_delta);
-	time_bank -= static_cast<real_t>(sub_ticks) * pretended_delta;
-
+	uint32_t sub_ticks = 1;
 	bool is_pretended = false;
+	const real_t delta = get_physics_process_delta_time();
+
+	if (is_client()) {
+		const real_t pretended_delta = get_pretended_delta();
+
+		time_bank += delta;
+		sub_ticks = static_cast<uint32_t>(time_bank / pretended_delta);
+		time_bank -= static_cast<real_t>(sub_ticks) * pretended_delta;
+	}
 
 	while (sub_ticks > 0) {
 
@@ -721,7 +732,7 @@ void SceneRewinder::process() {
 			main_controller->process(delta);
 		}
 
-		// The world is always processed
+		// The world is always processed // TODO put this before the controllers.
 		emit_signal("sync_process", delta);
 
 		Vector<ObjectID> null_objects;
@@ -809,6 +820,44 @@ PeerData::PeerData(int p_peer, int p_traced_frames) :
 
 bool PeerData::operator==(const PeerData &p_other) const {
 	return peer == p_other.peer;
+}
+
+Snapshot::operator String() const {
+	String s;
+	s += "Player ID: " + itos(player_controller_input_id) + "; ";
+	for (
+			const ObjectID *key = controllers_input_id.next(nullptr);
+			key != nullptr;
+			key = controllers_input_id.next(key)) {
+
+		s += "\nController: ";
+		if (nullptr != ObjectDB::get_instance(*key))
+			s += static_cast<Node *>(ObjectDB::get_instance(*key))->get_path();
+		else
+			s += " (Object ID): " + itos(*key);
+		s += " - ";
+		s += "input ID: ";
+		s += itos(controllers_input_id[*key]);
+	}
+
+	for (
+			const ObjectID *key = data.next(nullptr);
+			key != nullptr;
+			key = data.next(key)) {
+
+		s += "\nNode Data: ";
+		if (nullptr != ObjectDB::get_instance(*key))
+			s += static_cast<Node *>(ObjectDB::get_instance(*key))->get_path();
+		else
+			s += " (Object ID): " + itos(*key);
+		for (int i = 0; i < data[*key].vars.size(); i += 1) {
+			s += "\n|- Variable: ";
+			s += data[*key].vars[i].name;
+			s += " = ";
+			s += String(data[*key].vars[i].value);
+		}
+	}
+	return s;
 }
 
 void ControllerRewinder::init(
@@ -942,19 +991,23 @@ Variant ServerRewinder::generate_snapshot() {
 		snap_node_data.write[0] = node_data.id;
 		snap_node_data.write[1] = node_data.cached_node->get_path();
 
-		snapshot_data.push_back(snap_node_data);
-
-		// Set the input ID if this is a controller.
+		// Check if this is a controller
 		if (node_data.is_controller) {
+			// This is a controller, make sure we can already sync it.
+
 			CharacterNetController *controller = Object::cast_to<CharacterNetController>(node_data.cached_node);
 			CRASH_COND(controller == nullptr); // Unreachable
 
 			if (unlikely(controller->get_current_input_id() == UINT64_MAX)) {
-				// The first ID id is not yet arrived, so just put a 0.
-				snapshot_data.push_back(0);
+				// The first ID id is not yet arrived, so just skip this node.
+				continue;
 			} else {
+				snapshot_data.push_back(snap_node_data);
 				snapshot_data.push_back(controller->get_current_input_id());
 			}
+		} else {
+			// This is not a controller, we can insert this.
+			snapshot_data.push_back(snap_node_data);
 		}
 
 		// Insert the node variables.
@@ -990,8 +1043,11 @@ void ServerRewinder::process(real_t p_delta) {
 	if (state_notifier_timer >= scene_rewinder->get_server_notify_state_interval()) {
 		state_notifier_timer = 0.0;
 
-		Variant snapshot = generate_snapshot();
-		scene_rewinder->rpc("_rpc_send_state", snapshot);
+		if (scene_rewinder->cached_controllers.size() > 0) {
+			// Do this only if other peers are listening.
+			Variant snapshot = generate_snapshot();
+			scene_rewinder->rpc("_rpc_send_state", snapshot);
+		}
 	}
 }
 
@@ -1101,7 +1157,13 @@ void ClientRewinder::post_process(real_t p_delta) {
 }
 
 void ClientRewinder::receive_snapshot(Variant p_snapshot) {
+	// TODO
+	print_line("-----------------------------------------------------");
+	print_line(p_snapshot);
+
 	parse_snapshot(p_snapshot);
+
+	print_line(server_snapshot);
 }
 
 void ClientRewinder::store_snapshot() {
@@ -1189,6 +1251,7 @@ void ClientRewinder::process_recovery(real_t p_delta) {
 			client_snapshot);
 
 	if (need_rewind) {
+		WARN_PRINT("The snapshot with `player_input_id` = " + itos(server_snapshot.player_controller_input_id) + " was different and need a rewind.");
 		scene_rewinder->rewinding_in_progress = true;
 		recovery_rewind(server_snapshot, client_snapshot, p_delta);
 		scene_rewinder->rewinding_in_progress = false;
@@ -1246,8 +1309,11 @@ bool ClientRewinder::compare_and_recovery(
 		if (c_data == nullptr) {
 			// The client snapshot at that time was not tracking this node, so
 			// it's considered different. Just apply the server values.
+			WARN_PRINT("[Snapshot comparison] The Node: " + node->get_path() + " doesn't exist on client snapshot. Reset all.");
+
 			for (int s_var_index = 0; s_var_index < s_data.vars.size(); s_var_index += 1) {
 				node->set(s_vars[s_var_index].name, s_vars[s_var_index].value);
+				WARN_PRINT("[Snapshot comparison] Reset - Variable: " + s_vars[s_var_index].name + ", value: " + s_vars[s_var_index].value);
 
 				const int rew_var_index = rew_node_data->vars.find(s_vars[s_var_index].name);
 				// Unreachable, because when the snapshot is received the
@@ -1280,6 +1346,7 @@ bool ClientRewinder::compare_and_recovery(
 
 				if (different) {
 					node->set(s_vars[s_var_index].name, s_vars[s_var_index].value);
+					WARN_PRINT("[Snapshot comparison] Node: " + node->get_path() + ", variable: " + s_vars[s_var_index].name + ", the client value: " + c_vars[c_var_index].value + " is different from the server value: " + s_vars[s_var_index].value);
 
 					const int rew_var_index = rew_node_data->vars.find(s_vars[s_var_index].name);
 					// Unreachable, because when the snapshot is received the
@@ -1684,8 +1751,10 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	}
 
 	// Just make sure that the local player input ID was received.
-	ERR_FAIL_COND_MSG(player_controller_input_id == UINT64_MAX, "The player controller ID was not part of the received snapshot, this snapshot is corrupted.");
-
-	server_snapshot_id = snapshot_id;
-	server_snapshot.player_controller_input_id = player_controller_input_id;
+	if (player_controller_input_id == UINT64_MAX) {
+		WARN_PRINT("Recovery aborted, the player controller ID was not part of the received snapshot, probably the server doesn't have important informations for this peer.");
+	} else {
+		server_snapshot_id = snapshot_id;
+		server_snapshot.player_controller_input_id = player_controller_input_id;
+	}
 }

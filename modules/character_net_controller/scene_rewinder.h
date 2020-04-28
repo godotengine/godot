@@ -187,6 +187,7 @@ public:
 
 	// TODO this MUST disapper and __reset MUST be called automatically when the
 	// connection status of the game instance change
+	// TODO improve the name. Reset is missleading
 	/// Can only be called on the server
 	void reset();
 	void __reset();
@@ -219,6 +220,8 @@ private:
 	bool vec3_evaluation(const Vector3 a, const Vector3 b);
 	// Returns true when the variants are the same.
 	bool rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2);
+
+	bool is_client() const;
 };
 
 struct PeerData {
@@ -242,6 +245,8 @@ struct Snapshot {
 	// TODO copy on write?
 	HashMap<ObjectID, uint64_t> controllers_input_id;
 	HashMap<ObjectID, NodeData> data;
+
+	operator String() const;
 };
 
 struct ControllerRewinder {
