@@ -155,12 +155,12 @@ bool DisplayServerAndroid::screen_is_touchscreen(int p_screen) const {
 	return true;
 }
 
-void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_length) {
+void DisplayServerAndroid::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_length, int p_cursor_start, int p_cursor_end) {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_COND(!godot_io_java);
 
 	if (godot_io_java->has_vk()) {
-		godot_io_java->show_vk(p_existing_text, p_max_length);
+		godot_io_java->show_vk(p_existing_text, p_max_length, p_cursor_start, p_cursor_end);
 	} else {
 		ERR_PRINT("Virtual keyboard not available");
 	}
