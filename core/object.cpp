@@ -1190,6 +1190,25 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 			argc = bind_mem.size();
 		}
 
+		if (c.flags & CONNECT_DISCARD_EXTRA) {
+			List<MethodInfo> object_methods;
+			c.callable.get_object()->get_method_list(&object_methods);
+			int method_arg_count = -1;
+			for (List<MethodInfo>::Element *E = object_methods.front(); E; E = E->next()) {
+				if (E->get().name == c.callable.get_method()) {
+					method_arg_count = E->get().arguments.size();
+					break;
+				}
+			}
+
+			if (method_arg_count > -1) {
+				if (argc > method_arg_count) {
+					bind_mem.resize(method_arg_count);
+					argc = method_arg_count;
+				}
+			}
+		}
+
 		if (c.flags & CONNECT_DEFERRED) {
 			MessageQueue::get_singleton()->push_callable(c.callable, args, argc, true);
 		} else {
@@ -1762,6 +1781,7 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
 	BIND_ENUM_CONSTANT(CONNECT_ONESHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
+	BIND_ENUM_CONSTANT(CONNECT_DISCARD_EXTRA);
 }
 
 void Object::call_deferred(const StringName &p_method, VARIANT_ARG_DECLARE) {
