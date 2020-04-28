@@ -40,7 +40,15 @@
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION 1
+#define PACK_FORMAT_VERSION 2
+
+enum PackFlags {
+	PACK_DIR_ENCRYPTED = 1 << 0
+};
+
+enum PackFileFlags {
+	PACK_FILE_ENCRYPTED = 1 << 0
+};
 
 class PackSource;
 
@@ -56,6 +64,7 @@ public:
 		uint64_t size;
 		uint8_t md5[16];
 		PackSource *src;
+		bool encrypted;
 	};
 
 private:
@@ -102,7 +111,7 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files); // for PackSource
+	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false); // for PackSource
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
@@ -135,6 +144,7 @@ class FileAccessPack : public FileAccess {
 
 	mutable size_t pos;
 	mutable bool eof;
+	uint64_t off;
 
 	FileAccess *f;
 	virtual Error _open(const String &p_path, int p_mode_flags);

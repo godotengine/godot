@@ -145,6 +145,11 @@ private:
 	CheckBox *export_debug;
 	CheckBox *export_pck_zip_debug;
 
+	CheckButton *enc_pck;
+	CheckButton *enc_directory;
+	LineEdit *enc_in_filters;
+	LineEdit *enc_ex_filters;
+
 	void _open_export_template_manager();
 
 	void _export_pck_zip();
@@ -161,9 +166,15 @@ private:
 	void _custom_features_changed(const String &p_text);
 
 	bool updating_script_key;
+	bool updating_enc_filters;
+	void _enc_pck_changed(bool p_pressed);
+	void _enc_directory_changed(bool p_pressed);
+	void _enc_filters_changed(const String &p_text);
 	void _script_export_mode_changed(int p_mode);
 	void _script_encryption_key_changed(const String &p_key);
 	bool _validate_script_encryption_key(const String &p_key);
+
+	void _open_key_help_link();
 
 	void _tab_changed(int);
 

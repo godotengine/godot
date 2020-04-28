@@ -88,6 +88,8 @@ public:
 		Error decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
 		Error encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
 		Error decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
+		Error encrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst);
+		Error decrypt_cfb(size_t p_length, uint8_t p_iv[16], const uint8_t *p_src, uint8_t *r_dst);
 	};
 
 	static String b64_encode_str(const uint8_t *p_src, int p_src_len);
