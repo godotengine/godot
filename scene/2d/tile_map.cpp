@@ -857,6 +857,14 @@ void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
 	call("set_cell", args, 7, ce);
 }
 
+void TileMap::set_line(const PoolIntArray &p_array, int p_y, bool p_flip_x, bool p_flip_y, bool p_transpose) {
+
+	for (int x = 0; x < p_array._p->array.size(); x++) {
+		set_cell(x, p_y, p_array[x], p_flip_x, p_flip_y, p_transpose);
+	 }
+
+}
+
 void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
 
 	PosKey pk(p_x, p_y);
