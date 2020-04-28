@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/2d/collision_object_2d.h"
@@ -582,7 +582,7 @@ void Viewport::_notification(int p_what) {
 				RS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
 			}
 
-			if (physics_object_picking && (to_screen_rect == Rect2i() || InputFilter::get_singleton()->get_mouse_mode() != InputFilter::MOUSE_MODE_CAPTURED)) {
+			if (physics_object_picking && (to_screen_rect == Rect2i() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
 
 #ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
@@ -1517,7 +1517,7 @@ Vector2 Viewport::get_mouse_position() const {
 void Viewport::warp_mouse(const Vector2 &p_pos) {
 
 	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
-	InputFilter::get_singleton()->warp_mouse_position(gpos);
+	Input::get_singleton()->warp_mouse_position(gpos);
 }
 
 void Viewport::_gui_sort_roots() {
@@ -2091,7 +2091,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		gui.mouse_over = over;
 
-		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)InputFilter::get_singleton()->get_default_cursor_shape();
+		DisplayServer::CursorShape ds_cursor_shape = (DisplayServer::CursorShape)Input::get_singleton()->get_default_cursor_shape();
 
 		if (over) {
 
@@ -2411,7 +2411,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = nullptr;
 
-			InputFilter *input = InputFilter::get_singleton();
+			Input *input = Input::get_singleton();
 
 			if (p_event->is_action_pressed("ui_focus_next") && input->is_action_just_pressed("ui_focus_next")) {
 
@@ -3064,7 +3064,7 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 
 	if (physics_object_picking && !is_input_handled()) {
 
-		if (InputFilter::get_singleton()->get_mouse_mode() != InputFilter::MOUSE_MODE_CAPTURED &&
+		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
 				(Object::cast_to<InputEventMouseButton>(*ev) ||
 						Object::cast_to<InputEventMouseMotion>(*ev) ||
 						Object::cast_to<InputEventScreenDrag>(*ev) ||

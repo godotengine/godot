@@ -32,7 +32,7 @@
 
 #include "core/crypto/crypto.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
@@ -90,7 +90,7 @@
 // Initialized in setup()
 static Engine *engine = nullptr;
 static ProjectSettings *globals = nullptr;
-static InputFilter *input = nullptr;
+static Input *input = nullptr;
 static InputMap *input_map = nullptr;
 static TranslationServer *translation_server = nullptr;
 static Performance *performance = nullptr;
@@ -1249,7 +1249,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	/* Initialize Input */
 
-	input = memnew(InputFilter);
+	input = memnew(Input);
 
 	/* Iniitalize Display Server */
 
@@ -1403,7 +1403,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	GLOBAL_DEF("application/config/windows_native_icon", String());
 	ProjectSettings::get_singleton()->set_custom_property_info("application/config/windows_native_icon", PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"));
 
-	InputFilter *id = InputFilter::get_singleton();
+	Input *id = Input::get_singleton();
 	if (id) {
 		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) && !(editor || project_manager)) {
 
@@ -1438,7 +1438,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Ref<Texture2D> cursor = ResourceLoader::load(ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
 			Vector2 hotspot = ProjectSettings::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
-			InputFilter::get_singleton()->set_custom_mouse_cursor(cursor, InputFilter::CURSOR_ARROW, hotspot);
+			Input::get_singleton()->set_custom_mouse_cursor(cursor, Input::CURSOR_ARROW, hotspot);
 		}
 	}
 #ifdef TOOLS_ENABLED

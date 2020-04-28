@@ -30,7 +30,7 @@
 
 #include "graph_edit.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 
@@ -804,7 +804,7 @@ void GraphEdit::set_selected(Node *p_child) {
 void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventMouseMotion> mm = p_ev;
-	if (mm.is_valid() && (mm->get_button_mask() & BUTTON_MASK_MIDDLE || (mm->get_button_mask() & BUTTON_MASK_LEFT && InputFilter::get_singleton()->is_key_pressed(KEY_SPACE)))) {
+	if (mm.is_valid() && (mm->get_button_mask() & BUTTON_MASK_MIDDLE || (mm->get_button_mask() & BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
 		h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
 		v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);
 	}
@@ -823,7 +823,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
-				if (is_using_snap() ^ InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+				if (is_using_snap() ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 					const int snap = get_snap();
 					pos = pos.snapped(Vector2(snap, snap));
 				}
@@ -886,7 +886,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == BUTTON_LEFT && !b->is_pressed() && dragging) {
-			if (!just_selected && drag_accum == Vector2() && InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 				//deselect current node
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -948,7 +948,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				drag_accum = Vector2();
 				drag_origin = get_local_mouse_position();
 				just_selected = !gn->is_selected();
-				if (!gn->is_selected() && !InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
 						if (o_gn) {
@@ -976,7 +976,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			} else {
 				if (_filter_input(b->get_position()))
 					return;
-				if (InputFilter::get_singleton()->is_key_pressed(KEY_SPACE))
+				if (Input::get_singleton()->is_key_pressed(KEY_SPACE))
 					return;
 
 				box_selecting = true;
@@ -1035,16 +1035,16 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			//too difficult to get right
 			//set_zoom(zoom/ZOOM_SCALE);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_UP && !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (b->get_button_index() == BUTTON_WHEEL_UP && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_DOWN && !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (b->get_button_index() == BUTTON_WHEEL_DOWN && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_RIGHT || (b->get_button_index() == BUTTON_WHEEL_DOWN && InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT))) {
+		if (b->get_button_index() == BUTTON_WHEEL_RIGHT || (b->get_button_index() == BUTTON_WHEEL_DOWN && Input::get_singleton()->is_key_pressed(KEY_SHIFT))) {
 			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * b->get_factor() / 8);
 		}
-		if (b->get_button_index() == BUTTON_WHEEL_LEFT || (b->get_button_index() == BUTTON_WHEEL_UP && InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT))) {
+		if (b->get_button_index() == BUTTON_WHEEL_LEFT || (b->get_button_index() == BUTTON_WHEEL_UP && Input::get_singleton()->is_key_pressed(KEY_SHIFT))) {
 			h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * b->get_factor() / 8);
 		}
 	}

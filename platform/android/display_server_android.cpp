@@ -424,7 +424,7 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 	}
 #endif
 
-	InputFilter::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 }
 
 DisplayServerAndroid::~DisplayServerAndroid() {
@@ -445,16 +445,16 @@ DisplayServerAndroid::~DisplayServerAndroid() {
 void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p_event) {
 	switch (p_event.type) {
 		case JOY_EVENT_BUTTON:
-			InputFilter::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
+			Input::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
 			break;
 		case JOY_EVENT_AXIS:
-			InputFilter::JoyAxis value;
+			Input::JoyAxis value;
 			value.min = -1;
 			value.value = p_event.value;
-			InputFilter::get_singleton()->joy_axis(p_event.device, p_event.index, value);
+			Input::get_singleton()->joy_axis(p_event.device, p_event.index, value);
 			break;
 		case JOY_EVENT_HAT:
-			InputFilter::get_singleton()->joy_hat(p_event.device, p_event.hat);
+			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
 			break;
 		default:
 			return;
@@ -484,7 +484,7 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 		OS_Android::get_singleton()->main_loop_request_go_back();
 	}
 
-	InputFilter::get_singleton()->parse_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector<DisplayServerAndroid::TouchPos> &p_points) {
@@ -499,7 +499,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 				}
 			}
 
@@ -517,7 +517,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 				ev->set_index(touch[i].id);
 				ev->set_pressed(true);
 				ev->set_position(touch[i].pos);
-				InputFilter::get_singleton()->parse_input_event(ev);
+				Input::get_singleton()->parse_input_event(ev);
 			}
 
 		} break;
@@ -545,7 +545,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 				ev->set_index(touch[i].id);
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
-				InputFilter::get_singleton()->parse_input_event(ev);
+				Input::get_singleton()->parse_input_event(ev);
 				touch.write[i].pos = p_points[idx].pos;
 			}
 
@@ -560,7 +560,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 				}
 				touch.clear();
 			}
@@ -577,7 +577,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 					ev->set_index(tp.id);
 					ev->set_pressed(true);
 					ev->set_position(tp.pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 
 					break;
 				}
@@ -592,7 +592,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 					ev->set_index(touch[i].id);
 					ev->set_pressed(false);
 					ev->set_position(touch[i].pos);
-					InputFilter::get_singleton()->parse_input_event(ev);
+					Input::get_singleton()->parse_input_event(ev);
 					touch.remove(i);
 
 					break;
@@ -613,7 +613,7 @@ void DisplayServerAndroid::process_hover(int p_type, Point2 p_pos) {
 			ev->set_position(p_pos);
 			ev->set_global_position(p_pos);
 			ev->set_relative(p_pos - hover_prev_pos);
-			InputFilter::get_singleton()->parse_input_event(ev);
+			Input::get_singleton()->parse_input_event(ev);
 			hover_prev_pos = p_pos;
 		} break;
 	}
@@ -626,7 +626,7 @@ void DisplayServerAndroid::process_double_tap(Point2 p_pos) {
 	ev->set_global_position(p_pos);
 	ev->set_pressed(false);
 	ev->set_doubleclick(true);
-	InputFilter::get_singleton()->parse_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 }
 
 void DisplayServerAndroid::process_scroll(Point2 p_pos) {
@@ -634,22 +634,22 @@ void DisplayServerAndroid::process_scroll(Point2 p_pos) {
 	ev.instance();
 	ev->set_position(p_pos);
 	ev->set_delta(p_pos - scroll_prev_pos);
-	InputFilter::get_singleton()->parse_input_event(ev);
+	Input::get_singleton()->parse_input_event(ev);
 	scroll_prev_pos = p_pos;
 }
 
 void DisplayServerAndroid::process_accelerometer(const Vector3 &p_accelerometer) {
-	InputFilter::get_singleton()->set_accelerometer(p_accelerometer);
+	Input::get_singleton()->set_accelerometer(p_accelerometer);
 }
 
 void DisplayServerAndroid::process_gravity(const Vector3 &p_gravity) {
-	InputFilter::get_singleton()->set_gravity(p_gravity);
+	Input::get_singleton()->set_gravity(p_gravity);
 }
 
 void DisplayServerAndroid::process_magnetometer(const Vector3 &p_magnetometer) {
-	InputFilter::get_singleton()->set_magnetometer(p_magnetometer);
+	Input::get_singleton()->set_magnetometer(p_magnetometer);
 }
 
 void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
-	InputFilter::get_singleton()->set_gyroscope(p_gyroscope);
+	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }

@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "xr_interface_gdnative.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/xr/xr_positional_tracker.h"
 
@@ -306,7 +306,7 @@ godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, g
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, 0);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL_V(input, 0);
 
 	XRPositionalTracker *new_tracker = memnew(XRPositionalTracker);
@@ -345,7 +345,7 @@ void GDAPI godot_xr_remove_controller(godot_int p_controller_id) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	XRPositionalTracker *remove_tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
@@ -383,7 +383,7 @@ void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
@@ -399,14 +399,14 @@ void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_a
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	ERR_FAIL_NULL(input);
 
 	XRPositionalTracker *tracker = xr_server->find_by_type_and_id(XRServer::TRACKER_CONTROLLER, p_controller_id);
 	if (tracker != nullptr) {
 		int joyid = tracker->get_joy_id();
 		if (joyid != -1) {
-			InputFilter::JoyAxis jx;
+			Input::JoyAxis jx;
 			jx.min = p_can_be_negative ? -1 : 0;
 			jx.value = p_value;
 			input->joy_axis(joyid, p_axis, jx);

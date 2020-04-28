@@ -30,7 +30,7 @@
 
 #include "canvas_item_editor_plugin.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
@@ -334,7 +334,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
-	bool is_snap_active = smart_snap_active ^ InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
 	// Smart snap using the canvas position
 	Vector2 output = p_target;
@@ -462,7 +462,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 }
 
 float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
-	if (((smart_snap_active || snap_rotation) ^ InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) && snap_rotation_step != 0) {
+	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL)) && snap_rotation_step != 0) {
 		if (snap_relative) {
 			return Math::stepify(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int)(p_start / snap_rotation_step) * snap_rotation_step);
 		} else {
@@ -1284,7 +1284,7 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 			// Pan the viewport
 			Point2i relative;
 			if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
-				relative = InputFilter::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
+				relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
 			} else {
 				relative = m->get_relative();
 			}
@@ -1912,7 +1912,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
 
 			bool uniform = m->get_shift();
-			bool is_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
 			Point2 drag_from_local = simple_xform.xform(drag_from);
 			Point2 drag_to_local = simple_xform.xform(drag_to);
@@ -2214,10 +2214,10 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	if (k.is_valid() && !k->is_pressed() && drag_type == DRAG_KEY_MOVE && tool == TOOL_SELECT &&
 			(k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_LEFT || k->get_keycode() == KEY_RIGHT)) {
 		// Confirm canvas items move by arrow keys
-		if ((!InputFilter::get_singleton()->is_key_pressed(KEY_UP)) &&
-				(!InputFilter::get_singleton()->is_key_pressed(KEY_DOWN)) &&
-				(!InputFilter::get_singleton()->is_key_pressed(KEY_LEFT)) &&
-				(!InputFilter::get_singleton()->is_key_pressed(KEY_RIGHT))) {
+		if ((!Input::get_singleton()->is_key_pressed(KEY_UP)) &&
+				(!Input::get_singleton()->is_key_pressed(KEY_DOWN)) &&
+				(!Input::get_singleton()->is_key_pressed(KEY_LEFT)) &&
+				(!Input::get_singleton()->is_key_pressed(KEY_RIGHT))) {
 			_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
 			drag_type = DRAG_NONE;
 		}
@@ -3310,8 +3310,8 @@ void CanvasItemEditor::_draw_selection() {
 			}
 
 			// Draw the move handles
-			bool is_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
-			bool is_alt = InputFilter::get_singleton()->is_key_pressed(KEY_ALT);
+			bool is_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+			bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
 			if (tool == TOOL_MOVE && show_transformation_gizmos) {
 				if (_is_node_movable(canvas_item)) {
 					Transform2D unscaled_transform = (xform * canvas_item->get_transform().affine_inverse() * canvas_item->_edit_get_transform()).orthonormalized();
@@ -3347,7 +3347,7 @@ void CanvasItemEditor::_draw_selection() {
 					Transform2D simple_xform = viewport->get_transform() * unscaled_transform;
 
 					Size2 scale_factor = Size2(SCALE_HANDLE_DISTANCE, SCALE_HANDLE_DISTANCE);
-					bool uniform = InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
+					bool uniform = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 					Point2 offset = (simple_xform.affine_inverse().xform(drag_to) - simple_xform.affine_inverse().xform(drag_from)) * zoom;
 
 					if (drag_type == DRAG_SCALE_X) {
@@ -6204,8 +6204,8 @@ bool CanvasItemEditorViewport::_only_packed_scenes_selected() const {
 }
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
-	bool is_shift = InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
-	bool is_alt = InputFilter::get_singleton()->is_key_pressed(KEY_ALT);
+	bool is_shift = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+	bool is_alt = Input::get_singleton()->is_key_pressed(KEY_ALT);
 
 	selected_files.clear();
 	Dictionary d = p_data;

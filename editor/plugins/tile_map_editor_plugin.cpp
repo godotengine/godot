@@ -31,7 +31,7 @@
 #include "tile_map_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
@@ -997,7 +997,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (mb->is_pressed()) {
 
-				if (InputFilter::get_singleton()->is_key_pressed(KEY_SPACE))
+				if (Input::get_singleton()->is_key_pressed(KEY_SPACE))
 					return false; // Drag.
 
 				if (tool == TOOL_NONE) {
@@ -1378,7 +1378,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			return true;
 		}
-		if (tool == TOOL_PICKING && InputFilter::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
+		if (tool == TOOL_PICKING && Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT)) {
 
 			_pick_tile(over_tile);
 

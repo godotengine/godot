@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "mobile_vr_interface.h"
-#include "core/input/input_filter.h"
+
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_server_globals.h"
@@ -118,7 +119,7 @@ void MobileVRInterface::set_position_from_sensors() {
 	float delta_time = (double)ticks_elapsed / 1000000.0;
 
 	// few things we need
-	InputFilter *input = InputFilter::get_singleton();
+	Input *input = Input::get_singleton();
 	Vector3 down(0.0, -1.0, 0.0); // Down is Y negative
 	Vector3 north(0.0, 0.0, 1.0); // North is Z positive
 

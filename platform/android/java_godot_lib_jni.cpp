@@ -38,7 +38,7 @@
 #include "api/jni_singleton.h"
 #include "audio_driver_jandroid.h"
 #include "core/engine.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/project_settings.h"
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
@@ -311,15 +311,15 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 	int hat = 0;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0)
-			hat |= InputFilter::HAT_MASK_LEFT;
+			hat |= Input::HAT_MASK_LEFT;
 		else
-			hat |= InputFilter::HAT_MASK_RIGHT;
+			hat |= Input::HAT_MASK_RIGHT;
 	}
 	if (p_hat_y != 0) {
 		if (p_hat_y < 0)
-			hat |= InputFilter::HAT_MASK_UP;
+			hat |= Input::HAT_MASK_UP;
 		else
-			hat |= InputFilter::HAT_MASK_DOWN;
+			hat |= Input::HAT_MASK_DOWN;
 	}
 	jevent.hat = hat;
 
@@ -329,7 +329,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyconnectionchanged(JNIEnv *env, jclass clazz, jint p_device, jboolean p_connected, jstring p_name) {
 	if (os_android) {
 		String name = jstring_to_string(p_name, env);
-		InputFilter::get_singleton()->joy_connection_changed(p_device, p_connected, name);
+		Input::get_singleton()->joy_connection_changed(p_device, p_connected, name);
 	}
 }
 
