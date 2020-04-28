@@ -3344,15 +3344,10 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 
 				if (args.empty() || args.size() > 2) {
-					_set_error("Wrong number of arguments, expected 1 or 2");
+					_set_error("Wrong number of arguments, expected 1 or 2", assert_line);
 					return;
 				}
 
-#ifdef DEBUG_ENABLED
-				// Mark as safe, let type check mark as unsafe if needed
-				_mark_line_as_safe(assert_line);
-				_reduce_node_type(args[0]);
-#endif
 				AssertNode *an = alloc_node<AssertNode>();
 				an->condition = _reduce_expression(args[0], p_static);
 				an->line = assert_line;
@@ -3368,7 +3363,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				p_block->statements.push_back(an);
 
 				if (!_end_statement()) {
-					_set_error("Expected end of statement after \"assert\".");
+					_set_error("Expected end of statement after \"assert\".", assert_line);
 					return;
 				}
 			} break;
@@ -8115,9 +8110,14 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 		Node *statement = E->get();
 		switch (statement->type) {
 			case Node::TYPE_NEWLINE:
-			case Node::TYPE_BREAKPOINT:
-			case Node::TYPE_ASSERT: {
+			case Node::TYPE_BREAKPOINT: {
 				// Nothing to do
+			} break;
+			case Node::TYPE_ASSERT: {
+				AssertNode *an = static_cast<AssertNode *>(statement);
+				_mark_line_as_safe(an->line);
+				_reduce_node_type(an->condition);
+				_reduce_node_type(an->message);
 			} break;
 			case Node::TYPE_LOCAL_VAR: {
 				LocalVarNode *lv = static_cast<LocalVarNode *>(statement);
