@@ -90,7 +90,7 @@ private:
 		int channel = 0;
 	};
 
-	CompressionMode compression_mode = COMPRESS_NONE;
+	CompressionMode compression_mode = COMPRESS_RANGE_CODER;
 
 	List<Packet> incoming_packets;
 
