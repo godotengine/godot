@@ -32,7 +32,7 @@
 #define DISPLAY_SERVER_H
 
 #include "core/callable.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/resource.h"
 
@@ -61,11 +61,11 @@ public:
 	typedef Vector<String> (*GetRenderingDriversFunction)();
 
 private:
-	static void _input_set_mouse_mode(InputFilter::MouseMode p_mode);
-	static InputFilter::MouseMode _input_get_mouse_mode();
+	static void _input_set_mouse_mode(Input::MouseMode p_mode);
+	static Input::MouseMode _input_get_mouse_mode();
 	static void _input_warp(const Vector2 &p_to_pos);
-	static InputFilter::CursorShape _input_get_current_cursor_shape();
-	static void _input_set_custom_mouse_cursor_func(const RES &, InputFilter::CursorShape, const Vector2 &p_hostspot);
+	static Input::CursorShape _input_get_current_cursor_shape();
+	static void _input_set_custom_mouse_cursor_func(const RES &, Input::CursorShape, const Vector2 &p_hostspot);
 
 protected:
 	static void _bind_methods();

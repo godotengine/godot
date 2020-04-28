@@ -32,7 +32,7 @@
 
 #include "core/engine.h"
 #include "core/global_constants.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
@@ -3870,16 +3870,16 @@ public:
 
 		switch (mode) {
 			case VisualScriptInputAction::MODE_PRESSED: {
-				*p_outputs[0] = InputFilter::get_singleton()->is_action_pressed(action);
+				*p_outputs[0] = Input::get_singleton()->is_action_pressed(action);
 			} break;
 			case VisualScriptInputAction::MODE_RELEASED: {
-				*p_outputs[0] = !InputFilter::get_singleton()->is_action_pressed(action);
+				*p_outputs[0] = !Input::get_singleton()->is_action_pressed(action);
 			} break;
 			case VisualScriptInputAction::MODE_JUST_PRESSED: {
-				*p_outputs[0] = InputFilter::get_singleton()->is_action_just_pressed(action);
+				*p_outputs[0] = Input::get_singleton()->is_action_just_pressed(action);
 			} break;
 			case VisualScriptInputAction::MODE_JUST_RELEASED: {
-				*p_outputs[0] = InputFilter::get_singleton()->is_action_just_released(action);
+				*p_outputs[0] = Input::get_singleton()->is_action_just_released(action);
 			} break;
 		}
 

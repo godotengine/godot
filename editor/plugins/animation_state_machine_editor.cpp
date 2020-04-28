@@ -30,7 +30,7 @@
 
 #include "animation_state_machine_editor.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/delaunay.h"
 #include "core/os/keyboard.h"

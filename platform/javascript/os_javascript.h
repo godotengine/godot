@@ -32,7 +32,7 @@
 #define OS_JAVASCRIPT_H
 
 #include "audio_driver_javascript.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rasterizer.h"

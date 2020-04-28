@@ -31,7 +31,7 @@
 #include "collision_polygon_3d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
@@ -342,7 +342,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL)) {
+			if (snap_ignore && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 				snap_ignore = false;
 			}
 

@@ -33,7 +33,7 @@
 
 #include "audio_driver_media_kit.h"
 #include "context_gl_haiku.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "drivers/unix/os_unix.h"
 #include "haiku_application.h"
 #include "haiku_direct_window.h"

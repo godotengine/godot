@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "xr_positional_tracker.h"
-#include "core/input/input_filter.h"
+
+#include "core/input/input.h"
 
 void XRPositionalTracker::_bind_methods() {
 	BIND_ENUM_CONSTANT(TRACKER_HAND_UNKNOWN);

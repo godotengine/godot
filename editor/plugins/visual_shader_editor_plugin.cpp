@@ -30,7 +30,7 @@
 
 #include "visual_shader_editor_plugin.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
@@ -1635,7 +1635,7 @@ void VisualShaderEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 			popup_menu->set_item_disabled(NodeMenuOptions::DELETE, to_change.empty());
 			popup_menu->set_item_disabled(NodeMenuOptions::DUPLICATE, to_change.empty());
 			menu_point = graph->get_local_mouse_position();
-			Point2 gpos = InputFilter::get_singleton()->get_mouse_position();
+			Point2 gpos = Input::get_singleton()->get_mouse_position();
 			popup_menu->set_position(gpos);
 			popup_menu->popup();
 		}
@@ -1648,7 +1648,7 @@ void VisualShaderEditor::_show_members_dialog(bool at_mouse_pos) {
 		saved_node_pos_dirty = true;
 		saved_node_pos = graph->get_local_mouse_position();
 
-		Point2 gpos = InputFilter::get_singleton()->get_mouse_position();
+		Point2 gpos = Input::get_singleton()->get_mouse_position();
 		members_dialog->popup();
 		members_dialog->set_position(gpos);
 	} else {

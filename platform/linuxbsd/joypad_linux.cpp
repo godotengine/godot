@@ -71,7 +71,7 @@ void JoypadLinux::Joypad::reset() {
 	dpad = 0;
 	fd = -1;
 
-	InputFilter::JoyAxis jx;
+	Input::JoyAxis jx;
 	jx.min = -1;
 	jx.value = 0.0f;
 	for (int i = 0; i < MAX_ABS; i++) {
@@ -80,7 +80,7 @@ void JoypadLinux::Joypad::reset() {
 	}
 }
 
-JoypadLinux::JoypadLinux(InputFilter *in) {
+JoypadLinux::JoypadLinux(Input *in) {
 	exit_udev = false;
 	input = in;
 	joy_thread = Thread::create(joy_thread_func, this);
@@ -436,11 +436,11 @@ void JoypadLinux::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-InputFilter::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+Input::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
-	InputFilter::JoyAxis jx;
+	Input::JoyAxis jx;
 
 	if (min < 0) {
 		jx.min = -1;
@@ -492,11 +492,11 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0X:
 								if (ev.value != 0) {
 									if (ev.value < 0)
-										joy->dpad |= InputFilter::HAT_MASK_LEFT;
+										joy->dpad |= Input::HAT_MASK_LEFT;
 									else
-										joy->dpad |= InputFilter::HAT_MASK_RIGHT;
+										joy->dpad |= Input::HAT_MASK_RIGHT;
 								} else
-									joy->dpad &= ~(InputFilter::HAT_MASK_LEFT | InputFilter::HAT_MASK_RIGHT);
+									joy->dpad &= ~(Input::HAT_MASK_LEFT | Input::HAT_MASK_RIGHT);
 
 								input->joy_hat(i, joy->dpad);
 								break;
@@ -504,11 +504,11 @@ void JoypadLinux::process_joypads() {
 							case ABS_HAT0Y:
 								if (ev.value != 0) {
 									if (ev.value < 0)
-										joy->dpad |= InputFilter::HAT_MASK_UP;
+										joy->dpad |= Input::HAT_MASK_UP;
 									else
-										joy->dpad |= InputFilter::HAT_MASK_DOWN;
+										joy->dpad |= Input::HAT_MASK_DOWN;
 								} else
-									joy->dpad &= ~(InputFilter::HAT_MASK_UP | InputFilter::HAT_MASK_DOWN);
+									joy->dpad &= ~(Input::HAT_MASK_UP | Input::HAT_MASK_DOWN);
 
 								input->joy_hat(i, joy->dpad);
 								break;
@@ -517,7 +517,7 @@ void JoypadLinux::process_joypads() {
 								if (ev.code >= MAX_ABS)
 									return;
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
-									InputFilter::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
+									Input::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;
 								}
 								break;

@@ -31,7 +31,7 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "crash_handler_windows.h"

@@ -35,7 +35,7 @@
 
 #include <DirectWindow.h>
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 
 #include "haiku_gl_view.h"

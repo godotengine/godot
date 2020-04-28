@@ -30,7 +30,7 @@
 
 #include "script_editor_plugin.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
@@ -1545,7 +1545,7 @@ void ScriptEditor::_help_overview_selected(int p_idx) {
 
 void ScriptEditor::_script_selected(int p_idx) {
 
-	grab_focus_block = !InputFilter::get_singleton()->is_mouse_button_pressed(1); //amazing hack, simply amazing
+	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(1); //amazing hack, simply amazing
 
 	_go_to_tab(script_list->get_item_metadata(p_idx));
 	grab_focus_block = false;

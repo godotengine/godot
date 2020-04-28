@@ -31,7 +31,7 @@
 #ifndef JOYPAD_UWP_H
 #define JOYPAD_UWP_H
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 
 ref class JoypadUWP sealed {
 

@@ -32,7 +32,7 @@
 #define OS_UWP_H
 
 #include "context_egl_uwp.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/math/transform_2d.h"
 #include "core/os/os.h"
 #include "core/ustring.h"

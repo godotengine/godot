@@ -33,7 +33,7 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
@@ -659,9 +659,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	servers_profiler->skip_profile_frame = true; // Avoid frame time spike in debug.
 
-	InputFilter::MouseMode mouse_mode = InputFilter::get_singleton()->get_mouse_mode();
-	if (mouse_mode != InputFilter::MOUSE_MODE_VISIBLE)
-		InputFilter::get_singleton()->set_mouse_mode(InputFilter::MOUSE_MODE_VISIBLE);
+	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
+	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 
 	uint64_t loop_begin_usec = 0;
 	uint64_t loop_time_sec = 0;
@@ -779,8 +779,8 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	send_message("debug_exit", Array());
 
-	if (mouse_mode != InputFilter::MOUSE_MODE_VISIBLE)
-		InputFilter::get_singleton()->set_mouse_mode(mouse_mode);
+	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
+		Input::get_singleton()->set_mouse_mode(mouse_mode);
 }
 
 void RemoteDebugger::poll_events(bool p_is_idle) {

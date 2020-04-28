@@ -30,7 +30,7 @@
 
 #include "color_picker.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
