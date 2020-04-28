@@ -1169,6 +1169,9 @@
 		</member>
 		<member name="rendering/vulkan/staging_buffer/texture_upload_region_size_px" type="int" setter="" getter="" default="64">
 		</member>
+		<member name="world/2d/cell_size" type="int" setter="" getter="" default="100">
+			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses.
+		</member>
 	</members>
 	<constants>
 	</constants>
