@@ -30,6 +30,8 @@
 
 #include "file_access_pack.h"
 
+#include "core/io/file_access_encrypted.h"
+#include "core/script_language.h"
 #include "core/version.h"
 
 #include <stdio.h>
@@ -44,13 +46,14 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, size_t p_
 	return ERR_FILE_UNRECOGNIZED;
 }
 
-void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
+void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted) {
 	PathMD5 pmd5(path.md5_buffer());
 	//printf("adding path %s, %lli, %lli\n", path.utf8().get_data(), pmd5.a, pmd5.b);
 
 	bool exists = files.has(pmd5);
 
 	PackedFile pf;
+	pf.encrypted = p_encrypted;
 	pf.pack = pkg_path;
 	pf.offset = ofs;
 	pf.size = size;
@@ -179,12 +182,41 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		ERR_FAIL_V_MSG(false, "Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + ".");
 	}
 
+	uint32_t pack_flags = f->get_32();
+	uint64_t file_base = f->get_64();
+
+	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
+
 	for (int i = 0; i < 16; i++) {
 		//reserved
 		f->get_32();
 	}
 
 	int file_count = f->get_32();
+
+	if (enc_directory) {
+		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+		if (!fae) {
+			f->close();
+			memdelete(f);
+			ERR_FAIL_V_MSG(false, "Can't open encrypted pack directory.");
+		}
+
+		Vector<uint8_t> key;
+		key.resize(32);
+		for (int i = 0; i < key.size(); i++) {
+			key.write[i] = script_encryption_key[i];
+		}
+
+		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
+		if (err) {
+			f->close();
+			memdelete(f);
+			memdelete(fae);
+			ERR_FAIL_V_MSG(false, "Can't open encrypted pack directory.");
+		}
+		f = fae;
+	}
 
 	for (int i = 0; i < file_count; i++) {
 		uint32_t sl = f->get_32();
@@ -196,11 +228,13 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		String path;
 		path.parse_utf8(cs.ptr());
 
-		uint64_t ofs = f->get_64();
+		uint64_t ofs = file_base + f->get_64();
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
-		PackedData::get_singleton()->add_path(p_path, path, ofs + p_offset, size, md5, this, p_replace_files);
+		uint32_t flags = f->get_32();
+
+		PackedData::get_singleton()->add_path(p_path, path, ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
 	}
 
 	f->close();
@@ -234,7 +268,7 @@ void FileAccessPack::seek(size_t p_position) {
 		eof = false;
 	}
 
-	f->seek(pf.offset + p_position);
+	f->seek(off + p_position);
 	pos = p_position;
 }
 
@@ -319,12 +353,35 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 	ERR_FAIL_COND_MSG(!f, "Can't open pack-referenced file '" + String(pf.pack) + "'.");
 
 	f->seek(pf.offset);
+	off = pf.offset;
+
+	if (pf.encrypted) {
+		FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+		if (!fae) {
+			ERR_FAIL_MSG("Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
+		}
+
+		Vector<uint8_t> key;
+		key.resize(32);
+		for (int i = 0; i < key.size(); i++) {
+			key.write[i] = script_encryption_key[i];
+		}
+
+		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
+		if (err) {
+			memdelete(fae);
+			ERR_FAIL_MSG("Can't open encrypted pack-referenced file '" + String(pf.pack) + "'.");
+		}
+		f = fae;
+		off = 0;
+	}
 	pos = 0;
 	eof = false;
 }
 
 FileAccessPack::~FileAccessPack() {
 	if (f) {
+		f->close();
 		memdelete(f);
 	}
 }
