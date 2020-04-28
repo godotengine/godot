@@ -176,8 +176,8 @@
 				[codeblock]
 				# This code block is part of a script that inherits from Node3D.
 				# `control` is a reference to a node inheriting from Control.
-				control.visible = not get_viewport().get_camera().is_position_behind(global_transform.origin)
-				control.rect_position = get_viewport().get_camera().unproject_position(global_transform.origin)
+				control.visible = not get_viewport().get_camera_3d().is_position_behind(global_transform.origin)
+				control.rect_position = get_viewport().get_camera_3d().unproject_position(global_transform.origin)
 				[/codeblock]
 			</description>
 		</method>

@@ -37,6 +37,7 @@
 #include "core/os/os.h"
 #include "core/string/translation.h"
 
+#include "scene/2d/camera_2d.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
@@ -195,7 +196,7 @@ void Viewport::_collision_object_input_event(CollisionObject3D *p_object, Camera
 			return; //discarded
 		}
 	}
-	p_object->_input_event(camera, p_input_event, p_pos, p_normal, p_shape);
+	p_object->_input_event(camera_3d, p_input_event, p_pos, p_normal, p_shape);
 	physics_last_object_transform = object_transform;
 	physics_last_camera_transform = camera_transform;
 	physics_last_id = id;
@@ -462,7 +463,7 @@ void Viewport::_notification(int p_what) {
 				}
 			}
 
-			if (cameras.size() && !camera) {
+			if (cameras.size() && !camera_3d) {
 				//there are cameras but no current camera, pick first in tree and make it current
 				Camera3D *first = nullptr;
 				for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
@@ -755,8 +756,8 @@ void Viewport::_process_picking() {
 
 		if (physics_object_capture.is_valid()) {
 			CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
-			if (co && camera) {
-				_collision_object_input_event(co, camera, ev, Vector3(), Vector3(), 0);
+			if (co && camera_3d) {
+				_collision_object_input_event(co, camera_3d, ev, Vector3(), Vector3(), 0);
 				captured = true;
 				if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
 					physics_object_capture = ObjectID();
@@ -773,16 +774,16 @@ void Viewport::_process_picking() {
 			if (last_id.is_valid()) {
 				if (ObjectDB::get_instance(last_id) && last_object) {
 					//good, exists
-					_collision_object_input_event(last_object, camera, ev, result.position, result.normal, result.shape);
+					_collision_object_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
 					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 						physics_object_capture = last_id;
 					}
 				}
 			}
 		} else {
-			if (camera) {
-				Vector3 from = camera->project_ray_origin(pos);
-				Vector3 dir = camera->project_ray_normal(pos);
+			if (camera_3d) {
+				Vector3 from = camera_3d->project_ray_origin(pos);
+				Vector3 dir = camera_3d->project_ray_normal(pos);
 
 				PhysicsDirectSpaceState3D *space = PhysicsServer3D::get_singleton()->space_get_direct_state(find_world_3d()->get_space());
 				if (space) {
@@ -790,8 +791,8 @@ void Viewport::_process_picking() {
 					ObjectID new_collider;
 					if (col) {
 						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
-						if (co && co->can_process()) {
-							_collision_object_input_event(co, camera, ev, result.position, result.normal, result.shape);
+						if (co) {
+							_collision_object_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
 							last_object = co;
 							last_id = result.collider_id;
 							new_collider = last_id;
@@ -1045,64 +1046,68 @@ void Viewport::_listener_make_next_current(Listener3D *p_exclude) {
 		}
 	} else {
 		// Attempt to reset listener to the camera position
-		if (camera != nullptr) {
+		if (camera_3d != nullptr) {
 			_update_listener();
-			_camera_transform_changed_notify();
+			_camera_3d_transform_changed_notify();
 		}
 	}
 }
 #endif
 
-void Viewport::_camera_transform_changed_notify() {
+void Viewport::_camera_3d_transform_changed_notify() {
 #ifndef _3D_DISABLED
 #endif
 }
 
-void Viewport::_camera_set(Camera3D *p_camera) {
+void Viewport::_camera_3d_set(Camera3D *p_camera) {
 #ifndef _3D_DISABLED
 
-	if (camera == p_camera) {
+	if (camera_3d == p_camera) {
 		return;
 	}
 
-	if (camera) {
-		camera->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
+	if (camera_3d) {
+		camera_3d->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
 	}
 
-	camera = p_camera;
+	camera_3d = p_camera;
 
 	if (!camera_override) {
-		if (camera) {
-			RenderingServer::get_singleton()->viewport_attach_camera(viewport, camera->get_camera());
+		if (camera_3d) {
+			RenderingServer::get_singleton()->viewport_attach_camera(viewport, camera_3d->get_camera());
 		} else {
 			RenderingServer::get_singleton()->viewport_attach_camera(viewport, RID());
 		}
 	}
 
-	if (camera) {
-		camera->notification(Camera3D::NOTIFICATION_BECAME_CURRENT);
+	if (camera_3d) {
+		camera_3d->notification(Camera3D::NOTIFICATION_BECAME_CURRENT);
 	}
 
 	_update_listener();
-	_camera_transform_changed_notify();
+	_camera_3d_transform_changed_notify();
 #endif
 }
 
-bool Viewport::_camera_add(Camera3D *p_camera) {
+void Viewport::_camera_2d_set(Camera2D *p_camera_2d) {
+	camera_2d = p_camera_2d;
+}
+
+bool Viewport::_camera_3d_add(Camera3D *p_camera) {
 	cameras.insert(p_camera);
 	return cameras.size() == 1;
 }
 
-void Viewport::_camera_remove(Camera3D *p_camera) {
+void Viewport::_camera_3d_remove(Camera3D *p_camera) {
 	cameras.erase(p_camera);
-	if (camera == p_camera) {
-		camera->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
-		camera = nullptr;
+	if (camera_3d == p_camera) {
+		camera_3d->notification(Camera3D::NOTIFICATION_LOST_CURRENT);
+		camera_3d = nullptr;
 	}
 }
 
 #ifndef _3D_DISABLED
-void Viewport::_camera_make_next_current(Camera3D *p_exclude) {
+void Viewport::_camera_3d_make_next_current(Camera3D *p_exclude) {
 	for (Set<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 		if (p_exclude == E->get()) {
 			continue;
@@ -1110,7 +1115,7 @@ void Viewport::_camera_make_next_current(Camera3D *p_exclude) {
 		if (!E->get()->is_inside_tree()) {
 			continue;
 		}
-		if (camera != nullptr) {
+		if (camera_3d != nullptr) {
 			return;
 		}
 
@@ -1299,8 +1304,12 @@ Listener3D *Viewport::get_listener() const {
 	return listener;
 }
 
-Camera3D *Viewport::get_camera() const {
-	return camera;
+Camera3D *Viewport::get_camera_3d() const {
+	return camera_3d;
+}
+
+Camera2D *Viewport::get_camera_2d() const {
+	return camera_2d;
 }
 
 void Viewport::enable_camera_override(bool p_enable) {
@@ -1318,8 +1327,8 @@ void Viewport::enable_camera_override(bool p_enable) {
 
 	if (p_enable) {
 		RenderingServer::get_singleton()->viewport_attach_camera(viewport, camera_override.rid);
-	} else if (camera) {
-		RenderingServer::get_singleton()->viewport_attach_camera(viewport, camera->get_camera());
+	} else if (camera_3d) {
+		RenderingServer::get_singleton()->viewport_attach_camera(viewport, camera_3d->get_camera());
 	} else {
 		RenderingServer::get_singleton()->viewport_attach_camera(viewport, RID());
 	}
@@ -3517,7 +3526,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_own_world_3d", "enable"), &Viewport::set_use_own_world_3d);
 	ClassDB::bind_method(D_METHOD("is_using_own_world_3d"), &Viewport::is_using_own_world_3d);
 
-	ClassDB::bind_method(D_METHOD("get_camera"), &Viewport::get_camera);
+	ClassDB::bind_method(D_METHOD("get_camera_3d"), &Viewport::get_camera_3d);
+	ClassDB::bind_method(D_METHOD("get_camera_2d"), &Viewport::get_camera_2d);
 
 	ClassDB::bind_method(D_METHOD("set_as_audio_listener", "enable"), &Viewport::set_as_audio_listener);
 	ClassDB::bind_method(D_METHOD("is_audio_listener"), &Viewport::is_audio_listener);

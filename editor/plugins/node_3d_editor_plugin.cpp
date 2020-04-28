@@ -2418,7 +2418,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		Node *scene_root = editor->get_scene_tree_dock()->get_editor_data()->get_edited_scene_root();
 		if (previewing_cinema && scene_root != nullptr) {
-			Camera3D *cam = scene_root->get_viewport()->get_camera();
+			Camera3D *cam = scene_root->get_viewport()->get_camera_3d();
 			if (cam != nullptr && cam != previewing) {
 				//then switch the viewport's camera to the scene's viewport camera
 				if (previewing != nullptr) {

@@ -213,7 +213,8 @@ private:
 		}
 	} camera_override;
 
-	Camera3D *camera = nullptr;
+	Camera3D *camera_3d = nullptr;
+	Camera2D *camera_2d = nullptr;
 	Set<Camera3D *> cameras;
 	Set<CanvasLayer *> canvas_layers;
 
@@ -444,11 +445,14 @@ private:
 	void _listener_make_next_current(Listener3D *p_exclude);
 
 	friend class Camera3D;
-	void _camera_transform_changed_notify();
-	void _camera_set(Camera3D *p_camera);
-	bool _camera_add(Camera3D *p_camera); //true if first
-	void _camera_remove(Camera3D *p_camera);
-	void _camera_make_next_current(Camera3D *p_exclude);
+	void _camera_3d_transform_changed_notify();
+	void _camera_3d_set(Camera3D *p_camera);
+	bool _camera_3d_add(Camera3D *p_camera); //true if first
+	void _camera_3d_remove(Camera3D *p_camera);
+	void _camera_3d_make_next_current(Camera3D *p_exclude);
+
+	friend class Camera2D;
+	void _camera_2d_set(Camera2D *p_camera_2d);
 
 	friend class CanvasLayer;
 	void _canvas_layer_add(CanvasLayer *p_canvas_layer);
@@ -491,7 +495,8 @@ public:
 	uint64_t get_processed_events_count() const { return event_count; }
 
 	Listener3D *get_listener() const;
-	Camera3D *get_camera() const;
+	Camera3D *get_camera_3d() const;
+	Camera2D *get_camera_2d() const;
 
 	void enable_camera_override(bool p_enable);
 	bool is_camera_override_enabled() const;

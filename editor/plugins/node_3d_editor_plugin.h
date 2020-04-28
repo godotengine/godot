@@ -494,7 +494,7 @@ public:
 			AcceptDialog *p_accept);
 
 	SubViewport *get_viewport_node() { return viewport; }
-	Camera3D *get_camera() { return camera; } // return the default camera object.
+	Camera3D *get_camera_3d() { return camera; } // return the default camera object.
 
 	Node3DEditorViewport(Node3DEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
 	~Node3DEditorViewport();
