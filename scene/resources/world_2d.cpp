@@ -314,7 +314,7 @@ struct SpatialIndexer2D {
 
 		pass = 0;
 		changed = false;
-		cell_size = 100; //should be configurable with GLOBAL_DEF("") i guess
+		cell_size = GLOBAL_DEF("world/2d/cell_size", 100);
 	}
 };
 

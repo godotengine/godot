@@ -1164,6 +1164,9 @@
 		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 		</member>
+		<member name="world/2d/cell_size" type="int" setter="" getter="" default="100">
+			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses.
+		</member>
 	</members>
 	<constants>
 	</constants>
