@@ -23,6 +23,8 @@
 			</argument>
 			<argument index="1" name="source_path" type="String">
 			</argument>
+			<argument index="2" name="encrypt" type="bool" default="false">
+			</argument>
 			<description>
 				Adds the [code]source_path[/code] file to the current PCK package at the [code]pck_path[/code] internal path (should start with [code]res://[/code]).
 			</description>
@@ -42,6 +44,10 @@
 			<argument index="0" name="pck_name" type="String">
 			</argument>
 			<argument index="1" name="alignment" type="int" default="0">
+			</argument>
+			<argument index="2" name="key" type="String" default="&quot;&quot;">
+			</argument>
+			<argument index="3" name="encrypt_directory" type="bool" default="false">
 			</argument>
 			<description>
 				Creates a new PCK file with the name [code]pck_name[/code]. The [code].pck[/code] file extension isn't added automatically, so it should be part of [code]pck_name[/code] (even though it's not required).

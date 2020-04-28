@@ -37,52 +37,54 @@
 
 #include <stdio.h>
 
-#define COMP_MAGIC 0x43454447
-
-Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
+Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic) {
 	ERR_FAIL_COND_V_MSG(file != nullptr, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
 	pos = 0;
 	eofed = false;
+	use_magic = p_with_magic;
 
 	if (p_mode == MODE_WRITE_AES256) {
 		data.clear();
 		writing = true;
 		file = p_base;
-		mode = p_mode;
 		key = p_key;
 
 	} else if (p_mode == MODE_READ) {
 		writing = false;
 		key = p_key;
-		uint32_t magic = p_base->get_32();
-		ERR_FAIL_COND_V(magic != COMP_MAGIC, ERR_FILE_UNRECOGNIZED);
 
-		mode = Mode(p_base->get_32());
-		ERR_FAIL_INDEX_V(mode, MODE_MAX, ERR_FILE_CORRUPT);
-		ERR_FAIL_COND_V(mode == 0, ERR_FILE_CORRUPT);
+		if (use_magic) {
+			uint32_t magic = p_base->get_32();
+			ERR_FAIL_COND_V(magic != ENCRYPTED_HEADER_MAGIC, ERR_FILE_UNRECOGNIZED);
+		}
 
 		unsigned char md5d[16];
 		p_base->get_buffer(md5d, 16);
 		length = p_base->get_64();
+
+		unsigned char iv[16];
+		for (int i = 0; i < 16; i++) {
+			iv[i] = p_base->get_8();
+		}
+
 		base = p_base->get_position();
 		ERR_FAIL_COND_V(p_base->get_len() < base + length, ERR_FILE_CORRUPT);
 		uint32_t ds = length;
 		if (ds % 16) {
 			ds += 16 - (ds % 16);
 		}
-
 		data.resize(ds);
 
 		uint32_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
-		CryptoCore::AESContext ctx;
-		ctx.set_decode_key(key.ptrw(), 256);
+		{
+			CryptoCore::AESContext ctx;
 
-		for (size_t i = 0; i < ds; i += 16) {
-			ctx.decrypt_ecb(&data.write[i], &data.write[i]);
+			ctx.set_encode_key(key.ptrw(), 256); // Due to the nature of CFB, same key schedule is used for both encryption and decryption!
+			ctx.decrypt_cfb(ds, iv, data.ptrw(), data.ptrw());
 		}
 
 		data.resize(length);
@@ -119,6 +121,25 @@ void FileAccessEncrypted::close() {
 		return;
 	}
 
+	_release();
+
+	file->close();
+	memdelete(file);
+
+	file = nullptr;
+}
+
+void FileAccessEncrypted::release() {
+	if (!file) {
+		return;
+	}
+
+	_release();
+
+	file = nullptr;
+}
+
+void FileAccessEncrypted::_release() {
 	if (writing) {
 		Vector<uint8_t> compressed;
 		size_t len = data.size();
@@ -138,27 +159,23 @@ void FileAccessEncrypted::close() {
 		CryptoCore::AESContext ctx;
 		ctx.set_encode_key(key.ptrw(), 256);
 
-		for (size_t i = 0; i < len; i += 16) {
-			ctx.encrypt_ecb(&compressed.write[i], &compressed.write[i]);
+		if (use_magic) {
+			file->store_32(ENCRYPTED_HEADER_MAGIC);
 		}
-
-		file->store_32(COMP_MAGIC);
-		file->store_32(mode);
 
 		file->store_buffer(hash, 16);
 		file->store_64(data.size());
 
-		file->store_buffer(compressed.ptr(), compressed.size());
-		file->close();
-		memdelete(file);
-		file = nullptr;
-		data.clear();
+		unsigned char iv[16];
+		for (int i = 0; i < 16; i++) {
+			iv[i] = Math::rand() % 256;
+			file->store_8(iv[i]);
+		}
 
-	} else {
-		file->close();
-		memdelete(file);
+		ctx.encrypt_cfb(len, iv, compressed.ptrw(), compressed.ptrw());
+
+		file->store_buffer(compressed.ptr(), compressed.size());
 		data.clear();
-		file = nullptr;
 	}
 }
 

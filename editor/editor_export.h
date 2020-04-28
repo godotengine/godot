@@ -55,7 +55,6 @@ public:
 	enum ScriptExportMode {
 		MODE_SCRIPT_TEXT,
 		MODE_SCRIPT_COMPILED,
-		MODE_SCRIPT_ENCRYPTED,
 	};
 
 private:
@@ -80,6 +79,11 @@ private:
 	String name;
 
 	String custom_features;
+
+	String enc_in_filters;
+	String enc_ex_filters;
+	bool enc_pck = false;
+	bool enc_directory = false;
 
 	int script_mode = MODE_SCRIPT_COMPILED;
 	String script_key;
@@ -129,6 +133,18 @@ public:
 	void set_export_path(const String &p_path);
 	String get_export_path() const;
 
+	void set_enc_in_filter(const String &p_filter);
+	String get_enc_in_filter() const;
+
+	void set_enc_ex_filter(const String &p_filter);
+	String get_enc_ex_filter() const;
+
+	void set_enc_pck(bool p_enabled);
+	bool get_enc_pck() const;
+
+	void set_enc_directory(bool p_enabled);
+	bool get_enc_directory() const;
+
 	void set_script_export_mode(int p_mode);
 	int get_script_export_mode() const;
 
@@ -156,13 +172,14 @@ class EditorExportPlatform : public Reference {
 	GDCLASS(EditorExportPlatform, Reference);
 
 public:
-	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
+	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 	typedef Error (*EditorExportSaveSharedObject)(void *p_userdata, const SharedObject &p_so);
 
 private:
 	struct SavedData {
 		uint64_t ofs;
 		uint64_t size;
+		bool encrypted;
 		Vector<uint8_t> md5;
 		CharString path_utf8;
 
@@ -192,8 +209,8 @@ private:
 	void _export_find_dependencies(const String &p_path, Set<String> &p_paths);
 
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
-	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
-	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
+	static Error _save_pack_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
+	static Error _save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
 	void _edit_files_with_filter(DirAccess *da, const Vector<String> &p_filters, Set<String> &r_list, bool exclude);
 	void _edit_filter_list(Set<String> &r_list, const String &p_filter, bool exclude);
