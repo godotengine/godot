@@ -119,7 +119,11 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.doubleclick = false;
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD)) {
-				DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length);
+				if (selection.enabled) {
+					DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length, selection.begin, selection.end);
+				} else {
+					DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length, cursor_pos);
+				}
 			}
 		}
 
@@ -918,7 +922,11 @@ void LineEdit::_notification(int p_what) {
 			}
 
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD)) {
-				DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length);
+				if (selection.enabled) {
+					DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length, selection.begin, selection.end);
+				} else {
+					DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length, cursor_pos);
+				}
 			}
 
 		} break;
