@@ -8,8 +8,6 @@ import input_builders
 
 # Order matters here. Higher index controller database files write on top of lower index database files.
 controller_databases = [
-    "#core/input/gamecontrollerdb_204.txt",
-    "#core/input/gamecontrollerdb_205.txt",
     "#core/input/gamecontrollerdb.txt",
     "#core/input/godotcontrollerdb.txt",
 ]
