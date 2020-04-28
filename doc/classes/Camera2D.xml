@@ -171,6 +171,13 @@
 		<member name="rotating" type="bool" setter="set_rotating" getter="is_rotating" default="false">
 			If [code]true[/code], the camera rotates with the target.
 		</member>
+		<member name="rotation_smoothing_enabled" type="bool" setter="set_enable_rotation_smoothing" getter="is_rotation_smoothing_enabled" default="false">
+			If [code]true[/code], the camera smoothly rotates to align with the target at [member rotation_smoothing_speed].
+			Requires [member rotating] to be enabled for rotation smoothing to work.
+		</member>
+		<member name="rotation_smoothing_speed" type="float" setter="set_rotation_smoothing" getter="get_rotation_smoothing" default="5.0">
+			Angular speed in radians per second of the camera's rotation smoothing effect when [member rotation_smoothing_enabled] is [code]true[/code].
+		</member>
 		<member name="smoothing_enabled" type="bool" setter="set_enable_follow_smoothing" getter="is_follow_smoothing_enabled" default="false">
 			If [code]true[/code], the camera smoothly moves towards the target at [member smoothing_speed].
 		</member>

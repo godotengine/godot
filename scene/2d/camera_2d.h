@@ -66,8 +66,14 @@ protected:
 	AnchorMode anchor_mode;
 	bool rotating;
 	bool current;
-	float smoothing;
-	bool smoothing_enabled;
+
+	float follow_smoothing;
+	bool follow_smoothing_enabled;
+
+	float camera_angle;
+	float rotation_smoothing;
+	bool rotation_smoothing_enabled;
+
 	int limit[4];
 	bool limit_smoothing_enabled;
 	float drag_margin[4];
@@ -86,6 +92,8 @@ protected:
 
 	void _make_current(Object *p_which);
 	void _set_current(bool p_current);
+
+	void _enable_process_internal_if_needed_for_smoothing();
 
 	void _set_old_smoothing(float p_enable);
 
@@ -136,6 +144,12 @@ public:
 
 	void set_follow_smoothing(float p_speed);
 	float get_follow_smoothing() const;
+
+	void set_rotation_smoothing(float p_speed);
+	float get_rotation_smoothing() const;
+
+	void set_enable_rotation_smoothing(bool p_enabled);
+	bool is_rotation_smoothing_enabled() const;
 
 	void set_process_mode(Camera2DProcessMode p_mode);
 	Camera2DProcessMode get_process_mode() const;
