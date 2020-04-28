@@ -31,7 +31,7 @@
 #include "scene_tree.h"
 
 #include "core/debugger/engine_debugger.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -576,7 +576,7 @@ void SceneTree::_main_window_go_back() {
 }
 
 void SceneTree::_main_window_focus_in() {
-	InputFilter *id = InputFilter::get_singleton();
+	Input *id = Input::get_singleton();
 	if (id) {
 		id->ensure_touch_mouse_raised();
 	}

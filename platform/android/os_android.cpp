@@ -88,7 +88,7 @@ void OS_Android::initialize() {
 }
 
 void OS_Android::initialize_joypads() {
-	InputFilter::get_singleton()->set_fallback_mapping(godot_java->get_input_fallback_mapping());
+	Input::get_singleton()->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
 	// This queries/updates the currently connected devices/joypads.
 	godot_java->init_input_devices();

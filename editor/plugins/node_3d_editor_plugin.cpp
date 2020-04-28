@@ -30,7 +30,7 @@
 
 #include "node_3d_editor_plugin.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/math/camera_matrix.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
@@ -298,10 +298,10 @@ void Node3DEditorViewport::_update_camera(float p_interp_delta) {
 			float zoom_inertia = EDITOR_GET("editors/3d/navigation_feel/zoom_inertia");
 
 			//determine if being manipulated
-			bool manipulated = InputFilter::get_singleton()->get_mouse_button_mask() & (2 | 4);
-			manipulated |= InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
-			manipulated |= InputFilter::get_singleton()->is_key_pressed(KEY_ALT);
-			manipulated |= InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+			bool manipulated = Input::get_singleton()->get_mouse_button_mask() & (2 | 4);
+			manipulated |= Input::get_singleton()->is_key_pressed(KEY_SHIFT);
+			manipulated |= Input::get_singleton()->is_key_pressed(KEY_ALT);
+			manipulated |= Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
 			float orbit_inertia = MAX(0.00001, manipulated ? manip_orbit_inertia : free_orbit_inertia);
 			float translation_inertia = MAX(0.0001, manipulated ? manip_translation_inertia : free_translation_inertia);
@@ -2260,7 +2260,7 @@ void Node3DEditorViewport::scale_freelook_speed(real_t scale) {
 Point2i Node3DEditorViewport::_get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const {
 	Point2i relative;
 	if (bool(EDITOR_DEF("editors/3d/navigation/warped_mouse_panning", false))) {
-		relative = InputFilter::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
+		relative = Input::get_singleton()->warp_mouse_motion(p_ev_mouse_motion, surface->get_global_rect());
 	} else {
 		relative = p_ev_mouse_motion->get_relative();
 	}
@@ -2276,7 +2276,7 @@ static bool is_shortcut_pressed(const String &p_path) {
 	if (k == nullptr) {
 		return false;
 	}
-	const InputFilter &input = *InputFilter::get_singleton();
+	const Input &input = *Input::get_singleton();
 	int keycode = k->get_keycode();
 	return input.is_key_pressed(keycode);
 }
@@ -3828,7 +3828,7 @@ void Node3DEditorViewport::drop_data_fw(const Point2 &p_point, const Variant &p_
 	if (!can_drop_data_fw(p_point, p_data, p_from))
 		return;
 
-	bool is_shift = InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT);
+	bool is_shift = Input::get_singleton()->is_key_pressed(KEY_SHIFT);
 
 	selected_files.clear();
 	Dictionary d = p_data;
@@ -5785,7 +5785,7 @@ void Node3DEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 	if (!is_visible_in_tree())
 		return;
 
-	snap_key_enabled = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+	snap_key_enabled = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 }
 void Node3DEditor::_notification(int p_what) {
 
@@ -6446,7 +6446,7 @@ Vector3 Node3DEditor::snap_point(Vector3 p_target, Vector3 p_start) const {
 
 float Node3DEditor::get_translate_snap() const {
 	float snap_value;
-	if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		snap_value = snap_translate->get_text().to_double() / 10.0;
 	} else {
 		snap_value = snap_translate->get_text().to_double();
@@ -6457,7 +6457,7 @@ float Node3DEditor::get_translate_snap() const {
 
 float Node3DEditor::get_rotate_snap() const {
 	float snap_value;
-	if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		snap_value = snap_rotate->get_text().to_double() / 3.0;
 	} else {
 		snap_value = snap_rotate->get_text().to_double();
@@ -6468,7 +6468,7 @@ float Node3DEditor::get_rotate_snap() const {
 
 float Node3DEditor::get_scale_snap() const {
 	float snap_value;
-	if (InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+	if (Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 		snap_value = snap_scale->get_text().to_double() / 2.0;
 	} else {
 		snap_value = snap_scale->get_text().to_double();

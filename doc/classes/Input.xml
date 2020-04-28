@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="InputFilter" inherits="Object" version="4.0">
+<class name="Input" inherits="Object" version="4.0">
 	<brief_description>
 		A singleton that deals with inputs.
 	</brief_description>
@@ -68,7 +68,7 @@
 			</description>
 		</method>
 		<method name="get_current_cursor_shape" qualifiers="const">
-			<return type="int" enum="InputFilter.CursorShape">
+			<return type="int" enum="Input.CursorShape">
 			</return>
 			<description>
 				Returns the currently assigned cursor shape (see [enum CursorShape]).
@@ -193,7 +193,7 @@
 			</description>
 		</method>
 		<method name="get_mouse_mode" qualifiers="const">
-			<return type="int" enum="InputFilter.MouseMode">
+			<return type="int" enum="Input.MouseMode">
 			</return>
 			<description>
 				Returns the mouse mode. See the constants for more information.
@@ -277,7 +277,7 @@
 			<argument index="3" name="guid" type="String">
 			</argument>
 			<description>
-				Notifies the [InputFilter] singleton that a connection has changed, to update the state for the [code]device[/code] index.
+				Notifies the [Input] singleton that a connection has changed, to update the state for the [code]device[/code] index.
 				This is used internally and should not have to be called from user scripts. See [signal joy_connection_changed] for the signal emitted when this is triggered internally.
 			</description>
 		</method>
@@ -293,7 +293,7 @@
 				var a = InputEventAction.new()
 				a.action = "ui_cancel"
 				a.pressed = true
-				InputFilter.parse_input_event(a)
+				Input.parse_input_event(a)
 				[/codeblock]
 			</description>
 		</method>
@@ -311,7 +311,7 @@
 			</return>
 			<argument index="0" name="image" type="Resource">
 			</argument>
-			<argument index="1" name="shape" type="int" enum="InputFilter.CursorShape" default="0">
+			<argument index="1" name="shape" type="int" enum="Input.CursorShape" default="0">
 			</argument>
 			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
@@ -326,7 +326,7 @@
 		<method name="set_default_cursor_shape">
 			<return type="void">
 			</return>
-			<argument index="0" name="shape" type="int" enum="InputFilter.CursorShape" default="0">
+			<argument index="0" name="shape" type="int" enum="Input.CursorShape" default="0">
 			</argument>
 			<description>
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
@@ -337,7 +337,7 @@
 		<method name="set_mouse_mode">
 			<return type="void">
 			</return>
-			<argument index="0" name="mode" type="int" enum="InputFilter.MouseMode">
+			<argument index="0" name="mode" type="int" enum="Input.MouseMode">
 			</argument>
 			<description>
 				Sets the mouse mode. See the constants for more information.

@@ -34,7 +34,7 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/delaunay.h"
 #include "core/os/keyboard.h"

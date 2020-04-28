@@ -30,7 +30,7 @@
 
 #include "visual_script_editor.h"
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/object.h"
 #include "core/os/keyboard.h"
 #include "core/script_language.h"
@@ -1073,9 +1073,9 @@ void VisualScriptEditor::_member_selected() {
 	if (ti->get_parent() == members->get_root()->get_children()) {
 
 #ifdef OSX_ENABLED
-		bool held_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_META);
+		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool held_ctrl = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool held_ctrl = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 		if (held_ctrl) {
 			ERR_FAIL_COND(!script->has_function(selected));
@@ -1378,7 +1378,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 		}
 	} else if (ti->get_parent() == root->get_children()) {
 		selected = ti->get_text(0);
-		function_name_edit->set_position(InputFilter::get_singleton()->get_mouse_position() - Vector2(60, -10));
+		function_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
 		function_name_edit->popup();
 		function_name_box->set_text(selected);
 		function_name_box->select_all();
@@ -1740,7 +1740,7 @@ void VisualScriptEditor::_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> key = p_event;
 
 	if (key.is_valid() && !key->is_pressed()) {
-		mouse_up_position = InputFilter::get_singleton()->get_mouse_position();
+		mouse_up_position = Input::get_singleton()->get_mouse_position();
 	}
 }
 
@@ -1750,7 +1750,7 @@ void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == BUTTON_RIGHT) {
 		saved_position = graph->get_local_mouse_position();
 
-		Point2 gpos = InputFilter::get_singleton()->get_mouse_position();
+		Point2 gpos = Input::get_singleton()->get_mouse_position();
 		_generic_search(script->get_instance_base_type(), gpos);
 	}
 }
@@ -2004,9 +2004,9 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	if (String(d["type"]) == "visual_script_variable_drag") {
 
 #ifdef OSX_ENABLED
-		bool use_set = InputFilter::get_singleton()->is_key_pressed(KEY_META);
+		bool use_set = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_set = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_set = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 		Vector2 ofs = graph->get_scroll_ofs() + p_point;
 		if (graph->is_using_snap()) {
@@ -2199,9 +2199,9 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		}
 
 #ifdef OSX_ENABLED
-		bool use_node = InputFilter::get_singleton()->is_key_pressed(KEY_META);
+		bool use_node = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_node = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_node = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 
 		Array nodes = d["nodes"];
@@ -2263,7 +2263,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		Node *sn = _find_script_node(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root(), script);
 
-		if (!sn && !InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (!sn && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Can't drop properties because script '%s' is not used in this scene.\nDrop holding 'Shift' to just copy the signature."), get_name()));
 			return;
 		}
@@ -2283,12 +2283,12 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 		ofs /= EDSCALE;
 #ifdef OSX_ENABLED
-		bool use_get = InputFilter::get_singleton()->is_key_pressed(KEY_META);
+		bool use_get = Input::get_singleton()->is_key_pressed(KEY_META);
 #else
-		bool use_get = InputFilter::get_singleton()->is_key_pressed(KEY_CONTROL);
+		bool use_get = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 #endif
 
-		if (!node || InputFilter::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		if (!node || Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 
 			if (use_get)
 				undo_redo->create_action(TTR("Add Getter Property"));

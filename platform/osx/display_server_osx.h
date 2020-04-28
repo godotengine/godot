@@ -33,7 +33,7 @@
 
 #define BitMap _QDBitMap // Suppress deprecated QuickDraw definition.
 
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "servers/display_server.h"
 
 #if defined(OPENGL_ENABLED)

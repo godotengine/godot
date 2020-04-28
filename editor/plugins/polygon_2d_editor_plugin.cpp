@@ -31,7 +31,7 @@
 #include "polygon_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-#include "core/input/input_filter.h"
+#include "core/input/input.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
@@ -810,7 +810,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 	if (mm.is_valid()) {
 
-		if ((mm->get_button_mask() & BUTTON_MASK_MIDDLE) || InputFilter::get_singleton()->is_key_pressed(KEY_SPACE)) {
+		if ((mm->get_button_mask() & BUTTON_MASK_MIDDLE) || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
 			Vector2 drag(mm->get_relative().x, mm->get_relative().y);
 			uv_hscroll->set_value(uv_hscroll->get_value() - drag.x);
