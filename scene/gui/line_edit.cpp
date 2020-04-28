@@ -127,8 +127,13 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.creating = false;
 			selection.doubleclick = false;
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
+			if (OS::get_singleton()->has_virtual_keyboard()) {
+				if (selection.enabled) {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
+				} else {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, cursor_pos);
+				}
+			}
 		}
 
 		update();
@@ -903,13 +908,19 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			OS::get_singleton()->set_ime_active(true);
-			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			{
+				OS::get_singleton()->set_ime_active(true);
+				Point2 cursor_pos2 = Point2(get_cursor_position(), 1) * get_minimum_size().height;
+				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos2);
+			}
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
-
+			if (OS::get_singleton()->has_virtual_keyboard()) {
+				if (selection.enabled) {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, selection.begin, selection.end);
+				} else {
+					OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length, cursor_pos);
+				}
+			}
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
