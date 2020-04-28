@@ -5063,10 +5063,10 @@ void RasterizerStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::
 			bv[2].z = v.basis.elements[2][2];
 			bv[2].w = 0;
 
-			bv[2].x = v.origin.x;
-			bv[2].y = v.origin.y;
-			bv[2].z = v.origin.z;
-			bv[2].w = 1;
+			bv[3].x = v.origin.x;
+			bv[3].y = v.origin.y;
+			bv[3].z = v.origin.z;
+			bv[3].w = 1;
 
 		} break;
 		default: {
