@@ -525,6 +525,9 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 	*r_buffer = (const uint8_t *)(&current_packet.packet->data[8]);
 	r_buffer_size = current_packet.packet->dataLength - 8;
 
+	this->num_packets_received++;
+	this->num_bytes_received += current_packet.packet->dataLength - 8;
+
 	return OK;
 }
 
@@ -569,6 +572,9 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	encode_uint32(unique_id, &packet->data[0]); // Source ID
 	encode_uint32(target_peer, &packet->data[4]); // Dest ID
 	copymem(&packet->data[8], p_buffer, p_buffer_size);
+
+	this->num_packets_sent++;
+	this->num_bytes_sent += p_buffer_size;
 
 	if (server) {
 
@@ -847,6 +853,29 @@ bool NetworkedMultiplayerENet::is_server_relay_enabled() const {
 	return server_relay;
 }
 
+uint32_t NetworkedMultiplayerENet::get_num_packets_received() const {
+	return num_packets_received;
+}
+
+uint32_t NetworkedMultiplayerENet::get_num_bytes_received() const {
+	return num_bytes_received;
+}
+
+uint32_t NetworkedMultiplayerENet::get_num_packets_sent() const {
+	return num_packets_sent;
+}
+
+uint32_t NetworkedMultiplayerENet::get_num_bytes_sent() const {
+	return num_bytes_sent;
+}
+
+void NetworkedMultiplayerENet::clear_packet_stats() {
+	num_packets_received = 0;
+	num_bytes_received = 0;
+	num_packets_sent = 0;
+	num_bytes_sent = 0;
+}
+
 void NetworkedMultiplayerENet::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("create_server", "port", "max_clients", "in_bandwidth", "out_bandwidth"), &NetworkedMultiplayerENet::create_server, DEFVAL(32), DEFVAL(0), DEFVAL(0));
@@ -869,6 +898,12 @@ void NetworkedMultiplayerENet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_always_ordered"), &NetworkedMultiplayerENet::is_always_ordered);
 	ClassDB::bind_method(D_METHOD("set_server_relay_enabled", "enabled"), &NetworkedMultiplayerENet::set_server_relay_enabled);
 	ClassDB::bind_method(D_METHOD("is_server_relay_enabled"), &NetworkedMultiplayerENet::is_server_relay_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_num_packets_received"), &NetworkedMultiplayerENet::get_num_packets_received);
+	ClassDB::bind_method(D_METHOD("get_num_bytes_received"), &NetworkedMultiplayerENet::get_num_bytes_received);
+	ClassDB::bind_method(D_METHOD("get_num_packets_sent"), &NetworkedMultiplayerENet::get_num_packets_sent);
+	ClassDB::bind_method(D_METHOD("get_num_bytes_sent"), &NetworkedMultiplayerENet::get_num_bytes_sent);
+	ClassDB::bind_method(D_METHOD("clear_packet_stats"), &NetworkedMultiplayerENet::clear_packet_stats);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "compression_mode", PROPERTY_HINT_ENUM, "None,Range Coder,FastLZ,ZLib,ZStd"), "set_compression_mode", "get_compression_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transfer_channel"), "set_transfer_channel", "get_transfer_channel");
@@ -904,6 +939,8 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	enet_compressor.destroy = enet_compressor_destroy;
 
 	bind_ip = IP_Address("*");
+
+	clear_packet_stats();
 }
 
 NetworkedMultiplayerENet::~NetworkedMultiplayerENet() {

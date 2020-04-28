@@ -73,6 +73,11 @@ private:
 	int channel_count;
 	bool always_ordered;
 
+	uint32_t num_packets_received;
+	uint32_t num_bytes_received;
+	uint32_t num_packets_sent;
+	uint32_t num_bytes_sent;
+
 	ENetEvent event;
 	ENetPeer *peer;
 	ENetHost *host;
@@ -161,6 +166,12 @@ public:
 	bool is_always_ordered() const;
 	void set_server_relay_enabled(bool p_enabled);
 	bool is_server_relay_enabled() const;
+
+	uint32_t get_num_packets_received() const;
+	uint32_t get_num_bytes_received() const;
+	uint32_t get_num_packets_sent() const;
+	uint32_t get_num_bytes_sent() const;
+	void clear_packet_stats();
 
 	NetworkedMultiplayerENet();
 	~NetworkedMultiplayerENet();

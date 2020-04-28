@@ -104,6 +104,42 @@
 				The IP used when creating a server. This is set to the wildcard [code]"*"[/code] by default, which binds to all available interfaces. The given IP needs to be in IPv4 or IPv6 address format, for example: [code]"192.168.1.1"[/code].
 			</description>
 		</method>
+		<method name="get_num_packets_sent">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of packets sent since the last clear.
+			</description>
+		</method>
+		<method name="get_num_packets_received">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of packets received since the last clear.
+			</description>
+		</method>
+		<method name="get_num_bytes_sent">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of bytes sent since the last clear.
+			</description>
+		</method>
+		<method name="get_num_bytes_received">
+			<return type="int">
+			</return>
+			<description>
+				Get the number of bytes received since the last clear.
+			</description>
+		</method>
+		<method name="clear_packet_stats">
+			<return type="void">
+			</return>
+			<description>
+				Clear the packet sent/received stats.
+			</description>
+		</method>
+
 	</methods>
 	<members>
 		<member name="always_ordered" type="bool" setter="set_always_ordered" getter="is_always_ordered" default="false">
