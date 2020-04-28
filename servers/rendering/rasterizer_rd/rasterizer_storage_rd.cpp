@@ -131,7 +131,6 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 				image->convert(Image::FORMAT_RGBAF);
 			}
 
-			r_format.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
@@ -171,7 +170,6 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 				image->convert(Image::FORMAT_RGBAH);
 			}
 
-			r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
