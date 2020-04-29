@@ -607,6 +607,7 @@ public:
 	struct ShaderNode : public Node {
 
 		struct Constant {
+			StringName name;
 			DataType type;
 			StringName type_str;
 			DataPrecision precision;
@@ -698,6 +699,7 @@ public:
 		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
+		Vector<Constant> vconstants;
 		Vector<Struct> vstructs;
 
 		ShaderNode() :

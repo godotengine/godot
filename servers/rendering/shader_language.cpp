@@ -6334,6 +6334,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					while (true) {
 						ShaderNode::Constant constant;
+						constant.name = name;
 						constant.type = is_struct ? TYPE_STRUCT : type;
 						constant.type_str = struct_name;
 						constant.precision = precision;
@@ -6373,6 +6374,8 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 						}
 
 						shader->constants[name] = constant;
+						shader->vconstants.push_back(constant);
+
 						if (tk.type == TK_COMMA) {
 							tk = _get_token();
 							if (tk.type != TK_IDENTIFIER) {
