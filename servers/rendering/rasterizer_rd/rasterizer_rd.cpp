@@ -30,6 +30,8 @@
 
 #include "rasterizer_rd.h"
 
+#include "core/project_settings.h"
+
 void RasterizerRD::prepare_for_blitting_render_targets() {
 	RD::get_singleton()->prepare_screen_for_drawing();
 }
@@ -78,6 +80,10 @@ void RasterizerRD::blit_render_targets_to_screen(DisplayServer::WindowID p_scree
 void RasterizerRD::begin_frame(double frame_step) {
 	frame++;
 	time += frame_step;
+
+	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	time = Math::fmod(time, time_roll_over);
+
 	canvas->set_time(time);
 	scene->set_time(time, frame_step);
 }
