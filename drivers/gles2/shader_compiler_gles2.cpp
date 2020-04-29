@@ -368,14 +368,14 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			// constants
 
-			for (Map<StringName, SL::ShaderNode::Constant>::Element *E = snode->constants.front(); E; E = E->next()) {
+			for (int i = 0; i < snode->vconstants.size(); i++) {
 				String gcode;
 				gcode += "const ";
-				gcode += _prestr(E->get().precision);
-				gcode += _typestr(E->get().type);
-				gcode += " " + _mkid(E->key());
+				gcode += _prestr(snode->vconstants[i].precision);
+				gcode += _typestr(snode->vconstants[i].type);
+				gcode += " " + _mkid(String(snode->vconstants[i].name));
 				gcode += "=";
-				gcode += _dump_node_code(E->get().initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				gcode += _dump_node_code(snode->vconstants[i].initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				gcode += ";\n";
 				vertex_global += gcode;
 				fragment_global += gcode;
