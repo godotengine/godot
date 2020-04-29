@@ -330,7 +330,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads an image from file [code]path[/code].
+				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 			</description>
 		</method>
 		<method name="load_jpg_from_buffer">
