@@ -145,6 +145,11 @@ void ConnectDialog::_text_entered(const String &p_text) {
 	_ok_pressed(); // From AcceptDialog.
 }
 
+void ConnectDialog::_text_changed(const String &p_text) {
+
+	_update_ok_enabled();
+}
+
 /*
  * Called each time a target node is selected within the target node tree.
  */
@@ -156,6 +161,7 @@ void ConnectDialog::_tree_node_selected() {
 		return;
 
 	dst_path = source->get_path_to(current);
+	_update_method_picker();
 	_update_ok_enabled();
 }
 
@@ -211,6 +217,65 @@ void ConnectDialog::_remove_bind() {
 	cdbinds->notify_changed();
 }
 
+void ConnectDialog::_update_method_picker() {
+
+	Node *target = tree->get_selected();
+	PopupMenu *method_menu = method_pick_button->get_popup();
+
+	method_pick_button->set_disabled(true);
+	method_menu->clear();
+
+	Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
+		get_theme_icon("Variant", "EditorIcons"),
+		get_theme_icon("bool", "EditorIcons"),
+		get_theme_icon("int", "EditorIcons"),
+		get_theme_icon("float", "EditorIcons"),
+		get_theme_icon("String", "EditorIcons"),
+		get_theme_icon("Vector2", "EditorIcons"),
+		get_theme_icon("Rect2", "EditorIcons"),
+		get_theme_icon("Vector3", "EditorIcons"),
+		get_theme_icon("Transform2D", "EditorIcons"),
+		get_theme_icon("Plane", "EditorIcons"),
+		get_theme_icon("Quat", "EditorIcons"),
+		get_theme_icon("AABB", "EditorIcons"),
+		get_theme_icon("Basis", "EditorIcons"),
+		get_theme_icon("Transform", "EditorIcons"),
+		get_theme_icon("Color", "EditorIcons"),
+		get_theme_icon("Path", "EditorIcons"),
+		get_theme_icon("RID", "EditorIcons"),
+		get_theme_icon("Object", "EditorIcons"),
+		get_theme_icon("Dictionary", "EditorIcons"),
+		get_theme_icon("Array", "EditorIcons"),
+		get_theme_icon("PackedByteArray", "EditorIcons"),
+		get_theme_icon("PackedInt32Array", "EditorIcons"),
+		get_theme_icon("PackedFloat32Array", "EditorIcons"),
+		get_theme_icon("PackedStringArray", "EditorIcons"),
+		get_theme_icon("PackedVector2Array", "EditorIcons"),
+		get_theme_icon("PackedVector3Array", "EditorIcons"),
+		get_theme_icon("PackedColorArray", "EditorIcons")
+	};
+
+	// If a script is attached, get methods from it
+	ScriptInstance *si = target->get_script_instance();
+	if (si) {
+		List<MethodInfo> methods;
+		si->get_method_list(&methods);
+
+		if (methods.size() == 0) {
+			method_menu->add_item(TTR("No methods available"), 0);
+			method_menu->set_item_disabled(0, true);
+		}
+
+		for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
+			MethodInfo mi = E->get();
+			Ref<Texture2D> icon = type_icons[mi.return_val.type];
+			method_menu->add_icon_item(icon, mi.name);
+		}
+
+		method_pick_button->set_disabled(false);
+	}
+}
+
 /*
  * Enables or disables the connect button. The connect button is enabled if a
  * node is selected and valid in the selected mode.
@@ -225,6 +290,11 @@ void ConnectDialog::_update_ok_enabled() {
 	}
 
 	if (!advanced->is_pressed() && target->get_script().is_null()) {
+		get_ok()->set_disabled(true);
+		return;
+	}
+
+	if (dst_method->get_text() == "") {
 		get_ok()->set_disabled(true);
 		return;
 	}
@@ -372,6 +442,12 @@ void ConnectDialog::_advanced_pressed() {
 	popup_centered();
 }
 
+void ConnectDialog::_method_selected(int p_index) {
+	String method_name = method_pick_button->get_popup()->get_item_text(p_index);
+	dst_method->set_text(method_name);
+	_update_ok_enabled();
+}
+
 ConnectDialog::ConnectDialog() {
 
 	set_min_size(Size2(600, 500) * EDSCALE);
@@ -387,9 +463,19 @@ ConnectDialog::ConnectDialog() {
 	main_hb->add_child(vbc_left);
 	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
+	HBoxContainer *from_signal_hb = memnew(HBoxContainer);
+
 	from_signal = memnew(LineEdit);
 	from_signal->set_editable(false);
-	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
+	from_signal->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	from_signal_hb->add_child(from_signal);
+
+	advanced = memnew(CheckButton);
+	from_signal_hb->add_child(advanced);
+	advanced->set_text(TTR("Advanced"));
+	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
+
+	vbc_left->add_margin_child(TTR("From Signal:"), from_signal_hb);
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
@@ -452,13 +538,16 @@ ConnectDialog::ConnectDialog() {
 
 	dst_method = memnew(LineEdit);
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	dst_method->connect("text_changed", callable_mp(this, &ConnectDialog::_text_changed));
 	dst_method->connect("text_entered", callable_mp(this, &ConnectDialog::_text_entered));
 	dstm_hb->add_child(dst_method);
 
-	advanced = memnew(CheckButton);
-	dstm_hb->add_child(advanced);
-	advanced->set_text(TTR("Advanced"));
-	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
+	method_pick_button = memnew(MenuButton);
+	dstm_hb->add_child(method_pick_button);
+	method_pick_button->set_flat(false);
+	method_pick_button->set_text("...");
+	method_pick_button->set_disabled(true);
+	method_pick_button->get_popup()->connect("index_pressed", callable_mp(this, &ConnectDialog::_method_selected));
 
 	// Add spacing so the tree and inspector are the same size.
 	Control *spacing = memnew(Control);

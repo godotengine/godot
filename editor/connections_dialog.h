@@ -88,6 +88,7 @@ private:
 	Node *source;
 	StringName signal;
 	LineEdit *dst_method;
+	MenuButton *method_pick_button;
 	ConnectDialogBinds *cdbinds;
 	bool bEditMode;
 	NodePath dst_path;
@@ -106,11 +107,14 @@ private:
 	void ok_pressed();
 	void _cancel_pressed();
 	void _item_activated();
+	void _text_changed(const String &_text);
 	void _text_entered(const String &_text);
 	void _tree_node_selected();
 	void _add_bind();
 	void _remove_bind();
 	void _advanced_pressed();
+	void _method_selected(int p_index);
+	void _update_method_picker();
 	void _update_ok_enabled();
 
 protected:
