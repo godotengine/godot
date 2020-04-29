@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+	@author AndreaCatania
+*/
+
 #include "input_buffer.h"
 
 #include "core/io/marshalls.h"

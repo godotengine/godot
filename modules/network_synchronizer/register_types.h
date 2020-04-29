@@ -28,5 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+	@author AndreaCatania
+*/
+
 void register_network_synchronizer_types();
 void unregister_network_synchronizer_types();

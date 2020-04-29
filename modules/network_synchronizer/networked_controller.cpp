@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+	@author AndreaCatania
+*/
+
 #include "networked_controller.h"
 
 #include "core/engine.h"

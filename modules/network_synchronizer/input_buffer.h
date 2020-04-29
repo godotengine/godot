@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+	@author AndreaCatania
+*/
+
 #include "scene/main/node.h"
 
 #include "bit_array.h"

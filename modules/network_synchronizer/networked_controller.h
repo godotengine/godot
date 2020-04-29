@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+	@author AndreaCatania
+*/
+
 #include "scene/main/node.h"
 
 #include "core/math/transform.h"
@@ -42,6 +46,24 @@
 struct Controller;
 class SceneRewinder;
 
+/// The `NetworkedController` is responsible to sync the `Player` inputs between
+/// the peers. This allows to control a character, or an object with high precision
+/// and replicates that movement on all connected peers.
+///
+/// The `NetworkedController` will sync inputs, based on those will perform
+/// operations.
+/// The result of these operations, are guaranteed to be the same accross the
+/// peers, if we stay under the assumption that the initial state is the same.
+///
+/// Is possible to use the `SceneRewinder` to keep the state in sync with the
+/// peers.
+///
+// # Implementation details
+//
+// The `NetworkedController` perform different operations depending where it's
+// instantiated.
+// The most important part is inside the `PlayerController`, `ServerController`,
+// `DollController`, `NoNetController`.
 class NetworkedController : public Node {
 	GDCLASS(NetworkedController, Node);
 

@@ -28,6 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+/**
+	@author AndreaCatania
+*/
+
 #include "scene/main/node.h"
 
 #include "core/hash_map.h"
@@ -71,6 +75,67 @@ struct NodeData {
 	int find_var_by_id(uint32_t p_id) const;
 };
 
+/// # SceneRewinder
+///
+/// The `SceneRewinder` is responsible to keep the scene of all peers in sync.
+/// Usually each peer has it istantiated, and depending if it's istantiated in
+/// the server or in the client, it does a different thing.
+///
+/// ## The `Player` is playing the game on the server.
+///
+/// The server is authoritative and it can't never be wrong. For this reason
+/// the `SceneRewinder` on the server sends at a fixed interval (defined by
+/// `server_notify_state_interval`) a snapshot to all peers.
+///
+/// The clients receives the server snapshot, so it compares with the local
+/// snapshot and if it's necessary perform the recovery.
+///
+/// ## Variable traking
+///
+/// The `SceneRewinder` is able to track any node variable. It's possible to specify
+/// the variables to track using the function `register_variable`.
+///
+/// ## NetworkedController
+/// The `NetworkedController` is able to aquire the `Player` input and perform
+/// operation in sync with other peers. When a discrepancy is found by the
+/// `SceneRewinder`, it will drive the `NetworkedController` so to recover that
+/// missalignment.
+///
+///
+/// ## Processing function
+/// Some objects, that are not direclty controlled by a `Player`, may need to be
+/// in sync between peers; since those are not controlled by a `Player` is
+/// not necessary use the `NetworkedController`.
+///
+/// It's possible to specify some process functions using `register_process`.
+/// The `SceneRewinder` will call these functions each frame, in sync with the
+/// other peers.
+///
+/// As example object we may think about a moving platform, or a bridge that
+/// opens and close, or even a simple timer to track the match time.
+/// An example implementation would be:
+/// ```
+/// var time := 0.0
+///
+/// func _ready():
+/// 	# Make sure this never go out of sync.
+/// 	SceneRewinder.register_variable(self, "time")
+///
+/// 	# Make sure to call this in sync with other peers.
+/// 	SceneRewinder.register_process(self, "in_sync_process")
+///
+/// func in_sync_process(delta: float):
+/// 	time += delta
+/// ```
+/// In the above code the variable `time` will always be in sync.
+///
+//
+// # Implementation details.
+//
+// The entry point of the above mechanism is the function `SceneRewinder::process()`.
+// The server `SceneRewinder` code is inside the class `ServerRewinder`.
+// The client `SceneRewinder` code is inside the class `ClientRewinder`.
+// The no networking `SceneRewinder` code is inside the class `NoNetRewinder`.
 class SceneRewinder : public Node {
 	GDCLASS(SceneRewinder, Node);
 
