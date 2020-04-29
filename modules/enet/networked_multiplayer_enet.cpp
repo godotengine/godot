@@ -355,6 +355,11 @@ void NetworkedMultiplayerENet::poll() {
 					uint32_t *id = (uint32_t *)event.peer->data;
 
 					ERR_CONTINUE(event.packet->dataLength < 8);
+					
+					if (track_packet_stats) {
+						num_packets_received++;
+						num_bytes_received += event.packet->dataLength - 8;
+					}
 
 					uint32_t source = decode_uint32(&event.packet->data[0]);
 					int target = decode_uint32(&event.packet->data[4]);
@@ -524,11 +529,6 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 
 	*r_buffer = (const uint8_t *)(&current_packet.packet->data[8]);
 	r_buffer_size = current_packet.packet->dataLength - 8;
-
-	if (track_packet_stats) {
-		num_packets_received++;
-		num_bytes_received += current_packet.packet->dataLength - 8;
-	}
 
 	return OK;
 }
