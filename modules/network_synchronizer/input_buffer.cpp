@@ -145,7 +145,7 @@ real_t InputsBuffer::add_unit_real(real_t p_input, CompressionLevel p_compressio
 
 	const int bits = get_bit_taken(DATA_TYPE_UNIT_REAL, p_compression_level);
 
-	const double max_value = ~(0xFFFFFFFF << bits);
+	const double max_value = static_cast<double>(~(0xFFFFFFFF << bits));
 
 	const uint64_t compressed_val = compress_unit_float(p_input, max_value);
 
@@ -161,7 +161,7 @@ real_t InputsBuffer::read_unit_real(CompressionLevel p_compression_level) {
 
 	const int bits = get_bit_taken(DATA_TYPE_UNIT_REAL, p_compression_level);
 
-	const double max_value = ~(0xFFFFFFFF << bits);
+	const double max_value = static_cast<double>(~(0xFFFFFFFF << bits));
 
 	const uint64_t compressed_val = buffer.read_bits(bit_offset, bits);
 	bit_offset += bits;
@@ -179,7 +179,7 @@ Vector2 InputsBuffer::add_normalized_vector2(Vector2 p_input, CompressionLevel p
 	const double angle = p_input.angle();
 	const uint32_t is_not_zero = p_input.length_squared() > CMP_EPSILON;
 
-	const double max_value = ~(0xFFFFFFFF << bits_for_the_angle);
+	const double max_value = static_cast<double>(~(0xFFFFFFFF << bits_for_the_angle));
 
 	const uint64_t compressed_angle = compress_unit_float((angle + Math_PI) / Math_TAU, max_value);
 
@@ -202,7 +202,7 @@ Vector2 InputsBuffer::read_normalized_vector2(CompressionLevel p_compression_lev
 	const int bits_for_the_angle = bits - 1;
 	const int bits_for_zero = 1;
 
-	const double max_value = ~(0xFFFFFFFF << bits_for_the_angle);
+	const double max_value = static_cast<double>(~(0xFFFFFFFF << bits_for_the_angle));
 
 	const real_t is_not_zero = buffer.read_bits(bit_offset, bits_for_zero);
 	const uint64_t compressed_angle = buffer.read_bits(bit_offset + 1, bits_for_the_angle);
@@ -221,7 +221,7 @@ Vector3 InputsBuffer::add_normalized_vector3(Vector3 p_input, CompressionLevel p
 	const int bits = get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR3, p_compression_level);
 	const int bits_for_the_axis = bits / 3;
 
-	const double max_value = ~(0xFFFFFFFF << bits_for_the_axis);
+	const double max_value = static_cast<double>(~(0xFFFFFFFF << bits_for_the_axis));
 
 	const uint64_t compressed_x_axis = compress_unit_float(p_input[0], max_value);
 	const uint64_t compressed_y_axis = compress_unit_float(p_input[1], max_value);
@@ -251,7 +251,7 @@ Vector3 InputsBuffer::read_normalized_vector3(CompressionLevel p_compression_lev
 	const int bits = get_bit_taken(DATA_TYPE_NORMALIZED_VECTOR3, p_compression_level);
 	const int bits_for_the_axis = bits / 3;
 
-	const double max_value = ~(0xFFFFFFFF << bits_for_the_axis);
+	const double max_value = static_cast<double>(~(0xFFFFFFFF << bits_for_the_axis));
 
 	const real_t decompressed_x_axis = decompress_unit_float(buffer.read_bits(bit_offset, bits_for_the_axis), max_value);
 	bit_offset += bits_for_the_axis;

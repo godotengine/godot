@@ -333,6 +333,7 @@ protected:
 
 public:
 	Rewinder(SceneRewinder *p_node);
+	virtual ~Rewinder();
 
 	virtual void clear() = 0;
 

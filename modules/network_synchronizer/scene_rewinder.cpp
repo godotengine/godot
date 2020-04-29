@@ -916,6 +916,9 @@ Rewinder::Rewinder(SceneRewinder *p_node) :
 		scene_rewinder(p_node) {
 }
 
+Rewinder::~Rewinder() {
+}
+
 NoNetRewinder::NoNetRewinder(SceneRewinder *p_node) :
 		Rewinder(p_node) {}
 
