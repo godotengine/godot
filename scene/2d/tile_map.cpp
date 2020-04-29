@@ -870,7 +870,7 @@ Vector<int> TileMap::get_line(int p_from_x, int p_to_x, int p_y) {
 	Vector<int> p_ids;
 
 	for (int x = p_from_x; x < p_to_x; x++) {
-		get_cell(x, p_y);
+		p_ids.push_back(get_cell(x, p_y));
 	 }
 
 	return p_ids;
