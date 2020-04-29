@@ -292,7 +292,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		line = p_state->line;
 		ip = p_state->ip;
 		alloca_size = p_state->stack.size();
-		script = p_state->script.ptr();
+		script = p_state->script;
 		p_instance = p_state->instance;
 		defarg = p_state->defarg;
 		self = p_state->self;
@@ -1271,13 +1271,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.stack_size = _stack_size;
 				gdfs->state.self = self;
 				gdfs->state.alloca_size = alloca_size;
-				gdfs->state.script = Ref<GDScript>(_script);
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
+				gdfs->state.script = _script;
+				gdfs->state.script_id = _script->get_instance_id();
+#ifdef DEBUG_ENABLED
+				gdfs->state.script_path = _script->get_path();
+#endif
+				gdfs->state.instance = p_instance;
 				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
 				//gdfs->state.result_pos=ip+ipofs-1;
 				gdfs->state.defarg = defarg;
-				gdfs->state.instance = p_instance;
 				gdfs->function = this;
 
 				retvalue = gdfs;
@@ -1828,9 +1832,17 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 		return false;
 
 	if (p_extended_check) {
-		//class instance gone?
-		if (state.instance_id && !ObjectDB::get_instance(state.instance_id))
-			return false;
+		if (state.instance_id) {
+			// Class instance gone? (Otherwise script is valid for sure, because the instance has a ref to the script)
+			if (!ObjectDB::get_instance(state.instance_id)) {
+				return false;
+			}
+		} else {
+			// Script gone? (Static method, so there's no instance whose ref to the script can ensure it's valid)
+			if (!ObjectDB::get_instance(state.script_id)) {
+				return false;
+			}
+		}
 	}
 
 	return true;
@@ -1839,12 +1851,22 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	ERR_FAIL_COND_V(!function, Variant());
-	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
+	if (state.instance_id) {
+		if (!ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
-		ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
 #else
-		return Variant();
+			return Variant();
 #endif
+		}
+	} else {
+		if (!ObjectDB::get_instance(state.script_id)) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
+#else
+			return Variant();
+#endif
+		}
 	}
 
 	state.result = p_arg;
