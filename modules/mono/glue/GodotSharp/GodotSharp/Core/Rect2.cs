@@ -127,7 +127,7 @@ namespace Godot
         {
             var g = this;
 
-            g.GrowIndividual(Margin.Left == margin ? by : 0,
+            g = g.GrowIndividual(Margin.Left == margin ? by : 0,
                     Margin.Top == margin ? by : 0,
                     Margin.Right == margin ? by : 0,
                     Margin.Bottom == margin ? by : 0);
