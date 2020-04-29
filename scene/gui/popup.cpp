@@ -39,6 +39,25 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_keycode() == KEY_ESCAPE) {
 		_close_pressed();
 	}
+
+	Ref<InputEventMouseButton> button = p_event;
+	if (button.is_valid() && !button->is_pressed() && button->get_window_id() != get_window_id()) {
+		if (invalidated_click) {
+			invalidated_click = false;
+		} else {
+			_close_pressed();
+		}
+	}
+
+	Ref<InputEventMouseMotion> mouse = p_event;
+	if (mouse.is_valid()) {
+		if (invalidated_click) {
+			moved += mouse->get_relative();
+			if (moved.length() > 4) {
+				invalidated_click = false;
+			}
+		}
+	}
 }
 
 void Popup::_parent_focused() {
@@ -96,6 +115,12 @@ void Popup::set_as_minsize() {
 	set_size(get_contents_minimum_size());
 }
 
+void Popup::popup(const Rect2 &p_bounds) {
+	moved = Vector2();
+	invalidated_click = true;
+	Window::popup(p_bounds);
+}
+
 void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
@@ -130,13 +155,13 @@ Rect2i Popup::_popup_adjust_rect() const {
 }
 
 Popup::Popup() {
-	parent_visible = nullptr;
-
 	set_wrap_controls(true);
 	set_visible(false);
 	set_transient(true);
 	set_flag(FLAG_BORDERLESS, true);
 	set_flag(FLAG_RESIZE_DISABLED, true);
+	set_flag(FLAG_NO_FOCUS, true);
+	set_flag(FLAG_INPUT_WITHOUT_FOCUS, true);
 
 	connect("window_input", callable_mp(this, &Popup::_input_from_window));
 }

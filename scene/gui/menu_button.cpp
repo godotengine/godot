@@ -59,6 +59,10 @@ void MenuButton::pressed() {
 			print_line("windowpos: " + w->get_position());
 		}
 	}
+	if (popup->is_visible()) {
+		return;
+	}
+
 	Size2 size = get_size();
 
 	Point2 gp = get_screen_position();

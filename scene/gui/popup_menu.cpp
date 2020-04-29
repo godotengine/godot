@@ -306,11 +306,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 					int over = _get_mouse_over(b->get_position());
 
-					if (invalidated_click) {
-						invalidated_click = false;
-						break;
-					}
-					if (over < 0) {
+					if (over < 0 || get_window_id() != b->get_window_id()) {
 						if (!was_during_grabbed_click) {
 							hide();
 						}
@@ -335,14 +331,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
 
-	if (m.is_valid()) {
-		if (invalidated_click) {
-			moved += m->get_relative();
-			if (moved.length() > 4) {
-				invalidated_click = false;
-			}
-		}
-
+	if (m.is_valid() && get_window_id() == m->get_window_id()) {
 		for (List<Rect2>::Element *E = autohide_areas.front(); E; E = E->next()) {
 			if (!Rect2(Point2(), get_size()).has_point(m->get_position()) && E->get().has_point(m->get_position())) {
 				_close_pressed();
@@ -1422,12 +1411,6 @@ void PopupMenu::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("index_pressed", PropertyInfo(Variant::INT, "index")));
 }
 
-void PopupMenu::popup(const Rect2 &p_bounds) {
-	moved = Vector2();
-	invalidated_click = true;
-	Popup::popup(p_bounds);
-}
-
 PopupMenu::PopupMenu() {
 	control = memnew(Control);
 	add_child(control);
@@ -1440,7 +1423,6 @@ PopupMenu::PopupMenu() {
 	submenu_over = -1;
 	initial_button_mask = 0;
 	during_grabbed_click = false;
-	invalidated_click = false;
 
 	allow_search = true;
 	search_time_msec = 0;

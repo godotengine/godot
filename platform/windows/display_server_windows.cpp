@@ -487,6 +487,9 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.no_focus = true;
 	}
+	if (p_flags & WINDOW_FLAG_INPUT_WITHOUT_FOCUS_BIT) {
+		wd.input_without_focus = true;
+	}
 
 	_update_window_style(window_id);
 
@@ -1013,6 +1016,9 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		} break;
 		case WINDOW_FLAG_MAX:
 			break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			wd.input_without_focus = p_enabled;
+		}
 	}
 }
 
@@ -1039,6 +1045,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_MAX:
 			break;
+		case WINDOW_FLAG_INPUT_WITHOUT_FOCUS: {
+			return wd.input_without_focus;
+		} break;
 	}
 
 	return false;
@@ -1716,6 +1725,17 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			return;
 		}
 		callable.call((const Variant **)&evp, 1, ret, ce);
+
+		//send to all windows that request always input and aren't the current window and are unfocused
+		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+			if (E->key() == event_from_window->get_window_id() || E->key() == MAIN_WINDOW_ID || (!E->get().input_without_focus && E->get().no_focus))
+				continue;
+			Callable callable = E->get().input_event_callback;
+			if (callable.is_null()) {
+				continue;
+			}
+			callable.call((const Variant **)&evp, 1, ret, ce);
+		}
 	} else {
 		//send to all windows
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -1839,6 +1859,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			return 0; // Jump Back
 		}
+		case WM_MOUSEACTIVATE: {
+			if (windows[window_id].no_focus)
+				return MA_NOACTIVATE;
+
+		} break;
 		case WM_MOUSELEAVE: {
 			old_invalid = true;
 			outside = true;
@@ -1917,7 +1942,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					*/
 				}
 
-				if (windows[window_id].window_has_focus && mm->get_relative() != Vector2())
+				if ((windows[window_id].window_has_focus || windows[window_id].input_without_focus) && mm->get_relative() != Vector2())
 					Input::get_singleton()->accumulate_input_event(mm);
 			}
 			delete[] lpb;
@@ -2152,7 +2177,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus) {
+			if (windows[window_id].window_has_focus || windows[window_id].input_without_focus) {
 				Input::get_singleton()->accumulate_input_event(mm);
 			}
 
@@ -2257,7 +2282,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
-			if (windows[window_id].window_has_focus)
+			if (windows[window_id].window_has_focus || windows[window_id].input_without_focus)
 				Input::get_singleton()->accumulate_input_event(mm);
 
 		} break;
@@ -2814,9 +2839,13 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
 	WindowID id = window_id_counter;
+
+	if (id > 0) {
+		dwExStyle |= WS_EX_TOOLWINDOW;
+	}
+
 	{
 		WindowData wd;
-
 		wd.hWnd = CreateWindowExW(
 				dwExStyle,
 				L"Engine", L"",

@@ -93,11 +93,9 @@ class PopupMenu : public Popup {
 	void _activate_submenu(int over);
 	void _submenu_timeout();
 
-	bool invalidated_click;
 	bool hide_on_item_selection;
 	bool hide_on_checkable_item_selection;
 	bool hide_on_multistate_item_selection;
-	Vector2 moved;
 
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
@@ -212,8 +210,6 @@ public:
 
 	void set_allow_search(bool p_allow);
 	bool get_allow_search() const;
-
-	virtual void popup(const Rect2 &p_bounds = Rect2());
 
 	void take_mouse_focus();
 

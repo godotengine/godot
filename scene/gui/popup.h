@@ -36,7 +36,10 @@
 class Popup : public Window {
 	GDCLASS(Popup, Window);
 
-	Window *parent_visible;
+	Window *parent_visible = nullptr;
+
+	bool invalidated_click = false;
+	Vector2 moved = Vector2();
 
 	void _input_from_window(const Ref<InputEvent> &p_event);
 	void _parent_focused();
@@ -50,6 +53,7 @@ protected:
 
 public:
 	void set_as_minsize();
+	virtual void popup(const Rect2 &p_bounds = Rect2());
 	Popup();
 	~Popup();
 };
