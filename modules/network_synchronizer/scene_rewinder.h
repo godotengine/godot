@@ -49,11 +49,12 @@ struct VarData {
 	uint32_t id;
 	StringName name;
 	Variant value;
+	bool skip_rewinding;
 	bool enabled;
 
 	VarData();
 	VarData(StringName p_name);
-	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled);
+	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
 
 	bool operator==(const VarData &p_other) const;
 };
@@ -62,6 +63,7 @@ struct NodeData {
 	uint32_t id;
 	ObjectID instance_id;
 	bool is_controller;
+	ObjectID controlled_by;
 	int registered_process_count;
 	Vector<VarData> vars;
 
@@ -227,7 +229,7 @@ public:
 	void set_comparison_float_tolerance(real_t p_tolerance);
 	real_t get_comparison_float_tolerance() const;
 
-	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName());
+	void register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify_to = StringName(), bool p_skip_rewinding = false);
 	void unregister_variable(Node *p_node, StringName p_variable);
 
 	String get_changed_event_name(StringName p_variable);
@@ -235,7 +237,8 @@ public:
 	void track_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 	void untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method);
 
-	void register_controller(Node *p_controller);
+	void set_node_as_controlled_by(Node *p_node, Node *p_controller);
+
 	void unregister_controller(Node *p_controller);
 
 	void _register_controller(NetworkedController *p_controller);
@@ -316,11 +319,11 @@ struct Snapshot {
 
 struct ControllerRewinder {
 	NetworkedController *controller;
-	uint64_t recovered_snapshot_input_id;
 	int frames_to_skip;
+	uint64_t recovered_snapshot_input_id;
 	bool finished;
 
-	void init(NetworkedController *p_controller, int p_frames, uint64_t p_recovered_snapshot_input_id);
+	void init(NetworkedController *p_controller, int p_frames_to_skip, uint64_t p_recovered_snapshot_input_id);
 	void advance(int p_i, real_t p_delta);
 	bool has_finished() const;
 	NetworkedController *get_controller() const;

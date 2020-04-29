@@ -49,18 +49,21 @@
 
 VarData::VarData() :
 		id(0),
+		skip_rewinding(false),
 		enabled(false) {}
 
 VarData::VarData(StringName p_name) :
 		id(0),
 		name(p_name),
+		skip_rewinding(false),
 		enabled(false) {
 }
 
-VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_enabled) :
+VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled) :
 		id(p_id),
 		name(p_name),
 		value(p_val),
+		skip_rewinding(p_skip_rewinding),
 		enabled(p_enabled) {
 }
 
@@ -123,7 +126,7 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_comparison_float_tolerance", "tolerance"), &SceneRewinder::set_comparison_float_tolerance);
 	ClassDB::bind_method(D_METHOD("get_comparison_float_tolerance"), &SceneRewinder::get_comparison_float_tolerance);
 
-	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify"), &SceneRewinder::register_variable, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("register_variable", "node", "variable", "on_change_notify", "skip_rewinding"), &SceneRewinder::register_variable, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("unregister_variable", "node", "variable"), &SceneRewinder::unregister_variable);
 
 	ClassDB::bind_method(D_METHOD("get_changed_event_name", "variable"), &SceneRewinder::get_changed_event_name);
@@ -131,7 +134,7 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("track_variable_changes", "node", "variable", "method"), &SceneRewinder::track_variable_changes);
 	ClassDB::bind_method(D_METHOD("untrack_variable_changes", "node", "variable", "method"), &SceneRewinder::untrack_variable_changes);
 
-	ClassDB::bind_method(D_METHOD("register_controller", "controller"), &SceneRewinder::register_controller);
+	ClassDB::bind_method(D_METHOD("set_node_as_controlled_by", "node", "controller"), &SceneRewinder::set_node_as_controlled_by);
 	ClassDB::bind_method(D_METHOD("unregister_controller", "controller"), &SceneRewinder::unregister_controller);
 
 	ClassDB::bind_method(D_METHOD("register_process", "node", "function"), &SceneRewinder::register_process);
@@ -152,7 +155,7 @@ void SceneRewinder::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_input_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_input_storage_size", "get_server_input_storage_size");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "out_of_sync_frames_tolerance", PROPERTY_HINT_RANGE, "1,500,1"), "set_out_of_sync_frames_tolerance", "get_out_of_sync_frames_tolerance");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "out_of_sync_frames_tolerance", PROPERTY_HINT_RANGE, "1,10000,1"), "set_out_of_sync_frames_tolerance", "get_out_of_sync_frames_tolerance");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "server_notify_state_interval", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001"), "set_server_notify_state_interval", "get_server_notify_state_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "comparison_float_tolerance", PROPERTY_HINT_RANGE, "0.000001,0.01,0.000001"), "set_comparison_float_tolerance", "get_comparison_float_tolerance");
@@ -199,7 +202,7 @@ SceneRewinder::SceneRewinder() :
 		tick_acceleration(2.0),
 		optimal_size_acceleration(2.5),
 		server_input_storage_size(30),
-		out_of_sync_frames_tolerance(20),
+		out_of_sync_frames_tolerance(120),
 		server_notify_state_interval(1.0),
 		comparison_float_tolerance(0.001),
 		rewinder(nullptr),
@@ -293,7 +296,7 @@ real_t SceneRewinder::get_comparison_float_tolerance() const {
 	return comparison_float_tolerance;
 }
 
-void SceneRewinder::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify) {
+void SceneRewinder::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify, bool p_skip_rewinding) {
 
 	NodeData *node_data = register_node(p_node);
 	ERR_FAIL_COND(node_data == nullptr);
@@ -306,8 +309,10 @@ void SceneRewinder::register_variable(Node *p_node, StringName p_variable, Strin
 				var_id,
 				p_variable,
 				old_val,
+				p_skip_rewinding,
 				true));
 	} else {
+		node_data->vars.write[id].skip_rewinding = p_skip_rewinding;
 		node_data->vars.write[id].enabled = true;
 	}
 
@@ -369,10 +374,25 @@ void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable
 	}
 }
 
-void SceneRewinder::register_controller(Node *p_controller) {
-	NetworkedController *c = Object::cast_to<NetworkedController>(p_controller);
-	ERR_FAIL_COND(c == nullptr);
-	register_node(p_controller);
+void SceneRewinder::set_node_as_controlled_by(Node *p_node, Node *p_controller) {
+	ERR_FAIL_COND(p_node == nullptr);
+	register_node(p_node);
+	if (p_controller) {
+		NetworkedController *c = Object::cast_to<NetworkedController>(p_controller);
+		ERR_FAIL_COND(c == nullptr);
+
+		register_node(p_controller);
+
+		NodeData *node_data = data.getptr(p_node->get_instance_id());
+		if (node_data == nullptr) {
+			node_data->controlled_by = p_controller->get_instance_id();
+		}
+	} else {
+		NodeData *node_data = data.getptr(p_node->get_instance_id());
+		if (node_data == nullptr) {
+			node_data->controlled_by = ObjectID();
+		}
+	}
 }
 
 void SceneRewinder::unregister_controller(Node *p_controller) {
@@ -752,7 +772,7 @@ void SceneRewinder::process() {
 		rewinder->process(delta);
 
 		sub_ticks -= 1;
-		is_pretended = true;
+		//is_pretended = true;
 	}
 
 	rewinder->post_process(delta);
@@ -867,14 +887,14 @@ Snapshot::operator String() const {
 
 void ControllerRewinder::init(
 		NetworkedController *p_controller,
-		int p_frames,
+		int p_frames_to_skip,
 		uint64_t p_recovered_snapshot_input_id) {
 
+	frames_to_skip = p_frames_to_skip;
 	recovered_snapshot_input_id = p_recovered_snapshot_input_id;
 	const bool rewinding_disabled = recovered_snapshot_input_id == UINT64_MAX;
 
 	controller = p_controller;
-	frames_to_skip = p_frames;
 
 	if (rewinding_disabled == false) {
 		const int remaining_inputs = controller->notify_input_checked(p_recovered_snapshot_input_id);
@@ -889,7 +909,7 @@ void ControllerRewinder::advance(int p_i, real_t p_delta) {
 		return;
 	}
 
-	const bool has_next = controller->process_instant(p_i, p_delta);
+	const bool has_next = controller->process_instant(p_i - frames_to_skip, p_delta);
 	if (has_next == false) {
 		finished = true;
 	}
@@ -1275,6 +1295,14 @@ bool ClientRewinder::compare_and_recovery(
 		const Snapshot &p_server_snapshot,
 		const Snapshot &p_client_snapshot) {
 
+	// TODO This must be improved because not all variable of a controller will
+	// require a full rewinding.
+	// Or the other way around, some nodes may hold some important data for the
+	// controller so it need a full rewind.
+	// Imagine: a controller needs the Character (its parent) transform in sync
+	// so when the transfrom is out of sync we need a rewind.
+	// Add a system to address that.
+
 	// Compare the server snapshot with the client snapshot and apply the server
 	// value if the difference found doesn't need a full recovery.
 	// Note: the full recovery sets the entire server snapshot, so just return
@@ -1305,7 +1333,8 @@ bool ClientRewinder::compare_and_recovery(
 		// Check if this node is sensible to changes, so a rewind is needed.
 		const bool sensible =
 				rew_node_data->is_controller ||
-				(rew_node_data->registered_process_count > 0);
+				rew_node_data->controlled_by.is_null() == false ||
+				rew_node_data->registered_process_count > 0;
 
 		const NodeData *c_data = p_client_snapshot.data.getptr(*key);
 		if (c_data == nullptr) {
@@ -1359,7 +1388,7 @@ bool ClientRewinder::compare_and_recovery(
 
 					node->emit_signal(scene_rewinder->get_changed_event_name(s_vars[s_var_index].name));
 
-					if (sensible) {
+					if (sensible && c_vars[c_var_index].skip_rewinding == false) {
 						need_rewind = true;
 					}
 				}
@@ -1381,7 +1410,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 
 	for (size_t i = 0; i < controller_size; i += 1) {
 
-		int frames_to_skip = 0; // Hard reset by default
+		int frames_to_skip = 0;
 		uint64_t rewind_input_id = UINT64_MAX; // Rewind disabled by default.
 
 		const uint64_t *server_input_id = p_server_snapshot
@@ -1390,7 +1419,6 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 
 		if (server_input_id != nullptr) {
 			const uint64_t siid = *server_input_id;
-			rewind_input_id = siid;
 
 #ifdef DEBUG_ENABLED
 			// The parser make sure this never happens
@@ -1405,8 +1433,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 														  .getptr(
 																  scene_rewinder->cached_controllers[i]->get_instance_id());
 
-				// TODO verify this code
-				if (client_input_id != nullptr && (*client_input_id) == UINT64_MAX) {
+				if (client_input_id != nullptr && (*client_input_id) != UINT64_MAX) {
 					// The doll on the client is likely behind the server,
 					// but it's not bring in line with it to avoid time jumps
 					// each rewinding.
@@ -1425,15 +1452,27 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 						// - Relative is more than the tolerance when the client
 						//   is too behind the server.
 						// In both cases, hard reset.
-						frames_to_skip = 0;
+						rewind_input_id = siid;
+						WARN_PRINT("The tolerance is not satisfied, the doll is hard resetted. `relative`: " + itos(relative));
 					} else {
-						// Relative is inside the allowed range, fluid rewinding.
-						frames_to_skip = relative;
+						// Relative is inside the allowed range, so we can
+						// rewind this doll from the client input id.
+						rewind_input_id = ciid;
 					}
+				} else {
+					WARN_PRINT("The input id on the client snapshot for this doll was not found. The server input id is: " + itos(siid));
+					rewind_input_id = siid;
 				}
 			} else {
+				// The main controller is always rewinded from the server snapshot.
+				rewind_input_id = siid;
+
 				main_controller_rewinder = rewinders + i;
 			}
+
+			// This is not supposed to happen.
+			if (rewind_input_id == UINT64_MAX)
+				ERR_PRINT("At this point the `rewind_input_id` is not supposed to be `UINT64_MAX`");
 		}
 
 		rewinders[i].init(
@@ -1455,6 +1494,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 #endif
 
 	// - 1 because there is still the recovering snapshot.
+	// TODO this function seems executed more than it should, the main controllers should never be out of inputs.
 	const int frames_to_rewind = snapshots.size() - 1;
 	for (int i = 0; i < frames_to_rewind; i += 1) {
 		const int snapshot_index = i + 1;
@@ -1472,6 +1512,25 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 		// Process the controllers
 		for (size_t c = 0; c < controller_size; c += 1) {
 			rewinders[c].advance(i, p_delta);
+
+			// TODO do this for any controller.
+			if (rewinders[c].controller != scene_rewinder->main_controller) {
+				// TODO do this only id debug
+				// TODO if an input is missing the processed remain like the previous one
+				// TODO make sure this case is also addressed.
+				if (rewinders[c].recovered_snapshot_input_id == UINT64_MAX) {
+					print_line("The rewind is disabled. Why???");
+				} else {
+					const uint64_t expected_input_id = (rewinders[c].recovered_snapshot_input_id == UINT64_MAX) ? UINT64_MAX : rewinders[c].recovered_snapshot_input_id + 1 + i;
+					const uint64_t processed_input_id = rewinders[c].get_processed_input_id(i);
+					if (expected_input_id != processed_input_id) {
+						print_line(itos(expected_input_id) + " != " + itos(processed_input_id));
+						//CRASH_COND(expected_input_id != processed_input_id);
+					} else {
+						print_line(itos(expected_input_id) + " == " + itos(processed_input_id));
+					}
+				}
+			}
 		}
 
 		// Update the snapshot.
@@ -1679,6 +1738,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				if (index == -1) {
 					// The variable is not known locally, so just add it so
 					// to store the variable ID.
+					const bool skip_rewinding = false;
 					const bool enabled = false;
 					rewinder_node_data->vars
 							.push_back(
@@ -1686,6 +1746,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 											var_id,
 											variable_name,
 											Variant(),
+											skip_rewinding,
 											enabled));
 				} else {
 					// The variable is known, just make sure that it has the
@@ -1723,6 +1784,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				// The server snapshot seems not contains this yet.
 				server_snap_variable_index = server_snapshot_node_data->vars.size();
 
+				const bool skip_rewinding = false;
 				const bool enabled = true;
 				server_snapshot_node_data->vars
 						.push_back(
@@ -1730,6 +1792,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 										var_id,
 										variable_name,
 										Variant(),
+										skip_rewinding,
 										enabled));
 
 			} else {

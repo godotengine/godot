@@ -773,7 +773,7 @@ int PlayerController::notify_input_checked(uint64_t p_input_id) {
 	while (frames_snapshot.empty() == false && frames_snapshot.front().id <= p_input_id) {
 		frames_snapshot.pop_front();
 	}
-	// Unreachable, because the next input have always the next `p_input_id` on client.
+	// Unreachable, because the next input have always the next `p_input_id` or empty.
 	CRASH_COND(frames_snapshot.empty() == false && (p_input_id + 1) != frames_snapshot.front().id);
 	return frames_snapshot.size();
 }
