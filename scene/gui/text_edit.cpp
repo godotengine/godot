@@ -1064,11 +1064,6 @@ void TextEdit::_notification(int p_what) {
 								break;
 							}
 
-							// re-adjust if we went backwards.
-							if (color != previous_color && !is_whitespace) {
-								characters++;
-							}
-
 							if (str[j] == '\t') {
 								tabs += minimap_tab_size;
 							}
