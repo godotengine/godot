@@ -269,7 +269,8 @@ public:
 	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
 	int get_cellv(const Vector2 &p_pos) const;
 
-	void set_line(const PoolIntArray &p_array, int p_y, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
+	void set_line(int p_x, int p_y, const Vector<int> &p_ids, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
+	Vector<int> get_line(int p_from_x, int p_to_x, int p_y);
 
 	void make_bitmask_area_dirty(const Vector2 &p_pos);
 	void update_bitmask_area(const Vector2 &p_pos);

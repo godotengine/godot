@@ -857,11 +857,23 @@ void TileMap::_set_celld(const Vector2 &p_pos, const Dictionary &p_data) {
 	call("set_cell", args, 7, ce);
 }
 
-void TileMap::set_line(const PoolIntArray &p_array, int p_y, bool p_flip_x, bool p_flip_y, bool p_transpose) {
+void TileMap::set_line(int p_x, int p_y, const Vector<int> &p_ids, bool p_flip_x, bool p_flip_y, bool p_transpose) {
 
-	for (int x = 0; x < p_array._p->array.size(); x++) {
-		set_cell(x, p_y, p_array[x], p_flip_x, p_flip_y, p_transpose);
+	for (int x = p_x; x < p_ids.size() + p_x; x++) {
+		set_cell(x, p_y, p_ids[x], p_flip_x, p_flip_y, p_transpose);
 	 }
+
+}
+
+Vector<int> TileMap::get_line(int p_from_x, int p_to_x, int p_y) {
+
+	Vector<int> p_ids;
+
+	for (int x = p_from_x; x < p_to_x; x++) {
+		get_cell(x, p_y);
+	 }
+
+	return p_ids;
 
 }
 
@@ -1877,6 +1889,9 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_cell_x_flipped", "x", "y"), &TileMap::is_cell_x_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_y_flipped", "x", "y"), &TileMap::is_cell_y_flipped);
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
+
+	ClassDB::bind_method(D_METHOD("set_line", "x", "y", "tiles", "flip_x", "flip_y", "transpose"), &TileMap::set_line, DEFVAL(false), DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_line", "from_x", "to_x","y"), &TileMap::get_line);
 
 	ClassDB::bind_method(D_METHOD("get_cell_autotile_coord", "x", "y"), &TileMap::get_cell_autotile_coord);
 
