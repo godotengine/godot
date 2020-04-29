@@ -1432,6 +1432,13 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			}
 		}
 
+		if (d.has("extensions")) {
+			Dictionary extensions = d["extensions"];
+			if (extensions.has("KHR_materials_pbrSpecularGlossiness")) {
+				return FAILED;
+			}
+		}
+
 		if (d.has("normalTexture")) {
 			const Dictionary &bct = d["normalTexture"];
 			if (bct.has("index")) {
