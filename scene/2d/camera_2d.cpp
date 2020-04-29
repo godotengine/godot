@@ -56,7 +56,7 @@ void Camera2D::_update_scroll() {
 
 		viewport->set_canvas_transform(xform);
 
-		Size2 screen_size = viewport->get_visible_rect().size;
+		Size2 screen_size = _get_camera_screen_size();
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5) : Point2());
 
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, group_name, "_camera_moved", xform, screen_offset);
@@ -94,7 +94,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	ERR_FAIL_COND_V(custom_viewport && !ObjectDB::get_instance(custom_viewport_id), Transform2D());
 
-	Size2 screen_size = viewport->get_visible_rect().size;
+	Size2 screen_size = _get_camera_screen_size();
 
 	Point2 new_camera_pos = get_global_transform().get_origin();
 	Point2 ret_camera_pos;
@@ -274,7 +274,7 @@ void Camera2D::_notification(int p_what) {
 				}
 
 				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
-				Size2 screen_size = get_viewport_rect().size;
+				Size2 screen_size = _get_camera_screen_size();
 
 				Vector2 screen_endpoints[4] = {
 					inv_camera_transform.xform(Vector2(0, 0)),
@@ -321,7 +321,7 @@ void Camera2D::_notification(int p_what) {
 				}
 
 				Transform2D inv_camera_transform = get_camera_transform().affine_inverse();
-				Size2 screen_size = get_viewport_rect().size;
+				Size2 screen_size = _get_camera_screen_size();
 
 				Vector2 margin_endpoints[4] = {
 					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[MARGIN_LEFT]), (screen_size.height / 2) - ((screen_size.height / 2) * drag_margin[MARGIN_TOP]))),
@@ -469,7 +469,7 @@ void Camera2D::reset_smoothing() {
 void Camera2D::align() {
 	ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
 
-	Size2 screen_size = viewport->get_visible_rect().size;
+	Size2 screen_size = _get_camera_screen_size();
 
 	Point2 current_camera_pos = get_global_transform().get_origin();
 	if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
@@ -505,6 +505,14 @@ float Camera2D::get_follow_smoothing() const {
 
 Point2 Camera2D::get_camera_screen_center() const {
 	return camera_screen_center;
+}
+
+Size2 Camera2D::_get_camera_screen_size() const {
+	// special case if the camera2D is in the root viewport
+	if (Engine::get_singleton()->is_editor_hint() && get_viewport()->get_parent_viewport() == get_tree()->get_root()) {
+		return Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+	}
+	return get_viewport_rect().size;
 }
 
 void Camera2D::set_h_drag_enabled(bool p_enabled) {
