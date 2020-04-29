@@ -975,11 +975,20 @@
 		<member name="rendering/gles2/batching/colored_vertex_format_threshold" type="float" setter="" getter="" default="0.25">
 			Including color in the vertex format has a cost, however, not including color prevents batching across color changes. This threshold determines the ratio of [code]number of vertex color changes / total number of vertices[/code] above which vertices will be translated to colored format. A value of 0 will always use colored vertices, 1 will never use colored vertices.
 		</member>
+		<member name="rendering/gles2/batching/item_reordering_lookahead" type="int" setter="" getter="" default="4">
+			In certain circumstances, the batcher can reorder items in order to better join them. This may result in better performance. An overlap test is needed however for each item lookahead, so there is a trade off, with diminishing returns. If you are getting no benefit, setting this to 0 will switch it off.
+		</member>
+		<member name="rendering/gles2/batching/light_max_join_items" type="int" setter="" getter="" default="32">
+			Lights have the potential to prevent joining items, and break many of the performance benefits of batching. This setting enables some complex logic to allow joining items if their lighting is similar, and overlap tests pass. This can significantly improve performance in some games. Set to 0 to switch off. With large values the cost of overlap tests may lead to diminishing returns.
+		</member>
 		<member name="rendering/gles2/batching/light_scissor_area_threshold" type="float" setter="" getter="" default="1.0">
 			Sets the proportion of the screen area that must be saved by a scissor operation in order to activate light scissoring. This can prevent parts of items being rendered outside the light area. Lower values scissor more aggressively. A value of 1 scissors none of the items, a value of 0 scissors every item. This can reduce fill rate requirements in scenes with a lot of lighting.
 		</member>
 		<member name="rendering/gles2/batching/max_join_item_commands" type="int" setter="" getter="" default="16">
 			Sets the number of commands to lookahead to determine whether to batch render items. A value of 1 can join items consisting of single commands, 0 turns off joining. Higher values are in theory more likely to join, however this has diminishing returns and has a runtime cost so a small value is recommended.
+		</member>
+		<member name="rendering/gles2/batching/single_rect_fallback" type="bool" setter="" getter="" default="false">
+			Enabling this uses the legacy method to draw single rects, which is faster, but can cause flicker on some systems. This is best disabled unless crucial for performance.
 		</member>
 		<member name="rendering/gles2/batching/use_batching" type="bool" setter="" getter="" default="true">
 			Turns batching on and off. Batching increases performance by reducing the amount of graphics API drawcalls.
