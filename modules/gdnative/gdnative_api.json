@@ -586,7 +586,7 @@
         ]
       },
       {
-        "name": "godot_color_linear_interpolate",
+        "name": "godot_color_lerp",
         "return_type": "godot_color",
         "arguments": [
           ["const godot_color *", "p_self"],
@@ -710,7 +710,7 @@
         ]
       },
       {
-        "name": "godot_vector2_linear_interpolate",
+        "name": "godot_vector2_lerp",
         "return_type": "godot_vector2",
         "arguments": [
           ["const godot_vector2 *", "p_self"],
@@ -1449,7 +1449,7 @@
         ]
       },
       {
-        "name": "godot_vector3_linear_interpolate",
+        "name": "godot_vector3_lerp",
         "return_type": "godot_vector3",
         "arguments": [
           ["const godot_vector3 *", "p_self"],

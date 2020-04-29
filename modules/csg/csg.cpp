@@ -50,7 +50,7 @@ inline static Vector2 interpolate_segment_uv(const Vector2 p_segement_points[2],
 	float distance = (p_interpolation_point - p_segement_points[0]).length();
 	float fraction = distance / segment_length;
 
-	return p_uvs[0].linear_interpolate(p_uvs[1], fraction);
+	return p_uvs[0].lerp(p_uvs[1], fraction);
 }
 
 inline static Vector2 interpolate_triangle_uv(const Vector2 p_vertices[3], const Vector2 p_uvs[3], const Vector2 &p_interpolation_point) {

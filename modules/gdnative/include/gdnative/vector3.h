@@ -86,7 +86,7 @@ godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_self, const god
 
 godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_self, const godot_vector3 *p_axis, const godot_real p_phi);
 
-godot_vector3 GDAPI godot_vector3_linear_interpolate(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t);
+godot_vector3 GDAPI godot_vector3_lerp(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_real p_t);
 
 godot_vector3 GDAPI godot_vector3_cubic_interpolate(const godot_vector3 *p_self, const godot_vector3 *p_b, const godot_vector3 *p_pre_a, const godot_vector3 *p_post_b, const godot_real p_t);
 

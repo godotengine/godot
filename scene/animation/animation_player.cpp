@@ -395,9 +395,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				} else {
 
-					nc->loc_accum = nc->loc_accum.linear_interpolate(loc, p_interp);
+					nc->loc_accum = nc->loc_accum.lerp(loc, p_interp);
 					nc->rot_accum = nc->rot_accum.slerp(rot, p_interp);
-					nc->scale_accum = nc->scale_accum.linear_interpolate(scale, p_interp);
+					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);
 				}
 
 			} break;

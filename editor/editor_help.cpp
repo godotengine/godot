@@ -47,12 +47,12 @@ void EditorHelp::_init_colors() {
 	title_color = get_theme_color("accent_color", "Editor");
 	text_color = get_theme_color("default_color", "RichTextLabel");
 	headline_color = get_theme_color("headline_color", "EditorHelp");
-	base_type_color = title_color.linear_interpolate(text_color, 0.5);
+	base_type_color = title_color.lerp(text_color, 0.5);
 	comment_color = text_color * Color(1, 1, 1, 0.6);
 	symbol_color = comment_color;
 	value_color = text_color * Color(1, 1, 1, 0.6);
 	qualifier_color = text_color * Color(1, 1, 1, 0.8);
-	type_color = get_theme_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
+	type_color = get_theme_color("accent_color", "Editor").lerp(text_color, 0.5);
 	class_desc->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	class_desc->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
 }
@@ -196,7 +196,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		}
 	}
 	const Color text_color = get_theme_color("default_color", "RichTextLabel");
-	const Color type_color = get_theme_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
+	const Color type_color = get_theme_color("accent_color", "Editor").lerp(text_color, 0.5);
 	class_desc->push_color(type_color);
 	bool add_array = false;
 	if (can_ref) {
@@ -1227,9 +1227,9 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	Color font_color_hl = p_rt->get_theme_color("headline_color", "EditorHelp");
 	Color accent_color = p_rt->get_theme_color("accent_color", "Editor");
 	Color property_color = p_rt->get_theme_color("property_color", "Editor");
-	Color link_color = accent_color.linear_interpolate(font_color_hl, 0.8);
-	Color code_color = accent_color.linear_interpolate(font_color_hl, 0.6);
-	Color kbd_color = accent_color.linear_interpolate(property_color, 0.6);
+	Color link_color = accent_color.lerp(font_color_hl, 0.8);
+	Color code_color = accent_color.lerp(font_color_hl, 0.6);
+	Color kbd_color = accent_color.lerp(property_color, 0.6);
 
 	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
 

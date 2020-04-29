@@ -268,7 +268,7 @@ void Node3DEditorViewport::_update_camera(float p_interp_delta) {
 			real_t factor = (1.0 / inertia) * p_interp_delta;
 
 			// We interpolate a different point here, because in freelook mode the focus point (cursor.pos) orbits around eye_pos
-			camera_cursor.eye_pos = old_camera_cursor.eye_pos.linear_interpolate(cursor.eye_pos, CLAMP(factor, 0, 1));
+			camera_cursor.eye_pos = old_camera_cursor.eye_pos.lerp(cursor.eye_pos, CLAMP(factor, 0, 1));
 
 			float orbit_inertia = EDITOR_GET("editors/3d/navigation_feel/orbit_inertia");
 			orbit_inertia = MAX(0.0001, orbit_inertia);
@@ -318,7 +318,7 @@ void Node3DEditorViewport::_update_camera(float p_interp_delta) {
 				camera_cursor.y_rot = cursor.y_rot;
 			}
 
-			camera_cursor.pos = old_camera_cursor.pos.linear_interpolate(cursor.pos, MIN(1.f, p_interp_delta * (1 / translation_inertia)));
+			camera_cursor.pos = old_camera_cursor.pos.lerp(cursor.pos, MIN(1.f, p_interp_delta * (1 / translation_inertia)));
 			camera_cursor.distance = Math::lerp(old_camera_cursor.distance, cursor.distance, MIN(1.f, p_interp_delta * (1 / zoom_inertia)));
 		}
 	}
@@ -4570,10 +4570,10 @@ void Node3DEditor::_generate_selection_box() {
 		st->add_color(Color(1.0, 1.0, 0.8, 0.8));
 		st->add_vertex(a);
 		st->add_color(Color(1.0, 1.0, 0.8, 0.4));
-		st->add_vertex(a.linear_interpolate(b, 0.2));
+		st->add_vertex(a.lerp(b, 0.2));
 
 		st->add_color(Color(1.0, 1.0, 0.8, 0.4));
-		st->add_vertex(a.linear_interpolate(b, 0.8));
+		st->add_vertex(a.lerp(b, 0.8));
 		st->add_color(Color(1.0, 1.0, 0.8, 0.8));
 		st->add_vertex(b);
 	}
