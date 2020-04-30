@@ -946,7 +946,7 @@ Error VulkanContext::_create_physical_device() {
 Error VulkanContext::_create_device() {
 	VkResult err;
 	float queue_priorities[1] = { 0.0 };
-	VkDeviceQueueCreateInfo queues[2];
+	VkDeviceQueueCreateInfo queues[3];
 	queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	queues[0].pNext = nullptr;
 	queues[0].queueFamilyIndex = graphics_queue_family_index;
@@ -968,13 +968,23 @@ Error VulkanContext::_create_device() {
 
 	};
 	if (separate_present_queue) {
-		queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queues[1].pNext = nullptr;
-		queues[1].queueFamilyIndex = present_queue_family_index;
-		queues[1].queueCount = 1;
-		queues[1].pQueuePriorities = queue_priorities;
-		queues[1].flags = 0;
-		sdevice.queueCreateInfoCount = 2;
+		queues[sdevice.queueCreateInfoCount].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queues[sdevice.queueCreateInfoCount].pNext = nullptr;
+		queues[sdevice.queueCreateInfoCount].queueFamilyIndex = present_queue_family_index;
+		queues[sdevice.queueCreateInfoCount].queueCount = 1;
+		queues[sdevice.queueCreateInfoCount].pQueuePriorities = queue_priorities;
+		queues[sdevice.queueCreateInfoCount].flags = 0;
+		sdevice.queueCreateInfoCount++;
+	}
+
+	if (separate_transfer_queue) {
+		queues[sdevice.queueCreateInfoCount].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queues[sdevice.queueCreateInfoCount].pNext = nullptr;
+		queues[sdevice.queueCreateInfoCount].queueFamilyIndex = transfer_queue_family_index;
+		queues[sdevice.queueCreateInfoCount].queueCount = 1; // TODO is having multiple transfer queues worthwhile when available?
+		queues[sdevice.queueCreateInfoCount].pQueuePriorities = queue_priorities;
+		queues[sdevice.queueCreateInfoCount].flags = 0;
+		sdevice.queueCreateInfoCount++;
 	}
 
 	VkPhysicalDeviceVulkan11Features vulkan11features;
@@ -1022,7 +1032,9 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 
 	// Search for a graphics and a present queue in the array of queue
 	// families, try to find one that supports both
+	// Search for dedicated transfer queue
 	uint32_t graphicsQueueFamilyIndex = UINT32_MAX;
+	uint32_t transferQueueFamilyIndex = UINT32_MAX;
 	uint32_t presentQueueFamilyIndex = UINT32_MAX;
 	for (uint32_t i = 0; i < queue_family_count; i++) {
 		if ((queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
@@ -1033,9 +1045,17 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 			if (supportsPresent[i] == VK_TRUE) {
 				graphicsQueueFamilyIndex = i;
 				presentQueueFamilyIndex = i;
-				break;
 			}
 		}
+
+		if ((queue_props[i].queueFlags & VK_QUEUE_TRANSFER_BIT) != 0 && (queue_props[i].queueFlags & VK_QUEUE_COMPUTE_BIT) == 0 && (queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) {
+			transferQueueFamilyIndex = i;
+		}
+	}
+
+	if (transferQueueFamilyIndex == UINT32_MAX) {
+		// No dedicated transfer queue, use graphics
+		transferQueueFamilyIndex = graphicsQueueFamilyIndex;
 	}
 
 	if (presentQueueFamilyIndex == UINT32_MAX) {
@@ -1057,7 +1077,9 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 
 	graphics_queue_family_index = graphicsQueueFamilyIndex;
 	present_queue_family_index = presentQueueFamilyIndex;
+	transfer_queue_family_index = transferQueueFamilyIndex;
 	separate_present_queue = (graphics_queue_family_index != present_queue_family_index);
+	separate_transfer_queue = (graphics_queue_family_index != transfer_queue_family_index) || (queue_props[graphics_queue_family_index].queueCount > 1);
 
 	_create_device();
 
@@ -1087,6 +1109,37 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR p_surface) {
 		present_queue = graphics_queue;
 	} else {
 		vkGetDeviceQueue(device, present_queue_family_index, 0, &present_queue);
+	}
+
+	if (separate_transfer_queue) {
+		vkGetDeviceQueue(device, transfer_queue_family_index, 0, &transfer_queue);
+		{ //create command pool for transfer operations
+			VkCommandPoolCreateInfo cmd_pool_info;
+			cmd_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			cmd_pool_info.pNext = nullptr;
+			cmd_pool_info.queueFamilyIndex = transfer_queue_family_index;
+			cmd_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+			VkResult res = vkCreateCommandPool(device, &cmd_pool_info, NULL, &transfer_command_pool);
+			ERR_FAIL_COND_V_MSG(res, ERR_CANT_CREATE, "vkCreateCommandPool failed with error " + itos(res) + ".");
+		}
+
+		{ //create transfer command buffer
+
+			VkCommandBufferAllocateInfo cmdbuf;
+			//no command buffer exists, create it.
+			cmdbuf.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			cmdbuf.pNext = nullptr;
+			cmdbuf.commandPool = transfer_command_pool;
+			cmdbuf.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+			cmdbuf.commandBufferCount = 1;
+
+			VkResult err = vkAllocateCommandBuffers(device, &cmdbuf, &transfer_command_buffer);
+			ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkAllocateCommandBuffers failed with error " + itos(err) + ".");
+		}
+
+	} else {
+		transfer_queue = graphics_queue;
 	}
 
 	// Get the list of VkFormat's that are supported:
@@ -2035,6 +2088,33 @@ VkQueue VulkanContext::get_graphics_queue() const {
 
 uint32_t VulkanContext::get_graphics_queue_family_index() const {
 	return graphics_queue_family_index;
+}
+uint32_t VulkanContext::get_transfer_queue() const {
+	return transfer_queue_family_index;
+}
+bool VulkanContext::is_using_separate_transfer_queue() const {
+	return separate_transfer_queue;
+}
+void VulkanContext::submit_transfer_queue() {
+	if (is_using_separate_transfer_queue()) {
+		VkSubmitInfo submit_info;
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.pNext = nullptr;
+		submit_info.pWaitDstStageMask = nullptr;
+		submit_info.waitSemaphoreCount = 0;
+		submit_info.pWaitSemaphores = nullptr;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &transfer_command_buffer;
+		submit_info.signalSemaphoreCount = 0;
+		submit_info.pSignalSemaphores = nullptr;
+		VkResult err = vkQueueSubmit(transfer_queue, 1, &submit_info, VK_NULL_HANDLE);
+		ERR_FAIL_COND(err);
+		vkDeviceWaitIdle(device);
+	}
+}
+
+VkCommandBuffer VulkanContext::get_transfer_command_buffer() const {
+	return transfer_command_buffer;
 }
 
 VkFormat VulkanContext::get_screen_format() const {

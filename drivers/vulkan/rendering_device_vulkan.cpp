@@ -1583,6 +1583,68 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 	return OK;
 }
 
+Error RenderingDeviceVulkan::_buffer_transfer(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size) {
+	VkCommandBuffer command_buffer = context->is_using_separate_transfer_queue() ? context->get_transfer_command_buffer() : frames[frame].setup_command_buffer;
+
+	if (context->is_using_separate_transfer_queue()) {
+		VkResult err = vkResetCommandBuffer(context->get_transfer_command_buffer(), 0);
+		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkResetCommandBuffer failed with error " + itos(err) + ".");
+
+		VkCommandBufferBeginInfo cmdbuf_begin;
+		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdbuf_begin.pNext = nullptr;
+		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		cmdbuf_begin.pInheritanceInfo = nullptr;
+
+		err = vkBeginCommandBuffer(context->get_transfer_command_buffer(), &cmdbuf_begin);
+		ERR_FAIL_COND_V_MSG(err, ERR_CANT_CREATE, "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+	}
+
+	//allocate buffer
+	Buffer tmp_buffer;
+	_buffer_allocate(&tmp_buffer, p_data_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+	void *buffer_mem;
+	VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
+	ERR_FAIL_COND_V_MSG(vkerr, ERR_CANT_CREATE, "vmaMapMemory failed with error " + itos(vkerr) + ".");
+
+	memcpy(buffer_mem, p_data, p_data_size);
+
+	vmaFlushAllocation(allocator, tmp_buffer.allocation, 0, VK_WHOLE_SIZE);
+
+	vmaUnmapMemory(allocator, tmp_buffer.allocation);
+
+	VkBufferCopy region;
+	region.srcOffset = 0;
+	region.dstOffset = 0;
+	region.size = p_data_size;
+
+	vkCmdCopyBuffer(command_buffer, tmp_buffer.buffer, p_buffer->buffer, 1, &region);
+
+	_buffer_free(&tmp_buffer);
+
+	if (context->is_using_separate_transfer_queue()) {
+		VkBufferMemoryBarrier buffer_memory_barrier;
+		buffer_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		buffer_memory_barrier.pNext = nullptr;
+		buffer_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		buffer_memory_barrier.dstAccessMask = 0;
+		buffer_memory_barrier.srcQueueFamilyIndex = context->get_transfer_queue();
+		buffer_memory_barrier.dstQueueFamilyIndex = context->get_graphics_queue_family_index();
+		buffer_memory_barrier.buffer = p_buffer->buffer;
+		buffer_memory_barrier.offset = 0;
+		buffer_memory_barrier.size = p_data_size;
+
+		vkCmdPipelineBarrier(context->get_transfer_command_buffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 1, &buffer_memory_barrier, 0, nullptr);
+
+		vkEndCommandBuffer(context->get_transfer_command_buffer());
+
+		context->submit_transfer_queue();
+	}
+
+	return OK;
+}
+
 Error RenderingDeviceVulkan::_buffer_update(Buffer *p_buffer, size_t p_offset, const uint8_t *p_data, size_t p_data_size, bool p_use_draw_command_buffer, uint32_t p_required_align) {
 	//submitting may get chunked for various reasons, so convert this to a task
 	size_t to_submit = p_data_size;
@@ -2014,15 +2076,31 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		ERR_FAIL_V_MSG(RID(), "vkCreateImageView failed with error " + itos(err) + ".");
 	}
 
+	VkCommandBuffer command_buffer = context->is_using_separate_transfer_queue() ? context->get_transfer_command_buffer() : frames[frame].setup_command_buffer;
+
+	if (context->is_using_separate_transfer_queue()) {
+		err = vkResetCommandBuffer(context->get_transfer_command_buffer(), 0);
+		ERR_FAIL_COND_V_MSG(err, RID(), "vkResetCommandBuffer failed with error " + itos(err) + ".");
+
+		VkCommandBufferBeginInfo cmdbuf_begin;
+		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdbuf_begin.pNext = nullptr;
+		cmdbuf_begin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		cmdbuf_begin.pInheritanceInfo = nullptr;
+
+		err = vkBeginCommandBuffer(context->get_transfer_command_buffer(), &cmdbuf_begin);
+		ERR_FAIL_COND_V_MSG(err, RID(), "vkBeginCommandBuffer failed with error " + itos(err) + ".");
+	}
+
 	//barrier to set layout
 	{
 		VkImageMemoryBarrier image_memory_barrier;
 		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		image_memory_barrier.pNext = nullptr;
 		image_memory_barrier.srcAccessMask = 0;
-		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		image_memory_barrier.dstAccessMask = context->is_using_separate_transfer_queue() ? VK_ACCESS_TRANSFER_WRITE_BIT : VK_ACCESS_SHADER_READ_BIT;
 		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		image_memory_barrier.newLayout = texture.layout;
+		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture.image;
@@ -2032,16 +2110,129 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
 		image_memory_barrier.subresourceRange.layerCount = image_create_info.arrayLayers;
 
-		vkCmdPipelineBarrier(frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, context->is_using_separate_transfer_queue() ? VK_PIPELINE_STAGE_TRANSFER_BIT : VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
 	}
 
 	RID id = texture_owner.make_rid(texture);
 
-	if (p_data.size()) {
-		for (uint32_t i = 0; i < image_create_info.arrayLayers; i++) {
-			_texture_update(id, i, p_data[i], RD::BARRIER_MASK_ALL, true);
-		}
+	if (!p_data.size()) {
+		return id;
 	}
+
+	for (int i = 0; i < p_data.size(); i++) {
+		const uint8_t *r = p_data[i].ptr();
+
+		//compute total image size
+		uint32_t width, height, depth;
+		uint32_t buffer_size = get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, texture.mipmaps, &width, &height, &depth);
+
+		//allocate buffer
+		Buffer tmp_buffer;
+		_buffer_allocate(&tmp_buffer, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+
+		void *buffer_mem;
+		VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
+		ERR_FAIL_COND_V_MSG(vkerr, RID(), "vmaMapMemory failed with error " + itos(vkerr) + ".");
+
+		memcpy(buffer_mem, r, buffer_size);
+
+		vmaFlushAllocation(allocator, tmp_buffer.allocation, 0, VK_WHOLE_SIZE);
+
+		vmaUnmapMemory(allocator, tmp_buffer.allocation);
+
+		uint32_t computed_w = texture.width;
+		uint32_t computed_h = texture.height;
+		uint32_t computed_d = texture.depth;
+
+		uint32_t prev_size = 0;
+		uint32_t offset = 0;
+
+		for (uint32_t mm = 0; mm < texture.mipmaps; mm++) {
+			uint32_t image_size = get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, mm + 1);
+			uint32_t size = image_size - prev_size;
+			prev_size = image_size;
+
+			VkBufferImageCopy buffer_image_copy;
+			buffer_image_copy.bufferOffset = offset;
+			buffer_image_copy.bufferRowLength = 0; //tigthly packed
+			buffer_image_copy.bufferImageHeight = 0; //tigthly packed
+
+			buffer_image_copy.imageSubresource.aspectMask = texture.read_aspect_mask;
+			buffer_image_copy.imageSubresource.mipLevel = mm;
+			buffer_image_copy.imageSubresource.baseArrayLayer = i;
+			buffer_image_copy.imageSubresource.layerCount = 1;
+
+			buffer_image_copy.imageOffset.x = 0;
+			buffer_image_copy.imageOffset.y = 0;
+			buffer_image_copy.imageOffset.z = 0;
+
+			buffer_image_copy.imageExtent.width = computed_w;
+			buffer_image_copy.imageExtent.height = computed_h;
+			buffer_image_copy.imageExtent.depth = computed_d;
+
+			vkCmdCopyBufferToImage(command_buffer, tmp_buffer.buffer, texture.image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &buffer_image_copy);
+			offset += size;
+			computed_w = MAX(1, computed_w >> 1);
+			computed_h = MAX(1, computed_h >> 1);
+			computed_d = MAX(1, computed_d >> 1);
+		}
+
+		_buffer_free(&tmp_buffer);
+	}
+
+	if (context->is_using_separate_transfer_queue()) {
+		{
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = nullptr;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = 0;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			image_memory_barrier.newLayout = texture.layout;
+			image_memory_barrier.srcQueueFamilyIndex = context->get_transfer_queue();
+			image_memory_barrier.dstQueueFamilyIndex = context->get_graphics_queue_family_index();
+			image_memory_barrier.image = texture.image;
+			image_memory_barrier.subresourceRange = image_view_create_info.subresourceRange;
+
+			vkCmdPipelineBarrier(context->get_transfer_command_buffer(), VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		}
+
+		{
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = nullptr;
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			image_memory_barrier.newLayout = texture.layout;
+			image_memory_barrier.srcQueueFamilyIndex = context->get_transfer_queue();
+			image_memory_barrier.dstQueueFamilyIndex = context->get_graphics_queue_family_index();
+			image_memory_barrier.image = texture.image;
+			image_memory_barrier.subresourceRange = image_view_create_info.subresourceRange;
+
+			vkCmdPipelineBarrier(frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		}
+
+		vkEndCommandBuffer(context->get_transfer_command_buffer());
+
+		context->submit_transfer_queue();
+	} else {
+		VkImageMemoryBarrier image_memory_barrier;
+		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		image_memory_barrier.pNext = nullptr;
+		image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		image_memory_barrier.newLayout = texture.layout;
+		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.image = texture.image;
+		image_memory_barrier.subresourceRange = image_view_create_info.subresourceRange;
+
+		vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+		_flush(true);
+	}
+
 	return id;
 }
 
@@ -4024,8 +4215,12 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Vec
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
+		_buffer_transfer(&buffer, r, data_size);
+		if (context->is_using_separate_transfer_queue()) {
+			_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
+		} else {
+			_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
+		}
 	}
 
 	return vertex_buffer_owner.make_rid(buffer);
@@ -4186,8 +4381,12 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&index_buffer, 0, r, data_size);
-		_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
+		_buffer_transfer(&index_buffer, r, data_size);
+		if (context->is_using_separate_transfer_queue()) {
+			_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, VK_ACCESS_INDEX_READ_BIT, false);
+		} else {
+			_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
+		}
 	}
 	return index_buffer_owner.make_rid(index_buffer);
 }
@@ -5296,8 +5495,12 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Ve
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
+		_buffer_transfer(&buffer, r, data_size);
+		if (context->is_using_separate_transfer_queue()) {
+			_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, VK_ACCESS_UNIFORM_READ_BIT, false);
+		} else {
+			_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
+		}
 	}
 	return uniform_buffer_owner.make_rid(buffer);
 }
@@ -5323,8 +5526,12 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Ve
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&buffer, 0, r, data_size);
-		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
+		_buffer_transfer(&buffer, r, data_size);
+		if (context->is_using_separate_transfer_queue()) {
+			_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
+		} else {
+			_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
+		}
 	}
 	return storage_buffer_owner.make_rid(buffer);
 }
@@ -5349,8 +5556,12 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		_buffer_update(&texture_buffer.buffer, 0, r, data_size);
-		_buffer_memory_barrier(texture_buffer.buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
+		_buffer_transfer(&texture_buffer.buffer, r, data_size);
+		if (context->is_using_separate_transfer_queue()) {
+			_buffer_memory_barrier(texture_buffer.buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, VK_ACCESS_SHADER_READ_BIT, false);
+		} else {
+			_buffer_memory_barrier(texture_buffer.buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
+		}
 	}
 
 	VkBufferViewCreateInfo view_create_info;

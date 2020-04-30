@@ -103,6 +103,13 @@ private:
 	bool separate_present_queue = false;
 	VkQueue graphics_queue = VK_NULL_HANDLE;
 	VkQueue present_queue = VK_NULL_HANDLE;
+
+	uint32_t transfer_queue_family_index = 0;
+	bool separate_transfer_queue = false;
+	VkCommandPool transfer_command_pool = VK_NULL_HANDLE;
+	VkCommandBuffer transfer_command_buffer = VK_NULL_HANDLE;
+	VkQueue transfer_queue = VK_NULL_HANDLE;
+
 	VkColorSpaceKHR color_space;
 	VkFormat format;
 	VkSemaphore draw_complete_semaphores[FRAME_LAG];
@@ -246,6 +253,10 @@ public:
 	int get_swapchain_image_count() const;
 	VkQueue get_graphics_queue() const;
 	uint32_t get_graphics_queue_family_index() const;
+	uint32_t get_transfer_queue() const;
+	void submit_transfer_queue();
+	bool is_using_separate_transfer_queue() const;
+	VkCommandBuffer get_transfer_command_buffer() const;
 
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	int window_get_width(DisplayServer::WindowID p_window = 0);
