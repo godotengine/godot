@@ -1185,3 +1185,42 @@ Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polyp
 	}
 	return polypaths;
 }
+
+Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int p_plane_count) {
+
+	Vector<Vector3> points;
+
+	// Iterate through every unique combination of any three planes.
+	for (int i = p_plane_count - 1; i >= 0; i--) {
+		for (int j = i - 1; j >= 0; j--) {
+			for (int k = j - 1; k >= 0; k--) {
+
+				// Find the point where these planes all cross over (if they
+				// do at all).
+				Vector3 convex_shape_point;
+				if (p_planes[i].intersect_3(p_planes[j], p_planes[k], &convex_shape_point)) {
+
+					// See if any *other* plane excludes this point because it's
+					// on the wrong side.
+					bool excluded = false;
+					for (int n = 0; n < p_plane_count; n++) {
+						if (n != i && n != j && n != k) {
+							real_t dp = p_planes[n].normal.dot(convex_shape_point);
+							if (dp - p_planes[n].d > CMP_EPSILON) {
+								excluded = true;
+								break;
+							}
+						}
+					}
+
+					// Only add the point if it passed all tests.
+					if (!excluded) {
+						points.push_back(convex_shape_point);
+					}
+				}
+			}
+		}
+	}
+
+	return points;
+}
