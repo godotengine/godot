@@ -15,6 +15,9 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_tinyexr.Prepend(CPPPATH=[thirdparty_dir])
 
+# Enable threaded loading with C++11.
+env_tinyexr.Append(CPPDEFINES=["TINYEXR_USE_THREAD"])
+
 env_thirdparty = env_tinyexr.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
