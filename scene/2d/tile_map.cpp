@@ -861,8 +861,7 @@ void TileMap::set_line(int p_x, int p_y, const Vector<int> &p_ids, bool p_flip_x
 
 	for (int x = p_x; x < p_ids.size() + p_x; x++) {
 		set_cell(x, p_y, p_ids[x], p_flip_x, p_flip_y, p_transpose);
-	 }
-
+	}
 }
 
 Vector<int> TileMap::get_line(int p_from_x, int p_to_x, int p_y) {
@@ -871,10 +870,9 @@ Vector<int> TileMap::get_line(int p_from_x, int p_to_x, int p_y) {
 
 	for (int x = p_from_x; x < p_to_x; x++) {
 		p_ids.push_back(get_cell(x, p_y));
-	 }
+	}
 
 	return p_ids;
-
 }
 
 void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_y, bool p_transpose, Vector2 p_autotile_coord) {
@@ -1891,7 +1889,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "x", "y"), &TileMap::is_cell_transposed);
 
 	ClassDB::bind_method(D_METHOD("set_line", "x", "y", "tiles", "flip_x", "flip_y", "transpose"), &TileMap::set_line, DEFVAL(false), DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_line", "from_x", "to_x","y"), &TileMap::get_line);
+	ClassDB::bind_method(D_METHOD("get_line", "from_x", "to_x", "y"), &TileMap::get_line);
 
 	ClassDB::bind_method(D_METHOD("get_cell_autotile_coord", "x", "y"), &TileMap::get_cell_autotile_coord);
 
