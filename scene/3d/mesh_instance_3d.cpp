@@ -271,6 +271,41 @@ void MeshInstance3D::create_convex_collision() {
 	}
 }
 
+Node *MeshInstance3D::create_multiple_convex_collisions_node() {
+	if (mesh.is_null()) {
+		return nullptr;
+	}
+
+	Vector<Ref<Shape3D>> shapes = mesh->convex_decompose();
+	if (!shapes.size()) {
+		return nullptr;
+	}
+
+	StaticBody3D *static_body = memnew(StaticBody3D);
+	for (int i = 0; i < shapes.size(); i++) {
+		CollisionShape3D *cshape = memnew(CollisionShape3D);
+		cshape->set_shape(shapes[i]);
+		static_body->add_child(cshape);
+	}
+	return static_body;
+}
+
+void MeshInstance3D::create_multiple_convex_collisions() {
+	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_multiple_convex_collisions_node());
+	ERR_FAIL_COND(!static_body);
+	static_body->set_name(String(get_name()) + "_col");
+
+	add_child(static_body);
+	if (get_owner()) {
+		static_body->set_owner(get_owner());
+		int count = static_body->get_child_count();
+		for (int i = 0; i < count; i++) {
+			CollisionShape3D *cshape = Object::cast_to<CollisionShape3D>(static_body->get_child(i));
+			cshape->set_owner(get_owner());
+		}
+	}
+}
+
 void MeshInstance3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_resolve_skeleton_path();
@@ -417,6 +452,8 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision"), &MeshInstance3D::create_convex_collision);
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions"), &MeshInstance3D::create_multiple_convex_collisions);
+	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
 
 	ClassDB::bind_method(D_METHOD("create_debug_tangents"), &MeshInstance3D::create_debug_tangents);
 	ClassDB::set_method_flags("MeshInstance3D", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
