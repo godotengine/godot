@@ -323,7 +323,7 @@ data. */
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_set_character_tables(pcre2_compile_context *ccontext,
-  const unsigned char *tables)
+  const uint8_t *tables)
 {
 ccontext->tables = tables;
 return 0;

@@ -88,11 +88,13 @@ Arguments:
   countptr        pointer to call count (to catch over complexity)
   backref_cache   vector for caching back references.
 
+This function is no longer called when the pattern contains (*ACCEPT); however,
+the old code for returning -1 is retained, just in case.
+
 Returns:   the minimum length
            -1 \C in UTF-8 mode
               or (*ACCEPT)
               or pattern too complicated
-              or back reference to duplicate name/number
            -2 internal error (missing capturing bracket)
            -3 internal error (opcode not listed)
 */
@@ -103,6 +105,7 @@ find_minlength(const pcre2_real_code *re, PCRE2_SPTR code,
   int *backref_cache)
 {
 int length = -1;
+int branchlength = 0;
 int prev_cap_recno = -1;
 int prev_cap_d = 0;
 int prev_recurse_recno = -1;
@@ -110,9 +113,9 @@ int prev_recurse_d = 0;
 uint32_t once_fudge = 0;
 BOOL had_recurse = FALSE;
 BOOL dupcapused = (re->flags & PCRE2_DUPCAPUSED) != 0;
-recurse_check this_recurse;
-int branchlength = 0;
+PCRE2_SPTR nextbranch = code + GET(code, 1);
 PCRE2_UCHAR *cc = (PCRE2_UCHAR *)code + 1 + LINK_SIZE;
+recurse_check this_recurse;
 
 /* If this is a "could be empty" group, its minimum length is 0. */
 
@@ -128,16 +131,20 @@ if ((*countptr)++ > 1000) return -1;
 
 /* Scan along the opcodes for this branch. If we get to the end of the branch,
 check the length against that of the other branches. If the accumulated length
-passes 16-bits, stop. */
+passes 16-bits, reset to that value and skip the rest of the branch. */
 
 for (;;)
   {
   int d, min, recno;
-  PCRE2_UCHAR *cs, *ce;
-  PCRE2_UCHAR op = *cc;
+  PCRE2_UCHAR op, *cs, *ce;
 
-  if (branchlength >= UINT16_MAX) return UINT16_MAX;
+  if (branchlength >= UINT16_MAX)
+    {
+    branchlength = UINT16_MAX;
+    cc = (PCRE2_UCHAR *)nextbranch;
+    }
 
+  op = *cc;
   switch (op)
     {
     case OP_COND:
@@ -206,7 +213,9 @@ for (;;)
     cc += 1 + LINK_SIZE;
     break;
 
-    /* ACCEPT makes things far too complicated; we have to give up. */
+    /* ACCEPT makes things far too complicated; we have to give up. In fact,
+    from 10.34 onwards, if a pattern contains (*ACCEPT), this function is not
+    used. However, leave the code in place, just in case. */
 
     case OP_ACCEPT:
     case OP_ASSERT_ACCEPT:
@@ -214,9 +223,9 @@ for (;;)
 
     /* Reached end of a branch; if it's a ket it is the end of a nested
     call. If it's ALT it is an alternation in a nested call. If it is END it's
-    the end of the outer call. All can be handled by the same code. If an
-    ACCEPT was previously encountered, use the length that was in force at that
-    time, and pass back the shortest ACCEPT length. */
+    the end of the outer call. All can be handled by the same code. If the
+    length of any branch is zero, there is no need to scan any subsequent
+    branches. */
 
     case OP_ALT:
     case OP_KET:
@@ -226,7 +235,8 @@ for (;;)
     case OP_END:
     if (length < 0 || (!had_recurse && branchlength < length))
       length = branchlength;
-    if (op != OP_ALT) return length;
+    if (op != OP_ALT || length == 0) return length;
+    nextbranch = cc + GET(cc, 1);
     cc += 1 + LINK_SIZE;
     branchlength = 0;
     had_recurse = FALSE;
@@ -238,6 +248,8 @@ for (;;)
     case OP_ASSERT_NOT:
     case OP_ASSERTBACK:
     case OP_ASSERTBACK_NOT:
+    case OP_ASSERT_NA:
+    case OP_ASSERTBACK_NA:
     do cc += GET(cc, 1); while (*cc == OP_ALT);
     /* Fall through */
 
@@ -451,15 +463,17 @@ for (;;)
 
     If PCRE2_MATCH_UNSET_BACKREF is set, a backreference to an unset bracket
     matches an empty string (by default it causes a matching failure), so in
-    that case we must set the minimum length to zero. */
+    that case we must set the minimum length to zero.
 
-    /* Duplicate named pattern back reference. We cannot reliably find a length
-    for this if duplicate numbers are present in the pattern. */
+    For backreferenes, if duplicate numbers are present in the pattern we check
+    for a reference to a duplicate. If it is, we don't know which version will
+    be referenced, so we have to set the minimum length to zero. */
+
+    /* Duplicate named pattern back reference. */
 
     case OP_DNREF:
     case OP_DNREFI:
-    if (dupcapused) return -1;
-    if ((re->overall_options & PCRE2_MATCH_UNSET_BACKREF) == 0)
+    if (!dupcapused && (re->overall_options & PCRE2_MATCH_UNSET_BACKREF) == 0)
       {
       int count = GET2(cc, 1+IMM2_SIZE);
       PCRE2_UCHAR *slot =
@@ -482,28 +496,32 @@ for (;;)
           ce = cs = (PCRE2_UCHAR *)PRIV(find_bracket)(startcode, utf, recno);
           if (cs == NULL) return -2;
           do ce += GET(ce, 1); while (*ce == OP_ALT);
-          if (cc > cs && cc < ce)    /* Simple recursion */
+
+          dd = 0;
+          if (!dupcapused ||
+              (PCRE2_UCHAR *)PRIV(find_bracket)(ce, utf, recno) == NULL)
             {
-            dd = 0;
-            had_recurse = TRUE;
-            }
-          else
-            {
-            recurse_check *r = recurses;
-            for (r = recurses; r != NULL; r = r->prev)
-              if (r->group == cs) break;
-            if (r != NULL)           /* Mutual recursion */
+            if (cc > cs && cc < ce)    /* Simple recursion */
               {
-              dd = 0;
               had_recurse = TRUE;
               }
             else
               {
-              this_recurse.prev = recurses;
-              this_recurse.group = cs;
-              dd = find_minlength(re, cs, startcode, utf, &this_recurse,
-                countptr, backref_cache);
-              if (dd < 0) return dd;
+              recurse_check *r = recurses;
+              for (r = recurses; r != NULL; r = r->prev)
+                if (r->group == cs) break;
+              if (r != NULL)           /* Mutual recursion */
+                {
+                had_recurse = TRUE;
+                }
+              else
+                {
+                this_recurse.prev = recurses;  /* No recursion */
+                this_recurse.group = cs;
+                dd = find_minlength(re, cs, startcode, utf, &this_recurse,
+                  countptr, backref_cache);
+                if (dd < 0) return dd;
+                }
               }
             }
 
@@ -521,48 +539,51 @@ for (;;)
     cc += 1 + 2*IMM2_SIZE;
     goto REPEAT_BACK_REFERENCE;
 
-    /* Single back reference. We cannot find a length for this if duplicate
-    numbers are present in the pattern. */
+    /* Single back reference by number. References by name are converted to by
+    number when there is no duplication. */
 
     case OP_REF:
     case OP_REFI:
-    if (dupcapused) return -1;
     recno = GET2(cc, 1);
     if (recno <= backref_cache[0] && backref_cache[recno] >= 0)
       d = backref_cache[recno];
     else
       {
       int i;
+      d = 0;
+
       if ((re->overall_options & PCRE2_MATCH_UNSET_BACKREF) == 0)
         {
         ce = cs = (PCRE2_UCHAR *)PRIV(find_bracket)(startcode, utf, recno);
         if (cs == NULL) return -2;
         do ce += GET(ce, 1); while (*ce == OP_ALT);
-        if (cc > cs && cc < ce)    /* Simple recursion */
+
+        if (!dupcapused ||
+            (PCRE2_UCHAR *)PRIV(find_bracket)(ce, utf, recno) == NULL)
           {
-          d = 0;
-          had_recurse = TRUE;
-          }
-        else
-          {
-          recurse_check *r = recurses;
-          for (r = recurses; r != NULL; r = r->prev) if (r->group == cs) break;
-          if (r != NULL)           /* Mutual recursion */
+          if (cc > cs && cc < ce)    /* Simple recursion */
             {
-            d = 0;
             had_recurse = TRUE;
             }
           else
             {
-            this_recurse.prev = recurses;
-            this_recurse.group = cs;
-            d = find_minlength(re, cs, startcode, utf, &this_recurse, countptr,
-              backref_cache);
-            if (d < 0) return d;
+            recurse_check *r = recurses;
+            for (r = recurses; r != NULL; r = r->prev) if (r->group == cs) break;
+            if (r != NULL)           /* Mutual recursion */
+              {
+              had_recurse = TRUE;
+              }
+            else                     /* No recursion */
+              {
+              this_recurse.prev = recurses;
+              this_recurse.group = cs;
+              d = find_minlength(re, cs, startcode, utf, &this_recurse, countptr,
+                backref_cache);
+              if (d < 0) return d;
+              }
             }
           }
         }
-      else d = 0;
 
       backref_cache[recno] = d;
       for (i = backref_cache[0] + 1; i < recno; i++) backref_cache[i] = -1;
@@ -888,7 +909,7 @@ if (table_limit != 32) for (c = 24; c < 32; c++) re->start_bitmap[c] = 0xff;
 
 
 /*************************************************
-*          Create bitmap of starting bytes       *
+*      Create bitmap of starting code units      *
 *************************************************/
 
 /* This function scans a compiled unanchored expression recursively and
@@ -938,6 +959,9 @@ do
     {
     int rc;
     uint8_t *classmap = NULL;
+#ifdef SUPPORT_WIDE_CHARS
+    PCRE2_UCHAR xclassflags;
+#endif
 
     switch(*tcode)
       {
@@ -1078,6 +1102,7 @@ do
       case OP_ONCE:
       case OP_SCRIPT_RUN:
       case OP_ASSERT:
+      case OP_ASSERT_NA:
       rc = set_start_bits(re, tcode, utf);
       if (rc == SSB_FAIL || rc == SSB_UNKNOWN) return rc;
       if (rc == SSB_DONE) try_next = FALSE; else
@@ -1120,6 +1145,7 @@ do
       case OP_ASSERT_NOT:
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
+      case OP_ASSERTBACK_NA:
       do tcode += GET(tcode, 1); while (*tcode == OP_ALT);
       tcode += 1 + LINK_SIZE;
       break;
@@ -1444,20 +1470,59 @@ do
       negative XCLASS without a map, give up. If there are no property checks,
       there must be wide characters on the XCLASS list, because otherwise an
       XCLASS would not have been created. This means that code points >= 255
-      are always potential starters. */
+      are potential starters. In the UTF-8 case we can scan them and set bits
+      for the relevant leading bytes. */
 
 #ifdef SUPPORT_WIDE_CHARS
       case OP_XCLASS:
-      if ((tcode[1 + LINK_SIZE] & XCL_HASPROP) != 0 ||
-          (tcode[1 + LINK_SIZE] & (XCL_MAP|XCL_NOT)) == XCL_NOT)
+      xclassflags = tcode[1 + LINK_SIZE];
+      if ((xclassflags & XCL_HASPROP) != 0 ||
+          (xclassflags & (XCL_MAP|XCL_NOT)) == XCL_NOT)
         return SSB_FAIL;
 
       /* We have a positive XCLASS or a negative one without a map. Set up the
       map pointer if there is one, and fall through. */
 
-      classmap = ((tcode[1 + LINK_SIZE] & XCL_MAP) == 0)? NULL :
+      classmap = ((xclassflags & XCL_MAP) == 0)? NULL :
         (uint8_t *)(tcode + 1 + LINK_SIZE + 1);
-#endif
+
+      /* In UTF-8 mode, scan the character list and set bits for leading bytes,
+      then jump to handle the map. */
+
+#if PCRE2_CODE_UNIT_WIDTH == 8
+      if (utf && (xclassflags & XCL_NOT) == 0)
+        {
+        PCRE2_UCHAR b, e;
+        PCRE2_SPTR p = tcode + 1 + LINK_SIZE + 1 + ((classmap == NULL)? 0:32);
+        tcode += GET(tcode, 1);
+
+        for (;;) switch (*p++)
+          {
+          case XCL_SINGLE:
+          b = *p++;
+          while ((*p & 0xc0) == 0x80) p++;
+          re->start_bitmap[b/8] |= (1u << (b&7));
+          break;
+
+          case XCL_RANGE:
+          b = *p++;
+          while ((*p & 0xc0) == 0x80) p++;
+          e = *p++;
+          while ((*p & 0xc0) == 0x80) p++;
+          for (; b <= e; b++)
+            re->start_bitmap[b/8] |= (1u << (b&7));
+          break;
+
+          case XCL_END:
+          goto HANDLE_CLASSMAP;
+
+          default:
+          return SSB_UNKNOWN;   /* Internal error, should not occur */
+          }
+        }
+#endif  /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8 */
+#endif  /* SUPPORT_WIDE_CHARS */
+
       /* It seems that the fall through comment must be outside the #ifdef if
       it is to avoid the gcc compiler warning. */
 
@@ -1499,6 +1564,9 @@ do
       greater than 127. In fact, there are only two possible starting bytes for
       characters in the range 128 - 255. */
 
+#if defined SUPPORT_WIDE_CHARS && PCRE2_CODE_UNIT_WIDTH == 8
+      HANDLE_CLASSMAP:
+#endif
       if (classmap != NULL)
         {
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
@@ -1569,7 +1637,9 @@ return yield;
 /* This function is handed a compiled expression that it must study to produce
 information that will speed up the matching.
 
-Argument:  points to the compiled expression
+Argument:
+  re       points to the compiled expression
+
 Returns:   0 normally; non-zero should never normally occur
            1 unknown opcode in set_start_bits
            2 missing capturing bracket
@@ -1579,7 +1649,6 @@ Returns:   0 normally; non-zero should never normally occur
 int
 PRIV(study)(pcre2_real_code *re)
 {
-int min;
 int count = 0;
 PCRE2_UCHAR *code;
 BOOL utf = (re->overall_options & PCRE2_UTF) != 0;
@@ -1597,25 +1666,121 @@ if ((re->flags & (PCRE2_FIRSTSET|PCRE2_STARTLINE)) == 0)
   {
   int rc = set_start_bits(re, code, utf);
   if (rc == SSB_UNKNOWN) return 1;
-  if (rc == SSB_DONE) re->flags |= PCRE2_FIRSTMAPSET;
+
+  /* If a list of starting code units was set up, scan the list to see if only
+  one or two were listed. Having only one listed is rare because usually a
+  single starting code unit will have been recognized and PCRE2_FIRSTSET set.
+  If two are listed, see if they are caseless versions of the same character;
+  if so we can replace the list with a caseless first code unit. This gives
+  better performance and is plausibly worth doing for patterns such as [Ww]ord
+  or (word|WORD). */
+
+  if (rc == SSB_DONE)
+    {
+    int i;
+    int a = -1;
+    int b = -1;
+    uint8_t *p = re->start_bitmap;
+    uint32_t flags = PCRE2_FIRSTMAPSET;
+
+    for (i = 0; i < 256; p++, i += 8)
+      {
+      uint8_t x = *p;
+      if (x != 0)
+        {
+        int c;
+        uint8_t y = x & (~x + 1);   /* Least significant bit */
+        if (y != x) goto DONE;      /* More than one bit set */
+
+        /* In the 16-bit and 32-bit libraries, the bit for 0xff means "0xff and
+        all wide characters", so we cannot use it here. */
+
+#if PCRE2_CODE_UNIT_WIDTH != 8
+        if (i == 248 && x == 0x80) goto DONE;
+#endif
+
+        /* Compute the character value */
+
+        c = i;
+        switch (x)
+          {
+          case 1:   break;
+          case 2:   c += 1; break;  case 4:  c += 2; break;
+          case 8:   c += 3; break;  case 16: c += 4; break;
+          case 32:  c += 5; break;  case 64: c += 6; break;
+          case 128: c += 7; break;
+          }
+
+        /* c contains the code unit value, in the range 0-255. In 8-bit UTF
+        mode, only values < 128 can be used. */
+
+#if PCRE2_CODE_UNIT_WIDTH == 8
+        if (c > 127) goto DONE;
+#endif
+        if (a < 0) a = c;   /* First one found */
+        else if (b < 0)     /* Second one found */
+          {
+          int d = TABLE_GET((unsigned int)c, re->tables + fcc_offset, c);
+
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+          if (utf && UCD_CASESET(c) != 0) goto DONE;   /* Multiple case set */
+#else   /* 16-bit or 32-bit */
+          if (UCD_CASESET(c) != 0) goto DONE;     /* Multiple case set */
+          if (utf && c > 127) d = UCD_OTHERCASE(c);
+#endif  /* Code width */
+#endif  /* SUPPORT_UNICODE */
+
+          if (d != a) goto DONE;   /* Not other case of a */
+          b = c;
+          }
+        else goto DONE;   /* More than two characters found */
+        }
+      }
+
+    /* Replace the start code unit bits with a first code unit, but only if it
+    is not the same as a required later code unit. This is because a search for
+    a required code unit starts after an explicit first code unit, but at a
+    code unit found from the bitmap. Patterns such as /a*a/ don't work
+    if both the start unit and required unit are the same. */
+
+    if (a >= 0 &&
+        (
+        (re->flags & PCRE2_LASTSET) == 0 ||
+          (
+          re->last_codeunit != (uint32_t)a &&
+          (b < 0 || re->last_codeunit != (uint32_t)b)
+          )
+        ))
+      {
+      re->first_codeunit = a;
+      flags = PCRE2_FIRSTSET;
+      if (b >= 0) flags |= PCRE2_FIRSTCASELESS;
+      }
+
+    DONE:
+    re->flags |= flags;
+    }
   }
 
 /* Find the minimum length of subject string. If the pattern can match an empty
-string, the minimum length is already known. If there are more back references
-than the size of the vector we are going to cache them in, do nothing. A
-pattern that complicated will probably take a long time to analyze and may in
-any case turn out to be too complicated. Note that back reference minima are
-held as 16-bit numbers. */
+string, the minimum length is already known. If the pattern contains (*ACCEPT)
+all bets are off, and we don't even try to find a minimum length. If there are
+more back references than the size of the vector we are going to cache them in,
+do nothing. A pattern that complicated will probably take a long time to
+analyze and may in any case turn out to be too complicated. Note that back
+reference minima are held as 16-bit numbers. */
 
-if ((re->flags & PCRE2_MATCH_EMPTY) == 0 &&
+if ((re->flags & (PCRE2_MATCH_EMPTY|PCRE2_HASACCEPT)) == 0 &&
      re->top_backref <= MAX_CACHE_BACKREF)
   {
+  int min;
   int backref_cache[MAX_CACHE_BACKREF+1];
   backref_cache[0] = 0;    /* Highest one that is set */
   min = find_minlength(re, code, code, utf, NULL, &count, backref_cache);
   switch(min)
     {
-    case -1:  /* \C in UTF mode or (*ACCEPT) or over-complex regex */
+    case -1:  /* \C in UTF mode or over-complex regex */
     break;    /* Leave minlength unchanged (will be zero) */
 
     case -2:
@@ -1625,8 +1790,7 @@ if ((re->flags & PCRE2_MATCH_EMPTY) == 0 &&
     return 3; /* unrecognized opcode */
 
     default:
-    if (min > UINT16_MAX) min = UINT16_MAX;
-    re->minlength = min;
+    re->minlength = (min > UINT16_MAX)? UINT16_MAX : min;
     break;
     }
   }
