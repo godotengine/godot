@@ -332,6 +332,8 @@ struct rcCompactSpan
 /// @ingroup recast
 struct rcCompactHeightfield
 {
+	rcCompactHeightfield();
+	~rcCompactHeightfield();
 	int width;					///< The width of the heightfield. (Along the x-axis in cell units.)
 	int height;					///< The height of the heightfield. (Along the z-axis in cell units.)
 	int spanCount;				///< The number of spans in the heightfield.
@@ -376,6 +378,8 @@ struct rcHeightfieldLayer
 /// @see rcAllocHeightfieldLayerSet, rcFreeHeightfieldLayerSet 
 struct rcHeightfieldLayerSet
 {
+	rcHeightfieldLayerSet();
+	~rcHeightfieldLayerSet();
 	rcHeightfieldLayer* layers;			///< The layers in the set. [Size: #nlayers]
 	int nlayers;						///< The number of layers in the set.
 };
@@ -395,6 +399,8 @@ struct rcContour
 /// @ingroup recast
 struct rcContourSet
 {
+	rcContourSet();
+	~rcContourSet();
 	rcContour* conts;	///< An array of the contours in the set. [Size: #nconts]
 	int nconts;			///< The number of contours in the set.
 	float bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
@@ -411,6 +417,8 @@ struct rcContourSet
 /// @ingroup recast
 struct rcPolyMesh
 {
+	rcPolyMesh();
+	~rcPolyMesh();
 	unsigned short* verts;	///< The mesh vertices. [Form: (x, y, z) * #nverts]
 	unsigned short* polys;	///< Polygon and neighbor data. [Length: #maxpolys * 2 * #nvp]
 	unsigned short* regs;	///< The region id assigned to each polygon. [Length: #maxpolys]

@@ -440,12 +440,12 @@ Files extracted from upstream source:
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
-- version: git (ef3ea40f, 2017)
+- Version: git (57610fa6ef31b39020231906f8c5d40eaa8294ae, 2019)
 - License: zlib
 
 Files extracted from upstream source:
 
-- `Recast/` folder
+- `Recast/` folder without `CMakeLists.txt`
 - License.txt
 
 
