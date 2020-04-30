@@ -352,10 +352,6 @@ Collection of single-file libraries used in Godot components.
 
 ### modules
 
-- `curl_hostcheck.{c,h}`
-  * Upstream: https://curl.haxx.se/
-  * Version: ? (2013)
-  * License: MIT
 - `yuv2rgb.h`
   * Upstream: http://wss.co.uk/pinknoise/yuv2rgb/ (to check)
   * Version: ?

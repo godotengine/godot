@@ -245,12 +245,6 @@ Comment: Clipper
 Copyright: 2010-2017, Angus Johnson
 License: BSL-1.0
 
-Files: ./thirdparty/misc/curl_hostcheck.c
- ./thirdparty/misc/curl_hostcheck.h
-Comment: curl
-Copyright: 1998-2012, Daniel Stenberg et al.
-License: curl
-
 Files: ./thirdparty/misc/easing_equations.cpp
 Comment: Robert Penner's Easing Functions
 Copyright: 2001, Robert Penner
@@ -837,25 +831,6 @@ License: CC-BY-3.0
  does not form part of this License.
  .
  Creative Commons may be contacted at http://creativecommons.org/.
-
-License: curl
- All rights reserved.
- .
- Permission to use, copy, modify, and distribute this software for any purpose
- with or without fee is hereby granted, provided that the above copyright
- notice and this permission notice appear in all copies.
- .
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN
- NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
- OR OTHER DEALINGS IN THE SOFTWARE.
- .
- Except as contained in this notice, the name of a copyright holder shall not
- be used in advertising or otherwise to promote the sale, use or other dealings
- in this Software without prior written authorization of the copyright holder.
 
 License: Expat
  Permission is hereby granted, free of charge, to any person obtaining
