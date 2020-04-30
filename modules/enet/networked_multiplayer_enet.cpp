@@ -355,7 +355,7 @@ void NetworkedMultiplayerENet::poll() {
 					uint32_t *id = (uint32_t *)event.peer->data;
 
 					ERR_CONTINUE(event.packet->dataLength < 8);
-					
+
 					if (track_packet_stats) {
 						num_packets_received++;
 						num_bytes_received += event.packet->dataLength - 8;
