@@ -517,6 +517,7 @@ bytes in a code unit in that mode. */
 #define PCRE2_HASBKPORX     0x00100000  /* contains \P, \p, or \X */
 #define PCRE2_DUPCAPUSED    0x00200000  /* contains (?| */
 #define PCRE2_HASBKC        0x00400000  /* contains \C */
+#define PCRE2_HASACCEPT     0x00800000  /* contains (*ACCEPT) */
 
 #define PCRE2_MODE_MASK     (PCRE2_MODE8 | PCRE2_MODE16 | PCRE2_MODE32)
 
@@ -535,13 +536,14 @@ enum { PCRE2_MATCHEDBY_INTERPRETER,     /* pcre2_match() */
 #define MAGIC_NUMBER  0x50435245UL   /* 'PCRE' */
 
 /* The maximum remaining length of subject we are prepared to search for a
-req_unit match. In 8-bit mode, memchr() is used and is much faster than the
-search loop that has to be used in 16-bit and 32-bit modes. */
+req_unit match from an anchored pattern. In 8-bit mode, memchr() is used and is
+much faster than the search loop that has to be used in 16-bit and 32-bit
+modes. */
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
-#define REQ_CU_MAX 2000
+#define REQ_CU_MAX       5000
 #else
-#define REQ_CU_MAX 1000
+#define REQ_CU_MAX       2000
 #endif
 
 /* Offsets for the bitmap tables in the cbits set of tables. Each table
@@ -881,12 +883,16 @@ a positive value. */
 #define STRING_atomic0               "atomic\0"
 #define STRING_pla0                  "pla\0"
 #define STRING_plb0                  "plb\0"
+#define STRING_napla0                "napla\0"
+#define STRING_naplb0                "naplb\0"
 #define STRING_nla0                  "nla\0"
 #define STRING_nlb0                  "nlb\0"
 #define STRING_sr0                   "sr\0"
 #define STRING_asr0                  "asr\0"
 #define STRING_positive_lookahead0   "positive_lookahead\0"
 #define STRING_positive_lookbehind0  "positive_lookbehind\0"
+#define STRING_non_atomic_positive_lookahead0   "non_atomic_positive_lookahead\0"
+#define STRING_non_atomic_positive_lookbehind0  "non_atomic_positive_lookbehind\0"
 #define STRING_negative_lookahead0   "negative_lookahead\0"
 #define STRING_negative_lookbehind0  "negative_lookbehind\0"
 #define STRING_script_run0           "script_run\0"
@@ -1171,12 +1177,16 @@ only. */
 #define STRING_atomic0               STR_a STR_t STR_o STR_m STR_i STR_c "\0"
 #define STRING_pla0                  STR_p STR_l STR_a "\0"
 #define STRING_plb0                  STR_p STR_l STR_b "\0"
+#define STRING_napla0                STR_n STR_a STR_p STR_l STR_a "\0"
+#define STRING_naplb0                STR_n STR_a STR_p STR_l STR_b "\0"
 #define STRING_nla0                  STR_n STR_l STR_a "\0"
 #define STRING_nlb0                  STR_n STR_l STR_b "\0"
 #define STRING_sr0                   STR_s STR_r "\0"
 #define STRING_asr0                  STR_a STR_s STR_r "\0"
 #define STRING_positive_lookahead0   STR_p STR_o STR_s STR_i STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_a STR_h STR_e STR_a STR_d "\0"
 #define STRING_positive_lookbehind0  STR_p STR_o STR_s STR_i STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_b STR_e STR_h STR_i STR_n STR_d "\0"
+#define STRING_non_atomic_positive_lookahead0   STR_n STR_o STR_n STR_UNDERSCORE STR_a STR_t STR_o STR_m STR_i STR_c STR_UNDERSCORE STR_p STR_o STR_s STR_i STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_a STR_h STR_e STR_a STR_d "\0"
+#define STRING_non_atomic_positive_lookbehind0  STR_n STR_o STR_n STR_UNDERSCORE STR_a STR_t STR_o STR_m STR_i STR_c STR_UNDERSCORE STR_p STR_o STR_s STR_i STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_b STR_e STR_h STR_i STR_n STR_d "\0"
 #define STRING_negative_lookahead0   STR_n STR_e STR_g STR_a STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_a STR_h STR_e STR_a STR_d "\0"
 #define STRING_negative_lookbehind0  STR_n STR_e STR_g STR_a STR_t STR_i STR_v STR_e STR_UNDERSCORE STR_l STR_o STR_o STR_k STR_b STR_e STR_h STR_i STR_n STR_d "\0"
 #define STRING_script_run0           STR_s STR_c STR_r STR_i STR_p STR_t STR_UNDERSCORE STR_r STR_u STR_n "\0"
@@ -1301,7 +1311,7 @@ enum { ESC_A = 1, ESC_G, ESC_K, ESC_B, ESC_b, ESC_D, ESC_d, ESC_S, ESC_s,
 Starting from 1 (i.e. after OP_END), the values up to OP_EOD must correspond in
 order to the list of escapes immediately above. Furthermore, values up to
 OP_DOLLM must not be changed without adjusting the table called autoposstab in
-pcre2_auto_possess.c
+pcre2_auto_possess.c.
 
 Whenever this list is updated, the two macro definitions that follow must be
 updated to match. The possessification table called "opcode_possessify" in
@@ -1499,80 +1509,81 @@ enum {
   OP_KETRMIN,        /* 123 order. They are for groups the repeat for ever. */
   OP_KETRPOS,        /* 124 Possessive unlimited repeat. */
 
-  /* The assertions must come before BRA, CBRA, ONCE, and COND, and the four
-  asserts must remain in order. */
+  /* The assertions must come before BRA, CBRA, ONCE, and COND. */
 
   OP_REVERSE,        /* 125 Move pointer back - used in lookbehind assertions */
   OP_ASSERT,         /* 126 Positive lookahead */
   OP_ASSERT_NOT,     /* 127 Negative lookahead */
   OP_ASSERTBACK,     /* 128 Positive lookbehind */
   OP_ASSERTBACK_NOT, /* 129 Negative lookbehind */
+  OP_ASSERT_NA,      /* 130 Positive non-atomic lookahead */
+  OP_ASSERTBACK_NA,  /* 131 Positive non-atomic lookbehind */
 
   /* ONCE, SCRIPT_RUN, BRA, BRAPOS, CBRA, CBRAPOS, and COND must come
   immediately after the assertions, with ONCE first, as there's a test for >=
   ONCE for a subpattern that isn't an assertion. The POS versions must
   immediately follow the non-POS versions in each case. */
 
-  OP_ONCE,           /* 130 Atomic group, contains captures */
-  OP_SCRIPT_RUN,     /* 131 Non-capture, but check characters' scripts */
-  OP_BRA,            /* 132 Start of non-capturing bracket */
-  OP_BRAPOS,         /* 133 Ditto, with unlimited, possessive repeat */
-  OP_CBRA,           /* 134 Start of capturing bracket */
-  OP_CBRAPOS,        /* 135 Ditto, with unlimited, possessive repeat */
-  OP_COND,           /* 136 Conditional group */
+  OP_ONCE,           /* 132 Atomic group, contains captures */
+  OP_SCRIPT_RUN,     /* 133 Non-capture, but check characters' scripts */
+  OP_BRA,            /* 134 Start of non-capturing bracket */
+  OP_BRAPOS,         /* 135 Ditto, with unlimited, possessive repeat */
+  OP_CBRA,           /* 136 Start of capturing bracket */
+  OP_CBRAPOS,        /* 137 Ditto, with unlimited, possessive repeat */
+  OP_COND,           /* 138 Conditional group */
 
   /* These five must follow the previous five, in the same order. There's a
   check for >= SBRA to distinguish the two sets. */
 
-  OP_SBRA,           /* 137 Start of non-capturing bracket, check empty  */
-  OP_SBRAPOS,        /* 138 Ditto, with unlimited, possessive repeat */
-  OP_SCBRA,          /* 139 Start of capturing bracket, check empty */
-  OP_SCBRAPOS,       /* 140 Ditto, with unlimited, possessive repeat */
-  OP_SCOND,          /* 141 Conditional group, check empty */
+  OP_SBRA,           /* 139 Start of non-capturing bracket, check empty  */
+  OP_SBRAPOS,        /* 149 Ditto, with unlimited, possessive repeat */
+  OP_SCBRA,          /* 141 Start of capturing bracket, check empty */
+  OP_SCBRAPOS,       /* 142 Ditto, with unlimited, possessive repeat */
+  OP_SCOND,          /* 143 Conditional group, check empty */
 
   /* The next two pairs must (respectively) be kept together. */
 
-  OP_CREF,           /* 142 Used to hold a capture number as condition */
-  OP_DNCREF,         /* 143 Used to point to duplicate names as a condition */
-  OP_RREF,           /* 144 Used to hold a recursion number as condition */
-  OP_DNRREF,         /* 145 Used to point to duplicate names as a condition */
-  OP_FALSE,          /* 146 Always false (used by DEFINE and VERSION) */
-  OP_TRUE,           /* 147 Always true (used by VERSION) */
+  OP_CREF,           /* 144 Used to hold a capture number as condition */
+  OP_DNCREF,         /* 145 Used to point to duplicate names as a condition */
+  OP_RREF,           /* 146 Used to hold a recursion number as condition */
+  OP_DNRREF,         /* 147 Used to point to duplicate names as a condition */
+  OP_FALSE,          /* 148 Always false (used by DEFINE and VERSION) */
+  OP_TRUE,           /* 149 Always true (used by VERSION) */
 
-  OP_BRAZERO,        /* 148 These two must remain together and in this */
-  OP_BRAMINZERO,     /* 149 order. */
-  OP_BRAPOSZERO,     /* 150 */
+  OP_BRAZERO,        /* 150 These two must remain together and in this */
+  OP_BRAMINZERO,     /* 151 order. */
+  OP_BRAPOSZERO,     /* 152 */
 
   /* These are backtracking control verbs */
 
-  OP_MARK,           /* 151 always has an argument */
-  OP_PRUNE,          /* 152 */
-  OP_PRUNE_ARG,      /* 153 same, but with argument */
-  OP_SKIP,           /* 154 */
-  OP_SKIP_ARG,       /* 155 same, but with argument */
-  OP_THEN,           /* 156 */
-  OP_THEN_ARG,       /* 157 same, but with argument */
-  OP_COMMIT,         /* 158 */
-  OP_COMMIT_ARG,     /* 159 same, but with argument */
+  OP_MARK,           /* 153 always has an argument */
+  OP_PRUNE,          /* 154 */
+  OP_PRUNE_ARG,      /* 155 same, but with argument */
+  OP_SKIP,           /* 156 */
+  OP_SKIP_ARG,       /* 157 same, but with argument */
+  OP_THEN,           /* 158 */
+  OP_THEN_ARG,       /* 159 same, but with argument */
+  OP_COMMIT,         /* 160 */
+  OP_COMMIT_ARG,     /* 161 same, but with argument */
 
   /* These are forced failure and success verbs. FAIL and ACCEPT do accept an
   argument, but these cases can be compiled as, for example, (*MARK:X)(*FAIL)
   without the need for a special opcode. */
 
-  OP_FAIL,           /* 160 */
-  OP_ACCEPT,         /* 161 */
-  OP_ASSERT_ACCEPT,  /* 162 Used inside assertions */
-  OP_CLOSE,          /* 163 Used before OP_ACCEPT to close open captures */
+  OP_FAIL,           /* 162 */
+  OP_ACCEPT,         /* 163 */
+  OP_ASSERT_ACCEPT,  /* 164 Used inside assertions */
+  OP_CLOSE,          /* 165 Used before OP_ACCEPT to close open captures */
 
   /* This is used to skip a subpattern with a {0} quantifier */
 
-  OP_SKIPZERO,       /* 164 */
+  OP_SKIPZERO,       /* 166 */
 
   /* This is used to identify a DEFINE group during compilation so that it can
   be checked for having only one branch. It is changed to OP_FALSE before
   compilation finishes. */
 
-  OP_DEFINE,         /* 165 */
+  OP_DEFINE,         /* 167 */
 
   /* This is not an opcode, but is used to check that tables indexed by opcode
   are the correct length, in order to catch updating errors - there have been
@@ -1585,7 +1596,7 @@ enum {
 /* *** NOTE NOTE NOTE *** Whenever the list above is updated, the two macro
 definitions that follow must also be updated to match. There are also tables
 called "opcode_possessify" in pcre2_compile.c and "coptable" and "poptable" in
-pcre2_dfa_exec.c that must be updated. */
+pcre2_dfa_match.c that must be updated. */
 
 
 /* This macro defines textual names for all the opcodes. These are used only
@@ -1618,7 +1629,9 @@ some cases doesn't actually use these names at all). */
   "class", "nclass", "xclass", "Ref", "Refi", "DnRef", "DnRefi",  \
   "Recurse", "Callout", "CalloutStr",                             \
   "Alt", "Ket", "KetRmax", "KetRmin", "KetRpos",                  \
-  "Reverse", "Assert", "Assert not", "AssertB", "AssertB not",    \
+  "Reverse", "Assert", "Assert not",                              \
+  "Assert back", "Assert back not",                               \
+  "Non-atomic assert", "Non-atomic assert back",                  \
   "Once",                                                         \
   "Script run",                                                   \
   "Bra", "BraPos", "CBra", "CBraPos",                             \
@@ -1703,6 +1716,8 @@ in UTF-8 mode. The code that uses this table must know about such things. */
   1+LINK_SIZE,                   /* Assert not                             */ \
   1+LINK_SIZE,                   /* Assert behind                          */ \
   1+LINK_SIZE,                   /* Assert behind not                      */ \
+  1+LINK_SIZE,                   /* NA Assert                              */ \
+  1+LINK_SIZE,                   /* NA Assert behind                       */ \
   1+LINK_SIZE,                   /* ONCE                                   */ \
   1+LINK_SIZE,                   /* SCRIPT_RUN                             */ \
   1+LINK_SIZE,                   /* BRA                                    */ \

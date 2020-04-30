@@ -39,8 +39,10 @@ static sljit_s32 emit_load_imm64(struct sljit_compiler *compiler, sljit_s32 reg,
 	return SLJIT_SUCCESS;
 }
 
-static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_ptr, sljit_s32 type)
+static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_ptr)
 {
+	sljit_s32 type = jump->flags >> TYPE_SHIFT;
+
 	int short_addr = !(jump->flags & SLJIT_REWRITABLE_JUMP) && !(jump->flags & JUMP_LABEL) && (jump->u.target <= 0xffffffff);
 
 	/* The relative jump below specialized for this case. */
@@ -69,6 +71,56 @@ static sljit_u8* generate_far_jump_code(struct sljit_jump *jump, sljit_u8 *code_
 	*code_ptr++ = GROUP_FF;
 	*code_ptr++ = MOD_REG | (type >= SLJIT_FAST_CALL ? CALL_rm : JMP_rm) | reg_lmap[TMP_REG2];
 
+	return code_ptr;
+}
+
+static sljit_u8* generate_put_label_code(struct sljit_put_label *put_label, sljit_u8 *code_ptr, sljit_uw max_label)
+{
+	if (max_label > HALFWORD_MAX) {
+		put_label->addr -= put_label->flags;
+		put_label->flags = PATCH_MD;
+		return code_ptr;
+	}
+
+	if (put_label->flags == 0) {
+		/* Destination is register. */
+		code_ptr = (sljit_u8*)put_label->addr - 2 - sizeof(sljit_uw);
+
+		SLJIT_ASSERT((code_ptr[0] & 0xf8) == REX_W);
+		SLJIT_ASSERT((code_ptr[1] & 0xf8) == MOV_r_i32);
+
+		if ((code_ptr[0] & 0x07) != 0) {
+			code_ptr[0] = (sljit_u8)(code_ptr[0] & ~0x08);
+			code_ptr += 2 + sizeof(sljit_s32);
+		}
+		else {
+			code_ptr[0] = code_ptr[1];
+			code_ptr += 1 + sizeof(sljit_s32);
+		}
+
+		put_label->addr = (sljit_uw)code_ptr;
+		return code_ptr;
+	}
+
+	code_ptr -= put_label->flags + (2 + sizeof(sljit_uw));
+	SLJIT_MEMMOVE(code_ptr, code_ptr + (2 + sizeof(sljit_uw)), put_label->flags);
+
+	SLJIT_ASSERT((code_ptr[0] & 0xf8) == REX_W);
+
+	if ((code_ptr[1] & 0xf8) == MOV_r_i32) {
+		code_ptr += 2 + sizeof(sljit_uw);
+		SLJIT_ASSERT((code_ptr[0] & 0xf8) == REX_W);
+	}
+
+	SLJIT_ASSERT(code_ptr[1] == MOV_rm_r);
+
+	code_ptr[0] = (sljit_u8)(code_ptr[0] & ~0x4);
+	code_ptr[1] = MOV_rm_i32;
+	code_ptr[2] = (sljit_u8)(code_ptr[2] & ~(0x7 << 3));
+
+	code_ptr = (sljit_u8*)(put_label->addr - (2 + sizeof(sljit_uw)) + sizeof(sljit_s32));
+	put_label->addr = (sljit_uw)code_ptr;
+	put_label->flags = 0;
 	return code_ptr;
 }
 

@@ -267,6 +267,7 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_jump_addr(sljit_uw addr, sljit_uw new_ta
 {
 	sljit_ins *inst = (sljit_ins *)addr;
 
+	SLJIT_ASSERT(((inst[0] & 0xc1c00000) == 0x01000000) && ((inst[1] & 0xc1f82000) == 0x80102000));
 	inst[0] = (inst[0] & 0xffc00000) | ((new_target >> 10) & 0x3fffff);
 	inst[1] = (inst[1] & 0xfffffc00) | (new_target & 0x3ff);
 	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
@@ -277,6 +278,7 @@ SLJIT_API_FUNC_ATTRIBUTE void sljit_set_const(sljit_uw addr, sljit_sw new_consta
 {
 	sljit_ins *inst = (sljit_ins *)addr;
 
+	SLJIT_ASSERT(((inst[0] & 0xc1c00000) == 0x01000000) && ((inst[1] & 0xc1f82000) == 0x80102000));
 	inst[0] = (inst[0] & 0xffc00000) | ((new_constant >> 10) & 0x3fffff);
 	inst[1] = (inst[1] & 0xfffffc00) | (new_constant & 0x3ff);
 	inst = (sljit_ins *)SLJIT_ADD_EXEC_OFFSET(inst, executable_offset);
