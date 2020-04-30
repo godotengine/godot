@@ -324,7 +324,7 @@ Collection of single-file libraries used in Godot components.
   * License: BSL-1.0
 - `fastlz.{c,h}`
   * Upstream: https://github.com/ariya/FastLZ
-  * Version: git (f121734, 2007)
+  * Version: 0.5.0 (4f20f54d46f5a6dd4fae4def134933369b7602d2, 2020)
   * License: MIT
 - `hq2x.{cpp,h}`
   * Upstream: https://github.com/brunexgeek/hqx

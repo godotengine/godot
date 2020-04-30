@@ -253,7 +253,7 @@ License: BSD-3-clause
 Files: ./thirdparty/misc/fastlz.c
  ./thirdparty/misc/fastlz.h
 Comment: FastLZ
-Copyright: 2005-2007, Ariya Hidayat
+Copyright: 2005-2020, Ariya Hidayat
 License: Expat
 
 Files: ./thirdparty/misc/hq2x.cpp
