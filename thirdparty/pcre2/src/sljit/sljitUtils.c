@@ -154,7 +154,13 @@ SLJIT_API_FUNC_ATTRIBUTE void SLJIT_FUNC sljit_release_lock(void)
 #include "windows.h"
 #else
 /* Provides mmap function. */
+#include <sys/types.h>
 #include <sys/mman.h>
+#ifndef MAP_ANON
+#ifdef MAP_ANONYMOUS
+#define MAP_ANON MAP_ANONYMOUS
+#endif
+#endif
 /* For detecting the page size. */
 #include <unistd.h>
 
