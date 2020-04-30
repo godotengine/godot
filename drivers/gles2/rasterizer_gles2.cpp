@@ -277,9 +277,8 @@ void RasterizerGLES2::begin_frame(double frame_step) {
 		frame_step = 0.001;
 	}
 
-	// double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
-	// if (time_total > time_roll_over)
-	//	time_total = 0; //roll over every day (should be customz
+	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	time_total = Math::fmod(time_total, time_roll_over);
 
 	storage->frame.time[0] = time_total;
 	storage->frame.time[1] = Math::fmod(time_total, 3600);
