@@ -354,6 +354,8 @@ public:
 	void set_button_index(int p_index);
 	int get_button_index() const;
 
+	int get_button_index_with_modifiers() const;
+
 	void set_pressed(bool p_pressed);
 	virtual bool is_pressed() const;
 
@@ -365,6 +367,8 @@ public:
 
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
+
+	virtual bool shortcut_match(const Ref<InputEvent> &p_event) const;
 
 	InputEventMouseButton();
 };

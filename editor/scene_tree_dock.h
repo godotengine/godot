@@ -194,7 +194,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _nodes_drag_begin();
 	void _input(Ref<InputEvent> p_event);
-	void _unhandled_key_input(Ref<InputEvent> p_event);
 
 	void _import_subscene();
 

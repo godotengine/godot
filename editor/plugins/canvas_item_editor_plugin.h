@@ -463,7 +463,7 @@ private:
 
 	void _keying_changed();
 
-	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
+	void _input(const Ref<InputEvent> &p_ev);
 
 	void _draw_text_at_position(Point2 p_position, String p_string, Margin p_side);
 	void _draw_margin_at_position(int p_value, Point2 p_position, Margin p_side);

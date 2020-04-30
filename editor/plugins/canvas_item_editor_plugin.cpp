@@ -473,18 +473,20 @@ float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
 	}
 }
 
-void CanvasItemEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
+void CanvasItemEditor::_input(const Ref<InputEvent> &p_ev) {
 
 	Ref<InputEventKey> k = p_ev;
 
 	if (!is_visible_in_tree())
 		return;
 
-	if (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT) {
+	if (k.is_valid() && (k->is_pressed() && (k->get_keycode() == KEY_CONTROL || k->get_keycode() == KEY_ALT || k->get_keycode() == KEY_SHIFT))) {
 		viewport->update();
 	}
 
-	if (k->is_pressed() && !k->get_control() && !k->is_echo()) {
+	Ref<InputEventMouseButton> mb = p_ev;
+
+	if ((k.is_valid() && (k->is_pressed() && !k->get_control() && !k->is_echo())) || (mb.is_valid() && mb->is_pressed())) {
 		if ((grid_snap_active || show_grid) && multiply_grid_step_shortcut.is_valid() && multiply_grid_step_shortcut->is_shortcut(p_ev)) {
 			// Multiply the grid size
 			grid_step_multiplier = MIN(grid_step_multiplier + 1, 12);
@@ -1256,8 +1258,9 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		}
 	}
 
+	// TODO: Check
 	Ref<InputEventKey> k = p_event;
-	if (k.is_valid()) {
+	if (k.is_valid() || b.is_valid()) {
 		bool is_pan_key = pan_view_shortcut.is_valid() && pan_view_shortcut->is_shortcut(p_event);
 
 		if (is_pan_key && (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || drag_type != DRAG_NONE)) {
@@ -5093,7 +5096,7 @@ void CanvasItemEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_override_camera_button", "game_running"), &CanvasItemEditor::_update_override_camera_button);
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
-	ClassDB::bind_method("_unhandled_key_input", &CanvasItemEditor::_unhandled_key_input);
+	ClassDB::bind_method("_input", &CanvasItemEditor::_input);
 	ClassDB::bind_method("_queue_update_bone_list", &CanvasItemEditor::_update_bone_list);
 	ClassDB::bind_method("_update_bone_list", &CanvasItemEditor::_update_bone_list);
 	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
@@ -5807,7 +5810,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	skeleton_menu->get_popup()->set_item_checked(skeleton_menu->get_popup()->get_item_index(SKELETON_SHOW_BONES), true);
 	singleton = this;
 
-	set_process_unhandled_key_input(true);
+	set_process_input(true);
 
 	// Update the menus' checkboxes
 	call_deferred("set_state", get_state());

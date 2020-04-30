@@ -71,9 +71,6 @@ void SceneTreeDock::_input(Ref<InputEvent> p_event) {
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 		restore_script_editor_on_drag = false; //lost chance
 	}
-}
-
-void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 	if (get_focus_owner() && get_focus_owner()->is_text_field())
 		return;
@@ -2772,7 +2769,6 @@ void SceneTreeDock::_feature_profile_changed() {
 void SceneTreeDock::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_set_owners"), &SceneTreeDock::_set_owners);
-	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &SceneTreeDock::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_input"), &SceneTreeDock::_input);
 	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
 
@@ -2921,7 +2917,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	quick_open = memnew(EditorQuickOpen);
 	add_child(quick_open);
 	quick_open->connect("quick_open", callable_mp(this, &SceneTreeDock::_quick_open));
-	set_process_unhandled_key_input(true);
 
 	delete_dialog = memnew(ConfirmationDialog);
 	add_child(delete_dialog);

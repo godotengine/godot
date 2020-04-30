@@ -61,7 +61,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	ConfirmationDialog *press_a_key;
 	Label *press_a_key_label;
-	Ref<InputEventKey> last_wait_for_key;
+	Ref<InputEvent> last_wait_for_input;
 	String shortcut_configured;
 	String shortcut_filter;
 

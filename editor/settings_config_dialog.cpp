@@ -279,7 +279,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 	if (p_idx == 0) {
 		press_a_key_label->set_text(TTR("Press a Key..."));
-		last_wait_for_key = Ref<InputEventKey>();
+		last_wait_for_input = Ref<InputEvent>();
 		press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
 		//press_a_key->grab_focus();
 		press_a_key->get_ok()->set_focus_mode(Control::FOCUS_NONE);
@@ -319,10 +319,22 @@ void EditorSettingsDialog::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
-	if (k.is_valid() && k->is_pressed() && k->get_keycode() != 0) {
-
-		last_wait_for_key = k;
+	if (k.is_valid() && k->is_pressed() && k->get_keycode() != 0 && !k->is_echo()) {
+		last_wait_for_input = k;
 		const String str = keycode_get_string(k->get_keycode_with_modifiers());
+
+		press_a_key_label->set_text(str);
+		press_a_key->set_input_as_handled();
+		return;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+
+	// Disallow rebinding left and right mouse button.
+	if (mb.is_valid() && mb->is_pressed() && !(mb->get_button_mask() & (BUTTON_MASK_LEFT | BUTTON_MASK_RIGHT))) {
+		last_wait_for_input = mb;
+
+		const String str = mb->as_text();
 
 		press_a_key_label->set_text(str);
 		press_a_key->set_input_as_handled();
@@ -331,16 +343,37 @@ void EditorSettingsDialog::_wait_for_key(const Ref<InputEvent> &p_event) {
 
 void EditorSettingsDialog::_press_a_key_confirm() {
 
-	if (last_wait_for_key.is_null())
+	if (last_wait_for_input.is_null())
 		return;
 
-	Ref<InputEventKey> ie;
-	ie.instance();
-	ie->set_keycode(last_wait_for_key->get_keycode());
-	ie->set_shift(last_wait_for_key->get_shift());
-	ie->set_control(last_wait_for_key->get_control());
-	ie->set_alt(last_wait_for_key->get_alt());
-	ie->set_metakey(last_wait_for_key->get_metakey());
+	Ref<InputEvent> ie;
+
+	InputEventKey *k = Object::cast_to<InputEventKey>(*last_wait_for_input);
+	if (k) {
+		Ref<InputEventKey> ie_k;
+		ie_k.instance();
+		ie_k->set_keycode(k->get_keycode());
+		ie_k->set_shift(k->get_shift());
+		ie_k->set_control(k->get_control());
+		ie_k->set_alt(k->get_alt());
+		ie_k->set_metakey(k->get_metakey());
+
+		ie = ie_k;
+	}
+
+	InputEventMouseButton *mb = Object::cast_to<InputEventMouseButton>(*last_wait_for_input);
+	if (mb) {
+		Ref<InputEventMouseButton> ie_mb;
+		ie_mb.instance();
+		ie_mb->set_button_index(mb->get_button_index());
+		ie_mb->set_shift(mb->get_shift());
+		ie_mb->set_control(mb->get_control());
+		ie_mb->set_alt(mb->get_alt());
+		ie_mb->set_metakey(mb->get_metakey());
+		ie_mb->set_pressed(true);
+
+		ie = ie_mb;
+	}
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(shortcut_configured);
 

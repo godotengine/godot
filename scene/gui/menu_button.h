@@ -43,7 +43,7 @@ class MenuButton : public Button {
 	bool disable_shortcuts;
 	PopupMenu *popup;
 
-	void _unhandled_key_input(Ref<InputEvent> p_event);
+	void _input(Ref<InputEvent> p_event);
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
 

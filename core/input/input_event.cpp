@@ -491,6 +491,21 @@ int InputEventMouseButton::get_button_index() const {
 	return button_index;
 }
 
+int InputEventMouseButton::get_button_index_with_modifiers() const {
+
+	uint32_t sc = button_index;
+	if (get_control())
+		sc |= KEY_MASK_CTRL;
+	if (get_alt())
+		sc |= KEY_MASK_ALT;
+	if (get_shift())
+		sc |= KEY_MASK_SHIFT;
+	if (get_metakey())
+		sc |= KEY_MASK_META;
+
+	return sc;
+}
+
 void InputEventMouseButton::set_pressed(bool p_pressed) {
 
 	pressed = p_pressed;
@@ -552,40 +567,68 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 
 String InputEventMouseButton::as_text() const {
 
-	String button_index_string = "";
+	String button_event_string = "";
+
 	switch (get_button_index()) {
 		case BUTTON_LEFT:
-			button_index_string = "BUTTON_LEFT";
+			button_event_string = "LMB";
 			break;
 		case BUTTON_RIGHT:
-			button_index_string = "BUTTON_RIGHT";
+			button_event_string = "RMB";
 			break;
 		case BUTTON_MIDDLE:
-			button_index_string = "BUTTON_MIDDLE";
+			button_event_string = "MMB";
 			break;
 		case BUTTON_WHEEL_UP:
-			button_index_string = "BUTTON_WHEEL_UP";
+			button_event_string = "MWU";
 			break;
 		case BUTTON_WHEEL_DOWN:
-			button_index_string = "BUTTON_WHEEL_DOWN";
+			button_event_string = "MWD";
 			break;
 		case BUTTON_WHEEL_LEFT:
-			button_index_string = "BUTTON_WHEEL_LEFT";
+			button_event_string = "MWL";
 			break;
 		case BUTTON_WHEEL_RIGHT:
-			button_index_string = "BUTTON_WHEEL_RIGHT";
+			button_event_string = "MWR";
 			break;
 		case BUTTON_XBUTTON1:
-			button_index_string = "BUTTON_XBUTTON1";
+			button_event_string = "MBX1";
 			break;
 		case BUTTON_XBUTTON2:
-			button_index_string = "BUTTON_XBUTTON2";
+			button_event_string = "MBX2";
 			break;
 		default:
-			button_index_string = itos(get_button_index());
+			button_event_string = "MB" + itos(get_button_index());
 			break;
 	}
-	return "InputEventMouseButton : button_index=" + button_index_string + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + "), button_mask=" + itos(get_button_mask()) + ", doubleclick=" + (doubleclick ? "true" : "false");
+
+	if (get_metakey()) {
+		button_event_string = find_keycode_name(KEY_META) + ("+" + button_event_string);
+	}
+	if (get_alt()) {
+		button_event_string = find_keycode_name(KEY_ALT) + ("+" + button_event_string);
+	}
+	if (get_shift()) {
+		button_event_string = find_keycode_name(KEY_SHIFT) + ("+" + button_event_string);
+	}
+	if (get_control()) {
+		button_event_string = find_keycode_name(KEY_CONTROL) + ("+" + button_event_string);
+	}
+
+	//return "InputEventMouseButton : button_index=" + button_index_string + ", pressed=" + (pressed ? "true" : "false") + ", position=(" + String(get_position()) + "), button_mask=" + itos(get_button_mask()) + ", doubleclick=" + (doubleclick ? "true" : "false");
+	return button_event_string;
+}
+
+bool InputEventMouseButton::shortcut_match(const Ref<InputEvent> &p_event) const {
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_null())
+		return false;
+
+	uint32_t button = get_button_index_with_modifiers();
+	uint32_t event_button = mb->get_button_index_with_modifiers();
+
+	return button == event_button;
 }
 
 void InputEventMouseButton::_bind_methods() {
