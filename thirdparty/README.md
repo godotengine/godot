@@ -412,14 +412,13 @@ Files extracted from upstream source:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.33
+- Version: 10.34
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
 - Files listed in the file NON-AUTOTOOLS-BUILD steps 1-4
 - All .h files in src/ apart from pcre2posix.h
-- src/pcre2_jit_compile.c
 - src/pcre2_jit_match.c
 - src/pcre2_jit_misc.c
 - src/sljit/*
