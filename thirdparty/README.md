@@ -197,8 +197,8 @@ Collection of single-file libraries used in Godot components.
   * Version: latest, as of April 2017
   * License: Public Domain
 - `fastlz.{c,h}`
-  * Upstream: https://code.google.com/archive/p/fastlz
-  * Version: svn (r12)
+  * Upstream: https://github.com/ariya/FastLZ
+  * Version: 0.5.0 (4f20f54d46f5a6dd4fae4def134933369b7602d2, 2020)
   * License: MIT
 - `hq2x.{cpp,h}`
   * Upstream: https://github.com/brunexgeek/hqx
