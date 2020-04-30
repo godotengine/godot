@@ -1200,12 +1200,24 @@ void ClientRewinder::clear() {
 	snapshots.clear();
 }
 
-void ClientRewinder::process(real_t _p_delta) {
+void ClientRewinder::process(real_t p_delta) {
+	ERR_FAIL_COND_MSG(scene_rewinder->main_controller == nullptr, "Snapshot creation fail, Make sure to track a NetController.");
+
 	store_snapshot();
+	store_dolls_snapshot(snapshots.back(), client_doll_snapshots);
+
+	if (scene_rewinder->main_controller->player_has_new_input() == false) {
+		// If the main controller doesn't accept new inputs drop the last added
+		// one.
+		snapshots.pop_back();
+	}
 }
 
 void ClientRewinder::post_process(real_t p_delta) {
 	process_dolls_recovery(p_delta);
+
+	// Executed after the doll so we can override any kind of change it's applied
+	// by that check.
 	process_world_recovery(p_delta);
 }
 
@@ -1216,66 +1228,11 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 		return;
 	}
 
-	// Extract the doll data used for decoupled doll check.
-	const ObjectID *controllers = scene_rewinder->controllers.ptr();
-	for (int c = 0; c < scene_rewinder->controllers.size(); c += 1) {
-		ObjectID controller = controllers[c];
-
-		if (scene_rewinder->main_controller->get_instance_id() == controller) {
-			// This is the main controller, not the doll. Skip this.
-			continue;
-		}
-
-		const uint64_t *input_id = server_snapshot.controllers_input_id.getptr(controller);
-		if (input_id == nullptr) {
-			// The server snapshot doesn't have info for this controller.
-			continue;
-		}
-
-#ifdef DEBUG_ENABLED
-		// Unreachable because this is checked in the parser.
-		CRASH_COND(*input_id == UINT64_MAX);
-#endif
-
-		std::deque<PartialSnapshot> *controller_snaps = doll_controllers_snapshots.getptr(controller);
-		if (controller_snaps == nullptr) {
-			doll_controllers_snapshots.set(controller, std::deque<PartialSnapshot>());
-			controller_snaps = doll_controllers_snapshots.getptr(controller);
-		}
-
-#ifdef DEBUG_ENABLED
-		// Simply unreachable.
-		CRASH_COND(controller_snaps == nullptr);
-#endif
-
-		if (controller_snaps->empty() == false) {
-			const uint64_t last_stored_input_id = controller_snaps->back().input_id;
-			ERR_FAIL_COND_MSG((*input_id) <= last_stored_input_id, "This doll snapshot (with ID: " + itos(*input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
-		}
-
-		PartialSnapshot snap;
-		snap.input_id = *input_id;
-
-		for (const ObjectID *key = server_snapshot.data.next(nullptr); key != nullptr; key = server_snapshot.data.next(key)) {
-			if ((*key) != controller && scene_rewinder->data[*key].controlled_by != controller) {
-				continue;
-			}
-
-			// This node is part of this controller, store it.
-			snap.node_vars[*key] = server_snapshot.data[*key].vars;
-		}
-
-		controller_snaps->push_back(snap);
-	}
+	store_dolls_snapshot(server_snapshot, server_doll_snapshots);
 }
 
 void ClientRewinder::store_snapshot() {
-	ERR_FAIL_COND_MSG(scene_rewinder->main_controller == nullptr, "Snapshot creation fail, Make sure to track a NetController.");
-
-	if (scene_rewinder->main_controller->player_has_new_input() == false) {
-		// Never store if the player is not accepting new inputs.
-		return;
-	}
+	ERR_FAIL_COND(scene_rewinder->main_controller == nullptr);
 
 	// Store snapshots, only if the `main_controller` accept new inputs.
 	Snapshot snapshot;
@@ -1323,7 +1280,223 @@ void ClientRewinder::update_snapshot(
 	snapshots[p_snapshot_index].data = scene_rewinder->data;
 }
 
+void ClientRewinder::store_dolls_snapshot(const Snapshot &p_snapshot, HashMap<ObjectID, std::deque<PartialSnapshot>> &p_snapshot_storage) {
+
+	// Extract the doll data used for decoupled doll check.
+	const ObjectID *controllers = scene_rewinder->controllers.ptr();
+	for (int c = 0; c < scene_rewinder->controllers.size(); c += 1) {
+		ObjectID controller = controllers[c];
+
+		if (scene_rewinder->main_controller->get_instance_id() == controller) {
+			// This is the main controller, not the doll. Skip this.
+			continue;
+		}
+
+		const uint64_t *input_id = p_snapshot.controllers_input_id.getptr(controller);
+		if (input_id == nullptr || *input_id == UINT64_MAX) {
+			// The snapshot doesn't have info for this controller.
+			continue;
+		}
+
+		std::deque<PartialSnapshot> *controller_snaps = p_snapshot_storage.getptr(controller);
+		if (controller_snaps == nullptr) {
+			p_snapshot_storage.set(controller, std::deque<PartialSnapshot>());
+			controller_snaps = p_snapshot_storage.getptr(controller);
+		}
+
+#ifdef DEBUG_ENABLED
+		// Simply unreachable.
+		CRASH_COND(controller_snaps == nullptr);
+#endif
+
+		if (controller_snaps->empty() == false) {
+			// Make sure the snapshots are stored in order.
+			const uint64_t last_stored_input_id = controller_snaps->back().input_id;
+			ERR_FAIL_COND_MSG((*input_id) <= last_stored_input_id, "This doll snapshot (with ID: " + itos(*input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
+		}
+
+		PartialSnapshot snap;
+		snap.input_id = *input_id;
+
+		for (const ObjectID *key = p_snapshot.data.next(nullptr); key != nullptr; key = p_snapshot.data.next(key)) {
+			if ((*key) != controller && scene_rewinder->data[*key].controlled_by != controller) {
+				continue;
+			}
+
+			// This node is part of this controller, store it.
+			snap.node_vars[*key] = p_snapshot.data[*key].vars;
+		}
+
+		controller_snaps->push_back(snap);
+	}
+}
+
 void ClientRewinder::process_dolls_recovery(real_t p_delta) {
+	for (size_t c = 0; c < scene_rewinder->cached_controllers.size(); c += 1) {
+		NetworkedController *controller = scene_rewinder->cached_controllers[c];
+
+		// --- Phase one, find snapshot check. ---
+
+		if (scene_rewinder->main_controller == controller) {
+			// Skip the main controller.
+			continue;
+		}
+
+		std::deque<PartialSnapshot> *server_snaps = server_doll_snapshots.getptr(controller->get_instance_id());
+		if (server_snaps == nullptr || server_snaps->empty()) {
+			// We don't have snapshots to recover for this controller. Skip it.
+			continue;
+		}
+
+		// Find the best recoverable input_id.
+		uint64_t checkable_input_id = UINT64_MAX;
+		{
+			const uint64_t last_input_id = controller->get_stored_input_id(-1);
+			if (last_input_id != UINT64_MAX) {
+				for (auto snap = server_snaps->rbegin(); snap != server_snaps->rend(); ++snap) {
+					if (snap->input_id <= last_input_id) {
+						// This snapshot can be checked.
+						checkable_input_id = snap->input_id;
+						break;
+					}
+				}
+			}
+		}
+
+		if (checkable_input_id == UINT64_MAX) {
+			// We don't have any snapshot to compare yet.
+			continue;
+		}
+
+#ifdef DEBUG_ENABLED
+		// Unreachable cause the above check
+		CRASH_COND(server_snaps->empty());
+#endif
+
+		while (server_snaps->front().input_id < checkable_input_id) {
+			// Drop any olded snapshot.
+			server_snaps->pop_front();
+		}
+
+#ifdef DEBUG_ENABLED
+		// These are unreachable at this point.
+		CRASH_COND(server_snaps->empty());
+		CRASH_COND(server_snaps->front().input_id != checkable_input_id);
+#endif
+		// --- Phase two, check snapshot and recover if needed. ---
+
+		bool different = false;
+		std::deque<PartialSnapshot> *client_snaps = client_doll_snapshots.getptr(controller->get_instance_id());
+		if (client_snaps == nullptr) {
+			// We don't have any snapshot on client for this controller.
+			// Just reset all the nodes to the server state.
+			WARN_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
+			for (
+					const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
+					key != nullptr;
+					key = server_snaps->front().node_vars.next(key)) {
+
+				Node *node = static_cast<Node *>(ObjectDB::get_instance(*key));
+				if (node) {
+					const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
+					const VarData *s_vars_ptr = s_vars.ptr();
+
+					NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
+					VarData *rew_vars = rew_node_data->vars.ptrw();
+
+					for (int i = 0; i < s_vars.size(); i += 1) {
+						node->set(s_vars_ptr[i].name, s_vars_ptr[i].value);
+
+						// TODO make sure to convert this into a function so to avoid direct sets.
+						const int rew_var_index = rew_node_data->vars.find(s_vars[i].name);
+						// Unreachable, because when the snapshot is received the
+						// algorithm make sure the `scene_rewinder` is traking the
+						// variable.
+						CRASH_COND(rew_var_index <= -1);
+						rew_vars[rew_var_index].value = s_vars[i].value;
+
+						WARN_PRINT("[Snapshot doll comparison] Reset - Variable: " + s_vars_ptr[i].name + ", value: " + s_vars_ptr[i].value);
+						node->emit_signal(scene_rewinder->get_changed_event_name(s_vars_ptr[i].name));
+						different = true;
+					}
+				}
+			}
+		} else {
+			// Drop all the client snapshots until the one that we need.
+
+			while (client_snaps->empty() == false && client_snaps->front().input_id < checkable_input_id) {
+				// Drop any olded snapshot.
+				client_snaps->pop_front();
+			}
+
+#ifdef DEBUG_ENABLED
+			// This is unreachable, because we store all the client shapshots
+			// each time a new input is processed. Since the `checkable_input_id`
+			// is taken by reading the processed doll inputs, it's guaranteed
+			// that here the snapshot exists.
+			CRASH_COND(client_snaps->empty());
+			CRASH_COND(client_snaps->front().input_id != checkable_input_id);
+#endif
+
+			for (
+					const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
+					key != nullptr;
+					key = server_snaps->front().node_vars.next(key)) {
+
+				NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
+				// Unreachable; once received the server snapshot, the parser
+				// make sure that the `scene_rewinder` has the node.
+				CRASH_COND(rew_node_data == nullptr);
+
+				Node *node = rew_node_data->cached_node;
+
+				const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
+
+				const Vector<VarData> *c_vars = client_snaps->front().node_vars.getptr(*key);
+				if (c_vars == nullptr) {
+					VarData *rew_vars = rew_node_data->vars.ptrw();
+					const VarData *s_vars_ptr = s_vars.ptr();
+
+					// This is not present on client snapshot, fully apply it.
+					for (int i = 0; i < s_vars.size(); i += 1) {
+						node->set(s_vars_ptr[i].name, s_vars_ptr[i].value);
+
+						const int rew_var_index = rew_node_data->vars.find(s_vars[i].name);
+						// Unreachable, because when the snapshot is received the
+						// algorithm make sure the `scene_rewinder` is traking the
+						// variable.
+						CRASH_COND(rew_var_index <= -1);
+						rew_vars[rew_var_index].value = s_vars[i].value;
+						WARN_PRINT("[Snapshot doll comparison] Reset - Variable: " + s_vars_ptr[i].name + ", value: " + s_vars_ptr[i].value);
+						node->emit_signal(scene_rewinder->get_changed_event_name(s_vars_ptr[i].name));
+						different = true;
+					}
+					different = true;
+				} else {
+
+					const bool comparison_res = compare_and_recover_vars(
+							node,
+							rew_node_data,
+							s_vars,
+							*c_vars);
+
+					if (comparison_res) {
+						different = true;
+					}
+				}
+			}
+
+			// Popout the client snapshot.
+			client_snaps->pop_front();
+		}
+
+		if (different) {
+			// TODO here??
+		}
+
+		// Popout the server snapshot.
+		server_snaps->pop_front();
+	}
 }
 
 void ClientRewinder::process_world_recovery(real_t p_delta) {
@@ -1352,11 +1525,13 @@ void ClientRewinder::process_world_recovery(real_t p_delta) {
 	// Client snapshot found.
 	scene_rewinder->recover_in_progress = true;
 
-	const bool need_rewind = compare_and_recovery(
+	const bool need_rewind = compare_and_recovery_world_snap(
 			server_snapshot,
 			client_snapshot);
 
-	if (need_rewind) {
+	// TODO touch only the main controller?.
+	if (need_rewind && false) {
+		//if (need_rewind) {
 		WARN_PRINT("The snapshot with `player_input_id` = " + itos(server_snapshot.player_controller_input_id) + " was different and need a rewind.");
 		scene_rewinder->rewinding_in_progress = true;
 		recovery_rewind(server_snapshot, client_snapshot, p_delta);
@@ -1375,22 +1550,17 @@ void ClientRewinder::process_world_recovery(real_t p_delta) {
 	snapshots.pop_front();
 }
 
-bool ClientRewinder::compare_and_recovery(
+bool ClientRewinder::compare_and_recovery_doll_snap() {
+	return false;
+}
+
+bool ClientRewinder::compare_and_recovery_world_snap(
 		const Snapshot &p_server_snapshot,
 		const Snapshot &p_client_snapshot) {
 
-	// TODO This must be improved because not all variable of a controller will
-	// require a full rewinding.
-	// Or the other way around, some nodes may hold some important data for the
-	// controller so it need a full rewind.
-	// Imagine: a controller needs the Character (its parent) transform in sync
-	// so when the transfrom is out of sync we need a rewind.
-	// Add a system to address that.
-
 	// Compare the server snapshot with the client snapshot and apply the server
 	// value if the difference found doesn't need a full recovery.
-	// Note: the full recovery sets the entire server snapshot, so just return
-	// `true` is enough.
+	// Make sure the main controller and the world are in the correct state.
 
 	bool need_rewind = false;
 
@@ -1400,19 +1570,36 @@ bool ClientRewinder::compare_and_recovery(
 			key = p_server_snapshot.data.next(key)) {
 
 		const NodeData &s_data = p_server_snapshot.data.get(*key);
-		const VarData *s_vars = s_data.vars.ptr();
 
-		NodeData *rew_node_data = scene_rewinder->data.getptr(s_data.instance_id);
+#ifdef DEBUG_ENABLED
+		CRASH_COND(s_data.instance_id != *key);
+#endif
+
+		NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
 		// Unreachable, because once received the server snapshot, the algorithm
 		// make sure that the `scene_rewinder` has the node.
 		CRASH_COND(rew_node_data == nullptr);
+
+		if (scene_rewinder->main_controller->get_instance_id() != (*key)) {
+			// This is not the main controller.
+
+			if (rew_node_data->is_controller) {
+				// This is a doll. Skip it.
+				continue;
+			} else if (
+					rew_node_data->controlled_by.is_null() == false &&
+					rew_node_data->controlled_by != scene_rewinder->main_controller->get_instance_id()) {
+				// This is a node controlled by the doll. Skip it.
+				continue;
+			}
+
+			// This is a scene node, untied from any controller.
+		}
 
 		Node *node = rew_node_data->cached_node;
 		if (node == nullptr) {
 			continue;
 		}
-
-		VarData *rew_vars = rew_node_data->vars.ptrw();
 
 		// Check if this node is sensible to changes, so a rewind is needed.
 		const bool sensible =
@@ -1426,6 +1613,8 @@ bool ClientRewinder::compare_and_recovery(
 			// it's considered different. Just apply the server values.
 			WARN_PRINT("[Snapshot comparison] The Node: " + node->get_path() + " doesn't exist on client snapshot. Reset all.");
 
+			const VarData *s_vars = s_data.vars.ptr();
+			VarData *rew_vars = rew_node_data->vars.ptrw();
 			for (int s_var_index = 0; s_var_index < s_data.vars.size(); s_var_index += 1) {
 				node->set(s_vars[s_var_index].name, s_vars[s_var_index].value);
 				WARN_PRINT("[Snapshot comparison] Reset - Variable: " + s_vars[s_var_index].name + ", value: " + s_vars[s_var_index].value);
@@ -1446,36 +1635,14 @@ bool ClientRewinder::compare_and_recovery(
 
 		} else {
 			// Compare vars.
-			const VarData *c_vars = c_data->vars.ptr();
+			const bool different = compare_and_recover_vars(
+					node,
+					rew_node_data,
+					s_data.vars,
+					c_data->vars);
 
-			for (int s_var_index = 0; s_var_index < s_data.vars.size(); s_var_index += 1) {
-				const int c_var_index = c_data->vars.find(s_vars[s_var_index].name);
-				bool different = false;
-				if (c_var_index == -1) {
-					// Variable not found, this is considered a difference.
-					different = true;
-				} else {
-					// Variable found compare.
-					different = !scene_rewinder->rewinder_variant_evaluation(s_vars[s_var_index].value, c_vars[c_var_index].value);
-				}
-
-				if (different) {
-					node->set(s_vars[s_var_index].name, s_vars[s_var_index].value);
-					WARN_PRINT("[Snapshot comparison] Node: " + node->get_path() + ", variable: " + s_vars[s_var_index].name + ", the client value: " + c_vars[c_var_index].value + " is different from the server value: " + s_vars[s_var_index].value);
-
-					const int rew_var_index = rew_node_data->vars.find(s_vars[s_var_index].name);
-					// Unreachable, because when the snapshot is received the
-					// algorithm make sure the `scene_rewinder` is traking the
-					// variable.
-					CRASH_COND(rew_var_index <= -1);
-					rew_vars[rew_var_index].value = s_vars[s_var_index].value;
-
-					node->emit_signal(scene_rewinder->get_changed_event_name(s_vars[s_var_index].name));
-
-					if (sensible && c_vars[c_var_index].skip_rewinding == false) {
-						need_rewind = true;
-					}
-				}
+			if (different && sensible) {
+				need_rewind = true;
 			}
 		}
 	}
@@ -1909,4 +2076,48 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 		server_snapshot.player_controller_input_id = player_controller_input_id;
 		return true;
 	}
+}
+
+bool ClientRewinder::compare_and_recover_vars(
+		Node *p_node,
+		NodeData *p_rewinder_node_data,
+		const Vector<VarData> &p_server_vars,
+		const Vector<VarData> &p_client_vars) {
+
+	bool difference_found = false;
+	const VarData *s_vars = p_server_vars.ptr();
+	const VarData *c_vars = p_client_vars.ptr();
+	VarData *rew_vars = p_rewinder_node_data->vars.ptrw();
+
+	for (int s_var_index = 0; s_var_index < p_server_vars.size(); s_var_index += 1) {
+		bool different = false;
+
+		const int c_var_index = p_client_vars.find(s_vars[s_var_index].name);
+		if (c_var_index == -1) {
+			// Variable not found, this is considered a difference.
+			different = true;
+		} else {
+			// Variable found compare.
+			different = !scene_rewinder->rewinder_variant_evaluation(s_vars[s_var_index].value, c_vars[c_var_index].value);
+		}
+
+		if (different) {
+			p_node->set(s_vars[s_var_index].name, s_vars[s_var_index].value);
+			WARN_PRINT("[Snapshot comparison] Node: " + p_node->get_path() + ", variable: " + s_vars[s_var_index].name + ", the client value: " + c_vars[c_var_index].value + " is different from the server value: " + s_vars[s_var_index].value);
+
+			const int rew_var_index = p_rewinder_node_data->vars.find(s_vars[s_var_index].name);
+			// Unreachable, because when the snapshot is received the
+			// algorithm make sure the `scene_rewinder` is traking the
+			// variable.
+			CRASH_COND(rew_var_index <= -1);
+			rew_vars[rew_var_index].value = s_vars[s_var_index].value;
+
+			p_node->emit_signal(scene_rewinder->get_changed_event_name(s_vars[s_var_index].name));
+
+			if (c_vars[c_var_index].skip_rewinding == false) {
+				difference_found = true;
+			}
+		}
+	}
+	return difference_found;
 }
