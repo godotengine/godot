@@ -60,6 +60,7 @@ struct VarData {
 };
 
 struct NodeData {
+	// ID used to reference this Node in the networked calls.
 	uint32_t id;
 	ObjectID instance_id;
 	bool is_controller;
@@ -312,7 +313,14 @@ struct Snapshot {
 	// TODO worth store the pointer instead of the Object ID?
 	// TODO copy on write?
 	HashMap<ObjectID, uint64_t> controllers_input_id;
-	HashMap<ObjectID, NodeData> data;
+	HashMap<ObjectID, NodeData> data; // TODO Can we just use Vetor<VarData> ?
+
+	operator String() const;
+};
+
+struct PartialSnapshot {
+	uint64_t input_id;
+	HashMap<ObjectID, Vector<VarData>> node_vars;
 
 	operator String() const;
 };
@@ -405,6 +413,7 @@ class ClientRewinder : public Rewinder {
 	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
 	std::deque<Snapshot> snapshots;
+	HashMap<ObjectID, std::deque<PartialSnapshot>> doll_controllers_snapshots;
 
 public:
 	ClientRewinder(SceneRewinder *p_node);
@@ -419,10 +428,11 @@ private:
 	void store_snapshot();
 	void update_snapshot(int p_i, int p_snapshot_index, ControllerRewinder *p_rewinders, int p_rewinder_count);
 
-	void process_recovery(real_t p_delta);
+	void process_dolls_recovery(real_t p_delta);
+	void process_world_recovery(real_t p_delta);
 	bool compare_and_recovery(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot);
 	void recovery_rewind(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot, real_t p_delta);
-	void parse_snapshot(Variant p_snapshot);
+	bool parse_snapshot(Variant p_snapshot);
 };
 
 #endif

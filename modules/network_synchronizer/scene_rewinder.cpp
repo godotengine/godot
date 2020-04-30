@@ -885,6 +885,30 @@ Snapshot::operator String() const {
 	return s;
 }
 
+PartialSnapshot::operator String() const {
+	String s;
+	s += "Input ID: " + itos(input_id) + "; ";
+	for (
+			const ObjectID *key = node_vars.next(nullptr);
+			key != nullptr;
+			key = node_vars.next(key)) {
+
+		s += "\nNode: ";
+		if (nullptr != ObjectDB::get_instance(*key))
+			s += static_cast<Node *>(ObjectDB::get_instance(*key))->get_path();
+		else
+			s += " (Object ID): " + itos(*key);
+
+		for (int i = 0; i < node_vars[*key].size(); i += 1) {
+			s += "\n|- Variable: ";
+			s += node_vars[*key][i].name;
+			s += " = ";
+			s += String(node_vars[*key][i].value);
+		}
+	}
+	return s;
+}
+
 void ControllerRewinder::init(
 		NetworkedController *p_controller,
 		int p_frames_to_skip,
@@ -1181,11 +1205,68 @@ void ClientRewinder::process(real_t _p_delta) {
 }
 
 void ClientRewinder::post_process(real_t p_delta) {
-	process_recovery(p_delta);
+	process_dolls_recovery(p_delta);
+	process_world_recovery(p_delta);
 }
 
 void ClientRewinder::receive_snapshot(Variant p_snapshot) {
-	parse_snapshot(p_snapshot);
+	const bool success = parse_snapshot(p_snapshot);
+
+	if (success == false) {
+		return;
+	}
+
+	// Extract the doll data used for decoupled doll check.
+	const ObjectID *controllers = scene_rewinder->controllers.ptr();
+	for (int c = 0; c < scene_rewinder->controllers.size(); c += 1) {
+		ObjectID controller = controllers[c];
+
+		if (scene_rewinder->main_controller->get_instance_id() == controller) {
+			// This is the main controller, not the doll. Skip this.
+			continue;
+		}
+
+		const uint64_t *input_id = server_snapshot.controllers_input_id.getptr(controller);
+		if (input_id == nullptr) {
+			// The server snapshot doesn't have info for this controller.
+			continue;
+		}
+
+#ifdef DEBUG_ENABLED
+		// Unreachable because this is checked in the parser.
+		CRASH_COND(*input_id == UINT64_MAX);
+#endif
+
+		std::deque<PartialSnapshot> *controller_snaps = doll_controllers_snapshots.getptr(controller);
+		if (controller_snaps == nullptr) {
+			doll_controllers_snapshots.set(controller, std::deque<PartialSnapshot>());
+			controller_snaps = doll_controllers_snapshots.getptr(controller);
+		}
+
+#ifdef DEBUG_ENABLED
+		// Simply unreachable.
+		CRASH_COND(controller_snaps == nullptr);
+#endif
+
+		if (controller_snaps->empty() == false) {
+			const uint64_t last_stored_input_id = controller_snaps->back().input_id;
+			ERR_FAIL_COND_MSG((*input_id) <= last_stored_input_id, "This doll snapshot (with ID: " + itos(*input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
+		}
+
+		PartialSnapshot snap;
+		snap.input_id = *input_id;
+
+		for (const ObjectID *key = server_snapshot.data.next(nullptr); key != nullptr; key = server_snapshot.data.next(key)) {
+			if ((*key) != controller && scene_rewinder->data[*key].controlled_by != controller) {
+				continue;
+			}
+
+			// This node is part of this controller, store it.
+			snap.node_vars[*key] = server_snapshot.data[*key].vars;
+		}
+
+		controller_snaps->push_back(snap);
+	}
 }
 
 void ClientRewinder::store_snapshot() {
@@ -1242,7 +1323,10 @@ void ClientRewinder::update_snapshot(
 	snapshots[p_snapshot_index].data = scene_rewinder->data;
 }
 
-void ClientRewinder::process_recovery(real_t p_delta) {
+void ClientRewinder::process_dolls_recovery(real_t p_delta) {
+}
+
+void ClientRewinder::process_world_recovery(real_t p_delta) {
 	if (server_snapshot_id <= recovered_snapshot_id) {
 		// Nothing to recover.
 		return;
@@ -1551,7 +1635,7 @@ void ClientRewinder::recovery_rewind(const Snapshot &p_server_snapshot, const Sn
 	memdelete_arr(rewinders);
 }
 
-void ClientRewinder::parse_snapshot(Variant p_snapshot) {
+bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	// The packet data is an array that contains the informations to update the
 	// client snapshot.
 	//
@@ -1569,10 +1653,11 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	//              the ID; similarly as is for the NODE the array is send only
 	//              the first time.
 
-	ERR_FAIL_COND_MSG(
+	ERR_FAIL_COND_V_MSG(
 			scene_rewinder->main_controller == nullptr,
+			false,
 			"Is not possible to receive server snapshots if you are not tracking any NetController.");
-	ERR_FAIL_COND(!p_snapshot.is_array());
+	ERR_FAIL_COND_V(!p_snapshot.is_array(), false);
 
 	const Vector<Variant> raw_snapshot = p_snapshot;
 	const Variant *raw_snapshot_ptr = raw_snapshot.ptr();
@@ -1584,14 +1669,14 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	int server_snap_variable_index = -1;
 
 	// Make sure the Snapshot ID is here.
-	ERR_FAIL_COND(raw_snapshot.size() < 1);
-	ERR_FAIL_COND(raw_snapshot_ptr[0].get_type() != Variant::INT);
+	ERR_FAIL_COND_V(raw_snapshot.size() < 1, false);
+	ERR_FAIL_COND_V(raw_snapshot_ptr[0].get_type() != Variant::INT, false);
 
 	const uint64_t snapshot_id = raw_snapshot_ptr[0];
 	uint64_t player_controller_input_id = UINT64_MAX;
 
 	// Make sure this snapshot is expected.
-	ERR_FAIL_COND(snapshot_id <= server_snapshot_id);
+	ERR_FAIL_COND_V(snapshot_id <= server_snapshot_id, false);
 
 	// We espect that the player_controller is updated by this new snapshot,
 	// so make sure it's done so.
@@ -1608,9 +1693,9 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				// Node info are in verbose form, extract it.
 
 				const Vector<Variant> node_data = v;
-				ERR_FAIL_COND(node_data.size() != 2);
-				ERR_FAIL_COND(node_data[0].get_type() != Variant::INT);
-				ERR_FAIL_COND(node_data[1].get_type() != Variant::NODE_PATH);
+				ERR_FAIL_COND_V(node_data.size() != 2, false);
+				ERR_FAIL_COND_V(node_data[0].get_type() != Variant::INT, false);
+				ERR_FAIL_COND_V(node_data[1].get_type() != Variant::NODE_PATH, false);
 
 				node_id = node_data[0];
 				const NodePath node_path = node_data[1];
@@ -1649,7 +1734,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				}
 			} else {
 				// The arrived snapshot does't seems to be in the expected form.
-				ERR_FAIL_MSG("Snapshot is corrupted.");
+				ERR_FAIL_V_MSG(false, "Snapshot is corrupted.");
 			}
 
 			if (node == nullptr) {
@@ -1695,10 +1780,10 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 
 			if (is_controller) {
 				// This is a controller, so the next data is the input ID.
-				ERR_FAIL_COND(snap_data_index + 1 >= raw_snapshot.size());
+				ERR_FAIL_COND_V(snap_data_index + 1 >= raw_snapshot.size(), false);
 				snap_data_index += 1;
 				const uint64_t input_id = raw_snapshot_ptr[snap_data_index];
-				ERR_FAIL_COND_MSG(input_id == UINT64_MAX, "The server is always able to send input_id, so this snapshot seems corrupted.");
+				ERR_FAIL_COND_V_MSG(input_id == UINT64_MAX, false, "The server is always able to send input_id, so this snapshot seems corrupted.");
 
 				server_snapshot.controllers_input_id[node->get_instance_id()] = input_id;
 
@@ -1726,9 +1811,9 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				// The variable info are stored in verbose mode.
 
 				const Vector<Variant> var_data = v;
-				ERR_FAIL_COND(var_data.size() != 2);
-				ERR_FAIL_COND(var_data[0].get_type() != Variant::INT);
-				ERR_FAIL_COND(var_data[1].get_type() != Variant::STRING_NAME);
+				ERR_FAIL_COND_V(var_data.size() != 2, false);
+				ERR_FAIL_COND_V(var_data[0].get_type() != Variant::INT, false);
+				ERR_FAIL_COND_V(var_data[1].get_type() != Variant::STRING_NAME, false);
 
 				var_id = var_data[0];
 				variable_name = var_data[1];
@@ -1774,7 +1859,7 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				}
 
 			} else {
-				ERR_FAIL_MSG("The snapshot received seems corrupted.");
+				ERR_FAIL_V_MSG(false, "The snapshot received seems corrupted.");
 			}
 
 			server_snap_variable_index = server_snapshot_node_data->vars
@@ -1818,8 +1903,10 @@ void ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	// Just make sure that the local player input ID was received.
 	if (player_controller_input_id == UINT64_MAX) {
 		WARN_PRINT("Recovery aborted, the player controller ID was not part of the received snapshot, probably the server doesn't have important informations for this peer.");
+		return false;
 	} else {
 		server_snapshot_id = snapshot_id;
 		server_snapshot.player_controller_input_id = player_controller_input_id;
+		return true;
 	}
 }
