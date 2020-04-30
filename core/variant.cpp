@@ -1762,11 +1762,12 @@ Variant::operator RID() const {
 			return _get_obj().ref.get_rid();
 		} else {
 #ifdef DEBUG_ENABLED
-			Object *obj = _get_obj().rc->get_ptr();
+			Object *obj = likely(_get_obj().rc) ? _get_obj().rc->get_ptr() : NULL;
 			if (unlikely(!obj)) {
 				if (ScriptDebugger::get_singleton() && _get_obj().rc && !ObjectDB::get_instance(_get_obj().rc->instance_id)) {
 					WARN_PRINT("Attempted get RID on a deleted object.");
 				}
+				return RID();
 			}
 #else
 			Object *obj = _get_obj().obj;
