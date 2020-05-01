@@ -56,6 +56,7 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+	void finish_async();
 
 	virtual Error capture_start();
 	virtual Error capture_stop();
