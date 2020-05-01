@@ -210,12 +210,12 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_CONSTRUCT_DICTIONARY,        \
 		&&OPCODE_CALL,                        \
 		&&OPCODE_CALL_RETURN,                 \
+		&&OPCODE_CALL_ASYNC,                  \
 		&&OPCODE_CALL_BUILT_IN,               \
 		&&OPCODE_CALL_SELF,                   \
 		&&OPCODE_CALL_SELF_BASE,              \
-		&&OPCODE_YIELD,                       \
-		&&OPCODE_YIELD_SIGNAL,                \
-		&&OPCODE_YIELD_RESUME,                \
+		&&OPCODE_AWAIT,                       \
+		&&OPCODE_AWAIT_RESUME,                \
 		&&OPCODE_JUMP,                        \
 		&&OPCODE_JUMP_IF,                     \
 		&&OPCODE_JUMP_IF_NOT,                 \
@@ -227,7 +227,8 @@ String GDScriptFunction::_get_call_error(const Callable::CallError &p_err, const
 		&&OPCODE_BREAKPOINT,                  \
 		&&OPCODE_LINE,                        \
 		&&OPCODE_END                          \
-	};
+	};                                        \
+	static_assert((sizeof(switch_table_ops) / sizeof(switch_table_ops[0]) == (OPCODE_END + 1)), "Opcodes in jump table aren't the same as opcodes in enum.");
 
 #define OPCODE(m_op) \
 	m_op:
@@ -280,7 +281,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	int line = _initial_line;
 
 	if (p_state) {
-		//use existing (supplied) state (yielded)
+		//use existing (supplied) state (awaited)
 		stack = (Variant *)p_state->stack.ptr();
 		call_args = (Variant **)&p_state->stack.ptr()[sizeof(Variant) * p_state->stack_size]; //ptr() to avoid bounds check
 		line = p_state->line;
@@ -411,7 +412,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		profile.frame_call_count++;
 	}
 	bool exit_ok = false;
-	bool yielded = false;
+	bool awaited = false;
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -1006,10 +1007,14 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_CALL_ASYNC)
 			OPCODE(OPCODE_CALL_RETURN)
 			OPCODE(OPCODE_CALL) {
 				CHECK_SPACE(4);
-				bool call_ret = _code_ptr[ip] == OPCODE_CALL_RETURN;
+				bool call_ret = _code_ptr[ip] != OPCODE_CALL;
+#ifdef DEBUG_ENABLED
+				bool call_async = _code_ptr[ip] == OPCODE_CALL_ASYNC;
+#endif
 
 				int argc = _code_ptr[ip + 1];
 				GET_VARIANT_PTR(base, 2);
@@ -1040,6 +1045,22 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				if (call_ret) {
 					GET_VARIANT_PTR(ret, argc);
 					base->call_ptr(*methodname, (const Variant **)argptrs, argc, ret, err);
+#ifdef DEBUG_ENABLED
+					if (!call_async && ret->get_type() == Variant::OBJECT) {
+						// Check if getting a function state without await.
+						bool was_freed = false;
+						Object *obj = ret->get_validated_object_with_check(was_freed);
+
+						if (was_freed) {
+							err_text = "Got a freed object as a result of the call.";
+							OPCODE_BREAK;
+						}
+						if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+							err_text = R"(Trying to call an async function without "await".)";
+							OPCODE_BREAK;
+						}
+					}
+#endif
 				} else {
 					base->call_ptr(*methodname, (const Variant **)argptrs, argc, nullptr, err);
 				}
@@ -1192,105 +1213,96 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_YIELD)
-			OPCODE(OPCODE_YIELD_SIGNAL) {
-				int ipofs = 1;
-				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
-					CHECK_SPACE(4);
-					ipofs += 2;
-				} else {
-					CHECK_SPACE(2);
-				}
+			OPCODE(OPCODE_AWAIT) {
+				int ipofs = 2;
+				CHECK_SPACE(3);
 
-				Ref<GDScriptFunctionState> gdfs = memnew(GDScriptFunctionState);
-				gdfs->function = this;
+				//do the oneshot connect
+				GET_VARIANT_PTR(argobj, 1);
 
-				gdfs->state.stack.resize(alloca_size);
-				//copy variant stack
-				for (int i = 0; i < _stack_size; i++) {
-					memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
-				}
-				gdfs->state.stack_size = _stack_size;
-				gdfs->state.self = self;
-				gdfs->state.alloca_size = alloca_size;
-				gdfs->state.ip = ip + ipofs;
-				gdfs->state.line = line;
-				gdfs->state.script = _script;
+				Signal sig;
+				bool is_signal = true;
+
 				{
-					MutexLock lock(GDScriptLanguage::get_singleton()->lock);
-					_script->pending_func_states.add(&gdfs->scripts_list);
-					if (p_instance) {
-						gdfs->state.instance = p_instance;
-						p_instance->pending_func_states.add(&gdfs->instances_list);
+					Variant result = *argobj;
+
+					if (argobj->get_type() == Variant::OBJECT) {
+						bool was_freed = false;
+						Object *obj = argobj->get_validated_object_with_check(was_freed);
+
+						if (was_freed) {
+							err_text = "Trying to await on a freed object.";
+							OPCODE_BREAK;
+						}
+
+						// Is this even possible to be null at this point?
+						if (obj) {
+							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+								static StringName completed = _scs_create("completed");
+								result = Signal(obj, completed);
+							}
+						}
+					}
+
+					if (result.get_type() != Variant::SIGNAL) {
+						ip += 4; // Skip OPCODE_AWAIT_RESUME and its data.
+						// The stack pointer should be the same, so we don't need to set a return value.
+						is_signal = false;
 					} else {
-						gdfs->state.instance = nullptr;
+						sig = result;
 					}
 				}
+
+				if (is_signal) {
+					Ref<GDScriptFunctionState> gdfs = memnew(GDScriptFunctionState);
+					gdfs->function = this;
+
+					gdfs->state.stack.resize(alloca_size);
+					//copy variant stack
+					for (int i = 0; i < _stack_size; i++) {
+						memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
+					}
+					gdfs->state.stack_size = _stack_size;
+					gdfs->state.self = self;
+					gdfs->state.alloca_size = alloca_size;
+					gdfs->state.ip = ip + ipofs;
+					gdfs->state.line = line;
+					gdfs->state.script = _script;
+					{
+						MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+						_script->pending_func_states.add(&gdfs->scripts_list);
+						if (p_instance) {
+							gdfs->state.instance = p_instance;
+							p_instance->pending_func_states.add(&gdfs->instances_list);
+						} else {
+							gdfs->state.instance = nullptr;
+						}
+					}
 #ifdef DEBUG_ENABLED
-				gdfs->state.function_name = name;
-				gdfs->state.script_path = _script->get_path();
+					gdfs->state.function_name = name;
+					gdfs->state.script_path = _script->get_path();
 #endif
-				gdfs->state.defarg = defarg;
-				gdfs->function = this;
+					gdfs->state.defarg = defarg;
+					gdfs->function = this;
 
-				retvalue = gdfs;
+					retvalue = gdfs;
 
-				if (_code_ptr[ip] == OPCODE_YIELD_SIGNAL) {
-					//do the oneshot connect
-					GET_VARIANT_PTR(argobj, 1);
-					GET_VARIANT_PTR(argname, 2);
-
-#ifdef DEBUG_ENABLED
-					if (argobj->get_type() != Variant::OBJECT) {
-						err_text = "First argument of yield() not of type object.";
-						OPCODE_BREAK;
-					}
-					if (argname->get_type() != Variant::STRING) {
-						err_text = "Second argument of yield() not a string (for signal name).";
-						OPCODE_BREAK;
-					}
-#endif
-
-#ifdef DEBUG_ENABLED
-					bool was_freed;
-					Object *obj = argobj->get_validated_object_with_check(was_freed);
-					String signal = argname->operator String();
-
-					if (was_freed) {
-						err_text = "First argument of yield() is a previously freed instance.";
-						OPCODE_BREAK;
-					}
-
-					if (!obj) {
-						err_text = "First argument of yield() is null.";
-						OPCODE_BREAK;
-					}
-					if (signal.length() == 0) {
-						err_text = "Second argument of yield() is an empty string (for signal name).";
-						OPCODE_BREAK;
-					}
-
-					Error err = obj->connect_compat(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
+					Error err = sig.connect(Callable(gdfs.ptr(), "_signal_callback"), varray(gdfs), Object::CONNECT_ONESHOT);
 					if (err != OK) {
-						err_text = "Error connecting to signal: " + signal + " during yield().";
+						err_text = "Error connecting to signal: " + sig.get_name() + " during await.";
 						OPCODE_BREAK;
 					}
-#else
-					Object *obj = argobj->operator Object *();
-					String signal = argname->operator String();
-
-					obj->connect_compat(signal, gdfs.ptr(), "_signal_callback", varray(gdfs), Object::CONNECT_ONESHOT);
-#endif
-				}
 
 #ifdef DEBUG_ENABLED
-				exit_ok = true;
-				yielded = true;
+					exit_ok = true;
+					awaited = true;
 #endif
-				OPCODE_BREAK;
+					OPCODE_BREAK;
+				}
 			}
+			DISPATCH_OPCODE; // Needed for synchronous calls (when result is immediately available).
 
-			OPCODE(OPCODE_YIELD_RESUME) {
+			OPCODE(OPCODE_AWAIT_RESUME) {
 				CHECK_SPACE(2);
 #ifdef DEBUG_ENABLED
 				if (!p_state) {
@@ -1556,11 +1568,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-	// Check if this is the last time the function is resuming from yield
-	// Will be true if never yielded as well
+	// Check if this is the last time the function is resuming from await
+	// Will be true if never awaited as well
 	// When it's the last resume it will postpone the exit from stack,
 	// so the debugger knows which function triggered the resume of the next function (if any)
-	if (!p_state || yielded) {
+	if (!p_state || awaited) {
 		if (EngineDebugger::is_active()) {
 			GDScriptLanguage::get_singleton()->exit_function();
 		}
@@ -1786,14 +1798,14 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 		if (!scripts_list.in_list()) {
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after await, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
 #else
 			return Variant();
 #endif
 		}
 		if (state.instance && !instances_list.in_list()) {
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after await, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
 #else
 			return Variant();
 #endif
@@ -1810,7 +1822,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	bool completed = true;
 
 	// If the return value is a GDScriptFunctionState reference,
-	// then the function did yield again after resuming.
+	// then the function did awaited again after resuming.
 	if (ret.is_ref()) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
