@@ -31,6 +31,9 @@
 #ifndef GDSCRIPT_PROTOCAL_SERVER_H
 #define GDSCRIPT_PROTOCAL_SERVER_H
 
+// FIXME: Reenable LSP.
+#if 0
+
 #include "core/io/stream_peer.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
@@ -107,5 +110,7 @@ public:
 
 	GDScriptLanguageProtocol();
 };
+
+#endif
 
 #endif
