@@ -53,9 +53,11 @@ void CPUParticles2D::set_amount(int p_amount) {
 	{
 		PoolVector<Particle>::Write w = particles.write();
 
-		for (int i = 0; i < p_amount; i++) {
-			w[i].active = false;
-		}
+		// each particle must be set to false
+		// zeroing the data also prevents uninitialized memory being sent to GPU
+		zeromem(static_cast<void *>(&w[0]), p_amount * sizeof(Particle));
+		// cast to prevent compiler warning .. note this relies on Particle not containing any complex types.
+		// an alternative is to use some zero method per item but the generated code will be far less efficient.
 	}
 
 	particle_data.resize((8 + 4 + 1) * p_amount);
@@ -1020,21 +1022,21 @@ void CPUParticles2D::_update_particle_data_buffer() {
 				ptr[6] = 0;
 				ptr[7] = t.elements[2][1];
 
+				Color c = r[idx].color;
+				uint8_t *data8 = (uint8_t *)&ptr[8];
+				data8[0] = CLAMP(c.r * 255.0, 0, 255);
+				data8[1] = CLAMP(c.g * 255.0, 0, 255);
+				data8[2] = CLAMP(c.b * 255.0, 0, 255);
+				data8[3] = CLAMP(c.a * 255.0, 0, 255);
+
+				ptr[9] = r[idx].custom[0];
+				ptr[10] = r[idx].custom[1];
+				ptr[11] = r[idx].custom[2];
+				ptr[12] = r[idx].custom[3];
+
 			} else {
-				zeromem(ptr, sizeof(float) * 8);
+				zeromem(ptr, sizeof(float) * 13);
 			}
-
-			Color c = r[idx].color;
-			uint8_t *data8 = (uint8_t *)&ptr[8];
-			data8[0] = CLAMP(c.r * 255.0, 0, 255);
-			data8[1] = CLAMP(c.g * 255.0, 0, 255);
-			data8[2] = CLAMP(c.b * 255.0, 0, 255);
-			data8[3] = CLAMP(c.a * 255.0, 0, 255);
-
-			ptr[9] = r[idx].custom[0];
-			ptr[10] = r[idx].custom[1];
-			ptr[11] = r[idx].custom[2];
-			ptr[12] = r[idx].custom[3];
 
 			ptr += 13;
 		}
