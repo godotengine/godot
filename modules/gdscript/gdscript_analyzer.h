@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  gdscript_text_document.h                                             */
+/*  gdscript_analyzer.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,56 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GDSCRIPT_TEXT_DOCUMENT_H
-#define GDSCRIPT_TEXT_DOCUMENT_H
+#ifndef GDSCRIPT_ANALYZER_H
+#define GDSCRIPT_ANALYZER_H
 
-// FIXME: Reenable LSP.
-#if 0
+#include "gdscript_parser.h"
 
-#include "core/os/file_access.h"
-#include "core/reference.h"
-#include "lsp.hpp"
+class GDScriptAnalyzer {
+	GDScriptParser *parser = nullptr;
 
-class GDScriptTextDocument : public Reference {
-	GDCLASS(GDScriptTextDocument, Reference)
-protected:
-	static void _bind_methods();
+	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
+	GDScriptParser::DataType resolve_datatype(const GDScriptParser::TypeNode *p_type);
 
-	FileAccess *file_checker;
-
-	void didOpen(const Variant &p_param);
-	void didChange(const Variant &p_param);
-
-	void sync_script_content(const String &p_path, const String &p_content);
-	void show_native_symbol_in_editor(const String &p_symbol_id);
-
-	Array native_member_completions;
-
-private:
-	Array find_symbols(const lsp::TextDocumentPositionParams &p_location, List<const lsp::DocumentSymbol *> &r_list);
-	lsp::TextDocumentItem load_document_item(const Variant &p_param);
-	void notify_client_show_symbol(const lsp::DocumentSymbol *symbol);
+	// This traverses the tree to resolve all TypeNodes.
+	Error resolve_datatypes(GDScriptParser::ClassNode *p_class);
 
 public:
-	Variant nativeSymbol(const Dictionary &p_params);
-	Array documentSymbol(const Dictionary &p_params);
-	Array completion(const Dictionary &p_params);
-	Dictionary resolve(const Dictionary &p_params);
-	Array foldingRange(const Dictionary &p_params);
-	Array codeLens(const Dictionary &p_params);
-	Array documentLink(const Dictionary &p_params);
-	Array colorPresentation(const Dictionary &p_params);
-	Variant hover(const Dictionary &p_params);
-	Array definition(const Dictionary &p_params);
-	Variant declaration(const Dictionary &p_params);
-	Variant signatureHelp(const Dictionary &p_params);
+	Error resolve_inheritance();
+	Error analyze();
 
-	void initialize();
-
-	GDScriptTextDocument();
-	virtual ~GDScriptTextDocument();
+	GDScriptAnalyzer(GDScriptParser *p_parser);
 };
 
-#endif
-
-#endif
+#endif // GDSCRIPT_ANALYZER_H

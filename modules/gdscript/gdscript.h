@@ -104,7 +104,8 @@ class GDScript : public Script {
 #endif
 	Map<StringName, PropertyInfo> member_info;
 
-	GDScriptFunction *initializer; //direct pointer to _init , faster to locate
+	GDScriptFunction *implicit_initializer = nullptr;
+	GDScriptFunction *initializer = nullptr; //direct pointer to new , faster to locate
 
 	int subclass_count;
 	Set<Object *> instances;
@@ -117,6 +118,7 @@ class GDScript : public Script {
 
 	SelfList<GDScriptFunctionState>::List pending_func_states;
 
+	void _super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error);
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);

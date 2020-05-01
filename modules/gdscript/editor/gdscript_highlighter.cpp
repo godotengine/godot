@@ -288,7 +288,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 
 			if (str[k] == '(') {
 				in_function_name = true;
-			} else if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::TK_PR_VAR)) {
+			} else if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR)) {
 				in_variable_declaration = true;
 			}
 		}
@@ -357,7 +357,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting(int p_line) 
 		} else if (in_function_name) {
 			next_type = FUNCTION;
 
-			if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::TK_PR_FUNCTION)) {
+			if (previous_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
 				color = function_definition_color;
 			} else {
 				color = function_color;

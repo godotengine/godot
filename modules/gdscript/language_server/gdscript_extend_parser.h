@@ -31,6 +31,9 @@
 #ifndef GDSCRIPT_EXTEND_PARSER_H
 #define GDSCRIPT_EXTEND_PARSER_H
 
+// FIXME: Reenable LSP.
+#if 0
+
 #include "../gdscript_parser.h"
 #include "core/variant.h"
 #include "lsp.hpp"
@@ -98,5 +101,7 @@ public:
 
 	Error parse(const String &p_code, const String &p_path);
 };
+
+#endif
 
 #endif
