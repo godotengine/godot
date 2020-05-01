@@ -140,7 +140,7 @@ void Container::queue_sort() {
 		return;
 	}
 
-	MessageQueue::get_singleton()->push_call(this, "_sort_children");
+	MessageQueue::get_singleton()->push_callable(callable_mp(this, &Container::_sort_children));
 	pending_sort = true;
 }
 
@@ -177,8 +177,6 @@ String Container::get_configuration_warning() const {
 }
 
 void Container::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_sort_children"), &Container::_sort_children);
-
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
 	ClassDB::bind_method(D_METHOD("fit_child_in_rect", "child", "rect"), &Container::fit_child_in_rect);
 
