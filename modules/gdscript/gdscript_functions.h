@@ -133,6 +133,10 @@ public:
 	static void call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error);
 	static bool is_deterministic(Function p_func);
 	static MethodInfo get_info(Function p_func);
+
+private:
+	static Variant _inst2dict(const Variant &p_arg, Variant::CallError &r_error);
+	static Variant _dict2inst(const Dictionary &p_arg, Variant::CallError &r_error);
 };
 
 #endif // GDSCRIPT_FUNCTIONS_H
