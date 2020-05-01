@@ -469,6 +469,8 @@
 		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
+		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
+		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code]theme[/code] or generic [code]tres[/code]/[code]res[/code] extension).
 		</member>
@@ -976,6 +978,8 @@
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="128000">
 			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
+		</member>
+		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 		</member>
 		<member name="rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround" type="bool" setter="" getter="" default="false">
 			Some NVIDIA GPU drivers have a bug which produces flickering issues for the [code]draw_rect[/code] method, especially as used in [TileMap]. Refer to [url=https://github.com/godotengine/godot/issues/9913]GitHub issue 9913[/url] for details.
