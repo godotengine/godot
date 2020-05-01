@@ -555,11 +555,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			selection.sort_custom<Node::Comparator>();
 
-			for (List<Node *>::Element *E = selection.back(); E; E = E->prev()) {
+			Node *add_below_node = selection.back()->get();
+
+			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 
 				Node *node = E->get();
 				Node *parent = node->get_parent();
-				Node *selection_tail = _get_selection_group_tail(node, selection);
 
 				List<Node *> owned;
 				node->get_owned_by(node->get_owner(), &owned);
@@ -577,7 +578,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				dup->set_name(parent->validate_child_name(dup));
 
-				editor_data->get_undo_redo().add_do_method(parent, "add_child_below_node", selection_tail, dup);
+				editor_data->get_undo_redo().add_do_method(parent, "add_child_below_node", add_below_node, dup);
 				for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
 
 					if (!duplimap.has(F->get())) {
@@ -585,7 +586,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						continue;
 					}
 					Node *d = duplimap[F->get()];
-					editor_data->get_undo_redo().add_do_method(d, "set_owner", selection_tail->get_owner());
+					editor_data->get_undo_redo().add_do_method(d, "set_owner", node->get_owner());
 				}
 				editor_data->get_undo_redo().add_do_method(editor_selection, "add_node", dup);
 				editor_data->get_undo_redo().add_undo_method(parent, "remove_child", dup);
@@ -595,6 +596,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				editor_data->get_undo_redo().add_do_method(sed, "live_debug_duplicate_node", edited_scene->get_path_to(node), dup->get_name());
 				editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(edited_scene->get_path_to(parent)).plus_file(dup->get_name())));
+
+				add_below_node = dup;
 			}
 
 			editor_data->get_undo_redo().commit_action();
@@ -602,7 +605,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (dupsingle)
 				editor->push_item(dupsingle);
 
-			for (List<Node *>::Element *E = editable_children.front(); E; E = E->next())
+			for (List<Node *>::Element *E = editable_children.back(); E; E = E->prev())
 				_toggle_editable_children(E->get());
 
 		} break;
