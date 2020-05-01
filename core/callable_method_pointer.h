@@ -161,19 +161,35 @@ template <class T, class... P>
 class CallableCustomMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
+#ifdef DEBUG_ENABLED
+		uint64_t object_id;
+#endif
 		void (T::*method)(P...);
 	} data;
 
 public:
-	virtual ObjectID get_object() const { return data.instance->get_instance_id(); }
+	virtual ObjectID get_object() const {
+#ifdef DEBUG_ENABLED
+		if (ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr) {
+			return ObjectID();
+		}
+#endif
+		return data.instance->get_instance_id();
+	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+#ifdef DEBUG_ENABLED
+		ERR_FAIL_COND_MSG(ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr, "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
+#endif
 		call_with_variant_args(data.instance, data.method, p_arguments, p_argcount, r_call_error);
 	}
 
 	CallableCustomMethodPointer(T *p_instance, void (T::*p_method)(P...)) {
 		zeromem(&data, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
+#ifdef DEBUG_ENABLED
+		data.object_id = p_instance->get_instance_id();
+#endif
 		data.method = p_method;
 		_setup((uint32_t *)&data, sizeof(Data));
 	}
@@ -242,20 +258,36 @@ template <class T, class R, class... P>
 class CallableCustomMethodPointerRet : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
+#ifdef DEBUG_ENABLED
+		uint64_t object_id;
+#endif
 		R(T::*method)
 		(P...);
 	} data;
 
 public:
-	virtual ObjectID get_object() const { return data.instance->get_instance_id(); }
+	virtual ObjectID get_object() const {
+#ifdef DEBUG_ENABLED
+		if (ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr) {
+			return ObjectID();
+		}
+#endif
+		return data.instance->get_instance_id();
+	}
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+#ifdef DEBUG_ENABLED
+		ERR_FAIL_COND_MSG(ObjectDB::get_instance(ObjectID(data.object_id)) == nullptr, "Invalid Object id '" + uitos(data.object_id) + "', can't call method.");
+#endif
 		call_with_variant_args_ret(data.instance, data.method, p_arguments, p_argcount, r_return_value, r_call_error);
 	}
 
 	CallableCustomMethodPointerRet(T *p_instance, R (T::*p_method)(P...)) {
 		zeromem(&data, sizeof(Data)); // Clear beforehand, may have padding bytes.
 		data.instance = p_instance;
+#ifdef DEBUG_ENABLED
+		data.object_id = p_instance->get_instance_id();
+#endif
 		data.method = p_method;
 		_setup((uint32_t *)&data, sizeof(Data));
 	}

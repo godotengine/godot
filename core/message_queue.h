@@ -79,6 +79,7 @@ public:
 	Error push_notification(ObjectID p_id, int p_notification);
 	Error push_set(ObjectID p_id, const StringName &p_prop, const Variant &p_value);
 	Error push_callable(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error = false);
+	Error push_callable(const Callable &p_callable, VARIANT_ARG_LIST);
 
 	Error push_call(Object *p_object, const StringName &p_method, VARIANT_ARG_LIST);
 	Error push_notification(Object *p_object, int p_notification);
