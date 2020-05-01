@@ -45,10 +45,14 @@
 class Rewinder;
 class NetworkedController;
 
-struct VarData {
-	uint32_t id;
+struct Var {
 	StringName name;
 	Variant value;
+};
+
+struct VarData {
+	uint32_t id;
+	Var var;
 	bool skip_rewinding;
 	bool enabled;
 
@@ -275,8 +279,8 @@ private:
 	real_t get_pretended_delta() const;
 
 	// Read the node variables and store the value if is different from the
-	// previous one. Emit a signal for each changed variable.
-	void pull_variable_changes(Vector<ObjectID> *r_null_objects = nullptr);
+	// previous one and emits a signal.
+	void pull_node_changes(Node *p_node, NodeData *p_node_data = nullptr);
 
 	void on_peer_connected(int p_peer_id);
 	void on_peer_disconnected(int p_peer_id);
@@ -318,24 +322,16 @@ struct Snapshot {
 	operator String() const;
 };
 
-struct PartialSnapshot {
+struct IsleSnapshot {
 	uint64_t input_id;
 	HashMap<ObjectID, Vector<VarData>> node_vars;
 
 	operator String() const;
 };
 
-struct ControllerRewinder {
-	NetworkedController *controller;
-	int frames_to_skip;
-	uint64_t recovered_snapshot_input_id;
-	bool finished;
-
-	void init(NetworkedController *p_controller, int p_frames_to_skip, uint64_t p_recovered_snapshot_input_id);
-	void advance(int p_i, real_t p_delta);
-	bool has_finished() const;
-	NetworkedController *get_controller() const;
-	uint64_t get_processed_input_id(int p_i) const;
+struct PostponedRecover {
+	NodeData *node_data = nullptr;
+	Vector<Var> vars;
 };
 
 class Rewinder {
@@ -413,8 +409,8 @@ class ClientRewinder : public Rewinder {
 	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
 	std::deque<Snapshot> snapshots;
-	HashMap<ObjectID, std::deque<PartialSnapshot>> client_doll_snapshots;
-	HashMap<ObjectID, std::deque<PartialSnapshot>> server_doll_snapshots;
+	HashMap<ObjectID, std::deque<IsleSnapshot>> client_controllers_snapshots;
+	HashMap<ObjectID, std::deque<IsleSnapshot>> server_controllers_snapshots;
 
 public:
 	ClientRewinder(SceneRewinder *p_node);
@@ -427,17 +423,15 @@ public:
 
 private:
 	void store_snapshot();
-	void update_snapshot(int p_i, int p_snapshot_index, ControllerRewinder *p_rewinders, int p_rewinder_count);
 
-	void store_dolls_snapshot(const Snapshot &p_snapshot, HashMap<ObjectID, std::deque<PartialSnapshot>> &p_snapshot_storage);
+	void store_controllers_snapshot(
+			const Snapshot &p_snapshot,
+			bool p_only_new_inputs,
+			HashMap<ObjectID, std::deque<IsleSnapshot>> &r_snapshot_storage);
 
-	void process_dolls_recovery(real_t p_delta);
-	void process_world_recovery(real_t p_delta);
-	bool compare_and_recovery_doll_snap();
-	bool compare_and_recovery_world_snap(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot);
-	void recovery_rewind(const Snapshot &p_server_snapshot, const Snapshot &p_client_snapshot, real_t p_delta);
+	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
-	bool compare_and_recover_vars(Node *p_node, NodeData *p_rewinder_node_data, const Vector<VarData> &p_server_vars, const Vector<VarData> &p_client_vars);
+	bool compare_vars(const NodeData *p_rewinder_node_data, const Vector<VarData> &p_server_vars, const Vector<VarData> &p_client_vars, Vector<Var> &r_postponed_recover);
 };
 
 #endif

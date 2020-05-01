@@ -968,14 +968,16 @@ DollController::DollController(NetworkedController *p_node) :
 void DollController::physics_process(real_t p_delta) {
 
 	// Lock mechanism when the server don't update anymore this doll!
-	if (is_flow_open && is_server_state_update_received) {
-		if (is_server_communication_detected == false) {
+	if (is_flow_open) {
+		if (is_server_state_update_received &&
+				is_server_communication_detected == false) {
 			is_server_communication_detected = true;
 			hard_reset_to_server_state();
 			node->emit_signal("doll_server_comunication_opened");
 		}
 	} else {
 		// Locked
+		node->player_set_has_new_input(false);
 		return;
 	}
 
@@ -985,6 +987,8 @@ void DollController::physics_process(real_t p_delta) {
 	if (is_new_input) {
 		player_controller.store_input_buffer(server_controller.current_input_buffer_id);
 	}
+
+	node->player_set_has_new_input(is_new_input);
 
 	// Keeps the doll in sync with the server.
 	soft_reset_to_server_state();
