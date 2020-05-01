@@ -1138,6 +1138,8 @@ public:
 
 	virtual RenderingDevice *create_local_device();
 
+	virtual uint64_t get_memory_usage() const;
+
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();
 };

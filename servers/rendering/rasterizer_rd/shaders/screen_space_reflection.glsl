@@ -68,7 +68,7 @@ void main() {
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
-	if (any(greaterThan(ssC, params.screen_size))) { //too large, do nothing
+	if (any(greaterThanEqual(ssC, params.screen_size))) { //too large, do nothing
 		return;
 	}
 

@@ -132,6 +132,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"TYPE_ISAMPLER3D",
 	"TYPE_USAMPLER3D",
 	"TYPE_SAMPLERCUBE",
+	"TYPE_SAMPLERCUBEARRAY",
 	"INTERPOLATION_FLAT",
 	"INTERPOLATION_SMOOTH",
 	"CONST",
@@ -283,6 +284,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_TYPE_ISAMPLER3D, "isampler3D" },
 	{ TK_TYPE_USAMPLER3D, "usampler3D" },
 	{ TK_TYPE_SAMPLERCUBE, "samplerCube" },
+	{ TK_TYPE_SAMPLERCUBEARRAY, "samplerCubeArray" },
 	{ TK_INTERPOLATION_FLAT, "flat" },
 	{ TK_INTERPOLATION_SMOOTH, "smooth" },
 	{ TK_CONST, "const" },
@@ -783,7 +785,8 @@ bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 			p_type == TK_TYPE_SAMPLER3D ||
 			p_type == TK_TYPE_ISAMPLER3D ||
 			p_type == TK_TYPE_USAMPLER3D ||
-			p_type == TK_TYPE_SAMPLERCUBE);
+			p_type == TK_TYPE_SAMPLERCUBE ||
+			p_type == TK_TYPE_SAMPLERCUBEARRAY);
 }
 
 ShaderLanguage::DataType ShaderLanguage::get_token_datatype(TokenType p_type) {
@@ -902,6 +905,8 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 			return "usampler3D";
 		case TYPE_SAMPLERCUBE:
 			return "samplerCube";
+		case TYPE_SAMPLERCUBEARRAY:
+			return "samplerCubeArray";
 		case TYPE_STRUCT:
 			return "struct";
 		case TYPE_MAX:
@@ -2046,6 +2051,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER3D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER3D, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBE, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBEARRAY, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
@@ -2067,6 +2073,8 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, false },
 	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 
 	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_VOID }, TAG_GLOBAL, true },
@@ -2097,6 +2105,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
+	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, false },
 
 	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID }, TAG_GLOBAL, true },
@@ -2128,6 +2137,7 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
+	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBEARRAY, TYPE_VEC4, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, TAG_GLOBAL, true },
 
 	{ "dFdx", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, TAG_GLOBAL, true },
 	{ "dFdx", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, TAG_GLOBAL, true },
@@ -2618,7 +2628,8 @@ bool ShaderLanguage::is_sampler_type(DataType p_type) {
 		   p_type == TYPE_SAMPLER3D ||
 		   p_type == TYPE_ISAMPLER3D ||
 		   p_type == TYPE_USAMPLER3D ||
-		   p_type == TYPE_SAMPLERCUBE;
+		   p_type == TYPE_SAMPLERCUBE ||
+		   p_type == TYPE_SAMPLERCUBEARRAY;
 }
 
 Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::ConstantNode::Value> &p_value, DataType p_type, ShaderLanguage::ShaderNode::Uniform::Hint p_hint) {
@@ -2712,7 +2723,9 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 			case ShaderLanguage::TYPE_USAMPLER2DARRAY:
 			case ShaderLanguage::TYPE_USAMPLER2D:
 			case ShaderLanguage::TYPE_USAMPLER3D:
-			case ShaderLanguage::TYPE_SAMPLERCUBE: {
+			case ShaderLanguage::TYPE_SAMPLERCUBE:
+			case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
+
 				// Texture types, likely not relevant here.
 				break;
 			}
@@ -2814,7 +2827,7 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 
 			pi.type = Variant::OBJECT;
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "TextureArray";
+			pi.hint_string = "TextureLayered";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLER3D:
 		case ShaderLanguage::TYPE_ISAMPLER3D:
@@ -2823,11 +2836,12 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
 			pi.hint_string = "Texture3D";
 		} break;
-		case ShaderLanguage::TYPE_SAMPLERCUBE: {
+		case ShaderLanguage::TYPE_SAMPLERCUBE:
+		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
 
 			pi.type = Variant::OBJECT;
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "CubeMap";
+			pi.hint_string = "TextureLayered";
 		} break;
 		case ShaderLanguage::TYPE_STRUCT: {
 			// FIXME: Implement this.
@@ -2878,6 +2892,7 @@ uint32_t ShaderLanguage::get_type_size(DataType p_type) {
 		case TYPE_ISAMPLER3D:
 		case TYPE_USAMPLER3D:
 		case TYPE_SAMPLERCUBE:
+		case TYPE_SAMPLERCUBEARRAY:
 			return 4; //not really, but useful for indices
 		case TYPE_STRUCT:
 			// FIXME: Implement.
@@ -6185,7 +6200,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							return ERR_PARSE_ERROR;
 						}
 					} else {
-						if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL && (type == TYPE_MAT2 || type == TYPE_MAT3 || type == TYPE_MAT4)) {
+						if (uniform_scope == ShaderNode::Uniform::SCOPE_INSTANCE && (type == TYPE_MAT2 || type == TYPE_MAT3 || type == TYPE_MAT4)) {
 							_set_error("Uniforms with 'instance' qualifiers can't be of matrix type.");
 							return ERR_PARSE_ERROR;
 						}

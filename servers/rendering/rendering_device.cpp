@@ -147,7 +147,7 @@ Ref<RDShaderBytecode> RenderingDevice::_shader_compile_from_source(const Ref<RDS
 	return bytecode;
 }
 
-RID RenderingDevice::_shader_create(const Ref<RDShaderBytecode> &p_bytecode) {
+RID RenderingDevice::shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_bytecode) {
 	ERR_FAIL_COND_V(p_bytecode.is_null(), RID());
 
 	Vector<ShaderStageData> stage_data;
@@ -276,7 +276,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_from_source, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("shader_create", "shader_data"), &RenderingDevice::_shader_create);
+	ClassDB::bind_method(D_METHOD("shader_create", "shader_data"), &RenderingDevice::shader_create_from_bytecode);
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
 	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()));

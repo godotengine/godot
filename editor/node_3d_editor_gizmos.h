@@ -321,25 +321,42 @@ public:
 	GIProbeGizmoPlugin();
 };
 
-#if 0
-class BakedIndirectLightGizmoPlugin : public EditorNode3DGizmoPlugin {
+class BakedLightmapGizmoPlugin : public EditorNode3DGizmoPlugin {
 
-	GDCLASS(BakedIndirectLightGizmoPlugin, EditorNode3DGizmoPlugin);
+	GDCLASS(BakedLightmapGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
-	bool has_gizmo(Spatial *p_spatial);
+	bool has_gizmo(Node3D *p_spatial);
 	String get_name() const;
 	int get_priority() const;
 	void redraw(EditorNode3DGizmo *p_gizmo);
 
 	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
 	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
-	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point);
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
 	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
 
-	BakedIndirectLightGizmoPlugin();
+	BakedLightmapGizmoPlugin();
 };
-#endif
+
+class LightmapProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
+
+	GDCLASS(LightmapProbeGizmoPlugin, EditorNode3DGizmoPlugin);
+
+public:
+	bool has_gizmo(Node3D *p_spatial);
+	String get_name() const;
+	int get_priority() const;
+	void redraw(EditorNode3DGizmo *p_gizmo);
+
+	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	Variant get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const;
+	void set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point);
+	void commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel = false);
+
+	LightmapProbeGizmoPlugin();
+};
+
 class CollisionShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 
 	GDCLASS(CollisionShape3DGizmoPlugin, EditorNode3DGizmoPlugin);

@@ -159,6 +159,7 @@ public:
 	bool is_rotation() const;
 
 	Basis slerp(const Basis &target, const real_t &t) const;
+	void rotate_sh(real_t *p_values);
 
 	operator String() const;
 
