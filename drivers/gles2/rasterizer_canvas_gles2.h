@@ -115,6 +115,17 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		BatchVector2 tex_pixel_size;
 	};
 
+	// items in a list to be sorted prior to joining
+	struct BSortItem {
+		// have a function to keep as pod, rather than operator
+		void assign(const BSortItem &o) {
+			item = o.item;
+			z_index = o.z_index;
+		}
+		Item *item;
+		int z_index;
+	};
+
 	// batch item may represent 1 or more items
 	struct BItemJoined {
 		uint32_t first_item_ref;
@@ -134,6 +145,17 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 	struct BItemRef {
 		Item *item;
 		Color final_modulate;
+	};
+
+	struct BLightRegion {
+		void reset() {
+			light_bitfield = 0;
+			shadow_bitfield = 0;
+			too_many_lights = false;
+		}
+		uint64_t light_bitfield;
+		uint64_t shadow_bitfield;
+		bool too_many_lights; // we can only do light region optimization if there are 64 or less lights
 	};
 
 	struct BatchData {
@@ -167,6 +189,9 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		RasterizerArrayGLES2<BItemJoined> items_joined;
 		RasterizerArrayGLES2<BItemRef> item_refs;
 
+		// items are sorted prior to joining
+		RasterizerArrayGLES2<BSortItem> sort_items;
+
 		// counts
 		int total_quads;
 
@@ -198,6 +223,19 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		int settings_batch_buffer_num_verts;
 		bool settings_scissor_lights;
 		float settings_scissor_threshold; // 0.0 to 1.0
+		int settings_item_reordering_lookahead;
+		bool settings_use_single_rect_fallback;
+		int settings_light_max_join_items;
+
+		// only done on diagnose frame
+		void reset_stats() {
+			stats_items_sorted = 0;
+			stats_light_items_joined = 0;
+		}
+
+		// frame stats (just for monitoring and debugging)
+		int stats_items_sorted;
+		int stats_light_items_joined;
 	} bdata;
 
 	struct RenderItemState {
@@ -214,6 +252,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		// used for joining items only
 		BItemJoined *joined_item;
 		bool join_batch_break;
+		BLightRegion light_region;
 
 		// 'item group' is data over a single call to canvas_render_items
 		int item_group_z;
@@ -249,6 +288,7 @@ public:
 	virtual void canvas_render_items_end();
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
 	virtual void canvas_begin();
+	virtual void canvas_end();
 
 private:
 	// legacy codepath .. to remove after testing
@@ -258,9 +298,11 @@ private:
 	// high level batch funcs
 	void canvas_render_items_implementation(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light, const Transform2D &p_base_transform);
 	void render_joined_item(const BItemJoined &p_bij, RenderItemState &r_ris);
+	void record_items(Item *p_item_list, int p_z);
 	void join_items(Item *p_item_list, int p_z);
+	void join_sorted_items();
 	bool try_join_item(Item *p_ci, RenderItemState &r_ris, bool &r_batch_break);
-	void render_joined_item_commands(const BItemJoined &p_bij, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
+	void render_joined_item_commands(const BItemJoined &p_bij, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material, bool p_lit);
 	void render_batches(Item::Command *const *p_commands, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
 	bool prefill_joined_item(FillState &r_fill_state, int &r_command_start, Item *p_item, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
 	void flush_render_batches(Item *p_first_item, Item *p_current_clip, bool &r_reclip, RasterizerStorageGLES2::Material *p_material);
@@ -279,6 +321,11 @@ private:
 	void _software_transform_vertex(Vector2 &r_v, const Transform2D &p_tr) const;
 	TransformMode _find_transform_mode(const Transform2D &p_tr) const;
 	_FORCE_INLINE_ void _prefill_default_batch(FillState &r_fill_state, int p_command_num, const Item &p_item);
+
+	// sorting
+	void sort_items();
+	bool sort_items_from(int p_start);
+	bool _sort_items_match(const BSortItem &p_a, const BSortItem &p_b) const;
 
 	// light scissoring
 	bool _light_find_intersection(const Rect2 &p_item_rect, const Transform2D &p_light_xform, const Rect2 &p_light_rect, Rect2 &r_cliprect) const;
@@ -390,6 +437,35 @@ _FORCE_INLINE_ RasterizerCanvasGLES2::TransformMode RasterizerCanvasGLES2::_find
 	}
 
 	return TM_ALL;
+}
+
+_FORCE_INLINE_ bool RasterizerCanvasGLES2::_sort_items_match(const BSortItem &p_a, const BSortItem &p_b) const {
+	const Item *a = p_a.item;
+	const Item *b = p_b.item;
+
+	if (b->commands.size() != 1)
+		return false;
+
+	// tested outside function
+	//	if (a->commands.size() != 1)
+	//		return false;
+
+	const Item::Command &cb = *b->commands[0];
+	if (cb.type != Item::Command::TYPE_RECT)
+		return false;
+
+	const Item::Command &ca = *a->commands[0];
+	// tested outside function
+	//	if (ca.type != Item::Command::TYPE_RECT)
+	//		return false;
+
+	const Item::CommandRect *rect_a = static_cast<const Item::CommandRect *>(&ca);
+	const Item::CommandRect *rect_b = static_cast<const Item::CommandRect *>(&cb);
+
+	if (rect_a->texture != rect_b->texture)
+		return false;
+
+	return true;
 }
 
 #endif // RASTERIZERCANVASGLES2_H
