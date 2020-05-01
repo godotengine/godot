@@ -1539,8 +1539,8 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 					}
 				}
 
-				if (md->last_frame != RasterizerRD::get_frame_number()) {
-					md->last_frame = RasterizerRD::get_frame_number();
+				if (md->last_frame != RasterizerRD::singleton->get_frame_number()) {
+					md->last_frame = RasterizerRD::singleton->get_frame_number();
 					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
 						// uniform set may be gone because a dependency was erased. In this case, it will happen
 						// if a texture is deleted, so just re-create it.

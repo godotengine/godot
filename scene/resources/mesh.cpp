@@ -472,11 +472,11 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	return newmesh;
 }
 
-void Mesh::set_lightmap_size_hint(const Vector2 &p_size) {
+void Mesh::set_lightmap_size_hint(const Size2i &p_size) {
 	lightmap_size_hint = p_size;
 }
 
-Size2 Mesh::get_lightmap_size_hint() const {
+Size2i Mesh::get_lightmap_size_hint() const {
 	return lightmap_size_hint;
 }
 
@@ -486,7 +486,7 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_lightmap_size_hint"), &Mesh::get_lightmap_size_hint);
 	ClassDB::bind_method(D_METHOD("get_aabb"), &Mesh::get_aabb);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "lightmap_size_hint"), "set_lightmap_size_hint", "get_lightmap_size_hint");
 
 	ClassDB::bind_method(D_METHOD("get_surface_count"), &Mesh::get_surface_count);
 	ClassDB::bind_method(D_METHOD("surface_get_arrays", "surf_idx"), &Mesh::surface_get_arrays);

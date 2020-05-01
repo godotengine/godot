@@ -41,6 +41,7 @@
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/light_3d.h"
+#include "scene/3d/lightmap_probe.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -3069,136 +3070,296 @@ void GIProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 }
 
 ////
-#if 0
-BakedIndirectLightGizmoPlugin::BakedIndirectLightGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/baked_indirect_light", Color(0.5, 0.6, 1));
 
-	create_material("baked_indirect_light_material", gizmo_color);
+BakedLightmapGizmoPlugin::BakedLightmapGizmoPlugin() {
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
 
 	gizmo_color.a = 0.1;
-	create_material("baked_indirect_light_internal_material", gizmo_color);
+	create_material("lightmap_lines", gizmo_color);
 
-	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_icon("GizmoBakedLightmap", "EditorIcons"));
-	create_handle_material("handles");
+	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, false);
+
+	add_material("lightmap_probe_material", mat);
+
+	create_icon_material("baked_indirect_light_icon", Node3DEditor::get_singleton()->get_theme_icon("GizmoBakedLightmap", "EditorIcons"));
 }
 
-String BakedIndirectLightGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-
-	switch (p_idx) {
-		case 0: return "Extents X";
-		case 1: return "Extents Y";
-		case 2: return "Extents Z";
-	}
+String BakedLightmapGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 
 	return "";
 }
-Variant BakedIndirectLightGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+Variant BakedLightmapGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
 
-	BakedLightmap *baker = Object::cast_to<BakedLightmap>(p_gizmo->get_spatial_node());
-	return baker->get_extents();
+	return Variant();
 }
-void BakedIndirectLightGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera *p_camera, const Point2 &p_point) {
-
-	BakedLightmap *baker = Object::cast_to<BakedLightmap>(p_gizmo->get_spatial_node());
-
-	Transform gt = baker->get_global_transform();
-	Transform gi = gt.affine_inverse();
-
-	Vector3 extents = baker->get_extents();
-
-	Vector3 ray_from = p_camera->project_ray_origin(p_point);
-	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
-
-	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 16384) };
-
-	Vector3 axis;
-	axis[p_idx] = 1.0;
-
-	Vector3 ra, rb;
-	Geometry::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
-	float d = ra[p_idx];
-	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
-		d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
-	}
-
-	if (d < 0.001)
-		d = 0.001;
-
-	extents[p_idx] = d;
-	baker->set_extents(extents);
+void BakedLightmapGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 }
 
-void BakedIndirectLightGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
-
-	BakedLightmap *baker = Object::cast_to<BakedLightmap>(p_gizmo->get_spatial_node());
-
-	Vector3 restore = p_restore;
-
-	if (p_cancel) {
-		baker->set_extents(restore);
-		return;
-	}
-
-	UndoRedo *ur = Node3DEditor::get_singleton()->get_undo_redo();
-	ur->create_action(TTR("Change Probe Extents"));
-	ur->add_do_method(baker, "set_extents", baker->get_extents());
-	ur->add_undo_method(baker, "set_extents", restore);
-	ur->commit_action();
+void BakedLightmapGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
 }
 
-bool BakedIndirectLightGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+bool BakedLightmapGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<BakedLightmap>(p_spatial) != nullptr;
 }
 
-String BakedIndirectLightGizmoPlugin::get_name() const {
+String BakedLightmapGizmoPlugin::get_name() const {
 	return "BakedLightmap";
 }
 
-int BakedIndirectLightGizmoPlugin::get_priority() const {
+int BakedLightmapGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-void BakedIndirectLightGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+void BakedLightmapGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
-	BakedLightmap *baker = Object::cast_to<BakedLightmap>(p_gizmo->get_spatial_node());
-
-	Ref<Material> material = get_material("baked_indirect_light_material", p_gizmo);
 	Ref<Material> icon = get_material("baked_indirect_light_icon", p_gizmo);
-	Ref<Material> material_internal = get_material("baked_indirect_light_internal_material", p_gizmo);
+	BakedLightmap *baker = Object::cast_to<BakedLightmap>(p_gizmo->get_spatial_node());
+	Ref<BakedLightmapData> data = baker->get_light_data();
+
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
+
+	if (data.is_null()) {
+		return;
+	}
+
+	Ref<Material> material_lines = get_material("lightmap_lines", p_gizmo);
+	Ref<Material> material_probes = get_material("lightmap_probe_material", p_gizmo);
 
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
-	Vector3 extents = baker->get_extents();
+	Set<Vector2i> lines_found;
 
-	AABB aabb = AABB(-extents, extents * 2);
-
-	for (int i = 0; i < 12; i++) {
-		Vector3 a, b;
-		aabb.get_edge(i, a, b);
-		lines.push_back(a);
-		lines.push_back(b);
+	Vector<Vector3> points = data->get_capture_points();
+	if (points.size() == 0) {
+		return;
+	}
+	Vector<Color> sh = data->get_capture_sh();
+	if (sh.size() != points.size() * 9) {
+		return;
 	}
 
-	p_gizmo->add_lines(lines, material);
+	Vector<int> tetrahedrons = data->get_capture_tetrahedra();
 
-	Vector<Vector3> handles;
+	for (int i = 0; i < tetrahedrons.size(); i += 4) {
 
-	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 4; j++) {
+			for (int k = j + 1; k < 4; k++) {
 
-		Vector3 ax;
-		ax[i] = aabb.position[i] + aabb.size[i];
-		handles.push_back(ax);
+				Vector2i pair;
+				pair.x = tetrahedrons[i + j];
+				pair.y = tetrahedrons[i + k];
+
+				if (pair.y < pair.x) {
+					SWAP(pair.x, pair.y);
+				}
+				if (lines_found.has(pair)) {
+					continue;
+				}
+				lines_found.insert(pair);
+				lines.push_back(points[pair.x]);
+				lines.push_back(points[pair.y]);
+			}
+		}
 	}
 
-	if (p_gizmo->is_selected()) {
-		p_gizmo->add_solid_box(material_internal, aabb.get_size());
+	p_gizmo->add_lines(lines, material_lines);
+
+	int stack_count = 8;
+	int sector_count = 16;
+
+	float sector_step = 2 * Math_PI / sector_count;
+	float stack_step = Math_PI / stack_count;
+
+	Vector<Vector3> vertices;
+	Vector<Color> colors;
+	Vector<int> indices;
+	float radius = 0.3;
+
+	for (int p = 0; p < points.size(); p++) {
+
+		int vertex_base = vertices.size();
+		Vector3 sh_col[9];
+		for (int i = 0; i < 9; i++) {
+			sh_col[i].x = sh[p * 9 + i].r;
+			sh_col[i].y = sh[p * 9 + i].g;
+			sh_col[i].z = sh[p * 9 + i].b;
+		}
+
+		for (int i = 0; i <= stack_count; ++i) {
+			float stack_angle = Math_PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
+			float xy = radius * Math::cos(stack_angle); // r * cos(u)
+			float z = radius * Math::sin(stack_angle); // r * sin(u)
+
+			// add (sector_count+1) vertices per stack
+			// the first and last vertices have same position and normal, but different tex coords
+			for (int j = 0; j <= sector_count; ++j) {
+				float sector_angle = j * sector_step; // starting from 0 to 2pi
+
+				// vertex position (x, y, z)
+				float x = xy * Math::cos(sector_angle); // r * cos(u) * cos(v)
+				float y = xy * Math::sin(sector_angle); // r * cos(u) * sin(v)
+
+				Vector3 n = Vector3(x, z, y);
+				vertices.push_back(points[p] + n);
+				n.normalize();
+
+				const float c1 = 0.429043;
+				const float c2 = 0.511664;
+				const float c3 = 0.743125;
+				const float c4 = 0.886227;
+				const float c5 = 0.247708;
+				Vector3 light = (c1 * sh_col[8] * (n.x * n.x - n.y * n.y) +
+								 c3 * sh_col[6] * n.z * n.z +
+								 c4 * sh_col[0] -
+								 c5 * sh_col[6] +
+								 2.0 * c1 * sh_col[4] * n.x * n.y +
+								 2.0 * c1 * sh_col[7] * n.x * n.z +
+								 2.0 * c1 * sh_col[5] * n.y * n.z +
+								 2.0 * c2 * sh_col[3] * n.x +
+								 2.0 * c2 * sh_col[1] * n.y +
+								 2.0 * c2 * sh_col[2] * n.z);
+
+				colors.push_back(Color(light.x, light.y, light.z, 1));
+			}
+		}
+
+		for (int i = 0; i < stack_count; ++i) {
+			int k1 = i * (sector_count + 1); // beginning of current stack
+			int k2 = k1 + sector_count + 1; // beginning of next stack
+
+			for (int j = 0; j < sector_count; ++j, ++k1, ++k2) {
+				// 2 triangles per sector excluding first and last stacks
+				// k1 => k2 => k1+1
+				if (i != 0) {
+					indices.push_back(vertex_base + k1);
+					indices.push_back(vertex_base + k2);
+					indices.push_back(vertex_base + k1 + 1);
+				}
+
+				// k1+1 => k2 => k2+1
+				if (i != (stack_count - 1)) {
+					indices.push_back(vertex_base + k1 + 1);
+					indices.push_back(vertex_base + k2);
+					indices.push_back(vertex_base + k2 + 1);
+				}
+			}
+		}
 	}
 
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
-	p_gizmo->add_handles(handles, get_material("handles"));
+	Array array;
+	array.resize(RS::ARRAY_MAX);
+	array[RS::ARRAY_VERTEX] = vertices;
+	array[RS::ARRAY_INDEX] = indices;
+	array[RS::ARRAY_COLOR] = colors;
+
+	Ref<ArrayMesh> mesh;
+	mesh.instance();
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array, Array(), Dictionary(), 0); //no compression
+	mesh->surface_set_material(0, material_probes);
+
+	p_gizmo->add_mesh(mesh);
 }
-#endif
+/////////
+
+LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/lightprobe_lines", Color(0.5, 0.6, 1));
+
+	gizmo_color.a = 0.3;
+	create_material("lightprobe_lines", gizmo_color);
+}
+
+String LightmapProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
+
+	return "";
+}
+Variant LightmapProbeGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
+
+	return Variant();
+}
+void LightmapProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
+}
+
+void LightmapProbeGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
+}
+
+bool LightmapProbeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
+	return Object::cast_to<LightmapProbe>(p_spatial) != nullptr;
+}
+
+String LightmapProbeGizmoPlugin::get_name() const {
+	return "LightmapProbe";
+}
+
+int LightmapProbeGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+void LightmapProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
+
+	Ref<Material> material_lines = get_material("lightprobe_lines", p_gizmo);
+
+	p_gizmo->clear();
+
+	Vector<Vector3> lines;
+
+	int stack_count = 8;
+	int sector_count = 16;
+
+	float sector_step = 2 * Math_PI / sector_count;
+	float stack_step = Math_PI / stack_count;
+
+	Vector<Vector3> vertices;
+	float radius = 0.2;
+
+	for (int i = 0; i <= stack_count; ++i) {
+		float stack_angle = Math_PI / 2 - i * stack_step; // starting from pi/2 to -pi/2
+		float xy = radius * Math::cos(stack_angle); // r * cos(u)
+		float z = radius * Math::sin(stack_angle); // r * sin(u)
+
+		// add (sector_count+1) vertices per stack
+		// the first and last vertices have same position and normal, but different tex coords
+		for (int j = 0; j <= sector_count; ++j) {
+			float sector_angle = j * sector_step; // starting from 0 to 2pi
+
+			// vertex position (x, y, z)
+			float x = xy * Math::cos(sector_angle); // r * cos(u) * cos(v)
+			float y = xy * Math::sin(sector_angle); // r * cos(u) * sin(v)
+
+			Vector3 n = Vector3(x, z, y);
+			vertices.push_back(n);
+		}
+	}
+
+	for (int i = 0; i < stack_count; ++i) {
+		int k1 = i * (sector_count + 1); // beginning of current stack
+		int k2 = k1 + sector_count + 1; // beginning of next stack
+
+		for (int j = 0; j < sector_count; ++j, ++k1, ++k2) {
+			// 2 triangles per sector excluding first and last stacks
+			// k1 => k2 => k1+1
+			if (i != 0) {
+				lines.push_back(vertices[k1]);
+				lines.push_back(vertices[k2]);
+				lines.push_back(vertices[k1]);
+				lines.push_back(vertices[k1 + 1]);
+			}
+
+			if (i != (stack_count - 1)) {
+				lines.push_back(vertices[k1 + 1]);
+				lines.push_back(vertices[k2]);
+				lines.push_back(vertices[k2]);
+				lines.push_back(vertices[k2 + 1]);
+			}
+		}
+	}
+
+	p_gizmo->add_lines(lines, material_lines);
+}
 ////
 
 CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {

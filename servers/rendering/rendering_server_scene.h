@@ -51,6 +51,7 @@ public:
 		MAX_DECALS_CULLED = 4096,
 		MAX_GI_PROBES_CULLED = 4096,
 		MAX_ROOM_CULL = 32,
+		MAX_LIGHTMAPS_CULLED = 4096,
 		MAX_EXTERIOR_PORTALS = 128,
 	};
 
@@ -170,6 +171,8 @@ public:
 		float lod_begin_hysteresis;
 		float lod_end_hysteresis;
 		RID lod_instance;
+
+		Vector<Color> lightmap_target_sh; //target is used for incrementally changing the SH over time, this avoids pops in some corner cases and when going interior <-> exterior
 
 		uint64_t last_render_pass;
 		uint64_t last_frame_pass;
@@ -374,7 +377,7 @@ public:
 
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
 
-	struct InstanceLightmapCaptureData : public InstanceBaseData {
+	struct InstanceLightmapData : public InstanceBaseData {
 
 		struct PairInfo {
 			List<Instance *>::Element *L; //iterator in geometry
@@ -384,7 +387,7 @@ public:
 
 		Set<Instance *> users;
 
-		InstanceLightmapCaptureData() {
+		InstanceLightmapData() {
 		}
 	};
 
@@ -401,6 +404,8 @@ public:
 	int decal_cull_count;
 	RID gi_probe_instance_cull_result[MAX_GI_PROBES_CULLED];
 	int gi_probe_cull_count;
+	Instance *lightmap_cull_result[MAX_LIGHTS_CULLED];
+	int lightmap_cull_count;
 
 	RID_PtrOwner<Instance> instance_owner;
 
@@ -414,7 +419,6 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
-	virtual void instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
@@ -434,6 +438,7 @@ public:
 
 	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin);
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance);
+	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 
 	void _update_instance_shader_parameters_from_material(Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &isparams, const Map<StringName, RasterizerScene::InstanceBase::InstanceShaderParameter> &existing_isparams, RID p_material);
 
@@ -459,6 +464,8 @@ public:
 	void update_dirty_instances();
 
 	void render_probes();
+
+	TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size);
 
 	bool free(RID p_rid);
 

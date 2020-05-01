@@ -138,7 +138,7 @@ void RenderingServerWrapMT::finish() {
 	spot_light_free_cached_ids();
 	reflection_probe_free_cached_ids();
 	gi_probe_free_cached_ids();
-	lightmap_capture_free_cached_ids();
+	lightmap_free_cached_ids();
 	particles_free_cached_ids();
 	camera_free_cached_ids();
 	viewport_free_cached_ids();

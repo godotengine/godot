@@ -282,6 +282,30 @@ void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_textu
 	RD::get_singleton()->compute_list_end();
 }
 
+void RasterizerEffectsRD::copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array) {
+
+	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
+
+	copy.push_constant.section[0] = 0;
+	copy.push_constant.section[1] = 0;
+	copy.push_constant.section[2] = p_panorama_size.width;
+	copy.push_constant.section[3] = p_panorama_size.height;
+	copy.push_constant.target[0] = 0;
+	copy.push_constant.target[1] = 0;
+	copy.push_constant.camera_z_far = p_lod;
+
+	int32_t x_groups = (p_panorama_size.width - 1) / 8 + 1;
+	int32_t y_groups = (p_panorama_size.height - 1) / 8 + 1;
+
+	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+	RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, copy.pipelines[p_is_array ? COPY_MODE_CUBE_ARRAY_TO_PANORAMA : COPY_MODE_CUBE_TO_PANORAMA]);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_cube), 0);
+	RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_dest_panorama), 3);
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &copy.push_constant, sizeof(CopyPushConstant));
+	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
+	RD::get_singleton()->compute_list_end();
+}
+
 void RasterizerEffectsRD::copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far) {
 
 	zeromem(&copy.push_constant, sizeof(CopyPushConstant));
@@ -1202,7 +1226,9 @@ void RasterizerEffectsRD::render_sky(RD::DrawListID p_list, float p_time, RID p_
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, p_pipeline->get_render_pipeline(RD::INVALID_ID, fb_format));
 
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_samplers, 0);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
+	if (p_uniform_set.is_valid()) { //material may not have uniform set
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_uniform_set, 1);
+	}
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_texture_set, 2);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_lights, 3);
 
@@ -1226,6 +1252,8 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		copy_modes.push_back("\n#define MODE_SIMPLE_COPY_DEPTH\n");
 		copy_modes.push_back("\n#define MODE_MIPMAP\n");
 		copy_modes.push_back("\n#define MODE_LINEARIZE_DEPTH_COPY\n");
+		copy_modes.push_back("\n#define MODE_CUBEMAP_TO_PANORAMA\n");
+		copy_modes.push_back("\n#define MODE_CUBEMAP_ARRAY_TO_PANORAMA\n");
 
 		copy.shader.initialize(copy_modes);
 		zeromem(&copy.push_constant, sizeof(CopyPushConstant));

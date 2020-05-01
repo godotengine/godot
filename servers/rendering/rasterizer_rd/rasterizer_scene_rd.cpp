@@ -263,7 +263,47 @@ void RasterizerSceneRD::sky_set_material(RID p_sky, RID p_material) {
 	Sky *sky = sky_owner.getornull(p_sky);
 	ERR_FAIL_COND(!sky);
 	sky->material = p_material;
+	_sky_invalidate(sky);
 }
+
+Ref<Image> RasterizerSceneRD::sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) {
+
+	Sky *sky = sky_owner.getornull(p_sky);
+	ERR_FAIL_COND_V(!sky, Ref<Image>());
+
+	_update_dirty_skys();
+
+	if (sky->radiance.is_valid()) {
+
+		RD::TextureFormat tf;
+		tf.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+		tf.width = p_size.width;
+		tf.height = p_size.height;
+		tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+
+		RID rad_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
+		storage->get_effects()->copy_cubemap_to_panorama(sky->radiance, rad_tex, p_size, p_bake_irradiance ? roughness_layers : 0, sky->reflection.layers.size() > 1);
+		Vector<uint8_t> data = RD::get_singleton()->texture_get_data(rad_tex, 0);
+		RD::get_singleton()->free(rad_tex);
+
+		Ref<Image> img;
+		img.instance();
+		img->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF, data);
+		for (int i = 0; i < p_size.width; i++) {
+			for (int j = 0; j < p_size.height; j++) {
+				Color c = img->get_pixel(i, j);
+				c.r *= p_energy;
+				c.g *= p_energy;
+				c.b *= p_energy;
+				img->set_pixel(i, j, c);
+			}
+		}
+		return img;
+	}
+
+	return Ref<Image>();
+}
+
 void RasterizerSceneRD::_update_dirty_skys() {
 
 	Sky *sky = dirty_sky_list;
@@ -1334,6 +1374,43 @@ bool RasterizerSceneRD::environment_is_ssr_enabled(RID p_env) const {
 
 bool RasterizerSceneRD::is_environment(RID p_env) const {
 	return environment_owner.owns(p_env);
+}
+
+Ref<Image> RasterizerSceneRD::environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, Ref<Image>());
+
+	if (env->background == RS::ENV_BG_CAMERA_FEED || env->background == RS::ENV_BG_CANVAS || env->background == RS::ENV_BG_KEEP) {
+		return Ref<Image>(); //nothing to bake
+	}
+
+	if (env->background == RS::ENV_BG_CLEAR_COLOR || env->background == RS::ENV_BG_COLOR) {
+		Color color;
+		if (env->background == RS::ENV_BG_CLEAR_COLOR) {
+			color = storage->get_default_clear_color();
+		} else {
+			color = env->bg_color;
+		}
+		color.r *= env->bg_energy;
+		color.g *= env->bg_energy;
+		color.b *= env->bg_energy;
+
+		Ref<Image> ret;
+		ret.instance();
+		ret->create(p_size.width, p_size.height, false, Image::FORMAT_RGBAF);
+		for (int i = 0; i < p_size.width; i++) {
+			for (int j = 0; j < p_size.height; j++) {
+				ret->set_pixel(i, j, color);
+			}
+		}
+		return ret;
+	}
+
+	if (env->background == RS::ENV_BG_SKY && env->sky.is_valid()) {
+		return sky_bake_panorama(env->sky, env->bg_energy, p_bake_irradiance, p_size);
+	}
+
+	return Ref<Image>();
 }
 
 ////////////////////////////////////////////////////////////
@@ -3741,7 +3818,7 @@ RasterizerSceneRD::RenderBufferData *RasterizerSceneRD::render_buffers_get_data(
 	return rb->data;
 }
 
-void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	Color clear_color;
 	if (p_render_buffers.is_valid()) {
@@ -3752,7 +3829,7 @@ void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_ca
 		clear_color = storage->get_default_clear_color();
 	}
 
-	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_decal_cull_result, p_decal_cull_count, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
+	_render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_gi_probe_cull_result, p_gi_probe_cull_count, p_decal_cull_result, p_decal_cull_count, p_lightmap_cull_result, p_lightmap_cull_count, p_environment, p_camera_effects, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass, clear_color);
 
 	if (p_render_buffers.is_valid()) {
 		RENDER_TIMESTAMP("Tonemap");
@@ -4077,6 +4154,98 @@ bool RasterizerSceneRD::screen_space_roughness_limiter_is_active() const {
 
 float RasterizerSceneRD::screen_space_roughness_limiter_get_curve() const {
 	return screen_space_roughness_limiter_curve;
+}
+
+TypedArray<Image> RasterizerSceneRD::bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) {
+
+	RD::TextureFormat tf;
+	tf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	tf.width = p_image_size.width; // Always 64x64
+	tf.height = p_image_size.height;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+
+	RID albedo_alpha_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	RID normal_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	RID orm_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+	tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+	RID emission_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+	tf.format = RD::DATA_FORMAT_R32_SFLOAT;
+	RID depth_write_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+	tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+	tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+	RID depth_tex = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+	Vector<RID> fb_tex;
+	fb_tex.push_back(albedo_alpha_tex);
+	fb_tex.push_back(normal_tex);
+	fb_tex.push_back(orm_tex);
+	fb_tex.push_back(emission_tex);
+	fb_tex.push_back(depth_write_tex);
+	fb_tex.push_back(depth_tex);
+
+	RID fb = RD::get_singleton()->framebuffer_create(fb_tex);
+
+	//RID sampled_light;
+
+	InstanceBase ins;
+
+	ins.base_type = RSG::storage->get_base_type(p_base);
+	ins.base = p_base;
+	ins.materials.resize(RSG::storage->mesh_get_surface_count(p_base));
+	for (int i = 0; i < ins.materials.size(); i++) {
+		if (i < p_material_overrides.size()) {
+			ins.materials.write[i] = p_material_overrides[i];
+		}
+	}
+
+	InstanceBase *cull = &ins;
+	_render_uv2(&cull, 1, fb, Rect2i(0, 0, p_image_size.width, p_image_size.height));
+
+	TypedArray<Image> ret;
+
+	{
+		PackedByteArray data = RD::get_singleton()->texture_get_data(albedo_alpha_tex, 0);
+		Ref<Image> img;
+		img.instance();
+		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		RD::get_singleton()->free(albedo_alpha_tex);
+		ret.push_back(img);
+	}
+
+	{
+		PackedByteArray data = RD::get_singleton()->texture_get_data(normal_tex, 0);
+		Ref<Image> img;
+		img.instance();
+		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		RD::get_singleton()->free(normal_tex);
+		ret.push_back(img);
+	}
+
+	{
+		PackedByteArray data = RD::get_singleton()->texture_get_data(orm_tex, 0);
+		Ref<Image> img;
+		img.instance();
+		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBA8, data);
+		RD::get_singleton()->free(orm_tex);
+		ret.push_back(img);
+	}
+
+	{
+		PackedByteArray data = RD::get_singleton()->texture_get_data(emission_tex, 0);
+		Ref<Image> img;
+		img.instance();
+		img->create(p_image_size.width, p_image_size.height, false, Image::FORMAT_RGBAH, data);
+		RD::get_singleton()->free(emission_tex);
+		ret.push_back(img);
+	}
+
+	RD::get_singleton()->free(depth_write_tex);
+	RD::get_singleton()->free(depth_tex);
+
+	return ret;
 }
 
 RasterizerSceneRD *RasterizerSceneRD::singleton = nullptr;

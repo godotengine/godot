@@ -32,8 +32,10 @@
 
 #include "core/math/basis.h"
 #include "core/math/camera_matrix.h"
+#include "core/math/delaunay_3d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/transform.h"
+#include "core/method_ptrcall.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -44,8 +46,6 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "servers/rendering/shader_language.h"
-
-#include "core/method_ptrcall.h"
 
 namespace TestMath {
 
@@ -413,6 +413,55 @@ uint32_t ihash3(uint32_t a) {
 }
 
 MainLoop *test() {
+
+	{
+		Vector<Vector3> points;
+		points.push_back(Vector3(0, 0, 0));
+		points.push_back(Vector3(0, 0, 1));
+		points.push_back(Vector3(0, 1, 0));
+		points.push_back(Vector3(0, 1, 1));
+		points.push_back(Vector3(1, 1, 0));
+		points.push_back(Vector3(1, 0, 0));
+		points.push_back(Vector3(1, 0, 1));
+		points.push_back(Vector3(1, 1, 1));
+
+		for (int i = 0; i < 800; i++) {
+			points.push_back(Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0) * Vector3(25, 30, 33));
+		}
+
+		Vector<Delaunay3D::OutputSimplex> os = Delaunay3D::tetrahedralize(points);
+		print_line("simplices in the end: " + itos(os.size()));
+		for (int i = 0; i < os.size(); i++) {
+			print_line("Simplex " + itos(i) + ": ");
+			print_line(points[os[i].points[0]]);
+			print_line(points[os[i].points[1]]);
+			print_line(points[os[i].points[2]]);
+			print_line(points[os[i].points[3]]);
+		}
+
+		{
+			FileAccessRef f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
+			for (int i = 0; i < os.size(); i++) {
+				f->store_line("o Simplex" + itos(i));
+				for (int j = 0; j < 4; j++) {
+					f->store_line(vformat("v %f %f %f", points[os[i].points[j]].x, points[os[i].points[j]].y, points[os[i].points[j]].z));
+				}
+				static const int face_order[4][3] = {
+					{ 1, 2, 3 },
+					{ 1, 3, 4 },
+					{ 1, 2, 4 },
+					{ 2, 3, 4 }
+				};
+
+				for (int j = 0; j < 4; j++) {
+					f->store_line(vformat("f %d %d %d", 4 * i + face_order[j][0], 4 * i + face_order[j][1], 4 * i + face_order[j][2]));
+				}
+			}
+			f->close();
+		}
+
+		return nullptr;
+	}
 
 	{
 		float r = 1;

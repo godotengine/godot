@@ -67,18 +67,18 @@ static _FORCE_INLINE_ void store_basis_3x4(const Basis &p_mtx, float *p_array) {
 	p_array[11] = 0;
 }
 
-static _FORCE_INLINE_ void store_transform_3x3(const Transform &p_mtx, float *p_array) {
-	p_array[0] = p_mtx.basis.elements[0][0];
-	p_array[1] = p_mtx.basis.elements[1][0];
-	p_array[2] = p_mtx.basis.elements[2][0];
+static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_mtx, float *p_array) {
+	p_array[0] = p_mtx.elements[0][0];
+	p_array[1] = p_mtx.elements[1][0];
+	p_array[2] = p_mtx.elements[2][0];
 	p_array[3] = 0;
-	p_array[4] = p_mtx.basis.elements[0][1];
-	p_array[5] = p_mtx.basis.elements[1][1];
-	p_array[6] = p_mtx.basis.elements[2][1];
+	p_array[4] = p_mtx.elements[0][1];
+	p_array[5] = p_mtx.elements[1][1];
+	p_array[6] = p_mtx.elements[2][1];
 	p_array[7] = 0;
-	p_array[8] = p_mtx.basis.elements[0][2];
-	p_array[9] = p_mtx.basis.elements[1][2];
-	p_array[10] = p_mtx.basis.elements[2][2];
+	p_array[8] = p_mtx.elements[0][2];
+	p_array[9] = p_mtx.elements[1][2];
+	p_array[10] = p_mtx.elements[2][2];
 	p_array[11] = 0;
 }
 
@@ -841,6 +841,8 @@ bool RasterizerSceneHighEndRD::free(RID p_rid) {
 
 void RasterizerSceneHighEndRD::_fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth) {
 
+	uint32_t lightmap_captures_used = 0;
+
 	for (int i = 0; i < p_element_count; i++) {
 
 		const RenderList::Element *e = p_elements[i];
@@ -898,6 +900,7 @@ void RasterizerSceneHighEndRD::_fill_instances(RenderList::Element **p_elements,
 
 				if (written == 0) {
 					id.gi_offset = index;
+					id.flags |= INSTANCE_DATA_FLAG_USE_GIPROBE;
 					written = 1;
 				} else {
 					id.gi_offset = index << 16;
@@ -910,17 +913,53 @@ void RasterizerSceneHighEndRD::_fill_instances(RenderList::Element **p_elements,
 			} else if (written == 1) {
 				id.gi_offset |= 0xFFFF0000;
 			}
+		} else if (e->instance->lightmap) {
+
+			int32_t lightmap_index = storage->lightmap_get_array_index(e->instance->lightmap->base);
+			if (lightmap_index >= 0) {
+				id.gi_offset = lightmap_index;
+				id.gi_offset |= e->instance->lightmap_slice_index << 12;
+				id.gi_offset |= e->instance->lightmap_cull_index << 20;
+				id.lightmap_uv_scale[0] = e->instance->lightmap_uv_scale.position.x;
+				id.lightmap_uv_scale[1] = e->instance->lightmap_uv_scale.position.y;
+				id.lightmap_uv_scale[2] = e->instance->lightmap_uv_scale.size.width;
+				id.lightmap_uv_scale[3] = e->instance->lightmap_uv_scale.size.height;
+				id.flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP;
+				if (storage->lightmap_uses_spherical_harmonics(e->instance->lightmap->base)) {
+					id.flags |= INSTANCE_DATA_FLAG_USE_SH_LIGHTMAP;
+				}
+			} else {
+				id.gi_offset = 0xFFFFFFFF;
+			}
+		} else if (!e->instance->lightmap_sh.empty()) {
+			if (lightmap_captures_used < scene_state.max_lightmap_captures) {
+
+				const Color *src_capture = e->instance->lightmap_sh.ptr();
+				LightmapCaptureData &lcd = scene_state.lightmap_captures[lightmap_captures_used];
+				for (int j = 0; j < 9; j++) {
+					lcd.sh[j * 4 + 0] = src_capture[j].r;
+					lcd.sh[j * 4 + 1] = src_capture[j].g;
+					lcd.sh[j * 4 + 2] = src_capture[j].b;
+					lcd.sh[j * 4 + 3] = src_capture[j].a;
+				}
+				id.flags |= INSTANCE_DATA_FLAG_USE_LIGHTMAP_CAPTURE;
+				id.gi_offset = lightmap_captures_used;
+				lightmap_captures_used++;
+			}
 		} else {
 			id.gi_offset = 0xFFFFFFFF;
 		}
 	}
 
 	RD::get_singleton()->buffer_update(scene_state.instance_buffer, 0, sizeof(InstanceData) * p_element_count, scene_state.instances, true);
+	if (lightmap_captures_used) {
+		RD::get_singleton()->buffer_update(scene_state.lightmap_capture_buffer, 0, sizeof(LightmapCaptureData) * lightmap_captures_used, scene_state.lightmap_captures, true);
+	}
 }
 
 /// RENDERING ///
 
-void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_radiance_uniform_set, RID p_render_buffers_uniform_set) {
+void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi, RID p_radiance_uniform_set, RID p_render_buffers_uniform_set, bool p_force_wireframe, const Vector2 &p_uv_offset) {
 
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
@@ -949,6 +988,8 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 	PushConstant push_constant;
 	zeromem(&push_constant, sizeof(PushConstant));
+	push_constant.bake_uv2_offset[0] = p_uv_offset.x;
+	push_constant.bake_uv2_offset[1] = p_uv_offset.y;
 
 	for (int i = 0; i < p_element_count; i++) {
 
@@ -961,7 +1002,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 		//find cull variant
 		ShaderData::CullVariant cull_variant;
 
-		if ((p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) && e->instance->cast_shadows == RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED) {
+		if (p_pass_mode == PASS_MODE_DEPTH_MATERIAL || ((p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) && e->instance->cast_shadows == RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED)) {
 			cull_variant = ShaderData::CULL_VARIANT_DOUBLE_SIDED;
 		} else {
 			bool mirror = e->instance->mirror;
@@ -1080,7 +1121,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			prev_index_array_rd = index_array_rd;
 		}
 
-		RID pipeline_rd = pipeline->get_render_pipeline(vertex_format, framebuffer_format);
+		RID pipeline_rd = pipeline->get_render_pipeline(vertex_format, framebuffer_format, p_force_wireframe);
 
 		if (pipeline_rd != prev_pipeline_rd) {
 			// checking with prev shader does not make so much sense, as
@@ -1255,6 +1296,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 
 		scene_state.ubo.use_ambient_cubemap = false;
 		scene_state.ubo.use_reflection_cubemap = false;
+		scene_state.ubo.ssao_enabled = false;
 	}
 
 	scene_state.ubo.roughness_limiter_enabled = p_opaque_render_buffers && screen_space_roughness_limiter_is_active();
@@ -1271,8 +1313,6 @@ void RasterizerSceneHighEndRD::_add_geometry(InstanceBase *p_instance, uint32_t 
 	if (unlikely(get_debug_draw_mode() != RS::VIEWPORT_DEBUG_DRAW_DISABLED)) {
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 			m_src = overdraw_material;
-		} else if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME) {
-			m_src = wireframe_material;
 		} else if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING) {
 			m_src = default_material;
 		}
@@ -1374,7 +1414,7 @@ void RasterizerSceneHighEndRD::_add_geometry_with_material(InstanceBase *p_insta
 	e->geometry_index = p_geometry_index;
 	e->material_index = e->material->index;
 	e->uses_instancing = e->instance->base_type == RS::INSTANCE_MULTIMESH;
-	e->uses_lightmap = e->instance->lightmap.is_valid();
+	e->uses_lightmap = e->instance->lightmap != nullptr || !e->instance->lightmap_sh.empty();
 	e->uses_vct = e->instance->gi_probe_instances.size();
 	e->shader_index = e->shader_index;
 	e->depth_layer = e->instance->depth_layer;
@@ -1572,6 +1612,26 @@ void RasterizerSceneHighEndRD::_setup_reflections(RID *p_reflection_probe_cull_r
 
 	if (p_reflection_probe_cull_count) {
 		RD::get_singleton()->buffer_update(scene_state.reflection_buffer, 0, MIN(scene_state.max_reflections, (unsigned int)p_reflection_probe_cull_count) * sizeof(ReflectionData), scene_state.reflections, true);
+	}
+}
+
+void RasterizerSceneHighEndRD::_setup_lightmaps(InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, const Transform &p_cam_transform) {
+
+	uint32_t lightmaps_used = 0;
+	for (int i = 0; i < p_lightmap_cull_count; i++) {
+		if (i >= (int)scene_state.max_lightmaps) {
+			break;
+		}
+
+		InstanceBase *lm = p_lightmap_cull_result[i];
+		Basis to_lm = lm->transform.basis.inverse() * p_cam_transform.basis;
+		to_lm = to_lm.inverse().transposed(); //will transform normals
+		store_transform_3x3(to_lm, scene_state.lightmaps[i].normal_xform);
+		lm->lightmap_cull_index = i;
+		lightmaps_used++;
+	}
+	if (lightmaps_used > 0) {
+		RD::get_singleton()->buffer_update(scene_state.lightmap_buffer, 0, sizeof(LightmapData) * lightmaps_used, scene_state.lightmaps, true);
 	}
 }
 
@@ -2118,7 +2178,7 @@ void RasterizerSceneHighEndRD::_setup_decals(const RID *p_decal_instances, int p
 	}
 }
 
-void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color) {
+void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, const Color &p_default_bg_color) {
 
 	RenderBufferDataHighEnd *render_buffer = nullptr;
 	if (p_render_buffer.is_valid()) {
@@ -2238,6 +2298,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	_setup_decals(p_decal_cull_result, p_decal_cull_count, p_cam_transform.affine_inverse());
 	_setup_reflections(p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_cam_transform.affine_inverse(), p_environment);
 	_setup_gi_probes(p_gi_probe_cull_result, p_gi_probe_cull_count, p_cam_transform);
+	_setup_lightmaps(p_lightmap_cull_result, p_lightmap_cull_count, p_cam_transform);
 	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
 
 	cluster_builder.bake_cluster(); //bake to cluster
@@ -2338,7 +2399,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 		bool finish_depth = using_ssao;
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, finish_depth ? RD::FINAL_ACTION_READ : RD::FINAL_ACTION_CONTINUE, depth_pass_clear);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(depth_framebuffer), render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, radiance_uniform_set, RID());
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(depth_framebuffer), render_list.elements, render_list.element_count, false, depth_pass_mode, render_buffer == nullptr, radiance_uniform_set, RID(), get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME);
 		RD::get_singleton()->draw_list_end();
 
 		if (render_buffer && render_buffer->msaa != RS::VIEWPORT_MSAA_DISABLED) {
@@ -2394,7 +2455,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 		RID framebuffer = using_separate_specular ? opaque_specular_framebuffer : opaque_framebuffer;
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, keep_color ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CLEAR, will_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, depth_pre_pass ? (using_ssao ? RD::INITIAL_ACTION_KEEP : RD::INITIAL_ACTION_CONTINUE) : RD::INITIAL_ACTION_CLEAR, will_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, c, 1.0, 0);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(framebuffer), render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(framebuffer), render_list.elements, render_list.element_count, false, using_separate_specular ? PASS_MODE_COLOR_SPECULAR : PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME);
 		RD::get_singleton()->draw_list_end();
 
 		if (will_continue_color && using_separate_specular) {
@@ -2472,7 +2533,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	{
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(alpha_framebuffer, can_continue_color ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue_depth ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(alpha_framebuffer), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(alpha_framebuffer), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr, radiance_uniform_set, render_buffers_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME);
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -2517,13 +2578,14 @@ void RasterizerSceneHighEndRD::_render_shadow(RID p_framebuffer, InstanceBase **
 }
 
 void RasterizerSceneHighEndRD::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
-	RENDER_TIMESTAMP("Setup Rendering Shadow");
+	RENDER_TIMESTAMP("Setup Rendering Material");
 
 	_update_render_base_uniform_set();
 
 	render_pass++;
 
 	scene_state.ubo.dual_paraboloid_side = 0;
+	scene_state.ubo.material_uv2_mode = true;
 
 	_setup_environment(RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), false, Color(), 0, 0);
 
@@ -2554,6 +2616,67 @@ void RasterizerSceneHighEndRD::_render_material(const Transform &p_cam_transform
 	}
 }
 
+void RasterizerSceneHighEndRD::_render_uv2(InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
+	RENDER_TIMESTAMP("Setup Rendering UV2");
+
+	_update_render_base_uniform_set();
+
+	render_pass++;
+
+	scene_state.ubo.dual_paraboloid_side = 0;
+	scene_state.ubo.material_uv2_mode = true;
+
+	_setup_environment(RID(), CameraMatrix(), Transform(), RID(), true, Vector2(1, 1), RID(), false, Color(), 0, 0);
+
+	render_list.clear();
+
+	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
+	_fill_render_list(p_cull_result, p_cull_count, pass_mode, true);
+
+	_setup_view_dependant_uniform_set(RID(), RID());
+
+	RENDER_TIMESTAMP("Render Material");
+
+	render_list.sort_by_key(false);
+
+	_fill_instances(render_list.elements, render_list.element_count, true);
+
+	{
+		//regular forward for now
+		Vector<Color> clear;
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, clear, 1.0, 0, p_region);
+
+		const int uv_offset_count = 9;
+		static const Vector2 uv_offsets[uv_offset_count] = {
+			Vector2(-1, 1),
+			Vector2(1, 1),
+			Vector2(1, -1),
+			Vector2(-1, -1),
+			Vector2(-1, 0),
+			Vector2(1, 0),
+			Vector2(0, -1),
+			Vector2(0, 1),
+			Vector2(0, 0),
+
+		};
+
+		for (int i = 0; i < uv_offset_count; i++) {
+			Vector2 ofs = uv_offsets[i];
+			ofs.x /= p_region.size.width;
+			ofs.y /= p_region.size.height;
+			_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, true, pass_mode, true, RID(), RID(), true, ofs); //first wireframe, for pseudo conservative
+		}
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, true, pass_mode, true, RID(), RID(), false); //second regular triangles
+
+		RD::get_singleton()->draw_list_end();
+	}
+}
+
 void RasterizerSceneHighEndRD::_base_uniforms_changed() {
 
 	if (!render_base_uniform_set.is_null() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
@@ -2564,11 +2687,13 @@ void RasterizerSceneHighEndRD::_base_uniforms_changed() {
 
 void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 
-	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
+	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != storage->lightmap_array_get_version())) {
 
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
 			RD::get_singleton()->free(render_base_uniform_set);
 		}
+
+		lightmap_texture_array_version = storage->lightmap_array_get_version();
 
 		Vector<RD::Uniform> uniforms;
 
@@ -2685,6 +2810,27 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.binding = 10;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.ids.push_back(scene_state.lightmap_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 11;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.ids = storage->lightmap_array_get_textures();
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 12;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.ids.push_back(scene_state.lightmap_capture_buffer);
+			uniforms.push_back(u);
+		}
+		{
+			RD::Uniform u;
+			u.binding = 13;
 			u.type = RD::UNIFORM_TYPE_TEXTURE;
 			RID decal_atlas = storage->decal_atlas_get_texture();
 			u.ids.push_back(decal_atlas);
@@ -2692,7 +2838,7 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 		}
 		{
 			RD::Uniform u;
-			u.binding = 11;
+			u.binding = 14;
 			u.type = RD::UNIFORM_TYPE_TEXTURE;
 			RID decal_atlas = storage->decal_atlas_get_texture_srgb();
 			u.ids.push_back(decal_atlas);
@@ -2700,7 +2846,7 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 		}
 		{
 			RD::Uniform u;
-			u.binding = 12;
+			u.binding = 15;
 			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(scene_state.decal_buffer);
 			uniforms.push_back(u);
@@ -2708,14 +2854,14 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 
 		{
 			RD::Uniform u;
-			u.binding = 13;
+			u.binding = 16;
 			u.type = RD::UNIFORM_TYPE_TEXTURE;
 			u.ids.push_back(cluster_builder.get_cluster_texture());
 			uniforms.push_back(u);
 		}
 		{
 			RD::Uniform u;
-			u.binding = 14;
+			u.binding = 17;
 			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.ids.push_back(cluster_builder.get_cluster_indices_buffer());
 			uniforms.push_back(u);
@@ -2723,7 +2869,7 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 
 		{
 			RD::Uniform u;
-			u.binding = 15;
+			u.binding = 18;
 			u.type = RD::UNIFORM_TYPE_TEXTURE;
 			if (directional_shadow_get_texture().is_valid()) {
 				u.ids.push_back(directional_shadow_get_texture());
@@ -2736,7 +2882,7 @@ void RasterizerSceneHighEndRD::_update_render_base_uniform_set() {
 		{
 			RD::Uniform u;
 			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
-			u.binding = 16;
+			u.binding = 19;
 			u.ids.push_back(storage->global_variables_get_storage_buffer());
 			uniforms.push_back(u);
 		}
@@ -2951,12 +3097,31 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 			scene_state.gi_probe_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(GIProbeData) * scene_state.max_gi_probes);
 			defines += "\n#define MAX_GI_PROBES " + itos(scene_state.max_gi_probes) + "\n";
 		}
+		{
+			//lightmaps
+			scene_state.max_lightmaps = storage->lightmap_array_get_size();
+			defines += "\n#define MAX_LIGHTMAP_TEXTURES " + itos(scene_state.max_lightmaps) + "\n";
+			defines += "\n#define MAX_LIGHTMAPS " + itos(scene_state.max_lightmaps) + "\n";
 
+			scene_state.lightmaps = memnew_arr(LightmapData, scene_state.max_lightmaps);
+			scene_state.lightmap_buffer = RD::get_singleton()->storage_buffer_create(sizeof(LightmapData) * scene_state.max_lightmaps);
+		}
+		{
+			//captures
+			scene_state.max_lightmap_captures = 2048;
+			scene_state.lightmap_captures = memnew_arr(LightmapCaptureData, scene_state.max_lightmap_captures);
+			scene_state.lightmap_capture_buffer = RD::get_singleton()->storage_buffer_create(sizeof(LightmapCaptureData) * scene_state.max_lightmap_captures);
+		}
 		{ //decals
 			scene_state.max_decals = MIN(1024 * 1024, uniform_max_size) / sizeof(DecalData); //1mb of decals
 			uint32_t decal_buffer_size = scene_state.max_decals * sizeof(DecalData);
 			scene_state.decals = memnew_arr(DecalData, scene_state.max_decals);
 			scene_state.decal_buffer = RD::get_singleton()->storage_buffer_create(decal_buffer_size);
+		}
+
+		{
+
+			defines += "\n#define MATERIAL_UNIFORM_SET " + itos(MATERIAL_UNIFORM_SET) + "\n";
 		}
 
 		Vector<String> shader_versions;

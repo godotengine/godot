@@ -1567,6 +1567,15 @@ void VulkanContext::local_device_push_command_buffers(RID p_local_device, const 
 	submit_info.pSignalSemaphores = nullptr;
 
 	VkResult err = vkQueueSubmit(ld->queue, 1, &submit_info, VK_NULL_HANDLE);
+	if (err == VK_ERROR_OUT_OF_HOST_MEMORY) {
+		print_line("out of host memory");
+	}
+	if (err == VK_ERROR_OUT_OF_DEVICE_MEMORY) {
+		print_line("out of device memory");
+	}
+	if (err == VK_ERROR_DEVICE_LOST) {
+		print_line("device lost");
+	}
 	ERR_FAIL_COND(err);
 
 	ld->waiting = true;

@@ -349,7 +349,7 @@ Vector3 GIProbe::get_extents() const {
 void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
-	if (mi && mi->get_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT) && mi->is_visible_in_tree()) {
+	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_BAKED && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 
