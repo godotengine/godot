@@ -44,8 +44,7 @@ class Array {
 	void _ref(const Array &p_from) const;
 	void _unref() const;
 
-	int _clamp_index(int p_index) const;
-	static int _fix_slice_index(int p_index, int p_arr_len, int p_top_mod);
+	inline int _clamp_slice_index(int p_index) const;
 
 protected:
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
