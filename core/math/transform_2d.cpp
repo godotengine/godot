@@ -70,6 +70,18 @@ void Transform2D::rotate(real_t p_phi) {
 	*this = Transform2D(p_phi, Vector2()) * (*this);
 }
 
+real_t Transform2D::get_skew() const {
+
+	real_t det = basis_determinant();
+	return Math::acos(elements[0].normalized().dot(SGN(det) * elements[1].normalized())) - Math_PI * 0.5;
+}
+
+void Transform2D::set_skew(float p_angle) {
+
+	real_t det = basis_determinant();
+	elements[1] = SGN(det) * elements[0].rotated((Math_PI * 0.5 + p_angle)).normalized() * elements[1].length();
+}
+
 real_t Transform2D::get_rotation() const {
 	real_t det = basis_determinant();
 	Transform2D m = orthonormalized();
