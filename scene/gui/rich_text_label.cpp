@@ -2676,7 +2676,13 @@ void RichTextLabel::set_effects(const Vector<Variant> &effects) {
 		custom_effects.push_back(effect);
 	}
 
+	String text = get_text();
+
 	parse_bbcode(bbcode);
+
+	if (!is_using_bbcode()) {
+		set_text(text);
+	}
 }
 
 Vector<Variant> RichTextLabel::get_effects() {
