@@ -10,15 +10,16 @@ msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: \n"
-"Last-Translator: Rémi Verschelde <remi@godotengine.org>\n"
+"PO-Revision-Date: 2020-05-01 11:09+0000\n"
+"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
-"godot-classes/fr/>\n"
+"godot-class-reference/fr/>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: doc/tools/makerst.py
 msgid "Description"
@@ -38,7 +39,7 @@ msgstr "Méthodes"
 
 #: doc/tools/makerst.py
 msgid "Theme Properties"
-msgstr "Propriétés de thème"
+msgstr "Propriétés du thème"
 
 #: doc/tools/makerst.py
 msgid "Signals"
@@ -58,7 +59,7 @@ msgstr "Description des propriétés"
 
 #: doc/tools/makerst.py
 msgid "Method Descriptions"
-msgstr "Description des méthodes"
+msgstr "Descriptions des méthodes"
 
 #: modules/gdscript/doc_classes/@GDScript.xml:4
 msgid "Built-in GDScript functions."
