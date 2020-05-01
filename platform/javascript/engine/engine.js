@@ -31,6 +31,7 @@ Function('return this')()['Engine'] = (function() {
 		this.rtenv = null;
 		this.customLocale = null;
 		this.resizeCanvasOnStart = false;
+		this.onExecute = null;
 		this.onExit = null;
 	};
 
@@ -115,6 +116,7 @@ Function('return this')()['Engine'] = (function() {
 			me.rtenv['thisProgram'] = me.executableName;
 			me.rtenv['resizeCanvasOnStart'] = me.resizeCanvasOnStart;
 			me.rtenv['noExitRuntime'] = true;
+			me.rtenv['onExecute'] = me.onExecute;
 			me.rtenv['onExit'] = function(code) {
 				if (me.onExit)
 					me.onExit(code);
@@ -201,6 +203,12 @@ Function('return this')()['Engine'] = (function() {
 		stderr = printErr;
 	};
 
+	Engine.prototype.setOnExecute = function(onExecute) {
+		if (this.rtenv)
+			this.rtenv.onExecute = onExecute;
+		this.onExecute = onExecute;
+	}
+
 	Engine.prototype.setOnExit = function(onExit) {
 		this.onExit = onExit;
 	}
@@ -230,6 +238,7 @@ Function('return this')()['Engine'] = (function() {
 	Engine.prototype['setProgressFunc'] = Engine.prototype.setProgressFunc;
 	Engine.prototype['setStdoutFunc'] = Engine.prototype.setStdoutFunc;
 	Engine.prototype['setStderrFunc'] = Engine.prototype.setStderrFunc;
+	Engine.prototype['setOnExecute'] = Engine.prototype.setOnExecute;
 	Engine.prototype['setOnExit'] = Engine.prototype.setOnExit;
 	Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;
 	return Engine;
