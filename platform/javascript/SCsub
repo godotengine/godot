@@ -32,7 +32,6 @@ env.Depends(build, js_modules)
 
 engine = [
     "engine/preloader.js",
-    "engine/loader.js",
     "engine/utils.js",
     "engine/engine.js",
 ]
