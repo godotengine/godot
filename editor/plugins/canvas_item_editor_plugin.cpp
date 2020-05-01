@@ -6161,7 +6161,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						   type == "ViewportTexture" ||
 						   type == "CurveTexture" ||
 						   type == "GradientTexture" ||
-						   type == "StreamTexture" ||
+						   type == "StreamTexture2D" ||
 						   type == "AtlasTexture" ||
 						   type == "LargeTexture") {
 					Ref<Texture2D> texture = Ref<Texture2D>(Object::cast_to<Texture2D>(*res));

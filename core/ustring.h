@@ -254,7 +254,7 @@ public:
 	static int to_int(const char *p_str, int p_len = -1);
 	static double to_double(const char *p_str);
 	static double to_double(const CharType *p_str, const CharType **r_end = nullptr);
-	static int64_t to_int(const CharType *p_str, int p_len = -1);
+	static int64_t to_int(const CharType *p_str, int p_len = -1, bool p_clamp = false);
 	String capitalize() const;
 	String camelcase_to_underscore(bool lowercase = true) const;
 

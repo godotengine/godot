@@ -103,7 +103,7 @@ Error ResourceImporterShaderFile::import(const String &p_source_file, const Stri
 	Ref<RDShaderFile> shader_file;
 	shader_file.instance();
 	String base_path = p_source_file.get_base_dir();
-	err = shader_file->parse_versions_from_text(file_txt, _include_function, &base_path);
+	err = shader_file->parse_versions_from_text(file_txt, "", _include_function, &base_path);
 
 	if (err != OK) {
 		if (!ShaderFileEditor::singleton->is_visible_in_tree()) {

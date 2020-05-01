@@ -92,6 +92,7 @@ public:
 		DEFAULT_RD_TEXTURE_CUBEMAP_BLACK,
 		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_3D_WHITE,
+		DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE,
 		DEFAULT_RD_TEXTURE_MAX
 	};
 
@@ -118,6 +119,7 @@ private:
 		};
 
 		Type type;
+		RS::TextureLayeredType layered_type = RS::TEXTURE_LAYERED_2D_ARRAY;
 
 		RenderingDevice::TextureType rd_type;
 		RID rd_texture;
@@ -147,6 +149,7 @@ private:
 
 		RID proxy_to;
 		Vector<RID> proxies;
+		Set<RID> lightmap_users;
 
 		RS::TextureDetectCallback detect_3d_callback = nullptr;
 		void *detect_3d_callback_ud = nullptr;
@@ -524,6 +527,40 @@ private:
 
 	mutable RID_Owner<GIProbe> gi_probe_owner;
 
+	/* REFLECTION PROBE */
+
+	struct Lightmap {
+
+		RID light_texture;
+		bool uses_spherical_harmonics = false;
+		bool interior = false;
+		AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
+		int32_t array_index = -1; //unassigned
+		PackedVector3Array points;
+		PackedColorArray point_sh;
+		PackedInt32Array tetrahedra;
+		PackedInt32Array bsp_tree;
+
+		struct BSP {
+			static const int32_t EMPTY_LEAF = INT32_MIN;
+			float plane[4];
+			int32_t over = EMPTY_LEAF, under = EMPTY_LEAF;
+		};
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	bool using_lightmap_array; //high end uses this
+	/* for high end */
+
+	Vector<RID> lightmap_textures;
+
+	uint64_t lightmap_array_version = 0;
+
+	mutable RID_Owner<Lightmap> lightmap_owner;
+
+	float lightmap_probe_capture_update_speed = 4;
+
 	/* RENDER TARGET */
 
 	struct RenderTarget {
@@ -653,7 +690,7 @@ public:
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create();
-	virtual RID texture_2d_layered_placeholder_create();
+	virtual RID texture_2d_layered_placeholder_create(RenderingServer::TextureLayeredType p_layered_type);
 	virtual RID texture_3d_placeholder_create();
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const;
@@ -1270,23 +1307,47 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
-	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
-	void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) {}
-	RID lightmap_capture_create() {
-		return RID();
+	virtual RID lightmap_create();
+
+	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics);
+	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds);
+	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior);
+	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree);
+	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const;
+	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const;
+	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const;
+	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const;
+	virtual AABB lightmap_get_aabb(RID p_lightmap) const;
+	virtual bool lightmap_is_interior(RID p_lightmap) const;
+	virtual void lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh);
+	virtual void lightmap_set_probe_capture_update_speed(float p_speed);
+	_FORCE_INLINE_ float lightmap_get_probe_capture_update_speed() const {
+		return lightmap_probe_capture_update_speed;
 	}
-	Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
-		return Vector<uint8_t>();
+
+	_FORCE_INLINE_ int32_t lightmap_get_array_index(RID p_lightmap) const {
+		ERR_FAIL_COND_V(!using_lightmap_array, -1); //only for arrays
+		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		return lm->array_index;
 	}
-	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {}
-	Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const { return Transform(); }
-	void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) {}
-	int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const { return 0; }
-	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
-	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
-	const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
-		return nullptr;
+	_FORCE_INLINE_ bool lightmap_uses_spherical_harmonics(RID p_lightmap) const {
+		ERR_FAIL_COND_V(!using_lightmap_array, false); //only for arrays
+		const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+		return lm->uses_spherical_harmonics;
+	}
+	_FORCE_INLINE_ uint64_t lightmap_array_get_version() const {
+		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays
+		return lightmap_array_version;
+	}
+
+	_FORCE_INLINE_ int lightmap_array_get_size() const {
+		ERR_FAIL_COND_V(!using_lightmap_array, 0); //only for arrays
+		return lightmap_textures.size();
+	}
+
+	_FORCE_INLINE_ const Vector<RID> &lightmap_array_get_textures() const {
+		ERR_FAIL_COND_V(!using_lightmap_array, lightmap_textures); //only for arrays
+		return lightmap_textures;
 	}
 
 	/* PARTICLES */
