@@ -1384,6 +1384,9 @@
 		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="22" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="23" enum="PropertyHint">
+			Hints that a NodePath must be of one of the types specified via a hint string such as [code]"Hello,Something,Else"[/code].
+		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
 			The property is serialized and saved in the scene file (default).
 		</constant>

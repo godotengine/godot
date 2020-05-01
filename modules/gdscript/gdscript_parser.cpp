@@ -4525,6 +4525,46 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									_ADVANCE_AND_CONSUME_NEWLINES;
 
 								} break;
+								case Variant::NODE_PATH: {
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type() == Variant::STRING) {
+										//enumeration
+										current_export.hint = PROPERTY_HINT_NODE_PATH_VALID_TYPES;
+										bool first = true;
+										while (true) {
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_CONSTANT || tokenizer->get_token_constant().get_type() != Variant::STRING) {
+
+												current_export = PropertyInfo();
+												_set_error("Expected a string constant in the enumeration hint.");
+												return;
+											}
+
+											String c = tokenizer->get_token_constant();
+											if (!first)
+												current_export.hint_string += ",";
+											else
+												first = false;
+
+											current_export.hint_string += c.xml_escape();
+
+											_ADVANCE_AND_CONSUME_NEWLINES;
+											if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_CLOSE)
+												break;
+
+											if (tokenizer->get_token() != GDScriptTokenizer::TK_COMMA) {
+												current_export = PropertyInfo();
+												_set_error("Expected \")\" or \",\" in the enumeration hint.");
+												return;
+											}
+
+											_ADVANCE_AND_CONSUME_NEWLINES;
+										}
+
+										break;
+									}
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+								} break;
 								default: {
 
 									current_export = PropertyInfo();

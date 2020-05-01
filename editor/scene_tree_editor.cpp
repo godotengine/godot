@@ -418,7 +418,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (valid_types.size()) {
 		bool valid = false;
 		for (int i = 0; i < valid_types.size(); i++) {
-			if (p_node->is_class(valid_types[i])) {
+			if (p_node->is_class(valid_types[i]) || EditorNode::get_singleton()->get_object_custom_type_name(p_node) == valid_types[i]) {
 				valid = true;
 				break;
 			}
