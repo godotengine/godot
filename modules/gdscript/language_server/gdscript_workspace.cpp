@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// FIXME: Reenable LSP.
+#if 0
+
 #include "gdscript_workspace.h"
 #include "../gdscript.h"
 #include "../gdscript_parser.h"
@@ -617,3 +620,5 @@ GDScriptWorkspace::~GDScriptWorkspace() {
 		remove_cache_parser(E->get());
 	}
 }
+
+#endif

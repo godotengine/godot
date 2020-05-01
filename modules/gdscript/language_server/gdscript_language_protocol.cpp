@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// FIXME: Reenable LSP.
+#if 0
+
 #include "gdscript_language_protocol.h"
 #include "core/io/json.h"
 #include "core/os/copymem.h"
@@ -300,3 +303,5 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	latest_client_id = 0;
 	next_client_id = 0;
 }
+
+#endif

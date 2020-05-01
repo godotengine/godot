@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// FIXME: Reenable LSP.
+#if 0
+
 #include "gdscript_extend_parser.h"
 #include "../gdscript.h"
 #include "core/io/json.h"
@@ -768,3 +771,5 @@ Error ExtendGDScriptParser::parse(const String &p_code, const String &p_path) {
 	update_document_links(p_code);
 	return err;
 }
+
+#endif

@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+// FIXME: Reenable LSP.
+#if 0
+
 #include "gdscript_language_server.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -113,3 +116,5 @@ void register_lsp_types() {
 	ClassDB::register_class<GDScriptTextDocument>();
 	ClassDB::register_class<GDScriptWorkspace>();
 }
+
+#endif
