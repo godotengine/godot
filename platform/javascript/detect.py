@@ -164,3 +164,6 @@ def configure(env):
 
     # callMain for manual start, FS for preloading.
     env.Append(LINKFLAGS=["-s", 'EXTRA_EXPORTED_RUNTIME_METHODS=["callMain", "FS"]'])
+
+    # Add code that allow exiting runtime.
+    env.Append(LINKFLAGS=['-s', 'EXIT_RUNTIME=1'])
