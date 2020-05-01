@@ -79,6 +79,7 @@ void RasterizerRD::blit_render_targets_to_screen(DisplayServer::WindowID p_scree
 
 void RasterizerRD::begin_frame(double frame_step) {
 	frame++;
+	delta = frame_step;
 	time += frame_step;
 
 	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
@@ -157,7 +158,7 @@ void RasterizerRD::initialize() {
 }
 
 ThreadWorkPool RasterizerRD::thread_work_pool;
-uint32_t RasterizerRD::frame = 1;
+uint64_t RasterizerRD::frame = 1;
 
 void RasterizerRD::finalize() {
 
@@ -173,7 +174,10 @@ void RasterizerRD::finalize() {
 	RD::get_singleton()->free(copy_viewports_sampler);
 }
 
+RasterizerRD *RasterizerRD::singleton = nullptr;
+
 RasterizerRD::RasterizerRD() {
+	singleton = this;
 	thread_work_pool.init();
 	time = 0;
 

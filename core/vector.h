@@ -39,6 +39,7 @@
 
 #include "core/cowdata.h"
 #include "core/error_macros.h"
+#include "core/os/copymem.h"
 #include "core/os/memory.h"
 #include "core/sort_array.h"
 
@@ -123,6 +124,13 @@ public:
 	inline Vector &operator=(const Vector &p_from) {
 		_cowdata._ref(p_from._cowdata);
 		return *this;
+	}
+
+	Vector<uint8_t> to_byte_array() const {
+		Vector<uint8_t> ret;
+		ret.resize(size() * sizeof(T));
+		copymem(ret.ptrw(), ptr(), sizeof(T) * size());
+		return ret;
 	}
 
 	Vector<T> subarray(int p_from, int p_to) const {

@@ -66,6 +66,8 @@ class RasterizerEffectsRD {
 		COPY_MODE_SIMPLY_COPY_DEPTH,
 		COPY_MODE_MIPMAP,
 		COPY_MODE_LINEARIZE_DEPTH,
+		COPY_MODE_CUBE_TO_PANORAMA,
+		COPY_MODE_CUBE_ARRAY_TO_PANORAMA,
 		COPY_MODE_MAX,
 
 	};
@@ -564,6 +566,7 @@ class RasterizerEffectsRD {
 public:
 	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false);
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false);
+	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);

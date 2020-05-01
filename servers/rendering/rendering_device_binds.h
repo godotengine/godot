@@ -322,8 +322,31 @@ public:
 		return base_error;
 	}
 
+	void print_errors(const String &p_file) {
+		if (base_error != "") {
+			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
+		} else {
+			for (Map<StringName, Ref<RDShaderBytecode>>::Element *E = versions.front(); E; E = E->next()) {
+				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+					String error = E->get()->get_stage_compile_error(RD::ShaderStage(i));
+					if (error != String()) {
+						static const char *stage_str[RD::SHADER_STAGE_MAX] = {
+							"vertex",
+							"fragment",
+							"tesselation_control",
+							"tesselation_evaluation",
+							"compute"
+						};
+
+						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E->key()) + "', stage '" + stage_str[i] + "':\n\n" + error);
+					}
+				}
+			}
+		}
+	}
+
 	typedef String (*OpenIncludeFunction)(const String &, void *userdata);
-	Error parse_versions_from_text(const String &p_text, OpenIncludeFunction p_include_func = nullptr, void *p_include_func_userdata = nullptr);
+	Error parse_versions_from_text(const String &p_text, const String p_defines = String(), OpenIncludeFunction p_include_func = nullptr, void *p_include_func_userdata = nullptr);
 
 protected:
 	Dictionary _get_versions() const {

@@ -354,7 +354,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 		if (p_light_bake_mode != LIGHT_BAKE_DISABLED) {
 
-			mi->set_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT, true);
+			mi->set_gi_mode(GeometryInstance3D::GI_MODE_BAKED);
 		}
 	}
 
@@ -955,7 +955,7 @@ void ResourceImporterScene::_find_meshes(Node *p_node, Map<Ref<ArrayMesh>, Trans
 			Transform transform;
 			while (s) {
 				transform = transform * s->get_transform();
-				s = s->get_parent_spatial();
+				s = Object::cast_to<Node3D>(s->get_parent());
 			}
 
 			meshes[mesh] = transform;
@@ -1358,8 +1358,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		scene->set_script(Variant(root_script));
 	}
 
+	float root_scale = 1.0;
 	if (Object::cast_to<Node3D>(scene)) {
-		float root_scale = p_options["nodes/root_scale"];
+		root_scale = p_options["nodes/root_scale"];
 		Object::cast_to<Node3D>(scene)->scale(Vector3(root_scale, root_scale, root_scale));
 	}
 

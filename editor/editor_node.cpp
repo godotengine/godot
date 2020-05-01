@@ -158,6 +158,7 @@
 #include "editor/plugins/style_box_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/texture_editor_plugin.h"
+#include "editor/plugins/texture_layered_editor_plugin.h"
 #include "editor/plugins/texture_region_editor_plugin.h"
 #include "editor/plugins/theme_editor_plugin.h"
 #include "editor/plugins/tile_map_editor_plugin.h"
@@ -381,6 +382,8 @@ void EditorNode::_notification(int p_what) {
 				RS::get_singleton()->shadows_quality_set(shadows_quality);
 				RS::ShadowQuality directional_shadow_quality = RS::ShadowQuality(int(GLOBAL_GET("rendering/quality/directional_shadow/soft_shadow_quality")));
 				RS::get_singleton()->directional_shadow_quality_set(directional_shadow_quality);
+				float probe_update_speed = GLOBAL_GET("rendering/lightmapper/probe_capture_update_speed");
+				RS::get_singleton()->lightmap_set_probe_capture_update_speed(probe_update_speed);
 			}
 
 			ResourceImporterTexture::get_singleton()->update_imports();
@@ -713,7 +716,6 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		// Reload the global shader variables, but this time
 		// loading texures, as they are now properly imported.
-		print_line("done scanning, reload textures");
 		RenderingServer::get_singleton()->global_variables_load_settings(true);
 
 		// Start preview thread now that it's safe.
@@ -5678,7 +5680,7 @@ EditorNode::EditorNode() {
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
 
-		/*		Ref<ResourceImporterLayeredTexture> import_cubemap;
+		Ref<ResourceImporterLayeredTexture> import_cubemap;
 		import_cubemap.instance();
 		import_cubemap->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP);
 		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap);
@@ -5692,7 +5694,12 @@ EditorNode::EditorNode() {
 		import_cubemap_array.instance();
 		import_cubemap_array->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP_ARRAY);
 		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap_array);
-*/
+
+		/*Ref<ResourceImporterLayeredTexture> import_3d;
+		import_3d.instance();
+		import_3d->set_mode(ResourceImporterLayeredTexture::MODE_3D);
+		ResourceFormatImporter::get_singleton()->add_importer(import_3d);*/
+
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_image);
@@ -6663,7 +6670,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(SpriteFramesEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
 	add_editor_plugin(memnew(GIProbeEditorPlugin(this)));
-	//add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
+	add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Path3DEditorPlugin(this)));
 	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
@@ -6674,6 +6681,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(CollisionShape2DEditorPlugin(this)));
 	add_editor_plugin(memnew(CurveEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureEditorPlugin(this)));
+	add_editor_plugin(memnew(TextureLayeredEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioStreamEditorPlugin(this)));
 	add_editor_plugin(memnew(AudioBusesEditorPlugin(audio_bus_editor)));
 	add_editor_plugin(memnew(Skeleton3DEditorPlugin(this)));

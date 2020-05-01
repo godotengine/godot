@@ -68,10 +68,10 @@ class ResourceLoaderBinary {
 	struct IntResource {
 		String path;
 		uint64_t offset;
-		RES cache;
 	};
 
 	Vector<IntResource> internal_resources;
+	Map<String, RES> internal_index_cache;
 
 	String get_unicode_string();
 	void _advance_padding(uint32_t p_len);
