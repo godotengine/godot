@@ -480,10 +480,16 @@ void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p
 	if (rd->is_peer_connected()) {
 		if (overflowed)
 			s += "[...]";
-		rd->output_strings.push_back(s);
+
+		OutputString output_string;
+		output_string.message = s;
+		output_string.type = p_error ? MESSAGE_TYPE_ERROR : MESSAGE_TYPE_LOG;
+		rd->output_strings.push_back(output_string);
 
 		if (overflowed) {
-			rd->output_strings.push_back("[output overflow, print less text!]");
+			output_string.message = "[output overflow, print less text!]";
+			output_string.type = MESSAGE_TYPE_ERROR;
+			rd->output_strings.push_back(output_string);
 		}
 	}
 }
@@ -517,15 +523,32 @@ void RemoteDebugger::flush_output() {
 	if (output_strings.size()) {
 
 		// Join output strings so we generate less messages.
+		Vector<String> joined_log_strings;
 		Vector<String> strings;
-		strings.resize(output_strings.size());
-		String *w = strings.ptrw();
+		Vector<int> types;
 		for (int i = 0; i < output_strings.size(); i++) {
-			w[i] = output_strings[i];
+			const OutputString &output_string = output_strings[i];
+			if (output_string.type == MESSAGE_TYPE_ERROR) {
+				if (!joined_log_strings.empty()) {
+					strings.push_back(String("\n").join(joined_log_strings));
+					types.push_back(MESSAGE_TYPE_LOG);
+					joined_log_strings.clear();
+				}
+				strings.push_back(output_string.message);
+				types.push_back(MESSAGE_TYPE_ERROR);
+			} else {
+				joined_log_strings.push_back(output_string.message);
+			}
+		}
+
+		if (!joined_log_strings.empty()) {
+			strings.push_back(String("\n").join(joined_log_strings));
+			types.push_back(MESSAGE_TYPE_LOG);
 		}
 
 		Array arr;
 		arr.push_back(strings);
+		arr.push_back(types);
 		_put_msg("output", arr);
 		output_strings.clear();
 	}
