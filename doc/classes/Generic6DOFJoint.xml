@@ -373,6 +373,12 @@
 		<constant name="PARAM_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="Param">
 			The maximum force the linear motor will apply while trying to reach the velocity target.
 		</constant>
+		<constant name="PARAM_LINEAR_SPRING_STIFFNESS" value="7" enum="Param">
+		</constant>
+		<constant name="PARAM_LINEAR_SPRING_DAMPING" value="8" enum="Param">
+		</constant>
+		<constant name="PARAM_LINEAR_SPRING_EQUILIBRIUM_POINT" value="9" enum="Param">
+		</constant>
 		<constant name="PARAM_ANGULAR_LOWER_LIMIT" value="10" enum="Param">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
@@ -399,6 +405,12 @@
 		</constant>
 		<constant name="PARAM_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="Param">
 			Maximum acceleration for the motor at the axes.
+		</constant>
+		<constant name="PARAM_ANGULAR_SPRING_STIFFNESS" value="19" enum="Param">
+		</constant>
+		<constant name="PARAM_ANGULAR_SPRING_DAMPING" value="20" enum="Param">
+		</constant>
+		<constant name="PARAM_ANGULAR_SPRING_EQUILIBRIUM_POINT" value="21" enum="Param">
 		</constant>
 		<constant name="PARAM_MAX" value="22" enum="Param">
 			Represents the size of the [enum Param] enum.
