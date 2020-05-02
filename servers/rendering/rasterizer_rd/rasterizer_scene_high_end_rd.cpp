@@ -1720,6 +1720,16 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 				light_data.shadow_enabled = p_using_shadows && storage->light_has_shadow(base);
 
+				float angular_diameter = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
+				if (angular_diameter > 0.0) {
+					// I know tan(0) is 0, but let's not risk it with numerical precision.
+					// technically this will keep expanding until reaching the sun, but all we care
+					// is expand until we reach the radius of the near plane (there can't be more occluders than that)
+					angular_diameter = Math::tan(Math::deg2rad(angular_diameter));
+				} else {
+					angular_diameter = 0.0;
+				}
+
 				if (light_data.shadow_enabled) {
 
 					RS::LightDirectionalShadowMode smode = storage->light_directional_get_shadow_mode(base);
@@ -1775,15 +1785,9 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
 
 					light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
+					light_data.softshadow_angle = angular_diameter;
 
-					float softshadow_angle = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
-					if (softshadow_angle > 0.0) {
-						// I know tan(0) is 0, but let's not risk it with numerical precision.
-						// technically this will keep expanding until reaching the sun, but all we care
-						// is expand until we reach the radius of the near plane (there can't be more occluders than that)
-						light_data.softshadow_angle = Math::tan(Math::deg2rad(softshadow_angle));
-					} else {
-						light_data.softshadow_angle = 0;
+					if (angular_diameter <= 0.0) {
 						light_data.soft_shadow_scale *= directional_shadow_quality_radius_get(); // Only use quality radius for PCF
 					}
 				}
@@ -1806,7 +1810,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					sky_light_data.color[2] = light_data.color[2];
 
 					sky_light_data.enabled = true;
-					sky_light_data.size = light_data.softshadow_angle;
+					sky_light_data.size = angular_diameter;
 					sky_scene_state.directional_light_count++;
 				}
 
