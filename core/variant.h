@@ -67,13 +67,6 @@ typedef Vector<Vector2> PackedVector2Array;
 typedef Vector<Vector3> PackedVector3Array;
 typedef Vector<Color> PackedColorArray;
 
-// Temporary workaround until c++11 alignas()
-#ifdef __GNUC__
-#define GCC_ALIGNED_8 __attribute__((aligned(8)))
-#else
-#define GCC_ALIGNED_8
-#endif
-
 class Variant {
 public:
 	// If this changes the table in variant_op must be updated
@@ -211,7 +204,7 @@ private:
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
-	} _data GCC_ALIGNED_8;
+	} _data alignas(8);
 
 	void reference(const Variant &p_variant);
 	void clear();
