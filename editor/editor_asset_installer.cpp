@@ -234,9 +234,13 @@ void EditorAssetInstaller::ok_pressed() {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		
-		if (unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0) != UNZ_OK)
-			break;
+
+		if (unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0) != UNZ_OK) {
+			print_line(vformat("Unable to unzip and get current file info for file: %s.", fname));
+			idx++;
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
 
 		String name = fname;
 
@@ -266,9 +270,24 @@ void EditorAssetInstaller::ok_pressed() {
 				data.resize(info.uncompressed_size);
 
 				//read
-				unzOpenCurrentFile(pkg);
-				unzReadCurrentFile(pkg, data.ptrw(), data.size());
-				unzCloseCurrentFile(pkg);
+				if (unzOpenCurrentFile(pkg) != UNZ_OK) {
+					print_line(vformat("Unable to open current file with path: %s.", path));
+					idx++;
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+				if (unzReadCurrentFile(pkg, data.ptrw(), data.size()) != UNZ_OK) {
+					print_line(vformat("Unable to read file with path: %s.", path));
+					idx++;
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+				if (unzCloseCurrentFile(pkg) != UNZ_OK) {
+					print_line(vformat("Unable to close file with path: %s.", path));
+					idx++;
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
 
 				FileAccess *f = FileAccess::open(path, FileAccess::WRITE);
 				if (f) {
