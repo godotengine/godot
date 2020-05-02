@@ -7571,6 +7571,10 @@ GDScriptParser::DataType GDScriptParser::_reduce_identifier_type(const DataType 
 	}
 
 	if (_get_member_type(base_type, p_identifier, member_type)) {
+		if (!p_base_type && current_function && current_function->_static) {
+			_set_error("Can't access member variable (\"" + p_identifier.operator String() + "\") from a static function.", p_line);
+			return DataType();
+		}
 		return member_type;
 	}
 
