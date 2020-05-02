@@ -671,7 +671,6 @@ void _OS::print_all_textures_by_size() {
 			img.path = E->get()->get_path();
 			img.vram = Image::get_image_data_size(img.size.width, img.size.height, Image::Format(img.fmt));
 			img.id = E->get()->get_instance_id();
-			total += img.vram;
 			imgs.push_back(img);
 		}
 	}
