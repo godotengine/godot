@@ -1756,14 +1756,14 @@ Size2 Control::get_size() const {
 
 Rect2 Control::get_global_rect() const {
 
-	return Rect2(get_global_position(), get_size());
+	return Rect2(get_global_position(), get_size() * get_global_transform().get_scale());
 }
 
 Rect2 Control::get_screen_rect() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
 
-	Rect2 r(get_global_position(), get_size());
+	Rect2 r(get_global_position(), get_size() * get_global_transform().get_scale());
 
 	Window *w = Object::cast_to<Window>(get_viewport());
 	if (w && !w->is_embedding_subwindows()) {
