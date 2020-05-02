@@ -121,6 +121,7 @@ private:
 	void _load_default_text_editor_theme();
 	bool _save_text_editor_theme(String p_file);
 	bool _is_default_text_editor_theme(String p_theme_name);
+	void _send_settings_to_visual_server();
 
 protected:
 	static void _bind_methods();

@@ -117,6 +117,8 @@ public:
 		GLuint ubo;
 	};
 
+	bool draw_lines_as_rects;
+
 	RID_Owner<LightInternal> light_internal_owner;
 
 	virtual RID light_internal_create();
@@ -125,6 +127,7 @@ public:
 
 	virtual void canvas_begin();
 	virtual void canvas_end();
+	virtual void set_editor_settings(const VisualServer::EditorSettings &p_settings);
 
 	_FORCE_INLINE_ void _set_texture_rect_mode(bool p_enable, bool p_ninepatch = false);
 	_FORCE_INLINE_ RasterizerStorageGLES3::Texture *_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map, bool p_force = false);

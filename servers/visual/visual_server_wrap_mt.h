@@ -616,6 +616,8 @@ public:
 	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 	FUNC1(set_default_clear_color, const Color &)
 
+	FUNC1(set_editor_settings, const EditorSettings &)
+
 	FUNC0R(RID, get_test_cube)
 
 	FUNC1(set_debug_generate_wireframes, bool)

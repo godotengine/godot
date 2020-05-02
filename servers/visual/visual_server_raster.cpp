@@ -163,6 +163,12 @@ String VisualServerRaster::get_video_adapter_vendor() const {
 	return VSG::storage->get_video_adapter_vendor();
 }
 
+/* PASSING EDITOR SETTINGS */
+
+void VisualServerRaster::set_editor_settings(const EditorSettings &p_settings) {
+	VSG::rasterizer->set_editor_settings(p_settings);
+}
+
 /* TESTING */
 
 void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {

@@ -52,6 +52,7 @@ public:
 	virtual RasterizerScene *get_scene();
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	virtual void set_editor_settings(const VisualServer::EditorSettings &p_settings);
 
 	virtual void initialize();
 	virtual void begin_frame(double frame_step);

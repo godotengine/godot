@@ -269,6 +269,10 @@ void RasterizerGLES2::initialize() {
 	scene->initialize();
 }
 
+void RasterizerGLES2::set_editor_settings(const VisualServer::EditorSettings &p_settings) {
+	canvas->set_editor_settings(p_settings);
+}
+
 void RasterizerGLES2::begin_frame(double frame_step) {
 	time_total += frame_step;
 

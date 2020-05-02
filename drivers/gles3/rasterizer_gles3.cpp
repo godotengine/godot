@@ -271,6 +271,10 @@ void RasterizerGLES3::clear_render_target(const Color &p_color) {
 	storage->frame.clear_request_color = p_color;
 }
 
+void RasterizerGLES3::set_editor_settings(const VisualServer::EditorSettings &p_settings) {
+	canvas->set_editor_settings(p_settings);
+}
+
 void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 
 	if (p_image.is_null() || p_image->empty())

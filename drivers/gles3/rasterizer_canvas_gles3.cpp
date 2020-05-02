@@ -142,8 +142,11 @@ void RasterizerCanvasGLES3::light_internal_free(RID p_rid) {
 	memdelete(li);
 }
 
-void RasterizerCanvasGLES3::canvas_begin() {
+void RasterizerCanvasGLES3::set_editor_settings(const VisualServer::EditorSettings &p_settings) {
+	draw_lines_as_rects = p_settings.high_quality_lines == false;
+}
 
+void RasterizerCanvasGLES3::canvas_begin() {
 	if (storage->frame.current_rt && storage->frame.clear_request) {
 		// a clear request may be pending, so do it
 		bool transparent = storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
@@ -640,7 +643,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				glVertexAttrib4f(VS::ARRAY_COLOR, line->color.r, line->color.g, line->color.b, line->color.a);
 
-				if (line->width <= 1) {
+				if ((line->width <= 1) && (!draw_lines_as_rects)) {
 					Vector2 verts[2] = {
 						Vector2(line->from.x, line->from.y),
 						Vector2(line->to.x, line->to.y)
@@ -672,7 +675,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					//glLineWidth(line->width);
 					_draw_gui_primitive(4, verts, NULL, NULL);
 #ifdef GLES_OVER_GL
-					if (line->antialiased) {
+					if ((line->antialiased) && (!draw_lines_as_rects)) {
 						glEnable(GL_LINE_SMOOTH);
 						for (int j = 0; j < 4; j++) {
 							Vector2 vertsl[2] = {
@@ -2260,4 +2263,5 @@ void RasterizerCanvasGLES3::finalize() {
 }
 
 RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
+	draw_lines_as_rects = false;
 }

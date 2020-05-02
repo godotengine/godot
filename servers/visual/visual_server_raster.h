@@ -688,6 +688,10 @@ public:
 
 	virtual RID get_test_cube();
 
+	/* PASSING EDITOR SETTINGS */
+
+	virtual void set_editor_settings(const EditorSettings &p_settings);
+
 	/* TESTING */
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);

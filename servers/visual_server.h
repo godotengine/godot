@@ -1032,6 +1032,13 @@ public:
 
 	/* Materials for 2D on 3D */
 
+	/* PASSING EDITOR SETTINGS */
+	struct EditorSettings {
+		bool high_quality_lines;
+	};
+
+	virtual void set_editor_settings(const EditorSettings &p_settings) = 0;
+
 	/* TESTING */
 
 	virtual RID get_test_cube() = 0;

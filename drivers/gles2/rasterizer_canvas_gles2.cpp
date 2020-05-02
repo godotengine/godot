@@ -818,7 +818,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 
 							state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 
-							if (line->width <= 1) {
+							if ((line->width <= 1) && (!draw_lines_as_rects)) {
 								Vector2 verts[2] = {
 									Vector2(line->from.x, line->from.y),
 									Vector2(line->to.x, line->to.y)
@@ -846,7 +846,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 
 								_draw_gui_primitive(4, verts, NULL, NULL);
 #ifdef GLES_OVER_GL
-								if (line->antialiased) {
+								if ((line->antialiased) && (!draw_lines_as_rects)) {
 									glEnable(GL_LINE_SMOOTH);
 									for (int j = 0; j < 4; j++) {
 										Vector2 vertsl[2] = {
@@ -1995,6 +1995,10 @@ void RasterizerCanvasGLES2::canvas_end() {
 #endif
 
 	RasterizerCanvasBaseGLES2::canvas_end();
+}
+
+void RasterizerCanvasGLES2::set_editor_settings(const VisualServer::EditorSettings &p_settings) {
+	draw_lines_as_rects = p_settings.high_quality_lines == false;
 }
 
 void RasterizerCanvasGLES2::canvas_begin() {
@@ -3488,4 +3492,5 @@ void RasterizerCanvasGLES2::initialize() {
 RasterizerCanvasGLES2::RasterizerCanvasGLES2() {
 
 	bdata.settings_use_batching = false;
+	draw_lines_as_rects = false;
 }
