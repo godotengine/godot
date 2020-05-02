@@ -519,7 +519,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_icon("updown", "SpinBox", make_icon(spinbox_updown_png));
 
-	//scroll container
+	// scroll container
 	Ref<StyleBoxEmpty> empty;
 	empty.instance();
 	theme->set_stylebox("bg", "ScrollContainer", empty);
@@ -598,8 +598,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxTexture> graph_bpoint = make_stylebox(graph_node_breakpoint_png, 6, 24, 6, 5, 16, 24, 16, 6);
 	Ref<StyleBoxTexture> graph_position = make_stylebox(graph_node_position_png, 6, 24, 6, 5, 16, 24, 16, 6);
 
-	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
-	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
+	// graphsb->set_expand_margin_size(MARGIN_LEFT,10);
+	// graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
 	theme->set_stylebox("frame", "GraphNode", graphsb);
 	theme->set_stylebox("selectedframe", "GraphNode", graphsbselected);
 	theme->set_stylebox("defaultframe", "GraphNode", graphsbdefault);

@@ -43,7 +43,7 @@ void Step3DSW::_populate_island(Body3DSW *p_body, Body3DSW **p_island, Constrain
 
 		Constraint3DSW *c = (Constraint3DSW *)E->key();
 		if (c->get_island_step() == _step)
-			continue; //already processed
+			continue; // already processed
 		c->set_island_step(_step);
 		c->set_island_next(*p_constraint_island);
 		*p_constraint_island = c;
@@ -53,7 +53,7 @@ void Step3DSW::_populate_island(Body3DSW *p_body, Body3DSW **p_island, Constrain
 				continue;
 			Body3DSW *b = c->get_body_ptr()[i];
 			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC)
-				continue; //no go
+				continue; // no go
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
 		}
 	}
@@ -64,7 +64,7 @@ void Step3DSW::_setup_island(Constraint3DSW *p_island, real_t p_delta) {
 	Constraint3DSW *ci = p_island;
 	while (ci) {
 		ci->setup(p_delta);
-		//todo remove from island if process fails
+		// todo remove from island if process fails
 		ci = ci->get_island_next();
 	}
 }
@@ -92,7 +92,7 @@ void Step3DSW::_solve_island(Constraint3DSW *p_island, int p_iterations, real_t 
 			while (ci) {
 				if (ci->get_priority() < at_priority) {
 					if (prev) {
-						prev->set_island_next(ci->get_island_next()); //remove
+						prev->set_island_next(ci->get_island_next()); // remove
 					} else {
 						p_island = ci->get_island_next();
 					}
@@ -116,7 +116,7 @@ void Step3DSW::_check_suspend(Body3DSW *p_island, real_t p_delta) {
 
 		if (b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
-			continue; //ignore for static
+			continue; // ignore for static
 		}
 
 		if (!b->sleep_test(p_delta))
@@ -125,14 +125,14 @@ void Step3DSW::_check_suspend(Body3DSW *p_island, real_t p_delta) {
 		b = b->get_island_next();
 	}
 
-	//put all to sleep or wake up everyoen
+	// put all to sleep or wake up everyoen
 
 	b = p_island;
 	while (b) {
 
 		if (b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
-			continue; //ignore for static
+			continue; // ignore for static
 		}
 
 		bool active = b->is_active();
@@ -148,7 +148,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	p_space->lock(); // can't access space during this
 
-	p_space->setup(); //update inertias, etc
+	p_space->setup(); // update inertias, etc
 
 	const SelfList<Body3DSW>::List *body_list = &p_space->get_active_body_list();
 
@@ -169,7 +169,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	p_space->set_active_objects(active_count);
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -219,10 +219,10 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 			c->set_island_list_next(constraint_island_list);
 			constraint_island_list = c;
 		}
-		p_space->area_remove_from_moved_list((SelfList<Area3DSW> *)aml.first()); //faster to remove here
+		p_space->area_remove_from_moved_list((SelfList<Area3DSW> *)aml.first()); // faster to remove here
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_GENERATE_ISLANDS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -239,7 +239,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 		}
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_SETUP_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -250,13 +250,13 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	{
 		Constraint3DSW *ci = constraint_island_list;
 		while (ci) {
-			//iterating each island separatedly improves cache efficiency
+			// iterating each island separatedly improves cache efficiency
 			_solve_island(ci, p_iterations, p_delta);
 			ci = ci->get_island_list_next();
 		}
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -282,7 +282,7 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 		}
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space3DSW::ELAPSED_TIME_INTEGRATE_VELOCITIES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;

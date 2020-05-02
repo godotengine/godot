@@ -420,7 +420,7 @@ bool SceneTree::iteration(float p_time) {
 	_notify_group_pause("physics_process_internal", Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	_notify_group_pause("physics_process", Node::NOTIFICATION_PHYSICS_PROCESS);
 	_flush_ugc();
-	MessageQueue::get_singleton()->flush(); //small little hack
+	MessageQueue::get_singleton()->flush(); // small little hack
 	flush_transform_notifications();
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 	root_lock--;
@@ -433,9 +433,9 @@ bool SceneTree::iteration(float p_time) {
 
 bool SceneTree::idle(float p_time) {
 
-	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
-	//print_line("node count: "+itos(get_node_count()));
-	//print_line("TEXTURE RAM: "+itos(RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED)));
+	// print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
+	// print_line("node count: "+itos(get_node_count()));
+	// print_line("TEXTURE RAM: "+itos(RS::get_singleton()->get_render_info(RS::INFO_TEXTURE_MEM_USED)));
 
 	root_lock++;
 
@@ -449,7 +449,7 @@ bool SceneTree::idle(float p_time) {
 
 	emit_signal("idle_frame");
 
-	MessageQueue::get_singleton()->flush(); //small little hack
+	MessageQueue::get_singleton()->flush(); // small little hack
 
 	flush_transform_notifications();
 
@@ -457,24 +457,24 @@ bool SceneTree::idle(float p_time) {
 	_notify_group_pause("idle_process", Node::NOTIFICATION_PROCESS);
 
 	_flush_ugc();
-	MessageQueue::get_singleton()->flush(); //small little hack
-	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
+	MessageQueue::get_singleton()->flush(); // small little hack
+	flush_transform_notifications(); // transforms after world update, to avoid unnecessary enter/exit notifications
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 
 	root_lock--;
 
 	_flush_delete_queue();
 
-	//go through timers
+	// go through timers
 
-	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); //last element
+	List<Ref<SceneTreeTimer>>::Element *L = timers.back(); // last element
 
 	for (List<Ref<SceneTreeTimer>>::Element *E = timers.front(); E;) {
 
 		List<Ref<SceneTreeTimer>>::Element *N = E->next();
 		if (pause && !E->get()->is_pause_mode_process()) {
 			if (E == L) {
-				break; //break on last, so if new timers were added during list traversal, ignore them.
+				break; // break on last, so if new timers were added during list traversal, ignore them.
 			}
 			E = N;
 			continue;
@@ -488,21 +488,21 @@ bool SceneTree::idle(float p_time) {
 			timers.erase(E);
 		}
 		if (E == L) {
-			break; //break on last, so if new timers were added during list traversal, ignore them.
+			break; // break on last, so if new timers were added during list traversal, ignore them.
 		}
 		E = N;
 	}
 
-	flush_transform_notifications(); //additional transforms after timers update
+	flush_transform_notifications(); // additional transforms after timers update
 
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		//simple hack to reload fallback environment if it changed from editor
+		// simple hack to reload fallback environment if it changed from editor
 		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/default_environment");
-		env_path = env_path.strip_edges(); //user may have added a space or two
+		env_path = env_path.strip_edges(); // user may have added a space or two
 		String cpath;
 		Ref<Environment> fallback = get_root()->get_world()->get_fallback_environment();
 		if (fallback.is_valid()) {
@@ -513,7 +513,7 @@ bool SceneTree::idle(float p_time) {
 			if (env_path != String()) {
 				fallback = ResourceLoader::load(env_path);
 				if (fallback.is_null()) {
-					//could not load fallback, set as empty
+					// could not load fallback, set as empty
 					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 				}
 			} else {
@@ -541,7 +541,7 @@ void SceneTree::finish() {
 	if (root) {
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
-		memdelete(root); //delete root
+		memdelete(root); // delete root
 		root = nullptr;
 	}
 
@@ -819,8 +819,8 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 
 	_update_group_order(g, p_notification == Node::NOTIFICATION_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PROCESS || p_notification == Node::NOTIFICATION_PHYSICS_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 
-	//copy, so copy on write happens in case something is removed from process while being called
-	//performance is not lost because only if something is added/removed the vector is copied.
+	// copy, so copy on write happens in case something is removed from process while being called
+	// performance is not lost because only if something is added/removed the vector is copied.
 	Vector<Node *> nodes_copy = g.nodes;
 
 	int node_count = nodes_copy.size();
@@ -870,8 +870,8 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 
 	_update_group_order(g);
 
-	//copy, so copy on write happens in case something is removed from process while being called
-	//performance is not lost because only if something is added/removed the vector is copied.
+	// copy, so copy on write happens in case something is removed from process while being called
+	// performance is not lost because only if something is added/removed the vector is copied.
 	Vector<Node *> nodes_copy = g.nodes;
 
 	int node_count = nodes_copy.size();
@@ -962,7 +962,7 @@ Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	if (!E)
 		return ret;
 
-	_update_group_order(E->get()); //update order just in case
+	_update_group_order(E->get()); // update order just in case
 	int nc = E->get().nodes.size();
 	if (nc == 0)
 		return ret;
@@ -988,7 +988,7 @@ void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_li
 	if (!E)
 		return;
 
-	_update_group_order(E->get()); //update order just in case
+	_update_group_order(E->get()); // update order just in case
 	int nc = E->get().nodes.size();
 	if (nc == 0)
 		return;
@@ -1405,7 +1405,7 @@ SceneTree::SceneTree() {
 	root_lock = 0;
 	node_count = 0;
 
-	//create with mainloop
+	// create with mainloop
 
 	root = memnew(Window);
 	root->set_name("root");
@@ -1416,7 +1416,7 @@ SceneTree::SceneTree() {
 	multiplayer_poll = true;
 	set_multiplayer(Ref<MultiplayerAPI>(memnew(MultiplayerAPI)));
 
-	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
+	// root->set_world_2d( Ref<World2D>( memnew( World2D )));
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
 	current_scene = nullptr;
@@ -1429,8 +1429,8 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/screen_filters/screen_space_aa", PropertyInfo(Variant::INT, "rendering/quality/screen_filters/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled,FXAA"));
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
-	{ //load default fallback environment
-		//get possible extensions
+	{ // load default fallback environment
+		// get possible extensions
 		List<String> exts;
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
@@ -1439,9 +1439,9 @@ SceneTree::SceneTree() {
 				ext_hint += ",";
 			ext_hint += "*." + E->get();
 		}
-		//get path
+		// get path
 		String env_path = GLOBAL_DEF("rendering/environment/default_environment", "");
-		//setup property
+		// setup property
 		ProjectSettings::get_singleton()->set_custom_property_info("rendering/environment/default_environment", PropertyInfo(Variant::STRING, "rendering/viewport/default_environment", PROPERTY_HINT_FILE, ext_hint));
 		env_path = env_path.strip_edges();
 		if (env_path != String()) {
@@ -1450,10 +1450,10 @@ SceneTree::SceneTree() {
 				root->get_world()->set_fallback_environment(env);
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
-					//file was erased, clear the field.
+					// file was erased, clear the field.
 					ProjectSettings::get_singleton()->set("rendering/environment/default_environment", "");
 				} else {
-					//file was erased, notify user.
+					// file was erased, notify user.
 					ERR_PRINT(RTR("Default Environment as specified in Project Settings (Rendering -> Environment -> Default Environment) could not be loaded."));
 				}
 			}

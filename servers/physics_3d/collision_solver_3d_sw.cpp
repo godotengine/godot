@@ -154,7 +154,7 @@ bool CollisionSolver3DSW::solve_concave(const Shape3DSW *p_shape_A, const Transf
 	Transform rel_transform = p_transform_A;
 	rel_transform.origin -= p_transform_B.origin;
 
-	//quickly compute a local AABB
+	// quickly compute a local AABB
 
 	AABB local_aabb;
 	for (int i = 0; i < 3; i++) {
@@ -327,7 +327,7 @@ bool CollisionSolver3DSW::solve_distance(const Shape3DSW *p_shape_A, const Trans
 		Transform rel_transform = p_transform_A;
 		rel_transform.origin -= p_transform_B.origin;
 
-		//quickly compute a local AABB
+		// quickly compute a local AABB
 
 		bool use_cc_hint = p_concave_hint != AABB();
 		AABB cc_hint_aabb;
@@ -367,6 +367,6 @@ bool CollisionSolver3DSW::solve_distance(const Shape3DSW *p_shape_A, const Trans
 		return !cinfo.collided;
 	} else {
 
-		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); //should pass sepaxis..
+		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); // should pass sepaxis..
 	}
 }

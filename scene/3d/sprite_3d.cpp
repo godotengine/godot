@@ -486,7 +486,7 @@ void Sprite3D::_draw() {
 		SWAP(x_axis, y_axis);
 
 		for (int i = 0; i < 4; i++) {
-			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
+			// uvs[i] = Vector2(1.0,1.0)-uvs[i];
 			//SWAP(vertices[i].x,vertices[i].y);
 			if (axis == Vector3::AXIS_Y) {
 				vertices[i].y = -vertices[i].y;
@@ -733,7 +733,7 @@ void AnimatedSprite3D::_draw() {
 
 	Ref<Texture2D> texture = frames->get_frame(animation, frame);
 	if (!texture.is_valid())
-		return; //no texuture no life
+		return; // no texuture no life
 	Vector2 tsize = texture->get_size();
 	if (tsize.x == 0 || tsize.y == 0)
 		return;
@@ -821,7 +821,7 @@ void AnimatedSprite3D::_draw() {
 		SWAP(x_axis, y_axis);
 
 		for (int i = 0; i < 4; i++) {
-			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
+			// uvs[i] = Vector2(1.0,1.0)-uvs[i];
 			//SWAP(vertices[i].x,vertices[i].y);
 			if (axis == Vector3::AXIS_Y) {
 				vertices[i].y = -vertices[i].y;
@@ -916,7 +916,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 
 			float speed = frames->get_animation_speed(animation);
 			if (speed == 0)
-				return; //do nothing
+				return; // do nothing
 
 			float remaining = get_process_delta_time();
 

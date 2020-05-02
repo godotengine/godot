@@ -102,7 +102,7 @@ void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, Li
 }
 
 bool ResourceFormatLoader::exists(const String &p_path) const {
-	return FileAccess::exists(p_path); //by default just check file
+	return FileAccess::exists(p_path); // by default just check file
 }
 
 void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
@@ -224,12 +224,12 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	load_task.loader_id = Thread::get_caller_id();
 
 	if (load_task.semaphore) {
-		//this is an actual thread, so wait for Ok fom semaphore
-		thread_load_semaphore->wait(); //wait until its ok to start loading
+		// this is an actual thread, so wait for Ok fom semaphore
+		thread_load_semaphore->wait(); // wait until its ok to start loading
 	}
 	load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, false, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 
-	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
+	load_task.progress = 1.0; // it was fully loaded at this point, so force progress to 1.0
 
 	thread_load_mutex->lock();
 	if (load_task.error != OK) {
@@ -241,10 +241,10 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 		if (load_task.start_next && thread_waiting_count > 0) {
 			thread_waiting_count--;
-			//thread loading count remains constant, this ends but another one begins
+			// thread loading count remains constant, this ends but another one begins
 			thread_load_semaphore->post();
 		} else {
-			thread_loading_count--; //no threads waiting, just reduce loading count
+			thread_loading_count--; // no threads waiting, just reduce loading count
 		}
 
 		print_lt("END: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
@@ -267,7 +267,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		load_task.resource->set_edited(false);
 		if (timestamp_on_load) {
 			uint64_t mt = FileAccess::get_modified_time(load_task.remapped_path);
-			//printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
+			// printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
 			load_task.resource->set_last_modified_time(mt);
 		}
 #endif
@@ -290,18 +290,18 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 	thread_load_mutex->lock();
 
 	if (p_source_resource != String()) {
-		//must be loading from this resource
+		// must be loading from this resource
 		if (!thread_load_tasks.has(p_source_resource)) {
 			thread_load_mutex->unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "There is no thread loading source resource '" + p_source_resource + "'.");
 		}
-		//must be loading from this thread
+		// must be loading from this thread
 		if (thread_load_tasks[p_source_resource].loader_id != Thread::get_caller_id()) {
 			thread_load_mutex->unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Threading loading resource'" + local_path + " failed: Source specified: '" + p_source_resource + "' but was not called by it.");
 		}
 
-		//must not be already added as s sub tasks
+		// must not be already added as s sub tasks
 		if (thread_load_tasks[p_source_resource].sub_tasks.has(local_path)) {
 			thread_load_mutex->unlock();
 			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Thread loading source resource '" + p_source_resource + "' already is loading '" + local_path + "'.");
@@ -318,7 +318,7 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 	}
 
 	{
-		//create load task
+		// create load task
 
 		ThreadLoadTask load_task;
 
@@ -328,25 +328,25 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 		load_task.type_hint = p_type_hint;
 		load_task.use_sub_threads = p_use_sub_threads;
 
-		{ //must check if resource is already loaded before attempting to load it in a thread
+		{ // must check if resource is already loaded before attempting to load it in a thread
 
 			if (load_task.loader_id == Thread::get_caller_id()) {
 				thread_load_mutex->unlock();
 				ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Attempted to load a resource already being loaded from this thread, cyclic reference?");
 			}
-			//lock first if possible
+			// lock first if possible
 			if (ResourceCache::lock) {
 				ResourceCache::lock->read_lock();
 			}
 
-			//get ptr
+			// get ptr
 			Resource **rptr = ResourceCache::resources.getptr(local_path);
 
 			if (rptr) {
 				RES res(*rptr);
-				//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
+				// it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
 				if (res.is_valid()) {
-					//referencing is fine
+					// referencing is fine
 					load_task.resource = res;
 					load_task.status = THREAD_LOAD_LOADED;
 					load_task.progress = 1.0;
@@ -366,12 +366,12 @@ Error ResourceLoader::load_threaded_request(const String &p_path, const String &
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
 
-	if (load_task.resource.is_null()) { //needs  to be loaded in thread
+	if (load_task.resource.is_null()) { // needs  to be loaded in thread
 
 		load_task.semaphore = memnew(Semaphore);
 		if (thread_loading_count < thread_load_max) {
 			thread_loading_count++;
-			thread_load_semaphore->post(); //we have free threads, so allow one
+			thread_load_semaphore->post(); // we have free threads, so allow one
 		} else {
 			thread_waiting_count++;
 		}
@@ -406,7 +406,7 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 		}
 
 	} else {
-		return 1.0; //assume finished loading it so it no longer exists
+		return 1.0; // assume finished loading it so it no longer exists
 	}
 }
 
@@ -453,7 +453,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
 
-	//semaphore still exists, meaning its still loading, request poll
+	// semaphore still exists, meaning its still loading, request poll
 	Semaphore *semaphore = load_task.semaphore;
 	if (semaphore) {
 		load_task.poll_requests++;
@@ -473,7 +473,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 				thread_loading_count++;
 				thread_load_semaphore->post();
 
-				load_task.start_next = false; //do not start next since we are doing it here
+				load_task.start_next = false; // do not start next since we are doing it here
 			}
 
 			thread_suspended_count++;
@@ -487,7 +487,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 
 		thread_suspended_count--;
 
-		if (!thread_load_tasks.has(local_path)) { //may have been erased during unlock and this was always an invalid call
+		if (!thread_load_tasks.has(local_path)) { // may have been erased during unlock and this was always an invalid call
 			thread_load_mutex->unlock();
 			if (r_error) {
 				*r_error = ERR_INVALID_PARAMETER;
@@ -504,7 +504,7 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	load_task.requests--;
 
 	if (load_task.requests == 0) {
-		if (load_task.thread) { //thread may not have been used
+		if (load_task.thread) { // thread may not have been used
 			Thread::wait_to_finish(load_task.thread);
 			memdelete(load_task.thread);
 		}
@@ -556,7 +556,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		if (rptr) {
 			RES res(*rptr);
 
-			//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
+			// it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
 			if (res.is_valid()) {
 				if (ResourceCache::lock) {
 					ResourceCache::lock->read_unlock();
@@ -567,7 +567,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 					*r_error = OK;
 				}
 
-				return res; //use cached
+				return res; // use cached
 			}
 		}
 
@@ -575,7 +575,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 			ResourceCache::lock->read_unlock();
 		}
 
-		//load using task (but this thread)
+		// load using task (but this thread)
 		ThreadLoadTask load_task;
 
 		load_task.requests = 1;
@@ -618,7 +618,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		res->set_edited(false);
 		if (timestamp_on_load) {
 			uint64_t mt = FileAccess::get_modified_time(path);
-			//printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
+			// printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
 			res->set_last_modified_time(mt);
 		}
 #endif
@@ -740,7 +740,7 @@ String ResourceLoader::get_import_group_file(const String &p_path) {
 		return loader[i]->get_import_group_file(p_path);
 	}
 
-	return String(); //not found
+	return String(); // not found
 }
 
 bool ResourceLoader::is_import_valid(const String &p_path) {
@@ -765,7 +765,7 @@ bool ResourceLoader::is_import_valid(const String &p_path) {
 		return loader[i]->is_import_valid(p_path);
 	}
 
-	return false; //not found
+	return false; // not found
 }
 
 bool ResourceLoader::is_imported(const String &p_path) {
@@ -790,7 +790,7 @@ bool ResourceLoader::is_imported(const String &p_path) {
 		return loader[i]->is_imported(p_path);
 	}
 
-	return false; //not found
+	return false; // not found
 }
 
 void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -991,7 +991,7 @@ void ResourceLoader::reload_translation_remaps() {
 		ResourceCache::lock->read_unlock();
 	}
 
-	//now just make sure to not delete any of these resources while changing locale..
+	// now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {
 		to_reload.front()->get()->reload_from_file();
 		to_reload.pop_front();
@@ -1030,7 +1030,7 @@ void ResourceLoader::load_path_remaps() {
 
 	Vector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
 	int rc = remaps.size();
-	ERR_FAIL_COND(rc & 1); //must be even
+	ERR_FAIL_COND(rc & 1); // must be even
 	const String *r = remaps.ptr();
 
 	for (int i = 0; i < rc; i += 2) {

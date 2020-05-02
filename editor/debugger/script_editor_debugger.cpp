@@ -1082,7 +1082,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 	VARIANT_ARGPTRS
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		//no pointers, sorry
+		// no pointers, sorry
 		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::_RID))
 			return;
 	}
@@ -1096,7 +1096,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		msg.push_back(pathid);
 		msg.push_back(p_name);
 		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-			//no pointers, sorry
+			// no pointers, sorry
 			msg.push_back(*argptr[i]);
 		}
 		_put_msg("scene:live_node_call", msg);
@@ -1115,7 +1115,7 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 		msg.push_back(pathid);
 		msg.push_back(p_name);
 		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-			//no pointers, sorry
+			// no pointers, sorry
 			msg.push_back(*argptr[i]);
 		}
 		_put_msg("scene:live_res_call", msg);
@@ -1514,7 +1514,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 
 	add_child(tabs);
 
-	{ //debugger
+	{ // debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
 		vbc->set_name(TTR("Debugger"));
 		Control *dbg = vbc;
@@ -1597,7 +1597,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		tabs->add_child(dbg);
 	}
 
-	{ //errors
+	{ // errors
 		errors_tab = memnew(VBoxContainer);
 		errors_tab->set_name(TTR("Errors"));
 
@@ -1652,7 +1652,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		add_child(file_dialog);
 	}
 
-	{ //profiler
+	{ // profiler
 		profiler = memnew(EditorProfiler);
 		profiler->set_name(TTR("Profiler"));
 		tabs->add_child(profiler);
@@ -1660,21 +1660,21 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		profiler->connect("break_request", callable_mp(this, &ScriptEditorDebugger::_profiler_seeked));
 	}
 
-	{ //frame profiler
+	{ // frame profiler
 		visual_profiler = memnew(EditorVisualProfiler);
 		visual_profiler->set_name(TTR("Visual Profiler"));
 		tabs->add_child(visual_profiler);
 		visual_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate), varray(PROFILER_VISUAL));
 	}
 
-	{ //network profiler
+	{ // network profiler
 		network_profiler = memnew(EditorNetworkProfiler);
 		network_profiler->set_name(TTR("Network Profiler"));
 		tabs->add_child(network_profiler);
 		network_profiler->connect("enable_profiling", callable_mp(this, &ScriptEditorDebugger::_profiler_activate), varray(PROFILER_NETWORK));
 	}
 
-	{ //monitors
+	{ // monitors
 
 		HSplitContainer *hsp = memnew(HSplitContainer);
 
@@ -1735,7 +1735,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		perf_draw->add_child(info_message);
 	}
 
-	{ //vmem inspect
+	{ // vmem inspect
 		VBoxContainer *vmem_vb = memnew(VBoxContainer);
 		HBoxContainer *vmem_hb = memnew(HBoxContainer);
 		Label *vmlb = memnew(Label(TTR("List of Video Memory Usage by Resource:") + " "));

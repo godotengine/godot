@@ -118,7 +118,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		return true;
 	}
 
-	//set up input mesh
+	// set up input mesh
 	xatlas::MeshDecl input_mesh;
 	input_mesh.indexData = p_indices;
 	input_mesh.indexCount = p_index_count;
@@ -154,7 +154,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	float h = *r_size_hint_y;
 
 	if (w == 0 || h == 0) {
-		return false; //could not bake because there is no area
+		return false; // could not bake because there is no area
 	}
 
 	const xatlas::Mesh &output = atlas->meshes[0];

@@ -284,7 +284,7 @@ void Window::_clear_window() {
 
 void Window::_rect_changed_callback(const Rect2i &p_callback) {
 
-	//we must always accept this as the truth
+	// we must always accept this as the truth
 	if (size == p_callback.size && position == p_callback.position) {
 		return;
 	}
@@ -332,7 +332,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 		} break;
 		case DisplayServer::WINDOW_EVENT_CLOSE_REQUEST: {
 			if (exclusive_child != nullptr) {
-				break; //has an exclusive child, can't get events until child is closed
+				break; // has an exclusive child, can't get events until child is closed
 			}
 			_propagate_window_notification(this, NOTIFICATION_WM_CLOSE_REQUEST);
 			emit_signal("close_requested");
@@ -420,10 +420,10 @@ void Window::_clear_transient() {
 
 void Window::_make_transient() {
 	if (!get_parent()) {
-		//main window, can't be transient
+		// main window, can't be transient
 		return;
 	}
-	//find transient parent
+	// find transient parent
 	Viewport *vp = get_parent()->get_viewport();
 	Window *window = nullptr;
 	while (vp) {
@@ -450,7 +450,7 @@ void Window::_make_transient() {
 		}
 	}
 
-	//see if we can make transient
+	// see if we can make transient
 	if (transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID && window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, transient_parent->window_id);
 	}
@@ -532,11 +532,11 @@ void Window::_update_window_size() {
 		DisplayServer::get_singleton()->window_set_size(size, window_id);
 	}
 
-	//update the viewport
+	// update the viewport
 	_update_viewport_size();
 }
 void Window::_update_viewport_size() {
-	//update the viewport part
+	// update the viewport part
 
 	Size2i final_size;
 	Size2i final_size_override;
@@ -551,7 +551,7 @@ void Window::_update_viewport_size() {
 
 	} else {
 
-		//actual screen video mode
+		// actual screen video mode
 		Size2 video_mode = size;
 		Size2 desired_res = content_scale_size;
 
@@ -562,7 +562,7 @@ void Window::_update_viewport_size() {
 		float video_mode_aspect = video_mode.aspect();
 
 		if (content_scale_aspect == CONTENT_SCALE_ASPECT_IGNORE || Math::is_equal_approx(viewport_aspect, video_mode_aspect)) {
-			//same aspect or ignore aspect
+			// same aspect or ignore aspect
 			viewport_size = desired_res;
 			screen_size = video_mode;
 		} else if (viewport_aspect < video_mode_aspect) {
@@ -570,28 +570,28 @@ void Window::_update_viewport_size() {
 
 			if (content_scale_aspect == CONTENT_SCALE_ASPECT_KEEP_HEIGHT || content_scale_aspect == CONTENT_SCALE_ASPECT_EXPAND) {
 
-				//will stretch horizontally
+				// will stretch horizontally
 				viewport_size.x = desired_res.y * video_mode_aspect;
 				viewport_size.y = desired_res.y;
 				screen_size = video_mode;
 
 			} else {
-				//will need black bars
+				// will need black bars
 				viewport_size = desired_res;
 				screen_size.x = video_mode.y * viewport_aspect;
 				screen_size.y = video_mode.y;
 			}
 		} else {
-			//screen ratio is smaller horizontally
+			// screen ratio is smaller horizontally
 			if (content_scale_aspect == CONTENT_SCALE_ASPECT_KEEP_WIDTH || content_scale_aspect == CONTENT_SCALE_ASPECT_EXPAND) {
 
-				//will stretch horizontally
+				// will stretch horizontally
 				viewport_size.x = desired_res.x;
 				viewport_size.y = desired_res.x / video_mode_aspect;
 				screen_size = video_mode;
 
 			} else {
-				//will need black bars
+				// will need black bars
 				viewport_size = desired_res;
 				screen_size.x = video_mode.x;
 				screen_size.y = video_mode.x / viewport_aspect;
@@ -603,7 +603,7 @@ void Window::_update_viewport_size() {
 
 		Size2 margin;
 		Size2 offset;
-		//black bars and margin
+		// black bars and margin
 		if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.x < video_mode.x) {
 			margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
 			//RenderingServer::get_singleton()->black_bars_set_margins(margin.x, 0, margin.x, 0);
@@ -709,13 +709,13 @@ void Window::_notification(int p_what) {
 				embedded = true;
 
 				if (!visible) {
-					embedder = nullptr; //not yet since not visible
+					embedder = nullptr; // not yet since not visible
 				}
 			}
 		}
 
 		if (embedded) {
-			//create as embedded
+			// create as embedded
 			if (embedder) {
 				embedder->_sub_window_register(this);
 				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
@@ -724,21 +724,21 @@ void Window::_notification(int p_what) {
 
 		} else {
 			if (get_parent() == nullptr) {
-				//it's the root window!
-				visible = true; //always visible
+				// it's the root window!
+				visible = true; // always visible
 				window_id = DisplayServer::MAIN_WINDOW_ID;
 				DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 				_update_from_window();
-				//since this window already exists (created on start), we must update pos and size from it
+				// since this window already exists (created on start), we must update pos and size from it
 				{
 					position = DisplayServer::get_singleton()->window_get_position(window_id);
 					size = DisplayServer::get_singleton()->window_get_size(window_id);
 				}
-				_update_viewport_size(); //then feed back to the viewport
+				_update_viewport_size(); // then feed back to the viewport
 				_update_window_callbacks();
 				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 			} else {
-				//create
+				// create
 				if (visible) {
 					_make_window();
 					_update_window_callbacks();
@@ -785,7 +785,7 @@ void Window::_notification(int p_what) {
 				embedder = nullptr;
 				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 			}
-			_update_viewport_size(); //called by clear and make, which does not happen here
+			_update_viewport_size(); // called by clear and make, which does not happen here
 		}
 
 		RS::get_singleton()->viewport_set_active(get_viewport_rid(), false);
@@ -883,10 +883,10 @@ void Window::child_controls_changed() {
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev)))
-		return; //avoid joy input on editor
+		return; // avoid joy input on editor
 
 	if (EngineDebugger::is_active()) {
-		//quit from game window using F8
+		// quit from game window using F8
 		Ref<InputEventKey> k = p_ev;
 		if (k.is_valid() && k->is_pressed() && !k->is_echo() && k->get_keycode() == KEY_F8) {
 			EngineDebugger::get_singleton()->send_message("request_quit", Array());
@@ -896,7 +896,7 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 	if (exclusive_child != nullptr) {
 		exclusive_child->grab_focus();
 
-		return; //has an exclusive child, can't get events until child is closed
+		return; // has an exclusive child, can't get events until child is closed
 	}
 
 	emit_signal(SceneStringNames::get_singleton()->window_input, p_ev);
@@ -1076,7 +1076,7 @@ Rect2i Window::get_usable_parent_rect() const {
 	} else {
 
 		const Window *w = is_visible() ? this : get_parent_visible_window();
-		//find a parent that can contain us
+		// find a parent that can contain us
 		ERR_FAIL_COND_V(!w, Rect2());
 
 		parent = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen(w->get_window_id()));
@@ -1089,13 +1089,13 @@ void Window::add_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && child_c->data.theme.is_null() && (theme_owner || theme_owner_window)) {
-		Control::_propagate_theme_changed(child_c, theme_owner, theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+		Control::_propagate_theme_changed(child_c, theme_owner, theme_owner_window); // need to propagate here, since many controls may require setting up stuff
 	}
 
 	Window *child_w = Object::cast_to<Window>(p_child);
 
 	if (child_w && child_w->theme.is_null() && (theme_owner || theme_owner_window)) {
-		Control::_propagate_theme_changed(child_w, theme_owner, theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+		Control::_propagate_theme_changed(child_w, theme_owner, theme_owner_window); // need to propagate here, since many controls may require setting up stuff
 	}
 
 	if (is_inside_tree() && wrap_controls) {
@@ -1206,7 +1206,7 @@ bool Window::has_theme_constant(const StringName &p_name, const StringName &p_ty
 Rect2i Window::get_parent_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2i());
 	if (is_embedded()) {
-		//viewport
+		// viewport
 		Node *n = get_parent();
 		ERR_FAIL_COND_V(!n, Rect2i());
 		Viewport *p = n->get_viewport();
@@ -1221,7 +1221,7 @@ Rect2i Window::get_parent_rect() const {
 			Rect2i s(DisplayServer::get_singleton()->screen_get_position(i), DisplayServer::get_singleton()->screen_get_size(i));
 			int d;
 			if (x >= s.position.x && x < s.size.x) {
-				//contained
+				// contained
 				closest_rect = s;
 				break;
 			} else if (x < s.position.x) {

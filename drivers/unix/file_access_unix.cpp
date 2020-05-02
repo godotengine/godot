@@ -80,7 +80,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 
 	path_src = p_path;
 	path = fix_path(p_path);
-	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
+	// printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
 
 	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
 	const char *mode_string;
@@ -99,7 +99,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	/* pretty much every implementation that uses fopen as primary
 	   backend (unix-compatible mostly) supports utf8 encoding */
 
-	//printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
+	// printf("opening %s as %s\n", p_path.utf8().get_data(), path.utf8().get_data());
 	struct stat st;
 	int err = stat(path.utf8().get_data(), &st);
 	if (!err) {
@@ -329,7 +329,7 @@ uint32_t FileAccessUnix::_get_unix_permissions(const String &p_file) {
 	int err = stat(file.utf8().get_data(), &flags);
 
 	if (!err) {
-		return flags.st_mode & 0x7FF; //only permissions
+		return flags.st_mode & 0x7FF; // only permissions
 	} else {
 		ERR_FAIL_V_MSG(0, "Failed to get unix permissions for: " + p_file + ".");
 	};

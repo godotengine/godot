@@ -64,7 +64,7 @@ void BroadPhase3DBasic::remove(ID p_id) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	List<PairKey> to_erase;
-	//unpair must be done immediately on removal to avoid potential invalid pointers
+	// unpair must be done immediately on removal to avoid potential invalid pointers
 	for (Map<PairKey, void *>::Element *F = pair_map.front(); F; F = F->next()) {
 
 		if (F->key().a == p_id || F->key().b == p_id) {

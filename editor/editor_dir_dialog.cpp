@@ -57,8 +57,8 @@ void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p
 		p_item->set_text(0, p_dir->get_name());
 	}
 
-	//this should be handled by EditorFileSystem already
-	//bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
+	// this should be handled by EditorFileSystem already
+	// bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
 	updating = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 
@@ -166,8 +166,8 @@ void EditorDirDialog::_make_dir_confirm() {
 		mkdirerr->popup_centered(Size2(250, 80) * EDSCALE);
 	} else {
 		opened_paths.insert(dir);
-		//reload(dir.plus_file(makedirname->get_text()));
-		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
+		// reload(dir.plus_file(makedirname->get_text()));
+		EditorFileSystem::get_singleton()->scan_changes(); // we created a dir, so rescan changes
 	}
 	makedirname->set_text(""); // reset label
 }
@@ -198,7 +198,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	VBoxContainer *makevb = memnew(VBoxContainer);
 	makedialog->add_child(makevb);
-	//makedialog->set_child_rect(makevb);
+	// makedialog->set_child_rect(makevb);
 
 	makedirname = memnew(LineEdit);
 	makevb->add_margin_child(TTR("Name:"), makedirname);

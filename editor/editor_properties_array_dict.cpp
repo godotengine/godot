@@ -174,7 +174,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		emit_changed(get_edited_property(), array, "", true);
 
 		if (array.get_type() == Variant::ARRAY) {
-			array = array.call("duplicate"); //dupe, so undo/redo works better
+			array = array.call("duplicate"); // dupe, so undo/redo works better
 		}
 		object->set_array(array);
 	}
@@ -206,7 +206,7 @@ void EditorPropertyArray::_change_type_menu(int p_index) {
 	emit_changed(get_edited_property(), array, "", true);
 
 	if (array.get_type() == Variant::ARRAY) {
-		array = array.call("duplicate"); //dupe, so undo/redo works better
+		array = array.call("duplicate"); // dupe, so undo/redo works better
 	}
 
 	object->set_array(array);
@@ -309,7 +309,7 @@ void EditorPropertyArray::update_property() {
 			page->set_h_size_flags(SIZE_EXPAND_FILL);
 			page->connect("value_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
 		} else {
-			//bye bye children of the box
+			// bye bye children of the box
 			while (vbox->get_child_count() > 2) {
 				vbox->get_child(2)->queue_delete(); // button still needed after pressed is called
 				vbox->remove_child(vbox->get_child(2));
@@ -550,7 +550,7 @@ void EditorPropertyArray::_length_changed(double p_page) {
 				}
 			}
 		}
-		array = array.call("duplicate"); //dupe, so undo/redo works better
+		array = array.call("duplicate"); // dupe, so undo/redo works better
 	} else {
 		int size = array.call("size");
 		// Pool*Array don't initialize their elements, have to do it manually
@@ -646,7 +646,7 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 
 		emit_changed(get_edited_property(), dict, "", true);
 
-		dict = dict.duplicate(); //dupe, so undo/redo works better
+		dict = dict.duplicate(); // dupe, so undo/redo works better
 		object->set_dict(dict);
 	}
 }
@@ -677,7 +677,7 @@ void EditorPropertyDictionary::_add_key_value() {
 
 	emit_changed(get_edited_property(), dict, "", false);
 
-	dict = dict.duplicate(); //dupe, so undo/redo works better
+	dict = dict.duplicate(); // dupe, so undo/redo works better
 	object->set_dict(dict);
 	update_property();
 }
@@ -713,7 +713,7 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 
 	emit_changed(get_edited_property(), dict, "", false);
 
-	dict = dict.duplicate(); //dupe, so undo/redo works better
+	dict = dict.duplicate(); // dupe, so undo/redo works better
 	object->set_dict(dict);
 	update_property();
 }

@@ -238,7 +238,7 @@ int ImageTexture::get_height() const {
 RID ImageTexture::get_rid() const {
 
 	if (texture.is_null()) {
-		//we are in trouble, create something temporary
+		// we are in trouble, create something temporary
 		texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
 	}
 	return texture;
@@ -279,7 +279,7 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_data();
 		if (img.is_valid()) {
-			if (img->is_compressed()) { //must decompress, if compressed
+			if (img->is_compressed()) { // must decompress, if compressed
 				Ref<Image> decom = img->duplicate();
 				decom->decompress();
 				img = decom;
@@ -364,12 +364,12 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 	Image::Format format = Image::Format(f->get_32());
 
 	if (data_format == DATA_FORMAT_LOSSLESS || data_format == DATA_FORMAT_LOSSY || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
-		//look for a PNG or WEBP file inside
+		// look for a PNG or WEBP file inside
 
 		int sw = w;
 		int sh = h;
 
-		//mipmaps need to be read independently, they will be later combined
+		// mipmaps need to be read independently, they will be later combined
 		Vector<Ref<Image>> mipmap_images;
 		int total_size = 0;
 
@@ -380,7 +380,7 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 			uint32_t size = f->get_32();
 
 			if (p_size_limit > 0 && i < (mipmaps - 1) && (sw > p_size_limit || sh > p_size_limit)) {
-				//can't load this due to size limit
+				// can't load this due to size limit
 				sw = MAX(sw >> 1, 1);
 				sh = MAX(sh >> 1, 1);
 				f->seek(f->get_position() + size);
@@ -408,12 +408,12 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 			}
 
 			if (first) {
-				//format will actually be the format of the first image,
-				//as it may have changed on compression
+				// format will actually be the format of the first image,
+				// as it may have changed on compression
 				format = img->get_format();
 				first = false;
 			} else if (img->get_format() != format) {
-				img->convert(format); //all needs to be the same format
+				img->convert(format); // all needs to be the same format
 			}
 
 			total_size += img->get_data().size();
@@ -424,18 +424,18 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 			sh = MAX(sh >> 1, 1);
 		}
 
-		//print_line("mipmap read total: " + itos(mipmap_images.size()));
+		// print_line("mipmap read total: " + itos(mipmap_images.size()));
 
 		Ref<Image> image;
 		image.instance();
 
 		if (mipmap_images.size() == 1) {
-			//only one image (which will most likely be the case anyway for this format)
+			// only one image (which will most likely be the case anyway for this format)
 			image = mipmap_images[0];
 			return image;
 
 		} else {
-			//rarer use case, but needs to be supported
+			// rarer use case, but needs to be supported
 			Vector<uint8_t> img_data;
 			img_data.resize(total_size);
 
@@ -469,7 +469,7 @@ Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) 
 				if (ofs) {
 					f->seek(f->get_position() + ofs);
 				}
-				continue; //oops, size limit enforced, go to next
+				continue; // oops, size limit enforced, go to next
 			}
 
 			Vector<uint8_t> data;
@@ -558,11 +558,11 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 	}
 	tw_custom = f->get_32();
 	th_custom = f->get_32();
-	uint32_t df = f->get_32(); //data format
+	uint32_t df = f->get_32(); // data format
 
-	//skip reserved
+	// skip reserved
 	mipmap_limit = int(f->get_32());
-	//reserved
+	// reserved
 	f->get_32();
 	f->get_32();
 	f->get_32();
@@ -626,33 +626,33 @@ Error StreamTexture::load(const String &p_path) {
 	format = image->get_format();
 
 	if (get_path() == String()) {
-		//temporarily set path if no path set for resource, helps find errors
+		// temporarily set path if no path set for resource, helps find errors
 		RenderingServer::get_singleton()->texture_set_path(texture, p_path);
 	}
 
 #ifdef TOOLS_ENABLED
 
 	if (request_3d) {
-		//print_line("request detect 3D at " + p_path);
+		// print_line("request detect 3D at " + p_path);
 		RS::get_singleton()->texture_set_detect_3d_callback(texture, _requested_3d, this);
 	} else {
-		//print_line("not requesting detect 3D at " + p_path);
+		// print_line("not requesting detect 3D at " + p_path);
 		RS::get_singleton()->texture_set_detect_3d_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_roughness) {
-		//print_line("request detect srgb at " + p_path);
+		// print_line("request detect srgb at " + p_path);
 		RS::get_singleton()->texture_set_detect_roughness_callback(texture, _requested_roughness, this);
 	} else {
-		//print_line("not requesting detect srgb at " + p_path);
+		// print_line("not requesting detect srgb at " + p_path);
 		RS::get_singleton()->texture_set_detect_roughness_callback(texture, nullptr, nullptr);
 	}
 
 	if (request_normal) {
-		//print_line("request detect srgb at " + p_path);
+		// print_line("request detect srgb at " + p_path);
 		RS::get_singleton()->texture_set_detect_normal_callback(texture, _requested_normal, this);
 	} else {
-		//print_line("not requesting detect normal at " + p_path);
+		// print_line("not requesting detect normal at " + p_path);
 		RS::get_singleton()->texture_set_detect_normal_callback(texture, nullptr, nullptr);
 	}
 
@@ -726,7 +726,7 @@ bool StreamTexture::is_pixel_opaque(int p_x, int p_y) const {
 	if (!alpha_cache.is_valid()) {
 		Ref<Image> img = get_data();
 		if (img.is_valid()) {
-			if (img->is_compressed()) { //must decompress, if compressed
+			if (img->is_compressed()) { // must decompress, if compressed
 				Ref<Image> decom = img->duplicate();
 				decom->decompress();
 				img = decom;
@@ -763,8 +763,8 @@ void StreamTexture::reload_from_file() {
 	if (!path.is_resource_file())
 		return;
 
-	path = ResourceLoader::path_remap(path); //remap for translation
-	path = ResourceLoader::import_remap(path); //remap for import
+	path = ResourceLoader::path_remap(path); // remap for translation
+	path = ResourceLoader::import_remap(path); // remap for import
 	if (!path.is_resource_file())
 		return;
 
@@ -979,7 +979,7 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 }
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, RS::CanvasItemTextureFilter p_texture_filter, RS::CanvasItemTextureRepeat p_texture_repeat, bool p_clip_uv) const {
 
-	//this might not necessarily work well if using a rect, needs to be fixed properly
+	// this might not necessarily work well if using a rect, needs to be fixed properly
 	if (!atlas.is_valid())
 		return;
 
@@ -1311,7 +1311,7 @@ void LargeTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 
 void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, RS::CanvasItemTextureFilter p_texture_filter, RS::CanvasItemTextureRepeat p_texture_repeat) const {
 
-	//tiling not supported for this
+	// tiling not supported for this
 	if (size.x == 0 || size.y == 0)
 		return;
 
@@ -1325,7 +1325,7 @@ void LargeTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 }
 void LargeTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, RS::CanvasItemTextureFilter p_texture_filter, RS::CanvasItemTextureRepeat p_texture_repeat, bool p_clip_uv) const {
 
-	//tiling not supported for this
+	// tiling not supported for this
 	if (p_src_rect.size.x == 0 || p_src_rect.size.y == 0)
 		return;
 
@@ -1653,7 +1653,7 @@ bool ProxyTexture::has_alpha() const {
 
 ProxyTexture::ProxyTexture() {
 
-	//proxy = RS::get_singleton()->texture_create();
+	// proxy = RS::get_singleton()->texture_create();
 }
 
 ProxyTexture::~ProxyTexture() {
@@ -1898,7 +1898,7 @@ void AnimatedTexture::_bind_methods() {
 }
 
 AnimatedTexture::AnimatedTexture() {
-	//proxy = RS::get_singleton()->texture_create();
+	// proxy = RS::get_singleton()->texture_create();
 	proxy_ph = RS::get_singleton()->texture_2d_placeholder_create();
 	proxy = RS::get_singleton()->texture_proxy_create(proxy_ph);
 
@@ -2119,7 +2119,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 	int tw = f->get_32();
 	int th = f->get_32();
 	int td = f->get_32();
-	bool use_mipmaps = f->get_32() != 0; //texture flags (deprecated)
+	bool use_mipmaps = f->get_32() != 0; // texture flags (deprecated)
 	Image::Format format = Image::Format(f->get_32());
 	uint32_t compression = f->get_32(); // 0 - lossless (PNG), 1 - vram, 2 - uncompressed
 
@@ -2130,7 +2130,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 		image.instance();
 
 		if (compression == COMPRESSION_LOSSLESS) {
-			//look for a PNG file inside
+			// look for a PNG file inside
 
 			int mipmaps = f->get_32();
 			Vector<Ref<Image>> mipmap_images;
@@ -2195,7 +2195,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 
 		} else {
 
-			//look for regular format
+			// look for regular format
 
 			int total_size = Image::get_image_data_size(tw, th, format, use_mipmaps);
 

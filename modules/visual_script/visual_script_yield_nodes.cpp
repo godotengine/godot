@@ -95,16 +95,16 @@ public:
 	VisualScriptYield::YieldMode mode;
 	float wait_time;
 
-	virtual int get_working_memory_size() const { return 1; } //yield needs at least 1
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
+	virtual int get_working_memory_size() const { return 1; } // yield needs at least 1
+	// virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	// virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return false; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
-			return 0; //resuming yield
+			return 0; // resuming yield
 		} else {
-			//yield
+			// yield
 
 			SceneTree *tree = Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop());
 			if (!tree) {
@@ -121,7 +121,7 @@ public:
 
 				case VisualScriptYield::YIELD_RETURN:
 					ret = STEP_EXIT_FUNCTION_BIT;
-					break; //return the yield
+					break; // return the yield
 				case VisualScriptYield::YIELD_FRAME: state->connect_to_signal(tree, "idle_frame", Array()); break;
 				case VisualScriptYield::YIELD_PHYSICS_FRAME: state->connect_to_signal(tree, "physics_frame", Array()); break;
 				case VisualScriptYield::YIELD_WAIT: state->connect_to_signal(tree->create_timer(wait_time).ptr(), "timeout", Array()); break;
@@ -137,7 +137,7 @@ public:
 VisualScriptNodeInstance *VisualScriptYield::instance(VisualScriptInstance *p_instance) {
 
 	VisualScriptNodeInstanceYield *instance = memnew(VisualScriptNodeInstanceYield);
-	//instance->instance=p_instance;
+	// instance->instance=p_instance;
 	instance->mode = yield_mode;
 	instance->wait_time = wait_time;
 	return instance;
@@ -328,7 +328,7 @@ PropertyInfo VisualScriptYieldSignal::get_output_value_port_info(int p_idx) cons
 	MethodInfo sr;
 
 	if (!ClassDB::get_signal(_get_base_type(), signal, &sr))
-		return PropertyInfo(); //no signal
+		return PropertyInfo(); // no signal
 	ERR_FAIL_INDEX_V(p_idx, sr.arguments.size(), PropertyInfo());
 	return sr.arguments[p_idx];
 }
@@ -430,7 +430,7 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo &property) const {
 
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); // convert to loong string
 			}
 		}
 	}
@@ -506,15 +506,15 @@ public:
 	VisualScriptInstance *instance;
 
 	virtual int get_working_memory_size() const { return 1; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+	// virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	// virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
 		if (p_start_mode == START_MODE_RESUME_YIELD) {
-			return 0; //resuming yield
+			return 0; // resuming yield
 		} else {
-			//yield
+			// yield
 
 			Object *object = nullptr;
 

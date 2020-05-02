@@ -105,7 +105,7 @@ List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Re
 
 		const Ref<InputEvent> e = E->get();
 
-		//if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
+		// if (e.type != Ref<InputEvent>::KEY && e.device != p_event.device) -- unsure about the KEY comparison, why is this here?
 		//	continue;
 
 		int device = e->get_device();
@@ -136,7 +136,7 @@ void InputMap::action_add_event(const StringName &p_action, const Ref<InputEvent
 	ERR_FAIL_COND_MSG(p_event.is_null(), "It's not a reference to a valid InputEvent object.");
 	ERR_FAIL_COND_MSG(!input_map.has(p_action), "Request for nonexistent InputMap action '" + String(p_action) + "'.");
 	if (_find_event(input_map[p_action], p_event))
-		return; //already gots
+		return; // already gots
 
 	input_map[p_action].inputs.push_back(p_event);
 }
@@ -328,7 +328,7 @@ void InputMap::load_default() {
 	key->set_keycode(KEY_END);
 	action_add_event("ui_end", key);
 
-	//set("display/window/handheld/orientation", "landscape");
+	// set("display/window/handheld/orientation", "landscape");
 }
 
 InputMap::InputMap() {

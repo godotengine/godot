@@ -63,7 +63,7 @@ int GradientEdit::_get_point_from_pos(int x) {
 	for (int i = 0; i < points.size(); i++) {
 		//Check if we clicked at point
 		float distance = ABS(x - points[i].offset * total_w);
-		float min = (POINT_WIDTH / 2 * 1.7); //make it easier to grab
+		float min = (POINT_WIDTH / 2 * 1.7); // make it easier to grab
 		if (distance <= min && distance < min_distance) {
 			result = i;
 			min_distance = distance;
@@ -152,7 +152,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	//select
+	// select
 	if (mb.is_valid() && mb->get_button_index() == 1 && mb->is_pressed()) {
 
 		update();
@@ -168,12 +168,12 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		grabbing = true;
 
 		grabbed = _get_point_from_pos(x);
-		//grab or select
+		// grab or select
 		if (grabbed != -1) {
 			return;
 		}
 
-		//insert
+		// insert
 		Gradient::Point newPoint;
 		newPoint.offset = CLAMP(x / float(total_w), 0, 1);
 
@@ -389,7 +389,7 @@ void GradientEdit::_notification(int p_what) {
 			//Draw with selection color
 			draw_rect(Rect2(total_w + SPACING, 0, h, h), points[grabbed].color);
 		} else {
-			//if no color selected draw grey color with 'X' on top.
+			// if no color selected draw grey color with 'X' on top.
 			draw_rect(Rect2(total_w + SPACING, 0, h, h), Color(0.5, 0.5, 0.5, 1));
 			draw_line(Vector2(total_w + SPACING, 0), Vector2(total_w + SPACING + h, h), Color(1, 1, 1, 0.6));
 			draw_line(Vector2(total_w + SPACING, h), Vector2(total_w + SPACING + h, 0), Color(1, 1, 1, 0.6));

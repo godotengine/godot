@@ -90,11 +90,11 @@ void BoxContainer::_resort() {
 	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * sep;
 	int stretch_diff = stretch_max - stretch_min;
 	if (stretch_diff < 0) {
-		//avoid negative stretch space
+		// avoid negative stretch space
 		stretch_diff = 0;
 	}
 
-	stretch_avail += stretch_diff; //available stretch space.
+	stretch_avail += stretch_diff; // available stretch space.
 	/** Second, pass sucessively to discard elements that can't be stretched, this will run while stretchable
 		elements exist */
 
@@ -102,7 +102,7 @@ void BoxContainer::_resort() {
 	while (stretch_ratio_total > 0) { // first of all, don't even be here if no stretchable objects exist
 
 		has_stretched = true;
-		bool refit_successful = true; //assume refit-test will go well
+		bool refit_successful = true; // assume refit-test will go well
 
 		for (int i = 0; i < get_child_count(); i++) {
 
@@ -115,13 +115,13 @@ void BoxContainer::_resort() {
 			ERR_FAIL_COND(!min_size_cache.has(c));
 			_MinSizeCache &msc = min_size_cache[c];
 
-			if (msc.will_stretch) { //wants to stretch
-				//let's see if it can really stretch
+			if (msc.will_stretch) { // wants to stretch
+				// let's see if it can really stretch
 
 				int final_pixel_size = stretch_avail * c->get_stretch_ratio() / stretch_ratio_total;
 				if (final_pixel_size < msc.min_size) {
-					//if available stretching area is too small for widget,
-					//then remove it from stretching area
+					// if available stretching area is too small for widget,
+					// then remove it from stretching area
 					msc.will_stretch = false;
 					stretch_ratio_total -= c->get_stretch_ratio();
 					refit_successful = false;
@@ -134,7 +134,7 @@ void BoxContainer::_resort() {
 			}
 		}
 
-		if (refit_successful) //uf refit went well, break
+		if (refit_successful) // uf refit went well, break
 			break;
 	}
 
@@ -176,8 +176,8 @@ void BoxContainer::_resort() {
 		int to = ofs + msc.final_size;
 
 		if (msc.will_stretch && idx == children_count - 1) {
-			//adjust so the last one always fits perfect
-			//compensating for numerical imprecision
+			// adjust so the last one always fits perfect
+			// compensating for numerical imprecision
 
 			to = vertical ? new_size.height : new_size.width;
 		}
@@ -273,7 +273,7 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew(Control);
-	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
+	c->set_mouse_filter(MOUSE_FILTER_PASS); // allow spacer to pass mouse events
 
 	if (vertical)
 		c->set_v_size_flags(SIZE_EXPAND_FILL);

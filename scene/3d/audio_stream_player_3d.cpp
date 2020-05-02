@@ -147,11 +147,11 @@ void AudioStreamPlayer3D::_mix_audio() {
 	bool started = false;
 	if (setseek >= 0.0) {
 		stream_playback->start(setseek);
-		setseek = -1.0; //reset seek
+		setseek = -1.0; // reset seek
 		started = true;
 	}
 
-	//get data
+	// get data
 	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
@@ -165,7 +165,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 
 		float output_pitch_scale = 0.0;
 		if (output_count) {
-			//used for doppler, not realistic but good enough
+			// used for doppler, not realistic but good enough
 			for (int i = 0; i < output_count; i++) {
 				output_pitch_scale += outputs[i].pitch_scale;
 			}
@@ -177,12 +177,12 @@ void AudioStreamPlayer3D::_mix_audio() {
 		stream_playback->mix(buffer, pitch_scale * output_pitch_scale, buffer_size);
 	}
 
-	//write all outputs
+	// write all outputs
 	for (int i = 0; i < output_count; i++) {
 
 		Output current = outputs[i];
 
-		//see if current output exists, to keep volume ramp
+		// see if current output exists, to keep volume ramp
 		bool found = false;
 		for (int j = i; j < prev_output_count; j++) {
 			if (prev_outputs[j].viewport == current.viewport) {
@@ -197,16 +197,16 @@ void AudioStreamPlayer3D::_mix_audio() {
 		bool interpolate_filter = !started;
 
 		if (!found) {
-			//create new if was not used before
+			// create new if was not used before
 			if (prev_output_count < MAX_OUTPUTS) {
-				prev_outputs[prev_output_count] = prev_outputs[i]; //may be owned by another viewport
+				prev_outputs[prev_output_count] = prev_outputs[i]; // may be owned by another viewport
 				prev_output_count++;
 			}
 			prev_outputs[i] = current;
 			interpolate_filter = false;
 		}
 
-		//mix!
+		// mix!
 
 		int buffers = AudioServer::get_singleton()->get_channel_count();
 
@@ -217,7 +217,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 			AudioFrame vol = vol_prev;
 
 			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k))
-				continue; //may have been deleted, will be updated on process
+				continue; // may have been deleted, will be updated on process
 
 			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 			current.filter.set_mode(AudioFilterSW::HIGHSHELF);
@@ -266,7 +266,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 			if (current.reverb_bus_index >= 0) {
 
 				if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.reverb_bus_index, k))
-					continue; //may have been deleted, will be updated on process
+					continue; // may have been deleted, will be updated on process
 
 				AudioFrame *rtarget = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.reverb_bus_index, k);
 
@@ -295,7 +295,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 
 	prev_output_count = output_count;
 
-	//stream is no longer active, disable this.
+	// stream is no longer active, disable this.
 	if (!stream_playback->is_playing()) {
 		active = false;
 	}
@@ -374,13 +374,13 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PHYSICS_PROCESS) {
 
-		//update anything related to position first, if possible of course
+		// update anything related to position first, if possible of course
 
 		if (!output_ready) {
 
 			Vector3 linear_velocity;
 
-			//compute linear velocity for doppler
+			// compute linear velocity for doppler
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				linear_velocity = velocity_tracker->get_tracked_linear_velocity();
 			}
@@ -394,7 +394,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			int bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus);
 
-			//check if any area is diverting sound into a bus
+			// check if any area is diverting sound into a bus
 
 			PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world->get_space());
 
@@ -457,7 +457,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 						total_max = MAX(total_max, listener_area_pos.length());
 					}
 					if (total_max > max_distance) {
-						continue; //can't hear this sound in this listener
+						continue; // can't hear this sound in this listener
 					}
 				}
 
@@ -468,14 +468,14 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				Output output;
 				output.bus_index = bus_index;
-				output.reverb_bus_index = -1; //no reverb by default
+				output.reverb_bus_index = -1; // no reverb by default
 				output.viewport = vp;
 
 				float db_att = (1.0 - MIN(1.0, multiplier)) * attenuation_filter_db;
 
 				if (emission_angle_enabled) {
 					Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
-					float c = listenertopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
+					float c = listenertopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); // it's z negative
 					float angle = Math::rad2deg(Math::acos(c));
 					if (angle > emission_angle)
 						db_att -= -emission_angle_filter_attenuation_db;
@@ -498,7 +498,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				if (area) {
 
 					if (area->is_overriding_audio_bus()) {
-						//override audio bus
+						// override audio bus
 						StringName bus_name = area->get_audio_bus();
 						output.bus_index = AudioServer::get_singleton()->thread_find_bus_index(bus_name);
 					}
@@ -517,13 +517,13 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 							float distance = listener_area_pos.length();
 							float attenuation = Math::db2linear(_get_attenuation_db(distance));
 
-							//float dist_att_db = -20 * Math::log(dist + 0.00001); //logarithmic attenuation, like in real life
+							// float dist_att_db = -20 * Math::log(dist + 0.00001); // logarithmic attenuation, like in real life
 
 							float center_val[3] = { 0.5f, 0.25f, 0.16666f };
 							AudioFrame center_frame(center_val[vol_index_max - 1], center_val[vol_index_max - 1]);
 
 							if (attenuation < 1.0) {
-								//pan the uniform sound
+								// pan the uniform sound
 								Vector3 rev_pos = listener_area_pos;
 								rev_pos.y = 0;
 								rev_pos.normalize();
@@ -599,7 +599,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 						float speed_of_sound = 343.0;
 
 						output.pitch_scale = speed_of_sound / (speed_of_sound + velocity * approaching);
-						output.pitch_scale = CLAMP(output.pitch_scale, (1 / 8.0), 8.0); //avoid crazy stuff
+						output.pitch_scale = CLAMP(output.pitch_scale, (1 / 8.0), 8.0); // avoid crazy stuff
 					}
 
 				} else {
@@ -624,20 +624,20 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			output_ready = true;
 		}
 
-		//start playing if requested
+		// start playing if requested
 		if (setplay >= 0.0) {
 			setseek = setplay;
 			active = true;
 			setplay = -1;
-			//do not update, this makes it easier to animate (will shut off otherwise)
-			///_change_notify("playing"); //update property in editor
+			// do not update, this makes it easier to animate (will shut off otherwise)
+			///_change_notify("playing"); // update property in editor
 		}
 
-		//stop playing if no longer active
+		// stop playing if no longer active
 		if (!active) {
 			set_physics_process_internal(false);
-			//do not update, this makes it easier to animate (will shut off otherwise)
-			//_change_notify("playing"); //update property in editor
+			// do not update, this makes it easier to animate (will shut off otherwise)
+			//_change_notify("playing"); // update property in editor
 			emit_signal("finished");
 		}
 	}
@@ -754,7 +754,7 @@ float AudioStreamPlayer3D::get_playback_position() {
 
 void AudioStreamPlayer3D::set_bus(const StringName &p_bus) {
 
-	//if audio is active, must lock this
+	// if audio is active, must lock this
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();

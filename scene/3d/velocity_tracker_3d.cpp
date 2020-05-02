@@ -50,7 +50,7 @@ void VelocityTracker3D::update_position(const Vector3 &p_position) {
 		ph.frame = Engine::get_singleton()->get_idle_frame_ticks();
 	}
 
-	if (position_history_len == 0 || position_history[0].frame != ph.frame) { //in same frame, use latest
+	if (position_history_len == 0 || position_history[0].frame != ph.frame) { // in same frame, use latest
 		position_history_len = MIN(position_history.size(), position_history_len + 1);
 		for (int i = position_history_len - 1; i > 0; i--) {
 			position_history.write[i] = position_history[i - 1];
@@ -63,7 +63,7 @@ Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 
 	Vector3 linear_velocity;
 
-	float max_time = 1 / 5.0; //maximum time to interpolate a velocity
+	float max_time = 1 / 5.0; // maximum time to interpolate a velocity
 
 	Vector3 distance_accum;
 	float time_accum = 0.0;

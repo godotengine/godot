@@ -540,14 +540,14 @@ private:
 					int idx = 0;
 					while (ret == UNZ_OK) {
 
-						//get filename
+						// get filename
 						unz_file_info info;
 						char fname[16384];
 						ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 						String path = fname;
 
-						int depth = 1; //stuff from github comes with tag
+						int depth = 1; // stuff from github comes with tag
 						bool skip = false;
 						while (depth > 0) {
 							int pp = path.find("/");
@@ -574,7 +574,7 @@ private:
 							Vector<uint8_t> data;
 							data.resize(info.uncompressed_size);
 
-							//read
+							// read
 							unzOpenCurrentFile(pkg);
 							unzReadCurrentFile(pkg, data.ptrw(), data.size());
 							unzCloseCurrentFile(pkg);
@@ -2412,7 +2412,7 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
-	EditorSettings::get_singleton()->set_optimize_save(false); //just write settings as they came
+	EditorSettings::get_singleton()->set_optimize_save(false); // just write settings as they came
 
 	{
 		int display_scale = EditorSettings::get_singleton()->get("interface/editor/display_scale");

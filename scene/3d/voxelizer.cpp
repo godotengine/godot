@@ -259,9 +259,9 @@ static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3
 void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb) {
 
 	if (p_level == cell_subdiv) {
-		//plot the face by guessing its albedo and emission value
+		// plot the face by guessing its albedo and emission value
 
-		//find best axis to map to, for scanning values
+		// find best axis to map to, for scanning values
 		int closest_axis = 0;
 		float closest_dot = 0;
 
@@ -295,7 +295,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 
 		float alpha = 0.0;
 
-		//map to a grid average in the best axis for this face
+		// map to a grid average in the best axis for this face
 		for (int i = 0; i < color_scan_cell_width; i++) {
 
 			Vector3 ofs_i = float(i) * t1;
@@ -308,12 +308,12 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector3 to = from + t1 + t2 + axis * p_aabb.size[closest_axis];
 				Vector3 half = (to - from) * 0.5;
 
-				//is in this cell?
+				// is in this cell?
 				if (!fast_tri_box_overlap(from + half, half, p_vtx)) {
-					continue; //face does not span this cell
+					continue; // face does not span this cell
 				}
 
-				//go from -size to +size*2 to avoid skipping collisions
+				// go from -size to +size*2 to avoid skipping collisions
 				Vector3 ray_from = from + (t1 + t2) * 0.5 - axis * p_aabb.size[closest_axis];
 				Vector3 ray_to = ray_from + axis * p_aabb.size[closest_axis] * 2;
 
@@ -337,7 +337,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector2 uv;
 				Vector3 lnormal;
 				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
-				if (lnormal == Vector3()) //just in case normal as nor provided
+				if (lnormal == Vector3()) // just in case normal as nor provided
 					lnormal = normal;
 
 				int uv_x = CLAMP(int(Math::fposmod(uv.x, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
@@ -360,7 +360,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		}
 
 		if (alpha == 0) {
-			//could not in any way get texture information.. so use closest point to center
+			// could not in any way get texture information.. so use closest point to center
 
 			Face3 f(p_vtx[0], p_vtx[1], p_vtx[2]);
 			Vector3 inters = f.get_closest_point_to(p_aabb.position + p_aabb.size * 0.5);
@@ -368,7 +368,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			Vector3 lnormal;
 			Vector2 uv;
 			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
-			if (lnormal == Vector3()) //just in case normal as nor provided
+			if (lnormal == Vector3()) // just in case normal as nor provided
 				lnormal = normal;
 
 			int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
@@ -406,7 +406,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			normal_accum *= accdiv;
 		}
 
-		//put this temporarily here, corrected in a later step
+		// put this temporarily here, corrected in a later step
 		bake_cells.write[p_idx].albedo[0] += albedo_accum.r;
 		bake_cells.write[p_idx].albedo[1] += albedo_accum.g;
 		bake_cells.write[p_idx].albedo[2] += albedo_accum.b;
@@ -419,7 +419,7 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 		bake_cells.write[p_idx].alpha += alpha;
 
 	} else {
-		//go down
+		// go down
 
 		int half = (1 << cell_subdiv) >> (p_level + 1);
 		for (int i = 0; i < 8; i++) {
@@ -443,24 +443,24 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				aabb.position.z += aabb.size.z;
 				nz += half;
 			}
-			//make sure to not plot beyond limits
+			// make sure to not plot beyond limits
 			if (nx < 0 || nx >= axis_cell_size[0] || ny < 0 || ny >= axis_cell_size[1] || nz < 0 || nz >= axis_cell_size[2])
 				continue;
 
 			{
 				AABB test_aabb = aabb;
-				//test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); //grow a bit to avoid numerical error in real-time
-				Vector3 qsize = test_aabb.size * 0.5; //quarter size, for fast aabb test
+				// test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); // grow a bit to avoid numerical error in real-time
+				Vector3 qsize = test_aabb.size * 0.5; // quarter size, for fast aabb test
 
 				if (!fast_tri_box_overlap(test_aabb.position + qsize, qsize, p_vtx)) {
-					//if (!Face3(p_vtx[0],p_vtx[1],p_vtx[2]).intersects_aabb2(aabb)) {
-					//does not fit in child, go on
+					// if (!Face3(p_vtx[0],p_vtx[1],p_vtx[2]).intersects_aabb2(aabb)) {
+					// does not fit in child, go on
 					continue;
 				}
 			}
 
 			if (bake_cells[p_idx].children[i] == CHILD_EMPTY) {
-				//sub cell must be created
+				// sub cell must be created
 
 				uint32_t child_idx = bake_cells.size();
 				bake_cells.write[p_idx].children[i] = child_idx;
@@ -516,10 +516,10 @@ Vector<Color> Voxelizer::_get_bake_texture(Ref<Image> p_image, const Color &p_co
 
 Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material) {
 
-	//this way of obtaining materials is inaccurate and also does not support some compressed formats very well
+	// this way of obtaining materials is inaccurate and also does not support some compressed formats very well
 	Ref<StandardMaterial3D> mat = p_material;
 
-	Ref<Material> material = mat; //hack for now
+	Ref<Material> material = mat; // hack for now
 
 	if (material_cache.has(material)) {
 		return material_cache[material];
@@ -574,7 +574,7 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
-			continue; //only triangles
+			continue; // only triangles
 
 		Ref<Material> src_material;
 
@@ -632,10 +632,10 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 					}
 				}
 
-				//test against original bounds
+				// test against original bounds
 				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
 					continue;
-				//plot
+				// plot
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
 
@@ -665,10 +665,10 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 					}
 				}
 
-				//test against original bounds
+				// test against original bounds
 				if (!fast_tri_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
 					continue;
-				//plot face
+				// plot face
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
 		}
@@ -702,7 +702,7 @@ void Voxelizer::_sort() {
 
 	sorted_cells.sort();
 
-	//verify just in case, index 0 must be level 0
+	// verify just in case, index 0 must be level 0
 	ERR_FAIL_COND(sorted_cells[0].level != 0);
 
 	Vector<Cell> new_bake_cells;
@@ -727,9 +727,9 @@ void Voxelizer::_sort() {
 		Cell *new_bake_cellsp = new_bake_cells.ptrw();
 
 		for (uint32_t i = 0; i < cell_count; i++) {
-			//copy to new cell
+			// copy to new cell
 			new_bake_cellsp[i] = bake_cellsp[sort_cellsp[i].index];
-			//remap children
+			// remap children
 			for (uint32_t j = 0; j < 8; j++) {
 				if (new_bake_cellsp[i].children[j] != CHILD_EMPTY) {
 					new_bake_cellsp[i].children[j] = reverse_mapp[new_bake_cellsp[i].children[j]];
@@ -753,7 +753,7 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		bake_cells.write[p_idx].albedo[1] /= alpha;
 		bake_cells.write[p_idx].albedo[2] /= alpha;
 
-		//transfer emission to light
+		// transfer emission to light
 		bake_cells.write[p_idx].emission[0] /= alpha;
 		bake_cells.write[p_idx].emission[1] /= alpha;
 		bake_cells.write[p_idx].emission[2] /= alpha;
@@ -764,7 +764,7 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 
 		Vector3 n(bake_cells[p_idx].normal[0], bake_cells[p_idx].normal[1], bake_cells[p_idx].normal[2]);
 		if (n.length() < 0.01) {
-			//too much fight over normal, zero it
+			// too much fight over normal, zero it
 			bake_cells.write[p_idx].normal[0] = 0;
 			bake_cells.write[p_idx].normal[1] = 0;
 			bake_cells.write[p_idx].normal[2] = 0;
@@ -785,7 +785,7 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 
 	} else {
 
-		//go down
+		// go down
 
 		bake_cells.write[p_idx].emission[0] = 0;
 		bake_cells.write[p_idx].emission[1] = 0;
@@ -826,7 +826,7 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 	material_cache.clear();
 
 	print_line("subdiv: " + itos(p_subdiv));
-	//find out the actual real bounds, power of 2, which gets the highest subdivision
+	// find out the actual real bounds, power of 2, which gets the highest subdivision
 	po2_bounds = p_bounds;
 	int longest_axis = po2_bounds.get_longest_axis_index();
 	axis_cell_size[longest_axis] = 1 << cell_subdiv;
@@ -840,7 +840,7 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 		axis_cell_size[i] = axis_cell_size[longest_axis];
 		float axis_size = po2_bounds.size[longest_axis];
 
-		//shrink until fit subdiv
+		// shrink until fit subdiv
 		while (axis_size / 2.0 >= po2_bounds.size[i]) {
 			axis_size /= 2.0;
 			axis_cell_size[i] >>= 1;
@@ -912,7 +912,7 @@ Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 
 		for (uint32_t i = 0; i < cell_count; i++) {
 
-			{ //position
+			{ // position
 
 				uint32_t x = cells[i].x;
 				uint32_t y = cells[i].y;
@@ -925,21 +925,21 @@ Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 				dataptr[i * 4 + 0] = position;
 			}
 
-			{ //albedo + alpha
-				uint32_t rgba = uint32_t(CLAMP(cells[i].alpha * 255.0, 0, 255)) << 24; //a
-				rgba |= uint32_t(CLAMP(cells[i].albedo[2] * 255.0, 0, 255)) << 16; //b
-				rgba |= uint32_t(CLAMP(cells[i].albedo[1] * 255.0, 0, 255)) << 8; //g
-				rgba |= uint32_t(CLAMP(cells[i].albedo[0] * 255.0, 0, 255)); //r
+			{ // albedo + alpha
+				uint32_t rgba = uint32_t(CLAMP(cells[i].alpha * 255.0, 0, 255)) << 24; // a
+				rgba |= uint32_t(CLAMP(cells[i].albedo[2] * 255.0, 0, 255)) << 16; // b
+				rgba |= uint32_t(CLAMP(cells[i].albedo[1] * 255.0, 0, 255)) << 8; // g
+				rgba |= uint32_t(CLAMP(cells[i].albedo[0] * 255.0, 0, 255)); // r
 
 				dataptr[i * 4 + 1] = rgba;
 			}
 
-			{ //emission, as rgbe9995
+			{ // emission, as rgbe9995
 				Color emission = Color(cells[i].emission[0], cells[i].emission[1], cells[i].emission[2]);
 				dataptr[i * 4 + 2] = emission.to_rgbe9995();
 			}
 
-			{ //normal
+			{ // normal
 
 				Vector3 n(bake_cells[i].normal[0], bake_cells[i].normal[1], bake_cells[i].normal[2]);
 				n.normalize();
@@ -960,7 +960,7 @@ Vector<int> Voxelizer::get_giprobe_level_cell_count() const {
 	uint32_t cell_count = bake_cells.size();
 	const Cell *cells = bake_cells.ptr();
 	Vector<int> level_count;
-	level_count.resize(cell_subdiv + 1); //remember, always x+1 levels for x subdivisions
+	level_count.resize(cell_subdiv + 1); // remember, always x+1 levels for x subdivisions
 	{
 		int *w = level_count.ptrw();
 		for (int i = 0; i < cell_subdiv + 1; i++) {
@@ -1032,7 +1032,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 	uint32_t y_mult = octree_size.x;
 	uint32_t z_mult = y_mult * octree_size.y;
 
-	//plot solid cells
+	// plot solid cells
 	{
 		const Cell *cells = bake_cells.ptr();
 		uint32_t cell_count = bake_cells.size();
@@ -1040,16 +1040,16 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		for (uint32_t i = 0; i < cell_count; i++) {
 
 			if (cells[i].level < (cell_subdiv - 1)) {
-				continue; //do not care about this level
+				continue; // do not care about this level
 			}
 
 			work_memory[cells[i].x + cells[i].y * y_mult + cells[i].z * z_mult] = 0;
 		}
 	}
 
-	//process in each direction
+	// process in each direction
 
-	//xy->z
+	// xy->z
 
 	for (int i = 0; i < octree_size.x; i++) {
 		for (int j = 0; j < octree_size.y; j++) {
@@ -1057,7 +1057,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		}
 	}
 
-	//xz->y
+	// xz->y
 
 	for (int i = 0; i < octree_size.x; i++) {
 		for (int j = 0; j < octree_size.z; j++) {
@@ -1065,7 +1065,7 @@ Vector<uint8_t> Voxelizer::get_sdf_3d_image() const {
 		}
 	}
 
-	//yz->x
+	// yz->x
 	for (int i = 0; i < octree_size.y; i++) {
 		for (int j = 0; j < octree_size.z; j++) {
 			edt(&work_memory[i * y_mult + j * z_mult], 1, octree_size.x);
@@ -1174,11 +1174,11 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 				}
 			}
 
-			//tri 1
+			// tri 1
 			ADD_VTX(0);
 			ADD_VTX(1);
 			ADD_VTX(2);
-			//tri 2
+			// tri 2
 			ADD_VTX(2);
 			ADD_VTX(3);
 			ADD_VTX(0);

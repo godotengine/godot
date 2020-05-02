@@ -274,7 +274,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	String cache_base = ProjectSettings::get_singleton()->globalize_path(p_path).md5_text();
 	cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
-	//does not have it, try to load a cached thumbnail
+	// does not have it, try to load a cached thumbnail
 
 	String path = cache_base + ".png";
 
@@ -314,7 +314,7 @@ void EditorMaterialPreviewPlugin::_bind_methods() {
 
 bool EditorMaterialPreviewPlugin::handles(const String &p_type) const {
 
-	return ClassDB::is_parent_class(p_type, "Material"); //any material
+	return ClassDB::is_parent_class(p_type, "Material"); // any material
 }
 
 bool EditorMaterialPreviewPlugin::generate_small_preview_automatically() const {
@@ -330,7 +330,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, material->get_rid());
 
-		RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+		RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); // once used for capture
 
 		preview_done = false;
 		RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMaterialPreviewPlugin *>(this), "_preview_done", Variant());
@@ -543,7 +543,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 				Color color = text_color;
 
 				if (c != '_' && ((c >= '!' && c <= '/') || (c >= ':' && c <= '@') || (c >= '[' && c <= '`') || (c >= '{' && c <= '~') || c == '\t')) {
-					//make symbol a little visible
+					// make symbol a little visible
 					color = symbol_color;
 					in_keyword = false;
 				} else if (!prev_is_text && _is_text_char(c)) {
@@ -623,7 +623,7 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 
 	float len_s = stream->get_length();
 	if (len_s == 0) {
-		len_s = 60; //one minute audio if no length specified
+		len_s = 60; // one minute audio if no length specified
 	}
 	int frame_length = AudioServer::get_singleton()->get_mix_rate() * len_s;
 
@@ -672,7 +672,7 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 		}
 	}
 
-	//post_process_preview(img);
+	// post_process_preview(img);
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> image;
@@ -698,7 +698,7 @@ void EditorMeshPreviewPlugin::_bind_methods() {
 }
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
 
-	return ClassDB::is_parent_class(p_type, "Mesh"); //any Mesh
+	return ClassDB::is_parent_class(p_type, "Mesh"); // any Mesh
 }
 
 Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
@@ -725,7 +725,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	xform.origin.z -= rot_aabb.size.z * 2;
 	RS::get_singleton()->instance_set_transform(mesh_instance, xform);
 
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); // once used for capture
 
 	preview_done = false;
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorMeshPreviewPlugin *>(this), "_preview_done", Variant());
@@ -786,7 +786,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	RS::get_singleton()->instance_set_transform(light_instance2, Transform().looking_at(Vector3(0, 1, 0), Vector3(0, 0, 1)));
 
-	//sphere = RS::get_singleton()->mesh_create();
+	// sphere = RS::get_singleton()->mesh_create();
 	mesh_instance = RS::get_singleton()->instance_create();
 	RS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
 }
@@ -849,7 +849,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 	font->draw(canvas_item, pos, sampled_text);
 
 	preview_done = false;
-	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); //once used for capture
+	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_ONCE); // once used for capture
 	RS::get_singleton()->request_frame_drawn_callback(const_cast<EditorFontPreviewPlugin *>(this), "_preview_done", Variant());
 
 	while (!preview_done) {

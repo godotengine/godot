@@ -248,7 +248,7 @@ void UndoRedo::commit_action() {
 	ERR_FAIL_COND(action_level <= 0);
 	action_level--;
 	if (action_level > 0)
-		return; //still nested
+		return; // still nested
 
 	if (merging) {
 		version--;
@@ -270,7 +270,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 		Operation &op = E->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
-		if (!obj) //may have been deleted and this is fine
+		if (!obj) // may have been deleted and this is fine
 			continue;
 
 		switch (op.type) {
@@ -319,7 +319,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				}
 			} break;
 			case Operation::TYPE_REFERENCE: {
-				//do nothing
+				// do nothing
 			} break;
 		}
 	}
@@ -330,7 +330,7 @@ bool UndoRedo::redo() {
 	ERR_FAIL_COND_V(action_level > 0, false);
 
 	if ((current_action + 1) >= actions.size())
-		return false; //nothing to redo
+		return false; // nothing to redo
 
 	current_action++;
 
@@ -345,7 +345,7 @@ bool UndoRedo::undo() {
 
 	ERR_FAIL_COND_V(action_level > 0, false);
 	if (current_action < 0)
-		return false; //nothing to redo
+		return false; // nothing to redo
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;

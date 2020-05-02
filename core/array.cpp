@@ -116,22 +116,22 @@ uint32_t Array::hash() const {
 void Array::_assign(const Array &p_array) {
 
 	if (_p->typed.type != Variant::OBJECT && _p->typed.type == p_array._p->typed.type) {
-		//same type or untyped, just reference, shuold be fine
+		// same type or untyped, just reference, shuold be fine
 		_ref(p_array);
-	} else if (_p->typed.type == Variant::NIL) { //from typed to untyped, must copy, but this is cheap anyway
+	} else if (_p->typed.type == Variant::NIL) { // from typed to untyped, must copy, but this is cheap anyway
 		_p->array = p_array._p->array;
-	} else if (p_array._p->typed.type == Variant::NIL) { //from untyped to typed, must try to check if they are all valid
+	} else if (p_array._p->typed.type == Variant::NIL) { // from untyped to typed, must try to check if they are all valid
 		if (_p->typed.type == Variant::OBJECT) {
-			//for objects, it needs full validation, either can be converted or fail
+			// for objects, it needs full validation, either can be converted or fail
 			for (int i = 0; i < p_array._p->array.size(); i++) {
 				if (!_p->typed.validate(p_array._p->array[i], "assign")) {
 					return;
 				}
 			}
-			_p->array = p_array._p->array; //then just copy, which is cheap anyway
+			_p->array = p_array._p->array; // then just copy, which is cheap anyway
 
 		} else {
-			//for non objects, we need to check if there is a valid conversion, which needs to happen one by one, so this is the worst case.
+			// for non objects, we need to check if there is a valid conversion, which needs to happen one by one, so this is the worst case.
 			Vector<Variant> new_array;
 			new_array.resize(p_array._p->array.size());
 			for (int i = 0; i < p_array._p->array.size(); i++) {
@@ -152,7 +152,7 @@ void Array::_assign(const Array &p_array) {
 
 			_p->array = new_array;
 		}
-	} else if (_p->typed.can_reference(p_array._p->typed)) { //same type or compatible
+	} else if (_p->typed.can_reference(p_array._p->typed)) { // same type or compatible
 		_ref(p_array);
 	} else {
 		ERR_FAIL_MSG("Assignment of arrays of incompatible types.");
@@ -492,10 +492,10 @@ Variant Array::min() const {
 			Variant test = get(i);
 			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
 			if (!valid) {
-				return Variant(); //not a valid comparison
+				return Variant(); // not a valid comparison
 			}
 			if (bool(ret)) {
-				//is less
+				// is less
 				minval = test;
 			}
 		}
@@ -515,10 +515,10 @@ Variant Array::max() const {
 			Variant test = get(i);
 			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
 			if (!valid) {
-				return Variant(); //not a valid comparison
+				return Variant(); // not a valid comparison
 			}
 			if (bool(ret)) {
-				//is less
+				// is less
 				maxval = test;
 			}
 		}

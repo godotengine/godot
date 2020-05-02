@@ -91,7 +91,7 @@ void Popup::_close_pressed() {
 	emit_signal("cancelled");
 
 	if (parent_window) {
-		//parent_window->grab_focus();
+		// parent_window->grab_focus();
 	}
 }
 

@@ -62,7 +62,7 @@ Error CryptoKeyMbedTLS::load(String p_path) {
 	{
 		uint8_t *w = out.ptrw();
 		f->get_buffer(w, flen);
-		w[flen] = 0; //end f string
+		w[flen] = 0; // end f string
 	}
 	memdelete(f);
 
@@ -111,7 +111,7 @@ Error X509CertificateMbedTLS::load(String p_path) {
 	{
 		uint8_t *w = out.ptrw();
 		f->get_buffer(w, flen);
-		w[flen] = 0; //end f string
+		w[flen] = 0; // end f string
 	}
 	memdelete(f);
 

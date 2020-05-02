@@ -152,7 +152,7 @@ void _rgba8_to_packbits_encode(int p_ch, int p_size, Vector<uint8_t> &p_source, 
 	int src_len = p_size * p_size;
 
 	Vector<uint8_t> result;
-	result.resize(src_len * 1.25); //temp vector for rle encoded data, make it 25% larger for worst case scenario
+	result.resize(src_len * 1.25); // temp vector for rle encoded data, make it 25% larger for worst case scenario
 	int res_size = 0;
 
 	uint8_t buf[128];
@@ -280,7 +280,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 		} else {
 			Vector<uint8_t> src_data = copy->get_data();
 
-			//encode 24bit RGB RLE icon
+			// encode 24bit RGB RLE icon
 			{
 				int ofs = data.size();
 				data.resize(data.size() + 8);
@@ -295,7 +295,7 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 				encode_uint32(len, &data.write[ofs + 4]);
 			}
 
-			//encode 8bit mask uncompressed icon
+			// encode 8bit mask uncompressed icon
 			{
 				int ofs = data.size();
 				int len = copy->get_width() * copy->get_height();
@@ -552,7 +552,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	while (ret == UNZ_OK && err == OK) {
 		bool is_execute = false;
 
-		//get filename
+		// get filename
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
@@ -562,12 +562,12 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
-		//read
+		// read
 		unzOpenCurrentFile(src_pkg_zip);
 		unzReadCurrentFile(src_pkg_zip, data.ptrw(), data.size());
 		unzCloseCurrentFile(src_pkg_zip);
 
-		//write
+		// write
 
 		file = file.replace_first("osx_template.app/", "");
 
@@ -578,7 +578,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		if (file.begins_with("Contents/MacOS/godot_")) {
 			if (file != "Contents/MacOS/" + binary_to_use) {
 				ret = unzGoToNextFile(src_pkg_zip);
-				continue; //ignore!
+				continue; // ignore!
 			}
 			found_binary = true;
 			is_execute = true;
@@ -586,7 +586,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 
 		if (file == "Contents/Resources/icon.icns") {
-			//see if there is an icon
+			// see if there is an icon
 			String iconpath;
 			if (p_preset->get("application/icon") != "")
 				iconpath = p_preset->get("application/icon");
@@ -618,14 +618,14 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			if (file.find("/data.mono.osx.64.release_debug/") != -1) {
 				if (!p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
-					continue; //skip
+					continue; // skip
 				}
 				file = file.replace("/data.mono.osx.64.release_debug/", "/data_" + pkg_name_safe + "/");
 			}
 			if (file.find("/data.mono.osx.64.release/") != -1) {
 				if (p_debug) {
 					ret = unzGoToNextFile(src_pkg_zip);
-					continue; //skip
+					continue; // skip
 				}
 				file = file.replace("/data.mono.osx.64.release/", "/data_" + pkg_name_safe + "/");
 			}
@@ -784,7 +784,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			}
 
 			if (err == OK) {
-				//add shared objects
+				// add shared objects
 				for (int i = 0; i < shared_objects.size(); i++) {
 					Vector<uint8_t> file = FileAccess::get_file_as_array(shared_objects[i].path);
 					ERR_CONTINUE(file.empty());

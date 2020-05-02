@@ -471,7 +471,7 @@ void BulletPhysicsServer3D::body_set_space(RID p_body, RID p_space) {
 	}
 
 	if (body->get_space() == space)
-		return; //pointles
+		return; // pointles
 
 	body->set_space(space);
 }
@@ -908,7 +908,7 @@ void BulletPhysicsServer3D::soft_body_set_space(RID p_body, RID p_space) {
 	}
 
 	if (body->get_space() == space)
-		return; //pointles
+		return; // pointles
 
 	body->set_space(space);
 }

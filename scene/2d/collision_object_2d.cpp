@@ -54,7 +54,7 @@ void CollisionObject2D::_notification(int p_what) {
 
 			_update_pickable();
 
-			//get space
+			// get space
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
@@ -153,7 +153,7 @@ bool CollisionObject2D::is_shape_owner_disabled(uint32_t p_owner) const {
 void CollisionObject2D::shape_owner_set_one_way_collision(uint32_t p_owner, bool p_enable) {
 
 	if (area)
-		return; //not for areas
+		return; // not for areas
 
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
@@ -174,7 +174,7 @@ bool CollisionObject2D::is_shape_owner_one_way_collision_enabled(uint32_t p_owne
 void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owner, float p_margin) {
 
 	if (area)
-		return; //not for areas
+		return; // not for areas
 
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
@@ -323,7 +323,7 @@ uint32_t CollisionObject2D::shape_find_owner(int p_shape_index) const {
 		}
 	}
 
-	//in theory it should be unreachable
+	// in theory it should be unreachable
 	return 0;
 }
 
@@ -450,7 +450,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 
 CollisionObject2D::CollisionObject2D() {
 
-	//owner=
+	// owner=
 
 	set_notify_transform(true);
 }

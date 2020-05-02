@@ -174,7 +174,7 @@ void OS_Server::set_main_loop(MainLoop *p_main_loop) {
 
 bool OS_Server::can_draw() const {
 
-	return false; //can never draw
+	return false; // can never draw
 };
 
 String OS_Server::get_name() const {
@@ -305,6 +305,6 @@ bool OS_Server::is_disable_crash_handler() const {
 
 OS_Server::OS_Server() {
 
-	//adriver here
+	// adriver here
 	grab = false;
 };

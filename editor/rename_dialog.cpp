@@ -297,7 +297,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	// ---- Dialog related
 
 	set_min_size(Size2(383, 0));
-	//set_as_toplevel(true);
+	// set_as_toplevel(true);
 	get_ok()->set_text(TTR("Rename"));
 	Button *but_reset = add_button(TTR("Reset"));
 

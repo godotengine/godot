@@ -159,7 +159,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jc
 	}
 
 	if (err != OK) {
-		return; //should exit instead and print the error
+		return; // should exit instead and print the error
 	}
 
 	java_class_wrapper = memnew(JavaClassWrapper(godot_java->get_activity()));
@@ -211,7 +211,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env, jcl
 
 	if (step == 1) {
 		if (!Main::start()) {
-			return; //should exit instead and print the error
+			return; // should exit instead and print the error
 		}
 
 		os_android->main_loop_begin();

@@ -91,7 +91,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 void Path2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW && curve.is_valid()) {
-		//draw the curve!!
+		// draw the curve!!
 
 		if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_navigation_hint()) {
 			return;
@@ -161,7 +161,7 @@ void Path2D::_bind_methods() {
 
 Path2D::Path2D() {
 
-	set_curve(Ref<Curve2D>(memnew(Curve2D))); //create one by default
+	set_curve(Ref<Curve2D>(memnew(Curve2D))); // create one by default
 }
 
 /////////////////////////////////////////////////////////////////////////////////

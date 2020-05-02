@@ -140,7 +140,7 @@ struct _VariantCall {
 		}
 	};
 
-	//void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
+	// void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
 
 	static void make_func_return_variant(Variant::Type p_type, const StringName &p_name) {
 
@@ -461,7 +461,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(Plane, has_point);
 	VCALL_LOCALMEM1R(Plane, project);
 
-	//return vector3 if intersected, nil if not
+	// return vector3 if intersected, nil if not
 	static void _call_Plane_intersect_3(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		Vector3 result;
 		if (reinterpret_cast<Plane *>(p_self._data._mem)->intersect_3(*p_args[0], *p_args[1], &result))
@@ -1198,7 +1198,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 	Variant ret;
 
 	if (type == Variant::OBJECT) {
-		//call object
+		// call object
 		Object *obj = _get_obj().obj;
 		if (!obj) {
 			r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
@@ -1213,7 +1213,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 #endif
 		ret = _get_obj().obj->call(p_method, p_args, p_argcount, r_error);
 
-		//else if (type==Variant::METHOD) {
+		// else if (type==Variant::METHOD) {
 
 	} else {
 
@@ -1227,7 +1227,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 			funcdata.call(ret, *this, p_args, p_argcount, r_error);
 
 		} else {
-			//handle vararg functions manually
+			// handle vararg functions manually
 			bool valid = false;
 			if (type == CALLABLE) {
 				if (p_method == CoreStringNames::get_singleton()->call) {
@@ -1249,7 +1249,7 @@ void Variant::call_ptr(const StringName &p_method, const Variant **p_args, int p
 				}
 			}
 			if (!valid) {
-				//ok fail because not found
+				// ok fail because not found
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				return;
 			}
@@ -1268,7 +1268,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 	ERR_FAIL_INDEX_V(p_type, VARIANT_MAX, Variant());
 
 	r_error.error = Callable::CallError::CALL_OK;
-	if (p_argcount == 0) { //generic construct
+	if (p_argcount == 0) { // generic construct
 
 		switch (p_type) {
 			case NIL:
@@ -1322,9 +1322,9 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 		}
 
 	} else if (p_argcount == 1 && p_args[0]->type == p_type) {
-		return *p_args[0]; //copy construct
+		return *p_args[0]; // copy construct
 	} else if (p_argcount == 1 && (!p_strict || Variant::can_convert(p_args[0]->type, p_type))) {
-		//near match construct
+		// near match construct
 
 		switch (p_type) {
 			case NIL: {
@@ -1398,10 +1398,10 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			if (cd.arg_count != p_argcount)
 				continue;
 
-			//validate parameters
+			// validate parameters
 			for (int i = 0; i < cd.arg_count; i++) {
 				if (!Variant::can_convert(p_args[i]->type, cd.arg_types[i])) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; //no such constructor
+					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT; // no such constructor
 					r_error.argument = i;
 					r_error.expected = cd.arg_types[i];
 					return Variant();
@@ -1413,7 +1413,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			return v;
 		}
 	}
-	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; //no such constructor
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD; // no such constructor
 	return Variant();
 }
 
@@ -1558,7 +1558,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 
 	ERR_FAIL_INDEX(p_type, VARIANT_MAX);
 
-	//custom constructors
+	// custom constructors
 	for (const List<_VariantCall::ConstructData>::Element *E = _VariantCall::construct_funcs[p_type].constructors.front(); E; E = E->next()) {
 
 		const _VariantCall::ConstructData &cd = E->get();
@@ -1574,7 +1574,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		}
 		p_list->push_back(mi);
 	}
-	//default constructors
+	// default constructors
 	for (int i = 0; i < VARIANT_MAX; i++) {
 		if (i == p_type)
 			continue;
@@ -2112,7 +2112,7 @@ void register_variant_methods() {
 	ADDFUNC1(PACKED_COLOR_ARRAY, NIL, PackedColorArray, resize, INT, "idx", varray());
 	ADDFUNC0(PACKED_COLOR_ARRAY, NIL, PackedColorArray, invert, varray());
 
-	//pointerbased
+	// pointerbased
 
 	ADDFUNC0R(AABB, FLOAT, AABB, get_area, varray());
 	ADDFUNC0R(AABB, BOOL, AABB, has_no_area, varray());

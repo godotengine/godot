@@ -72,7 +72,7 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 
 			// ok FINALLY get face
 			Face3 face = geometry[index];
-			//now compute some position inside the face...
+			// now compute some position inside the face...
 
 			Vector3 pos = face.get_random_point_inside();
 
@@ -122,7 +122,7 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 
 				Vector3 ofsv = ofs + aabb.size * dir;
 
-				//space it a little
+				// space it a little
 				ofs -= dir;
 				ofsv += dir;
 
@@ -146,7 +146,7 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 				}
 
 				if (max < min)
-					continue; //lost attempt
+					continue; // lost attempt
 
 				float val = min + (max - min) * Math::randf();
 

@@ -67,7 +67,7 @@ int G6DOFRotationalLimitMotor3DSW::testLimitValue(real_t test_value) {
 	}
 
 	if (test_value < m_loLimit) {
-		m_currentLimit = 1; //low limit violation
+		m_currentLimit = 1; // low limit violation
 		m_currentLimitError = test_value - m_loLimit;
 		return 1;
 	} else if (test_value > m_hiLimit) {
@@ -88,7 +88,7 @@ real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 	real_t target_velocity = m_targetVelocity;
 	real_t maxMotorForce = m_maxMotorForce;
 
-	//current error correction
+	// current error correction
 	if (m_currentLimit != 0) {
 		target_velocity = -m_ERP * m_currentLimitError / (timeStep);
 		maxMotorForce = m_maxLimitForce;
@@ -108,7 +108,7 @@ real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 	real_t motor_relvel = m_limitSoftness * (target_velocity - m_damping * rel_vel);
 
 	if (Math::is_zero_approx(motor_relvel)) {
-		return 0.0f; //no need for applying force
+		return 0.0f; // no need for applying force
 	}
 
 	// correction impulse
@@ -168,7 +168,7 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 
 	/// apply displacement correction
 
-	//positional error (zeroth order error)
+	// positional error (zeroth order error)
 	real_t depth = -(pointInA - pointInB).dot(axis_normal_on_a);
 	real_t lo = real_t(-1e30);
 	real_t hi = real_t(1e30);
@@ -176,7 +176,7 @@ real_t G6DOFTranslationalLimitMotor3DSW::solveLinearAxis(
 	real_t minLimit = m_lowerLimit[limit_index];
 	real_t maxLimit = m_upperLimit[limit_index];
 
-	//handle the limits
+	// handle the limits
 	if (minLimit < maxLimit) {
 		{
 			if (depth > maxLimit) {
@@ -295,7 +295,7 @@ void Generic6DOFJoint3DSW::buildAngularJacobian(
 bool Generic6DOFJoint3DSW::testAngularLimitMotor(int axis_index) {
 	real_t angle = m_calculatedAxisAngleDiff[axis_index];
 
-	//test limits
+	// test limits
 	m_angularLimits[axis_index].testLimitValue(angle);
 	return m_angularLimits[axis_index].needApplyTorques();
 }
@@ -308,7 +308,7 @@ bool Generic6DOFJoint3DSW::setup(real_t p_timestep) {
 	for (i = 0; i < 3; i++) {
 		m_angularLimits[i].m_accumulatedImpulse = real_t(0.);
 	}
-	//calculates transform
+	// calculates transform
 	calculateTransforms();
 
 	//  const Vector3& pivotAInW = m_calculatedTransformA.origin;
@@ -322,7 +322,7 @@ bool Generic6DOFJoint3DSW::setup(real_t p_timestep) {
 	//    Vector3 rel_pos2 = pivotBInW - B->get_transform().origin;
 
 	Vector3 normalWorld;
-	//linear part
+	// linear part
 	for (i = 0; i < 3; i++) {
 		if (m_linearLimits.enable_limit[i] && m_linearLimits.isLimited(i)) {
 			if (m_useLinearReferenceFrameA)
@@ -338,7 +338,7 @@ bool Generic6DOFJoint3DSW::setup(real_t p_timestep) {
 
 	// angular part
 	for (i = 0; i < 3; i++) {
-		//calculates error angle
+		// calculates error angle
 		if (m_angularLimits[i].m_enableLimit && testAngularLimitMotor(i)) {
 			normalWorld = this->getAxis(i);
 			// Create angular atom
@@ -352,7 +352,7 @@ bool Generic6DOFJoint3DSW::setup(real_t p_timestep) {
 void Generic6DOFJoint3DSW::solve(real_t p_timestep) {
 	m_timeStep = p_timestep;
 
-	//calculateTransforms();
+	// calculateTransforms();
 
 	int i;
 

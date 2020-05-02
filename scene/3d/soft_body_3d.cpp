@@ -78,7 +78,7 @@ void SoftBodyRenderingServerHandler::open() {
 }
 
 void SoftBodyRenderingServerHandler::close() {
-	//write_buffer.release();
+	// write_buffer.release();
 }
 
 void SoftBodyRenderingServerHandler::commit_changes() {

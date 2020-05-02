@@ -90,7 +90,7 @@ void RWLockPosix::make_default() {
 
 RWLockPosix::RWLockPosix() {
 
-	//rwlock=PTHREAD_RWLOCK_INITIALIZER; fails on OSX
+	// rwlock=PTHREAD_RWLOCK_INITIALIZER; fails on OSX
 	pthread_rwlock_init(&rwlock, nullptr);
 }
 

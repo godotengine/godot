@@ -161,11 +161,11 @@ bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
 
 void Dictionary::_ref(const Dictionary &p_from) const {
 
-	//make a copy first (thread safe)
+	// make a copy first (thread safe)
 	if (!p_from._p->refcount.ref())
 		return; // couldn't copy
 
-	//if this is the same, unreference the other one
+	// if this is the same, unreference the other one
 	if (p_from._p == _p) {
 		_p->refcount.unref();
 		return;

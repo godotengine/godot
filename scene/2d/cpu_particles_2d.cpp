@@ -365,7 +365,7 @@ void CPUParticles2D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 
 	switch (p_param) {
 		case PARAM_INITIAL_LINEAR_VELOCITY: {
-			//do none for this one
+			// do none for this one
 		} break;
 		case PARAM_ANGULAR_VELOCITY: {
 			_adjust_curve_range(p_curve, -360, 360);
@@ -574,7 +574,7 @@ void CPUParticles2D::_update_internal() {
 			set_process_internal(false);
 			_set_redraw(false);
 
-			//reset variables
+			// reset variables
 			time = 0;
 			inactive_time = 0;
 			frame_remainder = 0;
@@ -605,9 +605,9 @@ void CPUParticles2D::_update_internal() {
 		float decr = frame_time;
 
 		float ldelta = delta;
-		if (ldelta > 0.1) { //avoid recursive stalls if fps goes below 10
+		if (ldelta > 0.1) { // avoid recursive stalls if fps goes below 10
 			ldelta = 0.1;
-		} else if (ldelta <= 0.0) { //unlikely but..
+		} else if (ldelta <= 0.0) { // unlikely but..
 			ldelta = 0.001;
 		}
 		float todo = frame_remainder + ldelta;
@@ -753,7 +753,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 			p.custom[0] = 0.0; // unused
 			p.custom[1] = 0.0; // phase [0..1]
-			p.custom[2] = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp(1.0f, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]); //animation phase [0..1]
+			p.custom[2] = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp(1.0f, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]); // animation phase [0..1]
 			p.custom[3] = 0.0;
 			p.transform = Transform2D();
 			p.time = 0;
@@ -762,7 +762,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 			switch (emission_shape) {
 				case EMISSION_SHAPE_POINT: {
-					//do none
+					// do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
 					float s = Math::randf(), t = 2.0 * Math_PI * Math::randf();
@@ -864,18 +864,18 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			Vector2 force = gravity;
 			Vector2 pos = p.transform[2];
 
-			//apply linear acceleration
+			// apply linear acceleration
 			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * (parameters[PARAM_LINEAR_ACCEL] + tex_linear_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_LINEAR_ACCEL]) : Vector2();
-			//apply radial acceleration
+			// apply radial acceleration
 			Vector2 org = emission_xform[2];
 			Vector2 diff = pos - org;
 			force += diff.length() > 0.0 ? diff.normalized() * (parameters[PARAM_RADIAL_ACCEL] + tex_radial_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_RADIAL_ACCEL]) : Vector2();
-			//apply tangential acceleration;
+			// apply tangential acceleration;
 			Vector2 yx = Vector2(diff.y, diff.x);
 			force += yx.length() > 0.0 ? (yx * Vector2(-1.0, 1.0)).normalized() * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector2();
-			//apply attractor forces
+			// apply attractor forces
 			p.velocity += force * local_delta;
-			//orbit velocity
+			// orbit velocity
 			float orbit_amount = (parameters[PARAM_ORBIT_VELOCITY] + tex_orbit_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ORBIT_VELOCITY]);
 			if (orbit_amount != 0.0) {
 				float ang = orbit_amount * local_delta * Math_PI * 2.0;
@@ -902,12 +902,12 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			}
 			float base_angle = (parameters[PARAM_ANGLE] + tex_angle) * Math::lerp(1.0f, p.angle_rand, randomness[PARAM_ANGLE]);
 			base_angle += p.custom[1] * lifetime * (parameters[PARAM_ANGULAR_VELOCITY] + tex_angular_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed) * 2.0f - 1.0f, randomness[PARAM_ANGULAR_VELOCITY]);
-			p.rotation = Math::deg2rad(base_angle); //angle
+			p.rotation = Math::deg2rad(base_angle); // angle
 			float animation_phase = (parameters[PARAM_ANIM_OFFSET] + tex_anim_offset) * Math::lerp(1.0f, p.anim_offset_rand, randomness[PARAM_ANIM_OFFSET]) + p.custom[1] * (parameters[PARAM_ANIM_SPEED] + tex_anim_speed) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ANIM_SPEED]);
 			p.custom[2] = animation_phase;
 		}
-		//apply color
-		//apply hue rotation
+		// apply color
+		// apply hue rotation
 
 		float tex_scale = 1.0;
 		if (curve_parameters[PARAM_SCALE].is_valid()) {
@@ -959,7 +959,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 			p.transform.elements[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));
 		}
 
-		//scale by scale
+		// scale by scale
 		float base_scale = tex_scale * Math::lerp(parameters[PARAM_SCALE], 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
 		if (base_scale < 0.000001) base_scale = 0.000001;
 

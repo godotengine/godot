@@ -154,7 +154,7 @@ void PopupMenu::_activate_submenu(int over) {
 	Popup *pm = Object::cast_to<Popup>(n);
 	ERR_FAIL_COND_MSG(!pm, "Item subnode is not a Popup: " + items[over].submenu + ".");
 	if (pm->is_visible())
-		return; //already visible!
+		return; // already visible!
 
 	Point2 p = get_position();
 	Rect2 pr(p, get_size());
@@ -185,8 +185,8 @@ void PopupMenu::_activate_submenu(int over) {
 
 void PopupMenu::_submenu_timeout() {
 
-	//if (!has_focus()) {
-	//	return; //do not activate if not has focus
+	// if (!has_focus()) {
+	//	return; // do not activate if not has focus
 	//}
 	if (mouse_over == submenu_over)
 		_activate_submenu(mouse_over);
@@ -329,7 +329,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 						if (!was_during_grabbed_click) {
 							hide();
 						}
-						break; //non-activable
+						break; // non-activable
 					}
 
 					if (items[over].separator || items[over].disabled)
@@ -345,7 +345,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		//control->update();
+		// control->update();
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;
@@ -547,7 +547,7 @@ void PopupMenu::_draw() {
 		}
 
 		if (items[i].accel || (items[i].shortcut.is_valid() && items[i].shortcut->is_valid())) {
-			//accelerator
+			// accelerator
 			String text2 = _get_accel_text(i);
 			item_ofs.x = size.width - style->get_margin(MARGIN_RIGHT) - font->get_string_size(text2).width;
 			font->draw(ci, item_ofs + Point2(0, Math::floor((h - font_h) / 2.0)), text2, i == mouse_over ? font_color_hover : font_color_accel);
@@ -583,7 +583,7 @@ void PopupMenu::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_WM_MOUSE_ENTER: {
 
-			//grab_focus();
+			// grab_focus();
 		} break;
 		case NOTIFICATION_WM_MOUSE_EXIT: {
 
@@ -601,7 +601,7 @@ void PopupMenu::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			//only used when using operating system windows
+			// only used when using operating system windows
 			if (get_window_id() != DisplayServer::INVALID_WINDOW_ID && autohide_areas.size()) {
 				Point2 mouse_pos = DisplayServer::get_singleton()->mouse_get_position();
 				mouse_pos -= get_position();
@@ -1140,7 +1140,7 @@ void PopupMenu::activate_item(int p_item) {
 	ERR_FAIL_COND(items[p_item].separator);
 	int id = items[p_item].id >= 0 ? items[p_item].id : p_item;
 
-	//hide all parent PopupMenus
+	// hide all parent PopupMenus
 	Node *next = get_parent();
 	PopupMenu *pop = Object::cast_to<PopupMenu>(next);
 	while (pop) {

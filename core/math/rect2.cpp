@@ -106,7 +106,7 @@ bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_re
 
 	real_t low_limit;
 
-	//base rect2 first (faster)
+	// base rect2 first (faster)
 
 	if (xf_points[0].y > position.y)
 		goto next1;

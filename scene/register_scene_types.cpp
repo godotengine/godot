@@ -237,7 +237,7 @@ void register_scene_types() {
 
 	SceneStringNames::create();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	Node::init_node_hrcr();
 
@@ -265,7 +265,7 @@ void register_scene_types() {
 	resource_loader_bmfont.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_bmfont, true);
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_class<Object>();
 
@@ -287,7 +287,7 @@ void register_scene_types() {
 	ClassDB::register_class<ButtonGroup>();
 	ClassDB::register_virtual_class<BaseButton>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_class<ShortCut>();
 	ClassDB::register_class<Control>();
@@ -310,7 +310,7 @@ void register_scene_types() {
 	ClassDB::register_class<Panel>();
 	ClassDB::register_virtual_class<Range>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_class<TextureRect>();
 	ClassDB::register_class<ColorRect>();
@@ -331,7 +331,7 @@ void register_scene_types() {
 	ClassDB::register_class<ScrollContainer>();
 	ClassDB::register_class<PanelContainer>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_class<TextureProgress>();
 	ClassDB::register_class<ItemList>();
@@ -367,7 +367,7 @@ void register_scene_types() {
 	ClassDB::register_class<GraphNode>();
 	ClassDB::register_class<GraphEdit>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	AcceptDialog::set_swap_ok_cancel(GLOBAL_DEF("gui/common/swap_ok_cancel", bool(DisplayServer::get_singleton()->get_swap_ok_cancel())));
 #endif
@@ -405,9 +405,9 @@ void register_scene_types() {
 	ClassDB::register_class<AnimationNodeTimeSeek>();
 	ClassDB::register_class<AnimationNodeTransition>();
 
-	ClassDB::register_class<ShaderGlobalsOverride>(); //can be used in any shader
+	ClassDB::register_class<ShaderGlobalsOverride>(); // can be used in any shader
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 #ifndef _3D_DISABLED
 	ClassDB::register_virtual_class<VisualInstance3D>();
@@ -439,9 +439,9 @@ void register_scene_types() {
 	ClassDB::register_class<Position3D>();
 
 	ClassDB::register_class<RootMotionView>();
-	ClassDB::set_class_enabled("RootMotionView", false); //disabled by default, enabled by editor
+	ClassDB::set_class_enabled("RootMotionView", false); // disabled by default, enabled by editor
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_virtual_class<CollisionObject3D>();
 	ClassDB::register_virtual_class<PhysicsBody3D>();
@@ -486,7 +486,7 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationAgent3D>();
 	ClassDB::register_class<NavigationObstacle3D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 #endif
 
 	/* REGISTER SHADER */
@@ -597,7 +597,7 @@ void register_scene_types() {
 	ClassDB::register_class<YSort>();
 	ClassDB::register_class<BackBufferCopy>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_class<Camera2D>();
 	ClassDB::register_virtual_class<Joint2D>();
@@ -611,7 +611,7 @@ void register_scene_types() {
 	ClassDB::register_class<TouchScreenButton>();
 	ClassDB::register_class<RemoteTransform2D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	/* REGISTER RESOURCES */
 
@@ -649,7 +649,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<MeshLibrary>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_virtual_class<Shape3D>();
 	ClassDB::register_class<RayShape3D>();
@@ -662,7 +662,7 @@ void register_scene_types() {
 	ClassDB::register_class<ConvexPolygonShape3D>();
 	ClassDB::register_class<ConcavePolygonShape3D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_class<VelocityTracker3D>();
 #endif
@@ -712,7 +712,7 @@ void register_scene_types() {
 	ClassDB::register_class<BitMap>();
 	ClassDB::register_class<Gradient>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_class<AudioStreamPlayer>();
 	ClassDB::register_class<AudioStreamPlayer2D>();
@@ -722,7 +722,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VideoStream>();
 	ClassDB::register_class<AudioStreamSample>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_virtual_class<Shape2D>();
 	ClassDB::register_class<LineShape2D>();
@@ -744,13 +744,13 @@ void register_scene_types() {
 	ClassDB::register_class<NavigationAgent2D>();
 	ClassDB::register_class<NavigationObstacle2D>();
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	ClassDB::register_virtual_class<SceneState>();
 	ClassDB::register_class<PackedScene>();
 
 	ClassDB::register_class<SceneTree>();
-	ClassDB::register_virtual_class<SceneTreeTimer>(); //sorry, you can't create it
+	ClassDB::register_virtual_class<SceneTreeTimer>(); // sorry, you can't create it
 
 #ifndef DISABLE_DEPRECATED
 	// Dropped in 4.0, near approximation.
@@ -870,7 +870,7 @@ void register_scene_types() {
 
 #endif
 
-	OS::get_singleton()->yield(); //may take time to init
+	OS::get_singleton()->yield(); // may take time to init
 
 	for (int i = 0; i < 20; i++) {
 		GLOBAL_DEF("layer_names/2d_render/layer_" + itos(i + 1), "");

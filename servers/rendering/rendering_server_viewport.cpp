@@ -89,7 +89,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 
 	/* Camera should always be BEFORE any other 3D */
 
-	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
+	bool scenario_draw_canvas_bg = false; // draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
 
 	Color bgcolor = RSG::storage->get_default_clear_color();
@@ -117,7 +117,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 	}
 
 	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
-		//wants to draw 3D but there is no render buffer, create
+		// wants to draw 3D but there is no render buffer, create
 		p_viewport->render_buffers = RSG::scene_render->render_buffers_create();
 		RSG::scene_render->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, p_viewport->size.width, p_viewport->size.height, p_viewport->msaa, p_viewport->screen_space_aa);
 	}
@@ -148,13 +148,13 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 
 			Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
 
-			//find lights in canvas
+			// find lights in canvas
 
 			for (Set<RasterizerCanvas::Light *>::Element *F = canvas->lights.front(); F; F = F->next()) {
 
 				RasterizerCanvas::Light *cl = F->get();
 				if (cl->enabled && cl->texture.is_valid()) {
-					//not super efficient..
+					// not super efficient..
 					Size2 tsize = RSG::storage->texture_size_with_proxy(cl->texture);
 					tsize *= cl->scale;
 
@@ -171,7 +171,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 						scale.scale(cl->rect_cache.size);
 						scale.elements[2] = cl->rect_cache.position;
 						cl->light_shader_xform = cl->xform * scale;
-						//cl->light_shader_pos = cl->xform_cache[2];
+						// cl->light_shader_pos = cl->xform_cache[2];
 						if (cl->use_shadow) {
 
 							cl->shadows_next_ptr = lights_with_shadow;
@@ -191,7 +191,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 						light_count++;
 					}
 
-					//guess this is not needed, but keeping because it may be
+					// guess this is not needed, but keeping because it may be
 					//RSG::canvas_render->light_internal_update(cl->light_internal, cl);
 				}
 			}
@@ -200,14 +200,14 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 		}
 
 		if (lights_with_shadow) {
-			//update shadows if any
+			// update shadows if any
 
 			RasterizerCanvas::LightOccluderInstance *occluders = nullptr;
 
 			RENDER_TIMESTAMP(">Render 2D Shadows");
 			RENDER_TIMESTAMP("Cull Occluders");
 
-			//make list of occluders
+			// make list of occluders
 			for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
 
 				RenderingServerCanvas::Canvas *canvas = static_cast<RenderingServerCanvas::Canvas *>(E->get().canvas);
@@ -225,7 +225,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 					}
 				}
 			}
-			//update the light shadowmaps with them
+			// update the light shadowmaps with them
 
 			RasterizerCanvas::Light *light = lights_with_shadow;
 			while (light) {
@@ -292,7 +292,7 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 	}
 
 	if (RSG::storage->render_target_is_clear_requested(p_viewport->render_target)) {
-		//was never cleared in the end, force clear it
+		// was never cleared in the end, force clear it
 		RSG::storage->render_target_do_clear_request(p_viewport->render_target);
 	}
 
@@ -321,17 +321,17 @@ void RenderingServerViewport::draw_viewports() {
 		set_default_clear_color(GLOBAL_GET("rendering/environment/default_clear_color"));
 	}
 
-	//sort viewports
+	// sort viewports
 	active_viewports.sort_custom<ViewportSort>();
 
 	Map<DisplayServer::WindowID, Vector<Rasterizer::BlitToScreen>> blit_to_screen_list;
-	//draw viewports
+	// draw viewports
 	RENDER_TIMESTAMP(">Render Viewports");
 
-	//determine what is visible
+	// determine what is visible
 	draw_viewports_pass++;
 
-	for (int i = active_viewports.size() - 1; i >= 0; i--) { //to compute parent dependency, must go in reverse draw order
+	for (int i = active_viewports.size() - 1; i >= 0; i--) { // to compute parent dependency, must go in reverse draw order
 
 		Viewport *vp = active_viewports[i];
 
@@ -372,7 +372,7 @@ void RenderingServerViewport::draw_viewports() {
 		Viewport *vp = active_viewports[i];
 
 		if (vp->last_pass != draw_viewports_pass) {
-			continue; //should not draw
+			continue; // should not draw
 		}
 
 		RENDER_TIMESTAMP(">Rendering Viewport " + itos(i));
@@ -434,7 +434,7 @@ void RenderingServerViewport::draw_viewports() {
 			vp->render_info[RS::VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME] = RSG::storage->get_captured_render_info(RS::INFO_DRAW_CALLS_IN_FRAME);
 
 			if (vp->viewport_to_screen != DisplayServer::INVALID_WINDOW_ID && (!vp->viewport_render_direct_to_screen || !RSG::rasterizer->is_low_end())) {
-				//copy to screen if set as such
+				// copy to screen if set as such
 				Rasterizer::BlitToScreen blit;
 				blit.render_target = vp->render_target;
 				if (vp->viewport_to_screen_rect != Rect2()) {
@@ -461,7 +461,7 @@ void RenderingServerViewport::draw_viewports() {
 	RSG::scene_render->set_debug_draw_mode(RS::VIEWPORT_DEBUG_DRAW_DISABLED);
 
 	RENDER_TIMESTAMP("<Render Viewports");
-	//this needs to be called to make screen swapping more efficient
+	// this needs to be called to make screen swapping more efficient
 	RSG::rasterizer->prepare_for_blitting_render_targets();
 
 	for (Map<int, Vector<Rasterizer::BlitToScreen>>::Element *E = blit_to_screen_list.front(); E; E = E->next()) {
@@ -517,7 +517,7 @@ void RenderingServerViewport::viewport_set_active(RID p_viewport, bool p_active)
 	ERR_FAIL_COND(!viewport);
 
 	if (p_active) {
-		ERR_FAIL_COND(active_viewports.find(viewport) != -1); //already active
+		ERR_FAIL_COND(active_viewports.find(viewport) != -1); // already active
 		active_viewports.push_back(viewport);
 	} else {
 		active_viewports.erase(viewport);
@@ -759,7 +759,7 @@ int RenderingServerViewport::viewport_get_render_info(RID p_viewport, RS::Viewpo
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	if (!viewport)
-		return 0; //there should be a lock here..
+		return 0; // there should be a lock here..
 
 	return viewport->render_info[p_info];
 }

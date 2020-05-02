@@ -266,7 +266,7 @@ bool GridMap::get_center_z() const {
 void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 
 	if (baked_meshes.size() && !recreating_octants) {
-		//if you set a cell item, baked meshes go good bye
+		// if you set a cell item, baked meshes go good bye
 		clear_baked_meshes();
 		_recreate_octant_data();
 	}
@@ -286,7 +286,7 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	ok.z = p_z / octant_size;
 
 	if (p_item < 0) {
-		//erase
+		// erase
 		if (cell_map.has(key)) {
 			OctantKey octantkey = ok;
 
@@ -303,7 +303,7 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	OctantKey octantkey = ok;
 
 	if (!octant_map.has(octantkey)) {
-		//create octant because it does not exist
+		// create octant because it does not exist
 		Octant *g = memnew(Octant);
 		g->dirty = true;
 		g->static_body = PhysicsServer3D::get_singleton()->body_create(PhysicsServer3D::BODY_MODE_STATIC);
@@ -409,22 +409,22 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	if (!g.dirty)
 		return false;
 
-	//erase body shapes
+	// erase body shapes
 	PhysicsServer3D::get_singleton()->body_clear_shapes(g.static_body);
 
-	//erase body shapes debug
+	// erase body shapes debug
 	if (g.collision_debug.is_valid()) {
 
 		RS::get_singleton()->mesh_clear(g.collision_debug);
 	}
 
-	//erase navigation
+	// erase navigation
 	for (Map<IndexKey, Octant::NavMesh>::Element *E = g.navmesh_ids.front(); E; E = E->next()) {
 		NavigationServer3D::get_singleton()->free(E->get().region);
 	}
 	g.navmesh_ids.clear();
 
-	//erase multimeshes
+	// erase multimeshes
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
 
@@ -434,7 +434,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	g.multimesh_instances.clear();
 
 	if (g.cells.size() == 0) {
-		//octant no longer needed
+		// octant no longer needed
 		_octant_clean_up(p_key);
 		return true;
 	}
@@ -507,7 +507,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		}
 	}
 
-	//update multimeshes, only if not baked
+	// update multimeshes, only if not baked
 	if (baked_meshes.size() == 0) {
 
 		for (Map<int, List<Pair<Transform, IndexKey>>>::Element *E = multimesh_items.front(); E; E = E->next()) {
@@ -651,7 +651,7 @@ void GridMap::_octant_clean_up(const OctantKey &p_key) {
 	}
 	g.navmesh_ids.clear();
 
-	//erase multimeshes
+	// erase multimeshes
 
 	for (int i = 0; i < g.multimesh_instances.size(); i++) {
 
@@ -694,7 +694,7 @@ void GridMap::_notification(int p_what) {
 			Transform new_xform = get_global_transform();
 			if (new_xform == last_transform)
 				break;
-			//update run
+			// update run
 			for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
 				_octant_transform(E->key());
 			}
@@ -896,7 +896,7 @@ void GridMap::set_clip(bool p_enabled, bool p_clip_above, int p_floor, Vector3::
 	clip_axis = p_axis;
 	clip_above = p_clip_above;
 
-	//make it all update
+	// make it all update
 	for (Map<OctantKey, Octant *>::Element *E = octant_map.front(); E; E = E->next()) {
 
 		Octant *g = E->get();
@@ -987,7 +987,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 	if (!mesh_library.is_valid())
 		return;
 
-	//generate
+	// generate
 	Map<OctantKey, Map<Ref<Material>, Ref<SurfaceTool>>> surface_map;
 
 	for (Map<IndexKey, Cell>::Element *E = cell_map.front(); E; E = E->next()) {

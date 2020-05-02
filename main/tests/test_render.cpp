@@ -126,12 +126,12 @@ public:
 		print_line("ERR: " + itos(err));
 		test_cube = vs->mesh_create();
 		vs->mesh_add_surface_from_mesh_data(test_cube, md);
-		//vs->scenario_set_debug(scenario,RS::SCENARIO_DEBUG_WIREFRAME);
+		// vs->scenario_set_debug(scenario,RS::SCENARIO_DEBUG_WIREFRAME);
 
 		/*
 		RID sm = vs->shader_create();
-		//vs->shader_set_fragment_code(sm,"OUT_ALPHA=mod(TIME,1);");
-		//vs->shader_set_vertex_code(sm,"OUT_VERTEX=IN_VERTEX*mod(TIME,1);");
+		// vs->shader_set_fragment_code(sm,"OUT_ALPHA=mod(TIME,1);");
+		// vs->shader_set_vertex_code(sm,"OUT_VERTEX=IN_VERTEX*mod(TIME,1);");
 		vs->shader_set_fragment_code(sm,"OUT_DIFFUSE=vec3(1,0,1);OUT_GLOW=abs(sin(TIME));");
 		RID tcmat = vs->mesh_surface_get_material(test_cube,0);
 		vs->material_set_shader(tcmat,sm);
@@ -183,23 +183,23 @@ public:
 		RID lightaux;
 
 		lightaux = vs->directional_light_create();
-		//vs->light_set_color( lightaux, RenderingServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
+		// vs->light_set_color( lightaux, RenderingServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		vs->light_set_color(lightaux, Color(1.0, 1.0, 1.0));
-		//vs->light_set_shadow( lightaux, true );
+		// vs->light_set_shadow( lightaux, true );
 		light = vs->instance_create2(lightaux, scenario);
 		Transform lla;
-		//lla.set_look_at(Vector3(),Vector3(1,-1,1),Vector3(0,1,0));
+		// lla.set_look_at(Vector3(),Vector3(1,-1,1),Vector3(0,1,0));
 		lla.set_look_at(Vector3(), Vector3(-0.000000, -0.836026, -0.548690), Vector3(0, 1, 0));
 
 		vs->instance_set_transform(light, lla);
 
 		lightaux = vs->omni_light_create();
-		//vs->light_set_color( lightaux, RenderingServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
+		// vs->light_set_color( lightaux, RenderingServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
 		vs->light_set_color(lightaux, Color(1.0, 1.0, 0.0));
 		vs->light_set_param(lightaux, RenderingServer::LIGHT_PARAM_RANGE, 4);
 		vs->light_set_param(lightaux, RenderingServer::LIGHT_PARAM_ENERGY, 8);
-		//vs->light_set_shadow( lightaux, true );
-		//light = vs->instance_create( lightaux );
+		// vs->light_set_shadow( lightaux, true );
+		// light = vs->instance_create( lightaux );
 
 		ofs = 0;
 		quit = false;
@@ -208,13 +208,13 @@ public:
 
 		RenderingServer *vs = RenderingServer::get_singleton();
 		//Transform t;
-		//t.rotate(Vector3(0, 1, 0), ofs);
-		//t.translate(Vector3(0,0,20 ));
-		//vs->camera_set_transform(camera, t);
+		// t.rotate(Vector3(0, 1, 0), ofs);
+		// t.translate(Vector3(0,0,20 ));
+		// vs->camera_set_transform(camera, t);
 
 		ofs += p_time * 0.05;
 
-		//return quit;
+		// return quit;
 
 		for (List<InstanceInfo>::Element *E = instances.front(); E; E = E->next()) {
 

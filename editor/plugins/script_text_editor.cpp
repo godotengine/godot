@@ -118,7 +118,7 @@ Vector<String> ScriptTextEditor::get_functions() {
 
 	if (script->get_language()->validate(text, line, col, errortxt, script->get_path(), &fnc)) {
 
-		//if valid rewrite functions to latest
+		// if valid rewrite functions to latest
 		functions.clear();
 		for (List<String>::Element *E = fnc.front(); E; E = E->next()) {
 
@@ -289,7 +289,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		text_edit->add_keyword_color(E->get(), colors_cache.keyword_color);
 	}
 
-	//colorize core types
+	// colorize core types
 	const Color basetype_color = colors_cache.basetype_color;
 	text_edit->add_keyword_color("String", basetype_color);
 	text_edit->add_keyword_color("Vector2", basetype_color);
@@ -322,7 +322,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	text_edit->add_keyword_color("PackedVector3Array", basetype_color);
 	text_edit->add_keyword_color("PackedColorArray", basetype_color);
 
-	//colorize engine types
+	// colorize engine types
 	List<StringName> types;
 	ClassDB::get_class_list(&types);
 
@@ -336,7 +336,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 	}
 	_update_member_keywords();
 
-	//colorize user types
+	// colorize user types
 	List<StringName> global_classes;
 	ScriptServer::get_global_class_list(&global_classes);
 
@@ -345,7 +345,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		text_edit->add_keyword_color(E->get(), colors_cache.usertype_color);
 	}
 
-	//colorize singleton autoloads (as types, just as engine singletons are)
+	// colorize singleton autoloads (as types, just as engine singletons are)
 	List<PropertyInfo> props;
 	ProjectSettings::get_singleton()->get_property_list(&props);
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
@@ -359,7 +359,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		}
 	}
 
-	//colorize comments
+	// colorize comments
 	List<String> comments;
 	script->get_language()->get_comment_delimiters(&comments);
 
@@ -372,7 +372,7 @@ void ScriptTextEditor::_set_theme_for_script() {
 		text_edit->add_color_region(beg, end, colors_cache.comment_color, end == "");
 	}
 
-	//colorize strings
+	// colorize strings
 	List<String> strings;
 	script->get_language()->get_string_delimiters(&strings);
 	for (List<String>::Element *E = strings.front(); E; E = E->next()) {
@@ -437,13 +437,13 @@ void ScriptTextEditor::add_callback(const String &p_function, PackedStringArray 
 	String code = code_editor->get_text_edit()->get_text();
 	int pos = script->get_language()->find_function(p_function, code);
 	if (pos == -1) {
-		//does not exist
+		// does not exist
 		code_editor->get_text_edit()->deselect();
 		pos = code_editor->get_text_edit()->get_line_count() + 2;
 		String func = script->get_language()->make_function("", p_function, p_args);
-		//code=code+func;
+		// code=code+func;
 		code_editor->get_text_edit()->cursor_set_line(pos + 1);
-		code_editor->get_text_edit()->cursor_set_column(1000000); //none shall be that big
+		code_editor->get_text_edit()->cursor_set_column(1000000); // none shall be that big
 		code_editor->get_text_edit()->insert_text_at_cursor("\n\n" + func);
 	}
 	code_editor->get_text_edit()->cursor_set_line(pos);
@@ -797,7 +797,7 @@ void ScriptEditor::_update_modified_scripts_for_external_editor(Ref<Script> p_fo
 
 		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
 
-			continue; //internal script, who cares, though weird
+			continue; // internal script, who cares, though weird
 		}
 
 		uint64_t last_date = script->get_last_modified_time();
@@ -1241,7 +1241,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			for (int i = 0; i < lines.size(); i++) {
 				String line = lines[i];
-				String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); //extract the whitespace at the beginning
+				String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); // extract the whitespace at the beginning
 
 				if (expression.parse(line) == OK) {
 					Variant result = expression.execute(Array(), Variant(), false);
@@ -1255,7 +1255,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				}
 			}
 
-			code_editor->get_text_edit()->begin_complex_operation(); //prevents creating a two-step undo
+			code_editor->get_text_edit()->begin_complex_operation(); // prevents creating a two-step undo
 			code_editor->get_text_edit()->insert_text_at_cursor(String("\n").join(results));
 			code_editor->get_text_edit()->end_complex_operation();
 		} break;
@@ -1477,7 +1477,7 @@ void ScriptTextEditor::reload(bool p_soft) {
 	if (scr.is_null())
 		return;
 	scr->set_source_code(te->get_text());
-	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; //always soft-reload editor plugins
+	bool soft = p_soft || scr->get_instance_base_type() == "EditorPlugin"; // always soft-reload editor plugins
 
 	scr->get_language()->reload_tool_script(scr, soft);
 }

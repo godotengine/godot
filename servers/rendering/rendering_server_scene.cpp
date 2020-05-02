@@ -118,9 +118,9 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 	Instance *A = p_A;
 	Instance *B = p_B;
 
-	//instance indices are designed so greater always contains lesser
+	// instance indices are designed so greater always contains lesser
 	if (A->base_type > B->base_type) {
-		SWAP(A, B); //lesser always first
+		SWAP(A, B); // lesser always first
 	}
 
 	if (B->base_type == RS::INSTANCE_LIGHT && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
@@ -140,7 +140,7 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 		}
 		geom->lighting_dirty = true;
 
-		return E; //this element should make freeing faster
+		return E; // this element should make freeing faster
 	} else if (B->base_type == RS::INSTANCE_REFLECTION_PROBE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
 
 		InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(B->base_data);
@@ -154,7 +154,7 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 
 		geom->reflection_dirty = true;
 
-		return E; //this element should make freeing faster
+		return E; // this element should make freeing faster
 	} else if (B->base_type == RS::INSTANCE_DECAL && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
 
 		InstanceDecalData *decal = static_cast<InstanceDecalData *>(B->base_data);
@@ -168,7 +168,7 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 
 		geom->decal_dirty = true;
 
-		return E; //this element should make freeing faster
+		return E; // this element should make freeing faster
 	} else if (B->base_type == RS::INSTANCE_LIGHTMAP_CAPTURE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
 
 		InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(B->base_data);
@@ -179,9 +179,9 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 		pinfo.L = geom->lightmap_captures.push_back(B);
 
 		List<InstanceLightmapCaptureData::PairInfo>::Element *E = lightmap_capture->geometries.push_back(pinfo);
-		((RenderingServerScene *)p_self)->_instance_queue_update(A, false, false); //need to update capture
+		((RenderingServerScene *)p_self)->_instance_queue_update(A, false, false); // need to update capture
 
-		return E; //this element should make freeing faster
+		return E; // this element should make freeing faster
 	} else if (B->base_type == RS::INSTANCE_GI_PROBE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
 
 		InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(B->base_data);
@@ -200,7 +200,7 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 
 		geom->gi_probes_dirty = true;
 
-		return E; //this element should make freeing faster
+		return E; // this element should make freeing faster
 
 	} else if (B->base_type == RS::INSTANCE_GI_PROBE && A->base_type == RS::INSTANCE_LIGHT) {
 
@@ -216,9 +216,9 @@ void RenderingServerScene::_instance_unpair(void *p_self, OctreeElementID, Insta
 	Instance *A = p_A;
 	Instance *B = p_B;
 
-	//instance indices are designed so greater always contains lesser
+	// instance indices are designed so greater always contains lesser
 	if (A->base_type > B->base_type) {
-		SWAP(A, B); //lesser always first
+		SWAP(A, B); // lesser always first
 	}
 
 	if (B->base_type == RS::INSTANCE_LIGHT && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
@@ -267,7 +267,7 @@ void RenderingServerScene::_instance_unpair(void *p_self, OctreeElementID, Insta
 
 		geom->lightmap_captures.erase(E->get().L);
 		lightmap_capture->geometries.erase(E);
-		((RenderingServerScene *)p_self)->_instance_queue_update(A, false, false); //need to update capture
+		((RenderingServerScene *)p_self)->_instance_queue_update(A, false, false); // need to update capture
 
 	} else if (B->base_type == RS::INSTANCE_GI_PROBE && ((1 << A->base_type) & RS::INSTANCE_GEOMETRY_MASK)) {
 
@@ -304,7 +304,7 @@ RID RenderingServerScene::scenario_create() {
 	scenario->octree.set_pair_callback(_instance_pair, this);
 	scenario->octree.set_unpair_callback(_instance_unpair, this);
 	scenario->reflection_probe_shadow_atlas = RSG::scene_render->shadow_atlas_create();
-	RSG::scene_render->shadow_atlas_set_size(scenario->reflection_probe_shadow_atlas, 1024); //make enough shadows for close distance, don't bother with rest
+	RSG::scene_render->shadow_atlas_set_size(scenario->reflection_probe_shadow_atlas, 1024); // make enough shadows for close distance, don't bother with rest
 	RSG::scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 0, 4);
 	RSG::scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 1, 4);
 	RSG::scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 2, 4);
@@ -382,10 +382,10 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 	Scenario *scenario = instance->scenario;
 
 	if (instance->base_type != RS::INSTANCE_NONE) {
-		//free anything related to that base
+		// free anything related to that base
 
 		if (scenario && instance->octree_id) {
-			scenario->octree.erase(instance->octree_id); //make dependencies generated by the octree go away
+			scenario->octree.erase(instance->octree_id); // make dependencies generated by the octree go away
 			instance->octree_id = 0;
 		}
 
@@ -421,7 +421,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 			case RS::INSTANCE_LIGHTMAP_CAPTURE: {
 
 				InstanceLightmapCaptureData *lightmap_capture = static_cast<InstanceLightmapCaptureData *>(instance->base_data);
-				//erase dependencies, since no longer a lightmap
+				// erase dependencies, since no longer a lightmap
 				while (lightmap_capture->users.front()) {
 					instance_set_use_lightmap(lightmap_capture->users.front()->get()->self, RID(), RID());
 				}
@@ -519,7 +519,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 				InstanceLightmapCaptureData *lightmap_capture = memnew(InstanceLightmapCaptureData);
 				instance->base_data = lightmap_capture;
-				//lightmap_capture->instance = RSG::scene_render->lightmap_capture_instance_create(p_base);
+				// lightmap_capture->instance = RSG::scene_render->lightmap_capture_instance_create(p_base);
 			} break;
 			case RS::INSTANCE_GI_PROBE: {
 
@@ -540,7 +540,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 		instance->base = p_base;
 
-		//forcefully update the dependency now, so if for some reason it gets removed, we can immediately clear it
+		// forcefully update the dependency now, so if for some reason it gets removed, we can immediately clear it
 		RSG::storage->base_update_dependency(p_base, instance);
 	}
 
@@ -556,7 +556,7 @@ void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario)
 		instance->scenario->instances.remove(&instance->scenario_item);
 
 		if (instance->octree_id) {
-			instance->scenario->octree.erase(instance->octree_id); //make dependencies generated by the octree go away
+			instance->scenario->octree.erase(instance->octree_id); // make dependencies generated by the octree go away
 			instance->octree_id = 0;
 		}
 
@@ -652,7 +652,7 @@ void RenderingServerScene::instance_set_transform(RID p_instance, const Transfor
 	ERR_FAIL_COND(!instance);
 
 	if (instance->transform == p_transform)
-		return; //must be checked to avoid worst evil
+		return; // must be checked to avoid worst evil
 
 #ifdef DEBUG_ENABLED
 
@@ -696,7 +696,7 @@ void RenderingServerScene::instance_set_surface_material(RID p_instance, int p_s
 	ERR_FAIL_COND(!instance);
 
 	if (instance->base_type == RS::INSTANCE_MESH) {
-		//may not have been updated yet, may also have not been set yet. When updated will be correcte, worst case
+		// may not have been updated yet, may also have not been set yet. When updated will be correcte, worst case
 		instance->materials.resize(MAX(p_surface + 1, RSG::storage->mesh_get_surface_count(instance->base)));
 	}
 
@@ -817,7 +817,7 @@ void RenderingServerScene::instance_attach_skeleton(RID p_instance, RID p_skelet
 	instance->skeleton = p_skeleton;
 
 	if (p_skeleton.is_valid()) {
-		//update the dependency now, so if cleared, we remove it
+		// update the dependency now, so if cleared, we remove it
 		RSG::storage->skeleton_update_dependency(p_skeleton, instance);
 	}
 	_instance_queue_update(instance, true, true);
@@ -922,18 +922,18 @@ void RenderingServerScene::instance_geometry_set_flag(RID p_instance, RS::Instan
 		case RS::INSTANCE_FLAG_USE_DYNAMIC_GI: {
 
 			if (p_enabled == instance->dynamic_gi) {
-				//bye, redundant
+				// bye, redundant
 				return;
 			}
 
 			if (instance->octree_id != 0) {
-				//remove from octree, it needs to be re-paired
+				// remove from octree, it needs to be re-paired
 				instance->scenario->octree.erase(instance->octree_id);
 				instance->octree_id = 0;
 				_instance_queue_update(instance, true, true);
 			}
 
-			//once out of octree, can be changed
+			// once out of octree, can be changed
 			instance->dynamic_gi = p_enabled;
 
 		} break;
@@ -984,7 +984,7 @@ void RenderingServerScene::instance_geometry_set_shader_parameter(RID p_instance
 	} else {
 		E->get().value = p_value;
 		if (E->get().index >= 0 && instance->instance_allocated_shader_parameters) {
-			//update directly
+			// update directly
 			RSG::storage->global_variables_instance_update(p_instance, E->get().index, p_value);
 		}
 	}
@@ -1075,7 +1075,7 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 	if ((1 << p_instance->base_type) & RS::INSTANCE_GEOMETRY_MASK) {
 
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(p_instance->base_data);
-		//make sure lights are updated if it casts shadow
+		// make sure lights are updated if it casts shadow
 
 		if (geom->can_cast_shadows) {
 			for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
@@ -1085,11 +1085,11 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 		}
 
 		if (!p_instance->lightmap_capture && geom->lightmap_captures.size()) {
-			//affected by lightmap captures, must update capture info!
+			// affected by lightmap captures, must update capture info!
 			_update_instance_lightmap_captures(p_instance);
 		} else {
 			if (!p_instance->lightmap_capture_data.empty()) {
-				p_instance->lightmap_capture_data.resize(0); //not in use, clear capture data
+				p_instance->lightmap_capture_data.resize(0); // not in use, clear capture data
 			}
 		}
 	}
@@ -1120,7 +1120,7 @@ void RenderingServerScene::_update_instance(Instance *p_instance) {
 		}
 
 		if (p_instance->base_type == RS::INSTANCE_GI_PROBE) {
-			//lights and geometries
+			// lights and geometries
 			pairable_mask = p_instance->visible ? RS::INSTANCE_GEOMETRY_MASK | (1 << RS::INSTANCE_LIGHT) : 0;
 			pairable = true;
 		}
@@ -1233,7 +1233,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	int size = 1 << (p_cell_subdiv - 1);
 
 	int clamp_v = size - 1;
-	//first of all, clamp
+	// first of all, clamp
 	Vector3 pos;
 	pos.x = CLAMP(p_pos.x, 0, clamp_v);
 	pos.y = CLAMP(p_pos.y, 0, clamp_v);
@@ -1255,7 +1255,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	float alpha[2][8];
 	zeromem(alpha, sizeof(float) * 2 * 8);
 
-	//find cell at given level first
+	// find cell at given level first
 
 	for (int c = 0; c < 2; c++) {
 
@@ -1316,7 +1316,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 				alpha[c][n] = p_octree[cell].alpha;
 
 				for (int i = 0; i < 6; i++) {
-					//anisotropic read light
+					// anisotropic read light
 					float amount = p_dir.dot(aniso_normal[i]);
 					if (amount < 0)
 						amount = 0;
@@ -1326,7 +1326,7 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 				}
 			}
 
-			//print_line("\tlev " + itos(c) + " - " + itos(n) + " alpha: " + rtos(cells[test_cell].alpha) + " col: " + color[c][n]);
+			// print_line("\tlev " + itos(c) + " - " + itos(n) + " alpha: " + rtos(cells[test_cell].alpha) + " col: " + color[c][n]);
 		}
 	}
 
@@ -1372,12 +1372,12 @@ _FORCE_INLINE_ static void _light_capture_sample_octree(const RasterizerStorage:
 	r_color = color_interp[0].lerp(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
 
-	//print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
+	// print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
 _FORCE_INLINE_ static Color _light_capture_voxel_cone_trace(const RasterizerStorage::LightmapCaptureOctree *p_octree, const Vector3 &p_pos, const Vector3 &p_dir, float p_aperture, int p_cell_subdiv) {
 
-	float bias = 0.0; //no need for bias here
+	float bias = 0.0; // no need for bias here
 	float max_distance = (Vector3(1, 1, 1) * (1 << (p_cell_subdiv - 1))).length();
 
 	float dist = bias;
@@ -1424,15 +1424,15 @@ void RenderingServerScene::_update_instance_lightmap_captures(Instance *p_instan
 		p_instance->lightmap_capture_data.resize(12);
 	}
 
-	//print_line("update captures for pos: " + p_instance->transform.origin);
+	// print_line("update captures for pos: " + p_instance->transform.origin);
 
 	for (int i = 0; i < 12; i++)
 		new (&p_instance->lightmap_capture_data.ptrw()[i]) Color;
 
-	//this could use some sort of blending..
+	// this could use some sort of blending..
 	for (List<Instance *>::Element *E = geom->lightmap_captures.front(); E; E = E->next()) {
 		const Vector<RasterizerStorage::LightmapCaptureOctree> *octree = RSG::storage->lightmap_capture_get_octree_ptr(E->get()->base);
-		//print_line("octree size: " + itos(octree->size()));
+		// print_line("octree size: " + itos(octree->size()));
 		if (octree->size() == 0)
 			continue;
 		Transform to_cell_xform = RSG::storage->lightmap_capture_get_octree_cell_transform(E->get()->base);
@@ -1457,7 +1457,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 	InstanceLightData *light = static_cast<InstanceLightData *>(p_instance->base_data);
 
 	Transform light_transform = p_instance->transform;
-	light_transform.orthonormalize(); //scale does not count on lights
+	light_transform.orthonormalize(); // scale does not count on lights
 
 	bool animated_material_found = false;
 
@@ -1467,7 +1467,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 			real_t max_distance = p_cam_projection.get_z_far();
 			real_t shadow_max = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
-			if (shadow_max > 0 && !p_cam_orthogonal) { //its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
+			if (shadow_max > 0 && !p_cam_orthogonal) { // its impractical (and leads to unwanted behaviors) to set max distance in orthogonal camera
 				max_distance = MIN(shadow_max, max_distance);
 			}
 			max_distance = MAX(max_distance, p_cam_projection.get_z_near() + 0.001);
@@ -1478,11 +1478,11 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 			real_t pancake_size = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE);
 
 			if (depth_range_mode == RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_OPTIMIZED) {
-				//optimize min/max
+				// optimize min/max
 				Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 				int cull_count = p_scenario->octree.cull_convex(planes, instance_shadow_cull_result, MAX_INSTANCE_CULL, RS::INSTANCE_GEOMETRY_MASK);
 				Plane base(p_cam_transform.origin, -p_cam_transform.basis.get_axis(2));
-				//check distance max and min
+				// check distance max and min
 
 				bool found_items = false;
 				real_t z_max = -1e20;
@@ -1561,11 +1561,11 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					camera_matrix.set_orthogonal(vp_he.y * 2.0, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], false);
 				} else {
 
-					real_t fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
+					real_t fov = p_cam_projection.get_fov(); // this is actually yfov, because set aspect tries to keep it
 					camera_matrix.set_perspective(fov, aspect, distances[(i == 0 || !overlap) ? i : i - 1], distances[i + 1], true);
 				}
 
-				//obtain the frustum endpoints
+				// obtain the frustum endpoints
 
 				Vector3 endpoints[8]; // frustum plane endpoints
 				bool res = camera_matrix.get_endpoints(p_cam_transform, endpoints);
@@ -1573,12 +1573,12 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 				// obtain the light frustm ranges (given endpoints)
 
-				Transform transform = light_transform; //discard scale and stabilize light
+				Transform transform = light_transform; // discard scale and stabilize light
 
 				Vector3 x_vec = transform.basis.get_axis(Vector3::AXIS_X).normalized();
 				Vector3 y_vec = transform.basis.get_axis(Vector3::AXIS_Y).normalized();
 				Vector3 z_vec = transform.basis.get_axis(Vector3::AXIS_Z).normalized();
-				//z_vec points agsint the camera, like in default opengl
+				// z_vec points agsint the camera, like in default opengl
 
 				real_t x_min = 0.f, x_max = 0.f;
 				real_t y_min = 0.f, y_max = 0.f;
@@ -1589,12 +1589,12 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				real_t x_min_cam = 0.f, x_max_cam = 0.f;
 				real_t y_min_cam = 0.f, y_max_cam = 0.f;
 				real_t z_min_cam = 0.f;
-				//real_t z_max_cam = 0.f;
+				// real_t z_max_cam = 0.f;
 
 				real_t bias_scale = 1.0;
 				real_t aspect_bias_scale = 1.0;
 
-				//used for culling
+				// used for culling
 
 				for (int j = 0; j < 8; j++) {
 
@@ -1623,7 +1623,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				Vector3 center;
 
 				{
-					//camera viewport stuff
+					// camera viewport stuff
 
 					for (int j = 0; j < 8; j++) {
 
@@ -1631,7 +1631,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					}
 					center /= 8.0;
 
-					//center=x_vec*(x_max-x_min)*0.5 + y_vec*(y_max-y_min)*0.5 + z_vec*(z_max-z_min)*0.5;
+					// center=x_vec*(x_max-x_min)*0.5 + y_vec*(y_max-y_min)*0.5 + z_vec*(z_max-z_min)*0.5;
 
 					for (int j = 0; j < 8; j++) {
 
@@ -1640,7 +1640,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 							radius = d;
 					}
 
-					radius *= texture_size / (texture_size - 2.0); //add a texel by each side
+					radius *= texture_size / (texture_size - 2.0); // add a texel by each side
 
 					if (i == 0) {
 						first_radius = radius;
@@ -1673,8 +1673,8 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					y_min_cam = y_vec.dot(center) - radius - soft_shadow_expand;
 
 					if (depth_range_mode == RS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE) {
-						//this trick here is what stabilizes the shadow (make potential jaggies to not move)
-						//at the cost of some wasted resolution. Still the quality increase is very well worth it
+						// this trick here is what stabilizes the shadow (make potential jaggies to not move)
+						// at the cost of some wasted resolution. Still the quality increase is very well worth it
 
 						real_t unit = radius * 2.0 / texture_size;
 
@@ -1685,18 +1685,18 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					}
 				}
 
-				//now that we now all ranges, we can proceed to make the light frustum planes, for culling octree
+				// now that we now all ranges, we can proceed to make the light frustum planes, for culling octree
 
 				Vector<Plane> light_frustum_planes;
 				light_frustum_planes.resize(6);
 
-				//right/left
+				// right/left
 				light_frustum_planes.write[0] = Plane(x_vec, x_max);
 				light_frustum_planes.write[1] = Plane(-x_vec, -x_min);
-				//top/bottom
+				// top/bottom
 				light_frustum_planes.write[2] = Plane(y_vec, y_max);
 				light_frustum_planes.write[3] = Plane(-y_vec, -y_min);
-				//near/far
+				// near/far
 				light_frustum_planes.write[4] = Plane(z_vec, z_max + 1e6);
 				light_frustum_planes.write[5] = Plane(-z_vec, -z_min); // z_min is ok, since casters further than far-light plane are not needed
 
@@ -1758,7 +1758,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 						}
 
 						if (i == 0) {
-							//print_line("prev he: " + vp_he + " new he: " + camera_matrix_square.get_viewport_half_extents());
+							// print_line("prev he: " + vp_he + " new he: " + camera_matrix_square.get_viewport_half_extents());
 						}
 					}
 
@@ -1793,7 +1793,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 							radius_square = d;
 					}
 
-					radius_square *= texture_size / (texture_size - 2.0); //add a texel by each side
+					radius_square *= texture_size / (texture_size - 2.0); // add a texel by each side
 
 					if (pancake_size > 0) {
 						z_max_square = z_vec.dot(center_square) + radius_square + pancake_size;
@@ -1843,7 +1843,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 				for (int i = 0; i < 2; i++) {
 
-					//using this one ensures that raster deferred will have it
+					// using this one ensures that raster deferred will have it
 					RENDER_TIMESTAMP("Culling Shadow Paraboloid" + itos(i));
 
 					real_t radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
@@ -1881,7 +1881,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					RSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, i, 0);
 					RSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 				}
-			} else { //shadow cube
+			} else { // shadow cube
 
 				real_t radius = RSG::storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
 				CameraMatrix cm;
@@ -1890,7 +1890,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 				for (int i = 0; i < 6; i++) {
 
 					RENDER_TIMESTAMP("Culling Shadow Cube side" + itos(i));
-					//using this one ensures that raster deferred will have it
+					// using this one ensures that raster deferred will have it
 
 					static const Vector3 view_normals[6] = {
 						Vector3(+1, 0, 0),
@@ -1936,7 +1936,7 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					RSG::scene_render->render_shadow(light->instance, p_shadow_atlas, i, (RasterizerScene::InstanceBase **)instance_shadow_cull_result, cull_count);
 				}
 
-				//restore the regular DP matrix
+				// restore the regular DP matrix
 				RSG::scene_render->light_instance_set_shadow_transform(light->instance, CameraMatrix(), light_transform, radius, 0, 0, 0);
 			}
 
@@ -2127,7 +2127,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 	RENDER_TIMESTAMP("Frustum Culling");
 
-	//rasterizer->set_camera(camera->transform, camera_matrix,ortho);
+	// rasterizer->set_camera(camera->transform, camera_matrix,ortho);
 
 	Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 
@@ -2142,7 +2142,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 	decal_cull_count = 0;
 	gi_probe_cull_count = 0;
 
-	//light_samplers_culled=0;
+	// light_samplers_culled=0;
 
 	/*
 	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
@@ -2152,7 +2152,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 	*/
 
 	/* STEP 3 - PROCESS PORTALS, VALIDATE ROOMS */
-	//removed, will replace with culling
+	// removed, will replace with culling
 
 	/* STEP 4 - REMOVE FURTHER CULLED OBJECTS, ADD LIGHTS */
 
@@ -2163,7 +2163,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 		bool keep = false;
 
 		if ((camera_layer_mask & ins->layer_mask) == 0) {
-			//failure
+			// failure
 		} else if (ins->base_type == RS::INSTANCE_LIGHT && ins->visible) {
 
 			if (light_cull_count < MAX_LIGHTS_CULLED) {
@@ -2171,11 +2171,11 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 				InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
 				if (!light->geometries.empty()) {
-					//do not add this light if no geometry is affected by it..
+					// do not add this light if no geometry is affected by it..
 					light_cull_result[light_cull_count] = ins;
 					light_instance_cull_result[light_cull_count] = light->instance;
 					if (p_shadow_atlas.is_valid() && RSG::storage->light_has_shadow(ins->base)) {
-						RSG::scene_render->light_instance_mark_visible(light->instance); //mark it visible for shadow allocation later
+						RSG::scene_render->light_instance_mark_visible(light->instance); // mark it visible for shadow allocation later
 					}
 
 					light_cull_count++;
@@ -2188,10 +2188,10 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(ins->base_data);
 
 				if (p_reflection_probe != reflection_probe->instance) {
-					//avoid entering The Matrix
+					// avoid entering The Matrix
 
 					if (!reflection_probe->geometries.empty()) {
-						//do not add this light if no geometry is affected by it..
+						// do not add this light if no geometry is affected by it..
 
 						if (reflection_probe->reflection_dirty || RSG::scene_render->reflection_probe_instance_needs_redraw(reflection_probe->instance)) {
 							if (!reflection_probe->update_list.in_list()) {
@@ -2216,7 +2216,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 				InstanceDecalData *decal = static_cast<InstanceDecalData *>(ins->base_data);
 
 				if (!decal->geometries.empty()) {
-					//do not add this decal if no geometry is affected by it..
+					// do not add this decal if no geometry is affected by it..
 					decal_instance_cull_result[decal_cull_count] = decal->instance;
 					decal_cull_count++;
 				}
@@ -2245,20 +2245,20 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 			}
 
 			if (ins->base_type == RS::INSTANCE_PARTICLES) {
-				//particles visible? process them
+				// particles visible? process them
 				if (RSG::storage->particles_is_inactive(ins->base)) {
-					//but if nothing is going on, don't do it.
+					// but if nothing is going on, don't do it.
 					keep = false;
 				} else {
 					RSG::storage->particles_request_process(ins->base);
-					//particles visible? request redraw
+					// particles visible? request redraw
 					RenderingServerRaster::redraw_request();
 				}
 			}
 
 			if (geom->lighting_dirty) {
 				int l = 0;
-				//only called when lights AABB enter/exit this geometry
+				// only called when lights AABB enter/exit this geometry
 				ins->light_instances.resize(geom->lighting.size());
 
 				for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
@@ -2273,7 +2273,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 			if (geom->reflection_dirty) {
 				int l = 0;
-				//only called when reflection probe AABB enter/exit this geometry
+				// only called when reflection probe AABB enter/exit this geometry
 				ins->reflection_probe_instances.resize(geom->reflection_probes.size());
 
 				for (List<Instance *>::Element *E = geom->reflection_probes.front(); E; E = E->next()) {
@@ -2288,7 +2288,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 			if (geom->gi_probes_dirty) {
 				int l = 0;
-				//only called when reflection probe AABB enter/exit this geometry
+				// only called when reflection probe AABB enter/exit this geometry
 				ins->gi_probe_instances.resize(geom->gi_probes.size());
 
 				for (List<Instance *>::Element *E = geom->gi_probes.front(); E; E = E->next()) {
@@ -2339,13 +2339,13 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 			InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
 
-			//check shadow..
+			// check shadow..
 
 			if (light) {
 				if (p_using_shadows && p_shadow_atlas.is_valid() && RSG::storage->light_has_shadow(E->get()->base)) {
 					lights_with_shadow[directional_shadow_count++] = E->get();
 				}
-				//add to list
+				// add to list
 				directional_light_ptr[directional_light_count++] = light->instance;
 			}
 		}
@@ -2362,10 +2362,10 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 		}
 	}
 
-	if (p_using_shadows) { //setup shadow maps
+	if (p_using_shadows) { // setup shadow maps
 
 		//SortArray<Instance*,_InstanceLightsort> sorter;
-		//sorter.sort(light_cull_result,light_cull_count);
+		// sorter.sort(light_cull_result,light_cull_count);
 		for (int i = 0; i < light_cull_count; i++) {
 
 			Instance *ins = light_cull_result[i];
@@ -2377,11 +2377,11 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 			float coverage = 0.f;
 
-			{ //compute coverage
+			{ // compute coverage
 
 				Transform cam_xf = p_cam_transform;
 				float zn = p_cam_projection.get_z_near();
-				Plane p(cam_xf.origin + cam_xf.basis.get_axis(2) * -zn, -cam_xf.basis.get_axis(2)); //camera near plane
+				Plane p(cam_xf.origin + cam_xf.basis.get_axis(2) * -zn, -cam_xf.basis.get_axis(2)); // camera near plane
 
 				// near plane half width and height
 				Vector2 vp_half_extents = p_cam_projection.get_viewport_half_extents();
@@ -2392,20 +2392,20 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 
 						float radius = RSG::storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE);
 
-						//get two points parallel to near plane
+						// get two points parallel to near plane
 						Vector3 points[2] = {
 							ins->transform.origin,
 							ins->transform.origin + cam_xf.basis.get_axis(0) * radius
 						};
 
 						if (!p_cam_orthogonal) {
-							//if using perspetive, map them to near plane
+							// if using perspetive, map them to near plane
 							for (int j = 0; j < 2; j++) {
 								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
+									points[j].z = -zn; // small hack to keep size constant when hitting the screen
 								}
 
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+								p.intersects_segment(cam_xf.origin, points[j], &points[j]); // map to plane
 							}
 						}
 
@@ -2428,13 +2428,13 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 						};
 
 						if (!p_cam_orthogonal) {
-							//if using perspetive, map them to near plane
+							// if using perspetive, map them to near plane
 							for (int j = 0; j < 2; j++) {
 								if (p.distance_to(points[j]) < 0) {
-									points[j].z = -zn; //small hack to keep size constant when hitting the screen
+									points[j].z = -zn; // small hack to keep size constant when hitting the screen
 								}
 
-								p.intersects_segment(cam_xf.origin, points[j], &points[j]); //map to plane
+								p.intersects_segment(cam_xf.origin, points[j], &points[j]); // map to plane
 							}
 						}
 
@@ -2456,7 +2456,7 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 			bool redraw = RSG::scene_render->shadow_atlas_update_light(p_shadow_atlas, light->instance, coverage, light->last_version);
 
 			if (redraw) {
-				//must redraw!
+				// must redraw!
 				RENDER_TIMESTAMP(">Rendering Light " + itos(i));
 				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_cam_vaspect, p_shadow_atlas, scenario);
 				RENDER_TIMESTAMP("<Rendering Light " + itos(i));
@@ -2472,7 +2472,7 @@ void RenderingServerScene::_render_scene(RID p_render_buffers, const Transform p
 	/* ENVIRONMENT */
 
 	RID environment;
-	if (p_force_environment.is_valid()) //camera has more environment priority
+	if (p_force_environment.is_valid()) // camera has more environment priority
 		environment = p_force_environment;
 	else if (scenario->environment.is_valid())
 		environment = scenario->environment;
@@ -2513,12 +2513,12 @@ bool RenderingServerScene::_render_reflection_probe_step(Instance *p_instance, i
 	Scenario *scenario = p_instance->scenario;
 	ERR_FAIL_COND_V(!scenario, true);
 
-	RenderingServerRaster::redraw_request(); //update, so it updates in editor
+	RenderingServerRaster::redraw_request(); // update, so it updates in editor
 
 	if (p_step == 0) {
 
 		if (!RSG::scene_render->reflection_probe_instance_begin_render(reflection_probe->instance, scenario->reflection_atlas)) {
-			return true; //all full
+			return true; // all full
 		}
 	}
 
@@ -2546,11 +2546,11 @@ bool RenderingServerScene::_render_reflection_probe_step(Instance *p_instance, i
 		float max_distance = RSG::storage->reflection_probe_get_origin_max_distance(p_instance->base);
 
 		Vector3 edge = view_normals[p_step] * extents;
-		float distance = ABS(view_normals[p_step].dot(edge) - view_normals[p_step].dot(origin_offset)); //distance from origin offset to actual view distance limit
+		float distance = ABS(view_normals[p_step].dot(edge) - view_normals[p_step].dot(origin_offset)); // distance from origin offset to actual view distance limit
 
 		max_distance = MAX(max_distance, distance);
 
-		//render cubemap side
+		// render cubemap side
 		CameraMatrix cm;
 		cm.set_perspective(90, 1, 0.01, max_distance);
 
@@ -2572,7 +2572,7 @@ bool RenderingServerScene::_render_reflection_probe_step(Instance *p_instance, i
 		_render_scene(RID(), xform, cm, false, RID(), RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
-		//do roughness postprocess step until it believes it's done
+		// do roughness postprocess step until it believes it's done
 		RENDER_TIMESTAMP("Post-Process Reflection Probe, Step " + itos(p_step));
 		return RSG::scene_render->reflection_probe_instance_postprocess_step(reflection_probe->instance);
 	}
@@ -2596,7 +2596,7 @@ void RenderingServerScene::render_probes() {
 		switch (RSG::storage->reflection_probe_get_update_mode(base)) {
 
 			case RS::REFLECTION_PROBE_UPDATE_ONCE: {
-				if (busy) //already rendering something
+				if (busy) // already rendering something
 					break;
 
 				bool done = _render_reflection_probe_step(ref_probe->self()->owner, ref_probe->self()->render_step);
@@ -2606,7 +2606,7 @@ void RenderingServerScene::render_probes() {
 					ref_probe->self()->render_step++;
 				}
 
-				busy = true; //do not render another one of this kind
+				busy = true; // do not render another one of this kind
 			} break;
 			case RS::REFLECTION_PROBE_UPDATE_ALWAYS: {
 
@@ -2639,7 +2639,7 @@ void RenderingServerScene::render_probes() {
 		InstanceGIProbeData *probe = gi_probe->self();
 		//Instance *instance_probe = probe->owner;
 
-		//check if probe must be setup, but don't do if on the lighting thread
+		// check if probe must be setup, but don't do if on the lighting thread
 
 		bool cache_dirty = false;
 		int cache_count = 0;
@@ -2649,7 +2649,7 @@ void RenderingServerScene::render_probes() {
 			const InstanceGIProbeData::LightCache *caches = probe->light_cache.ptr();
 			const RID *instance_caches = probe->light_instances.ptr();
 
-			int idx = 0; //must count visible lights
+			int idx = 0; // must count visible lights
 			for (Set<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
 				Instance *instance = E->get();
 				InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
@@ -2657,7 +2657,7 @@ void RenderingServerScene::render_probes() {
 					continue;
 				}
 				if (cache_dirty) {
-					//do nothing, since idx must count all visible lights anyway
+					// do nothing, since idx must count all visible lights anyway
 				} else if (idx >= light_cache_size) {
 					cache_dirty = true;
 				} else {
@@ -2691,7 +2691,7 @@ void RenderingServerScene::render_probes() {
 					continue;
 				}
 				if (cache_dirty) {
-					//do nothing, since idx must count all visible lights anyway
+					// do nothing, since idx must count all visible lights anyway
 				} else if (idx >= light_cache_size) {
 					cache_dirty = true;
 				} else {
@@ -2734,7 +2734,7 @@ void RenderingServerScene::render_probes() {
 				InstanceGIProbeData::LightCache *caches = probe->light_cache.ptrw();
 				RID *instance_caches = probe->light_instances.ptrw();
 
-				int idx = 0; //must count visible lights
+				int idx = 0; // must count visible lights
 				for (Set<Instance *>::Element *E = probe->lights.front(); E; E = E->next()) {
 					Instance *instance = E->get();
 					InstanceLightData *instance_light = (InstanceLightData *)instance->base_data;
@@ -2796,9 +2796,9 @@ void RenderingServerScene::render_probes() {
 				InstanceGeometryData *geom = (InstanceGeometryData *)ins->base_data;
 
 				if (geom->gi_probes_dirty) {
-					//giprobes may be dirty, so update
+					// giprobes may be dirty, so update
 					int l = 0;
-					//only called when reflection probe AABB enter/exit this geometry
+					// only called when reflection probe AABB enter/exit this geometry
 					ins->gi_probe_instances.resize(geom->gi_probes.size());
 
 					for (List<Instance *>::Element *F = geom->gi_probes.front(); F; F = F->next()) {
@@ -2836,7 +2836,7 @@ void RenderingServerScene::_update_instance_shader_parameters_from_material(Map<
 			if (isparams[name].index != E->get().index) {
 				WARN_PRINT("More than one material in instance export the same instance shader uniform '" + E->get().info.name + "', but they do it with different indices. Only the first one (in order) will display correctly.");
 			}
-			continue; //first one found always has priority
+			continue; // first one found always has priority
 		}
 
 		RasterizerScene::InstanceBase::InstanceShaderParameter isp;
@@ -2871,7 +2871,7 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 		}
 
 		if (p_instance->base_type == RS::INSTANCE_MESH) {
-			//remove materials no longer used and un-own them
+			// remove materials no longer used and un-own them
 
 			int new_mat_count = RSG::storage->mesh_get_surface_count(p_instance->base);
 			p_instance->materials.resize(new_mat_count);
@@ -3036,7 +3036,7 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 			}
 
 			if (can_cast_shadows != geom->can_cast_shadows) {
-				//ability to cast shadows change, let lights now
+				// ability to cast shadows change, let lights now
 				for (List<Instance *>::Element *E = geom->lighting.front(); E; E = E->next()) {
 					InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
 					light->shadow_dirty = true;
@@ -3124,10 +3124,10 @@ bool RenderingServerScene::free(RID p_rid) {
 		instance_attach_skeleton(p_rid, RID());
 
 		if (instance->instance_allocated_shader_parameters) {
-			//free the used shader parameters
+			// free the used shader parameters
 			RSG::storage->global_variables_instance_free(instance->self);
 		}
-		update_dirty_instances(); //in case something changed this
+		update_dirty_instances(); // in case something changed this
 
 		instance_owner.free(p_rid);
 		memdelete(instance);

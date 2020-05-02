@@ -144,7 +144,7 @@ void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
 
 void ColorPicker::set_pick_color(const Color &p_color) {
 
-	_set_pick_color(p_color, true); //because setters can't have more arguments
+	_set_pick_color(p_color, true); // because setters can't have more arguments
 }
 
 void ColorPicker::set_edit_alpha(bool p_show) {
@@ -248,7 +248,7 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 
 void ColorPicker::_update_presets() {
 	return;
-	//presets should be shown using buttons or something else, this method is not a good idea
+	// presets should be shown using buttons or something else, this method is not a good idea
 
 	presets_per_row = 10;
 	Size2 size = bt_add_preset->get_size();
@@ -626,7 +626,7 @@ void ColorPicker::_screen_pick_pressed() {
 #ifndef _MSC_VER
 #warning show modal no longer works, needs to be converted to a popup
 #endif
-	//screen->show_modal();
+	// screen->show_modal();
 }
 
 void ColorPicker::_focus_enter() {
@@ -891,7 +891,7 @@ void ColorPickerButton::pressed() {
 	popup->set_as_minsize();
 
 	Rect2i usable_rect = popup->get_usable_parent_rect();
-	//let's try different positions to see which one we can use
+	// let's try different positions to see which one we can use
 
 	Rect2i cp_rect(Point2i(), popup->get_size());
 	for (int i = 0; i < 4; i++) {

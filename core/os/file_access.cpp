@@ -93,7 +93,7 @@ Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
 
 FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
 
-	//try packed data first
+	// try packed data first
 
 	FileAccess *ret = nullptr;
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
@@ -125,7 +125,7 @@ FileAccess::CreateFunc FileAccess::get_create_func(AccessType p_access) {
 };
 
 String FileAccess::fix_path(const String &p_path) const {
-	//helper used by file accesses that use a single filesystem
+	// helper used by file accesses that use a single filesystem
 
 	String r_path = p_path.replace("\\", "/");
 

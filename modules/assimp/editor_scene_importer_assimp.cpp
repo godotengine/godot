@@ -110,7 +110,7 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 	// Cannot remove pivot points because the static mesh will be in the wrong place
 	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 	int32_t max_bone_weights = 4;
-	//if (p_flags & IMPORT_ANIMATION_EIGHT_WEIGHTS) {
+	// if (p_flags & IMPORT_ANIMATION_EIGHT_WEIGHTS) {
 	//	const int eight_bones = 8;
 	//	importer.SetPropertyBool(AI_CONFIG_PP_LBW_MAX_WEIGHTS, eight_bones);
 	//	max_bone_weights = eight_bones;
@@ -118,34 +118,34 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
 
-	//importer.SetPropertyFloat(AI_CONFIG_PP_DB_THRESHOLD, 1.0f);
+	// importer.SetPropertyFloat(AI_CONFIG_PP_DB_THRESHOLD, 1.0f);
 	int32_t post_process_Steps = aiProcess_CalcTangentSpace |
 								 aiProcess_GlobalScale |
 								 // imports models and listens to their file scale for CM to M conversions
-								 //aiProcess_FlipUVs |
+								 // aiProcess_FlipUVs |
 								 aiProcess_FlipWindingOrder |
 								 // very important for culling so that it is done in the correct order.
-								 //aiProcess_DropNormals |
-								 //aiProcess_GenSmoothNormals |
-								 //aiProcess_JoinIdenticalVertices |
+								 // aiProcess_DropNormals |
+								 // aiProcess_GenSmoothNormals |
+								 // aiProcess_JoinIdenticalVertices |
 								 aiProcess_ImproveCacheLocality |
-								 //aiProcess_RemoveRedundantMaterials | // Causes a crash
-								 //aiProcess_SplitLargeMeshes |
+								 // aiProcess_RemoveRedundantMaterials | // Causes a crash
+								 // aiProcess_SplitLargeMeshes |
 								 aiProcess_Triangulate |
 								 aiProcess_GenUVCoords |
-								 //aiProcess_FindDegenerates |
-								 //aiProcess_SortByPType |
+								 // aiProcess_FindDegenerates |
+								 // aiProcess_SortByPType |
 								 // aiProcess_FindInvalidData |
 								 aiProcess_TransformUVCoords |
 								 aiProcess_FindInstances |
-								 //aiProcess_FixInfacingNormals |
-								 //aiProcess_ValidateDataStructure |
+								 // aiProcess_FixInfacingNormals |
+								 // aiProcess_ValidateDataStructure |
 								 aiProcess_OptimizeMeshes |
 								 aiProcess_PopulateArmatureData |
-								 //aiProcess_OptimizeGraph |
-								 //aiProcess_Debone |
+								 // aiProcess_OptimizeGraph |
+								 // aiProcess_Debone |
 								 // aiProcess_EmbedTextures |
-								 //aiProcess_SplitByBoneCount |
+								 // aiProcess_SplitByBoneCount |
 								 0;
 	aiScene *scene = (aiScene *)importer.ReadFile(s_path.c_str(), post_process_Steps);
 
@@ -211,7 +211,7 @@ struct EditorSceneImporterAssetImportInterpolate<Quat> {
 template <class T>
 T EditorSceneImporterAssimp::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time,
 		AssetImportAnimation::Interpolation p_interp) {
-	//could use binary search, worth it?
+	// could use binary search, worth it?
 	int idx = -1;
 	for (int i = 0; i < p_times.size(); i++) {
 		if (p_times[i] > p_time)
@@ -341,7 +341,7 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 			const aiNode *parent_assimp_node = element_assimp_node->mParent;
 
 			String node_name = AssimpUtils::get_assimp_string(element_assimp_node->mName);
-			//print_verbose("node: " + node_name);
+			// print_verbose("node: " + node_name);
 
 			Node3D *spatial = nullptr;
 			Transform transform = AssimpUtils::assimp_matrix_transform(element_assimp_node->mTransformation);
@@ -562,11 +562,11 @@ void EditorSceneImporterAssimp::_insert_animation_track(ImportState &scene, cons
 		Skeleton3D *skeleton, const NodePath &node_path,
 		const String &node_name, aiBone *track_bone) {
 	const aiNodeAnim *assimp_track = assimp_anim->mChannels[track_id];
-	//make transform track
+	// make transform track
 	int track_idx = animation->get_track_count();
 	animation->add_track(Animation::TYPE_TRANSFORM);
 	animation->track_set_path(track_idx, node_path);
-	//first determine animation length
+	// first determine animation length
 
 	float increment = 1.0 / float(anim_fps);
 	float time = 0.0;
@@ -640,7 +640,7 @@ void EditorSceneImporterAssimp::_insert_animation_track(ImportState &scene, cons
 		animation->track_set_interpolation_type(track_idx, Animation::INTERPOLATION_LINEAR);
 		animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
 
-		if (last) { //done this way so a key is always inserted past the end (for proper interpolation)
+		if (last) { // done this way so a key is always inserted past the end (for proper interpolation)
 			break;
 		}
 		time += increment;
@@ -678,7 +678,7 @@ void EditorSceneImporterAssimp::RegenerateBoneStack(ImportState &state) {
 
 			// doubtful this is required right now but best to check
 			if (!state.bone_stack.find(bone)) {
-				//print_verbose("[assimp] bone stack added: " + String(bone->mName.C_Str()) );
+				// print_verbose("[assimp] bone stack added: " + String(bone->mName.C_Str()) );
 				state.bone_stack.push_back(bone);
 			}
 		}
@@ -718,7 +718,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 	}
 
 	//?
-	//if ((p_path.get_file().get_extension().to_lower() == "glb" || p_path.get_file().get_extension().to_lower() == "gltf") && Math::is_equal_approx(ticks_per_second, 0.0f)) {
+	// if ((p_path.get_file().get_extension().to_lower() == "glb" || p_path.get_file().get_extension().to_lower() == "gltf") && Math::is_equal_approx(ticks_per_second, 0.0f)) {
 	//	ticks_per_second = 1000.0f;
 	//}
 
@@ -738,13 +738,13 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 	// generate bone stack for animation import
 	RegenerateBoneStack(state);
 
-	//regular tracks
+	// regular tracks
 	for (size_t i = 0; i < anim->mNumChannels; i++) {
 		const aiNodeAnim *track = anim->mChannels[i];
 		String node_name = AssimpUtils::get_assimp_string(track->mNodeName);
 		print_verbose("track name import: " + node_name);
 		if (track->mNumRotationKeys == 0 && track->mNumPositionKeys == 0 && track->mNumScalingKeys == 0) {
-			continue; //do not bother
+			continue; // do not bother
 		}
 
 		Skeleton3D *skeleton = nullptr;
@@ -792,7 +792,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 		}
 	}
 
-	//blend shape tracks
+	// blend shape tracks
 
 	for (size_t i = 0; i < anim->mNumMorphMeshChannels; i++) {
 
@@ -813,7 +813,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		ERR_CONTINUE(mesh.is_null());
 
-		//add the tracks for this mesh
+		// add the tracks for this mesh
 		int base_track = animation->get_track_count();
 		for (int j = 0; j < mesh->get_blend_shape_count(); j++) {
 
@@ -1316,7 +1316,7 @@ EditorSceneImporterAssimp::create_mesh(ImportState &state, const aiNode *assimp_
 		surface_indices.push_back(mesh_index);
 	}
 
-	//surface_indices.sort();
+	// surface_indices.sort();
 	String mesh_key;
 	for (int i = 0; i < surface_indices.size(); i++) {
 		if (i > 0) {

@@ -1238,7 +1238,7 @@ void TranslationServer::_bind_methods() {
 void TranslationServer::load_translations() {
 
 	String locale = get_locale();
-	_load_translations("locale/translations"); //all
+	_load_translations("locale/translations"); // all
 	_load_translations("locale/translations_" + locale.substr(0, 2));
 
 	if (locale.substr(0, 2) != locale) {

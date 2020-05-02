@@ -50,7 +50,7 @@ Node *SceneTreeEditor::get_scene_node() {
 void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 
 	if (connect_to_script_mode) {
-		return; //don't do anything in this mode
+		return; // don't do anything in this mode
 	}
 
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
@@ -175,7 +175,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		if ((show_enabled_subscene || can_open_instance) && p_node->get_owner() && (get_scene_node()->is_editable_instance(p_node->get_owner()))) {
 
 			part_of_subscene = true;
-			//allow
+			// allow
 		} else {
 			return false;
 		}
@@ -205,10 +205,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 
 		Ref<Script> script = p_node->get_script();
 		if (!script.is_null() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) != script) {
-			//has script
+			// has script
 			item->add_button(0, get_theme_icon("Script", "EditorIcons"), BUTTON_SCRIPT);
 		} else {
-			//has no script (or script is a custom type)
+			// has no script (or script is a custom type)
 			item->set_custom_color(0, get_theme_color("disabled_font_color", "Editor"));
 			item->set_selectable(0, false);
 
@@ -255,7 +255,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 	}
 
-	if (can_rename) { //should be can edit..
+	if (can_rename) { // should be can edit..
 
 		String warning = p_node->get_configuration_warning();
 		if (warning != String()) {
@@ -416,7 +416,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		}
 
 		if (!valid) {
-			//item->set_selectable(0,marked_selectable);
+			// item->set_selectable(0,marked_selectable);
 			item->set_custom_color(0, get_theme_color("disabled_font_color", "Editor"));
 			item->set_selectable(0, false);
 		}
@@ -493,7 +493,7 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 void SceneTreeEditor::_node_removed(Node *p_node) {
 
 	if (EditorNode::get_singleton()->is_exiting())
-		return; //speed up exit
+		return; // speed up exit
 
 	if (p_node->is_connected("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed)))
 		p_node->disconnect("script_changed", callable_mp(this, &SceneTreeEditor::_node_script_changed));
@@ -542,7 +542,7 @@ void SceneTreeEditor::_compute_hash(Node *p_node, uint64_t &hash) {
 
 	hash = hash_djb2_one_64(p_node->get_instance_id(), hash);
 	if (p_node->get_parent())
-		hash = hash_djb2_one_64(p_node->get_parent()->get_instance_id(), hash); //so a reparent still produces a different hash
+		hash = hash_djb2_one_64(p_node->get_parent()->get_instance_id(), hash); // so a reparent still produces a different hash
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 
@@ -563,7 +563,7 @@ void SceneTreeEditor::_test_update_tree() {
 	uint64_t hash = hash_djb2_one_64(0);
 	if (get_scene_node())
 		_compute_hash(get_scene_node(), hash);
-	//test hash
+	// test hash
 	if (hash == last_hash)
 		return; // did not change
 
@@ -574,7 +574,7 @@ void SceneTreeEditor::_test_update_tree() {
 void SceneTreeEditor::_tree_changed() {
 
 	if (EditorNode::get_singleton()->is_exiting())
-		return; //speed up exit
+		return; // speed up exit
 	if (pending_test_update)
 		return;
 	if (tree_dirty)
@@ -902,7 +902,7 @@ void SceneTreeEditor::_cell_collapsed(Object *p_obj) {
 
 Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (!can_rename)
-		return Variant(); //not editable tree
+		return Variant(); // not editable tree
 
 	Vector<Node *> selected;
 	Vector<Ref<Texture2D>> icons;
@@ -966,9 +966,9 @@ bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
 bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 
 	if (!can_rename)
-		return false; //not editable tree
+		return false; // not editable tree
 	if (filter != String())
-		return false; //can't rearrange tree with filter turned on
+		return false; // can't rearrange tree with filter turned on
 
 	Dictionary d = p_data;
 	if (!d.has("type"))
@@ -987,7 +987,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		Vector<String> files = d["files"];
 
 		if (files.size() == 0)
-			return false; //weird
+			return false; // weird
 
 		if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(files[0]))) {
 			tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
@@ -1001,7 +1001,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 				return false;
 		}
 
-		tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM); //so it works..
+		tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM); // so it works..
 
 		return true;
 	}
@@ -1073,7 +1073,7 @@ void SceneTreeEditor::_rmb_select(const Vector2 &p_pos) {
 
 void SceneTreeEditor::_warning_changed(Node *p_for_node) {
 
-	//should use a timer
+	// should use a timer
 	update_timer->start();
 }
 
@@ -1157,7 +1157,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	tree->connect("multi_selected", callable_mp(this, &SceneTreeEditor::_cell_multi_selected));
 	tree->connect("button_pressed", callable_mp(this, &SceneTreeEditor::_cell_button_pressed));
 	tree->connect("nothing_selected", callable_mp(this, &SceneTreeEditor::_deselect_items));
-	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
+	// tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew(AcceptDialog);
 	add_child(error);

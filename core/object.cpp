@@ -368,7 +368,7 @@ bool Object::_predelete() {
 	_predelete_ok = 1;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
-		_class_ptr = nullptr; //must restore so destructors can access class ptr correctly
+		_class_ptr = nullptr; // must restore so destructors can access class ptr correctly
 	}
 	return _predelete_ok;
 }
@@ -400,7 +400,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 
-	//try built-in setgetter
+	// try built-in setgetter
 	{
 		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
 			/*
@@ -418,14 +418,14 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 
 	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
-		//set_meta(p_name,p_value);
+		// set_meta(p_name,p_value);
 		metadata = p_value.duplicate();
 		if (r_valid)
 			*r_valid = true;
 		return;
 	}
 
-	//something inside the object... :|
+	// something inside the object... :|
 	bool success = _setv(p_name, p_value);
 	if (success) {
 		if (r_valid)
@@ -472,7 +472,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		}
 	}
 
-	//try built-in setgetter
+	// try built-in setgetter
 	{
 		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
 			if (r_valid)
@@ -494,7 +494,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		return ret;
 
 	} else {
-		//something inside the object... :|
+		// something inside the object... :|
 		bool success = _getv(p_name, ret);
 		if (success) {
 			if (r_valid)
@@ -502,7 +502,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			return ret;
 		}
 
-		//if nothing else, use getvar
+		// if nothing else, use getvar
 		{
 			bool valid;
 			ret = getvar(p_name, &valid);
@@ -724,7 +724,7 @@ void Object::call_multilevel(const StringName &p_method, const Variant **p_args,
 		ERR_FAIL_COND_MSG(_lock_index.get() > 1, "Object is locked and can't be freed.");
 #endif
 
-		//must be here, must be before everything,
+		// must be here, must be before everything,
 		memdelete(this);
 		return;
 	}
@@ -871,7 +871,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 		}
 
 #endif
-		//must be here, must be before everything,
+		// must be here, must be before everything,
 		memdelete(this);
 		r_error.error = Callable::CallError::CALL_OK;
 		return Variant();
@@ -881,7 +881,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 	OBJ_DEBUG_LOCK
 	if (script_instance) {
 		ret = script_instance->call(p_method, p_args, p_argcount, r_error);
-		//force jumptable
+		// force jumptable
 		switch (r_error.error) {
 
 			case Callable::CallError::CALL_OK:
@@ -952,7 +952,7 @@ void Object::cancel_delete() {
 
 void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_instance) {
 
-	//this function is not meant to be used in any of these ways
+	// this function is not meant to be used in any of these ways
 	ERR_FAIL_COND(p_script.is_null());
 	ERR_FAIL_COND(!p_instance);
 	ERR_FAIL_COND(script_instance != nullptr || !script.is_null());
@@ -984,7 +984,7 @@ void Object::set_script(const Variant &p_script) {
 		}
 	}
 
-	_change_notify(); //scripts may add variables, so refresh is desired
+	_change_notify(); // scripts may add variables, so refresh is desired
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
 }
 
@@ -1050,7 +1050,7 @@ Array Object::_get_method_list_bind() const {
 	for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
 
 		Dictionary d = E->get();
-		//va.push_back(d);
+		// va.push_back(d);
 		ret.push_back(d);
 	}
 
@@ -1134,24 +1134,24 @@ Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::C
 Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount) {
 
 	if (_block_signals)
-		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
+		return ERR_CANT_ACQUIRE_RESOURCE; // no emit, signals blocked
 
 	SignalData *s = signal_map.getptr(p_name);
 	if (!s) {
 #ifdef DEBUG_ENABLED
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_name);
-		//check in script
+		// check in script
 		ERR_FAIL_COND_V_MSG(!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name), ERR_UNAVAILABLE, "Can't emit non-existing signal " + String("\"") + p_name + "\".");
 #endif
-		//not connected? just return
+		// not connected? just return
 		return ERR_UNAVAILABLE;
 	}
 
 	List<_ObjectSignalDisconnectData> disconnect_data;
 
-	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
-	//this happens automatically and will not change the performance of calling.
-	//awesome, isn't it?
+	// copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
+	// this happens automatically and will not change the performance of calling.
+	// awesome, isn't it?
 	VMap<Callable, SignalData::Slot> slot_map = s->slot_map;
 
 	int ssize = slot_map.size();
@@ -1176,7 +1176,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		int argc = p_argcount;
 
 		if (c.binds.size()) {
-			//handle binds
+			// handle binds
 			bind_mem.resize(p_argcount + c.binds.size());
 
 			for (int j = 0; j < p_argcount; j++) {
@@ -1205,7 +1205,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 					continue;
 #endif
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
-					//most likely object is not initialized yet, do not throw error.
+					// most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINT("Error calling from signal '" + String(p_name) + "' to callable: " + Variant::get_callable_error_text(c.callable, args, argc, ce) + ".");
 					err = ERR_METHOD_NOT_FOUND;
@@ -1216,7 +1216,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		bool disconnect = c.flags & CONNECT_ONESHOT;
 #ifdef TOOLS_ENABLED
 		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
-			//this signal was connected from the editor, and is being edited. just don't disconnect for now
+			// this signal was connected from the editor, and is being edited. just don't disconnect for now
 			disconnect = false;
 		}
 #endif
@@ -1353,13 +1353,13 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	}
 
 	ClassDB::get_signal_list(get_class_name(), p_signals);
-	//find maybe usersignals?
+	// find maybe usersignals?
 	const StringName *S = nullptr;
 
 	while ((S = signal_map.next(S))) {
 
 		if (signal_map[*S].user.name != "") {
-			//user signal
+			// user signal
 			p_signals->push_back(signal_map[*S].user);
 		}
 	}
@@ -1384,7 +1384,7 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s)
-		return; //nothing
+		return; // nothing
 
 	for (int i = 0; i < s->slot_map.size(); i++)
 		p_connections->push_back(s->slot_map.getv(i).conn);
@@ -1430,7 +1430,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
-		//check in script
+		// check in script
 		if (!signal_is_valid && !script.is_null()) {
 
 			if (Ref<Script>(script)->has_script_signal(p_signal)) {
@@ -1438,7 +1438,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, co
 			}
 #ifdef TOOLS_ENABLED
 			else {
-				//allow connecting signals anyway if script is invalid, see issue #17070
+				// allow connecting signals anyway if script is invalid, see issue #17070
 				if (!Ref<Script>(script)->is_valid()) {
 					signal_is_valid = true;
 				}
@@ -1504,8 +1504,8 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 	Callable target = p_callable;
 
 	return s->slot_map.has(target);
-	//const Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.find(target);
-	//return (E!=nullptr );
+	// const Map<Signal::Target,Signal::Slot>::Element *E = s->slot_map.find(target);
+	// return (E!=nullptr );
 }
 
 void Object::disconnect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method) {
@@ -1542,7 +1542,7 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 	s->slot_map.erase(p_callable);
 
 	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
-		//not user signal, delete
+		// not user signal, delete
 		signal_map.erase(p_signal);
 	}
 }
@@ -1596,7 +1596,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 				return;
 
 			if (!r->get_path().begins_with("res://") || r->get_path().find("::") == -1)
-				return; //not an internal resource
+				return; // not an internal resource
 
 			Object *object = p_var;
 			if (!object)
@@ -1892,10 +1892,10 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	ERR_FAIL_INDEX_V(p_script_language_index, MAX_SCRIPT_INSTANCE_BINDINGS, nullptr);
 #endif
 
-	//it's up to the script language to make this thread safe, if the function is called twice due to threads being out of syncro
-	//just return the same pointer.
-	//if you want to put a big lock in the entire function and keep allocated pointers in a map or something, feel free to do it
-	//as it should not really affect performance much (won't be called too often), as in far most caes the condition below will be false afterwards
+	// it's up to the script language to make this thread safe, if the function is called twice due to threads being out of syncro
+	// just return the same pointer.
+	// if you want to put a big lock in the entire function and keep allocated pointers in a map or something, feel free to do it
+	// as it should not really affect performance much (won't be called too often), as in far most caes the condition below will be false afterwards
 
 	if (!_script_instance_bindings[p_script_language_index]) {
 		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
@@ -1968,7 +1968,7 @@ Object::~Object() {
 
 		SignalData *s = &signal_map[*S];
 
-		//brute force disconnect for performance
+		// brute force disconnect for performance
 		int slot_count = s->slot_map.size();
 		const VMap<Callable, SignalData::Slot>::Pair *slot_list = s->slot_map.get_array();
 
@@ -1980,7 +1980,7 @@ Object::~Object() {
 		signal_map.erase(*S);
 	}
 
-	//signals from nodes that connect to this node
+	// signals from nodes that connect to this node
 	while (connections.size()) {
 
 		Connection c = connections.front()->get();
@@ -2082,7 +2082,7 @@ ObjectID ObjectDB::add_instance(Object *p_object) {
 
 void ObjectDB::remove_instance(Object *p_object) {
 	uint64_t t = p_object->get_instance_id();
-	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; //slot is always valid on valid object
+	uint32_t slot = t & OBJECTDB_SLOT_MAX_COUNT_MASK; // slot is always valid on valid object
 
 	spin_lock.lock();
 
@@ -2101,11 +2101,11 @@ void ObjectDB::remove_instance(Object *p_object) {
 	}
 
 #endif
-	//decrease slot count
+	// decrease slot count
 	slot_count--;
-	//set the free slot properly
+	// set the free slot properly
 	object_slots[slot_count].next_free = slot;
-	//invalidate, so checks against it fail
+	// invalidate, so checks against it fail
 	object_slots[slot].validator = 0;
 	object_slots[slot].is_reference = false;
 	object_slots[slot].object = nullptr;
@@ -2115,7 +2115,7 @@ void ObjectDB::remove_instance(Object *p_object) {
 
 void ObjectDB::setup() {
 
-	//nothing to do now
+	// nothing to do now
 }
 
 void ObjectDB::cleanup() {

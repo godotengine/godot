@@ -59,7 +59,7 @@ void RemoteTransform2D::_update_remote() {
 	if (!n->is_inside_tree())
 		return;
 
-	//todo make faster
+	// todo make faster
 	if (use_global_coordinates) {
 
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {

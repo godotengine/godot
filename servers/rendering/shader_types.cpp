@@ -72,7 +72,7 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["ROUGHNESS"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].can_discard = false;
 
-	//builtins
+	// builtins
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["WORLD_MATRIX"] = ShaderLanguage::TYPE_MAT4;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["WORLD_NORMAL_MATRIX"] = ShaderLanguage::TYPE_MAT3;
 	shader_modes[RS::SHADER_SPATIAL].functions["vertex"].built_ins["INV_CAMERA_MATRIX"] = constt(ShaderLanguage::TYPE_MAT4);
@@ -158,7 +158,7 @@ ShaderTypes::ShaderTypes() {
 
 	shader_modes[RS::SHADER_SPATIAL].functions["light"].can_discard = true;
 
-	//order used puts first enum mode (default) first
+	// order used puts first enum mode (default) first
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_mix");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_add");
 	shader_modes[RS::SHADER_SPATIAL].modes.push_back("blend_sub");

@@ -283,7 +283,7 @@ void HaikuDirectWindow::HandleKeyboardEvent(BMessage *message) {
 		event->set_unicode(BUnicodeChar::FromUTF8(&bytes));
 	}
 
-	//make it consistent across platforms.
+	// make it consistent across platforms.
 	if (event->get_keycode() == KEY_BACKTAB) {
 		event->set_keycode(KEY_TAB);
 		event->set_physical_keycode(KEY_TAB);

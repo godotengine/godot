@@ -210,11 +210,11 @@ RID RenderingServer::_make_test_cube() {
 			normal_points[j][i % 3] = (i >= 3 ? -1 : 1);
 		}
 
-		//tri 1
+		// tri 1
 		ADD_VTX(0);
 		ADD_VTX(1);
 		ADD_VTX(2);
-		//tri 2
+		// tri 2
 		ADD_VTX(2);
 		ADD_VTX(3);
 		ADD_VTX(0);
@@ -239,7 +239,7 @@ RID RenderingServer::_make_test_cube() {
 
 	/*
 	test_material = fixed_material_create();
-	//material_set_flag(material, MATERIAL_FLAG_BILLBOARD_TOGGLE,true);
+	// material_set_flag(material, MATERIAL_FLAG_BILLBOARD_TOGGLE,true);
 	fixed_material_set_texture( test_material, FIXED_MATERIAL_PARAM_DIFFUSE, get_test_texture() );
 	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_SPECULAR_EXP, 70 );
 	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_EMISSION, Color(0.2,0.2,0.2) );
@@ -368,7 +368,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 							if (i == 0) {
 
-								aabb = Rect2(src[i], SMALL_VEC2); //must have a bit of size
+								aabb = Rect2(src[i], SMALL_VEC2); // must have a bit of size
 							} else {
 
 								aabb.expand_to(src[i]);
@@ -649,7 +649,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 	}
 
 	if (p_format & RS::ARRAY_FORMAT_BONES) {
-		//create AABBs for each detected bone
+		// create AABBs for each detected bone
 		int total_bones = max_bone + 1;
 
 		bool first = r_bone_aabb.size() == 0;
@@ -658,7 +658,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 
 		if (first) {
 			for (int i = 0; i < total_bones; i++) {
-				r_bone_aabb.write[i].size = Vector3(-1, -1, -1); //negative means unused
+				r_bone_aabb.write[i].size = Vector3(-1, -1, -1); // negative means unused
 			}
 		}
 
@@ -685,11 +685,11 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint
 					int idx = rb[i * 4 + j];
 					float w = rw[i * 4 + j];
 					if (w == 0)
-						continue; //break;
+						continue; // break;
 					ERR_FAIL_INDEX_V(idx, total_bones, ERR_INVALID_DATA);
 
 					if (bptr[idx].size.x < 0) {
-						//first
+						// first
 						bptr[idx] = AABB(v, SMALL_VEC3);
 						any_valid = true;
 					} else {
@@ -724,7 +724,7 @@ uint32_t RenderingServer::mesh_surface_make_offsets_from_format(uint32_t p_forma
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
 
-		r_offsets[i] = 0; //reset
+		r_offsets[i] = 0; // reset
 
 		if (!(p_format & (1 << i))) // no array
 			continue;
@@ -875,7 +875,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	ERR_FAIL_COND_V((format & RS::ARRAY_FORMAT_VERTEX) == 0, ERR_INVALID_PARAMETER); // mandatory
 
 	if (p_blend_shapes.size()) {
-		//validate format for morphs
+		// validate format for morphs
 		for (int i = 0; i < p_blend_shapes.size(); i++) {
 
 			uint32_t bsformat = 0;
@@ -896,7 +896,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
 
-		offsets[i] = 0; //reset
+		offsets[i] = 0; // reset
 
 		if (!(format & (1 << i))) // no array
 			continue;
@@ -1003,7 +1003,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	}
 
 	uint32_t mask = (1 << ARRAY_MAX) - 1;
-	format |= (~mask) & p_compress_format; //make the full format
+	format |= (~mask) & p_compress_format; // make the full format
 
 	int array_size = total_elem_size * array_len;
 
@@ -1047,7 +1047,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 			Vector<int> indices = p_lods[E->get()];
 			ERR_CONTINUE(indices.size() == 0);
 			uint32_t index_count = indices.size();
-			ERR_CONTINUE(index_count >= (uint32_t)index_array_len); //should be smaller..
+			ERR_CONTINUE(index_count >= (uint32_t)index_array_len); // should be smaller..
 
 			const int *r = indices.ptr();
 
@@ -1110,7 +1110,7 @@ Array RenderingServer::_get_array_from_surface(uint32_t p_format, Vector<uint8_t
 
 	for (int i = 0; i < RS::ARRAY_MAX; i++) {
 
-		offsets[i] = 0; //reset
+		offsets[i] = 0; // reset
 
 		if (!(p_format & (1 << i))) // no array
 			continue;
@@ -1597,7 +1597,7 @@ ShaderLanguage::DataType RenderingServer::global_variable_type_get_shader_dataty
 		case RS::GLOBAL_VAR_TYPE_SAMPLER2DARRAY: return ShaderLanguage::TYPE_SAMPLER2DARRAY;
 		case RS::GLOBAL_VAR_TYPE_SAMPLER3D: return ShaderLanguage::TYPE_SAMPLER3D;
 		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE: return ShaderLanguage::TYPE_SAMPLERCUBE;
-		default: return ShaderLanguage::TYPE_MAX; //invalid or not found
+		default: return ShaderLanguage::TYPE_MAX; // invalid or not found
 	}
 }
 
@@ -2335,7 +2335,7 @@ void RenderingServer::_bind_methods() {
 void RenderingServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {
 
 	ERR_FAIL_COND(p_margins.size() != 4);
-	//canvas_item_add_style_box(p_item,p_rect,p_source,p_texture,Vector2(p_margins[0],p_margins[1]),Vector2(p_margins[2],p_margins[3]),true,p_modulate);
+	// canvas_item_add_style_box(p_item,p_rect,p_source,p_texture,Vector2(p_margins[0],p_margins[1]),Vector2(p_margins[2],p_margins[3]),true,p_modulate);
 }
 
 void RenderingServer::_camera_set_orthogonal(RID p_camera, float p_size, float p_z_near, float p_z_far) {

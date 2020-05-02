@@ -176,7 +176,7 @@ void VisibilityEnabler3D::_find_nodes(Node *p_node) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
 		if (c->get_filename() != String())
-			continue; //skip, instance
+			continue; // skip, instance
 
 		_find_nodes(c);
 	}
@@ -190,7 +190,7 @@ void VisibilityEnabler3D::_notification(int p_what) {
 			return;
 
 		Node *from = this;
-		//find where current scene starts
+		// find where current scene starts
 		while (from->get_parent() && from->get_filename() == String())
 			from = from->get_parent();
 

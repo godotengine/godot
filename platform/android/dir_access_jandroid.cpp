@@ -128,7 +128,7 @@ Error DirAccessJAndroid::change_dir(String p_dir) {
 	else
 		new_dir = current_dir.plus_file(p_dir);
 
-	//test if newdir exists
+	// test if newdir exists
 	new_dir = new_dir.simplify_path();
 
 	jstring js = env->NewStringUTF(new_dir.utf8().get_data());

@@ -232,7 +232,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					} else if (ch == '"') {
 						break;
 					} else if (ch == '\\') {
-						//escaped characters...
+						// escaped characters...
 						CharType next = p_stream->get_char();
 						if (next == 0) {
 							r_err_str = "Unterminated String";
@@ -249,7 +249,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							case 'f': res = 12; break;
 							case 'r': res = 13; break;
 							case 'u': {
-								//hex number
+								// hex number
 								for (int j = 0; j < 4; j++) {
 									CharType c = p_stream->get_char();
 									if (c == 0) {
@@ -302,7 +302,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				if (string_name) {
 					r_token.type = TK_STRING_NAME;
 					r_token.value = StringName(str);
-					string_name = false; //reset
+					string_name = false; // reset
 				} else {
 					r_token.type = TK_STRING;
 					r_token.value = str;
@@ -317,7 +317,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				}
 
 				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
-					//a number
+					// a number
 
 					StringBuffer<> num;
 #define READING_SIGN 0
@@ -343,7 +343,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							case READING_INT: {
 
 								if (c >= '0' && c <= '9') {
-									//pass
+									// pass
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
@@ -474,7 +474,7 @@ Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, 
 		if (!first) {
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type == TK_COMMA) {
-				//do none
+				// do none
 			} else if (token.type == TK_PARENTHESIS_CLOSE) {
 				break;
 			} else {
@@ -614,7 +614,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Vector3i(args[0], args[1], args[2]);
 			return OK;
-		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
+		} else if (id == "Transform2D" || id == "Matrix32") { // compatibility
 
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -671,7 +671,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = AABB(Vector3(args[0], args[1], args[2]), Vector3(args[3], args[4], args[5]));
 			return OK;
 
-		} else if (id == "Basis" || id == "Matrix3") { //compatibility
+		} else if (id == "Basis" || id == "Matrix3") { // compatibility
 
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -1043,7 +1043,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				if (!first) {
 					get_token(p_stream, token, line, r_err_str);
 					if (token.type == TK_COMMA) {
-						//do none
+						// do none
 					} else if (token.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					} else {
@@ -1334,10 +1334,10 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 			break;
 
 		if (parsing_tag && token.type == TK_PERIOD) {
-			r_tag.name += "."; //support tags such as [someprop.Android] for specific platforms
+			r_tag.name += "."; // support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else if (parsing_tag && token.type == TK_COLON) {
-			r_tag.name += ":"; //support tags such as [someprop.Android] for specific platforms
+			r_tag.name += ":"; // support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else {
 			parsing_tag = false;
@@ -1391,7 +1391,7 @@ Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, T
 
 Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
 
-	//assign..
+	// assign..
 	r_assign = "";
 	String what;
 
@@ -1409,7 +1409,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		if (p_stream->is_eof())
 			return ERR_FILE_EOF;
 
-		if (c == ';') { //comment
+		if (c == ';') { // comment
 			while (true) {
 				CharType ch = p_stream->get_char();
 				if (p_stream->is_eof()) {
@@ -1422,8 +1422,8 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		}
 
 		if (c == '[' && what.length() == 0) {
-			//it's a tag!
-			p_stream->saved = '['; //go back one
+			// it's a tag!
+			p_stream->saved = '['; // go back one
 
 			Error err = parse_tag(p_stream, line, r_err_str, r_tag, p_res_parser, p_simple_tag);
 
@@ -1431,7 +1431,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		}
 
 		if (c > 32) {
-			if (c == '"') { //quoted
+			if (c == '"') { // quoted
 				p_stream->saved = '"';
 				Token tk;
 				Error err = get_token(p_stream, tk, line, r_err_str);
@@ -1480,7 +1480,7 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 static String rtosfix(double p_value) {
 
 	if (p_value == 0.0)
-		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
+		return "0"; // avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	else
 		return rtoss(p_value);
 }
@@ -1652,31 +1652,31 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			RES res = p_variant;
 			if (res.is_valid()) {
-				//is resource
+				// is resource
 				String res_text;
 
-				//try external function
+				// try external function
 				if (p_encode_res_func) {
 
 					res_text = p_encode_res_func(p_encode_res_ud, res);
 				}
 
-				//try path because it's a file
+				// try path because it's a file
 				if (res_text == String() && res->get_path().is_resource_file()) {
 
-					//external resource
+					// external resource
 					String path = res->get_path();
 					res_text = "Resource( \"" + path + "\")";
 				}
 
-				//could come up with some sort of text
+				// could come up with some sort of text
 				if (res_text != String()) {
 					p_store_string_func(p_store_string_ud, res_text);
 					break;
 				}
 			}
 
-			//store as generic object
+			// store as generic object
 
 			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",");
 
@@ -1686,7 +1686,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 				if (E->get().usage & PROPERTY_USAGE_STORAGE || E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
-					//must be serialized
+					// must be serialized
 
 					if (first) {
 						first = false;
@@ -1840,7 +1840,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			const String *ptr = data.ptr();
 
 			String s;
-			//write_string("\n");
+			// write_string("\n");
 
 			for (int i = 0; i < len; i++) {
 

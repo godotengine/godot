@@ -60,17 +60,17 @@ int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, in
 		case Vector3::AXIS_X: {
 			SortArray<BVH *, BVHCmpX> sort_x;
 			sort_x.nth_element(0, p_size, p_size / 2, &p_bb[p_from]);
-			//sort_x.sort(&p_bb[p_from],p_size);
+			// sort_x.sort(&p_bb[p_from],p_size);
 		} break;
 		case Vector3::AXIS_Y: {
 			SortArray<BVH *, BVHCmpY> sort_y;
 			sort_y.nth_element(0, p_size, p_size / 2, &p_bb[p_from]);
-			//sort_y.sort(&p_bb[p_from],p_size);
+			// sort_y.sort(&p_bb[p_from],p_size);
 		} break;
 		case Vector3::AXIS_Z: {
 			SortArray<BVH *, BVHCmpZ> sort_z;
 			sort_z.nth_element(0, p_size, p_size / 2, &p_bb[p_from]);
-			//sort_z.sort(&p_bb[p_from],p_size);
+			// sort_z.sort(&p_bb[p_from],p_size);
 
 		} break;
 	}
@@ -118,14 +118,14 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 	fc /= 3;
 	triangles.resize(fc);
 
-	bvh.resize(fc * 3); //will never be larger than this (todo make better)
+	bvh.resize(fc * 3); // will never be larger than this (todo make better)
 	BVH *bw = bvh.ptrw();
 
 	{
 
-		//create faces and indices and base bvh
-		//except for the Set for repeated triangles, everything
-		//goes in-place.
+		// create faces and indices and base bvh
+		// except for the Set for repeated triangles, everything
+		// goes in-place.
 
 		const Vector3 *r = p_faces.ptr();
 		Triangle *w = triangles.ptrw();
@@ -182,7 +182,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces) {
 	int max_alloc = fc;
 	_create_bvh(bw, bwp, 0, fc, 1, max_depth, max_alloc);
 
-	bvh.resize(max_alloc); //resize back
+	bvh.resize(max_alloc); // resize back
 
 	valid = true;
 }
@@ -318,7 +318,7 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 			case TEST_AABB_BIT: {
 
 				bool valid = b.aabb.intersects_segment(p_begin, p_end);
-				//bool valid = b.aabb.intersects(ray_aabb);
+				// bool valid = b.aabb.intersects(ray_aabb);
 
 				if (!valid) {
 
@@ -505,7 +505,7 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
-	//p_fully_inside = true;
+	// p_fully_inside = true;
 
 	enum {
 		TEST_AABB_BIT = 0,

@@ -51,7 +51,7 @@ static String _typestr(SL::DataType p_type) {
 
 	String type = ShaderLanguage::get_datatype_name(p_type);
 	if (ShaderLanguage::is_sampler_type(p_type)) {
-		type = type.replace("sampler", "texture"); //we use textures instead of samplers
+		type = type.replace("sampler", "texture"); // we use textures instead of samplers
 	}
 	return type;
 }
@@ -181,7 +181,7 @@ static String _opstr(SL::Operator p_op) {
 static String _mkid(const String &p_id) {
 
 	String id = "m_" + p_id.replace("__", "_dus_");
-	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
+	return id.replace("__", "_dus_"); // doubleunderscore is reserved in glsl
 }
 
 static String f2sp0(float p_float) {
@@ -306,7 +306,7 @@ void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const S
 	for (Set<StringName>::Element *E = p_node->functions[fidx].uses_function.front(); E; E = E->next()) {
 
 		if (added.has(E->get())) {
-			continue; //was added already
+			continue; // was added already
 		}
 
 		_dump_function_deps(p_node, E->get(), p_func_code, r_to_add, added);
@@ -487,7 +487,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				} else {
 
 					if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
-						continue; //instances are indexed directly, dont need index uniforms
+						continue; // instances are indexed directly, dont need index uniforms
 					}
 
 					max_uniforms++;
@@ -509,9 +509,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				String ucode;
 
 				if (E->get().scope == SL::ShaderNode::Uniform::SCOPE_INSTANCE) {
-					//insert, but don't generate any code.
+					// insert, but don't generate any code.
 					p_actions.uniforms->insert(E->key(), E->get());
-					continue; //instances are indexed directly, dont need index uniforms
+					continue; // instances are indexed directly, dont need index uniforms
 				}
 				if (SL::is_sampler_type(E->get().type)) {
 					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + E->get().texture_order) + ") uniform ";
@@ -520,7 +520,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				bool is_buffer_global = !SL::is_sampler_type(E->get().type) && E->get().scope == SL::ShaderNode::Uniform::SCOPE_GLOBAL;
 
 				if (is_buffer_global) {
-					//this is an integer to index the global table
+					// this is an integer to index the global table
 					ucode += _typestr(ShaderLanguage::TYPE_UINT);
 				} else {
 					ucode += _prestr(E->get().precision);
@@ -553,7 +553,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					}
 					uniform_defines.write[E->get().order] = ucode;
 					if (is_buffer_global) {
-						//globals are indices into the global table
+						// globals are indices into the global table
 						uniform_sizes.write[E->get().order] = _get_datatype_size(ShaderLanguage::TYPE_UINT);
 						uniform_alignments.write[E->get().order] = _get_datatype_alignment(ShaderLanguage::TYPE_UINT);
 					} else {
@@ -604,7 +604,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					uniform_sizes[i] = uniform_sizes[i] + uniform_sizes[i - 1];
 				}
 			}
-			//offset
+			// offset
 			r_gen_code.uniform_offsets.resize(uniform_sizes.size());
 			for (int i = 0; i < uniform_sizes.size(); i++) {
 
@@ -670,7 +670,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 
 			Map<StringName, String> function_code;
 
-			//code for functions
+			// code for functions
 			for (int i = 0; i < pnode->functions.size(); i++) {
 				SL::FunctionNode *fnode = pnode->functions[i].function;
 				function = fnode;
@@ -679,10 +679,10 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				function = nullptr;
 			}
 
-			//place functions in actual code
+			// place functions in actual code
 
 			Set<StringName> added_vtx;
-			Set<StringName> added_fragment; //share for light
+			Set<StringName> added_fragment; // share for light
 
 			for (int i = 0; i < pnode->functions.size(); i++) {
 
@@ -712,7 +712,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				function = nullptr;
 			}
 
-			//code+=dump_node_code(pnode->body,p_level);
+			// code+=dump_node_code(pnode->body,p_level);
 		} break;
 		case SL::Node::TYPE_STRUCT: {
 
@@ -723,7 +723,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		case SL::Node::TYPE_BLOCK: {
 			SL::BlockNode *bnode = (SL::BlockNode *)p_node;
 
-			//variables
+			// variables
 			if (!bnode->single_statement) {
 				code += _mktab(p_level - 1) + "{\n";
 			}
@@ -733,7 +733,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				String scode = _dump_node_code(bnode->statements[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 
 				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW || bnode->single_statement) {
-					code += scode; //use directly
+					code += scode; // use directly
 				} else {
 					code += _mktab(p_level) + scode + ";\n";
 				}
@@ -795,28 +795,28 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				code = p_default_actions.renames[vnode->name];
 			else {
 				if (shader->uniforms.has(vnode->name)) {
-					//its a uniform!
+					// its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
 					if (u.texture_order >= 0) {
-						code = _mkid(vnode->name); //texture, use as is
+						code = _mkid(vnode->name); // texture, use as is
 					} else {
-						//a scalar or vector
+						// a scalar or vector
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
-							code = actions.base_uniform_string + _mkid(vnode->name); //texture, use as is
-							//global variable, this means the code points to an index to the global table
+							code = actions.base_uniform_string + _mkid(vnode->name); // texture, use as is
+							// global variable, this means the code points to an index to the global table
 							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
-							//instance variable, index it as such
+							// instance variable, index it as such
 							code = "(" + p_default_actions.instance_uniform_index_variable + "+" + itos(u.instance_index) + ")";
 							code = _get_global_variable_from_type_and_index(p_default_actions.global_buffer_array_variable, code, u.type);
 						} else {
-							//regular uniform, index from UBO
+							// regular uniform, index from UBO
 							code = actions.base_uniform_string + _mkid(vnode->name);
 						}
 					}
 
 				} else {
-					code = _mkid(vnode->name); //its something else (local var most likely) use as is
+					code = _mkid(vnode->name); // its something else (local var most likely) use as is
 				}
 			}
 
@@ -1010,7 +1010,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 						if (is_texture_func && i == 1 && onode->arguments[i]->type == SL::Node::TYPE_VARIABLE) {
 
-							//need to map from texture to sampler in order to sample
+							// need to map from texture to sampler in order to sample
 							const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
 
 							StringName texture_uniform = varnode->name;
@@ -1041,7 +1041,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 										}
 									}
 									if (!found) {
-										//function was most likely unused, so use anything (compiler will remove it anyway)
+										// function was most likely unused, so use anything (compiler will remove it anyway)
 										sampler_name = _get_sampler_name(ShaderLanguage::FILTER_DEFAULT, ShaderLanguage::REPEAT_DEFAULT);
 									}
 								}
@@ -1247,7 +1247,7 @@ ShaderCompilerRD::ShaderCompilerRD() {
 	actions[RS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
 	actions[RS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "gl_InstanceID";
 
-	//builtins
+	// builtins
 
 	actions[RS::SHADER_SPATIAL].renames["TIME"] = "time";
 	actions[RS::SHADER_SPATIAL].renames["VIEWPORT_SIZE"] = "viewport_size";
@@ -1281,7 +1281,7 @@ ShaderCompilerRD::ShaderCompilerRD() {
 	actions[RS::SHADER_SPATIAL].renames["ALPHA_SCISSOR"] = "alpha_scissor";
 	actions[RS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
-	//for light
+	// for light
 	actions[RS::SHADER_SPATIAL].renames["VIEW"] = "view";
 	actions[RS::SHADER_SPATIAL].renames["LIGHT_COLOR"] = "light_color";
 	actions[RS::SHADER_SPATIAL].renames["LIGHT"] = "light";

@@ -323,7 +323,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						}
 
 						if (d.description == "") {
-							//in the oven, request!
+							// in the oven, request!
 							args.clear();
 							args.push_back("-s");
 							args.push_back(d.id);
@@ -396,7 +396,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		if (EditorSettings::get_singleton()->get("export/android/shutdown_adb_on_exit")) {
 			String adb = EditorSettings::get_singleton()->get("export/android/adb");
 			if (!FileAccess::exists(adb)) {
-				return; //adb not configured
+				return; // adb not configured
 			}
 
 			List<String> args;
@@ -666,11 +666,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		uint32_t ofs = 8;
 
 		uint32_t string_count = 0;
-		//uint32_t styles_count = 0;
+		// uint32_t styles_count = 0;
 		uint32_t string_flags = 0;
 		uint32_t string_data_offset = 0;
 
-		//uint32_t styles_offset = 0;
+		// uint32_t styles_offset = 0;
 		uint32_t string_table_begins = 0;
 		uint32_t string_table_ends = 0;
 		Vector<uint8_t> stable_extra;
@@ -727,10 +727,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					int iofs = ofs + 8;
 
 					string_count = decode_uint32(&p_manifest[iofs]);
-					//styles_count = decode_uint32(&p_manifest[iofs + 4]);
+					// styles_count = decode_uint32(&p_manifest[iofs + 4]);
 					string_flags = decode_uint32(&p_manifest[iofs + 8]);
 					string_data_offset = decode_uint32(&p_manifest[iofs + 12]);
-					//styles_offset = decode_uint32(&p_manifest[iofs + 16]);
+					// styles_offset = decode_uint32(&p_manifest[iofs + 16]);
 					/*
 					printf("string count: %i\n",string_count);
 					printf("flags: %i\n",string_flags);
@@ -792,7 +792,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						String attrname = string_table[attr_name];
 						const String nspace = (attr_nspace != 0xFFFFFFFF) ? string_table[attr_nspace] : "";
 
-						//replace project information
+						// replace project information
 						if (tname == "manifest" && attrname == "package") {
 							string_table.write[attr_value] = get_package_name(package_name);
 						}
@@ -1117,7 +1117,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			ofs += size;
 		}
 
-		//create new andriodmanifest binary
+		// create new andriodmanifest binary
 
 		Vector<uint8_t> ret;
 		ret.resize(string_table_begins + string_table.size() * 4);
@@ -1154,7 +1154,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			ret.push_back(stable_extra[i]);
 		}
 
-		//pad
+		// pad
 		while (ret.size() % 4)
 			ret.push_back(0);
 
@@ -1167,11 +1167,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		while (ret.size() % 4)
 			ret.push_back(0);
-		encode_uint32(ret.size(), &ret.write[4]); //update new file size
+		encode_uint32(ret.size(), &ret.write[4]); // update new file size
 
-		encode_uint32(new_stable_end - 8, &ret.write[12]); //update new string table size
-		encode_uint32(string_table.size(), &ret.write[16]); //update new number of strings
-		encode_uint32(string_data_offset - 8, &ret.write[28]); //update new string data offset
+		encode_uint32(new_stable_end - 8, &ret.write[12]); // update new string table size
+		encode_uint32(string_table.size(), &ret.write[16]); // update new number of strings
+		encode_uint32(string_data_offset - 8, &ret.write[28]); // update new string data offset
 
 		p_manifest = ret;
 	}
@@ -1252,7 +1252,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			if (str.begins_with("godot-project-name")) {
 
 				if (str == "godot-project-name") {
-					//project name
+					// project name
 					str = get_project_name(package_name);
 
 				} else {
@@ -1270,7 +1270,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			string_table.push_back(str);
 		}
 
-		//write a new string table, but use 16 bits
+		// write a new string table, but use 16 bits
 		Vector<uint8_t> ret;
 		ret.resize(string_table_begins + string_table.size() * 4);
 
@@ -1301,15 +1301,15 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			chars += 2;
 		}
 
-		//pad
+		// pad
 		while (ret.size() % 4)
 			ret.push_back(0);
 
-		//change flags to not use utf8
+		// change flags to not use utf8
 		encode_uint32(string_flags & ~0x100, &ret.write[28]);
-		//change length
+		// change length
 		encode_uint32(ret.size() - 12, &ret.write[16]);
-		//append the rest...
+		// append the rest...
 		int rest_from = 12 + string_block_len;
 		int rest_to = ret.size();
 		int rest_len = (p_manifest.size() - rest_from);
@@ -1317,11 +1317,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		for (int i = 0; i < rest_len; i++) {
 			ret.write[rest_to + i] = p_manifest[rest_from + i];
 		}
-		//finally update the size
+		// finally update the size
 		encode_uint32(ret.size(), &ret.write[4]);
 
 		p_manifest = ret;
-		//printf("end\n");
+		// printf("end\n");
 	}
 
 	void _process_launcher_icons(const String &p_processing_file_name, const Ref<Image> &p_source_image, const LauncherIcon p_icon, Vector<uint8_t> &p_data) {
@@ -1777,10 +1777,10 @@ public:
 
 		EditorProgress ep("export", "Exporting for Android", 105, true);
 
-		if (bool(p_preset->get("custom_template/use_custom_build"))) { //custom build
-			//re-generate build.gradle and AndroidManifest.xml
+		if (bool(p_preset->get("custom_template/use_custom_build"))) { // custom build
+			// re-generate build.gradle and AndroidManifest.xml
 
-			{ //test that installed build version is alright
+			{ // test that installed build version is alright
 				FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::READ);
 				if (!f) {
 					EditorNode::get_singleton()->show_warning(TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
@@ -1792,12 +1792,12 @@ public:
 					return ERR_UNCONFIGURED;
 				}
 			}
-			//build project if custom build is enabled
+			// build project if custom build is enabled
 			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
 
 			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
 
-			OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); //set and overwrite if required
+			OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path); // set and overwrite if required
 
 			String build_command;
 #ifdef WINDOWS_ENABLED
@@ -1953,7 +1953,7 @@ public:
 		Vector<String> invalid_abis(enabled_abis);
 		while (ret == UNZ_OK) {
 
-			//get filename
+			// get filename
 			unz_file_info info;
 			char fname[16384];
 			ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
@@ -1965,12 +1965,12 @@ public:
 			Vector<uint8_t> data;
 			data.resize(info.uncompressed_size);
 
-			//read
+			// read
 			unzOpenCurrentFile(pkg);
 			unzReadCurrentFile(pkg, data.ptrw(), data.size());
 			unzCloseCurrentFile(pkg);
 
-			//write
+			// write
 
 			if (file == "AndroidManifest.xml") {
 				_fix_manifest(p_preset, data, p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG));
@@ -2064,7 +2064,7 @@ public:
 			ed.apk = unaligned_apk;
 			err = export_project_files(p_preset, ignore_apk_file, &ed, save_apk_so);
 		} else {
-			//all files
+			// all files
 
 			if (apk_expansion) {
 
@@ -2113,7 +2113,7 @@ public:
 			cl.push_back("--debug_opengl");
 
 		if (cl.size()) {
-			//add comandline
+			// add comandline
 			Vector<uint8_t> clf;
 			clf.resize(4);
 			encode_uint32(cl.size(), &clf.write[0]);

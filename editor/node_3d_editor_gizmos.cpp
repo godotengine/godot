@@ -178,7 +178,7 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 		RS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
 	int layer = p_hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
-	RS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
+	RS::get_singleton()->instance_set_layer_mask(instance, layer); // gizmos are 26
 }
 
 void EditorNode3DGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const Ref<SkinReference> &p_skin_reference, const Ref<Material> &p_material) {
@@ -846,7 +846,7 @@ Variant Light3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_i
 
 static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vector3 &p_to, float p_arc_radius, const Transform &p_arc_xform) {
 
-	//bleh, discrete is simpler
+	// bleh, discrete is simpler
 	static const int arc_test_points = 64;
 	float min_d = 1e20;
 	Vector3 min_p;
@@ -868,7 +868,7 @@ static float _find_closest_angle_to_half_pi_arc(const Vector3 &p_from, const Vec
 		}
 	}
 
-	//min_p = p_arc_xform.affine_inverse().xform(min_p);
+	// min_p = p_arc_xform.affine_inverse().xform(min_p);
 	float a = (Math_PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
 	return a * 180.0 / Math_PI;
 }
@@ -1519,7 +1519,7 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Mesh> m = mesh->get_mesh();
 
 	if (!m.is_valid())
-		return; //none
+		return; // none
 
 	Ref<TriangleMesh> tm = m->generate_triangle_mesh();
 	if (tm.is_valid()) {
@@ -1679,7 +1679,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector3 d = (v1 - v0).normalized();
 			float dist = v0.distance_to(v1);
 
-			//find closest axis
+			// find closest axis
 			int closest = -1;
 			float closest_d = 0.0;
 
@@ -1689,7 +1689,7 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 					closest = j;
 			}
 
-			//find closest other
+			// find closest other
 			Vector3 first;
 			Vector3 points[4];
 			int pointidx = 0;
@@ -2083,18 +2083,18 @@ void VehicleWheel3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	}
 
-	//travel
+	// travel
 	points.push_back(Vector3(0, 0, 0));
 	points.push_back(Vector3(0, car_wheel->get_suspension_rest_length(), 0));
 
-	//axis
+	// axis
 	points.push_back(Vector3(r * 0.2, car_wheel->get_suspension_rest_length(), 0));
 	points.push_back(Vector3(-r * 0.2, car_wheel->get_suspension_rest_length(), 0));
-	//axis
+	// axis
 	points.push_back(Vector3(r * 0.2, 0, 0));
 	points.push_back(Vector3(-r * 0.2, 0, 0));
 
-	//forward line
+	// forward line
 	points.push_back(Vector3(0, -r, 0));
 	points.push_back(Vector3(0, -r, r * 2));
 	points.push_back(Vector3(0, -r, r * 2));
@@ -2269,7 +2269,7 @@ void VisibilityNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int
 
 		if (d < 0.001)
 			d = 0.001;
-		//resize
+		// resize
 		aabb.position[p_idx] = (aabb.position[p_idx] + aabb.size[p_idx] * 0.5) - d;
 		aabb.size[p_idx] = d * 2;
 		notifier->set_aabb(aabb);
@@ -2459,7 +2459,7 @@ void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx
 
 		if (d < 0.001)
 			d = 0.001;
-		//resize
+		// resize
 		aabb.position[p_idx] = (aabb.position[p_idx] + aabb.size[p_idx] * 0.5) - d;
 		aabb.size[p_idx] = d * 2;
 		particles->set_visibility_aabb(aabb);
@@ -4175,7 +4175,7 @@ void JointGizmosDrawer::draw_cone(const Transform &p_offset, const Basis &p_base
 	float w = r * Math::sin(p_swing);
 	float d = r * Math::cos(p_swing);
 
-	//swing
+	// swing
 	for (int i = 0; i < 360; i += 10) {
 
 		float ra = Math::deg2rad((float)i);

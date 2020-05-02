@@ -50,7 +50,7 @@ void CSGShape3D::set_use_collision(bool p_enable) {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(root_collision_instance, get_instance_id());
 		set_collision_layer(collision_layer);
 		set_collision_mask(collision_mask);
-		_make_dirty(); //force update
+		_make_dirty(); // force update
 	} else {
 		PhysicsServer3D::get_singleton()->free(root_collision_instance);
 		root_collision_instance = RID();
@@ -145,7 +145,7 @@ void CSGShape3D::_make_dirty() {
 	if (parent) {
 		parent->_make_dirty();
 	} else {
-		//only parent will do
+		// only parent will do
 		call_deferred("_update_shape");
 	}
 }
@@ -279,7 +279,7 @@ void CSGShape3D::_update_shape() {
 		return;
 
 	set_base(RID());
-	root_mesh.unref(); //byebye root mesh
+	root_mesh.unref(); // byebye root mesh
 
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
@@ -317,7 +317,7 @@ void CSGShape3D::_update_shape() {
 
 	surfaces.resize(face_count.size());
 
-	//create arrays
+	// create arrays
 	for (int i = 0; i < surfaces.size(); i++) {
 
 		surfaces.write[i].vertices.resize(face_count[i] * 3);
@@ -340,7 +340,7 @@ void CSGShape3D::_update_shape() {
 		}
 	}
 
-	//fill arrays
+	// fill arrays
 	Vector<Vector3> physics_faces;
 	bool fill_physics_faces = false;
 	if (root_collision_shape.is_valid()) {
@@ -412,7 +412,7 @@ void CSGShape3D::_update_shape() {
 	}
 
 	root_mesh.instance();
-	//create surfaces
+	// create surfaces
 
 	for (int i = 0; i < surfaces.size(); i++) {
 		// calculate tangents for this surface
@@ -568,7 +568,7 @@ bool CSGShape3D::is_calculating_tangents() const {
 void CSGShape3D::_validate_property(PropertyInfo &property) const {
 	bool is_collision_prefixed = property.name.begins_with("collision_");
 	if ((is_collision_prefixed || property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
-		//hide collision if not root
+		// hide collision if not root
 		property.usage = PROPERTY_USAGE_NOEDITOR;
 	} else if (is_collision_prefixed && !bool(get("use_collision"))) {
 		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
@@ -655,7 +655,7 @@ CSGShape3D::~CSGShape3D() {
 
 CSGBrush *CSGCombiner3D::_build_brush() {
 
-	return nullptr; //does not build anything
+	return nullptr; // does not build anything
 }
 
 CSGCombiner3D::CSGCombiner3D() {
@@ -981,7 +981,7 @@ CSGBrush *CSGSphere3D::_build_brush() {
 
 				if (i < rings) {
 
-					//face 1
+					// face 1
 					facesw[face * 3 + 0] = v[0];
 					facesw[face * 3 + 1] = v[1];
 					facesw[face * 3 + 2] = v[2];
@@ -998,7 +998,7 @@ CSGBrush *CSGSphere3D::_build_brush() {
 				}
 
 				if (i > 1) {
-					//face 2
+					// face 2
 					facesw[face * 3 + 0] = v[2];
 					facesw[face * 3 + 1] = v[3];
 					facesw[face * 3 + 2] = v[0];
@@ -1116,7 +1116,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 
 	CSGBrush *brush = memnew(CSGBrush);
 
-	int face_count = 12; //it's a cube..
+	int face_count = 12; // it's a cube..
 
 	bool invert_val = is_inverting_faces();
 	Ref<Material> material = get_material();
@@ -1174,7 +1174,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 					u[j] = Vector2(uv_points[j * 2 + 0], uv_points[j * 2 + 1]);
 				}
 
-				//face 1
+				// face 1
 				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
@@ -1188,7 +1188,7 @@ CSGBrush *CSGBox3D::_build_brush() {
 				materialsw[face] = material;
 
 				face++;
-				//face 1
+				// face 1
 				facesw[face * 3 + 0] = face_points[2] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[0] * vertex_mul;
@@ -1351,7 +1351,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					Vector2(inc, 1),
 				};
 
-				//side face 1
+				// side face 1
 				facesw[face * 3 + 0] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 2] = face_points[2] * vertex_mul;
@@ -1367,7 +1367,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				face++;
 
 				if (!cone) {
-					//side face 2
+					// side face 2
 					facesw[face * 3 + 0] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 1] = face_points[3] * vertex_mul;
 					facesw[face * 3 + 2] = face_points[0] * vertex_mul;
@@ -1382,7 +1382,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					face++;
 				}
 
-				//bottom face 1
+				// bottom face 1
 				facesw[face * 3 + 0] = face_points[1] * vertex_mul;
 				facesw[face * 3 + 1] = face_points[0] * vertex_mul;
 				facesw[face * 3 + 2] = Vector3(0, -1, 0) * vertex_mul;
@@ -1397,7 +1397,7 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 				face++;
 
 				if (!cone) {
-					//top face 1
+					// top face 1
 					facesw[face * 3 + 0] = face_points[3] * vertex_mul;
 					facesw[face * 3 + 1] = face_points[2] * vertex_mul;
 					facesw[face * 3 + 2] = Vector3(0, 1, 0) * vertex_mul;
@@ -1533,7 +1533,7 @@ CSGBrush *CSGTorus3D::_build_brush() {
 	float max_radius = outer_radius;
 
 	if (min_radius == max_radius)
-		return nullptr; //sorry, can't
+		return nullptr; // sorry, can't
 
 	if (min_radius > max_radius) {
 		SWAP(min_radius, max_radius);
@@ -1624,7 +1624,7 @@ CSGBrush *CSGTorus3D::_build_brush() {
 
 					face++;
 
-					//face 2
+					// face 2
 					facesw[face * 3 + 0] = face_points[3];
 					facesw[face * 3 + 1] = face_points[2];
 					facesw[face * 3 + 2] = face_points[0];
@@ -1855,7 +1855,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	materials.resize(face_count);
 	invert.resize(face_count);
 
-	AABB aabb; //must be computed
+	AABB aabb; // must be computed
 	{
 
 		Vector3 *facesw = faces.ptrw();
@@ -1869,7 +1869,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 		switch (mode) {
 			case MODE_DEPTH: {
 
-				//add triangles, front and back
+				// add triangles, front and back
 				for (int i = 0; i < 2; i++) {
 
 					for (int j = 0; j < triangles.size(); j += 3) {
@@ -1894,7 +1894,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					}
 				}
 
-				//add triangles for depth
+				// add triangles for depth
 				for (int i = 0; i < final_polygon.size(); i++) {
 
 					int i_n = (i + 1) % final_polygon.size();
@@ -1958,7 +1958,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					Vector3 normali = Vector3(Math::cos(angi), 0, Math::sin(angi));
 					Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
 
-					//add triangles for depth
+					// add triangles for depth
 					for (int j = 0; j < final_polygon.size(); j++) {
 
 						int j_n = (j + 1) % final_polygon.size();
@@ -2088,7 +2088,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					Vector3 local_dir;
 
 					if (path_rotation == PATH_ROTATION_PATH_FOLLOW && ofs > 0) {
-						//before end
+						// before end
 						Vector3 p1 = curve->interpolate_baked(ofs - 0.1);
 						Vector3 p2 = curve->interpolate_baked(ofs);
 						local_dir = (p2 - p1).normalized();
@@ -2100,7 +2100,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					xf = xf.looking_at(xf.origin + local_dir, Vector3(0, 1, 0));
 					Basis rot(Vector3(0, 0, 1), curve->interpolate_baked_tilt(ofs));
 
-					xf = xf * rot; //post mult
+					xf = xf * rot; // post mult
 
 					xf = path_to_this * xf;
 
@@ -2110,8 +2110,8 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							u2 += (prev_xf.origin - xf.origin).length();
 						};
 
-						//put triangles where they belong
-						//add triangles for depth
+						// put triangles where they belong
+						// add triangles for depth
 						for (int j = 0; j < final_polygon.size(); j++) {
 
 							int j_n = (j + 1) % final_polygon.size();

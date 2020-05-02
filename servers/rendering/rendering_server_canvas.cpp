@@ -184,7 +184,7 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	}
 
 	if ((ci->commands != nullptr && p_clip_rect.intersects(global_rect, true)) || ci->vp_render || ci->copy_back_buffer) {
-		//something to draw?
+		// something to draw?
 		ci->final_transform = xform;
 		ci->final_modulate = Color(modulate.r * ci->self_modulate.r, modulate.g * ci->self_modulate.g, modulate.b * ci->self_modulate.b, modulate.a * ci->self_modulate.a);
 		ci->global_rect_cache = global_rect;
@@ -268,13 +268,13 @@ void RenderingServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas,
 		_render_canvas_item_tree(p_render_target, ci, l, nullptr, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
 	} else {
-		//used for parallaxlayer mirroring
+		// used for parallaxlayer mirroring
 		for (int i = 0; i < l; i++) {
 
 			const Canvas::ChildItem &ci2 = p_canvas->child_items[i];
 			_render_canvas_item_tree(p_render_target, nullptr, 0, ci2.item, p_transform, p_clip_rect, p_canvas->modulate, p_lights);
 
-			//mirroring (useful for scrolling backgrounds)
+			// mirroring (useful for scrolling backgrounds)
 			if (ci2.mirror.x != 0) {
 
 				Transform2D xform2 = p_transform * Transform2D(0, Vector2(ci2.mirror.x, 0));
@@ -540,7 +540,7 @@ void RenderingServerCanvas::canvas_item_add_polyline(RID p_item, const Vector<Po
 		pline->polygon.create(indices, p_points, p_colors);
 	} else {
 #if 0
-		//make a trianglestrip for drawing the line...
+		// make a trianglestrip for drawing the line...
 		Vector2 prev_t;
 		pline->triangles.resize(p_points.size() * 2);
 		if (p_antialiased) {
@@ -883,7 +883,7 @@ void RenderingServerCanvas::canvas_item_add_particles(RID p_item, RID p_particle
 	part->texture_binding.create(canvas_item->texture_filter, canvas_item->texture_repeat, p_texture, p_normal_map, p_specular_map, p_filter, p_repeat, RID());
 	part->specular_shininess = p_specular_color_shininess;
 
-	//take the chance and request processing for them, at least once until they become visible again
+	// take the chance and request processing for them, at least once until they become visible again
 	RSG::storage->particles_request_process(p_particles);
 }
 

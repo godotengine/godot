@@ -130,7 +130,7 @@ SliderJoint3DSW::SliderJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &
 
 bool SliderJoint3DSW::setup(real_t p_step) {
 
-	//calculate transforms
+	// calculate transforms
 	m_calculatedTransformA = A->get_transform() * m_frameInA;
 	m_calculatedTransformB = B->get_transform() * m_frameInB;
 	m_realPivotAInW = m_calculatedTransformA.origin;
@@ -142,7 +142,7 @@ bool SliderJoint3DSW::setup(real_t p_step) {
 	m_relPosB = m_realPivotBInW - B->get_transform().origin;
 	Vector3 normalWorld;
 	int i;
-	//linear part
+	// linear part
 	for (i = 0; i < 3; i++) {
 		normalWorld = m_calculatedTransformA.basis.get_axis(i);
 		memnew_placement(&m_jacLin[i], JacobianEntry3DSW(
@@ -240,14 +240,14 @@ void SliderJoint3DSW::solve(real_t p_step) {
 	Vector3 angAorthog = angVelA - angVelAroundAxisA;
 	Vector3 angBorthog = angVelB - angVelAroundAxisB;
 	Vector3 velrelOrthog = angAorthog - angBorthog;
-	//solve orthogonal angular velocity correction
+	// solve orthogonal angular velocity correction
 	real_t len = velrelOrthog.length();
 	if (len > real_t(0.00001)) {
 		Vector3 normal = velrelOrthog.normalized();
 		real_t denom = A->compute_angular_impulse_denominator(normal) + B->compute_angular_impulse_denominator(normal);
 		velrelOrthog *= (real_t(1.) / denom) * m_dampingOrthoAng * m_softnessOrthoAng;
 	}
-	//solve angular positional correction
+	// solve angular positional correction
 	Vector3 angularError = axisA.cross(axisB) * (real_t(1.) / p_step);
 	real_t len2 = angularError.length();
 	if (len2 > real_t(0.00001)) {
@@ -259,7 +259,7 @@ void SliderJoint3DSW::solve(real_t p_step) {
 	A->apply_torque_impulse(-velrelOrthog + angularError);
 	B->apply_torque_impulse(velrelOrthog - angularError);
 	real_t impulseMag;
-	//solve angular limits
+	// solve angular limits
 	if (m_solveAngLim) {
 		impulseMag = (angVelB - angVelA).dot(axisA) * m_dampingLimAng + m_angDepth * m_restitutionLimAng / p_step;
 		impulseMag *= m_kAngle * m_softnessLimAng;
@@ -270,7 +270,7 @@ void SliderJoint3DSW::solve(real_t p_step) {
 	Vector3 impulse = axisA * impulseMag;
 	A->apply_torque_impulse(impulse);
 	B->apply_torque_impulse(-impulse);
-	//apply angular motor
+	// apply angular motor
 	if (m_poweredAngMotor) {
 		if (m_accumulatedAngMotorImpulse < m_maxAngMotorForce) {
 			Vector3 velrel = angVelAroundAxisA - angVelAroundAxisB;
@@ -314,7 +314,7 @@ void SliderJoint3DSW::calculateTransforms(void) {
 	m_projPivotInW = m_realPivotAInW + m_sliderAxis.dot(m_delta) * m_sliderAxis;
 	Vector3 normalWorld;
 	int i;
-	//linear part
+	// linear part
 	for (i = 0; i < 3; i++) {
 		normalWorld = m_calculatedTransformA.basis.get_axis(i);
 		m_depth[i] = m_delta.dot(normalWorld);

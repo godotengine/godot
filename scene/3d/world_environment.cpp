@@ -70,7 +70,7 @@ void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
 	if (is_inside_tree() && environment.is_valid() && get_viewport()->find_world()->get_environment() == environment) {
 		get_viewport()->find_world()->set_environment(Ref<Environment>());
 		remove_from_group("_world_environment_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
-		//clean up
+		// clean up
 	}
 
 	environment = p_environment;
@@ -95,7 +95,7 @@ void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_eff
 	if (is_inside_tree() && camera_effects.is_valid() && get_viewport()->find_world()->get_camera_effects() == camera_effects) {
 		get_viewport()->find_world()->set_camera_effects(Ref<CameraEffects>());
 		remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world()->get_scenario().get_id()));
-		//clean up
+		// clean up
 	}
 
 	camera_effects = p_camera_effects;

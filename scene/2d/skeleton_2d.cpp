@@ -41,7 +41,7 @@ void Bone2D::_notification(int p_what) {
 			if (skeleton)
 				break;
 			if (!Object::cast_to<Bone2D>(parent))
-				break; //skeletons must be chained to Bone2Ds.
+				break; // skeletons must be chained to Bone2Ds.
 
 			parent = parent->get_parent();
 		}
@@ -162,7 +162,7 @@ Bone2D::Bone2D() {
 	skeleton_index = -1;
 	default_length = 16;
 	set_notify_local_transform(true);
-	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
+	// this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for (int i = 0; i < 3; i++) {
 		rest[i] = Vector2(0, 0);
 	}
@@ -188,10 +188,10 @@ void Skeleton2D::_update_bone_setup() {
 	bone_setup_dirty = false;
 	RS::get_singleton()->skeleton_allocate(skeleton, bones.size(), true);
 
-	bones.sort(); //sorty so they are always in the same order/index
+	bones.sort(); // sorty so they are always in the same order/index
 
 	for (int i = 0; i < bones.size(); i++) {
-		bones.write[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); //bind pose
+		bones.write[i].rest_inverse = bones[i].bone->get_skeleton_rest().affine_inverse(); // bind pose
 		bones.write[i].bone->skeleton_index = i;
 		Bone2D *parent_bone = Object::cast_to<Bone2D>(bones[i].bone->get_parent());
 		if (parent_bone) {
@@ -220,7 +220,7 @@ void Skeleton2D::_update_transform() {
 
 	if (bone_setup_dirty) {
 		_update_bone_setup();
-		return; //above will update transform anyway
+		return; // above will update transform anyway
 	}
 	if (!transform_dirty)
 		return;

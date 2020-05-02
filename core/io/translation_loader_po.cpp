@@ -112,7 +112,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 				skip_next = true;
 			}
 			line++;
-			continue; //nothing to read or comment
+			continue; // nothing to read or comment
 		}
 
 		ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, RES(), f->get_path() + ":" + itos(line) + " Invalid line '" + l + "' while parsing: ");
@@ -199,7 +199,7 @@ RES TranslationLoaderPO::load(const String &p_path, const String &p_original_pat
 void TranslationLoaderPO::get_recognized_extensions(List<String> *p_extensions) const {
 
 	p_extensions->push_back("po");
-	//p_extensions->push_back("mo"); //mo in the future...
+	// p_extensions->push_back("mo"); // mo in the future...
 }
 bool TranslationLoaderPO::handles_type(const String &p_type) const {
 

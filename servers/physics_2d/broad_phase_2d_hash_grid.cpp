@@ -53,14 +53,14 @@ void BroadPhase2DHashGrid::_unpair_attempt(Element *p_elem, Element *p_with) {
 
 	Map<Element *, PairData *>::Element *E = p_elem->paired.find(p_with);
 
-	ERR_FAIL_COND(!E); //this should really be paired..
+	ERR_FAIL_COND(!E); // this should really be paired..
 
 	E->get()->rc--;
 
 	if (E->get()->rc == 0) {
 
 		if (E->get()->colliding) {
-			//uncollide
+			// uncollide
 			if (unpair_callback) {
 				unpair_callback(p_elem->owner, p_elem->subindex, p_with->owner, p_with->subindex, E->get()->ud, unpair_userdata);
 			}
@@ -99,9 +99,9 @@ void BroadPhase2DHashGrid::_check_motion(Element *p_elem) {
 
 void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static) {
 
-	Vector2 sz = (p_rect.size / cell_size * LARGE_ELEMENT_FI); //use magic number to avoid floating point issues
+	Vector2 sz = (p_rect.size / cell_size * LARGE_ELEMENT_FI); // use magic number to avoid floating point issues
 	if (sz.width * sz.height > large_object_min_surface) {
-		//large object, do not use grid, must check against all elements
+		// large object, do not use grid, must check against all elements
 		for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
 			if (E->key() == p_elem->self)
 				continue; // do not pair against itself
@@ -143,7 +143,7 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 			bool entered = false;
 
 			if (!pb) {
-				//does not exist, create!
+				// does not exist, create!
 				pb = memnew(PosBin);
 				pb->key = pk;
 				pb->next = hash_table[idx];
@@ -183,7 +183,7 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 		}
 	}
 
-	//pair separatedly with large elements
+	// pair separatedly with large elements
 
 	for (Map<Element *, RC>::Element *E = large_elements.front(); E; E = E->next()) {
 
@@ -203,7 +203,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 	Vector2 sz = (p_rect.size / cell_size * LARGE_ELEMENT_FI);
 	if (sz.width * sz.height > large_object_min_surface) {
 
-		//unpair all elements, instead of checking all, just check what is already paired, so we at least save from checking static vs static
+		// unpair all elements, instead of checking all, just check what is already paired, so we at least save from checking static vs static
 		Map<Element *, PairData *>::Element *E = p_elem->paired.front();
 		while (E) {
 			Map<Element *, PairData *>::Element *next = E->next();
@@ -240,7 +240,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 				pb = pb->next;
 			}
 
-			ERR_CONTINUE(!pb); //should exist!!
+			ERR_CONTINUE(!pb); // should exist!!
 
 			bool exited = false;
 
@@ -312,7 +312,7 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 		if (E->key()->_static && p_static)
 			continue;
 
-		//unpair from large elements
+		// unpair from large elements
 		_unpair_attempt(p_elem, E->key());
 	}
 }
@@ -480,7 +480,7 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2 &p_from, const Vector2 &p_t
 	Vector2 dir = (p_to - p_from);
 	if (dir == Vector2())
 		return 0;
-	//avoid divisions by zero
+	// avoid divisions by zero
 	dir.normalize();
 	if (dir.x == 0.0)
 		dir.x = 0.000001;

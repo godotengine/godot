@@ -231,7 +231,7 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 	Entry &entry = entry_array[entry_indices[new_entry_indices_pos]];
 
 	entry.len = p_size;
-	entry.pos = (new_entry_indices_pos == 0) ? 0 : entry_end(entry_array[entry_indices[new_entry_indices_pos - 1]]); //alloc either at beginning or end of previous
+	entry.pos = (new_entry_indices_pos == 0) ? 0 : entry_end(entry_array[entry_indices[new_entry_indices_pos - 1]]); // alloc either at beginning or end of previous
 	entry.lock = 0;
 	entry.check = (check_count++) & CHECK_MASK;
 	free_mem -= size_to_alloc;
@@ -354,7 +354,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		return OK;
 	}
 
-	//p_new_size = align(p_new_size)
+	// p_new_size = align(p_new_size)
 	int _free = free_mem; // - static_area_size;
 
 	if (uint32_t(_free + aligned(e->len)) < alloc_size) {
@@ -372,7 +372,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		ERR_FAIL_COND_V(!index_found, ERR_BUG);
 	}
 
-	//no need to move stuff around, it fits before the next block
+	// no need to move stuff around, it fits before the next block
 	uint32_t next_pos;
 	if (entry_indices_pos + 1 == entry_count) {
 		next_pos = pool_size; // - static_area_size;
@@ -387,12 +387,12 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		mt_unlock();
 		return OK;
 	}
-	//it doesn't fit, compact around BEFORE current index (make room behind)
+	// it doesn't fit, compact around BEFORE current index (make room behind)
 
 	compact(entry_indices_pos + 1);
 
 	if ((next_pos - e->pos) > alloc_size) {
-		//now fits! hooray!
+		// now fits! hooray!
 		free_mem += aligned(e->len);
 		e->len = p_new_size;
 		free_mem -= alloc_size;
@@ -407,7 +407,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 	compact_up(entry_indices_pos + 1);
 
 	if ((entry_array[entry_indices[entry_indices_pos + 1]].pos - e->pos) > alloc_size) {
-		//now fits! hooray!
+		// now fits! hooray!
 		free_mem += aligned(e->len);
 		e->len = p_new_size;
 		free_mem -= alloc_size;
@@ -512,7 +512,7 @@ void *PoolAllocator::get(ID p_mem) {
 	}
 	if (e->lock == 0) {
 
-		//assert(0);
+		// assert(0);
 		mt_unlock();
 		ERR_PRINT("e->lock == 0");
 		return nullptr;

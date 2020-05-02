@@ -50,7 +50,7 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
 
 	PathMD5 pmd5(path.md5_buffer());
-	//printf("adding path %ls, %lli, %lli\n", path.c_str(), pmd5.a, pmd5.b);
+	// printf("adding path %ls, %lli, %lli\n", path.c_str(), pmd5.a, pmd5.b);
 
 	bool exists = files.has(pmd5);
 
@@ -66,11 +66,11 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 		files[pmd5] = pf;
 
 	if (!exists) {
-		//search for dir
+		// search for dir
 		String p = path.replace_first("res://", "");
 		PackedDir *cd = root;
 
-		if (p.find("/") != -1) { //in a subdir
+		if (p.find("/") != -1) { // in a subdir
 
 			Vector<String> ds = p.get_base_dir().split("/");
 
@@ -141,7 +141,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 	uint32_t magic = f->get_32();
 
 	if (magic != PACK_HEADER_MAGIC) {
-		//maybe at the end.... self contained exe
+		// maybe at the end.... self contained exe
 		f->seek_end();
 		f->seek(f->get_position() - 4);
 		magic = f->get_32();
@@ -182,7 +182,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 	}
 
 	for (int i = 0; i < 16; i++) {
-		//reserved
+		// reserved
 		f->get_32();
 	}
 

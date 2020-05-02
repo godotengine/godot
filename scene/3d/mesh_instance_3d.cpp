@@ -38,8 +38,8 @@
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 
-	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
-	//add to it that it's probably found on first call to _set anyway.
+	// this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
+	// add to it that it's probably found on first call to _set anyway.
 
 	if (!get_instance().is_valid())
 		return false;
@@ -155,7 +155,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 		if (skeleton) {
 			new_skin_reference = skeleton->register_skin(skin_internal);
 			if (skin_internal.is_null()) {
-				//a skin was created for us
+				// a skin was created for us
 				skin_internal = new_skin_reference->get_skin();
 				_change_notify();
 			}
@@ -355,20 +355,20 @@ void MeshInstance3D::create_debug_tangents() {
 			Vector3 t = Vector3(tangents[j * 4 + 0], tangents[j * 4 + 1], tangents[j * 4 + 2]);
 			Vector3 b = (n.cross(t)).normalized() * tangents[j * 4 + 3];
 
-			lines.push_back(v); //normal
-			colors.push_back(Color(0, 0, 1)); //color
-			lines.push_back(v + n * 0.04); //normal
-			colors.push_back(Color(0, 0, 1)); //color
+			lines.push_back(v); // normal
+			colors.push_back(Color(0, 0, 1)); // color
+			lines.push_back(v + n * 0.04); // normal
+			colors.push_back(Color(0, 0, 1)); // color
 
-			lines.push_back(v); //tangent
-			colors.push_back(Color(1, 0, 0)); //color
-			lines.push_back(v + t * 0.04); //tangent
-			colors.push_back(Color(1, 0, 0)); //color
+			lines.push_back(v); // tangent
+			colors.push_back(Color(1, 0, 0)); // color
+			lines.push_back(v + t * 0.04); // tangent
+			colors.push_back(Color(1, 0, 0)); // color
 
-			lines.push_back(v); //binormal
-			colors.push_back(Color(0, 1, 0)); //color
-			lines.push_back(v + b * 0.04); //binormal
-			colors.push_back(Color(0, 1, 0)); //color
+			lines.push_back(v); // binormal
+			colors.push_back(Color(0, 1, 0)); // color
+			lines.push_back(v + b * 0.04); // binormal
+			colors.push_back(Color(0, 1, 0)); // color
 		}
 	}
 

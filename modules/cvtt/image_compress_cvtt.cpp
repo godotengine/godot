@@ -139,7 +139,7 @@ static void _digest_job_queue(void *p_job_queue) {
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
 
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA)
-		return; //do not compress, already compressed
+		return; // do not compress, already compressed
 
 	int w = p_image->get_width();
 	int h = p_image->get_height();
@@ -167,7 +167,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 
 	flags |= cvtt::Flags::BC7_RespectPunchThrough;
 
-	if (p_channels == Image::USED_CHANNELS_RG) { //guessing this is a normalmap
+	if (p_channels == Image::USED_CHANNELS_RG) { // guessing this is a normalmap
 		flags |= cvtt::Flags::Uniform;
 	}
 
@@ -192,7 +192,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 
 		target_format = is_signed ? Image::FORMAT_BPTC_RGBF : Image::FORMAT_BPTC_RGBFU;
 	} else {
-		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
+		p_image->convert(Image::FORMAT_RGBA8); // still uses RGBA to convert
 	}
 
 	const uint8_t *rb = p_image->get_data().ptr();

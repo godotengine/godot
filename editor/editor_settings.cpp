@@ -132,12 +132,12 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 			if (optimize_save) {
 				if (!sc->has_meta("original")) {
-					continue; //this came from settings but is not any longer used
+					continue; // this came from settings but is not any longer used
 				}
 
 				Ref<InputEvent> original = sc->get_meta("original");
 				if (sc->is_shortcut(original) || (original.is_null() && sc->get_shortcut().is_null()))
-					continue; //not changed from default, don't save
+					continue; // not changed from default, don't save
 			}
 
 			arr.push_back(E->key());
@@ -212,7 +212,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (!E->get().name.begins_with("_") && !E->get().name.begins_with("projects/")) {
 			pinfo |= PROPERTY_USAGE_EDITOR;
 		} else {
-			pinfo |= PROPERTY_USAGE_STORAGE; //hiddens must always be saved
+			pinfo |= PROPERTY_USAGE_STORAGE; // hiddens must always be saved
 		}
 
 		PropertyInfo pi(E->get().type, E->get().name);
@@ -227,7 +227,7 @@ void EditorSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(pi);
 	}
 
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL)); //do not edit
+	p_list->push_back(PropertyInfo(Variant::ARRAY, "shortcuts", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL)); // do not edit
 }
 
 void EditorSettings::_add_property_info_bind(const Dictionary &p_info) {
@@ -782,7 +782,7 @@ EditorSettings *EditorSettings::get_singleton() {
 void EditorSettings::create() {
 
 	if (singleton.ptr())
-		return; //pointless
+		return; // pointless
 
 	DirAccess *dir = nullptr;
 
@@ -840,7 +840,7 @@ void EditorSettings::create() {
 		}
 	}
 
-	ClassDB::register_class<EditorSettings>(); //otherwise it can't be unserialized
+	ClassDB::register_class<EditorSettings>(); // otherwise it can't be unserialized
 
 	String config_file_path;
 
@@ -1578,15 +1578,15 @@ Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 
-		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", ie); //to compare against changes
+		sc->set_name(p_name); // keep name (the ones that come from disk have no name)
+		sc->set_meta("original", ie); // to compare against changes
 		return sc;
 	}
 
 	sc.instance();
 	sc->set_name(p_name);
 	sc->set_shortcut(ie);
-	sc->set_meta("original", ie); //to compare against changes
+	sc->set_meta("original", ie); // to compare against changes
 	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
 
 	return sc;

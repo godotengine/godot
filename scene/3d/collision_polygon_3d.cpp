@@ -48,8 +48,8 @@ void CollisionPolygon3D::_build_polygon() {
 	if (decomp.size() == 0)
 		return;
 
-	//here comes the sun, lalalala
-	//decompose concave into multiple convex polygons and add them
+	// here comes the sun, lalalala
+	// decompose concave into multiple convex polygons and add them
 
 	for (int i = 0; i < decomp.size(); i++) {
 		Ref<ConvexPolygonShape3D> convex = memnew(ConvexPolygonShape3D);

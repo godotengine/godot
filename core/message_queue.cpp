@@ -107,8 +107,8 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
 
 	msg->type = TYPE_NOTIFICATION;
-	msg->callable = Callable(p_id, CoreStringNames::get_singleton()->notification); //name is meaningless but callable needs it
-	//msg->target;
+	msg->callable = Callable(p_id, CoreStringNames::get_singleton()->notification); // name is meaningless but callable needs it
+	// msg->target;
 	msg->notification = p_notification;
 
 	buffer_end += sizeof(Message);
@@ -206,7 +206,7 @@ void MessageQueue::statistics() {
 			}
 
 		} else {
-			//object was deleted
+			// object was deleted
 			print_line("Object was deleted while awaiting a callback");
 
 			null_count++;
@@ -265,18 +265,18 @@ void MessageQueue::flush() {
 
 	uint32_t read_pos = 0;
 
-	//using reverse locking strategy
+	// using reverse locking strategy
 	_THREAD_SAFE_LOCK_
 
 	if (flushing) {
 		_THREAD_SAFE_UNLOCK_
-		ERR_FAIL_COND(flushing); //already flushing, you did something odd
+		ERR_FAIL_COND(flushing); // already flushing, you did something odd
 	}
 	flushing = true;
 
 	while (read_pos < buffer_end) {
 
-		//lock on each iteration, so a call can re-add itself to the message queue
+		// lock on each iteration, so a call can re-add itself to the message queue
 
 		Message *message = (Message *)&buffer[read_pos];
 
@@ -284,7 +284,7 @@ void MessageQueue::flush() {
 		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
 			advance += sizeof(Variant) * message->args;
 
-		//pre-advance so this function is reentrant
+		// pre-advance so this function is reentrant
 		read_pos += advance;
 
 		_THREAD_SAFE_UNLOCK_

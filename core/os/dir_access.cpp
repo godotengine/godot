@@ -141,7 +141,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	String full_dir;
 
 	if (p_dir.is_rel_path()) {
-		//append current
+		// append current
 		full_dir = get_current_dir().plus_file(p_dir);
 
 	} else {
@@ -150,7 +150,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 
 	full_dir = full_dir.replace("\\", "/");
 
-	//int slices = full_dir.get_slice_count("/");
+	// int slices = full_dir.get_slice_count("/");
 
 	String base;
 
@@ -285,7 +285,7 @@ String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 
 Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 
-	//printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
+	// printf("copy %s -> %s\n",p_from.ascii().get_data(),p_to.ascii().get_data());
 	Error err;
 	FileAccess *fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
 

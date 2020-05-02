@@ -961,7 +961,7 @@ Vector<String> EditorExportPlatformIOS::_get_preset_architectures(const Ref<Edit
 
 void EditorExportPlatformIOS::add_module_code(const Ref<EditorExportPreset> &p_preset, EditorExportPlatformIOS::IOSConfigData &p_config_data, const String &p_name, const String &p_fid, const String &p_gid) {
 	if ((bool)p_preset->get("capabilities/" + p_name)) {
-		//add module static library
+		// add module static library
 		print_line("ADDING MODULE: " + p_name);
 
 		p_config_data.modules_buildfile += p_gid + " /* libgodot_" + p_name + "_module.a in Frameworks */ = {isa = PBXBuildFile; fileRef = " + p_fid + " /* libgodot_" + p_name + "_module.a */; };\n\t\t";
@@ -969,7 +969,7 @@ void EditorExportPlatformIOS::add_module_code(const Ref<EditorExportPreset> &p_p
 		p_config_data.modules_buildphase += p_gid + " /* libgodot_" + p_name + "_module.a */,\n\t\t\t\t";
 		p_config_data.modules_buildgrp += p_fid + " /* libgodot_" + p_name + "_module.a */,\n\t\t\t\t";
 	} else {
-		//add stub function for disabled module
+		// add stub function for disabled module
 		p_config_data.cpp_code += "void register_" + p_name + "_types() { /*stub*/ };\n";
 		p_config_data.cpp_code += "void unregister_" + p_name + "_types() { /*stub*/ };\n";
 	}
@@ -1094,7 +1094,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	add_module_code(p_preset, config_data, "arkit", "F9B95E6E2391205500AF0000", "F9C95E812391205C00BF0000");
 	add_module_code(p_preset, config_data, "camera", "F9B95E6E2391205500AF0001", "F9C95E812391205C00BF0001");
 
-	//export rest of the files
+	// export rest of the files
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
 	while (ret == UNZ_OK) {
@@ -1102,7 +1102,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		bool is_execute = false;
 #endif
 
-		//get filename
+		// get filename
 		unz_file_info info;
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
@@ -1113,12 +1113,12 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
-		//read
+		// read
 		unzOpenCurrentFile(src_pkg_zip);
 		unzReadCurrentFile(src_pkg_zip, data.ptrw(), data.size());
 		unzCloseCurrentFile(src_pkg_zip);
 
-		//write
+		// write
 
 		file = file.replace_first("iphone/", "");
 
@@ -1127,7 +1127,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		} else if (file.begins_with("libgodot.iphone")) {
 			if (file != library_to_use) {
 				ret = unzGoToNextFile(src_pkg_zip);
-				continue; //ignore!
+				continue; // ignore!
 			}
 			found_library = true;
 #if defined(OSX_ENABLED) || defined(X11_ENABLED)
@@ -1139,14 +1139,14 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 				file = "libgodot_arkit_module.a";
 			} else {
 				ret = unzGoToNextFile(src_pkg_zip);
-				continue; //ignore!
+				continue; // ignore!
 			}
 		} else if (file.begins_with("libgodot_camera")) {
 			if ((bool)p_preset->get("capabilities/camera") && file.ends_with(String(p_debug ? "debug" : "release") + ".fat.a")) {
 				file = "libgodot_camera_module.a";
 			} else {
 				ret = unzGoToNextFile(src_pkg_zip);
-				continue; //ignore!
+				continue; // ignore!
 			}
 		}
 		if (file == project_file) {

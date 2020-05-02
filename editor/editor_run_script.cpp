@@ -44,7 +44,7 @@ void EditorScript::add_root_node(Node *p_node) {
 		return;
 	}
 
-	//editor->set_edited_scene(p_node);
+	// editor->set_edited_scene(p_node);
 }
 
 EditorInterface *EditorScript::get_editor_interface() {

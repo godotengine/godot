@@ -160,10 +160,10 @@ void FileAccessWindows::close() {
 #else
 			if (!PathFileExistsW(save_path.c_str())) {
 #endif
-				//creating new file
+				// creating new file
 				rename_error = _wrename((save_path + ".tmp").c_str(), save_path.c_str()) != 0;
 			} else {
-				//atomic replace for existing file
+				// atomic replace for existing file
 				rename_error = !ReplaceFileW(save_path.c_str(), (save_path + ".tmp").c_str(), nullptr, 2 | 4, nullptr, nullptr);
 			}
 			if (rename_error) {
@@ -315,7 +315,7 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, int p_length) {
 bool FileAccessWindows::file_exists(const String &p_name) {
 
 	FILE *g;
-	//printf("opening file %s\n", p_fname.c_str());
+	// printf("opening file %s\n", p_fname.c_str());
 	String filename = fix_path(p_name);
 	_wfopen_s(&g, filename.c_str(), L"rb");
 	if (g == nullptr) {

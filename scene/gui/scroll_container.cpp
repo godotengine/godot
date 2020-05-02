@@ -127,7 +127,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		}
 
 		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
-			accept_event(); //accept event if scroll changed
+			accept_event(); // accept event if scroll changed
 
 		if (!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())))
 			return;
@@ -211,7 +211,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
-		accept_event(); //accept event if scroll changed
+		accept_event(); // accept event if scroll changed
 }
 
 void ScrollContainer::_update_scrollbar_position() {
@@ -280,10 +280,10 @@ void ScrollContainer::_notification(int p_what) {
 		size -= sb->get_minimum_size();
 		ofs += sb->get_offset();
 
-		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) //scrolls may have been moved out for reasons
+		if (h_scroll->is_visible_in_tree() && h_scroll->get_parent() == this) // scrolls may have been moved out for reasons
 			size.y -= h_scroll->get_minimum_size().y;
 
-		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) //scrolls may have been moved out for reasons
+		if (v_scroll->is_visible_in_tree() && v_scroll->get_parent() == this) // scrolls may have been moved out for reasons
 			size.x -= v_scroll->get_minimum_size().x;
 
 		for (int i = 0; i < get_child_count(); i++) {

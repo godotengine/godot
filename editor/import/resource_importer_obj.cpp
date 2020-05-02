@@ -55,18 +55,18 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 		String l = f->get_line().strip_edges();
 
 		if (l.begins_with("newmtl ")) {
-			//vertex
+			// vertex
 
 			current_name = l.replace("newmtl", "").strip_edges();
 			current.instance();
 			current->set_name(current_name);
 			material_map[current_name] = current;
 		} else if (l.begins_with("Ka ")) {
-			//uv
+			// uv
 			WARN_PRINT("OBJ: Ambient light for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("Kd ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_INVALID_DATA);
@@ -76,7 +76,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 			c.b = v[3].to_float();
 			current->set_albedo(c);
 		} else if (l.begins_with("Ks ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_INVALID_DATA);
@@ -86,14 +86,14 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 			float metalness = MAX(r, MAX(g, b));
 			current->set_metallic(metalness);
 		} else if (l.begins_with("Ns ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() != 2, ERR_INVALID_DATA);
 			float s = v[1].to_float();
 			current->set_metallic((1000.0 - s) / 1000.0);
 		} else if (l.begins_with("d ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() != 2, ERR_INVALID_DATA);
@@ -105,7 +105,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 				current->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 			}
 		} else if (l.begins_with("Tr ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() != 2, ERR_INVALID_DATA);
@@ -118,11 +118,11 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 			}
 
 		} else if (l.begins_with("map_Ka ")) {
-			//uv
+			// uv
 			WARN_PRINT("OBJ: Ambient light texture for material '" + current_name + "' is ignored in PBR");
 
 		} else if (l.begins_with("map_Kd ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
@@ -142,7 +142,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 			}
 
 		} else if (l.begins_with("map_Ks ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
@@ -162,7 +162,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 			}
 
 		} else if (l.begins_with("map_Ns ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
@@ -181,7 +181,7 @@ static Error _parse_material_library(const String &p_path, Map<String, Ref<Stand
 				r_missing_deps->push_back(path);
 			}
 		} else if (l.begins_with("map_bump ")) {
-			//normal
+			// normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
 			String p = l.replace("map_bump", "").replace("\\", "/").strip_edges();
@@ -242,7 +242,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 		}
 
 		if (l.begins_with("v ")) {
-			//vertex
+			// vertex
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_FILE_CORRUPT);
 			Vector3 vtx;
@@ -251,7 +251,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			vtx.z = v[3].to_float() * scale_mesh.z + offset_mesh.z;
 			vertices.push_back(vtx);
 		} else if (l.begins_with("vt ")) {
-			//uv
+			// uv
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 3, ERR_FILE_CORRUPT);
 			Vector2 uv;
@@ -260,7 +260,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			uvs.push_back(uv);
 
 		} else if (l.begins_with("vn ")) {
-			//normal
+			// normal
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_FILE_CORRUPT);
 			Vector3 nrm;
@@ -269,12 +269,12 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			nrm.z = v[3].to_float();
 			normals.push_back(nrm);
 		} else if (l.begins_with("f ")) {
-			//vertex
+			// vertex
 
 			Vector<String> v = l.split(" ", false);
 			ERR_FAIL_COND_V(v.size() < 4, ERR_FILE_CORRUPT);
 
-			//not very fast, could be sped up
+			// not very fast, could be sped up
 
 			Vector<String> face[3];
 			face[0] = v[1].split("/");
@@ -317,23 +317,23 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					ERR_FAIL_INDEX_V(vtx, vertices.size(), ERR_FILE_CORRUPT);
 
 					Vector3 vertex = vertices[vtx];
-					//if (weld_vertices)
+					// if (weld_vertices)
 					//	vertex.snap(Vector3(weld_tolerance, weld_tolerance, weld_tolerance));
 					surf_tool->add_vertex(vertex);
 				}
 
 				face[1] = face[2];
 			}
-		} else if (l.begins_with("s ")) { //smoothing
+		} else if (l.begins_with("s ")) { // smoothing
 			String what = l.substr(2, l.length()).strip_edges();
 			if (what == "off")
 				surf_tool->add_smooth_group(false);
 			else
 				surf_tool->add_smooth_group(true);
-		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { //commit group to mesh
-			//groups are too annoying
+		} else if (/*l.begins_with("g ") ||*/ l.begins_with("usemtl ") || (l.begins_with("o ") || f->eof_reached())) { // commit group to mesh
+			// groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
-				//another group going on, commit it
+				// another group going on, commit it
 				if (normals.size() == 0) {
 					surf_tool->generate_normals();
 				}
@@ -393,7 +393,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				current_group = l.substr(2, l.length()).strip_edges();
 			}
 
-		} else if (l.begins_with("mtllib ")) { //parse material
+		} else if (l.begins_with("mtllib ")) { // parse material
 
 			current_material_library = l.replace("mtllib", "").strip_edges();
 			if (!material_map.has(current_material_library)) {

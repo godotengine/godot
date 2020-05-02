@@ -96,7 +96,7 @@ int BitMap::get_true_bit_count() const {
 	const uint8_t *d = bitmask.ptr();
 	int c = 0;
 
-	//fast, almost branchless version
+	// fast, almost branchless version
 
 	for (int i = 0; i < ds; i++) {
 
@@ -187,7 +187,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 	Vector<Vector2> _points;
 	do {
 		int sv = 0;
-		{ //square value
+		{ // square value
 
 			/*
 			checking the 2x2 pixel grid, assigning these values to each pixel, if not transparent
@@ -279,12 +279,12 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 				this should normally go UP, but if we already been here, we go down
 				*/
 				if (case9s.has(Point2i(curx, cury))) {
-					//found, so we go down, and delete from case9s;
+					// found, so we go down, and delete from case9s;
 					stepx = 0;
 					stepy = 1;
 					case9s.erase(Point2i(curx, cury));
 				} else {
-					//not found, we go up, and add to case9s;
+					// not found, we go up, and add to case9s;
 					stepx = 0;
 					stepy = -1;
 					case9s.insert(Point2i(curx, cury));
@@ -301,12 +301,12 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 				this normally go RIGHT, but if its coming from RIGHT, it should go LEFT
 				*/
 				if (case6s.has(Point2i(curx, cury))) {
-					//found, so we go left, and delete from case6s;
+					// found, so we go left, and delete from case6s;
 					stepx = -1;
 					stepy = 0;
 					case6s.erase(Point2i(curx, cury));
 				} else {
-					//not found, we go right, and add to case6s;
+					// not found, we go right, and add to case6s;
 					stepx = 1;
 					stepy = 0;
 					case6s.insert(Point2i(curx, cury));
@@ -315,7 +315,7 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 			default:
 				ERR_PRINT("this shouldn't happen.");
 		}
-		//little optimization
+		// little optimization
 		// if previous direction is same as current direction,
 		// then we should modify the last vec to current
 		curx += stepx;
@@ -359,7 +359,7 @@ static Vector<Vector2> rdp(const Vector<Vector2> &v, float optimization) {
 
 	int index = -1;
 	float dist = 0;
-	//not looping first and last point
+	// not looping first and last point
 	for (size_t i = 1, size = v.size(); i < size - 1; ++i) {
 		float cdist = perpendicular_distance(v[i], v[0], v[v.size() - 1]);
 		if (cdist > dist) {

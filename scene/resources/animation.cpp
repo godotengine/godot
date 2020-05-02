@@ -178,7 +178,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 			} else if (track_get_type(track) == TYPE_METHOD) {
 
 				while (track_get_key_count(track))
-					track_remove_key(track, 0); //well shouldn't be set anyway
+					track_remove_key(track, 0); // well shouldn't be set anyway
 
 				Dictionary d = p_value;
 				ERR_FAIL_COND_V(!d.has("times"), false);
@@ -237,7 +237,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					for (int i = 0; i < valcount; i++) {
 
 						bt->values.write[i].time = rt[i];
-						bt->values.write[i].transition = 0; //unused in bezier
+						bt->values.write[i].transition = 0; // unused in bezier
 						bt->values.write[i].value.value = rv[i * 5 + 0];
 						bt->values.write[i].value.in_handle.x = rv[i * 5 + 1];
 						bt->values.write[i].value.in_handle.y = rv[i * 5 + 2];
@@ -783,7 +783,7 @@ int Animation::_insert_pos(float p_time, T& p_keys) {
 
 
 		if (idx==0 || p_keys[idx-1].time < p_time) {
-			//condition for insertion.
+			// condition for insertion.
 			p_keys.insert(idx,T());
 			return idx;
 		} else if (p_keys[idx-1].time == p_time) {
@@ -1384,15 +1384,15 @@ float Animation::track_get_key_transition(int p_track, int p_key_idx) const {
 		} break;
 		case TYPE_BEZIER: {
 
-			return 1; //bezier does not really use transitions
+			return 1; // bezier does not really use transitions
 		} break;
 		case TYPE_AUDIO: {
 
-			return 1; //audio does not really use transitions
+			return 1; // audio does not really use transitions
 		} break;
 		case TYPE_ANIMATION: {
 
-			return 1; //animation does not really use transitions
+			return 1; // animation does not really use transitions
 		} break;
 	}
 
@@ -1544,12 +1544,12 @@ int Animation::_find(const Vector<K> &p_keys, float p_time) const {
 
 		middle = (low + high) / 2;
 
-		if (Math::is_equal_approx(p_time, keys[middle].time)) { //match
+		if (Math::is_equal_approx(p_time, keys[middle].time)) { // match
 			return middle;
 		} else if (p_time < keys[middle].time)
-			high = middle - 1; //search low end of array
+			high = middle - 1; // search low end of array
 		else
-			low = middle + 1; //search high end of array
+			low = middle + 1; // search high end of array
 	}
 
 	if (keys[middle].time > p_time)
@@ -1613,7 +1613,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 	Variant::Type type_pa = p_pre_a.get_type();
 	Variant::Type type_pb = p_post_b.get_type();
 
-	//make int and real play along
+	// make int and real play along
 
 	uint32_t vformat = 1 << type_a;
 	vformat |= 1 << type_b;
@@ -1621,7 +1621,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 	vformat |= 1 << type_pb;
 
 	if (vformat == ((1 << Variant::INT) | (1 << Variant::FLOAT)) || vformat == (1 << Variant::FLOAT)) {
-		//mix of real and int
+		// mix of real and int
 
 		real_t p0 = p_pre_a;
 		real_t p1 = p_a;
@@ -1639,7 +1639,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 
 	} else if ((vformat & (vformat - 1))) {
 
-		return p_a; //can't interpolate, mix of types
+		return p_a; // can't interpolate, mix of types
 	}
 
 	switch (type_a) {
@@ -1897,11 +1897,11 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 void Animation::_value_track_get_key_indices_in_range(const ValueTrack *vt, float from_time, float to_time, List<int> *p_indices) const {
 
 	if (from_time != length && to_time == length)
-		to_time = length * 1.001; //include a little more if at the end
+		to_time = length * 1.001; // include a little more if at the end
 	int to = _find(vt->values, to_time);
 
 	if (to >= 0 && from_time == to_time && vt->values[to].time == from_time) {
-		//find exact (0 delta), return if found
+		// find exact (0 delta), return if found
 		p_indices->push_back(to);
 		return;
 	}
@@ -1995,7 +1995,7 @@ template <class T>
 void Animation::_track_get_key_indices_in_range(const Vector<T> &p_array, float from_time, float to_time, List<int> *p_indices) const {
 
 	if (from_time != length && to_time == length)
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length * 1.01; // include a little more if at the end
 
 	int to = _find(p_array, to_time);
 
@@ -2149,7 +2149,7 @@ void Animation::track_get_key_indices_in_range(int p_track, float p_time, float 
 void Animation::_method_track_get_key_indices_in_range(const MethodTrack *mt, float from_time, float to_time, List<int> *p_indices) const {
 
 	if (from_time != length && to_time == length)
-		to_time = length * 1.01; //include a little more if at the end
+		to_time = length * 1.01; // include a little more if at the end
 
 	int to = _find(mt->methods, to_time);
 
@@ -2369,7 +2369,7 @@ static _FORCE_INLINE_ Vector2 _bezier_interp(real_t t, const Vector2 &start, con
 }
 
 float Animation::bezier_track_interpolate(int p_track, float p_time) const {
-	//this uses a different interpolation scheme
+	// this uses a different interpolation scheme
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
 	Track *track = tracks[p_track];
 	ERR_FAIL_COND_V(track->type != TYPE_BEZIER, 0);
@@ -2389,7 +2389,7 @@ float Animation::bezier_track_interpolate(int p_track, float p_time) const {
 
 	ERR_FAIL_COND_V(idx == -2, 0);
 
-	//there really is no looping interpolation on bezier
+	// there really is no looping interpolation on bezier
 
 	if (idx < 0) {
 		return bt->values[0].value.value;
@@ -2413,7 +2413,7 @@ float Animation::bezier_track_interpolate(int p_track, float p_time) const {
 	Vector2 end(duration, bt->values[idx + 1].value.value);
 	Vector2 end_in = end + bt->values[idx + 1].value.in_handle;
 
-	//narrow high and low as much as possible
+	// narrow high and low as much as possible
 	for (int i = 0; i < iterations; i++) {
 
 		middle = (low + high) / 2;
@@ -2427,7 +2427,7 @@ float Animation::bezier_track_interpolate(int p_track, float p_time) const {
 		}
 	}
 
-	//interpolate the result:
+	// interpolate the result:
 	Vector2 low_pos = _bezier_interp(low, start, start_out, end_in, end);
 	Vector2 high_pos = _bezier_interp(high, start, start_out, end_in, end);
 	float c = (t - low_pos.x) / (high_pos.x - low_pos.x);
@@ -2849,7 +2849,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 	real_t c = (t1.time - t0.time) / (t2.time - t0.time);
 	real_t t[3] = { -1, -1, -1 };
 
-	{ //translation
+	{ // translation
 
 		const Vector3 &v0 = t0.value.loc;
 		const Vector3 &v1 = t1.value.loc;
@@ -2858,7 +2858,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		if (v0.is_equal_approx(v2)) {
 			//0 and 2 are close, let's see if 1 is close
 			if (!v0.is_equal_approx(v1)) {
-				//not close, not optimizable
+				// not close, not optimizable
 				return false;
 			}
 
@@ -2876,7 +2876,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			real_t d = Geometry::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; // beyond allowed error for colinearity
 			}
 
 			if (p_norm != Vector3() && Math::acos(pd.normalized().dot(p_norm)) > p_alowed_angular_err)
@@ -2886,13 +2886,13 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		}
 	}
 
-	{ //rotation
+	{ // rotation
 
 		const Quat &q0 = t0.value.rot;
 		const Quat &q1 = t1.value.rot;
 		const Quat &q2 = t2.value.rot;
 
-		//localize both to rotation from q0
+		// localize both to rotation from q0
 
 		if (q0.is_equal_approx(q2)) {
 
@@ -2914,31 +2914,31 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 				return false;
 
 			if (v01.dot(v02) < 0) {
-				//make sure both rotations go the same way to compare
+				// make sure both rotations go the same way to compare
 				v02 = -v02;
 				a02 = -a02;
 			}
 
 			real_t err_01 = Math::acos(v01.normalized().dot(v02.normalized())) / Math_PI;
 			if (err_01 > p_alowed_angular_err) {
-				//not rotating in the same axis
+				// not rotating in the same axis
 				return false;
 			}
 
 			if (a01 * a02 < 0) {
-				//not rotating in the same direction
+				// not rotating in the same direction
 				return false;
 			}
 
 			real_t tr = a01 / a02;
 			if (tr < 0 || tr > 1)
-				return false; //rotating too much or too less
+				return false; // rotating too much or too less
 
 			t[1] = tr;
 		}
 	}
 
-	{ //scale
+	{ // scale
 
 		const Vector3 &v0 = t0.value.scale;
 		const Vector3 &v1 = t1.value.scale;
@@ -2947,7 +2947,7 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		if (v0.is_equal_approx(v2)) {
 			//0 and 2 are close, let's see if 1 is close
 			if (!v0.is_equal_approx(v1)) {
-				//not close, not optimizable
+				// not close, not optimizable
 				return false;
 			}
 
@@ -2958,14 +2958,14 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			float d1 = pd.dot(v1);
 			float d2 = pd.dot(v2);
 			if (d1 < d0 || d1 > d2) {
-				return false; //beyond segment range
+				return false; // beyond segment range
 			}
 
 			Vector3 s[2] = { v0, v2 };
 			real_t d = Geometry::get_closest_point_to_segment(v1, s).distance_to(v1);
 
 			if (d > pd.length() * p_alowed_linear_err) {
-				return false; //beyond allowed error for colinearity
+				return false; // beyond allowed error for colinearity
 			}
 
 			t[2] = (d1 - d0) / (d2 - d0);
@@ -2981,10 +2981,10 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		erase = true;
 		real_t lt = -1;
 		for (int j = 0; j < 3; j++) {
-			//search for t on first, one must be it
+			// search for t on first, one must be it
 			if (t[j] != -1) {
-				lt = t[j]; //official t
-				//validate rest
+				lt = t[j]; // official t
+				// validate rest
 				for (int k = j + 1; k < 3; k++) {
 					if (t[k] == -1)
 						continue;
@@ -3003,9 +3003,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		if (erase) {
 
 			if (Math::abs(lt - c) > p_alowed_linear_err) {
-				//todo, evaluate changing the transition if this fails?
-				//this could be done as a second pass and would be
-				//able to optimize more
+				// todo, evaluate changing the transition if this fails?
+				// this could be done as a second pass and would be
+				// able to optimize more
 				erase = false;
 			}
 		}
@@ -3036,7 +3036,7 @@ void Animation::_transform_track_optimize(int p_idx, float p_allowed_linear_err,
 		}
 
 		if (prev_erased && !_transform_track_optimize_key(t0, first_erased, t2, p_allowed_linear_err, p_allowed_angular_err, p_max_optimizable_angle, norm)) {
-			//avoid error to go beyond first erased key
+			// avoid error to go beyond first erased key
 			erase = false;
 		}
 

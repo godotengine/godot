@@ -48,7 +48,7 @@ void ResourceImporterCSV::get_recognized_extensions(List<String> *p_extensions) 
 }
 
 String ResourceImporterCSV::get_save_extension() const {
-	return ""; //does not save a single resource
+	return ""; // does not save a single resource
 }
 
 String ResourceImporterCSV::get_resource_type() const {

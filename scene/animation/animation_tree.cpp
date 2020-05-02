@@ -162,7 +162,7 @@ float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p
 
 	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
-	//inputs.write[p_input].last_pass = state->last_pass;
+	// inputs.write[p_input].last_pass = state->last_pass;
 	float activity = 0;
 	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), nullptr, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
 
@@ -199,7 +199,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 	if (has_filter() && is_filter_enabled() && p_filter != FILTER_IGNORE) {
 
 		for (int i = 0; i < blend_count; i++) {
-			blendw[i] = 0.0; //all to zero by default
+			blendw[i] = 0.0; // all to zero by default
 		}
 
 		const NodePath *K = nullptr;
@@ -208,16 +208,16 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 				continue;
 			}
 			int idx = state->track_map[*K];
-			blendw[idx] = 1.0; //filtered goes to one
+			blendw[idx] = 1.0; // filtered goes to one
 		}
 
 		switch (p_filter) {
 			case FILTER_IGNORE:
-				break; //will not happen anyway
+				break; // will not happen anyway
 			case FILTER_PASS: {
-				//values filtered pass, the rest don't
+				// values filtered pass, the rest don't
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] == 0) //not filtered, does not pass
+					if (blendw[i] == 0) // not filtered, does not pass
 						continue;
 
 					blendw[i] = blendr[i] * p_blend;
@@ -229,10 +229,10 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			} break;
 			case FILTER_STOP: {
 
-				//values filtered don't pass, the rest are blended
+				// values filtered don't pass, the rest are blended
 
 				for (int i = 0; i < blend_count; i++) {
-					if (blendw[i] > 0) //filtered, does not pass
+					if (blendw[i] > 0) // filtered, does not pass
 						continue;
 
 					blendw[i] = blendr[i] * p_blend;
@@ -244,13 +244,13 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 			} break;
 			case FILTER_BLEND: {
 
-				//filtered values are blended, the rest are passed without blending
+				// filtered values are blended, the rest are passed without blending
 
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] == 1.0) {
-						blendw[i] = blendr[i] * p_blend; //filtered, blend
+						blendw[i] = blendr[i] * p_blend; // filtered, blend
 					} else {
-						blendw[i] = blendr[i]; //not filtered, do not blend
+						blendw[i] = blendr[i]; // not filtered, do not blend
 					}
 
 					if (blendw[i] > CMP_EPSILON) {
@@ -263,7 +263,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 	} else {
 		for (int i = 0; i < blend_count; i++) {
 
-			//regular blend
+			// regular blend
 			blendw[i] = blendr[i] * p_blend;
 			if (blendw[i] > CMP_EPSILON) {
 				any_valid = true;
@@ -278,13 +278,13 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 		}
 	}
 
-	if (!p_seek && p_optimize && !any_valid) //pointless to go on, all are zero
+	if (!p_seek && p_optimize && !any_valid) // pointless to go on, all are zero
 		return 0;
 
 	String new_path;
 	AnimationNode *new_parent;
 
-	//this is the slowest part of processing, but as strings process in powers of 2, and the paths always exist, it will not result in that many allocations
+	// this is the slowest part of processing, but as strings process in powers of 2, and the paths always exist, it will not result in that many allocations
 	if (p_new_parent) {
 		new_parent = p_new_parent;
 		new_path = String(base_path) + String(p_subpath) + "/";
@@ -315,7 +315,7 @@ String AnimationNode::get_caption() const {
 }
 
 void AnimationNode::add_input(const String &p_name) {
-	//root nodes can't add inputs
+	// root nodes can't add inputs
 	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != nullptr);
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
@@ -376,9 +376,9 @@ Array AnimationNode::_get_filters() const {
 
 	const NodePath *K = nullptr;
 	while ((K = filter.next(K))) {
-		paths.push_back(String(*K)); //use strings, so sorting is possible
+		paths.push_back(String(*K)); // use strings, so sorting is possible
 	}
-	paths.sort(); //done so every time the scene is saved, it does not change
+	paths.sort(); // done so every time the scene is saved, it does not change
 
 	return paths;
 }
@@ -563,7 +563,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				track = track_cache.get(path);
 			}
 
-			//if not valid, delete track
+			// if not valid, delete track
 			if (track && (track->type != track_type || ObjectDB::get_instance(track->object_id) == nullptr)) {
 				playing_caches.erase(track);
 				memdelete(track);
@@ -745,9 +745,9 @@ void AnimationTree::_clear_caches() {
 
 void AnimationTree::_process_graph(float p_delta) {
 
-	_update_properties(); //if properties need updating, update them
+	_update_properties(); // if properties need updating, update them
 
-	//check all tracks, see if they need modification
+	// check all tracks, see if they need modification
 
 	root_motion_transform = Transform();
 
@@ -802,13 +802,13 @@ void AnimationTree::_process_graph(float p_delta) {
 		}
 	}
 
-	{ //setup
+	{ // setup
 
 		process_pass++;
 
 		state.valid = true;
 		state.invalid_reasons = "";
-		state.animation_states.clear(); //will need to be re-created
+		state.animation_states.clear(); // will need to be re-created
 		state.valid = true;
 		state.player = player;
 		state.last_pass = process_pass;
@@ -819,16 +819,16 @@ void AnimationTree::_process_graph(float p_delta) {
 		root->blends.resize(state.track_count);
 		float *src_blendsw = root->blends.ptrw();
 		for (int i = 0; i < state.track_count; i++) {
-			src_blendsw[i] = 1.0; //by default all go to 1 for the root input
+			src_blendsw[i] = 1.0; // by default all go to 1 for the root input
 		}
 	}
 
-	//process
+	// process
 
 	{
 
 		if (started) {
-			//if started, seek
+			// if started, seek
 			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, nullptr, &state, 0, true, Vector<StringName>());
 			started = false;
 		}
@@ -837,9 +837,9 @@ void AnimationTree::_process_graph(float p_delta) {
 	}
 
 	if (!state.valid) {
-		return; //state is not valid. do nothing.
+		return; // state is not valid. do nothing.
 	}
-	//apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
+	// apply value/transform/bezier blends to track caches and execute method/audio/animation tracks
 
 	{
 
@@ -862,7 +862,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				TrackCache *track = track_cache[path];
 				if (track->type != a->track_get_type(i)) {
-					continue; //may happen should not
+					continue; // may happen should not
 				}
 
 				track->root_motion = root_motion_track == path;
@@ -875,7 +875,7 @@ void AnimationTree::_process_graph(float p_delta) {
 				float blend = (*as.track_blends)[blend_idx];
 
 				if (blend < CMP_EPSILON)
-					continue; //nothing to blend
+					continue; // nothing to blend
 
 				switch (track->type) {
 
@@ -944,7 +944,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							Vector3 scale;
 
 							Error err = a->transform_track_interpolate(i, time, &loc, &rot, &scale);
-							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
+							//ERR_CONTINUE(err!=OK); // used for testing, should be removed
 
 							if (t->process_pass != process_pass) {
 
@@ -977,7 +977,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
 
-						if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) { //delta == 0 means seek
+						if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) { // delta == 0 means seek
 
 							Variant value = a->value_track_interpolate(i, time);
 
@@ -1054,7 +1054,7 @@ void AnimationTree::_process_graph(float p_delta) {
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
-							//find whathever should be playing
+							// find whathever should be playing
 							int idx = a->track_find_key(i, time);
 							if (idx < 0)
 								continue;
@@ -1082,7 +1082,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 								t->playing = true;
 								playing_caches.insert(t);
-								if (len && end_ofs > 0) { //force a end at a time
+								if (len && end_ofs > 0) { // force a end at a time
 									t->len = len - start_ofs - end_ofs;
 								} else {
 									t->len = 0;
@@ -1092,7 +1092,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							}
 
 						} else {
-							//find stuff to play
+							// find stuff to play
 							List<int> to_play;
 							a->track_get_key_indices_in_range(i, time, delta, &to_play);
 							if (to_play.size()) {
@@ -1113,7 +1113,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 									t->playing = true;
 									playing_caches.insert(t);
-									if (len && end_ofs > 0) { //force a end at a time
+									if (len && end_ofs > 0) { // force a end at a time
 										t->len = len - start_ofs - end_ofs;
 									} else {
 										t->len = 0;
@@ -1138,7 +1138,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								}
 
 								if (stop) {
-									//time to stop
+									// time to stop
 									t->object->call("stop");
 									t->playing = false;
 									playing_caches.erase(t);
@@ -1163,7 +1163,7 @@ void AnimationTree::_process_graph(float p_delta) {
 							continue;
 
 						if (delta == 0 || seeked) {
-							//seek
+							// seek
 							int idx = a->track_find_key(i, time);
 							if (idx < 0)
 								continue;
@@ -1179,9 +1179,9 @@ void AnimationTree::_process_graph(float p_delta) {
 							float at_anim_pos;
 
 							if (anim->has_loop()) {
-								at_anim_pos = Math::fposmod(time - pos, anim->get_length()); //seek to loop
+								at_anim_pos = Math::fposmod(time - pos, anim->get_length()); // seek to loop
 							} else {
-								at_anim_pos = MAX(anim->get_length(), time - pos); //seek to end
+								at_anim_pos = MAX(anim->get_length(), time - pos); // seek to end
 							}
 
 							if (player2->is_playing() || seeked) {
@@ -1194,7 +1194,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								player2->seek(at_anim_pos, true);
 							}
 						} else {
-							//find stuff to play
+							// find stuff to play
 							List<int> to_play;
 							a->track_get_key_indices_in_range(i, time, delta, &to_play);
 							if (to_play.size()) {
@@ -1228,7 +1228,7 @@ void AnimationTree::_process_graph(float p_delta) {
 		while ((K = track_cache.next(K))) {
 			TrackCache *track = track_cache[*K];
 			if (track->process_pass != process_pass)
-				continue; //not processed, ignore
+				continue; // not processed, ignore
 
 			switch (track->type) {
 
@@ -1273,7 +1273,7 @@ void AnimationTree::_process_graph(float p_delta) {
 
 				} break;
 				default: {
-				} //the rest don't matter
+				} // the rest don't matter
 			}
 		}
 	}
@@ -1504,7 +1504,7 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
 
-	//rename values first
+	// rename values first
 	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 		if (E->get().name.begins_with(p_base)) {
 			String new_name = E->get().name.replace_first(p_base, p_new_base);
@@ -1512,7 +1512,7 @@ void AnimationTree::rename_parameter(const String &p_base, const String &p_new_b
 		}
 	}
 
-	//update tree second
+	// update tree second
 	properties_dirty = true;
 	_update_properties();
 }

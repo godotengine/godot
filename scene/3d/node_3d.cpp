@@ -60,7 +60,7 @@
     a) marking GLOBALs as dirty up all the tree must be done always
  2) If a node sets a GLOBAL, it marks local as dirty, and that's all?
 
- //is clearing the dirty state correct in this case?
+ // is clearing the dirty state correct in this case?
 
  drawback: setting a local down the tree forces many tree walks often
 
@@ -98,7 +98,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 
 	/*
 	if (data.dirty&DIRTY_GLOBAL)
-		return; //already dirty
+		return; // already dirty
 	*/
 
 	data.children_lock++;
@@ -106,7 +106,7 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	for (List<Node3D *>::Element *E = data.children.front(); E; E = E->next()) {
 
 		if (E->get()->data.toplevel_active)
-			continue; //don't propagate to a toplevel
+			continue; // don't propagate to a toplevel
 		E->get()->_propagate_transform_changed(p_origin);
 	}
 #ifdef TOOLS_ENABLED
@@ -140,12 +140,12 @@ void Node3D::_notification(int p_what) {
 
 				if (data.parent) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
-					data.dirty = DIRTY_VECTORS; //global is always dirty upon entering a scene
+					data.dirty = DIRTY_VECTORS; // global is always dirty upon entering a scene
 				}
 				data.toplevel_active = true;
 			}
 
-			data.dirty |= DIRTY_GLOBAL; //global is always dirty upon entering a scene
+			data.dirty |= DIRTY_GLOBAL; // global is always dirty upon entering a scene
 			_notify_dirty();
 
 			notification(NOTIFICATION_ENTER_WORLD);
@@ -181,7 +181,7 @@ void Node3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint() && get_tree()->is_node_being_edited(this)) {
 
-				//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
+				// get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
 				get_tree()->call_group_flags(0, SceneStringNames::get_singleton()->_spatial_editor_group, SceneStringNames::get_singleton()->_request_gizmo, this);
 				if (!data.gizmo_disabled) {
 
@@ -729,7 +729,7 @@ bool Node3D::is_local_transform_notification_enabled() const {
 void Node3D::force_update_transform() {
 	ERR_FAIL_COND(!is_inside_tree());
 	if (!xform_change.in_list()) {
-		return; //nothing to update
+		return; // nothing to update
 	}
 	get_tree()->xform_change_list.remove(&xform_change);
 

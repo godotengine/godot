@@ -62,7 +62,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 
 	int lines = 0;
 	String error_text;
-	bool path_found = false; //first match must have priority
+	bool path_found = false; // first match must have priority
 	while (true) {
 
 		assign = Variant();
@@ -84,12 +84,12 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 				String feature = assign.get_slicec('.', 1);
 				if (OS::get_singleton()->has_feature(feature)) {
 					r_path_and_type.path = value;
-					path_found = true; //first match must have priority
+					path_found = true; // first match must have priority
 				}
 
 			} else if (!path_found && assign == "path") {
 				r_path_and_type.path = value;
-				path_found = true; //first match must have priority
+				path_found = true; // first match must have priority
 			} else if (assign == "type") {
 				r_path_and_type.type = value;
 			} else if (assign == "importer") {
@@ -134,7 +134,7 @@ RES ResourceFormatImporter::load(const String &p_path, const String &p_original_
 
 #ifdef TOOLS_ENABLED
 	if (res.is_valid()) {
-		res->set_import_last_modified_time(res->get_last_modified_time()); //pass this, if used
+		res->set_import_last_modified_time(res->get_last_modified_time()); // pass this, if used
 		res->set_import_path(pat.path);
 	}
 #endif
@@ -412,7 +412,7 @@ bool ResourceFormatImporter::are_import_settings_valid(const String &p_path) con
 
 	for (int i = 0; i < importers.size(); i++) {
 		if (importers[i]->get_importer_name() == pat.importer) {
-			if (!importers[i]->are_import_settings_valid(p_path)) { //importer thinks this is not valid
+			if (!importers[i]->are_import_settings_valid(p_path)) { // importer thinks this is not valid
 				return false;
 			}
 		}

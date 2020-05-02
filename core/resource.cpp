@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/script_language.h"
-#include "scene/main/node.h" //only so casting works
+#include "scene/main/node.h" // only so casting works
 
 #include <stdio.h>
 
@@ -121,7 +121,7 @@ String Resource::get_name() const {
 
 bool Resource::editor_can_reload_from_file() {
 
-	return true; //by default yes
+	return true; // by default yes
 }
 
 void Resource::reload_from_file() {
@@ -143,7 +143,7 @@ void Resource::reload_from_file() {
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 			continue;
 		if (E->get().name == "resource_path")
-			continue; //do not change path
+			continue; // do not change path
 
 		set(E->get().name, s->get(E->get().name));
 	}
@@ -279,7 +279,7 @@ void Resource::notify_change_to_owners() {
 	for (Set<ObjectID>::Element *E = owners.front(); E; E = E->next()) {
 
 		Object *obj = ObjectDB::get_instance(E->get());
-		ERR_CONTINUE_MSG(!obj, "Object was deleted, while still owning a resource."); //wtf
+		ERR_CONTINUE_MSG(!obj, "Object was deleted, while still owning a resource."); // wtf
 		//TODO store string
 		obj->call("resource_changed", RES(this));
 	}

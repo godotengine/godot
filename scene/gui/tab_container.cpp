@@ -522,7 +522,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 		c->hide();
 	else {
 		c->show();
-		//call_deferred("set_current_tab",0);
+		// call_deferred("set_current_tab",0);
 		first = true;
 		current = 0;
 		previous = 0;
@@ -885,7 +885,7 @@ void TabContainer::set_tab_hidden(int p_tab, bool p_hidden) {
 		return;
 	}
 
-	//assumed no other tab can be switched to, just hide
+	// assumed no other tab can be switched to, just hide
 	child->hide();
 }
 

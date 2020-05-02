@@ -147,7 +147,7 @@ Ref<AudioEffectInstance> AudioEffectRecord::instance() {
 
 	//Re-using the buffer size calculations from audio_effect_delay.cpp
 	float ring_buffer_max_size = IO_BUFFER_SIZE_MS;
-	ring_buffer_max_size /= 1000.0; //convert to seconds
+	ring_buffer_max_size /= 1000.0; // convert to seconds
 	ring_buffer_max_size *= AudioServer::get_singleton()->get_mix_rate();
 
 	int ringbuff_size = ring_buffer_max_size;
@@ -213,7 +213,7 @@ AudioStreamSample::Format AudioEffectRecord::get_format() const {
 
 Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 	AudioStreamSample::Format dst_format = format;
-	bool stereo = true; //forcing mono is not implemented
+	bool stereo = true; // forcing mono is not implemented
 
 	Vector<uint8_t> dst_data;
 
@@ -239,7 +239,7 @@ Ref<AudioStreamSample> AudioEffectRecord::get_recording() const {
 			encode_uint16(v, &w[i * 2]);
 		}
 	} else if (dst_format == AudioStreamSample::FORMAT_IMA_ADPCM) {
-		//byte interleave
+		// byte interleave
 		Vector<float> left;
 		Vector<float> right;
 

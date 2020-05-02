@@ -42,10 +42,10 @@ void Path2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			//button_create->set_icon( get_icon("Edit","EditorIcons"));
-			//button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
-			//set_pressed_button(button_edit);
-			//button_edit->set_pressed(true);
+			// button_create->set_icon( get_icon("Edit","EditorIcons"));
+			// button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
+			// set_pressed_button(button_edit);
+			// button_edit->set_pressed(true);
 
 		} break;
 		case NOTIFICATION_PHYSICS_PROCESS: {

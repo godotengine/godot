@@ -781,7 +781,7 @@ void Input::accumulate_input_event(const Ref<InputEvent> &p_event) {
 		return;
 	}
 	if (!accumulated_events.empty() && accumulated_events.back()->get()->accumulate(p_event)) {
-		return; //event was accumulated, exit
+		return; // event was accumulated, exit
 	}
 
 	accumulated_events.push_back(p_event);
@@ -821,7 +821,7 @@ void Input::joy_button(int p_device, int p_button, bool p_pressed) {
 
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
-	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
+	// printf("got button %i, mapping is %i\n", p_button, joy.mapping);
 	if (joy.last_buttons[p_button] == p_pressed) {
 		return;
 	}
@@ -833,14 +833,14 @@ void Input::joy_button(int p_device, int p_button, bool p_pressed) {
 
 	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
 	if (!el) {
-		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
-		//return _button_event(p_last_id, p_device, p_button, p_pressed);
+		// don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
+		// return _button_event(p_last_id, p_device, p_button, p_pressed);
 		return;
 	}
 
 	JoyEvent map = el->get();
 	if (map.type == TYPE_BUTTON) {
-		//fake additional axis event for triggers
+		// fake additional axis event for triggers
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_pressed ? 1.0f : 0.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
@@ -879,7 +879,7 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		return;
 	}
 
-	//when changing direction quickly, insert fake event to release pending inputmap actions
+	// when changing direction quickly, insert fake event to release pending inputmap actions
 	float last = joy.last_axis[p_axis];
 	if (p_value.min == 0 && (last < 0.25 || last > 0.75) && (last - 0.5) * (p_value.value - 0.5) < 0) {
 		JoyAxis jx;
@@ -903,14 +903,14 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	const Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
 	if (!el) {
-		//return _axis_event(p_last_id, p_device, p_axis, p_value);
+		// return _axis_event(p_last_id, p_device, p_axis, p_value);
 		return;
 	};
 
 	JoyEvent map = el->get();
 
 	if (map.type == TYPE_BUTTON) {
-		//send axis event for triggers
+		// send axis event for triggers
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_value.min == 0 ? p_value.value : 0.5f + p_value.value / 2.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
@@ -968,7 +968,7 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		_axis_event(p_device, map.index, val);
 		return;
 	}
-	//printf("invalid mapping\n");
+	// printf("invalid mapping\n");
 }
 
 void Input::joy_hat(int p_device, int p_val) {
@@ -1125,7 +1125,7 @@ void Input::parse_mapping(String p_mapping) {
 		};
 	};
 	map_db.push_back(mapping);
-	//printf("added mapping with uuid %ls\n", mapping.uid.c_str());
+	// printf("added mapping with uuid %ls\n", mapping.uid.c_str());
 };
 
 void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {

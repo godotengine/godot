@@ -43,8 +43,8 @@ void MenuButton::_unhandled_key_input(Ref<InputEvent> p_event) {
 		if (!get_parent() || !is_visible_in_tree() || is_disabled())
 			return;
 
-		//bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
-		//if (popup->activate_item_by_event(p_event, global_only))
+		// bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
+		// if (popup->activate_item_by_event(p_event, global_only))
 		//	accept_event();
 		if (popup->activate_item_by_event(p_event, false))
 			accept_event();

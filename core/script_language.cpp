@@ -162,7 +162,7 @@ void ScriptServer::unregister_language(ScriptLanguage *p_language) {
 
 void ScriptServer::init_languages() {
 
-	{ //load global classes
+	{ // load global classes
 		global_classes_clear();
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
 			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");
@@ -489,7 +489,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 		Variant defval;
 		if (script->get_property_default_value(E->key(), defval)) {
-			//remove because it's the same as the default value
+			// remove because it's the same as the default value
 			if (defval == E->get()) {
 				to_remove.push_back(E->key());
 			}
@@ -506,7 +506,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 		owner->_change_notify();
 	}
-	//change notify
+	// change notify
 
 	constants.clear();
 	script->get_constants(&constants);

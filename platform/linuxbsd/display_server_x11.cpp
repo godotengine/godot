@@ -116,7 +116,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
-		//case FEATURE_HIDPI:
+		// case FEATURE_HIDPI:
 		case FEATURE_ICON:
 		case FEATURE_NATIVE_ICON:
 		case FEATURE_SWAP_BUFFERS:
@@ -374,7 +374,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
 
-		//flush pending motion events
+		// flush pending motion events
 		_flush_mouse_motion();
 		WindowData &main_window = windows[MAIN_WINDOW_ID];
 
@@ -490,10 +490,10 @@ static String _clipboard_get_impl(Atom p_source, Window x11_window, ::Display *x
 				selection, // Tricky..
 				0, 0, // offset - len
 				0, // Delete 0==FALSE
-				AnyPropertyType, //flag
+				AnyPropertyType, // flag
 				&type, // return type
 				&format, // return format
-				&len, &bytes_left, //that
+				&len, &bytes_left, // that
 				&data);
 		// DATA is There
 		if (bytes_left > 0) {
@@ -615,7 +615,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 		p_screen = window_get_current_screen();
 	}
 
-	//invalid screen?
+	// invalid screen?
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
 
 	//Get physical monitor Dimensions through XRandR and calculate dpi
@@ -648,7 +648,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	if (xdpi || ydpi)
 		return (xdpi + ydpi) / (xdpi && ydpi ? 2 : 1);
 
-	//could not get dpi
+	// could not get dpi
 	return 96;
 }
 bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
@@ -691,7 +691,7 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_id));
-	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted"); //ma
+	ERR_FAIL_COND_MSG(p_id == MAIN_WINDOW_ID, "Main window can't be deleted"); // ma
 
 	WindowData &wd = windows[p_id];
 
@@ -851,7 +851,7 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 
 	ERR_FAIL_COND_MSG(wd_window.on_top, "Windows with the 'on top' can't become transient.");
 	if (p_parent == INVALID_WINDOW_ID) {
-		//remove transient
+		// remove transient
 
 		ERR_FAIL_COND(wd_window.transient_parent == INVALID_WINDOW_ID);
 		ERR_FAIL_COND(!windows.has(wd_window.transient_parent));
@@ -894,7 +894,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 	int x = 0;
 	int y = 0;
 	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
-		//exclude window decorations
+		// exclude window decorations
 		XSync(x11_display, False);
 		Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
 		if (prop != None) {
@@ -1282,11 +1282,11 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 	if (old_mode == p_mode) {
 		return; // do nothing
 	}
-	//remove all "extra" modes
+	// remove all "extra" modes
 
 	switch (old_mode) {
 		case WINDOW_MODE_WINDOWED: {
-			//do nothing
+			// do nothing
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
 			//Un-Minimize
@@ -1320,7 +1320,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			//Remove full-screen
 			_set_wm_fullscreen(p_window, false);
 
-			//un-maximize required for always on top
+			// un-maximize required for always on top
 			bool on_top = window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window);
 
 			wd.fullscreen = false;
@@ -1340,7 +1340,7 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 	switch (p_mode) {
 		case WINDOW_MODE_WINDOWED: {
-			//do nothing
+			// do nothing
 		} break;
 		case WINDOW_MODE_MINIMIZED: {
 			// Using ICCCM -- Inter-Client Communication Conventions Manual
@@ -1392,10 +1392,10 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 	ERR_FAIL_COND_V(!windows.has(p_window), WINDOW_MODE_WINDOWED);
 	const WindowData &wd = windows[p_window];
 
-	if (wd.fullscreen) { //if fullscreen, it's not in another mode
+	if (wd.fullscreen) { // if fullscreen, it's not in another mode
 		return WINDOW_MODE_FULLSCREEN;
 	}
-	{ //test maximized
+	{ // test maximized
 		// Using EWMH -- Extended Window Manager Hints
 		Atom property = XInternAtom(x11_display, "_NET_WM_STATE", False);
 		Atom type;
@@ -1567,7 +1567,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			// todo reimplement
 		} break;
 		default: {
 		}
@@ -1612,7 +1612,7 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-			//todo reimplement
+			// todo reimplement
 		} break;
 		default: {
 		}
@@ -1672,7 +1672,7 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 
 bool DisplayServerX11::window_can_draw(WindowID p_window) const {
 
-	//this seems to be all that is provided by X11
+	// this seems to be all that is provided by X11
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
 }
 bool DisplayServerX11::can_any_window_draw() const {
@@ -1908,7 +1908,7 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 	int read_bytes = 1024;
 
 	//Keep trying to read the property until there are no
-	//bytes unread.
+	// bytes unread.
 	do {
 		if (ret != nullptr)
 			XFree(ret);
@@ -1959,7 +1959,7 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 
 	state->set_shift((p_x11_state & ShiftMask));
 	state->set_control((p_x11_state & ControlMask));
-	state->set_alt((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); //altgr should not count as alt
+	state->set_alt((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); // altgr should not count as alt
 	state->set_metakey((p_x11_state & Mod4Mask));
 }
 
@@ -2071,7 +2071,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				k->set_echo(false);
 
 				if (k->get_keycode() == KEY_BACKTAB) {
-					//make it consistent across platforms.
+					// make it consistent across platforms.
 					k->set_keycode(KEY_TAB);
 					k->set_physical_keycode(KEY_TAB);
 					k->set_shift(true);
@@ -2137,7 +2137,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// know Mod1 was ALT and Mod4 was META (applekey/winkey)
 	// just tried Mods until i found them.
 
-	//print_verbose("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
+	// print_verbose("mod1: "+itos(xkeyevent->state&Mod1Mask)+" mod 5: "+itos(xkeyevent->state&Mod5Mask));
 
 	Ref<InputEventKey> k;
 	k.instance();
@@ -2176,9 +2176,9 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				XLookupString((XKeyEvent *)&peek_event, str, 256, &rk, nullptr);
 				if (rk == keysym_keycode) {
 					XEvent event;
-					XNextEvent(x11_display, &event); //erase next event
+					XNextEvent(x11_display, &event); // erase next event
 					_handle_key_event(p_window, (XKeyEvent *)&event, true);
-					return; //ignore current, echo next
+					return; // ignore current, echo next
 				}
 			}
 
@@ -2201,14 +2201,14 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	k->set_echo(p_echo);
 
 	if (k->get_keycode() == KEY_BACKTAB) {
-		//make it consistent across platforms.
+		// make it consistent across platforms.
 		k->set_keycode(KEY_TAB);
 		k->set_physical_keycode(KEY_TAB);
 		k->set_shift(true);
 	}
 
-	//don't set mod state if modifier keys are released by themselves
-	//else event.is_action() will not work correctly here
+	// don't set mod state if modifier keys are released by themselves
+	// else event.is_action() will not work correctly here
 	if (!k->is_pressed()) {
 		if (k->get_keycode() == KEY_SHIFT)
 			k->set_shift(false);
@@ -2262,7 +2262,7 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 	}
 
 	{
-		//the position in xconfigure is not useful here, obtain it manually
+		// the position in xconfigure is not useful here, obtain it manually
 		int x, y;
 		Window child;
 		XTranslateCoordinates(x11_display, wd.x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
@@ -2316,7 +2316,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
+		// send to a window
 		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
 		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 		if (callable.is_null()) {
@@ -2324,7 +2324,7 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 		}
 		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
-		//send to all windows
+		// send to all windows
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 			Callable callable = E->get().input_event_callback;
 			if (callable.is_null()) {
@@ -2587,7 +2587,7 @@ void DisplayServerX11::process_events() {
 				if (mouse_mode_grab) {
 					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 
-						//dear X11, I try, I really try, but you never work, you do whathever you want.
+						// dear X11, I try, I really try, but you never work, you do whathever you want.
 						if (mouse_mode == MOUSE_MODE_CAPTURED) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
 							XUndefineCursor(x11_display, E->get().x11_window);
@@ -2682,7 +2682,7 @@ void DisplayServerX11::process_events() {
 
 				while (true) {
 					if (mouse_mode == MOUSE_MODE_CAPTURED && event.xmotion.x == windows[MAIN_WINDOW_ID].size.width / 2 && event.xmotion.y == windows[MAIN_WINDOW_ID].size.height / 2) {
-						//this is likely the warp event since it was warped here
+						// this is likely the warp event since it was warped here
 						center = Vector2(event.xmotion.x, event.xmotion.y);
 						break;
 					}
@@ -2913,8 +2913,8 @@ void DisplayServerX11::process_events() {
 						requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2], event.xclient.data.l[3], event.xclient.data.l[4]);
 				} else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_position) {
 
-					//xdnd position event, reply with an XDND status message
-					//just depending on type of data for now
+					// xdnd position event, reply with an XDND status message
+					// just depending on type of data for now
 					XClientMessageEvent m;
 					memset(&m, 0, sizeof(m));
 					m.type = ClientMessage;
@@ -2924,7 +2924,7 @@ void DisplayServerX11::process_events() {
 					m.format = 32;
 					m.data.l[0] = windows[window_id].x11_window;
 					m.data.l[1] = (requested != None);
-					m.data.l[2] = 0; //empty rectangle
+					m.data.l[2] = 0; // empty rectangle
 					m.data.l[3] = 0;
 					m.data.l[4] = xdnd_action_copy;
 
@@ -3168,7 +3168,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 		XMapWindow(x11_display, wd.x11_window);
 
-		//associate PID
+		// associate PID
 		// make PID known to X11
 		{
 			const long pid = OS::get_singleton()->get_process_id();
@@ -3282,9 +3282,9 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 			}
 
 			if (make_utility) {
-				//this one seems to disable the fade animations for regular windows
-				//but has the drawback that will not get focus by default, so
-				//we need fo force it, unless no focus requested
+				// this one seems to disable the fade animations for regular windows
+				// but has the drawback that will not get focus by default, so
+				// we need fo force it, unless no focus requested
 
 				Atom type_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE_UTILITY", False);
 				Atom wt_atom = XInternAtom(x11_display, "_NET_WM_WINDOW_TYPE", False);
@@ -3292,7 +3292,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
 
 				if (!(p_flags & WINDOW_FLAG_NO_FOCUS_BIT)) {
-					//but as utility appears unfocused, it needs to be forcefuly focused, unless no focus requested
+					// but as utility appears unfocused, it needs to be forcefuly focused, unless no focus requested
 					XEvent xev;
 					Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
 
@@ -3335,7 +3335,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		}
 #endif
 
-		//set_class_hint(x11_display, wd.x11_window);
+		// set_class_hint(x11_display, wd.x11_window);
 		XFlush(x11_display);
 
 		XSync(x11_display, False);
@@ -3348,7 +3348,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 	window_set_mode(p_mode, id);
 
-	//sync size
+	// sync size
 	{
 		XWindowAttributes xwa;
 
@@ -3363,7 +3363,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		print_line("DisplayServer::_create_window " + itos(id) + " want rect: " + p_rect + " got rect " + Rect2i(xwa.x, xwa.y, xwa.width, xwa.height));
 	}
 
-	//set cursor
+	// set cursor
 	if (cursors[current_cursor] != None) {
 
 		XDefineCursor(x11_display, wd.x11_window, cursors[current_cursor]);
@@ -3398,7 +3398,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	last_mouse_pos_valid = false;
 	last_keyrelease_time = 0;
 
-	XInitThreads(); //always use threads
+	XInitThreads(); // always use threads
 
 	/** XLIB INITIALIZATION **/
 	x11_display = XOpenDisplay(nullptr);
@@ -3620,7 +3620,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 
-		//temporary
+		// temporary
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
@@ -3636,7 +3636,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	*/
 
 	{
-		//set all event master mask
+		// set all event master mask
 		XIEventMask all_master_event_mask;
 		static unsigned char all_master_mask_data[XIMaskLen(XI_LASTEVENT)] = {};
 		all_master_event_mask.deviceid = XIAllMasterDevices;
@@ -3802,7 +3802,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 }
 DisplayServerX11::~DisplayServerX11() {
 
-	//destroy all windows
+	// destroy all windows
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 #ifdef VULKAN_ENABLED
 		if (rendering_driver == "vulkan") {
@@ -3817,7 +3817,7 @@ DisplayServerX11::~DisplayServerX11() {
 		XDestroyWindow(x11_display, E->get().x11_window);
 	}
 
-	//destroy drivers
+	// destroy drivers
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
 

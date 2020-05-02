@@ -140,7 +140,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
 	rendering_server->init();
-	//rendering_server->cursor_set_visible(false, 0);
+	// rendering_server->cursor_set_visible(false, 0);
 
 #if defined(OPENGL_ENABLED)
 	// reset this to what it should be, it will have been set to 0 after rendering_server->init() is called
@@ -165,7 +165,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 #ifdef ICLOUD_ENABLED
 	icloud = memnew(ICloud);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ICloud", icloud));
-	//icloud->connect();
+	// icloud->connect();
 #endif
 	ios = memnew(iOS);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("iOS", ios));
@@ -276,7 +276,7 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 
 	/*
 	if (p_x != last_accel.x) {
-		//printf("updating accel x %f\n", p_x);
+		// printf("updating accel x %f\n", p_x);
 		InputEvent ev;
 		ev.type = InputEvent::JOYPAD_MOTION;
 		ev.device = 0;
@@ -286,7 +286,7 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		queue_event(ev);
 	};
 	if (p_y != last_accel.y) {
-		//printf("updating accel y %f\n", p_y);
+		// printf("updating accel y %f\n", p_y);
 		InputEvent ev;
 		ev.type = InputEvent::JOYPAD_MOTION;
 		ev.device = 0;
@@ -296,7 +296,7 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		queue_event(ev);
 	};
 	if (p_z != last_accel.z) {
-		//printf("updating accel z %f\n", p_z);
+		// printf("updating accel z %f\n", p_z);
 		InputEvent ev;
 		ev.type = InputEvent::JOYPAD_MOTION;
 		ev.device = 0;

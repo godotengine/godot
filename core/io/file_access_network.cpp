@@ -151,7 +151,7 @@ void FileAccessNetworkClient::_thread_func() {
 				block.resize(len);
 				client->get_data(block.ptrw(), len);
 
-				if (fa) //may have been queued
+				if (fa) // may have been queued
 					fa->_set_block(offset, block);
 
 			} break;
@@ -297,11 +297,11 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 	last_page = -1;
 	last_page_buff = nullptr;
 
-	//buffers.clear();
+	// buffers.clear();
 	nc->unlock_mutex();
 	DEBUG_PRINT("OPEN POST");
 	DEBUG_TIME("open_post");
-	nc->sem.post(); //awaiting answer
+	nc->sem.post(); // awaiting answer
 	DEBUG_PRINT("WAIT...");
 	sem.wait();
 	DEBUG_TIME("open_end");
@@ -395,7 +395,7 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 
 int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 
-	//bool eof=false;
+	// bool eof=false;
 	if (pos + p_length > total_size) {
 		eof_flag = true;
 	}
@@ -429,7 +429,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 
 					_queue_page(page + j);
 				}
-				//queue pages
+				// queue pages
 				buffer_mutex.unlock();
 			}
 
@@ -506,7 +506,7 @@ Error FileAccessNetwork::_set_unix_permissions(const String &p_file, uint32_t p_
 void FileAccessNetwork::configure() {
 
 	GLOBAL_DEF("network/remote_fs/page_size", 65536);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/remote_fs/page_size", PropertyInfo(Variant::INT, "network/remote_fs/page_size", PROPERTY_HINT_RANGE, "1,65536,1,or_greater")); //is used as denominator and can't be zero
+	ProjectSettings::get_singleton()->set_custom_property_info("network/remote_fs/page_size", PropertyInfo(Variant::INT, "network/remote_fs/page_size", PROPERTY_HINT_RANGE, "1,65536,1,or_greater")); // is used as denominator and can't be zero
 	GLOBAL_DEF("network/remote_fs/page_read_ahead", 4);
 	ProjectSettings::get_singleton()->set_custom_property_info("network/remote_fs/page_read_ahead", PropertyInfo(Variant::INT, "network/remote_fs/page_read_ahead", PROPERTY_HINT_RANGE, "0,8,1,or_greater"));
 }

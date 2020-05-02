@@ -32,7 +32,7 @@
 
 void AnimationCache::_node_exit_tree(Node *p_node) {
 
-	//it is one shot, so it disconnects upon arrival
+	// it is one shot, so it disconnects upon arrival
 
 	ERR_FAIL_COND(!connected_nodes.has(p_node));
 
@@ -43,7 +43,7 @@ void AnimationCache::_node_exit_tree(Node *p_node) {
 		if (path_cache[i].node != p_node)
 			continue;
 
-		path_cache.write[i].valid = false; //invalidate path cache
+		path_cache.write[i].valid = false; // invalidate path cache
 	}
 }
 

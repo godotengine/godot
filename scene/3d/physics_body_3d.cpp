@@ -374,7 +374,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 #else
-	state = (PhysicsDirectBodyState3D *)p_state; //trust it
+	state = (PhysicsDirectBodyState3D *)p_state; // trust it
 #endif
 
 	set_ignore_transform_notification(true);
@@ -393,7 +393,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 
 		contact_monitor->locked = true;
 
-		//untag all
+		// untag all
 		int rc = 0;
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 
@@ -405,11 +405,11 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 		}
 
 		_RigidBodyInOut *toadd = (_RigidBodyInOut *)alloca(state->get_contact_count() * sizeof(_RigidBodyInOut));
-		int toadd_count = 0; //state->get_contact_count();
+		int toadd_count = 0; // state->get_contact_count();
 		RigidBody3D_RemoveAction *toremove = (RigidBody3D_RemoveAction *)alloca(rc * sizeof(RigidBody3D_RemoveAction));
 		int toremove_count = 0;
 
-		//put the ones to add
+		// put the ones to add
 
 		for (int i = 0; i < state->get_contact_count(); i++) {
 
@@ -417,7 +417,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
 
-			//bool found=false;
+			// bool found=false;
 
 			Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.find(obj);
 			if (!E) {
@@ -442,7 +442,7 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 			E->get().shapes[idx].tagged = true;
 		}
 
-		//put the ones to remove
+		// put the ones to remove
 
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 
@@ -457,14 +457,14 @@ void RigidBody3D::_direct_state_changed(Object *p_state) {
 			}
 		}
 
-		//process remotions
+		// process remotions
 
 		for (int i = 0; i < toremove_count; i++) {
 
 			_body_inout(0, toremove[i].body_id, toremove[i].pair.body_shape, toremove[i].pair.local_shape);
 		}
 
-		//process aditions
+		// process aditions
 
 		for (int i = 0; i < toadd_count; i++) {
 
@@ -482,7 +482,7 @@ void RigidBody3D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		if (Engine::get_singleton()->is_editor_hint()) {
-			set_notify_local_transform(true); //used for warnings and only in editor
+			set_notify_local_transform(true); // used for warnings and only in editor
 		}
 	}
 
@@ -733,7 +733,7 @@ void RigidBody3D::set_contact_monitor(bool p_enabled) {
 
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 
-			//clean up mess
+			// clean up mess
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = Object::cast_to<Node>(obj);
 
@@ -775,7 +775,7 @@ Array RigidBody3D::get_colliding_bodies() const {
 	for (const Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 		Object *obj = ObjectDB::get_instance(E->key());
 		if (!obj) {
-			ret.resize(ret.size() - 1); //ops
+			ret.resize(ret.size() - 1); // ops
 		} else {
 			ret[idx++] = obj;
 		}
@@ -916,7 +916,7 @@ RigidBody3D::RigidBody3D() :
 	linear_damp = -1;
 	angular_damp = -1;
 
-	//angular_velocity=0;
+	// angular_velocity=0;
 	sleeping = false;
 	ccd = false;
 
@@ -1036,15 +1036,15 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 
 		for (int i = 0; i < 2; ++i) {
 			bool collided;
-			if (i == 0) { //collide
+			if (i == 0) { // collide
 				collided = move_and_collide(motion, p_infinite_inertia, collision);
 				if (!collided) {
-					motion = Vector3(); //clear because no collision happened and motion completed
+					motion = Vector3(); // clear because no collision happened and motion completed
 				}
-			} else { //separate raycasts (if any)
+			} else { // separate raycasts (if any)
 				collided = separate_raycast_shapes(p_infinite_inertia, collision);
 				if (collided) {
-					collision.remainder = motion; //keep
+					collision.remainder = motion; // keep
 					collision.travel = Vector3();
 				}
 			}
@@ -1056,10 +1056,10 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 				motion = collision.remainder;
 
 				if (p_up_direction == Vector3()) {
-					//all is a wall
+					// all is a wall
 					on_wall = true;
 				} else {
-					if (Math::acos(collision.normal.dot(p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
+					if (Math::acos(collision.normal.dot(p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { // floor
 
 						on_floor = true;
 						floor_normal = collision.normal;
@@ -1074,7 +1074,7 @@ Vector3 KinematicBody3D::move_and_slide(const Vector3 &p_linear_velocity, const 
 								return Vector3();
 							}
 						}
-					} else if (Math::acos(collision.normal.dot(-p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
+					} else if (Math::acos(collision.normal.dot(-p_up_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { // ceiling
 						on_ceiling = true;
 					} else {
 						on_wall = true;
@@ -1128,7 +1128,7 @@ Vector3 KinematicBody3D::move_and_slide_with_snap(const Vector3 &p_linear_veloci
 					col.travel = col.travel.project(p_up_direction);
 				}
 			} else {
-				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
+				apply = false; // snapped with floor direction, but did not snap to a floor, do not snap.
 			}
 		}
 		if (apply) {
@@ -1173,7 +1173,7 @@ bool KinematicBody3D::test_move(const Transform &p_from, const Vector3 &p_motion
 
 bool KinematicBody3D::separate_raycast_shapes(bool p_infinite_inertia, Collision &r_collision) {
 
-	PhysicsServer3D::SeparationResult sep_res[8]; //max 8 rays
+	PhysicsServer3D::SeparationResult sep_res[8]; // max 8 rays
 
 	Transform gt = get_global_transform();
 
@@ -1300,7 +1300,7 @@ void KinematicBody3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	PhysicsDirectBodyState3D *state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 #else
-	PhysicsDirectBodyState3D *state = (PhysicsDirectBodyState3D *)p_state; //trust it
+	PhysicsDirectBodyState3D *state = (PhysicsDirectBodyState3D *)p_state; // trust it
 #endif
 
 	linear_velocity = state->get_linear_velocity();
@@ -2106,7 +2106,7 @@ void PhysicalBone3D::_direct_state_changed(Object *p_state) {
 #ifdef DEBUG_ENABLED
 	state = Object::cast_to<PhysicsDirectBodyState3D>(p_state);
 #else
-	state = (PhysicsDirectBodyState3D *)p_state; //trust it
+	state = (PhysicsDirectBodyState3D *)p_state; // trust it
 #endif
 
 	Transform global_transform(state->get_transform());

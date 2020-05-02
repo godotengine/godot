@@ -438,7 +438,7 @@ Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type) {
 
 	if (p_type == ERR_HANDLER_SCRIPT)
-		return; //ignore script errors, those go through debugger
+		return; // ignore script errors, those go through debugger
 
 	RemoteDebugger *rd = (RemoteDebugger *)p_this;
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) // Can't handle recursive errors during flush.
@@ -642,8 +642,8 @@ Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, boo
 
 void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
-	//this function is called when there is a debugger break (bug on script)
-	//or when execution is paused from editor
+	// this function is called when there is a debugger break (bug on script)
+	// or when execution is paused from editor
 
 	if (script_debugger->is_skipping_breakpoints() && !p_is_error_breakpoint)
 		return;

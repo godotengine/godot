@@ -143,7 +143,7 @@ struct _bit {
 //built in types
 
 static const _bit _type_list[] = {
-	//types
+	// types
 	{ Variant::BOOL, "bool" },
 	{ Variant::INT, "int" },
 	{ Variant::FLOAT, "float" },
@@ -187,12 +187,12 @@ struct _kws {
 };
 
 static const _kws _keyword_list[] = {
-	//ops
+	// ops
 	{ GDScriptTokenizer::TK_OP_IN, "in" },
 	{ GDScriptTokenizer::TK_OP_NOT, "not" },
 	{ GDScriptTokenizer::TK_OP_OR, "or" },
 	{ GDScriptTokenizer::TK_OP_AND, "and" },
-	//func
+	// func
 	{ GDScriptTokenizer::TK_PR_FUNCTION, "func" },
 	{ GDScriptTokenizer::TK_PR_CLASS, "class" },
 	{ GDScriptTokenizer::TK_PR_CLASS_NAME, "class_name" },
@@ -219,7 +219,7 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_PUPPETSYNC, "puppetsync" },
 	{ GDScriptTokenizer::TK_PR_CONST, "const" },
 	{ GDScriptTokenizer::TK_PR_ENUM, "enum" },
-	//controlflow
+	// controlflow
 	{ GDScriptTokenizer::TK_CF_IF, "if" },
 	{ GDScriptTokenizer::TK_CF_ELIF, "elif" },
 	{ GDScriptTokenizer::TK_CF_ELSE, "else" },
@@ -269,9 +269,9 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_BUILT_IN_FUNC:
 
 		case TK_OP_IN:
-			//case TK_OP_NOT:
-			//case TK_OP_OR:
-			//case TK_OP_AND:
+			// case TK_OP_NOT:
+			// case TK_OP_OR:
+			// case TK_OP_AND:
 
 		case TK_PR_CLASS:
 		case TK_PR_CONST:
@@ -466,7 +466,7 @@ void GDScriptTokenizerText::_make_newline(int p_indentation, int p_tabs) {
 void GDScriptTokenizerText::_advance() {
 
 	if (error_flag) {
-		//parser broke
+		// parser broke
 		_make_error(last_error);
 		return;
 	}
@@ -523,7 +523,7 @@ void GDScriptTokenizerText::_advance() {
 					comment += GETCHAR(0);
 #endif // DEBUG_ENABLED
 					code_pos++;
-					if (GETCHAR(0) == 0) { //end of file
+					if (GETCHAR(0) == 0) { // end of file
 						//_make_error("Unterminated Comment");
 						_make_token(TK_EOF);
 						return;
@@ -635,8 +635,8 @@ void GDScriptTokenizerText::_advance() {
 				}
 
 			} break;
-			//case '"' //string - no strings in shader
-			//case '\'' //string - no strings in shader
+			// case '"' // string - no strings in shader
+			// case '\'' // string - no strings in shader
 			case '{':
 				_make_token(TK_CURLY_BRACKET_OPEN);
 				break;
@@ -665,10 +665,10 @@ void GDScriptTokenizerText::_advance() {
 				_make_token(TK_QUESTION_MARK);
 				break;
 			case ':':
-				_make_token(TK_COLON); //for methods maybe but now useless.
+				_make_token(TK_COLON); // for methods maybe but now useless.
 				break;
 			case '$':
-				_make_token(TK_DOLLAR); //for the get_node() shortener
+				_make_token(TK_DOLLAR); // for the get_node() shortener
 				break;
 			case '^': {
 				if (GETCHAR(1) == '=') {
@@ -788,11 +788,11 @@ void GDScriptTokenizerText::_advance() {
 						_make_error("Unexpected EOL at String.");
 						return;
 					} else if (CharType(GETCHAR(i)) == 0xFFFF) {
-						//string ends here, next will be TK
+						// string ends here, next will be TK
 						i--;
 						break;
 					} else if (CharType(GETCHAR(i)) == '\\') {
-						//escaped characters...
+						// escaped characters...
 						i++;
 						CharType next = GETCHAR(i);
 						if (next == 0) {
@@ -815,7 +815,7 @@ void GDScriptTokenizerText::_advance() {
 							case '\\': res = '\\'; break;
 							case '/':
 								res = '/';
-								break; //wtf
+								break; // wtf
 
 							case 'u': {
 								// hex number
@@ -925,7 +925,7 @@ void GDScriptTokenizerText::_advance() {
 							}
 							exponent_found = true;
 						} else if (_is_number(GETCHAR(i))) {
-							//all ok
+							// all ok
 
 						} else if (bin_found && _is_bin(GETCHAR(i))) {
 
@@ -969,7 +969,7 @@ void GDScriptTokenizerText::_advance() {
 				}
 
 				if (GETCHAR(0) == '.') {
-					//parse period
+					// parse period
 					_make_token(TK_PERIOD);
 					break;
 				}
@@ -1016,7 +1016,7 @@ void GDScriptTokenizerText::_advance() {
 
 						if (!found) {
 
-							//built in func?
+							// built in func?
 
 							for (int j = 0; j < GDScriptFunctions::FUNC_MAX; j++) {
 
@@ -1030,7 +1030,7 @@ void GDScriptTokenizerText::_advance() {
 						}
 
 						if (!found) {
-							//keyword
+							// keyword
 
 							int idx = 0;
 							found = false;
@@ -1078,8 +1078,8 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 		_code = nullptr;
 	}
 	code_pos = 0;
-	line = 1; //it is stand-ar-ized that lines begin in 1 in code..
-	column = 1; //the same holds for columns
+	line = 1; // it is stand-ar-ized that lines begin in 1 in code..
+	column = 1; // the same holds for columns
 	tk_rb_pos = 0;
 	error_flag = false;
 #ifdef DEBUG_ENABLED
@@ -1264,7 +1264,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 
 		ERR_FAIL_COND_V(total_len < 1, ERR_INVALID_DATA);
 
-		if ((*b) & TOKEN_BYTE_MASK) { //little endian always
+		if ((*b) & TOKEN_BYTE_MASK) { // little endian always
 			ERR_FAIL_COND_V(total_len < 4, ERR_INVALID_DATA);
 
 			tokens.write[i] = decode_uint32(b) & ~TOKEN_BYTE_MASK;
@@ -1350,7 +1350,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 		tt.advance();
 	}
 
-	//reverse maps
+	// reverse maps
 
 	Map<int, StringName> rev_identifier_map;
 	for (Map<StringName, int>::Element *E = identifier_map.front(); E; E = E->next()) {
@@ -1368,7 +1368,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 		rev_line_map[E->get()] = E->key();
 	}
 
-	//save header
+	// save header
 	buf.resize(24);
 	buf.write[0] = 'G';
 	buf.write[1] = 'D';
@@ -1380,7 +1380,7 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code)
 	encode_uint32(line_map.size(), &buf.write[16]);
 	encode_uint32(token_array.size(), &buf.write[20]);
 
-	//save identifiers
+	// save identifiers
 
 	for (Map<int, StringName>::Element *E = rev_identifier_map.front(); E; E = E->next()) {
 

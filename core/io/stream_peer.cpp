@@ -471,7 +471,7 @@ Error StreamPeerBuffer::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_
 		r_received = data.size() - pointer;
 		if (r_received <= 0) {
 			r_received = 0;
-			return OK; //you got 0
+			return OK; // you got 0
 		}
 	} else {
 		r_received = p_bytes;

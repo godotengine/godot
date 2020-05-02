@@ -125,7 +125,7 @@ void AcceptDialog::_cancel_pressed() {
 	cancel_pressed();
 
 	if (parent_window) {
-		//parent_window->grab_focus();
+		// parent_window->grab_focus();
 	}
 }
 
@@ -225,7 +225,7 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	minsize.x = MAX(hminsize.x, minsize.x);
 	minsize.y += hminsize.y;
 	minsize.x += margin * 2;
-	minsize.y += margin * 3; //one as separation between hbc and child
+	minsize.y += margin * 3; // one as separation between hbc and child
 
 	Size2 wmsize = get_min_size();
 	minsize.x = MAX(wmsize.x, minsize.x);

@@ -386,7 +386,7 @@ void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 		button_group->buttons.insert(this);
 	}
 
-	update(); //checkbox changes to radio if set a buttongroup
+	update(); // checkbox changes to radio if set a buttongroup
 }
 
 Ref<ButtonGroup> BaseButton::get_button_group() const {

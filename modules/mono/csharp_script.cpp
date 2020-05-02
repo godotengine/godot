@@ -3180,7 +3180,7 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	CSharpInstance *instance = _create_instance(p_args, p_argcount, owner, r != nullptr, r_error);
 	if (!instance) {
 		if (ref.is_null()) {
-			memdelete(owner); //no owner, sorry
+			memdelete(owner); // no owner, sorry
 		}
 		return Variant();
 	}

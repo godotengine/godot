@@ -91,7 +91,7 @@ static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GL
 		return;
 
 	if (type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB)
-		return; //these are ultimately annoying, so removing for now
+		return; // these are ultimately annoying, so removing for now
 
 	char debSource[256], debType[256], debSev[256];
 
@@ -273,7 +273,7 @@ void RasterizerGLES2::begin_frame(double frame_step) {
 	time_total += frame_step;
 
 	if (frame_step == 0) {
-		//to avoid hiccups
+		// to avoid hiccups
 		frame_step = 0.001;
 	}
 
@@ -366,13 +366,13 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	if (p_scale) {
 
 		if (window_w > window_h) {
-			//scale horizontally
+			// scale horizontally
 			screenrect.size.y = window_h;
 			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
 			screenrect.position.x = (window_w - screenrect.size.x) / 2;
 
 		} else {
-			//scale vertically
+			// scale vertically
 			screenrect.size.x = window_w;
 			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
 			screenrect.position.y = (window_h - screenrect.size.y) / 2;
@@ -460,7 +460,7 @@ void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 			}
 #endif
 		} else {
-			//clear alpha
+			// clear alpha
 			glColorMask(false, false, false, true);
 			glClearColor(0, 0, 0, 1);
 			glClear(GL_COLOR_BUFFER_BIT);

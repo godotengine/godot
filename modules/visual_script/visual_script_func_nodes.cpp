@@ -155,7 +155,7 @@ int VisualScriptFunctionCall::get_output_value_port_count() const {
 		if (mb) {
 			ret = mb->has_return() ? 1 : 0;
 		} else
-			ret = 1; //it is assumed that script always returns something
+			ret = 1; // it is assumed that script always returns something
 
 		if (call_mode == CALL_MODE_INSTANCE) {
 			ret++;
@@ -354,14 +354,14 @@ void VisualScriptFunctionCall::_update_method_cache() {
 		Node *node = _get_base_node();
 		if (node) {
 			type = node->get_class();
-			base_type = type; //cache, too
+			base_type = type; // cache, too
 			script = node->get_script();
 		}
 	} else if (call_mode == CALL_MODE_SELF) {
 
 		if (get_visual_script().is_valid()) {
 			type = get_visual_script()->get_instance_base_type();
-			base_type = type; //cache, too
+			base_type = type; // cache, too
 			script = get_visual_script();
 		}
 
@@ -380,7 +380,7 @@ void VisualScriptFunctionCall::_update_method_cache() {
 
 			if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
 
-				ScriptServer::edit_request_func(base_script); //make sure it's loaded
+				ScriptServer::edit_request_func(base_script); // make sure it's loaded
 			}
 
 			if (ResourceCache::has(base_script)) {
@@ -414,7 +414,7 @@ void VisualScriptFunctionCall::_update_method_cache() {
 #endif
 
 		if (mb->is_vararg()) {
-			//for vararg just give it 10 arguments (should be enough for most use cases)
+			// for vararg just give it 10 arguments (should be enough for most use cases)
 			for (int i = 0; i < 10; i++) {
 				method_cache.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
 				use_default_args++;
@@ -437,7 +437,7 @@ void VisualScriptFunctionCall::set_function(const StringName &p_type) {
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
 		use_default_args = Variant::get_method_default_arguments(basic_type, function).size();
 	} else {
-		//update all caches
+		// update all caches
 
 		_update_method_cache();
 	}
@@ -518,7 +518,7 @@ bool VisualScriptFunctionCall::get_validate() const {
 }
 
 void VisualScriptFunctionCall::_set_argument_cache(const Dictionary &p_cache) {
-	//so everything works in case all else fails
+	// so everything works in case all else fails
 	method_cache = MethodInfo::from_dict(p_cache);
 }
 
@@ -571,7 +571,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); // convert to loong string
 			}
 		}
 	}
@@ -595,7 +595,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			} else {
 
 				property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
-				property.hint_string = base_type; //should be cached
+				property.hint_string = base_type; // should be cached
 			}
 		} else if (call_mode == CALL_MODE_INSTANCE) {
 			property.hint = PROPERTY_HINT_METHOD_OF_BASE_TYPE;
@@ -604,7 +604,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			if (base_script != String()) {
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
 
-					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+					ScriptServer::edit_request_func(base_script); // make sure it's loaded
 				}
 
 				if (ResourceCache::has(base_script)) {
@@ -648,7 +648,7 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 		}
 
 		if (mc == 0) {
-			property.usage = 0; //do not show
+			property.usage = 0; // do not show
 		} else {
 
 			property.hint_string = "0," + itos(mc) + ",1";
@@ -724,10 +724,10 @@ void VisualScriptFunctionCall::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "basic_type", PROPERTY_HINT_ENUM, bt), "set_basic_type", "get_basic_type");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_path", PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE), "set_base_path", "get_base_path");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "argument_cache", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_argument_cache", "_get_argument_cache");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "function"), "set_function", "get_function"); //when set, if loaded properly, will override argument count.
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "function"), "set_function", "get_function"); // when set, if loaded properly, will override argument count.
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "use_default_args"), "set_use_default_args", "get_use_default_args");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "validate"), "set_validate", "get_validate");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "rpc_call_mode", PROPERTY_HINT_ENUM, "Disabled,Reliable,Unreliable,ReliableToID,UnreliableToID"), "set_rpc_call_mode", "get_rpc_call_mode"); //when set, if loaded properly, will override argument count.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "rpc_call_mode", PROPERTY_HINT_ENUM, "Disabled,Reliable,Unreliable,ReliableToID,UnreliableToID"), "set_rpc_call_mode", "get_rpc_call_mode"); // when set, if loaded properly, will override argument count.
 
 	BIND_ENUM_CONSTANT(CALL_MODE_SELF);
 	BIND_ENUM_CONSTANT(CALL_MODE_NODE_PATH);
@@ -756,9 +756,9 @@ public:
 	VisualScriptFunctionCall *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+	// virtual int get_working_memory_size() const { return 0; }
+	// virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	// virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	_FORCE_INLINE_ bool call_rpc(Object *p_base, const Variant **p_args, int p_argcount) {
 
@@ -883,7 +883,7 @@ public:
 
 		if (!validate) {
 
-			//ignore call errors if validation is disabled
+			// ignore call errors if validation is disabled
 			r_error.error = Callable::CallError::CALL_OK;
 			r_error_str = String();
 		}
@@ -1094,7 +1094,7 @@ String VisualScriptPropertySet::get_text() const {
 }
 
 void VisualScriptPropertySet::_update_base_type() {
-	//cache it because this information may not be available on load
+	// cache it because this information may not be available on load
 	if (call_mode == CALL_MODE_NODE_PATH) {
 
 		Node *node = _get_base_node();
@@ -1159,12 +1159,12 @@ void VisualScriptPropertySet::_update_cache() {
 	if (!Object::cast_to<SceneTree>(OS::get_singleton()->get_main_loop()))
 		return;
 
-	if (!Engine::get_singleton()->is_editor_hint()) //only update cache if editor exists, it's pointless otherwise
+	if (!Engine::get_singleton()->is_editor_hint()) // only update cache if editor exists, it's pointless otherwise
 		return;
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
 
-		//not super efficient..
+		// not super efficient..
 
 		Variant v;
 		Callable::CallError ce;
@@ -1192,14 +1192,14 @@ void VisualScriptPropertySet::_update_cache() {
 			node = _get_base_node();
 			if (node) {
 				type = node->get_class();
-				base_type = type; //cache, too
+				base_type = type; // cache, too
 				script = node->get_script();
 			}
 		} else if (call_mode == CALL_MODE_SELF) {
 
 			if (get_visual_script().is_valid()) {
 				type = get_visual_script()->get_instance_base_type();
-				base_type = type; //cache, too
+				base_type = type; // cache, too
 				script = get_visual_script();
 			}
 		} else if (call_mode == CALL_MODE_INSTANCE) {
@@ -1209,7 +1209,7 @@ void VisualScriptPropertySet::_update_cache() {
 
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
 
-					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+					ScriptServer::edit_request_func(base_script); // make sure it's loaded
 				}
 
 				if (ResourceCache::has(base_script)) {
@@ -1359,7 +1359,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); // convert to loong string
 			}
 		}
 	}
@@ -1381,7 +1381,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 			if (base_script != String()) {
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
 
-					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+					ScriptServer::edit_request_func(base_script); // make sure it's loaded
 				}
 
 				if (ResourceCache::has(base_script)) {
@@ -1422,7 +1422,7 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 		property.hint_string = options;
 		property.type = Variant::STRING;
 		if (options == "")
-			property.usage = 0; //hide if type has no usable index
+			property.usage = 0; // hide if type has no usable index
 	}
 }
 
@@ -1515,9 +1515,9 @@ public:
 	StringName index;
 	bool needs_get;
 
-	//virtual int get_working_memory_size() const { return 0; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+	// virtual int get_working_memory_size() const { return 0; }
+	// virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	// virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	_FORCE_INLINE_ void _process_get(Variant &source, const Variant &p_argument, bool &valid) {
 
@@ -1534,7 +1534,7 @@ public:
 
 			switch (assign_op) {
 				case VisualScriptPropertySet::ASSIGN_OP_NONE: {
-					//should never get here
+					// should never get here
 				} break;
 				case VisualScriptPropertySet::ASSIGN_OP_ADD: {
 					value = Variant::evaluate(Variant::OP_ADD, value, p_argument);
@@ -1716,7 +1716,7 @@ bool VisualScriptPropertyGet::has_input_sequence_port() const {
 	return false; //(call_mode==CALL_MODE_SELF || call_mode==CALL_MODE_NODE_PATH)?false:true;
 }
 void VisualScriptPropertyGet::_update_base_type() {
-	//cache it because this information may not be available on load
+	// cache it because this information may not be available on load
 	if (call_mode == CALL_MODE_NODE_PATH) {
 
 		Node *node = _get_base_node();
@@ -1872,7 +1872,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
 	if (call_mode == CALL_MODE_BASIC_TYPE) {
 
-		//not super efficient..
+		// not super efficient..
 
 		Variant v;
 		Callable::CallError ce;
@@ -1901,14 +1901,14 @@ void VisualScriptPropertyGet::_update_cache() {
 			node = _get_base_node();
 			if (node) {
 				type = node->get_class();
-				base_type = type; //cache, too
+				base_type = type; // cache, too
 				script = node->get_script();
 			}
 		} else if (call_mode == CALL_MODE_SELF) {
 
 			if (get_visual_script().is_valid()) {
 				type = get_visual_script()->get_instance_base_type();
-				base_type = type; //cache, too
+				base_type = type; // cache, too
 				script = get_visual_script();
 			}
 		} else if (call_mode == CALL_MODE_INSTANCE) {
@@ -1918,7 +1918,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
 
-					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+					ScriptServer::edit_request_func(base_script); // make sure it's loaded
 				}
 
 				if (ResourceCache::has(base_script)) {
@@ -1938,7 +1938,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
 		if (valid) {
 			type_cache = type_ret;
-			return; //all dandy
+			return; // all dandy
 		}
 
 		if (node) {
@@ -1946,7 +1946,7 @@ void VisualScriptPropertyGet::_update_cache() {
 			Variant prop = node->get(property, &valid);
 			if (valid) {
 				type_cache = prop.get_type();
-				return; //all dandy again
+				return; // all dandy again
 			}
 		}
 
@@ -1956,7 +1956,7 @@ void VisualScriptPropertyGet::_update_cache() {
 
 			if (valid) {
 				type_cache = type_ret;
-				return; //all dandy
+				return; // all dandy
 			}
 		}
 	}
@@ -2075,7 +2075,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 
 			Node *bnode = _get_base_node();
 			if (bnode) {
-				property.hint_string = bnode->get_path(); //convert to loong string
+				property.hint_string = bnode->get_path(); // convert to loong string
 			}
 		}
 	}
@@ -2097,7 +2097,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 			if (base_script != String()) {
 				if (!ResourceCache::has(base_script) && ScriptServer::edit_request_func) {
 
-					ScriptServer::edit_request_func(base_script); //make sure it's loaded
+					ScriptServer::edit_request_func(base_script); // make sure it's loaded
 				}
 
 				if (ResourceCache::has(base_script)) {
@@ -2137,7 +2137,7 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 		property.hint_string = options;
 		property.type = Variant::STRING;
 		if (options == "")
-			property.usage = 0; //hide if type has no usable index
+			property.usage = 0; // hide if type has no usable index
 	}
 }
 
@@ -2430,9 +2430,9 @@ public:
 	int argcount;
 	StringName name;
 
-	//virtual int get_working_memory_size() const { return 0; }
-	//virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
-	//virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
+	// virtual int get_working_memory_size() const { return 0; }
+	// virtual bool is_output_port_unsequenced(int p_idx) const { return false; }
+	// virtual bool get_output_port_unsequenced(int p_idx,Variant* r_value,Variant* p_working_mem,String &r_error) const { return true; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 

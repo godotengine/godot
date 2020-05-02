@@ -85,7 +85,7 @@ Camera3DEditor::Camera3DEditor() {
 void Camera3DEditorPlugin::edit(Object *p_object) {
 
 	Node3DEditor::get_singleton()->set_can_preview(Object::cast_to<Camera3D>(p_object));
-	//camera_editor->edit(Object::cast_to<Node>(p_object));
+	// camera_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool Camera3DEditorPlugin::handles(Object *p_object) const {

@@ -61,7 +61,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 	for (int i = 0; i < p_frame_count; i++) {
 
 		AudioFrame s = src[i];
-		//convert to positive
+		// convert to positive
 		s.l = Math::abs(s.l);
 		s.r = Math::abs(s.r);
 
@@ -69,7 +69,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 
 		float overdb = 2.08136898f * Math::linear2db(peak / threshold);
 
-		if (overdb < 0.0) //we only care about what goes over to compress
+		if (overdb < 0.0) // we only care about what goes over to compress
 			overdb = 0.0;
 
 		if (overdb - rundb > 5) // diffeence is too large
@@ -88,7 +88,7 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames, Audi
 
 		float cratio;
 
-		if (false) { //rato all-in
+		if (false) { // rato all-in
 			cratio = 12 + averatio;
 		} else {
 			cratio = base->ratio;

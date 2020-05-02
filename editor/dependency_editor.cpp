@@ -84,7 +84,7 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 				continue;
 			}
 
-			//must match the best, using subdirs
+			// must match the best, using subdirs
 			String existing = E->get().replace_first("res://", "");
 			String current = path.replace_first("res://", "");
 			String lost = E->key().replace_first("res://", "");
@@ -111,9 +111,9 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 
 			if (current_score > existing_score) {
 
-				//if it was the same, could track distance to new path but..
+				// if it was the same, could track distance to new path but..
 
-				E->get() = path; //replace by more accurate
+				E->get() = path; // replace by more accurate
 			}
 		}
 	}

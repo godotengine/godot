@@ -371,10 +371,10 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 		String hint_string = pi.hint_string;
 		if (!res.is_null()) {
 			var = res->get_path();
-		} else { //only send information that can be sent..
-			int len = 0; //test how big is this to encode
+		} else { // only send information that can be sent..
+			int len = 0; // test how big is this to encode
 			encode_variant(var, nullptr, len);
-			if (len > p_max_size) { //limit to max size
+			if (len > p_max_size) { // limit to max size
 				hint = PROPERTY_HINT_OBJECT_TOO_BIG;
 				hint_string = "";
 				var = Variant();
@@ -521,7 +521,7 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -559,7 +559,7 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -632,7 +632,7 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -670,7 +670,7 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -703,7 +703,7 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
 
@@ -734,7 +734,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
 
@@ -768,7 +768,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
 
@@ -814,7 +814,7 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 
@@ -847,7 +847,7 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 
 	Map<String, Set<Node *>>::Element *E = live_scene_edit_cache.find(live_edit_scene);
 	if (!E)
-		return; //scene not editable
+		return; // scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
 

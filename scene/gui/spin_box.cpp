@@ -144,7 +144,7 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
-		//set_default_cursor_shape(CURSOR_ARROW);
+		// set_default_cursor_shape(CURSOR_ARROW);
 		range_click_timer->stop();
 
 		if (drag.enabled) {
@@ -293,7 +293,7 @@ SpinBox::SpinBox() {
 
 	line_edit->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	line_edit->set_mouse_filter(MOUSE_FILTER_PASS);
-	//connect("value_changed",this,"_value_changed");
+	// connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered", callable_mp(this, &SpinBox::_text_entered), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("focus_exited", callable_mp(this, &SpinBox::_line_edit_focus_exit), Vector<Variant>(), CONNECT_DEFERRED);
 	line_edit->connect("gui_input", callable_mp(this, &SpinBox::_line_edit_input));

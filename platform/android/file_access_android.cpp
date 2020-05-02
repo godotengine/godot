@@ -51,7 +51,7 @@ Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	else if (path.begins_with("res://"))
 		path = path.substr(6, path.length());
 
-	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, ERR_UNAVAILABLE); //can't write on android..
+	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, ERR_UNAVAILABLE); // can't write on android..
 	a = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 	if (!a)
 		return ERR_CANT_OPEN;
@@ -144,7 +144,7 @@ int FileAccessAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 
 Error FileAccessAndroid::get_error() const {
 
-	return eof ? ERR_FILE_EOF : OK; //not sure what else it may happen
+	return eof ? ERR_FILE_EOF : OK; // not sure what else it may happen
 }
 
 void FileAccessAndroid::flush() {

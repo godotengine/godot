@@ -395,7 +395,7 @@ bool VideoPlayer::has_autoplay() const {
 
 void VideoPlayer::set_bus(const StringName &p_bus) {
 
-	//if audio is active, must lock this
+	// if audio is active, must lock this
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();

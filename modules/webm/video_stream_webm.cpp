@@ -339,22 +339,22 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
 
 							yuv420_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-							//libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							// libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
 							yuv422_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-							//libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							// libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
 							yuv444_2_rgb8888(w, image.planes[0], image.planes[1], image.planes[2], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2);
-							//libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							// libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 							converted = true;
 						} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
 
-							//libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2] image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
-							//converted = true;
+							// libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2] image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+							// converted = true;
 						}
 
 						if (converted) {
@@ -399,7 +399,7 @@ inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 		// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
 		// systematically return 0. Now that it gives a proper latency, it broke this
 		// code where the delay compensation likely never really worked.
-		//const double audio_delay = AudioServer::get_singleton()->get_output_latency();
+		// const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 		const double video_time = video_frames[video_frames_pos - 1]->time;
 		return video_time >= time + /* audio_delay + */ delay_compensation;
 	}
@@ -410,7 +410,7 @@ bool VideoStreamPlaybackWebm::should_process(WebMFrame &video_frame) {
 	// FIXME: AudioServer output latency was fixed in af9bb0e, previously it used to
 	// systematically return 0. Now that it gives a proper latency, it broke this
 	// code where the delay compensation likely never really worked.
-	//const double audio_delay = AudioServer::get_singleton()->get_output_latency();
+	// const double audio_delay = AudioServer::get_singleton()->get_output_latency();
 	return video_frame.time >= time + /* audio_delay + */ delay_compensation;
 }
 

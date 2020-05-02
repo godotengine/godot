@@ -107,7 +107,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
 	if (err != OK) {
-		//not openable
+		// not openable
 
 		f = nullptr;
 		return err;
@@ -123,7 +123,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 		write_max = 0;
 		write_ptr = buffer.ptrw();
 
-		//don't store anything else unless it's done saving!
+		// don't store anything else unless it's done saving!
 	} else {
 
 		char rmagic[5];
@@ -144,17 +144,17 @@ void FileAccessCompressed::close() {
 		return;
 
 	if (writing) {
-		//save block table and all compressed blocks
+		// save block table and all compressed blocks
 
 		CharString mgc = magic.utf8();
-		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //write header 4
-		f->store_32(cmode); //write compression mode 4
-		f->store_32(block_size); //write block size 4
-		f->store_32(write_max); //max amount of data written 4
+		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); // write header 4
+		f->store_32(cmode); // write compression mode 4
+		f->store_32(block_size); // write block size 4
+		f->store_32(write_max); // max amount of data written 4
 		int bc = (write_max / block_size) + 1;
 
 		for (int i = 0; i < bc; i++) {
-			f->store_32(0); //compressed sizes, will update later
+			f->store_32(0); // compressed sizes, will update later
 		}
 
 		Vector<int> block_sizes;
@@ -171,11 +171,11 @@ void FileAccessCompressed::close() {
 			block_sizes.push_back(s);
 		}
 
-		f->seek(16); //ok write block sizes
+		f->seek(16); // ok write block sizes
 		for (int i = 0; i < bc; i++)
 			f->store_32(block_sizes[i]);
 		f->seek_end();
-		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
+		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); // magic at the end too
 
 		buffer.clear();
 
@@ -287,7 +287,7 @@ uint8_t FileAccessCompressed::get_8() const {
 		read_block++;
 
 		if (read_block < read_block_count) {
-			//read another block of compressed data
+			// read another block of compressed data
 			f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
 			Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
 			read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
@@ -319,7 +319,7 @@ int FileAccessCompressed::get_buffer(uint8_t *p_dst, int p_length) const {
 			read_block++;
 
 			if (read_block < read_block_count) {
-				//read another block of compressed data
+				// read another block of compressed data
 				f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
 				Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
 				read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;

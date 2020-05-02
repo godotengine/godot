@@ -192,7 +192,7 @@ Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs, const Variant &p_key, b
 				if (err)
 					return Variant();
 				if (key == p_key) {
-					//key matches, return value
+					// key matches, return value
 					return _get_at_ofs(decode_uint32(r + 8 + i * 12 + 8), rd, err);
 				}
 				found = true;
@@ -269,7 +269,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::DICTIONARY: {
 
 			Dictionary d = p_data;
-			//size is known, use sort
+			// size is known, use sort
 			uint32_t pos = tmpdata.size();
 			int len = d.size();
 			tmpdata.resize(tmpdata.size() + len * 12 + 8);
@@ -307,7 +307,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::ARRAY: {
 
 			Array a = p_data;
-			//size is known, use sort
+			// size is known, use sort
 			uint32_t pos = tmpdata.size();
 			int len = a.size();
 			tmpdata.resize(tmpdata.size() + len * 4 + 8);

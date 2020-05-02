@@ -74,7 +74,7 @@ void Label::_notification(int p_what) {
 
 		String new_text = tr(text);
 		if (new_text == xl_text)
-			return; //nothing new
+			return; // nothing new
 		xl_text = new_text;
 
 		regenerate_word_cache();
@@ -129,7 +129,7 @@ void Label::_notification(int p_what) {
 			switch (valign) {
 
 				case VALIGN_TOP: {
-					//nothing
+					// nothing
 				} break;
 				case VALIGN_CENTER: {
 					vbegin = (size.y - (lines_visible * font_h - line_spacing)) / 2;
@@ -177,7 +177,7 @@ void Label::_notification(int p_what) {
 			/* handle lines normally */
 
 			if (wc->char_pos < 0) {
-				//empty line
+				// empty line
 				wc = wc->next;
 				line++;
 				continue;
@@ -242,7 +242,7 @@ void Label::_notification(int p_what) {
 
 				if (font_color_shadow.a > 0) {
 
-					int chars_total_shadow = chars_total; //save chars drawn
+					int chars_total_shadow = chars_total; // save chars drawn
 					float x_ofs_shadow = x_ofs;
 					for (int i = 0; i < from->word_len; i++) {
 
@@ -408,7 +408,7 @@ void Label::regenerate_word_cache() {
 
 	for (int i = 0; i <= xl_text.length(); i++) {
 
-		CharType current = i < xl_text.length() ? xl_text[i] : L' '; //always a space at the end, so the algo works
+		CharType current = i < xl_text.length() ? xl_text[i] : L' '; // always a space at the end, so the algo works
 
 		if (uppercase)
 			current = String::char_uppercase(current);
@@ -417,7 +417,7 @@ void Label::regenerate_word_cache() {
 		// if your language is not well supported, consider helping improve
 		// the unicode support in Godot.
 		bool separatable = (current >= 0x2E08 && current <= 0xFAFF) || (current >= 0xFE30 && current <= 0xFE4F);
-		//current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
+		// current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
 		bool insert_newline = false;
 		real_t char_width = 0;
 
@@ -518,7 +518,7 @@ void Label::regenerate_word_cache() {
 	}
 
 	if (!autowrap || !clip) {
-		//helps speed up some labels that may change a lot, as no resizing is requested. Do not change.
+		// helps speed up some labels that may change a lot, as no resizing is requested. Do not change.
 		minimum_size_changed();
 	}
 	word_cache_dirty = false;

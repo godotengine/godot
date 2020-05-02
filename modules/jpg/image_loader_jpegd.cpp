@@ -88,7 +88,7 @@ Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 		}
 	}
 
-	//all good
+	// all good
 
 	Image::Format fmt;
 	if (comps == 1)

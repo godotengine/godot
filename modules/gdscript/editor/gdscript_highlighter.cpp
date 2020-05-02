@@ -167,7 +167,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 				}
 			} else {
 				TextEdit::ColorRegion cr = text_editor->_get_color_region(cri.region);
-				if (in_region == cri.region && !cr.line_only) { //ignore otherwise
+				if (in_region == cri.region && !cr.line_only) { // ignore otherwise
 					if (cri.end || cr.eq) {
 						deregion = cr.eq ? cr.begin_key.length() : cr.end_key.length();
 					}
@@ -193,7 +193,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 				col = text_editor->get_member_color(word);
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); //member indexing not allowed
+						col = Color(); // member indexing not allowed
 						break;
 					} else if (str[k] > 32) {
 						break;

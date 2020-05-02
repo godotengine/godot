@@ -96,7 +96,7 @@ void Listener3D::_notification(int p_what) {
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {
 					clear_current();
-					current = true; //keep it true
+					current = true; // keep it true
 
 				} else {
 					current = false;
@@ -171,7 +171,7 @@ Listener3D::Listener3D() {
 	current = false;
 	force_change = false;
 	set_notify_transform(true);
-	//active=false;
+	// active=false;
 }
 
 Listener3D::~Listener3D() {

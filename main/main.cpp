@@ -407,7 +407,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	globals = memnew(ProjectSettings);
 	input_map = memnew(InputMap);
 
-	register_core_settings(); //here globals is present
+	register_core_settings(); // here globals is present
 
 	translation_server = memnew(TranslationServer);
 	performance = memnew(Performance);
@@ -752,9 +752,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 				String p = I->next()->get();
 				if (OS::get_singleton()->set_cwd(p) == OK) {
-					//nothing
+					// nothing
 				} else {
-					project_path = I->next()->get(); //use project_path instead
+					project_path = I->next()->get(); // use project_path instead
 				}
 				N = I->next()->next();
 			} else {
@@ -952,7 +952,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
 	GLOBAL_DEF("logging/file_logging/log_path", "user://logs/log.txt");
 	GLOBAL_DEF("logging/file_logging/max_log_files", 10);
-	ProjectSettings::get_singleton()->set_custom_property_info("logging/file_logging/max_log_files", PropertyInfo(Variant::INT, "logging/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater")); //no negative numbers
+	ProjectSettings::get_singleton()->set_custom_property_info("logging/file_logging/max_log_files", PropertyInfo(Variant::INT, "logging/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater")); // no negative numbers
 	if (FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) && GLOBAL_GET("logging/file_logging/enable_file_logging")) {
 		String base_path = GLOBAL_GET("logging/file_logging/log_path");
 		int max_files = GLOBAL_GET("logging/file_logging/max_log_files");
@@ -989,9 +989,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (editor || project_manager) {
 		Engine::get_singleton()->set_editor_hint(true);
 		use_custom_res = false;
-		input_map->load_default(); //keys for editor
+		input_map->load_default(); // keys for editor
 	} else {
-		input_map->load_from_globals(); //keys for game
+		input_map->load_from_globals(); // keys for game
 	}
 
 	if (bool(ProjectSettings::get_singleton()->get("application/run/disable_stdout"))) {
@@ -1260,10 +1260,10 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_flags, window_size, err);
 		if (err != OK) {
-			//ok i guess we can't use this display server, try other ones
+			// ok i guess we can't use this display server, try other ones
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 				if (i == display_driver_idx) {
-					continue; //don't try the same twice
+					continue; // don't try the same twice
 				}
 				display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_flags, window_size, err);
 				if (err == OK) {
@@ -1297,7 +1297,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	AudioDriverManager::initialize(audio_driver_idx);
 
-	print_line(" "); //add a blank line for readability
+	print_line(" "); // add a blank line for readability
 
 	if (init_use_custom_pos) {
 		display_server->window_set_position(init_custom_pos);
@@ -1325,7 +1325,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		DisplayServer::get_singleton()->window_set_current_screen(init_screen);
 	}
 	if (init_windowed) {
-		//do none..
+		// do none..
 	} else if (init_maximized) {
 		DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_MAXIMIZED);
 	} else if (init_fullscreen) {
@@ -1346,7 +1346,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	Color clear = GLOBAL_DEF("rendering/environment/default_clear_color", Color(0.3, 0.3, 0.3));
 	RenderingServer::get_singleton()->set_default_clear_color(clear);
 
-	if (show_logo) { //boot logo!
+	if (show_logo) { // boot logo!
 		String boot_logo_path = GLOBAL_DEF("application/boot_splash/image", String());
 		bool boot_logo_scale = GLOBAL_DEF("application/boot_splash/fullsize", true);
 		bool boot_logo_filter = GLOBAL_DEF("application/boot_splash/use_filter", true);
@@ -1414,7 +1414,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 				}
 			}
 			if (!found_touchscreen) {
-				//only if no touchscreen ui hint, set emulation
+				// only if no touchscreen ui hint, set emulation
 				id->set_emulate_touch_from_mouse(true);
 			}
 		}
@@ -1467,13 +1467,13 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	MAIN_PRINT("Main: Load Translations");
 
-	translation_server->setup(); //register translations, load them, etc.
+	translation_server->setup(); // register translations, load them, etc.
 	if (locale != "") {
 
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
-	ResourceLoader::load_translation_remaps(); //load remaps for resources
+	ResourceLoader::load_translation_remaps(); // load remaps for resources
 
 	ResourceLoader::load_path_remaps();
 
@@ -1496,7 +1496,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	_start_success = true;
 	locale = String();
 
-	ClassDB::set_current_api(ClassDB::API_NONE); //no more api is registered at this point
+	ClassDB::set_current_api(ClassDB::API_NONE); // no more api is registered at this point
 
 	print_verbose("CORE API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_CORE)));
 	print_verbose("EDITOR API HASH: " + uitos(ClassDB::get_api_hash(ClassDB::API_EDITOR)));
@@ -1532,7 +1532,7 @@ bool Main::start() {
 
 	List<String> args = OS::get_singleton()->get_cmdline_args();
 	for (int i = 0; i < args.size(); i++) {
-		//parameters that do not have an argument to the right
+		// parameters that do not have an argument to the right
 		if (args[i] == "--check-only") {
 			check_only = true;
 #ifdef TOOLS_ENABLED
@@ -1556,7 +1556,7 @@ bool Main::start() {
 				game_path = args[i];
 			}
 		}
-		//parameters that have an argument to the right
+		// parameters that have an argument to the right
 		else if (i < (args.size() - 1)) {
 			bool parsed_pair = true;
 			if (args[i] == "-s" || args[i] == "--script") {
@@ -1569,10 +1569,10 @@ bool Main::start() {
 				for (int j = i + 2; j < args.size(); j++)
 					removal_docs.push_back(args[j]);
 			} else if (args[i] == "--export") {
-				editor = true; //needs editor
+				editor = true; // needs editor
 				_export_preset = args[i + 1];
 			} else if (args[i] == "--export-debug") {
-				editor = true; //needs editor
+				editor = true; // needs editor
 				_export_preset = args[i + 1];
 				export_debug = true;
 			} else if (args[i] == "--export-pack") {
@@ -1766,11 +1766,11 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 			if (game_path != "" || script != "") {
-				//autoload
+				// autoload
 				List<PropertyInfo> props;
 				ProjectSettings::get_singleton()->get_property_list(&props);
 
-				//first pass, add the constants so they exist before any script is loaded
+				// first pass, add the constants so they exist before any script is loaded
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 					String s = E->get().name;
@@ -1790,7 +1790,7 @@ bool Main::start() {
 					}
 				}
 
-				//second pass, load into global constants
+				// second pass, load into global constants
 				List<Node *> to_add;
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
@@ -1828,7 +1828,7 @@ bool Main::start() {
 					ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + path);
 					n->set_name(name);
 
-					//defer so references are all valid on _ready()
+					// defer so references are all valid on _ready()
 					to_add.push_back(n);
 
 					if (global_var) {
@@ -1865,7 +1865,7 @@ bool Main::start() {
 		}
 
 		if (!editor && !project_manager) {
-			//standard helpers that can be changed from main config
+			// standard helpers that can be changed from main config
 
 			String stretch_mode = GLOBAL_DEF("display/window/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/window/stretch/aspect", "ignore");
@@ -2097,7 +2097,7 @@ static uint64_t idle_process_max = 0;
 
 bool Main::iteration() {
 
-	//for now do not error on this
+	// for now do not error on this
 	//ERR_FAIL_COND_V(iterating, false);
 
 	iterating++;
@@ -2178,7 +2178,7 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
-	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+	RenderingServer::get_singleton()->sync(); // sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() && !disable_render_loop) {
 
@@ -2236,7 +2236,7 @@ bool Main::iteration() {
 		return exit;
 
 	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !DisplayServer::get_singleton()->can_any_window_draw())
-		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time
+		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); // apply some delay to force idle time
 	else {
 		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 		if (frame_delay)
@@ -2305,7 +2305,7 @@ void Main::cleanup() {
 	// Sync pending commands that may have been queued from a different thread during ScriptServer finalization
 	RenderingServer::get_singleton()->sync();
 
-	//clear global shader variables before scene and other graphics stuff is deinitialized.
+	// clear global shader variables before scene and other graphics stuff is deinitialized.
 	rendering_server->global_variables_clear();
 
 #ifdef TOOLS_ENABLED
@@ -2360,12 +2360,12 @@ void Main::cleanup() {
 		memdelete(engine);
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
-		//attempt to restart with arguments
+		// attempt to restart with arguments
 		String exec = OS::get_singleton()->get_executable_path();
 		List<String> args = OS::get_singleton()->get_restart_on_exit_arguments();
 		OS::ProcessID pid = 0;
 		OS::get_singleton()->execute(exec, args, false, &pid);
-		OS::get_singleton()->set_restart_on_exit(false, List<String>()); //clear list (uses memory)
+		OS::get_singleton()->set_restart_on_exit(false, List<String>()); // clear list (uses memory)
 	}
 
 	unregister_core_driver_types();

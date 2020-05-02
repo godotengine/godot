@@ -80,7 +80,7 @@ void image_decompress_squish(Image *p_image) {
 void image_compress_squish(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
 
 	if (p_image->get_format() >= Image::FORMAT_DXT1)
-		return; //do not compress, already compressed
+		return; // do not compress, already compressed
 
 	int w = p_image->get_width();
 	int h = p_image->get_height();
@@ -96,7 +96,7 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::UsedCha
 
 		Image::Format target_format = Image::FORMAT_RGBA8;
 
-		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
+		p_image->convert(Image::FORMAT_RGBA8); // still uses RGBA to convert
 
 		switch (p_channels) {
 			case Image::USED_CHANNELS_L: {

@@ -127,7 +127,7 @@ class GetClassAndNamespace {
 					return TK_PERIOD;
 				};
 				case '#': {
-					//compiler directive
+					// compiler directive
 					while (code[idx] != '\n' && code[idx] != 0) {
 						idx++;
 					}
@@ -187,7 +187,7 @@ class GetClassAndNamespace {
 							idx++;
 							break;
 						} else if (code[idx] == '\\') {
-							//escaped characters...
+							// escaped characters...
 							idx++;
 							CharType next = code[idx];
 							if (next == 0) {
@@ -244,7 +244,7 @@ class GetClassAndNamespace {
 					}
 
 					if (code[idx] == '-' || (code[idx] >= '0' && code[idx] <= '9')) {
-						//a number
+						// a number
 						const CharType *rptr;
 						double number = String::to_double(&code[idx], &rptr);
 						idx += (rptr - &code[idx]);
@@ -328,7 +328,7 @@ public:
 						curly_stack++;
 						break;
 					} else {
-						break; //whathever else
+						break; // whathever else
 					}
 				}
 
@@ -474,7 +474,7 @@ MainLoop *test() {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
-		//try editor!
+		// try editor!
 		return nullptr;
 	}
 

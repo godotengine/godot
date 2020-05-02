@@ -61,7 +61,7 @@ void *ThreadAndroid::thread_callback(void *userdata) {
 
 	ThreadAndroid *t = reinterpret_cast<ThreadAndroid *>(userdata);
 	setup_thread();
-	ScriptServer::thread_enter(); //scripts may need to attach a stack
+	ScriptServer::thread_enter(); // scripts may need to attach a stack
 	t->id = atomic_increment(&next_thread_id);
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(t->id)));
 	t->callback(t->user);
@@ -120,7 +120,7 @@ JavaVM *ThreadAndroid::java_vm = nullptr;
 void ThreadAndroid::setup_thread() {
 
 	if (pthread_getspecific(jvm_key))
-		return; //already setup
+		return; // already setup
 	JNIEnv *env;
 	java_vm->AttachCurrentThread(&env, nullptr);
 	pthread_setspecific(jvm_key, (void *)env);

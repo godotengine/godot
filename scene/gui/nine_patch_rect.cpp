@@ -96,7 +96,7 @@ void NinePatchRect::set_texture(const Ref<Texture2D> &p_tex) {
 	update();
 	/*
 	if (texture.is_valid())
-		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); // remove repeat from texture, it looks bad in sprites
 	*/
 	minimum_size_changed();
 	emit_signal("texture_changed");

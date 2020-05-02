@@ -89,7 +89,7 @@ Error EditorSceneImporterGLTF::_parse_glb(const String &p_path, GLTFState &state
 	}
 
 	uint32_t magic = f->get_32();
-	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); //glTF
+	ERR_FAIL_COND_V(magic != 0x46546C67, ERR_FILE_UNRECOGNIZED); // glTF
 	f->get_32(); // version
 	f->get_32(); // length
 
@@ -116,13 +116,13 @@ Error EditorSceneImporterGLTF::_parse_glb(const String &p_path, GLTFState &state
 
 	state.json = v;
 
-	//data?
+	// data?
 
 	chunk_length = f->get_32();
 	chunk_type = f->get_32();
 
 	if (f->eof_reached()) {
-		return OK; //all good
+		return OK; // all good
 	}
 
 	ERR_FAIL_COND_V(chunk_type != 0x004E4942, ERR_PARSE_ERROR); //BIN
@@ -313,7 +313,7 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 			GLTFNodeIndex child_i = state.nodes[node_i]->children[j];
 
 			ERR_FAIL_INDEX_V(child_i, state.nodes.size(), ERR_FILE_CORRUPT);
-			ERR_CONTINUE(state.nodes[child_i]->parent != -1); //node already has a parent, wtf.
+			ERR_CONTINUE(state.nodes[child_i]->parent != -1); // node already has a parent, wtf.
 
 			state.nodes[child_i]->parent = node_i;
 		}
@@ -385,11 +385,11 @@ Error EditorSceneImporterGLTF::_parse_buffers(GLTFState &state, const String &p_
 				String uri = buffer["uri"];
 
 				if (uri.findn("data:application/octet-stream;base64") == 0) {
-					//embedded data
+					// embedded data
 					buffer_data = _parse_base64_uri(uri);
 				} else {
 
-					uri = p_base_path.plus_file(uri).replace("\\", "/"); //fix for windows
+					uri = p_base_path.plus_file(uri).replace("\\", "/"); // fix for windows
 					buffer_data = FileAccess::get_file_as_array(uri);
 					ERR_FAIL_COND_V(buffer.size() == 0, ERR_PARSE_ERROR);
 				}
@@ -483,7 +483,7 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 		accessor.type = _get_type_from_str(d["type"]);
 
 		if (d.has("bufferView")) {
-			accessor.buffer_view = d["bufferView"]; //optional because it may be sparse...
+			accessor.buffer_view = d["bufferView"]; // optional because it may be sparse...
 		}
 
 		if (d.has("byteOffset")) {
@@ -499,7 +499,7 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 		}
 
 		if (d.has("sparse")) {
-			//eeh..
+			// eeh..
 
 			const Dictionary &s = d["sparse"];
 
@@ -570,16 +570,16 @@ Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, double *dst
 
 	int stride = bv.byte_stride ? bv.byte_stride : element_size;
 	if (for_vertex && stride % 4) {
-		stride += 4 - (stride % 4); //according to spec must be multiple of 4
+		stride += 4 - (stride % 4); // according to spec must be multiple of 4
 	}
 
 	ERR_FAIL_INDEX_V(bv.buffer, state.buffers.size(), ERR_PARSE_ERROR);
 
 	const uint32_t offset = bv.byte_offset + byte_offset;
-	Vector<uint8_t> buffer = state.buffers[bv.buffer]; //copy on write, so no performance hit
+	Vector<uint8_t> buffer = state.buffers[bv.buffer]; // copy on write, so no performance hit
 	const uint8_t *bufptr = buffer.ptr();
 
-	//use to debug
+	// use to debug
 	print_verbose("glTF: type " + _get_type_name(type) + " component type: " + _get_component_type_name(component_type) + " stride: " + itos(stride) + " amount " + itos(count));
 	print_verbose("glTF: accessor offset" + itos(byte_offset) + " view offset: " + itos(bv.byte_offset) + " total buffer len: " + itos(buffer.size()) + " view len " + itos(bv.byte_length));
 
@@ -588,7 +588,7 @@ Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, double *dst
 
 	ERR_FAIL_COND_V((int)(offset + buffer_end) > buffer.size(), ERR_PARSE_ERROR);
 
-	//fill everything as doubles
+	// fill everything as doubles
 
 	for (int i = 0; i < count; i++) {
 
@@ -670,8 +670,8 @@ int EditorSceneImporterGLTF::_get_component_type_size(const int component_type) 
 
 Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
 
-	//spec, for reference:
-	//https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#data-alignment
+	// spec, for reference:
+	// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#data-alignment
 
 	ERR_FAIL_INDEX_V(p_accessor, state.accessors.size(), Vector<double>());
 
@@ -688,7 +688,7 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, const
 
 	int skip_every = 0;
 	int skip_bytes = 0;
-	//special case of alignments, as described in spec
+	// special case of alignments, as described in spec
 	switch (a.component_type) {
 		case COMPONENT_TYPE_BYTE:
 		case COMPONENT_TYPE_UNSIGNED_BYTE: {
@@ -696,12 +696,12 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, const
 			if (a.type == TYPE_MAT2) {
 				skip_every = 2;
 				skip_bytes = 2;
-				element_size = 8; //override for this case
+				element_size = 8; // override for this case
 			}
 			if (a.type == TYPE_MAT3) {
 				skip_every = 3;
 				skip_bytes = 1;
-				element_size = 12; //override for this case
+				element_size = 12; // override for this case
 			}
 
 		} break;
@@ -710,7 +710,7 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, const
 			if (a.type == TYPE_MAT3) {
 				skip_every = 6;
 				skip_bytes = 4;
-				element_size = 16; //override for this case
+				element_size = 16; // override for this case
 			}
 		} break;
 		default: {
@@ -730,7 +730,7 @@ Vector<double> EditorSceneImporterGLTF::_decode_accessor(GLTFState &state, const
 			return Vector<double>();
 
 	} else {
-		//fill with zeros, as bufferview is not defined.
+		// fill with zeros, as bufferview is not defined.
 		for (int i = 0; i < (a.count * component_count); i++) {
 			dst_buffer.write[i] = 0;
 		}
@@ -984,11 +984,11 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				static const Mesh::PrimitiveType primitives2[7] = {
 					Mesh::PRIMITIVE_POINTS,
 					Mesh::PRIMITIVE_LINES,
-					Mesh::PRIMITIVE_LINES, //loop not supported, should ce converted
+					Mesh::PRIMITIVE_LINES, // loop not supported, should ce converted
 					Mesh::PRIMITIVE_LINES,
 					Mesh::PRIMITIVE_TRIANGLES,
 					Mesh::PRIMITIVE_TRIANGLE_STRIP,
-					Mesh::PRIMITIVE_TRIANGLES, //fan not supported, should be converted
+					Mesh::PRIMITIVE_TRIANGLES, // fan not supported, should be converted
 #ifndef _MSC_VER
 #warning line loop and triangle fan are not supported and need to be converted to lines and triangles
 #endif
@@ -1022,7 +1022,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			}
 			if (a.has("WEIGHTS_0")) {
 				Vector<float> weights = _decode_accessor_as_floats(state, a["WEIGHTS_0"], true);
-				{ //gltf does not seem to normalize the weights for some reason..
+				{ // gltf does not seem to normalize the weights for some reason..
 					int wc = weights.size();
 					float *w = weights.ptrw();
 
@@ -1047,7 +1047,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				Vector<int> indices = _decode_accessor_as_ints(state, p["indices"], false);
 
 				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
-					//swap around indices, convert ccw to cw for front face
+					// swap around indices, convert ccw to cw for front face
 
 					const int is = indices.size();
 					int *w = indices.ptrw();
@@ -1058,7 +1058,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				array[Mesh::ARRAY_INDEX] = indices;
 
 			} else if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
-				//generate indices because they need to be swapped for CW/CCW
+				// generate indices because they need to be swapped for CW/CCW
 				const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
 				ERR_FAIL_COND_V(vertices.size() == 0, ERR_PARSE_ERROR);
 				Vector<int> indices;
@@ -1078,7 +1078,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			bool generate_tangents = (primitive == Mesh::PRIMITIVE_TRIANGLES && !a.has("TANGENT") && a.has("TEXCOORD_0") && a.has("NORMAL"));
 
 			if (generate_tangents) {
-				//must generate mikktspace tangents.. ergh..
+				// must generate mikktspace tangents.. ergh..
 				Ref<SurfaceTool> st;
 				st.instance();
 				st->create_from_triangle_arrays(array);
@@ -1087,13 +1087,13 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			}
 
 			Array morphs;
-			//blend shapes
+			// blend shapes
 			if (p.has("targets")) {
 				print_verbose("glTF: Mesh has targets");
 				const Array &targets = p["targets"];
 
-				//ideally BLEND_SHAPE_MODE_RELATIVE since gltf2 stores in displacement
-				//but it could require a larger refactor?
+				// ideally BLEND_SHAPE_MODE_RELATIVE since gltf2 stores in displacement
+				// but it could require a larger refactor?
 				mesh.mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 
 				if (j == 0) {
@@ -1191,7 +1191,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 									w4[l * 4 + 1] = r4[l * 4 + 1];
 									w4[l * 4 + 2] = r4[l * 4 + 2];
 								}
-								w4[l * 4 + 3] = r4[l * 4 + 3]; //copy flip value
+								w4[l * 4 + 3] = r4[l * 4 + 3]; // copy flip value
 							}
 						}
 
@@ -1211,7 +1211,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				}
 			}
 
-			//just add it
+			// just add it
 			mesh.mesh->add_surface_from_arrays(primitive, array, morphs);
 
 			if (p.has("material")) {
@@ -1264,13 +1264,13 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 
 			if (uri.findn("data:application/octet-stream;base64") == 0 ||
 					uri.findn("data:" + mimetype + ";base64") == 0) {
-				//embedded data
+				// embedded data
 				data = _parse_base64_uri(uri);
 				data_ptr = data.ptr();
 				data_size = data.size();
 			} else {
 
-				uri = p_base_path.plus_file(uri).replace("\\", "/"); //fix for windows
+				uri = p_base_path.plus_file(uri).replace("\\", "/"); // fix for windows
 				Ref<Texture2D> texture = ResourceLoader::load(uri);
 				state.images.push_back(texture);
 				continue;
@@ -1296,7 +1296,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		ERR_FAIL_COND_V(mimetype == "", ERR_FILE_CORRUPT);
 
 		if (mimetype.findn("png") != -1) {
-			//is a png
+			// is a png
 			ERR_FAIL_COND_V(Image::_png_mem_loader_func == nullptr, ERR_UNAVAILABLE);
 
 			const Ref<Image> img = Image::_png_mem_loader_func(data_ptr, data_size);
@@ -1312,7 +1312,7 @@ Error EditorSceneImporterGLTF::_parse_images(GLTFState &state, const String &p_b
 		}
 
 		if (mimetype.findn("jpeg") != -1) {
-			//is a jpg
+			// is a jpg
 			ERR_FAIL_COND_V(Image::_jpg_mem_loader_func == nullptr, ERR_UNAVAILABLE);
 
 			const Ref<Image> img = Image::_jpg_mem_loader_func(data_ptr, data_size);
@@ -2399,18 +2399,18 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 			if (path == "translation") {
 				const Vector<Vector3> translations = _decode_accessor_as_vec3(state, output, false);
 				track->translation_track.interpolation = interp;
-				track->translation_track.times = Variant(times); //convert via variant
-				track->translation_track.values = Variant(translations); //convert via variant
+				track->translation_track.times = Variant(times); // convert via variant
+				track->translation_track.values = Variant(translations); // convert via variant
 			} else if (path == "rotation") {
 				const Vector<Quat> rotations = _decode_accessor_as_quat(state, output, false);
 				track->rotation_track.interpolation = interp;
-				track->rotation_track.times = Variant(times); //convert via variant
-				track->rotation_track.values = rotations; //convert via variant
+				track->rotation_track.times = Variant(times); // convert via variant
+				track->rotation_track.values = rotations; // convert via variant
 			} else if (path == "scale") {
 				const Vector<Vector3> scales = _decode_accessor_as_vec3(state, output, false);
 				track->scale_track.interpolation = interp;
-				track->scale_track.times = Variant(times); //convert via variant
-				track->scale_track.values = Variant(scales); //convert via variant
+				track->scale_track.times = Variant(times); // convert via variant
+				track->scale_track.values = Variant(scales); // convert via variant
 			} else if (path == "weights") {
 				const Vector<float> weights = _decode_accessor_as_floats(state, output, false);
 
@@ -2426,7 +2426,7 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 
 				const int wlen = weights.size() / wc;
 				const float *r = weights.ptr();
-				for (int k = 0; k < wc; k++) { //separate tracks, having them together is not such a good idea
+				for (int k = 0; k < wc; k++) { // separate tracks, having them together is not such a good idea
 					GLTFAnimation::Channel<float> cf;
 					cf.interpolation = interp;
 					cf.times = Variant(times);
@@ -2660,7 +2660,7 @@ struct EditorSceneImporterGLTFInterpolate<Quat> {
 template <class T>
 T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, const float p_time, const GLTFAnimation::Interpolation p_interp) {
 
-	//could use binary search, worth it?
+	// could use binary search, worth it?
 	int idx = -1;
 	for (int i = 0; i < p_times.size(); i++) {
 		if (p_times[i] > p_time)
@@ -2754,7 +2754,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 	for (Map<int, GLTFAnimation::Track>::Element *E = anim.tracks.front(); E; E = E->next()) {
 
 		const GLTFAnimation::Track &track = E->get();
-		//need to find the path
+		// need to find the path
 		NodePath node_path;
 
 		GLTFNodeIndex node_index = E->key();
@@ -2793,11 +2793,11 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 		}
 
 		if (track.rotation_track.values.size() || track.translation_track.values.size() || track.scale_track.values.size()) {
-			//make transform track
+			// make transform track
 			int track_idx = animation->get_track_count();
 			animation->add_track(Animation::TYPE_TRANSFORM);
 			animation->track_set_path(track_idx, node_path);
-			//first determine animation length
+			// first determine animation length
 
 			const float increment = 1.0 / float(bake_fps);
 			float time = 0.0;
@@ -2971,13 +2971,13 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	GLTFState state;
 
 	if (p_path.to_lower().ends_with("glb")) {
-		//binary file
-		//text file
+		// binary file
+		// text file
 		Error err = _parse_glb(p_path, state);
 		if (err)
 			return nullptr;
 	} else {
-		//text file
+		// text file
 		Error err = _parse_json(p_path, state);
 		if (err)
 			return nullptr;

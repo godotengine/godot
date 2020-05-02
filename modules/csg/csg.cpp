@@ -429,7 +429,7 @@ void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_b
 				}
 
 				if (mesh_merge.faces[i].from_b) {
-					//invert facing of insides of B
+					// invert facing of insides of B
 					SWAP(r_merged_brush.faces.write[face_count].vertices[1], r_merged_brush.faces.write[face_count].vertices[2]);
 					SWAP(r_merged_brush.faces.write[face_count].uvs[1], r_merged_brush.faces.write[face_count].uvs[2]);
 				}
@@ -487,19 +487,19 @@ int CSGBrushOperation::MeshMerge::_create_bvh(FaceBVH *facebvhptr, FaceBVH **fac
 		case Vector3::AXIS_X: {
 			SortArray<FaceBVH *, FaceBVHCmpX> sort_x;
 			sort_x.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
-			//sort_x.sort(&p_bb[p_from],p_size);
+			// sort_x.sort(&p_bb[p_from],p_size);
 		} break;
 
 		case Vector3::AXIS_Y: {
 			SortArray<FaceBVH *, FaceBVHCmpY> sort_y;
 			sort_y.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
-			//sort_y.sort(&p_bb[p_from],p_size);
+			// sort_y.sort(&p_bb[p_from],p_size);
 		} break;
 
 		case Vector3::AXIS_Z: {
 			SortArray<FaceBVH *, FaceBVHCmpZ> sort_z;
 			sort_z.nth_element(0, p_size, p_size / 2, &facebvhptrptr[p_from]);
-			//sort_z.sort(&p_bb[p_from],p_size);
+			// sort_z.sort(&p_bb[p_from],p_size);
 		} break;
 	}
 
@@ -1434,7 +1434,7 @@ void CSGBrushOperation::update_faces(const CSGBrush &p_brush_a, const int p_face
 
 				Vector3 sep_axis = axis_a.cross(axis_b);
 				if (sep_axis == Vector3())
-					continue; //colineal
+					continue; // colineal
 				sep_axis.normalize();
 
 				real_t min_a = 1e20, max_a = -1e20;

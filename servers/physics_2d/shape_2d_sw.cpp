@@ -109,14 +109,14 @@ bool LineShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_e
 	Vector2 segment = p_begin - p_end;
 	real_t den = normal.dot(segment);
 
-	//printf("den is %i\n",den);
+	// printf("den is %i\n",den);
 	if (Math::abs(den) <= CMP_EPSILON) {
 
 		return false;
 	}
 
 	real_t dist = (normal.dot(p_begin) - d) / den;
-	//printf("dist is %i\n",dist);
+	// printf("dist is %i\n",dist);
 
 	if (dist < -CMP_EPSILON || dist > (1.0 + CMP_EPSILON)) {
 
@@ -174,12 +174,12 @@ bool RayShape2DSW::contains_point(const Vector2 &p_point) const {
 
 bool RayShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
 
-	return false; //rays can't be intersected
+	return false; // rays can't be intersected
 }
 
 real_t RayShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
-	return 0; //rays are mass-less
+	return 0; // rays are mass-less
 }
 
 void RayShape2DSW::set_data(const Variant &p_data) {
@@ -448,7 +448,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 	Vector2 n = (p_end - p_begin).normalized();
 	bool collided = false;
 
-	//try spheres
+	// try spheres
 	for (int i = 0; i < 2; i++) {
 
 		Vector2 begin = p_begin;
@@ -500,8 +500,8 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 		}
 	}
 
-	//return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
-	return collided; //todo
+	// return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
+	return collided; // todo
 }
 
 real_t CapsuleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
@@ -546,14 +546,14 @@ void ConvexPolygonShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_su
 
 	for (int i = 0; i < point_count; i++) {
 
-		//test point
+		// test point
 		real_t ld = p_normal.dot(points[i].pos);
 		if (ld > d) {
 			support_idx = i;
 			d = ld;
 		}
 
-		//test segment
+		// test segment
 		if (points[i].normal.dot(p_normal) > _SEGMENT_IS_VALID_SUPPORT_THRESHOLD) {
 
 			r_amount = 2;
@@ -594,7 +594,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 
 	for (int i = 0; i < point_count; i++) {
 
-		//hmm.. no can do..
+		// hmm.. no can do..
 		/*
 		if (d.dot(points[i].normal)>=0)
 			continue;
@@ -621,8 +621,8 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vec
 			r_normal = -r_normal;
 	}
 
-	//return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
-	return inters; //todo
+	// return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
+	return inters; // todo
 }
 
 real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
@@ -738,7 +738,7 @@ void ConcavePolygonShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_s
 
 bool ConcavePolygonShape2DSW::contains_point(const Vector2 &p_point) const {
 
-	return false; //sorry
+	return false; // sorry
 }
 
 bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
@@ -864,7 +864,7 @@ int ConcavePolygonShape2DSW::_generate_bvh(BVH *p_bvh, int p_len, int p_depth) {
 		return bvh.size() - 1;
 	}
 
-	//else sort best
+	// else sort best
 
 	Rect2 global_aabb = p_bvh[0].aabb;
 	for (int i = 1; i < p_len; i++) {
@@ -969,7 +969,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 		_generate_bvh(main_vbh.ptrw(), main_vbh.size(), 1);
 
 	} else {
-		//dictionary with arrays
+		// dictionary with arrays
 	}
 
 	configure(aabb);

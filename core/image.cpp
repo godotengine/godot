@@ -42,24 +42,24 @@
 #include <stdio.h>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
-	"Lum8", //luminance
-	"LumAlpha8", //luminance-alpha
+	"Lum8", // luminance
+	"LumAlpha8", // luminance-alpha
 	"Red8",
 	"RedGreen",
 	"RGB8",
 	"RGBA8",
 	"RGBA4444",
 	"RGBA5551",
-	"RFloat", //float
+	"RFloat", // float
 	"RGFloat",
 	"RGBFloat",
 	"RGBAFloat",
-	"RHalf", //half float
+	"RHalf", // half float
 	"RGHalf",
 	"RGBHalf",
 	"RGBAHalf",
 	"RGBE9995",
-	"DXT1 RGB8", //s3tc
+	"DXT1 RGB8", // s3tc
 	"DXT3 RGBA8",
 	"DXT5 RGBA8",
 	"RGTC Red8",
@@ -67,13 +67,13 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"PVRTC2", //pvrtc
+	"PVRTC2", // pvrtc
 	"PVRTC2A",
 	"PVRTC4",
 	"PVRTC4A",
-	"ETC", //etc1
-	"ETC2_R11", //etc2
-	"ETC2_R11S", //signed", NOT srgb.
+	"ETC", // etc1
+	"ETC2_R11", // etc2
+	"ETC2_R11S", // signed", NOT srgb.
 	"ETC2_RG11",
 	"ETC2_RG11S",
 	"ETC2_RGB8",
@@ -111,9 +111,9 @@ int Image::get_format_pixel_size(Format p_format) {
 
 	switch (p_format) {
 		case FORMAT_L8:
-			return 1; //luminance
+			return 1; // luminance
 		case FORMAT_LA8:
-			return 2; //luminance-alpha
+			return 2; // luminance-alpha
 		case FORMAT_R8: return 1;
 		case FORMAT_RG8: return 2;
 		case FORMAT_RGB8: return 3;
@@ -121,43 +121,43 @@ int Image::get_format_pixel_size(Format p_format) {
 		case FORMAT_RGBA4444: return 2;
 		case FORMAT_RGB565: return 2;
 		case FORMAT_RF:
-			return 4; //float
+			return 4; // float
 		case FORMAT_RGF: return 8;
 		case FORMAT_RGBF: return 12;
 		case FORMAT_RGBAF: return 16;
 		case FORMAT_RH:
-			return 2; //half float
+			return 2; // half float
 		case FORMAT_RGH: return 4;
 		case FORMAT_RGBH: return 6;
 		case FORMAT_RGBAH: return 8;
 		case FORMAT_RGBE9995: return 4;
 		case FORMAT_DXT1:
-			return 1; //s3tc bc1
+			return 1; // s3tc bc1
 		case FORMAT_DXT3:
-			return 1; //bc2
+			return 1; // bc2
 		case FORMAT_DXT5:
-			return 1; //bc3
+			return 1; // bc3
 		case FORMAT_RGTC_R:
-			return 1; //bc4
+			return 1; // bc4
 		case FORMAT_RGTC_RG:
-			return 1; //bc5
+			return 1; // bc5
 		case FORMAT_BPTC_RGBA:
-			return 1; //btpc bc6h
+			return 1; // btpc bc6h
 		case FORMAT_BPTC_RGBF:
-			return 1; //float /
+			return 1; // float /
 		case FORMAT_BPTC_RGBFU:
-			return 1; //unsigned float
+			return 1; // unsigned float
 		case FORMAT_PVRTC2:
-			return 1; //pvrtc
+			return 1; // pvrtc
 		case FORMAT_PVRTC2A: return 1;
 		case FORMAT_PVRTC4: return 1;
 		case FORMAT_PVRTC4A: return 1;
 		case FORMAT_ETC:
-			return 1; //etc1
+			return 1; // etc1
 		case FORMAT_ETC2_R11:
-			return 1; //etc2
+			return 1; // etc2
 		case FORMAT_ETC2_R11S:
-			return 1; //signed: return 1; NOT srgb.
+			return 1; // signed: return 1; NOT srgb.
 		case FORMAT_ETC2_RG11: return 1;
 		case FORMAT_ETC2_RG11S: return 1;
 		case FORMAT_ETC2_RGB8: return 1;
@@ -174,11 +174,11 @@ int Image::get_format_pixel_size(Format p_format) {
 void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 
 	switch (p_format) {
-		case FORMAT_DXT1: //s3tc bc1
-		case FORMAT_DXT3: //bc2
-		case FORMAT_DXT5: //bc3
-		case FORMAT_RGTC_R: //bc4
-		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
+		case FORMAT_DXT1: // s3tc bc1
+		case FORMAT_DXT3: // bc2
+		case FORMAT_DXT5: // bc3
+		case FORMAT_RGTC_R: // bc4
+		case FORMAT_RGTC_RG: { // bc5		case case FORMAT_DXT1:
 
 			r_w = 4;
 			r_h = 4;
@@ -207,8 +207,8 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_w = 4;
 			r_h = 4;
 		} break;
-		case FORMAT_ETC2_R11: //etc2
-		case FORMAT_ETC2_R11S: //signed: NOT srgb.
+		case FORMAT_ETC2_R11: // etc2
+		case FORMAT_ETC2_R11S: // signed: NOT srgb.
 		case FORMAT_ETC2_RG11:
 		case FORMAT_ETC2_RG11S:
 		case FORMAT_ETC2_RGB8:
@@ -242,11 +242,11 @@ int Image::get_format_pixel_rshift(Format p_format) {
 int Image::get_format_block_size(Format p_format) {
 
 	switch (p_format) {
-		case FORMAT_DXT1: //s3tc bc1
-		case FORMAT_DXT3: //bc2
-		case FORMAT_DXT5: //bc3
-		case FORMAT_RGTC_R: //bc4
-		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
+		case FORMAT_DXT1: // s3tc bc1
+		case FORMAT_DXT3: // bc2
+		case FORMAT_DXT5: // bc3
+		case FORMAT_RGTC_R: // bc4
+		case FORMAT_RGTC_RG: { // bc5		case case FORMAT_DXT1:
 
 			return 4;
 		}
@@ -270,15 +270,15 @@ int Image::get_format_block_size(Format p_format) {
 
 			return 4;
 		}
-		case FORMAT_ETC2_R11: //etc2
-		case FORMAT_ETC2_R11S: //signed: NOT srgb.
+		case FORMAT_ETC2_R11: // etc2
+		case FORMAT_ETC2_R11S: // signed: NOT srgb.
 		case FORMAT_ETC2_RG11:
 		case FORMAT_ETC2_RG11S:
 		case FORMAT_ETC2_RGB8:
 		case FORMAT_ETC2_RGBA8:
 		case FORMAT_ETC2_RGB8A1:
-		case FORMAT_ETC2_RA_AS_RG: //used to make basis universal happy
-		case FORMAT_DXT5_RA_AS_RG: //used to make basis universal happy
+		case FORMAT_ETC2_RA_AS_RG: // used to make basis universal happy
+		case FORMAT_DXT5_RA_AS_RG: // used to make basis universal happy
 
 		{
 
@@ -450,7 +450,7 @@ void Image::convert(Format p_new_format) {
 
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
 
-		//use put/set pixel which is slower but works with non byte formats
+		// use put/set pixel which is slower but works with non byte formats
 		Image new_img(width, height, 0, p_new_format);
 
 		for (int i = 0; i < width; i++) {
@@ -599,7 +599,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 					const T *__restrict p = ((T *)p_src) + (oy2 * p_src_width + ox2) * CC;
 
 					for (int i = 0; i < CC; i++) {
-						if (sizeof(T) == 2) { //half float
+						if (sizeof(T) == 2) { // half float
 							color[i] = Math::half_to_float(p[i]);
 						} else {
 							color[i] += p[i] * k2;
@@ -609,9 +609,9 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 			}
 
 			for (int i = 0; i < CC; i++) {
-				if (sizeof(T) == 1) { //byte
+				if (sizeof(T) == 1) { // byte
 					dst[i] = CLAMP(Math::fast_ftoi(color[i]), 0, 255);
-				} else if (sizeof(T) == 2) { //half float
+				} else if (sizeof(T) == 2) { // half float
 					dst[i] = Math::make_half_float(color[i]);
 				} else {
 					dst[i] = color[i];
@@ -641,8 +641,8 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 		if (src_yofs_down >= p_src_height)
 			src_yofs_down = p_src_height - 1;
 
-		//src_yofs_up*=CC;
-		//src_yofs_down*=CC;
+		// src_yofs_up*=CC;
+		// src_yofs_down*=CC;
 
 		uint32_t y_ofs_up = src_yofs_up * p_src_width * CC;
 		uint32_t y_ofs_down = src_yofs_down * p_src_width * CC;
@@ -661,7 +661,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 
 			for (uint32_t l = 0; l < CC; l++) {
 
-				if (sizeof(T) == 1) { //uint8
+				if (sizeof(T) == 1) { // uint8
 					uint32_t p00 = p_src[y_ofs_up + src_xofs_left + l] << FRAC_BITS;
 					uint32_t p10 = p_src[y_ofs_up + src_xofs_right + l] << FRAC_BITS;
 					uint32_t p01 = p_src[y_ofs_down + src_xofs_left + l] << FRAC_BITS;
@@ -672,7 +672,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					uint32_t interp = interp_up + (((interp_down - interp_up) * src_yofs_frac) >> FRAC_BITS);
 					interp >>= FRAC_BITS;
 					p_dst[i * p_dst_width * CC + j * CC + l] = interp;
-				} else if (sizeof(T) == 2) { //half float
+				} else if (sizeof(T) == 2) { // half float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
 					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
@@ -689,7 +689,7 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 					float interp = interp_up + ((interp_down - interp_up) * yofs_frac);
 
 					dst[i * p_dst_width * CC + j * CC + l] = Math::make_half_float(interp);
-				} else if (sizeof(T) == 4) { //float
+				} else if (sizeof(T) == 4) { // float
 
 					float xofs_frac = float(src_xofs_frac) / (1 << FRAC_BITS);
 					float yofs_frac = float(src_yofs_frac) / (1 << FRAC_BITS);
@@ -787,7 +787,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 					const T *__restrict src_data = ((const T *)p_src) + (buffer_y * src_width + target_x) * CC;
 
 					for (uint32_t i = 0; i < CC; i++) {
-						if (sizeof(T) == 2) //half float
+						if (sizeof(T) == 2) // half float
 							pixel[i] += Math::half_to_float(src_data[i]) * lanczos_val;
 						else
 							pixel[i] += src_data[i] * lanczos_val;
@@ -843,9 +843,9 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 				for (uint32_t i = 0; i < CC; i++) {
 					pixel[i] /= weight;
 
-					if (sizeof(T) == 1) //byte
+					if (sizeof(T) == 1) // byte
 						dst_data[i] = CLAMP(Math::fast_ftoi(pixel[i]), 0, 255);
-					else if (sizeof(T) == 2) //half float
+					else if (sizeof(T) == 2) // half float
 						dst_data[i] = Math::make_half_float(pixel[i]);
 					else // float
 						dst_data[i] = pixel[i];
@@ -886,7 +886,7 @@ void Image::resize_to_po2(bool p_square) {
 	if (w == width && h == height) {
 
 		if (!p_square || w == h)
-			return; //nothing to do
+			return; // nothing to do
 	}
 
 	resize(w, h);
@@ -1122,7 +1122,7 @@ void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 	if (p_width == width && p_height == height && p_x == 0 && p_y == 0)
 		return;
 
-	uint8_t pdata[16]; //largest is 16
+	uint8_t pdata[16]; // largest is 16
 	uint32_t pixel_size = get_format_pixel_size(format);
 
 	Image dst(p_width, p_height, 0, format);
@@ -1235,9 +1235,9 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 	int pixsize = get_format_pixel_size(p_format);
 	int pixshift = get_format_pixel_rshift(p_format);
 	int block = get_format_block_size(p_format);
-	//technically, you can still compress up to 1 px no matter the format, so commenting this
-	//int minw, minh;
-	//get_format_min_pixel_size(p_format, minw, minh);
+	// technically, you can still compress up to 1 px no matter the format, so commenting this
+	// int minw, minh;
+	// get_format_min_pixel_size(p_format, minw, minh);
 	int minw = 1, minh = 1;
 
 	while (true) {
@@ -1289,7 +1289,7 @@ template <class Component, int CC, bool renormalize,
 		void (*renormalize_func)(Component *)>
 static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint32_t p_width, uint32_t p_height) {
 
-	//fast power of 2 mipmap generation
+	// fast power of 2 mipmap generation
 	uint32_t dst_w = MAX(p_width >> 1, 1);
 	uint32_t dst_h = MAX(p_height >> 1, 1);
 
@@ -1366,7 +1366,7 @@ void Image::shrink_x2() {
 
 	if (mipmaps) {
 
-		//just use the lower mipmap as base and copy all
+		// just use the lower mipmap as base and copy all
 		Vector<uint8_t> new_img;
 
 		int ofs = get_mipmap_offset(1);
@@ -1564,8 +1564,8 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 
 Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map) {
 
-	Vector<double> normal_sat_vec; //summed area table
-	double *normal_sat = nullptr; //summed area table for normalmap
+	Vector<double> normal_sat_vec; // summed area table
+	double *normal_sat = nullptr; // summed area table for normalmap
 	int normal_w = 0, normal_h = 0;
 
 	ERR_FAIL_COND_V_MSG(p_normal_map.is_null() || p_normal_map->empty(), ERR_INVALID_PARAMETER, "Must provide a valid normalmap for roughness mipmaps");
@@ -1582,7 +1582,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 
 	normal_sat = normal_sat_vec.ptrw();
 
-	//create summed area table
+	// create summed area table
 
 	for (int y = 0; y < normal_h; y++) {
 		double line_sum[3] = { 0, 0, 0 };
@@ -1591,7 +1591,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 			Color color = nm->get_pixel(x, y);
 			normal[0] = color.r * 2.0 - 1.0;
 			normal[1] = color.g * 2.0 - 1.0;
-			normal[2] = Math::sqrt(MAX(0.0, 1.0 - (normal[0] * normal[0] + normal[1] * normal[1]))); //reconstruct if missing
+			normal[2] = Math::sqrt(MAX(0.0, 1.0 - (normal[0] * normal[0] + normal[1] * normal[1]))); // reconstruct if missing
 
 			line_sum[0] += normal[0];
 			line_sum[1] += normal[1];
@@ -1645,7 +1645,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 				int size_x = (to_x - from_x) + 1;
 				int size_y = (to_y - from_y) + 1;
 
-				//summed area table version (much faster)
+				// summed area table version (much faster)
 
 				double avg[3] = { 0, 0, 0 };
 
@@ -1875,7 +1875,7 @@ void Image::create(const char **p_xpm) {
 					colorstring += *line_ptr;
 					line_ptr++;
 				}
-				//skip spaces
+				// skip spaces
 				while (*line_ptr == ' ' || *line_ptr == '\t' || *line_ptr == 0) {
 					if (*line_ptr == 0)
 						break;
@@ -1895,7 +1895,7 @@ void Image::create(const char **p_xpm) {
 						uint8_t col_r = 0;
 						uint8_t col_g = 0;
 						uint8_t col_b = 0;
-						//uint8_t col_a=255;
+						// uint8_t col_a=255;
 
 						for (int i = 0; i < 6; i++) {
 
@@ -2494,7 +2494,7 @@ void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, c
 
 			// If the mask's pixel is transparent then we skip it
 			//Color c = msk->get_pixel(src_x, src_y);
-			//if (c.a == 0) continue;
+			// if (c.a == 0) continue;
 			if (msk->get_pixel(src_x, src_y).a != 0) {
 
 				int dst_x = dest_rect.position.x + j;
@@ -2892,7 +2892,7 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) {
 	}
 
 	if (p_source == COMPRESS_SOURCE_NORMAL) {
-		//use RG channels only for normal
+		// use RG channels only for normal
 		used_channels = USED_CHANNELS_RG;
 	}
 
@@ -2987,38 +2987,38 @@ void Image::_bind_methods() {
 	BIND_CONSTANT(MAX_WIDTH);
 	BIND_CONSTANT(MAX_HEIGHT);
 
-	BIND_ENUM_CONSTANT(FORMAT_L8); //luminance
-	BIND_ENUM_CONSTANT(FORMAT_LA8); //luminance-alpha
+	BIND_ENUM_CONSTANT(FORMAT_L8); // luminance
+	BIND_ENUM_CONSTANT(FORMAT_LA8); // luminance-alpha
 	BIND_ENUM_CONSTANT(FORMAT_R8);
 	BIND_ENUM_CONSTANT(FORMAT_RG8);
 	BIND_ENUM_CONSTANT(FORMAT_RGB8);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA8);
 	BIND_ENUM_CONSTANT(FORMAT_RGBA4444);
 	BIND_ENUM_CONSTANT(FORMAT_RGB565);
-	BIND_ENUM_CONSTANT(FORMAT_RF); //float
+	BIND_ENUM_CONSTANT(FORMAT_RF); // float
 	BIND_ENUM_CONSTANT(FORMAT_RGF);
 	BIND_ENUM_CONSTANT(FORMAT_RGBF);
 	BIND_ENUM_CONSTANT(FORMAT_RGBAF);
-	BIND_ENUM_CONSTANT(FORMAT_RH); //half float
+	BIND_ENUM_CONSTANT(FORMAT_RH); // half float
 	BIND_ENUM_CONSTANT(FORMAT_RGH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBAH);
 	BIND_ENUM_CONSTANT(FORMAT_RGBE9995);
-	BIND_ENUM_CONSTANT(FORMAT_DXT1); //s3tc bc1
-	BIND_ENUM_CONSTANT(FORMAT_DXT3); //bc2
-	BIND_ENUM_CONSTANT(FORMAT_DXT5); //bc3
+	BIND_ENUM_CONSTANT(FORMAT_DXT1); // s3tc bc1
+	BIND_ENUM_CONSTANT(FORMAT_DXT3); // bc2
+	BIND_ENUM_CONSTANT(FORMAT_DXT5); // bc3
 	BIND_ENUM_CONSTANT(FORMAT_RGTC_R);
 	BIND_ENUM_CONSTANT(FORMAT_RGTC_RG);
-	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA); //btpc bc6h
-	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF); //float /
-	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU); //unsigned float
-	BIND_ENUM_CONSTANT(FORMAT_PVRTC2); //pvrtc
+	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBA); // btpc bc6h
+	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBF); // float /
+	BIND_ENUM_CONSTANT(FORMAT_BPTC_RGBFU); // unsigned float
+	BIND_ENUM_CONSTANT(FORMAT_PVRTC2); // pvrtc
 	BIND_ENUM_CONSTANT(FORMAT_PVRTC2A);
 	BIND_ENUM_CONSTANT(FORMAT_PVRTC4);
 	BIND_ENUM_CONSTANT(FORMAT_PVRTC4A);
-	BIND_ENUM_CONSTANT(FORMAT_ETC); //etc1
-	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11); //etc2
-	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S); //signed ); NOT srgb.
+	BIND_ENUM_CONSTANT(FORMAT_ETC); // etc1
+	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11); // etc2
+	BIND_ENUM_CONSTANT(FORMAT_ETC2_R11S); // signed ); NOT srgb.
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RG11);
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RG11S);
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RGB8);
@@ -3076,8 +3076,8 @@ void Image::normalmap_to_xy() {
 
 		for (int i = 0; i < len; i++) {
 
-			data_ptr[(i << 2) + 3] = data_ptr[(i << 2) + 0]; //x to w
-			data_ptr[(i << 2) + 0] = data_ptr[(i << 2) + 1]; //y to xz
+			data_ptr[(i << 2) + 3] = data_ptr[(i << 2) + 0]; // x to w
+			data_ptr[(i << 2) + 0] = data_ptr[(i << 2) + 1]; // y to xz
 			data_ptr[(i << 2) + 2] = data_ptr[(i << 2) + 1];
 		}
 	}
@@ -3138,7 +3138,7 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 	ERR_FAIL_COND(!_can_modify(format));
 	convert(Image::FORMAT_RF);
 
-	Vector<uint8_t> result_image; //rgba output
+	Vector<uint8_t> result_image; // rgba output
 	result_image.resize(width * height * 4);
 
 	{
@@ -3218,7 +3218,7 @@ void Image::premultiply_alpha() {
 		return;
 
 	if (format != FORMAT_RGBA8)
-		return; //not needed
+		return; // not needed
 
 	uint8_t *data_ptr = data.ptrw();
 
@@ -3240,7 +3240,7 @@ void Image::fix_alpha_edges() {
 		return;
 
 	if (format != FORMAT_RGBA8)
-		return; //not needed
+		return; // not needed
 
 	Vector<uint8_t> dcopy = data;
 	const uint8_t *srcptr = dcopy.ptr();

@@ -374,7 +374,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 					} else if (ch == '"') {
 						break;
 					} else if (ch == '\\') {
-						//escaped characters...
+						// escaped characters...
 
 						CharType next = GET_CHAR();
 						if (next == 0) {
@@ -450,7 +450,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 				}
 
 				if (cchar >= '0' && cchar <= '9') {
-					//a number
+					// a number
 
 					String num;
 #define READING_SIGN 0
@@ -471,7 +471,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 							case READING_INT: {
 
 								if (c >= '0' && c <= '9') {
-									//pass
+									// pass
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
@@ -538,7 +538,7 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 						first = false;
 					}
 
-					str_ofs--; //go back one
+					str_ofs--; // go back one
 
 					if (id == "in") {
 						r_token.type = TK_OP_IN;
@@ -651,7 +651,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 	Vector<Expression> expression;
 
 	while (true) {
-		//keep appending stuff to expression
+		// keep appending stuff to expression
 		ENode *expr = nullptr;
 
 		Token tk;
@@ -661,7 +661,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 		switch (tk.type) {
 			case TK_CURLY_BRACKET_OPEN: {
-				//a dictionary
+				// a dictionary
 				DictionaryNode *dn = alloc_node<DictionaryNode>();
 
 				while (true) {
@@ -671,8 +671,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					if (tk.type == TK_CURLY_BRACKET_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; // revert
+					// parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
 						return nullptr;
@@ -693,7 +693,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						// all good
 					} else if (tk.type == TK_CURLY_BRACKET_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -704,7 +704,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				expr = dn;
 			} break;
 			case TK_BRACKET_OPEN: {
-				//an array
+				// an array
 
 				ArrayNode *an = alloc_node<ArrayNode>();
 
@@ -715,8 +715,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					if (tk.type == TK_BRACKET_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; // revert
+					// parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
 						return nullptr;
@@ -725,7 +725,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						// all good
 					} else if (tk.type == TK_BRACKET_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -736,7 +736,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				expr = an;
 			} break;
 			case TK_PARENTHESIS_OPEN: {
-				//a suexpression
+				// a suexpression
 				ENode *e = _parse_expression();
 				if (error_set)
 					return nullptr;
@@ -780,7 +780,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				expr = constant;
 			} break;
 			case TK_BASIC_TYPE: {
-				//constructor..
+				// constructor..
 
 				Variant::Type bt = Variant::Type(int(tk.value));
 				_get_token(tk);
@@ -799,8 +799,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					if (tk.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; // revert
+					// parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
 						return nullptr;
@@ -810,7 +810,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						// all good
 					} else if (tk.type == TK_PARENTHESIS_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -822,7 +822,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 			} break;
 			case TK_BUILTIN_FUNC: {
-				//builtin function
+				// builtin function
 
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
@@ -840,8 +840,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					if (tk.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; // revert
+					// parse an expression
 					ENode *expr2 = _parse_expression();
 					if (!expr2)
 						return nullptr;
@@ -851,7 +851,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						// all good
 					} else if (tk.type == TK_PARENTHESIS_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -890,7 +890,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			} break;
 		}
 
-		//before going to operators, must check indexing!
+		// before going to operators, must check indexing!
 
 		while (true) {
 			int cofs2 = str_ofs;
@@ -902,7 +902,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 			switch (tk.type) {
 				case TK_BRACKET_OPEN: {
-					//value indexing
+					// value indexing
 
 					IndexNode *index = alloc_node<IndexNode>();
 					index->base = expr;
@@ -922,7 +922,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 				} break;
 				case TK_PERIOD: {
-					//named indexing or function call
+					// named indexing or function call
 					_get_token(tk);
 					if (tk.type != TK_IDENTIFIER) {
 						_set_error("Expected identifier after '.'");
@@ -934,7 +934,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					int cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_PARENTHESIS_OPEN) {
-						//function call
+						// function call
 						CallNode *func_call = alloc_node<CallNode>();
 						func_call->method = identifier;
 						func_call->base = expr;
@@ -946,8 +946,8 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 							if (tk.type == TK_PARENTHESIS_CLOSE) {
 								break;
 							}
-							str_ofs = cofs3; //revert
-							//parse an expression
+							str_ofs = cofs3; // revert
+							// parse an expression
 							ENode *expr2 = _parse_expression();
 							if (!expr2)
 								return nullptr;
@@ -957,7 +957,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 							cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_COMMA) {
-								//all good
+								// all good
 							} else if (tk.type == TK_PARENTHESIS_CLOSE) {
 								str_ofs = cofs3;
 							} else {
@@ -967,7 +967,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 						expr = func_call;
 					} else {
-						//named indexing
+						// named indexing
 						str_ofs = cofs;
 
 						NamedIndexNode *index = alloc_node<NamedIndexNode>();
@@ -987,7 +987,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				break;
 		}
 
-		//push expression
+		// push expression
 		{
 			Expression e;
 			e.is_op = false;
@@ -995,7 +995,7 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			expression.push_back(e);
 		}
 
-		//ok finally look for an operator
+		// ok finally look for an operator
 
 		int cofs = str_ofs;
 		_get_token(tk);
@@ -1030,12 +1030,12 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			};
 		}
 
-		if (op == Variant::OP_MAX) { //stop appending stuff
+		if (op == Variant::OP_MAX) { // stop appending stuff
 			str_ofs = cofs;
 			break;
 		}
 
-		//push operator and go on
+		// push operator and go on
 		{
 			Expression e;
 			e.is_op = true;
@@ -1135,13 +1135,13 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 				expr_pos++;
 				if (expr_pos == expression.size()) {
-					//can happen..
+					// can happen..
 					_set_error("Unexpected end of expression...");
 					return nullptr;
 				}
 			}
 
-			//consecutively do unary operators
+			// consecutively do unary operators
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 
 				OperatorNode *op = alloc_node<OperatorNode>();
@@ -1179,10 +1179,10 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				return nullptr;
 			}
 
-			op->nodes[0] = expression[next_op - 1].node; //expression goes as left
-			op->nodes[1] = expression[next_op + 1].node; //next expression goes as right
+			op->nodes[0] = expression[next_op - 1].node; // expression goes as left
+			op->nodes[1] = expression[next_op + 1].node; // next expression goes as right
 
-			//replace all 3 nodes by this operator and make it an expression
+			// replace all 3 nodes by this operator and make it an expression
 			expression.write[next_op - 1].node = op;
 			expression.remove(next_op);
 			expression.remove(next_op);
@@ -1227,8 +1227,8 @@ public:
 	VisualScriptInstance *instance;
 	VisualScriptExpression *expression;
 
-	//virtual int get_working_memory_size() const { return 0; }
-	//execute by parsing the tree directly
+	// virtual int get_working_memory_size() const { return 0; }
+	// execute by parsing the tree directly
 	virtual bool _execute(const Variant **p_inputs, VisualScriptExpression::ENode *p_node, Variant &r_ret, String &r_error_str, Callable::CallError &ce) {
 
 		switch (p_node->type) {

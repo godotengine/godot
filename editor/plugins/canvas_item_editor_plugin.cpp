@@ -703,7 +703,7 @@ bool CanvasItemEditor::_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *
 	if (!from_node)
 		return false;
 	if (!from_node->is_inside_tree())
-		return false; //may have been removed
+		return false; // may have been removed
 
 	if (!to_node && bone->get().length == 0)
 		return false;
@@ -2500,29 +2500,29 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 
 	if (EditorSettings::get_singleton()->get("editors/2d/simple_panning") || !pan_pressed) {
 		if ((accepted = _gui_input_rulers_and_guides(p_event))) {
-			//printf("Rulers and guides\n");
+			// printf("Rulers and guides\n");
 		} else if ((accepted = editor->get_editor_plugins_over()->forward_gui_input(p_event))) {
-			//printf("Plugin\n");
+			// printf("Plugin\n");
 		} else if ((accepted = _gui_input_open_scene_on_double_click(p_event))) {
-			//printf("Open scene on double click\n");
+			// printf("Open scene on double click\n");
 		} else if ((accepted = _gui_input_scale(p_event))) {
-			//printf("Set scale\n");
+			// printf("Set scale\n");
 		} else if ((accepted = _gui_input_pivot(p_event))) {
-			//printf("Set pivot\n");
+			// printf("Set pivot\n");
 		} else if ((accepted = _gui_input_resize(p_event))) {
-			//printf("Resize\n");
+			// printf("Resize\n");
 		} else if ((accepted = _gui_input_rotate(p_event))) {
-			//printf("Rotate\n");
+			// printf("Rotate\n");
 		} else if ((accepted = _gui_input_move(p_event))) {
-			//printf("Move\n");
+			// printf("Move\n");
 		} else if ((accepted = _gui_input_anchors(p_event))) {
-			//printf("Anchors\n");
+			// printf("Anchors\n");
 		} else if ((accepted = _gui_input_select(p_event))) {
-			//printf("Selection\n");
+			// printf("Selection\n");
 		} else if ((accepted = _gui_input_ruler_tool(p_event))) {
-			//printf("Measure\n");
+			// printf("Measure\n");
 		} else {
-			//printf("Not accepted\n");
+			// printf("Not accepted\n");
 		}
 	}
 
@@ -3264,7 +3264,7 @@ void CanvasItemEditor::_draw_selection() {
 			viewport->draw_set_transform_matrix(viewport->get_transform());
 		}
 
-		if (single && !item_locked && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { //kind of sucks
+		if (single && !item_locked && (tool == TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_SCALE || tool == TOOL_ROTATE || tool == TOOL_EDIT_PIVOT)) { // kind of sucks
 			// Draw the pivot
 			if (canvas_item->_edit_use_pivot()) {
 
@@ -3425,7 +3425,7 @@ void CanvasItemEditor::_draw_straight_line(Point2 p_from, Point2 p_to, Color p_c
 		float y_for_viewport_x = ((to.y - from.y) * (viewport_size.x - from.x)) / (to.x - from.x) + from.y;
 		float x_for_viewport_y = ((to.x - from.x) * (viewport_size.y - from.y)) / (to.y - from.y) + from.x; // faux
 
-		//bool start_set = false;
+		// bool start_set = false;
 		if (y_for_zero_x >= 0 && y_for_zero_x <= viewport_size.y) {
 			points.push_back(Point2(0, y_for_zero_x));
 		}
@@ -3637,7 +3637,7 @@ void CanvasItemEditor::_draw_locks_and_groups(Node *p_node, const Transform2D &p
 		Ref<Texture2D> group = get_theme_icon("GroupViewport", "EditorIcons");
 		if (canvas_item->has_meta("_edit_group_") && show_edit_locks) {
 			group->draw(viewport_canvas_item, (transform * canvas_xform * parent_xform).xform(Point2(0, 0)) + Point2(offset, 0));
-			//offset += group->get_size().x;
+			// offset += group->get_size().x;
 		}
 	}
 }
@@ -4420,7 +4420,7 @@ void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, 
 				AnimationPlayerEditor::singleton->get_track_editor()->insert_node_value_key(n2d, "scale", n2d->get_scale(), p_on_existing);
 
 			if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
-				//look for an IK chain
+				// look for an IK chain
 				List<Node2D *> ik_chain;
 
 				Node2D *n = Object::cast_to<Node2D>(n2d->get_parent_item());
@@ -5042,7 +5042,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 			continue;
 
 		// counting invisible items, for now
-		//if (!canvas_item->is_visible_in_tree()) continue;
+		// if (!canvas_item->is_visible_in_tree()) continue;
 		++count;
 
 		Rect2 item_rect;
@@ -5768,7 +5768,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	key_auto_insert_button->set_flat(true);
 	key_auto_insert_button->set_toggle_mode(true);
 	key_auto_insert_button->set_focus_mode(FOCUS_NONE);
-	//key_auto_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
+	// key_auto_insert_button->connect("pressed", this, "_popup_callback", varray(ANIM_INSERT_KEY));
 	key_auto_insert_button->set_tooltip(TTR("Auto insert keys when objects are translated, rotated or scaled (based on mask).\nKeys are only added to existing tracks, no new tracks will be created.\nKeys must be inserted manually for the first time."));
 	key_auto_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_auto_insert_key", TTR("Auto Insert Key")));
 	animation_hb->add_child(key_auto_insert_button);

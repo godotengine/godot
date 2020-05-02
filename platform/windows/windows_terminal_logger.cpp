@@ -82,7 +82,7 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 #ifndef UWP_ENABLED
 	} else {
 
-		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
+		CONSOLE_SCREEN_BUFFER_INFO sbi; // original
 		GetConsoleScreenBufferInfo(hCon, &sbi);
 
 		WORD current_bg = sbi.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);

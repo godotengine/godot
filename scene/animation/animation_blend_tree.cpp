@@ -226,14 +226,14 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 	float time_to_restart = get_parameter(this->time_to_restart);
 
 	if (!active) {
-		//make it as if this node doesn't exist, pass input 0 by.
+		// make it as if this node doesn't exist, pass input 0 by.
 		if (prev_active) {
 			set_parameter(this->prev_active, false);
 		}
 		if (time_to_restart >= 0.0 && !p_seek) {
 			time_to_restart -= p_time;
 			if (time_to_restart < 0) {
-				//restart
+				// restart
 				set_parameter(this->active, true);
 				active = true;
 			}
@@ -264,7 +264,7 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 		if (fade_in > 0)
 			blend = time / fade_in;
 		else
-			blend = 0; //wtf
+			blend = 0; // wtf
 
 	} else if (!do_start && remaining < fade_out) {
 
@@ -487,7 +487,7 @@ void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
 }
 Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_parameter) const {
-	return 0; //for blend amount
+	return 0; // for blend amount
 }
 
 String AnimationNodeBlend2::get_caption() const {
@@ -501,7 +501,7 @@ float AnimationNodeBlend2::process(float p_time, bool p_seek) {
 	float rem0 = blend_input(0, p_time, p_seek, 1.0 - amount, FILTER_BLEND, !sync);
 	float rem1 = blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
 
-	return amount > 0.5 ? rem1 : rem0; //hacky but good enough
+	return amount > 0.5 ? rem1 : rem0; // hacky but good enough
 }
 
 void AnimationNodeBlend2::set_use_sync(bool p_sync) {
@@ -538,7 +538,7 @@ void AnimationNodeBlend3::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
 }
 Variant AnimationNodeBlend3::get_parameter_default_value(const StringName &p_parameter) const {
-	return 0; //for blend amount
+	return 0; // for blend amount
 }
 
 String AnimationNodeBlend3::get_caption() const {
@@ -562,7 +562,7 @@ float AnimationNodeBlend3::process(float p_time, bool p_seek) {
 	float rem1 = blend_input(1, p_time, p_seek, 1.0 - ABS(amount), FILTER_IGNORE, !sync);
 	float rem2 = blend_input(2, p_time, p_seek, MAX(0, amount), FILTER_IGNORE, !sync);
 
-	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); //hacky but good enough
+	return amount > 0.5 ? rem2 : (amount < -0.5 ? rem0 : rem1); // hacky but good enough
 }
 
 void AnimationNodeBlend3::_bind_methods() {
@@ -586,7 +586,7 @@ void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) cons
 	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "0,32,0.01,or_greater"));
 }
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {
-	return 1.0; //initial timescale
+	return 1.0; // initial timescale
 }
 
 String AnimationNodeTimeScale::get_caption() const {
@@ -616,7 +616,7 @@ void AnimationNodeTimeSeek::get_parameter_list(List<PropertyInfo> *r_list) const
 	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater"));
 }
 Variant AnimationNodeTimeSeek::get_parameter_default_value(const StringName &p_parameter) const {
-	return 1.0; //initial timescale
+	return 1.0; // initial timescale
 }
 
 String AnimationNodeTimeSeek::get_caption() const {
@@ -630,7 +630,7 @@ float AnimationNodeTimeSeek::process(float p_time, bool p_seek) {
 		return blend_input(0, p_time, true, 1.0, FILTER_IGNORE, false);
 	} else if (seek_pos >= 0) {
 		float ret = blend_input(0, seek_pos, true, 1.0, FILTER_IGNORE, false);
-		set_parameter(this->seek_pos, -1.0); //reset
+		set_parameter(this->seek_pos, -1.0); // reset
 		_change_notify("seek_pos");
 		return ret;
 	} else {
@@ -772,7 +772,7 @@ float AnimationNodeTransition::process(float p_time, bool p_seek) {
 
 		float blend = xfade ? (prev_xfading / xfade) : 1;
 
-		if (!p_seek && switched) { //just switched, seek to start of current
+		if (!p_seek && switched) { // just switched, seek to start of current
 
 			rem = blend_input(current, 0, true, 1.0 - blend, FILTER_IGNORE, false);
 		} else {
@@ -943,7 +943,7 @@ Vector<StringName> AnimationNodeBlendTree::get_node_connection_array(const Strin
 void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 
 	ERR_FAIL_COND(!nodes.has(p_name));
-	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output); //can't delete output
+	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output); // can't delete output
 
 	{
 		Ref<AnimationNode> node = nodes[p_name].node;
@@ -953,7 +953,7 @@ void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 
 	nodes.erase(p_name);
 
-	//erase connections to name
+	// erase connections to name
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
 		for (int i = 0; i < E->get().connections.size(); i++) {
 			if (E->get().connections[i] == p_name) {
@@ -978,7 +978,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 	nodes[p_new_name] = nodes[p_name];
 	nodes.erase(p_name);
 
-	//rename connections
+	// rename connections
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {
 
 		for (int i = 0; i < E->get().connections.size(); i++) {
@@ -987,7 +987,7 @@ void AnimationNodeBlendTree::rename_node(const StringName &p_name, const StringN
 			}
 		}
 	}
-	//connection must be done with new name
+	// connection must be done with new name
 	nodes[p_new_name].node->connect("changed", callable_mp(this, &AnimationNodeBlendTree::_node_changed), varray(p_new_name), CONNECT_REFERENCE_COUNTED);
 
 	emit_signal("tree_changed");

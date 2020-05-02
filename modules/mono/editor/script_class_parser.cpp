@@ -108,7 +108,7 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 				return TK_PERIOD;
 			};
 			case '#': {
-				//compiler directive
+				// compiler directive
 				while (code[idx] != '\n' && code[idx] != 0) {
 					idx++;
 				}
@@ -170,7 +170,7 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						idx += 1;
 						break;
 					} else if (code[idx] == '\\' && !verbatim) {
-						//escaped characters...
+						// escaped characters...
 						idx++;
 						CharType next = code[idx];
 						if (next == 0) {
@@ -224,7 +224,7 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 				}
 
 				if (code[idx] == '-' || (code[idx] >= '0' && code[idx] <= '9')) {
-					//a number
+					// a number
 					const CharType *rptr;
 					double number = String::to_double(&code[idx], &rptr);
 					idx += (rptr - &code[idx]);

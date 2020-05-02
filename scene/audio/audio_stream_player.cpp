@@ -67,7 +67,7 @@ void AudioStreamPlayer::_mix_to_bus(const AudioFrame *p_frames, int p_amount) {
 
 void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
-	//get data
+	// get data
 	AudioFrame *buffer = mix_buffer.ptrw();
 	int buffer_size = mix_buffer.size();
 
@@ -78,7 +78,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 
 	stream_playback->mix(buffer, pitch_scale, buffer_size);
 
-	//multiply volume interpolating to avoid clicks if this changes
+	// multiply volume interpolating to avoid clicks if this changes
 	float target_volume = p_fadeout ? -80.0 : volume_db;
 	float vol = Math::db2linear(mix_volume_db);
 	float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
@@ -88,7 +88,7 @@ void AudioStreamPlayer::_mix_internal(bool p_fadeout) {
 		vol += vol_inc;
 	}
 
-	//set volume for next mix
+	// set volume for next mix
 	mix_volume_db = target_volume;
 
 	_mix_to_bus(buffer, buffer_size);
@@ -123,13 +123,13 @@ void AudioStreamPlayer::_mix_audio() {
 	if (setseek >= 0.0 && !stop_has_priority) {
 		if (stream_playback->is_playing()) {
 
-			//fade out to avoid pops
+			// fade out to avoid pops
 			_mix_internal(true);
 		}
 
 		stream_playback->start(setseek);
-		setseek = -1.0; //reset seek
-		mix_volume_db = volume_db; //reset ramp
+		setseek = -1.0; // reset seek
+		mix_volume_db = volume_db; // reset ramp
 	}
 
 	stop_has_priority = false;
@@ -178,15 +178,15 @@ void AudioStreamPlayer::set_stream(Ref<AudioStream> p_stream) {
 	AudioServer::get_singleton()->lock();
 
 	if (active && stream_playback.is_valid() && !stream_paused) {
-		//changing streams out of the blue is not a great idea, but at least
-		//lets try to somehow avoid a click
+		// changing streams out of the blue is not a great idea, but at least
+		// lets try to somehow avoid a click
 
 		AudioFrame *buffer = fadeout_buffer.ptrw();
 		int buffer_size = fadeout_buffer.size();
 
 		stream_playback->mix(buffer, pitch_scale, buffer_size);
 
-		//multiply volume interpolating to avoid clicks if this changes
+		// multiply volume interpolating to avoid clicks if this changes
 		float target_volume = -80.0;
 		float vol = Math::db2linear(mix_volume_db);
 		float vol_inc = (Math::db2linear(target_volume) - vol) / float(buffer_size);
@@ -246,7 +246,7 @@ float AudioStreamPlayer::get_pitch_scale() const {
 void AudioStreamPlayer::play(float p_from_pos) {
 
 	if (stream_playback.is_valid()) {
-		//mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
+		// mix_volume_db = volume_db; do not reset volume ramp here, can cause clicks
 		setseek = p_from_pos;
 		stop_has_priority = false;
 		active = true;
@@ -289,7 +289,7 @@ float AudioStreamPlayer::get_playback_position() {
 
 void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 
-	//if audio is active, must lock this
+	// if audio is active, must lock this
 	AudioServer::get_singleton()->lock();
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();

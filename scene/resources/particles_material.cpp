@@ -115,12 +115,12 @@ void ParticlesMaterial::_update_shader() {
 
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key)
-		return; //no update required in the end
+		return; // no update required in the end
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
 		if (shader_map[current_key].users == 0) {
-			//deallocate shader, as it's no longer in use
+			// deallocate shader, as it's no longer in use
 			RS::get_singleton()->free(shader_map[current_key].shader);
 			shader_map.erase(current_key);
 		}
@@ -135,7 +135,7 @@ void ParticlesMaterial::_update_shader() {
 		return;
 	}
 
-	//must create a shader!
+	// must create a shader!
 
 	String code = "shader_type particles;\n";
 
@@ -171,7 +171,7 @@ void ParticlesMaterial::_update_shader() {
 
 	switch (emission_shape) {
 		case EMISSION_SHAPE_POINT: {
-			//do none
+			// do none
 		} break;
 		case EMISSION_SHAPE_SPHERE: {
 			code += "uniform float emission_sphere_radius;\n";
@@ -237,7 +237,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "uniform sampler2D trail_color_modifier;\n";
 	}
 
-	//need a random function
+	// need a random function
 	code += "\n\n";
 	code += "float rand_from_seed(inout uint seed) {\n";
 	code += "	int k;\n";
@@ -258,7 +258,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "}\n";
 	code += "\n";
 
-	//improve seed quality
+	// improve seed quality
 	code += "uint hash(uint x) {\n";
 	code += "	x = ((x >> uint(16)) ^ x) * uint(73244475);\n";
 	code += "	x = ((x >> uint(16)) ^ x) * uint(73244475);\n";
@@ -314,7 +314,7 @@ void ParticlesMaterial::_update_shader() {
 		code += "		VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 
 	} else {
-		//initiate velocity spread in 3D
+		// initiate velocity spread in 3D
 		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
 		code += "		angle1_rad += direction.z != 0.0 ? atan(direction.x, direction.z) : sign(direction.x) * (pi / 2.0);\n";
@@ -335,7 +335,7 @@ void ParticlesMaterial::_update_shader() {
 
 	switch (emission_shape) {
 		case EMISSION_SHAPE_POINT: {
-			//do none
+			// do none
 		} break;
 		case EMISSION_SHAPE_SPHERE: {
 			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
@@ -567,7 +567,7 @@ void ParticlesMaterial::_update_shader() {
 			code += "	TRANSFORM = TRANSFORM * mat4(vec4(cos(CUSTOM.x), 0.0, -sin(CUSTOM.x), 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(sin(CUSTOM.x), 0.0, cos(CUSTOM.x), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 		}
 	}
-	//scale by scale
+	// scale by scale
 	code += "	float base_scale = tex_scale * mix(scale, 1.0, scale_random * scale_rand);\n";
 	code += "	if (base_scale < 0.000001) {\n";
 	code += "		base_scale = 0.000001;\n";
@@ -783,7 +783,7 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture2D
 
 	switch (p_param) {
 		case PARAM_INITIAL_LINEAR_VELOCITY: {
-			//do none for this one
+			// do none for this one
 		} break;
 		case PARAM_ANGULAR_VELOCITY: {
 			RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->angular_velocity_texture, p_texture);
@@ -1000,7 +1000,7 @@ void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
 	gravity = p_gravity;
 	Vector3 gset = gravity;
 	if (gset == Vector3()) {
-		gset = Vector3(0, -0.000001, 0); //as gravity is used as upvector in some calculations
+		gset = Vector3(0, -0.000001, 0); // as gravity is used as upvector in some calculations
 	}
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->gravity, gset);
 }
@@ -1279,7 +1279,7 @@ ParticlesMaterial::~ParticlesMaterial() {
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
 		if (shader_map[current_key].users == 0) {
-			//deallocate shader, as it's no longer in use
+			// deallocate shader, as it's no longer in use
 			RS::get_singleton()->free(shader_map[current_key].shader);
 			shader_map.erase(current_key);
 		}

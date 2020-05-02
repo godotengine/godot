@@ -89,7 +89,7 @@ void PinJoint3DSW::solve(real_t p_step) {
 
 		Vector3 rel_pos1 = pivotAInW - A->get_transform().origin;
 		Vector3 rel_pos2 = pivotBInW - B->get_transform().origin;
-		//this jacobian entry could be re-used for all iterations
+		// this jacobian entry could be re-used for all iterations
 
 		Vector3 vel1 = A->get_velocity_in_local_point(rel_pos1);
 		Vector3 vel2 = B->get_velocity_in_local_point(rel_pos2);
@@ -99,13 +99,13 @@ void PinJoint3DSW::solve(real_t p_step) {
 		rel_vel = normal.dot(vel);
 
 		/*
-		//velocity error (first order error)
+		// velocity error (first order error)
 		real_t rel_vel = m_jac[i].getRelativeVelocity(A->getLinearVelocity(),angvelA,
 														B->getLinearVelocity(),angvelB);
 	*/
 
-		//positional error (zeroth order error)
-		real_t depth = -(pivotAInW - pivotBInW).dot(normal); //this is the error projected on the normal
+		// positional error (zeroth order error)
+		real_t depth = -(pivotAInW - pivotBInW).dot(normal); // this is the error projected on the normal
 
 		real_t impulse = depth * m_tau / p_step * jacDiagABInv - m_damping * rel_vel * jacDiagABInv;
 

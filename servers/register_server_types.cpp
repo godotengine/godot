@@ -131,7 +131,7 @@ void register_server_types() {
 	ClassDB::register_virtual_class<AudioStreamGeneratorPlayback>();
 
 	{
-		//audio effects
+		// audio effects
 		ClassDB::register_class<AudioEffectAmplify>();
 
 		ClassDB::register_class<AudioEffectReverb>();

@@ -260,7 +260,7 @@ void InspectorDock::_prepare_history() {
 }
 
 void InspectorDock::_select_history(int p_idx) {
-	//push it to the top, it is not correct, but it's more useful
+	// push it to the top, it is not correct, but it's more useful
 	ObjectID id = EditorNode::get_singleton()->get_editor_history()->get_history_obj(p_idx);
 	Object *obj = ObjectDB::get_instance(id);
 	if (!obj)

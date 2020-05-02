@@ -38,7 +38,7 @@ void AudioEffectDelayInstance::process(const AudioFrame *p_src_frames, AudioFram
 
 	while (todo) {
 
-		int to_mix = MIN(todo, 256); //can't mix too much
+		int to_mix = MIN(todo, 256); // can't mix too much
 
 		_process_chunk(p_src_frames, p_dst_frames, to_mix);
 
@@ -98,9 +98,9 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 		out += fb_buf[feedback_buffer_pos];
 
-		//apply lowpass and feedback gain
+		// apply lowpass and feedback gain
 		AudioFrame fb_in = out * feedback_level_f * lpf_ic + h * lpf_c;
-		fb_in.undenormalise(); //avoid denormals
+		fb_in.undenormalise(); // avoid denormals
 
 		h = fb_in;
 		fb_buf[feedback_buffer_pos] = fb_in;
@@ -119,8 +119,8 @@ Ref<AudioEffectInstance> AudioEffectDelay::instance() {
 	ins.instance();
 	ins->base = Ref<AudioEffectDelay>(this);
 
-	float ring_buffer_max_size = MAX_DELAY_MS + 100; //add 100ms of extra room, just in case
-	ring_buffer_max_size /= 1000.0; //convert to seconds
+	float ring_buffer_max_size = MAX_DELAY_MS + 100; // add 100ms of extra room, just in case
+	ring_buffer_max_size /= 1000.0; // convert to seconds
 	ring_buffer_max_size *= AudioServer::get_singleton()->get_mix_rate();
 
 	int ringbuff_size = ring_buffer_max_size;

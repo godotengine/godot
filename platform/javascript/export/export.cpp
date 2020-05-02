@@ -408,7 +408,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	}
 
 	do {
-		//get filename
+		// get filename
 		unz_file_info info;
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
@@ -418,12 +418,12 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
-		//read
+		// read
 		unzOpenCurrentFile(pkg);
 		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
 
-		//write
+		// write
 
 		if (file == "godot.html") {
 

@@ -79,23 +79,23 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 			memcpy(buimg.get_ptr(), r, vec.size());
 		}
 
-		//image->save_png("pepeche.png");
+		// image->save_png("pepeche.png");
 
 		basisu::basis_compressor_params params;
 		params.m_max_endpoint_clusters = 512;
 		params.m_max_selector_clusters = 512;
 		params.m_multithreading = true;
-		//params.m_no_hybrid_sel_cb = true; //fixme, default on this causes crashes //seems fixed?
+		// params.m_no_hybrid_sel_cb = true; // fixme, default on this causes crashes // seems fixed?
 		params.m_pSel_codebook = sel_codebook;
-		//params.m_quality_level = 0;
-		//params.m_disable_hierarchical_endpoint_codebooks = true;
-		//params.m_no_selector_rdo = true;
+		// params.m_quality_level = 0;
+		// params.m_disable_hierarchical_endpoint_codebooks = true;
+		// params.m_no_selector_rdo = true;
 		params.m_auto_global_sel_pal = false;
 
 		basisu::job_pool jpool(OS::get_singleton()->get_processor_count());
 		params.m_pJob_pool = &jpool;
 
-		params.m_mip_gen = false; //sorry, please some day support provided mipmaps.
+		params.m_mip_gen = false; // sorry, please some day support provided mipmaps.
 		params.m_source_images.push_back(buimg);
 
 		BasisDecompressFormat decompress_format = BASIS_DECOMPRESS_RG;
@@ -168,11 +168,11 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 				format = basist::transcoder_texture_format::cTFBC5; // get this from renderer
 				imgfmt = Image::FORMAT_RGTC_RG;
 			} else if (RS::get_singleton()->has_os_feature("etc2")) {
-				//unfortunately, basis universal does not support
+				// unfortunately, basis universal does not support
 				//
-				ERR_FAIL_V(image); //unimplemented here
-				//format = basist::transcoder_texture_format::cTFETC1; // get this from renderer
-				//imgfmt = Image::FORMAT_RGTC_RG;
+				ERR_FAIL_V(image); // unimplemented here
+				// format = basist::transcoder_texture_format::cTFETC1; // get this from renderer
+				// imgfmt = Image::FORMAT_RGTC_RG;
 			} else {
 				// FIXME: There wasn't anything here, but then imgformat is used uninitialized.
 				ERR_FAIL_V(image);
@@ -206,7 +206,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 				format = basist::transcoder_texture_format::cTFETC2; // get this from renderer
 				imgfmt = Image::FORMAT_ETC2_RGBA8;
 			} else {
-				//gles2 most likely
+				// gles2 most likely
 				format = basist::transcoder_texture_format::cTFRGBA4444; // get this from renderer
 				imgfmt = Image::FORMAT_RGBA4444;
 			}
@@ -219,7 +219,7 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 				format = basist::transcoder_texture_format::cTFETC2; // get this from renderer
 				imgfmt = Image::FORMAT_ETC2_RGBA8;
 			} else {
-				//gles2 most likely, bad for normalmaps, nothing to do about this.
+				// gles2 most likely, bad for normalmaps, nothing to do about this.
 				format = basist::transcoder_texture_format::cTFRGBA32;
 				imgfmt = Image::FORMAT_RGBA8;
 			}

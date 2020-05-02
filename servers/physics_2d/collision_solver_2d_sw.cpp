@@ -81,7 +81,7 @@ bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector
 	Vector2 from = p_transform_A.get_origin();
 	Vector2 to = from + p_transform_A[1] * ray->get_length();
 	if (p_motion_A != Vector2()) {
-		//not the best but should be enough
+		// not the best but should be enough
 		Vector2 normal = (to - from).normalized();
 		to += normal * MAX(0.0, normal.dot(p_motion_A));
 	}
@@ -137,7 +137,7 @@ void CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex
 	_ConcaveCollisionInfo2D &cinfo = *(_ConcaveCollisionInfo2D *)(p_userdata);
 	cinfo.aabb_tests++;
 	if (!cinfo.result_callback && cinfo.collided)
-		return; //already collided and no contacts requested, don't test anymore
+		return; // already collided and no contacts requested, don't test anymore
 
 	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, cinfo.motion_A, p_convex, *cinfo.transform_B, cinfo.motion_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result, cinfo.sep_axis, cinfo.margin_A, cinfo.margin_B);
 	if (!collided)
@@ -170,7 +170,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A, const Transf
 	Transform2D rel_transform = p_transform_A;
 	rel_transform.elements[2] -= p_transform_B.get_origin();
 
-	//quickly compute a local Rect2
+	// quickly compute a local Rect2
 
 	Rect2 local_aabb;
 	for (int i = 0; i < 2; i++) {
@@ -226,7 +226,7 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 
 		if (type_B == PhysicsServer2D::SHAPE_RAY) {
 
-			return false; //no ray-ray
+			return false; // no ray-ray
 		}
 
 		if (swap) {

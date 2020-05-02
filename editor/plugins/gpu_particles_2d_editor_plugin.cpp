@@ -300,7 +300,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	if (capture_colors) {
 
 		Vector<uint8_t> colordata;
-		colordata.resize(w * h * 4); //use RG texture
+		colordata.resize(w * h * 4); // use RG texture
 
 		{
 			uint8_t *tw = colordata.ptrw();
@@ -322,7 +322,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		pm->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 
 		Vector<uint8_t> normdata;
-		normdata.resize(w * h * 2 * sizeof(float)); //use RG texture
+		normdata.resize(w * h * 2 * sizeof(float)); // use RG texture
 
 		{
 			uint8_t *tw = normdata.ptrw();

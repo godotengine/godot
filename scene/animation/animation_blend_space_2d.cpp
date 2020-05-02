@@ -432,7 +432,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 	Vector2 blend_pos = get_parameter(blend_position);
 	int closest = get_parameter(this->closest);
 	float length_internal = get_parameter(this->length_internal);
-	float mind = 0; //time of min distance point
+	float mind = 0; // time of min distance point
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
 
@@ -483,7 +483,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			}
 		}
 
-		ERR_FAIL_COND_V(blend_triangle == -1, 0); //should never reach here
+		ERR_FAIL_COND_V(blend_triangle == -1, 0); // should never reach here
 
 		int triangle_points[3];
 		for (int j = 0; j < 3; j++) {
@@ -497,7 +497,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			bool found = false;
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
-					//blend with the given weight
+					// blend with the given weight
 					float t = blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, blend_weights[j], FILTER_IGNORE, false);
 					if (first || t < mind) {
 						mind = t;
@@ -509,7 +509,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			}
 
 			if (!found) {
-				//ignore
+				// ignore
 				blend_node(blend_points[i].name, blend_points[i].node, p_time, p_seek, 0, FILTER_IGNORE, false);
 			}
 		}
@@ -532,7 +532,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 
 			float from = 0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {
-				//see how much animation remains
+				// see how much animation remains
 				from = blend_node(blend_points[closest].name, blend_points[closest].node, p_time, true, 0.0, FILTER_IGNORE, false) - length_internal;
 			}
 

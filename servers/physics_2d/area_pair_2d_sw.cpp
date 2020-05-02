@@ -61,7 +61,7 @@ bool AreaPair2DSW::setup(real_t p_step) {
 		colliding = result;
 	}
 
-	return false; //never do any post solving
+	return false; // never do any post solving
 }
 
 void AreaPair2DSW::solve(real_t p_step) {
@@ -76,7 +76,7 @@ AreaPair2DSW::AreaPair2DSW(Body2DSW *p_body, int p_body_shape, Area2DSW *p_area,
 	colliding = false;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
-	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) //need to be active to process pair
+	if (p_body->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) // need to be active to process pair
 		p_body->set_active(true);
 }
 
@@ -126,7 +126,7 @@ bool Area2Pair2DSW::setup(real_t p_step) {
 		colliding = result;
 	}
 
-	return false; //never do any post solving
+	return false; // never do any post solving
 }
 
 void Area2Pair2DSW::solve(real_t p_step) {

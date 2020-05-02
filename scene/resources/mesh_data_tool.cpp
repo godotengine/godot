@@ -127,7 +127,7 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 
 		indices = arrays[Mesh::ARRAY_INDEX];
 	} else {
-		//make code simpler
+		// make code simpler
 		indices.resize(vcount);
 		int *iw = indices.ptrw();
 		for (int i = 0; i < vcount; i++)

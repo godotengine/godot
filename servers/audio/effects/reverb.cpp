@@ -35,7 +35,7 @@
 #include <math.h>
 
 const float Reverb::comb_tunings[MAX_COMBS] = {
-	//freeverb comb tunings
+	// freeverb comb tunings
 	0.025306122448979593f,
 	0.026938775510204082f,
 	0.028956916099773241f,
@@ -47,7 +47,7 @@ const float Reverb::comb_tunings[MAX_COMBS] = {
 };
 
 const float Reverb::allpass_tunings[MAX_ALLPASS] = {
-	//freeverb allpass tunings
+	// freeverb allpass tunings
 	0.0051020408163265302f,
 	0.007732426303854875f,
 	0.01f,
@@ -80,7 +80,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 
 		input_buffer[i] = in;
 
-		p_dst[i] = 0; //take the chance and clear this
+		p_dst[i] = 0; // take the chance and clear this
 
 		echo_buffer_pos++;
 	}
@@ -107,11 +107,11 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 		int size_limit = c.size - lrintf((float)c.extra_spread_frames * (1.0 - params.extra_spread));
 		for (int j = 0; j < p_frames; j++) {
 
-			if (c.pos >= size_limit) //reset this now just in case
+			if (c.pos >= size_limit) // reset this now just in case
 				c.pos = 0;
 
 			float out = undenormalise(c.buffer[c.pos] * c.feedback);
-			out = out * (1.0 - c.damp) + c.damp_h * c.damp; //lowpass
+			out = out * (1.0 - c.damp) + c.damp_h * c.damp; // lowpass
 			c.damp_h = out;
 			c.buffer[c.pos] = input_buffer[j] + out;
 			p_dst[j] += out;
@@ -236,7 +236,7 @@ void Reverb::set_extra_spread_base(float p_sec) {
 
 void Reverb::configure_buffers() {
 
-	clear_buffers(); //clear if necessary
+	clear_buffers(); // clear if necessary
 
 	for (int i = 0; i < MAX_COMBS; i++) {
 
@@ -246,7 +246,7 @@ void Reverb::configure_buffers() {
 
 		int len = lrint(comb_tunings[i] * params.mix_rate) + c.extra_spread_frames;
 		if (len < 5)
-			len = 5; //may this happen?
+			len = 5; // may this happen?
 
 		c.buffer = memnew_arr(float, len);
 		c.pos = 0;
@@ -263,7 +263,7 @@ void Reverb::configure_buffers() {
 
 		int len = lrint(allpass_tunings[i] * params.mix_rate) + a.extra_spread_frames;
 		if (len < 5)
-			len = 5; //may this happen?
+			len = 5; // may this happen?
 
 		a.buffer = memnew_arr(float, len);
 		a.pos = 0;
@@ -284,7 +284,7 @@ void Reverb::configure_buffers() {
 
 void Reverb::update_parameters() {
 
-	//more freeverb derived constants
+	// more freeverb derived constants
 	static const float room_scale = 0.28f;
 	static const float room_offset = 0.7f;
 
@@ -297,7 +297,7 @@ void Reverb::update_parameters() {
 		else if (c.feedback > (room_offset + room_scale))
 			c.feedback = (room_offset + room_scale);
 
-		float auxdmp = params.damp / 2.0 + 0.5; //only half the range (0.5 .. 1.0  is enough)
+		float auxdmp = params.damp / 2.0 + 0.5; // only half the range (0.5 .. 1.0  is enough)
 		auxdmp *= auxdmp;
 
 		c.damp = expf(-2.0 * Math_PI * auxdmp * 10000 / params.mix_rate); // 0 .. 10khz

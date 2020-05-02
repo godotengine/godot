@@ -100,7 +100,7 @@ bool Callable::operator==(const Callable &p_callable) const {
 	if (custom_a == custom_b) {
 		if (custom_a) {
 			if (custom == p_callable.custom) {
-				return true; //same pointer, dont even compare
+				return true; // same pointer, dont even compare
 			}
 
 			CallableCustom::CompareEqualFunc eq_a = custom->get_compare_equal_func();
@@ -127,7 +127,7 @@ bool Callable::operator<(const Callable &p_callable) const {
 	if (custom_a == custom_b) {
 		if (custom_a) {
 			if (custom == p_callable.custom) {
-				return false; //same pointer, dont even compare
+				return false; // same pointer, dont even compare
 			}
 
 			CallableCustom::CompareLessFunc less_a = custom->get_compare_less_func();
@@ -135,7 +135,7 @@ bool Callable::operator<(const Callable &p_callable) const {
 			if (less_a == less_b) {
 				return less_a(custom, p_callable.custom);
 			} else {
-				return less_a < less_b; //it's something..
+				return less_a < less_b; // it's something..
 			}
 
 		} else {
@@ -230,7 +230,7 @@ Callable::Callable(CallableCustom *p_custom) {
 		ERR_FAIL_MSG("Callable custom is already referenced");
 	}
 	p_custom->referenced = true;
-	object = 0; //ensure object is all zero, since pointer may be 32 bits
+	object = 0; // ensure object is all zero, since pointer may be 32 bits
 	custom = p_custom;
 }
 Callable::Callable(const Callable &p_callable) {

@@ -253,7 +253,7 @@ Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_han
 	String path = p_path;
 
 	if (!FileAccess::exists(path)) {
-		//this code exists so gdnative can load .dll files from within the executable path
+		// this code exists so gdnative can load .dll files from within the executable path
 		path = get_executable_path().get_base_dir().plus_file(p_path.get_file());
 	}
 
@@ -486,7 +486,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	Vector<CharType> modstr; //windows wants to change this no idea why
+	Vector<CharType> modstr; // windows wants to change this no idea why
 	modstr.resize(cmdline.size());
 	for (int i = 0; i < cmdline.size(); i++)
 		modstr.write[i] = cmdline[i];

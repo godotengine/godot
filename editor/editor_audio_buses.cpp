@@ -203,7 +203,7 @@ void EditorAudioBus::update_send() {
 	} else {
 		send->set_disabled(false);
 		StringName current_send = AudioServer::get_singleton()->get_bus_send(get_index());
-		int current_send_index = 0; //by default to master
+		int current_send_index = 0; // by default to master
 
 		for (int i = 0; i < get_index(); i++) {
 			StringName send_name = AudioServer::get_singleton()->get_bus_name(i);
@@ -505,7 +505,7 @@ void EditorAudioBus::_effect_edited() {
 
 		effect_options->set_position(effects->get_global_position() + area.position + Vector2(0, area.size.y));
 		effect_options->popup();
-		//add effect
+		// add effect
 	} else {
 		int index = effect->get_metadata(0);
 		updating_bus = true;
@@ -571,7 +571,7 @@ void EditorAudioBus::_bus_popup_pressed(int p_option) {
 	} else if (p_option == 1) {
 		emit_signal("delete_request");
 	} else if (p_option == 0) {
-		//duplicate
+		// duplicate
 		emit_signal("duplicate_request", get_index());
 	}
 }

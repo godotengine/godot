@@ -41,7 +41,7 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 
 		Constraint2DSW *c = (Constraint2DSW *)E->key();
 		if (c->get_island_step() == _step)
-			continue; //already processed
+			continue; // already processed
 		c->set_island_step(_step);
 		c->set_island_next(*p_constraint_island);
 		*p_constraint_island = c;
@@ -51,7 +51,7 @@ void Step2DSW::_populate_island(Body2DSW *p_body, Body2DSW **p_island, Constrain
 				continue;
 			Body2DSW *b = c->get_body_ptr()[i];
 			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC)
-				continue; //no go
+				continue; // no go
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
 		}
 	}
@@ -66,7 +66,7 @@ bool Step2DSW::_setup_island(Constraint2DSW *p_island, real_t p_delta) {
 		bool process = ci->setup(p_delta);
 
 		if (!process) {
-			//remove from island if process fails
+			// remove from island if process fails
 			if (prev_ci) {
 				prev_ci->set_island_next(ci->get_island_next());
 			} else {
@@ -103,7 +103,7 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 
 		if (b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
-			continue; //ignore for static
+			continue; // ignore for static
 		}
 
 		if (!b->sleep_test(p_delta))
@@ -112,14 +112,14 @@ void Step2DSW::_check_suspend(Body2DSW *p_island, real_t p_delta) {
 		b = b->get_island_next();
 	}
 
-	//put all to sleep or wake up everyoen
+	// put all to sleep or wake up everyoen
 
 	b = p_island;
 	while (b) {
 
 		if (b->get_mode() == PhysicsServer2D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
-			continue; //ignore for static
+			continue; // ignore for static
 		}
 
 		bool active = b->is_active();
@@ -135,7 +135,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	p_space->lock(); // can't access space during this
 
-	p_space->setup(); //update inertias, etc
+	p_space->setup(); // update inertias, etc
 
 	const SelfList<Body2DSW>::List *body_list = &p_space->get_active_body_list();
 
@@ -156,7 +156,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 	p_space->set_active_objects(active_count);
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_INTEGRATE_FORCES, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -206,10 +206,10 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 			c->set_island_list_next(constraint_island_list);
 			constraint_island_list = c;
 		}
-		p_space->area_remove_from_moved_list((SelfList<Area2DSW> *)aml.first()); //faster to remove here
+		p_space->area_remove_from_moved_list((SelfList<Area2DSW> *)aml.first()); // faster to remove here
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_GENERATE_ISLANDS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -224,12 +224,12 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 
 			if (_setup_island(ci, p_delta)) {
 
-				//removed the root from the island graph because it is not to be processed
+				// removed the root from the island graph because it is not to be processed
 
 				Constraint2DSW *next = ci->get_island_next();
 
 				if (next) {
-					//root from list being deleted no longer exists, replace by next
+					// root from list being deleted no longer exists, replace by next
 					next->set_island_list_next(ci->get_island_list_next());
 					if (prev_ci) {
 						prev_ci->set_island_list_next(next);
@@ -239,7 +239,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 					prev_ci = next;
 				} else {
 
-					//list is empty, just skip
+					// list is empty, just skip
 					if (prev_ci) {
 						prev_ci->set_island_list_next(ci->get_island_list_next());
 
@@ -255,7 +255,7 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 		}
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_SETUP_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -266,13 +266,13 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 	{
 		Constraint2DSW *ci = constraint_island_list;
 		while (ci) {
-			//iterating each island separatedly improves cache efficiency
+			// iterating each island separatedly improves cache efficiency
 			_solve_island(ci, p_iterations, p_delta);
 			ci = ci->get_island_list_next();
 		}
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_SOLVE_CONSTRAINTS, profile_endtime - profile_begtime);
 		profile_begtime = profile_endtime;
@@ -299,10 +299,10 @@ void Step2DSW::step(Space2DSW *p_space, real_t p_delta, int p_iterations) {
 		}
 	}
 
-	{ //profile
+	{ // profile
 		profile_endtime = OS::get_singleton()->get_ticks_usec();
 		p_space->set_elapsed_time(Space2DSW::ELAPSED_TIME_INTEGRATE_VELOCITIES, profile_endtime - profile_begtime);
-		//profile_begtime=profile_endtime;
+		// profile_begtime=profile_endtime;
 	}
 
 	p_space->update();

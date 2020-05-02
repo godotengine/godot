@@ -243,8 +243,8 @@ void Path3DGizmo::redraw() {
 
 		v3p.push_back(r[i]);
 		v3p.push_back(r[i + 1]);
-		//v3p.push_back(r[i]);
-		//v3p.push_back(r[i]+Vector3(0,0.2,0));
+		// v3p.push_back(r[i]);
+		// v3p.push_back(r[i]+Vector3(0,0.2,0));
 	}
 
 	if (v3p.size() > 1) {
@@ -302,7 +302,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 	Transform gt = path->get_global_transform();
 	Transform it = gt.affine_inverse();
 
-	static const int click_dist = 10; //should make global
+	static const int click_dist = 10; // should make global
 
 	Ref<InputEventMouseButton> mb = p_event;
 
@@ -314,7 +314,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 			set_handle_clicked(false);
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && (curve_create->is_pressed() || (curve_edit->is_pressed() && mb->get_control()))) {
-			//click into curve, break it down
+			// click into curve, break it down
 			Vector<Vector3> v3a = c->tessellate();
 			int idx = 0;
 			int rc = v3a.size();
@@ -326,13 +326,13 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 				const Vector3 *r = v3a.ptr();
 
 				if (p_camera->unproject_position(gt.xform(c->get_point_position(0))).distance_to(mbpos) < click_dist)
-					return false; //nope, existing
+					return false; // nope, existing
 
 				for (int i = 0; i < c->get_point_count() - 1; i++) {
-					//find the offset and point index of the place to break up
+					// find the offset and point index of the place to break up
 					int j = idx;
 					if (p_camera->unproject_position(gt.xform(c->get_point_position(i + 1))).distance_to(mbpos) < click_dist)
-						return false; //nope, existing
+						return false; // nope, existing
 
 					while (j < rc && c->get_point_position(i + 1) != r[j]) {
 
@@ -364,9 +364,9 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 						j++;
 					}
 					if (idx == j)
-						idx++; //force next
+						idx++; // force next
 					else
-						idx = j; //swap
+						idx = j; // swap
 
 					if (j == rc)
 						break;
@@ -375,7 +375,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 
 			UndoRedo *ur = editor->get_undo_redo();
 			if (closest_seg != -1) {
-				//subdivide
+				// subdivide
 
 				ur->create_action(TTR("Split Path"));
 				ur->add_do_method(c.ptr(), "add_point", closest_seg_point, Vector3(), Vector3(), closest_seg + 1);
@@ -404,7 +404,7 @@ bool Path3DEditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref
 					return true;
 				}
 
-				//add new at pos
+				// add new at pos
 			}
 
 		} else if (mb->is_pressed() && ((mb->get_button_index() == BUTTON_LEFT && curve_del->is_pressed()) || (mb->get_button_index() == BUTTON_RIGHT && curve_edit->is_pressed()))) {
@@ -465,7 +465,7 @@ void Path3DEditorPlugin::edit(Object *p_object) {
 			pre->get_curve()->emit_signal("changed");
 		}
 	}
-	//collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
+	// collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool Path3DEditorPlugin::handles(Object *p_object) const {

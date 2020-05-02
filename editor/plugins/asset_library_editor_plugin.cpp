@@ -967,7 +967,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	if (p_page_count < 2)
 		return hbc;
 
-	//do the mario
+	// do the mario
 	int from = p_page - 5;
 	if (from < 0)
 		from = 0;

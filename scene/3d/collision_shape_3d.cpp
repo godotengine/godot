@@ -138,7 +138,7 @@ String CollisionShape3D::get_configuration_warning() const {
 
 void CollisionShape3D::_bind_methods() {
 
-	//not sure if this should do anything
+	// not sure if this should do anything
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &CollisionShape3D::resource_changed);
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape3D::set_shape);
 	ClassDB::bind_method(D_METHOD("get_shape"), &CollisionShape3D::get_shape);
@@ -198,7 +198,7 @@ bool CollisionShape3D::is_disabled() const {
 
 CollisionShape3D::CollisionShape3D() {
 
-	//indicator = RenderingServer::get_singleton()->mesh_create();
+	// indicator = RenderingServer::get_singleton()->mesh_create();
 	disabled = false;
 	debug_shape = nullptr;
 	parent = nullptr;

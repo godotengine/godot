@@ -53,13 +53,13 @@ void Body3DSW::_update_transform_dependant() {
 
 void Body3DSW::update_inertias() {
 
-	//update shapes and motions
+	// update shapes and motions
 
 	switch (mode) {
 
 		case PhysicsServer3D::BODY_MODE_RIGID: {
 
-			//update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
+			// update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
@@ -149,11 +149,11 @@ void Body3DSW::set_active(bool p_active) {
 			get_space()->body_remove_from_active_list(&active_list);
 	} else {
 		if (mode == PhysicsServer3D::BODY_MODE_STATIC)
-			return; //static bodies can't become active
+			return; // static bodies can't become active
 		if (get_space())
 			get_space()->body_add_to_active_list(&active_list);
 
-		//still_time=0;
+		// still_time=0;
 	}
 	/*
 	if (!space)
@@ -247,7 +247,7 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass = 0;
 			_set_static(p_mode == PhysicsServer3D::BODY_MODE_STATIC);
-			//set_active(p_mode==PhysicsServer3D::BODY_MODE_KINEMATIC);
+			// set_active(p_mode==PhysicsServer3D::BODY_MODE_KINEMATIC);
 			set_active(p_mode == PhysicsServer3D::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector3();
 			angular_velocity = Vector3();
@@ -295,7 +295,7 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 
 			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
-				//wakeup_neighbours();
+				// wakeup_neighbours();
 				set_active(true);
 				if (first_time_kinematic) {
 					_set_transform(p_variant);
@@ -310,7 +310,7 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 			} else {
 				Transform t = p_variant;
 				t.orthonormalize();
-				new_transform = get_transform(); //used as old to compute motion
+				new_transform = get_transform(); // used as old to compute motion
 				if (new_transform == t)
 					break;
 				_set_transform(t);
@@ -344,9 +344,9 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 			bool do_sleep = p_variant;
 			if (do_sleep) {
 				linear_velocity = Vector3();
-				//biased_linear_velocity=Vector3();
+				// biased_linear_velocity=Vector3();
 				angular_velocity = Vector3();
-				//biased_angular_velocity=Vector3();
+				// biased_angular_velocity=Vector3();
 				set_active(false);
 			} else {
 				set_active(true);
@@ -510,10 +510,10 @@ void Body3DSW::integrate_forces(real_t p_step) {
 
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 
-		//compute motion, angular and etc. velocities from prev transform
+		// compute motion, angular and etc. velocities from prev transform
 		linear_velocity = (new_transform.origin - get_transform().origin) / p_step;
 
-		//compute a FAKE angular velocity, not so easy
+		// compute a FAKE angular velocity, not so easy
 		Basis rot = new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
 		Vector3 axis;
 		real_t angle;
@@ -527,7 +527,7 @@ void Body3DSW::integrate_forces(real_t p_step) {
 
 	} else {
 		if (!omit_force_integration && !first_integration) {
-			//overridden by direct state query
+			// overridden by direct state query
 
 			Vector3 force = gravity * mass;
 			force += applied_force;
@@ -560,12 +560,12 @@ void Body3DSW::integrate_forces(real_t p_step) {
 	applied_torque = Vector3();
 	first_integration = false;
 
-	//motion=linear_velocity*p_step;
+	// motion=linear_velocity*p_step;
 
 	biased_angular_velocity = Vector3();
 	biased_linear_velocity = Vector3();
 
-	if (do_motion) { //shapes temporarily extend for raycast
+	if (do_motion) { // shapes temporarily extend for raycast
 		_update_shapes_with_motion(motion);
 	}
 
@@ -581,7 +581,7 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 	if (fi_callback)
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
 
-	//apply axis lock linear
+	// apply axis lock linear
 	for (int i = 0; i < 3; i++) {
 		if (is_axis_locked((PhysicsServer3D::BodyAxis)(1 << i))) {
 			linear_velocity[i] = 0;
@@ -589,7 +589,7 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 			new_transform.origin[i] = get_transform().origin[i];
 		}
 	}
-	//apply axis lock angular
+	// apply axis lock angular
 	for (int i = 0; i < 3; i++) {
 		if (is_axis_locked((PhysicsServer3D::BodyAxis)(1 << (i + 3)))) {
 			angular_velocity[i] = 0;
@@ -602,7 +602,7 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 		_set_transform(new_transform, false);
 		_set_inv_transform(new_transform.affine_inverse());
 		if (contacts.size() == 0 && linear_velocity == Vector3() && angular_velocity == Vector3())
-			set_active(false); //stopped moving, deactivate
+			set_active(false); // stopped moving, deactivate
 
 		return;
 	}
@@ -652,11 +652,11 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 		return;
 	}
 
-	//compute a FAKE linear velocity - this is easy
+	// compute a FAKE linear velocity - this is easy
 
 	linear_velocity=(p_xform.origin - get_transform().origin)/p_step;
 
-	//compute a FAKE angular velocity, not so easy
+	// compute a FAKE angular velocity, not so easy
 	Basis rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
 	Vector3 axis;
 	real_t angle;
@@ -736,7 +736,7 @@ bool Body3DSW::sleep_test(real_t p_step) {
 		return still_time > get_space()->get_body_time_to_sleep();
 	} else {
 
-		still_time = 0; //maybe this should be set to 0 on set_active?
+		still_time = 0; // maybe this should be set to 0 on set_active?
 		return false;
 	}
 }
@@ -779,7 +779,7 @@ Body3DSW::Body3DSW() :
 	bounce = 0;
 	friction = 1;
 	omit_force_integration = false;
-	//applied_torque=0;
+	// applied_torque=0;
 	island_step = 0;
 	island_next = nullptr;
 	island_list_next = nullptr;

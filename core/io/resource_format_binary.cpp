@@ -42,7 +42,7 @@
 
 enum {
 
-	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
+	// numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
 	VARIANT_NIL = 1,
 	VARIANT_BOOL = 2,
 	VARIANT_INT = 3,
@@ -85,8 +85,8 @@ enum {
 	OBJECT_EXTERNAL_RESOURCE = 1,
 	OBJECT_INTERNAL_RESOURCE = 2,
 	OBJECT_EXTERNAL_RESOURCE_INDEX = 3,
-	//version 2: added 64 bits support for float and int
-	//version 3: changed nodepath encoding
+	// version 2: added 64 bits support for float and int
+	// version 3: changed nodepath encoding
 	FORMAT_VERSION = 3,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
@@ -98,7 +98,7 @@ void ResourceLoaderBinary::_advance_padding(uint32_t p_len) {
 	uint32_t extra = 4 - (p_len % 4);
 	if (extra < 4) {
 		for (uint32_t i = 0; i < extra; i++)
-			f->get_8(); //pad to 32
+			f->get_8(); // pad to 32
 	}
 }
 
@@ -332,7 +332,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			switch (objtype) {
 
 				case OBJECT_EMPTY: {
-					//do none
+					// do none
 
 				} break;
 				case OBJECT_INTERNAL_RESOURCE: {
@@ -350,7 +350,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 				} break;
 				case OBJECT_EXTERNAL_RESOURCE: {
-					//old file format, still around for compatibility
+					// old file format, still around for compatibility
 
 					String exttype = get_unicode_string();
 					String path = get_unicode_string();
@@ -373,7 +373,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 
 				} break;
 				case OBJECT_EXTERNAL_RESOURCE_INDEX: {
-					//new file format, just refers to an index in the external list
+					// new file format, just refers to an index in the external list
 					int erindex = f->get_32();
 
 					if (erindex < 0 || erindex >= external_resources.size()) {
@@ -382,7 +382,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 					} else {
 
 						if (external_resources[erindex].cache.is_null()) {
-							//cache not here yet, wait for it?
+							// cache not here yet, wait for it?
 							if (use_sub_threads) {
 								Error err;
 								external_resources.write[erindex].cache = ResourceLoader::load_threaded_get(external_resources[erindex].path, &err);
@@ -423,7 +423,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		case VARIANT_DICTIONARY: {
 
 			uint32_t len = f->get_32();
-			Dictionary d; //last bit means shared
+			Dictionary d; // last bit means shared
 			len &= 0x7FFFFFFF;
 			for (uint32_t i = 0; i < len; i++) {
 				Variant key;
@@ -439,7 +439,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		case VARIANT_ARRAY: {
 
 			uint32_t len = f->get_32();
-			Array a; //last bit means shared
+			Array a; // last bit means shared
 			len &= 0x7FFFFFFF;
 			a.resize(len);
 			for (uint32_t i = 0; i < len; i++) {
@@ -645,7 +645,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 		} break;
 	}
 
-	return OK; //never reach anyway
+	return OK; // never reach anyway
 }
 
 void ResourceLoaderBinary::set_local_path(const String &p_local_path) {
@@ -677,7 +677,7 @@ Error ResourceLoaderBinary::load() {
 			path = ProjectSettings::get_singleton()->localize_path(path.get_base_dir().plus_file(external_resources[i].path));
 		}
 
-		external_resources.write[i].path = path; //remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
+		external_resources.write[i].path = path; // remap happens here, not on load because on load it can actually be used for filesystem dock resource remap
 
 		if (!use_sub_threads) {
 			external_resources.write[i].cache = ResourceLoader::load(path, external_resources[i].type);
@@ -714,7 +714,7 @@ Error ResourceLoaderBinary::load() {
 
 		bool main = i == (internal_resources.size() - 1);
 
-		//maybe it is loaded already
+		// maybe it is loaded already
 		String path;
 		int subindex = 0;
 
@@ -729,7 +729,7 @@ Error ResourceLoaderBinary::load() {
 				}
 
 				if (ResourceCache::has(path)) {
-					//already loaded, don't do anything
+					// already loaded, don't do anything
 					stage++;
 					error = OK;
 					continue;
@@ -757,7 +757,7 @@ Error ResourceLoaderBinary::load() {
 		if (!r) {
 			String obj_class = obj->get_class();
 			error = ERR_FILE_CORRUPT;
-			memdelete(obj); //bye
+			memdelete(obj); // bye
 			ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
 		}
 
@@ -774,7 +774,7 @@ Error ResourceLoaderBinary::load() {
 
 		int pc = f->get_32();
 
-		//set properties
+		// set properties
 
 		for (int j = 0; j < pc; j++) {
 
@@ -900,7 +900,7 @@ void ResourceLoaderBinary::open(FileAccess *p_f) {
 	bool big_endian = f->get_32();
 	bool use_real64 = f->get_32();
 
-	f->set_endian_swap(big_endian != 0); //read big endian if saved as big endian
+	f->set_endian_swap(big_endian != 0); // read big endian if saved as big endian
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -929,7 +929,7 @@ void ResourceLoaderBinary::open(FileAccess *p_f) {
 
 	importmd_ofs = f->get_64();
 	for (int i = 0; i < 14; i++)
-		f->get_32(); //skip a few reserved fields
+		f->get_32(); // skip a few reserved fields
 
 	uint32_t string_table_size = f->get_32();
 	string_map.resize(string_table_size);
@@ -1001,7 +1001,7 @@ String ResourceLoaderBinary::recognize(FileAccess *p_f) {
 	bool big_endian = f->get_32();
 	f->get_32(); // use_real64
 
-	f->set_endian_swap(big_endian != 0); //read big endian if saved as big endian
+	f->set_endian_swap(big_endian != 0); // read big endian if saved as big endian
 
 	uint32_t ver_major = f->get_32();
 	f->get_32(); // ver_minor
@@ -1053,7 +1053,7 @@ RES ResourceFormatLoaderBinary::load(const String &p_path, const String &p_origi
 	String path = p_original_path != "" ? p_original_path : p_path;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	// loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	loader.open(f);
 
 	err = loader.load();
@@ -1099,7 +1099,7 @@ void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_exten
 
 bool ResourceFormatLoaderBinary::handles_type(const String &p_type) const {
 
-	return true; //handles all
+	return true; // handles all
 }
 
 void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -1110,7 +1110,7 @@ void ResourceFormatLoaderBinary::get_dependencies(const String &p_path, List<Str
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	// loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	loader.get_dependencies(f, p_dependencies, p_add_types);
 }
 
@@ -1167,14 +1167,14 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	bool big_endian = f->get_32();
 	bool use_real64 = f->get_32();
 
-	f->set_endian_swap(big_endian != 0); //read big endian if saved as big endian
+	f->set_endian_swap(big_endian != 0); // read big endian if saved as big endian
 #ifdef BIG_ENDIAN_ENABLED
 	fw->store_32(!big_endian);
 #else
 	fw->store_32(big_endian);
 #endif
 	fw->set_endian_swap(big_endian != 0);
-	fw->store_32(use_real64); //use real64
+	fw->store_32(use_real64); // use real64
 
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
@@ -1187,7 +1187,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		da->remove(p_path + ".depren");
 		memdelete(da);
-		//use the old approach
+		// use the old approach
 
 		WARN_PRINT("This file is old, so it can't refactor dependencies, opening and resaving '" + p_path + "'.");
 
@@ -1200,7 +1200,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 		loader.res_path = loader.local_path;
 		loader.remaps = p_map;
-		//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+		// loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 		loader.open(f);
 
 		err = loader.load();
@@ -1225,18 +1225,18 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 	fw->store_32(ver_minor);
 	fw->store_32(ver_format);
 
-	save_ustring(fw, get_ustring(f)); //type
+	save_ustring(fw, get_ustring(f)); // type
 
 	size_t md_ofs = f->get_position();
 	size_t importmd_ofs = f->get_64();
-	fw->store_64(0); //metadata offset
+	fw->store_64(0); // metadata offset
 
 	for (int i = 0; i < 14; i++) {
 		fw->store_32(0);
 		f->get_32();
 	}
 
-	//string table
+	// string table
 	uint32_t string_table_size = f->get_32();
 
 	fw->store_32(string_table_size);
@@ -1247,7 +1247,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		save_ustring(fw, s);
 	}
 
-	//external resources
+	// external resources
 	uint32_t ext_resources_size = f->get_32();
 	fw->store_32(ext_resources_size);
 	for (uint32_t i = 0; i < ext_resources_size; i++) {
@@ -1267,7 +1267,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		}
 
 		if (relative) {
-			//restore relative
+			// restore relative
 			path = local_path.path_to_file(path);
 		}
 
@@ -1277,7 +1277,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	int64_t size_diff = (int64_t)fw->get_position() - (int64_t)f->get_position();
 
-	//internal resources
+	// internal resources
 	uint32_t int_resources_size = f->get_32();
 	fw->store_32(int_resources_size);
 
@@ -1289,7 +1289,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		fw->store_64(offset + size_diff);
 	}
 
-	//rest of file
+	// rest of file
 	uint8_t b = f->get_8();
 	while (!f->eof_reached()) {
 		fw->store_8(b);
@@ -1319,13 +1319,13 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f) {
-		return ""; //could not rwead
+		return ""; // could not rwead
 	}
 
 	ResourceLoaderBinary loader;
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
-	//loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	// loader.set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
 }
@@ -1339,7 +1339,7 @@ void ResourceFormatSaverBinaryInstance::_pad_buffer(FileAccess *f, int p_bytes) 
 	int extra = 4 - (p_bytes % 4);
 	if (extra < 4) {
 		for (int i = 0; i < extra; i++)
-			f->store_8(0); //pad to 32
+			f->store_8(0); // pad to 32
 	}
 }
 
@@ -1598,7 +1598,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
 				f->store_32(res->get_subindex());
-				//internal resource
+				// internal resource
 			}
 
 		} break;
@@ -1841,7 +1841,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			}
 		} break;
 		case Variant::NODE_PATH: {
-			//take the chance and save node path strings
+			// take the chance and save node path strings
 			NodePath np = p_variant;
 			for (int i = 0; i < np.get_name_count(); i++)
 				get_string_index(np.get_name(i));
@@ -1908,7 +1908,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	_find_resources(p_resource, true);
 
 	if (!(p_flags & ResourceSaver::FLAG_COMPRESS)) {
-		//save header compressed
+		// save header compressed
 		static const uint8_t header[4] = { 'R', 'S', 'R', 'C' };
 		f->store_buffer(header, 4);
 	}
@@ -1931,7 +1931,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 	}
 
 	save_unicode_string(f, p_resource->get_class());
-	f->store_64(0); //offset to import metadata
+	f->store_64(0); // offset to import metadata
 	for (int i = 0; i < 14; i++)
 		f->store_32(0); // reserved
 
@@ -1980,13 +1980,13 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		}
 	}
 
-	f->store_32(strings.size()); //string table size
+	f->store_32(strings.size()); // string table size
 	for (int i = 0; i < strings.size(); i++) {
 		save_unicode_string(f, strings[i]);
 	}
 
 	// save external resource table
-	f->store_32(external_resources.size()); //amount of external resources
+	f->store_32(external_resources.size()); // amount of external resources
 	Vector<RES> save_order;
 	save_order.resize(external_resources.size());
 
@@ -2002,7 +2002,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		save_unicode_string(f, path);
 	}
 	// save internal resource table
-	f->store_32(saved_resources.size()); //amount of internal resources
+	f->store_32(saved_resources.size()); // amount of internal resources
 	Vector<uint64_t> ofs_pos;
 	Set<int> used_indices;
 
@@ -2013,7 +2013,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 			if (r->get_subindex() != 0) {
 				if (used_indices.has(r->get_subindex())) {
-					r->set_subindex(0); //repeated
+					r->set_subindex(0); // repeated
 				} else {
 					used_indices.insert(r->get_subindex());
 				}
@@ -2043,15 +2043,15 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 			r->set_edited(false);
 #endif
 		} else {
-			save_unicode_string(f, r->get_path()); //actual external
+			save_unicode_string(f, r->get_path()); // actual external
 		}
 		ofs_pos.push_back(f->get_position());
-		f->store_64(0); //offset in 64 bits
+		f->store_64(0); // offset in 64 bits
 	}
 
 	Vector<uint64_t> ofs_table;
 
-	//now actually save the resources
+	// now actually save the resources
 	for (List<ResourceData>::Element *E = resources.front(); E; E = E->next()) {
 
 		ResourceData &rd = E->get();
@@ -2075,7 +2075,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	f->seek_end();
 
-	f->store_buffer((const uint8_t *)"RSRC", 4); //magic at end
+	f->store_buffer((const uint8_t *)"RSRC", 4); // magic at end
 
 	if (f->get_error() != OK && f->get_error() != ERR_FILE_EOF) {
 		f->close();
@@ -2098,7 +2098,7 @@ Error ResourceFormatSaverBinary::save(const String &p_path, const RES &p_resourc
 
 bool ResourceFormatSaverBinary::recognize(const RES &p_resource) const {
 
-	return true; //all recognized
+	return true; // all recognized
 }
 
 void ResourceFormatSaverBinary::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
