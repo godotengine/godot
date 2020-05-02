@@ -234,7 +234,9 @@ void EditorAssetInstaller::ok_pressed() {
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
+		
+		if (unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0) != UNZ_OK)
+			break;
 
 		String name = fname;
 
