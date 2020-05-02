@@ -1872,7 +1872,7 @@ bool _Directory::dir_exists(String p_dir) {
 int _Directory::get_space_left() {
 
 	ERR_FAIL_COND_V_MSG(!d, 0, "Directory must be opened before use.");
-	return d->get_space_left() / 1024 * 1024; //return value in megabytes, given binding is int
+	return d->get_space_left() / 1024 * 1024; // return value in megabytes, given binding is int
 }
 
 Error _Directory::copy(String p_from, String p_to) {
@@ -2491,7 +2491,7 @@ int _Engine::get_frames_drawn() {
 
 MainLoop *_Engine::get_main_loop() const {
 
-	//needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here
+	// needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here
 	return OS::get_singleton()->get_main_loop();
 }
 

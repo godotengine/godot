@@ -88,7 +88,7 @@ void RenderingServerWrapMT::sync() {
 		command_queue.push_and_sync(this, &RenderingServerWrapMT::thread_flush);
 	} else {
 
-		command_queue.flush_all(); //flush all pending from other threads
+		command_queue.flush_all(); // flush all pending from other threads
 	}
 }
 
@@ -174,7 +174,7 @@ RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool 
 		command_queue(p_create_thread) {
 
 	singleton_mt = this;
-	DisplayServer::switch_vsync_function = set_use_vsync_callback; //as this goes to another thread, make sure it goes properly
+	DisplayServer::switch_vsync_function = set_use_vsync_callback; // as this goes to another thread, make sure it goes properly
 
 	rendering_server = p_contained;
 	create_thread = p_create_thread;
@@ -193,5 +193,5 @@ RenderingServerWrapMT::RenderingServerWrapMT(RenderingServer *p_contained, bool 
 RenderingServerWrapMT::~RenderingServerWrapMT() {
 
 	memdelete(rendering_server);
-	//finish();
+	// finish();
 }

@@ -250,7 +250,7 @@ ResourceFormatPVR::ResourceFormatPVR() {
 	((p_tiled) ? WRAP_COORD((Val), (Size)) : CLAMP((Val), 0, (Size)-1))
 
 struct PVRTCBlock {
-	//blocks are 64 bits
+	// blocks are 64 bits
 	uint32_t data[2];
 };
 

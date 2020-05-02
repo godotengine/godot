@@ -210,7 +210,7 @@ void EditorSubScene::move(Node *p_new_parent, Node *p_new_owner) {
 		memdelete(scene);
 	}
 	scene = nullptr;
-	//return selnode;
+	// return selnode;
 }
 
 void EditorSubScene::clear() {
@@ -234,7 +234,7 @@ EditorSubScene::EditorSubScene() {
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
-	//set_child_rect(vb);
+	// set_child_rect(vb);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	path = memnew(LineEdit);
@@ -252,7 +252,7 @@ EditorSubScene::EditorSubScene() {
 	vb->add_margin_child(TTR("Import From Node:"), tree, true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->connect("multi_selected", callable_mp(this, &EditorSubScene::_item_multi_selected));
-	//tree->connect("nothing_selected", this, "_deselect_items");
+	// tree->connect("nothing_selected", this, "_deselect_items");
 	tree->connect("cell_selected", callable_mp(this, &EditorSubScene::_selected_changed));
 
 	tree->connect("item_activated", callable_mp(this, &EditorSubScene::_item_activated), make_binds(), CONNECT_DEFERRED);

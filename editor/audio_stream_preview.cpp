@@ -168,7 +168,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 		return previews[p_stream->get_instance_id()].preview;
 	}
 
-	//no preview exists
+	// no preview exists
 
 	previews[p_stream->get_instance_id()] = Preview();
 
@@ -180,7 +180,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 
 	float len_s = preview->base_stream->get_length();
 	if (len_s == 0) {
-		len_s = 60 * 5; //five minutes
+		len_s = 60 * 5; // five minutes
 	}
 
 	int frames = AudioServer::get_singleton()->get_mix_rate() * len_s;
@@ -223,7 +223,7 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 					Thread::wait_to_finish(E->get().thread);
 					E->get().thread = nullptr;
 				}
-				if (!ObjectDB::get_instance(E->key())) { //no longer in use, get rid of preview
+				if (!ObjectDB::get_instance(E->key())) { // no longer in use, get rid of preview
 					to_erase.push_back(E->key());
 				}
 			}

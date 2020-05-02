@@ -783,7 +783,7 @@ void CodeTextEditor::_line_col_changed() {
 	int positional_column = 0;
 	for (int i = 0; i < text_editor->cursor_get_column(); i++) {
 		if (line[i] == '\t') {
-			positional_column += text_editor->get_indent_size(); //tab size
+			positional_column += text_editor->get_indent_size(); // tab size
 		} else {
 			positional_column += 1;
 		}
@@ -966,8 +966,8 @@ void CodeTextEditor::insert_final_newline() {
 
 	String line = text_editor->get_line(final_line);
 
-	//length 0 means it's already an empty line,
-	//no need to add a newline
+	// length 0 means it's already an empty line,
+	// no need to add a newline
 	if (line.length() > 0 && !line.ends_with("\n")) {
 		text_editor->begin_complex_operation();
 

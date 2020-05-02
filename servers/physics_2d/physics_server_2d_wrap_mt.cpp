@@ -77,7 +77,7 @@ void PhysicsServer2DWrapMT::step(real_t p_step) {
 		command_queue.push(this, &PhysicsServer2DWrapMT::thread_step, p_step);
 	} else {
 
-		command_queue.flush_all(); //flush all pending from other threads
+		command_queue.flush_all(); // flush all pending from other threads
 		physics_2d_server->step(p_step);
 	}
 }
@@ -88,7 +88,7 @@ void PhysicsServer2DWrapMT::sync() {
 		if (first_frame)
 			first_frame = false;
 		else
-			step_sem.wait(); //must not wait if a step was not issued
+			step_sem.wait(); // must not wait if a step was not issued
 	}
 	physics_2d_server->sync();
 }
@@ -169,5 +169,5 @@ PhysicsServer2DWrapMT::PhysicsServer2DWrapMT(PhysicsServer2D *p_contained, bool 
 PhysicsServer2DWrapMT::~PhysicsServer2DWrapMT() {
 
 	memdelete(physics_2d_server);
-	//finish();
+	// finish();
 }

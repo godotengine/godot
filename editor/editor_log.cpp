@@ -61,7 +61,7 @@ void EditorLog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		//button->set_icon(get_icon("Console","EditorIcons"));
+		// button->set_icon(get_icon("Console","EditorIcons"));
 		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<DynamicFont> df_output_code = get_theme_font("output_source", "EditorFonts");

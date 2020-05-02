@@ -175,7 +175,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 	const int DefaultVersion = 100;
 	std::string pre_processed_code;
 
-	//preprocess
+	// preprocess
 	if (!shader.preprocess(&default_builtin_resource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
 
 		if (r_error) {
@@ -187,11 +187,11 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 
 		return ret;
 	}
-	//set back..
+	// set back..
 	cs_strings = pre_processed_code.c_str();
 	shader.setStrings(&cs_strings, 1);
 
-	//parse
+	// parse
 	if (!shader.parse(&default_builtin_resource, DefaultVersion, false, messages)) {
 		if (r_error) {
 			(*r_error) = "Failed parse:\n";
@@ -202,7 +202,7 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 		return ret;
 	}
 
-	//link
+	// link
 	glslang::TProgram program;
 	program.addShader(&shader);
 

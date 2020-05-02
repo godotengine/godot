@@ -54,9 +54,9 @@
 
 struct DirAccessWindowsPrivate {
 
-	HANDLE h; //handle for findfirstfile
+	HANDLE h; // handle for findfirstfile
 	WIN32_FIND_DATA f;
-	WIN32_FIND_DATAW fu; //unicode version
+	WIN32_FIND_DATAW fu; // unicode version
 };
 
 // CreateFolderAsync
@@ -151,7 +151,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 		current_dir = real_current_dir_name; // TODO, utf8 parser
 		current_dir = current_dir.replace("\\", "/");
 
-	} //else {
+	} // else {
 
 	SetCurrentDirectoryW(prev_dir.c_str());
 	//}
@@ -172,7 +172,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 	bool success;
 	int err;
 
-	p_dir = "\\\\?\\" + p_dir; //done according to
+	p_dir = "\\\\?\\" + p_dir; // done according to
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/aa363855(v=vs.85).aspx
 
 	success = CreateDirectoryW(p_dir.c_str(), nullptr);
@@ -225,7 +225,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 
 	p_file = fix_path(p_file);
 
-	//p_file.replace("/","\\");
+	// p_file.replace("/","\\");
 
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 
@@ -247,7 +247,7 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 	p_dir = fix_path(p_dir);
 
-	//p_dir.replace("/","\\");
+	// p_dir.replace("/","\\");
 
 	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 
@@ -352,7 +352,7 @@ size_t DirAccessWindows::get_space_left() {
 	if (!GetDiskFreeSpaceEx(nullptr, (PULARGE_INTEGER)&bytes, nullptr, nullptr))
 		return 0;
 
-	//this is either 0 or a value in bytes.
+	// this is either 0 or a value in bytes.
 	return (size_t)bytes;
 }
 
@@ -418,4 +418,4 @@ DirAccessWindows::~DirAccessWindows() {
 	memdelete(p);
 }
 
-#endif //windows DirAccess support
+#endif // windows DirAccess support

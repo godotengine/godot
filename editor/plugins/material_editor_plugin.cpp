@@ -39,10 +39,10 @@ void MaterialEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
 
-		//get_scene()->connect("node_removed",this,"_node_removed");
+		// get_scene()->connect("node_removed",this,"_node_removed");
 
 		if (first_enter) {
-			//it's in propertyeditor so.. could be moved around
+			// it's in propertyeditor so.. could be moved around
 
 			light_1_switch->set_normal_texture(get_theme_icon("MaterialPreviewLight1", "EditorIcons"));
 			light_1_switch->set_pressed_texture(get_theme_icon("MaterialPreviewLight1Off", "EditorIcons"));
@@ -119,7 +119,7 @@ MaterialEditor::MaterialEditor() {
 	viewport = memnew(SubViewport);
 	Ref<World3D> world;
 	world.instance();
-	viewport->set_world(world); //use own world
+	viewport->set_world(world); // use own world
 	vc->add_child(viewport);
 	viewport->set_disable_input(true);
 	viewport->set_transparent_background(true);

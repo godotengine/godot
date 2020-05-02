@@ -58,7 +58,7 @@ String ProjectSettings::get_resource_path() const {
 String ProjectSettings::localize_path(const String &p_path) const {
 
 	if (resource_path == "")
-		return p_path; //not initialized yet
+		return p_path; // not initialized yet
 
 	if (p_path.begins_with("res://") || p_path.begins_with("user://") ||
 			(p_path.is_abs_path() && !p_path.begins_with(resource_path)))
@@ -278,7 +278,7 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 	if (!ok)
 		return false;
 
-	//if data.pck is found, all directory access will be from here
+	// if data.pck is found, all directory access will be from here
 	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
 	using_datapack = true;
 
@@ -673,7 +673,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 	if (p_custom_features != String()) {
 		file->store_32(count + 1);
-		//store how many properties are saved, add one for custom featuers, which must always go first
+		// store how many properties are saved, add one for custom featuers, which must always go first
 		String key = CoreStringNames::get_singleton()->_custom_features;
 		file->store_32(key.length());
 		file->store_string(key);
@@ -697,7 +697,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_buffer(buff.ptr(), buff.size());
 
 	} else {
-		file->store_32(count); //store how many properties are saved
+		file->store_32(count); // store how many properties are saved
 	}
 
 	for (Map<String, List<String>>::Element *E = props.front(); E; E = E->next()) {
@@ -1201,7 +1201,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("debug/settings/profiler/max_functions", 16384);
 	custom_prop_info["debug/settings/profiler/max_functions"] = PropertyInfo(Variant::INT, "debug/settings/profiler/max_functions", PROPERTY_HINT_RANGE, "128,65535,1");
 
-	//assigning here, because using GLOBAL_GET on every block for compressing can be slow
+	// assigning here, because using GLOBAL_GET on every block for compressing can be slow
 	Compression::zstd_long_distance_matching = GLOBAL_DEF("compression/formats/zstd/long_distance_matching", false);
 	custom_prop_info["compression/formats/zstd/long_distance_matching"] = PropertyInfo(Variant::BOOL, "compression/formats/zstd/long_distance_matching");
 	Compression::zstd_level = GLOBAL_DEF("compression/formats/zstd/compression_level", 3);

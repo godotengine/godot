@@ -140,8 +140,8 @@ void AudioDriverOpenSL::start() {
 	ERR_FAIL_COND(res != SL_RESULT_SUCCESS);
 
 	SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, BUFFER_COUNT };
-	//bufferQueue.locatorType = SL_DATALOCATOR_BUFFERQUEUE;
-	//bufferQueue.numBuffers = BUFFER_COUNT; /* Four buffers in our buffer queue */
+	// bufferQueue.locatorType = SL_DATALOCATOR_BUFFERQUEUE;
+	// bufferQueue.numBuffers = BUFFER_COUNT; /* Four buffers in our buffer queue */
 	/* Setup the format of the content in the buffer queue */
 	pcm.formatType = SL_DATAFORMAT_PCM;
 	pcm.numChannels = 2;
@@ -163,9 +163,9 @@ void AudioDriverOpenSL::start() {
 	audioSink.pLocator = (void *)&locator_outputmix;
 	audioSink.pFormat = nullptr;
 	/* Initialize the context for Buffer queue callbacks */
-	//cntxt.pDataBase = (void*)&pcmData;
-	//cntxt.pData = cntxt.pDataBase;
-	//cntxt.size = sizeof(pcmData);
+	// cntxt.pDataBase = (void*)&pcmData;
+	// cntxt.pData = cntxt.pDataBase;
+	// cntxt.size = sizeof(pcmData);
 
 	/* Create the music player */
 
@@ -191,7 +191,7 @@ void AudioDriverOpenSL::start() {
 
 	last_free = 0;
 
-	//fill up buffers
+	// fill up buffers
 	for (int i = 0; i < BUFFER_COUNT; i++) {
 		/* Enqueue a few buffers to get the ball rolling */
 		res = (*bufferQueueItf)->Enqueue(bufferQueueItf, buffers[i], 4 * buffer_size); /* Size given in */

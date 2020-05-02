@@ -156,7 +156,7 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 	const Vector2 *points_B;
 
 	if (p_point_count_A > p_point_count_B) {
-		//swap
+		// swap
 		p_collector->swap = !p_collector->swap;
 		p_collector->normal = -p_collector->normal;
 
@@ -278,7 +278,7 @@ public:
 			return false; // doesn't contain 0
 		}
 
-		//use the smallest depth
+		// use the smallest depth
 
 		dmin = Math::abs(dmin);
 
@@ -317,7 +317,7 @@ public:
 			callback->collided = true;
 
 			if (!callback->callback)
-				return; //only collide, no callback
+				return; // only collide, no callback
 		}
 		static const int max_supports = 2;
 
@@ -361,7 +361,7 @@ public:
 			_generate_contacts_from_supports(supports_A, support_count_A, supports_B, support_count_B, callback);
 
 			if (callback->sep_axis && *callback->sep_axis != Vector2())
-				*callback->sep_axis = Vector2(); //invalidate previous axis (no test)
+				*callback->sep_axis = Vector2(); // invalidate previous axis (no test)
 		}
 	}
 
@@ -405,7 +405,7 @@ static void _collision_segment_segment(const Shape2DSW *p_a, const Transform2D &
 
 	if (!separator.test_previous_axis())
 		return;
-	//this collision is kind of pointless
+	// this collision is kind of pointless
 
 	if (!separator.test_cast())
 		return;
@@ -416,7 +416,7 @@ static void _collision_segment_segment(const Shape2DSW *p_a, const Transform2D &
 		return;
 
 	if (withMargin) {
-		//points grow to circles
+		// points grow to circles
 
 		if (TEST_POINT(p_transform_a.xform(segment_A->get_a()), p_transform_b.xform(segment_B->get_a())))
 			return;
@@ -445,15 +445,15 @@ static void _collision_segment_circle(const Shape2DSW *p_a, const Transform2D &p
 	if (!separator.test_cast())
 		return;
 
-	//segment normal
+	// segment normal
 	if (!separator.test_axis(
 				(p_transform_a.xform(segment_A->get_b()) - p_transform_a.xform(segment_A->get_a())).normalized().tangent()))
 		return;
 
-	//endpoint a vs circle
+	// endpoint a vs circle
 	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()), p_transform_b.get_origin()))
 		return;
-	//endpoint b vs circle
+	// endpoint b vs circle
 	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()), p_transform_b.get_origin()))
 		return;
 
@@ -627,7 +627,7 @@ static void _collision_circle_rectangle(const Shape2DSW *p_a, const Transform2D 
 
 	const Vector2 &sphere = p_transform_a.elements[2];
 	const Vector2 *axis = &p_transform_b.elements[0];
-	//const Vector2& half_extents = rectangle_B->get_half_extents();
+	// const Vector2& half_extents = rectangle_B->get_half_extents();
 
 	if (!separator.test_axis(axis[0].normalized()))
 		return;
@@ -680,11 +680,11 @@ static void _collision_circle_capsule(const Shape2DSW *p_a, const Transform2D &p
 	if (!separator.test_cast())
 		return;
 
-	//capsule axis
+	// capsule axis
 	if (!separator.test_axis(p_transform_b.elements[0].normalized()))
 		return;
 
-	//capsule endpoints
+	// capsule endpoints
 	if (TEST_POINT(p_transform_a.get_origin(), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * 0.5)))
 		return;
 	if (TEST_POINT(p_transform_a.get_origin(), (p_transform_b.get_origin() + p_transform_b.elements[1] * capsule_B->get_height() * -0.5)))
@@ -707,7 +707,7 @@ static void _collision_circle_convex_polygon(const Shape2DSW *p_a, const Transfo
 	if (!separator.test_cast())
 		return;
 
-	//poly faces and poly points vs circle
+	// poly faces and poly points vs circle
 	for (int i = 0; i < convex_B->get_point_count(); i++) {
 
 		if (TEST_POINT(p_transform_a.get_origin(), p_transform_b.xform(convex_B->get_point(i))))
@@ -736,14 +736,14 @@ static void _collision_rectangle_rectangle(const Shape2DSW *p_a, const Transform
 	if (!separator.test_cast())
 		return;
 
-	//box faces A
+	// box faces A
 	if (!separator.test_axis(p_transform_a.elements[0].normalized()))
 		return;
 
 	if (!separator.test_axis(p_transform_a.elements[1].normalized()))
 		return;
 
-	//box faces B
+	// box faces B
 	if (!separator.test_axis(p_transform_b.elements[0].normalized()))
 		return;
 
@@ -806,18 +806,18 @@ static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D
 	if (!separator.test_cast())
 		return;
 
-	//box faces
+	// box faces
 	if (!separator.test_axis(p_transform_a.elements[0].normalized()))
 		return;
 
 	if (!separator.test_axis(p_transform_a.elements[1].normalized()))
 		return;
 
-	//capsule axis
+	// capsule axis
 	if (!separator.test_axis(p_transform_b.elements[0].normalized()))
 		return;
 
-	//box endpoints to capsule circles
+	// box endpoints to capsule circles
 
 	Transform2D boxinv = p_transform_a.affine_inverse();
 
@@ -873,14 +873,14 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW *p_a, const Tran
 	if (!separator.test_cast())
 		return;
 
-	//box faces
+	// box faces
 	if (!separator.test_axis(p_transform_a.elements[0].normalized()))
 		return;
 
 	if (!separator.test_axis(p_transform_a.elements[1].normalized()))
 		return;
 
-	//convex faces
+	// convex faces
 	Transform2D boxinv;
 	if (withMargin) {
 		boxinv = p_transform_a.affine_inverse();
@@ -891,7 +891,7 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW *p_a, const Tran
 			return;
 
 		if (withMargin) {
-			//all points vs all points need to be tested if margin exist
+			// all points vs all points need to be tested if margin exist
 			if (!separator.test_axis(rectangle_A->get_circle_axis(p_transform_a, boxinv, p_transform_b.xform(convex_B->get_point(i)))))
 				return;
 			if (castA) {
@@ -931,7 +931,7 @@ static void _collision_capsule_capsule(const Shape2DSW *p_a, const Transform2D &
 	if (!separator.test_cast())
 		return;
 
-	//capsule axis
+	// capsule axis
 
 	if (!separator.test_axis(p_transform_b.elements[0].normalized()))
 		return;
@@ -939,7 +939,7 @@ static void _collision_capsule_capsule(const Shape2DSW *p_a, const Transform2D &
 	if (!separator.test_axis(p_transform_a.elements[0].normalized()))
 		return;
 
-	//capsule endpoints
+	// capsule endpoints
 
 	for (int i = 0; i < 2; i++) {
 
@@ -971,12 +971,12 @@ static void _collision_capsule_convex_polygon(const Shape2DSW *p_a, const Transf
 	if (!separator.test_cast())
 		return;
 
-	//capsule axis
+	// capsule axis
 
 	if (!separator.test_axis(p_transform_a.elements[0].normalized()))
 		return;
 
-	//poly vs capsule
+	// poly vs capsule
 	for (int i = 0; i < convex_B->get_point_count(); i++) {
 
 		Vector2 cpoint = p_transform_b.xform(convex_B->get_point(i));

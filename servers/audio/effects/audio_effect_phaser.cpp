@@ -51,13 +51,13 @@ void AudioEffectPhaserInstance::process(const AudioFrame *p_src_frames, AudioFra
 
 		float d = dmin + (dmax - dmin) * ((sin(phase) + 1.f) / 2.f);
 
-		//update filter coeffs
+		// update filter coeffs
 		for (int j = 0; j < 6; j++) {
 			allpass[0][j].delay(d);
 			allpass[1][j].delay(d);
 		}
 
-		//calculate output
+		// calculate output
 		float y = allpass[0][0].update(
 				allpass[0][1].update(
 						allpass[0][2].update(

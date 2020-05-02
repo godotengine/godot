@@ -56,7 +56,7 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	p_list->clear(); //sorry, no want category
+	p_list->clear(); // sorry, no want category
 	for (const List<PropertyInfo>::Element *E = prop_list.front(); E; E = E->next()) {
 		p_list->push_back(E->get());
 	}
@@ -180,7 +180,7 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 			}
 		}
 
-		//always add the property, since props may have been added or removed
+		// always add the property, since props may have been added or removed
 		debugObj->prop_list.push_back(pinfo);
 
 		if (!debugObj->prop_values.has(pinfo.name)) {
@@ -196,12 +196,12 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 	}
 
 	if (old_prop_size == debugObj->prop_list.size() && new_props_added == 0) {
-		//only some may have changed, if so, then update those, if exist
+		// only some may have changed, if so, then update those, if exist
 		for (Set<String>::Element *E = changed.front(); E; E = E->next()) {
 			emit_signal("object_property_updated", debugObj->remote_object_id, E->get());
 		}
 	} else {
-		//full update, because props were added or removed
+		// full update, because props were added or removed
 		debugObj->update();
 	}
 	return obj.id;

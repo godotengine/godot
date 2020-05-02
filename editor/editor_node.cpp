@@ -347,7 +347,7 @@ void EditorNode::_notification(int p_what) {
 
 			editor_selection->update();
 
-			//scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
+			// scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
 
 			{ //TODO should only happen on settings changed
 				int current_filter = GLOBAL_GET("rendering/canvas_textures/default_texture_filter");
@@ -426,7 +426,7 @@ void EditorNode::_notification(int p_what) {
 
 			feature_profile_manager->notify_changed();
 
-			if (!main_editor_buttons[EDITOR_3D]->is_visible()) { //may be hidden due to feature profile
+			if (!main_editor_buttons[EDITOR_3D]->is_visible()) { // may be hidden due to feature profile
 				_editor_select(EDITOR_2D);
 			} else {
 				_editor_select(EDITOR_3D);
@@ -585,7 +585,7 @@ void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 			continue;
 
 		if (res->get_import_path() != String()) {
-			//this is an imported resource, will be reloaded if reimported via the _resources_reimported() callback
+			// this is an imported resource, will be reloaded if reimported via the _resources_reimported() callback
 			continue;
 		}
 
@@ -678,21 +678,21 @@ void EditorNode::_fs_changed() {
 
 void EditorNode::_resources_reimported(const Vector<String> &p_resources) {
 
-	List<String> scenes; //will load later
+	List<String> scenes; // will load later
 	int current_tab = scene_tabs->get_current_tab();
 
 	for (int i = 0; i < p_resources.size(); i++) {
 		String file_type = ResourceLoader::get_resource_type(p_resources[i]);
 		if (file_type == "PackedScene") {
 			scenes.push_back(p_resources[i]);
-			//reload later if needed, first go with normal resources
+			// reload later if needed, first go with normal resources
 			continue;
 		}
 
 		if (!ResourceCache::has(p_resources[i])) {
-			continue; //not loaded, no need to reload
+			continue; // not loaded, no need to reload
 		}
-		//reload normally
+		// reload normally
 		Resource *resource = ResourceCache::get(p_resources[i]);
 		if (resource) {
 			resource->reload_from_file();
@@ -779,7 +779,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 
 	if (!p_ignore_broken_deps && dependency_errors.has(p_resource)) {
 
-		//current_option = -1;
+		// current_option = -1;
 		Vector<String> errors;
 		for (Set<String>::Element *E = dependency_errors[p_resource].front(); E; E = E->next()) {
 
@@ -860,7 +860,7 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	for (int i = 0; i < extensions.size(); i++) {
 
 		if (p_resource->is_class("Script") && (extensions[i] == "tres" || extensions[i] == "res" || extensions[i] == "xml")) {
-			//this serves no purpose and confused people
+			// this serves no purpose and confused people
 			continue;
 		}
 		file->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
@@ -976,7 +976,7 @@ void EditorNode::_get_scene_metadata(const String &p_file) {
 
 	Error err = cf->load(path);
 	if (err != OK || !cf->has_section("editor_states"))
-		return; //must not exist
+		return; // must not exist
 
 	List<String> esl;
 	cf->get_section_keys("editor_states", &esl);
@@ -1000,7 +1000,7 @@ void EditorNode::_set_scene_metadata(const String &p_file, int p_idx) {
 	if (!scene)
 		return;
 
-	scene->set_meta("__editor_run_settings__", Variant()); //clear it (no point in keeping it)
+	scene->set_meta("__editor_run_settings__", Variant()); // clear it (no point in keeping it)
 	scene->set_meta("__editor_plugin_states__", Variant());
 
 	String path = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(p_file.get_file() + "-editstate-" + p_file.md5_text() + ".cfg");
@@ -1045,10 +1045,10 @@ bool EditorNode::_find_and_save_resource(RES p_res, Map<RES, bool> &processed, i
 
 	if (p_res->get_path().is_resource_file()) {
 		if (changed || subchanged) {
-			//save
+			// save
 			ResourceSaver::save(p_res->get_path(), p_res, flags);
 		}
-		processed[p_res] = false; //because it's a file
+		processed[p_res] = false; // because it's a file
 		return false;
 	} else {
 
@@ -1156,7 +1156,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			is2d = false;
 		}
 		save.step(TTR("Creating Thumbnail"), 1);
-		//current view?
+		// current view?
 
 		Ref<Image> img;
 		if (is2d) {
@@ -1195,12 +1195,12 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 			}
 			img->convert(Image::FORMAT_RGB8);
 
-			//save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
+			// save thumbnail directly, as thumbnailer may not update due to actual scene not changing md5
 			String temp_path = EditorSettings::get_singleton()->get_cache_dir();
 			String cache_base = ProjectSettings::get_singleton()->globalize_path(p_file).md5_text();
 			cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
-			//does not have it, try to load a cached thumbnail
+			// does not have it, try to load a cached thumbnail
 
 			String file = cache_base + ".png";
 
@@ -1250,7 +1250,7 @@ static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Reso
 			if (res.is_null()) {
 				continue;
 			}
-			if (res->get_path().is_resource_file()) { //not a subresource, continue
+			if (res->get_path().is_resource_file()) { // not a subresource, continue
 				continue;
 			}
 			if (_find_edited_resources(res, edited_resources)) {
@@ -1263,7 +1263,7 @@ static bool _find_edited_resources(const Ref<Resource> &p_resource, Set<Ref<Reso
 }
 
 int EditorNode::_save_external_resources() {
-	//save external resources and its subresources if any was modified
+	// save external resources and its subresources if any was modified
 
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
@@ -1279,7 +1279,7 @@ int EditorNode::_save_external_resources() {
 		Ref<Resource> res = E->get();
 		if (!res->get_path().is_resource_file())
 			continue;
-		//not only check if this resourec is edited, check contained subresources too
+		// not only check if this resourec is edited, check contained subresources too
 		if (_find_edited_resources(res, edited_subresources)) {
 			ResourceSaver::save(res->get_path(), res, flg);
 			saved++;
@@ -1472,7 +1472,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			ProjectSettings::get_singleton()->set("application/run/main_scene", p_file);
 			ProjectSettings::get_singleton()->save();
-			//would be nice to show the project manager opened with the highlighted field..
+			// would be nice to show the project manager opened with the highlighted field..
 
 			if (pick_main_scene->has_meta("from_native") && (bool)pick_main_scene->get_meta("from_native")) {
 				run_native->resume_run_native();
@@ -1641,7 +1641,7 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 		} break;
-		default: { //save scene?
+		default: { // save scene?
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				_save_scene_with_preview(p_file);
@@ -1812,7 +1812,7 @@ void EditorNode::_edit_current() {
 	bool is_resource = current_obj->is_class("Resource");
 	bool is_node = current_obj->is_class("Node");
 
-	String editable_warning; //none by default
+	String editable_warning; // none by default
 
 	if (is_resource) {
 
@@ -1921,7 +1921,7 @@ void EditorNode::_edit_current() {
 
 		for (int i = 0; i < editor_table.size(); i++) {
 			if (editor_table[i] == main_plugin && !main_editor_buttons[i]->is_visible()) {
-				main_plugin = nullptr; //if button is not visible, then no plugin active
+				main_plugin = nullptr; // if button is not visible, then no plugin active
 			}
 		}
 
@@ -2026,7 +2026,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 	if (run_filename == "") {
 
-		//evidently, run the scene
+		// evidently, run the scene
 		if (!ensure_main_scene(false)) {
 			return;
 		}
@@ -2038,7 +2038,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 			Node *scene = editor_data.get_edited_scene_root();
 
-			if (scene) { //only autosave if there is a scene obviously
+			if (scene) { // only autosave if there is a scene obviously
 
 				if (scene->get_filename() == "") {
 
@@ -2096,7 +2096,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
-	if (!p_confirmed) //this may be a hack..
+	if (!p_confirmed) // this may be a hack..
 		current_option = (MenuOptions)p_option;
 
 	switch (p_option) {
@@ -2741,7 +2741,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 
 void EditorNode::_exit_editor() {
 	exiting = true;
-	resource_preview->stop(); //stop early to avoid crashes
+	resource_preview->stop(); // stop early to avoid crashes
 	_save_docks();
 
 	// Dim the editor window while it's quitting to make it clearer that it's busy
@@ -2846,7 +2846,7 @@ void EditorNode::_editor_select(int p_which) {
 
 	ERR_FAIL_INDEX(p_which, editor_table.size());
 
-	if (!main_editor_buttons[p_which]->is_visible()) //button hidden, no editor
+	if (!main_editor_buttons[p_which]->is_visible()) // button hidden, no editor
 		return;
 
 	selecting = true;
@@ -2987,7 +2987,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 		EditorPlugin *addon = plugin_addons[p_addon];
 		remove_editor_plugin(addon, p_config_changed);
-		memdelete(addon); //bye
+		memdelete(addon); // bye
 		plugin_addons.erase(p_addon);
 		_update_addon_config();
 		return;
@@ -3109,7 +3109,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	get_editor_data().set_edited_scene_root(p_scene);
 
 	if (Object::cast_to<Popup>(p_scene))
-		Object::cast_to<Popup>(p_scene)->show(); //show popups
+		Object::cast_to<Popup>(p_scene)->show(); // show popups
 	scene_tree_dock->set_edited_scene(p_scene);
 	if (get_tree())
 		get_tree()->set_edited_scene_root(p_scene);
@@ -3144,7 +3144,7 @@ Dictionary EditorNode::_get_main_scene_state() {
 void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	if (get_edited_scene() != p_for_scene && p_for_scene != nullptr)
-		return; //not for this scene
+		return; // not for this scene
 
 	changing_scene = false;
 
@@ -3158,7 +3158,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	if (p_state.has("editor_index")) {
 		int index = p_state["editor_index"];
-		if (current < 2) { //if currently in spatial/2d, only switch to spatial/2d. if currently in script, stay there
+		if (current < 2) { // if currently in spatial/2d, only switch to spatial/2d. if currently in script, stay there
 			if (index < 2 || !get_edited_scene()) {
 				_editor_select(index);
 			}
@@ -3167,7 +3167,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	if (get_edited_scene()) {
 		if (current < 2) {
-			//use heuristic instead
+			// use heuristic instead
 			int n2d = 0, n3d = 0;
 			_find_node_types(get_edited_scene(), n2d, n3d);
 			if (n2d > n3d) {
@@ -3186,7 +3186,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 	if (p_state.has("node_filter"))
 		scene_tree_dock->set_filter(p_state["node_filter"]);
 
-	//this should only happen at the very end
+	// this should only happen at the very end
 
 	EditorDebuggerNode::get_singleton()->update_live_edit_root();
 	ScriptEditor::get_singleton()->set_scene_root_script(editor_data.get_scene_root_script(editor_data.get_edited_scene()));
@@ -3235,7 +3235,7 @@ void EditorNode::set_current_scene(int p_idx) {
 	Node *new_scene = editor_data.get_edited_scene_root();
 
 	if (Object::cast_to<Popup>(new_scene))
-		Object::cast_to<Popup>(new_scene)->show(); //show popups
+		Object::cast_to<Popup>(new_scene)->show(); // show popups
 
 	scene_tree_dock->set_edited_scene(new_scene);
 	if (get_tree())
@@ -3251,7 +3251,7 @@ void EditorNode::set_current_scene(int p_idx) {
 
 	_update_title();
 
-	call_deferred("_set_main_scene_state", state, get_edited_scene()); //do after everything else is done setting up
+	call_deferred("_set_main_scene_state", state, get_edited_scene()); // do after everything else is done setting up
 }
 
 bool EditorNode::is_scene_open(const String &p_path) {
@@ -3357,7 +3357,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		return ERR_FILE_MISSING_DEPENDENCIES;
 	}
 
-	dependency_errors.erase(lpath); //at least not self path
+	dependency_errors.erase(lpath); // at least not self path
 
 	for (Map<String, Set<String>>::Element *E = dependency_errors.front(); E; E = E->next()) {
 
@@ -3369,7 +3369,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 	}
 
 	if (ResourceCache::has(lpath)) {
-		//used from somewhere else? no problem! update state and replace sdata
+		// used from somewhere else? no problem! update state and replace sdata
 		Ref<PackedScene> ps = Ref<PackedScene>(Object::cast_to<PackedScene>(ResourceCache::get(lpath)));
 		if (ps.is_valid()) {
 			ps->replace_state(sdata->get_state());
@@ -3378,7 +3378,7 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 		}
 
 	} else {
-		sdata->set_path(lpath, true); //take over path
+		sdata->set_path(lpath, true); // take over path
 	}
 
 	Node *new_scene = sdata->instance(PackedScene::GEN_EDIT_STATE_MAIN);
@@ -3989,7 +3989,7 @@ void EditorNode::_dock_make_float() {
 	ERR_FAIL_COND(!dock);
 
 	const Size2i borders = Size2i(4, 4) * EDSCALE;
-	Size2 dock_size = dock->get_size() + borders * 2; //remember size
+	Size2 dock_size = dock->get_size() + borders * 2; // remember size
 	Point2 dock_screen_pos = dock->get_global_position() + get_tree()->get_root()->get_position() - borders;
 
 	print_line("dock pos: " + dock->get_global_position() + " window pos: " + get_tree()->get_root()->get_position());
@@ -4235,7 +4235,7 @@ void EditorNode::_dock_select_draw() {
 void EditorNode::_save_docks() {
 
 	if (waiting_for_first_scan) {
-		return; //scanning, do not touch docks
+		return; // scanning, do not touch docks
 	}
 	Ref<ConfigFile> config;
 	config.instance();
@@ -4308,7 +4308,7 @@ void EditorNode::_load_docks() {
 	config.instance();
 	Error err = config->load(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("editor_layout.cfg"));
 	if (err != OK) {
-		//no config
+		// no config
 		if (overridden_default_layout >= 0) {
 			_layout_menu_option(overridden_default_layout);
 		}
@@ -4426,7 +4426,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 		for (int j = 0; j < names.size(); j++) {
 
 			String name = names[j];
-			//find it, in a horribly inefficient way
+			// find it, in a horribly inefficient way
 			int atidx = -1;
 			Control *node = nullptr;
 			for (int k = 0; k < DOCK_SLOT_MAX; k++) {
@@ -4438,7 +4438,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 				atidx = k;
 				break;
 			}
-			if (atidx == -1) //well, it's not anywhere
+			if (atidx == -1) // well, it's not anywhere
 				continue;
 
 			if (atidx == i) {
@@ -4546,7 +4546,7 @@ bool EditorNode::has_scenes_in_session() {
 }
 
 bool EditorNode::ensure_main_scene(bool p_from_native) {
-	pick_main_scene->set_meta("from_native", p_from_native); //whether from play button or native run
+	pick_main_scene->set_meta("from_native", p_from_native); // whether from play button or native run
 	String main_scene = GLOBAL_DEF("application/run/main_scene", "");
 
 	if (main_scene == "") {
@@ -4608,7 +4608,7 @@ void EditorNode::_update_layouts_menu() {
 	config.instance();
 	Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 	if (err != OK) {
-		return; //no config
+		return; // no config
 	}
 
 	List<String> layouts;
@@ -4658,7 +4658,7 @@ void EditorNode::_layout_menu_option(int p_id) {
 			config.instance();
 			Error err = config->load(EditorSettings::get_singleton()->get_editor_layouts_config());
 			if (err != OK) {
-				return; //no config
+				return; // no config
 			}
 
 			_load_docks_from_config(config, editor_layouts->get_item_text(p_id));
@@ -4791,7 +4791,7 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	bool unsaved = (saved_version != editor_data.get_undo_redo().get_version());
 
 	if (p_tab == editor_data.get_edited_scene())
-		return; //pointless
+		return; // pointless
 
 	uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
 
@@ -5017,11 +5017,11 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 	Ref<Texture2D> preview;
 
 	{
-		//todo make proper previews
+		// todo make proper previews
 		Ref<ImageTexture> pic = gui_base->get_theme_icon("FileBigThumb", "EditorIcons");
 		Ref<Image> img = pic->get_data();
 		img = img->duplicate();
-		img->resize(48, 48); //meh
+		img->resize(48, 48); // meh
 		Ref<ImageTexture> resized_pic = Ref<ImageTexture>(memnew(ImageTexture));
 		resized_pic->create_from_image(img);
 		preview = resized_pic;
@@ -5039,7 +5039,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 
 	drag_control->add_child(label);
 
-	p_from->set_drag_preview(drag_control); //wait until it enters scene
+	p_from->set_drag_preview(drag_control); // wait until it enters scene
 
 	label->set_position(Point2((preview->get_width() - label->get_minimum_size().width) / 2, preview->get_height()));
 
@@ -5093,7 +5093,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 		}
 		vbox->add_child(label);
 	}
-	p_from->set_drag_preview(vbox); //wait until it enters scene
+	p_from->set_drag_preview(vbox); // wait until it enters scene
 
 	Dictionary drag_data;
 	drag_data["type"] = has_folder ? "files_and_dirs" : "files";
@@ -5216,19 +5216,19 @@ void EditorNode::_file_access_close_error_notify(const String &p_str) {
 
 void EditorNode::reload_scene(const String &p_path) {
 
-	//first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
+	// first of all, reload internal textures, materials, meshes, etc. as they might have changed on disk
 
 	List<Ref<Resource>> cached;
 	ResourceCache::get_cached_resources(&cached);
-	List<Ref<Resource>> to_clear; //clear internal resources from previous scene from being used
+	List<Ref<Resource>> to_clear; // clear internal resources from previous scene from being used
 	for (List<Ref<Resource>>::Element *E = cached.front(); E; E = E->next()) {
 
-		if (E->get()->get_path().begins_with(p_path + "::")) { //subresources of existing scene
+		if (E->get()->get_path().begins_with(p_path + "::")) { // subresources of existing scene
 			to_clear.push_back(E->get());
 		}
 	}
 
-	//so reload reloads everything, clear subresources of previous scene
+	// so reload reloads everything, clear subresources of previous scene
 	while (to_clear.front()) {
 		to_clear.front()->get()->set_path("");
 		to_clear.pop_front();
@@ -5247,7 +5247,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	if (scene_idx == -1) {
 		if (get_edited_scene()) {
-			//scene is not open, so at it might be instanced. We'll refresh the whole scene later.
+			// scene is not open, so at it might be instanced. We'll refresh the whole scene later.
 			editor_data.get_undo_redo().clear_history();
 		}
 		return;
@@ -5258,17 +5258,17 @@ void EditorNode::reload_scene(const String &p_path) {
 		_set_scene_metadata(p_path);
 	}
 
-	//remove scene
+	// remove scene
 	_remove_scene(scene_idx, false);
 
-	//reload scene
+	// reload scene
 	load_scene(p_path, true, false, true, true);
 
-	//adjust index so tab is back a the previous position
+	// adjust index so tab is back a the previous position
 	editor_data.move_edited_scene_to_index(scene_idx);
 	get_undo_redo()->clear_history();
 
-	//recover the tab
+	// recover the tab
 	scene_tabs->set_current_tab(current_tab);
 }
 
@@ -5575,9 +5575,9 @@ EditorNode::EditorNode() {
 	PhysicsServer2D::get_singleton()->set_active(false); // no physics by default if editor
 	ScriptServer::set_scripting_enabled(false); // no scripting by default if editor
 
-	EditorHelp::generate_doc(); //before any editor classes are created
+	EditorHelp::generate_doc(); // before any editor classes are created
 	SceneState::set_disable_placeholders(true);
-	ResourceLoader::clear_translation_remaps(); //no remaps using during editor
+	ResourceLoader::clear_translation_remaps(); // no remaps using during editor
 	ResourceLoader::clear_path_remaps();
 
 	Input *id = Input::get_singleton();
@@ -5592,8 +5592,8 @@ EditorNode::EditorNode() {
 		}
 
 		if (!found_touchscreen && Input::get_singleton()) {
-			//only if no touchscreen ui hint, set emulation
-			id->set_emulate_touch_from_mouse(false); //just disable just in case
+			// only if no touchscreen ui hint, set emulation
+			id->set_emulate_touch_from_mouse(false); // just disable just in case
 		}
 		DisplayServer::get_singleton()->cursor_set_custom_image(RES());
 	}
@@ -5672,7 +5672,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_error_notify_func(this, _load_error_notify);
 	ResourceLoader::set_dependency_error_notify_func(this, _dependency_error_report);
 
-	{ //register importers at the beginning, so dialogs are created with the right extensions
+	{ // register importers at the beginning, so dialogs are created with the right extensions
 		Ref<ResourceImporterTexture> import_texture;
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
@@ -5768,7 +5768,7 @@ EditorNode::EditorNode() {
 	EditorFileSystem *efs = memnew(EditorFileSystem);
 	add_child(efs);
 
-	//used for previews
+	// used for previews
 	FileDialog::get_icon_func = _file_dialog_get_icon;
 	FileDialog::register_func = _file_dialog_register;
 	FileDialog::unregister_func = _file_dialog_unregister;
@@ -5789,7 +5789,7 @@ EditorNode::EditorNode() {
 
 	ClassDB::set_class_enabled("RootMotionView", true);
 
-	//defs here, use EDITOR_GET in logic
+	// defs here, use EDITOR_GET in logic
 	EDITOR_DEF_RST("interface/scene_tabs/always_show_close_button", false);
 	EDITOR_DEF_RST("interface/scene_tabs/resize_if_many_tabs", true);
 	EDITOR_DEF_RST("interface/scene_tabs/minimum_width", 50);
@@ -6050,7 +6050,7 @@ EditorNode::EditorNode() {
 	scene_root_parent->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
 	scene_root = memnew(SubViewport);
-	//scene_root->set_usage(Viewport::USAGE_2D); canvas BG mode prevents usage of this as 2D
+	// scene_root->set_usage(Viewport::USAGE_2D); canvas BG mode prevents usage of this as 2D
 
 	RenderingServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);
 	scene_root->set_disable_input(true);
@@ -6608,7 +6608,7 @@ EditorNode::EditorNode() {
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);
-	//plugin stuff
+	// plugin stuff
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin(this)));
@@ -6618,7 +6618,7 @@ EditorNode::EditorNode() {
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
 
-	ScriptTextEditor::register_editor(); //register one for text scripts
+	ScriptTextEditor::register_editor(); // register one for text scripts
 	TextEditor::register_editor();
 
 	if (StreamPeerSSL::is_available()) {
@@ -6627,12 +6627,12 @@ EditorNode::EditorNode() {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
 
-	//add interface before adding plugins
+	// add interface before adding plugins
 
 	editor_interface = memnew(EditorInterface);
 	add_child(editor_interface);
 
-	//more visually meaningful to have this later
+	// more visually meaningful to have this later
 	raise_bottom_panel_item(AnimationPlayerEditor::singleton);
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
@@ -6662,7 +6662,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(SpriteFramesEditorPlugin(this)));
 	add_editor_plugin(memnew(TextureRegionEditorPlugin(this)));
 	add_editor_plugin(memnew(GIProbeEditorPlugin(this)));
-	//add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
+	// add_editor_plugin(memnew(BakedLightmapEditorPlugin(this)));
 	add_editor_plugin(memnew(Path2DEditorPlugin(this)));
 	add_editor_plugin(memnew(Path3DEditorPlugin(this)));
 	add_editor_plugin(memnew(Line2DEditorPlugin(this)));
@@ -6830,7 +6830,7 @@ EditorNode::EditorNode() {
 #else
 	ED_SHORTCUT("editor/editor_2d", TTR("Open 2D Editor"), KEY_F1);
 	ED_SHORTCUT("editor/editor_3d", TTR("Open 3D Editor"), KEY_F2);
-	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_F3); //hack needed for script editor F3 search to work :) Assign like this or don't use F3
+	ED_SHORTCUT("editor/editor_script", TTR("Open Script Editor"), KEY_F3); // hack needed for script editor F3 search to work :) Assign like this or don't use F3
 	ED_SHORTCUT("editor/editor_help", TTR("Search Help"), KEY_MASK_SHIFT | KEY_F1);
 #endif
 	ED_SHORTCUT("editor/editor_assetlib", TTR("Open Asset Library"));

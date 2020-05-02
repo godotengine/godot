@@ -37,12 +37,12 @@
 
 void AudioStreamPlaybackResampled::_begin_resample() {
 
-	//clear cubic interpolation history
+	// clear cubic interpolation history
 	internal_buffer[0] = AudioFrame(0.0, 0.0);
 	internal_buffer[1] = AudioFrame(0.0, 0.0);
 	internal_buffer[2] = AudioFrame(0.0, 0.0);
 	internal_buffer[3] = AudioFrame(0.0, 0.0);
-	//mix buffer
+	// mix buffer
 	_mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
 	mix_offset = 0;
 }
@@ -57,8 +57,8 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 	for (int i = 0; i < p_frames; i++) {
 
 		uint32_t idx = CUBIC_INTERP_HISTORY + uint32_t(mix_offset >> FP_BITS);
-		//standard cubic interpolation (great quality/performance ratio)
-		//this used to be moved to a LUT for greater performance, but nowadays CPU speed is generally faster than memory.
+		// standard cubic interpolation (great quality/performance ratio)
+		// this used to be moved to a LUT for greater performance, but nowadays CPU speed is generally faster than memory.
 		float mu = (mix_offset & FP_MASK) / float(FP_LEN);
 		AudioFrame y0 = internal_buffer[idx - 3];
 		AudioFrame y1 = internal_buffer[idx - 2];
@@ -84,7 +84,7 @@ void AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale,
 			if (is_playing()) {
 				_mix_internal(internal_buffer + 4, INTERNAL_BUFFER_LEN);
 			} else {
-				//fill with silence, not playing
+				// fill with silence, not playing
 				for (int j = 0; j < INTERNAL_BUFFER_LEN; ++j) {
 					internal_buffer[j + 4] = AudioFrame(0, 0);
 				}
@@ -117,8 +117,8 @@ Ref<AudioStreamPlayback> AudioStreamMicrophone::instance_playback() {
 
 String AudioStreamMicrophone::get_stream_name() const {
 
-	//if (audio_stream.is_valid()) {
-	//return "Random: " + audio_stream->get_name();
+	// if (audio_stream.is_valid()) {
+	// return "Random: " + audio_stream->get_name();
 	//}
 	return "Microphone";
 }

@@ -78,7 +78,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, OpenIncludeFu
 					base_error = "Version text must be quoted using \"\", instead found '" + define + "'.";
 					break;
 				}
-				define = "\n" + define.substr(1, define.length() - 2).c_unescape() + "\n"; //add newline before and after jsut in case
+				define = "\n" + define.substr(1, define.length() - 2).c_unescape() + "\n"; // add newline before and after jsut in case
 
 				version_texts[version] = define;
 			}
@@ -91,7 +91,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, OpenIncludeFu
 			if (stage != RD::SHADER_STAGE_MAX) {
 				if (line.strip_edges().begins_with("#include")) {
 					if (p_include_func) {
-						//process include
+						// process include
 						String include = line.replace("#include", "").strip_edges();
 						if (!include.begins_with("\"") || !include.ends_with("\"")) {
 							base_error = "Malformed #include syntax, expected #include \"<path>\", found instad: " + include;
@@ -125,7 +125,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, OpenIncludeFu
 		}
 
 		if (version_texts.empty()) {
-			version_texts[""] = ""; //make sure a default version exists
+			version_texts[""] = ""; // make sure a default version exists
 		}
 
 		bool errors_found = false;

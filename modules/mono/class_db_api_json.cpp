@@ -48,7 +48,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 		names.push_back(*k);
 	}
-	//must be alphabetically sorted for hash to compute
+	// must be alphabetically sorted for hash to compute
 	names.sort_custom<StringName::AlphCompare>();
 
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
@@ -63,7 +63,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 		class_dict["inherits"] = t->inherits;
 
-		{ //methods
+		{ // methods
 
 			List<StringName> snames;
 
@@ -115,7 +115,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 				for (int i = 0; i < mb->get_default_argument_count(); i++) {
 					Dictionary default_argument_dict;
 					default_arguments.push_back(default_argument_dict);
-					//hash should not change, i hope for tis
+					// hash should not change, i hope for tis
 					Variant da = mb->get_default_argument(i);
 					default_argument_dict["value"] = da;
 				}
@@ -128,7 +128,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			}
 		}
 
-		{ //constants
+		{ // constants
 
 			List<StringName> snames;
 
@@ -156,7 +156,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			}
 		}
 
-		{ //signals
+		{ // signals
 
 			List<StringName> snames;
 
@@ -192,7 +192,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			}
 		}
 
-		{ //properties
+		{ // properties
 
 			List<StringName> snames;
 
@@ -225,7 +225,7 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 		Array property_list;
 
-		//property list
+		// property list
 		for (List<PropertyInfo>::Element *F = t->property_list.front(); F; F = F->next()) {
 			Dictionary property_dict;
 			property_list.push_back(property_dict);

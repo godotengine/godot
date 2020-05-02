@@ -48,8 +48,8 @@ void CollisionPolygon2D::_build_polygon() {
 
 	if (solids) {
 
-		//here comes the sun, lalalala
-		//decompose concave into multiple convex polygons and add them
+		// here comes the sun, lalalala
+		// decompose concave into multiple convex polygons and add them
 		Vector<Vector<Vector2>> decomp = _decompose_in_convex();
 		for (int i = 0; i < decomp.size(); i++) {
 			Ref<ConvexPolygonShape2D> convex = memnew(ConvexPolygonShape2D);
@@ -104,7 +104,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 			}
 
 			/*if (Engine::get_singleton()->is_editor_hint()) {
-				//display above all else
+				// display above all else
 				set_z_as_relative(false);
 				set_z_index(RS::CANVAS_ITEM_Z_MAX - 1);
 			}*/
@@ -174,7 +174,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				for (int i = 0; i < 3; i++)
 					cols.push_back(dcol);
 
-				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
+				draw_primitive(pts, cols, Vector<Vector2>()); // small arrow
 			}
 		} break;
 	}

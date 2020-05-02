@@ -56,15 +56,15 @@ DirAccess *DirAccessUnix::create_fs() {
 
 Error DirAccessUnix::list_dir_begin() {
 
-	list_dir_end(); //close any previous dir opening!
+	list_dir_end(); // close any previous dir opening!
 
-	//char real_current_dir_name[2048]; //is this enough?!
-	//getcwd(real_current_dir_name,2048);
-	//chdir(current_path.utf8().get_data());
+	// char real_current_dir_name[2048]; // is this enough?!
+	// getcwd(real_current_dir_name,2048);
+	// chdir(current_path.utf8().get_data());
 	dir_stream = opendir(current_dir.utf8().get_data());
-	//chdir(real_current_dir_name);
+	// chdir(real_current_dir_name);
 	if (!dir_stream)
-		return ERR_CANT_OPEN; //error!
+		return ERR_CANT_OPEN; // error!
 
 	return OK;
 }
@@ -308,7 +308,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	char real_current_dir_name[2048];
 	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == nullptr, ERR_BUG);
 	if (prev_dir.parse_utf8(real_current_dir_name))
-		prev_dir = real_current_dir_name; //no utf8, maybe latin?
+		prev_dir = real_current_dir_name; // no utf8, maybe latin?
 
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
@@ -332,7 +332,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 		new_dir.parse_utf8(real_current_dir_name);
 
 		if (!new_dir.begins_with(base)) {
-			try_dir = current_dir; //revert
+			try_dir = current_dir; // revert
 		}
 	}
 
@@ -429,4 +429,4 @@ DirAccessUnix::~DirAccessUnix() {
 	list_dir_end();
 }
 
-#endif //posix_enabled
+#endif // posix_enabled

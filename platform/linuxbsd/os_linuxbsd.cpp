@@ -245,10 +245,10 @@ void OS_LinuxBSD::run() {
 
 	main_loop->init();
 
-	//uint64_t last_ticks=get_ticks_usec();
+	// uint64_t last_ticks=get_ticks_usec();
 
-	//int frames=0;
-	//uint64_t frame=0;
+	// int frames=0;
+	// uint64_t frame=0;
 
 	while (!force_quit) {
 

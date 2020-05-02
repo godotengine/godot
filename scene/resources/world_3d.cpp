@@ -169,7 +169,7 @@ struct SpatialIndexer {
 
 			for (int i = 0; i < culled; i++) {
 
-				//notifiers in frustum
+				// notifiers in frustum
 
 				Map<VisibilityNotifier3D *, uint64_t>::Element *H = E->get().notifiers.find(ptr[i]);
 				if (!H) {

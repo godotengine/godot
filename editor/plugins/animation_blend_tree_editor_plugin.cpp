@@ -113,7 +113,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 	graph->set_scroll_ofs(blend_tree->get_graph_offset() * EDSCALE);
 
 	graph->clear_connections();
-	//erase all nodes
+	// erase all nodes
 	for (int i = 0; i < graph->get_child_count(); i++) {
 
 		if (Object::cast_to<GraphNode>(graph->get_child(i))) {
@@ -613,7 +613,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			node = base->get_node(accum);
 		}
 		if (!node)
-			continue; //no node, can't edit
+			continue; // no node, can't edit
 
 		if (path.get_subname_count()) {
 
@@ -621,7 +621,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 
 			Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(node);
 			if (skeleton && skeleton->find_bone(concat) != -1) {
-				//path in skeleton
+				// path in skeleton
 				const String &bone = concat;
 				int idx = skeleton->find_bone(bone);
 				List<String> bone_path;
@@ -658,7 +658,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 				ti->set_metadata(0, path);
 
 			} else {
-				//just a property
+				// just a property
 				ti = filters->create_item(ti);
 				ti->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 				ti->set_text(0, concat);
@@ -669,7 +669,7 @@ bool AnimationNodeBlendTreeEditor::_update_filters(const Ref<AnimationNode> &ano
 			}
 		} else {
 			if (ti) {
-				//just a node, not a property track
+				// just a node, not a property track
 				String types_text = "[";
 				if (types.has(path)) {
 					Set<String>::Element *F = types[path].front();
@@ -816,7 +816,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	ERR_FAIL_COND(new_name == "" || new_name.find(".") != -1 || new_name.find("/") != -1);
 
 	if (new_name == prev_name) {
-		return; //nothing to do
+		return; // nothing to do
 	}
 
 	const String &base_name = new_name;
@@ -842,7 +842,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 	gn->set_name(new_name);
 	gn->set_size(gn->get_minimum_size());
 
-	//change editors accordingly
+	// change editors accordingly
 	for (int i = 0; i < visible_properties.size(); i++) {
 		String pname = visible_properties[i]->get_edited_property().operator String();
 		if (pname.begins_with(base_path + prev_name)) {
@@ -851,7 +851,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 		}
 	}
 
-	//recreate connections
+	// recreate connections
 	graph->clear_connections();
 
 	List<AnimationNodeBlendTree::NodeConnection> connections;
@@ -866,7 +866,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 		graph->connect_node(from, 0, to, to_idx);
 	}
 
-	//update animations
+	// update animations
 	for (Map<StringName, ProgressBar *>::Element *E = animations.front(); E; E = E->next()) {
 		if (E->key() == prev_name) {
 			animations[new_name] = animations[prev_name];

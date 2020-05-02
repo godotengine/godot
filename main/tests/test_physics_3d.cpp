@@ -93,7 +93,7 @@ protected:
 		RID body = ps->body_create(p_body, !p_active_default);
 		ps->body_set_space(body, space);
 		ps->body_set_param(body, PhysicsServer3D::BODY_PARAM_BOUNCE, 0.0);
-		//todo set space
+		// todo set space
 		ps->body_add_shape(body, type_shape_map[p_shape]);
 		ps->body_set_force_integration_callback(body, this, "body_changed_transform", mesh_instance);
 
@@ -116,7 +116,7 @@ protected:
 
 		RID b = ps->body_create(PhysicsServer3D::BODY_MODE_STATIC);
 		ps->body_set_space(b, space);
-		//todo set space
+		// todo set space
 		ps->body_add_shape(b, world_margin_shape);
 		return b;
 	}
@@ -214,7 +214,7 @@ protected:
 
 		RID tribody = ps->body_create(PhysicsServer3D::BODY_MODE_STATIC);
 		ps->body_set_space(tribody, space);
-		//todo set space
+		// todo set space
 		ps->body_add_shape(tribody, trimesh_shape);
 		Transform tritrans = p_xform;
 		ps->body_set_state(tribody, PhysicsServer3D::BODY_STATE_TRANSFORM, tritrans);
@@ -377,13 +377,13 @@ public:
 		capsule_params["height"] = 1;
 		Transform shape_xform;
 		shape_xform.rotate(Vector3(1, 0, 0), Math_PI / 2.0);
-		//shape_xform.origin=Vector3(1,1,1);
+		// shape_xform.origin=Vector3(1,1,1);
 		ps->shape_set_data(capsule_shape, capsule_params);
 
 		RID mesh_instance = vs->instance_create2(capsule_mesh, scenario);
 		character = ps->body_create(PhysicsServer3D::BODY_MODE_CHARACTER);
 		ps->body_set_space(character, space);
-		//todo add space
+		// todo add space
 		ps->body_add_shape(character, capsule_shape);
 
 		ps->body_set_force_integration_callback(character, this, "body_changed_transform", mesh_instance);

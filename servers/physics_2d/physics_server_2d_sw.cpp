@@ -175,7 +175,7 @@ void PhysicsServer2DSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 		}
 		Vector2 rel_dir = (p_point_A - p_point_B).normalized();
 
-		if (cbk->valid_dir.dot(rel_dir) < Math_SQRT12) { //sqrt(2)/2.0 - 45 degrees
+		if (cbk->valid_dir.dot(rel_dir) < Math_SQRT12) { // sqrt(2)/2.0 - 45 degrees
 			cbk->invalid_by_dir++;
 
 			/*
@@ -190,7 +190,7 @@ void PhysicsServer2DSW::_shape_col_cbk(const Vector2 &p_point_A, const Vector2 &
 	}
 
 	if (cbk->amount == cbk->max) {
-		//find least deep
+		// find least deep
 		real_t min_depth = 1e20;
 		int min_depth_idx = 0;
 		for (int i = 0; i < cbk->amount; i++) {
@@ -339,7 +339,7 @@ void PhysicsServer2DSW::area_set_space(RID p_area, RID p_space) {
 	}
 
 	if (area->get_space() == space)
-		return; //pointless
+		return; // pointless
 
 	area->clear_constraints();
 	area->set_space(space);
@@ -603,7 +603,7 @@ void PhysicsServer2DSW::body_set_space(RID p_body, RID p_space) {
 	}
 
 	if (body->get_space() == space)
-		return; //pointless
+		return; // pointless
 
 	body->clear_constraint_map();
 	body->set_space(space);

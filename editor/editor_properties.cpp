@@ -621,7 +621,7 @@ public:
 		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 			for (int i = 0; i < flag_rects.size(); i++) {
 				if (flag_rects[i].has_point(mb->get_position())) {
-					//toggle
+					// toggle
 					if (value & (1 << i)) {
 						value &= ~(1 << i);
 					} else {
@@ -953,7 +953,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 		val = Math::absf(val);
 
 		val = Math::log(val) / Math::log((float)2.0);
-		//logspace
+		// logspace
 		val += rel * 0.05;
 
 		val = Math::pow(2.0f, val);
@@ -1181,7 +1181,7 @@ EditorPropertyVector2::EditorPropertyVector2(bool p_force_wide) {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -1266,7 +1266,7 @@ EditorPropertyRect2::EditorPropertyRect2(bool p_force_wide) {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -1348,7 +1348,7 @@ EditorPropertyVector3::EditorPropertyVector3(bool p_force_wide) {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -1430,7 +1430,7 @@ EditorPropertyVector2i::EditorPropertyVector2i(bool p_force_wide) {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -1515,7 +1515,7 @@ EditorPropertyRect2i::EditorPropertyRect2i(bool p_force_wide) {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -1596,7 +1596,7 @@ EditorPropertyVector3i::EditorPropertyVector3i(bool p_force_wide) {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -1681,7 +1681,7 @@ EditorPropertyPlane::EditorPropertyPlane(bool p_force_wide) {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -1762,7 +1762,7 @@ EditorPropertyQuat::EditorPropertyQuat() {
 	}
 
 	if (!horizontal) {
-		set_label_reference(spin[0]); //show text and buttons around this
+		set_label_reference(spin[0]); // show text and buttons around this
 	}
 	setting = false;
 }
@@ -2149,7 +2149,7 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 		base_node = Object::cast_to<Node>(get_edited_object());
 
 		if (!base_node) {
-			//try a base node within history
+			// try a base node within history
 			if (EditorNode::get_singleton()->get_editor_history()->get_path_size() > 0) {
 				Object *base = ObjectDB::get_instance(EditorNode::get_singleton()->get_editor_history()->get_path_object(0));
 				if (base) {
@@ -2269,7 +2269,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	hbc->add_child(clear);
 	use_path_from_scene_root = false;
 
-	scene_tree = nullptr; //do not allocate unnecessarily
+	scene_tree = nullptr; // do not allocate unnecessarily
 }
 
 ///////////////////// RID /////////////////////////
@@ -2531,7 +2531,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			Resource *resp = Object::cast_to<Resource>(obj);
 			ERR_BREAK(!resp);
 			if (get_edited_object() && base_type != String() && base_type == "Script") {
-				//make visual script the right type
+				// make visual script the right type
 				resp->call("set_instance_base_type", get_edited_object()->get_class());
 			}
 
@@ -2752,7 +2752,7 @@ void EditorPropertyResource::_button_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
 			_update_menu_items();
 			Vector2 pos = get_screen_position() + mb->get_position();
-			//pos = assign->get_global_transform().xform(pos);
+			// pos = assign->get_global_transform().xform(pos);
 			menu->set_as_minsize();
 			menu->set_position(pos);
 			menu->popup();
@@ -2763,7 +2763,7 @@ void EditorPropertyResource::_button_input(const Ref<InputEvent> &p_event) {
 void EditorPropertyResource::_open_editor_pressed() {
 	RES res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
-		EditorNode::get_singleton()->call_deferred("edit_item_resource", res); //may clear the editor so do it deferred
+		EditorNode::get_singleton()->call_deferred("edit_item_resource", res); // may clear the editor so do it deferred
 	}
 }
 
@@ -2792,7 +2792,7 @@ void EditorPropertyResource::_fold_other_editors(Object *p_self) {
 	opened_editor = false;
 
 	if (unfolded) {
-		//refold
+		// refold
 		assign->set_pressed(false);
 		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
 		update_property();
@@ -2843,7 +2843,7 @@ void EditorPropertyResource::update_property() {
 				}
 
 				if (use_editor) {
-					//open editor directly and hide other open of these
+					// open editor directly and hide other open of these
 					_open_editor_pressed();
 					if (is_inside_tree()) {
 						get_tree()->call_deferred("call_group", "_editor_resource_properties", "_fold_other_editors", this);
@@ -2892,7 +2892,7 @@ void EditorPropertyResource::update_property() {
 			assign->set_tooltip(res->get_path());
 		}
 
-		//preview will override the above, so called at the end
+		// preview will override the above, so called at the end
 		EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview", res->get_instance_id());
 	}
 }
@@ -3131,11 +3131,11 @@ EditorPropertyResource::EditorPropertyResource() {
 ////////////// DEFAULT PLUGIN //////////////////////
 
 bool EditorInspectorDefaultPlugin::can_handle(Object *p_object) {
-	return true; //can handle everything
+	return true; // can handle everything
 }
 
 void EditorInspectorDefaultPlugin::parse_begin(Object *p_object) {
-	//do none
+	// do none
 }
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
@@ -3184,7 +3184,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 						lt = EditorPropertyLayers::LAYER_PHYSICS_3D;
 						break;
 					default: {
-					} //compiler could be smarter here and realize this can't happen
+					} // compiler could be smarter here and realize this can't happen
 				}
 				EditorPropertyLayers *editor = memnew(EditorPropertyLayers);
 				editor->setup(lt);
@@ -3201,7 +3201,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				bool greater = true, lesser = true;
 
 				if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
-					greater = false; //if using ranged, assume false by default
+					greater = false; // if using ranged, assume false by default
 					lesser = false;
 					min = p_hint_text.get_slice(",", 0).to_int();
 					max = p_hint_text.get_slice(",", 1).to_int();
@@ -3254,7 +3254,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 				bool greater = true, lesser = true;
 
 				if ((p_hint == PROPERTY_HINT_RANGE || p_hint == PROPERTY_HINT_EXP_RANGE) && p_hint_text.get_slice_count(",") >= 2) {
-					greater = false; //if using ranged, assume false by default
+					greater = false; // if using ranged, assume false by default
 					lesser = false;
 					min = p_hint_text.get_slice(",", 0).to_double();
 					max = p_hint_text.get_slice(",", 1).to_double();
@@ -3576,7 +3576,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 			}
 			if (p_hint == PROPERTY_HINT_NODE_PATH_VALID_TYPES && p_hint_text != String()) {
 				Vector<String> types = p_hint_text.split(",", false);
-				Vector<StringName> sn = Variant(types); //convert via variant
+				Vector<StringName> sn = Variant(types); // convert via variant
 				editor->setup(NodePath(), sn, (p_usage & PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT));
 			}
 			add_property_editor(p_path, editor);
@@ -3665,9 +3665,9 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		}
 	}
 
-	return false; //can be overridden, although it will most likely be last anyway
+	return false; // can be overridden, although it will most likely be last anyway
 }
 
 void EditorInspectorDefaultPlugin::parse_end() {
-	//do none
+	// do none
 }

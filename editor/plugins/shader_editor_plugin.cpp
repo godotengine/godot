@@ -168,7 +168,7 @@ void ShaderTextEditor::_load_theme_settings() {
 		get_text_edit()->add_keyword_color(E->get(), keyword_color);
 	}
 
-	//colorize comments
+	// colorize comments
 	get_text_edit()->add_color_region("/*", "*/", comment_color, false);
 	get_text_edit()->add_color_region("//", "", comment_color, false);
 }
@@ -217,7 +217,7 @@ void ShaderTextEditor::_validate_script() {
 
 	String code = get_text_edit()->get_text();
 	//List<StringName> params;
-	//shader->get_param_list(&params);
+	// shader->get_param_list(&params);
 
 	ShaderLanguage sl;
 
@@ -461,7 +461,7 @@ void ShaderEditor::edit(const Ref<Shader> &p_shader) {
 
 	shader_editor->set_edited_shader(p_shader);
 
-	//vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
+	// vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
 	// see if already has it
 }
 
@@ -474,7 +474,7 @@ void ShaderEditor::save_external_data(const String &p_str) {
 
 	apply_shaders();
 	if (shader->get_path() != "" && shader->get_path().find("local://") == -1 && shader->get_path().find("::") == -1) {
-		//external shader, save it
+		// external shader, save it
 		ResourceSaver::save(shader->get_path(), shader);
 	}
 

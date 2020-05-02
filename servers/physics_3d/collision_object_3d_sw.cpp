@@ -38,7 +38,7 @@ void CollisionObject3DSW::add_shape(Shape3DSW *p_shape, const Transform &p_trans
 	s.shape = p_shape;
 	s.xform = p_transform;
 	s.xform_inv = s.xform.affine_inverse();
-	s.bpid = 0; //needs update
+	s.bpid = 0; // needs update
 	s.disabled = p_disabled;
 	shapes.push_back(s);
 	p_shape->add_owner(this);
@@ -85,7 +85,7 @@ void CollisionObject3DSW::set_shape_as_disabled(int p_idx, bool p_enable) {
 
 void CollisionObject3DSW::remove_shape(Shape3DSW *p_shape) {
 
-	//remove a shape, all the times it appears
+	// remove a shape, all the times it appears
 	for (int i = 0; i < shapes.size(); i++) {
 
 		if (shapes[i].shape == p_shape) {
@@ -97,13 +97,13 @@ void CollisionObject3DSW::remove_shape(Shape3DSW *p_shape) {
 
 void CollisionObject3DSW::remove_shape(int p_index) {
 
-	//remove anything from shape to be erased to end, so subindices don't change
+	// remove anything from shape to be erased to end, so subindices don't change
 	ERR_FAIL_INDEX(p_index, shapes.size());
 	for (int i = p_index; i < shapes.size(); i++) {
 
 		if (shapes[i].bpid == 0)
 			continue;
-		//should never get here with a null owner
+		// should never get here with a null owner
 		space->get_broadphase()->remove(shapes[i].bpid);
 		shapes.write[i].bpid = 0;
 	}
@@ -157,7 +157,7 @@ void CollisionObject3DSW::_update_shapes() {
 			space->get_broadphase()->set_static(s.bpid, _static);
 		}
 
-		//not quite correct, should compute the next matrix..
+		// not quite correct, should compute the next matrix..
 		AABB shape_aabb = s.shape->get_aabb();
 		Transform xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
@@ -184,11 +184,11 @@ void CollisionObject3DSW::_update_shapes_with_motion(const Vector3 &p_motion) {
 			space->get_broadphase()->set_static(s.bpid, _static);
 		}
 
-		//not quite correct, should compute the next matrix..
+		// not quite correct, should compute the next matrix..
 		AABB shape_aabb = s.shape->get_aabb();
 		Transform xform = transform * s.xform;
 		shape_aabb = xform.xform(shape_aabb);
-		shape_aabb = shape_aabb.merge(AABB(shape_aabb.position + p_motion, shape_aabb.size)); //use motion
+		shape_aabb = shape_aabb.merge(AABB(shape_aabb.position + p_motion, shape_aabb.size)); // use motion
 		s.aabb_cache = shape_aabb;
 
 		space->get_broadphase()->move(s.bpid, shape_aabb);

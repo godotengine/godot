@@ -130,7 +130,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 	} else if (pn.begins_with("indices")) {
 
 		if (pn.find("_") != -1) {
-			//type
+			// type
 			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
 
 			int type = p_value;
@@ -175,7 +175,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 
 	Variant arr = get_array();
-	//int size = arr.call("size");
+	// int size = arr.call("size");
 
 	String pn = p_name;
 	if (pn.begins_with("array/")) {
@@ -191,7 +191,7 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (pn.begins_with("indices")) {
 
 		if (pn.find("_") != -1) {
-			//type
+			// type
 			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
 			bool valid;
 			r_ret = arr.get(idx, &valid);

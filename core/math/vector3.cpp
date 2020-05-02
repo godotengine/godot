@@ -84,7 +84,7 @@ Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, 
 	Vector3 p3 = p_post_b;
 
 	{
-		//normalize
+		// normalize
 
 		real_t ab = p0.distance_to(p1);
 		real_t bc = p1.distance_to(p2);

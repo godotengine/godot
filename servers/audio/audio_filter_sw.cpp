@@ -58,7 +58,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 	int sr_limit = (sampling_rate / 2) + 512;
 
 	double final_cutoff = (cutoff > sr_limit) ? sr_limit : cutoff;
-	if (final_cutoff < 1) final_cutoff = 1; //don't allow less than this
+	if (final_cutoff < 1) final_cutoff = 1; // don't allow less than this
 
 	double omega = 2.0 * Math_PI * final_cutoff / sampling_rate;
 
@@ -134,7 +134,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 			p_coeffs->a2 = (1 - alpha / tmpgain);
 		} break;
 		case BANDLIMIT: {
-			//this one is extra tricky
+			// this one is extra tricky
 			double hicutoff = resonance;
 			double centercutoff = (cutoff + resonance) / 2.0;
 			double bandwidth = (Math::log(centercutoff) - Math::log(hicutoff)) / Math::log((double)2);
@@ -186,7 +186,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
 	p_coeffs->a1 /= 0.0 - a0;
 	p_coeffs->a2 /= 0.0 - a0;
 
-	//undenormalise
+	// undenormalise
 	/*    p_coeffs->b0=undenormalise(p_coeffs->b0);
     p_coeffs->b1=undenormalise(p_coeffs->b1);
     p_coeffs->b2=undenormalise(p_coeffs->b2);
@@ -194,7 +194,7 @@ void AudioFilterSW::prepare_coefficients(Coeffs *p_coeffs) {
     p_coeffs->a2=undenormalise(p_coeffs->a2);*/
 }
 
-void AudioFilterSW::set_stages(int p_stages) { //adjust for multiple stages
+void AudioFilterSW::set_stages(int p_stages) { // adjust for multiple stages
 
 	stages = p_stages;
 }
@@ -253,7 +253,7 @@ void AudioFilterSW::Processor::update_coeffs(int p_interp_buffer_len) {
 	if (!filter)
 		return;
 
-	if (p_interp_buffer_len) { //interpolate
+	if (p_interp_buffer_len) { // interpolate
 		Coeffs old_coeffs = coeffs;
 		filter->prepare_coefficients(&coeffs);
 		incr_coeffs.a1 = (coeffs.a1 - old_coeffs.a1) / p_interp_buffer_len;

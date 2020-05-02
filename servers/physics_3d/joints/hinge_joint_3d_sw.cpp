@@ -81,7 +81,7 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &fr
 	m_rbBFrame.basis[1][2] *= real_t(-1.);
 	m_rbBFrame.basis[2][2] *= real_t(-1.);
 
-	//start with free
+	// start with free
 	m_lowerLimit = Math_PI;
 	m_upperLimit = -Math_PI;
 
@@ -138,7 +138,7 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 			rbAxisB1.y, rbAxisB2.y, -axisInB.y,
 			rbAxisB1.z, rbAxisB2.z, -axisInB.z);
 
-	//start with free
+	// start with free
 	m_lowerLimit = Math_PI;
 	m_upperLimit = -Math_PI;
 
@@ -189,10 +189,10 @@ bool HingeJoint3DSW::setup(real_t p_step) {
 		}
 	}
 
-	//calculate two perpendicular jointAxis, orthogonal to hingeAxis
-	//these two jointAxis require equal angular velocities for both bodies
+	// calculate two perpendicular jointAxis, orthogonal to hingeAxis
+	// these two jointAxis require equal angular velocities for both bodies
 
-	//this is unused for now, it's a todo
+	// this is unused for now, it's a todo
 	Vector3 jointAxis0local;
 	Vector3 jointAxis1local;
 
@@ -223,21 +223,21 @@ bool HingeJoint3DSW::setup(real_t p_step) {
 	// Compute limit information
 	real_t hingeAngle = get_hinge_angle();
 
-	//set bias, sign, clear accumulator
+	// set bias, sign, clear accumulator
 	m_correction = real_t(0.);
 	m_limitSign = real_t(0.);
 	m_solveLimit = false;
 	m_accLimitImpulse = real_t(0.);
 
-	//if (m_lowerLimit < m_upperLimit)
+	// if (m_lowerLimit < m_upperLimit)
 	if (m_useLimit && m_lowerLimit <= m_upperLimit) {
-		//if (hingeAngle <= m_lowerLimit*m_limitSoftness)
+		// if (hingeAngle <= m_lowerLimit*m_limitSoftness)
 		if (hingeAngle <= m_lowerLimit) {
 			m_correction = (m_lowerLimit - hingeAngle);
 			m_limitSign = 1.0f;
 			m_solveLimit = true;
 		}
-		//else if (hingeAngle >= m_upperLimit*m_limitSoftness)
+		// else if (hingeAngle >= m_upperLimit*m_limitSoftness)
 		else if (hingeAngle >= m_upperLimit) {
 			m_correction = m_upperLimit - hingeAngle;
 			m_limitSign = -1.0f;
@@ -258,9 +258,9 @@ void HingeJoint3DSW::solve(real_t p_step) {
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
 
-	//real_t tau = real_t(0.3);
+	// real_t tau = real_t(0.3);
 
-	//linear part
+	// linear part
 	if (!m_angularOnly) {
 		Vector3 rel_pos1 = pivotAInW - A->get_transform().origin;
 		Vector3 rel_pos2 = pivotBInW - B->get_transform().origin;
@@ -275,8 +275,8 @@ void HingeJoint3DSW::solve(real_t p_step) {
 
 			real_t rel_vel;
 			rel_vel = normal.dot(vel);
-			//positional error (zeroth order error)
-			real_t depth = -(pivotAInW - pivotBInW).dot(normal); //this is the error projected on the normal
+			// positional error (zeroth order error)
+			real_t depth = -(pivotAInW - pivotBInW).dot(normal); // this is the error projected on the normal
 			real_t impulse = depth * tau / p_step * jacDiagABInv - rel_vel * jacDiagABInv;
 			m_appliedImpulse += impulse;
 			Vector3 impulse_vector = normal * impulse;
@@ -302,7 +302,7 @@ void HingeJoint3DSW::solve(real_t p_step) {
 		Vector3 angBorthog = angVelB - angVelAroundHingeAxisB;
 		Vector3 velrelOrthog = angAorthog - angBorthog;
 		{
-			//solve orthogonal angular velocity correction
+			// solve orthogonal angular velocity correction
 			real_t relaxation = real_t(1.);
 			real_t len = velrelOrthog.length();
 			if (len > real_t(0.00001)) {
@@ -313,7 +313,7 @@ void HingeJoint3DSW::solve(real_t p_step) {
 				velrelOrthog *= (real_t(1.) / denom) * m_relaxationFactor;
 			}
 
-			//solve angular positional correction
+			// solve angular positional correction
 			Vector3 angularError = -axisA.cross(axisB) * (real_t(1.) / p_step);
 			real_t len2 = angularError.length();
 			if (len2 > real_t(0.00001)) {
@@ -343,9 +343,9 @@ void HingeJoint3DSW::solve(real_t p_step) {
 			}
 		}
 
-		//apply motor
+		// apply motor
 		if (m_enableAngularMotor) {
-			//todo: add limits too
+			// todo: add limits too
 			Vector3 angularLimit(0, 0, 0);
 
 			Vector3 velrel = angVelAroundHingeAxisA - angVelAroundHingeAxisB;
@@ -355,7 +355,7 @@ void HingeJoint3DSW::solve(real_t p_step) {
 			real_t motor_relvel = desiredMotorVel - projRelVel;
 
 			real_t unclippedMotorImpulse = m_kHinge * motor_relvel;
-			//todo: should clip against accumulated impulse
+			// todo: should clip against accumulated impulse
 			real_t clippedMotorImpulse = unclippedMotorImpulse > m_maxMotorImpulse ? m_maxMotorImpulse : unclippedMotorImpulse;
 			clippedMotorImpulse = clippedMotorImpulse < -m_maxMotorImpulse ? -m_maxMotorImpulse : clippedMotorImpulse;
 			Vector3 motorImp = clippedMotorImpulse * axisA;

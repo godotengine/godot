@@ -473,14 +473,14 @@ signed char String::nocasecmp_to(const String &p_str) const {
 	while (true) {
 
 		if (*that_str == 0 && *this_str == 0)
-			return 0; //we're equal
+			return 0; // we're equal
 		else if (*this_str == 0)
-			return -1; //if this is empty, and the other one is not, then we're less.. I think?
+			return -1; // if this is empty, and the other one is not, then we're less.. I think?
 		else if (*that_str == 0)
-			return 1; //otherwise the other one is smaller..
-		else if (_find_upper(*this_str) < _find_upper(*that_str)) //more than
+			return 1; // otherwise the other one is smaller..
+		else if (_find_upper(*this_str) < _find_upper(*that_str)) // more than
 			return -1;
-		else if (_find_upper(*this_str) > _find_upper(*that_str)) //less than
+		else if (_find_upper(*this_str) > _find_upper(*that_str)) // less than
 			return 1;
 
 		this_str++;
@@ -503,14 +503,14 @@ signed char String::casecmp_to(const String &p_str) const {
 	while (true) {
 
 		if (*that_str == 0 && *this_str == 0)
-			return 0; //we're equal
+			return 0; // we're equal
 		else if (*this_str == 0)
-			return -1; //if this is empty, and the other one is not, then we're less.. I think?
+			return -1; // if this is empty, and the other one is not, then we're less.. I think?
 		else if (*that_str == 0)
-			return 1; //otherwise the other one is smaller..
-		else if (*this_str < *that_str) //more than
+			return 1; // otherwise the other one is smaller..
+		else if (*this_str < *that_str) // more than
 			return -1;
-		else if (*this_str > *that_str) //less than
+		else if (*this_str > *that_str) // less than
 			return 1;
 
 		this_str++;
@@ -564,9 +564,9 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 			} else if (IS_DIGIT(*that_str))
 				return 1;
 			else {
-				if (_find_upper(*this_str) < _find_upper(*that_str)) //more than
+				if (_find_upper(*this_str) < _find_upper(*that_str)) // more than
 					return -1;
-				else if (_find_upper(*this_str) > _find_upper(*that_str)) //less than
+				else if (_find_upper(*this_str) > _find_upper(*that_str)) // less than
 					return 1;
 
 				this_str++;
@@ -683,7 +683,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 	int pos = 0;
 	int prev_pos = 0;
-	//int slices=1;
+	// int slices=1;
 	if (p_slice < 0)
 		return "";
 	if (find(p_splitter) == -1)
@@ -694,24 +694,24 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 		pos = find(p_splitter, pos);
 		if (pos == -1)
-			pos = length(); //reached end
+			pos = length(); // reached end
 
 		int from = prev_pos;
-		//int to=pos;
+		// int to=pos;
 
 		if (p_slice == i) {
 
 			return substr(from, pos - from);
 		}
 
-		if (pos == length()) //reached end and no find
+		if (pos == length()) // reached end and no find
 			break;
 		pos += p_splitter.length();
 		prev_pos = pos;
 		i++;
 	}
 
-	return ""; //no find!
+	return ""; // no find!
 }
 
 String String::get_slicec(CharType p_splitter, int p_slice) const {
@@ -1080,7 +1080,7 @@ String String::num(double p_num, int p_decimals) {
 #endif
 
 	buf[255] = 0;
-	//destroy trailing zeroes
+	// destroy trailing zeroes
 	{
 
 		bool period = false;
@@ -1145,7 +1145,7 @@ String String::num(double p_num, int p_decimals) {
 
 			if (p_decimals == -1) {
 
-				if (digit == MAX_DIGITS) //no point in going to infinite
+				if (digit == MAX_DIGITS) // no point in going to infinite
 					break;
 
 				if ((dec - (float)((int)dec)) < 1e-6)
@@ -1418,7 +1418,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		bool has_bom = uint8_t(p_utf8[0]) == 0xEF && uint8_t(p_utf8[1]) == 0xBB && uint8_t(p_utf8[2]) == 0xBF;
 		if (has_bom) {
 
-			//just skip it
+			// just skip it
 			if (p_len >= 0)
 				p_len -= 3;
 			p_utf8 += 3;
@@ -1450,13 +1450,13 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 					skip = 5;
 				else {
 					_UNICERROR("invalid skip");
-					return true; //invalid utf8
+					return true; // invalid utf8
 				}
 
 				if (skip == 1 && (c & 0x1E) == 0) {
-					//printf("overlong rejected\n");
+					// printf("overlong rejected\n");
 					_UNICERROR("overlong rejected");
-					return true; //reject overlong
+					return true; // reject overlong
 				}
 
 				str_size++;
@@ -1472,7 +1472,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 		if (skip) {
 			_UNICERROR("no space left");
-			return true; //not enough spac
+			return true; // not enough spac
 		}
 	}
 
@@ -1505,18 +1505,18 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		else {
 			_UNICERROR("invalid len");
 
-			return true; //invalid UTF8
+			return true; // invalid UTF8
 		}
 
 		if (len > cstr_size) {
 			_UNICERROR("no space left");
-			return true; //not enough space
+			return true; // not enough space
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
-			//printf("overlong rejected\n");
+			// printf("overlong rejected\n");
 			_UNICERROR("no space left");
-			return true; //reject overlong
+			return true; // reject overlong
 		}
 
 		/* Convert the first character */
@@ -1533,19 +1533,19 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 				if ((p_utf8[i] & 0xC0) != 0x80) {
 					_UNICERROR("invalid utf8");
-					return true; //invalid utf8
+					return true; // invalid utf8
 				}
 				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7F) >> (7 - len)) == 0) {
 					_UNICERROR("invalid utf8 overlong");
-					return true; //no overlong
+					return true; // no overlong
 				}
 				unichar = (unichar << 6) | (p_utf8[i] & 0x3F);
 			}
 		}
 
-		//printf("char %i, len %i\n",unichar,len);
+		// printf("char %i, len %i\n",unichar,len);
 		if (sizeof(wchar_t) == 2 && unichar > 0xFFFF) {
-			unichar = ' '; //too long for windows
+			unichar = ' '; // too long for windows
 		}
 
 		*(dst++) = unichar;
@@ -1632,7 +1632,7 @@ CharString String::utf8() const {
 		}
 	}
 #undef APPEND_CHAR
-	*cdst = 0; //trailing zero
+	*cdst = 0; // trailing zero
 
 	return utf8s;
 }
@@ -2518,7 +2518,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	if (p_keys.size() == 0)
 		return -1;
 
-	//int src_len=p_str.length();
+	// int src_len=p_str.length();
 	const String *keys = &p_keys[0];
 	int key_count = p_keys.size();
 	int len = length();
@@ -3396,7 +3396,7 @@ String String::word_wrap(int p_chars_per_line) const {
 				ret += substr(from, i - from + 1) + "\n";
 			} else {
 				ret += substr(from, last_space - from) + "\n";
-				i = last_space; //rewind
+				i = last_space; // rewind
 			}
 			from = i + 1;
 			last_space = -1;
@@ -3845,25 +3845,25 @@ String String::path_to(const String &p_path) const {
 
 	} else if (src.begins_with("/") && dst.begins_with("/")) {
 
-		//nothing
+		// nothing
 	} else {
-		//dos style
+		// dos style
 		String src_begin = src.get_slicec('/', 0);
 		String dst_begin = dst.get_slicec('/', 0);
 
 		if (src_begin != dst_begin)
-			return p_path; //impossible to do this
+			return p_path; // impossible to do this
 
 		base = src_begin;
 		src = src.substr(src_begin.length(), src.length());
 		dst = dst.substr(dst_begin.length(), dst.length());
 	}
 
-	//remove leading and trailing slash and split
+	// remove leading and trailing slash and split
 	Vector<String> src_dirs = src.substr(1, src.length() - 2).split("/");
 	Vector<String> dst_dirs = dst.substr(1, dst.length() - 2).split("/");
 
-	//find common parent
+	// find common parent
 	int common_parent = 0;
 
 	while (true) {

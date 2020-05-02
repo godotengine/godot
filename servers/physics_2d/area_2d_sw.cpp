@@ -192,7 +192,7 @@ void Area2DSW::call_queries() {
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E; E = E->next()) {
 
 			if (E->get().state == 0)
-				continue; //nothing happened
+				continue; // nothing happened
 
 			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
 			res[1] = E->key().rid;
@@ -224,7 +224,7 @@ void Area2DSW::call_queries() {
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E; E = E->next()) {
 
 			if (E->get().state == 0)
-				continue; //nothing happened
+				continue; // nothing happened
 
 			res[0] = E->get().state > 0 ? PhysicsServer2D::AREA_BODY_ADDED : PhysicsServer2D::AREA_BODY_REMOVED;
 			res[1] = E->key().rid;
@@ -239,7 +239,7 @@ void Area2DSW::call_queries() {
 
 	monitored_areas.clear();
 
-	//get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
+	// get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
 }
 
 Area2DSW::Area2DSW() :
@@ -247,7 +247,7 @@ Area2DSW::Area2DSW() :
 		monitor_query_list(this),
 		moved_list(this) {
 
-	_set_static(true); //areas are not active by default
+	_set_static(true); // areas are not active by default
 	space_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
 	gravity = 9.80665;
 	gravity_vector = Vector2(0, -1);

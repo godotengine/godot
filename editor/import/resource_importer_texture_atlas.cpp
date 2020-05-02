@@ -88,8 +88,8 @@ Error ResourceImporterTextureAtlas::import(const String &p_source_file, const St
 
 	/* If this happens, it's because the atlas_file field was not filled, so just import a broken texture */
 
-	//use an xpm because it's size independent, the editor images are vector and size dependent
-	//it's a simple hack
+	// use an xpm because it's size independent, the editor images are vector and size dependent
+	// it's a simple hack
 	Ref<Image> broken = memnew(Image((const char **)atlas_import_failed_xpm));
 	Ref<ImageTexture> broken_texture;
 	broken_texture.instance();
@@ -152,7 +152,7 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 				px += p_offset.x;
 				py += p_offset.y;
 
-				//may have been cropped, so don't blit what is not visible?
+				// may have been cropped, so don't blit what is not visible?
 				if (px < 0 || px >= width) {
 					continue;
 				}
@@ -174,7 +174,7 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 				px += p_offset.x;
 				py += p_offset.y;
 
-				//may have been cropped, so don't blit what is not visible?
+				// may have been cropped, so don't blit what is not visible?
 				if (px < 0 || px >= width) {
 					continue;
 				}
@@ -194,7 +194,7 @@ static void _plot_triangle(Vector2 *vertices, const Vector2 &p_offset, bool p_tr
 
 Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const Map<String, Map<StringName, Variant>> &p_source_file_options, const Map<String, String> &p_base_paths) {
 
-	ERR_FAIL_COND_V(p_source_file_options.size() == 0, ERR_BUG); //should never happen
+	ERR_FAIL_COND_V(p_source_file_options.size() == 0, ERR_BUG); // should never happen
 
 	Vector<EditorAtlasPacker::Chart> charts;
 	Vector<PackData> pack_data_files;
@@ -223,7 +223,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 			EditorAtlasPacker::Chart chart;
 
-			//clip a region from the image
+			// clip a region from the image
 			Rect2 used_rect = image->get_used_rect();
 			pack_data.region = used_rect;
 
@@ -277,11 +277,11 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		}
 	}
 
-	//pack the charts
+	// pack the charts
 	int atlas_width, atlas_height;
 	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height);
 
-	//blit the atlas
+	// blit the atlas
 	Ref<Image> new_atlas;
 	new_atlas.instance();
 	new_atlas->create(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
@@ -304,11 +304,11 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		}
 	}
 
-	//save the atlas
+	// save the atlas
 
 	new_atlas->save_png(p_group_file);
 
-	//update cache if existing, else create
+	// update cache if existing, else create
 	Ref<Texture2D> cache;
 	if (ResourceCache::has(p_group_file)) {
 		Resource *resptr = ResourceCache::get(p_group_file);
@@ -321,7 +321,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		cache = res_cache;
 	}
 
-	//save the images
+	// save the images
 	idx = 0;
 	for (const Map<String, Map<StringName, Variant>>::Element *E = p_source_file_options.front(); E; E = E->next(), idx++) {
 
@@ -332,7 +332,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		if (!pack_data.is_mesh) {
 			Vector2 offset = charts[pack_data.chart_pieces[0]].vertices[0] + charts[pack_data.chart_pieces[0]].final_offset;
 
-			//region
+			// region
 			Ref<AtlasTexture> atlas_texture;
 			atlas_texture.instance();
 			atlas_texture->set_atlas(cache);
@@ -367,7 +367,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 							SWAP(uv.x, uv.y);
 						}
 						uv += chart.final_offset;
-						uv /= new_atlas->get_size(); //normalize uv to 0-1 range
+						uv /= new_atlas->get_size(); // normalize uv to 0-1 range
 						uvw[j] = uv;
 					}
 
@@ -394,7 +394,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 			mesh_texture->set_mesh(mesh);
 
 			texture = mesh_texture;
-			//mesh
+			// mesh
 		}
 
 		String save_path = p_base_paths[E->key()] + ".res";

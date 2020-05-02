@@ -51,19 +51,19 @@ DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 
 bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 	switch (p_feature) {
-		//case FEATURE_CONSOLE_WINDOW:
-		//case FEATURE_CURSOR_SHAPE:
-		//case FEATURE_CUSTOM_CURSOR_SHAPE:
-		//case FEATURE_GLOBAL_MENU:
-		//case FEATURE_HIDPI:
-		//case FEATURE_ICON:
-		//case FEATURE_IME:
-		//case FEATURE_MOUSE:
-		//case FEATURE_MOUSE_WARP:
-		//case FEATURE_NATIVE_DIALOG:
-		//case FEATURE_NATIVE_ICON:
-		//case FEATURE_NATIVE_VIDEO:
-		//case FEATURE_WINDOW_TRANSPARENCY:
+		// case FEATURE_CONSOLE_WINDOW:
+		// case FEATURE_CURSOR_SHAPE:
+		// case FEATURE_CUSTOM_CURSOR_SHAPE:
+		// case FEATURE_GLOBAL_MENU:
+		// case FEATURE_HIDPI:
+		// case FEATURE_ICON:
+		// case FEATURE_IME:
+		// case FEATURE_MOUSE:
+		// case FEATURE_MOUSE_WARP:
+		// case FEATURE_NATIVE_DIALOG:
+		// case FEATURE_NATIVE_ICON:
+		// case FEATURE_NATIVE_VIDEO:
+		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_ORIENTATION:
@@ -489,9 +489,9 @@ void DisplayServerAndroid::process_key_event(int p_keycode, int p_scancode, int 
 
 void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector<DisplayServerAndroid::TouchPos> &p_points) {
 	switch (p_what) {
-		case 0: { //gesture begin
+		case 0: { // gesture begin
 			if (touch.size()) {
-				//end all if exist
+				// end all if exist
 				for (int i = 0; i < touch.size(); i++) {
 
 					Ref<InputEventScreenTouch> ev;
@@ -509,7 +509,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 				touch.write[i].pos = p_points[i].pos;
 			}
 
-			//send touch
+			// send touch
 			for (int i = 0; i < touch.size(); i++) {
 
 				Ref<InputEventScreenTouch> ev;
@@ -521,7 +521,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			}
 
 		} break;
-		case 1: { //motion
+		case 1: { // motion
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
 			for (int i = 0; i < touch.size(); i++) {
@@ -538,7 +538,7 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 				ERR_CONTINUE(idx == -1);
 
 				if (touch[i].pos == p_points[idx].pos)
-					continue; //no move unncesearily
+					continue; // no move unncesearily
 
 				Ref<InputEventScreenDrag> ev;
 				ev.instance();
@@ -550,9 +550,9 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			}
 
 		} break;
-		case 2: { //release
+		case 2: { // release
 			if (touch.size()) {
-				//end all if exist
+				// end all if exist
 				for (int i = 0; i < touch.size(); i++) {
 
 					Ref<InputEventScreenTouch> ev;

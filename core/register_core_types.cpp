@@ -99,7 +99,7 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
-	//consistency check
+	// consistency check
 	static_assert(sizeof(Callable) <= 16);
 
 	ObjectDB::setup();
@@ -227,7 +227,7 @@ void register_core_types() {
 }
 
 void register_core_settings() {
-	//since in register core types, globals may not e present
+	// since in register core types, globals may not e present
 	GLOBAL_DEF("network/limits/tcp/connect_timeout_seconds", (30));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
 	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));

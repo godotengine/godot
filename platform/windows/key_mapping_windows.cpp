@@ -341,7 +341,7 @@ unsigned int KeyMappingWindows::get_keysym(unsigned int p_code) {
 	for (int i = 0; _vk_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 
 		if (_vk_to_keycode[i].keycode == p_code) {
-			//printf("outcode: %x\n",_vk_to_keycode[i].keysym);
+			// printf("outcode: %x\n",_vk_to_keycode[i].keysym);
 
 			return _vk_to_keycode[i].keysym;
 		}

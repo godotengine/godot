@@ -202,8 +202,8 @@ void GraphNode::_notification(int p_what) {
 				sb = get_theme_stylebox(selected ? "selectedframe" : "frame");
 			}
 
-			//sb=sb->duplicate();
-			//sb->call("set_modulate",modulate);
+			// sb=sb->duplicate();
+			// sb->call("set_modulate",modulate);
 			Ref<Texture2D> port = get_theme_icon("port");
 			Ref<Texture2D> close = get_theme_icon("close");
 			Ref<Texture2D> resizer = get_theme_icon("resizer");
@@ -257,7 +257,7 @@ void GraphNode::_notification(int p_what) {
 				if (!slot_info.has(E->key()))
 					continue;
 				const Slot &s = slot_info[E->key()];
-				//left
+				// left
 				if (s.enable_left) {
 					Ref<Texture2D> p = port;
 					if (s.custom_slot_left.is_valid()) {
@@ -445,7 +445,7 @@ void GraphNode::set_drag(bool p_drag) {
 	if (p_drag)
 		drag_from = get_offset();
 	else
-		emit_signal("dragged", drag_from, get_offset()); //useful for undo/redo
+		emit_signal("dragged", drag_from, get_offset()); // useful for undo/redo
 }
 
 Vector2 GraphNode::get_drag_from() {
@@ -599,7 +599,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
 			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
-				//send focus to parent
+				// send focus to parent
 				get_parent_control()->grab_focus();
 				emit_signal("close_request");
 				accept_event();

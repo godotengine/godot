@@ -74,7 +74,7 @@ RID RasterizerEffectsRD::_get_uniform_set_from_image(RID p_image) {
 	u.binding = 0;
 	u.ids.push_back(p_image);
 	uniforms.push_back(u);
-	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	// any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0), 1);
 
 	image_to_uniform_set_cache[p_image] = uniform_set;
@@ -98,7 +98,7 @@ RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture, bool p_use
 	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 	u.ids.push_back(p_texture);
 	uniforms.push_back(u);
-	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	// any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, tonemap.shader.version_get_shader(tonemap.shader_version, 0), 0);
 
 	texture_to_uniform_set_cache[p_texture] = uniform_set;
@@ -122,7 +122,7 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_texture(RID p_texture, bo
 	u.ids.push_back(p_use_mipmaps ? default_mipmap_sampler : default_sampler);
 	u.ids.push_back(p_texture);
 	uniforms.push_back(u);
-	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	// any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, luminance_reduce.shader.version_get_shader(luminance_reduce.shader_version, 0), 0);
 
 	texture_to_compute_uniform_set_cache[p_texture] = uniform_set;
@@ -160,7 +160,7 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_texture_pair(RID p_textur
 		u.ids.push_back(p_texture2);
 		uniforms.push_back(u);
 	}
-	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	// any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0), 1);
 
 	texture_pair_to_compute_uniform_set_cache[tp] = uniform_set;
@@ -196,7 +196,7 @@ RID RasterizerEffectsRD::_get_compute_uniform_set_from_image_pair(RID p_texture1
 		u.ids.push_back(p_texture2);
 		uniforms.push_back(u);
 	}
-	//any thing with the same configuration (one texture in binding 0 for set 0), is good
+	// any thing with the same configuration (one texture in binding 0 for set 0), is good
 	RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, ssr_scale.shader.version_get_shader(ssr_scale.shader_version, 0), 3);
 
 	image_pair_to_compute_uniform_set_cache[tp] = uniform_set;
@@ -390,10 +390,10 @@ void RasterizerEffectsRD::gaussian_glow(RID p_source_rd_texture, RID p_texture, 
 	copy.push_constant.glow_hdr_threshold = p_hdr_bleed_treshold;
 	copy.push_constant.glow_hdr_scale = p_hdr_bleed_scale;
 	copy.push_constant.glow_exposure = p_exposure;
-	copy.push_constant.glow_white = 0; //actually unused
+	copy.push_constant.glow_white = 0; // actually unused
 	copy.push_constant.glow_luminance_cap = p_luminance_cap;
 
-	copy.push_constant.glow_auto_exposure_grey = p_auto_exposure_grey; //unused also
+	copy.push_constant.glow_auto_exposure_grey = p_auto_exposure_grey; // unused also
 
 	//HORIZONTAL
 	RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
@@ -431,11 +431,11 @@ void RasterizerEffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal, R
 	int32_t x_groups = (p_screen_size.width - 1) / 8 + 1;
 	int32_t y_groups = (p_screen_size.height - 1) / 8 + 1;
 
-	{ //scale color and depth to half
+	{ // scale color and depth to half
 		ssr_scale.push_constant.camera_z_far = p_camera.get_z_far();
 		ssr_scale.push_constant.camera_z_near = p_camera.get_z_near();
 		ssr_scale.push_constant.orthogonal = p_camera.is_orthogonal();
-		ssr_scale.push_constant.filter = false; //enabling causes arctifacts
+		ssr_scale.push_constant.filter = false; // enabling causes arctifacts
 		ssr_scale.push_constant.screen_size[0] = p_screen_size.x;
 		ssr_scale.push_constant.screen_size[1] = p_screen_size.y;
 
@@ -495,7 +495,7 @@ void RasterizerEffectsRD::screen_space_reflection(RID p_diffuse, RID p_normal, R
 
 	if (p_roughness_quality != RS::ENV_SSR_ROUGNESS_QUALITY_DISABLED) {
 
-		//blurr
+		// blurr
 
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
@@ -561,7 +561,7 @@ void RasterizerEffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, 
 	p.normal /= p.d;
 	float unit_size = p.normal.x;
 
-	{ //scale color and depth to half
+	{ // scale color and depth to half
 		sss.push_constant.camera_z_far = p_camera.get_z_far();
 		sss.push_constant.camera_z_near = p_camera.get_z_near();
 		sss.push_constant.orthogonal = p_camera.is_orthogonal();
@@ -735,7 +735,7 @@ void RasterizerEffectsRD::luminance_reduction(RID p_source_texture, const Size2i
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_source_texture), 0);
 		} else {
 
-			RD::get_singleton()->compute_list_add_barrier(compute_list); //needs barrier, wait until previous is done
+			RD::get_singleton()->compute_list_add_barrier(compute_list); // needs barrier, wait until previous is done
 
 			if (i == p_reduce.size() - 1 && !p_set) {
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, luminance_reduce.pipelines[LUMINANCE_REDUCE_WRITE]);
@@ -808,7 +808,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 
 	if (p_bokeh_shape == RS::DOF_BOKEH_BOX || p_bokeh_shape == RS::DOF_BOKEH_HEXAGON) {
 
-		//second pass
+		// second pass
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[p_bokeh_shape == RS::DOF_BOKEH_BOX ? BOKEH_GEN_BOKEH_BOX : BOKEH_GEN_BOKEH_HEXAGONAL]);
 
 		static const int quality_samples[4] = { 6, 12, 12, 24 };
@@ -816,7 +816,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 		bokeh.push_constant.steps = quality_samples[p_quality];
 
 		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
-			//box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
+			// box and hexagon are more or less the same, and they can work in either half (very low and low quality) or full (medium and high quality_ sizes)
 
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_halfsize_texture1), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_base_texture), 1);
@@ -829,7 +829,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 			bokeh.push_constant.blur_size *= 0.5;
 
 		} else {
-			//medium and high quality use full size
+			// medium and high quality use full size
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_secondary_texture), 0);
 			RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_base_texture), 1);
 		}
@@ -839,7 +839,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-		//third pass
+		// third pass
 		bokeh.push_constant.second_pass = true;
 
 		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
@@ -857,7 +857,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
 		if (p_quality == RS::DOF_BLUR_QUALITY_VERY_LOW || p_quality == RS::DOF_BLUR_QUALITY_LOW) {
-			//forth pass, upscale for low quality
+			// forth pass, upscale for low quality
 
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[BOKEH_COMPOSITE]);
 
@@ -876,9 +876,9 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 			RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 		}
 	} else {
-		//circle
+		// circle
 
-		//second pass
+		// second pass
 		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, bokeh.pipelines[BOKEH_GEN_BOKEH_CIRCULAR]);
 
 		static const float quality_scale[4] = { 8.0, 4.0, 1.0, 0.5 };
@@ -886,7 +886,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 		bokeh.push_constant.steps = 0;
 		bokeh.push_constant.blur_scale = quality_scale[p_quality];
 
-		//circle always runs in half size, otherwise too expensive
+		// circle always runs in half size, otherwise too expensive
 
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_uniform_set_from_image(p_halfsize_texture1), 0);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_base_texture), 1);
@@ -902,7 +902,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 		RD::get_singleton()->compute_list_add_barrier(compute_list);
 
-		//circle is just one pass, then upscale
+		// circle is just one pass, then upscale
 
 		// upscale
 
@@ -928,7 +928,7 @@ void RasterizerEffectsRD::bokeh_dof(RID p_base_texture, RID p_depth_texture, con
 
 void RasterizerEffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer, const Size2i &p_depth_buffer_size, RID p_depth_mipmaps_texture, const Vector<RID> &depth_mipmaps, RID p_ao1, bool p_half_size, RID p_ao2, RID p_upscale_buffer, float p_intensity, float p_radius, float p_bias, const CameraMatrix &p_projection, RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOBlur p_blur, float p_edge_sharpness) {
 
-	//minify first
+	// minify first
 	ssao.minify_push_constant.orthogonal = p_projection.is_orthogonal();
 	ssao.minify_push_constant.z_near = p_projection.get_z_near();
 	ssao.minify_push_constant.z_far = p_projection.get_z_far();
@@ -993,8 +993,8 @@ void RasterizerEffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer,
 	ssao.gather_push_constant.proj_info[1] = -2.0f / (ssao.gather_push_constant.screen_size[1] * p_projection.matrix[1][1]);
 	ssao.gather_push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
 	ssao.gather_push_constant.proj_info[3] = (1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
-	//ssao.gather_push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
-	//ssao.gather_push_constant.proj_info[3] = -(1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
+	// ssao.gather_push_constant.proj_info[2] = (1.0f - p_projection.matrix[0][2]) / p_projection.matrix[0][0];
+	// ssao.gather_push_constant.proj_info[3] = -(1.0f + p_projection.matrix[1][2]) / p_projection.matrix[1][1];
 
 	ssao.gather_push_constant.radius = p_radius;
 
@@ -1055,11 +1055,11 @@ void RasterizerEffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer,
 
 		RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 	}
-	if (p_half_size) { //must upscale
+	if (p_half_size) { // must upscale
 
 		/* FOURTH PASS */
 		// upscale if half size
-		//back to full size
+		// back to full size
 		ssao.blur_push_constant.screen_size[0] = p_depth_buffer_size.x;
 		ssao.blur_push_constant.screen_size[1] = p_depth_buffer_size.y;
 
@@ -1071,7 +1071,7 @@ void RasterizerEffectsRD::generate_ssao(RID p_depth_buffer, RID p_normal_buffer,
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_buffer), 1);
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, _get_compute_uniform_set_from_texture(p_depth_mipmaps_texture), 2);
 
-		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant)); //not used but set anyway
+		RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant)); // not used but set anyway
 
 		x_groups = (p_depth_buffer_size.x - 1) / 8 + 1;
 		y_groups = (p_depth_buffer_size.y - 1) / 8 + 1;
@@ -1096,7 +1096,7 @@ void RasterizerEffectsRD::roughness_limit(RID p_source_normal, RID p_roughness, 
 	int x_groups = (p_size.x - 1) / 8 + 1;
 	int y_groups = (p_size.y - 1) / 8 + 1;
 
-	RD::get_singleton()->compute_list_set_push_constant(compute_list, &roughness_limiter.push_constant, sizeof(RoughnessLimiterPushConstant)); //not used but set anyway
+	RD::get_singleton()->compute_list_set_push_constant(compute_list, &roughness_limiter.push_constant, sizeof(RoughnessLimiterPushConstant)); // not used but set anyway
 
 	RD::get_singleton()->compute_list_dispatch(compute_list, x_groups, y_groups, 1);
 
@@ -1244,7 +1244,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 		copy_to_fb.shader_version = copy_to_fb.shader.version_create();
 
-		//use additive
+		// use additive
 
 		for (int i = 0; i < COPY_TO_FB_MAX; i++) {
 			copy_to_fb.pipelines[i].setup(copy_to_fb.shader.version_get_shader(copy_to_fb.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
@@ -1449,7 +1449,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 		specular_merge.shader_version = specular_merge.shader.version_create();
 
-		//use additive
+		// use additive
 
 		RD::PipelineColorBlendState::Attachment ba;
 		ba.enable_blend = true;
@@ -1542,7 +1542,7 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 	default_mipmap_sampler = RD::get_singleton()->sampler_create(sampler);
 
-	{ //create index array for copy shaders
+	{ // create index array for copy shaders
 		Vector<uint8_t> pv;
 		pv.resize(6 * 4);
 		{
@@ -1571,7 +1571,7 @@ RasterizerEffectsRD::~RasterizerEffectsRD() {
 
 	RD::get_singleton()->free(default_sampler);
 	RD::get_singleton()->free(default_mipmap_sampler);
-	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
+	RD::get_singleton()->free(index_buffer); // array gets freed as dependency
 	RD::get_singleton()->free(filter.coefficient_buffer);
 
 	bokeh.shader.version_free(bokeh.shader_version);

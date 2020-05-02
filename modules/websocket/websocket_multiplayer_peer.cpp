@@ -63,9 +63,9 @@ int WebSocketMultiplayerPeer::_gen_unique_id() const {
 		hash = hash_djb2_one_32(
 				(uint32_t)OS::get_singleton()->get_data_path().hash64(), hash);
 		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)this), hash); //rely on aslr heap
+				(uint32_t)((uint64_t)this), hash); // rely on aslr heap
 		hash = hash_djb2_one_32(
-				(uint32_t)((uint64_t)&hash), hash); //rely on aslr stack
+				(uint32_t)((uint64_t)&hash), hash); // rely on aslr stack
 		hash = hash & 0x7FFFFFFF; // make it compatible with unsigned, since negatie id is used for exclusion
 	}
 

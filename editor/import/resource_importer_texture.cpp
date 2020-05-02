@@ -328,11 +328,11 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 	f->store_8('G');
 	f->store_8('S');
 	f->store_8('T');
-	f->store_8('2'); //godot streamable texture 2D
+	f->store_8('2'); // godot streamable texture 2D
 
-	//format version
+	// format version
 	f->store_32(StreamTexture::FORMAT_VERSION);
-	//texture may be resized later, so original size must be saved first
+	// texture may be resized later, so original size must be saved first
 	f->store_32(p_image->get_width());
 	f->store_32(p_image->get_height());
 
@@ -340,7 +340,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 	if (p_streamable)
 		flags |= StreamTexture::FORMAT_BIT_STREAM;
 	if (p_mipmaps)
-		flags |= StreamTexture::FORMAT_BIT_HAS_MIPMAPS; //mipmaps bit
+		flags |= StreamTexture::FORMAT_BIT_HAS_MIPMAPS; // mipmaps bit
 	if (p_detect_3d)
 		flags |= StreamTexture::FORMAT_BIT_DETECT_3D;
 	if (p_detect_roughness)
@@ -350,7 +350,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 
 	f->store_32(flags);
 	f->store_32(p_limit_mipmap);
-	//reserved for future use
+	// reserved for future use
 	f->store_32(0);
 	f->store_32(0);
 	f->store_32(0);
@@ -364,7 +364,7 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 */
 
 	if ((p_compress_mode == COMPRESS_LOSSLESS || p_compress_mode == COMPRESS_LOSSY) && p_image->get_format() > Image::FORMAT_RGBA8) {
-		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; //these can't go as lossy
+		p_compress_mode = COMPRESS_VRAM_UNCOMPRESSED; // these can't go as lossy
 	}
 
 	Ref<Image> image = p_image->duplicate();
@@ -441,7 +441,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	Array formats_imported;
 
 	if (size_limit > 0 && (image->get_width() > size_limit || image->get_height() > size_limit)) {
-		//limit size
+		// limit size
 		if (image->get_width() >= image->get_height()) {
 			int new_width = size_limit;
 			int new_height = image->get_height() * new_width / image->get_width();
@@ -480,7 +480,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	}
 
 	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {
-		//basis universal does not support float formats, fall back
+		// basis universal does not support float formats, fall back
 		compress_mode = COMPRESS_VRAM_COMPRESSED;
 	}
 
@@ -491,7 +491,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool srgb_friendly_pack = pack_channels == 0;
 
 	if (compress_mode == COMPRESS_VRAM_COMPRESSED) {
-		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
+		// must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
 		//Android, GLES 2.x
 
 		bool ok_on_pc = false;
@@ -509,7 +509,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 				}
 			} else if (is_ldr) {
 
-				//handle "RGBA Only" setting
+				// handle "RGBA Only" setting
 				if (bptc_ldr == 1 && channels != Image::USED_CHANNELS_LA && channels != Image::USED_CHANNELS_RGBA) {
 					can_bptc = false;
 				}
@@ -519,7 +519,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		}
 
 		if (!can_bptc && is_hdr && !force_rgbe) {
-			//convert to ldr if this can't be stored hdr
+			// convert to ldr if this can't be stored hdr
 			image->convert(Image::FORMAT_RGBA8);
 		}
 
@@ -554,7 +554,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
 		}
 	} else {
-		//import normally
+		// import normally
 		_save_stex(image, p_save_path + ".stex", compress_mode, lossy, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, stream, detect_3d, detect_roughness, force_rgbe, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 	}
 
@@ -596,7 +596,7 @@ String ResourceImporterTexture::get_import_settings_string() const {
 
 bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) const {
 
-	//will become invalid if formats are missing to import
+	// will become invalid if formats are missing to import
 	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
 	if (!metadata.has("vram_texture")) {
@@ -605,7 +605,7 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path) co
 
 	bool vram = metadata["vram_texture"];
 	if (!vram) {
-		return true; //do not care about non vram
+		return true; // do not care about non vram
 	}
 
 	Vector<String> formats_imported;

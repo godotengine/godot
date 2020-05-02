@@ -112,16 +112,16 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	const int expected_vertices = 4;
 
 	if ((format & Mesh::ARRAY_FORMAT_WEIGHTS || format & Mesh::ARRAY_FORMAT_BONES) && (vtx.weights.size() != expected_vertices || vtx.bones.size() != expected_vertices)) {
-		//ensure vertices are the expected amount
+		// ensure vertices are the expected amount
 		ERR_FAIL_COND(vtx.weights.size() != vtx.bones.size());
 		if (vtx.weights.size() < expected_vertices) {
-			//less than required, fill
+			// less than required, fill
 			for (int i = vtx.weights.size(); i < expected_vertices; i++) {
 				vtx.weights.push_back(0);
 				vtx.bones.push_back(0);
 			}
 		} else if (vtx.weights.size() > expected_vertices) {
-			//more than required, sort, cap and normalize.
+			// more than required, sort, cap and normalize.
 			Vector<WeightSort> weights;
 			for (int i = 0; i < vtx.weights.size(); i++) {
 				WeightSort ws;
@@ -130,11 +130,11 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 				weights.push_back(ws);
 			}
 
-			//sort
+			// sort
 			weights.sort();
-			//cap
+			// cap
 			weights.resize(expected_vertices);
-			//renormalize
+			// renormalize
 			float total = 0;
 			for (int i = 0; i < expected_vertices; i++) {
 				total += weights[i].weight;
@@ -281,7 +281,7 @@ Array SurfaceTool::commit_to_arrays() {
 	for (int i = 0; i < Mesh::ARRAY_MAX; i++) {
 
 		if (!(format & (1 << i)))
-			continue; //not in format
+			continue; // not in format
 
 		switch (i) {
 
@@ -351,7 +351,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx + 1] = v.tangent.y;
 					w[idx + 2] = v.tangent.z;
 
-					//float d = v.tangent.dot(v.binormal,v.normal);
+					// float d = v.tangent.dot(v.binormal,v.normal);
 					float d = v.binormal.dot(v.normal.cross(v.tangent));
 					w[idx + 3] = d < 0 ? -1 : 1;
 				}
@@ -469,7 +469,7 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 void SurfaceTool::index() {
 
 	if (index_array.size())
-		return; //already indexed
+		return; // already indexed
 
 	HashMap<Vertex, int, VertexHasher> indices;
 	List<Vertex> new_vertices;
@@ -498,7 +498,7 @@ void SurfaceTool::index() {
 void SurfaceTool::deindex() {
 
 	if (index_array.size() == 0)
-		return; //nothing to deindex
+		return; // nothing to deindex
 	Vector<Vertex> varr;
 	varr.resize(vertex_array.size());
 	int idx = 0;
@@ -688,7 +688,7 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 		r_vertex->push_back(v);
 	}
 
-	//indices
+	// indices
 
 	Vector<int> idx = arr[RS::ARRAY_INDEX];
 	int is = idx.size();
@@ -796,7 +796,7 @@ int SurfaceTool::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
 }
 int SurfaceTool::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
 
-	return 3; //always 3
+	return 3; // always 3
 }
 void SurfaceTool::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
 

@@ -48,7 +48,7 @@ DWORD ThreadWindows::thread_callback(LPVOID userdata) {
 
 	ThreadWindows *t = reinterpret_cast<ThreadWindows *>(userdata);
 
-	ScriptServer::thread_enter(); //scripts may need to attach a stack
+	ScriptServer::thread_enter(); // scripts may need to attach a stack
 
 	t->id = (ID)GetCurrentThreadId(); // must implement
 	t->callback(t->user);
@@ -72,7 +72,7 @@ Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void
 }
 Thread::ID ThreadWindows::get_thread_id_func_windows() {
 
-	return (ID)GetCurrentThreadId(); //must implement
+	return (ID)GetCurrentThreadId(); // must implement
 }
 void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 

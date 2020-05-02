@@ -1431,7 +1431,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 
 			if (p_value.type == Variant::VECTOR2) {
 				Rect2 *v = reinterpret_cast<Rect2 *>(_data._mem);
-				//scalar name
+				// scalar name
 				if (p_index == CoreStringNames::singleton->position) {
 					v->position = *reinterpret_cast<const Vector2 *>(p_value._data._mem);
 					valid = true;
@@ -1448,7 +1448,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 
 			if (p_value.type == Variant::VECTOR2I) {
 				Rect2i *v = reinterpret_cast<Rect2i *>(_data._mem);
-				//scalar name
+				// scalar name
 				if (p_index == CoreStringNames::singleton->position) {
 					v->position = *reinterpret_cast<const Vector2i *>(p_value._data._mem);
 					valid = true;
@@ -1617,7 +1617,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 
 			if (p_value.type == Variant::VECTOR3) {
 				::AABB *v = _data._aabb;
-				//scalar name
+				// scalar name
 				if (p_index == CoreStringNames::singleton->position) {
 					v->position = *reinterpret_cast<const Vector3 *>(p_value._data._mem);
 					valid = true;
@@ -1634,7 +1634,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 
 			if (p_value.type == Variant::VECTOR3) {
 				Basis *v = _data._basis;
-				//scalar name
+				// scalar name
 				if (p_index == CoreStringNames::singleton->x) {
 					v->set_axis(0, *reinterpret_cast<const Vector3 *>(p_value._data._mem));
 					valid = true;
@@ -1784,7 +1784,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		case RECT2: {
 
 			const Rect2 *v = reinterpret_cast<const Rect2 *>(_data._mem);
-			//scalar name
+			// scalar name
 			if (p_index == CoreStringNames::singleton->position) {
 				return v->position;
 			} else if (p_index == CoreStringNames::singleton->size) {
@@ -1796,7 +1796,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		case RECT2I: {
 
 			const Rect2i *v = reinterpret_cast<const Rect2i *>(_data._mem);
-			//scalar name
+			// scalar name
 			if (p_index == CoreStringNames::singleton->position) {
 				return v->position;
 			} else if (p_index == CoreStringNames::singleton->size) {
@@ -1874,7 +1874,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		case AABB: {
 
 			const ::AABB *v = _data._aabb;
-			//scalar name
+			// scalar name
 			if (p_index == CoreStringNames::singleton->position) {
 				return v->position;
 			} else if (p_index == CoreStringNames::singleton->size) {
@@ -1886,7 +1886,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		case BASIS: {
 
 			const Basis *v = _data._basis;
-			//scalar name
+			// scalar name
 			if (p_index == CoreStringNames::singleton->x) {
 				return v->get_axis(0);
 			} else if (p_index == CoreStringNames::singleton->y) {
@@ -2082,7 +2082,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
@@ -2117,7 +2117,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Vector2i *v = reinterpret_cast<Vector2i *>(_data._mem);
@@ -2139,7 +2139,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				return;
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Rect2 *v = reinterpret_cast<Rect2 *>(_data._mem);
@@ -2164,7 +2164,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				return;
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Rect2i *v = reinterpret_cast<Rect2i *>(_data._mem);
@@ -2203,7 +2203,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			} else if (p_index.get_type() == Variant::STRING && p_value.get_type() == Variant::VECTOR2) {
 
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Transform2D *v = _data._transform2d;
 				if (*str == "x") {
@@ -2228,7 +2228,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				return;
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
+				// scalar index
 				int idx = p_index;
 				if (idx < 0)
 					idx += 3;
@@ -2241,7 +2241,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
 
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
 				if (*str == "x") {
@@ -2266,7 +2266,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				return;
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
+				// scalar index
 				int idx = p_index;
 				if (idx < 0)
 					idx += 3;
@@ -2279,7 +2279,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
 
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Vector3i *v = reinterpret_cast<Vector3i *>(_data._mem);
 				if (*str == "x") {
@@ -2301,7 +2301,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		case PLANE: {
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Plane *v = reinterpret_cast<Plane *>(_data._mem);
 				if (*str == "x") {
@@ -2375,7 +2375,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				return;
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				::AABB *v = _data._aabb;
@@ -2552,7 +2552,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		case OBJECT: {
 
 			Object *obj = _get_obj().obj;
-			//only if debugging!
+			// only if debugging!
 
 			if (obj) {
 #ifdef DEBUG_ENABLED
@@ -2577,7 +2577,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 			Dictionary *dic = reinterpret_cast<Dictionary *>(_data._mem);
 			dic->operator[](p_index) = p_value;
-			valid = true; //always valid, i guess? should this really be ok?
+			valid = true; // always valid, i guess? should this really be ok?
 			return;
 		} break;
 			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return )
@@ -2619,7 +2619,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case STRING: {
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//string index
+				// string index
 
 				int idx = p_index;
 				const String *str = reinterpret_cast<const String *>(_data._mem);
@@ -2647,7 +2647,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 					return (*v)[idx];
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);
@@ -2675,7 +2675,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 					return (*v)[idx];
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Vector2i *v = reinterpret_cast<const Vector2i *>(_data._mem);
@@ -2692,7 +2692,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case RECT2: {
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Rect2 *v = reinterpret_cast<const Rect2 *>(_data._mem);
@@ -2711,7 +2711,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case RECT2I: {
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Rect2i *v = reinterpret_cast<const Rect2i *>(_data._mem);
@@ -2730,7 +2730,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case VECTOR3: {
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
+				// scalar index
 				int idx = p_index;
 				if (idx < 0)
 					idx += 3;
@@ -2742,7 +2742,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
 
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Vector3 *v = reinterpret_cast<const Vector3 *>(_data._mem);
 				if (*str == "x") {
@@ -2761,7 +2761,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case VECTOR3I: {
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				//scalar index
+				// scalar index
 				int idx = p_index;
 				if (idx < 0)
 					idx += 3;
@@ -2773,7 +2773,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
 
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Vector3i *v = reinterpret_cast<const Vector3i *>(_data._mem);
 				if (*str == "x") {
@@ -2805,7 +2805,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
 
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Transform2D *v = _data._transform2d;
 				if (*str == "x") {
@@ -2824,7 +2824,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case PLANE: {
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const Plane *v = reinterpret_cast<const Plane *>(_data._mem);
 				if (*str == "x") {
@@ -2871,7 +2871,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case AABB: {
 
 			if (p_index.get_type() == Variant::STRING) {
-				//scalar name
+				// scalar name
 
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				const ::AABB *v = _data._aabb;
@@ -3061,7 +3061,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 		case STRING: {
 
 			if (p_index.get_type() == Variant::STRING) {
-				//string index
+				// string index
 				String idx = p_index;
 				const String *str = reinterpret_cast<const String *>(_data._mem);
 
@@ -3438,7 +3438,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		case PACKED_VECTOR3_ARRAY:
 		case PACKED_COLOR_ARRAY: {
 
-			//nothing
+			// nothing
 		} break;
 		default: {
 		}
@@ -3479,7 +3479,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			} else {
 				return step < 0;
 			}
-			//return true;
+			// return true;
 		} break;
 		case OBJECT: {
 
@@ -3871,7 +3871,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 				return Variant();
 			}
 
-			//r_iter=ref[0];
+			// r_iter=ref[0];
 
 			return ret;
 		} break;
@@ -3883,7 +3883,7 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 		} break;
 		case DICTIONARY: {
 
-			return r_iter; //iterator is the same as the key
+			return r_iter; // iterator is the same as the key
 
 		} break;
 		case ARRAY: {
@@ -4145,7 +4145,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 
 	if (a.type != b.type) {
 		if (a.is_num() && b.is_num()) {
-			//not as efficient but..
+			// not as efficient but..
 			real_t va = a;
 			real_t vb = b;
 			r_dst = va + (vb - va) * c;
@@ -4179,7 +4179,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case STRING: {
-			//this is pretty funny and bizarre, but artists like to use it for typewritter effects
+			// this is pretty funny and bizarre, but artists like to use it for typewritter effects
 			String sa = *reinterpret_cast<const String *>(a._data._mem);
 			String sb = *reinterpret_cast<const String *>(b._data._mem);
 			String dst;

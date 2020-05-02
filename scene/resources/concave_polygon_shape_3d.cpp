@@ -99,5 +99,5 @@ void ConcavePolygonShape3D::_bind_methods() {
 ConcavePolygonShape3D::ConcavePolygonShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_CONCAVE_POLYGON)) {
 
-	//set_planes(Vector3(1,1,1));
+	// set_planes(Vector3(1,1,1));
 }

@@ -49,7 +49,7 @@ static _VisualScriptEditor *vs_editor_singleton = nullptr;
 void register_visual_script_types() {
 
 	visual_script_language = memnew(VisualScriptLanguage);
-	//script_language_gd->init();
+	// script_language_gd->init();
 	ScriptServer::register_language(visual_script_language);
 
 	ClassDB::register_class<VisualScript>();

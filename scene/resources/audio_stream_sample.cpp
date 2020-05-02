@@ -36,7 +36,7 @@
 void AudioStreamPlaybackSample::start(float p_from_pos) {
 
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM) {
-		//no seeking in IMA_ADPCM
+		// no seeking in IMA_ADPCM
 		for (int i = 0; i < 2; i++) {
 			ima_adpcm[i].step_index = 0;
 			ima_adpcm[i].predictor = 0;
@@ -78,7 +78,7 @@ float AudioStreamPlaybackSample::get_playback_position() const {
 void AudioStreamPlaybackSample::seek(float p_time) {
 
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM)
-		return; //no seeking in ima-adpcm
+		return; // no seeking in ima-adpcm
 
 	float max = base->get_length();
 	if (p_time < 0) {
@@ -166,7 +166,7 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 						ima_adpcm[i].loop_predictor = ima_adpcm[i].predictor;
 					}
 
-					//printf("%i - %i - pred %i\n",int(ima_adpcm[i].last_nibble),int(nibble),int(ima_adpcm[i].predictor));
+					// printf("%i - %i - pred %i\n",int(ima_adpcm[i].last_nibble),int(nibble),int(ima_adpcm[i].predictor));
 				}
 			}
 
@@ -208,7 +208,7 @@ void AudioStreamPlaybackSample::do_resample(const Depth *p_src, AudioFrame *p_ds
 		}
 
 		if (!is_stereo) {
-			final_r = final; //copy to right channel if stereo
+			final_r = final; // copy to right channel if stereo
 		}
 
 		p_dst->l = final / 32767.0;
@@ -261,7 +261,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	int32_t increment = int32_t(MAX(fincrement * MIX_FRAC_LEN, 1));
 	increment *= sign;
 
-	//looping
+	// looping
 
 	AudioStreamSample::LoopMode loop_format = base->loop_mode;
 	AudioStreamSample::Format format = base->format;
@@ -389,7 +389,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 	}
 
 	if (todo) {
-		//bit was missing from mix
+		// bit was missing from mix
 		int todo_ofs = p_frames - todo;
 		for (int i = todo_ofs; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0, 0);
@@ -491,7 +491,7 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 
 		const uint8_t *r = p_data.ptr();
 		int alloc_len = datalen + DATA_PAD * 2;
-		data = memalloc(alloc_len); //alloc with some padding for interpolation
+		data = memalloc(alloc_len); // alloc with some padding for interpolation
 		zeromem(data, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
 		copymem(dataptr + DATA_PAD, r, datalen);

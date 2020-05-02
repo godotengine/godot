@@ -278,7 +278,7 @@ List<ClassAPI> generate_c_api_classes() {
 			}
 		}
 
-		//properties
+		// properties
 		{
 			List<PropertyInfo> properties;
 			ClassDB::get_property_list(class_name, &properties, true);
@@ -306,7 +306,7 @@ List<ClassAPI> generate_c_api_classes() {
 			}
 		}
 
-		//methods
+		// methods
 		{
 			List<MethodInfo> methods;
 			ClassDB::get_method_list(class_name, &methods, true);
@@ -317,9 +317,9 @@ List<ClassAPI> generate_c_api_classes() {
 				MethodBind *method_bind = ClassDB::get_method(class_name, m->get().name);
 				MethodInfo &method_info = m->get();
 
-				//method name
+				// method name
 				method_api.method_name = method_info.name;
-				//method return type
+				// method return type
 				if (method_api.method_name.find(":") != -1) {
 					method_api.return_type = method_api.method_name.get_slice(":", 1);
 					method_api.method_name = method_api.method_name.get_slice(":", 0);

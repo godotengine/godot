@@ -423,7 +423,7 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 		axis_cell_size[i] = axis_cell_size[longest_axis];
 		float axis_size = bounds.size[longest_axis];
 
-		//shrink until fit subdiv
+		// shrink until fit subdiv
 		while (axis_size / 2.0 >= bounds.size[i]) {
 			axis_size /= 2.0;
 			axis_cell_size[i] >>= 1;
@@ -466,7 +466,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 	baker.end_bake();
 
-	//create the data for visual server
+	// create the data for visual server
 
 	if (p_create_visual_debug) {
 		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
@@ -499,7 +499,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		set_probe_data(probe_data);
 #ifdef TOOLS_ENABLED
-		probe_data->set_edited(true); //so it gets saved
+		probe_data->set_edited(true); // so it gets saved
 #endif
 	}
 
@@ -507,7 +507,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		bake_end_function();
 	}
 
-	_change_notify(); //bake property may have changed
+	_change_notify(); // bake property may have changed
 }
 
 void GIProbe::_debug_bake() {

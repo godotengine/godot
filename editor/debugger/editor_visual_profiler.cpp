@@ -102,7 +102,7 @@ void EditorVisualProfiler::clear() {
 	frame_metrics.resize(metric_size);
 	last_metric = -1;
 	variables->clear();
-	//activate->set_pressed(false);
+	// activate->set_pressed(false);
 
 	updating_frame = true;
 	cursor_metric_edit->set_min(0);
@@ -163,7 +163,7 @@ void EditorVisualProfiler::_update_plot() {
 
 	uint8_t *wr = graph_image.ptrw();
 
-	//clear
+	// clear
 	for (int i = 0; i < desired_len; i += 4) {
 		wr[i + 0] = 0;
 		wr[i + 1] = 0;
@@ -171,7 +171,7 @@ void EditorVisualProfiler::_update_plot() {
 		wr[i + 3] = 255;
 	}
 
-	//find highest value
+	// find highest value
 
 	float highest_cpu = 0;
 	float highest_gpu = 0;
@@ -199,9 +199,9 @@ void EditorVisualProfiler::_update_plot() {
 			highest_cpu = highest_gpu = highest;
 		}
 
-		//means some data exists..
-		highest_cpu *= 1.2; //leave some upper room
-		highest_gpu *= 1.2; //leave some upper room
+		// means some data exists..
+		highest_cpu *= 1.2; // leave some upper room
+		highest_gpu *= 1.2; // leave some upper room
 		graph_height_cpu = highest_cpu;
 		graph_height_gpu = highest_gpu;
 
@@ -226,11 +226,11 @@ void EditorVisualProfiler::_update_plot() {
 				next = frame_metrics.size();
 			}
 			if (next == current)
-				next = current + 1; //just because for loop must work
+				next = current + 1; // just because for loop must work
 
 			for (int j = current; j < next; j++) {
 
-				//wrap
+				// wrap
 				int idx = last_metric + 1 + j;
 				while (idx >= frame_metrics.size()) {
 					idx -= frame_metrics.size();
@@ -260,7 +260,7 @@ void EditorVisualProfiler::_update_plot() {
 				}
 			}
 
-			//plot CPU
+			// plot CPU
 			for (int j = 0; j < h; j++) {
 
 				uint8_t r, g, b;
@@ -281,7 +281,7 @@ void EditorVisualProfiler::_update_plot() {
 				wr[widx + 2] = b;
 				wr[widx + 3] = 255;
 			}
-			//plot GPU
+			// plot GPU
 			for (int j = 0; j < h; j++) {
 
 				uint8_t r, g, b;
@@ -420,7 +420,7 @@ void EditorVisualProfiler::_activate_pressed() {
 	if (activate->is_pressed()) {
 		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
 		activate->set_text(TTR("Stop"));
-		_clear_pressed(); //always clear on start
+		_clear_pressed(); // always clear on start
 	} else {
 		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
 		activate->set_text(TTR("Start"));
@@ -456,7 +456,7 @@ void EditorVisualProfiler::_graph_tex_draw() {
 
 		int half_width = graph->get_size().x / 2;
 		int cur_x = frame * half_width / max_frames;
-		//cur_x /= 2.0;
+		// cur_x /= 2.0;
 
 		graph->draw_line(Vector2(cur_x, 0), Vector2(cur_x, graph->get_size().y), Color(1, 1, 1, 0.8));
 		graph->draw_line(Vector2(cur_x + half_width, 0), Vector2(cur_x + half_width, graph->get_size().y), Color(1, 1, 1, 0.8));
@@ -561,10 +561,10 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb.is_valid() || mm->get_button_mask() & BUTTON_MASK_LEFT) {
-			//cursor_metric=x;
+			// cursor_metric=x;
 			updating_frame = true;
 
-			//metric may be invalid, so look for closest metric that is valid, this makes snap feel better
+			// metric may be invalid, so look for closest metric that is valid, this makes snap feel better
 			bool valid = false;
 			for (int i = 0; i < frame_metrics.size(); i++) {
 
@@ -804,7 +804,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	graph = memnew(TextureRect);
 	graph->set_expand(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
-	//graph->set_ignore_mouse(false);
+	// graph->set_ignore_mouse(false);
 	graph->connect("draw", callable_mp(this, &EditorVisualProfiler::_graph_tex_draw));
 	graph->connect("gui_input", callable_mp(this, &EditorVisualProfiler::_graph_tex_input));
 	graph->connect("mouse_exited", callable_mp(this, &EditorVisualProfiler::_graph_tex_mouse_exit));
@@ -815,10 +815,10 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	int metric_size = CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size", 600)), 60, 1024);
 	frame_metrics.resize(metric_size);
 	last_metric = -1;
-	//cursor_metric=-1;
+	// cursor_metric=-1;
 	hover_metric = -1;
 
-	//display_mode=DISPLAY_FRAME_TIME;
+	// display_mode=DISPLAY_FRAME_TIME;
 
 	frame_delay = memnew(Timer);
 	frame_delay->set_wait_time(0.1);
@@ -838,5 +838,5 @@ EditorVisualProfiler::EditorVisualProfiler() {
 
 	graph_limit = 1000 / 60.0;
 
-	//activate->set_disabled(true);
+	// activate->set_disabled(true);
 }

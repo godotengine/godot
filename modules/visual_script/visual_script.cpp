@@ -77,9 +77,9 @@ void VisualScriptNode::_set_default_input_values(Array p_values) {
 }
 
 void VisualScriptNode::validate_input_default_values() {
-	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); //let it grow as big as possible, we don't want to lose values on resize
+	default_input_values.resize(MAX(default_input_values.size(), get_input_value_port_count())); // let it grow as big as possible, we don't want to lose values on resize
 
-	//actually validate on save
+	// actually validate on save
 	for (int i = 0; i < get_input_value_port_count(); i++) {
 
 		Variant::Type expected = get_input_value_port_info(i).type;
@@ -87,13 +87,13 @@ void VisualScriptNode::validate_input_default_values() {
 		if (expected == Variant::NIL || expected == default_input_values[i].get_type()) {
 			continue;
 		} else {
-			//not the same, reconvert
+			// not the same, reconvert
 			Callable::CallError ce;
 			Variant existing = default_input_values[i];
 			const Variant *existingp = &existing;
 			default_input_values[i] = Variant::construct(expected, &existingp, 1, ce, false);
 			if (ce.error != Callable::CallError::CALL_OK) {
-				//could not convert? force..
+				// could not convert? force..
 				default_input_values[i] = Variant::construct(expected, nullptr, 0, ce, false);
 			}
 		}
@@ -102,7 +102,7 @@ void VisualScriptNode::validate_input_default_values() {
 
 Array VisualScriptNode::_get_default_input_values() const {
 
-	//validate on save, since on load there is little info about this
+	// validate on save, since on load there is little info about this
 	Array values = default_input_values;
 	values.resize(get_input_value_port_count());
 
@@ -269,7 +269,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 
 	vsn->validate_input_default_values();
 
-	//must revalidate all the functions
+	// must revalidate all the functions
 
 	{
 		List<SequenceConnection> to_remove;
@@ -311,7 +311,7 @@ void VisualScript::_node_ports_changed(int p_id) {
 	}
 
 #ifdef TOOLS_ENABLED
-	set_edited(true); //something changed, let's set as edited
+	set_edited(true); // something changed, let's set as edited
 	emit_signal("node_ports_changed", function, p_id);
 #endif
 }
@@ -323,13 +323,13 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 
 	for (Map<StringName, Function>::Element *E = functions.front(); E; E = E->next()) {
 
-		ERR_FAIL_COND(E->get().nodes.has(p_id)); //id can exist only one in script, even for different functions
+		ERR_FAIL_COND(E->get().nodes.has(p_id)); // id can exist only one in script, even for different functions
 	}
 
 	Function &func = functions[p_func];
 
 	if (Object::cast_to<VisualScriptFunction>(*p_node)) {
-		//the function indeed
+		// the function indeed
 		ERR_FAIL_COND_MSG(func.function_id >= 0, "A function node has already been set here.");
 
 		func.function_id = p_id;
@@ -386,7 +386,7 @@ void VisualScript::remove_node(const StringName &p_func, int p_id) {
 	}
 
 	if (Object::cast_to<VisualScriptFunction>(func.nodes[p_id].node.ptr())) {
-		func.function_id = -1; //revert to invalid
+		func.function_id = -1; // revert to invalid
 	}
 
 	func.nodes[p_id].node->disconnect("ports_changed", callable_mp(this, &VisualScript::_node_ports_changed));
@@ -893,7 +893,7 @@ void VisualScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 void VisualScript::_update_placeholders() {
 
 	if (placeholders.size() == 0)
-		return; //no bother if no placeholders
+		return; // no bother if no placeholders
 	List<PropertyInfo> pinfo;
 	Map<StringName, Variant> values;
 
@@ -986,7 +986,7 @@ bool VisualScript::is_tool() const {
 }
 
 bool VisualScript::is_valid() const {
-	return true; //always valid
+	return true; // always valid
 }
 
 ScriptLanguage *VisualScript::get_language() const {
@@ -1086,7 +1086,7 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	get_variable_list(&vars);
 
 	for (List<StringName>::Element *E = vars.front(); E; E = E->next()) {
-		//if (!variables[E->get()]._export)
+		// if (!variables[E->get()]._export)
 		//	continue;
 		PropertyInfo pi = variables[E->get()].info;
 		pi.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
@@ -1218,7 +1218,7 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 		Dictionary func = funcs[i];
 
 		StringName name = func["name"];
-		//int id=func["function_id"];
+		// int id=func["function_id"];
 		add_function(name);
 
 		set_function_scroll(name, func["scroll"]);
@@ -1314,7 +1314,7 @@ Dictionary VisualScript::_get_data() const {
 	for (const Map<StringName, Variable>::Element *E = variables.front(); E; E = E->next()) {
 
 		Dictionary var = _get_variable_info(E->key());
-		var["name"] = E->key(); //make sure it's the right one
+		var["name"] = E->key(); // make sure it's the right one
 		var["default_value"] = E->get().default_value;
 		var["export"] = E->get()._export;
 		vars.push_back(var);
@@ -1461,7 +1461,7 @@ VisualScript::VisualScript() {
 }
 
 bool VisualScript::inherits_script(const Ref<Script> &p_script) const {
-	return this == p_script.ptr(); //there is no inheritance in visual scripts, so this is enough
+	return this == p_script.ptr(); // there is no inheritance in visual scripts, so this is enough
 }
 
 StringName VisualScript::get_default_func() const {
@@ -1560,7 +1560,7 @@ void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 					mi.arguments.push_back(arg);
 				}
 
-				if (!vsf->is_sequenced()) { //assumed constant if not sequenced
+				if (!vsf->is_sequenced()) { // assumed constant if not sequenced
 					mi.flags |= METHOD_FLAG_CONST;
 				}
 			}
@@ -1607,10 +1607,10 @@ void VisualScriptInstance::_dependency_step(VisualScriptNodeInstance *node, int 
 		int index = node->input_ports[i] & VisualScriptNodeInstance::INPUT_MASK;
 
 		if (node->input_ports[i] & VisualScriptNodeInstance::INPUT_DEFAULT_VALUE_BIT) {
-			//is a default value (unassigned input port)
+			// is a default value (unassigned input port)
 			input_args[i] = &default_values[index];
 		} else {
-			//regular temporary in stack
+			// regular temporary in stack
 			input_args[i] = &variant_stack[index];
 		}
 	}
@@ -1621,7 +1621,7 @@ void VisualScriptInstance::_dependency_step(VisualScriptNodeInstance *node, int 
 	Variant *working_mem = node->working_mem_idx >= 0 ? &variant_stack[node->working_mem_idx] : (Variant *)nullptr;
 
 	node->step(input_args, output_args, VisualScriptNodeInstance::START_MODE_BEGIN_SEQUENCE, working_mem, r_error, error_str);
-	//ignore return
+	// ignore return
 	if (r_error.error != Callable::CallError::CALL_OK) {
 		*r_error_node = node;
 	}
@@ -1633,7 +1633,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 	ERR_FAIL_COND_V(!F, Variant());
 	Function *f = &F->get();
 
-	//this call goes separate, so it can e yielded and suspended
+	// this call goes separate, so it can e yielded and suspended
 	Variant *variant_stack = (Variant *)p_stack;
 	bool *sequence_bits = (bool *)(variant_stack + f->max_stack);
 	const Variant **input_args = (const Variant **)(sequence_bits + f->node_count);
@@ -1660,26 +1660,26 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 	while (true) {
 
-		p_pass++; //increment pass
+		p_pass++; // increment pass
 		current_node_id = node->get_id();
 
 		VSDEBUG("==========AT NODE: " + itos(current_node_id) + " base: " + node->get_base_node()->get_class_name());
 		VSDEBUG("AT STACK POS: " + itos(flow_stack_pos));
 
-		//setup working mem
+		// setup working mem
 		working_mem = node->working_mem_idx >= 0 ? &variant_stack[node->working_mem_idx] : (Variant *)nullptr;
 
 		VSDEBUG("WORKING MEM: " + itos(node->working_mem_idx));
 
 		if (current_node_id == f->node) {
-			//if function node, set up function arguments from beginning of stack
+			// if function node, set up function arguments from beginning of stack
 
 			for (int i = 0; i < f->argument_count; i++) {
 				input_args[i] = &variant_stack[i];
 			}
 		} else {
 
-			//run dependencies first
+			// run dependencies first
 
 			if (!node->dependencies.empty()) {
 
@@ -1699,7 +1699,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 			if (!error) {
 
-				//setup input pointers normally
+				// setup input pointers normally
 				VSDEBUG("INPUT PORTS: " + itos(node->input_port_count));
 
 				for (int i = 0; i < node->input_port_count; i++) {
@@ -1707,11 +1707,11 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 					int index = node->input_ports[i] & VisualScriptNodeInstance::INPUT_MASK;
 
 					if (node->input_ports[i] & VisualScriptNodeInstance::INPUT_DEFAULT_VALUE_BIT) {
-						//is a default value (unassigned input port)
+						// is a default value (unassigned input port)
 						input_args[i] = &default_values[index];
 						VSDEBUG("\tPORT " + itos(i) + " DEFAULT VAL");
 					} else {
-						//regular temporary in stack
+						// regular temporary in stack
 						input_args[i] = &variant_stack[index];
 						VSDEBUG("PORT " + itos(i) + " AT STACK " + itos(index));
 					}
@@ -1722,7 +1722,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		if (error)
 			break;
 
-		//setup output pointers
+		// setup output pointers
 
 		VSDEBUG("OUTPUT PORTS: " + itos(node->output_port_count));
 		for (int i = 0; i < node->output_port_count; i++) {
@@ -1730,7 +1730,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 			VSDEBUG("PORT " + itos(i) + " AT STACK " + itos(node->output_ports[i]));
 		}
 
-		//do step
+		// do step
 
 		VisualScriptNodeInstance::StartMode start_mode;
 		{
@@ -1738,7 +1738,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 				start_mode = VisualScriptNodeInstance::START_MODE_RESUME_YIELD;
 				p_resuming_yield = false; // should resume only the first time
 			} else if (flow_stack && (flow_stack[flow_stack_pos] & VisualScriptNodeInstance::FLOW_STACK_PUSHED_BIT)) {
-				//if there is a push bit, it means we are continuing a sequence
+				// if there is a push bit, it means we are continuing a sequence
 				start_mode = VisualScriptNodeInstance::START_MODE_CONTINUE_SEQUENCE;
 			} else {
 				start_mode = VisualScriptNodeInstance::START_MODE_BEGIN_SEQUENCE;
@@ -1750,13 +1750,13 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		int ret = node->step(input_args, output_args, start_mode, working_mem, r_error, error_str);
 
 		if (r_error.error != Callable::CallError::CALL_OK) {
-			//use error from step
+			// use error from step
 			error = true;
 			break;
 		}
 
 		if (ret & VisualScriptNodeInstance::STEP_YIELD_BIT) {
-			//yielded!
+			// yielded!
 			if (node->get_working_memory_size() == 0) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				error_str = RTR("A node yielded without working memory, please read the docs on how to yield properly!");
@@ -1773,7 +1773,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 					break;
 				}
 
-				//step 1, capture all state
+				// step 1, capture all state
 				state->instance_id = get_owner_ptr()->get_instance_id();
 				state->script_id = get_script()->get_instance_id();
 				state->instance = this;
@@ -1785,11 +1785,11 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 				state->stack.resize(p_stack_size);
 				state->pass = p_pass;
 				copymem(state->stack.ptrw(), p_stack, p_stack_size);
-				//step 2, run away, return directly
+				// step 2, run away, return directly
 				r_error.error = Callable::CallError::CALL_OK;
 
 #ifdef DEBUG_ENABLED
-				//will re-enter later, so exiting
+				// will re-enter later, so exiting
 				if (EngineDebugger::is_active()) {
 					VisualScriptLanguage::singleton->exit_function();
 				}
@@ -1833,18 +1833,18 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 				error_str = RTR("Return value must be assigned to first element of node working memory! Fix your node please.");
 				error = true;
 			} else {
-				//assign from working memory, first element
+				// assign from working memory, first element
 				return_value = *working_mem;
 			}
 
 			VSDEBUG("EXITING FUNCTION - VALUE " + String(return_value));
-			break; //exit function requested, bye
+			break; // exit function requested, bye
 		}
 
-		VisualScriptNodeInstance *next = nullptr; //next node
+		VisualScriptNodeInstance *next = nullptr; // next node
 
 		if ((ret == output || ret & VisualScriptNodeInstance::STEP_FLAG_PUSH_STACK_BIT) && node->sequence_output_count) {
-			//if no exit bit was set, and has sequence outputs, guess next node
+			// if no exit bit was set, and has sequence outputs, guess next node
 			if (output >= node->sequence_output_count) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 				error_str = RTR("Node returned an invalid sequence output: ") + itos(output);
@@ -1862,22 +1862,22 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 		if (flow_stack) {
 
-			//update flow stack pos (may have changed)
+			// update flow stack pos (may have changed)
 			flow_stack[flow_stack_pos] = current_node_id;
 
-			//add stack push bit if requested
+			// add stack push bit if requested
 			if (ret & VisualScriptNodeInstance::STEP_FLAG_PUSH_STACK_BIT) {
 
 				flow_stack[flow_stack_pos] |= VisualScriptNodeInstance::FLOW_STACK_PUSHED_BIT;
-				sequence_bits[node->sequence_index] = true; //remember sequence bit
+				sequence_bits[node->sequence_index] = true; // remember sequence bit
 				VSDEBUG("NEXT SEQ - FLAG BIT");
 			} else {
-				sequence_bits[node->sequence_index] = false; //forget sequence bit
+				sequence_bits[node->sequence_index] = false; // forget sequence bit
 				VSDEBUG("NEXT SEQ - NORMAL");
 			}
 
 			if (ret & VisualScriptNodeInstance::STEP_FLAG_GO_BACK_BIT) {
-				//go back request
+				// go back request
 
 				if (flow_stack_pos > 0) {
 					flow_stack_pos--;
@@ -1885,7 +1885,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 					VSDEBUG("NEXT IS GO BACK");
 				} else {
 					VSDEBUG("NEXT IS GO BACK, BUT NO NEXT SO EXIT");
-					break; //simply exit without value or error
+					break; // simply exit without value or error
 				}
 			} else if (next) {
 
@@ -1900,7 +1900,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 					for (int i = flow_stack_pos; i >= 0; i--) {
 
 						if ((flow_stack[i] & VisualScriptNodeInstance::FLOW_STACK_MASK) == next->get_id()) {
-							flow_stack_pos = i; //roll back and remove bit
+							flow_stack_pos = i; // roll back and remove bit
 							flow_stack[i] = next->get_id();
 							sequence_bits[next->sequence_index] = false;
 							found = true;
@@ -1935,7 +1935,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 				}
 
 			} else {
-				//no next node, try to go back in stack to pushed bit
+				// no next node, try to go back in stack to pushed bit
 
 				bool found = false;
 
@@ -1953,24 +1953,24 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 				if (!found) {
 					VSDEBUG("NO NEXT NODE, NO GO BACK, EXITING");
-					break; //done, couldn't find a push stack bit
+					break; // done, couldn't find a push stack bit
 				}
 
 				VSDEBUG("NO NEXT NODE, GO BACK TO: " + itos(flow_stack_pos));
 			}
 		} else {
 
-			node = next; //stackless mode, simply assign next node
+			node = next; // stackless mode, simply assign next node
 		}
 	}
 
 	if (error) {
 
-		//error
+		// error
 		// function, file, line, error, explanation
 		String err_file = script->get_path();
 		String err_func = p_method;
-		int err_line = current_node_id; //not a line but it works as one
+		int err_line = current_node_id; // not a line but it works as one
 
 		if (node && (r_error.error != Callable::CallError::CALL_ERROR_INVALID_METHOD || error_str == String())) {
 
@@ -1992,7 +1992,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 			}
 		}
 
-		//if (!GDScriptLanguage::get_singleton()->debug_break(err_text,false)) {
+		// if (!GDScriptLanguage::get_singleton()->debug_break(err_text,false)) {
 		// debugger break did not happen
 
 		if (!VisualScriptLanguage::singleton->debug_break(error_str, false)) {
@@ -2003,7 +2003,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		//}
 	} else {
 
-		//return_value=
+		// return_value=
 	}
 
 #ifdef DEBUG_ENABLED
@@ -2012,7 +2012,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 	}
 #endif
 
-	//clean up variant stack
+	// clean up variant stack
 	for (int i = 0; i < f->max_stack; i++) {
 		variant_stack[i].~Variant();
 	}
@@ -2022,7 +2022,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
-	r_error.error = Callable::CallError::CALL_OK; //ok by default
+	r_error.error = Callable::CallError::CALL_OK; // ok by default
 
 	Map<StringName, Function>::Element *F = functions.find(p_method);
 	if (!F) {
@@ -2036,10 +2036,10 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 
 	int total_stack_size = 0;
 
-	total_stack_size += f->max_stack * sizeof(Variant); //variants
+	total_stack_size += f->max_stack * sizeof(Variant); // variants
 	total_stack_size += f->node_count * sizeof(bool);
-	total_stack_size += (max_input_args + max_output_args) * sizeof(Variant *); //arguments
-	total_stack_size += f->flow_stack_size * sizeof(int); //flow
+	total_stack_size += (max_input_args + max_output_args) * sizeof(Variant *); // arguments
+	total_stack_size += f->flow_stack_size * sizeof(int); // flow
 	total_stack_size += f->pass_stack_size * sizeof(int);
 
 	VSDEBUG("STACK SIZE: " + itos(total_stack_size));
@@ -2061,7 +2061,7 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 	int *pass_stack = flow_stack ? (int *)(flow_stack + flow_max) : (int *)nullptr;
 
 	for (int i = 0; i < f->node_count; i++) {
-		sequence_bits[i] = false; //all starts as false
+		sequence_bits[i] = false; // all starts as false
 	}
 
 	zeromem(pass_stack, f->pass_stack_size * sizeof(int));
@@ -2095,12 +2095,12 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 		return Variant();
 	}
 
-	//allocate variant stack
+	// allocate variant stack
 	for (int i = 0; i < f->max_stack; i++) {
 		memnew_placement(&variant_stack[i], Variant);
 	}
 
-	//allocate function arguments (must be copied for yield to work properly)
+	// allocate function arguments (must be copied for yield to work properly)
 	for (int i = 0; i < p_argcount; i++) {
 		variant_stack[i] = *p_args[i];
 	}
@@ -2110,12 +2110,12 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 
 void VisualScriptInstance::notification(int p_notification) {
 
-	//do nothing as this is called using virtual
+	// do nothing as this is called using virtual
 
 	Variant what = p_notification;
 	const Variant *whatp = &what;
 	Callable::CallError ce;
-	call(VisualScriptLanguage::singleton->notification, &whatp, 1, ce); //do as call
+	call(VisualScriptLanguage::singleton->notification, &whatp, 1, ce); // do as call
 }
 
 String VisualScriptInstance::to_string(bool *r_valid) {
@@ -2193,7 +2193,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 	max_output_args = 0;
 
 	if (Object::cast_to<Node>(p_owner)) {
-		//turn on these if they exist and base is a node
+		// turn on these if they exist and base is a node
 		Node *node = Object::cast_to<Node>(p_owner);
 		if (p_script->functions.has("_process"))
 			node->set_process(true);
@@ -2247,14 +2247,14 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			max_input_args = MAX(max_input_args, function.argument_count);
 		}
 
-		//multiple passes are required to set up this complex thing..
+		// multiple passes are required to set up this complex thing..
 
-		//first create the nodes
+		// first create the nodes
 		for (const Map<int, VisualScript::Function::NodeData>::Element *F = E->get().nodes.front(); F; F = F->next()) {
 
 			Ref<VisualScriptNode> node = F->get().node;
 
-			VisualScriptNodeInstance *instance = node->instance(this); //create instance
+			VisualScriptNodeInstance *instance = node->instance(this); // create instance
 			ERR_FAIL_COND(!instance);
 
 			instance->base = node.ptr();
@@ -2273,26 +2273,26 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				instance->input_ports = memnew_arr(int, instance->input_port_count);
 				for (int i = 0; i < instance->input_port_count; i++) {
 
-					instance->input_ports[i] = -1; //if not assigned, will become default value
+					instance->input_ports[i] = -1; // if not assigned, will become default value
 				}
 			}
 
 			if (instance->output_port_count) {
 				instance->output_ports = memnew_arr(int, instance->output_port_count);
 				for (int i = 0; i < instance->output_port_count; i++) {
-					instance->output_ports[i] = -1; //if not assigned, will output to trash
+					instance->output_ports[i] = -1; // if not assigned, will output to trash
 				}
 			}
 
 			if (instance->sequence_output_count) {
 				instance->sequence_outputs = memnew_arr(VisualScriptNodeInstance *, instance->sequence_output_count);
 				for (int i = 0; i < instance->sequence_output_count; i++) {
-					instance->sequence_outputs[i] = nullptr; //if it remains null, flow ends here
+					instance->sequence_outputs[i] = nullptr; // if it remains null, flow ends here
 				}
 			}
 
 			if (Object::cast_to<VisualScriptLocalVar>(node.ptr()) || Object::cast_to<VisualScriptLocalVarSet>(*node)) {
-				//working memory is shared only for this node, for the same variables
+				// working memory is shared only for this node, for the same variables
 				Ref<VisualScriptLocalVar> vslv = node;
 
 				StringName var_name;
@@ -2313,7 +2313,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				instance->working_mem_idx = function.max_stack;
 				function.max_stack += instance->get_working_memory_size();
 			} else {
-				instance->working_mem_idx = -1; //no working mem
+				instance->working_mem_idx = -1; // no working mem
 			}
 
 			max_input_args = MAX(max_input_args, instance->input_port_count);
@@ -2322,9 +2322,9 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			instances[F->key()] = instance;
 		}
 
-		function.trash_pos = function.max_stack++; //create pos for trash
+		function.trash_pos = function.max_stack++; // create pos for trash
 
-		//second pass, do data connections
+		// second pass, do data connections
 
 		for (const Set<VisualScript::DataConnection>::Element *F = E->get().data_connections.front(); F; F = F->next()) {
 
@@ -2343,7 +2343,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			}
 
 			if (from->get_sequence_output_count() == 0 && to->dependencies.find(from) == -1) {
-				//if the node we are reading from has no output sequence, we must call step() before reading from it.
+				// if the node we are reading from has no output sequence, we must call step() before reading from it.
 				if (from->pass_idx == -1) {
 					from->pass_idx = function.pass_stack_size;
 					function.pass_stack_size++;
@@ -2351,10 +2351,10 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 				to->dependencies.push_back(from);
 			}
 
-			to->input_ports[dc.to_port] = from->output_ports[dc.from_port]; //read from wherever the stack is
+			to->input_ports[dc.to_port] = from->output_ports[dc.from_port]; // read from wherever the stack is
 		}
 
-		//third pass, do sequence connections
+		// third pass, do sequence connections
 
 		for (const Set<VisualScript::SequenceConnection>::Element *F = E->get().sequence_connections.front(); F; F = F->next()) {
 
@@ -2368,7 +2368,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			from->sequence_outputs[sc.from_output] = to;
 		}
 
-		//fourth pass:
+		// fourth pass:
 		// 1) unassigned input ports to default values
 		// 2) connect unassigned output ports to trash
 
@@ -2383,7 +2383,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			for (int i = 0; i < instance->input_port_count; i++) {
 				if (instance->input_ports[i] == -1) {
 
-					//unassigned, connect to default val
+					// unassigned, connect to default val
 					instance->input_ports[i] = default_values.size() | VisualScriptNodeInstance::INPUT_DEFAULT_VALUE_BIT;
 					default_values.push_back(node->get_default_input_value(i));
 				}
@@ -2392,7 +2392,7 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 			// connect to trash
 			for (int i = 0; i < instance->output_port_count; i++) {
 				if (instance->output_ports[i] == -1) {
-					instance->output_ports[i] = function.trash_pos; //trash is same for all
+					instance->output_ports[i] = function.trash_pos; // trash is same for all
 				}
 			}
 		}
@@ -2446,7 +2446,7 @@ Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int 
 		r_error.argument = 1;
 		return Variant();
 	} else if (p_argcount == 1) {
-		//noooneee, reserved for me, me and only me.
+		// noooneee, reserved for me, me and only me.
 	} else {
 
 		for (int i = 0; i < p_argcount - 1; i++) {
@@ -2454,7 +2454,7 @@ Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int 
 		}
 	}
 
-	Ref<VisualScriptFunctionState> self = *p_args[p_argcount - 1]; //hi, I'm myself, needed this to remain alive.
+	Ref<VisualScriptFunctionState> self = *p_args[p_argcount - 1]; // hi, I'm myself, needed this to remain alive.
 
 	if (self.is_null()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -2467,10 +2467,10 @@ Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int 
 
 	Variant *working_mem = ((Variant *)stack.ptr()) + working_mem_index;
 
-	*working_mem = args; //arguments go to working mem.
+	*working_mem = args; // arguments go to working mem.
 
 	Variant ret = instance->_call_internal(function, stack.ptrw(), stack.size(), node, flow_stack_pos, pass, true, r_error);
-	function = StringName(); //invalidate
+	function = StringName(); // invalidate
 	return ret;
 }
 
@@ -2480,7 +2480,7 @@ void VisualScriptFunctionState::connect_to_signal(Object *p_obj, const String &p
 	for (int i = 0; i < p_binds.size(); i++) {
 		binds.push_back(p_binds[i]);
 	}
-	binds.push_back(Ref<VisualScriptFunctionState>(this)); //add myself on the back to avoid dying from unreferencing
+	binds.push_back(Ref<VisualScriptFunctionState>(this)); // add myself on the back to avoid dying from unreferencing
 	p_obj->connect_compat(p_signal, this, "_signal_callback", binds, CONNECT_ONESHOT);
 }
 
@@ -2504,10 +2504,10 @@ Variant VisualScriptFunctionState::resume(Array p_args) {
 
 	Variant *working_mem = ((Variant *)stack.ptr()) + working_mem_index;
 
-	*working_mem = p_args; //arguments go to working mem.
+	*working_mem = p_args; // arguments go to working mem.
 
 	Variant ret = instance->_call_internal(function, stack.ptrw(), stack.size(), node, flow_stack_pos, pass, true, r_error);
-	function = StringName(); //invalidate
+	function = StringName(); // invalidate
 	return ret;
 }
 
@@ -2615,7 +2615,7 @@ void VisualScriptLanguage::add_global_constant(const StringName &p_variable, con
 /* DEBUGGER FUNCTIONS */
 
 bool VisualScriptLanguage::debug_break_parse(const String &p_file, int p_node, const String &p_error) {
-	//break because of parse error
+	// break because of parse error
 
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
@@ -2711,7 +2711,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
 		p_locals->push_back("input/" + name);
 
-		//value is trickier
+		// value is trickier
 
 		int in_from = node->input_ports[i];
 		int in_value = in_from & VisualScriptNodeInstance::INPUT_MASK;
@@ -2732,7 +2732,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
 
 		p_locals->push_back("output/" + name);
 
-		//value is trickier
+		// value is trickier
 
 		int in_from = node->output_ports[i];
 		p_values->push_back(_call_stack[l].stack[in_from]);
@@ -2784,7 +2784,7 @@ void VisualScriptLanguage::debug_get_stack_level_members(int p_level, List<Strin
 
 void VisualScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 
-	//no globals are really reachable in gdscript
+	// no globals are really reachable in gdscript
 }
 String VisualScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
 
@@ -2859,10 +2859,10 @@ VisualScriptLanguage::VisualScriptLanguage() {
 	_debug_parse_err_file = "";
 	_debug_call_stack_pos = 0;
 	int dmcs = GLOBAL_DEF("debug/settings/visual_script/max_call_stack", 1024);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/visual_script/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/visual_script/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); //minimum is 1024
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/settings/visual_script/max_call_stack", PropertyInfo(Variant::INT, "debug/settings/visual_script/max_call_stack", PROPERTY_HINT_RANGE, "1024,4096,1,or_greater")); // minimum is 1024
 
 	if (EngineDebugger::is_active()) {
-		//debugging enabled!
+		// debugging enabled!
 		_debug_max_call_stack = dmcs;
 		_call_stack = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 

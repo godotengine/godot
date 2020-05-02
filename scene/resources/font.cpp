@@ -69,7 +69,7 @@ void Font::draw(RID p_canvas_item, const Point2 &p_pos, const String &p_text, co
 		int width = get_char_size(p_text[i]).width;
 
 		if (p_clip_w >= 0 && (ofs.x + width) > p_clip_w)
-			break; //clip
+			break; // clip
 
 		ofs.x += draw_char(p_canvas_item, p_pos + ofs, p_text[i], p_text[i + 1], with_outline ? p_outline_modulate : p_modulate, with_outline);
 		++chars_drawn;
@@ -110,10 +110,10 @@ Font::Font() {
 void BitmapFont::_set_chars(const Vector<int> &p_chars) {
 
 	int len = p_chars.size();
-	//char 1 charsize 1 texture, 4 rect, 2 align, advance 1
+	// char 1 charsize 1 texture, 4 rect, 2 align, advance 1
 	ERR_FAIL_COND(len % 9);
 	if (!len)
-		return; //none to do
+		return; // none to do
 	int chars = len / 9;
 
 	const int *r = p_chars.ptr();
@@ -197,8 +197,8 @@ Vector<Variant> BitmapFont::_get_textures() const {
 }
 
 Error BitmapFont::create_from_fnt(const String &p_file) {
-	//fnt format used by angelcode bmfont
-	//http://www.angelcode.com/products/bmfont/
+	// fnt format used by angelcode bmfont
+	// http://www.angelcode.com/products/bmfont/
 
 	FileAccess *f = FileAccess::open(p_file, FileAccess::READ);
 

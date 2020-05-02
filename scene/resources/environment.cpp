@@ -1130,7 +1130,7 @@ Environment::Environment() :
 	bg_energy = 1.0;
 	bg_canvas_max_layer = 0;
 	ambient_energy = 1.0;
-	//ambient_sky_contribution = 1.0;
+	// ambient_sky_contribution = 1.0;
 	ambient_source = AMBIENT_SOURCE_BG;
 	reflection_source = REFLECTION_SOURCE_BG;
 	set_ambient_light_sky_contribution(1.0);
@@ -1145,14 +1145,14 @@ Environment::Environment() :
 	tonemap_auto_exposure_speed = 0.5;
 	tonemap_auto_exposure_grey = 0.4;
 
-	set_tonemapper(tone_mapper); //update
+	set_tonemapper(tone_mapper); // update
 
 	adjustment_enabled = false;
 	adjustment_contrast = 1.0;
 	adjustment_saturation = 1.0;
 	adjustment_brightness = 1.0;
 
-	set_adjustment_enable(adjustment_enabled); //update
+	set_adjustment_enable(adjustment_enabled); // update
 
 	ssr_enabled = false;
 	ssr_max_steps = 64;

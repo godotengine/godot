@@ -104,7 +104,7 @@ uint32_t AudioRBResampler::_resample(AudioFrame *p_dest, int p_todo, int32_t p_i
 		}
 	}
 
-	return read >> MIX_FRAC_BITS; //rb_read_pos = offset >> MIX_FRAC_BITS;
+	return read >> MIX_FRAC_BITS; // rb_read_pos = offset >> MIX_FRAC_BITS;
 }
 
 bool AudioRBResampler::mix(AudioFrame *p_dest, int p_frames) {
@@ -185,7 +185,7 @@ Error AudioRBResampler::setup(int p_channels, int p_src_mix_rate, int p_target_m
 	rb_read_pos = 0;
 	rb_write_pos = 0;
 
-	//avoid maybe strange noises upon load
+	// avoid maybe strange noises upon load
 	for (unsigned int i = 0; i < (rb_len * channels); i++) {
 
 		rb[i] = 0;
@@ -200,7 +200,7 @@ void AudioRBResampler::clear() {
 	if (!rb)
 		return;
 
-	//should be stopped at this point but just in case
+	// should be stopped at this point but just in case
 	memdelete_arr(rb);
 	memdelete_arr(read_buf);
 	rb = nullptr;

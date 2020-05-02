@@ -304,7 +304,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, List<PlotMesh> &plo
 
 		Node *child = p_at_node->get_child(i);
 		if (!child->get_owner())
-			continue; //maybe a helper
+			continue; // maybe a helper
 
 		_find_meshes_and_lights(child, plot_meshes, plot_lights);
 	}
@@ -358,7 +358,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		}
 	}
 	{
-		//check for valid save path
+		// check for valid save path
 		DirAccessRef d = DirAccess::open(save_path);
 		if (!d) {
 			ERR_PRINT("Invalid Save Path '" + save_path + "'.");
@@ -494,7 +494,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 
 			if (hdr) {
 
-				//just save a regular image
+				// just save a regular image
 				Vector<uint8_t> data;
 				int s = lm.light.size();
 				data.resize(lm.light.size() * 2);
@@ -512,7 +512,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 
 			} else {
 
-				//just save a regular image
+				// just save a regular image
 				Vector<uint8_t> data;
 				int s = lm.light.size();
 				data.resize(lm.light.size());
@@ -543,7 +543,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 
 				bool srgb = false;
 				if (false && hdr) {
-					//save hdr
+					// save hdr
 				} else {
 					image_path += ".png";
 					print_line("image path saving png: " + image_path);
@@ -567,7 +567,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 				}
 
 				ResourceLoader::import(image_path);
-				texture = ResourceLoader::load(image_path); //if already loaded, it will be updated on refocus?
+				texture = ResourceLoader::load(image_path); // if already loaded, it will be updated on refocus?
 			} else {
 
 				image_path += ".text";
@@ -623,7 +623,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		bake_end_function();
 	}
 
-	//create the data for visual server
+	// create the data for visual server
 
 	if (p_create_visual_debug) {
 		MultiMeshInstance *mmi = memnew(MultiMeshInstance);
@@ -651,7 +651,7 @@ void BakedLightmap::_notification(int p_what) {
 		if (light_data.is_valid()) {
 			_assign_lightmaps();
 		}
-		request_ready(); //will need ready again if re-enters tree
+		request_ready(); // will need ready again if re-enters tree
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {

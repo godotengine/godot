@@ -137,7 +137,7 @@ void Polygon2D::_notification(int p_what) {
 
 			int len = polygon.size();
 			if ((invert || polygons.size() == 0) && internal_vertices > 0) {
-				//if no polygons are around, internal vertices must not be drawn, else let them be
+				// if no polygons are around, internal vertices must not be drawn, else let them be
 				len -= internal_vertices;
 			}
 
@@ -231,7 +231,7 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			if (skeleton_node && !invert && bone_weights.size()) {
-				//a skeleton is set! fill indices and weights
+				// a skeleton is set! fill indices and weights
 				int vc = len;
 				bones.resize(vc * 4);
 				weights.resize(vc * 4);
@@ -246,10 +246,10 @@ void Polygon2D::_notification(int p_what) {
 
 				for (int i = 0; i < bone_weights.size(); i++) {
 					if (bone_weights[i].weights.size() != points.size()) {
-						continue; //different number of vertices, sorry not using.
+						continue; // different number of vertices, sorry not using.
 					}
 					if (!skeleton_node->has_node(bone_weights[i].path)) {
-						continue; //node does not exist
+						continue; // node does not exist
 					}
 					Bone2D *bone = Object::cast_to<Bone2D>(skeleton_node->get_node(bone_weights[i].path));
 					if (!bone) {
@@ -260,11 +260,11 @@ void Polygon2D::_notification(int p_what) {
 					const float *r = bone_weights[i].weights.ptr();
 					for (int j = 0; j < vc; j++) {
 						if (r[j] == 0.0)
-							continue; //weight is unpainted, skip
-						//find an index with a weight
+							continue; // weight is unpainted, skip
+						// find an index with a weight
 						for (int k = 0; k < 4; k++) {
 							if (weightsw[j * 4 + k] < r[j]) {
-								//this is less than this weight, insert weight!
+								// this is less than this weight, insert weight!
 								for (int l = 3; l > k; l--) {
 									weightsw[j * 4 + l] = weightsw[j * 4 + l - 1];
 									bonesw[j * 4 + l] = bonesw[j * 4 + l - 1];
@@ -277,16 +277,16 @@ void Polygon2D::_notification(int p_what) {
 					}
 				}
 
-				//normalize the weights
+				// normalize the weights
 				for (int i = 0; i < vc; i++) {
 					float tw = 0;
 					for (int j = 0; j < 4; j++) {
 						tw += weightsw[i * 4 + j];
 					}
 					if (tw == 0)
-						continue; //unpainted, do nothing
+						continue; // unpainted, do nothing
 
-					//normalize
+					// normalize
 					for (int j = 0; j < 4; j++) {
 						weightsw[i * 4 + j] /= tw;
 					}
@@ -310,7 +310,7 @@ void Polygon2D::_notification(int p_what) {
 					RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID(), -1, normal_map.is_valid() ? normal_map->get_rid() : RID(), specular_map.is_valid() ? specular_map->get_rid() : RID(), Color(specular_color.r, specular_color.g, specular_color.b, shininess));
 				}
 			} else {
-				//draw individual polygons
+				// draw individual polygons
 				Vector<int> total_indices;
 				for (int i = 0; i < polygons.size(); i++) {
 					Vector<int> src_indices = polygons[i];

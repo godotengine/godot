@@ -63,7 +63,7 @@ void ReparentDialog::_reparent() {
 void ReparentDialog::set_current(const Set<Node *> &p_selection) {
 
 	tree->set_marked(p_selection, false, false);
-	//tree->set_selected(p_node->get_parent());
+	// tree->set_selected(p_node->get_parent());
 }
 
 void ReparentDialog::_bind_methods() {
@@ -79,7 +79,7 @@ ReparentDialog::ReparentDialog() {
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	//set_child_rect(vbc);
+	// set_child_rect(vbc);
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_show_enabled_subscene(true);
@@ -89,17 +89,17 @@ ReparentDialog::ReparentDialog() {
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ReparentDialog::_reparent));
 
 	//Label *label = memnew( Label );
-	//label->set_position( Point2( 15,8) );
-	//label->set_text("Reparent Location (Select new Parent):");
+	// label->set_position( Point2( 15,8) );
+	// label->set_text("Reparent Location (Select new Parent):");
 
 	keep_transform = memnew(CheckBox);
 	keep_transform->set_text(TTR("Keep Global Transform"));
 	keep_transform->set_pressed(true);
 	vbc->add_child(keep_transform);
 
-	//vbc->add_margin_child("Options:",node_only);
+	// vbc->add_margin_child("Options:",node_only);
 
-	//cancel->connect("pressed", this,"_cancel");
+	// cancel->connect("pressed", this,"_cancel");
 
 	get_ok()->set_text(TTR("Reparent"));
 }

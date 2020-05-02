@@ -481,7 +481,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			press_a_key->get_ok()->set_disabled(true);
 			last_wait_for_key = Ref<InputEvent>();
 			press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
-			//press_a_key->grab_focus();
+			// press_a_key->grab_focus();
 
 		} break;
 		case INPUT_KEY_PHYSICAL: {
@@ -1194,7 +1194,7 @@ void ProjectSettingsEditor::_copy_to_platform(int p_which) {
 	undo_redo->create_action(TTR("Override for Feature"));
 
 	Variant value = ProjectSettings::get_singleton()->get(property);
-	if (property.find(".") != -1) { //overwriting overwrite, keep overwrite
+	if (property.find(".") != -1) { // overwriting overwrite, keep overwrite
 		undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", property);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", property, value);
 	}
@@ -1228,7 +1228,7 @@ void ProjectSettingsEditor::_translation_add(const String &p_path) {
 	for (int i = 0; i < translations.size(); i++) {
 
 		if (translations[i] == p_path)
-			return; //exists
+			return; // exists
 	}
 
 	translations.push_back(p_path);
@@ -1286,7 +1286,7 @@ void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
 	}
 
 	if (remaps.has(p_path))
-		return; //pointless already has it
+		return; // pointless already has it
 
 	remaps[p_path] = PackedStringArray();
 
@@ -1529,7 +1529,7 @@ void ProjectSettingsEditor::_translation_filter_mode_changed(int p_mode) {
 
 void ProjectSettingsEditor::_update_translations() {
 
-	//update translations
+	// update translations
 
 	if (updating_translations)
 		return;
@@ -1556,7 +1556,7 @@ void ProjectSettingsEditor::_update_translations() {
 	Vector<String> langs = TranslationServer::get_all_locales();
 	Vector<String> names = TranslationServer::get_all_locale_names();
 
-	//update filter tab
+	// update filter tab
 	Array l_filter_all;
 
 	bool is_arr_empty = true;
@@ -1613,7 +1613,7 @@ void ProjectSettingsEditor::_update_translations() {
 		}
 	}
 
-	//update translation remaps
+	// update translation remaps
 
 	String remap_selected;
 	if (translation_remap->get_selected()) {
@@ -1956,7 +1956,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 #ifndef _MSC_VER
 #warning need to make drag data forwarding to non controls happen
 #endif
-	//input_editor->set_drag_forwarding(this);
+	// input_editor->set_drag_forwarding(this);
 
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
@@ -1965,7 +1965,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	press_a_key_physical = false;
 
 	press_a_key = memnew(ConfirmationDialog);
-	//press_a_key->set_focus_mode(Control::FOCUS_ALL);
+	// press_a_key->set_focus_mode(Control::FOCUS_ALL);
 	add_child(press_a_key);
 
 	l = memnew(Label);
@@ -2017,12 +2017,12 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	setting = false;
 
-	//translations
+	// translations
 	TabContainer *translations = memnew(TabContainer);
 	translations->set_tab_align(TabContainer::ALIGN_LEFT);
 	translations->set_name(TTR("Localization"));
 	tab_container->add_child(translations);
-	//remap for properly select language in popup
+	// remap for properly select language in popup
 	translation_locales_idxs_remap = Vector<int>();
 	translation_locales_list_created = false;
 

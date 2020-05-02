@@ -188,7 +188,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 						index++;
 						break;
 					} else if (p_str[index] == '\\') {
-						//escaped characters...
+						// escaped characters...
 						index++;
 						CharType next = p_str[index];
 						if (next == 0) {
@@ -234,7 +234,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 									res <<= 4;
 									res |= v;
 								}
-								index += 4; //will add at the end anyway
+								index += 4; // will add at the end anyway
 
 							} break;
 							default: {
@@ -265,7 +265,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 				}
 
 				if (p_str[index] == '-' || (p_str[index] >= '0' && p_str[index] <= '9')) {
-					//a number
+					// a number
 					const CharType *rptr;
 					double number = String::to_double(&p_str[index], &rptr);
 					index += (rptr - &p_str[index]);

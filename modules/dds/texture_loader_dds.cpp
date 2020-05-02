@@ -56,8 +56,8 @@ enum DDSFormat {
 	DDS_A2XY,
 	DDS_BGRA8,
 	DDS_BGR8,
-	DDS_RGBA8, //flipped in dds
-	DDS_RGB8, //flipped in dds
+	DDS_RGBA8, // flipped in dds
+	DDS_RGB8, // flipped in dds
 	DDS_BGR5A1,
 	DDS_BGR565,
 	DDS_BGR10A2,
@@ -119,11 +119,11 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	/* uint32_t depth = */ f->get_32();
 	uint32_t mipmaps = f->get_32();
 
-	//skip 11
+	// skip 11
 	for (int i = 0; i < 11; i++)
 		f->get_32();
 
-	//validate
+	// validate
 
 	if (magic != DDS_MAGIC || hsize != 124 || !(flags & DDSD_PIXELFORMAT) || !(flags & DDSD_CAPS)) {
 
@@ -143,7 +143,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	/* uint32_t caps_2 = */ f->get_32();
 	/* uint32_t caps_ddsx = */ f->get_32();
 
-	//reserved skip
+	// reserved skip
 	f->get_32();
 	f->get_32();
 
@@ -156,7 +156,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	printf("rmask: %x gmask: %x, bmask: %x, amask: %x\n",format_red_mask,format_green_mask,format_blue_mask,format_alpha_mask);
 	*/
 
-	//must avoid this later
+	// must avoid this later
 	while (f->get_position() < 128)
 		f->get_8();
 
@@ -229,7 +229,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	uint32_t h = height;
 
 	if (info.compressed) {
-		//compressed bc
+		// compressed bc
 
 		uint32_t size = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
 		ERR_FAIL_COND_V(size != pitch, RES());
@@ -240,7 +240,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 			w = MAX(1, w >> 1);
 			h = MAX(1, h >> 1);
 			uint32_t bsize = MAX(info.divisor, w) / info.divisor * MAX(info.divisor, h) / info.divisor * info.block_size;
-			//printf("%i x %i - block: %i\n",w,h,bsize);
+			// printf("%i x %i - block: %i\n",w,h,bsize);
 			size += bsize;
 		}
 
@@ -250,7 +250,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	} else if (info.palette) {
 
-		//indexed
+		// indexed
 		ERR_FAIL_COND_V(!(flags & DDSD_PITCH), RES());
 		ERR_FAIL_COND_V(format_rgb_bits != 8, RES());
 
@@ -292,7 +292,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				wb[dst_ofs + 3] = palette[src_ofs + 3];
 		}
 	} else {
-		//uncompressed generic...
+		// uncompressed generic...
 
 		uint32_t size = width * height * info.block_size;
 
@@ -348,7 +348,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 					uint8_t r = wb[src_ofs + 1] >> 3;
 					wb[dst_ofs + 0] = r << 3;
 					wb[dst_ofs + 1] = g << 2;
-					wb[dst_ofs + 2] = b << 3; //b<<3;
+					wb[dst_ofs + 2] = b << 3; // b<<3;
 				}
 
 			} break;

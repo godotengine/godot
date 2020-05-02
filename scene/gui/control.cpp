@@ -440,13 +440,13 @@ void Control::add_child_notify(Node *p_child) {
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && child_c->data.theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
-		_propagate_theme_changed(child_c, data.theme_owner, data.theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+		_propagate_theme_changed(child_c, data.theme_owner, data.theme_owner_window); // need to propagate here, since many controls may require setting up stuff
 	}
 
 	Window *child_w = Object::cast_to<Window>(p_child);
 
 	if (child_w && child_w->theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
-		_propagate_theme_changed(child_w, data.theme_owner, data.theme_owner_window); //need to propagate here, since many controls may require setting up stuff
+		_propagate_theme_changed(child_w, data.theme_owner, data.theme_owner_window); // need to propagate here, since many controls may require setting up stuff
 	}
 }
 
@@ -494,7 +494,7 @@ void Control::_notification(int p_notification) {
 
 			data.parent = Object::cast_to<Control>(get_parent());
 
-			Node *parent = this; //meh
+			Node *parent = this; // meh
 			Control *parent_control = nullptr;
 			bool subwindow = false;
 
@@ -523,13 +523,13 @@ void Control::_notification(int p_notification) {
 			}
 
 			if (parent_control && !subwindow) {
-				//do nothing, has a parent control and not toplevel
+				// do nothing, has a parent control and not toplevel
 				if (data.theme.is_null() && parent_control->data.theme_owner) {
 					data.theme_owner = parent_control->data.theme_owner;
 					notification(NOTIFICATION_THEME_CHANGED);
 				}
 			} else {
-				//is a regular root control or toplevel
+				// is a regular root control or toplevel
 				data.RI = get_viewport()->_gui_add_root_control(this);
 			}
 
@@ -539,7 +539,7 @@ void Control::_notification(int p_notification) {
 
 				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 			} else {
-				//connect viewport
+				// connect viewport
 				get_viewport()->connect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 		} break;
@@ -550,7 +550,7 @@ void Control::_notification(int p_notification) {
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = nullptr;
 			} else if (!is_set_as_toplevel()) {
-				//disconnect viewport
+				// disconnect viewport
 				get_viewport()->disconnect("size_changed", callable_mp(this, &Control::_size_changed));
 			}
 
@@ -584,7 +584,7 @@ void Control::_notification(int p_notification) {
 			_update_canvas_item_transform();
 			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
-			//emit_signal(SceneStringNames::get_singleton()->draw);
+			// emit_signal(SceneStringNames::get_singleton()->draw);
 
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
@@ -618,7 +618,7 @@ void Control::_notification(int p_notification) {
 				if (get_viewport() != nullptr)
 					get_viewport()->_gui_hid_control(this);
 
-				//remove key focus
+				// remove key focus
 
 			} else {
 				data.minimum_size_valid = false;
@@ -1287,7 +1287,7 @@ void Control::_size_changed() {
 		}
 
 		if (pos_changed && !size_changed) {
-			_update_canvas_item_transform(); //move because it won't be updated
+			_update_canvas_item_transform(); // move because it won't be updated
 		}
 	}
 }
@@ -1904,7 +1904,7 @@ static Control *_next_control(Control *p_from) {
 		return c;
 	}
 
-	//no next in parent, try the same in parent
+	// no next in parent, try the same in parent
 	return _next_control(parent);
 }
 
@@ -1947,7 +1947,7 @@ Control *Control::find_next_valid_focus() const {
 		if (!next_child) {
 
 			next_child = _next_control(from);
-			if (!next_child) { //nothing else.. go up and find either window or subwindow
+			if (!next_child) { // nothing else.. go up and find either window or subwindow
 				next_child = const_cast<Control *>(this);
 				while (next_child && !next_child->is_set_as_toplevel()) {
 
@@ -1996,7 +1996,7 @@ static Control *_prev_control(Control *p_from) {
 	if (!child)
 		return p_from;
 
-	//no prev in parent, try the same in parent
+	// no prev in parent, try the same in parent
 	return _prev_control(child);
 }
 
@@ -2026,7 +2026,7 @@ Control *Control::find_prev_valid_focus() const {
 
 		if (from->is_set_as_toplevel() || !Object::cast_to<Control>(from->get_parent())) {
 
-			//find last of the children
+			// find last of the children
 
 			prev_child = _prev_control(from);
 
@@ -2361,7 +2361,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest) {
 
 	if (Object::cast_to<Viewport>(p_at))
-		return; //bye
+		return; // bye
 
 	Control *c = Object::cast_to<Control>(p_at);
 
@@ -2399,7 +2399,7 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 
 					Vector2 pa, pb;
 					float d = Geometry::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					//float d = Geometry::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
+					// float d = Geometry::get_closest_distance_between_segments(Vector3(la.x,la.y,0),Vector3(lb.x,lb.y,0),Vector3(fa.x,fa.y,0),Vector3(fb.x,fb.y,0));
 					if (d < r_closest_dist) {
 						r_closest_dist = d;
 						*r_closest = c;
@@ -2414,7 +2414,7 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		Node *child = p_at->get_child(i);
 		Control *childc = Object::cast_to<Control>(child);
 		if (childc && childc->data.RI)
-			continue; //subwindow, ignore
+			continue; // subwindow, ignore
 		_window_find_focus_neighbour(p_dir, p_at->get_child(i), p_points, p_min, r_closest_dist, r_closest);
 	}
 }
@@ -2466,7 +2466,7 @@ void Control::minimum_size_changed() {
 
 	Control *invalidate = this;
 
-	//invalidate cache upwards
+	// invalidate cache upwards
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
 		if (invalidate->is_set_as_toplevel())

@@ -137,7 +137,7 @@ void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(last_focused_window)) {
-		return; //no window focused?
+		return; // no window focused?
 	}
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -158,7 +158,7 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 	POINT p;
 	GetCursorPos(&p);
 	return Point2i(p.x, p.y);
-	//return Point2(old_x, old_y);
+	// return Point2(old_x, old_y);
 }
 int DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
@@ -169,7 +169,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(last_focused_window)) {
-		return; //no window focused?
+		return; // no window focused?
 	}
 
 	// Convert LF line endings to CRLF in clipboard content
@@ -209,7 +209,7 @@ String DisplayServerWindows::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(last_focused_window)) {
-		return String(); //no window focused?
+		return String(); // no window focused?
 	}
 
 	String ret;
@@ -652,7 +652,7 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 	return Point2i(point.x, point.y);
 
 #if 0
-	//do not use this method, as it includes windows decorations
+	// do not use this method, as it includes windows decorations
 	RECT r;
 	GetWindowRect(wd.hWnd, &r);
 	return Point2(r.left, r.top);
@@ -679,7 +679,7 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 
 	if (wd.fullscreen) return;
 #if 0
-	//wrong needs to account properly for decorations
+	// wrong needs to account properly for decorations
 	RECT r;
 	GetWindowRect(wd.hWnd, &r);
 	MoveWindow(wd.hWnd, p_position.x, p_position.y, r.right - r.left, r.bottom - r.top, TRUE);
@@ -724,7 +724,7 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 	ERR_FAIL_COND_MSG(wd_window.always_on_top, "Windows with the 'on top' can't become transient.");
 
 	if (p_parent == INVALID_WINDOW_ID) {
-		//remove transient
+		// remove transient
 
 		ERR_FAIL_COND(wd_window.transient_parent == INVALID_WINDOW_ID);
 		ERR_FAIL_COND(!windows.has(wd_window.transient_parent));
@@ -877,7 +877,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 
 	if (p_fullscreen || p_borderless) {
 		r_style |= WS_POPUP;
-		//if (p_borderless) {
+		// if (p_borderless) {
 		//	r_style_ex |= WS_EX_TOOLWINDOW;
 		//}
 	} else {
@@ -1022,7 +1022,7 @@ bool DisplayServerWindows::window_is_maximize_allowed(WindowID p_window) const {
 
 	// FIXME: Implement this, or confirm that it should always be true.
 
-	return true; //no idea
+	return true; // no idea
 }
 
 void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
@@ -1207,7 +1207,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 	static const LPCTSTR win_cursors[CURSOR_MAX] = {
 		IDC_ARROW,
 		IDC_IBEAM,
-		IDC_HAND, //finger
+		IDC_HAND, // finger
 		IDC_CROSS,
 		IDC_WAIT,
 		IDC_APPSTARTING,
@@ -1764,7 +1764,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 
 	Ref<InputEventFromWindow> event_from_window = p_event;
 	if (event_from_window.is_valid() && event_from_window->get_window_id() != INVALID_WINDOW_ID) {
-		//send to a window
+		// send to a window
 		ERR_FAIL_COND(!windows.has(event_from_window->get_window_id()));
 		Callable callable = windows[event_from_window->get_window_id()].input_event_callback;
 		if (callable.is_null()) {
@@ -1772,7 +1772,7 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 		}
 		callable.call((const Variant **)&evp, 1, ret, ce);
 	} else {
-		//send to all windows
+		// send to all windows
 		for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 			Callable callable = E->get().input_event_callback;
 			if (callable.is_null()) {
@@ -1957,7 +1957,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							(double(raw->data.mouse.lLastX) - 65536.0 / (nScreenWidth)) * nScreenWidth / 65536.0 + nScreenLeft,
 							(double(raw->data.mouse.lLastY) - 65536.0 / (nScreenHeight)) * nScreenHeight / 65536.0 + nScreenTop);
 
-					POINT coords; //client coords
+					POINT coords; // client coords
 					coords.x = abs_pos.x;
 					coords.y = abs_pos.y;
 
@@ -2010,7 +2010,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (outside) {
-				//mouse enter
+				// mouse enter
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
@@ -2047,7 +2047,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			mm->set_button_mask(last_button_state);
 
-			POINT coords; //client coords
+			POINT coords; // client coords
 			coords.x = GET_X_LPARAM(lParam);
 			coords.y = GET_Y_LPARAM(lParam);
 
@@ -2107,7 +2107,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (outside) {
-				//mouse enter
+				// mouse enter
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
@@ -2306,7 +2306,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_control((wParam & MK_CONTROL) != 0);
 			mb->set_shift((wParam & MK_SHIFT) != 0);
 			mb->set_alt(alt_mem);
-			//mb->get_alt()=(wParam&MK_MENU)!=0;
+			// mb->get_alt()=(wParam&MK_MENU)!=0;
 			if (mb->is_pressed())
 				last_button_state |= (1 << (mb->get_button_index() - 1));
 			else
@@ -2349,7 +2349,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			Input::get_singleton()->accumulate_input_event(mb);
 			if (mb->is_pressed() && mb->get_button_index() > 3 && mb->get_button_index() < 8) {
-				//send release for mouse wheel
+				// send release for mouse wheel
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
 				mbd->set_window_id(window_id);
 				last_button_state &= ~(1 << (mbd->get_button_index() - 1));
@@ -2440,7 +2440,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
 			}
 #endif
-			//return 0;								// Jump Back
+			// return 0;								// Jump Back
 		} break;
 
 		case WM_ENTERSIZEMOVE: {
@@ -2528,7 +2528,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 							TOUCH_COORD_TO_PIXEL(ti.y),
 						};
 						ScreenToClient(hWnd, &touch_pos);
-						//do something with each touch input entry
+						// do something with each touch input entry
 						if (ti.dwFlags & TOUCHEVENTF_MOVE) {
 
 							_drag_event(window_id, touch_pos.x, touch_pos.y, ti.dwID);
@@ -2655,7 +2655,7 @@ void DisplayServerWindows::_process_key_events() {
 					Input::get_singleton()->accumulate_input_event(k);
 				}
 
-				//do nothing
+				// do nothing
 			} break;
 			case WM_KEYUP:
 			case WM_KEYDOWN: {
@@ -2831,7 +2831,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.lpfnWndProc = (WNDPROC)::WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	//wc.hInstance = hInstance;
+	// wc.hInstance = hInstance;
 	wc.hInstance = hInstance ? hInstance : GetModuleHandle(nullptr);
 	wc.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
 	wc.hCursor = nullptr; //LoadCursor(nullptr, IDC_ARROW);
@@ -2855,7 +2855,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	Rid[0].hwndTarget = 0;
 
 	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
-		//registration failed.
+		// registration failed.
 		use_raw_input = false;
 	}
 
@@ -2924,7 +2924,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	move_timer_id = 1;
 
-	//set_ime_active(false);
+	// set_ime_active(false);
 
 	if (!OS::get_singleton()->is_in_low_processor_usage_mode()) {
 		//SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);

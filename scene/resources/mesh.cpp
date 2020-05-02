@@ -287,7 +287,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			for (int j = 0; j < arrays.size(); j++) {
 
 				if (arrays[j].get_type() == Variant::NIL || a[j].get_type() == Variant::NIL) {
-					//mismatch, do not use
+					// mismatch, do not use
 					arrays[j] = Variant();
 					continue;
 				}
@@ -389,7 +389,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 		Map<Vector3, Vector3> normal_accum;
 
-		//fill normals with triangle normals
+		// fill normals with triangle normals
 		for (int i = 0; i < vc; i += 3) {
 
 			Vector3 t[3];
@@ -420,13 +420,13 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			}
 		}
 
-		//normalize
+		// normalize
 
 		for (Map<Vector3, Vector3>::Element *E = normal_accum.front(); E; E = E->next()) {
 			E->get().normalize();
 		}
 
-		//displace normals
+		// displace normals
 		int vc2 = vertices.size();
 
 		for (int i = 0; i < vc2; i++) {
@@ -745,18 +745,18 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (idx == surfaces.size()) {
 
-		//create
+		// create
 		Dictionary d = p_value;
 		ERR_FAIL_COND_V(!d.has("primitive"), false);
 
 		if (d.has("arrays")) {
-			//oldest format (2.x)
+			// oldest format (2.x)
 			ERR_FAIL_COND_V(!d.has("morph_arrays"), false);
 			add_surface_from_arrays(PrimitiveType(int(d["primitive"])), d["arrays"], d["morph_arrays"]);
 
 		} else if (d.has("array_data")) {
-			//print_line("array data (old style");
-			//older format (3.x)
+			// print_line("array data (old style");
+			// older format (3.x)
 			Vector<uint8_t> array_data = d["array_data"];
 			Vector<uint8_t> array_index_data;
 			if (d.has("array_index_data"))
@@ -777,7 +777,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				PRIMITIVE_TRIANGLE_STRIP
 			};
 
-			primitive = primitive_remap[primitive]; //compatibility
+			primitive = primitive_remap[primitive]; // compatibility
 
 			ERR_FAIL_COND_V(!d.has("vertex_count"), false);
 			int vertex_count = d["vertex_count"];
@@ -800,7 +800,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 
-			//clear unused flags
+			// clear unused flags
 			print_line("format pre: " + itos(format));
 			format &= ~uint32_t((1 << (ARRAY_VERTEX + ARRAY_COMPRESS_BASE)) | (ARRAY_COMPRESS_INDEX << 2) | (ARRAY_COMPRESS_TEX_UV2 << 2));
 			print_line("format post: " + itos(format));
@@ -936,7 +936,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 
 		if (d.has("lods")) {
 			Array lods = d["lods"];
-			ERR_FAIL_COND(lods.size() & 1); //must be even
+			ERR_FAIL_COND(lods.size() & 1); // must be even
 			for (int j = 0; j < lods.size(); j += 2) {
 				RS::SurfaceData::LOD lod;
 				lod.edge_length = lods[j + 0];
@@ -992,7 +992,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 	}
 
 	if (mesh.is_valid()) {
-		//if mesh exists, it needs to be updated
+		// if mesh exists, it needs to be updated
 		RS::get_singleton()->mesh_clear(mesh);
 		for (int i = 0; i < surface_data.size(); i++) {
 			RS::get_singleton()->mesh_add_surface(mesh, surface_data[i]);
@@ -1464,7 +1464,7 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 		lightmap_surfaces.push_back(s);
 	}
 
-	//unwrap
+	// unwrap
 
 	float *gen_uvs;
 	int *gen_vertices;
@@ -1480,10 +1480,10 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 		return ERR_CANT_CREATE;
 	}
 
-	//remove surfaces
+	// remove surfaces
 	clear_surfaces();
 
-	//create surfacetools for each surface..
+	// create surfacetools for each surface..
 	Vector<Ref<SurfaceTool>> surfaces_tools;
 
 	for (int i = 0; i < lightmap_surfaces.size(); i++) {
@@ -1491,11 +1491,11 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 		st.instance();
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
-		surfaces_tools.push_back(st); //stay there
+		surfaces_tools.push_back(st); // stay there
 	}
 
 	print_verbose("Mesh: Gen indices: " + itos(gen_index_count));
-	//go through all indices
+	// go through all indices
 	for (int i = 0; i < gen_index_count; i += 3) {
 
 		ERR_FAIL_INDEX_V(gen_vertices[gen_indices[i + 0]], uv_indices.size(), ERR_BUG);
@@ -1539,7 +1539,7 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 		}
 	}
 
-	//generate surfaces
+	// generate surfaces
 
 	for (int i = 0; i < surfaces_tools.size(); i++) {
 		surfaces_tools.write[i]->index();
@@ -1549,7 +1549,7 @@ Error ArrayMesh::lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cach
 	set_lightmap_size_hint(Size2(size_x, size_y));
 
 	if (!r_used_cache) {
-		//free stuff
+		// free stuff
 		::free(gen_vertices);
 		::free(gen_indices);
 		::free(gen_uvs);
@@ -1635,8 +1635,8 @@ void ArrayMesh::reload_from_file() {
 
 ArrayMesh::ArrayMesh() {
 
-	//mesh is now created on demand
-	//mesh = RenderingServer::get_singleton()->mesh_create();
+	// mesh is now created on demand
+	// mesh = RenderingServer::get_singleton()->mesh_create();
 	blend_shape_mode = BLEND_SHAPE_MODE_RELATIVE;
 }
 

@@ -47,7 +47,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 		}
 		int mixed = stb_vorbis_get_samples_float_interleaved(ogg_stream, 2, buffer, todo * 2);
 		if (vorbis_stream->channels == 1 && mixed > 0) {
-			//mix mono to stereo
+			// mix mono to stereo
 			for (int i = start_buffer; i < mixed; i++) {
 				p_buffer[i].r = p_buffer[i].l;
 			}
@@ -56,10 +56,10 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame *p_buffer, int p_fra
 		frames_mixed += mixed;
 
 		if (todo) {
-			//end of file!
+			// end of file!
 			bool is_not_empty = mixed > 0 || stb_vorbis_stream_length_in_samples(ogg_stream) > 0;
 			if (vorbis_stream->loop && is_not_empty) {
-				//loop
+				// loop
 				seek(vorbis_stream->loop_offset);
 				loops++;
 				// we still have buffer to fill, start from this element in the next iteration.
@@ -153,7 +153,7 @@ Ref<AudioStreamPlayback> AudioStreamOGGVorbis::instance_playback() {
 
 String AudioStreamOGGVorbis::get_stream_name() const {
 
-	return ""; //return stream_name;
+	return ""; // return stream_name;
 }
 
 void AudioStreamOGGVorbis::clear_data() {
@@ -201,8 +201,8 @@ void AudioStreamOGGVorbis::set_data(const Vector<uint8_t> &p_data) {
 			channels = info.channels;
 			sample_rate = info.sample_rate;
 			decode_mem_size = alloc_try;
-			//does this work? (it's less mem..)
-			//decode_mem_size = ogg_alloc.alloc_buffer_length_in_bytes + info.setup_memory_required + info.temp_memory_required + info.max_frame_size;
+			// does this work? (it's less mem..)
+			// decode_mem_size = ogg_alloc.alloc_buffer_length_in_bytes + info.setup_memory_required + info.temp_memory_required + info.max_frame_size;
 
 			length = stb_vorbis_stream_length_in_seconds(ogg_stream);
 			stb_vorbis_close(ogg_stream);

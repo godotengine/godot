@@ -281,14 +281,14 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		press_a_key_label->set_text(TTR("Press a Key..."));
 		last_wait_for_key = Ref<InputEventKey>();
 		press_a_key->popup_centered(Size2(250, 80) * EDSCALE);
-		//press_a_key->grab_focus();
+		// press_a_key->grab_focus();
 		press_a_key->get_ok()->set_focus_mode(Control::FOCUS_NONE);
 		press_a_key->get_cancel()->set_focus_mode(Control::FOCUS_NONE);
 		shortcut_configured = item;
 
-	} else if (p_idx == 1) { //erase
+	} else if (p_idx == 1) { // erase
 		if (!sc.is_valid())
-			return; //pointless, there is nothing
+			return; // pointless, there is nothing
 
 		undo_redo->create_action(TTR("Erase Shortcut"));
 		undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
@@ -298,9 +298,9 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		undo_redo->add_do_method(this, "_settings_changed");
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
-	} else if (p_idx == 2) { //revert to original
+	} else if (p_idx == 2) { // revert to original
 		if (!sc.is_valid())
-			return; //pointless, there is nothing
+			return; // pointless, there is nothing
 
 		Ref<InputEvent> original = sc->get_meta("original");
 
@@ -473,7 +473,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->connect("button_pressed", callable_mp(this, &EditorSettingsDialog::_shortcut_button_pressed));
 
 	press_a_key = memnew(ConfirmationDialog);
-	//press_a_key->set_focus_mode(Control::FOCUS_ALL);
+	// press_a_key->set_focus_mode(Control::FOCUS_ALL);
 	add_child(press_a_key);
 
 	Label *l = memnew(Label);

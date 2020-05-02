@@ -634,16 +634,16 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(INDEX_BUFFER_FORMAT_UINT16);
 	BIND_ENUM_CONSTANT(INDEX_BUFFER_FORMAT_UINT32);
 
-	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER); //for sampling only (sampler GLSL type)
+	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER); // for sampling only (sampler GLSL type)
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER_WITH_TEXTURE); // for sampling only); but includes a texture); (samplerXX GLSL type)); first a sampler then a texture
-	BIND_ENUM_CONSTANT(UNIFORM_TYPE_TEXTURE); //only texture); (textureXX GLSL type)
+	BIND_ENUM_CONSTANT(UNIFORM_TYPE_TEXTURE); // only texture); (textureXX GLSL type)
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_IMAGE); // storage image (imageXX GLSL type)); for compute mostly
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_TEXTURE_BUFFER); // buffer texture (or TBO); textureBuffer type)
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER); // buffer texture with a sampler(or TBO); samplerBuffer type)
-	BIND_ENUM_CONSTANT(UNIFORM_TYPE_IMAGE_BUFFER); //texel buffer); (imageBuffer type)); for compute mostly
-	BIND_ENUM_CONSTANT(UNIFORM_TYPE_UNIFORM_BUFFER); //regular uniform buffer (or UBO).
-	BIND_ENUM_CONSTANT(UNIFORM_TYPE_STORAGE_BUFFER); //storage buffer ("buffer" qualifier) like UBO); but supports storage); for compute mostly
-	BIND_ENUM_CONSTANT(UNIFORM_TYPE_INPUT_ATTACHMENT); //used for sub-pass read/write); for mobile mostly
+	BIND_ENUM_CONSTANT(UNIFORM_TYPE_IMAGE_BUFFER); // texel buffer); (imageBuffer type)); for compute mostly
+	BIND_ENUM_CONSTANT(UNIFORM_TYPE_UNIFORM_BUFFER); // regular uniform buffer (or UBO).
+	BIND_ENUM_CONSTANT(UNIFORM_TYPE_STORAGE_BUFFER); // storage buffer ("buffer" qualifier) like UBO); but supports storage); for compute mostly
+	BIND_ENUM_CONSTANT(UNIFORM_TYPE_INPUT_ATTACHMENT); // used for sub-pass read/write); for mobile mostly
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_MAX);
 
 	BIND_ENUM_CONSTANT(RENDER_PRIMITIVE_POINTS);
@@ -674,7 +674,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(STENCIL_OP_INVERT);
 	BIND_ENUM_CONSTANT(STENCIL_OP_INCREMENT_AND_WRAP);
 	BIND_ENUM_CONSTANT(STENCIL_OP_DECREMENT_AND_WRAP);
-	BIND_ENUM_CONSTANT(STENCIL_OP_MAX); //not an actual operator); just the amount of operators :D
+	BIND_ENUM_CONSTANT(STENCIL_OP_MAX); // not an actual operator); just the amount of operators :D
 
 	BIND_ENUM_CONSTANT(COMPARE_OP_NEVER);
 	BIND_ENUM_CONSTANT(COMPARE_OP_LESS);
@@ -702,7 +702,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOGIC_OP_OR_INVERTED);
 	BIND_ENUM_CONSTANT(LOGIC_OP_NAND);
 	BIND_ENUM_CONSTANT(LOGIC_OP_SET);
-	BIND_ENUM_CONSTANT(LOGIC_OP_MAX); //not an actual operator); just the amount of operators :D
+	BIND_ENUM_CONSTANT(LOGIC_OP_MAX); // not an actual operator); just the amount of operators :D
 
 	BIND_ENUM_CONSTANT(BLEND_FACTOR_ZERO);
 	BIND_ENUM_CONSTANT(BLEND_FACTOR_ONE);
@@ -740,15 +740,15 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_WRITE_MASK);
 	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_REFERENCE);
 
-	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR); //start rendering and clear the framebuffer (supply params)
-	BIND_ENUM_CONSTANT(INITIAL_ACTION_KEEP); //start rendering); but keep attached color texture contents (depth will be cleared)
-	BIND_ENUM_CONSTANT(INITIAL_ACTION_DROP); //start rendering); ignore what is there); just write above it
-	BIND_ENUM_CONSTANT(INITIAL_ACTION_CONTINUE); //continue rendering (framebuffer must have been left in "continue" state as final action previously)
+	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR); // start rendering and clear the framebuffer (supply params)
+	BIND_ENUM_CONSTANT(INITIAL_ACTION_KEEP); // start rendering); but keep attached color texture contents (depth will be cleared)
+	BIND_ENUM_CONSTANT(INITIAL_ACTION_DROP); // start rendering); ignore what is there); just write above it
+	BIND_ENUM_CONSTANT(INITIAL_ACTION_CONTINUE); // continue rendering (framebuffer must have been left in "continue" state as final action previously)
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_MAX);
 
-	BIND_ENUM_CONSTANT(FINAL_ACTION_READ); //will no longer render to it); allows attached textures to be read again); but depth buffer contents will be dropped (Can't be read from)
+	BIND_ENUM_CONSTANT(FINAL_ACTION_READ); // will no longer render to it); allows attached textures to be read again); but depth buffer contents will be dropped (Can't be read from)
 	BIND_ENUM_CONSTANT(FINAL_ACTION_DISCARD); // discard contents after rendering
-	BIND_ENUM_CONSTANT(FINAL_ACTION_CONTINUE); //will continue rendering later); attached textures can't be read until re-bound with "finish"
+	BIND_ENUM_CONSTANT(FINAL_ACTION_CONTINUE); // will continue rendering later); attached textures can't be read until re-bound with "finish"
 	BIND_ENUM_CONSTANT(FINAL_ACTION_MAX);
 
 	BIND_ENUM_CONSTANT(SHADER_STAGE_VERTEX);

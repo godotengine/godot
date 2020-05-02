@@ -37,7 +37,7 @@
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
 
 	name = p_name;
-	//split vertex and shader code (thank you, shader compiler programmers from you know what company).
+	// split vertex and shader code (thank you, shader compiler programmers from you know what company).
 	if (p_vertex_code) {
 		String defines_tag = "\nVERSION_DEFINES";
 		String globals_tag = "\nVERTEX_SHADER_GLOBALS";
@@ -99,7 +99,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			fragment_code0 = code.ascii();
 		} else {
 			fragment_code0 = code.substr(0, cpos).ascii();
-			//print_line("CODE0:\n"+String(fragment_code0.get_data()));
+			// print_line("CODE0:\n"+String(fragment_code0.get_data()));
 			code = code.substr(cpos + material_tag.length(), code.length());
 			cpos = code.find(globals_tag);
 
@@ -108,7 +108,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			} else {
 
 				fragment_code1 = code.substr(0, cpos).ascii();
-				//print_line("CODE1:\n"+String(fragment_code1.get_data()));
+				// print_line("CODE1:\n"+String(fragment_code1.get_data()));
 
 				String code2 = code.substr(cpos + globals_tag.length(), code.length());
 				cpos = code2.find(light_code_tag);
@@ -118,7 +118,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 				} else {
 
 					fragment_code2 = code2.substr(0, cpos).ascii();
-					//print_line("CODE2:\n"+String(fragment_code2.get_data()));
+					// print_line("CODE2:\n"+String(fragment_code2.get_data()));
 
 					String code3 = code2.substr(cpos + light_code_tag.length(), code2.length());
 
@@ -128,9 +128,9 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 					} else {
 
 						fragment_code3 = code3.substr(0, cpos).ascii();
-						//print_line("CODE3:\n"+String(fragment_code3.get_data()));
+						// print_line("CODE3:\n"+String(fragment_code3.get_data()));
 						fragment_code4 = code3.substr(cpos + code_tag.length(), code3.length()).ascii();
-						//print_line("CODE4:\n"+String(fragment_code4.get_data()));
+						// print_line("CODE4:\n"+String(fragment_code4.get_data()));
 					}
 				}
 			}
@@ -184,7 +184,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 RID ShaderRD::version_create() {
 
-	//initialize() was never called
+	// initialize() was never called
 	ERR_FAIL_COND_V(variant_defines.size() == 0, RID());
 
 	Version version;
@@ -196,7 +196,7 @@ RID ShaderRD::version_create() {
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
-	//clear versions if they exist
+	// clear versions if they exist
 	if (p_version->variants) {
 		for (int i = 0; i < variant_defines.size(); i++) {
 			RD::get_singleton()->free(p_version->variants[i]);
@@ -217,12 +217,12 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 	bool build_ok = true;
 
 	if (!is_compute) {
-		//vertex stage
+		// vertex stage
 
 		StringBuilder builder;
 
 		builder.append(vertex_codev.get_data()); // version info (if exists)
-		builder.append("\n"); //make sure defines begin at newline
+		builder.append("\n"); // make sure defines begin at newline
 		builder.append(general_defines.get_data());
 		builder.append(variant_defines[p_variant].get_data());
 
@@ -230,19 +230,19 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 			builder.append(p_version->custom_defines[j].get_data());
 		}
 
-		builder.append(vertex_code0.get_data()); //first part of vertex
+		builder.append(vertex_code0.get_data()); // first part of vertex
 
-		builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
+		builder.append(p_version->uniforms.get_data()); // uniforms (same for vertex and fragment)
 
-		builder.append(vertex_code1.get_data()); //second part of vertex
+		builder.append(vertex_code1.get_data()); // second part of vertex
 
 		builder.append(p_version->vertex_globals.get_data()); // vertex globals
 
-		builder.append(vertex_code2.get_data()); //third part of vertex
+		builder.append(vertex_code2.get_data()); // third part of vertex
 
 		builder.append(p_version->vertex_code.get_data()); // code
 
-		builder.append(vertex_code3.get_data()); //fourth of vertex
+		builder.append(vertex_code3.get_data()); // fourth of vertex
 
 		current_source = builder.as_string();
 		RD::ShaderStageData stage;
@@ -257,13 +257,13 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 	}
 
 	if (!is_compute && build_ok) {
-		//fragment stage
+		// fragment stage
 		current_stage = RD::SHADER_STAGE_FRAGMENT;
 
 		StringBuilder builder;
 
 		builder.append(fragment_codev.get_data()); // version info (if exists)
-		builder.append("\n"); //make sure defines begin at newline
+		builder.append("\n"); // make sure defines begin at newline
 
 		builder.append(general_defines.get_data());
 		builder.append(variant_defines[p_variant].get_data());
@@ -271,23 +271,23 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 			builder.append(p_version->custom_defines[j].get_data());
 		}
 
-		builder.append(fragment_code0.get_data()); //first part of fragment
+		builder.append(fragment_code0.get_data()); // first part of fragment
 
-		builder.append(p_version->uniforms.get_data()); //uniforms (same for fragment and fragment)
+		builder.append(p_version->uniforms.get_data()); // uniforms (same for fragment and fragment)
 
-		builder.append(fragment_code1.get_data()); //first part of fragment
+		builder.append(fragment_code1.get_data()); // first part of fragment
 
 		builder.append(p_version->fragment_globals.get_data()); // fragment globals
 
-		builder.append(fragment_code2.get_data()); //third part of fragment
+		builder.append(fragment_code2.get_data()); // third part of fragment
 
 		builder.append(p_version->fragment_light.get_data()); // fragment light
 
-		builder.append(fragment_code3.get_data()); //fourth part of fragment
+		builder.append(fragment_code3.get_data()); // fourth part of fragment
 
 		builder.append(p_version->fragment_code.get_data()); // fragment code
 
-		builder.append(fragment_code4.get_data()); //fourth part of fragment
+		builder.append(fragment_code4.get_data()); // fourth part of fragment
 
 		current_source = builder.as_string();
 		RD::ShaderStageData stage;
@@ -302,13 +302,13 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 	}
 
 	if (is_compute) {
-		//compute stage
+		// compute stage
 		current_stage = RD::SHADER_STAGE_COMPUTE;
 
 		StringBuilder builder;
 
 		builder.append(compute_codev.get_data()); // version info (if exists)
-		builder.append("\n"); //make sure defines begin at newline
+		builder.append("\n"); // make sure defines begin at newline
 		builder.append(general_defines.get_data());
 		builder.append(variant_defines[p_variant].get_data());
 
@@ -316,19 +316,19 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 			builder.append(p_version->custom_defines[j].get_data());
 		}
 
-		builder.append(compute_code0.get_data()); //first part of compute
+		builder.append(compute_code0.get_data()); // first part of compute
 
-		builder.append(p_version->uniforms.get_data()); //uniforms (same for compute and fragment)
+		builder.append(p_version->uniforms.get_data()); // uniforms (same for compute and fragment)
 
-		builder.append(compute_code1.get_data()); //second part of compute
+		builder.append(compute_code1.get_data()); // second part of compute
 
 		builder.append(p_version->compute_globals.get_data()); // compute globals
 
-		builder.append(compute_code2.get_data()); //third part of compute
+		builder.append(compute_code2.get_data()); // third part of compute
 
 		builder.append(p_version->compute_code.get_data()); // code
 
-		builder.append(compute_code3.get_data()); //fourth of compute
+		builder.append(compute_code3.get_data()); // fourth of compute
 
 		current_source = builder.as_string();
 		RD::ShaderStageData stage;
@@ -343,7 +343,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 	}
 
 	if (!build_ok) {
-		MutexLock lock(variant_set_mutex); //properly print the errors
+		MutexLock lock(variant_set_mutex); // properly print the errors
 		ERR_PRINT("Error compiling " + String(current_stage == RD::SHADER_STAGE_COMPUTE ? "Compute " : (current_stage == RD::SHADER_STAGE_VERTEX ? "Vertex" : "Fragment")) + " shader, variant #" + itos(p_variant) + " (" + variant_defines[p_variant].get_data() + ").");
 		ERR_PRINT(error);
 
@@ -387,7 +387,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 	}
 
 	if (!all_valid) {
-		//clear versions if they exist
+		// clear versions if they exist
 		for (int i = 0; i < variant_defines.size(); i++) {
 			if (!p_version->variants[i].is_null()) {
 				RD::get_singleton()->free(p_version->variants[i]);

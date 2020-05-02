@@ -234,7 +234,7 @@ NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 	Vector<StringName> src_dirs = get_names();
 	Vector<StringName> dst_dirs = p_np.get_names();
 
-	//find common parent
+	// find common parent
 	int common_parent = 0;
 
 	while (true) {
@@ -327,7 +327,7 @@ void NodePath::simplify() {
 			data->path.remove(i);
 			i--;
 		} else if (data->path[i].operator String() == ".." && i > 0 && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
-			//remove both
+			// remove both
 			data->path.remove(i - 1);
 			data->path.remove(i - 1);
 			i -= 2;

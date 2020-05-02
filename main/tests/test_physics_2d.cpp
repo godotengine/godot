@@ -257,16 +257,16 @@ protected:
 		ps->body_set_continuous_collision_detection_mode(body, PhysicsServer2D::CCD_MODE_CAST_SHAPE);
 		ps->body_set_state(body, PhysicsServer2D::BODY_STATE_TRANSFORM, p_xform);
 
-		//print_line("add body with xform: "+p_xform);
+		// print_line("add body with xform: "+p_xform);
 		RID sprite = vs->canvas_item_create();
 		vs->canvas_item_set_parent(sprite, canvas);
 		vs->canvas_item_set_transform(sprite, p_xform);
-		Size2 imgsize(5, 5); //vs->texture_get_width(body_shape_data[p_shape].image), vs->texture_get_height(body_shape_data[p_shape].image));
+		Size2 imgsize(5, 5); // vs->texture_get_width(body_shape_data[p_shape].image), vs->texture_get_height(body_shape_data[p_shape].image));
 		vs->canvas_item_add_texture_rect(sprite, Rect2(-imgsize / 2.0, imgsize), body_shape_data[p_shape].image);
 
 		ps->body_set_force_integration_callback(body, this, "_body_moved", sprite);
 		//RID q = ps->query_create(this,"_body_moved",sprite);
-		//ps->query_body_state(q,body);
+		// ps->query_body_state(q,body);
 
 		return body;
 	}
@@ -362,17 +362,17 @@ public:
 			vs->viewport_set_active(vp, true);
 
 			Transform2D smaller;
-			//smaller.scale(Vector2(0.6,0.6));
-			//smaller.elements[2]=Vector2(100,0);
+			// smaller.scale(Vector2(0.6,0.6));
+			// smaller.elements[2]=Vector2(100,0);
 
-			//view_xform = smaller;
+			// view_xform = smaller;
 			vs->viewport_set_canvas_transform(vp, canvas, view_xform);
 		}
 
 		ray = vs->canvas_item_create();
 		vs->canvas_item_set_parent(ray, canvas);
-		//ray_query = ps->query_create(this,"_ray_query_callback",Variant());
-		//ps->query_intersection(ray_query,space);
+		// ray_query = ps->query_create(this,"_ray_query_callback",Variant());
+		// ps->query_intersection(ray_query,space);
 
 		_create_body_shape_data();
 
@@ -387,7 +387,7 @@ public:
 			};
 
 			PhysicsServer2D::ShapeType type = types[i % 4];
-			//type=PhysicsServer2D::SHAPE_SEGMENT;
+			// type=PhysicsServer2D::SHAPE_SEGMENT;
 			_add_body(type, Transform2D(i * 0.8, Point2(152 + i * 40, 100 - 40 * i)));
 			/*
 			if (i==0)
@@ -396,7 +396,7 @@ public:
 		}
 
 		//RID b= _add_body(PhysicsServer2D::SHAPE_CIRCLE,Transform2D(0,Point2(101,140)));
-		//ps->body_set_mode(b,PhysicsServer2D::BODY_MODE_STATIC);
+		// ps->body_set_mode(b,PhysicsServer2D::BODY_MODE_STATIC);
 
 		Point2 prev;
 

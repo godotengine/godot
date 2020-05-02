@@ -299,7 +299,7 @@ Error AudioDriverPulseAudio::init() {
 
 float AudioDriverPulseAudio::get_latency() {
 
-	if (latency == 0) { //only do this once since it's approximate anyway
+	if (latency == 0) { // only do this once since it's approximate anyway
 		lock();
 
 		pa_usec_t palat = 0;

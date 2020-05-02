@@ -96,7 +96,7 @@ void RenderingServerRaster::request_frame_drawn_callback(Object *p_where, const 
 
 void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
-	//needs to be done before changes is reset to 0, to not force the editor to redraw
+	// needs to be done before changes is reset to 0, to not force the editor to redraw
 	RS::get_singleton()->emit_signal("frame_pre_draw");
 
 	changes = 0;
@@ -105,9 +105,9 @@ void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	TIMESTAMP_BEGIN()
 
-	RSG::scene_render->update(); //update scenes stuff before updating instances
+	RSG::scene_render->update(); // update scenes stuff before updating instances
 
-	RSG::scene->update_dirty_instances(); //update scene stuff
+	RSG::scene->update_dirty_instances(); // update scene stuff
 
 	RSG::scene->render_probes();
 	RSG::viewport->draw_viewports();
@@ -252,7 +252,7 @@ bool RenderingServerRaster::is_low_end() const {
 	// FIXME: Commented out when rebasing vulkan branch on master,
 	// causes a crash, it seems rasterizer is not initialized yet the
 	// first time it's called.
-	//return RSG::rasterizer->is_low_end();
+	// return RSG::rasterizer->is_low_end();
 	return false;
 }
 RenderingServerRaster::RenderingServerRaster() {

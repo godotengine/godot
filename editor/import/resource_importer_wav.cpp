@@ -148,7 +148,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 		/* chunk size */
 		uint32_t chunksize = file->get_32();
-		uint32_t file_pos = file->get_position(); //save file pos, so we can skip to next chunk safely
+		uint32_t file_pos = file->get_position(); // save file pos, so we can skip to next chunk safely
 
 		if (file->eof_reached()) {
 
@@ -175,7 +175,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Format not supported for WAVE file (not stereo or mono).");
 			}
 
-			format_freq = file->get_32(); //sampling rate
+			format_freq = file->get_32(); // sampling rate
 
 			file->get_32(); // average bits/second (unused)
 			file->get_16(); // block align (unused)
@@ -259,7 +259,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 		}
 
 		if (chunkID[0] == 's' && chunkID[1] == 'm' && chunkID[2] == 'p' && chunkID[3] == 'l') {
-			//loop point info!
+			// loop point info!
 
 			/**
 			*	Consider exploring next document:
@@ -311,7 +311,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	print_line("\tloop end: " + itos(loop_end));
 	*/
 
-	//apply frequency limit
+	// apply frequency limit
 
 	bool limit_rate = p_options["force/max_rate"];
 	int limit_rate_hz = p_options["force/max_rate_hz"];
@@ -328,7 +328,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			for (int i = 0; i < new_data_frames; i++) {
 
-				//simple cubic interpolation should be enough.
+				// simple cubic interpolation should be enough.
 
 				float mu = frac;
 
@@ -477,7 +477,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			_compress_ima_adpcm(data, dst_data);
 		} else {
 
-			//byte interleave
+			// byte interleave
 			Vector<float> left;
 			Vector<float> right;
 

@@ -113,8 +113,8 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 
 			int size = (cache.buffer.size() - (file.offset - cache.offset));
 			size = size - (size % 4);
-			//const uint8_t* read = cache.buffer.ptr();
-			//memcpy(p_dest, read.ptr() + (file.offset - cache.offset), size);
+			// const uint8_t* read = cache.buffer.ptr();
+			// memcpy(p_dest, read.ptr() + (file.offset - cache.offset), size);
 			memcpy(p_dest, cache.buffer.ptr() + (file.offset - cache.offset), size);
 			p_dest += size;
 			p_length -= size;
@@ -145,8 +145,8 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_length) const {
 		}
 
 		int r = MIN(left, to_read);
-		//const uint8_t* read = cache.buffer.ptr();
-		//memcpy(p_dest+total_read, &read.ptr()[file.offset - cache.offset], r);
+		// const uint8_t* read = cache.buffer.ptr();
+		// memcpy(p_dest+total_read, &read.ptr()[file.offset - cache.offset], r);
 		memcpy(p_dest + total_read, cache.buffer.ptr() + (file.offset - cache.offset), r);
 
 		file.offset += r;

@@ -139,7 +139,7 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 		for (List<PropertyInfo>::Element *F = plist.front(); F; F = F->next()) {
 
 			if (F->get().name == "script")
-				continue; //added later manually, since this is intercepted before being set (check Variant Object::get() )
+				continue; // added later manually, since this is intercepted before being set (check Variant Object::get() )
 			if (!usage.has(F->get().name)) {
 				PLData pld;
 				pld.uses = 0;

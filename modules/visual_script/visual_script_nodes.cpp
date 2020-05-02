@@ -216,7 +216,7 @@ String VisualScriptFunction::get_caption() const {
 
 String VisualScriptFunction::get_text() const {
 
-	return get_name(); //use name as function name I guess
+	return get_name(); // use name as function name I guess
 }
 
 void VisualScriptFunction::add_argument(Variant::Type p_type, const String &p_name, int p_index, const PropertyHint p_hint, const String &p_hint_string) {
@@ -283,7 +283,7 @@ public:
 	VisualScriptFunction *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -827,7 +827,7 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 		{ Variant::NIL, Variant::NIL }, //OP_LESS_EQUAL,
 		{ Variant::NIL, Variant::NIL }, //OP_GREATER,
 		{ Variant::NIL, Variant::NIL }, //OP_GREATER_EQUAL,
-		//mathematic
+		// mathematic
 		{ Variant::NIL, Variant::NIL }, //OP_ADD,
 		{ Variant::NIL, Variant::NIL }, //OP_SUBTRACT,
 		{ Variant::NIL, Variant::NIL }, //OP_MULTIPLY,
@@ -836,19 +836,19 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 		{ Variant::NIL, Variant::NIL }, //OP_POSITIVE,
 		{ Variant::INT, Variant::INT }, //OP_MODULE,
 		{ Variant::STRING, Variant::STRING }, //OP_STRING_CONCAT,
-		//bitwise
+		// bitwise
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_LEFT,
 		{ Variant::INT, Variant::INT }, //OP_SHIFT_RIGHT,
 		{ Variant::INT, Variant::INT }, //OP_BIT_AND,
 		{ Variant::INT, Variant::INT }, //OP_BIT_OR,
 		{ Variant::INT, Variant::INT }, //OP_BIT_XOR,
 		{ Variant::INT, Variant::INT }, //OP_BIT_NEGATE,
-		//logic
+		// logic
 		{ Variant::BOOL, Variant::BOOL }, //OP_AND,
 		{ Variant::BOOL, Variant::BOOL }, //OP_OR,
 		{ Variant::BOOL, Variant::BOOL }, //OP_XOR,
 		{ Variant::BOOL, Variant::BOOL }, //OP_NOT,
-		//containment
+		// containment
 		{ Variant::NIL, Variant::NIL } //OP_IN,
 	};
 
@@ -863,14 +863,14 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 }
 PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 	static const Variant::Type port_types[Variant::OP_MAX] = {
-		//comparison
+		// comparison
 		Variant::BOOL, //OP_EQUAL,
 		Variant::BOOL, //OP_NOT_EQUAL,
 		Variant::BOOL, //OP_LESS,
 		Variant::BOOL, //OP_LESS_EQUAL,
 		Variant::BOOL, //OP_GREATER,
 		Variant::BOOL, //OP_GREATER_EQUAL,
-		//mathematic
+		// mathematic
 		Variant::NIL, //OP_ADD,
 		Variant::NIL, //OP_SUBTRACT,
 		Variant::NIL, //OP_MULTIPLY,
@@ -879,19 +879,19 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 		Variant::NIL, //OP_POSITIVE,
 		Variant::INT, //OP_MODULE,
 		Variant::STRING, //OP_STRING_CONCAT,
-		//bitwise
+		// bitwise
 		Variant::INT, //OP_SHIFT_LEFT,
 		Variant::INT, //OP_SHIFT_RIGHT,
 		Variant::INT, //OP_BIT_AND,
 		Variant::INT, //OP_BIT_OR,
 		Variant::INT, //OP_BIT_XOR,
 		Variant::INT, //OP_BIT_NEGATE,
-		//logic
+		// logic
 		Variant::BOOL, //OP_AND,
 		Variant::BOOL, //OP_OR,
 		Variant::BOOL, //OP_XOR,
 		Variant::BOOL, //OP_NOT,
-		//containment
+		// containment
 		Variant::BOOL //OP_IN,
 	};
 
@@ -904,14 +904,14 @@ PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 }
 
 static const char *op_names[] = {
-	//comparison
+	// comparison
 	"Are Equal", //OP_EQUAL,
 	"Are Not Equal", //OP_NOT_EQUAL,
 	"Less Than", //OP_LESS,
 	"Less Than or Equal", //OP_LESS_EQUAL,
 	"Greater Than", //OP_GREATER,
 	"Greater Than or Equal", //OP_GREATER_EQUAL,
-	//mathematic
+	// mathematic
 	"Add", //OP_ADD,
 	"Subtract", //OP_SUBTRACT,
 	"Multiply", //OP_MULTIPLY,
@@ -920,33 +920,33 @@ static const char *op_names[] = {
 	"Positive", //OP_POSITIVE,
 	"Remainder", //OP_MODULE,
 	"Concatenate", //OP_STRING_CONCAT,
-	//bitwise
+	// bitwise
 	"Bit Shift Left", //OP_SHIFT_LEFT,
 	"Bit Shift Right", //OP_SHIFT_RIGHT,
 	"Bit And", //OP_BIT_AND,
 	"Bit Or", //OP_BIT_OR,
 	"Bit Xor", //OP_BIT_XOR,
 	"Bit Negate", //OP_BIT_NEGATE,
-	//logic
+	// logic
 	"And", //OP_AND,
 	"Or", //OP_OR,
 	"Xor", //OP_XOR,
 	"Not", //OP_NOT,
-	//containment
+	// containment
 	"In", //OP_IN,
 };
 
 String VisualScriptOperator::get_caption() const {
 
 	static const wchar_t *op_names[] = {
-		//comparison
+		// comparison
 		L"A = B", //OP_EQUAL,
 		L"A \u2260 B", //OP_NOT_EQUAL,
 		L"A < B", //OP_LESS,
 		L"A \u2264 B", //OP_LESS_EQUAL,
 		L"A > B", //OP_GREATER,
 		L"A \u2265 B", //OP_GREATER_EQUAL,
-		//mathematic
+		// mathematic
 		L"A + B", //OP_ADD,
 		L"A - B", //OP_SUBTRACT,
 		L"A \u00D7 B", //OP_MULTIPLY,
@@ -955,14 +955,14 @@ String VisualScriptOperator::get_caption() const {
 		L"+ A", //OP_POSITIVE,
 		L"A mod B", //OP_MODULE,
 		L"A .. B", //OP_STRING_CONCAT,
-		//bitwise
+		// bitwise
 		L"A << B", //OP_SHIFT_LEFT,
 		L"A >> B", //OP_SHIFT_RIGHT,
 		L"A & B", //OP_BIT_AND,
 		L"A | B", //OP_BIT_OR,
 		L"A ^ B", //OP_BIT_XOR,
 		L"~A", //OP_BIT_NEGATE,
-		//logic
+		// logic
 		L"A and B", //OP_AND,
 		L"A or B", //OP_OR,
 		L"A xor B", //OP_XOR,
@@ -1029,7 +1029,7 @@ public:
 	bool unary;
 	Variant::Operator op;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1163,7 +1163,7 @@ void VisualScriptSelect::_bind_methods() {
 
 class VisualScriptNodeInstanceSelect : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1405,7 +1405,7 @@ public:
 	VisualScriptInstance *instance;
 	StringName variable;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1511,7 +1511,7 @@ void VisualScriptConstant::_validate_property(PropertyInfo &property) const {
 	if (property.name == "value") {
 		property.type = type;
 		if (type == Variant::NIL)
-			property.usage = 0; //do not save if nil
+			property.usage = 0; // do not save if nil
 	}
 }
 
@@ -1535,7 +1535,7 @@ void VisualScriptConstant::_bind_methods() {
 class VisualScriptNodeInstanceConstant : public VisualScriptNodeInstance {
 public:
 	Variant constant;
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1640,7 +1640,7 @@ void VisualScriptPreload::_bind_methods() {
 class VisualScriptNodeInstancePreload : public VisualScriptNodeInstance {
 public:
 	Ref<Resource> preload;
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1708,7 +1708,7 @@ String VisualScriptIndexGet::get_caption() const {
 
 class VisualScriptNodeInstanceIndexGet : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1783,7 +1783,7 @@ String VisualScriptIndexSet::get_caption() const {
 
 class VisualScriptNodeInstanceIndexSet : public VisualScriptNodeInstance {
 public:
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1864,7 +1864,7 @@ int VisualScriptGlobalConstant::get_global_constant() {
 class VisualScriptNodeInstanceGlobalConstant : public VisualScriptNodeInstance {
 public:
 	int index;
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -1989,7 +1989,7 @@ class VisualScriptNodeInstanceClassConstant : public VisualScriptNodeInstance {
 public:
 	int value;
 	bool valid;
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -2138,7 +2138,7 @@ class VisualScriptNodeInstanceBasicTypeConstant : public VisualScriptNodeInstanc
 public:
 	Variant value;
 	bool valid;
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -2281,7 +2281,7 @@ VisualScriptMathConstant::MathConstant VisualScriptMathConstant::get_math_consta
 class VisualScriptNodeInstanceMathConstant : public VisualScriptNodeInstance {
 public:
 	float value;
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -2387,7 +2387,7 @@ class VisualScriptNodeInstanceEngineSingleton : public VisualScriptNodeInstance 
 public:
 	Object *singleton;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -2426,7 +2426,7 @@ void VisualScriptEngineSingleton::_validate_property(PropertyInfo &property) con
 
 	for (List<Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
 		if (E->get().name == "VS" || E->get().name == "PS" || E->get().name == "PS2D" || E->get().name == "AS" || E->get().name == "TS" || E->get().name == "SS" || E->get().name == "SS2D")
-			continue; //skip these, too simple named
+			continue; // skip these, too simple named
 
 		if (cc != String())
 			cc += ",";
@@ -2510,7 +2510,7 @@ public:
 	VisualScriptInstance *instance;
 	NodePath path;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -2694,7 +2694,7 @@ public:
 	VisualScriptSceneTree *node;
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -2801,7 +2801,7 @@ class VisualScriptNodeInstanceResourcePath : public VisualScriptNodeInstance {
 public:
 	String path;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -2883,7 +2883,7 @@ class VisualScriptNodeInstanceSelf : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -3233,7 +3233,7 @@ public:
 	int input_args;
 	bool valid;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -3364,7 +3364,7 @@ class VisualScriptNodeInstanceComment : public VisualScriptNodeInstance {
 public:
 	VisualScriptInstance *instance;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -3479,7 +3479,7 @@ public:
 	Variant::Type type;
 	int argcount;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -4028,7 +4028,7 @@ void VisualScriptDeconstruct::set_deconstruct_type(Variant::Type p_type) {
 	type = p_type;
 	_update_elements();
 	ports_changed_notify();
-	_change_notify(); //to make input appear/disappear
+	_change_notify(); // to make input appear/disappear
 }
 
 Variant::Type VisualScriptDeconstruct::get_deconstruct_type() const {
@@ -4061,7 +4061,7 @@ public:
 	VisualScriptInstance *instance;
 	Vector<StringName> outputs;
 
-	//virtual int get_working_memory_size() const { return 0; }
+	// virtual int get_working_memory_size() const { return 0; }
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Callable::CallError &r_error, String &r_error_str) {
 
@@ -4159,7 +4159,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/compare/less_equal", create_op_node<Variant::OP_LESS_EQUAL>);
 	VisualScriptLanguage::singleton->add_register_func("operators/compare/greater", create_op_node<Variant::OP_GREATER>);
 	VisualScriptLanguage::singleton->add_register_func("operators/compare/greater_equal", create_op_node<Variant::OP_GREATER_EQUAL>);
-	//mathematic
+	// mathematic
 	VisualScriptLanguage::singleton->add_register_func("operators/math/add", create_op_node<Variant::OP_ADD>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/subtract", create_op_node<Variant::OP_SUBTRACT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/multiply", create_op_node<Variant::OP_MULTIPLY>);
@@ -4168,14 +4168,14 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/math/positive", create_op_node<Variant::OP_POSITIVE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/remainder", create_op_node<Variant::OP_MODULE>);
 	VisualScriptLanguage::singleton->add_register_func("operators/math/string_concat", create_op_node<Variant::OP_STRING_CONCAT>);
-	//bitwise
+	// bitwise
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_left", create_op_node<Variant::OP_SHIFT_LEFT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/shift_right", create_op_node<Variant::OP_SHIFT_RIGHT>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/bit_and", create_op_node<Variant::OP_BIT_AND>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/bit_or", create_op_node<Variant::OP_BIT_OR>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/bit_xor", create_op_node<Variant::OP_BIT_XOR>);
 	VisualScriptLanguage::singleton->add_register_func("operators/bitwise/bit_negate", create_op_node<Variant::OP_BIT_NEGATE>);
-	//logic
+	// logic
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/and", create_op_node<Variant::OP_AND>);
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/or", create_op_node<Variant::OP_OR>);
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/xor", create_op_node<Variant::OP_XOR>);

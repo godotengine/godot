@@ -493,7 +493,7 @@ void EditorAutoloadSettings::update_autoload() {
 		info->in_editor = scr.is_valid() && scr->is_tool();
 
 		if (info->in_editor) {
-			//defer so references are all valid on _ready()
+			// defer so references are all valid on _ready()
 			nodes_to_add.push_back(info->node);
 		}
 

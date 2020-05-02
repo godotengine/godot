@@ -69,7 +69,7 @@ void *ThreadPosix::thread_callback(void *userdata) {
 	t->id = atomic_increment(&next_thread_id);
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(t->id)));
 
-	ScriptServer::thread_enter(); //scripts may need to attach a stack
+	ScriptServer::thread_enter(); // scripts may need to attach a stack
 
 	t->callback(t->user);
 

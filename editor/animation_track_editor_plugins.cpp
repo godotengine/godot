@@ -1005,7 +1005,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 
 			ofs = get_editor()->snap_time(ofs);
 
-			while (get_animation()->track_find_key(get_track(), ofs, true) != -1) { //make sure insertion point is valid
+			while (get_animation()->track_find_key(get_track(), ofs, true) != -1) { // make sure insertion point is valid
 				ofs += 0.001;
 			}
 

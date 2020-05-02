@@ -39,7 +39,7 @@
 
 /* Helper */
 static int solve_quadratic(double a, double b, double c, double *r1, double *r2) {
-	//solves quadractic and returns number of roots
+	// solves quadractic and returns number of roots
 
 	double base = 2 * a;
 	if (base == 0.0f)
@@ -101,11 +101,11 @@ void EQ::recalculate_band_coefficients() {
 
 		double c2c = 0.25 * side_gain2 * POW2(cos(th)) - 0.5 * side_gain2 * cos(th_l) * cos(th) + 0.25 * side_gain2 - 0.25 * POW2(sin(th_l));
 
-		//printf("band %i, precoefs = %f,%f,%f\n",i,c2a,c2b,c2c);
+		// printf("band %i, precoefs = %f,%f,%f\n",i,c2a,c2b,c2c);
 
 		// Default initializing to silence compiler warning about potential uninitialized use.
 		// Both variables are properly set in _solve_quadratic before use, or we continue if roots == 0.
-		double r1 = 0, r2 = 0; //roots
+		double r1 = 0, r2 = 0; // roots
 		int roots = solve_quadratic(c2a, c2b, c2c, &r1, &r2);
 
 		ERR_CONTINUE(roots == 0);
@@ -113,7 +113,7 @@ void EQ::recalculate_band_coefficients() {
 		band.write[i].c1 = 2.0 * ((0.5 - r1) / 2.0);
 		band.write[i].c2 = 2.0 * r1;
 		band.write[i].c3 = 2.0 * (0.5 + r1) * cos(th);
-		//printf("band %i, coefs = %f,%f,%f\n",i,(float)bands[i].c1,(float)bands[i].c2,(float)bands[i].c3);
+		// printf("band %i, coefs = %f,%f,%f\n",i,(float)bands[i].c1,(float)bands[i].c2,(float)bands[i].c3);
 	}
 }
 

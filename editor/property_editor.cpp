@@ -301,7 +301,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					Resource *res = Object::cast_to<Resource>(obj);
 					ERR_BREAK(!res);
 					if (owner && hint == PROPERTY_HINT_RESOURCE_TYPE && hint_text == "Script") {
-						//make visual script the right type
+						// make visual script the right type
 						res->call("set_instance_base_type", owner->get_class());
 					}
 
@@ -855,7 +855,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::COLOR: {
 
 			if (!color_picker) {
-				//late init for performance
+				// late init for performance
 				color_picker = memnew(ColorPicker);
 				color_picker->set_deferred_mode(true);
 				add_child(color_picker);
@@ -1205,7 +1205,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 		if (!node) {
 			v = p_path;
 			emit_signal("variant_changed");
-			call_deferred("hide"); //to not mess with dialogs
+			call_deferred("hide"); // to not mess with dialogs
 			return;
 		}
 
@@ -1217,7 +1217,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	v = p_path;
 	emit_signal("variant_changed");
-	call_deferred("hide"); //to not mess with dialogs
+	call_deferred("hide"); // to not mess with dialogs
 }
 
 void CustomPropertyEditor::_action_pressed(int p_which) {
@@ -1457,7 +1457,7 @@ void CustomPropertyEditor::_drag_easing(const Ref<InputEvent> &p_ev) {
 		val = Math::absf(val);
 
 		val = Math::log(val) / Math::log((float)2.0);
-		//logspace
+		// logspace
 		val += rel * 0.05;
 
 		val = Math::pow(2.0f, val);

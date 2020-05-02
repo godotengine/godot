@@ -115,7 +115,7 @@ Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 
 	if (!instance) {
 		if (ref.is_null()) {
-			memdelete(owner); //no owner, sorry
+			memdelete(owner); // no owner, sorry
 		}
 		return Variant();
 	}
@@ -168,7 +168,7 @@ void PluginScript::update_exports() {
 	ASSERT_SCRIPT_VALID();
 	if (placeholders.size()) {
 
-		//update placeholders if any
+		// update placeholders if any
 		Map<StringName, Variant> propdefvalues;
 		List<PropertyInfo> propinfos;
 

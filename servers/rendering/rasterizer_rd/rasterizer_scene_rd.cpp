@@ -61,7 +61,7 @@ void RasterizerSceneRD::_clear_reflection_data(ReflectionData &rd) {
 }
 
 void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer, bool p_low_quality) {
-	//recreate radiance and all data
+	// recreate radiance and all data
 
 	int mipmaps = p_mipmaps;
 	uint32_t w = p_size, h = p_size;
@@ -97,7 +97,7 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 
 	} else {
 		mipmaps = p_low_quality ? 8 : mipmaps;
-		//regular cubemap, lower quality (aliasing, less memory)
+		// regular cubemap, lower quality (aliasing, less memory)
 		ReflectionData::Layer layer;
 		uint32_t mmw = w;
 		uint32_t mmh = h;
@@ -177,7 +177,7 @@ void RasterizerSceneRD::_create_reflection_importance_sample(ReflectionData &rd,
 
 	if (p_use_arrays) {
 
-		//render directly to the layers
+		// render directly to the layers
 		storage->get_effects()->cubemap_roughness(rd.radiance_base_cubemap, rd.layers[p_base_layer].views[0], p_cube_side, sky_ggx_samples_quality, float(p_base_layer) / (rd.layers.size() - 1.0), rd.layers[p_base_layer].mipmaps[0].size.x);
 	} else {
 
@@ -271,7 +271,7 @@ void RasterizerSceneRD::_update_dirty_skys() {
 	while (sky) {
 
 		bool texture_set_dirty = false;
-		//update sky configuration if texture is missing
+		// update sky configuration if texture is missing
 
 		if (sky->radiance.is_null()) {
 			int mipmaps = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBAH) + 1;
@@ -286,7 +286,7 @@ void RasterizerSceneRD::_update_dirty_skys() {
 			}
 
 			if (sky_use_cubemap_array) {
-				//array (higher quality, 6 times more memory)
+				// array (higher quality, 6 times more memory)
 				RD::TextureFormat tf;
 				tf.array_layers = layers * 6;
 				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
@@ -301,7 +301,7 @@ void RasterizerSceneRD::_update_dirty_skys() {
 				_update_reflection_data(sky->reflection, sky->radiance_size, mipmaps, true, sky->radiance, 0, sky->mode == RS::SKY_MODE_REALTIME);
 
 			} else {
-				//regular cubemap, lower quality (aliasing, less memory)
+				// regular cubemap, lower quality (aliasing, less memory)
 				RD::TextureFormat tf;
 				tf.array_layers = 6;
 				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
@@ -823,7 +823,7 @@ void RasterizerSceneRD::_update_sky(RID p_environment, const CameraMatrix &p_pro
 /* SKY SHADER */
 
 void RasterizerSceneRD::SkyShaderData::set_code(const String &p_code) {
-	//compile
+	// compile
 
 	code = p_code;
 	valid = false;
@@ -831,7 +831,7 @@ void RasterizerSceneRD::SkyShaderData::set_code(const String &p_code) {
 	uniforms.clear();
 
 	if (code == String()) {
-		return; //just invalid, but no error
+		return; // just invalid, but no error
 	}
 
 	ShaderCompilerRD::GeneratedCode gen_code;
@@ -902,7 +902,7 @@ void RasterizerSceneRD::SkyShaderData::set_code(const String &p_code) {
 	ubo_offsets = gen_code.uniform_offsets;
 	texture_uniforms = gen_code.texture_uniforms;
 
-	//update pipelines
+	// update pipelines
 
 	for (int i = 0; i < SKY_VERSION_MAX; i++) {
 
@@ -960,7 +960,7 @@ void RasterizerSceneRD::SkyShaderData::get_instance_param_list(List<RasterizerSt
 
 		RasterizerStorage::InstanceShaderParam p;
 		p.info = ShaderLanguage::uniform_to_property_info(E->get());
-		p.info.name = E->key(); //supply name
+		p.info.name = E->key(); // supply name
 		p.index = E->get().instance_index;
 		p.default_value = ShaderLanguage::constant_value_to_variant(E->get().default_value, E->get().type, E->get().hint);
 		p_param_list->push_back(p);
@@ -999,7 +999,7 @@ RasterizerSceneRD::SkyShaderData::SkyShaderData() {
 RasterizerSceneRD::SkyShaderData::~SkyShaderData() {
 	RasterizerSceneRD *scene_singleton = (RasterizerSceneRD *)RasterizerSceneRD::singleton;
 	ERR_FAIL_COND(!scene_singleton);
-	//pipeline variants will clear themselves if shader is gone
+	// pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
 		scene_singleton->sky_shader.shader.version_free(version);
 	}
@@ -1026,17 +1026,17 @@ void RasterizerSceneRD::SkyMaterialData::update_parameters(const Map<StringName,
 		ubo_data.resize(shader_data->ubo_size);
 		if (ubo_data.size()) {
 			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
-			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
+			memset(ubo_data.ptrw(), 0, ubo_data.size()); // clear
 		}
 
-		//clear previous uniform set
+		// clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 			RD::get_singleton()->free(uniform_set);
 			uniform_set = RID();
 		}
 	}
 
-	//check whether buffer changed
+	// check whether buffer changed
 	if (p_uniform_dirty && ubo_data.size()) {
 
 		update_uniform_buffer(shader_data->uniforms, shader_data->ubo_offsets.ptr(), p_parameters, ubo_data.ptrw(), ubo_data.size(), false);
@@ -1049,7 +1049,7 @@ void RasterizerSceneRD::SkyMaterialData::update_parameters(const Map<StringName,
 		texture_cache.resize(tex_uniform_count);
 		p_textures_dirty = true;
 
-		//clear previous uniform set
+		// clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 			RD::get_singleton()->free(uniform_set);
 			uniform_set = RID();
@@ -1067,7 +1067,7 @@ void RasterizerSceneRD::SkyMaterialData::update_parameters(const Map<StringName,
 	}
 
 	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		//no reason to update uniform set, only UBO (or nothing) was needed to update
+		// no reason to update uniform set, only UBO (or nothing) was needed to update
 		return;
 	}
 
@@ -1110,7 +1110,7 @@ RasterizerStorageRD::MaterialData *RasterizerSceneRD::_create_sky_material_func(
 	SkyMaterialData *material_data = memnew(SkyMaterialData);
 	material_data->shader_data = p_shader;
 	material_data->last_frame = false;
-	//update will happen later anyway so do nothing.
+	// update will happen later anyway so do nothing.
 	return material_data;
 }
 
@@ -1353,14 +1353,14 @@ void RasterizerSceneRD::reflection_atlas_set_size(RID p_ref_atlas, int p_reflect
 	ERR_FAIL_COND(!ra);
 
 	if (ra->size == p_reflection_size && ra->count == p_reflection_count) {
-		return; //no changes
+		return; // no changes
 	}
 
 	ra->size = p_reflection_size;
 	ra->count = p_reflection_count;
 
 	if (ra->reflection.is_valid()) {
-		//clear and invalidate everything
+		// clear and invalidate everything
 		RD::get_singleton()->free(ra->reflection);
 		ra->reflection = RID();
 		RD::get_singleton()->free(ra->depth_buffer);
@@ -1372,7 +1372,7 @@ void RasterizerSceneRD::reflection_atlas_set_size(RID p_ref_atlas, int p_reflect
 				continue;
 			}
 			reflection_probe_release_atlas_index(ra->reflections[i].owner);
-			//rp->atlasindex clear
+			// rp->atlasindex clear
 		}
 
 		ra->reflections.clear();
@@ -1400,7 +1400,7 @@ void RasterizerSceneRD::reflection_probe_release_atlas_index(RID p_instance) {
 	ERR_FAIL_COND(!rpi);
 
 	if (rpi->atlas.is_null()) {
-		return; //nothing to release
+		return; // nothing to release
 	}
 	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
 	ERR_FAIL_COND(!atlas);
@@ -1471,7 +1471,7 @@ bool RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance, R
 		int mipmaps = MIN(roughness_layers, Image::get_image_required_mipmaps(atlas->size, atlas->size, Image::FORMAT_RGBAH) + 1);
 		mipmaps = storage->reflection_probe_get_update_mode(rpi->probe) == RS::REFLECTION_PROBE_UPDATE_ALWAYS ? 8 : mipmaps; // always use 8 mipmaps with real time filtering
 		{
-			//reflection atlas was unused, create:
+			// reflection atlas was unused, create:
 			RD::TextureFormat tf;
 			tf.array_layers = 6 * atlas->count;
 			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
@@ -1515,9 +1515,9 @@ bool RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance, R
 				break;
 			}
 		}
-		//find the one used last
+		// find the one used last
 		if (rpi->atlas_index == -1) {
-			//everything is in use, find the one least used via LRU
+			// everything is in use, find the one least used via LRU
 			uint64_t pass_min = 0;
 
 			for (int i = 0; i < atlas->reflections.size(); i++) {
@@ -1548,7 +1548,7 @@ bool RasterizerSceneRD::reflection_probe_instance_postprocess_step(RID p_instanc
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
 	if (!atlas || rpi->atlas_index == -1) {
-		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
+		// does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
 		rpi->rendering = false;
 		return false;
 	}
@@ -1638,19 +1638,19 @@ void RasterizerSceneRD::shadow_atlas_set_size(RID p_atlas, int p_size) {
 		shadow_atlas->depth = RID();
 	}
 	for (int i = 0; i < 4; i++) {
-		//clear subdivisions
+		// clear subdivisions
 		shadow_atlas->quadrants[i].shadows.resize(0);
 		shadow_atlas->quadrants[i].shadows.resize(1 << shadow_atlas->quadrants[i].subdivision);
 	}
 
-	//erase shadow atlas reference from lights
+	// erase shadow atlas reference from lights
 	for (Map<RID, uint32_t>::Element *E = shadow_atlas->shadow_owners.front(); E; E = E->next()) {
 		LightInstance *li = light_instance_owner.getornull(E->key());
 		ERR_CONTINUE(!li);
 		li->shadow_atlases.erase(p_atlas);
 	}
 
-	//clear owners
+	// clear owners
 	shadow_atlas->shadow_owners.clear();
 
 	shadow_atlas->size = p_size;
@@ -1675,18 +1675,18 @@ void RasterizerSceneRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p
 	ERR_FAIL_INDEX(p_subdivision, 16384);
 
 	uint32_t subdiv = next_power_of_2(p_subdivision);
-	if (subdiv & 0xaaaaaaaa) { //sqrt(subdiv) must be integer
+	if (subdiv & 0xaaaaaaaa) { // sqrt(subdiv) must be integer
 		subdiv <<= 1;
 	}
 
 	subdiv = int(Math::sqrt((float)subdiv));
 
-	//obtain the number that will be x*x
+	// obtain the number that will be x*x
 
 	if (shadow_atlas->quadrants[p_quadrant].subdivision == subdiv)
 		return;
 
-	//erase all data from quadrant
+	// erase all data from quadrant
 	for (int i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
 
 		if (shadow_atlas->quadrants[p_quadrant].shadows[i].owner.is_valid()) {
@@ -1701,7 +1701,7 @@ void RasterizerSceneRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p
 	shadow_atlas->quadrants[p_quadrant].shadows.resize(subdiv * subdiv);
 	shadow_atlas->quadrants[p_quadrant].subdivision = subdiv;
 
-	//cache the smallest subdiv (for faster allocation in light update)
+	// cache the smallest subdiv (for faster allocation in light update)
 
 	shadow_atlas->smallest_subdiv = 1 << 30;
 
@@ -1715,7 +1715,7 @@ void RasterizerSceneRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p
 		shadow_atlas->smallest_subdiv = 0;
 	}
 
-	//resort the size orders, simple bublesort for 4 elements..
+	// resort the size orders, simple bublesort for 4 elements..
 
 	int swaps = 0;
 	do {
@@ -1740,12 +1740,12 @@ bool RasterizerSceneRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int
 			return false;
 		}
 
-		//look for an empty space
+		// look for an empty space
 		int sc = shadow_atlas->quadrants[qidx].shadows.size();
 		ShadowAtlas::Quadrant::Shadow *sarr = shadow_atlas->quadrants[qidx].shadows.ptrw();
 
-		int found_free_idx = -1; //found a free one
-		int found_used_idx = -1; //found existing one, must steal it
+		int found_free_idx = -1; // found a free one
+		int found_used_idx = -1; // found existing one, must steal it
 		uint64_t min_pass = 0; // pass of the existing one, try to use the least recently used one (LRU fashion)
 
 		for (int j = 0; j < sc; j++) {
@@ -1759,7 +1759,7 @@ bool RasterizerSceneRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int
 
 			if (sli->last_scene_pass != scene_pass) {
 
-				//was just allocated, don't kill it so soon, wait a bit..
+				// was just allocated, don't kill it so soon, wait a bit..
 				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec)
 					continue;
 
@@ -1771,7 +1771,7 @@ bool RasterizerSceneRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int
 		}
 
 		if (found_free_idx == -1 && found_used_idx == -1)
-			continue; //nothing found
+			continue; // nothing found
 
 		if (found_free_idx == -1 && found_used_idx != -1) {
 			found_free_idx = found_used_idx;
@@ -1803,20 +1803,20 @@ bool RasterizerSceneRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intan
 
 	int valid_quadrants[4];
 	int valid_quadrant_count = 0;
-	int best_size = -1; //best size found
-	int best_subdiv = -1; //subdiv for the best size
+	int best_size = -1; // best size found
+	int best_subdiv = -1; // subdiv for the best size
 
-	//find the quadrants this fits into, and the best possible size it can fit into
+	// find the quadrants this fits into, and the best possible size it can fit into
 	for (int i = 0; i < 4; i++) {
 		int q = shadow_atlas->size_order[i];
 		int sd = shadow_atlas->quadrants[q].subdivision;
 		if (sd == 0)
-			continue; //unused
+			continue; // unused
 
 		int max_fit = quad_size / sd;
 
 		if (best_size != -1 && max_fit > best_size)
-			break; //too large
+			break; // too large
 
 		valid_quadrants[valid_quadrant_count++] = q;
 		best_subdiv = sd;
@@ -1830,10 +1830,10 @@ bool RasterizerSceneRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intan
 
 	uint64_t tick = OS::get_singleton()->get_ticks_msec();
 
-	//see if it already exists
+	// see if it already exists
 
 	if (shadow_atlas->shadow_owners.has(p_light_intance)) {
-		//it does!
+		// it does!
 		uint32_t key = shadow_atlas->shadow_owners[p_light_intance];
 		uint32_t q = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
 		uint32_t s = key & ShadowAtlas::SHADOW_INDEX_MASK;
@@ -1843,24 +1843,24 @@ bool RasterizerSceneRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intan
 
 		if (!should_realloc) {
 			shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
-			//already existing, see if it should redraw or it's just OK
+			// already existing, see if it should redraw or it's just OK
 			return should_redraw;
 		}
 
 		int new_quadrant, new_shadow;
 
-		//find a better place
+		// find a better place
 		if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, shadow_atlas->quadrants[q].subdivision, tick, new_quadrant, new_shadow)) {
-			//found a better place!
+			// found a better place!
 			ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 			if (sh->owner.is_valid()) {
-				//is taken, but is invalid, erasing it
+				// is taken, but is invalid, erasing it
 				shadow_atlas->shadow_owners.erase(sh->owner);
 				LightInstance *sli = light_instance_owner.getornull(sh->owner);
 				sli->shadow_atlases.erase(p_atlas);
 			}
 
-			//erase previous
+			// erase previous
 			shadow_atlas->quadrants[q].shadows.write[s].version = 0;
 			shadow_atlas->quadrants[q].shadows.write[s].owner = RID();
 
@@ -1869,18 +1869,18 @@ bool RasterizerSceneRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intan
 			sh->version = p_light_version;
 			li->shadow_atlases.insert(p_atlas);
 
-			//make new key
+			// make new key
 			key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
 			key |= new_shadow;
-			//update it in map
+			// update it in map
 			shadow_atlas->shadow_owners[p_light_intance] = key;
-			//make it dirty, as it should redraw anyway
+			// make it dirty, as it should redraw anyway
 			return true;
 		}
 
-		//no better place for this shadow found, keep current
+		// no better place for this shadow found, keep current
 
-		//already existing, see if it should redraw or it's just OK
+		// already existing, see if it should redraw or it's just OK
 
 		shadow_atlas->quadrants[q].shadows.write[s].version = p_light_version;
 
@@ -1889,12 +1889,12 @@ bool RasterizerSceneRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intan
 
 	int new_quadrant, new_shadow;
 
-	//find a better place
+	// find a better place
 	if (_shadow_atlas_find_shadow(shadow_atlas, valid_quadrants, valid_quadrant_count, -1, tick, new_quadrant, new_shadow)) {
-		//found a better place!
+		// found a better place!
 		ShadowAtlas::Quadrant::Shadow *sh = &shadow_atlas->quadrants[new_quadrant].shadows.write[new_shadow];
 		if (sh->owner.is_valid()) {
-			//is taken, but is invalid, erasing it
+			// is taken, but is invalid, erasing it
 			shadow_atlas->shadow_owners.erase(sh->owner);
 			LightInstance *sli = light_instance_owner.getornull(sh->owner);
 			sli->shadow_atlases.erase(p_atlas);
@@ -1905,17 +1905,17 @@ bool RasterizerSceneRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intan
 		sh->version = p_light_version;
 		li->shadow_atlases.insert(p_atlas);
 
-		//make new key
+		// make new key
 		uint32_t key = new_quadrant << ShadowAtlas::QUADRANT_SHIFT;
 		key |= new_shadow;
-		//update it in map
+		// update it in map
 		shadow_atlas->shadow_owners[p_light_intance] = key;
-		//make it dirty, as it should redraw anyway
+		// make it dirty, as it should redraw anyway
 
 		return true;
 	}
 
-	//no place to allocate this light, apologies
+	// no place to allocate this light, apologies
 
 	return false;
 }
@@ -1989,7 +1989,7 @@ int RasterizerSceneRD::get_directional_light_shadow_size(RID p_light_intance) {
 
 	switch (storage->light_directional_get_shadow_mode(light_instance->light)) {
 		case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
-			break; //none
+			break; // none
 		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS: r.size.height /= 2; break;
 		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: r.size /= 2; break;
 	}
@@ -2160,7 +2160,7 @@ void RasterizerSceneRD::decal_instance_set_transform(RID p_decal, const Transfor
 /////////////////////////////////
 
 RID RasterizerSceneRD::gi_probe_instance_create(RID p_base) {
-	//find a free slot
+	// find a free slot
 	int index = -1;
 	for (int i = 0; i < gi_probe_slots.size(); i++) {
 		if (gi_probe_slots[i] == RID()) {
@@ -2192,7 +2192,7 @@ bool RasterizerSceneRD::gi_probe_needs_update(RID p_probe) const {
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!gi_probe, false);
 
-	//return true;
+	// return true;
 	return gi_probe->last_probe_version != storage->gi_probe_get_version(gi_probe->probe);
 }
 
@@ -2206,7 +2206,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 	// (RE)CREATE IF NEEDED
 
 	if (gi_probe->last_probe_data_version != data_version) {
-		//need to re-create everything
+		// need to re-create everything
 		if (gi_probe->texture.is_valid()) {
 			RD::get_singleton()->free(gi_probe->texture);
 			if (gi_probe_use_anisotropy) {
@@ -2227,7 +2227,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 		Vector3i octree_size = storage->gi_probe_get_octree_size(gi_probe->probe);
 
 		if (octree_size != Vector3i()) {
-			//can create a 3D texture
+			// can create a 3D texture
 			Vector<int> levels = storage->gi_probe_get_level_counts(gi_probe->probe);
 
 			RD::TextureFormat tf;
@@ -2249,7 +2249,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 				tf.shareable_formats.push_back(RD::DATA_FORMAT_R16_UINT);
 				tf.shareable_formats.push_back(RD::DATA_FORMAT_R5G6B5_UNORM_PACK16);
 
-				//need to create R16 first, else driver does not like the storage bit for compute..
+				// need to create R16 first, else driver does not like the storage bit for compute..
 				gi_probe->anisotropy_r16[0] = RD::get_singleton()->texture_create(tf, RD::TextureView());
 				gi_probe->anisotropy_r16[1] = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
@@ -2343,7 +2343,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 
 						mipmap.uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_COMPUTE_LIGHT], 0);
 
-						copy_uniforms = uniforms; //restore
+						copy_uniforms = uniforms; // restore
 
 						{
 							RD::Uniform u;
@@ -2436,13 +2436,13 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 
 					if (gi_probe->dynamic_maps.size() == 0) {
-						//render depth for first one
+						// render depth for first one
 						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
 						dtf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 						dmap.fb_depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					}
 
-					//just use depth as-is
+					// just use depth as-is
 					dtf.format = RD::DATA_FORMAT_R32_SFLOAT;
 					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 
@@ -2460,7 +2460,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 						fb.push_back(dmap.albedo);
 						fb.push_back(dmap.normal);
 						fb.push_back(dmap.orm);
-						fb.push_back(dmap.texture); //emission
+						fb.push_back(dmap.texture); // emission
 						fb.push_back(dmap.depth);
 						fb.push_back(dmap.fb_depth);
 
@@ -2625,7 +2625,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 		}
 
 		gi_probe->last_probe_data_version = data_version;
-		p_update_light_instances = true; //just in case
+		p_update_light_instances = true; // just in case
 
 		_base_uniforms_changed();
 	}
@@ -2633,7 +2633,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 	// UDPDATE TIME
 
 	if (gi_probe->has_dynamic_object_data) {
-		//if it has dynamic object data, it needs to be cleared
+		// if it has dynamic object data, it needs to be cleared
 		RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
 		if (gi_probe_is_anisotropic()) {
 			RD::get_singleton()->texture_clear(gi_probe->anisotropy[0], Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
@@ -2650,7 +2650,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 		{
 			Transform to_cell = storage->gi_probe_get_to_cell_xform(gi_probe->probe);
 			Transform to_probe_xform = (gi_probe->transform * to_cell.affine_inverse()).affine_inverse();
-			//update lights
+			// update lights
 
 			for (uint32_t i = 0; i < light_count; i++) {
 				GIProbeLight &l = gi_probe_lights[i];
@@ -2692,7 +2692,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 	if (gi_probe->has_dynamic_object_data || p_update_light_instances || p_dynamic_object_count) {
 		// PROCESS MIPMAPS
 		if (gi_probe->mipmaps.size()) {
-			//can update mipmaps
+			// can update mipmaps
 
 			Vector3i probe_size = storage->gi_probe_get_octree_size(gi_probe->probe);
 
@@ -2718,7 +2718,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 			if (p_update_light_instances) {
 				passes = storage->gi_probe_is_using_two_bounces(gi_probe->probe) ? 2 : 1;
 			} else {
-				passes = 1; //only re-blitting is necessary
+				passes = 1; // only re-blitting is necessary
 			}
 			int wg_size = 64;
 			int wg_limit_x = RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X);
@@ -2735,7 +2735,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 						}
 
 						if (pass == 1 || i > 0) {
-							RD::get_singleton()->compute_list_add_barrier(compute_list); //wait til previous step is done
+							RD::get_singleton()->compute_list_add_barrier(compute_list); // wait til previous step is done
 						}
 						if (pass == 0 || i > 0) {
 							RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->mipmaps[i].uniform_set, 0);
@@ -2756,7 +2756,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 						}
 					}
 
-					RD::get_singleton()->compute_list_add_barrier(compute_list); //wait til previous step is done
+					RD::get_singleton()->compute_list_add_barrier(compute_list); // wait til previous step is done
 				}
 
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_WRITE_TEXTURE]);
@@ -2783,7 +2783,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 		}
 	}
 
-	gi_probe->has_dynamic_object_data = false; //clear until dynamic object data is used again
+	gi_probe->has_dynamic_object_data = false; // clear until dynamic object data is used again
 
 	if (p_dynamic_object_count && gi_probe->dynamic_maps.size()) {
 
@@ -2799,39 +2799,39 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 
 		AABB probe_aabb(Vector3(), octree_size);
 
-		//this could probably be better parallelized in compute..
+		// this could probably be better parallelized in compute..
 		for (int i = 0; i < p_dynamic_object_count; i++) {
 
 			InstanceBase *instance = p_dynamic_objects[i];
-			//not used, so clear
+			// not used, so clear
 			instance->depth_layer = 0;
 			instance->depth = 0;
 
-			//transform aabb to giprobe
+			// transform aabb to giprobe
 			AABB aabb = (to_probe_xform * instance->transform).xform(instance->aabb);
 
-			//this needs to wrap to grid resolution to avoid jitter
-			//also extend margin a bit just in case
+			// this needs to wrap to grid resolution to avoid jitter
+			// also extend margin a bit just in case
 			Vector3i begin = aabb.position - Vector3i(1, 1, 1);
 			Vector3i end = aabb.position + aabb.size + Vector3i(1, 1, 1);
 
 			for (int j = 0; j < 3; j++) {
 				if ((end[j] - begin[j]) & 1) {
-					end[j]++; //for half extents split, it needs to be even
+					end[j]++; // for half extents split, it needs to be even
 				}
 				begin[j] = MAX(begin[j], 0);
 				end[j] = MIN(end[j], octree_size[j] * multiplier);
 			}
 
-			//aabb = aabb.intersection(probe_aabb); //intersect
+			// aabb = aabb.intersection(probe_aabb); // intersect
 			aabb.position = begin;
 			aabb.size = end - begin;
 
-			//print_line("aabb: " + aabb);
+			// print_line("aabb: " + aabb);
 
 			for (int j = 0; j < 6; j++) {
 
-				//if (j != 0 && j != 3) {
+				// if (j != 0 && j != 3) {
 				//	continue;
 				//}
 				static const Vector3 render_z[6] = {
@@ -2910,23 +2910,23 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 				push_constant.pad[1] = 0;
 				push_constant.pad[2] = 0;
 
-				//process lighting
+				// process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING]);
 				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->dynamic_maps[0].uniform_set, 0);
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbeDynamicPushConstant));
 				RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
-				//print_line("rect: " + itos(i) + ": " + rect);
+				// print_line("rect: " + itos(i) + ": " + rect);
 
 				for (int k = 1; k < gi_probe->dynamic_maps.size(); k++) {
 
 					// enlarge the rect if needed so all pixels fit when downscaled,
 					// this ensures downsampling is smooth and optimal because no pixels are left behind
 
-					//x
+					// x
 					if (rect.position.x & 1) {
 						rect.size.x++;
-						push_constant.prev_rect_ofs[0] = 1; //this is used to ensure reading is also optimal
+						push_constant.prev_rect_ofs[0] = 1; // this is used to ensure reading is also optimal
 					} else {
 						push_constant.prev_rect_ofs[0] = 0;
 					}
@@ -2937,7 +2937,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 					rect.position.x >>= 1;
 					rect.size.x = MAX(1, rect.size.x >> 1);
 
-					//y
+					// y
 					if (rect.position.y & 1) {
 						rect.size.y++;
 						push_constant.prev_rect_ofs[1] = 1;
@@ -2951,14 +2951,14 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 					rect.position.y >>= 1;
 					rect.size.y = MAX(1, rect.size.y >> 1);
 
-					//shrink limits to ensure plot does not go outside map
+					// shrink limits to ensure plot does not go outside map
 					if (gi_probe->dynamic_maps[k].mipmap > 0) {
 						for (int l = 0; l < 3; l++) {
 							push_constant.limits[l] = MAX(1, push_constant.limits[l] >> 1);
 						}
 					}
 
-					//print_line("rect: " + itos(i) + ": " + rect);
+					// print_line("rect: " + itos(i) + ": " + rect);
 					push_constant.rect_pos[0] = rect.position[0];
 					push_constant.rect_pos[1] = rect.position[1];
 					push_constant.prev_rect_size[0] = push_constant.rect_size[0];
@@ -2985,7 +2985,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instanc
 			}
 		}
 
-		gi_probe->has_dynamic_object_data = true; //clear until dynamic object data is used again
+		gi_probe->has_dynamic_object_data = true; // clear until dynamic object data is used again
 	}
 
 	gi_probe->last_probe_version = storage->gi_probe_get_version(gi_probe->probe);
@@ -3109,7 +3109,7 @@ void RasterizerSceneRD::_allocate_blur_textures(RenderBuffers *rb) {
 	tf.mipmaps = mipmaps_required;
 
 	rb->blur[0].texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-	//the second one is smaller (only used for separatable part of blur)
+	// the second one is smaller (only used for separatable part of blur)
 	tf.width >>= 1;
 	tf.height >>= 1;
 	tf.mipmaps--;
@@ -3247,7 +3247,7 @@ void RasterizerSceneRD::_process_sss(RID p_render_buffers, const CameraMatrix &p
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
 	if (!can_use_effects) {
-		//just copy
+		// just copy
 		return;
 	}
 
@@ -3267,7 +3267,7 @@ void RasterizerSceneRD::_process_ssr(RID p_render_buffers, RID p_dest_framebuffe
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
 
 	if (!can_use_effects) {
-		//just copy
+		// just copy
 		storage->get_effects()->merge_specular(p_dest_framebuffer, p_specular_buffer, p_use_additive ? RID() : rb->texture, RID());
 		return;
 	}
@@ -3339,7 +3339,7 @@ void RasterizerSceneRD::_process_ssao(RID p_render_buffers, RID p_environment, R
 	}
 
 	if (!rb->ssao.ao[0].is_valid()) {
-		//allocate depth slices
+		// allocate depth slices
 
 		{
 			RD::TextureFormat tf;
@@ -3366,7 +3366,7 @@ void RasterizerSceneRD::_process_ssao(RID p_render_buffers, RID p_environment, R
 		}
 
 		if (ssao_half_size) {
-			//upsample texture
+			// upsample texture
 			RD::TextureFormat tf;
 			tf.format = RD::DATA_FORMAT_R8_UNORM;
 			tf.width = rb->width;
@@ -3387,7 +3387,7 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 	ERR_FAIL_COND(!rb);
 
 	Environent *env = environment_owner.getornull(p_environment);
-	//glow (if enabled)
+	// glow (if enabled)
 	CameraEffects *camfx = camera_effects_owner.getornull(p_camera_effects);
 
 	bool can_use_effects = rb->width >= 8 && rb->height >= 8;
@@ -3416,9 +3416,9 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 		double step = env->auto_exp_speed * time_step;
 		storage->get_effects()->luminance_reduction(rb->texture, Size2i(rb->width, rb->height), rb->luminance.reduce, rb->luminance.current, env->min_luminance, env->max_luminance, step, set_immediate);
 
-		//swap final reduce with prev luminance
+		// swap final reduce with prev luminance
 		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
-		RenderingServerRaster::redraw_request(); //redraw all the time if auto exposure rendering is on
+		RenderingServerRaster::redraw_request(); // redraw all the time if auto exposure rendering is on
 	}
 
 	int max_glow_level = -1;
@@ -3465,7 +3465,7 @@ void RasterizerSceneRD::_render_buffers_post_process_and_tonemap(RID p_render_bu
 	}
 
 	{
-		//tonemap
+		// tonemap
 		RasterizerEffectsRD::TonemapSettings tonemap;
 
 		tonemap.color_correction_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
@@ -3574,7 +3574,7 @@ RID RasterizerSceneRD::render_buffers_get_back_buffer_texture(RID p_render_buffe
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND_V(!rb, RID());
 	if (!rb->blur[0].texture.is_valid()) {
-		return RID(); //not valid at the moment
+		return RID(); // not valid at the moment
 	}
 	return rb->blur[0].texture;
 }
@@ -3784,7 +3784,7 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 	Transform light_transform;
 
 	if (storage->light_get_type(light_instance->light) == RS::LIGHT_DIRECTIONAL) {
-		//set pssm stuff
+		// set pssm stuff
 		if (light_instance->last_scene_shadow_pass != scene_pass) {
 			light_instance->directional_rect = _get_directional_shadow_rect(directional_shadow.size, directional_shadow.light_count, directional_shadow.current_light);
 			directional_shadow.current_light++;
@@ -3841,7 +3841,7 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 		atlas_texture = directional_shadow.depth;
 
 	} else {
-		//set from shadow atlas
+		// set from shadow atlas
 
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 		ERR_FAIL_COND(!shadow_atlas);
@@ -3916,28 +3916,28 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 	}
 
 	if (render_cubemap) {
-		//rendering to cubemap
+		// rendering to cubemap
 		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, 0, 0, false, false, use_pancake);
 		if (finalize_cubemap) {
-			//reblit
+			// reblit
 			atlas_rect.size.height /= 2;
 			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_texture, atlas_rect, light_projection.get_z_near(), light_projection.get_z_far(), 0.0, false);
 			atlas_rect.position.y += atlas_rect.size.height;
 			storage->get_effects()->copy_cubemap_to_dp(render_texture, atlas_texture, atlas_rect, light_projection.get_z_near(), light_projection.get_z_far(), 0.0, true);
 		}
 	} else {
-		//render shadow
+		// render shadow
 
 		_render_shadow(render_fb, p_cull_result, p_cull_count, light_projection, light_transform, zfar, bias, normal_bias, using_dual_paraboloid, using_dual_paraboloid_flip, use_pancake);
 
-		//copy to atlas
+		// copy to atlas
 		if (use_linear_depth) {
 			storage->get_effects()->copy_depth_to_rect_and_linearize(render_texture, atlas_texture, atlas_rect, true, znear, zfar);
 		} else {
 			storage->get_effects()->copy_depth_to_rect(render_texture, atlas_texture, atlas_rect, true);
 		}
 
-		//does not work from depth to color
+		// does not work from depth to color
 		//RD::get_singleton()->texture_copy(render_texture, atlas_texture, Vector3(0, 0, 0), Vector3(atlas_rect.position.x, atlas_rect.position.y, 0), Vector3(atlas_rect.size.x, atlas_rect.size.y, 1), 0, 0, 0, 0, true);
 	}
 }
@@ -3955,16 +3955,16 @@ bool RasterizerSceneRD::free(RID p_rid) {
 		memdelete(rb->data);
 		render_buffers_owner.free(p_rid);
 	} else if (environment_owner.owns(p_rid)) {
-		//not much to delete, just free it
+		// not much to delete, just free it
 		environment_owner.free(p_rid);
 	} else if (camera_effects_owner.owns(p_rid)) {
-		//not much to delete, just free it
+		// not much to delete, just free it
 		camera_effects_owner.free(p_rid);
 	} else if (reflection_atlas_owner.owns(p_rid)) {
 		reflection_atlas_set_size(p_rid, 0, 0);
 		reflection_atlas_owner.free(p_rid);
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
-		//not much to delete, just free it
+		// not much to delete, just free it
 		//ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
@@ -4023,7 +4023,7 @@ bool RasterizerSceneRD::free(RID p_rid) {
 
 		LightInstance *light_instance = light_instance_owner.getornull(p_rid);
 
-		//remove from shadow atlases..
+		// remove from shadow atlases..
 		for (Set<RID>::Element *E = light_instance->shadow_atlases.front(); E; E = E->next()) {
 			ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(E->get());
 			ERR_CONTINUE(!shadow_atlas->shadow_owners.has(p_rid));
@@ -4090,7 +4090,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 
 	{
 
-		//kinda complicated to compute the amount of slots, we try to use as many as we can
+		// kinda complicated to compute the amount of slots, we try to use as many as we can
 
 		gi_probe_max_lights = 32;
 
@@ -4101,22 +4101,22 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		gi_probe_quality = GIProbeQuality(CLAMP(int(GLOBAL_GET("rendering/quality/gi_probes/quality")), 0, 2));
 
 		if (textures_per_stage <= 16) {
-			gi_probe_slots.resize(2); //thats all you can get
+			gi_probe_slots.resize(2); // thats all you can get
 			gi_probe_use_anisotropy = false;
 		} else if (textures_per_stage <= 31) {
-			gi_probe_slots.resize(4); //thats all you can get, iOS
+			gi_probe_slots.resize(4); // thats all you can get, iOS
 			gi_probe_use_anisotropy = false;
 		} else if (textures_per_stage <= 128) {
-			gi_probe_slots.resize(32); //old intel
+			gi_probe_slots.resize(32); // old intel
 			gi_probe_use_anisotropy = false;
 		} else if (textures_per_stage <= 256) {
-			gi_probe_slots.resize(64); //old intel too
+			gi_probe_slots.resize(64); // old intel too
 			gi_probe_use_anisotropy = false;
 		} else {
 			if (gi_probe_use_anisotropy) {
-				gi_probe_slots.resize(1024 / 3); //needs 3 textures
+				gi_probe_slots.resize(1024 / 3); // needs 3 textures
 			} else {
-				gi_probe_slots.resize(1024); //modern intel, nvidia, 8192 or greater
+				gi_probe_slots.resize(1024); // modern intel, nvidia, 8192 or greater
 			}
 		}
 

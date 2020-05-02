@@ -161,7 +161,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 				code += dump_node_code(fnode->body, p_level + 1);
 			}
 
-			//code+=dump_node_code(pnode->body,p_level);
+			// code+=dump_node_code(pnode->body,p_level);
 		} break;
 		case SL::Node::TYPE_STRUCT: {
 
@@ -172,7 +172,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 		case SL::Node::TYPE_BLOCK: {
 			SL::BlockNode *bnode = (SL::BlockNode *)p_node;
 
-			//variables
+			// variables
 			code += _mktab(p_level - 1) + "{\n";
 			for (Map<StringName, SL::BlockNode::Variable>::Element *E = bnode->variables.front(); E; E = E->next()) {
 
@@ -184,7 +184,7 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 				String scode = dump_node_code(bnode->statements[i], p_level);
 
 				if (bnode->statements[i]->type == SL::Node::TYPE_CONTROL_FLOW) {
-					code += scode; //use directly
+					code += scode; // use directly
 				} else {
 					code += _mktab(p_level) + scode + ";\n";
 				}
@@ -308,7 +308,7 @@ MainLoop *test() {
 	List<String> cmdlargs = OS::get_singleton()->get_cmdline_args();
 
 	if (cmdlargs.empty()) {
-		//try editor!
+		// try editor!
 		print_line("usage: godot -test shader_lang <shader>");
 		return nullptr;
 	}

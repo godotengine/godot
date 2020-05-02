@@ -63,7 +63,7 @@ void AudioEffectStereoEnhanceInstance::process(const AudioFrame *p_src_frames, A
 
 			delay_ringbuff[ringbuff_pos & ringbuff_mask] = val;
 
-			//r is delayed
+			// r is delayed
 			r = delay_ringbuff[(ringbuff_pos - delay_frames) & ringbuff_mask];
 			;
 		}
@@ -86,7 +86,7 @@ Ref<AudioEffectInstance> AudioEffectStereoEnhance::instance() {
 	ins->base = Ref<AudioEffectStereoEnhance>(this);
 
 	float ring_buffer_max_size = AudioEffectStereoEnhanceInstance::MAX_DELAY_MS + 2;
-	ring_buffer_max_size /= 1000.0; //convert to seconds
+	ring_buffer_max_size /= 1000.0; // convert to seconds
 	ring_buffer_max_size *= AudioServer::get_singleton()->get_mix_rate();
 
 	int ringbuff_size = (int)ring_buffer_max_size;

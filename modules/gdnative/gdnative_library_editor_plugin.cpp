@@ -372,7 +372,7 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
-	//file_dialog->set_resizable(true);
+	// file_dialog->set_resizable(true);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", callable_mp(this, &GDNativeLibraryEditor::_on_library_selected));
 	file_dialog->connect("files_selected", callable_mp(this, &GDNativeLibraryEditor::_on_dependencies_selected));

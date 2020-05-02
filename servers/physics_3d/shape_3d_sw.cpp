@@ -136,7 +136,7 @@ Vector3 PlaneShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 
 Vector3 PlaneShape3DSW::get_moment_of_inertia(real_t p_mass) const {
 
-	return Vector3(); //wtf
+	return Vector3(); // wtf
 }
 
 void PlaneShape3DSW::_setup(const Plane &p_plane) {
@@ -202,12 +202,12 @@ void RayShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_s
 
 bool RayShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal) const {
 
-	return false; //simply not possible
+	return false; // simply not possible
 }
 
 bool RayShape3DSW::intersect_point(const Vector3 &p_point) const {
 
-	return false; //simply not possible
+	return false; // simply not possible
 }
 
 Vector3 RayShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
@@ -461,7 +461,7 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 		if (Math::abs(p_point[i]) > half_extents[i]) {
 			outside++;
 			if (outside == 1) {
-				//use plane if only one side matches
+				// use plane if only one side matches
 				Vector3 n;
 				n[i] = SGN(p_point[i]);
 
@@ -472,12 +472,12 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	}
 
 	if (!outside)
-		return p_point; //it's inside, don't do anything else
+		return p_point; // it's inside, don't do anything else
 
-	if (outside == 1) //if only above one plane, this plane clearly wins
+	if (outside == 1) // if only above one plane, this plane clearly wins
 		return min_point;
 
-	//check segments
+	// check segments
 	float min_distance = 1e20;
 	Vector3 closest_vertex = half_extents * p_point.sign();
 	Vector3 s[2] = {
@@ -488,7 +488,7 @@ Vector3 BoxShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
 	for (int i = 0; i < 3; i++) {
 
 		s[1] = closest_vertex;
-		s[1][i] = -s[1][i]; //edge
+		s[1][i] = -s[1][i]; // edge
 
 		Vector3 closest_edge = Geometry::get_closest_point_to_segment(p_point, s);
 
@@ -767,7 +767,7 @@ void ConvexPolygonShape3DSW::get_supports(const Vector3 &p_normal, int p_max, Ve
 	const Vector3 *vertices = mesh.vertices.ptr();
 	int vc = mesh.vertices.size();
 
-	//find vertex first
+	// find vertex first
 	real_t max = 0;
 	int vtx = 0;
 
@@ -840,7 +840,7 @@ bool ConvexPolygonShape3DSW::intersect_segment(const Vector3 &p_begin, const Vec
 	for (int i = 0; i < fc; i++) {
 
 		if (faces[i].plane.normal.dot(n) > 0)
-			continue; //opposing face
+			continue; // opposing face
 
 		int ic = faces[i].indices.size();
 		const int *ind = faces[i].indices.ptr();
@@ -920,7 +920,7 @@ Vector3 ConvexPolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) con
 	float min_distance = 1e20;
 	Vector3 min_point;
 
-	//check edges
+	// check edges
 	const Geometry::MeshData::Edge *edges = mesh.edges.ptr();
 	int ec = mesh.edges.size();
 	for (int i = 0; i < ec; i++) {
@@ -1088,7 +1088,7 @@ bool FaceShape3DSW::intersect_segment(const Vector3 &p_begin, const Vector3 &p_e
 
 bool FaceShape3DSW::intersect_point(const Vector3 &p_point) const {
 
-	return false; //face is flat
+	return false; // face is flat
 }
 
 Vector3 FaceShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
@@ -1177,10 +1177,10 @@ void ConcavePolygonShape3DSW::_cull_segment(int p_idx, _SegmentCullParams *p_par
 
 	/*
 	if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
-		return; //test against whole AABB, which isn't very costly
+		return; // test against whole AABB, which isn't very costly
 	*/
 
-	//printf("addr: %p\n",bvh);
+	// printf("addr: %p\n",bvh);
 	if (!bvh->aabb.intersects_segment(p_params->from, p_params->to)) {
 
 		return;
@@ -1260,7 +1260,7 @@ bool ConcavePolygonShape3DSW::intersect_segment(const Vector3 &p_begin, const Ve
 
 bool ConcavePolygonShape3DSW::intersect_point(const Vector3 &p_point) const {
 
-	return false; //face is flat
+	return false; // face is flat
 }
 
 Vector3 ConcavePolygonShape3DSW::get_closest_point_to(const Vector3 &p_point) const {
@@ -1383,7 +1383,7 @@ _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_siz
 	_VolumeSW_BVH *bvh = memnew(_VolumeSW_BVH);
 
 	if (p_size == 1) {
-		//leaf
+		// leaf
 		bvh->aabb = p_elements[0].aabb;
 		bvh->left = nullptr;
 		bvh->right = nullptr;
@@ -1428,7 +1428,7 @@ _VolumeSW_BVH *_volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements, int p_siz
 	bvh->left = _volume_sw_build_bvh(p_elements, split, count);
 	bvh->right = _volume_sw_build_bvh(&p_elements[split], p_size - split, count);
 
-	//printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
+	// printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
 	count++;
 	return bvh;
 }
@@ -1439,7 +1439,7 @@ void ConcavePolygonShape3DSW::_fill_bvh(_VolumeSW_BVH *p_bvh_tree, BVH *p_bvh_ar
 
 	p_bvh_array[idx].aabb = p_bvh_tree->aabb;
 	p_bvh_array[idx].face_index = p_bvh_tree->face_index;
-	//printf("%p - %i: %i(%p)  -- %p:%p\n",%p_bvh_array[idx],p_idx,p_bvh_array[i]->face_index,&p_bvh_tree->face_index,p_bvh_tree->left,p_bvh_tree->right);
+	// printf("%p - %i: %i(%p)  -- %p:%p\n",%p_bvh_array[idx],p_idx,p_bvh_array[i]->face_index,&p_bvh_tree->face_index,p_bvh_tree->left,p_bvh_tree->right);
 
 	if (p_bvh_tree->left) {
 		p_bvh_array[idx].left = ++p_idx;
@@ -1555,13 +1555,13 @@ real_t HeightMapShape3DSW::get_cell_size() const {
 
 void HeightMapShape3DSW::project_range(const Vector3 &p_normal, const Transform &p_transform, real_t &r_min, real_t &r_max) const {
 
-	//not very useful, but not very used either
+	// not very useful, but not very used either
 	p_transform.xform(get_aabb()).project_range_in_plane(Plane(p_normal, 0), r_min, r_max);
 }
 
 Vector3 HeightMapShape3DSW::get_support(const Vector3 &p_normal) const {
 
-	//not very useful, but not very used either
+	// not very useful, but not very used either
 	return get_aabb().get_support(p_normal);
 }
 

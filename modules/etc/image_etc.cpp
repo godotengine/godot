@@ -92,7 +92,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	Image::Format img_format = p_img->get_format();
 
 	if (img_format >= Image::FORMAT_DXT1) {
-		return; //do not compress, already compressed
+		return; // do not compress, already compressed
 	}
 
 	if (img_format > Image::FORMAT_RGBA8) {
@@ -128,7 +128,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	Ref<Image> img = p_img->duplicate();
 
 	if (img->get_format() != Image::FORMAT_RGBA8)
-		img->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
+		img->convert(Image::FORMAT_RGBA8); // still uses RGBA to convert
 
 	if (img->has_mipmaps()) {
 		if (next_power_of_2(imgw) != imgw || next_power_of_2(imgh) != imgh) {
@@ -163,7 +163,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 	// prepare parameters to be passed to etc2comp
 	int num_cpus = OS::get_singleton()->get_processor_count();
 	int encoding_time = 0;
-	float effort = 0.0; //default, reasonable time
+	float effort = 0.0; // default, reasonable time
 
 	if (p_lossy_quality > 0.75)
 		effort = 0.4;

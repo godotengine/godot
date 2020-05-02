@@ -41,7 +41,7 @@ void TextureEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
 
-		//get_scene()->connect("node_removed",this,"_node_removed");
+		// get_scene()->connect("node_removed",this,"_node_removed");
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {

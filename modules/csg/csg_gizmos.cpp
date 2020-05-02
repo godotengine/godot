@@ -115,7 +115,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
 	Transform gt = cs->get_global_transform();
-	//gt.orthonormalize();
+	// gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);

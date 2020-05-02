@@ -55,10 +55,10 @@ void ShaderFileEditor::_version_selected(int p_option) {
 
 	error_text->clear();
 
-	if (stage == RD::SHADER_STAGE_MAX) { //need to change stage, does not have it
+	if (stage == RD::SHADER_STAGE_MAX) { // need to change stage, does not have it
 		if (first_found == -1) {
 			error_text->add_text(TTR("No valid shader stages found."));
-			return; //well you did not put any stage I guess?
+			return; // well you did not put any stage I guess?
 		}
 		stages[first_found]->set_pressed(true);
 		stage = RD::ShaderStage(first_found);
@@ -93,7 +93,7 @@ void ShaderFileEditor::_update_options() {
 	versions->show();
 
 	int c = versions->get_current();
-	//remember current
+	// remember current
 	versions->clear();
 	Vector<StringName> version_list = shader_file->get_version_list();
 

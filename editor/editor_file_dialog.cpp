@@ -1103,7 +1103,7 @@ void EditorFileDialog::_make_dir_confirm() {
 		update_filters();
 		update_dir();
 		_push_history();
-		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
+		EditorFileSystem::get_singleton()->scan_changes(); // we created a dir, so rescan changes
 	} else {
 		mkdirerr->popup_centered(Size2(250, 50) * EDSCALE);
 	}
@@ -1688,7 +1688,7 @@ EditorFileDialog::EditorFileDialog() {
 	filter->connect("item_selected", callable_mp(this, &EditorFileDialog::_filter_selected));
 
 	confirm_save = memnew(ConfirmationDialog);
-	//confirm_save->set_as_toplevel(true);
+	// confirm_save->set_as_toplevel(true);
 	add_child(confirm_save);
 	confirm_save->connect("confirmed", callable_mp(this, &EditorFileDialog::_save_confirm_pressed));
 

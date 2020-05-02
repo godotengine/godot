@@ -128,7 +128,7 @@ public:
 				I = I->next();
 			}
 
-			if (O != E) { //should never happen..
+			if (O != E) { // should never happen..
 				cached.erase(O);
 			}
 		}
@@ -139,7 +139,7 @@ public:
 	EditorScriptCodeCompletionCache() {
 
 		max_cache_size = 128;
-		max_time_cache = 5 * 60 * 1000; //minutes, five
+		max_time_cache = 5 * 60 * 1000; // minutes, five
 	}
 
 	virtual ~EditorScriptCodeCompletionCache() {}
@@ -586,7 +586,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 		_history_back();
 	}
 
-	//remove from history
+	// remove from history
 	history.resize(history_pos + 1);
 
 	for (int i = 0; i < history.size(); i++) {
@@ -720,7 +720,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 		RES script = se->get_edited_resource();
 
 		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1)
-			continue; //internal script, who cares
+			continue; // internal script, who cares
 
 		if (trim_trailing_whitespace_on_save) {
 			se->trim_trailing_whitespace();
@@ -764,7 +764,7 @@ void ScriptEditor::_reload_scripts() {
 
 		if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1) {
 
-			continue; //internal script, who cares
+			continue; // internal script, who cares
 		}
 
 		uint64_t last_date = edited_res->get_last_modified_time();
@@ -811,7 +811,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 		RES script = se->get_edited_resource();
 
 		if (script->get_path() == "" || script->get_path().find("local://") != -1 || script->get_path().find("::") != -1) {
-			continue; //internal script, who cares
+			continue; // internal script, who cares
 		}
 
 		if (script == p_res) {
@@ -853,7 +853,7 @@ bool ScriptEditor::_test_script_times_on_disk(RES p_for_script) {
 				continue;
 
 			if (edited_res->get_path() == "" || edited_res->get_path().find("local://") != -1 || edited_res->get_path().find("::") != -1)
-				continue; //internal script, who cares
+				continue; // internal script, who cares
 
 			uint64_t last_date = edited_res->get_last_modified_time();
 			uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
@@ -1039,7 +1039,7 @@ void ScriptEditor::_menu_option(int p_option) {
 						if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
 							EditorNode::get_singleton()->load_scene(res_path);
 							script_editor->call_deferred("_menu_option", p_option);
-							previous_scripts.push_back(path); //repeat the operation
+							previous_scripts.push_back(path); // repeat the operation
 							return;
 						}
 					} else {
@@ -1199,7 +1199,7 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 
 				current->apply_code();
-				Error err = scr->reload(false); //hard reload script before running always
+				Error err = scr->reload(false); // hard reload script before running always
 
 				if (err != OK) {
 					EditorNode::get_singleton()->show_warning(TTR("Script failed reloading, check console for errors."));
@@ -1464,7 +1464,7 @@ void ScriptEditor::close_builtin_scripts_from_scene(const String &p_scene) {
 			if (script == nullptr || !script.is_valid())
 				continue;
 
-			if (script->get_path().find("::") != -1 && script->get_path().begins_with(p_scene)) { //is an internal script and belongs to scene being closed
+			if (script->get_path().find("::") != -1 && script->get_path().begins_with(p_scene)) { // is an internal script and belongs to scene being closed
 				_close_tab(i);
 				i--;
 			}
@@ -1545,7 +1545,7 @@ void ScriptEditor::_help_overview_selected(int p_idx) {
 
 void ScriptEditor::_script_selected(int p_idx) {
 
-	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(1); //amazing hack, simply amazing
+	grab_focus_block = !Input::get_singleton()->is_mouse_button_pressed(1); // amazing hack, simply amazing
 
 	_go_to_tab(script_list->get_item_metadata(p_idx));
 	grab_focus_block = false;
@@ -2142,7 +2142,7 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::_on_find_in_files_requested));
 	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
 
-	//test for modification, maybe the script was not edited but was loaded
+	// test for modification, maybe the script was not edited but was loaded
 
 	_test_script_times_on_disk(p_resource);
 	_update_modified_scripts_for_external_editor(p_resource);
@@ -2192,7 +2192,7 @@ void ScriptEditor::save_all_scripts() {
 				_save_text_file(text_file, text_file->get_path());
 				continue;
 			}
-			editor->save_resource(edited_res); //external script, save it
+			editor->save_resource(edited_res); // external script, save it
 		}
 	}
 
@@ -2413,7 +2413,7 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 		Vector<String> files = d["files"];
 
 		if (files.size() == 0)
-			return false; //weird
+			return false; // weird
 
 		for (int i = 0; i < files.size(); i++) {
 			String file = files[i];
@@ -3101,7 +3101,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew(ItemList);
 	scripts_vbox->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	script_list->set_custom_minimum_size(Size2(150, 60) * EDSCALE); // need to give a bit of limit to avoid it from disappearing
 	script_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	script_split->set_split_offset(70 * EDSCALE);
 	_sort_list_on_update = true;
@@ -3145,14 +3145,14 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	overview_vbox->add_child(members_overview);
 
 	members_overview->set_allow_reselect(true);
-	members_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	members_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); // need to give a bit of limit to avoid it from disappearing
 	members_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 	members_overview->set_allow_rmb_select(true);
 
 	help_overview = memnew(ItemList);
 	overview_vbox->add_child(help_overview);
 	help_overview->set_allow_reselect(true);
-	help_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); //need to give a bit of limit to avoid it from disappearing
+	help_overview->set_custom_minimum_size(Size2(0, 60) * EDSCALE); // need to give a bit of limit to avoid it from disappearing
 	help_overview->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	tab_container = memnew(TabContainer);

@@ -101,7 +101,7 @@ static _FORCE_INLINE_ void store_soft_shadow_kernel(const float *p_kernel, float
 
 /* SCENE SHADER */
 void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
-	//compile
+	// compile
 
 	code = p_code;
 	valid = false;
@@ -110,7 +110,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	uses_screen_texture = false;
 
 	if (code == String()) {
-		return; //just invalid, but no error
+		return; // just invalid, but no error
 	}
 
 	ShaderCompilerRD::GeneratedCode gen_code;
@@ -218,7 +218,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	ubo_offsets = gen_code.uniform_offsets;
 	texture_uniforms = gen_code.texture_uniforms;
 
-	//blend modes
+	// blend modes
 
 	RD::PipelineColorBlendState::Attachment blend_attachment;
 
@@ -243,7 +243,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			uses_blend_alpha = true; //force alpha used because of blend
+			uses_blend_alpha = true; // force alpha used because of blend
 
 		} break;
 		case BLEND_MODE_SUB: {
@@ -255,7 +255,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
-			uses_blend_alpha = true; //force alpha used because of blend
+			uses_blend_alpha = true; // force alpha used because of blend
 
 		} break;
 		case BLEND_MODE_MUL: {
@@ -266,7 +266,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 			blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
 			blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
 			blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
-			uses_blend_alpha = true; //force alpha used because of blend
+			uses_blend_alpha = true; // force alpha used because of blend
 		} break;
 	}
 
@@ -277,7 +277,7 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 	RD::PipelineColorBlendState blend_state_depth_normal = RD::PipelineColorBlendState::create_disabled(1);
 	RD::PipelineColorBlendState blend_state_depth_normal_roughness = RD::PipelineColorBlendState::create_disabled(2);
 
-	//update pipelines
+	// update pipelines
 
 	RD::PipelineDepthStencilState depth_stencil_state;
 
@@ -322,15 +322,15 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_VCT_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
 						blend_state = blend_state_blend;
 						if (depth_draw == DEPTH_DRAW_OPAQUE) {
-							depth_stencil.enable_depth_write = false; //alpha does not draw depth
+							depth_stencil.enable_depth_write = false; // alpha does not draw depth
 						}
 					} else if (uses_depth_pre_pass && (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS || k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL)) {
 						if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
-							//none, blend state contains nothing
+							// none, blend state contains nothing
 						} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
-							blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
+							blend_state = RD::PipelineColorBlendState::create_disabled(5); // writes to normal and roughness in opaque way
 						} else {
-							blend_state = blend_state_opaque; //writes to normal and roughness in opaque way
+							blend_state = blend_state_opaque; // writes to normal and roughness in opaque way
 						}
 					} else {
 						pipelines[i][j][k].clear();
@@ -341,16 +341,16 @@ void RasterizerSceneHighEndRD::ShaderData::set_code(const String &p_code) {
 					if (k == SHADER_VERSION_COLOR_PASS || k == SHADER_VERSION_VCT_COLOR_PASS || k == SHADER_VERSION_LIGHTMAP_COLOR_PASS) {
 						blend_state = blend_state_opaque;
 					} else if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
-						//none, leave empty
+						// none, leave empty
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL) {
 						blend_state = blend_state_depth_normal;
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
 						blend_state = blend_state_depth_normal_roughness;
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
-						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
+						blend_state = RD::PipelineColorBlendState::create_disabled(5); // writes to normal and roughness in opaque way
 
 					} else {
-						//specular write
+						// specular write
 						blend_state = blend_state_opaque_specular;
 					}
 				}
@@ -407,7 +407,7 @@ void RasterizerSceneHighEndRD::ShaderData::get_instance_param_list(List<Rasteriz
 
 		RasterizerStorage::InstanceShaderParam p;
 		p.info = ShaderLanguage::uniform_to_property_info(E->get());
-		p.info.name = E->key(); //supply name
+		p.info.name = E->key(); // supply name
 		p.index = E->get().instance_index;
 		p.default_value = ShaderLanguage::constant_value_to_variant(E->get().default_value, E->get().type, E->get().hint);
 		p_param_list->push_back(p);
@@ -446,7 +446,7 @@ RasterizerSceneHighEndRD::ShaderData::ShaderData() {
 RasterizerSceneHighEndRD::ShaderData::~ShaderData() {
 	RasterizerSceneHighEndRD *scene_singleton = (RasterizerSceneHighEndRD *)RasterizerSceneHighEndRD::singleton;
 	ERR_FAIL_COND(!scene_singleton);
-	//pipeline variants will clear themselves if shader is gone
+	// pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
 		scene_singleton->shader.scene_shader.version_free(version);
 	}
@@ -479,17 +479,17 @@ void RasterizerSceneHighEndRD::MaterialData::update_parameters(const Map<StringN
 		ubo_data.resize(shader_data->ubo_size);
 		if (ubo_data.size()) {
 			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
-			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
+			memset(ubo_data.ptrw(), 0, ubo_data.size()); // clear
 		}
 
-		//clear previous uniform set
+		// clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 			RD::get_singleton()->free(uniform_set);
 			uniform_set = RID();
 		}
 	}
 
-	//check whether buffer changed
+	// check whether buffer changed
 	if (p_uniform_dirty && ubo_data.size()) {
 
 		update_uniform_buffer(shader_data->uniforms, shader_data->ubo_offsets.ptr(), p_parameters, ubo_data.ptrw(), ubo_data.size(), false);
@@ -502,7 +502,7 @@ void RasterizerSceneHighEndRD::MaterialData::update_parameters(const Map<StringN
 		texture_cache.resize(tex_uniform_count);
 		p_textures_dirty = true;
 
-		//clear previous uniform set
+		// clear previous uniform set
 		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 			RD::get_singleton()->free(uniform_set);
 			uniform_set = RID();
@@ -520,7 +520,7 @@ void RasterizerSceneHighEndRD::MaterialData::update_parameters(const Map<StringN
 	}
 
 	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
-		//no reason to update uniform set, only UBO (or nothing) was needed to update
+		// no reason to update uniform set, only UBO (or nothing) was needed to update
 		return;
 	}
 
@@ -563,7 +563,7 @@ RasterizerStorageRD::MaterialData *RasterizerSceneHighEndRD::_create_material_fu
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
 	material_data->last_frame = false;
-	//update will happen later anyway so do nothing.
+	// update will happen later anyway so do nothing.
 	return material_data;
 }
 
@@ -887,11 +887,11 @@ void RasterizerSceneHighEndRD::_fill_instances(RenderList::Element **p_elements,
 				RID probe = e->instance->gi_probe_instances[j];
 				int slot = gi_probe_instance_get_slot(probe);
 				if (slot < 0) {
-					continue; //unallocated, dont render
+					continue; // unallocated, dont render
 				}
 
 				if (render_pass != gi_probe_instance_get_render_pass(probe)) {
-					continue; //not rendered in this frame
+					continue; // not rendered in this frame
 				}
 
 				uint32_t index = gi_probe_instance_get_render_index(probe);
@@ -925,7 +925,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
-	//global scope bindings
+	// global scope bindings
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_base_uniform_set, SCENE_UNIFORM_SET);
 	if (p_radiance_uniform_set.is_valid()) {
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_radiance_uniform_set, RADIANCE_UNIFORM_SET);
@@ -958,7 +958,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 		ShaderData *shader = material->shader_data;
 		RID xforms_uniform_set;
 
-		//find cull variant
+		// find cull variant
 		ShaderData::CullVariant cull_variant;
 
 		if ((p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_SHADOW_DP) && e->instance->cast_shadows == RS::SHADOW_CASTING_SETTING_DOUBLE_SIDED) {
@@ -971,7 +971,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			cull_variant = mirror ? ShaderData::CULL_VARIANT_REVERSED : ShaderData::CULL_VARIANT_NORMAL;
 		}
 
-		//find primitive and vertex format
+		// find primitive and vertex format
 		RS::PrimitiveType primitive;
 
 		switch (e->instance->base_type) {
@@ -983,20 +983,20 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			} break;
 			case RS::INSTANCE_MULTIMESH: {
 				RID mesh = storage->multimesh_get_mesh(e->instance->base);
-				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
+				ERR_CONTINUE(!mesh.is_valid()); // should be a bug
 				primitive = storage->mesh_surface_get_primitive(mesh, e->surface_index);
 
 				xforms_uniform_set = storage->multimesh_get_3d_uniform_set(e->instance->base, default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
 			} break;
 			case RS::INSTANCE_IMMEDIATE: {
-				ERR_CONTINUE(true); //should be a bug
+				ERR_CONTINUE(true); // should be a bug
 			} break;
 			case RS::INSTANCE_PARTICLES: {
-				ERR_CONTINUE(true); //should be a bug
+				ERR_CONTINUE(true); // should be a bug
 			} break;
 			default: {
-				ERR_CONTINUE(true); //should be a bug
+				ERR_CONTINUE(true); // should be a bug
 			}
 		}
 
@@ -1054,17 +1054,17 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			} break;
 			case RS::INSTANCE_MULTIMESH: {
 				RID mesh = storage->multimesh_get_mesh(e->instance->base);
-				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
+				ERR_CONTINUE(!mesh.is_valid()); // should be a bug
 				storage->mesh_surface_get_arrays_and_format(mesh, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
 			} break;
 			case RS::INSTANCE_IMMEDIATE: {
-				ERR_CONTINUE(true); //should be a bug
+				ERR_CONTINUE(true); // should be a bug
 			} break;
 			case RS::INSTANCE_PARTICLES: {
-				ERR_CONTINUE(true); //should be a bug
+				ERR_CONTINUE(true); // should be a bug
 			} break;
 			default: {
-				ERR_CONTINUE(true); //should be a bug
+				ERR_CONTINUE(true); // should be a bug
 			}
 		}
 
@@ -1095,7 +1095,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 		}
 
 		if (material != prev_material) {
-			//update uniform set
+			// update uniform set
 			if (material->uniform_set.is_valid()) {
 				RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material->uniform_set, MATERIAL_UNIFORM_SET);
 			}
@@ -1121,7 +1121,7 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 			} break;
 			default: {
-				ERR_CONTINUE(true); //should be a bug
+				ERR_CONTINUE(true); // should be a bug
 			}
 		}
 	}
@@ -1130,12 +1130,12 @@ void RasterizerSceneHighEndRD::_render_list(RenderingDevice::DrawListID p_draw_l
 void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y, const Color &p_default_bg_color, float p_znear, float p_zfar, bool p_opaque_render_buffers, bool p_pancake_shadows) {
 
 	//CameraMatrix projection = p_cam_projection;
-	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
+	// projection.flip_y(); // Vulkan and modern APIs use Y-Down
 	CameraMatrix correction;
 	correction.set_depth_correction(p_flip_y);
 	CameraMatrix projection = correction * p_cam_projection;
 
-	//store camera into ubo
+	// store camera into ubo
 	store_camera(projection, scene_state.ubo.projection_matrix);
 	store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
 	store_transform(p_cam_transform, scene_state.ubo.camera_matrix);
@@ -1169,7 +1169,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 		scene_state.ubo.directional_shadow_pixel_size[0] = 1.0 / dss.x;
 		scene_state.ubo.directional_shadow_pixel_size[1] = 1.0 / dss.y;
 	}
-	//time global variables
+	// time global variables
 	scene_state.ubo.time = time;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
@@ -1193,7 +1193,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 
 		scene_state.ubo.ambient_color_sky_mix = environment_get_ambient_sky_contribution(p_environment);
 
-		//ambient
+		// ambient
 		if (ambient_src == RS::ENV_AMBIENT_SOURCE_BG && (env_bg == RS::ENV_BG_CLEAR_COLOR || env_bg == RS::ENV_BG_COLOR)) {
 
 			Color color = env_bg == RS::ENV_BG_CLEAR_COLOR ? p_default_bg_color : environment_get_bg_color(p_environment);
@@ -1221,7 +1221,7 @@ void RasterizerSceneHighEndRD::_setup_environment(RID p_environment, const Camer
 			scene_state.ubo.use_ambient_light = scene_state.ubo.use_ambient_cubemap || ambient_src == RS::ENV_AMBIENT_SOURCE_COLOR;
 		}
 
-		//specular
+		// specular
 		RS::EnvironmentReflectionSource ref_src = environment_get_reflection_source(p_environment);
 		if ((ref_src == RS::ENV_REFLECTION_SOURCE_BG && env_bg == RS::ENV_BG_SKY) || ref_src == RS::ENV_REFLECTION_SOURCE_SKY) {
 			scene_state.ubo.use_reflection_cubemap = true;
@@ -1331,12 +1331,12 @@ void RasterizerSceneHighEndRD::_add_geometry_with_material(InstanceBase *p_insta
 	if (p_pass_mode != PASS_MODE_COLOR && p_pass_mode != PASS_MODE_COLOR_SPECULAR) {
 
 		if (has_blend_alpha || has_read_screen_alpha || (has_base_alpha && !p_material->shader_data->uses_depth_pre_pass) || p_material->shader_data->depth_draw == ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == ShaderData::DEPTH_TEST_DISABLED || p_instance->cast_shadows == RS::SHADOW_CASTING_SETTING_OFF) {
-			//conditions in which no depth pass should be processed
+			// conditions in which no depth pass should be processed
 			return;
 		}
 
 		if (p_pass_mode != PASS_MODE_DEPTH_MATERIAL && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
-			//shader does not use discard and does not write a vertex position, use generic material
+			// shader does not use discard and does not write a vertex position, use generic material
 			if (p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_DEPTH) {
 				p_material = (MaterialData *)storage->material_get_data(default_material, RasterizerStorageRD::SHADER_TYPE_3D);
 			} else if (p_pass_mode == PASS_MODE_DEPTH_NORMAL && !p_material->shader_data->uses_normal) {
@@ -1361,7 +1361,7 @@ void RasterizerSceneHighEndRD::_add_geometry_with_material(InstanceBase *p_insta
 
 	if (e->material->last_pass != render_pass) {
 		if (!RD::get_singleton()->uniform_set_is_valid(e->material->uniform_set)) {
-			//uniform set no longer valid, probably a texture changed
+			// uniform set no longer valid, probably a texture changed
 			storage->material_force_update_textures(p_material_rid, RasterizerStorageRD::SHADER_TYPE_3D);
 		}
 		e->material->last_pass = render_pass;
@@ -1396,13 +1396,13 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 
 	uint32_t geometry_index = 0;
 
-	//fill list
+	// fill list
 
 	for (int i = 0; i < p_cull_count; i++) {
 
 		InstanceBase *inst = p_cull_result[i];
 
-		//add geometry for drawing
+		// add geometry for drawing
 		switch (inst->base_type) {
 
 			case RS::INSTANCE_MESH: {
@@ -1412,7 +1412,7 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 
 				materials = storage->mesh_get_surface_count_and_materials(inst->base, surface_count);
 				if (!materials) {
-					continue; //nothing to do
+					continue; // nothing to do
 				}
 
 				const RID *inst_materials = inst->materials.ptr();
@@ -1425,14 +1425,14 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 					_add_geometry(inst, j, material, p_pass_mode, surface_index);
 				}
 
-				//mesh->last_pass=frame;
+				// mesh->last_pass=frame;
 
 			} break;
 
 			case RS::INSTANCE_MULTIMESH: {
 
 				if (storage->multimesh_get_instances_to_draw(inst->base) == 0) {
-					//not visible, 0 instances
+					// not visible, 0 instances
 					continue;
 				}
 
@@ -1446,7 +1446,7 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 
 				materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
 				if (!materials) {
-					continue; //nothing to do
+					continue; // nothing to do
 				}
 
 				for (uint32_t j = 0; j < surface_count; j++) {
@@ -1477,7 +1477,7 @@ void RasterizerSceneHighEndRD::_fill_render_list(InstanceBase **p_cull_result, i
 						continue;
 					RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getornull(pmesh);
 					if (!mesh)
-						continue; //mesh not assigned
+						continue; // mesh not assigned
 
 					int ssize = mesh->surfaces.size();
 
@@ -1503,7 +1503,7 @@ void RasterizerSceneHighEndRD::_setup_reflections(RID *p_reflection_probe_cull_r
 		RID rpi = p_reflection_probe_cull_result[i];
 
 		if (i >= (int)scene_state.max_reflections) {
-			reflection_probe_instance_set_render_index(rpi, 0); //invalid, but something needs to be set
+			reflection_probe_instance_set_render_index(rpi, 0); // invalid, but something needs to be set
 			continue;
 		}
 
@@ -1558,7 +1558,7 @@ void RasterizerSceneHighEndRD::_setup_reflections(RID *p_reflection_probe_cull_r
 			reflection_ubo.ambient[0] = ambient_linear.r;
 			reflection_ubo.ambient[1] = ambient_linear.g;
 			reflection_ubo.ambient[2] = ambient_linear.b;
-			reflection_ubo.ambient[3] = 0; //not used in exterior mode, since it just blends with regular ambient light
+			reflection_ubo.ambient[3] = 0; // not used in exterior mode, since it just blends with regular ambient light
 		}
 
 		Transform transform = reflection_probe_instance_get_transform(rpi);
@@ -1589,7 +1589,7 @@ void RasterizerSceneHighEndRD::_setup_gi_probes(RID *p_gi_probe_probe_cull_resul
 
 		int slot = gi_probe_instance_get_slot(rpi);
 		if (slot < 0) {
-			continue; //not usable
+			continue; // not usable
 		}
 
 		RID base_probe = gi_probe_instance_get_base_probe(rpi);
@@ -1676,7 +1676,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 				float size = storage->light_get_param(base, RS::LIGHT_PARAM_SIZE);
 
-				light_data.size = 1.0 - Math::cos(Math::deg2rad(size)); //angle to cosine offset
+				light_data.size = 1.0 - Math::cos(Math::deg2rad(size)); // angle to cosine offset
 
 				Color shadow_col = storage->light_get_shadow_color(base).to_linear();
 
@@ -1749,7 +1749,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 						store_camera(shadow_mtx, light_data.shadow_matrices[j]);
 
 						Vector2 uv_scale = light_instance_get_shadow_uv_scale(li, j);
-						uv_scale *= atlas_rect.size; //adapt to atlas size
+						uv_scale *= atlas_rect.size; // adapt to atlas size
 						switch (j) {
 							case 0: {
 								light_data.uv_scale1[0] = uv_scale.x;
@@ -1771,7 +1771,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					}
 
 					float fade_start = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_FADE_START);
-					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
+					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); // using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
 
 					light_data.soft_shadow_scale = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BLUR);
@@ -1872,14 +1872,14 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					if (type == RS::LIGHT_SPOT) {
 
 						light_data.projector_rect[0] = rect.position.x;
-						light_data.projector_rect[1] = rect.position.y + rect.size.height; //flip because shadow is flipped
+						light_data.projector_rect[1] = rect.position.y + rect.size.height; // flip because shadow is flipped
 						light_data.projector_rect[2] = rect.size.width;
 						light_data.projector_rect[3] = -rect.size.height;
 					} else {
 						light_data.projector_rect[0] = rect.position.x;
 						light_data.projector_rect[1] = rect.position.y;
 						light_data.projector_rect[2] = rect.size.width;
-						light_data.projector_rect[3] = rect.size.height * 0.5; //used by dp, so needs to be half
+						light_data.projector_rect[3] = rect.size.height * 0.5; // used by dp, so needs to be half
 					}
 				} else {
 					light_data.projector_rect[0] = 0;
@@ -1905,7 +1905,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 						light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size;
 
-					} else { //omni
+					} else { // omni
 						light_data.shadow_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS) * radius / 10.0;
 						float shadow_texel_size = light_instance_get_shadow_texel_size(li, p_shadow_atlas);
 						light_data.shadow_normal_bias = storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS) * shadow_texel_size * 2.0; // applied in -1 .. 1 space
@@ -1924,7 +1924,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 					if (type == RS::LIGHT_OMNI) {
 
-						light_data.atlas_rect[3] *= 0.5; //one paraboloid on top of another
+						light_data.atlas_rect[3] *= 0.5; // one paraboloid on top of another
 						Transform proj = (p_camera_inverse_transform * light_transform).inverse();
 
 						store_transform(proj, light_data.shadow_matrix);
@@ -1969,7 +1969,7 @@ void RasterizerSceneHighEndRD::_setup_lights(RID *p_light_cull_result, int p_lig
 
 		light_instance_set_render_pass(li, render_pass);
 
-		//update UBO for forward rendering, blit to texture for clustered
+		// update UBO for forward rendering, blit to texture for clustered
 	}
 
 	if (light_count) {
@@ -2022,7 +2022,7 @@ void RasterizerSceneHighEndRD::_setup_decals(const RID *p_decal_instances, int p
 		store_transform(to_decal_xform, dd.xform);
 
 		Vector3 normal = xform.basis.get_axis(Vector3::AXIS_Y).normalized();
-		normal = p_camera_inverse_xform.basis.xform(normal); //camera is normalized, so fine
+		normal = p_camera_inverse_xform.basis.xform(normal); // camera is normalized, so fine
 
 		dd.normal[0] = normal.x;
 		dd.normal[1] = normal.y;
@@ -2040,7 +2040,7 @@ void RasterizerSceneHighEndRD::_setup_decals(const RID *p_decal_instances, int p
 		} else {
 
 			if (!emission_tex.is_valid()) {
-				continue; //no albedo, no emission, no decal.
+				continue; // no albedo, no emission, no decal.
 			}
 			dd.albedo_rect[0] = 0;
 			dd.albedo_rect[1] = 0;
@@ -2121,10 +2121,10 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		render_buffer = (RenderBufferDataHighEnd *)render_buffers_get_data(p_render_buffer);
 	}
 
-	//first of all, make a new render pass
+	// first of all, make a new render pass
 	render_pass++;
 
-	//fill up ubo
+	// fill up ubo
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
@@ -2145,7 +2145,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		scene_state.ubo.reflection_multiplier = 1.0;
 	}
 
-	//scene_state.ubo.subsurface_scatter_width = subsurface_scatter_size;
+	// scene_state.ubo.subsurface_scatter_width = subsurface_scatter_size;
 
 	Vector2 vp_he = p_cam_projection.get_viewport_half_extents();
 	scene_state.ubo.viewport_size[0] = vp_he.x;
@@ -2180,7 +2180,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			opaque_specular_framebuffer = render_buffer->color_specular_fb;
 		} else if (screen_space_roughness_limiter_is_active()) {
 			depth_pass_mode = PASS_MODE_DEPTH_NORMAL;
-			//we need to allocate both these, if not allocated
+			// we need to allocate both these, if not allocated
 			_allocate_normal_texture(render_buffer);
 			_allocate_roughness_texture(render_buffer);
 		} else if (p_environment.is_valid() && (environment_is_ssao_enabled(p_environment) || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER)) {
@@ -2221,14 +2221,14 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		alpha_framebuffer = opaque_framebuffer;
 
 		if (storage->reflection_probe_is_interior(reflection_probe_instance_get_probe(p_reflection_probe))) {
-			p_environment = RID(); //no environment on interiors
+			p_environment = RID(); // no environment on interiors
 		}
 
 	} else {
-		ERR_FAIL(); //bug?
+		ERR_FAIL(); // bug?
 	}
 
-	cluster_builder.begin(p_cam_transform.affine_inverse(), p_cam_projection); //prepare cluster
+	cluster_builder.begin(p_cam_transform.affine_inverse(), p_cam_projection); // prepare cluster
 
 	_setup_lights(p_light_cull_result, p_light_cull_count, p_cam_transform.affine_inverse(), p_shadow_atlas, using_shadows);
 	_setup_decals(p_decal_cull_result, p_decal_cull_count, p_cam_transform.affine_inverse());
@@ -2236,9 +2236,9 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	_setup_gi_probes(p_gi_probe_cull_result, p_gi_probe_cull_count, p_cam_transform);
 	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid(), p_default_bg_color, p_cam_projection.get_z_near(), p_cam_projection.get_z_far(), false);
 
-	cluster_builder.bake_cluster(); //bake to cluster
+	cluster_builder.bake_cluster(); // bake to cluster
 
-	_update_render_base_uniform_set(); //may have changed due to the above (light buffer enlarged, as an example)
+	_update_render_base_uniform_set(); // may have changed due to the above (light buffer enlarged, as an example)
 
 	render_list.clear();
 	_fill_render_list(p_cull_result, p_cull_count, PASS_MODE_COLOR, render_buffer == nullptr);
@@ -2258,7 +2258,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	bool keep_color = false;
 
 	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
-		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
+		clear_color = Color(0, 0, 0, 1); // in overdraw mode, BG should always be black
 	} else if (is_environment(p_environment)) {
 		RS::EnvironmentBG bg_mode = environment_get_background(p_environment);
 		float bg_energy = environment_get_bg_energy(p_environment);
@@ -2329,7 +2329,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 
 	bool using_ssao = depth_pre_pass && p_render_buffer.is_valid() && p_environment.is_valid() && environment_is_ssao_enabled(p_environment);
 
-	if (depth_pre_pass) { //depth pre pass
+	if (depth_pre_pass) { // depth pre pass
 		RENDER_TIMESTAMP("Render Depth Pre-Pass");
 
 		bool finish_depth = using_ssao;
@@ -2360,7 +2360,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	}
 
 	if (p_render_buffer.is_valid()) {
-		//update the render buffers uniform set in case it changed
+		// update the render buffers uniform set in case it changed
 		_update_render_buffers_uniform_set(p_render_buffer);
 		render_buffers_uniform_set = render_buffer->uniform_set;
 	}
@@ -2377,11 +2377,11 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 		bool will_continue_color = (can_continue_color || draw_sky || debug_giprobes);
 		bool will_continue_depth = (can_continue_depth || draw_sky || debug_giprobes);
 
-		//regular forward for now
+		// regular forward for now
 		Vector<Color> c;
 		if (using_separate_specular) {
 			Color cc = clear_color.to_linear();
-			cc.a = 0; //subsurf scatter must be 0
+			cc.a = 0; // subsurf scatter must be 0
 			c.push_back(cc);
 			c.push_back(Color(0, 0, 0, 0));
 		} else {
@@ -2401,7 +2401,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 	}
 
 	if (debug_giprobes) {
-		//debug giprobes
+		// debug giprobes
 		bool will_continue_color = (can_continue_color || draw_sky);
 		bool will_continue_depth = (can_continue_depth || draw_sky);
 
@@ -2452,7 +2452,7 @@ void RasterizerSceneHighEndRD::_render_scene(RID p_render_buffer, const Transfor
 			RENDER_TIMESTAMP("Screen Space Reflection");
 			_process_ssr(p_render_buffer, render_buffer->color_fb, render_buffer->normal_buffer, render_buffer->roughness_buffer, render_buffer->specular, render_buffer->specular, Color(0, 0, 0, 1), p_environment, p_cam_projection, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED);
 		} else {
-			//just mix specular back
+			// just mix specular back
 			RENDER_TIMESTAMP("Merge Specular");
 			storage->get_effects()->merge_specular(render_buffer->color_fb, render_buffer->specular, render_buffer->msaa == RS::VIEWPORT_MSAA_DISABLED ? RID() : render_buffer->color, RID());
 		}
@@ -2505,7 +2505,7 @@ void RasterizerSceneHighEndRD::_render_shadow(RID p_framebuffer, InstanceBase **
 	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	{
-		//regular forward for now
+		// regular forward for now
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, p_use_dp_flip, pass_mode, true, RID(), RID());
 		RD::get_singleton()->draw_list_end();
@@ -2537,7 +2537,7 @@ void RasterizerSceneHighEndRD::_render_material(const Transform &p_cam_transform
 	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	{
-		//regular forward for now
+		// regular forward for now
 		Vector<Color> clear;
 		clear.push_back(Color(0, 0, 0, 0));
 		clear.push_back(Color(0, 0, 0, 0));
@@ -2747,7 +2747,7 @@ void RasterizerSceneHighEndRD::_setup_view_dependant_uniform_set(RID p_shadow_at
 		RD::get_singleton()->free(view_dependant_uniform_set);
 	}
 
-	//default render buffer and scene state uniform set
+	// default render buffer and scene state uniform set
 
 	Vector<RD::Uniform> uniforms;
 
@@ -2889,7 +2889,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 
 		uint32_t uniform_max_size = RD::get_singleton()->limit_get(RD::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
 
-		{ //reflections
+		{ // reflections
 			uint32_t reflection_buffer_size;
 			if (uniform_max_size < 65536) {
 				//Yes, you guessed right, ARM again
@@ -2904,12 +2904,12 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 			defines += "\n#define MAX_REFLECTION_DATA_STRUCTS " + itos(scene_state.max_reflections) + "\n";
 		}
 
-		{ //lights
+		{ // lights
 			scene_state.max_lights = MIN(1024 * 1024, uniform_max_size) / sizeof(LightData); //1mb of lights
 			uint32_t light_buffer_size = scene_state.max_lights * sizeof(LightData);
 			scene_state.lights = memnew_arr(LightData, scene_state.max_lights);
 			scene_state.light_buffer = RD::get_singleton()->storage_buffer_create(light_buffer_size);
-			//defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(scene_state.max_lights) + "\n";
+			// defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(scene_state.max_lights) + "\n";
 
 			scene_state.max_directional_lights = 8;
 			uint32_t directional_light_buffer_size = scene_state.max_directional_lights * sizeof(DirectionalLightData);
@@ -2918,7 +2918,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 			defines += "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(scene_state.max_directional_lights) + "\n";
 		}
 
-		{ //giprobes
+		{ // giprobes
 			int slot_count = gi_probe_get_slots().size();
 			if (gi_probe_is_anisotropic()) {
 				slot_count *= 3;
@@ -2948,7 +2948,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 			defines += "\n#define MAX_GI_PROBES " + itos(scene_state.max_gi_probes) + "\n";
 		}
 
-		{ //decals
+		{ // decals
 			scene_state.max_decals = MIN(1024 * 1024, uniform_max_size) / sizeof(DecalData); //1mb of decals
 			uint32_t decal_buffer_size = scene_state.max_decals * sizeof(DecalData);
 			scene_state.decals = memnew_arr(DecalData, scene_state.max_decals);
@@ -2974,7 +2974,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 	storage->material_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_3D, _create_material_funcs);
 
 	{
-		//shader compiler
+		// shader compiler
 		ShaderCompilerRD::DefaultIdentifierActions actions;
 
 		actions.renames["WORLD_MATRIX"] = "world_matrix";
@@ -2997,7 +2997,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.renames["POINT_SIZE"] = "gl_PointSize";
 		actions.renames["INSTANCE_ID"] = "gl_InstanceIndex";
 
-		//builtins
+		// builtins
 
 		actions.renames["TIME"] = "scene_data.time";
 		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
@@ -3035,7 +3035,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		actions.renames["DEPTH"] = "gl_FragDepth";
 		actions.renames["OUTPUT_IS_SRGB"] = "true";
 
-		//for light
+		// for light
 		actions.renames["VIEW"] = "view";
 		actions.renames["LIGHT_COLOR"] = "light_color";
 		actions.renames["LIGHT"] = "light";
@@ -3119,7 +3119,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		shader.compiler.initialize(actions);
 	}
 
-	//render list
+	// render list
 	render_list.max_elements = GLOBAL_DEF_RST("rendering/limits/rendering/max_renderable_elements", (int)128000);
 	render_list.init();
 	render_pass = 0;
@@ -3134,7 +3134,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 	scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO));
 
 	{
-		//default material and shader
+		// default material and shader
 		default_shader = storage->shader_create();
 		storage->shader_set_code(default_shader, "shader_type spatial; void vertex() { ROUGHNESS = 0.8; } void fragment() { ALBEDO=vec3(0.6); ROUGHNESS=0.8; METALLIC=0.2; } \n");
 		default_material = storage->material_create();
@@ -3191,7 +3191,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 		default_radiance_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, RADIANCE_UNIFORM_SET);
 	}
 
-	{ //render buffers
+	{ // render buffers
 		Vector<RD::Uniform> uniforms;
 		for (int i = 0; i < 5; i++) {
 			RD::Uniform u;
@@ -3211,7 +3211,7 @@ RasterizerSceneHighEndRD::RasterizerSceneHighEndRD(RasterizerStorageRD *p_storag
 RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
 	directional_shadow_atlas_set_size(0);
 
-	//clear base uniform set if still valid
+	// clear base uniform set if still valid
 	if (view_dependant_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(view_dependant_uniform_set)) {
 		RD::get_singleton()->free(view_dependant_uniform_set);
 	}

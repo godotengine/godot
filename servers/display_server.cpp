@@ -163,7 +163,7 @@ float DisplayServer::screen_get_scale(int p_screen) const {
 };
 
 bool DisplayServer::screen_is_touchscreen(int p_screen) const {
-	//return false;
+	// return false;
 	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
 }
 
@@ -286,9 +286,9 @@ void DisplayServer::_set_use_vsync(bool p_enable) {
 }
 void DisplayServer::vsync_set_enabled(bool p_enable) {
 	vsync_enabled = p_enable;
-	if (switch_vsync_function) { //if a function was set, use function
+	if (switch_vsync_function) { // if a function was set, use function
 		switch_vsync_function(p_enable);
-	} else { //otherwise just call here
+	} else { // otherwise just call here
 		_set_use_vsync(p_enable);
 	}
 }

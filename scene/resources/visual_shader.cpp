@@ -610,7 +610,7 @@ void VisualShader::set_mode(Mode p_mode) {
 		return;
 	}
 
-	//erase input/output connections
+	// erase input/output connections
 	modes.clear();
 	flags.clear();
 	shader_mode = p_mode;
@@ -621,7 +621,7 @@ void VisualShader::set_mode(Mode p_mode) {
 			Ref<VisualShaderNodeInput> input = E->get().node;
 			if (input.is_valid()) {
 				input->shader_mode = shader_mode;
-				//input->input_index = 0;
+				// input->input_index = 0;
 			}
 		}
 
@@ -717,7 +717,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	global_code += "\n";
 	global_code += global_expressions;
 
-	//make it faster to go around through shader
+	// make it faster to go around through shader
 	VMap<ConnectionKey, const List<Connection>::Element *> input_connections;
 	VMap<ConnectionKey, const List<Connection>::Element *> output_connections;
 
@@ -752,7 +752,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	}
 	code += "}\n";
 
-	//set code secretly
+	// set code secretly
 	global_code += "\n\n";
 	String final_code = global_code;
 	final_code += global_code_per_node;
@@ -814,7 +814,7 @@ String VisualShader::validate_port_name(const String &p_name, const List<String>
 
 String VisualShader::validate_uniform_name(const String &p_name, const Ref<VisualShaderNodeUniform> &p_uniform) const {
 
-	String name = p_name; //validate name first
+	String name = p_name; // validate name first
 	while (name.length() && !IS_INITIAL_CHAR(name[0])) {
 		name = name.substr(1, name.length() - 1);
 	}
@@ -845,7 +845,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 		for (int i = 0; i < TYPE_MAX; i++) {
 			for (const Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
 				Ref<VisualShaderNodeUniform> node = E->get().node;
-				if (node == p_uniform) { //do not test on self
+				if (node == p_uniform) { // do not test on self
 					continue;
 				}
 				if (node.is_valid() && node->get_uniform_name() == name) {
@@ -859,7 +859,7 @@ String VisualShader::validate_uniform_name(const String &p_name, const Ref<Visua
 		}
 
 		if (exists) {
-			//remove numbers, put new and try again
+			// remove numbers, put new and try again
 			attempt++;
 			while (name.length() && name[name.length() - 1] >= '0' && name[name.length() - 1] <= '9') {
 				name = name.substr(0, name.length() - 1);
@@ -909,7 +909,7 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		String mode = name.get_slicec('/', 1);
 		int value = p_value;
 		if (value == 0) {
-			modes.erase(mode); //means it's default anyway, so don't store it
+			modes.erase(mode); // means it's default anyway, so don't store it
 		} else {
 			modes[mode] = value;
 		}
@@ -1033,9 +1033,9 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
-	//mode
+	// mode
 	p_list->push_back(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Node3D,CanvasItem,Particles,Sky"));
-	//render modes
+	// render modes
 
 	Map<String, String> blend_mode_enums;
 	Set<String> toggles;
@@ -1102,7 +1102,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[node].node;
 
-	//check inputs recursively first
+	// check inputs recursively first
 	int input_count = vsnode->get_input_port_count();
 	for (int i = 0; i < input_count; i++) {
 		ConnectionKey ck;
@@ -1135,7 +1135,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		ck.port = i;
 
 		if (input_connections.has(ck)) {
-			//connected to something, use that output
+			// connected to something, use that output
 			int from_node = input_connections[ck]->get().from_node;
 			int from_port = input_connections[ck]->get().from_port;
 
@@ -1215,7 +1215,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				bool err = false;
 				code += "\tmat4 " + inputs[i] + " = " + String("mat4(vec4(%.5f, %.5f, %.5f, 0.0), vec4(%.5f, %.5f, %.5f, 0.0), vec4(%.5f, %.5f, %.5f, 0.0), vec4(%.5f, %.5f, %.5f, 1.0));\n").sprintf(values, &err);
 			} else {
-				//will go empty, node is expected to know what it is doing at this point and handle it
+				// will go empty, node is expected to know what it is doing at this point and handle it
 			}
 		}
 	}
@@ -1307,7 +1307,7 @@ void VisualShader::_update_shader() const {
 	String render_mode;
 
 	{
-		//fill render mode enums
+		// fill render mode enums
 		int idx = 0;
 		while (render_mode_enums[idx].string) {
 
@@ -1335,7 +1335,7 @@ void VisualShader::_update_shader() const {
 			idx++;
 		}
 
-		//fill render mode flags
+		// fill render mode flags
 		for (int i = 0; i < ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode)).size(); i++) {
 
 			String mode = ShaderTypes::get_singleton()->get_modes(RenderingServer::ShaderMode(shader_mode))[i];
@@ -1382,7 +1382,7 @@ void VisualShader::_update_shader() const {
 			continue;
 		}
 
-		//make it faster to go around through shader
+		// make it faster to go around through shader
 		VMap<ConnectionKey, const List<Connection>::Element *> input_connections;
 		VMap<ConnectionKey, const List<Connection>::Element *> output_connections;
 
@@ -1410,7 +1410,7 @@ void VisualShader::_update_shader() const {
 		code += "}\n";
 	}
 
-	//set code secretly
+	// set code secretly
 	global_code += "\n\n";
 	String final_code = global_code;
 	final_code += global_code_per_node;
@@ -1444,7 +1444,7 @@ void VisualShader::_queue_update() {
 }
 
 void VisualShader::_input_type_changed(Type p_type, int p_id) {
-	//erase connections using this input, as type changed
+	// erase connections using this input, as type changed
 	Graph *g = &graph[p_type];
 
 	for (List<Connection>::Element *E = g->connections.front(); E;) {
@@ -1804,7 +1804,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 				case PORT_TYPE_BOOLEAN: {
 					code = "\t" + p_output_vars[0] + " = false;\n";
 				} break;
-				default: //default (none found) is scalar
+				default: // default (none found) is scalar
 					break;
 			}
 		}
@@ -1825,7 +1825,7 @@ String VisualShaderNodeInput::generate_code(Shader::Mode p_mode, VisualShader::T
 		}
 
 		if (code == String()) {
-			code = "\t" + p_output_vars[0] + " = 0.0;\n"; //default (none found) is scalar
+			code = "\t" + p_output_vars[0] + " = 0.0;\n"; // default (none found) is scalar
 		}
 
 		return code;

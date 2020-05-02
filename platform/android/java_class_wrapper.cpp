@@ -70,7 +70,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 			switch (ptypes[i]) {
 
 				case ARG_TYPE_VOID: {
-					//bug?
+					// bug?
 				} break;
 				case ARG_TYPE_BOOLEAN: {
 					if (p_args[i]->get_type() != Variant::BOOL)
@@ -117,13 +117,13 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 							if (Object::cast_to<JavaObject>(ref.ptr())) {
 
 								Ref<JavaObject> jo = ref;
-								//could be faster
+								// could be faster
 								jclass c = env->FindClass(E->get().param_sigs[i].operator String().utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
 
 									arg_expected = Variant::OBJECT;
 								} else {
-									//ok
+									// ok
 								}
 							} else {
 								arg_expected = Variant::OBJECT;
@@ -156,7 +156,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 	}
 
 	if (!method)
-		return true; //no version convinces
+		return true; // no version convinces
 
 	r_error.error = Callable::CallError::CALL_OK;
 
@@ -172,7 +172,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 		switch (method->param_types[i]) {
 			case ARG_TYPE_VOID: {
-				//can't happen
+				// can't happen
 				argv[i].l = nullptr; //I hope this works
 			} break;
 
@@ -563,7 +563,7 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 			return false;
 		}
 		if (str_type.begins_with("L")) {
-			str_type = str_type.substr(1, str_type.length() - 2); //ok it's a class
+			str_type = str_type.substr(1, str_type.length() - 2); // ok it's a class
 		}
 	}
 
@@ -622,7 +622,7 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 		t |= JavaClass::ARG_TYPE_DOUBLE | JavaClass::ARG_NUMBER_CLASS_BIT;
 		strsig += "Ljava/lang/Double;";
 	} else {
-		//a class likely
+		// a class likely
 		strsig += "L" + str_type.replace(".", "/") + ";";
 		t |= JavaClass::ARG_TYPE_CLASS;
 	}
@@ -635,7 +635,7 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &var, uint32_t p_sig) {
 
 	if (!obj) {
-		var = Variant(); //seems null is just null...
+		var = Variant(); // seems null is just null...
 		return true;
 	}
 
@@ -1053,7 +1053,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 	jclass bclass = env->FindClass(p_class.utf8().get_data());
 	ERR_FAIL_COND_V(!bclass, Ref<JavaClass>());
 
-	//jmethodID getDeclaredMethods = env->GetMethodID(bclass,"getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
+	// jmethodID getDeclaredMethods = env->GetMethodID(bclass,"getDeclaredMethods", "()[Ljava/lang/reflect/Method;");
 
 	//ERR_FAIL_COND_V(!getDeclaredMethods,Ref<JavaClass>());
 
@@ -1080,7 +1080,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 
 		if (!(mods & 0x0001)) {
 			env->DeleteLocalRef(obj);
-			continue; //not public bye
+			continue; // not public bye
 		}
 
 		jobjectArray param_types = (jobjectArray)env->CallObjectMethod(obj, getParameterTypes);
@@ -1203,7 +1203,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String &p_class) {
 		String str_field = jstring_to_string(name, env);
 		env->DeleteLocalRef(name);
 		int mods = env->CallIntMethod(obj, Field_getModifiers);
-		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { //static final public!
+		if ((mods & 0x8) && (mods & 0x10) && (mods & 0x1)) { // static final public!
 
 			jobject objc = env->CallObjectMethod(obj, Field_get, nullptr);
 			if (objc) {

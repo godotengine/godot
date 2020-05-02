@@ -216,16 +216,16 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 			return false;
 		}
 		case RS::GLOBAL_VAR_TYPE_BVEC2: {
-			return 0; //bits
+			return 0; // bits
 		}
 		case RS::GLOBAL_VAR_TYPE_BVEC3: {
-			return 0; //bits
+			return 0; // bits
 		}
 		case RS::GLOBAL_VAR_TYPE_BVEC4: {
-			return 0; //bits
+			return 0; // bits
 		}
 		case RS::GLOBAL_VAR_TYPE_INT: {
-			return 0; //bits
+			return 0; // bits
 		}
 		case RS::GLOBAL_VAR_TYPE_IVEC2: {
 			return Vector2i();

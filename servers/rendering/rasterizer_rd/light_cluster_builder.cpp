@@ -36,7 +36,7 @@ void LightClusterBuilder::begin(const Transform &p_view_transform, const CameraM
 	z_near = -projection.get_z_near();
 	z_far = -projection.get_z_far();
 
-	//reset counts
+	// reset counts
 	light_count = 0;
 	refprobe_count = 0;
 	decal_count = 0;
@@ -50,7 +50,7 @@ void LightClusterBuilder::bake_cluster() {
 
 	uint8_t *cluster_dataw = cluster_data.ptrw();
 	Cell *cluster_data_ptr = (Cell *)cluster_dataw;
-	//clear the cluster
+	// clear the cluster
 	zeromem(cluster_data_ptr, (width * height * depth * sizeof(Cell)));
 
 	/* Step 1, create cell positions and count them */
@@ -63,7 +63,7 @@ void LightClusterBuilder::bake_cluster() {
 		int to_slice = Math::floor((z_near - item.aabb.position.z) / slice_depth);
 
 		if (from_slice >= (int)depth || to_slice < 0) {
-			continue; //sorry no go
+			continue; // sorry no go
 		}
 
 		from_slice = MAX(0, from_slice);
@@ -99,8 +99,8 @@ void LightClusterBuilder::bake_cluster() {
 			int far_to_x = int(Math::floor((proj_max.x * 0.5 + 0.5) * width));
 			int far_to_y = int(Math::floor((-proj_min.y * 0.5 + 0.5) * height));
 
-			//print_line(itos(j) + " near - " + Vector2i(near_from_x, near_from_y) + " -> " + Vector2i(near_to_x, near_to_y));
-			//print_line(itos(j) + " far - " + Vector2i(far_from_x, far_from_y) + " -> " + Vector2i(far_to_x, far_to_y));
+			// print_line(itos(j) + " near - " + Vector2i(near_from_x, near_from_y) + " -> " + Vector2i(near_to_x, near_to_y));
+			// print_line(itos(j) + " far - " + Vector2i(far_from_x, far_from_y) + " -> " + Vector2i(far_to_x, far_to_y));
 
 			int from_x = MIN(near_from_x, far_from_x);
 			int from_y = MIN(near_from_y, far_from_y);
@@ -116,7 +116,7 @@ void LightClusterBuilder::bake_cluster() {
 			int dx = MIN((int)width - 1, to_x);
 			int dy = MIN((int)height - 1, to_y);
 
-			//print_line(itos(j) + " - " + Vector2i(sx, sy) + " -> " + Vector2i(dx, dy));
+			// print_line(itos(j) + " - " + Vector2i(sx, sy) + " -> " + Vector2i(dx, dy));
 
 			for (int x = sx; x <= dx; x++) {
 				for (int y = sy; y <= dy; y++) {
@@ -139,9 +139,9 @@ void LightClusterBuilder::bake_cluster() {
 
 					sort_id_count++;
 
-					//for now, only count
+					// for now, only count
 					cluster_data_ptr[offset].item_pointers[item.type]++;
-					//print_line("at offset " + itos(offset) + " value: " + itos(cluster_data_ptr[offset].item_pointers[item.type]));
+					// print_line("at offset " + itos(offset) + " value: " + itos(cluster_data_ptr[offset].item_pointers[item.type]));
 				}
 			}
 		}
@@ -152,13 +152,13 @@ void LightClusterBuilder::bake_cluster() {
 	uint32_t offset = 0;
 	for (uint32_t i = 0; i < (width * height * depth); i++) {
 		for (int j = 0; j < ITEM_TYPE_MAX; j++) {
-			uint32_t count = cluster_data_ptr[i].item_pointers[j]; //save count
-			cluster_data_ptr[i].item_pointers[j] = offset; //replace count by pointer
-			offset += count; //increase offset by count;
+			uint32_t count = cluster_data_ptr[i].item_pointers[j]; // save count
+			cluster_data_ptr[i].item_pointers[j] = offset; // replace count by pointer
+			offset += count; // increase offset by count;
 		}
 	}
 
-	//print_line("offset: " + itos(offset));
+	// print_line("offset: " + itos(offset));
 	/* Step 3, Place item lists */
 
 	uint32_t *ids_ptr = ids.ptrw();
@@ -213,7 +213,7 @@ RID LightClusterBuilder::get_cluster_indices_buffer() const {
 }
 
 LightClusterBuilder::LightClusterBuilder() {
-	//initialize accumulators to something
+	// initialize accumulators to something
 	lights = (LightData *)memalloc(sizeof(LightData) * 1024);
 	light_max = 1024;
 

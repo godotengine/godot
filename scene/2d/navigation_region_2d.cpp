@@ -256,7 +256,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 		}
 	}
 
-	outside_point += Vector2(0.7239784, 0.819238); //avoid precision issues
+	outside_point += Vector2(0.7239784, 0.819238); // avoid precision issues
 
 	for (int i = 0; i < outlines.size(); i++) {
 
@@ -267,11 +267,11 @@ void NavigationPolygon::make_polygons_from_outlines() {
 		const Vector2 *r = ol.ptr();
 
 		int interscount = 0;
-		//test if this is an outer outline
+		// test if this is an outer outline
 		for (int k = 0; k < outlines.size(); k++) {
 
 			if (i == k)
-				continue; //no self intersect
+				continue; // no self intersect
 
 			Vector<Vector2> ol2 = outlines[k];
 			int olsize2 = ol2.size();
@@ -306,7 +306,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	}
 
 	TriangulatorPartition tpart;
-	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
+	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { // failed!
 		ERR_PRINT("NavigationPolygon: Convex partition failed!");
 		return;
 	}

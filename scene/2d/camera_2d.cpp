@@ -41,7 +41,7 @@ void Camera2D::_update_scroll() {
 		return;
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		update(); //will just be drawn
+		update(); // will just be drawn
 		return;
 	}
 
@@ -163,7 +163,7 @@ Transform2D Camera2D::get_camera_transform() {
 			float c = smoothing * (process_mode == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
-			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
+			// camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
 		} else {
 
 			ret_camera_pos = smoothed_camera_pos = camera_pos;
@@ -579,7 +579,7 @@ float Camera2D::get_h_offset() const {
 }
 
 void Camera2D::_set_old_smoothing(float p_enable) {
-	//compatibility
+	// compatibility
 	if (p_enable > 0) {
 		smoothing_enabled = true;
 		set_follow_smoothing(p_enable);

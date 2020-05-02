@@ -86,7 +86,7 @@ void EditorHelp::_class_list_select(const String &p_select) {
 
 void EditorHelp::_class_desc_select(const String &p_select) {
 
-	if (p_select.begins_with("$")) { //enum
+	if (p_select.begins_with("$")) { // enum
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
 		if (select.find(".") != -1) {
@@ -205,9 +205,9 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 			t = t.replace("[]", "");
 		}
 		if (p_enum.empty()) {
-			class_desc->push_meta("#" + t); //class
+			class_desc->push_meta("#" + t); // class
 		} else {
-			class_desc->push_meta("$" + p_enum); //class
+			class_desc->push_meta("$" + p_enum); // class
 		}
 	}
 	class_desc->add_text(t);
@@ -215,7 +215,7 @@ void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 		class_desc->pop();
 		if (add_array) {
 			class_desc->add_text(" ");
-			class_desc->push_meta("#Array"); //class
+			class_desc->push_meta("#Array"); // class
 			class_desc->add_text("[]");
 			class_desc->pop();
 		}
@@ -242,7 +242,7 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 
 void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview) {
 
-	method_line[p_method.name] = class_desc->get_line_count() - 2; //gets overridden if description
+	method_line[p_method.name] = class_desc->get_line_count() - 2; // gets overridden if description
 
 	const bool is_vararg = p_method.qualifiers.find("vararg") != -1;
 
@@ -254,8 +254,8 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	_add_type(p_method.return_type, p_method.return_enum);
 
 	if (p_overview) {
-		class_desc->pop(); //align
-		class_desc->pop(); //cell
+		class_desc->pop(); // align
+		class_desc->pop(); // cell
 		class_desc->push_cell();
 	} else {
 		class_desc->add_text(" ");
@@ -270,7 +270,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	class_desc->pop();
 
 	if (p_overview && p_method.description != "") {
-		class_desc->pop(); //meta
+		class_desc->pop(); // meta
 	}
 
 	class_desc->push_color(symbol_color);
@@ -320,7 +320,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	if (p_overview)
-		class_desc->pop(); //cell
+		class_desc->pop(); // cell
 }
 
 Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
@@ -335,7 +335,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 	description_line = 0;
 
 	if (p_class == edited_class)
-		return OK; //already there
+		return OK; // already there
 
 	edited_class = p_class;
 	_update_doc();
@@ -354,7 +354,7 @@ void EditorHelp::_update_doc() {
 
 	_init_colors();
 
-	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
+	DocData::ClassDoc cd = doc->class_list[edited_class]; // make a copy, so we can sort without worrying
 
 	Ref<Font> doc_font = get_theme_font("doc", "EditorFonts");
 	Ref<Font> doc_bold_font = get_theme_font("doc_bold", "EditorFonts");
@@ -529,7 +529,7 @@ void EditorHelp::_update_doc() {
 		class_desc->set_table_column_expand(1, 1);
 
 		for (int i = 0; i < cd.properties.size(); i++) {
-			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; // gets overridden if description
 
 			class_desc->push_cell();
 			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
@@ -591,7 +591,7 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 		}
 
-		class_desc->pop(); //table
+		class_desc->pop(); // table
 		class_desc->pop();
 		class_desc->pop(); // font
 		class_desc->add_newline();
@@ -644,9 +644,9 @@ void EditorHelp::_update_doc() {
 
 			if (any_previous && !m.empty()) {
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // cell
 				class_desc->push_cell();
-				class_desc->pop(); //cell
+				class_desc->pop(); // cell
 			}
 
 			String group_prefix;
@@ -664,9 +664,9 @@ void EditorHelp::_update_doc() {
 
 				if (is_new_group && pass == 1) {
 					class_desc->push_cell();
-					class_desc->pop(); //cell
+					class_desc->pop(); // cell
 					class_desc->push_cell();
-					class_desc->pop(); //cell
+					class_desc->pop(); // cell
 				}
 
 				if (m[i].description != "") {
@@ -679,7 +679,7 @@ void EditorHelp::_update_doc() {
 			any_previous = !m.empty();
 		}
 
-		class_desc->pop(); //table
+		class_desc->pop(); // table
 		class_desc->pop();
 		class_desc->pop(); // font
 		class_desc->add_newline();
@@ -702,7 +702,7 @@ void EditorHelp::_update_doc() {
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
 
-			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; // gets overridden if description
 
 			class_desc->push_cell();
 			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
@@ -770,7 +770,7 @@ void EditorHelp::_update_doc() {
 
 		for (int i = 0; i < cd.signals.size(); i++) {
 
-			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
+			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; // gets overridden if description
 			class_desc->push_font(doc_code_font); // monofont
 			class_desc->push_color(headline_color);
 			_add_text(cd.signals[i].name);
@@ -900,7 +900,7 @@ void EditorHelp::_update_doc() {
 					class_desc->pop();
 					if (enum_list[i].description != "") {
 						class_desc->push_font(doc_font);
-						//class_desc->add_text("  ");
+						// class_desc->add_text("  ");
 						class_desc->push_indent(1);
 						class_desc->push_color(comment_color);
 						_add_text(DTR(enum_list[i].description));
@@ -1063,12 +1063,12 @@ void EditorHelp::_update_doc() {
 				class_desc->push_font(doc_code_font);
 				class_desc->push_color(text_color);
 				class_desc->add_text(cd.properties[i].getter + "()");
-				class_desc->pop(); //color
+				class_desc->pop(); // color
 				class_desc->push_color(comment_color);
 				class_desc->add_text(" getter");
-				class_desc->pop(); //color
-				class_desc->pop(); //font
-				class_desc->pop(); //cell
+				class_desc->pop(); // color
+				class_desc->pop(); // font
+				class_desc->pop(); // cell
 			}
 
 			class_desc->pop(); // table
@@ -1170,7 +1170,7 @@ void EditorHelp::_help_callback(const String &p_topic) {
 	if (p_topic.get_slice_count(":") == 3)
 		name = p_topic.get_slice(":", 2);
 
-	_request_help(clss); //first go to class
+	_request_help(clss); // first go to class
 
 	int line = 0;
 
@@ -1256,7 +1256,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		}
 
 		if (brk_pos == bbcode.length())
-			break; //nothing else to add
+			break; // nothing else to add
 
 		int brk_end = bbcode.find("]", brk_pos + 1);
 
@@ -1322,19 +1322,19 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		} else if (tag == "b") {
 
-			//use bold font
+			// use bold font
 			p_rt->push_font(doc_bold_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "i") {
 
-			//use italics font
+			// use italics font
 			p_rt->push_color(font_color_hl);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code" || tag == "codeblock") {
 
-			//use monospace font
+			// use monospace font
 			p_rt->push_font(doc_code_font);
 			p_rt->push_color(code_color);
 			code_tag = true;
@@ -1342,7 +1342,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "kbd") {
 
-			//use keyboard font with custom color
+			// use keyboard font with custom color
 			p_rt->push_font(doc_kbd_font);
 			p_rt->push_color(kbd_color);
 			code_tag = true; // though not strictly a code tag, logic is similar
@@ -1350,24 +1350,24 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
 
-			//align to center
+			// align to center
 			p_rt->push_align(RichTextLabel::ALIGN_CENTER);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
 
-			//force a line break
+			// force a line break
 			p_rt->add_newline();
 			pos = brk_end + 1;
 		} else if (tag == "u") {
 
-			//use underline
+			// use underline
 			p_rt->push_underline();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
 
-			//use strikethrough
+			// use strikethrough
 			p_rt->push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
@@ -1441,7 +1441,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			else if (col == "yellow")
 				color = Color(1, 1, 0);
 			else
-				color = Color(0, 0, 0); //base_color;
+				color = Color(0, 0, 0); // base_color;
 
 			p_rt->push_color(color);
 			pos = brk_end + 1;
@@ -1463,7 +1463,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 		} else {
 
-			p_rt->add_text("["); //ignore
+			p_rt->add_text("["); // ignore
 			pos = brk_pos + 1;
 		}
 	}
@@ -1479,7 +1479,7 @@ void EditorHelp::generate_doc() {
 	doc->generate(true);
 	DocData compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
-	doc->merge_from(compdoc); //ensure all is up to date
+	doc->merge_from(compdoc); // ensure all is up to date
 }
 
 void EditorHelp::_notification(int p_what) {
@@ -1598,7 +1598,7 @@ void EditorHelpBit::_go_to_help(String p_what) {
 
 void EditorHelpBit::_meta_clicked(String p_select) {
 
-	if (p_select.begins_with("$")) { //enum
+	if (p_select.begins_with("$")) { // enum
 
 		String select = p_select.substr(1, p_select.length());
 		String class_name;
@@ -1618,7 +1618,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 		String m = p_select.substr(1, p_select.length());
 
 		if (m.find(".") != -1)
-			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); //must go somewhere else
+			_go_to_help("class_method:" + m.get_slice(".", 0) + ":" + m.get_slice(".", 0)); // must go somewhere else
 	}
 }
 

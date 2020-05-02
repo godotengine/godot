@@ -78,13 +78,13 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 		p = p->GetNext();
 	}
 
-	//turn the result into simply polygon (AKA, fix overlap)
+	// turn the result into simply polygon (AKA, fix overlap)
 
-	//clamp into the specified rect
+	// clamp into the specified rect
 	ClipperLib::Clipper cl;
 	cl.StrictlySimple(true);
 	cl.AddPath(p->Contour, ClipperLib::ptSubject, true);
-	//create the clipping rect
+	// create the clipping rect
 	ClipperLib::Path clamp;
 	clamp.push_back(ClipperLib::IntPoint(0, 0));
 	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, 0));
@@ -226,9 +226,9 @@ void Sprite2DEditor::_update_mesh_data() {
 				Vector2 vtx = lines[j][i];
 				computed_uv.push_back(vtx / img_size);
 
-				vtx -= rect.position; //offset by rect position
+				vtx -= rect.position; // offset by rect position
 
-				//flip if flipped
+				// flip if flipped
 				if (node->is_flipped_h())
 					vtx.x = rect.size.x - vtx.x - 1.0;
 				if (node->is_flipped_v())
@@ -274,9 +274,9 @@ void Sprite2DEditor::_update_mesh_data() {
 
 				ol.write[i] = vtx;
 
-				vtx -= rect.position; //offset by rect position
+				vtx -= rect.position; // offset by rect position
 
-				//flip if flipped
+				// flip if flipped
 				if (node->is_flipped_h())
 					vtx.x = rect.size.x - vtx.x - 1.0;
 				if (node->is_flipped_v())
@@ -604,7 +604,7 @@ Sprite2DEditorPlugin::Sprite2DEditorPlugin(EditorNode *p_node) {
 	editor->get_viewport()->add_child(sprite_editor);
 	make_visible(false);
 
-	//sprite_editor->options->hide();
+	// sprite_editor->options->hide();
 }
 
 Sprite2DEditorPlugin::~Sprite2DEditorPlugin() {

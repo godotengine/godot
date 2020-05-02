@@ -319,11 +319,11 @@ String EditorFeatureProfileManager::_get_selected_profile() {
 void EditorFeatureProfileManager::_update_profile_list(const String &p_select_profile) {
 
 	String selected_profile;
-	if (p_select_profile == String()) { //default, keep
+	if (p_select_profile == String()) { // default, keep
 		if (profile_list->get_selected() >= 0) {
 			selected_profile = profile_list->get_item_metadata(profile_list->get_selected());
 			if (!FileAccess::exists(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(selected_profile + ".profile"))) {
-				selected_profile = String(); //does not exist
+				selected_profile = String(); // does not exist
 			}
 		}
 	} else {
@@ -502,7 +502,7 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 		class_item->select(0);
 	}
 	if (disabled) {
-		//class disabled, do nothing else (do not show further)
+		// class disabled, do nothing else (do not show further)
 		return;
 	}
 
@@ -667,17 +667,17 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	class_list->clear();
 
 	String profile = _get_selected_profile();
-	if (profile == String()) { //nothing selected, nothing edited
+	if (profile == String()) { // nothing selected, nothing edited
 		property_list->clear();
 		edited.unref();
 		return;
 	}
 
 	if (profile == current_profile) {
-		edited = current; //reuse current profile (which is what editor uses)
-		ERR_FAIL_COND(current.is_null()); //nothing selected, current should never be null
+		edited = current; // reuse current profile (which is what editor uses)
+		ERR_FAIL_COND(current.is_null()); // nothing selected, current should never be null
 	} else {
-		//reload edited, if different from current
+		// reload edited, if different from current
 		edited.instance();
 		Error err = edited->load_from_file(EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile"));
 		ERR_FAIL_COND_MSG(err != OK, "Error when loading EditorSettings from file '" + EditorSettings::get_singleton()->get_feature_profiles_dir().plus_file(profile + ".profile") + "'.");
@@ -719,7 +719,7 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 
 void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths) {
 
-	//test it first
+	// test it first
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
 		profile.instance();
@@ -738,7 +738,7 @@ void EditorFeatureProfileManager::_import_profiles(const Vector<String> &p_paths
 		}
 	}
 
-	//do it second
+	// do it second
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<EditorFeatureProfile> profile;
 		profile.instance();
@@ -909,7 +909,7 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 	EDITOR_DEF("_default_feature_profile", "");
 
 	update_timer = memnew(Timer);
-	update_timer->set_wait_time(1); //wait a second before updating editor
+	update_timer->set_wait_time(1); // wait a second before updating editor
 	add_child(update_timer);
 	update_timer->connect("timeout", callable_mp(this, &EditorFeatureProfileManager::_emit_current_profile_changed));
 	update_timer->set_one_shot(true);

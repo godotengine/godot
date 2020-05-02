@@ -226,7 +226,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 	if (p_type_from == p_type_to)
 		return true;
-	if (p_type_to == NIL && p_type_from != NIL) //nil can convert to anything
+	if (p_type_to == NIL && p_type_from != NIL) // Anything can become Nil.
 		return true;
 
 	if (p_type_from == NIL) {
@@ -563,7 +563,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 	if (p_type_from == p_type_to)
 		return true;
-	if (p_type_to == NIL && p_type_from != NIL) //nil can convert to anything
+	if (p_type_to == NIL && p_type_from != NIL) // nil can convert to anything
 		return true;
 
 	if (p_type_from == NIL) {
@@ -886,7 +886,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 bool Variant::operator==(const Variant &p_variant) const {
 
-	if (type != p_variant.type) //evaluation of operator== needs to be more strict
+	if (type != p_variant.type) // evaluation of operator== needs to be more strict
 		return false;
 	bool v;
 	Variant r;
@@ -896,7 +896,7 @@ bool Variant::operator==(const Variant &p_variant) const {
 
 bool Variant::operator!=(const Variant &p_variant) const {
 
-	if (type != p_variant.type) //evaluation of operator== needs to be more strict
+	if (type != p_variant.type) // evaluation of operator== needs to be more strict
 		return true;
 	bool v;
 	Variant r;
@@ -905,7 +905,7 @@ bool Variant::operator!=(const Variant &p_variant) const {
 }
 
 bool Variant::operator<(const Variant &p_variant) const {
-	if (type != p_variant.type) //if types differ, then order by type first
+	if (type != p_variant.type) // if types differ, then order by type first
 		return type < p_variant.type;
 	bool v;
 	Variant r;
@@ -1473,7 +1473,7 @@ void Variant::clear() {
 		case OBJECT: {
 
 			if (_get_obj().id.is_reference()) {
-				//we are safe that there is a reference here
+				// we are safe that there is a reference here
 				Reference *reference = static_cast<Reference *>(_get_obj().obj);
 				if (reference->unreference()) {
 					memdelete(reference);
@@ -1823,7 +1823,7 @@ String Variant::stringify(List<const void *> &stack) const {
 		case VECTOR3I: return "(" + operator Vector3i() + ")";
 		case PLANE:
 			return operator Plane();
-		//case QUAT:
+		// case QUAT:
 		case AABB: return operator ::AABB();
 		case QUAT: return "(" + operator Quat() + ")";
 		case BASIS: {
@@ -1864,7 +1864,7 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			stack.push_back(d.id());
 
-			//const String *K=nullptr;
+			// const String *K=nullptr;
 			String str("{");
 			List<Variant> keys;
 			d.get_key_list(&keys);
@@ -2994,7 +2994,7 @@ void Variant::operator=(const Variant &p_variant) {
 		case OBJECT: {
 
 			if (_get_obj().id.is_reference()) {
-				//we are safe that there is a reference here
+				// we are safe that there is a reference here
 				Reference *reference = static_cast<Reference *>(_get_obj().obj);
 				if (reference->unreference()) {
 					memdelete(reference);

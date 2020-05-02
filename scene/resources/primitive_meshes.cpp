@@ -140,11 +140,11 @@ Array PrimitiveMesh::surface_get_arrays(int p_surface) const {
 }
 
 Dictionary PrimitiveMesh::surface_get_lods(int p_surface) const {
-	return Dictionary(); //not really supported
+	return Dictionary(); // not really supported
 }
 Array PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) const {
 
-	return Array(); //not really supported
+	return Array(); // not really supported
 }
 
 uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {

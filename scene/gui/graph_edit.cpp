@@ -130,7 +130,7 @@ void GraphEdit::_scroll_moved(double) {
 	top_layer->update();
 	update();
 
-	if (!setting_scroll_ofs) { //in godot, signals on change value are avoided as a convention
+	if (!setting_scroll_ofs) { // in godot, signals on change value are avoided as a convention
 		emit_signal("scroll_offset_changed", get_scroll_ofs());
 	}
 }
@@ -253,7 +253,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 
 	Control::add_child_notify(p_child);
 
-	top_layer->call_deferred("raise"); //top layer always on top!
+	top_layer->call_deferred("raise"); // top layer always on top!
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
@@ -269,7 +269,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 
 	Control::remove_child_notify(p_child);
 	if (is_inside_tree()) {
-		top_layer->call_deferred("raise"); //top layer always on top!
+		top_layer->call_deferred("raise"); // top layer always on top!
 	}
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
@@ -308,7 +308,7 @@ void GraphEdit::_notification(int p_what) {
 		draw_style_box(get_theme_stylebox("bg"), Rect2(Point2(), get_size()));
 
 		if (is_using_snap()) {
-			//draw grid
+			// draw grid
 
 			int snap = get_snap();
 
@@ -403,7 +403,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_hot_zone(pos, mpos)) {
 
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
-						//check disconnect
+						// check disconnect
 						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 
 							if (E->get().from == gn->get_name() && E->get().from_port == j) {
@@ -421,7 +421,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									just_disconnected = true;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port);
-									to = get_node(String(connecting_from)); //maybe it was erased
+									to = get_node(String(connecting_from)); // maybe it was erased
 									if (Object::cast_to<GraphNode>(to)) {
 										connecting = true;
 									}
@@ -450,7 +450,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				if (is_in_hot_zone(pos, mpos)) {
 
 					if (right_disconnects || valid_right_disconnect_types.has(gn->get_connection_input_type(j))) {
-						//check disconnect
+						// check disconnect
 						for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 
 							if (E->get().to == gn->get_name() && E->get().to_port == j) {
@@ -468,7 +468,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 									just_disconnected = true;
 
 									emit_signal("disconnection_request", E->get().from, E->get().from_port, E->get().to, E->get().to_port);
-									fr = get_node(String(connecting_from)); //maybe it was erased
+									fr = get_node(String(connecting_from)); // maybe it was erased
 									if (Object::cast_to<GraphNode>(fr)) {
 										connecting = true;
 									}
@@ -582,7 +582,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 		return false;
 
 	if (!p_control->has_point(pos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
-		//test children
+		// test children
 		for (int i = 0; i < p_control->get_child_count(); i++) {
 			Control *subchild = Object::cast_to<Control>(p_control->get_child(i));
 			if (!subchild)
@@ -609,7 +609,7 @@ bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
 		Rect2 rect = child->get_rect();
 		if (rect.has_point(p_mouse_pos)) {
 
-			//check sub-controls
+			// check sub-controls
 			Vector2 subpos = p_mouse_pos - rect.position;
 
 			for (int j = 0; j < child->get_child_count(); j++) {
@@ -663,7 +663,7 @@ void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, 
 
 void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const Vector2 &p_to, const Color &p_color, const Color &p_to_color) {
 
-	//cubic bezier code
+	// cubic bezier code
 	float diff = p_to.x - p_from.x;
 	float cp_offset;
 	int cp_len = get_theme_constant("bezier_len_pos");
@@ -698,7 +698,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 void GraphEdit::_connections_layer_draw() {
 
 	Color activity_color = get_theme_color("activity");
-	//draw connections
+	// draw connections
 	List<List<Connection>::Element *> to_erase;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 
@@ -813,7 +813,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		just_selected = true;
 		// TODO: Remove local mouse pos hack if/when InputEventMouseMotion is fixed to support floats
-		//drag_accum+=Vector2(mm->get_relative().x,mm->get_relative().y);
+		// drag_accum+=Vector2(mm->get_relative().x,mm->get_relative().y);
 		drag_accum = get_local_mouse_position() - drag_origin;
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
@@ -887,7 +887,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		if (b->get_button_index() == BUTTON_LEFT && !b->is_pressed() && dragging) {
 			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
-				//deselect current node
+				// deselect current node
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 
@@ -1027,13 +1027,13 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_UP && b->is_pressed()) {
-			//too difficult to get right
-			//set_zoom(zoom*ZOOM_SCALE);
+			// too difficult to get right
+			// set_zoom(zoom*ZOOM_SCALE);
 		}
 
 		if (b->get_button_index() == BUTTON_WHEEL_DOWN && b->is_pressed()) {
-			//too difficult to get right
-			//set_zoom(zoom/ZOOM_SCALE);
+			// too difficult to get right
+			// set_zoom(zoom/ZOOM_SCALE);
 		}
 		if (b->get_button_index() == BUTTON_WHEEL_UP && !Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
@@ -1095,7 +1095,7 @@ void GraphEdit::set_connection_activity(const StringName &p_from, int p_from_por
 		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
 
 			if (Math::is_equal_approx(E->get().activity, p_activity)) {
-				//update only if changed
+				// update only if changed
 				top_layer->update();
 				connections_layer->update();
 			}
@@ -1364,7 +1364,7 @@ GraphEdit::GraphEdit() {
 	box_selecting = false;
 	dragging = false;
 
-	//set large minmax so it can scroll even if not resized yet
+	// set large minmax so it can scroll even if not resized yet
 	h_scroll->set_min(-10000);
 	h_scroll->set_max(10000);
 

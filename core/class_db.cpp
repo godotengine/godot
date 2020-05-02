@@ -383,7 +383,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 		names.push_back(*k);
 	}
-	//must be alphabetically sorted for hash to compute
+	// must be alphabetically sorted for hash to compute
 	names.sort_custom<StringName::AlphCompare>();
 
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
@@ -395,7 +395,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 		hash = hash_djb2_one_64(t->name.hash(), hash);
 		hash = hash_djb2_one_64(t->inherits.hash(), hash);
 
-		{ //methods
+		{ // methods
 
 			List<StringName> snames;
 
@@ -420,7 +420,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 				MethodBind *mb = t->method_map[F->get()];
 				hash = hash_djb2_one_64(mb->get_name().hash(), hash);
 				hash = hash_djb2_one_64(mb->get_argument_count(), hash);
-				hash = hash_djb2_one_64(mb->get_argument_type(-1), hash); //return
+				hash = hash_djb2_one_64(mb->get_argument_type(-1), hash); // return
 
 				for (int i = 0; i < mb->get_argument_count(); i++) {
 					const PropertyInfo info = mb->get_argument_info(i);
@@ -433,7 +433,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 				hash = hash_djb2_one_64(mb->get_default_argument_count(), hash);
 
 				for (int i = 0; i < mb->get_default_argument_count(); i++) {
-					//hash should not change, i hope for tis
+					// hash should not change, i hope for tis
 					Variant da = mb->get_default_argument(i);
 					hash = hash_djb2_one_64(da.hash(), hash);
 				}
@@ -442,7 +442,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
-		{ //constants
+		{ // constants
 
 			List<StringName> snames;
 
@@ -462,7 +462,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
-		{ //signals
+		{ // signals
 
 			List<StringName> snames;
 
@@ -485,7 +485,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
-		{ //properties
+		{ // properties
 
 			List<StringName> snames;
 
@@ -509,7 +509,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			}
 		}
 
-		//property list
+		// property list
 		for (List<PropertyInfo>::Element *F = t->property_list.front(); F; F = F->next()) {
 
 			hash = hash_djb2_one_64(F->get().name.hash(), hash);
@@ -591,7 +591,7 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 
 	if (ti.inherits) {
 
-		ERR_FAIL_COND(!classes.has(ti.inherits)); //it MUST be registered.
+		ERR_FAIL_COND(!classes.has(ti.inherits)); // it MUST be registered.
 		ti.inherits_ptr = &classes[ti.inherits];
 
 	} else {
@@ -1040,7 +1040,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 			if (!psg->setter) {
 				if (r_valid)
 					*r_valid = false;
-				return true; //return true but do nothing
+				return true; // return true but do nothing
 			}
 
 			Callable::CallError ce;
@@ -1048,7 +1048,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 			if (psg->index >= 0) {
 				Variant index = psg->index;
 				const Variant *arg[2] = { &index, &p_value };
-				//p_object->call(psg->setter,arg,2,ce);
+				// p_object->call(psg->setter,arg,2,ce);
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object, arg, 2, ce);
 				} else {
@@ -1083,7 +1083,7 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 		const PropertySetGet *psg = check->property_setget.getptr(p_property);
 		if (psg) {
 			if (!psg->getter)
-				return true; //return true but do nothing
+				return true; // return true but do nothing
 
 			if (psg->index >= 0) {
 				Variant index = psg->index;
@@ -1104,19 +1104,19 @@ bool ClassDB::get_property(Object *p_object, const StringName &p_property, Varia
 			return true;
 		}
 
-		const int *c = check->constant_map.getptr(p_property); //constants count
+		const int *c = check->constant_map.getptr(p_property); // constants count
 		if (c) {
 
 			r_value = *c;
 			return true;
 		}
 
-		if (check->method_map.has(p_property)) { //methods count
+		if (check->method_map.has(p_property)) { // methods count
 			r_value = Callable(p_object, p_property);
 			return true;
 		}
 
-		if (check->signal_map.has(p_property)) { //signals count
+		if (check->signal_map.has(p_property)) { // signals count
 			r_value = Signal(p_object, p_property);
 			return true;
 		}

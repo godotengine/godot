@@ -57,7 +57,7 @@ Vector2 Polygon2DEditor::_get_offset(int p_idx) const {
 int Polygon2DEditor::_get_polygon_count() const {
 
 	if (node->get_internal_vertex_count() > 0) {
-		return 0; //do not edit if internal vertices exist
+		return 0; // do not edit if internal vertices exist
 	} else {
 		return 1;
 	}
@@ -136,7 +136,7 @@ void Polygon2DEditor::_sync_bones() {
 				}
 			}
 
-			if (weights.size() == 0) { //create them
+			if (weights.size() == 0) { // create them
 				weights.resize(node->get_polygon().size());
 				float *w = weights.ptrw();
 				for (int j = 0; j < wc; j++) {
@@ -204,7 +204,7 @@ void Polygon2DEditor::_bone_paint_selected(int p_index) {
 
 void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 
-	if (p_mode == 0) { //uv
+	if (p_mode == 0) { // uv
 
 		uv_button[UV_MODE_CREATE]->hide();
 		uv_button[UV_MODE_CREATE_INTERNAL]->hide();
@@ -222,7 +222,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		bone_paint_strength->hide();
 		bone_paint_radius->hide();
 		bone_paint_radius_label->hide();
-	} else if (p_mode == 1) { //poly
+	} else if (p_mode == 1) { // poly
 
 		for (int i = 0; i <= UV_MODE_SCALE; i++) {
 			uv_button[i]->show();
@@ -237,7 +237,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		bone_paint_strength->hide();
 		bone_paint_radius->hide();
 		bone_paint_radius_label->hide();
-	} else if (p_mode == 2) { //splits
+	} else if (p_mode == 2) { // splits
 
 		for (int i = 0; i <= UV_MODE_SCALE; i++) {
 			uv_button[i]->hide();
@@ -252,7 +252,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		bone_paint_strength->hide();
 		bone_paint_radius->hide();
 		bone_paint_radius_label->hide();
-	} else if (p_mode == 3) { //bones´
+	} else if (p_mode == 3) { // bones´
 
 		for (int i = 0; i <= UV_MODE_REMOVE_POLYGON; i++) {
 			uv_button[i]->hide();
@@ -266,7 +266,7 @@ void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
 		bone_paint_radius->show();
 		bone_paint_radius_label->show();
 		_update_bone_list();
-		bone_paint_pos = Vector2(-100000, -100000); //send brush away when switching
+		bone_paint_pos = Vector2(-100000, -100000); // send brush away when switching
 	}
 
 	uv_edit->set_size(uv_edit->get_size()); // Necessary readjustment of the popup window.
@@ -474,9 +474,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 				uv_drag = true;
 				points_prev = node->get_uv();
 
-				if (uv_edit_mode[0]->is_pressed()) { //edit uv
+				if (uv_edit_mode[0]->is_pressed()) { // edit uv
 					points_prev = node->get_uv();
-				} else { //edit polygon
+				} else { // edit polygon
 					points_prev = node->get_polygon();
 				}
 
@@ -680,15 +680,15 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 					if (closest != -1) {
 						if (polygon_create.size() && closest == polygon_create[0]) {
-							//close
+							// close
 							if (polygon_create.size() < 3) {
 								error->set_text(TTR("Invalid Polygon (need 3 different vertices)"));
 								error->popup_centered();
 							} else {
 								Array polygons = node->get_polygons();
-								polygons = polygons.duplicate(); //copy because its a reference
+								polygons = polygons.duplicate(); // copy because its a reference
 
-								//todo, could check whether it already exists?
+								// todo, could check whether it already exists?
 								polygons.push_back(polygon_create);
 								undo_redo->create_action(TTR("Add Custom Polygon"));
 								undo_redo->add_do_method(node, "set_polygons", polygons);
@@ -700,7 +700,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 							polygon_create.clear();
 						} else if (polygon_create.find(closest) == -1) {
-							//add temporarily if not exists
+							// add temporarily if not exists
 							polygon_create.push_back(closest);
 						}
 					}
@@ -708,7 +708,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 
 				if (uv_move_current == UV_MODE_REMOVE_POLYGON) {
 					Array polygons = node->get_polygons();
-					polygons = polygons.duplicate(); //copy because its a reference
+					polygons = polygons.duplicate(); // copy because its a reference
 
 					int erase_index = -1;
 					for (int i = polygons.size() - 1; i >= 0; i--) {
@@ -835,9 +835,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					Vector<Vector2> uv_new = points_prev;
 					uv_new.set(point_drag_index, uv_new[point_drag_index] + drag);
 
-					if (uv_edit_mode[0]->is_pressed()) { //edit uv
+					if (uv_edit_mode[0]->is_pressed()) { // edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else if (uv_edit_mode[1]->is_pressed()) { // edit polygon
 						node->set_polygon(uv_new);
 					}
 				} break;
@@ -847,9 +847,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 					for (int i = 0; i < uv_new.size(); i++)
 						uv_new.set(i, uv_new[i] + drag);
 
-					if (uv_edit_mode[0]->is_pressed()) { //edit uv
+					if (uv_edit_mode[0]->is_pressed()) { // edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else if (uv_edit_mode[1]->is_pressed()) { // edit polygon
 						node->set_polygon(uv_new);
 					}
 				} break;
@@ -870,9 +870,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_new.set(i, center + rel);
 					}
 
-					if (uv_edit_mode[0]->is_pressed()) { //edit uv
+					if (uv_edit_mode[0]->is_pressed()) { // edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else if (uv_edit_mode[1]->is_pressed()) { // edit polygon
 						node->set_polygon(uv_new);
 					}
 				} break;
@@ -898,9 +898,9 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 						uv_new.set(i, center + rel);
 					}
 
-					if (uv_edit_mode[0]->is_pressed()) { //edit uv
+					if (uv_edit_mode[0]->is_pressed()) { // edit uv
 						node->set_uv(uv_new);
-					} else if (uv_edit_mode[1]->is_pressed()) { //edit polygon
+					} else if (uv_edit_mode[1]->is_pressed()) { // edit polygon
 						node->set_polygon(uv_new);
 					}
 				} break;
@@ -1025,9 +1025,9 @@ void Polygon2DEditor::_uv_draw() {
 	Array polygons = node->get_polygons();
 
 	Vector<Vector2> uvs;
-	if (uv_edit_mode[0]->is_pressed()) { //edit uv
+	if (uv_edit_mode[0]->is_pressed()) { // edit uv
 		uvs = node->get_uv();
-	} else { //edit polygon
+	} else { // edit polygon
 		uvs = node->get_polygon();
 	}
 
@@ -1084,7 +1084,7 @@ void Polygon2DEditor::_uv_draw() {
 		if (uv_create && i == uvs.size() - 1) {
 			next_point = uv_create_to;
 		}
-		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { //if using or creating polygons, do not show outline (will show polygons instead)
+		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { // if using or creating polygons, do not show outline (will show polygons instead)
 			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, Math::round(EDSCALE));
 		}
 
@@ -1148,7 +1148,7 @@ void Polygon2DEditor::_uv_draw() {
 			}
 		}
 
-		//draw skeleton
+		// draw skeleton
 		NodePath skeleton_path = node->get_skeleton();
 		if (node->has_node(skeleton_path)) {
 			Skeleton2D *skeleton = Object::cast_to<Skeleton2D>(node->get_node(skeleton_path));
@@ -1157,7 +1157,7 @@ void Polygon2DEditor::_uv_draw() {
 
 					Bone2D *bone = skeleton->get_bone(i);
 					if (bone->get_rest() == Transform2D(0, 0, 0, 0, 0, 0))
-						continue; //not set
+						continue; // not set
 
 					bool current = bone_path == skeleton->get_path_to(bone);
 
@@ -1180,7 +1180,7 @@ void Polygon2DEditor::_uv_draw() {
 					}
 
 					if (!found_child) {
-						//draw normally
+						// draw normally
 						Transform2D bone_xform = node->get_global_transform().affine_inverse() * (skeleton->get_global_transform() * bone->get_skeleton_rest());
 						Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_default_length(), 0));
 
@@ -1192,7 +1192,7 @@ void Polygon2DEditor::_uv_draw() {
 			}
 		}
 
-		//draw paint circle
+		// draw paint circle
 		uv_edit_draw->draw_circle(bone_paint_pos, bone_paint_radius->get_value() * EDSCALE, Color(1, 1, 1, 0.1));
 	}
 

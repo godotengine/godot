@@ -745,7 +745,7 @@ int VulkanContext::window_get_height(DisplayServer::WindowID p_window) {
 VkRenderPass VulkanContext::window_get_render_pass(DisplayServer::WindowID p_window) {
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
-	//vulkan use of currentbuffer
+	// vulkan use of currentbuffer
 	return w->render_pass;
 }
 
@@ -753,7 +753,7 @@ VkFramebuffer VulkanContext::window_get_framebuffer(DisplayServer::WindowID p_wi
 	ERR_FAIL_COND_V(!windows.has(p_window), VK_NULL_HANDLE);
 	ERR_FAIL_COND_V(!buffers_prepared, VK_NULL_HANDLE);
 	Window *w = &windows[p_window];
-	//vulkan use of currentbuffer
+	// vulkan use of currentbuffer
 	return w->swapchain_image_resources[w->current_buffer].framebuffer;
 }
 
@@ -771,7 +771,7 @@ Error VulkanContext::_clean_up_swap_chain(Window *window) {
 	}
 	vkDeviceWaitIdle(device);
 
-	//this destroys images associated it seems
+	// this destroys images associated it seems
 	fpDestroySwapchainKHR(device, window->swapchain, nullptr);
 	window->swapchain = VK_NULL_HANDLE;
 	vkDestroyRenderPass(device, window->render_pass, nullptr);
@@ -842,7 +842,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	if (window->width == 0 || window->height == 0) {
 		free(presentModes);
-		//likely window minimized, no swapchain created
+		// likely window minimized, no swapchain created
 		return OK;
 	}
 	// The FIFO present mode is guaranteed by the spec to be supported
@@ -955,7 +955,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
 
 	if (swapchainImageCount == 0) {
-		//assign here for the first time.
+		// assign here for the first time.
 		swapchainImageCount = sp_image_count;
 	} else {
 		ERR_FAIL_COND_V(swapchainImageCount != sp_image_count, ERR_BUG);
@@ -1128,7 +1128,7 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		}
 	}
 
-	//reset current buffer
+	// reset current buffer
 	window->current_buffer = 0;
 
 	return OK;
@@ -1163,11 +1163,11 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 	// ensure everything else pending is executed
 	vkDeviceWaitIdle(device);
 
-	//flush the pending setup buffer
+	// flush the pending setup buffer
 
 	if (p_flush_setup && command_buffer_queue[0]) {
 
-		//use a fence to wait for everything done
+		// use a fence to wait for everything done
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.pNext = nullptr;
@@ -1186,7 +1186,7 @@ void VulkanContext::flush(bool p_flush_setup, bool p_flush_pending) {
 
 	if (p_flush_pending && command_buffer_count > 1) {
 
-		//use a fence to wait for everything done
+		// use a fence to wait for everything done
 
 		VkSubmitInfo submit_info;
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1236,7 +1236,7 @@ Error VulkanContext::prepare_buffers() {
 				// swapchain is out of date (e.g. the window was resized) and
 				// must be recreated:
 				print_line("early out of data");
-				//resize_notify();
+				// resize_notify();
 				_update_swap_chain(w);
 			} else if (err == VK_SUBOPTIMAL_KHR) {
 				print_line("early suboptimal");
@@ -1285,7 +1285,7 @@ Error VulkanContext::swap_buffers() {
 	uint32_t commands_to_submit = 0;
 
 	if (command_buffer_queue[0] == nullptr) {
-		//no setup command, but commands to submit, submit from the first and skip command
+		// no setup command, but commands to submit, submit from the first and skip command
 		if (command_buffer_count > 1) {
 			commands_ptr = command_buffer_queue.ptr() + 1;
 			commands_to_submit = command_buffer_count - 1;
@@ -1497,7 +1497,7 @@ VulkanContext::VulkanContext() {
 	VK_KHR_incremental_present_enabled = true;
 	VK_GOOGLE_display_timing_enabled = true;
 
-	command_buffer_queue.resize(1); //first one is the setup command always
+	command_buffer_queue.resize(1); // first one is the setup command always
 	command_buffer_queue.write[0] = nullptr;
 	command_buffer_count = 1;
 	queues_initialized = false;
@@ -1509,7 +1509,7 @@ VulkanContext::VulkanContext() {
 RID VulkanContext::local_device_create() {
 	LocalDevice ld;
 
-	{ //create device
+	{ // create device
 		VkResult err;
 		float queue_priorities[1] = { 0.0 };
 		VkDeviceQueueCreateInfo queues[2];
@@ -1536,7 +1536,7 @@ RID VulkanContext::local_device_create() {
 		ERR_FAIL_COND_V(err, RID());
 	}
 
-	{ //create graphics queue
+	{ // create graphics queue
 
 		vkGetDeviceQueue(ld.device, graphics_queue_family_index, 0, &ld.queue);
 	}

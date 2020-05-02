@@ -61,7 +61,7 @@ bool AreaPair3DSW::setup(real_t p_step) {
 		colliding = result;
 	}
 
-	return false; //never do any post solving
+	return false; // never do any post solving
 }
 
 void AreaPair3DSW::solve(real_t p_step) {
@@ -126,7 +126,7 @@ bool Area2Pair3DSW::setup(real_t p_step) {
 		colliding = result;
 	}
 
-	return false; //never do any post solving
+	return false; // never do any post solving
 }
 
 void Area2Pair3DSW::solve(real_t p_step) {

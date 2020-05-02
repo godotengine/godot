@@ -38,7 +38,7 @@ void AudioEffectChorusInstance::process(const AudioFrame *p_src_frames, AudioFra
 
 	while (todo) {
 
-		int to_mix = MIN(todo, 256); //can't mix too much
+		int to_mix = MIN(todo, 256); // can't mix too much
 
 		_process_chunk(p_src_frames, p_dst_frames, to_mix);
 
@@ -51,7 +51,7 @@ void AudioEffectChorusInstance::process(const AudioFrame *p_src_frames, AudioFra
 
 void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 
-	//fill ringbuffer
+	// fill ringbuffer
 	for (int i = 0; i < p_frame_count; i++) {
 		audio_buffer.write[(buffer_pos + i) & buffer_mask] = p_src_frames[i];
 		p_dst_frames[i] = p_src_frames[i] * base->dry;
@@ -78,13 +78,13 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		uint64_t local_cycles = cycles[vc];
 		uint64_t increment = llrint(cycles_to_mix / (double)p_frame_count * (double)(1 << AudioEffectChorus::CYCLES_FRAC));
 
-		//check the LFO doesn't read ahead of the write pos
+		// check the LFO doesn't read ahead of the write pos
 		if ((((unsigned int)max_depth_frames) + 10) > delay_frames) { //10 as some threshold to avoid precision stuff
 			delay_frames += (int)max_depth_frames - delay_frames;
-			delay_frames += 10; //threshold to avoid precision stuff
+			delay_frames += 10; // threshold to avoid precision stuff
 		}
 
-		//low pass filter
+		// low pass filter
 		if (v.cutoff == 0)
 			continue;
 		float auxlp = expf(-2.0 * Math_PI * v.cutoff / mix_rate);
@@ -96,7 +96,7 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 			c2 = 0.0;
 		}
 
-		//vol modifier
+		// vol modifier
 
 		AudioFrame vol_modifier = AudioFrame(base->wet, base->wet) * Math::db2linear(v.level);
 		vol_modifier.l *= CLAMP(1.0 - v.pan, 0, 1);
@@ -157,8 +157,8 @@ Ref<AudioEffectInstance> AudioEffectChorus::instance() {
 
 	float ring_buffer_max_size = AudioEffectChorus::MAX_DELAY_MS + AudioEffectChorus::MAX_DEPTH_MS + AudioEffectChorus::MAX_WIDTH_MS;
 
-	ring_buffer_max_size *= 2; //just to avoid complications
-	ring_buffer_max_size /= 1000.0; //convert to seconds
+	ring_buffer_max_size *= 2; // just to avoid complications
+	ring_buffer_max_size /= 1000.0; // convert to seconds
 	ring_buffer_max_size *= AudioServer::get_singleton()->get_mix_rate();
 
 	int ringbuff_size = ring_buffer_max_size;

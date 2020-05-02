@@ -186,7 +186,7 @@ void EditorProfiler::_update_plot() {
 		wr[i + 3] = 255;
 	}
 
-	//find highest value
+	// find highest value
 
 	const bool use_self = display_time->get_selected() == DISPLAY_SELF_TIME;
 	float highest = 0;
@@ -215,8 +215,8 @@ void EditorProfiler::_update_plot() {
 	}
 
 	if (highest > 0) {
-		//means some data exists..
-		highest *= 1.2; //leave some upper room
+		// means some data exists..
+		highest *= 1.2; // leave some upper room
 		graph_height = highest;
 
 		Vector<int> columnv;
@@ -239,7 +239,7 @@ void EditorProfiler::_update_plot() {
 				next = frame_metrics.size();
 			}
 			if (next == current)
-				next = current + 1; //just because for loop must work
+				next = current + 1; // just because for loop must work
 
 			for (Set<StringName>::Element *E = plot_sigs.front(); E; E = E->next()) {
 
@@ -247,16 +247,16 @@ void EditorProfiler::_update_plot() {
 
 				for (int j = current; j < next; j++) {
 
-					//wrap
+					// wrap
 					int idx = last_metric + 1 + j;
 					while (idx >= frame_metrics.size()) {
 						idx -= frame_metrics.size();
 					}
 
-					//get
+					// get
 					const Metric &m = frame_metrics[idx];
 					if (!m.valid)
-						continue; //skip because invalid
+						continue; // skip because invalid
 
 					float value = 0;
 
@@ -287,7 +287,7 @@ void EditorProfiler::_update_plot() {
 				}
 
 				if (plot_pos == -1 && prev_plot == -1) {
-					//don't bother drawing
+					// don't bother drawing
 					continue;
 				}
 
@@ -527,10 +527,10 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb.is_valid() || mm->get_button_mask() & BUTTON_MASK_LEFT) {
-			//cursor_metric=x;
+			// cursor_metric=x;
 			updating_frame = true;
 
-			//metric may be invalid, so look for closest metric that is valid, this makes snap feel better
+			// metric may be invalid, so look for closest metric that is valid, this makes snap feel better
 			bool valid = false;
 			for (int i = 0; i < frame_metrics.size(); i++) {
 

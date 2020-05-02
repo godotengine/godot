@@ -8,7 +8,7 @@ StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 
 	StringName *r = param_remaps.getptr(p_name);
 	if (!r) {
-		//not cached, do caching
+		// not cached, do caching
 		String p = p_name;
 		if (p.begins_with("params/")) {
 			String q = p.replace_first("params/", "");
@@ -195,7 +195,7 @@ void ShaderGlobalsOverride::_activate() {
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
 	if (nodes.size() == 0) {
-		//good we are the only override, enable all
+		// good we are the only override, enable all
 		active = true;
 		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
 
@@ -207,7 +207,7 @@ void ShaderGlobalsOverride::_activate() {
 			}
 		}
 
-		update_configuration_warning(); //may have activated
+		update_configuration_warning(); // may have activated
 	}
 }
 
@@ -221,7 +221,7 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 	} else if (p_what == Node3D::NOTIFICATION_EXIT_TREE) {
 
 		if (active) {
-			//remove overrides
+			// remove overrides
 			const StringName *K = nullptr;
 			while ((K = overrides.next(K))) {
 				Override *o = overrides.getptr(*K);
@@ -233,7 +233,7 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 
 		remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group_active);
 		remove_from_group(SceneStringNames::get_singleton()->shader_overrides_group);
-		get_tree()->call_group(SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); //another may want to activate when this is removed
+		get_tree()->call_group(SceneStringNames::get_singleton()->shader_overrides_group, "_activate"); // another may want to activate when this is removed
 		active = false;
 	}
 }

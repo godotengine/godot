@@ -182,29 +182,29 @@ void Skeleton3D::_update_process_order() {
 	for (int i = 0; i < len; i++) {
 
 		if (bonesptr[i].parent >= len) {
-			//validate this just in case
+			// validate this just in case
 			ERR_PRINT("Bone " + itos(i) + " has invalid parent: " + itos(bonesptr[i].parent));
 			bonesptr[i].parent = -1;
 		}
 		order[i] = i;
 		bonesptr[i].sort_index = i;
 	}
-	//now check process order
+	// now check process order
 	int pass_count = 0;
 	while (pass_count < len * len) {
-		//using bubblesort because of simplicity, it won't run every frame though.
-		//bublesort worst case is O(n^2), and this may be an infinite loop if cyclic
+		// using bubblesort because of simplicity, it won't run every frame though.
+		// bublesort worst case is O(n^2), and this may be an infinite loop if cyclic
 		bool swapped = false;
 		for (int i = 0; i < len; i++) {
 			int parent_idx = bonesptr[order[i]].parent;
 			if (parent_idx < 0)
-				continue; //do nothing because it has no parent
-			//swap indices
+				continue; // do nothing because it has no parent
+			// swap indices
 			int parent_order = bonesptr[parent_idx].sort_index;
 			if (parent_order > i) {
 				bonesptr[order[i]].sort_index = parent_order;
 				bonesptr[parent_idx].sort_index = i;
-				//swap order
+				// swap order
 				SWAP(order[i], order[parent_order]);
 				swapped = true;
 			}
@@ -313,7 +313,7 @@ void Skeleton3D::_notification(int p_what) {
 				}
 			}
 
-			//update skins
+			// update skins
 			for (Set<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
 
 				const Skin *skin = E->get()->skin.operator->();
@@ -333,7 +333,7 @@ void Skeleton3D::_notification(int p_what) {
 						StringName bind_name = skin->get_bind_name(i);
 
 						if (bind_name != StringName()) {
-							//bind name used, use this
+							// bind name used, use this
 							bool found = false;
 							for (int j = 0; j < len; j++) {
 								if (bonesptr[j].name == bind_name) {
@@ -832,13 +832,13 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 	Ref<Skin> skin = p_skin;
 
 	if (skin.is_null()) {
-		//need to create one from existing code, this is for compatibility only
-		//when skeletons did not support skins. It is also used by gizmo
-		//to display the skeleton.
+		// need to create one from existing code, this is for compatibility only
+		// when skeletons did not support skins. It is also used by gizmo
+		// to display the skeleton.
 
 		skin.instance();
 		skin->set_bind_count(bones.size());
-		_update_process_order(); //just in case
+		_update_process_order(); // just in case
 
 		// pose changed, rebuild cache of inverses
 		const Bone *bonesptr = bones.ptr();
@@ -856,7 +856,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 		}
 
 		for (int i = 0; i < len; i++) {
-			//the inverse is what is actually required
+			// the inverse is what is actually required
 			skin->set_bind_bone(i, i);
 			skin->set_bind_pose(i, skin->get_bind_pose(i).affine_inverse());
 		}
@@ -877,7 +877,7 @@ Ref<SkinReference> Skeleton3D::register_skin(const Ref<Skin> &p_skin) {
 
 	skin->connect_compat("changed", skin_ref.operator->(), "_skin_changed");
 
-	_make_dirty(); //skin needs to be updated, so update skeleton
+	_make_dirty(); // skin needs to be updated, so update skeleton
 
 	return skin_ref;
 }
@@ -947,7 +947,7 @@ Skeleton3D::Skeleton3D() {
 
 Skeleton3D::~Skeleton3D() {
 
-	//some skins may remain bound
+	// some skins may remain bound
 	for (Set<SkinReference *>::Element *E = skin_bindings.front(); E; E = E->next()) {
 		E->get()->skeleton_node = nullptr;
 	}

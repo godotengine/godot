@@ -872,7 +872,7 @@ void SpaceBullet::check_body_collision() {
 void SpaceBullet::update_gravity() {
 	btVector3 btGravity;
 	G_TO_B(gravityDirection * gravityMagnitude, btGravity);
-	//dynamicsWorld->setGravity(btGravity);
+	// dynamicsWorld->setGravity(btGravity);
 	dynamicsWorld->setGravity(btVector3(0, 0, 0));
 	if (soft_body_world_info) {
 		soft_body_world_info->m_gravity = btGravity;
@@ -1314,7 +1314,7 @@ bool SpaceBullet::RFP_convex_world_test(const btConvexShape *p_shapeA, const btC
 	btCollisionAlgorithm *algorithm = dispatcher->findAlgorithm(&obA, &obB, nullptr, BT_CONTACT_POINT_ALGORITHMS);
 	if (algorithm) {
 		GodotDeepPenetrationContactResultCallback contactPointResult(&obA, &obB);
-		//discrete collision detection query
+		// discrete collision detection query
 		algorithm->processCollision(&obA, &obB, dynamicsWorld->getDispatchInfo(), &contactPointResult);
 
 		algorithm->~btCollisionAlgorithm();

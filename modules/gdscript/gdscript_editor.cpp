@@ -219,7 +219,7 @@ Script *GDScriptLanguage::create_script() const {
 /* DEBUGGER FUNCTIONS */
 
 bool GDScriptLanguage::debug_break_parse(const String &p_file, int p_line, const String &p_error) {
-	//break because of parse error
+	// break because of parse error
 
 	if (EngineDebugger::is_active() && Thread::get_caller_id() == Thread::get_main_id()) {
 
@@ -407,7 +407,7 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 		p_functions->push_back(GDScriptFunctions::get_info(GDScriptFunctions::Function(i)));
 	}
 
-	//not really "functions", but..
+	// not really "functions", but..
 	{
 		MethodInfo mi;
 		mi.name = "preload";
@@ -867,8 +867,8 @@ static bool _guess_expression_type(GDScriptCompletionContext &p_context, const G
 															}
 
 															if (!script.ends_with(".gd")) {
-																//not a script, try find the script anyway,
-																//may have some success
+																// not a script, try find the script anyway,
+																// may have some success
 																script = script.get_basename() + ".gd";
 															}
 
@@ -1215,13 +1215,13 @@ static bool _guess_identifier_type(GDScriptCompletionContext &p_context, const S
 		}
 
 		if (blk->if_condition && blk->if_condition->type == GDScriptParser::Node::TYPE_OPERATOR && static_cast<const GDScriptParser::OperatorNode *>(blk->if_condition)->op == GDScriptParser::OperatorNode::OP_IS) {
-			//is used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
-			//super dirty hack, but very useful
-			//credit: Zylann
+			// is used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
+			// super dirty hack, but very useful
+			// credit: Zylann
 			//TODO: this could be hacked to detect ANDed conditions too..
 			const GDScriptParser::OperatorNode *op = static_cast<const GDScriptParser::OperatorNode *>(blk->if_condition);
 			if (op->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[0])->name == p_identifier) {
-				//bingo
+				// bingo
 				GDScriptCompletionContext c = p_context;
 				c.line = op->line;
 				c.block = blk;
@@ -3034,7 +3034,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 
 		String st = l.substr(tc, l.length()).strip_edges();
 		if (st == "" || st.begins_with("#"))
-			continue; //ignore!
+			continue; // ignore!
 
 		int ilevel = 0;
 		if (indent_stack.size()) {
@@ -3049,7 +3049,7 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 			}
 
 			if (indent_stack.size() && indent_stack.back()->get() != tc)
-				indent_stack.push_back(tc); //this is not right but gets the job done
+				indent_stack.push_back(tc); // this is not right but gets the job done
 		}
 
 		if (i >= p_from_line) {
@@ -3258,7 +3258,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 
 Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) {
 
-	//before parsing, try the usual stuff
+	// before parsing, try the usual stuff
 	if (ClassDB::class_exists(p_symbol)) {
 		r_result.type = ScriptLanguage::LookupResult::RESULT_CLASS;
 		r_result.class_name = p_symbol;

@@ -125,7 +125,7 @@ void BodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, const Vector
 
 		ERR_FAIL_COND(least_deep == -1);
 
-		if (least_deep < contact_count) { //replace the last deep contact by the new one
+		if (least_deep < contact_count) { // replace the last deep contact by the new one
 
 			contacts[least_deep] = contact;
 		}
@@ -143,7 +143,7 @@ void BodyPair3DSW::contact_added_callback(const Vector3 &p_point_A, const Vector
 
 void BodyPair3DSW::validate_contacts() {
 
-	//make sure to erase contacts that are no longer valid
+	// make sure to erase contacts that are no longer valid
 
 	real_t contact_max_separation = space->get_contact_max_separation();
 	for (int i = 0; i < contact_count; i++) {
@@ -180,21 +180,21 @@ bool BodyPair3DSW::_test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const 
 
 	real_t min, max;
 	p_A->get_shape(p_shape_A)->project_range(mnormal, p_xform_A, min, max);
-	bool fast_object = mlen > (max - min) * 0.3; //going too fast in that direction
+	bool fast_object = mlen > (max - min) * 0.3; // going too fast in that direction
 
-	if (!fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
+	if (!fast_object) { // did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
 		return false;
 	}
 
-	//cast a segment from support in motion normal, in the same direction of motion by motion length
-	//support is the worst case collision point, so real collision happened before
+	// cast a segment from support in motion normal, in the same direction of motion by motion length
+	// support is the worst case collision point, so real collision happened before
 	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform(mnormal).normalized());
 	Vector3 from = p_xform_A.xform(s);
 	Vector3 to = from + motion;
 
 	Transform from_inv = p_xform_B.affine_inverse();
 
-	Vector3 local_from = from_inv.xform(from - mnormal * mlen * 0.1); //start from a little inside the bounding box
+	Vector3 local_from = from_inv.xform(from - mnormal * mlen * 0.1); // start from a little inside the bounding box
 	Vector3 local_to = from_inv.xform(to);
 
 	Vector3 rpos, rnorm;
@@ -202,7 +202,7 @@ bool BodyPair3DSW::_test_ccd(real_t p_step, Body3DSW *p_A, int p_shape_A, const 
 		return false;
 	}
 
-	//shorten the linear velocity so it does not hit, but gets close enough, next frame will hit softly or soft enough
+	// shorten the linear velocity so it does not hit, but gets close enough, next frame will hit softly or soft enough
 	Vector3 hitpos = p_xform_B.xform(rpos);
 
 	real_t newlen = hitpos.distance_to(from) - (max - min) * 0.01;
@@ -221,7 +221,7 @@ real_t combine_friction(Body3DSW *A, Body3DSW *B) {
 
 bool BodyPair3DSW::setup(real_t p_step) {
 
-	//cannot collide
+	// cannot collide
 	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC && A->get_max_contacts_reported() == 0 && B->get_max_contacts_reported() == 0)) {
 		collided = false;
 		return false;
@@ -252,7 +252,7 @@ bool BodyPair3DSW::setup(real_t p_step) {
 
 	if (!collided) {
 
-		//test ccd (currently just a raycast)
+		// test ccd (currently just a raycast)
 
 		if (A->is_continuous_collision_detection_enabled() && A->get_mode() > PhysicsServer3D::BODY_MODE_KINEMATIC && B->get_mode() <= PhysicsServer3D::BODY_MODE_KINEMATIC) {
 			_test_ccd(p_step, A, shape_A, xform_A, B, shape_B, xform_B);
@@ -345,7 +345,7 @@ bool BodyPair3DSW::setup(real_t p_step) {
 			Vector3 crA = A->get_angular_velocity().cross(c.rA);
 			Vector3 crB = B->get_angular_velocity().cross(c.rB);
 			Vector3 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
-			//normal impule
+			// normal impule
 			c.bounce = c.bounce * dv.dot(c.normal);
 		}
 	}
@@ -364,9 +364,9 @@ void BodyPair3DSW::solve(real_t p_step) {
 		if (!c.active)
 			continue;
 
-		c.active = false; //try to deactivate, will activate itself if still needed
+		c.active = false; // try to deactivate, will activate itself if still needed
 
-		//bias impulse
+		// bias impulse
 
 		Vector3 crbA = A->get_biased_angular_velocity().cross(c.rA);
 		Vector3 crbB = B->get_biased_angular_velocity().cross(c.rB);
@@ -410,7 +410,7 @@ void BodyPair3DSW::solve(real_t p_step) {
 		Vector3 crB = B->get_angular_velocity().cross(c.rB);
 		Vector3 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
 
-		//normal impulse
+		// normal impulse
 		real_t vn = dv.dot(c.normal);
 
 		if (Math::abs(vn) > MIN_VELOCITY) {
@@ -427,7 +427,7 @@ void BodyPair3DSW::solve(real_t p_step) {
 			c.active = true;
 		}
 
-		//friction impulse
+		// friction impulse
 
 		real_t friction = combine_friction(A, B);
 

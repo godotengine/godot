@@ -65,7 +65,7 @@ void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices)
 	for (int yi = y[0]; yi <= (y[2] > height - 1 ? height - 1 : y[2]); yi++) {
 		if (yi >= 0) {
 			for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < width ? xt : width - 1); xi++) {
-				//pixels[int(x + y * width)] = color;
+				// pixels[int(x + y * width)] = color;
 
 				p_bitmap->set_bit(Point2(xi, yi), true);
 			}
@@ -93,7 +93,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 		const Chart &chart = charts[i];
 
-		//generate aabb
+		// generate aabb
 
 		Rect2i aabb;
 		int vertex_count = chart.vertices.size();
@@ -115,7 +115,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 		int w = src_bitmap->get_size().width;
 		int h = src_bitmap->get_size().height;
 
-		//plot triangles, using divisor
+		// plot triangles, using divisor
 
 		for (int j = 0; j < chart.faces.size(); j++) {
 
@@ -130,9 +130,9 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 			_plot_triangle(src_bitmap, v);
 		}
 
-		//src_bitmap->convert_to_image()->save_png("bitmap" + itos(i) + ".png");
+		// src_bitmap->convert_to_image()->save_png("bitmap" + itos(i) + ".png");
 
-		//grow by 1 for each side
+		// grow by 1 for each side
 
 		int bmw = src_bitmap->get_size().width + 2;
 		int bmh = src_bitmap->get_size().height + 2;
@@ -221,7 +221,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 	while (true) {
 		atlas_h = 0;
 
-		//do a tetris
+		// do a tetris
 		Vector<int> heights;
 		heights.resize(atlas_w);
 		for (int i = 0; i < atlas_w; i++) {
@@ -247,7 +247,7 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 
 					int pixmap_h = bottom_heights[k];
 					if (pixmap_h == -1) {
-						continue; //no pixel here, anything is fine
+						continue; // no pixel here, anything is fine
 					}
 
 					int h = MAX(0, atlas_ptr[j + k] - pixmap_h);
@@ -262,8 +262,8 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 				}
 			}
 
-			for (int j = 0; j < w; j++) { //add
-				if (top_heights[j] == -1) { //unused
+			for (int j = 0; j < w; j++) { // add
+				if (top_heights[j] == -1) { // unused
 					continue;
 				}
 				int height = best_height + top_heights[j] + 1;
@@ -283,10 +283,10 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 		}
 
 		if (atlas_h <= atlas_w * 2 || atlas_w >= atlas_max_width) {
-			break; //ok this one is enough
+			break; // ok this one is enough
 		}
 
-		//try again
+		// try again
 		atlas_w *= 2;
 	}
 

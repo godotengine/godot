@@ -714,7 +714,7 @@ void Theme::get_constant_list(StringName p_type, List<StringName> *p_list) const
 
 void Theme::clear() {
 
-	//these need disconnecting
+	// these need disconnecting
 	{
 		const StringName *K = nullptr;
 		while ((K = icon_map.next(K))) {
@@ -779,7 +779,7 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 		return;
 	}
 
-	//these need reconnecting, so add normally
+	// these need reconnecting, so add normally
 	{
 		const StringName *K = nullptr;
 		while ((K = p_other->icon_map.next(K))) {
@@ -810,7 +810,7 @@ void Theme::copy_theme(const Ref<Theme> &p_other) {
 		}
 	}
 
-	//these are ok to just copy
+	// these are ok to just copy
 
 	color_map = p_other->color_map;
 	constant_map = p_other->constant_map;

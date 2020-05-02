@@ -147,7 +147,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	if (type == "") {
 		r_texture = Ref<ImageTexture>();
 		r_small_texture = Ref<ImageTexture>();
-		return; //could not guess type
+		return; // could not guess type
 	}
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
@@ -195,7 +195,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 	if (!p_item.resource.is_valid()) {
 		// cache the preview in case it's a resource on disk
 		if (r_texture.is_valid()) {
-			//wow it generated a preview... save cache
+			// wow it generated a preview... save cache
 			bool has_small_texture = r_small_texture.is_valid();
 			ResourceSaver::save(cache_base + ".png", r_texture);
 			if (has_small_texture) {
@@ -227,10 +227,10 @@ void EditorResourcePreview::_thread() {
 			queue.pop_front();
 
 			if (cache.has(item.path)) {
-				//already has it because someone loaded it, just let it know it's ready
+				// already has it because someone loaded it, just let it know it's ready
 				String path = item.path;
 				if (item.resource.is_valid()) {
-					path += ":" + itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
+					path += ":" + itos(cache[item.path].last_hash); // keep last hash (see description of what this is in condition below)
 				}
 
 				_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
@@ -250,7 +250,7 @@ void EditorResourcePreview::_thread() {
 
 					_generate_preview(texture, small_texture, item, String());
 
-					//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
+					// adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
 					_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, item.id, item.function, item.userdata);
 
 				} else {
@@ -259,7 +259,7 @@ void EditorResourcePreview::_thread() {
 					String cache_base = ProjectSettings::get_singleton()->globalize_path(item.path).md5_text();
 					cache_base = temp_path.plus_file("resthumb-" + cache_base);
 
-					//does not have it, try to load a cached thumbnail
+					// does not have it, try to load a cached thumbnail
 
 					String file = cache_base + ".txt";
 					FileAccess *f = FileAccess::open(file, FileAccess::READ);
@@ -291,7 +291,7 @@ void EditorResourcePreview::_thread() {
 								cache_valid = false;
 
 							} else {
-								//update modified time
+								// update modified time
 
 								f = FileAccess::open(file, FileAccess::WRITE);
 								if (!f) {
@@ -368,7 +368,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 			return;
 		}
 
-		cache.erase(path_id); //erase if exists, since it will be regen
+		cache.erase(path_id); // erase if exists, since it will be regen
 
 		QueueItem item;
 		item.function = p_receiver_func;
@@ -449,7 +449,7 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 		}
 	}
 
-	if (call_invalidated) { //do outside mutex
+	if (call_invalidated) { // do outside mutex
 		call_deferred("emit_signal", "preview_invalidated", p_path);
 	}
 }
@@ -465,7 +465,7 @@ void EditorResourcePreview::stop() {
 		preview_sem.post();
 		while (!exited) {
 			OS::get_singleton()->delay_usec(10000);
-			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on visual server
+			RenderingServer::get_singleton()->sync(); // sync pending stuff, as thread may be blocked on visual server
 		}
 		Thread::wait_to_finish(thread);
 		memdelete(thread);

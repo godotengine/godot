@@ -139,11 +139,11 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 		//DO NOT snap here, it's confusing in 3D for adding points.
 		//Let the snap happen when the point is being moved, instead.
-		//cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+		// cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
 
 		Vector<Vector2> poly = node->call("get_polygon");
 
-		//first check if a point is to be added (segment split)
+		// first check if a point is to be added (segment split)
 		real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 
 		switch (mode) {
@@ -165,7 +165,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 					} else {
 
 						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_threshold) {
-							//wip closed
+							// wip closed
 							_wip_close();
 
 							return true;
@@ -203,7 +203,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 								return true;
 							}
 
-							//search edges
+							// search edges
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
@@ -216,7 +216,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 								Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint, points);
 								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2)
-									continue; //not valid to reuse point
+									continue; // not valid to reuse point
 
 								real_t d = cp.distance_to(gpoint);
 								if (d < closest_dist && d < grab_threshold) {
@@ -240,7 +240,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							}
 						} else {
 
-							//look for points to move
+							// look for points to move
 
 							int closest_idx = -1;
 							Vector2 closest_pos;
@@ -273,7 +273,7 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 						if (edited_point != -1) {
 
-							//apply
+							// apply
 
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
 							poly.write[edited_point] = edited_point_pos;
@@ -411,8 +411,8 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 		imgeom->add_vertex(next_point);
 
 		//Color col=Color(1,0.3,0.1,0.8);
-		//vpc->draw_line(point,next_point,col,2);
-		//vpc->draw_texture(handle,point-handle->get_size()*0.5);
+		// vpc->draw_line(point,next_point,col,2);
+		// vpc->draw_texture(handle,point-handle->get_size()*0.5);
 	}
 
 	rect = rect.grow(1);

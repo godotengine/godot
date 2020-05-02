@@ -574,19 +574,19 @@ inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_re
 	int border_bottom = style_rect.size.height - inner_rect.size.height - border_top;
 
 	int rad;
-	//tl
+	// tl
 	rad = MIN(border_top, border_left);
 	inner_corner_radius[0] = MAX(corner_radius[0] - rad, 0);
 
-	//tr
+	// tr
 	rad = MIN(border_top, border_right);
 	inner_corner_radius[1] = MAX(corner_radius[1] - rad, 0);
 
-	//br
+	// br
 	rad = MIN(border_bottom, border_right);
 	inner_corner_radius[2] = MAX(corner_radius[2] - rad, 0);
 
-	//bl
+	// bl
 	rad = MIN(border_bottom, border_left);
 	inner_corner_radius[3] = MAX(corner_radius[3] - rad, 0);
 }
@@ -604,23 +604,23 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	int ring_corner_radius[4];
 	set_inner_corner_radius(style_rect, ring_rect, corner_radius, ring_corner_radius);
 
-	//corner radius center points
+	// corner radius center points
 	Vector<Point2> outer_points;
-	outer_points.push_back(ring_rect.position + Vector2(ring_corner_radius[0], ring_corner_radius[0])); //tl
-	outer_points.push_back(Point2(ring_rect.position.x + ring_rect.size.x - ring_corner_radius[1], ring_rect.position.y + ring_corner_radius[1])); //tr
-	outer_points.push_back(ring_rect.position + ring_rect.size - Vector2(ring_corner_radius[2], ring_corner_radius[2])); //br
-	outer_points.push_back(Point2(ring_rect.position.x + ring_corner_radius[3], ring_rect.position.y + ring_rect.size.y - ring_corner_radius[3])); //bl
+	outer_points.push_back(ring_rect.position + Vector2(ring_corner_radius[0], ring_corner_radius[0])); // tl
+	outer_points.push_back(Point2(ring_rect.position.x + ring_rect.size.x - ring_corner_radius[1], ring_rect.position.y + ring_corner_radius[1])); // tr
+	outer_points.push_back(ring_rect.position + ring_rect.size - Vector2(ring_corner_radius[2], ring_corner_radius[2])); // br
+	outer_points.push_back(Point2(ring_rect.position.x + ring_corner_radius[3], ring_rect.position.y + ring_rect.size.y - ring_corner_radius[3])); // bl
 
 	int inner_corner_radius[4];
 	set_inner_corner_radius(style_rect, inner_rect, corner_radius, inner_corner_radius);
 
 	Vector<Point2> inner_points;
-	inner_points.push_back(inner_rect.position + Vector2(inner_corner_radius[0], inner_corner_radius[0])); //tl
-	inner_points.push_back(Point2(inner_rect.position.x + inner_rect.size.x - inner_corner_radius[1], inner_rect.position.y + inner_corner_radius[1])); //tr
-	inner_points.push_back(inner_rect.position + inner_rect.size - Vector2(inner_corner_radius[2], inner_corner_radius[2])); //br
-	inner_points.push_back(Point2(inner_rect.position.x + inner_corner_radius[3], inner_rect.position.y + inner_rect.size.y - inner_corner_radius[3])); //bl
+	inner_points.push_back(inner_rect.position + Vector2(inner_corner_radius[0], inner_corner_radius[0])); // tl
+	inner_points.push_back(Point2(inner_rect.position.x + inner_rect.size.x - inner_corner_radius[1], inner_rect.position.y + inner_corner_radius[1])); // tr
+	inner_points.push_back(inner_rect.position + inner_rect.size - Vector2(inner_corner_radius[2], inner_corner_radius[2])); // br
+	inner_points.push_back(Point2(inner_rect.position.x + inner_corner_radius[3], inner_rect.position.y + inner_rect.size.y - inner_corner_radius[3])); // bl
 
-	//calculate the vert array
+	// calculate the vert array
 	for (int corner_index = 0; corner_index < 4; corner_index++) {
 		for (int detail = 0; detail <= adapted_corner_detail; detail++) {
 			for (int inner_outer = 0; inner_outer < 2; inner_outer++) {
@@ -646,7 +646,7 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 
 	int ring_vert_count = verts.size() - vert_offset;
 
-	//fill the indices and the colors for the border
+	// fill the indices and the colors for the border
 	for (int i = 0; i < ring_vert_count; i++) {
 		indices.push_back(vert_offset + ((i + 0) % ring_vert_count));
 		indices.push_back(vert_offset + ((i + 2) % ring_vert_count));
@@ -654,14 +654,14 @@ inline void draw_ring(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color
 	}
 
 	if (fill_center) {
-		//fill the indices and the colors for the center
+		// fill the indices and the colors for the center
 		for (int index = 0; index < ring_vert_count / 2; index += 2) {
 			int i = index;
-			//poly 1
+			// poly 1
 			indices.push_back(vert_offset + i);
 			indices.push_back(vert_offset + ring_vert_count - 4 - i);
 			indices.push_back(vert_offset + i + 2);
-			//poly 2
+			// poly 2
 			indices.push_back(vert_offset + i);
 			indices.push_back(vert_offset + ring_vert_count - 2 - i);
 			indices.push_back(vert_offset + ring_vert_count - 4 - i);
@@ -728,14 +728,14 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Color border_color_blend = (draw_center ? bg_color : border_color_alpha);
 	Color border_color_inner = blend_on ? border_color_blend : border_color;
 
-	//adapt borders (prevent weird overlapping/glitchy drawings)
+	// adapt borders (prevent weird overlapping/glitchy drawings)
 	int width = MAX(style_rect.size.width, 0);
 	int height = MAX(style_rect.size.height, 0);
 	int adapted_border[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
 	adapt_values(MARGIN_TOP, MARGIN_BOTTOM, adapted_border, border_width, height, height, height);
 	adapt_values(MARGIN_LEFT, MARGIN_RIGHT, adapted_border, border_width, width, width, width);
 
-	//adapt corners (prevent weird overlapping/glitchy drawings)
+	// adapt corners (prevent weird overlapping/glitchy drawings)
 	int adapted_corner[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
 	adapt_values(CORNER_TOP_RIGHT, CORNER_BOTTOM_RIGHT, adapted_corner, corner_radius, height, height - adapted_border[MARGIN_BOTTOM], height - adapted_border[MARGIN_TOP]);
 	adapt_values(CORNER_TOP_LEFT, CORNER_BOTTOM_LEFT, adapted_corner, corner_radius, height, height - adapted_border[MARGIN_BOTTOM], height - adapted_border[MARGIN_TOP]);

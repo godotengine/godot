@@ -50,7 +50,7 @@ void RenderPipelineVertexFormatCacheRD::_clear() {
 
 	if (versions) {
 		for (uint32_t i = 0; i < version_count; i++) {
-			//shader may be gone, so this may not be valid
+			// shader may be gone, so this may not be valid
 			if (RD::get_singleton()->render_pipeline_is_valid(versions[i].pipeline)) {
 				RD::get_singleton()->free(versions[i].pipeline);
 			}
@@ -82,7 +82,7 @@ void RenderPipelineVertexFormatCacheRD::update_shader(RID p_shader) {
 
 void RenderPipelineVertexFormatCacheRD::clear() {
 	_clear();
-	shader = RID(); //clear shader
+	shader = RID(); // clear shader
 	input_mask = 0;
 }
 

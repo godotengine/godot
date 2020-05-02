@@ -87,7 +87,7 @@ bool ShaderGLES2::bind() {
 
 	ERR_FAIL_COND_V(!version, false);
 
-	if (!version->ok) { //broken, unable to bind (do not throw error, you saw it before already when it failed compilation).
+	if (!version->ok) { // broken, unable to bind (do not throw error, you saw it before already when it failed compilation).
 		glUseProgram(0);
 		return false;
 	}
@@ -132,7 +132,7 @@ static void _display_error_with_code(const String &p_error, const Vector<const c
 static String _mkid(const String &p_id) {
 
 	String id = "m_" + p_id;
-	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
+	return id.replace("__", "_dus_"); // doubleunderscore is reserved in glsl
 }
 
 ShaderGLES2::Version *ShaderGLES2::get_current_version() {
@@ -620,7 +620,7 @@ void ShaderGLES2::free_custom_shader(uint32_t p_code_id) {
 
 	ERR_FAIL_COND(!custom_code_map.has(p_code_id));
 	if (conditional_version.code_version == p_code_id) {
-		conditional_version.code_version = 0; //do not keep using a version that is going away
+		conditional_version.code_version = 0; // do not keep using a version that is going away
 		unbind();
 	}
 
@@ -664,7 +664,7 @@ void ShaderGLES2::use_material(void *p_material) {
 
 		Map<StringName, GLint>::Element *L = v->custom_uniform_locations.find(E->key());
 		if (!L || L->get() < 0)
-			continue; //uniform not valid
+			continue; // uniform not valid
 
 		GLuint location = L->get();
 
@@ -969,7 +969,7 @@ void ShaderGLES2::use_material(void *p_material) {
 					ERR_PRINT("ShaderNode type missing, bug?");
 				} break;
 			}
-		} else { //zero
+		} else { // zero
 
 			switch (E->get().type) {
 				case ShaderLanguage::TYPE_BOOL: {

@@ -251,7 +251,7 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		int from = buffer_size - to_mix;
 		int from_buf = p_frames - todo;
 
-		//master master, send to output
+		// master master, send to output
 		int cs = master->channels.size();
 		for (int k = 0; k < cs; k++) {
 
@@ -296,26 +296,26 @@ void AudioServer::_mix_step() {
 
 	for (int i = 0; i < buses.size(); i++) {
 		Bus *bus = buses[i];
-		bus->index_cache = i; //might be moved around by editor, so..
+		bus->index_cache = i; // might be moved around by editor, so..
 		for (int k = 0; k < bus->channels.size(); k++) {
 
 			bus->channels.write[k].used = false;
 		}
 
 		if (bus->solo) {
-			//solo chain
+			// solo chain
 			solo_mode = true;
 			bus->soloed = true;
 			do {
 
 				if (bus != buses[0]) {
-					//everything has a send save for master bus
+					// everything has a send save for master bus
 					if (!bus_map.has(bus->send)) {
-						bus = buses[0]; //send to master
+						bus = buses[0]; // send to master
 					} else {
 						int prev_index_cache = bus->index_cache;
 						bus = bus_map[bus->send];
-						if (prev_index_cache >= bus->index_cache) { //invalid, send to master
+						if (prev_index_cache >= bus->index_cache) { // invalid, send to master
 							bus = buses[0];
 						}
 					}
@@ -331,20 +331,20 @@ void AudioServer::_mix_step() {
 		}
 	}
 
-	//make callbacks for mixing the audio
+	// make callbacks for mixing the audio
 	for (Set<CallbackItem>::Element *E = callbacks.front(); E; E = E->next()) {
 
 		E->get().callback(E->get().userdata);
 	}
 
 	for (int i = buses.size() - 1; i >= 0; i--) {
-		//go bus by bus
+		// go bus by bus
 		Bus *bus = buses[i];
 
 		for (int k = 0; k < bus->channels.size(); k++) {
 
 			if (bus->channels[k].active && !bus->channels[k].used) {
-				//buffer was not used, but it's still active, so it must be cleaned
+				// buffer was not used, but it's still active, so it must be cleaned
 				AudioFrame *buf = bus->channels.write[k].buffer.ptrw();
 
 				for (uint32_t j = 0; j < buffer_size; j++) {
@@ -354,7 +354,7 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		//process effects
+		// process effects
 		if (!bus->bypass) {
 			for (int j = 0; j < bus->effects.size(); j++) {
 
@@ -372,7 +372,7 @@ void AudioServer::_mix_step() {
 					bus->channels.write[k].effect_instances.write[j]->process(bus->channels[k].buffer.ptr(), temp_buffer.write[k].ptrw(), buffer_size);
 				}
 
-				//swap buffers, so internal buffer always has the right data
+				// swap buffers, so internal buffer always has the right data
 				for (int k = 0; k < bus->channels.size(); k++) {
 
 					if (!(buses[i]->channels[k].active || bus->channels[k].effect_instances[j]->process_silence()))
@@ -386,17 +386,17 @@ void AudioServer::_mix_step() {
 			}
 		}
 
-		//process send
+		// process send
 
 		Bus *send = nullptr;
 
 		if (i > 0) {
-			//everything has a send save for master bus
+			// everything has a send save for master bus
 			if (!bus_map.has(bus->send)) {
 				send = buses[0];
 			} else {
 				send = bus_map[bus->send];
-				if (send->index_cache >= bus->index_cache) { //invalid, send to master
+				if (send->index_cache >= bus->index_cache) { // invalid, send to master
 					send = buses[0];
 				}
 			}
@@ -423,7 +423,7 @@ void AudioServer::_mix_step() {
 				}
 			}
 
-			//apply volume and compute peak
+			// apply volume and compute peak
 			for (uint32_t j = 0; j < buffer_size; j++) {
 
 				buf[j] *= volume;
@@ -441,18 +441,18 @@ void AudioServer::_mix_step() {
 			bus->channels.write[k].peak_volume = AudioFrame(Math::linear2db(peak.l + 0.0000000001), Math::linear2db(peak.r + 0.0000000001));
 
 			if (!bus->channels[k].used) {
-				//see if any audio is contained, because channel was not used
+				// see if any audio is contained, because channel was not used
 
 				if (MAX(peak.r, peak.l) > Math::db2linear(channel_disable_threshold_db)) {
 					bus->channels.write[k].last_mix_with_audio = mix_frames;
 				} else if (mix_frames - bus->channels[k].last_mix_with_audio > channel_disable_frames) {
 					bus->channels.write[k].active = false;
-					continue; //went inactive, don't mix.
+					continue; // went inactive, don't mix.
 				}
 			}
 
 			if (send) {
-				//if not master bus, send
+				// if not master bus, send
 				AudioFrame *target_buf = thread_get_channel_mix_buffer(send->index_cache, k);
 
 				for (uint32_t j = 0; j < buffer_size; j++) {
@@ -675,7 +675,7 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 
 	ERR_FAIL_INDEX(p_bus, buses.size());
 	if (p_bus == 0 && p_name != "Master")
-		return; //bus 0 is always master
+		return; // bus 0 is always master
 
 	MARK_EDITED
 
@@ -835,7 +835,7 @@ void AudioServer::add_bus_effect(int p_bus, const Ref<AudioEffect> &p_effect, in
 
 	Bus::Effect fx;
 	fx.effect = p_effect;
-	//fx.instance=p_effect->instance();
+	// fx.instance=p_effect->instance();
 	fx.enabled = true;
 #ifdef DEBUG_ENABLED
 	fx.prof_time = 0;
@@ -973,7 +973,7 @@ void AudioServer::init() {
 	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/channel_disable_threshold_db", -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST("audio/channel_disable_time", 2.0)) * get_mix_rate();
 	ProjectSettings::get_singleton()->set_custom_property_info("audio/channel_disable_time", PropertyInfo(Variant::FLOAT, "audio/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"));
-	buffer_size = 1024; //hardcoded for now
+	buffer_size = 1024; // hardcoded for now
 
 	init_channels_and_buffers();
 
@@ -985,7 +985,7 @@ void AudioServer::init() {
 		AudioDriver::get_singleton()->start();
 
 #ifdef TOOLS_ENABLED
-	set_edited(false); //avoid editors from thinking this was edited
+	set_edited(false); // avoid editors from thinking this was edited
 #endif
 
 	GLOBAL_DEF_RST("audio/video_delay_compensation_ms", 0);

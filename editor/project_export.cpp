@@ -1072,7 +1072,7 @@ ProjectExportDialog::ProjectExportDialog() {
 #ifndef _MSC_VER
 #warning must reimplement drag forward
 #endif
-	//presets->set_drag_forwarding(this);
+	// presets->set_drag_forwarding(this);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(ToolButton);
@@ -1176,7 +1176,7 @@ ProjectExportDialog::ProjectExportDialog() {
 #ifndef _MSC_VER
 #warning must reimplement drag forward
 #endif
-	//patches->set_drag_forwarding(this);
+	// patches->set_drag_forwarding(this);
 	patches->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 
 	HBoxContainer *patches_hb = memnew(HBoxContainer);

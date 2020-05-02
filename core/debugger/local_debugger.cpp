@@ -70,7 +70,7 @@ struct LocalDebugger::ScriptsProfiler {
 	void _print_frame_data(bool p_accumulated) {
 		uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
 
-		if (!p_accumulated && diff < 1000000) //show every one second
+		if (!p_accumulated && diff < 1000000) // show every one second
 			return;
 
 		idle_accum = OS::get_singleton()->get_ticks_usec();
@@ -152,7 +152,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 			for (int i = 0; i < total_frames; i++) {
 
-				String cfi = (current_frame == i) ? "*" : " "; //current frame indicator
+				String cfi = (current_frame == i) ? "*" : " "; // current frame indicator
 				print_line(cfi + "Frame " + itos(i) + " - " + script_lang->debug_get_stack_level_source(i) + ":" + itos(script_lang->debug_get_stack_level_line(i)) + " in function '" + script_lang->debug_get_stack_level_function(i) + "'");
 			}
 

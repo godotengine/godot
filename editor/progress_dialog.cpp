@@ -112,7 +112,7 @@ void BackgroundProgress::add_task(const String &p_task, const String &p_label, i
 }
 void BackgroundProgress::task_step(const String &p_task, int p_step) {
 
-	//this code is weird, but it prevents deadlock.
+	// this code is weird, but it prevents deadlock.
 	bool no_updates = true;
 	{
 		_THREAD_SAFE_METHOD_
@@ -152,7 +152,7 @@ void ProgressDialog::_popup() {
 	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
 	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
-	//raise();
+	// raise();
 	popup_centered(ms);
 }
 

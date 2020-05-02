@@ -127,7 +127,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		CustomFont->set_antialiased(font_antialiased);
 		CustomFont->set_hinting(font_hinting);
 		CustomFont->set_font_path(custom_font_path);
-		CustomFont->set_force_autohinter(true); //just looks better..i think?
+		CustomFont->set_force_autohinter(true); // just looks better..i think?
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
 	}
@@ -141,7 +141,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 		CustomFontBold->set_antialiased(font_antialiased);
 		CustomFontBold->set_hinting(font_hinting);
 		CustomFontBold->set_font_path(custom_font_path_bold);
-		CustomFontBold->set_force_autohinter(true); //just looks better..i think?
+		CustomFontBold->set_force_autohinter(true); // just looks better..i think?
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font_bold", "");
 	}
@@ -168,7 +168,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	DefaultFont->set_antialiased(font_antialiased);
 	DefaultFont->set_hinting(font_hinting);
 	DefaultFont->set_font_ptr(_font_NotoSansUI_Regular, _font_NotoSansUI_Regular_size);
-	DefaultFont->set_force_autohinter(true); //just looks better..i think?
+	DefaultFont->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<DynamicFontData> DefaultFontBold;
 	DefaultFontBold.instance();
@@ -182,42 +182,42 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	FontFallback->set_antialiased(font_antialiased);
 	FontFallback->set_hinting(font_hinting);
 	FontFallback->set_font_ptr(_font_DroidSansFallback, _font_DroidSansFallback_size);
-	FontFallback->set_force_autohinter(true); //just looks better..i think?
+	FontFallback->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<DynamicFontData> FontJapanese;
 	FontJapanese.instance();
 	FontJapanese->set_antialiased(font_antialiased);
 	FontJapanese->set_hinting(font_hinting);
 	FontJapanese->set_font_ptr(_font_DroidSansJapanese, _font_DroidSansJapanese_size);
-	FontJapanese->set_force_autohinter(true); //just looks better..i think?
+	FontJapanese->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<DynamicFontData> FontArabic;
 	FontArabic.instance();
 	FontArabic->set_antialiased(font_antialiased);
 	FontArabic->set_hinting(font_hinting);
 	FontArabic->set_font_ptr(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
-	FontArabic->set_force_autohinter(true); //just looks better..i think?
+	FontArabic->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<DynamicFontData> FontHebrew;
 	FontHebrew.instance();
 	FontHebrew->set_antialiased(font_antialiased);
 	FontHebrew->set_hinting(font_hinting);
 	FontHebrew->set_font_ptr(_font_NotoSansHebrew_Regular, _font_NotoSansHebrew_Regular_size);
-	FontHebrew->set_force_autohinter(true); //just looks better..i think?
+	FontHebrew->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<DynamicFontData> FontThai;
 	FontThai.instance();
 	FontThai->set_antialiased(font_antialiased);
 	FontThai->set_hinting(font_hinting);
 	FontThai->set_font_ptr(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
-	FontThai->set_force_autohinter(true); //just looks better..i think?
+	FontThai->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<DynamicFontData> FontHindi;
 	FontHindi.instance();
 	FontHindi->set_antialiased(font_antialiased);
 	FontHindi->set_hinting(font_hinting);
 	FontHindi->set_font_ptr(_font_NotoSansDevanagariUI_Regular, _font_NotoSansDevanagariUI_Regular_size);
-	FontHindi->set_force_autohinter(true); //just looks better..i think?
+	FontHindi->set_force_autohinter(true); // just looks better..i think?
 
 	/* Hack */
 

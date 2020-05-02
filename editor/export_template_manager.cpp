@@ -195,7 +195,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	}
 	int ret = unzGoToFirstFile(pkg);
 
-	int fc = 0; //count them and find version
+	int fc = 0; // count them and find version
 	String version;
 	String contents_dir;
 
@@ -212,7 +212,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			Vector<uint8_t> data;
 			data.resize(info.uncompressed_size);
 
-			//read
+			// read
 			unzOpenCurrentFile(pkg);
 			ret = unzReadCurrentFile(pkg, data.ptrw(), data.size());
 			unzCloseCurrentFile(pkg);
@@ -267,7 +267,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 
 	while (ret == UNZ_OK) {
 
-		//get filename
+		// get filename
 		unz_file_info info;
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
@@ -284,7 +284,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		Vector<uint8_t> data;
 		data.resize(info.uncompressed_size);
 
-		//read
+		// read
 		unzOpenCurrentFile(pkg);
 		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);

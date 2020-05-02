@@ -79,7 +79,7 @@ Size2 EditorProperty::get_minimum_size() const {
 	if (bottom_editor != nullptr && bottom_editor->is_visible()) {
 		ms.height += get_theme_constant("vseparation", "Tree");
 		Size2 bems = bottom_editor->get_combined_minimum_size();
-		//bems.width += get_constant("item_margin", "Tree");
+		// bems.width += get_constant("item_margin", "Tree");
 		ms.height += bems.height;
 		ms.width = MAX(ms.width, bems.width);
 	}
@@ -112,7 +112,7 @@ void EditorProperty::_notification(int p_what) {
 			int height = font->get_height();
 			bool no_children = true;
 
-			//compute room needed
+			// compute room needed
 			for (int i = 0; i < get_child_count(); i++) {
 
 				Control *c = Object::cast_to<Control>(get_child(i));
@@ -139,7 +139,7 @@ void EditorProperty::_notification(int p_what) {
 
 			if (bottom_editor) {
 
-				int m = 0; //get_constant("item_margin", "Tree");
+				int m = 0; // get_constant("item_margin", "Tree");
 
 				bottom_rect = Rect2(m, rect.size.height + get_theme_constant("vseparation", "Tree"), size.width - m, bottom_editor->get_combined_minimum_size().height);
 			}
@@ -173,7 +173,7 @@ void EditorProperty::_notification(int p_what) {
 			}
 		}
 
-		//set children
+		// set children
 		for (int i = 0; i < get_child_count(); i++) {
 
 			Control *c = Object::cast_to<Control>(get_child(i));
@@ -193,7 +193,7 @@ void EditorProperty::_notification(int p_what) {
 			bottom_child_rect = bottom_rect;
 		}
 
-		update(); //need to redraw text
+		update(); // need to redraw text
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
@@ -226,7 +226,7 @@ void EditorProperty::_notification(int p_what) {
 			color = get_theme_color("property_color", "Editor");
 		}
 		if (label.find(".") != -1) {
-			color.a = 0.5; //this should be un-hacked honestly, as it's used for editor overrides
+			color.a = 0.5; // this should be un-hacked honestly, as it's used for editor overrides
 		}
 
 		int ofs = 0;
@@ -410,14 +410,14 @@ bool EditorPropertyRevert::get_instanced_node_original_property(Node *p_node, co
 			}
 		}
 		if (node == edited_scene) {
-			//just in case
+			// just in case
 			break;
 		}
 		node = node->get_owner();
 	}
 
 	if (!found && node) {
-		//if not found, try default class value
+		// if not found, try default class value
 		Variant attempt = ClassDB::class_get_default_property_value(node->get_class_name(), p_prop);
 		if (attempt.get_type() != Variant::NIL) {
 			found = true;
@@ -433,7 +433,7 @@ bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Varian
 	// this is a pretty difficult function, because a property may not be saved but may have
 	// the flag to not save if one or if zero
 
-	//make sure there is an actual state
+	// make sure there is an actual state
 	{
 		Node *node = p_node;
 		if (!node)
@@ -457,21 +457,21 @@ bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Varian
 				found_state = true;
 			}
 			if (node == edited_scene) {
-				//just in case
+				// just in case
 				break;
 			}
 			node = node->get_owner();
 		}
 
 		if (!found_state)
-			return false; //pointless to check if we are not comparing against anything.
+			return false; // pointless to check if we are not comparing against anything.
 	}
 
 	if (p_current.get_type() == Variant::FLOAT && p_orig.get_type() == Variant::FLOAT) {
 		float a = p_current;
 		float b = p_orig;
 
-		return !Math::is_equal_approx(a, b); //this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+		return !Math::is_equal_approx(a, b); // this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
 	}
 
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, p_current, p_orig));
@@ -484,7 +484,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 	Node *node = Object::cast_to<Node>(p_object);
 
 	if (node && EditorPropertyRevert::may_node_be_in_instance(node)) {
-		//check for difference including instantiation
+		// check for difference including instantiation
 		Variant vorig;
 		if (EditorPropertyRevert::get_instanced_node_original_property(node, p_property, vorig)) {
 			Variant v = p_object->get(p_property);
@@ -494,7 +494,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 			}
 		}
 	} else {
-		//check for difference against default class value instead
+		// check for difference against default class value instead
 		Variant default_value = ClassDB::class_get_default_property_value(p_object->get_class_name(), p_property);
 		if (default_value != Variant() && default_value != p_object->get(p_property)) {
 			has_revert = true;
@@ -524,7 +524,7 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 void EditorProperty::update_reload_status() {
 
 	if (property == StringName())
-		return; //no property, so nothing to do
+		return; // no property, so nothing to do
 
 	bool has_reload = EditorPropertyRevert::can_property_revert(object, property);
 
@@ -831,7 +831,7 @@ Control *EditorProperty::make_custom_tooltip(const String &p_text) const {
 
 	tooltip_text = p_text;
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	//help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
+	// help_bit->add_theme_style_override("panel", get_theme_stylebox("panel", "TooltipPanel"));
 	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
 
 	String text;
@@ -1088,7 +1088,7 @@ Control *EditorInspectorCategory::make_custom_tooltip(const String &p_text) cons
 				text += "\n" + property_doc;
 			}
 		}
-		help_bit->set_text(text); //hack so it uses proper theme once inside scene
+		help_bit->set_text(text); // hack so it uses proper theme once inside scene
 	}
 
 	return help_bit;
@@ -1159,7 +1159,7 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		Rect2 rect(offset, size - offset);
 
-		//set children
+		// set children
 		for (int i = 0; i < get_child_count(); i++) {
 
 			Control *c = Object::cast_to<Control>(get_child(i));
@@ -1173,7 +1173,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			fit_child_in_rect(c, rect);
 		}
 
-		update(); //need to redraw text
+		update(); // need to redraw text
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
@@ -1264,7 +1264,7 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 		Ref<Font> font = get_theme_font("font", "Tree");
-		if (mb->get_position().y > font->get_height()) { //clicked outside
+		if (mb->get_position().y > font->get_height()) { // clicked outside
 			return;
 		}
 
@@ -1301,7 +1301,7 @@ void EditorInspectorSection::fold() {
 		return;
 
 	if (!vbox_added)
-		return; //kinda pointless
+		return; // kinda pointless
 
 	object->editor_set_section_unfold(section, false);
 	vbox->hide();
@@ -1343,7 +1343,7 @@ EditorProperty *EditorInspector::instantiate_property_editor(Object *p_object, V
 
 		inspector_plugins[i]->parse_property(p_object, p_type, p_path, p_hint, p_hint_text, p_usage, p_wide);
 		if (inspector_plugins[i]->added_editors.size()) {
-			for (int j = 1; j < inspector_plugins[i]->added_editors.size(); j++) { //only keep first one
+			for (int j = 1; j < inspector_plugins[i]->added_editors.size(); j++) { // only keep first one
 				memdelete(inspector_plugins[i]->added_editors[j].property_editor);
 			}
 
@@ -1367,7 +1367,7 @@ void EditorInspector::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 
 	for (int i = 0; i < inspector_plugin_count; i++) {
 		if (inspector_plugins[i] == p_plugin)
-			return; //already exists
+			return; // already exists
 	}
 	inspector_plugins[inspector_plugin_count++] = p_plugin;
 }
@@ -1434,7 +1434,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 			if (F->get().properties.size()) {
 
 				if (F->get().properties.size() == 1) {
-					//since it's one, associate:
+					// since it's one, associate:
 					ep->property = F->get().properties[0];
 					ep->property_usage = 0;
 				}
@@ -1477,7 +1477,7 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 			return true;
 		}
 		if (profile->is_class_disabled(class_name)) {
-			//won't see properties of a disabled class
+			// won't see properties of a disabled class
 			return true;
 		}
 		class_name = ClassDB::get_parent_class(class_name);
@@ -1488,12 +1488,12 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 
 void EditorInspector::update_tree() {
 
-	//to update properly if all is refreshed
+	// to update properly if all is refreshed
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
 
 	if (property_focusable != -1) {
-		//check focusable is really focusable
+		// check focusable is really focusable
 		bool restore_focus = false;
 		Control *focused = get_focus_owner();
 		if (focused) {
@@ -1501,8 +1501,8 @@ void EditorInspector::update_tree() {
 			while (parent) {
 				EditorInspector *inspector = Object::cast_to<EditorInspector>(parent);
 				if (inspector) {
-					restore_focus = inspector == this; //may be owned by another inspector
-					break; //exit after the first inspector is found, since there may be nested ones
+					restore_focus = inspector == this; // may be owned by another inspector
+					break; // exit after the first inspector is found, since there may be nested ones
 				}
 				parent = parent->get_parent();
 			}
@@ -1520,7 +1520,7 @@ void EditorInspector::update_tree() {
 
 	List<Ref<EditorInspectorPlugin>> valid_plugins;
 
-	for (int i = inspector_plugin_count - 1; i >= 0; i--) { //start by last, so lastly added can override newly added
+	for (int i = inspector_plugin_count - 1; i >= 0; i--) { // start by last, so lastly added can override newly added
 		if (!inspector_plugins[i]->can_handle(object))
 			continue;
 		valid_plugins.push_back(inspector_plugins[i]);
@@ -1566,7 +1566,7 @@ void EditorInspector::update_tree() {
 
 		PropertyInfo &p = I->get();
 
-		//make sure the property can be edited
+		// make sure the property can be edited
 
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 
@@ -1596,7 +1596,7 @@ void EditorInspector::update_tree() {
 
 			List<PropertyInfo>::Element *N = I->next();
 			bool valid = true;
-			//if no properties in category, skip
+			// if no properties in category, skip
 			while (N) {
 				if (N->get().usage & PROPERTY_USAGE_EDITOR)
 					break;
@@ -1607,11 +1607,11 @@ void EditorInspector::update_tree() {
 				N = N->next();
 			}
 			if (!valid)
-				continue; //empty, ignore
+				continue; // empty, ignore
 
 			EditorInspectorCategory *category = memnew(EditorInspectorCategory);
 			main_vbox->add_child(category);
-			category_vbox = nullptr; //reset
+			category_vbox = nullptr; // reset
 
 			String type = p.name;
 			category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
@@ -1646,7 +1646,7 @@ void EditorInspector::update_tree() {
 			continue;
 
 		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && RS::get_singleton()->is_low_end())
-			continue; //do not show this property in low end gfx
+			continue; // do not show this property in low end gfx
 
 		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
 			continue;
@@ -1659,9 +1659,9 @@ void EditorInspector::update_tree() {
 				if (basename.begins_with(subgroup_base)) {
 					basename = basename.replace_first(subgroup_base, "");
 				} else if (subgroup_base.begins_with(basename)) {
-					//keep it, this is used pretty often
+					// keep it, this is used pretty often
 				} else {
-					subgroup = ""; //no longer using subgroup base, clear
+					subgroup = ""; // no longer using subgroup base, clear
 				}
 			}
 		}
@@ -1670,9 +1670,9 @@ void EditorInspector::update_tree() {
 				if (basename.begins_with(group_base)) {
 					basename = basename.replace_first(group_base, "");
 				} else if (group_base.begins_with(basename)) {
-					//keep it, this is used pretty often
+					// keep it, this is used pretty often
 				} else {
-					group = ""; //no longer using group base, clear
+					group = ""; // no longer using group base, clear
 					subgroup = "";
 				}
 			}
@@ -1749,7 +1749,7 @@ void EditorInspector::update_tree() {
 			}
 
 			if (current_vbox == main_vbox) {
-				//do not add directly to the main vbox, given it has no spacing
+				// do not add directly to the main vbox, given it has no spacing
 				if (category_vbox == nullptr) {
 					category_vbox = memnew(VBoxContainer);
 				}
@@ -1827,7 +1827,7 @@ void EditorInspector::update_tree() {
 			Ref<EditorInspectorPlugin> ped = E->get();
 			bool exclusive = ped->parse_property(object, p.type, p.name, p.hint, p.hint_string, p.usage, wide_editors);
 
-			List<EditorInspectorPlugin::AddedEditor> editors = ped->added_editors; //make a copy, since plugins may be used again in a sub-inspector
+			List<EditorInspectorPlugin::AddedEditor> editors = ped->added_editors; // make a copy, since plugins may be used again in a sub-inspector
 			ped->added_editors.clear();
 
 			for (List<EditorInspectorPlugin::AddedEditor>::Element *F = editors.front(); F; F = F->next()) {
@@ -1835,22 +1835,22 @@ void EditorInspector::update_tree() {
 				EditorProperty *ep = Object::cast_to<EditorProperty>(F->get().property_editor);
 
 				if (ep) {
-					//set all this before the control gets the ENTER_TREE notification
+					// set all this before the control gets the ENTER_TREE notification
 					ep->object = object;
 
 					if (F->get().properties.size()) {
 
 						if (F->get().properties.size() == 1) {
-							//since it's one, associate:
+							// since it's one, associate:
 							ep->property = F->get().properties[0];
 							ep->property_usage = p.usage;
-							//and set label?
+							// and set label?
 						}
 
 						if (F->get().label != String()) {
 							ep->set_label(F->get().label);
 						} else {
-							//use existin one
+							// use existin one
 							ep->set_label(name);
 						}
 						for (int i = 0; i < F->get().properties.size(); i++) {
@@ -1914,7 +1914,7 @@ void EditorInspector::update_tree() {
 		_parse_added_editors(main_vbox, ped);
 	}
 
-	//see if this property exists and should be kept
+	// see if this property exists and should be kept
 }
 void EditorInspector::update_property(const String &p_prop) {
 	if (!editor_property_map.has(p_prop))
@@ -1962,9 +1962,9 @@ void EditorInspector::edit(Object *p_object) {
 	object = p_object;
 
 	if (object) {
-		update_scroll_request = 0; //reset
-		if (scroll_cache.has(object->get_instance_id())) { //if exists, set something else
-			update_scroll_request = scroll_cache[object->get_instance_id()]; //done this way because wait until full size is accommodated
+		update_scroll_request = 0; // reset
+		if (scroll_cache.has(object->get_instance_id())) { // if exists, set something else
+			update_scroll_request = scroll_cache[object->get_instance_id()]; // done this way because wait until full size is accommodated
 		}
 		object->add_change_receptor(this);
 		update_tree();
@@ -2088,7 +2088,7 @@ void EditorInspector::set_use_deletable_properties(bool p_enabled) {
 
 void EditorInspector::_edit_request_change(Object *p_object, const String &p_property) {
 
-	if (object != p_object) //may be undoing/redoing for a non edited object, so ignore
+	if (object != p_object) // may be undoing/redoing for a non edited object, so ignore
 		return;
 
 	if (changing)
@@ -2215,7 +2215,7 @@ void EditorInspector::_property_keyed(const String &p_path, bool p_advance) {
 	if (!object)
 		return;
 
-	emit_signal("property_keyed", p_path, object->get(p_path), p_advance); //second param is deprecated
+	emit_signal("property_keyed", p_path, object->get(p_path), p_advance); // second param is deprecated
 }
 
 void EditorInspector::_property_deleted(const String &p_path) {
@@ -2224,7 +2224,7 @@ void EditorInspector::_property_deleted(const String &p_path) {
 	if (!object)
 		return;
 
-	emit_signal("property_deleted", p_path); //second param is deprecated
+	emit_signal("property_deleted", p_path); // second param is deprecated
 }
 
 void EditorInspector::_property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance) {
@@ -2232,7 +2232,7 @@ void EditorInspector::_property_keyed_with_value(const String &p_path, const Var
 	if (!object)
 		return;
 
-	emit_signal("property_keyed", p_path, p_value, p_advance); //second param is deprecated
+	emit_signal("property_keyed", p_path, p_value, p_advance); // second param is deprecated
 }
 
 void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
@@ -2240,7 +2240,7 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 	if (!object)
 		return;
 
-	//property checked
+	// property checked
 	if (autoclear) {
 
 		if (!p_checked) {
@@ -2276,7 +2276,7 @@ void EditorInspector::_property_selected(const String &p_path, int p_focusable) 
 
 	property_selected = p_path;
 	property_focusable = p_focusable;
-	//deselect the others
+	// deselect the others
 	for (Map<StringName, List<EditorProperty *>>::Element *F = editor_property_map.front(); F; F = F->next()) {
 		if (F->key() == property_selected)
 			continue;
@@ -2321,7 +2321,7 @@ void EditorInspector::_notification(int p_what) {
 		}
 	}
 	if (p_what == NOTIFICATION_PREDELETE) {
-		edit(nullptr); //just in case
+		edit(nullptr); // just in case
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
@@ -2387,13 +2387,13 @@ void EditorInspector::_notification(int p_what) {
 }
 
 void EditorInspector::_changed_callback(Object *p_changed, const char *p_prop) {
-	//this is called when property change is notified via _change_notify()
+	// this is called when property change is notified via _change_notify()
 	_edit_request_change(p_changed, p_prop);
 }
 
 void EditorInspector::_vscroll_changed(double p_offset) {
 
-	if (update_scroll_request >= 0) //waiting, do nothing
+	if (update_scroll_request >= 0) // waiting, do nothing
 		return;
 
 	if (object) {

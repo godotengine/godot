@@ -99,18 +99,18 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 
 	uint64_t time = OS::get_singleton()->get_ticks_usec();
 
-	//copy everything over first, since this only really does capture
+	// copy everything over first, since this only really does capture
 	for (int i = 0; i < p_frame_count; i++) {
 		p_dst_frames[i] = p_src_frames[i];
 	}
 
-	//capture spectrum
+	// capture spectrum
 	while (p_frame_count) {
 		int to_fill = fft_size * 2 - temporal_fft_pos;
 		to_fill = MIN(to_fill, p_frame_count);
 
 		float *fftw = temporal_fft.ptrw();
-		for (int i = 0; i < to_fill; i++) { //left and right buffers
+		for (int i = 0; i < to_fill; i++) { // left and right buffers
 			float window = -0.5 * Math::cos(2.0 * Math_PI * (double)i / (double)to_fill) + 0.5;
 			fftw[(i + temporal_fft_pos) * 2] = window * p_src_frames[i].l;
 			fftw[(i + temporal_fft_pos) * 2 + 1] = 0;
@@ -123,27 +123,27 @@ void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames
 		p_frame_count -= to_fill;
 
 		if (temporal_fft_pos == fft_size * 2) {
-			//time to do a FFT
+			// time to do a FFT
 			smbFft(fftw, fft_size * 2, -1);
 			smbFft(fftw + fft_size * 4, fft_size * 2, -1);
 			int next = (fft_pos + 1) % fft_count;
 
-			AudioFrame *hw = (AudioFrame *)fft_history[next].ptr(); //do not use write, avoid cow
+			AudioFrame *hw = (AudioFrame *)fft_history[next].ptr(); // do not use write, avoid cow
 
 			for (int i = 0; i < fft_size; i++) {
-				//abs(vec)/fft_size normalizes each frequency
+				// abs(vec)/fft_size normalizes each frequency
 				float window = 1.0; //-.5 * Math::cos(2. * Math_PI * (double)i / (double)fft_size) + .5;
 				hw[i].l = window * Vector2(fftw[i * 2], fftw[i * 2 + 1]).length() / float(fft_size);
 				hw[i].r = window * Vector2(fftw[fft_size * 4 + i * 2], fftw[fft_size * 4 + i * 2 + 1]).length() / float(fft_size);
 			}
 
-			fft_pos = next; //swap
+			fft_pos = next; // swap
 			temporal_fft_pos = 0;
 		}
 	}
 
-	//determine time of capture
-	double remainer_sec = (temporal_fft_pos / mix_rate); //subtract remainder from mix time
+	// determine time of capture
+	double remainer_sec = (temporal_fft_pos / mix_rate); // subtract remainder from mix time
 	last_fft_time = time - uint64_t(remainer_sec * 1000000.0);
 }
 
@@ -220,10 +220,10 @@ Ref<AudioEffectInstance> AudioEffectSpectrumAnalyzer::instance() {
 	ins->fft_pos = 0;
 	ins->last_fft_time = 0;
 	ins->fft_history.resize(ins->fft_count);
-	ins->temporal_fft.resize(ins->fft_size * 8); //x2 stereo, x2 amount of samples for freqs, x2 for input
+	ins->temporal_fft.resize(ins->fft_size * 8); // x2 stereo, x2 amount of samples for freqs, x2 for input
 	ins->temporal_fft_pos = 0;
 	for (int i = 0; i < ins->fft_count; i++) {
-		ins->fft_history.write[i].resize(ins->fft_size); //only magnitude matters
+		ins->fft_history.write[i].resize(ins->fft_size); // only magnitude matters
 		for (int j = 0; j < ins->fft_size; j++) {
 			ins->fft_history.write[i].write[j] = AudioFrame(0, 0);
 		}

@@ -81,7 +81,7 @@ static String _opstr(SL::Operator p_op) {
 static String _mkid(const String &p_id) {
 
 	String id = "m_" + p_id.replace("__", "_dus_");
-	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
+	return id.replace("__", "_dus_"); // doubleunderscore is reserved in glsl
 }
 
 static String f2sp0(float p_float) {
@@ -1057,7 +1057,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	// gl_InstanceID is not available in OpenGL ES 2.0
 	actions[RS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
 
-	//builtins
+	// builtins
 
 	actions[RS::SHADER_SPATIAL].renames["TIME"] = "time";
 	actions[RS::SHADER_SPATIAL].renames["VIEWPORT_SIZE"] = "viewport_size";
@@ -1088,11 +1088,11 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[RS::SHADER_SPATIAL].renames["SCREEN_TEXTURE"] = "screen_texture";
 	actions[RS::SHADER_SPATIAL].renames["DEPTH_TEXTURE"] = "depth_texture";
 	// Defined in GLES3, but not available in GLES2
-	//actions[RS::SHADER_SPATIAL].renames["DEPTH"] = "gl_FragDepth";
+	// actions[RS::SHADER_SPATIAL].renames["DEPTH"] = "gl_FragDepth";
 	actions[RS::SHADER_SPATIAL].renames["ALPHA_SCISSOR"] = "alpha_scissor";
 	actions[RS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
-	//for light
+	// for light
 	actions[RS::SHADER_SPATIAL].renames["VIEW"] = "view";
 	actions[RS::SHADER_SPATIAL].renames["LIGHT_COLOR"] = "light_color";
 	actions[RS::SHADER_SPATIAL].renames["LIGHT"] = "light";
@@ -1150,10 +1150,10 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[RS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
 
 	// Defined in GLES3, could be implemented in GLES2 too if there's a need for it
-	//actions[RS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
+	// actions[RS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
 	// Defined in GLES3, might not be possible in GLES2 as gl_FrontFacing is not available
-	//actions[RS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
-	//actions[RS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
+	// actions[RS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
+	// actions[RS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
 
 	bool force_lambert = GLOBAL_GET("rendering/quality/shading/force_lambert_over_burley");
 

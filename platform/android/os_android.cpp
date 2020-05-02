@@ -191,7 +191,7 @@ Error OS_Android::shell_open(String p_uri) {
 
 String OS_Android::get_resource_dir() const {
 
-	return "/"; //android has its own filesystem for resources inside the APK
+	return "/"; // android has its own filesystem for resources inside the APK
 }
 
 String OS_Android::get_locale() const {
@@ -221,21 +221,21 @@ String OS_Android::get_user_data_dir() const {
 	String data_dir = godot_io_java->get_user_data_dir();
 	if (data_dir != "") {
 
-		//store current dir
+		// store current dir
 		char real_current_dir_name[2048];
 		getcwd(real_current_dir_name, 2048);
 
-		//go to data dir
+		// go to data dir
 		chdir(data_dir.utf8().get_data());
 
-		//get actual data dir, so we resolve potential symlink (Android 6.0+ seems to use symlink)
+		// get actual data dir, so we resolve potential symlink (Android 6.0+ seems to use symlink)
 		char data_current_dir_name[2048];
 		getcwd(data_current_dir_name, 2048);
 
-		//cache by parsing utf8
+		// cache by parsing utf8
 		data_dir_cache.parse_utf8(data_current_dir_name);
 
-		//restore original dir so we don't mess things up
+		// restore original dir so we don't mess things up
 		chdir(real_current_dir_name);
 
 		return data_dir_cache;
@@ -268,8 +268,8 @@ Size2i OS_Android::get_display_size() const {
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
 #if defined(OPENGL_ENABLED)
-	//use_16bits_fbo = p_is_16;
-	//if (rasterizer)
+	// use_16bits_fbo = p_is_16;
+	// if (rasterizer)
 	//	rasterizer->set_force_16_bits_fbo(p_is_16);
 #endif
 }

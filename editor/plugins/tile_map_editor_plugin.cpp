@@ -1562,7 +1562,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 		if (node->get_half_offset() != TileMap::HALF_OFFSET_X && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_X) {
 
-			int max_lines = 2000; //avoid crash if size too small
+			int max_lines = 2000; // avoid crash if size too small
 
 			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
 
@@ -1576,7 +1576,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			}
 		} else {
 
-			int max_lines = 10000; //avoid crash if size too small
+			int max_lines = 10000; // avoid crash if size too small
 
 			for (int i = (si.position.x) - 1; i <= (si.position.x + si.size.x); i++) {
 
@@ -1601,7 +1601,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			}
 		}
 
-		int max_lines = 10000; //avoid crash if size too small
+		int max_lines = 10000; // avoid crash if size too small
 
 		if (node->get_half_offset() != TileMap::HALF_OFFSET_Y && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_Y) {
 

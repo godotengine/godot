@@ -93,12 +93,12 @@ void RasterizerRD::end_frame(bool p_swap_buffers) {
 #ifndef _MSC_VER
 #warning TODO: likely passa bool to swap buffers to avoid display?
 #endif
-	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
+	RD::get_singleton()->swap_buffers(); // probably should pass some bool to avoid display?
 }
 
 void RasterizerRD::initialize() {
 
-	{ //create framebuffer copy shader
+	{ // create framebuffer copy shader
 		RenderingDevice::ShaderStageData vert;
 		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
 		vert.spir_v = RenderingDevice::get_singleton()->shader_compile_from_source(RenderingDevice::SHADER_STAGE_VERTEX,
@@ -131,7 +131,7 @@ void RasterizerRD::initialize() {
 		}
 	}
 
-	{ //create index array for copy shader
+	{ // create index array for copy shader
 		Vector<uint8_t> pv;
 		pv.resize(6 * 4);
 		{
@@ -148,7 +148,7 @@ void RasterizerRD::initialize() {
 		copy_viewports_rd_array = RD::get_singleton()->index_array_create(copy_viewports_rd_index_buffer, 0, 6);
 	}
 
-	{ //pipeline
+	{ // pipeline
 		copy_viewports_rd_pipeline = RD::get_singleton()->render_pipeline_create(copy_viewports_rd_shader, RD::get_singleton()->screen_get_framebuffer_format(), RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled(), 0);
 	}
 	{ // sampler
@@ -167,7 +167,7 @@ void RasterizerRD::finalize() {
 	memdelete(canvas);
 	memdelete(storage);
 
-	//only need to erase these, the rest are erased by cascade
+	// only need to erase these, the rest are erased by cascade
 	RD::get_singleton()->free(copy_viewports_rd_index_buffer);
 	RD::get_singleton()->free(copy_viewports_rd_shader);
 	RD::get_singleton()->free(copy_viewports_sampler);

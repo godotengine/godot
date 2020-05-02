@@ -129,7 +129,7 @@ void Camera3D::_notification(int p_what) {
 			if (!get_tree()->is_node_being_edited(this)) {
 				if (is_current()) {
 					clear_current();
-					current = true; //keep it true
+					current = true; // keep it true
 
 				} else {
 					current = false;
@@ -231,7 +231,7 @@ void Camera3D::make_current() {
 
 	get_viewport()->_camera_set(this);
 
-	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
+	// get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
 
 void Camera3D::clear_current(bool p_enable_next) {
@@ -695,7 +695,7 @@ Camera3D::Camera3D() {
 	v_offset = 0;
 	h_offset = 0;
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
-	//active=false;
+	// active=false;
 	velocity_tracker.instance();
 	doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	set_notify_transform(true);
@@ -753,15 +753,15 @@ void ClippedCamera3D::_notification(int p_what) {
 		Plane parent_plane(parent_pos, cam_fw);
 
 		if (parent_plane.is_point_over(cam_pos)) {
-			//cam is beyond parent plane
+			// cam is beyond parent plane
 			return;
 		}
 
 		Vector3 ray_from = parent_plane.project(cam_pos);
 
-		clip_offset = 0; //reset by defau;t
+		clip_offset = 0; // reset by defau;t
 
-		{ //check if points changed
+		{ // check if points changed
 			Vector<Vector3> local_points = get_near_plane_points();
 
 			bool all_equal = true;
