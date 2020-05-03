@@ -196,6 +196,7 @@ class SeparatorAxisTest2D {
 	real_t margin_A;
 	real_t margin_B;
 	_CollectorCallback2D *callback;
+	Vector2 one_way_axis;
 
 public:
 	_FORCE_INLINE_ bool test_previous_axis() {
@@ -276,6 +277,11 @@ public:
 #endif
 
 			return false; // doesn't contain 0
+		}
+
+		// Don't count for best_axis is perpendicular to the one way axis
+		if (one_way_axis != Vector2() && Math::abs(one_way_axis.normalized().dot(axis.normalized())) < CMP_EPSILON) {
+			return true;
 		}
 
 		//use the smallest depth
@@ -365,7 +371,7 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A, const Transform2D &p_transform_a, const ShapeB *p_shape_B, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_A = Vector2(), const Vector2 &p_motion_B = Vector2(), real_t p_margin_A = 0, real_t p_margin_B = 0) {
+	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A, const Transform2D &p_transform_a, const ShapeB *p_shape_B, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_A = Vector2(), const Vector2 &p_motion_B = Vector2(), real_t p_margin_A = 0, real_t p_margin_B = 0, const Vector2 &p_one_way_axis = Vector2()) {
 
 		margin_A = p_margin_A;
 		margin_B = p_margin_B;
@@ -376,6 +382,7 @@ public:
 		transform_B = &p_transform_b;
 		motion_A = p_motion_A;
 		motion_B = p_motion_B;
+		one_way_axis = p_one_way_axis;
 
 		callback = p_collector;
 #ifdef DEBUG_ENABLED
@@ -393,15 +400,15 @@ public:
 			(castB && !separator.test_axis(((m_a) - ((m_b) + p_motion_b)).normalized())) || \
 			(castA && castB && !separator.test_axis(((m_a) + p_motion_a - ((m_b) + p_motion_b)).normalized())))
 
-typedef void (*CollisionFunc)(const Shape2DSW *, const Transform2D &, const Shape2DSW *, const Transform2D &, _CollectorCallback2D *p_collector, const Vector2 &, const Vector2 &, real_t, real_t);
+typedef void (*CollisionFunc)(const Shape2DSW *, const Transform2D &, const Shape2DSW *, const Transform2D &, _CollectorCallback2D *p_collector, const Vector2 &, const Vector2 &, real_t, real_t, const Vector2 &);
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_segment_segment(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_segment_segment(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW *>(p_a);
 	const SegmentShape2DSW *segment_B = static_cast<const SegmentShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW, SegmentShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, segment_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<SegmentShape2DSW, SegmentShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, segment_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -432,12 +439,12 @@ static void _collision_segment_segment(const Shape2DSW *p_a, const Transform2D &
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_segment_circle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_segment_circle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW *>(p_a);
 	const CircleShape2DSW *circle_B = static_cast<const CircleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW, CircleShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, circle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<SegmentShape2DSW, CircleShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, circle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -461,12 +468,12 @@ static void _collision_segment_circle(const Shape2DSW *p_a, const Transform2D &p
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_segment_rectangle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_segment_rectangle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW *>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW, RectangleShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, rectangle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<SegmentShape2DSW, RectangleShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, rectangle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -524,12 +531,12 @@ static void _collision_segment_rectangle(const Shape2DSW *p_a, const Transform2D
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_segment_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_segment_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW *>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<SegmentShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -556,12 +563,12 @@ static void _collision_segment_capsule(const Shape2DSW *p_a, const Transform2D &
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_segment_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_segment_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW *>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<SegmentShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(segment_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -592,12 +599,12 @@ static void _collision_segment_convex_polygon(const Shape2DSW *p_a, const Transf
 /////////
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_circle_circle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_circle_circle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW *>(p_a);
 	const CircleShape2DSW *circle_B = static_cast<const CircleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<CircleShape2DSW, CircleShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, circle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<CircleShape2DSW, CircleShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, circle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -612,12 +619,12 @@ static void _collision_circle_circle(const Shape2DSW *p_a, const Transform2D &p_
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_circle_rectangle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_circle_rectangle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW *>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<CircleShape2DSW, RectangleShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, rectangle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<CircleShape2DSW, RectangleShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, rectangle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -667,12 +674,12 @@ static void _collision_circle_rectangle(const Shape2DSW *p_a, const Transform2D 
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_circle_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_circle_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW *>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<CircleShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<CircleShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -694,12 +701,12 @@ static void _collision_circle_capsule(const Shape2DSW *p_a, const Transform2D &p
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_circle_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_circle_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW *>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<CircleShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<CircleShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(circle_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -723,12 +730,12 @@ static void _collision_circle_convex_polygon(const Shape2DSW *p_a, const Transfo
 /////////
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_rectangle_rectangle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_rectangle_rectangle(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW *>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<RectangleShape2DSW, RectangleShape2DSW, castA, castB, withMargin> separator(rectangle_A, p_transform_a, rectangle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<RectangleShape2DSW, RectangleShape2DSW, castA, castB, withMargin> separator(rectangle_A, p_transform_a, rectangle_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -793,12 +800,12 @@ static void _collision_rectangle_rectangle(const Shape2DSW *p_a, const Transform
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW *>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<RectangleShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(rectangle_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<RectangleShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(rectangle_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -860,12 +867,12 @@ static void _collision_rectangle_capsule(const Shape2DSW *p_a, const Transform2D
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_rectangle_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_rectangle_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW *>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<RectangleShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(rectangle_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<RectangleShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(rectangle_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -918,12 +925,12 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW *p_a, const Tran
 /////////
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_capsule_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_capsule_capsule(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const CapsuleShape2DSW *capsule_A = static_cast<const CapsuleShape2DSW *>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<CapsuleShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(capsule_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<CapsuleShape2DSW, CapsuleShape2DSW, castA, castB, withMargin> separator(capsule_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -958,12 +965,12 @@ static void _collision_capsule_capsule(const Shape2DSW *p_a, const Transform2D &
 }
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_capsule_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_capsule_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const CapsuleShape2DSW *capsule_A = static_cast<const CapsuleShape2DSW *>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<CapsuleShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(capsule_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<CapsuleShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(capsule_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -999,12 +1006,12 @@ static void _collision_capsule_convex_polygon(const Shape2DSW *p_a, const Transf
 /////////
 
 template <bool castA, bool castB, bool withMargin>
-static void _collision_convex_polygon_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B) {
+static void _collision_convex_polygon_convex_polygon(const Shape2DSW *p_a, const Transform2D &p_transform_a, const Shape2DSW *p_b, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_a, const Vector2 &p_motion_b, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	const ConvexPolygonShape2DSW *convex_A = static_cast<const ConvexPolygonShape2DSW *>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW *>(p_b);
 
-	SeparatorAxisTest2D<ConvexPolygonShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(convex_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B);
+	SeparatorAxisTest2D<ConvexPolygonShape2DSW, ConvexPolygonShape2DSW, castA, castB, withMargin> separator(convex_A, p_transform_a, convex_B, p_transform_b, p_collector, p_motion_a, p_motion_b, p_margin_A, p_margin_B, p_one_way_axis);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -1040,7 +1047,7 @@ static void _collision_convex_polygon_convex_polygon(const Shape2DSW *p_a, const
 
 ////////
 
-bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CollisionSolver2DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B) {
+bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Vector2 &p_motion_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, const Vector2 &p_motion_B, CollisionSolver2DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap, Vector2 *sep_axis, real_t p_margin_A, real_t p_margin_B, const Vector2 &p_one_way_axis) {
 
 	Physics2DServer::ShapeType type_A = p_shape_A->get_type();
 
@@ -1337,7 +1344,7 @@ bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D 
 
 	ERR_FAIL_COND_V(!collision_func, false);
 
-	collision_func(A, *transform_A, B, *transform_B, &callback, *motion_A, *motion_B, margin_A, margin_B);
+	collision_func(A, *transform_A, B, *transform_B, &callback, *motion_A, *motion_B, margin_A, margin_B, p_one_way_axis);
 
 	return callback.collided;
 }
