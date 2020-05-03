@@ -961,7 +961,7 @@ static void *setup_temp_malloc(vorb *f, int sz)
 static void setup_temp_free(vorb *f, void *p, int sz)
 {
    if (f->alloc.alloc_buffer) {
-      f->temp_offset += (sz+3)&~3;
+      f->temp_offset += (sz+7)&~7;
       return;
    }
    free(p);
