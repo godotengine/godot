@@ -138,6 +138,7 @@ class OS_X11 : public OS_Unix {
 		XIEventMask all_master_event_mask;
 		Map<int, Vector2> state;
 		double pressure;
+		bool pressure_supported;
 		Vector2 tilt;
 		Vector2 mouse_pos_to_filter;
 		Vector2 relative_motion;

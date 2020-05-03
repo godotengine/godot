@@ -446,6 +446,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				mm->set_control(control_mem);
 				mm->set_shift(shift_mem);
 				mm->set_alt(alt_mem);
+				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
 
 				mm->set_button_mask(last_button_state);
 
@@ -554,12 +555,20 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			Ref<InputEventMouseMotion> mm;
 			mm.instance();
 
-			mm->set_pressure(pen_info.pressure ? (float)pen_info.pressure / 1024 : 0);
-			mm->set_tilt(Vector2(pen_info.tiltX ? (float)pen_info.tiltX / 90 : 0, pen_info.tiltY ? (float)pen_info.tiltY / 90 : 0));
+			if (pen_info.penMask & PEN_MASK_PRESSURE) {
+				mm->set_pressure((float)pen_info.pressure / 1024);
+			} else {
+				mm->set_pressure((HIWORD(wParam) & POINTER_MESSAGE_FLAG_FIRSTBUTTON) ? 1.0f : 0.0f);
+			}
+			if ((pen_info.penMask & PEN_MASK_TILT_X) && (pen_info.penMask & PEN_MASK_TILT_Y)) {
+				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
+			}
 
 			mm->set_control((wParam & MK_CONTROL) != 0);
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
+
+			mm->set_pressure((wParam & MK_LBUTTON) ? 1.0f : 0.0f);
 
 			mm->set_button_mask(last_button_state);
 

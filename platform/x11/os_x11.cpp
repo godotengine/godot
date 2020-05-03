@@ -2085,6 +2085,7 @@ void OS_X11::process_xevents() {
 
 	xi.pressure = 0;
 	xi.tilt = Vector2();
+	xi.pressure_supported = false;
 
 	while (XPending(x11_display) > 0) {
 		XEvent event;
@@ -2137,9 +2138,11 @@ void OS_X11::process_xevents() {
 							Map<int, Vector2>::Element *pen_pressure = xi.pen_pressure_range.find(device_id);
 							if (pen_pressure) {
 								Vector2 pen_pressure_range = pen_pressure->value();
-								if (pen_pressure_range != Vector2())
+								if (pen_pressure_range != Vector2()) {
+									xi.pressure_supported = true;
 									xi.pressure = (*values - pen_pressure_range[0]) /
 												  (pen_pressure_range[1] - pen_pressure_range[0]);
+								}
 							}
 
 							values++;
@@ -2484,7 +2487,11 @@ void OS_X11::process_xevents() {
 				Ref<InputEventMouseMotion> mm;
 				mm.instance();
 
-				mm->set_pressure(xi.pressure);
+				if (xi.pressure_supported) {
+					mm->set_pressure(xi.pressure);
+				} else {
+					mm->set_pressure((get_mouse_button_state() & (1 << (BUTTON_LEFT - 1))) ? 1.0f : 0.0f);
+				}
 				mm->set_tilt(xi.tilt);
 
 				// Make the absolute position integral so it doesn't look _too_ weird :)
