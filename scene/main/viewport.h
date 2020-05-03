@@ -69,16 +69,16 @@ public:
 	void set_viewport_path_in_scene(const NodePath &p_path);
 	NodePath get_viewport_path_in_scene() const;
 
-	virtual void setup_local_to_scene();
+	virtual void setup_local_to_scene() override;
 
-	virtual int get_width() const;
-	virtual int get_height() const;
-	virtual Size2 get_size() const;
-	virtual RID get_rid() const;
+	virtual int get_width() const override;
+	virtual int get_height() const override;
+	virtual Size2 get_size() const override;
+	virtual RID get_rid() const override; 
 
-	virtual bool has_alpha() const;
+	virtual bool has_alpha() const override;
 
-	virtual Ref<Image> get_data() const;
+	virtual Ref<Image> get_data() const override;
 
 	ViewportTexture();
 	~ViewportTexture();
@@ -451,7 +451,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	Listener3D *get_listener() const;
@@ -540,7 +540,7 @@ public:
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
@@ -606,7 +606,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual DisplayServer::WindowID get_window_id() const;
+	virtual DisplayServer::WindowID get_window_id() const override;
 	Transform2D _stretch_transform();
 	void _notification(int p_what);
 

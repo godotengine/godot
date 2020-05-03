@@ -58,7 +58,7 @@ class EditorExportGDScript : public EditorExportPlugin {
 	GDCLASS(EditorExportGDScript, EditorExportPlugin);
 
 public:
-	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) override {
 
 		int script_mode = EditorExportPreset::MODE_SCRIPT_COMPILED;
 		String script_key;

@@ -251,7 +251,7 @@ struct GetTypeInfo<const T *, typename EnableIf<TypeInherits<Object, T>::value>:
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                                                             \
 		static inline PropertyInfo get_class_info() {                                                                                                                             \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, String(#m_enum).replace("::", ".")); \
-		}                                                                                                                                                                         \
+		};                                                                                                                                                                        \
 	};
 
 #define MAKE_ENUM_TYPE_INFO(m_enum)                 \

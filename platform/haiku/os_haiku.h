@@ -66,7 +66,7 @@ protected:
 	virtual int get_current_video_driver() const;
 
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
-	virtual void finalize();
+	virtual void finalize() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
@@ -74,7 +74,7 @@ public:
 	OS_Haiku();
 	void run();
 
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
 	virtual MainLoop *get_main_loop() const;
 

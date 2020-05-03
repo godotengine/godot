@@ -44,12 +44,12 @@ private:
 	Ref<TCP_Server> server;
 
 public:
-	virtual void poll() {}
-	virtual Error start();
-	virtual void stop();
-	virtual bool is_active() const;
-	virtual bool is_connection_available() const;
-	virtual Ref<RemoteDebuggerPeer> take_connection();
+	virtual void poll() override {}
+	virtual Error start() override;
+	virtual void stop() override;
+	virtual bool is_active() const override;
+	virtual bool is_connection_available() const override;
+	virtual Ref<RemoteDebuggerPeer> take_connection() override;
 
 	EditorDebuggerServerTCP();
 };

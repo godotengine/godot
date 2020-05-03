@@ -289,7 +289,7 @@ public:
 
 		quit = true;
 	}
-	virtual void init() {
+	virtual void init() override {
 
 		ofs_x = ofs_y = 0;
 		init_shapes();
@@ -331,7 +331,8 @@ public:
 		test_fall();
 		quit = false;
 	}
-	virtual bool iteration(float p_time) {
+
+	virtual bool iteration(const float p_time) override {
 
 		if (mover.is_valid()) {
 			static float joy_speed = 10;
@@ -350,7 +351,8 @@ public:
 
 		return quit;
 	}
-	virtual void finish() {
+
+	virtual void finish() override {
 	}
 
 	void test_joint() {
@@ -422,7 +424,7 @@ public:
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
 
-	virtual bool idle(float p_time) {
+	virtual bool idle(float p_time) override {
 		return false;
 	}
 

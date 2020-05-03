@@ -57,7 +57,7 @@ protected:
 	bool ticks_on_borders;
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;

@@ -1003,24 +1003,24 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 	}
 
 public:
-	virtual String get_name() const {
+	virtual String get_name() const override {
 		return "Windows Universal";
 	}
-	virtual String get_os_name() const {
+	virtual String get_os_name() const override {
 		return "UWP";
 	}
 
-	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override{
 		List<String> list;
 		list.push_back("appx");
 		return list;
 	}
 
-	virtual Ref<Texture2D> get_logo() const {
+	virtual Ref<Texture2D> get_logo() const override{
 		return logo;
 	}
 
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features)override {
 		r_features->push_back("s3tc");
 		r_features->push_back("etc");
 		switch ((int)p_preset->get("architecture/target")) {
@@ -1036,7 +1036,7 @@ public:
 		}
 	}
 
-	virtual void get_export_options(List<ExportOption> *r_options) {
+	virtual void get_export_options(List<ExportOption> *r_options)override {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "architecture/target", PROPERTY_HINT_ENUM, "arm,x86,x64"), 1));
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "command_line/extra_args"), ""));
@@ -1101,7 +1101,7 @@ public:
 		}
 	}
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override {
 
 		String err;
 		bool valid = false;
@@ -1212,7 +1212,7 @@ public:
 		return valid;
 	}
 
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
 
 		String src_appx;
 
@@ -1457,13 +1457,13 @@ public:
 		return OK;
 	}
 
-	virtual void get_platform_features(List<String> *r_features) {
+	virtual void get_platform_features(List<String> *r_features) override {
 
 		r_features->push_back("pc");
 		r_features->push_back("UWP");
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
 	}
 
 	EditorExportPlatformUWP() {

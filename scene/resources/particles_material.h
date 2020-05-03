@@ -234,7 +234,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_direction(Vector3 p_direction);
@@ -301,7 +301,7 @@ public:
 
 	RID get_shader_rid() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 
 	ParticlesMaterial();
 	~ParticlesMaterial();

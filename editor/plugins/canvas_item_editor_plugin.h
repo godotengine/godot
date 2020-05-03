@@ -619,8 +619,8 @@ public:
 	Transform2D get_canvas_transform() const { return transform; }
 
 	static CanvasItemEditor *get_singleton() { return singleton; }
-	Dictionary get_state() const;
-	void set_state(const Dictionary &p_state);
+	virtual Dictionary get_state() const;
+	virtual void set_state(const Dictionary &p_state);
 
 	void add_control_to_menu_panel(Control *p_control);
 	void remove_control_from_menu_panel(Control *p_control);
@@ -658,13 +658,13 @@ class CanvasItemEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "2D"; }
-	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-	virtual Dictionary get_state() const;
-	virtual void set_state(const Dictionary &p_state);
+	virtual String get_name() const override { return "2D"; }
+	virtual bool has_main_screen() const override { return true; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	virtual Dictionary get_state() const override;
+	virtual void set_state(const Dictionary &p_state) override;
 
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 
@@ -715,8 +715,8 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
-	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 
 	CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();

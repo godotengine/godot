@@ -135,7 +135,7 @@ private:
 	float reverb_amount;
 	float reverb_uniformity;
 
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 protected:
 	void _notification(int p_what);

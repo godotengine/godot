@@ -89,7 +89,7 @@ public:
 	static DisplayServerAndroid *get_singleton();
 
 	virtual bool has_feature(Feature p_feature) const;
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;

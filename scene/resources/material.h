@@ -53,7 +53,7 @@ protected:
 	static void _bind_methods();
 	virtual bool _can_do_next_pass() const { return false; }
 
-	void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	enum {
@@ -66,7 +66,7 @@ public:
 	void set_render_priority(int p_priority);
 	int get_render_priority() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override; 
 
 	virtual Shader::Mode get_shader_mode() const = 0;
 	Material();
@@ -87,9 +87,9 @@ protected:
 
 	static void _bind_methods();
 
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
-	virtual bool _can_do_next_pass() const;
+	virtual bool _can_do_next_pass() const override;
 
 	void _shader_changed();
 
@@ -100,7 +100,7 @@ public:
 	void set_shader_param(const StringName &p_param, const Variant &p_value);
 	Variant get_shader_param(const StringName &p_param) const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 
 	ShaderMaterial();
 	~ShaderMaterial();
@@ -501,8 +501,8 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const;
-	virtual bool _can_do_next_pass() const { return true; }
+	virtual void _validate_property(PropertyInfo &property) const override;
+	virtual bool _can_do_next_pass() const override { return true; }
 
 public:
 	void set_albedo(const Color &p_albedo);
@@ -702,7 +702,7 @@ public:
 
 	RID get_shader_rid() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 
 	BaseMaterial3D(bool p_orm);
 	virtual ~BaseMaterial3D();

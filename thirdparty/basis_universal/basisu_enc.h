@@ -2672,7 +2672,7 @@ namespace basisu
 		interval_timer();
 
 		void start();
-		void stop();
+		virtual void stop();
 
 		double get_elapsed_secs() const;
 		inline double get_elapsed_ms() const { return 1000.0f* get_elapsed_secs(); }

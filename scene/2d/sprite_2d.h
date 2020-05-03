@@ -67,20 +67,20 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const;
-	virtual void _edit_set_state(const Dictionary &p_state);
+	virtual Dictionary _edit_get_state() const override;
+	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual void _edit_set_pivot(const Point2 &p_pivot);
-	virtual Point2 _edit_get_pivot() const;
-	virtual bool _edit_use_pivot() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
+	virtual Point2 _edit_get_pivot() const override;
+	virtual bool _edit_use_pivot() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
 #endif
 
 	bool is_pixel_opaque(const Point2 &p_point) const;
@@ -134,7 +134,7 @@ public:
 	int get_hframes() const;
 
 	Rect2 get_rect() const;
-	virtual Rect2 get_anchorable_rect() const;
+	virtual Rect2 get_anchorable_rect() const override;
 
 	Sprite2D();
 	~Sprite2D();

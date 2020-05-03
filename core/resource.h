@@ -37,10 +37,17 @@
 #include "core/safe_refcount.h"
 #include "core/self_list.h"
 
-#define RES_BASE_EXTENSION(m_ext)                                                                                   \
+#define RES_BASE_EXTENSION_NO_OVERRIDE(m_ext)                                                                       \
 public:                                                                                                             \
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
 	virtual String get_base_extension() const { return m_ext; }                                                     \
+                                                                                                                    \
+private:
+
+#define RES_BASE_EXTENSION(m_ext)                                                                                   \
+public:                                                                                                             \
+	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
+	virtual String get_base_extension() const override { return m_ext; }                                            \
                                                                                                                     \
 private:
 
@@ -48,7 +55,7 @@ class Resource : public Reference {
 
 	GDCLASS(Resource, Reference);
 	OBJ_CATEGORY("Resources");
-	RES_BASE_EXTENSION("res");
+	RES_BASE_EXTENSION_NO_OVERRIDE("res");
 
 	Set<ObjectID> owners;
 
@@ -94,7 +101,7 @@ public:
 	void unregister_owner(Object *p_owner);
 
 	void set_name(const String &p_name);
-	String get_name() const;
+	virtual String get_name() const;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;

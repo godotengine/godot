@@ -62,8 +62,8 @@ private:
 	void _menu_option(int p_option);
 
 public:
-	virtual String get_name() const { return "Debugger"; }
-	bool has_main_screen() const { return false; }
+	virtual String get_name() const override { return "Debugger"; }
+	virtual bool has_main_screen() const override { return false; }
 
 	DebuggerEditorPlugin(EditorNode *p_node, MenuButton *p_menu);
 	~DebuggerEditorPlugin();

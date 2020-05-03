@@ -215,7 +215,7 @@ public:
 	const SceneDebuggerTree *get_remote_tree();
 
 	void start(Ref<RemoteDebuggerPeer> p_peer);
-	void stop();
+	virtual void stop();
 
 	void debug_skip_breakpoints();
 	void debug_copy();
@@ -261,7 +261,7 @@ public:
 
 	bool is_skip_breakpoints();
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	ScriptEditorDebugger(EditorNode *p_editor = nullptr);
 	~ScriptEditorDebugger();
 };

@@ -61,8 +61,8 @@ public:
 	void _on_message(uint8_t *p_data, uint32_t p_size, bool p_is_string);
 
 	virtual void set_write_mode(WriteMode mode);
-	virtual WriteMode get_write_mode() const;
-	virtual bool was_string_packet() const;
+	virtual WriteMode get_write_mode() const override;
+	virtual bool was_string_packet() const override;
 
 	virtual ChannelState get_ready_state() const;
 	virtual String get_label() const;
@@ -77,11 +77,11 @@ public:
 	virtual void close();
 
 	/** Inherited from PacketPeer: **/
-	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size); ///< buffer is GONE after next get_packet
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
+	virtual int get_available_packet_count() const override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override; ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 
-	virtual int get_max_packet_size() const;
+	virtual int get_max_packet_size() const override;
 
 	WebRTCDataChannelJS();
 	WebRTCDataChannelJS(int js_id);

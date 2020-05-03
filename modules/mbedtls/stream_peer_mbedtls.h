@@ -55,20 +55,20 @@ protected:
 	Error _do_handshake();
 
 public:
-	virtual void poll();
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>());
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>());
-	virtual Status get_status() const;
+	virtual void poll() override;
+	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) override;
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) override;
+	virtual Status get_status() const override;
 
-	virtual void disconnect_from_stream();
+	virtual void disconnect_from_stream()  override;
 
-	virtual Error put_data(const uint8_t *p_data, int p_bytes);
-	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	virtual Error put_data(const uint8_t *p_data, int p_bytes) override;
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
 
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
-	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
-	virtual int get_available_bytes() const;
+	virtual int get_available_bytes() const override;
 
 	static void initialize_ssl();
 	static void finalize_ssl();

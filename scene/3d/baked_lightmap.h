@@ -83,7 +83,7 @@ public:
 	int get_user_instance(int p_user) const;
 	void clear_users();
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override;
 	BakedLightmapData();
 	~BakedLightmapData();
 };
@@ -201,8 +201,8 @@ public:
 	void set_image_path(const String &p_path);
 	String get_image_path() const;
 
-	AABB get_aabb() const;
-	Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	BakeError bake(Node *p_from_node, bool p_create_visual_debug = false);
 	BakedLightmap();

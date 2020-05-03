@@ -150,7 +150,7 @@ class ColorPickerButton : public Button {
 	void _color_changed(const Color &p_color);
 	void _modal_closed();
 
-	virtual void pressed();
+	virtual void pressed() override;
 
 	void _update_picker();
 

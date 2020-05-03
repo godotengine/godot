@@ -236,8 +236,8 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo &property) const;
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _validate_property(PropertyInfo &property) const override;
+	virtual void _changed_callback(Object *p_changed, const char *p_prop) override;
 
 public:
 	enum {
@@ -245,7 +245,7 @@ public:
 	};
 
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
+	virtual Rect2 _edit_get_rect() const override;
 #endif
 
 	void set_tileset(const Ref<TileSet> &p_tileset);
@@ -335,16 +335,16 @@ public:
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
 
-	virtual void set_light_mask(int p_light_mask);
+	virtual void set_light_mask(int p_light_mask) override;
 
-	virtual void set_material(const Ref<Material> &p_material);
+	virtual void set_material(const Ref<Material> &p_material) override;
 
-	virtual void set_use_parent_material(bool p_use_parent_material);
+	virtual void set_use_parent_material(bool p_use_parent_material) override;
 
 	void set_clip_uv(bool p_enable);
 	bool get_clip_uv() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	void fix_invalid_tiles();
 	void clear();

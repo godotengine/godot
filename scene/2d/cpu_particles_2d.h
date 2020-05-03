@@ -191,7 +191,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_emitting(bool p_emitting);
@@ -281,7 +281,7 @@ public:
 	void set_gravity(const Vector2 &p_gravity);
 	Vector2 get_gravity() const;
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	void restart();
 

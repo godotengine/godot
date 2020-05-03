@@ -104,7 +104,7 @@ protected:
 	static void _bind_methods();
 	// bind helpers
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_align(Align p_align);
 	Align get_align() const;

@@ -54,7 +54,7 @@ protected:
 	virtual void _update_shape();
 
 public:
-	virtual RID get_rid() const { return shape; }
+	virtual RID get_rid() const override { return shape; }
 
 	Ref<ArrayMesh> get_debug_mesh();
 	virtual Vector<Vector3> get_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }

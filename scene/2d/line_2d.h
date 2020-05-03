@@ -57,9 +57,9 @@ public:
 	};
 
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
 
 	Line2D();

@@ -71,7 +71,7 @@ public:
 
 	void force_update_cache();
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	RemoteTransform2D();
 };

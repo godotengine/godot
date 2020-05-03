@@ -141,8 +141,8 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	virtual void add_child_notify(Node *p_child);
-	virtual void remove_child_notify(Node *p_child);
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void remove_child_notify(Node *p_child) override;
 
 public:
 	enum {
@@ -251,7 +251,7 @@ public:
 	bool has_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	Rect2i get_parent_rect() const;
-	virtual DisplayServer::WindowID get_window_id() const;
+	virtual DisplayServer::WindowID get_window_id() const override;
 
 	Window();
 	~Window();

@@ -76,12 +76,12 @@ protected:
 
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
-	virtual void finalize();
+	virtual void finalize() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);

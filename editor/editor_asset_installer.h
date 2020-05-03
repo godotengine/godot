@@ -44,7 +44,7 @@ class EditorAssetInstaller : public ConfirmationDialog {
 	bool updating;
 	void _update_subitems(TreeItem *p_item, bool p_check, bool p_first = false);
 	void _item_edited();
-	virtual void ok_pressed();
+	virtual void ok_pressed() override;
 
 protected:
 	static void _bind_methods();

@@ -57,20 +57,20 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const;
-	virtual void _edit_set_state(const Dictionary &p_state);
+	virtual Dictionary _edit_get_state() const override;
+	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual void _edit_set_position(const Point2 &p_position);
-	virtual Point2 _edit_get_position() const;
+	virtual void _edit_set_position(const Point2 &p_position) override;
+	virtual Point2 _edit_get_position() const override;
 
-	virtual void _edit_set_scale(const Size2 &p_scale);
-	virtual Size2 _edit_get_scale() const;
+	virtual void _edit_set_scale(const Size2 &p_scale) override;
+	virtual Size2 _edit_get_scale() const override;
 
-	virtual void _edit_set_rotation(float p_rotation);
-	virtual float _edit_get_rotation() const;
-	virtual bool _edit_use_rotation() const;
+	virtual void _edit_set_rotation(float p_rotation) override;
+	virtual float _edit_get_rotation() const override;
+	virtual bool _edit_use_rotation() const override;
 
-	virtual void _edit_set_rect(const Rect2 &p_edit_rect);
+	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
 #endif
 
 	void set_position(const Point2 &p_pos);
@@ -120,7 +120,7 @@ public:
 
 	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
-	Transform2D get_transform() const;
+	virtual Transform2D get_transform() const override;
 
 	Node2D();
 };

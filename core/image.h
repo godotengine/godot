@@ -366,7 +366,7 @@ public:
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
 
-	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
+	virtual Ref<Resource> duplicate(bool p_subresources = false) const override;
 
 	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC);
 	void optimize_channels();

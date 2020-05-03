@@ -131,31 +131,31 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	}
 
 protected:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
-	virtual void get_export_options(List<ExportOption> *r_options);
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
+	virtual void get_export_options(List<ExportOption> *r_options) override;
 
 public:
-	virtual String get_name() const { return "iOS"; }
-	virtual String get_os_name() const { return "iOS"; }
-	virtual Ref<Texture2D> get_logo() const { return logo; }
+	virtual String get_name() const override { return "iOS"; }
+	virtual String get_os_name() const override { return "iOS"; }
+	virtual Ref<Texture2D> get_logo() const override { return logo; }
 
-	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
 		list.push_back("ipa");
 		return list;
 	}
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual void add_module_code(const Ref<EditorExportPreset> &p_preset, IOSConfigData &p_config_data, const String &p_name, const String &p_fid, const String &p_gid);
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
 
-	virtual void get_platform_features(List<String> *r_features) {
+	virtual void get_platform_features(List<String> *r_features) override {
 
 		r_features->push_back("mobile");
 		r_features->push_back("iOS");
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
 	}
 
 	EditorExportPlatformIOS();

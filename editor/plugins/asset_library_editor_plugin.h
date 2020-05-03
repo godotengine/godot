@@ -316,14 +316,11 @@ class AssetLibraryEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "AssetLib"; }
-	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_object) {}
-	virtual bool handles(Object *p_object) const { return false; }
-	virtual void make_visible(bool p_visible);
-	//virtual bool get_remove_list(List<Node*> *p_list) { return canvas_item_editor->get_remove_list(p_list); }
-	//virtual Dictionary get_state() const;
-	//virtual void set_state(const Dictionary& p_state);
+	virtual String get_name() const override { return "AssetLib"; }
+	virtual bool has_main_screen() const override { return true; }
+	virtual void edit(Object *p_object) override {}
+	virtual bool handles(Object *p_object) const override { return false; }
+	virtual void make_visible(bool p_visible) override;
 
 	AssetLibraryEditorPlugin(EditorNode *p_node);
 	~AssetLibraryEditorPlugin();

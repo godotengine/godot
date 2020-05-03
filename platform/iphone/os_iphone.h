@@ -96,7 +96,7 @@ private:
 
 	virtual void delete_main_loop();
 
-	virtual void finalize();
+	virtual void finalize() override;
 
 	struct MouseList {
 
@@ -183,7 +183,7 @@ public:
 
 	void set_data_dir(String p_dir);
 
-	virtual String get_name() const;
+	virtual String get_name() const override;
 	virtual String get_model_name() const;
 
 	Error shell_open(String p_uri);

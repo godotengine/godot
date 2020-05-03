@@ -95,31 +95,31 @@ class AudioDriverPulseAudio : public AudioDriver {
 	static void thread_func(void *p_udata);
 
 public:
-	const char *get_name() const {
+	const char *get_name() const override {
 		return "PulseAudio";
 	};
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
 
-	virtual Array get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
+	virtual Array get_device_list() override;
+	virtual String get_device() override;
+	virtual void set_device(String device) override;
 
-	virtual Array capture_get_device_list();
-	virtual void capture_set_device(const String &p_name);
-	virtual String capture_get_device();
+	virtual Array capture_get_device_list() override;
+	virtual void capture_set_device(const String &p_name) override;
+	virtual String capture_get_device() override;
 
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual float get_latency();
+	virtual float get_latency() override;
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+	virtual Error capture_start() override;
+	virtual Error capture_stop() override;
 
 	AudioDriverPulseAudio();
 	~AudioDriverPulseAudio();

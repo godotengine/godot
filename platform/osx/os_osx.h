@@ -62,15 +62,15 @@ public:
 
 protected:
 	virtual void initialize_core();
-	virtual void initialize();
-	virtual void finalize();
+	virtual void initialize() override;
+	virtual void finalize() override;
 
 	virtual void initialize_joypads();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 

@@ -82,7 +82,7 @@ protected:
 
 public:
 	/** general interface information **/
-	virtual StringName get_name() const;
+	virtual StringName get_name() const { return "Unknown"; };
 	virtual int get_capabilities() const = 0;
 
 	bool is_primary();

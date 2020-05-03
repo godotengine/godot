@@ -170,7 +170,7 @@ public:
 
 public:
 	virtual bool has_feature(Feature p_feature) const;
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
 	virtual void global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant());
 	virtual void global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Variant &p_tag = Variant());

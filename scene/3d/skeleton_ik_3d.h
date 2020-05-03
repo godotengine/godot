@@ -162,7 +162,7 @@ class SkeletonIK3D : public Node {
 
 protected:
 	virtual void
-	_validate_property(PropertyInfo &property) const;
+	_validate_property(PropertyInfo &property) const override;
 
 	static void _bind_methods();
 	virtual void _notification(int p_what);
@@ -206,7 +206,7 @@ public:
 	bool is_running();
 
 	void start(bool p_one_time = false);
-	void stop();
+	virtual void stop();
 
 private:
 	Transform _get_target_transform();

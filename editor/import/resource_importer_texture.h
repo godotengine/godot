@@ -85,11 +85,11 @@ public:
 	void save_to_stex_format(FileAccess *f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, bool p_force_rgbe);
 
 	static ResourceImporterTexture *get_singleton() { return singleton; }
-	virtual String get_importer_name() const;
-	virtual String get_visible_name() const;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual String get_save_extension() const;
-	virtual String get_resource_type() const;
+	virtual String get_importer_name() const override;
+	virtual String get_visible_name() const override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual String get_save_extension() const override;
+	virtual String get_resource_type() const override;
 
 	enum Preset {
 		PRESET_DETECT,
@@ -98,18 +98,18 @@ public:
 		PRESET_3D,
 	};
 
-	virtual int get_preset_count() const;
-	virtual String get_preset_name(int p_idx) const;
+	virtual int get_preset_count() const override;
+	virtual String get_preset_name(int p_idx) const override;
 
-	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const;
-	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const;
+	virtual void get_import_options(List<ImportOption> *r_options, int p_preset = 0) const override;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const override;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr);
+	virtual Error import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	void update_imports();
 
-	virtual bool are_import_settings_valid(const String &p_path) const;
-	virtual String get_import_settings_string() const;
+	virtual bool are_import_settings_valid(const String &p_path) const override;
+	virtual String get_import_settings_string() const override;
 
 	ResourceImporterTexture();
 	~ResourceImporterTexture();

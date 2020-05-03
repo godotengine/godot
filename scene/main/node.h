@@ -416,7 +416,7 @@ public:
 
 	bool is_owned_by_parent() const;
 
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	void clear_internal_tree_resource_paths();
 

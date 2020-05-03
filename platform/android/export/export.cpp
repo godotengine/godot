@@ -1362,7 +1362,7 @@ public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override {
 
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
 		if (driver == "GLES2") {
@@ -1379,7 +1379,7 @@ public:
 		}
 	}
 
-	virtual void get_export_options(List<ExportOption> *r_options) {
+	virtual void get_export_options(List<ExportOption> *r_options) override {
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
@@ -1433,19 +1433,19 @@ public:
 		}
 	}
 
-	virtual String get_name() const {
+	virtual String get_name() const override {
 		return "Android";
 	}
 
-	virtual String get_os_name() const {
+	virtual String get_os_name() const override {
 		return "Android";
 	}
 
-	virtual Ref<Texture2D> get_logo() const {
+	virtual Ref<Texture2D> get_logo() const override {
 		return logo;
 	}
 
-	virtual bool poll_export() {
+	virtual bool poll_export() override {
 
 		bool dc = devices_changed;
 		if (dc) {
@@ -1455,25 +1455,25 @@ public:
 		return dc;
 	}
 
-	virtual int get_options_count() const {
+	virtual int get_options_count() const override {
 
 		MutexLock lock(device_lock);
 		return devices.size();
 	}
 
-	virtual String get_options_tooltip() const {
+	virtual String get_options_tooltip() const override {
 
 		return TTR("Select device from the list");
 	}
 
-	virtual String get_option_label(int p_index) const {
+	virtual String get_option_label(int p_index) const override {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		MutexLock lock(device_lock);
 		return devices[p_index].name;
 	}
 
-	virtual String get_option_tooltip(int p_index) const {
+	virtual String get_option_tooltip(int p_index) const override {
 
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		MutexLock lock(device_lock);
@@ -1487,7 +1487,7 @@ public:
 		return s;
 	}
 
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) override {
 
 		ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
 
@@ -1648,11 +1648,11 @@ public:
 #undef CLEANUP_AND_RETURN
 	}
 
-	virtual Ref<Texture2D> get_run_icon() const {
+	virtual Ref<Texture2D> get_run_icon() const override {
 		return run_icon;
 	}
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override {
 
 		String err;
 		bool valid = false;
@@ -1764,13 +1764,13 @@ public:
 		return valid;
 	}
 
-	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
 		list.push_back("apk");
 		return list;
 	}
 
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override {
 
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -2325,13 +2325,13 @@ public:
 		CLEANUP_AND_RETURN(OK);
 	}
 
-	virtual void get_platform_features(List<String> *r_features) {
+	virtual void get_platform_features(List<String> *r_features) override {
 
 		r_features->push_back("mobile");
 		r_features->push_back("Android");
 	}
 
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override {
 	}
 
 	EditorExportPlatformAndroid() {

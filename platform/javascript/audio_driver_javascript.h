@@ -48,8 +48,8 @@ public:
 
 	virtual const char *get_name() const;
 
-	virtual Error init();
-	virtual void start();
+	virtual Error init() override;
+	virtual void start() override;
 	void resume();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
@@ -58,8 +58,8 @@ public:
 	virtual void finish();
 	void finish_async();
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+	virtual Error capture_start() override;
+	virtual Error capture_stop() override;
 
 	AudioDriverJavaScript();
 };

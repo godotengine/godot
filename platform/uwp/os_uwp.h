@@ -157,7 +157,7 @@ protected:
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
 
-	virtual void finalize();
+	virtual void finalize() override;
 	virtual void finalize_core();
 
 	void process_events();
@@ -189,10 +189,10 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
-	virtual Date get_date(bool utc) const;
-	virtual Time get_time(bool utc) const;
+	virtual Date get_date(bool utc) const override;
+	virtual Time get_time(bool utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 

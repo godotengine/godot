@@ -74,7 +74,7 @@ public:
 	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override; 
 
 	Sky();
 	~Sky();

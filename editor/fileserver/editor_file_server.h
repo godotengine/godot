@@ -74,7 +74,7 @@ class EditorFileServer : public Object {
 
 public:
 	void start();
-	void stop();
+	virtual void stop();
 
 	bool is_active() const;
 

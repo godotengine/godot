@@ -83,17 +83,17 @@ protected:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const;
-	virtual void _edit_set_state(const Dictionary &p_state);
+	virtual Dictionary _edit_get_state() const override;
+	virtual void _edit_set_state(const Dictionary &p_state) override;
 
-	virtual void _edit_set_pivot(const Point2 &p_pivot);
-	virtual Point2 _edit_get_pivot() const;
-	virtual bool _edit_use_pivot() const;
-	virtual Rect2 _edit_get_rect() const;
-	virtual bool _edit_use_rect() const;
+	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
+	virtual Point2 _edit_get_pivot() const override;
+	virtual bool _edit_use_pivot() const override;
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
 #endif
 
-	virtual Rect2 get_anchorable_rect() const;
+	virtual Rect2 get_anchorable_rect() const override;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
@@ -155,7 +155,7 @@ public:
 	void set_shadow_smooth(float p_amount);
 	float get_shadow_smooth() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	Light2D();
 	~Light2D();

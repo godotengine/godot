@@ -104,13 +104,13 @@ public:
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
-	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
-	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false) override;
+	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
+	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
+	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map) override;
 };
 
 class ResourceFormatSaverBinaryInstance {

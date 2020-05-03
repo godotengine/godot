@@ -441,7 +441,7 @@ private:
 			set_message(TTR("It would be a good idea to name your project."), MESSAGE_WARNING);
 	}
 
-	void ok_pressed() {
+	virtual void ok_pressed() override {
 
 		String dir = project_path->get_text();
 
@@ -640,7 +640,7 @@ private:
 		}
 	}
 
-	void cancel_pressed() {
+	virtual void cancel_pressed() override {
 
 		_remove_created_folder();
 

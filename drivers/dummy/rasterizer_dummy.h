@@ -191,12 +191,12 @@ public:
 	mutable RID_PtrOwner<DummyTexture> texture_owner;
 	mutable RID_PtrOwner<DummyMesh> mesh_owner;
 
-	virtual RID texture_2d_create(const Ref<Image> &p_image) { return RID(); }
+	virtual RID texture_2d_create(const Ref<Image> &p_image) override { return RID(); }
 	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) { return RID(); }
-	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) { return RID(); }
-	virtual RID texture_proxy_create(RID p_base) { return RID(); }
+	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) override { return RID(); }
+	virtual RID texture_proxy_create(RID p_base) override { return RID(); }
 
-	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) {}
+	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override {}
 	virtual void texture_2d_update(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) {}
 	virtual void texture_3d_update(RID p_texture, const Ref<Image> &p_image, int p_depth, int p_mipmap) {}
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) {}

@@ -97,7 +97,7 @@ protected:
 	void _update_camera_mode();
 
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo &p_property) const;
+	virtual void _validate_property(PropertyInfo &p_property) const override;
 
 	static void _bind_methods();
 
@@ -209,7 +209,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual Transform get_camera_transform() const;
+	virtual Transform get_camera_transform() const override;
 
 public:
 	void set_clip_to_areas(bool p_clip);

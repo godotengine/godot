@@ -166,7 +166,7 @@ public:
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
 
-	String get_name() const;
+	virtual String get_name() const;
 	Vector<String> get_cmdline_args();
 
 	String get_locale() const;

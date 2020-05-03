@@ -231,8 +231,8 @@ public:
 	bool is_pinned() const { return pin->is_pressed(); }
 	void unpin() { pin->set_pressed(false); }
 	AnimationTrackEditor *get_track_editor() { return track_editor; }
-	Dictionary get_state() const;
-	void set_state(const Dictionary &p_state);
+	virtual Dictionary get_state() const;
+	virtual void set_state(const Dictionary &p_state);
 
 	void ensure_visibility();
 
@@ -254,16 +254,16 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual Dictionary get_state() const { return anim_editor->get_state(); }
-	virtual void set_state(const Dictionary &p_state) { anim_editor->set_state(p_state); }
+	virtual Dictionary get_state() const override { return anim_editor->get_state(); }
+	virtual void set_state(const Dictionary &p_state) override { anim_editor->set_state(p_state); }
 
-	virtual String get_name() const { return "Anim"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Anim"; }
+	virtual bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
-	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) { anim_editor->forward_canvas_force_draw_over_viewport(p_overlay); }
+	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_canvas_force_draw_over_viewport(p_overlay); }
 
 	AnimationPlayerEditorPlugin(EditorNode *p_node);
 	~AnimationPlayerEditorPlugin();

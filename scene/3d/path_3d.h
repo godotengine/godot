@@ -80,7 +80,7 @@ private:
 	void _update_transform();
 
 protected:
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -107,7 +107,7 @@ public:
 	void set_cubic_interpolation(bool p_enable);
 	bool get_cubic_interpolation() const;
 
-	String get_configuration_warning() const;
+	String get_configuration_warning() const override;
 
 	PathFollow3D();
 };

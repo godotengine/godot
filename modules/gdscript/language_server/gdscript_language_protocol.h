@@ -98,7 +98,7 @@ public:
 
 	void poll();
 	Error start(int p_port, const IP_Address &p_bind_ip);
-	void stop();
+	virtual void stop();
 
 	void notify_client(const String &p_method, const Variant &p_params = Variant(), int p_client_id = -1);
 

@@ -58,21 +58,21 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 
 public:
 	static ResourceFormatImporter *get_singleton() { return singleton; }
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
-	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const override;
+	virtual bool recognize_path(const String &p_path, const String &p_for_type = String()) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 	virtual Variant get_resource_metadata(const String &p_path) const;
-	virtual bool is_import_valid(const String &p_path) const;
-	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
-	virtual bool is_imported(const String &p_path) const { return recognize_path(p_path); }
-	virtual String get_import_group_file(const String &p_path) const;
-	virtual bool exists(const String &p_path) const;
+	virtual bool is_import_valid(const String &p_path) const override;
+	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
+	virtual bool is_imported(const String &p_path) const override { return recognize_path(p_path); }
+	virtual String get_import_group_file(const String &p_path) const override;
+	virtual bool exists(const String &p_path) const override;
 
 	virtual bool can_be_imported(const String &p_path) const;
-	virtual int get_import_order(const String &p_path) const;
+	virtual int get_import_order(const String &p_path) const override;
 
 	String get_internal_resource_path(const String &p_path) const;
 	void get_internal_resource_path_list(const String &p_path, List<String> *r_paths);

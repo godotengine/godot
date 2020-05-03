@@ -216,7 +216,7 @@ public:
 	void sort_items_by_text();
 	int find_metadata(const Variant &p_metadata) const;
 
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 	int get_item_at_position(const Point2 &p_pos, bool p_exact = false) const;
 	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 
@@ -226,7 +226,7 @@ public:
 	void set_auto_height(bool p_enable);
 	bool has_auto_height() const;
 
-	Size2 get_minimum_size() const;
+	Size2 get_minimum_size() const override;
 
 	void set_autoscroll_to_bottom(const bool p_enable);
 

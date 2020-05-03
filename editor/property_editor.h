@@ -164,7 +164,7 @@ public:
 	void hide_menu();
 
 	Variant get_variant() const;
-	String get_name() const;
+	virtual String get_name() const;
 
 	void set_read_only(bool p_read_only) { read_only = p_read_only; }
 

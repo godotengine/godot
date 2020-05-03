@@ -79,11 +79,11 @@ class ShaderFileEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-	virtual String get_name() const { return "ShaderFile"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "ShaderFile"; }
+	virtual bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	ShaderFileEditor *get_shader_editor() const { return shader_editor; }
 

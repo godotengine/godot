@@ -71,15 +71,15 @@ private:
 	bool _verify_headers(String &r_protocol);
 
 public:
-	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
-	Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>());
-	int get_max_packet_size() const;
-	Ref<WebSocketPeer> get_peer(int p_peer_id) const;
-	void disconnect_from_host(int p_code = 1000, String p_reason = "");
-	IP_Address get_connected_host() const;
-	uint16_t get_connected_port() const;
-	virtual ConnectionStatus get_connection_status() const;
-	virtual void poll();
+	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) override;
+	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocol = Vector<String>(), const Vector<String> p_custom_headers = Vector<String>()) override;
+	virtual int get_max_packet_size() const override;
+	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const override;
+	virtual void disconnect_from_host(int p_code = 1000, String p_reason = "") override;
+	virtual IP_Address get_connected_host() const override;
+	virtual uint16_t get_connected_port() const override;
+	virtual ConnectionStatus get_connection_status() const override;
+	virtual void poll() override;
 
 	WSLClient();
 	~WSLClient();

@@ -60,13 +60,13 @@ public:
 
 	virtual const char *get_name() const;
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
 	virtual void set_pause(bool p_pause);
 

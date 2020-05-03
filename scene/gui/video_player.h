@@ -79,10 +79,10 @@ class VideoPlayer : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
-	void _validate_property(PropertyInfo &p_property) const;
+	virtual void _validate_property(PropertyInfo &p_property) const override;
 
 public:
-	Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	void set_expand(bool p_expand);
 	bool has_expand() const;
 
@@ -92,7 +92,7 @@ public:
 	Ref<VideoStream> get_stream() const;
 
 	void play();
-	void stop();
+	virtual void stop();
 	bool is_playing() const;
 
 	void set_paused(bool p_paused);

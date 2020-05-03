@@ -185,6 +185,6 @@ public:
 
 	Error start();
 
-	void stop();
+	virtual void stop();
 };
 #endif // EDITOR_DEBUGGER_NODE_H

@@ -394,7 +394,7 @@ private:
 	void _gui_input(Ref<InputEvent> p_event);
 	void _notification(int p_what);
 
-	Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void item_edited(int p_column, TreeItem *p_item, bool p_lmb = true);
 	void item_changed(int p_column, TreeItem *p_item);
@@ -536,7 +536,7 @@ protected:
 	}
 
 public:
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	TreeItem *get_item_at_position(const Point2 &p_pos) const;
 	int get_column_at_position(const Point2 &p_pos) const;

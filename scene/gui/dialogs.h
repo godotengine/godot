@@ -61,7 +61,7 @@ class AcceptDialog : public Window {
 	void _parent_focused();
 
 protected:
-	virtual Size2 _get_contents_minimum_size() const;
+	virtual Size2 _get_contents_minimum_size() const override;
 
 	void _notification(int p_what);
 	static void _bind_methods();

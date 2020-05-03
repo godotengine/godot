@@ -46,7 +46,7 @@ class SpinBox : public Range {
 	void _range_click_timeout();
 
 	void _text_entered(const String &p_string);
-	virtual void _value_changed(double);
+	virtual void _value_changed(double) override;
 	String prefix;
 	String suffix;
 
@@ -74,7 +74,7 @@ protected:
 public:
 	LineEdit *get_line_edit();
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_align(LineEdit::Align p_align);
 	LineEdit::Align get_align() const;

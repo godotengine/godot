@@ -1301,11 +1301,11 @@ public:
 
 	void _copy_screen();
 
-	virtual bool has_os_feature(const String &p_feature) const;
+	virtual bool has_os_feature(const String &p_feature) const override;
 
 	virtual void update_dirty_resources();
 
-	virtual void set_debug_generate_wireframes(bool p_generate);
+	virtual void set_debug_generate_wireframes(bool p_generate) override;
 
 	virtual void render_info_begin_capture();
 	virtual void render_info_end_capture();

@@ -237,7 +237,7 @@ protected:
 public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	static Input *get_singleton();
 

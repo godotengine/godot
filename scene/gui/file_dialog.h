@@ -128,7 +128,7 @@ private:
 
 	bool _is_open_should_be_disabled();
 
-	virtual void _post_popup();
+	virtual void _post_popup() override;
 
 protected:
 	void _theme_changed();

@@ -492,7 +492,7 @@ private:
 	void _scroll_lines_down();
 
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
-	Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	int _get_control_height() const;
 
 	int get_row_height() const;
@@ -529,7 +529,7 @@ private:
 	int _calculate_spaces_till_next_right_indent(int column);
 
 protected:
-	virtual String get_tooltip(const Point2 &p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	void _insert_text(int p_line, int p_char, const String &p_text, int *r_end_line = nullptr, int *r_end_char = nullptr);
 	void _remove_text(int p_from_line, int p_from_column, int p_to_line, int p_to_column);
@@ -573,7 +573,7 @@ public:
 		SEARCH_RESULT_LINE,
 	};
 
-	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	void _get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) const;
 	void _get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const;
@@ -826,7 +826,7 @@ public:
 	String get_text_for_completion();
 	String get_text_for_lookup_completion();
 
-	virtual bool is_text_field() const;
+	virtual bool is_text_field() const override;
 	TextEdit();
 	~TextEdit();
 };

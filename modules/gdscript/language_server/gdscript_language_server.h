@@ -55,7 +55,7 @@ public:
 	Error parse_script_file(const String &p_path);
 	GDScriptLanguageServer();
 	void start();
-	void stop();
+	virtual void stop();
 };
 
 void register_lsp_types();

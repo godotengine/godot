@@ -461,25 +461,25 @@ class ScriptEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "Script"; }
-	bool has_main_screen() const { return true; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-	virtual void selected_notify();
+	virtual String get_name() const override { return "Script"; }
+	virtual bool has_main_screen() const override { return true; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
+	virtual void selected_notify() override;
 
-	virtual void save_external_data();
-	virtual void apply_changes();
+	virtual void save_external_data() override;
+	virtual void apply_changes() override;
 
-	virtual void restore_global_state();
-	virtual void save_global_state();
+	virtual void restore_global_state() override;
+	virtual void save_global_state() override;
 
-	virtual void set_window_layout(Ref<ConfigFile> p_layout);
-	virtual void get_window_layout(Ref<ConfigFile> p_layout);
+	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
+	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 
-	virtual void get_breakpoints(List<String> *p_breakpoints);
+	virtual void get_breakpoints(List<String> *p_breakpoints) override;
 
-	virtual void edited_scene_changed();
+	virtual void edited_scene_changed() override;
 
 	ScriptEditorPlugin(EditorNode *p_node);
 	~ScriptEditorPlugin();

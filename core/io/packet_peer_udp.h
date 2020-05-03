@@ -70,7 +70,7 @@ public:
 	Error listen(int p_port, const IP_Address &p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
 	void close();
 	Error wait();
-	bool is_listening() const;
+	virtual bool is_listening() const;
 
 	Error connect_socket(Ref<NetSocket> p_sock); // Used by UDPServer
 	Error connect_to_host(const IP_Address &p_host, int p_port);
@@ -80,10 +80,10 @@ public:
 	int get_packet_port() const;
 	void set_dest_address(const IP_Address &p_address, int p_port);
 
-	Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	int get_available_packet_count() const;
-	int get_max_packet_size() const;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	virtual int get_available_packet_count() const override;
+	virtual int get_max_packet_size() const override;
 	void set_broadcast_enabled(bool p_enabled);
 	Error join_multicast_group(IP_Address p_multi_address, String p_if_name);
 	Error leave_multicast_group(IP_Address p_multi_address, String p_if_name);

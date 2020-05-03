@@ -102,7 +102,7 @@ public:
 	bool has_export_file(const String &p_path);
 
 	void set_name(const String &p_name);
-	String get_name() const;
+	virtual String get_name() const;
 
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
@@ -417,17 +417,17 @@ private:
 	FixUpEmbeddedPckFunc fixup_embedded_pck_func;
 
 public:
-	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
+	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) override;
 
-	virtual void get_export_options(List<ExportOption> *r_options);
+	virtual void get_export_options(List<ExportOption> *r_options) override;
 
-	virtual String get_name() const;
-	virtual String get_os_name() const;
-	virtual Ref<Texture2D> get_logo() const;
+	virtual String get_name() const override;
+	virtual String get_os_name() const override;
+	virtual Ref<Texture2D> get_logo() const override;
 
-	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
-	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
-	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
+	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const override;
+	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
+	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) override;
 	virtual Error sign_shared_object(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path);
 
 	void set_extension(const String &p_extension, const String &p_feature_key = "default");
@@ -442,8 +442,8 @@ public:
 	void set_debug_32(const String &p_file);
 
 	void add_platform_feature(const String &p_feature);
-	virtual void get_platform_features(List<String> *r_features);
-	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features);
+	virtual void get_platform_features(List<String> *r_features) override;
+	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) override;
 
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);
@@ -459,7 +459,7 @@ class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
 	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin);
 
 public:
-	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);
+	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) override;
 	EditorExportTextSceneToBinaryPlugin();
 };
 

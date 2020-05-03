@@ -54,7 +54,7 @@ class JNISingleton : public Object {
 #endif
 
 public:
-	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) override {
 #ifdef ANDROID_ENABLED
 		Map<StringName, MethodData>::Element *E = method_map.find(p_method);
 

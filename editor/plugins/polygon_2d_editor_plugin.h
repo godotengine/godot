@@ -123,7 +123,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Vector2 snap_offset;
 	Vector2 snap_step;
 
-	virtual void _menu_option(int p_option);
+	virtual void _menu_option(int p_option) override;
 
 	void _cancel_editing();
 	void _update_polygon_editing_state();
@@ -144,16 +144,16 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	void _uv_edit_popup_hide();
 	void _bone_paint_selected(int p_index);
 
-	int _get_polygon_count() const;
+	virtual int _get_polygon_count() const override;
 
 protected:
-	virtual Node2D *_get_node() const;
-	virtual void _set_node(Node *p_polygon);
+	virtual Node2D *_get_node() const override;
+	virtual void _set_node(Node *p_polygon) override;
 
-	virtual Vector2 _get_offset(int p_idx) const;
+	virtual Vector2 _get_offset(int p_idx) const override;
 
-	virtual bool _has_uv() const { return true; };
-	virtual void _commit_action();
+	virtual bool _has_uv() const override { return true; };
+	virtual void _commit_action() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();

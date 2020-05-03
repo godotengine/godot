@@ -103,13 +103,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error put_data(const uint8_t *p_data, int p_bytes);
-	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	virtual Error put_data(const uint8_t *p_data, int p_bytes) override;
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
 
-	Error get_data(uint8_t *p_buffer, int p_bytes);
-	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
-	virtual int get_available_bytes() const;
+	virtual int get_available_bytes() const override;
 
 	void seek(int p_pos);
 	int get_size() const;

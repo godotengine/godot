@@ -166,7 +166,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 #ifndef DISABLE_DEPRECATED
 	// Kept for compatibility from 3.x to 4.0.
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -355,7 +355,7 @@ public:
 	void set_fog_height_curve(float p_distance);
 	float get_fog_height_curve() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override; 
 
 	Environment();
 	~Environment();
@@ -419,7 +419,7 @@ public:
 	void set_override_exposure(float p_exposure);
 	float get_override_exposure() const;
 
-	virtual RID get_rid() const;
+	virtual RID get_rid() const override; 
 
 	CameraEffects();
 	~CameraEffects();

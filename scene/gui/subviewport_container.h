@@ -53,7 +53,7 @@ public:
 	void set_stretch_shrink(int p_shrink);
 	int get_stretch_shrink() const;
 
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	SubViewportContainer();
 };

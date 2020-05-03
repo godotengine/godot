@@ -69,11 +69,11 @@ public:
 
 	Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
 	bool is_connected_to_host() const;
-	IP_Address get_connected_host() const;
-	uint16_t get_connected_port() const;
+	virtual IP_Address get_connected_host() const;
+	virtual uint16_t get_connected_port() const;
 	void disconnect_from_host();
 
-	int get_available_bytes() const;
+	virtual int get_available_bytes() const override;
 	Status get_status();
 
 	void set_no_delay(bool p_enabled);
@@ -82,10 +82,10 @@ public:
 	Error poll(NetSocket::PollType p_type, int timeout = 0);
 
 	// Read/Write from StreamPeer
-	Error put_data(const uint8_t *p_data, int p_bytes);
-	Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
-	Error get_data(uint8_t *p_buffer, int p_bytes);
-	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	virtual Error put_data(const uint8_t *p_data, int p_bytes) override;
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) override;
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes) override;
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
 	StreamPeerTCP();
 	~StreamPeerTCP();

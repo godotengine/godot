@@ -63,7 +63,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_intensity(float p_intensity);
@@ -102,8 +102,8 @@ public:
 	void set_update_mode(UpdateMode p_mode);
 	UpdateMode get_update_mode() const;
 
-	virtual AABB get_aabb() const;
-	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual AABB get_aabb() const override;
+	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const override;
 
 	ReflectionProbe();
 	~ReflectionProbe();

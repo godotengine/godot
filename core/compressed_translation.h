@@ -83,7 +83,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual StringName get_message(const StringName &p_src_text) const; //overridable for other implementations
+	virtual StringName get_message(const StringName &p_src_text) const override; //overridable for other implementations
 	void generate(const Ref<Translation> &p_from);
 
 	PHashTranslation();

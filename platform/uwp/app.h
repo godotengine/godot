@@ -52,7 +52,7 @@ namespace GodotUWP
 		virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
 		virtual void Load(Platform::String^ entryPoint);
 		virtual void Run();
-		virtual void Uninitialize();
+		virtual void uninitialize() override;
 
 		property Windows::Foundation::EventRegistrationToken MouseMovedToken {
 				Windows::Foundation::EventRegistrationToken get() { return this->mouseMovedToken; }

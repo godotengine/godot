@@ -42,7 +42,7 @@ class PaneDrag : public Control {
 protected:
 	void _gui_input(const Ref<InputEvent> &p_input);
 	void _notification(int p_what);
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	static void _bind_methods();
 
 public:

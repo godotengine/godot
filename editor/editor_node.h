@@ -513,7 +513,7 @@ private:
 
 	static void _load_error_notify(void *p_ud, const String &p_text);
 
-	bool has_main_screen() const { return true; }
+	virtual bool has_main_screen() const { return true; }
 
 	String import_reload_fn;
 

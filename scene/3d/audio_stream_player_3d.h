@@ -143,7 +143,7 @@ private:
 	float _get_attenuation_db(float p_distance) const;
 
 protected:
-	void _validate_property(PropertyInfo &property) const;
+	void _validate_property(PropertyInfo &property) const override;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -165,7 +165,7 @@ public:
 
 	void play(float p_from_pos = 0.0);
 	void seek(float p_seconds);
-	void stop();
+	virtual void stop() ;
 	bool is_playing() const;
 	float get_playback_position();
 

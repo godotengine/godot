@@ -44,7 +44,7 @@ class TextureEditor : public Control {
 protected:
 	void _notification(int p_what);
 	void _gui_input(Ref<InputEvent> p_event);
-	void _changed_callback(Object *p_changed, const char *p_prop);
+	virtual void _changed_callback(Object *p_changed, const char *p_prop) override ;
 	static void _bind_methods();
 
 public:
@@ -57,8 +57,8 @@ class EditorInspectorPluginTexture : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorPluginTexture, EditorInspectorPlugin);
 
 public:
-	virtual bool can_handle(Object *p_object);
-	virtual void parse_begin(Object *p_object);
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
 };
 
 class TextureEditorPlugin : public EditorPlugin {
@@ -66,7 +66,7 @@ class TextureEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const { return "Texture2D"; }
+	virtual String get_name() const override { return "Texture2D"; }
 
 	TextureEditorPlugin(EditorNode *p_node);
 };

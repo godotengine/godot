@@ -69,14 +69,14 @@ private:
 
 public:
 	virtual void initialize_core();
-	virtual void initialize();
+	virtual void initialize() override;
 
 	virtual void initialize_joypads();
 
 	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
 
-	virtual void finalize();
+	virtual void finalize() override;
 
 	typedef int64_t ProcessID;
 
@@ -90,7 +90,7 @@ public:
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 
-	virtual String get_name() const;
+	virtual String get_name() const override;
 	virtual MainLoop *get_main_loop() const;
 
 	void main_loop_begin();

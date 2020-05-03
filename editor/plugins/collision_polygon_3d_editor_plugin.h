@@ -104,13 +104,13 @@ class Polygon3DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) { return collision_polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
+	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return collision_polygon_editor->forward_spatial_gui_input(p_camera, p_event); }
 
-	virtual String get_name() const { return "Polygon3DEditor"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Polygon3DEditor"; }
+	virtual bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	Polygon3DEditorPlugin(EditorNode *p_node);
 	~Polygon3DEditorPlugin();

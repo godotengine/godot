@@ -65,8 +65,8 @@ class EditorSettingsDialog : public AcceptDialog {
 	String shortcut_configured;
 	String shortcut_filter;
 
-	virtual void cancel_pressed();
-	virtual void ok_pressed();
+	virtual void cancel_pressed() override;
+	virtual void ok_pressed() override;
 
 	void _settings_changed();
 	void _settings_property_edited(const String &p_name);

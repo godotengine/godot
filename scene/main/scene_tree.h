@@ -242,12 +242,12 @@ public:
 
 	void flush_transform_notifications();
 
-	virtual void init();
+	virtual void init() override;
 
-	virtual bool iteration(float p_time);
-	virtual bool idle(float p_time);
+	virtual bool iteration(float p_time) override;
+	virtual bool idle(float p_time) override;
 
-	virtual void finish();
+	virtual void finish() override;
 
 	void set_auto_accept_quit(bool p_enable);
 	void set_quit_on_go_back(bool p_enable);
@@ -331,7 +331,7 @@ public:
 
 	static SceneTree *get_singleton() { return singleton; }
 
-	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 
 	//network API
 

@@ -89,7 +89,7 @@ public:
 
 protected:
 	float params[3];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -127,7 +127,7 @@ public:
 protected:
 	float params[PARAM_MAX];
 	bool flags[FLAG_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 	void _set_upper_limit(float p_limit);
@@ -190,7 +190,7 @@ protected:
 	float _get_lower_limit_angular() const;
 
 	float params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -225,7 +225,7 @@ protected:
 	float _get_twist_span() const;
 
 	float params[PARAM_MAX];
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:
@@ -307,7 +307,7 @@ protected:
 
 	int precision;
 
-	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
+	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
 public:

@@ -81,7 +81,7 @@ public:
 	bool is_active() const;
 	void set_active(bool p_is_active);
 
-	String get_name() const;
+	virtual String get_name() const;
 	void set_name(String p_name);
 
 	int get_base_width() const;

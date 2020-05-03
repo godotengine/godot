@@ -60,7 +60,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 
 	void set_text(const String &p_text);
 	String get_text() const;

@@ -44,12 +44,12 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	mutable float orig_out_length;
 
 public:
-	virtual String get_handle_name(int p_idx) const;
-	virtual Variant get_handle_value(int p_idx);
-	virtual void set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point);
-	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+	virtual String get_handle_name(int p_idx) const override;
+	virtual Variant get_handle_value(int p_idx) override;
+	virtual void set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) override;
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false) override;
 
-	virtual void redraw();
+	virtual void redraw() override;
 	Path3DGizmo(Path3D *p_path = nullptr);
 };
 
@@ -58,11 +58,11 @@ class Path3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(Path3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 protected:
-	Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial);
+	virtual Ref<EditorNode3DGizmo> create_gizmo(Node3D *p_spatial) override;
 
 public:
-	String get_name() const;
-	int get_priority() const;
+	virtual String get_name() const override;
+	virtual int get_priority() const override;
 	Path3DGizmoPlugin();
 };
 
@@ -101,13 +101,13 @@ public:
 	Path3D *get_edited_path() { return path; }
 
 	static Path3DEditorPlugin *singleton;
-	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event);
+	virtual bool forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	virtual String get_name() const { return "Path3D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "Path3D"; }
+	virtual bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	bool mirror_angle_enabled() { return mirror_handle_angle; }
 	bool mirror_length_enabled() { return mirror_handle_length; }

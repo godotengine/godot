@@ -111,7 +111,7 @@ public:
 	void check_for_invalidation(const String &p_path);
 
 	void start();
-	void stop();
+	virtual void stop();
 
 	EditorResourcePreview();
 	~EditorResourcePreview();

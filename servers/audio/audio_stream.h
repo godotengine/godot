@@ -74,7 +74,7 @@ protected:
 	virtual float get_stream_sampling_rate() = 0;
 
 public:
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	AudioStreamPlaybackResampled() { mix_offset = 0; }
 };
@@ -109,10 +109,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Ref<AudioStreamPlayback> instance_playback();
-	virtual String get_stream_name() const;
+	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual String get_stream_name() const override;
 
-	virtual float get_length() const; //if supported, otherwise return 0
+	virtual float get_length() const override; //if supported, otherwise return 0
 
 	AudioStreamMicrophone();
 };
@@ -128,20 +128,20 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	Ref<AudioStreamMicrophone> microphone;
 
 protected:
-	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames);
-	virtual float get_stream_sampling_rate();
+	virtual void _mix_internal(AudioFrame *p_buffer, int p_frames) override;
+	virtual float get_stream_sampling_rate() override;
 
 public:
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
-	virtual void start(float p_from_pos = 0.0);
-	virtual void stop();
-	virtual bool is_playing() const;
+	virtual void start(float p_from_pos = 0.0) override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
 
-	virtual int get_loop_count() const; //times it looped
+	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
 	~AudioStreamPlaybackMicrophone();
 	AudioStreamPlaybackMicrophone();
@@ -170,10 +170,10 @@ public:
 	void set_random_pitch(float p_pitch);
 	float get_random_pitch() const;
 
-	virtual Ref<AudioStreamPlayback> instance_playback();
-	virtual String get_stream_name() const;
+	virtual Ref<AudioStreamPlayback> instance_playback() override;
+	virtual String get_stream_name() const override;
 
-	virtual float get_length() const; //if supported, otherwise return 0
+	virtual float get_length() const override; //if supported, otherwise return 0
 
 	AudioStreamRandomPitch();
 };
@@ -189,16 +189,16 @@ class AudioStreamPlaybackRandomPitch : public AudioStreamPlayback {
 	float pitch_scale;
 
 public:
-	virtual void start(float p_from_pos = 0.0);
-	virtual void stop();
-	virtual bool is_playing() const;
+	virtual void start(float p_from_pos = 0.0) override;
+	virtual void stop() override;
+	virtual bool is_playing() const override;
 
-	virtual int get_loop_count() const; //times it looped
+	virtual int get_loop_count() const override; //times it looped
 
-	virtual float get_playback_position() const;
-	virtual void seek(float p_time);
+	virtual float get_playback_position() const override;
+	virtual void seek(float p_time) override;
 
-	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
+	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) override;
 
 	~AudioStreamPlaybackRandomPitch();
 };

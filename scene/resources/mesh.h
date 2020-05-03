@@ -195,13 +195,13 @@ public:
 
 	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes = Vector<Vector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
 
-	Array surface_get_arrays(int p_surface) const;
-	Array surface_get_blend_shape_arrays(int p_surface) const;
-	Dictionary surface_get_lods(int p_surface) const;
+	virtual Array surface_get_arrays(int p_surface) const override;
+	virtual Array surface_get_blend_shape_arrays(int p_surface) const override;
+	virtual Dictionary surface_get_lods(int p_surface) const override;
 
 	void add_blend_shape(const StringName &p_name);
-	int get_blend_shape_count() const;
-	StringName get_blend_shape_name(int p_index) const;
+	virtual int get_blend_shape_count() const override;
+	virtual StringName get_blend_shape_name(int p_index) const override;
 	void clear_blend_shapes();
 
 	void set_blend_shape_mode(BlendShapeMode p_mode);
@@ -209,21 +209,21 @@ public:
 
 	void surface_update_region(int p_surface, int p_offset, const Vector<uint8_t> &p_data);
 
-	int get_surface_count() const;
+	virtual int get_surface_count() const override;
 	void surface_remove(int p_idx);
 
 	void clear_surfaces();
 
 	void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
 
-	int surface_get_array_len(int p_idx) const;
-	int surface_get_array_index_len(int p_idx) const;
-	uint32_t surface_get_format(int p_idx) const;
-	PrimitiveType surface_get_primitive_type(int p_idx) const;
+	virtual int surface_get_array_len(int p_idx) const override;
+	virtual int surface_get_array_index_len(int p_idx) const override;
+	virtual uint32_t surface_get_format(int p_idx) const override;
+	virtual PrimitiveType surface_get_primitive_type(int p_idx) const override;
 	bool surface_is_alpha_sorting_enabled(int p_idx) const;
 
-	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material);
-	virtual Ref<Material> surface_get_material(int p_idx) const;
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override;
+	virtual Ref<Material> surface_get_material(int p_idx) const override;
 
 	int surface_find_by_name(const String &p_name) const;
 	void surface_set_name(int p_idx, const String &p_name);
@@ -232,15 +232,15 @@ public:
 	void set_custom_aabb(const AABB &p_custom);
 	AABB get_custom_aabb() const;
 
-	AABB get_aabb() const;
-	virtual RID get_rid() const;
+	virtual AABB get_aabb() const override;
+	virtual RID get_rid() const override; 
 
 	void regen_normalmaps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
-	virtual void reload_from_file();
+	virtual void reload_from_file() override;
 
 	ArrayMesh();
 

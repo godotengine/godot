@@ -126,7 +126,7 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &property) const;
+	virtual void _validate_property(PropertyInfo &property) const override;
 
 public:
 	void set_blend_mode(BlendMode p_blend_mode);
@@ -152,7 +152,7 @@ public:
 
 	RID get_shader_rid() const;
 
-	virtual Shader::Mode get_shader_mode() const;
+	virtual Shader::Mode get_shader_mode() const override;
 
 	CanvasItemMaterial();
 	virtual ~CanvasItemMaterial();

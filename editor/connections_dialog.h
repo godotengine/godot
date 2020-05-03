@@ -103,7 +103,7 @@ private:
 
 	Label *error_label;
 
-	void ok_pressed();
+	virtual void ok_pressed() override;
 	void _cancel_pressed();
 	void _item_activated();
 	void _text_entered(const String &_text);

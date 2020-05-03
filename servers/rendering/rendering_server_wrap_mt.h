@@ -78,22 +78,22 @@ public:
 #include "servers/server_wrap_mt_common.h"
 
 	//these go pass-through, as they can be called from any thread
-	virtual RID texture_2d_create(const Ref<Image> &p_image) { return rendering_server->texture_2d_create(p_image); }
-	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) { return rendering_server->texture_2d_layered_create(p_layers, p_layered_type); }
-	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) { return rendering_server->texture_3d_create(p_slices); }
-	virtual RID texture_proxy_create(RID p_base) { return rendering_server->texture_proxy_create(p_base); }
+	virtual RID texture_2d_create(const Ref<Image> &p_image) override { return rendering_server->texture_2d_create(p_image); }
+	virtual RID texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, TextureLayeredType p_layered_type) override { return rendering_server->texture_2d_layered_create(p_layers, p_layered_type); }
+	virtual RID texture_3d_create(const Vector<Ref<Image>> &p_slices) override { return rendering_server->texture_3d_create(p_slices); }
+	virtual RID texture_proxy_create(RID p_base) override { return rendering_server->texture_proxy_create(p_base); }
 
 	//goes pass-through
-	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) { rendering_server->texture_2d_update_immediate(p_texture, p_image, p_layer); }
+	virtual void texture_2d_update_immediate(RID p_texture, const Ref<Image> &p_image, int p_layer = 0) override { rendering_server->texture_2d_update_immediate(p_texture, p_image, p_layer); }
 	//these go through command queue if they are in another thread
 	FUNC3(texture_2d_update, RID, const Ref<Image> &, int)
 	FUNC4(texture_3d_update, RID, const Ref<Image> &, int, int)
 	FUNC2(texture_proxy_update, RID, RID)
 
 	//these also go pass-through
-	virtual RID texture_2d_placeholder_create() { return rendering_server->texture_2d_placeholder_create(); }
-	virtual RID texture_2d_layered_placeholder_create() { return rendering_server->texture_2d_layered_placeholder_create(); }
-	virtual RID texture_3d_placeholder_create() { return rendering_server->texture_3d_placeholder_create(); }
+	virtual RID texture_2d_placeholder_create() override { return rendering_server->texture_2d_placeholder_create(); }
+	virtual RID texture_2d_layered_placeholder_create() override { return rendering_server->texture_2d_layered_placeholder_create(); }
+	virtual RID texture_3d_placeholder_create() override { return rendering_server->texture_3d_placeholder_create(); }
 
 	FUNC1RC(Ref<Image>, texture_2d_get, RID)
 	FUNC2RC(Ref<Image>, texture_2d_layer_get, RID, int)
@@ -144,7 +144,7 @@ public:
 
 	/* MESH API */
 
-	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) override {
 		return rendering_server->mesh_create_from_surfaces(p_surfaces);
 	}
 
@@ -420,17 +420,19 @@ public:
 	FUNC2(viewport_set_screen_space_aa, RID, ViewportScreenSpaceAA)
 
 	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
-	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
+	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) override {
 		return rendering_server->viewport_get_render_info(p_viewport, p_info);
 	}
 
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
 	FUNC2(viewport_set_measure_render_time, RID, bool)
-	virtual float viewport_get_measured_render_time_cpu(RID p_viewport) const {
+
+	virtual float viewport_get_measured_render_time_cpu(RID p_viewport) const override {
 		return rendering_server->viewport_get_measured_render_time_cpu(p_viewport);
 	}
-	virtual float viewport_get_measured_render_time_gpu(RID p_viewport) const {
+
+	virtual float viewport_get_measured_render_time_gpu(RID p_viewport) const override {
 		return rendering_server->viewport_get_measured_render_time_gpu(p_viewport);
 	}
 
@@ -655,24 +657,24 @@ public:
 
 	FUNC3(request_frame_drawn_callback, Object *, const StringName &, const Variant &)
 
-	virtual void init();
-	virtual void finish();
-	virtual void draw(bool p_swap_buffers, double frame_step);
-	virtual void sync();
+	virtual void init() override;
+	virtual void finish() override;
+	virtual void draw(bool p_swap_buffers, double frame_step) override;
+	virtual void sync() override;
 	FUNC0RC(bool, has_changed)
 
 	/* RENDER INFO */
 
 	//this passes directly to avoid stalling
-	virtual int get_render_info(RenderInfo p_info) {
+	virtual int get_render_info(RenderInfo p_info) override {
 		return rendering_server->get_render_info(p_info);
 	}
 
-	virtual String get_video_adapter_name() const {
+	virtual String get_video_adapter_name() const override {
 		return rendering_server->get_video_adapter_name();
 	}
 
-	virtual String get_video_adapter_vendor() const {
+	virtual String get_video_adapter_vendor() const override {
 		return rendering_server->get_video_adapter_vendor();
 	}
 
@@ -683,10 +685,11 @@ public:
 
 	FUNC1(set_debug_generate_wireframes, bool)
 
-	virtual bool has_feature(Features p_feature) const {
+	virtual bool has_feature(Features p_feature) const override {
 		return rendering_server->has_feature(p_feature);
 	}
-	virtual bool has_os_feature(const String &p_feature) const {
+
+	virtual bool has_os_feature(const String &p_feature) const override {
 		return rendering_server->has_os_feature(p_feature);
 	}
 
@@ -694,19 +697,19 @@ public:
 
 	static void set_use_vsync_callback(bool p_enable);
 
-	virtual bool is_low_end() const {
+	virtual bool is_low_end() const override {
 		return rendering_server->is_low_end();
 	}
 
-	virtual uint64_t get_frame_profile_frame() {
+	virtual uint64_t get_frame_profile_frame() override {
 		return rendering_server->get_frame_profile_frame();
 	}
 
-	virtual void set_frame_profiling_enabled(bool p_enabled) {
+	virtual void set_frame_profiling_enabled(bool p_enabled) override {
 		rendering_server->set_frame_profiling_enabled(p_enabled);
 	}
 
-	virtual Vector<FrameProfileArea> get_frame_profile() {
+	virtual Vector<FrameProfileArea> get_frame_profile() override {
 		return rendering_server->get_frame_profile();
 	}
 

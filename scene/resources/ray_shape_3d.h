@@ -40,7 +40,7 @@ class RayShape3D : public Shape3D {
 
 protected:
 	static void _bind_methods();
-	virtual void _update_shape();
+	virtual void _update_shape()  override;
 
 public:
 	void set_length(float p_length);
@@ -49,8 +49,8 @@ public:
 	void set_slips_on_slope(bool p_active);
 	bool get_slips_on_slope() const;
 
-	virtual Vector<Vector3> get_debug_mesh_lines();
-	virtual real_t get_enclosing_radius() const;
+	virtual Vector<Vector3> get_debug_mesh_lines() override;
+	virtual real_t get_enclosing_radius() const override;
 
 	RayShape3D();
 };

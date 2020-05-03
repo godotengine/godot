@@ -977,166 +977,166 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	void _begin_frame();
 
 public:
-	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());
-	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
+	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>()) override;
+	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) override;
 
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
-	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false);
-	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) override;
+	virtual Error texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_sync_with_draw = false) override;
+	virtual Vector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) override;
 
-	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
-	virtual bool texture_is_shared(RID p_texture);
-	virtual bool texture_is_valid(RID p_texture);
+	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const override;
+	virtual bool texture_is_shared(RID p_texture) override;
+	virtual bool texture_is_valid(RID p_texture) override;
 
-	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false);
-	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw = false);
-	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, bool p_sync_with_draw = false);
+	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false) override;
+	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw = false) override;
+	virtual Error texture_resolve_multisample(RID p_from_texture, RID p_to_texture, bool p_sync_with_draw = false) override;
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
 
-	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format);
-	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format);
+	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format) override;
+	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format) override;
 
-	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID);
+	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID) override;
 
-	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer);
+	virtual FramebufferFormatID framebuffer_get_format(RID p_framebuffer) override;
 
 	/*****************/
 	/**** SAMPLER ****/
 	/*****************/
 
-	virtual RID sampler_create(const SamplerState &p_state);
+	virtual RID sampler_create(const SamplerState &p_state) override;
 
 	/**********************/
 	/**** VERTEX ARRAY ****/
 	/**********************/
 
-	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	virtual RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) override;
 
 	// Internally reference counted, this ID is warranted to be unique for the same description, but needs to be freed as many times as it was allocated
-	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats);
-	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers);
+	virtual VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_formats) override;
+	virtual RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers) override;
 
-	virtual RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false);
+	virtual RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false) override;
 
-	virtual RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count);
+	virtual RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count) override;
 
 	/****************/
 	/**** SHADER ****/
 	/****************/
 
-	virtual RID shader_create(const Vector<ShaderStageData> &p_stages);
-	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader);
+	virtual RID shader_create(const Vector<ShaderStageData> &p_stages) override;
+	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) override;
 
 	/*****************/
 	/**** UNIFORM ****/
 	/*****************/
 
-	virtual RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
-	virtual RID storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
-	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	virtual RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) override;
+	virtual RID storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>()) override;
+	virtual RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>()) override;
 
-	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set);
-	virtual bool uniform_set_is_valid(RID p_uniform_set);
+	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) override;
+	virtual bool uniform_set_is_valid(RID p_uniform_set) override;
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false); //works for any buffer
-	virtual Vector<uint8_t> buffer_get_data(RID p_buffer);
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false) override; //works for any buffer
+	virtual Vector<uint8_t> buffer_get_data(RID p_buffer) override;
 
 	/*************************/
 	/**** RENDER PIPELINE ****/
 	/*************************/
 
-	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0);
-	virtual bool render_pipeline_is_valid(RID p_pipeline);
+	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0) override;
+	virtual bool render_pipeline_is_valid(RID p_pipeline) override;
 
 	/**************************/
 	/**** COMPUTE PIPELINE ****/
 	/**************************/
 
-	virtual RID compute_pipeline_create(RID p_shader);
-	virtual bool compute_pipeline_is_valid(RID p_pipeline);
+	virtual RID compute_pipeline_create(RID p_shader) override;
+	virtual bool compute_pipeline_is_valid(RID p_pipeline) override;
 
 	/****************/
 	/**** SCREEN ****/
 	/****************/
 
-	virtual int screen_get_width(DisplayServer::WindowID p_screen = 0) const;
-	virtual int screen_get_height(DisplayServer::WindowID p_screen = 0) const;
-	virtual FramebufferFormatID screen_get_framebuffer_format() const;
+	virtual int screen_get_width(DisplayServer::WindowID p_screen = 0) const override;
+	virtual int screen_get_height(DisplayServer::WindowID p_screen = 0) const override;
+	virtual FramebufferFormatID screen_get_framebuffer_format() const override;
 
 	/********************/
 	/**** DRAW LISTS ****/
 	/********************/
 
-	virtual DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
+	virtual DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color()) override;
 
-	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
-	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
+	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2()) override;
+	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2()) override;
 
-	virtual void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
-	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index);
-	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array);
-	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array);
-	virtual void draw_list_set_line_width(DrawListID p_list, float p_width);
-	virtual void draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size);
+	virtual void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) override;
+	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) override;
+	virtual void draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) override;
+	virtual void draw_list_bind_index_array(DrawListID p_list, RID p_index_array) override;
+	virtual void draw_list_set_line_width(DrawListID p_list, float p_width) override;
+	virtual void draw_list_set_push_constant(DrawListID p_list, const void *p_data, uint32_t p_data_size) override;
 
-	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
+	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0) override;
 
-	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
-	virtual void draw_list_disable_scissor(DrawListID p_list);
+	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) override;
+	virtual void draw_list_disable_scissor(DrawListID p_list) override;
 
-	virtual void draw_list_end();
+	virtual void draw_list_end() override;
 
 	/***********************/
 	/**** COMPUTE LISTS ****/
 	/***********************/
 
-	virtual ComputeListID compute_list_begin();
-	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline);
-	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index);
-	virtual void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size);
-	virtual void compute_list_add_barrier(ComputeListID p_list);
+	virtual ComputeListID compute_list_begin() override;
+	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) override;
+	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) override;
+	virtual void compute_list_set_push_constant(ComputeListID p_list, const void *p_data, uint32_t p_data_size) override;
+	virtual void compute_list_add_barrier(ComputeListID p_list) override;
 
-	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
-	virtual void compute_list_end();
+	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override;
+	virtual void compute_list_end() override;
 
 	/**************/
 	/**** FREE ****/
 	/**************/
 
-	virtual void free(RID p_id);
+	virtual void free(RID p_id) override;
 
 	/****************/
 	/**** Timing ****/
 	/****************/
 
-	virtual void capture_timestamp(const String &p_name, bool p_sync_to_draw);
-	virtual uint32_t get_captured_timestamps_count() const;
-	virtual uint64_t get_captured_timestamps_frame() const;
-	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const;
-	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
-	virtual String get_captured_timestamp_name(uint32_t p_index) const;
+	virtual void capture_timestamp(const String &p_name, bool p_sync_to_draw) override;
+	virtual uint32_t get_captured_timestamps_count() const override;
+	virtual uint64_t get_captured_timestamps_frame() const override;
+	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const override;
+	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const override;
+	virtual String get_captured_timestamp_name(uint32_t p_index) const override;
 
 	/****************/
 	/**** Limits ****/
 	/****************/
 
-	virtual int limit_get(Limit p_limit);
+	virtual int limit_get(Limit p_limit) override;
 
-	virtual void prepare_screen_for_drawing();
+	virtual void prepare_screen_for_drawing() override;
 	void initialize(VulkanContext *p_context, bool p_local_device = false);
 	void finalize();
 
-	virtual void swap_buffers(); //for main device
+	virtual void swap_buffers() override; //for main device
 
-	virtual void submit(); //for local device
-	virtual void sync(); //for local device
+	virtual void submit() override; //for local device
+	virtual void sync() override; //for local device
 
-	virtual uint32_t get_frame_delay() const;
+	virtual uint32_t get_frame_delay() const override;
 
-	virtual RenderingDevice *create_local_device();
+	virtual RenderingDevice *create_local_device() override;
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

@@ -47,7 +47,7 @@ public:
 	void set_percent_visible(bool p_visible);
 	bool is_percent_visible() const;
 
-	Size2 get_minimum_size() const;
+	virtual Size2 get_minimum_size() const override;
 	ProgressBar();
 };
 

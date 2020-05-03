@@ -78,10 +78,6 @@ void XRInterface::_bind_methods() {
 	BIND_ENUM_CONSTANT(XR_NOT_TRACKING);
 };
 
-StringName XRInterface::get_name() const {
-	return "Unknown";
-};
-
 bool XRInterface::is_primary() {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, false);

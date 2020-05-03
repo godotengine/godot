@@ -44,7 +44,7 @@ class Popup : public Window {
 
 protected:
 	void _close_pressed();
-	virtual Rect2i _popup_adjust_rect() const;
+	virtual Rect2i _popup_adjust_rect() const override;
 
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -65,7 +65,7 @@ protected:
 	void _update_child_rects();
 	void _notification(int p_what);
 
-	virtual Size2 _get_contents_minimum_size() const;
+	virtual Size2 _get_contents_minimum_size() const override;
 
 public:
 	void set_child_rect(Control *p_child);

@@ -88,7 +88,7 @@ class GPUParticles3DEditor : public GPUParticles3DEditorBase {
 
 	friend class GPUParticles3DEditorPlugin;
 
-	virtual void _generate_emission_points();
+	virtual void _generate_emission_points() override;
 
 protected:
 	void _notification(int p_notification);
@@ -108,11 +108,11 @@ class GPUParticles3DEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "GPUParticles3D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
+	virtual String get_name() const override { return "GPUParticles3D"; }
+	virtual bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_object) override;
+	virtual bool handles(Object *p_object) const override;
+	virtual void make_visible(bool p_visible) override;
 
 	GPUParticles3DEditorPlugin(EditorNode *p_node);
 	~GPUParticles3DEditorPlugin();

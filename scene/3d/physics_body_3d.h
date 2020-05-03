@@ -191,7 +191,7 @@ public:
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
 
-	virtual float get_inverse_mass() const { return 1.0 / mass; }
+	virtual float get_inverse_mass() const override { return 1.0 / mass; }
 
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
@@ -200,12 +200,12 @@ public:
 	Ref<PhysicsMaterial> get_physics_material_override() const;
 
 	void set_linear_velocity(const Vector3 &p_velocity);
-	Vector3 get_linear_velocity() const;
+	virtual Vector3 get_linear_velocity() const override;
 
 	void set_axis_velocity(const Vector3 &p_axis);
 
 	void set_angular_velocity(const Vector3 &p_velocity);
-	Vector3 get_angular_velocity() const;
+	virtual Vector3 get_angular_velocity() const override;
 
 	void set_gravity_scale(real_t p_gravity_scale);
 	real_t get_gravity_scale() const;
@@ -247,7 +247,7 @@ public:
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 	void apply_torque_impulse(const Vector3 &p_impulse);
 
-	virtual String get_configuration_warning() const;
+	virtual String get_configuration_warning() const override;
 
 	RigidBody3D();
 	~RigidBody3D();
@@ -308,8 +308,8 @@ protected:
 	virtual void _direct_state_changed(Object *p_state);
 
 public:
-	virtual Vector3 get_linear_velocity() const;
-	virtual Vector3 get_angular_velocity() const;
+	virtual Vector3 get_linear_velocity() const override;
+	virtual Vector3 get_angular_velocity() const override;
 
 	bool move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes = true, bool p_test_only = false);
 	bool test_move(const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia);
@@ -588,8 +588,8 @@ public:
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Transform get_global_gizmo_transform() const;
-	virtual Transform get_local_gizmo_transform() const;
+	virtual Transform get_global_gizmo_transform() const override;
+	virtual Transform get_local_gizmo_transform() const override;
 #endif
 
 	const JointData *get_joint_data() const;

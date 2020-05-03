@@ -603,12 +603,12 @@ public:
 	Vector<String> names;
 	Vector<String> tooltips;
 
-	virtual Size2 get_minimum_size() const {
+	virtual Size2 get_minimum_size() const override {
 		Ref<Font> font = get_theme_font("font", "Label");
 		return Vector2(0, font->get_height() * 2);
 	}
 
-	virtual String get_tooltip(const Point2 &p_pos) const {
+	virtual String get_tooltip(const Point2 &p_pos) const override {
 		for (int i = 0; i < flag_rects.size(); i++) {
 			if (i < tooltips.size() && flag_rects[i].has_point(p_pos)) {
 				return tooltips[i];
@@ -616,6 +616,7 @@ public:
 		}
 		return String();
 	}
+	
 	void _gui_input(const Ref<InputEvent> &p_ev) {
 		Ref<InputEventMouseButton> mb = p_ev;
 		if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {

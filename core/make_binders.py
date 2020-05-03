@@ -8,8 +8,8 @@ public:
 
 	$ifret R$ $ifnoret void$ (T::*method)($arg, P@$) $ifconst const$;
 #ifdef DEBUG_METHODS_ENABLED
-	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
 		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
 		$
@@ -21,18 +21,18 @@ public:
 		$
 		return Variant::NIL;
 	}
-	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const override {
 		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
 		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
 		$
 		return PropertyInfo();
 	}
 #endif
-	virtual String get_instance_class() const {
+	virtual String get_instance_class() const override {
 		return T::get_class_static();
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) override {
 
 		T *instance=Object::cast_to<T>(p_object);
 		r_error.error=Callable::CallError::CALL_OK;
@@ -60,7 +60,7 @@ public:
 	}
 
 #ifdef PTRCALL_ENABLED
-	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
+	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) override {
 
 		T *instance=Object::cast_to<T>(p_object);
 		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;
@@ -99,8 +99,8 @@ public:
 	$ifret R$ $ifnoret void$ (__UnexistingClass::*method)($arg, P@$) $ifconst const$;
 
 #ifdef DEBUG_METHODS_ENABLED
-	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
 		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
 		$
@@ -114,7 +114,7 @@ public:
 		return Variant::NIL;
 	}
 
-	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const override {
 		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
 		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
 		$
@@ -126,7 +126,7 @@ public:
 		return type_name;
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) override {
 
 		__UnexistingClass *instance = (__UnexistingClass*)p_object;
 
@@ -155,7 +155,7 @@ public:
 		$ifnoret return Variant();$
 	}
 #ifdef PTRCALL_ENABLED
-	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
+	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) override {
 		__UnexistingClass *instance = (__UnexistingClass*)p_object;
 		$ifret PtrToArg<R>::encode( $ (instance->*method)($arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret) $ ;
 	}
@@ -199,8 +199,8 @@ public:
 
 	$ifret R$ $ifnoret void$ (*method) ($ifconst const$ T *$ifargs , $$arg, P@$);
 #ifdef DEBUG_METHODS_ENABLED
-	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
-	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+	virtual Variant::Type _gen_argument_type(int p_arg) const override { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
 		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
 		$
@@ -212,7 +212,7 @@ public:
 		$
 		return Variant::NIL;
 	}
-	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const override {
 		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
 		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
 		$
@@ -223,7 +223,7 @@ public:
 		return T::get_class_static();
 	}
 
-	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) {
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Callable::CallError& r_error) override {
 
 		T *instance=Object::cast_to<T>(p_object);
 		r_error.error=Callable::CallError::CALL_OK;
@@ -251,7 +251,7 @@ public:
 	}
 
 #ifdef PTRCALL_ENABLED
-	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
+	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) override {
 
 		T *instance=Object::cast_to<T>(p_object);
 		$ifret PtrToArg<R>::encode( $ (method)(instance$ifargs , $$arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;
@@ -296,13 +296,13 @@ def make_version(template, nargs, argmax, const, ret):
         end = intext.find("$", to_pos + 1)
         if end == -1:
             break  # ignore
-        macro = intext[to_pos + 1 : end]
+        macro = intext[to_pos + 1: end]
         cmd = ""
         data = ""
 
         if macro.find(" ") != -1:
-            cmd = macro[0 : macro.find(" ")]
-            data = macro[macro.find(" ") + 1 :]
+            cmd = macro[0: macro.find(" ")]
+            data = macro[macro.find(" ") + 1:]
         else:
             cmd = macro
 
@@ -367,10 +367,14 @@ def run(target, source, env):
         else:
             text += t
 
-        text_free_func += make_version(template_typed_free_func, i, versions, False, False)
-        text_free_func += make_version(template_typed_free_func, i, versions, False, True)
-        text_free_func += make_version(template_typed_free_func, i, versions, True, False)
-        text_free_func += make_version(template_typed_free_func, i, versions, True, True)
+        text_free_func += make_version(template_typed_free_func,
+                                       i, versions, False, False)
+        text_free_func += make_version(template_typed_free_func,
+                                       i, versions, False, True)
+        text_free_func += make_version(template_typed_free_func,
+                                       i, versions, True, False)
+        text_free_func += make_version(template_typed_free_func,
+                                       i, versions, True, True)
 
     text_free_func += "#endif"
 

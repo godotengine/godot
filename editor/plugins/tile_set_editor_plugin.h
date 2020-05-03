@@ -286,13 +286,13 @@ class TileSetEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 public:
-	virtual String get_name() const { return "TileSet"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
-	void set_state(const Dictionary &p_state);
-	Dictionary get_state() const;
+	virtual String get_name() const override { return "TileSet"; }
+	virtual bool has_main_screen() const override { return false; }
+	virtual void edit(Object *p_node) override;
+	virtual bool handles(Object *p_node) const override;
+	virtual void make_visible(bool p_visible) override;
+	virtual void set_state(const Dictionary &p_state) override;
+	virtual Dictionary get_state() const override;
 
 	TileSetEditorPlugin(EditorNode *p_node);
 };

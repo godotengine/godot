@@ -48,8 +48,8 @@ class EditorLayoutsDialog : public ConfirmationDialog {
 
 protected:
 	static void _bind_methods();
-	virtual void ok_pressed();
-	virtual void _post_popup();
+	virtual void ok_pressed() override;
+	virtual void _post_popup() override;
 
 public:
 	EditorLayoutsDialog();

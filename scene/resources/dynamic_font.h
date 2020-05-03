@@ -274,20 +274,20 @@ public:
 	Ref<DynamicFontData> get_fallback(int p_idx) const;
 	void remove_fallback(int p_idx);
 
-	virtual float get_height() const;
+	virtual float get_height() const override;
 
-	virtual float get_ascent() const;
-	virtual float get_descent() const;
-	virtual float get_underline_position() const;
-	virtual float get_underline_thickness() const;
+	virtual float get_ascent() const override;
+	virtual float get_descent() const override;
+	virtual float get_underline_position() const override;
+	virtual float get_underline_thickness() const override;
 
-	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
+	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const override;
 
-	virtual bool is_distance_field_hint() const;
+	virtual bool is_distance_field_hint() const override;
 
-	virtual bool has_outline() const;
+	virtual bool has_outline() const override;
 
-	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const;
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1), bool p_outline = false) const override;
 
 	SelfList<DynamicFont> font_list;
 
@@ -308,10 +308,10 @@ VARIANT_ENUM_CAST(DynamicFont::SpacingType);
 
 class ResourceFormatLoaderDynamicFont : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false) override;
+	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
+	virtual bool handles_type(const String &p_type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 };
 
 #endif

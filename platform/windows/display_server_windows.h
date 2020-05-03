@@ -415,7 +415,7 @@ public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	virtual bool has_feature(Feature p_feature) const;
-	virtual String get_name() const;
+	virtual String get_name() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 

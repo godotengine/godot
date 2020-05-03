@@ -55,7 +55,7 @@ protected:
 
 public:
 	void set_aabb(const AABB &p_aabb);
-	AABB get_aabb() const;
+	virtual AABB get_aabb() const ;
 	bool is_on_screen() const;
 
 	VisibilityNotifier3D();
@@ -73,8 +73,8 @@ public:
 	};
 
 protected:
-	virtual void _screen_enter();
-	virtual void _screen_exit();
+	virtual void _screen_enter() override;
+	virtual void _screen_exit() override;
 
 	bool visible;
 
