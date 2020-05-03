@@ -170,7 +170,9 @@ class DisplayServerX11 : public DisplayServer {
 		int opcode;
 		Vector<int> touch_devices;
 		Map<int, Vector2> absolute_devices;
-		Map<int, Vector3> pen_devices;
+		Map<int, Vector2> pen_pressure_range;
+		Map<int, Vector2> pen_tilt_x_range;
+		Map<int, Vector2> pen_tilt_y_range;
 		XIEventMask all_event_mask;
 		Map<int, Vector2> state;
 		double pressure;
