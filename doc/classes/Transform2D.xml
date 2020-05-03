@@ -18,7 +18,7 @@
 			<return type="Transform2D">
 			</return>
 			<description>
-				Constructs a default-initialized [Transform] set to [constant IDENTITY].
+				Constructs a default-initialized [Transform2D] set to [constant IDENTITY].
 			</description>
 		</method>
 		<method name="Transform2D" qualifiers="constructor">

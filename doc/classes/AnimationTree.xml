@@ -21,10 +21,10 @@
 			</description>
 		</method>
 		<method name="get_root_motion_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
-				Retrieve the motion of the [member root_motion_track] as a [Transform] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_TRANSFORM], returns an identity transformation.
+				Retrieve the motion of the [member root_motion_track] as a [Transform3D] that can be used elsewhere. If [member root_motion_track] is not a path to a track of type [constant Animation.TYPE_TRANSFORM], returns an identity transformation.
 			</description>
 		</method>
 		<method name="rename_parameter">

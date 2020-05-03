@@ -69,7 +69,7 @@
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="adjust_by_reference_frame" type="bool">
 			</argument>

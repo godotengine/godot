@@ -76,10 +76,10 @@
 			</argument>
 			<argument index="1" name="surface" type="int">
 			</argument>
-			<argument index="2" name="transform" type="Transform">
+			<argument index="2" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Append vertices from a given [Mesh] surface onto the current vertex array with specified [Transform].
+				Append vertices from a given [Mesh] surface onto the current vertex array with specified [Transform3D].
 			</description>
 		</method>
 		<method name="begin">

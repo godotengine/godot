@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RemoteTransform3D" inherits="Node3D" version="4.0">
 	<brief_description>
-		RemoteTransform3D pushes its own [Transform] to another [Node3D] derived Node in the scene.
+		RemoteTransform3D pushes its own [Transform3D] to another [Node3D] derived Node in the scene.
 	</brief_description>
 	<description>
-		RemoteTransform3D pushes its own [Transform] to another [Node3D] derived Node (called the remote node) in the scene.
+		RemoteTransform3D pushes its own [Transform3D] to another [Node3D] derived Node (called the remote node) in the scene.
 		It can be set to update another Node's position, rotation and/or scale. It can use either global or local coordinates.
 	</description>
 	<tutorials>

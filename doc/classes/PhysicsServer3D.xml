@@ -16,7 +16,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			<argument index="2" name="transform" type="Transform3D" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			</argument>
 			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
@@ -92,7 +92,7 @@
 			</description>
 		</method>
 		<method name="area_get_shape_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="area" type="RID">
 			</argument>
@@ -121,7 +121,7 @@
 			</description>
 		</method>
 		<method name="area_get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="area" type="RID">
 			</argument>
@@ -258,7 +258,7 @@
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
-			<argument index="2" name="transform" type="Transform">
+			<argument index="2" name="transform" type="Transform3D">
 			</argument>
 			<description>
 				Sets the transform matrix for an area shape.
@@ -291,7 +291,7 @@
 			</return>
 			<argument index="0" name="area" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
 				Sets the transform matrix for an area.
@@ -337,7 +337,7 @@
 			</argument>
 			<argument index="1" name="shape" type="RID">
 			</argument>
-			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			<argument index="2" name="transform" type="Transform3D" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 			</argument>
 			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
@@ -510,7 +510,7 @@
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -760,7 +760,7 @@
 			</argument>
 			<argument index="1" name="shape_idx" type="int">
 			</argument>
-			<argument index="2" name="transform" type="Transform">
+			<argument index="2" name="transform" type="Transform3D">
 			</argument>
 			<description>
 				Sets the transform matrix for a body shape.
@@ -1017,11 +1017,11 @@
 			</argument>
 			<argument index="1" name="body_A" type="RID">
 			</argument>
-			<argument index="2" name="local_ref_A" type="Transform">
+			<argument index="2" name="local_ref_A" type="Transform3D">
 			</argument>
 			<argument index="3" name="body_B" type="RID">
 			</argument>
-			<argument index="4" name="local_ref_B" type="Transform">
+			<argument index="4" name="local_ref_B" type="Transform3D">
 			</argument>
 			<description>
 			</description>
@@ -1033,11 +1033,11 @@
 			</argument>
 			<argument index="1" name="body_A" type="RID">
 			</argument>
-			<argument index="2" name="local_ref_A" type="Transform">
+			<argument index="2" name="local_ref_A" type="Transform3D">
 			</argument>
 			<argument index="3" name="body_B" type="RID">
 			</argument>
-			<argument index="4" name="local_ref_B" type="Transform">
+			<argument index="4" name="local_ref_B" type="Transform3D">
 			</argument>
 			<description>
 			</description>
@@ -1049,11 +1049,11 @@
 			</argument>
 			<argument index="1" name="body_A" type="RID">
 			</argument>
-			<argument index="2" name="hinge_A" type="Transform">
+			<argument index="2" name="hinge_A" type="Transform3D">
 			</argument>
 			<argument index="3" name="body_B" type="RID">
 			</argument>
-			<argument index="4" name="hinge_B" type="Transform">
+			<argument index="4" name="hinge_B" type="Transform3D">
 			</argument>
 			<description>
 			</description>
@@ -1081,11 +1081,11 @@
 			</argument>
 			<argument index="1" name="body_A" type="RID">
 			</argument>
-			<argument index="2" name="local_ref_A" type="Transform">
+			<argument index="2" name="local_ref_A" type="Transform3D">
 			</argument>
 			<argument index="3" name="body_B" type="RID">
 			</argument>
-			<argument index="4" name="local_ref_B" type="Transform">
+			<argument index="4" name="local_ref_B" type="Transform3D">
 			</argument>
 			<description>
 			</description>

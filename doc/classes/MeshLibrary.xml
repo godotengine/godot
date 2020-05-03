@@ -72,7 +72,7 @@
 			</description>
 		</method>
 		<method name="get_item_navmesh_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -96,7 +96,7 @@
 			</argument>
 			<description>
 				Returns an item's collision shapes.
-				The array consists of each [Shape3D] followed by its [Transform].
+				The array consists of each [Shape3D] followed by its [Transform3D].
 			</description>
 		</method>
 		<method name="get_last_unused_item_id" qualifiers="const">
@@ -154,7 +154,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="navmesh" type="Transform">
+			<argument index="1" name="navmesh" type="Transform3D">
 			</argument>
 			<description>
 				Sets the transform to apply to the item's navigation mesh.
@@ -180,7 +180,7 @@
 			</argument>
 			<description>
 				Sets an item's collision shapes.
-				The array should consist of [Shape3D] objects, each followed by a [Transform] that will be applied to it. For shapes that should not have a transform, use [constant Transform.IDENTITY].
+				The array should consist of [Shape3D] objects, each followed by a [Transform3D] that will be applied to it. For shapes that should not have a transform, use [constant Transform3D.IDENTITY].
 			</description>
 		</method>
 	</methods>

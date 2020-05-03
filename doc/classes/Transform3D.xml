@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform" version="4.0">
+<class name="Transform3D" version="4.0">
 	<brief_description>
 		3D transformation (3×4 matrix).
 	</brief_description>
@@ -16,35 +16,35 @@
 		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
 	</tutorials>
 	<methods>
-		<method name="Transform" qualifiers="constructor">
-			<return type="Transform">
+		<method name="Transform3D" qualifiers="constructor">
+			<return type="Transform3D">
 			</return>
 			<description>
-				Constructs a default-initialized [Transform] set to [constant IDENTITY].
+				Constructs a default-initialized [Transform3D] set to [constant IDENTITY].
 			</description>
 		</method>
-		<method name="Transform" qualifiers="constructor">
-			<return type="Transform">
+		<method name="Transform3D" qualifiers="constructor">
+			<return type="Transform3D">
 			</return>
-			<argument index="0" name="from" type="Transform">
+			<argument index="0" name="from" type="Transform3D">
 			</argument>
 			<description>
-				Constructs a [Transform] as a copy of the given [Transform].
+				Constructs a [Transform3D] as a copy of the given [Transform3D].
 			</description>
 		</method>
-		<method name="Transform" qualifiers="constructor">
-			<return type="Transform">
+		<method name="Transform3D" qualifiers="constructor">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="basis" type="Basis">
 			</argument>
 			<argument index="1" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Constructs a Transform from a [Basis] and [Vector3].
+				Constructs a Transform3D from a [Basis] and [Vector3].
 			</description>
 		</method>
-		<method name="Transform" qualifiers="constructor">
-			<return type="Transform">
+		<method name="Transform3D" qualifiers="constructor">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="x_axis" type="Vector3">
 			</argument>
@@ -55,29 +55,29 @@
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Constructs a Transform from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
+				Constructs a Transform3D from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="affine_inverse" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="interpolate_with" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
-			<argument index="0" name="xform" type="Transform">
+			<argument index="0" name="xform" type="Transform3D">
 			</argument>
 			<argument index="1" name="weight" type="float">
 			</argument>
 			<description>
-				Interpolates the transform to other Transform by weight amount (on the range of 0.0 to 1.0).
+				Interpolates the transform to other Transform3D by weight amount (on the range of 0.0 to 1.0).
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling, use affine_inverse for transforms with scaling).
@@ -86,14 +86,14 @@
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool">
 			</return>
-			<argument index="0" name="xform" type="Transform">
+			<argument index="0" name="xform" type="Transform3D">
 			</argument>
 			<description>
 				Returns [code]true[/code] if this transform and [code]transform[/code] are approximately equal, by calling [code]is_equal_approx[/code] on each component.
 			</description>
 		</method>
 		<method name="looking_at" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="target" type="Vector3">
 			</argument>
@@ -108,7 +108,7 @@
 		<method name="operator !=" qualifiers="operator">
 			<return type="bool">
 			</return>
-			<argument index="0" name="right" type="Transform">
+			<argument index="0" name="right" type="Transform3D">
 			</argument>
 			<description>
 			</description>
@@ -122,9 +122,9 @@
 			</description>
 		</method>
 		<method name="operator *" qualifiers="operator">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
-			<argument index="0" name="right" type="Transform">
+			<argument index="0" name="right" type="Transform3D">
 			</argument>
 			<description>
 			</description>
@@ -148,20 +148,20 @@
 		<method name="operator ==" qualifiers="operator">
 			<return type="bool">
 			</return>
-			<argument index="0" name="right" type="Transform">
+			<argument index="0" name="right" type="Transform3D">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="orthonormalized" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors.
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="axis" type="Vector3">
 			</argument>
@@ -172,7 +172,7 @@
 			</description>
 		</method>
 		<method name="scaled" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
@@ -181,7 +181,7 @@
 			</description>
 		</method>
 		<method name="translated" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="offset" type="Vector3">
 			</argument>
@@ -200,17 +200,17 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="IDENTITY" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
-			[Transform] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
+		<constant name="IDENTITY" value="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform3D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
-		<constant name="FLIP_X" value="Transform( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
-			[Transform] with mirroring applied perpendicular to the YZ plane.
+		<constant name="FLIP_X" value="Transform3D( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform3D] with mirroring applied perpendicular to the YZ plane.
 		</constant>
-		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
-			[Transform] with mirroring applied perpendicular to the XZ plane.
+		<constant name="FLIP_Y" value="Transform3D( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform3D] with mirroring applied perpendicular to the XZ plane.
 		</constant>
-		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
-			[Transform] with mirroring applied perpendicular to the XY plane.
+		<constant name="FLIP_Z" value="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
+			[Transform3D] with mirroring applied perpendicular to the XY plane.
 		</constant>
 	</constants>
 </class>

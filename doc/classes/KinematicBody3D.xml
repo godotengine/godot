@@ -155,14 +155,14 @@
 		<method name="test_move">
 			<return type="bool">
 			</return>
-			<argument index="0" name="from" type="Transform">
+			<argument index="0" name="from" type="Transform3D">
 			</argument>
 			<argument index="1" name="rel_vec" type="Vector3">
 			</argument>
 			<argument index="2" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
-				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
+				Checks for collisions without moving the body. Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [code]rel_vec[/code]. Returns [code]true[/code] if a collision would occur.
 			</description>
 		</method>
 	</methods>

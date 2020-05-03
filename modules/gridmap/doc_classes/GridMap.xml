@@ -41,7 +41,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an array of [ArrayMesh]es and [Transform] references of all bake meshes that exist within the current GridMap.
+				Returns an array of [ArrayMesh]es and [Transform3D] references of all bake meshes that exist within the current GridMap.
 			</description>
 		</method>
 		<method name="get_cell_item" qualifiers="const">
@@ -84,7 +84,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Returns an array of [Transform] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
+				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in world space.
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">

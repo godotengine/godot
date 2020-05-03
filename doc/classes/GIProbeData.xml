@@ -11,7 +11,7 @@
 		<method name="allocate">
 			<return type="void">
 			</return>
-			<argument index="0" name="to_cell_xform" type="Transform">
+			<argument index="0" name="to_cell_xform" type="Transform3D">
 			</argument>
 			<argument index="1" name="aabb" type="AABB">
 			</argument>
@@ -59,7 +59,7 @@
 			</description>
 		</method>
 		<method name="get_to_cell_xform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 			</description>
