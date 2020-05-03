@@ -44,6 +44,7 @@
 class ShaderTextEditor : public CodeTextEditor {
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
+	Ref<CodeHighlighter> syntax_highlighter;
 	Ref<Shader> shader;
 
 	void _check_shader_mode();

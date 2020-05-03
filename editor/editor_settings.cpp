@@ -420,7 +420,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_load_default_text_editor_theme();
 
 	// Highlighting
-	_initial_set("text_editor/highlighting/syntax_highlighting", true);
 	_initial_set("text_editor/highlighting/highlight_all_occurrences", true);
 	_initial_set("text_editor/highlighting/highlight_current_line", true);
 	_initial_set("text_editor/highlighting/highlight_type_safe_lines", true);
