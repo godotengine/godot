@@ -72,6 +72,7 @@ class VisualShaderEditor : public VBoxContainer {
 	bool shader_error;
 	VBoxContainer *preview_vbox;
 	TextEdit *preview_text;
+	Ref<CodeHighlighter> syntax_highlighter;
 	Label *error_text;
 
 	UndoRedo *undo_redo;

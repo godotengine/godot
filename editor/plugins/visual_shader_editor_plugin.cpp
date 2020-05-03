@@ -824,6 +824,8 @@ void VisualShaderEditor::_update_graph() {
 
 		if (is_expression) {
 			TextEdit *expression_box = memnew(TextEdit);
+			Ref<CodeHighlighter> expression_syntax_highlighter;
+			expression_syntax_highlighter.instance();
 			expression_node->set_control(expression_box, 0);
 			node->add_child(expression_box);
 
@@ -833,18 +835,18 @@ void VisualShaderEditor::_update_graph() {
 			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 
-			expression_box->set_syntax_coloring(true);
+			expression_box->set_syntax_highlighter(expression_syntax_highlighter);
 			expression_box->add_theme_color_override("background_color", background_color);
 
 			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
-				expression_box->add_keyword_color(E->get(), keyword_color);
+				expression_syntax_highlighter->add_keyword_color(E->get(), keyword_color);
 			}
 
 			expression_box->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
 			expression_box->add_theme_color_override("font_color", text_color);
-			expression_box->add_theme_color_override("symbol_color", symbol_color);
-			expression_box->add_color_region("/*", "*/", comment_color, false);
-			expression_box->add_color_region("//", "", comment_color, false);
+			expression_syntax_highlighter->set_symbol_color(symbol_color);
+			expression_syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
+			expression_syntax_highlighter->add_color_region("//", "", comment_color, false);
 
 			expression_box->set_text(expression);
 			expression_box->set_context_menu_enabled(false);
@@ -1703,14 +1705,14 @@ void VisualShaderEditor::_notification(int p_what) {
 			preview_text->add_theme_color_override("background_color", background_color);
 
 			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
-				preview_text->add_keyword_color(E->get(), keyword_color);
+				syntax_highlighter->add_keyword_color(E->get(), keyword_color);
 			}
 
 			preview_text->add_theme_font_override("font", get_theme_font("expression", "EditorFonts"));
 			preview_text->add_theme_color_override("font_color", text_color);
-			preview_text->add_theme_color_override("symbol_color", symbol_color);
-			preview_text->add_color_region("/*", "*/", comment_color, false);
-			preview_text->add_color_region("//", "", comment_color, false);
+			syntax_highlighter->set_symbol_color(symbol_color);
+			syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
+			syntax_highlighter->add_color_region("//", "", comment_color, false);
 
 			error_text->add_theme_font_override("font", get_theme_font("status_source", "EditorFonts"));
 			error_text->add_theme_color_override("font_color", get_theme_color("error_color", "Editor"));
@@ -2369,11 +2371,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_vbox->set_visible(preview_showed);
 	main_box->add_child(preview_vbox);
 	preview_text = memnew(TextEdit);
+	syntax_highlighter.instance();
 	preview_vbox->add_child(preview_text);
 	preview_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_text->set_v_size_flags(SIZE_EXPAND_FILL);
 	preview_text->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
-	preview_text->set_syntax_coloring(true);
+	preview_text->set_syntax_highlighter(syntax_highlighter);
 	preview_text->set_show_line_numbers(true);
 	preview_text->set_readonly(true);
 
