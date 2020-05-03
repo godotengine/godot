@@ -28,21 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "gdnative/transform.h"
+#include "gdnative/transform_3d.h"
 
 #include "core/math/transform_3d.h"
 
-static_assert(sizeof(godot_transform) == sizeof(Transform3D), "Transform3D size mismatch");
+static_assert(sizeof(godot_transform3d) == sizeof(Transform3D), "Transform3D size mismatch");
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void GDAPI godot_transform_new(godot_transform *p_self) {
+void GDAPI godot_transform3d_new(godot_transform3d *p_self) {
 	memnew_placement(p_self, Transform3D);
 }
 
-void GDAPI godot_transform_new_copy(godot_transform *r_dest, const godot_transform *p_src) {
+void GDAPI godot_transform3d_new_copy(godot_transform3d *r_dest, const godot_transform3d *p_src) {
 	memnew_placement(r_dest, Transform3D(*(Transform3D *)p_src));
 }
 
