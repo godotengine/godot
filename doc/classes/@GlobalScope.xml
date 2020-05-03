@@ -2605,8 +2605,8 @@
 		<constant name="TYPE_BASIS" value="15" enum="Variant.Type">
 			Variable is of type [Basis].
 		</constant>
-		<constant name="TYPE_TRANSFORM" value="16" enum="Variant.Type">
-			Variable is of type [Transform].
+		<constant name="TYPE_TRANSFORM3D" value="16" enum="Variant.Type">
+			Variable is of type [Transform3D].
 		</constant>
 		<constant name="TYPE_COLOR" value="17" enum="Variant.Type">
 			Variable is of type [Color].

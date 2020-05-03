@@ -4,7 +4,7 @@
 		3×3 matrix datatype.
 	</brief_description>
 	<description>
-		3×3 matrix used for 3D rotation and scale. Almost always used as an orthogonal basis for a Transform.
+		3×3 matrix used for 3D rotation and scale. Almost always used as an orthogonal basis for a [Transform3D].
 		Contains 3 vector fields X, Y and Z as its columns, which are typically interpreted as the local basis vectors of a transformation. For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 		Can also be accessed as array of 3D vectors. These vectors are normally orthogonal to each other, but are not necessarily normalized (due to scaling).
 		For more information, read the "Matrices and transforms" documentation article.

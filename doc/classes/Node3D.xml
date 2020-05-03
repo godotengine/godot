@@ -4,7 +4,7 @@
 		Most basic 3D game object, parent of all 3D-related nodes.
 	</brief_description>
 	<description>
-		Most basic 3D game object, with a 3D [Transform] and visibility settings. All other 3D game objects inherit from Node3D. Use [Node3D] as a parent node to move, scale, rotate and show/hide children in a 3D project.
+		Most basic 3D game object, with a 3D [Transform3D] and visibility settings. All other 3D game objects inherit from Node3D. Use [Node3D] as a parent node to move, scale, rotate and show/hide children in a 3D project.
 		Affine operations (rotate, scale, translate) happen in parent's local coordinate system, unless the [Node3D] object is set as top-level. Affine operations in this coordinate system correspond to direct affine operations on the [Node3D]'s transform. The word local below refers to this coordinate system. The coordinate system that is attached to the [Node3D] object itself is referred to as object-local coordinate system.
 		[b]Note:[/b] Unless otherwise specified, all methods that have angle parameters must have angles specified as [i]radians[/i]. To convert degrees to radians, use [method @GlobalScope.deg2rad].
 	</description>
@@ -128,7 +128,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform].
+				Resets this node's transformations (like scale, skew and taper) preserving its rotation and translation by performing Gram-Schmidt orthonormalization on this node's [Transform3D].
 			</description>
 		</method>
 		<method name="rotate">
@@ -202,7 +202,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Reset all transformations for this node (sets its [Transform] to the identity matrix).
+				Reset all transformations for this node (sets its [Transform3D] to the identity matrix).
 			</description>
 		</method>
 		<method name="set_ignore_transform_notification">
@@ -288,8 +288,8 @@
 		<member name="gizmo" type="Node3DGizmo" setter="set_gizmo" getter="get_gizmo">
 			The [Node3DGizmo] for this node. Used for example in [EditorNode3DGizmo] as custom visualization and editing handles in Editor.
 		</member>
-		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform">
-			World3D space (global) [Transform] of this node.
+		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
+			World3D space (global) [Transform3D] of this node.
 		</member>
 		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation">
 			Rotation part of the local transformation in radians, specified in terms of YXZ-Euler angles in the format (X angle, Y angle, Z angle).
@@ -304,8 +304,8 @@
 		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
 			If [code]true[/code], the node will not inherit its transformations from its parent. Node transformations are only in global space.
 		</member>
-		<member name="transform" type="Transform" setter="set_transform" getter="get_transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
-			Local space [Transform] of this node, with respect to the parent node.
+		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			Local space [Transform3D] of this node, with respect to the parent node.
 		</member>
 		<member name="translation" type="Vector3" setter="set_translation" getter="get_translation" default="Vector3( 0, 0, 0 )">
 			Local translation of this node.

@@ -214,7 +214,7 @@
 		<member name="total_linear_damp" type="float" setter="" getter="get_total_linear_damp">
 			The rate at which the body stops moving, if there are not any other forces moving it.
 		</member>
-		<member name="transform" type="Transform" setter="set_transform" getter="get_transform">
+		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform">
 			The body's transformation matrix.
 		</member>
 	</members>

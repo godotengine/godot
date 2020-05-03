@@ -63,7 +63,7 @@
 			</description>
 		</method>
 		<method name="get_hmd_transform">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Returns the primary interface's transformation.
@@ -114,7 +114,7 @@
 			</description>
 		</method>
 		<method name="get_reference_frame" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Returns the reference frame transform. Mostly used internally and exposed for GDNative build interfaces.

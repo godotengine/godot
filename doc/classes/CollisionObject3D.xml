@@ -179,12 +179,12 @@
 			</description>
 		</method>
 		<method name="shape_owner_get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="owner_id" type="int">
 			</argument>
 			<description>
-				Returns the shape owner's [Transform].
+				Returns the shape owner's [Transform3D].
 			</description>
 		</method>
 		<method name="shape_owner_remove_shape">
@@ -214,10 +214,10 @@
 			</return>
 			<argument index="0" name="owner_id" type="int">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets the [Transform] of the given shape owner.
+				Sets the [Transform3D] of the given shape owner.
 			</description>
 		</method>
 	</methods>

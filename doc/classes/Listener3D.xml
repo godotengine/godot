@@ -18,10 +18,10 @@
 			</description>
 		</method>
 		<method name="get_listener_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
-				Returns the listener's global orthonormalized [Transform].
+				Returns the listener's global orthonormalized [Transform3D].
 			</description>
 		</method>
 		<method name="is_current" qualifiers="const">

@@ -27,7 +27,7 @@
 			</description>
 		</method>
 		<method name="get_camera_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<description>
 				Gets the camera transform. Subclassed cameras such as [ClippedCamera3D] may provide different transforms than the [Node] transform.

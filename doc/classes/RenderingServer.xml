@@ -130,10 +130,10 @@
 			</return>
 			<argument index="0" name="camera" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets [Transform] of camera.
+				Sets [Transform3D] of camera.
 			</description>
 		</method>
 		<method name="camera_set_use_vertical_aspect">
@@ -1335,7 +1335,7 @@
 			</return>
 			<argument index="0" name="instance" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
 				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
@@ -1894,14 +1894,14 @@
 			</description>
 		</method>
 		<method name="multimesh_instance_get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="multimesh" type="RID">
 			</argument>
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
-				Returns the [Transform] of the specified instance.
+				Returns the [Transform3D] of the specified instance.
 			</description>
 		</method>
 		<method name="multimesh_instance_get_transform_2d" qualifiers="const">
@@ -1948,10 +1948,10 @@
 			</argument>
 			<argument index="1" name="index" type="int">
 			</argument>
-			<argument index="2" name="transform" type="Transform">
+			<argument index="2" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets the [Transform] for this instance. Equivalent to [method MultiMesh.set_instance_transform].
+				Sets the [Transform3D] for this instance. Equivalent to [method MultiMesh.set_instance_transform].
 			</description>
 		</method>
 		<method name="multimesh_instance_set_transform_2d">
@@ -2142,10 +2142,10 @@
 			</return>
 			<argument index="0" name="particles" type="RID">
 			</argument>
-			<argument index="1" name="transform" type="Transform">
+			<argument index="1" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets the [Transform] that will be used by the particles when they first emit.
+				Sets the [Transform3D] that will be used by the particles when they first emit.
 			</description>
 		</method>
 		<method name="particles_set_emitting">
@@ -2590,14 +2590,14 @@
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="skeleton" type="RID">
 			</argument>
 			<argument index="1" name="bone" type="int">
 			</argument>
 			<description>
-				Returns the [Transform] set for a specific bone of this skeleton.
+				Returns the [Transform3D] set for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_get_transform_2d" qualifiers="const">
@@ -2618,10 +2618,10 @@
 			</argument>
 			<argument index="1" name="bone" type="int">
 			</argument>
-			<argument index="2" name="transform" type="Transform">
+			<argument index="2" name="transform" type="Transform3D">
 			</argument>
 			<description>
-				Sets the [Transform] for a specific bone of this skeleton.
+				Sets the [Transform3D] for a specific bone of this skeleton.
 			</description>
 		</method>
 		<method name="skeleton_bone_set_transform_2d">
@@ -3267,7 +3267,7 @@
 			Use [Transform2D] to store MultiMesh transform.
 		</constant>
 		<constant name="MULTIMESH_TRANSFORM_3D" value="1" enum="MultimeshTransformFormat">
-			Use [Transform] to store MultiMesh transform.
+			Use [Transform3D] to store MultiMesh transform.
 		</constant>
 		<constant name="LIGHT_DIRECTIONAL" value="0" enum="LightType">
 			Is a directional (sun) light.

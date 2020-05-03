@@ -274,7 +274,7 @@
 		<method name="operator *" qualifiers="operator">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="right" type="Transform">
+			<argument index="0" name="right" type="Transform3D">
 			</argument>
 			<description>
 			</description>

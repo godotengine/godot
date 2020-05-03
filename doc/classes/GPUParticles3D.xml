@@ -22,7 +22,7 @@
 		<method name="emit_particle">
 			<return type="void">
 			</return>
-			<argument index="0" name="xform" type="Transform">
+			<argument index="0" name="xform" type="Transform3D">
 			</argument>
 			<argument index="1" name="velocity" type="Vector3">
 			</argument>
