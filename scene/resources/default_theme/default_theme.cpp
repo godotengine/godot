@@ -405,13 +405,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("caret_color", "TextEdit", control_font_color);
 	theme->set_color("caret_background_color", "TextEdit", Color(0, 0, 0));
-	theme->set_color("symbol_color", "TextEdit", control_font_color_hover);
 	theme->set_color("brace_mismatch_color", "TextEdit", Color(1, 0.2, 0.2));
 	theme->set_color("line_number_color", "TextEdit", Color(0.67, 0.67, 0.67, 0.4));
 	theme->set_color("safe_line_number_color", "TextEdit", Color(0.67, 0.78, 0.67, 0.6));
-	theme->set_color("function_color", "TextEdit", Color(0.4, 0.64, 0.81));
-	theme->set_color("member_variable_color", "TextEdit", Color(0.9, 0.31, 0.35));
-	theme->set_color("number_color", "TextEdit", Color(0.92, 0.58, 0.2));
 	theme->set_color("word_highlighted_color", "TextEdit", Color(0.8, 0.9, 0.9, 0.15));
 
 	theme->set_constant("completion_lines", "TextEdit", 7);

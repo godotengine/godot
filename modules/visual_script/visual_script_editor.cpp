@@ -4660,10 +4660,10 @@ void VisualScriptEditor::_member_option(int p_option) {
 	}
 }
 
-void VisualScriptEditor::add_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) {
+void VisualScriptEditor::add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 }
 
-void VisualScriptEditor::set_syntax_highlighter(Ref<SyntaxHighlighter> p_highlighter) {
+void VisualScriptEditor::set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) {
 }
 
 void VisualScriptEditor::_bind_methods() {
