@@ -161,9 +161,9 @@ typedef void godot_object;
 
 #include <gdnative/basis.h>
 
-/////// Transform
+/////// Transform3D
 
-#include <gdnative/transform.h>
+#include <gdnative/transform_3d.h>
 
 /////// Color
 
