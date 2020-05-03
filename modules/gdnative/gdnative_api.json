@@ -511,7 +511,7 @@
 				]
 			},
 			{
-				"name": "godot_variant_new_transform",
+				"name": "godot_variant_new_transform3d",
 				"return_type": "void",
 				"arguments": [
 					[
@@ -519,7 +519,7 @@
 						"r_dest"
 					],
 					[
-						"const godot_transform *",
+						"const godot_transform3d *",
 						"p_trans"
 					]
 				]
@@ -923,8 +923,8 @@
 				]
 			},
 			{
-				"name": "godot_variant_as_transform",
-				"return_type": "godot_transform",
+				"name": "godot_variant_as_transform3d",
+				"return_type": "godot_transform3d",
 				"arguments": [
 					[
 						"const godot_variant *",
@@ -4344,25 +4344,25 @@
 				]
 			},
 			{
-				"name": "godot_transform_new",
+				"name": "godot_transform3d_new",
 				"return_type": "void",
 				"arguments": [
 					[
-						"godot_transform *",
+						"godot_transform3d *",
 						"r_dest"
 					]
 				]
 			},
 			{
-				"name": "godot_transform_new_copy",
+				"name": "godot_transform3d_new_copy",
 				"return_type": "void",
 				"arguments": [
 					[
-						"godot_transform *",
+						"godot_transform3d *",
 						"r_dest"
 					],
 					[
-						"const godot_transform *",
+						"const godot_transform3d *",
 						"p_src"
 					]
 				]
@@ -5073,7 +5073,7 @@
 				},
 				{
 					"name": "godot_xr_get_reference_frame",
-					"return_type": "godot_transform",
+					"return_type": "godot_transform3d",
 					"arguments": []
 				},
 				{
@@ -5145,7 +5145,7 @@
 							"p_controller_id"
 						],
 						[
-							"godot_transform *",
+							"godot_transform3d *",
 							"p_transform"
 						],
 						[

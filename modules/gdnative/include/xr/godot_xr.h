@@ -57,7 +57,7 @@ typedef struct {
 	godot_bool (*initialize)(void *);
 	void (*uninitialize)(void *);
 	godot_vector2 (*get_render_targetsize)(const void *);
-	godot_transform (*get_transform_for_eye)(void *, godot_int, godot_transform *);
+	godot_transform3d (*get_transform_for_eye)(void *, godot_int, godot_transform3d *);
 	void (*fill_projection_for_eye)(void *, godot_float *, godot_int, godot_float, godot_float, godot_float);
 	void (*commit_for_eye)(void *, godot_int, godot_rid *, godot_rect2 *);
 	void (*process)(void *);
@@ -70,7 +70,7 @@ void GDAPI godot_xr_register_interface(const godot_xr_interface_gdnative *p_inte
 
 // helper functions to access XRServer data
 godot_float GDAPI godot_xr_get_worldscale();
-godot_transform GDAPI godot_xr_get_reference_frame();
+godot_transform3d GDAPI godot_xr_get_reference_frame();
 
 // helper functions for rendering
 void GDAPI godot_xr_blit(godot_int p_eye, godot_rid *p_render_target, godot_rect2 *p_rect);
@@ -79,7 +79,7 @@ godot_int GDAPI godot_xr_get_texid(godot_rid *p_render_target);
 // helper functions for updating XR controllers
 godot_int GDAPI godot_xr_add_controller(char *p_device_name, godot_int p_hand, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
 void GDAPI godot_xr_remove_controller(godot_int p_controller_id);
-void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_transform *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
+void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_transform3d *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position);
 void GDAPI godot_xr_set_controller_button(godot_int p_controller_id, godot_int p_button, godot_bool p_is_pressed);
 void GDAPI godot_xr_set_controller_axis(godot_int p_controller_id, godot_int p_axis, godot_float p_value, godot_bool p_can_be_negative);
 godot_float GDAPI godot_xr_get_controller_rumble(godot_int p_controller_id);

@@ -161,7 +161,7 @@ void GDAPI godot_variant_new_basis(godot_variant *r_dest, const godot_basis *p_b
 	memnew_placement_custom(dest, Variant, Variant(*basis));
 }
 
-void GDAPI godot_variant_new_transform(godot_variant *r_dest, const godot_transform *p_trans) {
+void GDAPI godot_variant_new_transform3d(godot_variant *r_dest, const godot_transform3d *p_trans) {
 	Variant *dest = (Variant *)r_dest;
 	const Transform3D *trans = (const Transform3D *)p_trans;
 	memnew_placement_custom(dest, Variant, Variant(*trans));
@@ -402,8 +402,8 @@ godot_basis GDAPI godot_variant_as_basis(const godot_variant *p_self) {
 	return raw_dest;
 }
 
-godot_transform GDAPI godot_variant_as_transform(const godot_variant *p_self) {
-	godot_transform raw_dest;
+godot_transform3d GDAPI godot_variant_as_transform3d(const godot_variant *p_self) {
+	godot_transform3d raw_dest;
 	const Variant *self = (const Variant *)p_self;
 	Transform3D *dest = (Transform3D *)&raw_dest;
 	*dest = *self;

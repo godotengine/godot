@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GODOT_TRANSFORM_H
-#define GODOT_TRANSFORM_H
+#ifndef GODOT_TRANSFORM3D_H
+#define GODOT_TRANSFORM3D_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,22 +37,24 @@ extern "C" {
 
 #include <gdnative/math_defs.h>
 
-#define GODOT_TRANSFORM_SIZE (sizeof(godot_real_t) * 12)
+#define GODOT_TRANSFORM3D_SIZE (sizeof(godot_real_t) * 12)
 
-#ifndef GODOT_CORE_API_GODOT_TRANSFORM_TYPE_DEFINED
-#define GODOT_CORE_API_GODOT_TRANSFORM_TYPE_DEFINED
+#ifndef GODOT_CORE_API_GODOT_TRANSFORM3D_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_TRANSFORM3D_TYPE_DEFINED
 typedef struct {
-	uint8_t _dont_touch_that[GODOT_TRANSFORM_SIZE];
-} godot_transform;
+	uint8_t _dont_touch_that[GODOT_TRANSFORM3D_SIZE];
+} godot_transform3d;
 #endif
 
 #include <gdnative/gdnative.h>
 
-void GDAPI godot_transform_new(godot_transform *p_self);
-void GDAPI godot_transform_new_copy(godot_transform *r_dest, const godot_transform *p_src);
+void GDAPI godot_transform3d_new(godot_transform3d *p_self);
+void GDAPI godot_transform3d_new_copy(godot_transform3d *r_dest, const godot_transform3d *p_src);
+godot_vector3 GDAPI *godot_transform3d_operator_index(godot_transform3d *p_self, godot_int p_index);
+const godot_vector3 GDAPI *godot_transform3d_operator_index_const(const godot_transform3d *p_self, godot_int p_index);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // GODOT_TRANSFORM_H
+#endif // GODOT_TRANSFORM3D_H

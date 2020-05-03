@@ -178,7 +178,7 @@ Transform3D XRInterfaceGDNative::get_transform_for_eye(XRInterface::Eyes p_eye, 
 
 	ERR_FAIL_COND_V(interface == nullptr, Transform3D());
 
-	godot_transform t = interface->get_transform_for_eye(data, (int)p_eye, (godot_transform *)&p_cam_transform);
+	godot_transform3d t = interface->get_transform_for_eye(data, (int)p_eye, (godot_transform3d *)&p_cam_transform);
 
 	ret = (Transform3D *)&t;
 
@@ -241,8 +241,8 @@ godot_float GDAPI godot_xr_get_worldscale() {
 	return xr_server->get_world_scale();
 }
 
-godot_transform GDAPI godot_xr_get_reference_frame() {
-	godot_transform reference_frame;
+godot_transform3d GDAPI godot_xr_get_reference_frame() {
+	godot_transform3d reference_frame;
 	Transform3D *reference_frame_ptr = (Transform3D *)&reference_frame;
 
 	XRServer *xr_server = XRServer::get_singleton();
@@ -356,7 +356,7 @@ void GDAPI godot_xr_remove_controller(godot_int p_controller_id) {
 	}
 }
 
-void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_transform *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position) {
+void GDAPI godot_xr_set_controller_transform(godot_int p_controller_id, godot_transform3d *p_transform, godot_bool p_tracks_orientation, godot_bool p_tracks_position) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
