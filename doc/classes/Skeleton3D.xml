@@ -23,9 +23,9 @@
 			</description>
 		</method>
 		<method name="bone_transform_to_world_transform">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
-			<argument index="0" name="bone_transform" type="Transform">
+			<argument index="0" name="bone_transform" type="Transform3D">
 			</argument>
 			<description>
 				Takes the given bone pose/transform and converts it to a world transform, relative to the [Skeleton3D] node.
@@ -63,7 +63,7 @@
 			</description>
 		</method>
 		<method name="get_bone_custom_pose" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
@@ -72,7 +72,7 @@
 			</description>
 		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
@@ -81,7 +81,7 @@
 			</description>
 		</method>
 		<method name="get_bone_global_pose_no_override" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
@@ -109,7 +109,7 @@
 			</description>
 		</method>
 		<method name="get_bone_pose" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
@@ -124,7 +124,7 @@
 			</description>
 		</method>
 		<method name="get_bone_rest" qualifiers="const">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
@@ -199,7 +199,7 @@
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
-			<argument index="1" name="custom_pose" type="Transform">
+			<argument index="1" name="custom_pose" type="Transform3D">
 			</argument>
 			<description>
 				Sets the custom pose transform, [code]custom_pose[/code], for the bone at [code]bone_idx[/code]. This pose is an addition to the bone rest pose.
@@ -222,7 +222,7 @@
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
-			<argument index="1" name="pose" type="Transform">
+			<argument index="1" name="pose" type="Transform3D">
 			</argument>
 			<argument index="2" name="amount" type="float">
 			</argument>
@@ -261,7 +261,7 @@
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
-			<argument index="1" name="pose" type="Transform">
+			<argument index="1" name="pose" type="Transform3D">
 			</argument>
 			<description>
 				Sets the pose transform for bone [code]bone_idx[/code].
@@ -273,7 +273,7 @@
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
-			<argument index="1" name="rest" type="Transform">
+			<argument index="1" name="rest" type="Transform3D">
 			</argument>
 			<description>
 				Sets the rest transform for bone [code]bone_idx[/code].
@@ -289,9 +289,9 @@
 			</description>
 		</method>
 		<method name="world_transform_to_bone_transform">
-			<return type="Transform">
+			<return type="Transform3D">
 			</return>
-			<argument index="0" name="world_transform" type="Transform">
+			<argument index="0" name="world_transform" type="Transform3D">
 			</argument>
 			<description>
 				Takes the given world transform, relative to the [Skeleton3D], and converts it to a bone pose/transform.

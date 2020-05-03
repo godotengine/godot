@@ -33,7 +33,7 @@
 		</member>
 		<member name="translation" type="Vector3" setter="set_translation" getter="get_translation" default="Vector3( 0, 0, 0 )">
 		</member>
-		<member name="xform" type="Transform" setter="set_xform" getter="get_xform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<member name="xform" type="Transform3D" setter="set_xform" getter="get_xform" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
 		</member>
 	</members>
 	<constants>

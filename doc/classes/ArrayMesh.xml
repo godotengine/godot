@@ -113,7 +113,7 @@
 		<method name="lightmap_unwrap">
 			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="transform" type="Transform">
+			<argument index="0" name="transform" type="Transform3D">
 			</argument>
 			<argument index="1" name="texel_size" type="float">
 			</argument>
