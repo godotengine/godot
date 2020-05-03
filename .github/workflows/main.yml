@@ -1,0 +1,207 @@
+name: CI
+
+on:
+  push:
+    branches: [ master, 3.2, 3.1, 3.0, github_instead_travis ]
+  pull_request:
+    branches: [ master, 3.2, 3.1, 3.0, github_instead_travis ]
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    name: Static Checks
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Clang Format
+      run: |
+        sudo apt update
+        sudo apt upgrade -y
+        
+        sudo apt install clang-format
+        pip3 install --user black pygments
+        
+    - name: Static checks (clang-format) + Documentation checks
+      run: |
+        sh ./misc/travis/clang-format.sh;
+        sh ./misc/travis/black-format.sh
+        doc/tools/makerst.py --dry-run doc/classes modules
+
+
+  linux-mono:
+    runs-on: ubuntu-latest
+    name: Linux editor (debug, GCC 9, with Mono)
+
+    steps:
+    - uses: actions/checkout@v2
+
+
+    - name: Dependency installation
+      run: |
+        sudo apt install gnupg ca-certificates
+        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+        echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+        
+        sudo apt update
+        sudo apt upgrade -y
+        
+        sudo apt install -y build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+        sudo apt install -y
+        
+    - name: Change Python version
+      run: |
+        sudo rm /usr/bin/python
+        sudo ln -s /usr/bin/python3 /usr/bin/python
+
+    - name: Compilation
+      run: |
+        scons p=linuxbsd tools=yes target=debug module_mono_enabled=yes mono_glue=no warnings=extra werror=yes -j6 
+        
+  linux-export-clang:
+    runs-on: ubuntu-latest
+    name: Linux export template (release, Clang 7)
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Dependency installation
+      run: |
+        sudo apt update
+        sudo apt upgrade -y
+        
+        sudo apt install -y build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+        sudo apt install -y llvm clang
+        
+    - name: Change Python version
+      run: |
+        sudo rm /usr/bin/python
+        sudo ln -s /usr/bin/python3 /usr/bin/python
+
+    - name: Compilation
+      run: |
+        scons p=linuxbsd tools=no target=release warnings=extra werror=yes use_llvm=yes -j6 
+        
+        
+  android-export:
+    runs-on: ubuntu-latest
+    name: Android export template (release_debug, Clang)
+
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: Dependency installation
+      run: |
+        sudo apt install gnupg ca-certificates
+        sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+        echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+        
+        sudo apt update
+        sudo apt upgrade -y
+        
+        sudo apt install -y build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+        sudo apt install -y llvm clang
+        sudo apt install -y openjdk-8-jdk
+        
+    - name: Prepare android
+      run: |
+        export ANDROID_HOME=$GITHUB_WORKSPACE/godot-dev/build-tools/android-sdk;
+        export ANDROID_NDK_ROOT=$GITHUB_WORKSPACE/godot-dev/build-tools/android-ndk;
+        export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+        export PATH=/usr/lib/jvm/java-8-openjdk-amd64/jre/bin:${PATH}
+        java -version;
+        misc/travis/android-tools-linux.sh;
+        
+    - name: Change Python version
+      run: |
+        sudo rm /usr/bin/python
+        sudo ln -s /usr/bin/python3 /usr/bin/python
+
+    - name: Compilation
+      run: |
+      
+        scons p=android tools=no target=release_debug warnings=extra warnings=extra werror=yes use_llvm=yes -j6 
+        
+        
+  macos-editor:
+    runs-on: macos-latest
+    name: macOS editor (debug, Clang)
+
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: Dependency installation
+      run: |
+        brew install scons yasm
+
+    - name: Compilation
+      run: |
+      
+        scons platform=osx tools=yes target=debug warnings=extra werror=yes -j6
+        
+  linux-export-gcc:
+    runs-on: ubuntu-latest
+    name: Linux export template (release_debug, GCC 7, without 3D support)
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Dependency installation
+      run: |
+        sudo apt update
+        sudo apt upgrade -y
+        sudo apt install -y build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+        
+    - name: Change Python version
+      run: |
+        sudo rm /usr/bin/python
+        sudo ln -s /usr/bin/python3 /usr/bin/python
+
+    - name: Compilation
+      run: |
+        scons p=linuxbsd tools=no target=release disable_3d=yes -j6 
+        
+
+
+
+  sanitizer-compilation:
+    runs-on: ubuntu-latest
+    name: Sanitizer Compilation and tests
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Dependency installation
+      run: |
+        sudo apt update
+        sudo apt upgrade -y
+        
+        sudo apt install -y build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm
+        
+    - name: Change Python version
+      run: |
+       sudo rm /usr/bin/python
+        sudo ln -s /usr/bin/python3 /usr/bin/python
+
+    - name: Compilation Linux
+      run: |
+        scons p=linuxbsd -j6 use_asan=yes
+        
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with: 
+        path: bin/
+        
+    - name: Install test dependency
+      run: |
+        sudo apt install -y xvfb
+#    - name: Run Address and Leak Sanitizer test
+#      run: | 
+#        xvfb-run godot -e
+        
+        
+#- name: Cppcheck
+#  run: |
+#    sudo apt install -y cppcheck
+#    cppcheck -q -j8 --enable=all --force --output-file=cppcheck.xml --xml --xml-version=2 .
+#    mkdir report
+#    cppcheck-htmlreport --source-dir=. --title=project --file=cppcheck.xml --report-dir=report
