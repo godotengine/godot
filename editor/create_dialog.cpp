@@ -40,7 +40,7 @@
 #include "editor_settings.h"
 #include "scene/gui/box_container.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type, const String &p_select_name) {
 
 	type_list.clear();
 	ClassDB::get_class_list(&type_list);
@@ -111,7 +111,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 
 	if (p_replace_mode) {
 		select_type(p_select_type);
-		set_title(vformat(TTR("Change %s Type"), base_type));
+		set_title(vformat(TTR("Convert %s from %s"), p_select_name, p_select_type));
 		get_ok()->set_text(TTR("Change"));
 	} else {
 		set_title(vformat(TTR("Create New %s"), base_type));
