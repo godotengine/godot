@@ -2430,6 +2430,7 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/gles2/debug/flash_batching", false);
 	GLOBAL_DEF("rendering/gles2/debug/diagnose_frame", false);
 	GLOBAL_DEF_RST("rendering/gles2/debug/use_batching_in_editor", true);
+	GLOBAL_DEF("rendering/gles2/debug/disable_half_float", false);
 
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/max_join_item_commands", PropertyInfo(Variant::INT, "rendering/gles2/batching/max_join_item_commands", PROPERTY_HINT_RANGE, "0,65535"));
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/gles2/batching/colored_vertex_format_threshold", PropertyInfo(Variant::REAL, "rendering/gles2/batching/colored_vertex_format_threshold", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));

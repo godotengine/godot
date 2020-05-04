@@ -5961,12 +5961,15 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_write_depth = config.extensions.has("GL_EXT_frag_depth");
 #endif
 
+	config.support_half_float_vertices = true;
+//every platform should support this except web, iOS has issues with their support, so add option to disable
 #ifdef JAVASCRIPT_ENABLED
 	config.support_half_float_vertices = false;
-#else
-	//every other platform, be it mobile or desktop, supports this (even if not in the GLES2 spec).
-	config.support_half_float_vertices = true;
 #endif
+	bool disable_half_float = GLOBAL_GET("rendering/gles2/batching/disable_half_float");
+	if (disable_half_float) {
+		config.support_half_float_vertices = false;
+	}
 
 	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc") || config.extensions.has("EXT_texture_compression_bptc");
