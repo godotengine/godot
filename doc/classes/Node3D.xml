@@ -26,7 +26,7 @@
 				Returns the parent [Node3D], or an empty [Object] if no parent exists or parent is not of type [Node3D].
 			</description>
 		</method>
-		<method name="get_world" qualifiers="const">
+		<method name="get_world_3d" qualifiers="const">
 			<return type="World3D">
 			</return>
 			<description>
