@@ -109,14 +109,16 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 			continue; //don't propagate to a toplevel
 		E->get()->_propagate_transform_changed(p_origin);
 	}
+	data.dirty |= DIRTY_GLOBAL;
 #ifdef TOOLS_ENABLED
 	if ((data.gizmo.is_valid() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
 #else
 	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 #endif
 		get_tree()->xform_change_list.add(&xform_change);
+	} else if (data.ignore_notification && !xform_change.in_list()) {
+		get_tree()->ignored_xform_change_list.add(&xform_change);
 	}
-	data.dirty |= DIRTY_GLOBAL;
 
 	data.children_lock--;
 }
@@ -215,7 +217,7 @@ void Node3D::_notification(int p_what) {
 			data.inside_world = false;
 
 		} break;
-
+		case NOTIFICATION_TRANSFORM_CHANGE_IGNORED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 #ifdef TOOLS_ENABLED
@@ -799,6 +801,7 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);
 
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
+	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGE_IGNORED);
 	BIND_CONSTANT(NOTIFICATION_ENTER_WORLD);
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);

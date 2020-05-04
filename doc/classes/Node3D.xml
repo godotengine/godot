@@ -338,6 +338,9 @@
 			Node3D nodes receives this notification when their global transform changes. This means that either the current or a parent node changed its transform.
 			In order for [constant NOTIFICATION_TRANSFORM_CHANGED] to work, users first need to ask for it, with [method set_notify_transform].
 		</constant>
+		<constant name="NOTIFICATION_TRANSFORM_CHANGE_IGNORED" value="2001">
+			Node3D nodes receive this notification when their global transform changes, but they are set to ignore transform notifications with [method set_ignore_transform_notification].
+		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
 			Node3D nodes receives this notification when they are registered to new [World3D] resource.
 		</constant>

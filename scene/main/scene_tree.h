@@ -193,6 +193,7 @@ private:
 	friend class Viewport;
 
 	SelfList<Node>::List xform_change_list;
+	SelfList<Node>::List ignored_xform_change_list;
 
 #ifdef DEBUG_ENABLED // No live editor in release build.
 	friend class LiveEditor;
@@ -219,7 +220,8 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = 2000
+		NOTIFICATION_TRANSFORM_CHANGED = 2000,
+		NOTIFICATION_TRANSFORM_CHANGE_IGNORED = 2001
 	};
 
 	enum GroupCallFlags {

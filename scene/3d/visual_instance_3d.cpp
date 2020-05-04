@@ -65,6 +65,7 @@ void VisualInstance3D::_notification(int p_what) {
 			_update_visibility();
 
 		} break;
+		case NOTIFICATION_TRANSFORM_CHANGE_IGNORED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 			Transform gt = get_global_transform();

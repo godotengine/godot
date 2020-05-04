@@ -165,6 +165,15 @@ void SceneTree::flush_transform_notifications() {
 		n = nx;
 		node->notification(NOTIFICATION_TRANSFORM_CHANGED);
 	}
+	n = ignored_xform_change_list.first();
+	while (n) {
+
+		Node *node = n->self();
+		SelfList<Node> *nx = n->next();
+		ignored_xform_change_list.remove(n);
+		n = nx;
+		node->notification(NOTIFICATION_TRANSFORM_CHANGE_IGNORED);
+	}
 }
 
 void SceneTree::_flush_ugc() {
