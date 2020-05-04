@@ -31,6 +31,7 @@
 #ifndef TEXT_EDIT_H
 #define TEXT_EDIT_H
 
+#include "core/ordered_hash_map.h"
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
@@ -334,6 +335,14 @@ private:
 	String completion_hint;
 	int completion_hint_offset;
 
+	bool completion_clicked; // tracks if a click started on a completion rect.
+
+	// Code complete filtering.
+	Vector<ScriptCodeCompletionOption> unfiltered_completion_options_cache;
+	int completion_current_kind_filter; // Use int instead of ScriptCodeCompletionOption::Kind because we need to add an option for 'all' (-1) without affectecting core files (script_langauge.h)
+	OrderedHashMap<int, Rect2> completion_kind_filter_rect_map;
+	Rect2i completion_filter_rect;
+
 	bool setting_text;
 
 	// data
@@ -524,6 +533,9 @@ private:
 	void _cancel_code_hint();
 	void _confirm_completion();
 	void _update_completion_candidates();
+
+	Ref<Texture2D> _get_completion_option_kind_icon(int kind);
+	String _get_completion_option_kind_display(int kind);
 
 	int _calculate_spaces_till_next_left_indent(int column);
 	int _calculate_spaces_till_next_right_indent(int column);
