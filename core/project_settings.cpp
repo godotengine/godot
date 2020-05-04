@@ -362,40 +362,29 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
-		bool found = false;
-
 		String exec_dir = exec_path.get_base_dir();
 		String exec_filename = exec_path.get_file();
 		String exec_basename = exec_filename.get_basename();
 
-		// Try to load data pack at the location of the executable
-		// As mentioned above, we have two potential names to attempt
-
-		if (_load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) ||
-				_load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"))) {
-			found = true;
-		} else {
-			// If we couldn't find them next to the executable, we attempt
-			// the current working directory. Same story, two tests.
-			if (_load_resource_pack(exec_basename + ".pck") ||
-					_load_resource_pack(exec_filename + ".pck")) {
-				found = true;
-			}
-		}
+		// Attempt with PCK bundled into executable
+		bool found = _load_resource_pack(exec_path);
 
 #ifdef OSX_ENABLED
-		// Attempt to load PCK from macOS .app bundle resources
 		if (!found) {
-			if (_load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"))) {
-				found = true;
-			}
+			// Attempt to load PCK from macOS .app bundle resources
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"));
 		}
 #endif
 
-		// Attempt with PCK bundled into executable
 		if (!found) {
-			if (_load_resource_pack(exec_path)) {
-				found = true;
+			// Try to load data pack at the location of the executable
+			// As mentioned above, we have two potential names to attempt
+			found = _load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) || _load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"));
+
+			if (!found) {
+				// If we couldn't find them next to the executable, we attempt
+				// the current working directory. Same story, two tests.
+				found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
 			}
 		}
 
