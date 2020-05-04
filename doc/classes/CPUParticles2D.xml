@@ -240,6 +240,7 @@
 		</member>
 		<member name="normalmap" type="Texture2D" setter="set_normalmap" getter="get_normalmap">
 			Normal map to be used for the [member texture] property.
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
 			If [code]true[/code], only one emission cycle occurs. If set [code]true[/code] during a cycle, emission will stop at the cycle's end.

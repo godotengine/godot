@@ -102,6 +102,8 @@
 			If [code]true[/code], polygon will be inverted, containing the area outside the defined points and extending to the [code]invert_border[/code].
 		</member>
 		<member name="normal_map" type="Texture2D" setter="set_normal_map" getter="get_normal_map">
+			The normal map gives depth to the Polygon2D.
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The offset applied to each vertex.
