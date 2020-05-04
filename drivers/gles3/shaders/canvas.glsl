@@ -48,6 +48,9 @@ uniform highp mat4 extra_matrix;
 
 out highp vec2 uv_interp;
 out mediump vec4 color_interp;
+#ifdef MODULATE_USED
+uniform mediump vec4 final_modulate;
+#endif
 
 #ifdef USE_NINEPATCH
 
@@ -517,7 +520,9 @@ FRAGMENT_SHADER_CODE
 	color = vec4(vec3(enc32), 1.0);
 #endif
 
+#if !defined(MODULATE_USED)
 	color *= final_modulate;
+#endif
 
 #ifdef USE_LIGHTING
 

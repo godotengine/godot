@@ -48,6 +48,9 @@ uniform highp mat4 skeleton_transform_inverse;
 
 varying vec2 uv_interp;
 varying vec4 color_interp;
+#ifdef MODULATE_USED
+uniform vec4 final_modulate;
+#endif
 
 uniform highp vec2 color_texpixel_size;
 
@@ -407,7 +410,9 @@ FRAGMENT_SHADER_CODE
 		normal = mix(vec3(0.0, 0.0, 1.0), normal_map * vec3(2.0, -2.0, 1.0) - vec3(1.0, -1.0, 0.0), normal_depth);
 #endif
 	}
+#if !defined(MODULATE_USED)
 	color *= final_modulate;
+#endif
 
 #ifdef USE_LIGHTING
 
