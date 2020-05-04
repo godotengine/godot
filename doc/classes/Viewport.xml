@@ -16,18 +16,18 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/viewports/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="find_world" qualifiers="const">
-			<return type="World3D">
-			</return>
-			<description>
-				Returns the 3D world of the viewport, or if none the world of the parent viewport.
-			</description>
-		</method>
 		<method name="find_world_2d" qualifiers="const">
 			<return type="World2D">
 			</return>
 			<description>
 				Returns the 2D world of the viewport.
+			</description>
+		</method>
+		<method name="find_world_3d" qualifiers="const">
+			<return type="World3D">
+			</return>
+			<description>
+				Returns the 3D world of the viewport, or if none the world of the parent viewport.
 			</description>
 		</method>
 		<method name="get_camera" qualifiers="const">
@@ -219,8 +219,8 @@
 		<member name="msaa" type="int" setter="set_msaa" getter="get_msaa" enum="Viewport.MSAA" default="0">
 			The multisample anti-aliasing mode. A higher number results in smoother edges at the cost of significantly worse performance. A value of 4 is best unless targeting very high-end systems.
 		</member>
-		<member name="own_world" type="bool" setter="set_use_own_world" getter="is_using_own_world" default="false">
-			If [code]true[/code], the viewport will use [World3D] defined in [code]world[/code] property.
+		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
+			If [code]true[/code], the viewport will use the [World3D] defined in [member world_3d].
 		</member>
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
@@ -247,11 +247,11 @@
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
-		<member name="world" type="World3D" setter="set_world" getter="get_world">
-			The custom [World3D] which can be used as 3D environment source.
-		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">
 			The custom [World2D] which can be used as 2D environment source.
+		</member>
+		<member name="world_3d" type="World3D" setter="set_world_3d" getter="get_world_3d">
+			The custom [World3D] which can be used as 3D environment source.
 		</member>
 	</members>
 	<signals>
