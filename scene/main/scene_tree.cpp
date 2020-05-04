@@ -504,7 +504,7 @@ bool SceneTree::idle(float p_time) {
 		String env_path = ProjectSettings::get_singleton()->get("rendering/environment/default_environment");
 		env_path = env_path.strip_edges(); //user may have added a space or two
 		String cpath;
-		Ref<Environment> fallback = get_root()->get_world()->get_fallback_environment();
+		Ref<Environment> fallback = get_root()->get_world_3d()->get_fallback_environment();
 		if (fallback.is_valid()) {
 			cpath = fallback->get_path();
 		}
@@ -519,7 +519,7 @@ bool SceneTree::idle(float p_time) {
 			} else {
 				fallback.unref();
 			}
-			get_root()->get_world()->set_fallback_environment(fallback);
+			get_root()->get_world_3d()->set_fallback_environment(fallback);
 		}
 	}
 
@@ -1409,8 +1409,8 @@ SceneTree::SceneTree() {
 
 	root = memnew(Window);
 	root->set_name("root");
-	if (!root->get_world().is_valid())
-		root->set_world(Ref<World3D>(memnew(World3D)));
+	if (!root->get_world_3d().is_valid())
+		root->set_world_3d(Ref<World3D>(memnew(World3D)));
 
 	// Initialize network state
 	multiplayer_poll = true;
@@ -1447,7 +1447,7 @@ SceneTree::SceneTree() {
 		if (env_path != String()) {
 			Ref<Environment> env = ResourceLoader::load(env_path);
 			if (env.is_valid()) {
-				root->get_world()->set_fallback_environment(env);
+				root->get_world_3d()->set_fallback_environment(env);
 			} else {
 				if (Engine::get_singleton()->is_editor_hint()) {
 					//file was erased, clear the field.

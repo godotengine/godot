@@ -385,8 +385,8 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				linear_velocity = velocity_tracker->get_tracked_linear_velocity();
 			}
 
-			Ref<World3D> world = get_world();
-			ERR_FAIL_COND(world.is_null());
+			Ref<World3D> world_3d = get_world_3d();
+			ERR_FAIL_COND(world_3d.is_null());
 
 			int new_output_count = 0;
 
@@ -396,7 +396,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			//check if any area is diverting sound into a bus
 
-			PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world->get_space());
+			PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
 			PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
@@ -419,7 +419,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 			}
 
 			List<Camera3D *> cameras;
-			world->get_camera_list(&cameras);
+			world_3d->get_camera_list(&cameras);
 
 			for (List<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 

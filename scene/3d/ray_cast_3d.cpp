@@ -196,7 +196,7 @@ void RayCast3D::_notification(int p_what) {
 }
 
 void RayCast3D::_update_raycast_state() {
-	Ref<World3D> w3d = get_world();
+	Ref<World3D> w3d = get_world_3d();
 	ERR_FAIL_COND(w3d.is_null());
 
 	PhysicsDirectSpaceState3D *dss = PhysicsServer3D::get_singleton()->space_get_direct_state(w3d->get_space());
