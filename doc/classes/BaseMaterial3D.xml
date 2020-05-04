@@ -159,6 +159,7 @@
 		</member>
 		<member name="detail_normal" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that specifies the per-pixel normal of the detail overlay.
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV">
 			Specifies whether to use [code]UV[/code] or [code]UV2[/code] for the detail layer. See [enum DetailUV] for options.
@@ -250,6 +251,7 @@
 		</member>
 		<member name="normal_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to specify the normal at a given pixel. The [code]normal_texture[/code] only uses the red and green channels. The normal read from [code]normal_texture[/code] is oriented around the surface normal provided by the [Mesh].
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
