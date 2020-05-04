@@ -190,7 +190,7 @@ private:
 	struct JoyEvent {
 		int type;
 		int index;
-		int value;
+		float value;
 	};
 
 	struct JoyBinding {
@@ -201,6 +201,7 @@ private:
 			struct {
 				int axis;
 				JoyAxisRange range;
+				bool invert;
 			} axis;
 
 			struct {
@@ -231,7 +232,7 @@ private:
 	Vector<JoyDeviceMapping> map_db;
 
 	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button);
-	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, const JoyAxis &p_value);
 	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[HAT_MAX]);
 	JoyButtonList _get_output_button(String output);
 	JoyAxisList _get_output_axis(String output);

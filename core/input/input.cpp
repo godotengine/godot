@@ -969,7 +969,7 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 		return;
 	};
 
-	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis);
+	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value);
 
 	if (map.type == TYPE_BUTTON) {
 
@@ -1024,7 +1024,7 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	if (map.type == TYPE_AXIS) {
 
-		_axis_event(p_device, map.index, val);
+		_axis_event(p_device, map.index, map.value);
 		return;
 	}
 	//printf("invalid mapping\n");
@@ -1110,10 +1110,10 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 			switch (binding.outputType) {
 				case TYPE_BUTTON:
 					event.index = binding.output.button;
-					break;
+					return event;
 				case TYPE_AXIS:
 					event.index = binding.output.axis.axis;
-					break;
+					return event;
 				default:
 					ERR_PRINT_ONCE("Joypad button mapping error.");
 			}
@@ -1122,7 +1122,7 @@ Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping,
 	return event;
 }
 
-Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis) {
+Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, const JoyAxis &p_value) {
 
 	JoyEvent event;
 	event.type = TYPE_MAX;
@@ -1130,16 +1130,49 @@ Input::JoyEvent Input::_get_mapped_axis_event(const JoyDeviceMapping &mapping, i
 	for (int i = 0; i < mapping.bindings.size(); i++) {
 		const JoyBinding binding = mapping.bindings[i];
 		if (binding.inputType == TYPE_AXIS && binding.input.axis.axis == p_axis) {
-			event.type = binding.outputType;
-			switch (binding.outputType) {
-				case TYPE_BUTTON:
-					event.index = binding.output.button;
-					break;
-				case TYPE_AXIS:
-					event.index = binding.output.axis.axis;
-					break;
-				default:
-					ERR_PRINT_ONCE("Joypad button mapping error.");
+			float value = p_value.value;
+			if (binding.input.axis.invert)
+				value = -value;
+			if (binding.input.axis.range == FULL_AXIS ||
+					(binding.input.axis.range == POSITIVE_HALF_AXIS && value > 0) ||
+					(binding.input.axis.range == NEGATIVE_HALF_AXIS && value < 0)) {
+				event.type = binding.outputType;
+				switch (binding.outputType) {
+					case TYPE_BUTTON:
+						event.index = binding.output.button;
+						return event;
+					case TYPE_AXIS:
+						event.index = binding.output.axis.axis;
+						event.value = value;
+						if (binding.output.axis.range != binding.input.axis.range) {
+							float shifted_positive_value = 0;
+							switch (binding.input.axis.range) {
+								case POSITIVE_HALF_AXIS:
+									shifted_positive_value = value;
+									break;
+								case NEGATIVE_HALF_AXIS:
+									shifted_positive_value = value + 1;
+									break;
+								case FULL_AXIS:
+									shifted_positive_value = (value + 1) / 2;
+									break;
+							}
+							switch (binding.output.axis.range) {
+								case POSITIVE_HALF_AXIS:
+									event.value = shifted_positive_value;
+									break;
+								case NEGATIVE_HALF_AXIS:
+									event.value = shifted_positive_value - 1;
+									break;
+								case FULL_AXIS:
+									event.value = (shifted_positive_value * 2) - 1;
+									break;
+							}
+						}
+						return event;
+					default:
+						ERR_PRINT_ONCE("Joypad axis mapping error.");
+				}
 			}
 		}
 	}
@@ -1282,11 +1315,7 @@ void Input::parse_mapping(String p_mapping) {
 				binding.inputType = TYPE_AXIS;
 				binding.input.axis.axis = input.right(1).to_int();
 				binding.input.axis.range = input_range;
-				if (invert_axis) {
-					int int_range = static_cast<int>(input_range);
-					int_range = -int_range;
-					binding.input.axis.range = static_cast<JoyAxisRange>(int_range);
-				}
+				binding.input.axis.invert = invert_axis;
 				break;
 			case 'h':
 				ERR_CONTINUE_MSG(input.length() != 4 || input[2] != '.',
