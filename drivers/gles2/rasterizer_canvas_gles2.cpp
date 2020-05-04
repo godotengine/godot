@@ -60,6 +60,7 @@ RasterizerCanvasGLES2::BatchData::BatchData() {
 	settings_colored_vertex_format_threshold = 0.0f;
 	settings_batch_buffer_num_verts = 0;
 	scissor_threshold_area = 0.0f;
+	prevent_color_baking = false;
 	diagnose_frame = false;
 	next_diagnose_tick = 10000;
 	diagnose_frame_number = 9999999999; // some high number
@@ -1687,7 +1688,9 @@ void RasterizerCanvasGLES2::flush_render_batches(Item *p_first_item, Item *p_cur
 	bdata.use_colored_vertices = false;
 
 	// only check whether to convert if there are quads (prevent divide by zero)
-	if (bdata.total_quads) {
+	// and we haven't decided to prevent color baking (due to e.g. MODULATE
+	// being used in a shader)
+	if (bdata.total_quads && !bdata.prevent_color_baking) {
 		// minus 1 to prevent single primitives (ratio 1.0) always being converted to colored..
 		// in that case it is slightly cheaper to just have the color as part of the batch
 		float ratio = (float)(bdata.total_color_changes - 1) / (float)bdata.total_quads;
@@ -2251,6 +2254,16 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	int blend_mode = r_ris.shader_cache ? r_ris.shader_cache->canvas_item.blend_mode : RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX;
 	bool unshaded = r_ris.shader_cache && (r_ris.shader_cache->canvas_item.light_mode == RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_UNSHADED || (blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX && blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_PMALPHA));
 	bool reclip = false;
+
+	// does the shader contain BUILTINs which should break the batching?
+	if (r_ris.shader_cache && !unshaded) {
+		if (r_ris.shader_cache->canvas_item.prevent_color_baking) {
+			// we will do this same test on the shader during the rendering pass in order to set a bool not to bake vertex colors
+			// instead of saving this info as it is cheap to calculate
+			join = false;
+			r_batch_break = true;
+		}
+	}
 
 	// we are precalculating the final_modulate ahead of time because we need this for baking of final modulate into vertex colors
 	// (only in software transform mode)
@@ -2973,6 +2986,14 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 	int blend_mode = r_ris.shader_cache ? r_ris.shader_cache->canvas_item.blend_mode : RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX;
 	bool unshaded = r_ris.shader_cache && (r_ris.shader_cache->canvas_item.light_mode == RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_UNSHADED || (blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX && blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_PMALPHA));
 	bool reclip = false;
+
+	// does the shader contain BUILTINs which break the batching and should prevent color baking?
+	bdata.prevent_color_baking = false;
+	if (r_ris.shader_cache && !unshaded) {
+		if (r_ris.shader_cache->canvas_item.prevent_color_baking) {
+			bdata.prevent_color_baking = true;
+		}
+	}
 
 	if (r_ris.last_blend_mode != blend_mode) {
 

@@ -1424,6 +1424,9 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			p_shader->canvas_item.uses_screen_texture = false;
 			p_shader->canvas_item.uses_screen_uv = false;
 			p_shader->canvas_item.uses_time = false;
+			p_shader->canvas_item.uses_modulate = false;
+			p_shader->canvas_item.reads_color = false;
+			p_shader->canvas_item.prevent_color_baking = false;
 
 			shaders.actions_canvas.render_mode_values["blend_add"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_ADD);
 			shaders.actions_canvas.render_mode_values["blend_mix"] = Pair<int *, int>(&p_shader->canvas_item.blend_mode, Shader::CanvasItem::BLEND_MODE_MIX);
@@ -1438,6 +1441,9 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_PIXEL_SIZE"] = &p_shader->canvas_item.uses_screen_uv;
 			shaders.actions_canvas.usage_flag_pointers["SCREEN_TEXTURE"] = &p_shader->canvas_item.uses_screen_texture;
 			shaders.actions_canvas.usage_flag_pointers["TIME"] = &p_shader->canvas_item.uses_time;
+			shaders.actions_canvas.usage_flag_pointers["MODULATE"] = &p_shader->canvas_item.uses_modulate;
+
+			shaders.actions_canvas.read_flag_pointers["COLOR"] = &p_shader->canvas_item.reads_color;
 
 			actions = &shaders.actions_canvas;
 			actions->uniforms = &p_shader->uniforms;
@@ -1524,6 +1530,11 @@ void RasterizerStorageGLES2::_update_shader(Shader *p_shader) const {
 
 	p_shader->uses_vertex_time = gen_code.uses_vertex_time;
 	p_shader->uses_fragment_time = gen_code.uses_fragment_time;
+
+	// some logic for batching
+	if (p_shader->mode == VS::SHADER_CANVAS_ITEM) {
+		p_shader->canvas_item.prevent_color_baking = p_shader->canvas_item.uses_modulate | p_shader->canvas_item.reads_color;
+	}
 
 	p_shader->shader->set_custom_shader(p_shader->custom_code_id);
 	p_shader->shader->bind();
@@ -5950,12 +5961,15 @@ void RasterizerStorageGLES2::initialize() {
 	config.support_write_depth = config.extensions.has("GL_EXT_frag_depth");
 #endif
 
+	config.support_half_float_vertices = true;
+//every platform should support this except web, iOS has issues with their support, so add option to disable
 #ifdef JAVASCRIPT_ENABLED
 	config.support_half_float_vertices = false;
-#else
-	//every other platform, be it mobile or desktop, supports this (even if not in the GLES2 spec).
-	config.support_half_float_vertices = true;
 #endif
+	bool disable_half_float = GLOBAL_GET("rendering/gles2/batching/disable_half_float");
+	if (disable_half_float) {
+		config.support_half_float_vertices = false;
+	}
 
 	config.rgtc_supported = config.extensions.has("GL_EXT_texture_compression_rgtc") || config.extensions.has("GL_ARB_texture_compression_rgtc") || config.extensions.has("EXT_texture_compression_rgtc");
 	config.bptc_supported = config.extensions.has("GL_ARB_texture_compression_bptc") || config.extensions.has("EXT_texture_compression_bptc");

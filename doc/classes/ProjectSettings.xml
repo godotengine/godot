@@ -478,6 +478,8 @@
 		<member name="gui/common/swap_ok_cancel" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], swaps OK and Cancel buttons in dialogs on Windows and UWP to follow interface conventions.
 		</member>
+		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
+		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code]theme[/code] or generic [code]tres[/code]/[code]res[/code] extension).
 		</member>

@@ -936,13 +936,10 @@ void TileMap::update_bitmask_area(const Vector2 &p_pos) {
 void TileMap::update_bitmask_region(const Vector2 &p_start, const Vector2 &p_end) {
 
 	if ((p_end.x < p_start.x || p_end.y < p_start.y) || (p_end.x == p_start.x && p_end.y == p_start.y)) {
-		int i;
 		Array a = get_used_cells();
-		for (i = 0; i < a.size(); i++) {
-			// update_bitmask_area() in order to update cells adjacent to the
-			// current cell, since ordering in array may not be reliable
+		for (int i = 0; i < a.size(); i++) {
 			Vector2 vector = (Vector2)a[i];
-			update_bitmask_area(Vector2(vector.x, vector.y));
+			update_cell_bitmask(vector.x, vector.y);
 		}
 		return;
 	}
