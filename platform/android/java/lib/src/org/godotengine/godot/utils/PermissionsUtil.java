@@ -36,6 +36,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import org.godotengine.godot.Godot;
@@ -45,6 +46,8 @@ import org.godotengine.godot.Godot;
  * @author Cagdas Caglak <cagdascaglak@gmail.com>
  */
 public final class PermissionsUtil {
+
+	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
@@ -113,8 +116,8 @@ public final class PermissionsUtil {
 					dangerousPermissions.add(manifestPermission);
 				}
 			} catch (PackageManager.NameNotFoundException e) {
-				e.printStackTrace();
-				return false;
+				// Skip this permission and continue.
+				Log.w(TAG, "Unable to identify permission " + manifestPermission, e);
 			}
 		}
 
@@ -153,8 +156,8 @@ public final class PermissionsUtil {
 					dangerousPermissions.add(manifestPermission);
 				}
 			} catch (PackageManager.NameNotFoundException e) {
-				e.printStackTrace();
-				return new String[0];
+				// Skip this permission and continue.
+				Log.w(TAG, "Unable to identify permission " + manifestPermission, e);
 			}
 		}
 
