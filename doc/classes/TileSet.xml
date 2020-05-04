@@ -590,6 +590,7 @@
 			</argument>
 			<description>
 				Sets the tile's normal map texture.
+				[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 			</description>
 		</method>
 		<method name="tile_set_occluder_offset">
