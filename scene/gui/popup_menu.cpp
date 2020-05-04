@@ -1063,6 +1063,11 @@ bool PopupMenu::is_item_shortcut_disabled(int p_idx) const {
 	return items[p_idx].shortcut_is_disabled;
 }
 
+int PopupMenu::get_current_index() const {
+
+	return mouse_over;
+}
+
 int PopupMenu::get_item_count() const {
 
 	return items.size();
@@ -1443,6 +1448,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &PopupMenu::get_item_tooltip);
 	ClassDB::bind_method(D_METHOD("get_item_shortcut", "idx"), &PopupMenu::get_item_shortcut);
 
+	ClassDB::bind_method(D_METHOD("get_current_index"), &PopupMenu::get_current_index);
 	ClassDB::bind_method(D_METHOD("get_item_count"), &PopupMenu::get_item_count);
 
 	ClassDB::bind_method(D_METHOD("remove_item", "idx"), &PopupMenu::remove_item);
