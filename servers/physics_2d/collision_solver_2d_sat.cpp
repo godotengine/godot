@@ -48,9 +48,9 @@ struct _CollectorCallback2D {
 			return;
 		*/
 		if (swap)
-			callback(p_point_B, p_point_A, userdata);
+			callback(p_point_B, p_point_A, -normal, userdata);
 		else
-			callback(p_point_A, p_point_B, userdata);
+			callback(p_point_A, p_point_B, normal, userdata);
 	}
 };
 

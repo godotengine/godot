@@ -63,9 +63,9 @@ bool CollisionSolver2DSW::solve_static_line(const Shape2DSW *p_shape_A, const Tr
 
 		if (p_result_callback) {
 			if (p_swap_result)
-				p_result_callback(supports[i], support_A, p_userdata);
+				p_result_callback(supports[i], support_A, Vector2(), p_userdata);
 			else
-				p_result_callback(support_A, supports[i], p_userdata);
+				p_result_callback(support_A, supports[i], Vector2(), p_userdata);
 		}
 	}
 
@@ -107,9 +107,9 @@ bool CollisionSolver2DSW::solve_raycast(const Shape2DSW *p_shape_A, const Vector
 
 	if (p_result_callback) {
 		if (p_swap_result)
-			p_result_callback(support_B, support_A, p_userdata);
+			p_result_callback(support_B, support_A, Vector2(), p_userdata);
 		else
-			p_result_callback(support_A, support_B, p_userdata);
+			p_result_callback(support_A, support_B, Vector2(), p_userdata);
 	}
 	return true;
 }

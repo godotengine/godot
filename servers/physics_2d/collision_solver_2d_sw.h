@@ -35,7 +35,7 @@
 
 class CollisionSolver2DSW {
 public:
-	typedef void (*CallbackResult)(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata);
+	typedef void (*CallbackResult)(const Vector2 &p_point_A, const Vector2 &p_point_B, const Vector2 &normal, void *p_userdata);
 
 private:
 	static bool solve_static_line(const Shape2DSW *p_shape_A, const Transform2D &p_transform_A, const Shape2DSW *p_shape_B, const Transform2D &p_transform_B, CallbackResult p_result_callback, void *p_userdata, bool p_swap_result);

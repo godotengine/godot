@@ -97,7 +97,7 @@ public:
 	virtual RID convex_polygon_shape_create();
 	virtual RID concave_polygon_shape_create();
 
-	static void _shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_userdata);
+	static void _shape_col_cbk(const Vector2 &p_point_A, const Vector2 &p_point_B, const Vector2 &normal, void *p_userdata);
 
 	virtual void shape_set_data(RID p_shape, const Variant &p_data);
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias);
