@@ -176,6 +176,7 @@ class DisplayServerX11 : public DisplayServer {
 		XIEventMask all_event_mask;
 		Map<int, Vector2> state;
 		double pressure;
+		bool pressure_supported;
 		Vector2 tilt;
 		Vector2 mouse_pos_to_filter;
 		Vector2 relative_motion;
