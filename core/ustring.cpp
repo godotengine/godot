@@ -3929,10 +3929,10 @@ bool String::is_valid_ip_address() const {
 				if (nint < 0 || nint > 0xffff)
 					return false;
 				continue;
-			};
+			}
 			if (!n.is_valid_ip_address())
 				return false;
-		};
+		}
 
 	} else {
 		Vector<String> ip = split(".");
@@ -3947,7 +3947,7 @@ bool String::is_valid_ip_address() const {
 			if (val < 0 || val > 255)
 				return false;
 		}
-	};
+	}
 
 	return true;
 }
