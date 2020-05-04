@@ -6014,8 +6014,11 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child(settings_menu);
 
 	p = settings_menu->get_popup();
-
+#ifdef OSX_ENABLED
+	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings..."), KEY_MASK_CMD + KEY_COMMA), SETTINGS_PREFERENCES);
+#else
 	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings...")), SETTINGS_PREFERENCES);
+#endif
 	p->add_separator();
 
 	editor_layouts = memnew(PopupMenu);
