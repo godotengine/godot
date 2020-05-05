@@ -1271,33 +1271,22 @@ void ClientRewinder::store_controllers_snapshot(
 		snap.input_id = *input_id;
 
 		for (const ObjectID *key = p_snapshot.data.next(nullptr); key != nullptr; key = p_snapshot.data.next(key)) {
-			if ((*key) != controller->get_instance_id()) {
-				const NodeData *node_data = scene_rewinder->data.getptr(*key);
-				if (node_data) {
-					if (is_main_controller) {
-						// The main controller takes with him all the nodes controlled by him self and the one that
-						// are not controlled by anyother.
-						if (node_data->controlled_by.is_null() == false && node_data->controlled_by != controller->get_instance_id()) {
-							// This node is controlled by another controller.
-							continue;
-						} else {
-							// This is a node not controlled.
-						}
-					} else {
-						if (node_data->controlled_by != controller->get_instance_id()) {
-							// This is a node not controlled by this controller.
-							continue;
-						} else {
-							// This is a node controlled by this controller.
-						}
-					}
-				} else {
-					// Not enough information to decide what to do with this node
-					// so skip it.
-					continue;
-				}
-			} else {
-				// This is the controller node. Just store it.
+			const NodeData *node_data = scene_rewinder->data.getptr(*key);
+			if (node_data == nullptr) {
+				// Not enough information to decide what to do with this node
+				// so SKIP IT.
+				continue;
+			} else if ((*key) == controller->get_instance_id()) {
+				// This is the controller node.
+			} else if (node_data->is_controller) {
+				// This is another controller, SKIP IT.
+				continue;
+			} else if (is_main_controller && node_data->controlled_by.is_null()) {
+				// The main controller takes care to sync all non controlled
+				// nodes.
+			} else if (node_data->controlled_by != controller->get_instance_id()) {
+				// This node is not controlled by this controller. SKIP IT.
+				continue;
 			}
 
 			// This node is part of this isle, store it.
@@ -1333,8 +1322,14 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 		// Find the best recoverable input_id.
 		uint64_t checkable_input_id = UINT64_MAX;
-		if (client_snaps != nullptr) {
-			for (auto s_snap = server_snaps->rbegin(); s_snap != server_snaps->rend(); ++s_snap) {
+		if (client_snaps == nullptr || client_snaps->empty()) {
+			checkable_input_id = server_snaps->back().input_id;
+		} else {
+			for (
+					auto s_snap = server_snaps->rbegin();
+					checkable_input_id == UINT64_MAX && s_snap != server_snaps->rend();
+					++s_snap) {
+
 				for (auto c_snap = client_snaps->begin(); c_snap != client_snaps->end(); ++c_snap) {
 					if (c_snap->input_id == s_snap->input_id) {
 						// This snapshot is present on client can be checked.
@@ -1342,13 +1337,12 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 						break;
 					}
 				}
-				if (checkable_input_id != UINT64_MAX) {
-					break;
-				}
 			}
 		}
 
 		if (checkable_input_id == UINT64_MAX) {
+			// TODO If the server is too faraway from the client this will always be true
+			// Make sure to hard reset the doll if the server is too faraway.
 			// We don't have any snapshot to compare yet for this controller.
 			continue;
 		}
@@ -1403,10 +1397,13 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
 				// Unreachable; once received the server snapshot, the parser
 				// make sure that the `scene_rewinder` has the node.
-				CRASH_COND(rew_node_data == nullptr);
+				if (rew_node_data == nullptr) {
+					continue;
+				}
 
 				const Vector<VarData> *c_vars = client_snaps->front().node_vars.getptr(*key);
 				if (c_vars == nullptr) {
+					WARN_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->cached_node->get_path());
 					need_rewinding = true;
 					break;
 				} else {
@@ -1422,6 +1419,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 							rec.vars);
 
 					if (different) {
+						WARN_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->cached_node->get_path());
 						need_rewinding = true;
 						break;
 					} else if (rec.vars.size() > 0) {
@@ -1448,9 +1446,9 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					key = server_snaps->front().node_vars.next(key)) {
 
 				NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
-				// Unreachable; once received the server snapshot, the parser
-				// make sure that the `scene_rewinder` has the node.
-				CRASH_COND(rew_node_data == nullptr);
+				if (rew_node_data == nullptr) {
+					continue;
+				}
 
 				VarData *rew_vars = rew_node_data->vars.ptrw();
 				Node *node = rew_node_data->cached_node;
@@ -1458,7 +1456,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
 				const VarData *s_vars_ptr = s_vars.ptr();
 
-				WARN_PRINT("[Snapshot full reset] Node: " + node->get_path());
+				print_line("Full reset node: " + node->get_path());
 				for (int i = 0; i < s_vars.size(); i += 1) {
 					node->set(s_vars_ptr[i].var.name, s_vars_ptr[i].var.value);
 
@@ -1468,9 +1466,11 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					// algorithm make sure the `scene_rewinder` is traking the
 					// variable.
 					CRASH_COND(rew_var_index <= -1);
+
+					print_line(" |- Variable: " + s_vars[i].var.name + " New value: " + s_vars[i].var.value + " [Previous value: " + rew_vars[rew_var_index].var.value + "]");
+
 					rew_vars[rew_var_index].var.value = s_vars[i].var.value;
 
-					print_line(" |- Variable: " + s_vars[i].var.name + "; value: " + s_vars[i].var.value);
 					node->emit_signal(scene_rewinder->get_changed_event_name(s_vars_ptr[i].var.name));
 				}
 			}
@@ -1505,9 +1505,9 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 						key = server_snaps->front().node_vars.next(key)) {
 
 					NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
-					// Unreachable; once received the server snapshot, the parser
-					// make sure that the `scene_rewinder` has the node.
-					CRASH_COND(rew_node_data == nullptr);
+					if (rew_node_data == nullptr) {
+						continue;
+					}
 
 					scene_rewinder->pull_node_changes(rew_node_data->cached_node, rew_node_data);
 
@@ -1864,6 +1864,7 @@ bool ClientRewinder::compare_vars(
 				const int index = p_rewinder_node_data->vars.find(s_vars[s_var_index].var.name);
 				if (index < 0 || p_rewinder_node_data->vars[index].skip_rewinding == false) {
 					// The vars are different.
+					WARN_PRINT("Difference found on var name `" + s_vars[s_var_index].var.name + "` Server value: `" + s_vars[s_var_index].var.value + "` Client value: `" + c_vars[c_var_index].var.value + "`.");
 					return true;
 				} else {
 					// The vars are different, but this variable don't what to
