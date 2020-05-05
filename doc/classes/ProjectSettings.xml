@@ -998,6 +998,9 @@
 		<member name="rendering/gles2/debug/diagnose_frame" type="bool" setter="" getter="" default="false">
 			When batching is on, this regularly prints a frame diagnosis log. Note that this will degrade performance.
 		</member>
+		<member name="rendering/gles2/debug/disable_half_float" type="bool" setter="" getter="" default="false">
+			The use of half-float vertex compression may be producing rendering errors on some platforms (especially iOS). These have been seen particularly in particles. Disabling half-float may resolve these problems.
+		</member>
 		<member name="rendering/gles2/debug/flash_batching" type="bool" setter="" getter="" default="false">
 			[b]Experimental[/b] For regression testing against the old renderer. If this is switched on, and [code]use_batching[/code] is set, the renderer will swap alternately between using the old renderer, and the batched renderer, on each frame. This makes it easy to identify visual differences. Performance will be degraded.
 		</member>
