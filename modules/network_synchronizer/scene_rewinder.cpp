@@ -298,6 +298,8 @@ real_t SceneRewinder::get_comparison_float_tolerance() const {
 }
 
 void SceneRewinder::register_variable(Node *p_node, StringName p_variable, StringName p_on_change_notify, bool p_skip_rewinding) {
+	ERR_FAIL_COND(p_node == nullptr);
+	ERR_FAIL_COND(p_variable == StringName());
 
 	NodeData *node_data = register_node(p_node);
 	ERR_FAIL_COND(node_data == nullptr);
@@ -322,10 +324,15 @@ void SceneRewinder::register_variable(Node *p_node, StringName p_variable, Strin
 				get_changed_event_name(p_variable)));
 	}
 
-	track_variable_changes(p_node, p_variable, p_on_change_notify);
+	if (p_on_change_notify != StringName()) {
+		track_variable_changes(p_node, p_variable, p_on_change_notify);
+	}
 }
 
 void SceneRewinder::unregister_variable(Node *p_node, StringName p_variable) {
+	ERR_FAIL_COND(p_node == nullptr);
+	ERR_FAIL_COND(p_variable == StringName());
+
 	if (data.has(p_node->get_instance_id()) == false) return;
 	if (data[p_node->get_instance_id()].vars.find(p_variable) == -1) return;
 
@@ -348,6 +355,9 @@ String SceneRewinder::get_changed_event_name(StringName p_variable) {
 }
 
 void SceneRewinder::track_variable_changes(Node *p_node, StringName p_variable, StringName p_method) {
+	ERR_FAIL_COND(p_node == nullptr);
+	ERR_FAIL_COND(p_variable == StringName());
+	ERR_FAIL_COND(p_method == StringName());
 	ERR_FAIL_COND_MSG(data.has(p_node->get_instance_id()) == false, "You need to register the variable to track its changes.");
 	ERR_FAIL_COND_MSG(data[p_node->get_instance_id()].vars.find(p_variable) == -1, "You need to register the variable to track its changes.");
 
@@ -362,6 +372,9 @@ void SceneRewinder::track_variable_changes(Node *p_node, StringName p_variable, 
 }
 
 void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable, StringName p_method) {
+	ERR_FAIL_COND(p_node == nullptr);
+	ERR_FAIL_COND(p_variable == StringName());
+	ERR_FAIL_COND(p_method == StringName());
 	if (data.has(p_node->get_instance_id()) == false) return;
 	if (data[p_node->get_instance_id()].vars.find(p_variable) == -1) return;
 
