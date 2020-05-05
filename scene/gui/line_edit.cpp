@@ -698,6 +698,7 @@ void LineEdit::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 
 			if ((!has_focus() && !menu->has_focus()) || !window_has_focus) {
+				deselect();
 				draw_caret = false;
 			}
 
