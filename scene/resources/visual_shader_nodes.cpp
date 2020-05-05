@@ -3283,11 +3283,11 @@ String VisualShaderNodeFloatUniform::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeFloatUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	if (hint == HINT_RANGE) {
-		return "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ");\n";
+		return _get_qual_str() + "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ");\n";
 	} else if (hint == HINT_RANGE_STEP) {
-		return "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ");\n";
+		return _get_qual_str() + "uniform float " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ");\n";
 	}
-	return "uniform float " + get_uniform_name() + ";\n";
+	return _get_qual_str() + "uniform float " + get_uniform_name() + ";\n";
 }
 
 String VisualShaderNodeFloatUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
@@ -3353,8 +3353,12 @@ void VisualShaderNodeFloatUniform::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINT_RANGE_STEP);
 }
 
+bool VisualShaderNodeFloatUniform::is_qualifier_supported(Qualifier p_qual) const {
+	return true; // all qualifiers are supported
+}
+
 Vector<StringName> VisualShaderNodeFloatUniform::get_editable_properties() const {
-	Vector<StringName> props;
+	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
 	props.push_back("hint");
 	if (hint == HINT_RANGE || hint == HINT_RANGE_STEP) {
 		props.push_back("min");
@@ -3405,11 +3409,11 @@ String VisualShaderNodeIntUniform::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeIntUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	if (hint == HINT_RANGE) {
-		return "uniform int " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ");\n";
+		return _get_qual_str() + "uniform int " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ");\n";
 	} else if (hint == HINT_RANGE_STEP) {
-		return "uniform int " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ");\n";
+		return _get_qual_str() + "uniform int " + get_uniform_name() + " : hint_range(" + rtos(hint_range_min) + ", " + rtos(hint_range_max) + ", " + rtos(hint_range_step) + ");\n";
 	}
-	return "uniform int " + get_uniform_name() + ";\n";
+	return _get_qual_str() + "uniform int " + get_uniform_name() + ";\n";
 }
 
 String VisualShaderNodeIntUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
@@ -3475,8 +3479,12 @@ void VisualShaderNodeIntUniform::_bind_methods() {
 	BIND_ENUM_CONSTANT(HINT_RANGE_STEP);
 }
 
+bool VisualShaderNodeIntUniform::is_qualifier_supported(Qualifier p_qual) const {
+	return true; // all qualifiers are supported
+}
+
 Vector<StringName> VisualShaderNodeIntUniform::get_editable_properties() const {
-	Vector<StringName> props;
+	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
 	props.push_back("hint");
 	if (hint == HINT_RANGE || hint == HINT_RANGE_STEP) {
 		props.push_back("min");
@@ -3526,11 +3534,15 @@ String VisualShaderNodeBooleanUniform::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeBooleanUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	return "uniform bool " + get_uniform_name() + ";\n";
+	return _get_qual_str() + "uniform bool " + get_uniform_name() + ";\n";
 }
 
 String VisualShaderNodeBooleanUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+}
+
+bool VisualShaderNodeBooleanUniform::is_qualifier_supported(Qualifier p_qual) const {
+	return true; // all qualifiers are supported
 }
 
 VisualShaderNodeBooleanUniform::VisualShaderNodeBooleanUniform() {
@@ -3568,13 +3580,17 @@ String VisualShaderNodeColorUniform::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeColorUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 
-	return "uniform vec4 " + get_uniform_name() + " : hint_color;\n";
+	return _get_qual_str() + "uniform vec4 " + get_uniform_name() + " : hint_color;\n";
 }
 
 String VisualShaderNodeColorUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code = "\t" + p_output_vars[0] + " = " + get_uniform_name() + ".rgb;\n";
 	code += "\t" + p_output_vars[1] + " = " + get_uniform_name() + ".a;\n";
 	return code;
+}
+
+bool VisualShaderNodeColorUniform::is_qualifier_supported(Qualifier p_qual) const {
+	return true; // all qualifiers are supported
 }
 
 VisualShaderNodeColorUniform::VisualShaderNodeColorUniform() {
@@ -3611,11 +3627,15 @@ String VisualShaderNodeVec3Uniform::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeVec3Uniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	return "uniform vec3 " + get_uniform_name() + ";\n";
+	return _get_qual_str() + "uniform vec3 " + get_uniform_name() + ";\n";
 }
 
 String VisualShaderNodeVec3Uniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+}
+
+bool VisualShaderNodeVec3Uniform::is_qualifier_supported(Qualifier p_qual) const {
+	return true; // all qualifiers are supported
 }
 
 VisualShaderNodeVec3Uniform::VisualShaderNodeVec3Uniform() {
@@ -3652,11 +3672,15 @@ String VisualShaderNodeTransformUniform::get_output_port_name(int p_port) const 
 }
 
 String VisualShaderNodeTransformUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	return "uniform mat4 " + get_uniform_name() + ";\n";
+	return _get_qual_str() + "uniform mat4 " + get_uniform_name() + ";\n";
 }
 
 String VisualShaderNodeTransformUniform::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "\t" + p_output_vars[0] + " = " + get_uniform_name() + ";\n";
+}
+
+bool VisualShaderNodeTransformUniform::is_qualifier_supported(Qualifier p_qual) const {
+	return true; // all qualifiers are supported
 }
 
 VisualShaderNodeTransformUniform::VisualShaderNodeTransformUniform() {
@@ -3713,7 +3737,7 @@ String VisualShaderNodeTextureUniform::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeTextureUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = "uniform sampler2D " + get_uniform_name();
+	String code = _get_qual_str() + "uniform sampler2D " + get_uniform_name();
 
 	switch (texture_type) {
 		case TYPE_DATA:
@@ -3778,7 +3802,7 @@ VisualShaderNodeTextureUniform::ColorDefault VisualShaderNodeTextureUniform::get
 }
 
 Vector<StringName> VisualShaderNodeTextureUniform::get_editable_properties() const {
-	Vector<StringName> props;
+	Vector<StringName> props = VisualShaderNodeUniform::get_editable_properties();
 	props.push_back("texture_type");
 	props.push_back("color_default");
 	return props;
@@ -3808,6 +3832,18 @@ String VisualShaderNodeTextureUniform::get_input_port_default_hint(int p_port) c
 		return "UV.xy";
 	}
 	return "";
+}
+
+bool VisualShaderNodeTextureUniform::is_qualifier_supported(Qualifier p_qual) const {
+	switch (p_qual) {
+		case Qualifier::QUAL_NONE:
+			return true;
+		case Qualifier::QUAL_GLOBAL:
+			return true;
+		case Qualifier::QUAL_INSTANCE:
+			return false;
+	}
+	return false;
 }
 
 VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
@@ -3952,7 +3988,7 @@ String VisualShaderNodeCubemapUniform::get_input_port_default_hint(int p_port) c
 }
 
 String VisualShaderNodeCubemapUniform::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
-	String code = "uniform samplerCube " + get_uniform_name();
+	String code = _get_qual_str() + "uniform samplerCube " + get_uniform_name();
 
 	switch (texture_type) {
 		case TYPE_DATA:
