@@ -30,6 +30,8 @@
 
 package org.godotengine.godot.utils;
 
+import org.godotengine.godot.Godot;
+
 import android.Manifest;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -37,9 +39,9 @@ import android.content.pm.PermissionInfo;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.godotengine.godot.Godot;
 
 /**
  * This class includes utility functions for Android permissions related operations.
