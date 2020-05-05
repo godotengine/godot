@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-23 20:21+0000\n"
+"PO-Revision-Date: 2020-05-01 11:42+0000\n"
 "Last-Translator: Richard Urban <redasuio1@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sk/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -3034,6 +3034,13 @@ msgid ""
 "the \"Use Custom Build\" option should be enabled in the Android export "
 "preset."
 msgstr ""
+"Toto pripraví vás projekt pre vlastný Android builds keď inštalujete source "
+"template do \"res://android/build\".\n"
+"Teraz môžete pridať modifikácie a tak vytvoriť vlastné APK na export "
+"(pridávanie modulov, zmeniť AndroidManifest.xml, atď.).\n"
+"Poznámka že v záujme vytvorenia vlastných zostavení namiesto použitia vopred "
+"vytvorených súborov APK by mala byť v predvoľbe exportu systému Android "
+"povolená možnosť \"Use Costom Build\"."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3042,27 +3049,30 @@ msgid ""
 "Remove the \"res://android/build\" directory manually before attempting this "
 "operation again."
 msgstr ""
+"V tomto projekte už je nainštalovaný Android build template a nemôže byť "
+"prepísaný.\n"
+"Manuálne odstránte \"res://android/build\" predtým ako sa znova pokúsite o "
+"túto operáciu."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
-msgstr ""
+msgstr "Importovať Šablóny Zo ZIP File-u"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Template Package"
-msgstr "Všetky vybrané"
+msgstr "Balíček Šablón"
 
 #: editor/editor_node.cpp
 msgid "Export Library"
-msgstr ""
+msgstr "Exportovať Library"
 
 #: editor/editor_node.cpp
 msgid "Merge With Existing"
-msgstr ""
+msgstr "Spojiť Z Existujúcim"
 
 #: editor/editor_node.cpp
 msgid "Open & Run a Script"
-msgstr ""
+msgstr "Otvoriť & Spustiť Script"
 
 #: editor/editor_node.cpp
 #, fuzzy

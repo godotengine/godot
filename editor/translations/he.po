@@ -5,18 +5,19 @@
 # Daniel <lorddaniel09@gmail.com>, 2018.
 # Ben Golan <golanben4@gmail.com>, 2017.
 # Luc Stepniewski <lior@gradstein.info>, 2017.
-# Yaron Shahrabani <sh.yaron@gmail.com>, 2018, 2019.
+# Yaron Shahrabani <sh.yaron@gmail.com>, 2018, 2019, 2020.
 # RaikaRakka <shaiyatta@gmail.com>, 2018.
 # Ido Dana <idodana01@gmail.com>, 2019.
 # Daniel Dovgun <daniel.dovgun@gmail.com>, 2019.
 # MordechaiHadad <Mordechai.hadad01@gmail.com>, 2019.
 # Daniel <danielharush5252@gmail.com>, 2020.
+# test test <ugbdvwpeikvyzwaadt@awdrt.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-25 09:41+0000\n"
-"Last-Translator: Daniel <danielharush5252@gmail.com>\n"
+"PO-Revision-Date: 2020-05-05 14:01+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -25,7 +26,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -34,7 +35,7 @@ msgstr "משתנה סוג לא חוקי לפונקציית convert()‎, יש ל
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "צופה מחרוזת באורך 1 (תו)"
+msgstr "צפויה מחרוזת באורך 1 (תו)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -722,13 +723,12 @@ msgid "Line Number:"
 msgstr "מספר השורה:"
 
 #: editor/code_editor.cpp
-#, fuzzy
 msgid "%d replaced."
-msgstr "החלפה…"
+msgstr "%d הוחלף."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "%d match."
-msgstr ""
+msgstr "d% התאמות."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 #, fuzzy
@@ -4044,9 +4044,8 @@ msgid "Saving..."
 msgstr "שמירה…"
 
 #: editor/import_dock.cpp
-#, fuzzy
 msgid "%d Files"
-msgstr " קבצים"
+msgstr "%d קבצים"
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
@@ -6788,66 +6787,58 @@ msgid "Error writing TextFile:"
 msgstr "שגיאה בייבוא ערכת הנושא"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Could not load file at:"
-msgstr "לא ניתן ליצור תיקייה."
+msgstr "לא ניתן לטעון קובץ מהמיקום:"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error saving file!"
-msgstr "שגיאה בשמירה"
+msgstr "שגיאה בשמירת קובץ!"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error while saving theme."
-msgstr "שגיאה בשמירת ערכת העיצוב"
+msgstr "שגיאה בשמירת ערכת העיצוב."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error Saving"
 msgstr "שגיאה בשמירה"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error importing theme."
-msgstr "שגיאה בייבוא ערכת הנושא"
+msgstr "שגיאה בייבוא ערכת העיצוב."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Error Importing"
 msgstr "שגיאה בייבוא"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "New Text File..."
-msgstr "תיקייה חדשה…"
+msgstr "קובץ טקסט חדש…"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Open File"
 msgstr "פתיחת קובץ"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Save File As..."
-msgstr "שמירה בשם…"
+msgstr "שמירת קובץ בשם…"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Can't obtain the script for running."
-msgstr ""
+msgstr "לא ניתן לקבל את הסקריפט להרצה."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script failed reloading, check console for errors."
-msgstr ""
+msgstr "רענון הסקריפט נכשל, נא לחפש את השגיאות במסוף."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Script is not in tool mode, will not be able to run."
-msgstr ""
+msgstr "הסקריפט אינו במצב כלים, לא תהיה לו אפשרות לרוץ."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid ""
 "To run this script, it must inherit EditorScript and be set to tool mode."
 msgstr ""
+"כדי להריץ את הסקריפט הזה, עליו לרשת EditorScript ולהגדיר אותו למצב כלים."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
@@ -6880,9 +6871,8 @@ msgid "Find Previous"
 msgstr "איתור הקודם"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter scripts"
-msgstr "מאפייני פריט."
+msgstr "סינון סקריפטים"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."

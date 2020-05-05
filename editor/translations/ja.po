@@ -35,8 +35,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-27 08:25+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"PO-Revision-Date: 2020-05-04 15:12+0000\n"
+"Last-Translator: Wataru Onuki <bettawat@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -592,7 +592,7 @@ msgstr "選択範囲を複製"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Transposed"
-msgstr "複製を転置"
+msgstr "転置して複製"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Selection"
@@ -1862,7 +1862,7 @@ msgstr "隠しファイルをオン / オフ"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Favorite"
-msgstr "お気に入りのオン / オフ"
+msgstr "お気に入りにする / しない"
 
 #: editor/editor_file_dialog.cpp
 msgid "Toggle Mode"
@@ -1870,7 +1870,7 @@ msgstr "モード切替え"
 
 #: editor/editor_file_dialog.cpp
 msgid "Focus Path"
-msgstr "フォーカスパス"
+msgstr "パスにフォーカス"
 
 #: editor/editor_file_dialog.cpp
 msgid "Move Favorite Up"
@@ -1898,7 +1898,7 @@ msgstr "ファイル更新。"
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
-msgstr "現在のフォルダをお気に入りにする/お気に入りから外す。"
+msgstr "現在のフォルダをお気に入りにする / しない。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Toggle the visibility of hidden files."
@@ -1989,7 +1989,7 @@ msgstr "メソッド"
 
 #: editor/editor_help.cpp
 msgid "Theme Properties"
-msgstr "テーマプロパティ"
+msgstr "テーマ プロパティ"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -4051,6 +4051,7 @@ msgid "Copy Resource"
 msgstr "リソースをコピー"
 
 #: editor/inspector_dock.cpp
+#, fuzzy
 msgid "Make Built-In"
 msgstr "ビルトインを作成"
 
@@ -5316,22 +5317,22 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock Selected"
-msgstr "選択をロック"
+msgstr "選択対象をロック"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock Selected"
-msgstr "選択を解除"
+msgstr "選択対象をロック解除"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Group Selected"
-msgstr "選択したグループ"
+msgstr "選択対象をグループ化"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Ungroup Selected"
-msgstr "グループ解除"
+msgstr "選択対象をグループ解除"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
@@ -5390,7 +5391,7 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Alt+RMB: Depth list selection"
-msgstr "Alt+右クリック: 奥行き(被写界深度)リストの選択"
+msgstr "Alt+右クリック: 奥行き選択リスト"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5500,12 +5501,12 @@ msgstr "ガイドにスナップ"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock the selected object in place (can't be moved)."
-msgstr "選択したオブジェクトをその場でロック (移動不可能にする)。"
+msgstr "選択したオブジェクトを現在位置でロック (移動不可能にする)。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock the selected object (can be moved)."
-msgstr "選択したオブジェクトをアンロック (移動可能にする)。"
+msgstr "選択したオブジェクトをロック解除 (移動可能にする)。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5568,11 +5569,11 @@ msgstr "グループアイコンとロックアイコンを表示"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
-msgstr "センター選択"
+msgstr "選択対象を中央に"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
-msgstr "フレーム選択"
+msgstr "選択対象を全面に"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
@@ -6842,7 +6843,7 @@ msgstr "ブレーク"
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 #: editor/script_editor_debugger.cpp
 msgid "Continue"
-msgstr "実行を継続"
+msgstr "続行"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Keep Debugger Open"
@@ -7034,7 +7035,7 @@ msgstr "シンボルを補完"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Evaluate Selection"
-msgstr "選択したものを評価する"
+msgstr "選択範囲を評価する"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
@@ -7058,7 +7059,7 @@ msgstr "複数ファイル内を検索..."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
-msgstr "コンテキストヘルプ"
+msgstr "コンテキスト ヘルプ"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Bookmark"
@@ -7363,11 +7364,11 @@ msgstr "フリールック右"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "前方をフリールックで見る"
+msgstr "フリールック前進"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "フリールック後方"
+msgstr "フリールック後進"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
@@ -7379,11 +7380,11 @@ msgstr "フリールック下"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
-msgstr "フリールックの速度を調整"
+msgstr "フリールックの速度調整"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Slow Modifier"
-msgstr "フリールックの減速を調整"
+msgstr "フリールックの減速調整"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
@@ -7399,7 +7400,7 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
-msgstr "Xformダイアログ"
+msgstr "XFormダイアログ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
@@ -7407,7 +7408,7 @@ msgstr "ノードをフロアにスナップ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "選択をスナップする剛体の床を見つけれません。"
+msgstr "選択対象をスナップさせる剛体の床を見つけられませんでした。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7415,9 +7416,9 @@ msgid ""
 "Alt+Drag: Move\n"
 "Alt+RMB: Depth list selection"
 msgstr ""
-"ドラッグ:回転\n"
-"Alt+ドラッグ:移動\n"
-"Alt+右クリック: 奥行きリストの選択"
+"ドラッグ: 回転\n"
+"Alt+ドラッグ: 移動\n"
+"Alt+右クリック: 奥行き選択リスト"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Local Space"
@@ -7453,7 +7454,7 @@ msgstr "右側面図"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Switch Perspective/Orthogonal View"
-msgstr "透視図/正投影図の切り替え"
+msgstr "透視投影 / 平行投影の切り替え"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Insert Animation Key"
@@ -7465,7 +7466,7 @@ msgstr "原点にフォーカス"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr "選択にフォーカス"
+msgstr "選択対象にフォーカス"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Toggle Freelook"
@@ -7494,7 +7495,7 @@ msgstr "2 ビューポート"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr "2 ビューポート(Alt)"
+msgstr "2 ビューポート (Alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
@@ -7502,7 +7503,7 @@ msgstr "3 ビューポート"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr "3 ビューポート(Alt)"
+msgstr "3 ビューポート (Alt)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
@@ -7799,7 +7800,7 @@ msgstr "スプライトフレーム"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Region Rect"
-msgstr "矩形の領域を設定"
+msgstr "領域 Rect を設定"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Set Margin"
@@ -7989,7 +7990,7 @@ msgstr "フォント"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Color"
-msgstr "\\ Color"
+msgstr "Color"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme File"
@@ -7997,7 +7998,7 @@ msgstr "テーマ ファイル"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Erase Selection"
-msgstr "選択対象を消去"
+msgstr "選択範囲を消去"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Fix Invalid Tiles"
@@ -8006,7 +8007,7 @@ msgstr "無効なタイルを修正"
 #: editor/plugins/tile_map_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cut Selection"
-msgstr "選択対象を切り取り"
+msgstr "選択範囲を切り取り"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint TileMap"
@@ -8018,7 +8019,7 @@ msgstr "直線を描画"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rectangle Paint"
-msgstr "矩形ペイント"
+msgstr "長方形ペイント"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Bucket Fill"
@@ -8030,7 +8031,7 @@ msgstr "タイルマップを消去"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Find Tile"
-msgstr "タイルを検索する"
+msgstr "タイルを検索"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Transpose"
@@ -8056,19 +8057,19 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
-msgstr "タイルを塗る"
+msgstr "タイルをペイント"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
 "Shift+LMB: Line Draw\n"
 "Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
-"Shift+左マウスボタン:線の描画\n"
-"Shift+Ctrl+左マウスボタン:矩形ペイント"
+"Shift+左マウスボタン: 直線に描く\n"
+"Shift+Ctrl+左マウスボタン: 長方形ペイント"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
-msgstr "タイルを選択"
+msgstr "タイルをピック"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Left"
@@ -8208,7 +8209,7 @@ msgstr "ビットマスクを消去。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new rectangle."
-msgstr "新規矩形を作成。"
+msgstr "新しく長方形を作成。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create a new polygon."
@@ -8265,12 +8266,12 @@ msgid ""
 "Drag handles to edit Rect.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"ハンドルをドラッグして矩形を編集します。\n"
-"別のタイルをクリックしてそれを編集します。"
+"ハンドルをドラッグして長方形を編集します。\n"
+"別のタイルをクリックするとそれを編集します。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Delete selected Rect."
-msgstr "選択した矩形を削除する。"
+msgstr "選択した長方形を削除する。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -8476,7 +8477,7 @@ msgstr "タイプの変更"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage Selected"
-msgstr "選択物をステージする"
+msgstr "選択対象をステージする"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Stage All"
@@ -9285,6 +9286,7 @@ msgstr ""
 "ためにそれを使用しないでください。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
@@ -9911,6 +9913,10 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"検索ボックスでは、プロジェクトは名前およびパスの最後の部分でフィルターされま"
+"す。\n"
+"プロジェクト名および完全パスでフィルターするには、クエリには `/` 文字が少なく"
+"とも1つ必要です。"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -11026,9 +11032,8 @@ msgid "Total:"
 msgstr "合計:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "プロファイルのエクスポート"
+msgstr "CSVファイルにリストをエクスポート"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11779,7 +11784,7 @@ msgstr "グラフを編集する関数を選択または作成します。"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
-msgstr "選択済みを削除"
+msgstr "選択対象を削除"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
@@ -11795,11 +11800,11 @@ msgstr "ノードを切り取る"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Make Function"
-msgstr "関数の作成"
+msgstr "関数を作成"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Refresh Graph"
-msgstr "グラフの更新"
+msgstr "グラフを更新"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"

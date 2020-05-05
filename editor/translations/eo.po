@@ -7,18 +7,19 @@
 # Teashrock <kajitsu22@gmail.com>, 2019.
 # Brandon Dyer <brandondyer64@gmail.com>, 2019.
 # Alejandro Sánchez Medina <alejandrosanchzmedina@gmail.com>, 2019.
+# Sr Half <flavio05@outlook.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-11-11 14:19+0000\n"
-"Last-Translator: Alejandro Sánchez Medina <alejandrosanchzmedina@gmail.com>\n"
+"PO-Revision-Date: 2020-05-01 11:43+0000\n"
+"Last-Translator: Sr Half <flavio05@outlook.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -27,7 +28,7 @@ msgstr "Nevalida tip-argumento por funkcio convert(). Uzu konstantojn TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "Atendas ĉenon de longo 1 (unu karaktero)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -65,31 +66,31 @@ msgstr "En voko al '%s':"
 
 #: core/ustring.cpp
 msgid "B"
-msgstr ""
+msgstr "B"
 
 #: core/ustring.cpp
 msgid "KiB"
-msgstr ""
+msgstr "Kib"
 
 #: core/ustring.cpp
 msgid "MiB"
-msgstr ""
+msgstr "MiB"
 
 #: core/ustring.cpp
 msgid "GiB"
-msgstr ""
+msgstr "Gib"
 
 #: core/ustring.cpp
 msgid "TiB"
-msgstr ""
+msgstr "TiB"
 
 #: core/ustring.cpp
 msgid "PiB"
-msgstr ""
+msgstr "PiB"
 
 #: core/ustring.cpp
 msgid "EiB"
-msgstr ""
+msgstr "EiB"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -422,7 +423,7 @@ msgstr "Ĝi ne estas ebla adici novan vojeton sen radiko"
 
 #: editor/animation_track_editor.cpp
 msgid "Invalid track for Bezier (no suitable sub-properties)"
-msgstr ""
+msgstr "Nevalida trako por Bezier (neniu taŭga subproprietaĵoj)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Bezier Track"
@@ -12285,7 +12286,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Konstantoj ne povas esti modifitaj."
 
 #, fuzzy
 #~ msgid "Help improve the Godot documentation by giving feedback."

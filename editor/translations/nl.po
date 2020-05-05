@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-23 20:21+0000\n"
+"PO-Revision-Date: 2020-05-04 15:12+0000\n"
 "Last-Translator: Stijn Hinlopen <f.a.hinlopen@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
@@ -53,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -2023,8 +2023,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Er is momenteel geen beschrijving voor deze eigenschap. Help ons alsjeblieft "
-"door [color=$color][url=$url]een toe te voegen[/url][/color]!"
+"Er is momenteel geen beschrijving voor deze eigenschap. Help ons alstublieft "
+"door [color=$color][url=$url]een bijdrage te leveren[/url][/color]!"
 
 #: editor/editor_help.cpp
 msgid "Method Descriptions"
@@ -2035,8 +2035,8 @@ msgid ""
 "There is currently no description for this method. Please help us by [color="
 "$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Er is momenteel geen beschrijving voor deze methode. Help ons alsjeblieft "
-"door [color=$color][url=$url]een toe te voegen[/url][/color]!"
+"Er is momenteel geen beschrijving voor deze methode. Help ons alstublieft "
+"door [color=$color][url=$url]een bijdrage te leveren[/url][/color]!"
 
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
@@ -2500,8 +2500,8 @@ msgid ""
 "This option is deprecated. Situations where refresh must be forced are now "
 "considered a bug. Please report."
 msgstr ""
-"Deze optie is verouderd. Situaties waar een hernieuwing geforceerd moet "
-"worden zijn softwarefouten. Rapporteer dit alsjeblieft."
+"Deze optie is verouderd. Situaties waarbij gedwongen herladen moet worden, "
+"worden gezien als softwarefouten. Rapporteer dit alstublieft."
 
 #: editor/editor_node.cpp
 msgid "Pick a Main Scene"
@@ -2730,7 +2730,7 @@ msgstr "Alle scènes opslaan"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
-msgstr "Converteer Naar..."
+msgstr "Omzetten naar..."
 
 #: editor/editor_node.cpp
 msgid "MeshLibrary..."
@@ -5898,7 +5898,7 @@ msgstr "Creëer een statisch tri-mesh lichaam"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "This doesn't work on scene root!"
-msgstr "Dit werkt niet op scènewortel!"
+msgstr "Dit werkt niet op de scènewortel!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Shape"
@@ -6986,7 +6986,7 @@ msgstr "Kies Kleur"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Convert Case"
-msgstr "Converteer Hoofdlettergebruik"
+msgstr "Letters omzetten"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Uppercase"
@@ -6998,7 +6998,7 @@ msgstr "Kleine letters"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Capitalize"
-msgstr "Maak Hoofdletters"
+msgstr "Elk Woord Met Hoofdletter"
 
 #: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
 msgid "Syntax Highlighter"
@@ -7074,15 +7074,15 @@ msgstr "Trim Navolgende Spaties"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Spaces"
-msgstr "Converteer Indentatie Naar Spaties"
+msgstr "Insprong in spaties omzetten"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Convert Indent to Tabs"
-msgstr "Converteer Indentatie Naar Tabs"
+msgstr "Insprong in Tabs omzetten"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
-msgstr "Auto Indentatie"
+msgstr "Automatisch inspringen"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Find in Files..."
@@ -7678,7 +7678,7 @@ msgstr "Ongeldige geometrie, kan geen polygon creëren."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Polygon2D"
-msgstr "Converteer naar Polygon2D"
+msgstr "Naar Polygon2D omzetten"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create collision polygon."
@@ -9816,8 +9816,8 @@ msgstr ""
 "\n"
 "%s\n"
 "\n"
-"Als je doorgaat met het openen van dit bestand, zal het worden geconverteerd "
-"naar Godot's huidige format voor project-configuratiebestanden.\n"
+"Als je doorgaat met het openen van dit bestand, zal het worden omgezet naar "
+"Godot's huidige formaat voor project-configuratiebestanden.\n"
 "Waarschuwing: Hierna kan het project niet meer worden geopend door oudere "
 "versies van Godot Engine."
 
@@ -9966,6 +9966,10 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"De zoekbalk filtert projecten op naam en naam van de map waarin het project "
+"staat.\n"
+"Om ook op het volledige pad te filteren, moet de zoekopdracht tenminste één "
+"`/` karakter bevatten."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10706,7 +10710,7 @@ msgstr "Knoop hieronder toevoegen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Expand/Collapse All"
-msgstr "Alles uit-/inklappen"
+msgstr "Alles in-/uitklappen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
@@ -10718,7 +10722,7 @@ msgstr "Onder nieuwe knoop hangen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
-msgstr "Scènewortel instellen"
+msgstr "Als scènewortel instellen"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -11085,9 +11089,8 @@ msgid "Total:"
 msgstr "Totaal:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "Profiel exporteren"
+msgstr "Exporteer lijst naar een csv-bestand"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12208,9 +12211,7 @@ msgstr ""
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
-msgstr ""
-"Een vorm moet voorzien worden om CollisionShape2D te laten functioneren. "
-"Creëer hiervoor alsjeblieft een vorm resource!"
+msgstr "Een CollisionShape2D heeft een vorm nodig in de Shape-eigenschap!"
 
 #: scene/2d/cpu_particles_2d.cpp
 msgid ""
@@ -12238,7 +12239,7 @@ msgstr ""
 #: scene/2d/light_occluder_2d.cpp
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
-"De occluder polygoon van deze occluder is leeg. Teken alsjeblieft een "
+"De occluder-polygoon van deze occluder is leeg. Teken alstublieft een "
 "polygoon."
 
 #: scene/2d/navigation_polygon.cpp
@@ -12703,7 +12704,7 @@ msgstr "Alarm!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "Bevestig alsjeblieft..."
+msgstr "Bevestig alstublieft..."
 
 #: scene/gui/popup.cpp
 msgid ""
