@@ -3,41 +3,42 @@
 # Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).
 # This file is distributed under the same license as the Godot source code.
 # Prachi Joshi <josprachi@yahoo.com>, 2019, 2020.
+# Shirious <sad3119823@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2020-01-30 03:56+0000\n"
-"Last-Translator: Prachi Joshi <josprachi@yahoo.com>\n"
+"PO-Revision-Date: 2020-05-05 14:01+0000\n"
+"Last-Translator: Shirious <sad3119823@gmail.com>\n"
 "Language-Team: Marathi <https://hosted.weblate.org/projects/godot-engine/"
 "godot/mr/>\n"
 "Language: mr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.11-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "convert() साठी अवैध आरग्युमेन्ट, TYPE_* कोन्सटन्ट वापरा."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "1 लांबीची स्ट्रिंग अपेक्षित (एक कैरेक्टर)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "डिकोड करण्यासाठी पुरसे बाईटस् नाहित, किंवा अवैध फ़ोरमैट."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "एक्सप्रेशन मधे अवैध इनपुट %i (पास नाही झाले)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "self वापरले जाऊ शकत नाही कारण इन्सटन्स null आहे (पास नाही झाले)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -1928,9 +1929,8 @@ msgid "Property Descriptions"
 msgstr ""
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "(value)"
-msgstr "मूल्य:"
+msgstr "(किंमत)"
 
 #: editor/editor_help.cpp
 msgid ""

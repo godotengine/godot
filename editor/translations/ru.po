@@ -70,12 +70,13 @@
 # Ivan Kuzmenko <kuzmenko.ivan2002@yandex.com>, 2020.
 # Super Pracion <superpracion2@gmail.com>, 2020.
 # PizzArt <7o7goo7o7@gmail.com>, 2020.
+# TheGracekale <mrsmailbot.lg@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-23 20:21+0000\n"
-"Last-Translator: PizzArt <7o7goo7o7@gmail.com>\n"
+"PO-Revision-Date: 2020-05-05 14:01+0000\n"
+"Last-Translator: Super Pracion <superpracion2@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -84,7 +85,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -9966,6 +9967,9 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"Поле поиска фильтрует проекты по имени и последнему компоненту пути\n"
+"Чтобы отфильтровать проекты по имени и полному пути, запрос должен содержать "
+"хотя бы один символ `/`."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10935,9 +10939,8 @@ msgid "Invalid inherited parent name or path."
 msgstr "Неверное имя или путь наследуемого предка."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Script path/name is valid."
-msgstr "Путь/имя скрипта действителен."
+msgstr "Путь/имя скрипта допустимы."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -11089,9 +11092,8 @@ msgid "Total:"
 msgstr "Всего:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "Экспортировать профиль"
+msgstr "Экспортировать профиль в CSV файл"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12524,7 +12526,6 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow работает только при если она дочь узла Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
 "parent Path's Curve resource."
