@@ -546,6 +546,10 @@ void VisualShaderEditor::_update_graph() {
 		Ref<VisualShaderNodeUniform> uniform = vsnode;
 		Ref<VisualShaderNodeFloatUniform> float_uniform = vsnode;
 		Ref<VisualShaderNodeIntUniform> int_uniform = vsnode;
+		Ref<VisualShaderNodeVec3Uniform> vec3_uniform = vsnode;
+		Ref<VisualShaderNodeColorUniform> color_uniform = vsnode;
+		Ref<VisualShaderNodeBooleanUniform> bool_uniform = vsnode;
+		Ref<VisualShaderNodeTransformUniform> transform_uniform = vsnode;
 		if (uniform.is_valid()) {
 			graph->add_child(node);
 			_update_created_node(node);
@@ -571,7 +575,7 @@ void VisualShaderEditor::_update_graph() {
 				//shortcut
 				VisualShaderNode::PortType port_right = vsnode->get_output_port_type(0);
 				node->set_slot(0, false, VisualShaderNode::PORT_TYPE_SCALAR, Color(), true, port_right, type_color[port_right]);
-				if (!float_uniform.is_valid() && !int_uniform.is_valid()) {
+				if (!float_uniform.is_valid() && !int_uniform.is_valid() && !vec3_uniform.is_valid() && !color_uniform.is_valid() && !bool_uniform.is_valid() && !transform_uniform.is_valid()) {
 					continue;
 				}
 			}
@@ -585,13 +589,16 @@ void VisualShaderEditor::_update_graph() {
 			}
 		}
 
-		if (custom_editor && !float_uniform.is_valid() && !int_uniform.is_valid() && vsnode->get_output_port_count() > 0 && vsnode->get_output_port_name(0) == "" && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == "")) {
+		if (custom_editor && !float_uniform.is_valid() && !int_uniform.is_valid() && !vec3_uniform.is_valid() && !bool_uniform.is_valid() && !transform_uniform.is_valid() && vsnode->get_output_port_count() > 0 && vsnode->get_output_port_name(0) == "" && (vsnode->get_input_port_count() == 0 || vsnode->get_input_port_name(0) == "")) {
 			//will be embedded in first port
 		} else if (custom_editor) {
 
 			port_offset++;
 			node->add_child(custom_editor);
-			if (float_uniform.is_valid() || int_uniform.is_valid()) {
+			if (color_uniform.is_valid()) {
+				custom_editor->call_deferred("_show_prop_names", true);
+			}
+			if (float_uniform.is_valid() || int_uniform.is_valid() || vec3_uniform.is_valid() || bool_uniform.is_valid() || transform_uniform.is_valid()) {
 				custom_editor->call_deferred("_show_prop_names", true);
 				continue;
 			}
