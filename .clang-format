@@ -124,4 +124,5 @@ ObjCBlockIndentWidth: 4
 ### Java specific config ###
 Language:        Java
 # BreakAfterJavaFieldAnnotations: false
+JavaImportGroups: ['org.godotengine', 'android', 'androidx', 'com.android', 'com.google', 'java', 'javax']
 ...

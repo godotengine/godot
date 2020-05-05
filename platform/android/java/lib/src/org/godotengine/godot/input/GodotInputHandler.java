@@ -32,18 +32,20 @@ package org.godotengine.godot.input;
 
 import static org.godotengine.godot.utils.GLUtils.DEBUG;
 
+import org.godotengine.godot.GodotLib;
+import org.godotengine.godot.GodotView;
+import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
+
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.InputDevice.MotionRange;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotView;
-import org.godotengine.godot.input.InputManagerCompat.InputDeviceListener;
 
 /**
  * Handles input related events for the {@link GodotView} view.
