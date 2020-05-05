@@ -54,7 +54,87 @@
 #include <stdio.h>
 #include <windows.h>
 #include <windowsx.h>
+// WinTab API
+#define WT_PACKET 0x7FF0
+#define WT_PROXIMITY 0x7FF5
+#define WT_INFOCHANGE 0x7FF6
+#define WT_CSRCHANGE 0x7FF7
 
+#define WTI_DEFSYSCTX 4
+#define WTI_DEVICES 100
+#define DVC_NPRESSURE 15
+#define DVC_TPRESSURE 16
+#define DVC_ORIENTATION 17
+#define DVC_ROTATION 18
+
+#define CXO_MESSAGES 0x0004
+#define PK_NORMAL_PRESSURE 0x0400
+#define PK_TANGENT_PRESSURE 0x0800
+#define PK_ORIENTATION 0x1000
+
+typedef struct tagLOGCONTEXTW {
+	WCHAR lcName[40];
+	UINT lcOptions;
+	UINT lcStatus;
+	UINT lcLocks;
+	UINT lcMsgBase;
+	UINT lcDevice;
+	UINT lcPktRate;
+	DWORD lcPktData;
+	DWORD lcPktMode;
+	DWORD lcMoveMask;
+	DWORD lcBtnDnMask;
+	DWORD lcBtnUpMask;
+	LONG lcInOrgX;
+	LONG lcInOrgY;
+	LONG lcInOrgZ;
+	LONG lcInExtX;
+	LONG lcInExtY;
+	LONG lcInExtZ;
+	LONG lcOutOrgX;
+	LONG lcOutOrgY;
+	LONG lcOutOrgZ;
+	LONG lcOutExtX;
+	LONG lcOutExtY;
+	LONG lcOutExtZ;
+	DWORD lcSensX;
+	DWORD lcSensY;
+	DWORD lcSensZ;
+	BOOL lcSysMode;
+	int lcSysOrgX;
+	int lcSysOrgY;
+	int lcSysExtX;
+	int lcSysExtY;
+	DWORD lcSysSensX;
+	DWORD lcSysSensY;
+} LOGCONTEXTW;
+
+typedef struct tagAXIS {
+	LONG axMin;
+	LONG axMax;
+	UINT axUnits;
+	DWORD axResolution;
+} AXIS;
+
+typedef struct tagORIENTATION {
+	int orAzimuth;
+	int orAltitude;
+	int orTwist;
+} ORIENTATION;
+
+typedef struct tagPACKET {
+	int pkNormalPressure;
+	int pkTangentPressure;
+	ORIENTATION pkOrientation;
+} PACKET;
+
+typedef HANDLE(WINAPI *WTOpenPtr)(HWND p_window, LOGCONTEXTW *p_ctx, BOOL p_enable);
+typedef BOOL(WINAPI *WTClosePtr)(HANDLE p_ctx);
+typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
+typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
+typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
+
+// Windows Ink API
 #ifndef POINTER_STRUCTURES
 
 #define POINTER_STRUCTURES
@@ -133,6 +213,10 @@ typedef struct tagPOINTER_PEN_INFO {
 
 #endif
 
+#ifndef WM_POINTERUPDATE
+#define WM_POINTERUPDATE 0x0245
+#endif
+
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 
@@ -156,9 +240,27 @@ typedef struct {
 
 class JoypadWindows;
 class OS_Windows : public OS {
+	// WinTab API
+	static bool wintab_available;
+	static WTOpenPtr wintab_WTOpen;
+	static WTClosePtr wintab_WTClose;
+	static WTInfoPtr wintab_WTInfo;
+	static WTPacketPtr wintab_WTPacket;
+	static WTEnablePtr wintab_WTEnable;
 
+	// Windows Ink API
 	static GetPointerTypePtr win8p_GetPointerType;
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
+
+	HANDLE wtctx;
+	LOGCONTEXTW wtlc;
+	int min_pressure;
+	int max_pressure;
+	bool tilt_supported;
+
+	int last_pressure_update;
+	float last_pressure;
+	Vector2 last_tilt;
 
 	enum {
 		KEY_EVENT_BUFFER_SIZE = 512
