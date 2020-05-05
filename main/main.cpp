@@ -139,6 +139,7 @@ static DisplayServer::ScreenOrientation window_orientation = DisplayServer::SCRE
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1024, 600);
 static bool window_vsync_via_compositor = false;
+static bool disable_wintab = false;
 
 static int init_screen = -1;
 static bool init_fullscreen = false;
@@ -314,6 +315,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --single-window                  Use a single window (no separate subwindows).\n");
+	OS::get_singleton()->print("  --disable-wintab                 Disable WinTab API and always use Windows Ink API for the pen input (Windows only).\n");
 	OS::get_singleton()->print("\n");
 #endif
 
@@ -595,6 +597,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--gpu-abort") { // force windowed window
 
 			Engine::singleton->abort_on_gpu_errors = true;
+		} else if (I->get() == "--disable-wintab") {
+
+			disable_wintab = true;
 		} else if (I->get() == "--single-window") { // force single window
 
 			single_window = true;
@@ -1078,6 +1083,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	OS::get_singleton()->_vsync_via_compositor = window_vsync_via_compositor;
+
+	if (!disable_wintab) {
+		// No "--disable_wintab" option
+		disable_wintab = GLOBAL_DEF("display/window/disable_wintab_api", false);
+	}
+
+	OS::get_singleton()->_disable_wintab = disable_wintab;
 
 	/* todo restore
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
