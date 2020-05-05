@@ -64,8 +64,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2020-04-24 15:30+0000\n"
-"Last-Translator: Revan Ji <jiruifancr@gmail.com>\n"
+"PO-Revision-Date: 2020-05-01 11:42+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -73,7 +73,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5901,7 +5901,6 @@ msgstr ""
 "这是最准确（但是最慢）的碰撞检测手段。"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
 msgstr "创建单一凸碰撞同级"
 
@@ -7211,9 +7210,8 @@ msgid "This operation requires a single selected node."
 msgstr "此操作只能应用于单个选中节点。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Orthogonal Enabled"
-msgstr "正交"
+msgstr "启用自动正交"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -9774,6 +9772,8 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"搜索框根据名称和路径的末尾部分来过滤项目。\n"
+"如果要根据名称和完整路径过滤，搜索内容应至少包含一个“/”字符。"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10874,9 +10874,8 @@ msgid "Total:"
 msgstr "合计:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "导出配置文件"
+msgstr "将列表导出为CSV文件"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12171,7 +12170,7 @@ msgstr "平面形状无法正常工作，未来版本将被删除。请勿使用
 #: scene/3d/collision_shape.cpp
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
-msgstr ""
+msgstr "ConcavePolygonShape仅支持静态RigidBody。"
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."

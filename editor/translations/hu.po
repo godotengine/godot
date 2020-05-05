@@ -10,7 +10,6 @@
 # Tusa Gamer <tusagamer@mailinator.com>, 2018.
 # Máté Lugosi <mate.lugosi@gmail.com>, 2019.
 # sztrovacsek <magadeve@gmail.com>, 2019.
-# Deleted User <noreply+18797@weblate.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"

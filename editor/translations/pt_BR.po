@@ -86,12 +86,14 @@
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # Wellyngton R Weller <well.weller@hotmail.com>, 2020.
 # Lucas Araujo <lucassants2808@gmail.com>, 2020.
+# Sr Half <flavio05@outlook.com>, 2020.
+# Matheus Pesegoginski <pese.ek.tk@outlook.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2020-04-27 08:25+0000\n"
-"Last-Translator: johnnybigoode <jamarson@gmail.com>\n"
+"PO-Revision-Date: 2020-05-04 15:12+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -99,7 +101,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -736,7 +738,7 @@ msgstr "Selecionar Todos/Nenhum"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Add Audio Track Clip"
-msgstr "Adicionar Trilha de Clipes de Áudio"
+msgstr "Adicionar Clipe de Trilha de Áudio"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -3128,7 +3130,7 @@ msgstr ""
 "Você pode então aplicar modificações e construir seu próprio APK na guia "
 "Exportação (Adicionando módulos, trocando o AndroidManifest.xml, etc.).\n"
 "Note que para fazer uma construção customizada, em vez de usar APKs pre-"
-"construídos, a opção \"Usar construção customizada\" deve estar ativa nas "
+"construídos, a opção \"Usar Construção Customizada\" deve estar ativa nas "
 "predefinições de exportação Android."
 
 #: editor/editor_node.cpp
@@ -5655,7 +5657,7 @@ msgstr "Visualizar Canvas Scale"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
-msgstr "Mascara de tradução para inserção de chaves"
+msgstr "Máscara de tradução para inserção de chaves"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Rotation mask for inserting keys."
@@ -6044,7 +6046,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Single Convex Collision Sibling"
-msgstr "Criar Simples Colisão Convexa Irmã(s)"
+msgstr "Criar um irmão de Colisão Convexa"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -7369,7 +7371,7 @@ msgstr "Essa operação requer um único nó selecionado."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Auto Orthogonal Enabled"
-msgstr "Ortogonal automático habilitado"
+msgstr "Auto-Ortogonal Habilitado"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -7689,7 +7691,7 @@ msgstr "Visualizar Polígono De Colisão 2D"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D"
-msgstr "Criar LightOccluder2D"
+msgstr "Criar Polígono de Oclusão (LightOccluder2D)"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "LightOccluder2D Preview"
@@ -7730,7 +7732,7 @@ msgstr "Criar PolígonoDeColisão2D Irmão"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Invalid geometry, can't create light occluder."
-msgstr "Geometria inválida, não é possível criar oclusor de luz."
+msgstr "Geometria inválida, não é possível criar o oclusor de luz."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D Sibling"
@@ -8145,11 +8147,11 @@ msgstr "Pegar Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Left"
-msgstr "Girar à esquerda"
+msgstr "Girar à Esquerda"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Right"
-msgstr "Girar à direita"
+msgstr "Girar à Direita"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Flip Horizontally"
@@ -9991,6 +9993,10 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"A caixa de busca filtra projetos por nome e pelo último componente do "
+"caminho.\n"
+"Para filtrar projetos por nome e pelo caminho completo, a consulta deve "
+"conter pelo menos um caractere `/`."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -11107,9 +11113,8 @@ msgid "Total:"
 msgstr "Total:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "Exportar Perfil"
+msgstr "Exportar lista para arquivo CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
