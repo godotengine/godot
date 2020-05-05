@@ -690,7 +690,7 @@ public:
 	static Vector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis = Vector3::AXIS_Z);
 	static Vector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 
-	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
+	static Vector<Vector3> compute_convex_mesh_points(const Vector<Plane> &p_planes);
 
 #define FINDMINMAX(x0, x1, x2, min, max) \
 	min = max = x0;                      \

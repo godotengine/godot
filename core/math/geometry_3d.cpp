@@ -855,11 +855,11 @@ Vector<Plane> Geometry3D::build_capsule_planes(real_t p_radius, real_t p_height,
 	return planes;
 }
 
-Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, int p_plane_count) {
+Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Vector<Plane> &p_planes) {
 	Vector<Vector3> points;
 
 	// Iterate through every unique combination of any three planes.
-	for (int i = p_plane_count - 1; i >= 0; i--) {
+	for (int i = p_planes.size() - 1; i >= 0; i--) {
 		for (int j = i - 1; j >= 0; j--) {
 			for (int k = j - 1; k >= 0; k--) {
 				// Find the point where these planes all cross over (if they
@@ -869,7 +869,7 @@ Vector<Vector3> Geometry3D::compute_convex_mesh_points(const Plane *p_planes, in
 					// See if any *other* plane excludes this point because it's
 					// on the wrong side.
 					bool excluded = false;
-					for (int n = 0; n < p_plane_count; n++) {
+					for (int n = 0; n < p_planes.size(); n++) {
 						if (n != i && n != j && n != k) {
 							real_t dp = p_planes[n].normal.dot(convex_shape_point);
 							if (dp - p_planes[n].d > CMP_EPSILON) {
