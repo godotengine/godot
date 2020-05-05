@@ -45,7 +45,7 @@
 			Adds the specified [code]prefix[/code] string before the numerical value of the [SpinBox].
 		</member>
 		<member name="suffix" type="String" setter="set_suffix" getter="get_suffix" default="&quot;&quot;">
-			Adds the specified [code]prefix[/code] string after the numerical value of the [SpinBox].
+			Adds the specified [code]suffix[/code] string after the numerical value of the [SpinBox].
 		</member>
 	</members>
 	<constants>
