@@ -1052,6 +1052,16 @@ void GDScript::_init_rpc_methods_properties() {
 }
 
 GDScript::~GDScript() {
+
+	{
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+
+		while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+			E->self()->_clear_stack();
+			pending_func_states.remove(E);
+		}
+	}
+
 	for (Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
 		memdelete(E->get());
 	}
@@ -1470,9 +1480,15 @@ GDScriptInstance::GDScriptInstance() {
 }
 
 GDScriptInstance::~GDScriptInstance() {
-	if (script.is_valid() && owner) {
-		MutexLock lock(GDScriptLanguage::singleton->lock);
 
+	MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		E->self()->_clear_stack();
+		pending_func_states.remove(E);
+	}
+
+	if (script.is_valid() && owner) {
 		script->instances.erase(owner);
 	}
 }
