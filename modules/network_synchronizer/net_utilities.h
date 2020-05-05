@@ -37,6 +37,16 @@
 #ifndef NET_UTILITIES_H
 #define NET_UTILITIES_H
 
+#ifdef DEBUG_ENABLED
+#define NET_DEBUG_PRINT(msg) \
+	print_line(String("[Net] ") + msg)
+#define NET_DEBUG_WARN(msg) \
+	WARN_PRINT(String("[Net] ") + msg)
+#else
+#define NET_DEBUG_PRINT(msg)
+#define NET_DEBUG_WARN(msg)
+#endif
+
 /// Traces the arrived vs missing packets and estimate the connection loss.
 class NetworkTracer {
 	int id;

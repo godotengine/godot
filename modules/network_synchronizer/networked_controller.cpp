@@ -619,7 +619,7 @@ bool ServerController::fetch_next_input() {
 			is_new_input = false;
 			is_packet_missing = true;
 			ghost_input_count += 1;
-			WARN_PRINT("Input buffer is void, i'm using the previous one!");
+			NET_DEBUG_PRINT("Input buffer is void, i'm using the previous one!");
 
 		} else {
 			// The input buffer is not empty, search the new input.
@@ -712,10 +712,10 @@ bool ServerController::fetch_next_input() {
 					node->set_inputs_buffer(pi.inputs_buffer);
 					current_input_buffer_id = pi.id;
 					ghost_input_count = 0;
-					WARN_PRINT("Packet recovered");
+					NET_DEBUG_PRINT("Packet recovered");
 				} else {
 					is_new_input = false;
-					WARN_PRINT("Packet still missing");
+					NET_DEBUG_PRINT("Packet still missing");
 				}
 			}
 		}
@@ -746,7 +746,7 @@ void PlayerController::physics_process(real_t p_delta) {
 		node->get_inputs_buffer_mut().begin_write();
 		node->call("collect_inputs", p_delta);
 	} else {
-		WARN_PRINT("It's not possible to accept new inputs. Is this lagging?");
+		NET_DEBUG_WARN("It's not possible to accept new inputs. Is this lagging?");
 	}
 
 	node->get_inputs_buffer_mut().dry();

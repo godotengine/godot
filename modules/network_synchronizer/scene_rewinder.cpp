@@ -34,6 +34,7 @@
 
 #include "scene_rewinder.h"
 
+#include "net_utilities.h"
 #include "networked_controller.h"
 #include "scene/main/window.h"
 
@@ -412,7 +413,7 @@ void SceneRewinder::_register_controller(NetworkedController *p_controller) {
 			if (main_controller == nullptr) {
 				main_controller = p_controller;
 			} else {
-				WARN_PRINT("Multiple local player net controllers are not fully tested. Please report any strange behaviour.");
+				NET_DEBUG_PRINT("Multiple local player net controllers are not fully tested. Please report any strange behaviour.");
 			}
 		}
 	}
@@ -669,8 +670,8 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 		}
 		return false;
 	} else if (v_1.get_type() == Variant::TRANSFORM) {
-		const Transform a(v_1);
-		const Transform b(v_2);
+		const Transform a = v_1;
+		const Transform b = v_2;
 		if (vec3_evaluation(a.origin, b.origin)) {
 			if (vec3_evaluation(a.basis.elements[0], b.basis.elements[0])) {
 				if (vec3_evaluation(a.basis.elements[1], b.basis.elements[1])) {
@@ -1370,7 +1371,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 		if (client_snaps == nullptr || client_snaps->empty()) {
 			// We don't have any snapshot on client for this controller.
 			// Just reset all the nodes to the server state.
-			WARN_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
+			NET_DEBUG_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
 			need_rewinding = true;
 		} else {
 			// Drop all the client snapshots until the one that we need.
@@ -1403,7 +1404,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 				const Vector<VarData> *c_vars = client_snaps->front().node_vars.getptr(*key);
 				if (c_vars == nullptr) {
-					WARN_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->cached_node->get_path());
+					NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->cached_node->get_path());
 					need_rewinding = true;
 					break;
 				} else {
@@ -1419,7 +1420,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 							rec.vars);
 
 					if (different) {
-						WARN_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->cached_node->get_path());
+						NET_DEBUG_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->cached_node->get_path());
 						need_rewinding = true;
 						break;
 					} else if (rec.vars.size() > 0) {
@@ -1456,7 +1457,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
 				const VarData *s_vars_ptr = s_vars.ptr();
 
-				print_line("Full reset node: " + node->get_path());
+				NET_DEBUG_PRINT("Full reset node: " + node->get_path());
 				for (int i = 0; i < s_vars.size(); i += 1) {
 					node->set(s_vars_ptr[i].var.name, s_vars_ptr[i].var.value);
 
@@ -1467,7 +1468,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					// variable.
 					CRASH_COND(rew_var_index <= -1);
 
-					print_line(" |- Variable: " + s_vars[i].var.name + " New value: " + s_vars[i].var.value + " [Previous value: " + rew_vars[rew_var_index].var.value + "]");
+					NET_DEBUG_PRINT(" |- Variable: " + s_vars[i].var.name + " New value: " + s_vars[i].var.value + " [Previous value: " + rew_vars[rew_var_index].var.value + "]");
 
 					rew_vars[rew_var_index].var.value = s_vars[i].var.value;
 
@@ -1531,7 +1532,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				Node *node = rew_node_data->cached_node;
 				const Var *vars = it->vars.ptr();
 
-				WARN_PRINT("[Snapshot partial reset] Node: " + node->get_path());
+				NET_DEBUG_PRINT("[Snapshot partial reset] Node: " + node->get_path());
 
 				for (int v = 0; v < it->vars.size(); v += 1) {
 
@@ -1546,7 +1547,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 					rew_node_data->vars.write[rew_var_index].var.value = vars[v].value;
 
-					print_line(" |- Variable: " + vars[v].name + "; value: " + vars[v].value);
+					NET_DEBUG_PRINT(" |- Variable: " + vars[v].name + "; value: " + vars[v].value);
 					node->emit_signal(scene_rewinder->get_changed_event_name(vars[v].name));
 				}
 
@@ -1654,7 +1655,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 					// to find it now.
 
 					if (node_paths.has(node_id) == false) {
-						WARN_PRINT("The node with ID `" + itos(node_id) + "` is not know by this peer, this is not supposed to happen.");
+						NET_DEBUG_PRINT("The node with ID `" + itos(node_id) + "` is not know by this peer, this is not supposed to happen.");
 						// TODO notify the server so it sends a full snapshot, and so fix this issue.
 					} else {
 						const NodePath node_path = node_paths[node_id];
@@ -1774,7 +1775,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 
 				const int index = rewinder_node_data->find_var_by_id(var_id);
 				if (index == -1) {
-					WARN_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer, this is not supposed to happen.");
+					NET_DEBUG_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer, this is not supposed to happen.");
 
 					// TODO please notify the server that this peer need a full snapshot.
 
@@ -1832,7 +1833,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 
 	// Just make sure that the local player input ID was received.
 	if (player_controller_input_id == UINT64_MAX) {
-		WARN_PRINT("Recovery aborted, the player controller ID was not part of the received snapshot, probably the server doesn't have important informations for this peer.");
+		NET_DEBUG_PRINT("Recovery aborted, the player controller ID was not part of the received snapshot, probably the server doesn't have important informations for this peer.");
 		return false;
 	} else {
 		server_snapshot_id = snapshot_id;
@@ -1864,7 +1865,7 @@ bool ClientRewinder::compare_vars(
 				const int index = p_rewinder_node_data->vars.find(s_vars[s_var_index].var.name);
 				if (index < 0 || p_rewinder_node_data->vars[index].skip_rewinding == false) {
 					// The vars are different.
-					WARN_PRINT("Difference found on var name `" + s_vars[s_var_index].var.name + "` Server value: `" + s_vars[s_var_index].var.value + "` Client value: `" + c_vars[c_var_index].var.value + "`.");
+					NET_DEBUG_PRINT("Difference found on var name `" + s_vars[s_var_index].var.name + "` Server value: `" + s_vars[s_var_index].var.value + "` Client value: `" + c_vars[c_var_index].var.value + "`.");
 					return true;
 				} else {
 					// The vars are different, but this variable don't what to
