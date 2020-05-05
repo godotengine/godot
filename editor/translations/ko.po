@@ -21,8 +21,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-20 05:51+0000\n"
-"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
+"PO-Revision-Date: 2020-05-01 11:42+0000\n"
+"Last-Translator: Ch. <ccwpc@hanmail.net>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -30,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5929,7 +5929,7 @@ msgstr ""
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Single Convex Collision Sibling"
-msgstr "개별 Convex 충돌 형제 만들기"
+msgstr "단일 Convex 충돌 형제 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -9838,6 +9838,9 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"이 검색창은 프로젝트를 이름과 경로의 마지막 부분으로 거릅니다.\n"
+"프로젝트를 전체 경로를 기준으로 걸러내려면 검색어에 `/` 가 한 글자 이상 포함"
+"시키세요."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10949,9 +10952,8 @@ msgid "Total:"
 msgstr "전체:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "프로필 내보내기"
+msgstr "목록을 CSV 파일로 내보내기"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12584,7 +12586,7 @@ msgstr ""
 
 #: scene/main/viewport.cpp
 msgid "Viewport size must be greater than 0 to render anything."
-msgstr "뷰포트 크기는 무엇이든 렌더링하기 위해 0보다 커야 합니다."
+msgstr "무엇이든 렌더링하려면 뷰포트 크기가 0보다 커야 합니다."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."

@@ -20,7 +20,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-20 05:51+0000\n"
+"PO-Revision-Date: 2020-05-01 11:42+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -29,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1473,7 +1473,7 @@ msgstr "O Ficheiro não existe."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Not in resource path."
-msgstr "Não está no Caminho do recurso."
+msgstr "Não está no caminho do recurso."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Add AutoLoad"
@@ -2498,27 +2498,27 @@ msgstr "Incapaz de localizar campo Script para plugin em: 'res://addons/%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
-msgstr "Incapaz de carregar Script addon do Caminho: '%s'."
+msgstr "Incapaz de carregar script addon do caminho: '%s'."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
-"Incapaz de carregar Script addon do caminho: '%s' Parece haver um erro no "
+"Incapaz de carregar script addon do caminho: '%s' Parece haver um erro no "
 "código, reveja a sintaxe."
 
 #: editor/editor_node.cpp
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
-"Incapaz de carregar Script addon do Caminho: '%s' Tipo base não é "
+"Incapaz de carregar script addon do Caminho: '%s' Tipo base não é "
 "EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"Incapaz de carregar Script addon do Caminho: '%s' Script não está no modo "
+"Incapaz de carregar script addon do Caminho: '%s' Script não está no modo "
 "ferramenta."
 
 #: editor/editor_node.cpp
@@ -3443,7 +3443,7 @@ msgstr "Não foi encontrado version.txt dentro dos Modelos."
 
 #: editor/export_template_manager.cpp
 msgid "Error creating path for templates:"
-msgstr "Erro ao criar o Caminho para os Modelos:"
+msgstr "Erro ao criar o caminho para os modelos:"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -6069,7 +6069,7 @@ msgstr "Fonte da Malha não especificada (e MultiMesh não contêm Malha)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
-msgstr "A fonte da Malha é inválida (Caminho inválido)."
+msgstr "A fonte da malha é inválida (caminho inválido)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
@@ -6085,7 +6085,7 @@ msgstr "Fonte de superfície não especificada."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (invalid path)."
-msgstr "A fonte de superfície é inválida (Caminho inválido)."
+msgstr "A fonte de superfície é inválida (caminho inválido)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no geometry)."
@@ -9615,7 +9615,7 @@ msgstr "Seria uma boa ideia dar um nome ao Projeto."
 
 #: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr "Caminho de Projeto inválido (alguma alteração?)."
+msgstr "Caminho de projeto inválido (alguma alteração?)."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9902,6 +9902,10 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"A caixa de pesquisa filtra projetos por nome e último componente do "
+"caminho.\n"
+"Para filtrar projetos por nome e caminho completo, a pesquisa tem de conter "
+"pelo menos um caráter `/`."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -10101,7 +10105,7 @@ msgstr "Remover tradução"
 
 #: editor/project_settings_editor.cpp
 msgid "Add Remapped Path"
-msgstr "Adicionar correção remapeada"
+msgstr "Adicionar Caminho Remapeado"
 
 #: editor/project_settings_editor.cpp
 msgid "Resource Remap Add Remap"
@@ -10862,11 +10866,11 @@ msgstr "Nome de classe inválido."
 
 #: editor/script_create_dialog.cpp
 msgid "Invalid inherited parent name or path."
-msgstr "Nome ou Caminho de parente herdado inválido."
+msgstr "Nome ou caminho de parente herdado inválido."
 
 #: editor/script_create_dialog.cpp
 msgid "Script path/name is valid."
-msgstr "Caminho/nome de Script é válido."
+msgstr "Caminho/nome de script é válido."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
@@ -11017,13 +11021,12 @@ msgid "Total:"
 msgstr "Total:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "Exportar Perfil"
+msgstr "Exportar lista para ficheiro CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
-msgstr "Caminho do recurso"
+msgstr "Caminho do Recurso"
 
 #: editor/script_editor_debugger.cpp
 msgid "Type"
@@ -11241,7 +11244,7 @@ msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Formato de dicionário de instância inválido (Script inválido em @path)"
+msgstr "Formato de dicionário de instância inválido (script inválido em @path)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
@@ -12240,7 +12243,7 @@ msgstr ""
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
-"Para funcionar, a Propriedade Caminho tem de apontar para um nó Node2D "
+"Para funcionar, a propriedade caminho tem de apontar para um nó Node2D "
 "válido."
 
 #: scene/2d/skeleton_2d.cpp
