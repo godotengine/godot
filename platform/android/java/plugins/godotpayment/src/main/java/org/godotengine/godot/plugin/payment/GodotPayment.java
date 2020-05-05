@@ -30,16 +30,19 @@
 
 package org.godotengine.godot.plugin.payment;
 
-import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.util.Log;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.godotengine.godot.Dictionary;
 import org.godotengine.godot.Godot;
 import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.plugin.GodotPlugin;
+
+import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

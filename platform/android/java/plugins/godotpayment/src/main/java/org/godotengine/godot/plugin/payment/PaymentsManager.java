@@ -40,9 +40,12 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
+
 import com.android.vending.billing.IInAppBillingService;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -30,10 +30,11 @@
 
 package org.godotengine.godot.utils;
 
+import org.godotengine.godot.Godot;
+
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.util.Log;
-import org.godotengine.godot.Godot;
 
 /**
  * This class handles Android-specific networking functions.

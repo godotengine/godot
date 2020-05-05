@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 package org.godotengine.godot.input;
+
+import org.godotengine.godot.*;
+
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -38,8 +41,8 @@ import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+
 import java.lang.ref.WeakReference;
-import org.godotengine.godot.*;
 
 public class GodotEditText extends EditText {
 	// ===========================================================

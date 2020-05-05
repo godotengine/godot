@@ -30,14 +30,16 @@
 
 package org.godotengine.godot.xr.regular;
 
+import org.godotengine.godot.GodotLib;
+import org.godotengine.godot.utils.GLUtils;
+
 import android.opengl.GLSurfaceView;
 import android.util.Log;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLContext;
 import javax.microedition.khronos.egl.EGLDisplay;
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.utils.GLUtils;
 
 /**
  * Factory used to setup the opengl context for pancake games.
