@@ -59,6 +59,7 @@ class OS {
 	bool _allow_layered;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
+	bool _disable_wintab;
 
 	char *last_error;
 
@@ -148,6 +149,7 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
+	bool is_wintab_disabled() const { return _disable_wintab; }
 
 	void ensure_user_data_dir();
 
