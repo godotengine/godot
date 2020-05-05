@@ -384,14 +384,12 @@ void SceneRewinder::set_node_as_controlled_by(Node *p_node, Node *p_controller) 
 		register_node(p_controller);
 
 		NodeData *node_data = data.getptr(p_node->get_instance_id());
-		if (node_data == nullptr) {
-			node_data->controlled_by = p_controller->get_instance_id();
-		}
+		ERR_FAIL_COND(node_data == nullptr);
+		node_data->controlled_by = p_controller->get_instance_id();
 	} else {
 		NodeData *node_data = data.getptr(p_node->get_instance_id());
-		if (node_data == nullptr) {
-			node_data->controlled_by = ObjectID();
-		}
+		ERR_FAIL_COND(node_data == nullptr);
+		node_data->controlled_by = ObjectID();
 	}
 }
 
@@ -637,8 +635,8 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 	} else if (v_1.get_type() == Variant::VECTOR3) {
 		return vec3_evaluation(v_1, v_2);
 	} else if (v_1.get_type() == Variant::QUAT) {
-		const Quat a(v_1);
-		const Quat b(v_2);
+		const Quat a = v_1;
+		const Quat b = v_2;
 		const Quat r(a - b); // Element wise subtraction.
 		return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (comparison_float_tolerance * comparison_float_tolerance);
 	} else if (v_1.get_type() == Variant::PLANE) {
@@ -660,8 +658,8 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 		}
 		return false;
 	} else if (v_1.get_type() == Variant::BASIS) {
-		const Basis a(v_1);
-		const Basis b(v_2);
+		const Basis a = v_1;
+		const Basis b = v_2;
 		if (vec3_evaluation(a.elements[0], b.elements[0])) {
 			if (vec3_evaluation(a.elements[1], b.elements[1])) {
 				if (vec3_evaluation(a.elements[2], b.elements[2])) {
@@ -1162,6 +1160,8 @@ void ClientRewinder::process(real_t p_delta) {
 	// TODO store the snapshot directly into the `SceneIsle` form (The node are combined per controllers)
 	store_snapshot();
 
+	ERR_FAIL_COND(snapshots.empty());
+
 	const bool only_new_inputs = true;
 	store_controllers_snapshot(
 			snapshots.back(),
@@ -1272,20 +1272,32 @@ void ClientRewinder::store_controllers_snapshot(
 
 		for (const ObjectID *key = p_snapshot.data.next(nullptr); key != nullptr; key = p_snapshot.data.next(key)) {
 			if ((*key) != controller->get_instance_id()) {
-				const ObjectID controlled_by = scene_rewinder->data[*key].controlled_by;
-				if (is_main_controller) {
-					// The main controller takes with him all the nodes controlled by him self and the one that
-					// are not controlled by anyother.
-					if (controlled_by.is_null() == false && controlled_by != controller->get_instance_id()) {
-						// This node is controlled by another controller.
-						continue;
+				const NodeData *node_data = scene_rewinder->data.getptr(*key);
+				if (node_data) {
+					if (is_main_controller) {
+						// The main controller takes with him all the nodes controlled by him self and the one that
+						// are not controlled by anyother.
+						if (node_data->controlled_by.is_null() == false && node_data->controlled_by != controller->get_instance_id()) {
+							// This node is controlled by another controller.
+							continue;
+						} else {
+							// This is a node not controlled.
+						}
+					} else {
+						if (node_data->controlled_by != controller->get_instance_id()) {
+							// This is a node not controlled by this controller.
+							continue;
+						} else {
+							// This is a node controlled by this controller.
+						}
 					}
 				} else {
-					if (controlled_by != controller->get_instance_id()) {
-						// This node is not controlled by the main controller
-						continue;
-					}
+					// Not enough information to decide what to do with this node
+					// so skip it.
+					continue;
 				}
+			} else {
+				// This is the controller node. Just store it.
 			}
 
 			// This node is part of this isle, store it.
@@ -1377,6 +1389,8 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			// is taken by reading the processed doll inputs, it's guaranteed
 			// that here the snapshot exists.
 			CRASH_COND(client_snaps->empty());
+			print_line("Snapshot size: " + itos(client_snaps->size()));
+			print_line("Snapshot front ID: " + itos(client_snaps->front().input_id));
 			CRASH_COND(client_snaps->front().input_id != checkable_input_id);
 #endif
 
