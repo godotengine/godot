@@ -266,6 +266,20 @@ void GridMapEditor::_menu_option(int p_option) {
 			_fill_selection();
 
 		} break;
+		case MENU_OPTION_CLEAR_ALL: {
+			undo_redo->create_action(TTR("Clear All"));
+			undo_redo->add_undo_method(node, "set", "data", node->get("data"));
+			node->clear();
+			undo_redo->add_do_method(node, "set", "data", node->get("data"));
+			undo_redo->commit_action();
+		} break;
+		case MENU_OPTION_FIX_INVALID_CELLS: {
+			undo_redo->create_action(TTR("Fix Invalid Cells"));
+			undo_redo->add_undo_method(node, "set", "data", node->get("data"));
+			node->fix_invalid_cells();
+			undo_redo->add_do_method(node, "set", "data", node->get("data"));
+			undo_redo->commit_action();
+		} break;
 		case MENU_OPTION_GRIDMAP_SETTINGS: {
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size() + Size2(50, 50) * EDSCALE);
 		} break;
@@ -1270,7 +1284,10 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Cut Selection"), MENU_OPTION_SELECTION_CUT, KEY_MASK_CTRL + KEY_X);
 	options->get_popup()->add_item(TTR("Clear Selection"), MENU_OPTION_SELECTION_CLEAR, KEY_DELETE);
 	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KEY_MASK_CTRL + KEY_F);
-
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Clear All"), MENU_OPTION_CLEAR_ALL);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Fix Invalid Cells"), MENU_OPTION_FIX_INVALID_CELLS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);
 
