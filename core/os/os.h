@@ -61,6 +61,7 @@ class OS {
 	bool _allow_layered;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
+	bool _disable_wintab;
 
 	char *last_error;
 
@@ -528,6 +529,7 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
+	bool is_wintab_disabled() const { return _disable_wintab; }
 
 	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
 	bool is_restart_on_exit_set() const;

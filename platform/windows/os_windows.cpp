@@ -70,10 +70,6 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define WM_TOUCH 576
 #endif
 
-#ifndef WM_POINTERUPDATE
-#define WM_POINTERUPDATE 0x0245
-#endif
-
 #if defined(__GNUC__)
 // Workaround GCC warning from -Wcast-function-type.
 #define GetProcAddress (void *)GetProcAddress
@@ -201,6 +197,15 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
+// WinTab API
+bool OS_Windows::wintab_available = false;
+WTOpenPtr OS_Windows::wintab_WTOpen = nullptr;
+WTClosePtr OS_Windows::wintab_WTClose = nullptr;
+WTInfoPtr OS_Windows::wintab_WTInfo = nullptr;
+WTPacketPtr OS_Windows::wintab_WTPacket = nullptr;
+WTEnablePtr OS_Windows::wintab_WTEnable = nullptr;
+
+// Windows Ink API
 GetPointerTypePtr OS_Windows::win8p_GetPointerType = NULL;
 GetPointerPenInfoPtr OS_Windows::win8p_GetPointerPenInfo = NULL;
 
@@ -368,7 +373,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				alt_mem = false;
 			};
 
-			return 0; // Return To The Message Loop
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				wintab_WTEnable(wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
+			}
+
+			return 0; // Return  To The Message Loop
 		}
 		case WM_GETMINMAXINFO: {
 			if (video_mode.resizable && !video_mode.fullscreen) {
@@ -446,6 +455,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				mm->set_control(control_mem);
 				mm->set_shift(shift_mem);
 				mm->set_alt(alt_mem);
+
 				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
 
 				mm->set_button_mask(last_button_state);
@@ -495,6 +505,42 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					input->accumulate_input_event(mm);
 			}
 			delete[] lpb;
+		} break;
+		case WT_CSRCHANGE:
+		case WT_PROXIMITY: {
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				AXIS pressure;
+				if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
+					min_pressure = int(pressure.axMin);
+					max_pressure = int(pressure.axMax);
+				}
+				AXIS orientation[3];
+				if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
+					tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
+				}
+				return 0;
+			}
+		} break;
+		case WT_PACKET: {
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				PACKET packet;
+				if (wintab_WTPacket(wtctx, wParam, &packet)) {
+
+					float pressure = float(packet.pkNormalPressure - min_pressure) / float(max_pressure - min_pressure);
+					last_pressure = pressure;
+					last_pressure_update = 0;
+
+					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
+					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+
+					if (tilt_supported) {
+						last_tilt = Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt));
+					} else {
+						last_tilt = Vector2();
+					}
+				}
+				return 0;
+			}
 		} break;
 		case WM_POINTERUPDATE: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -567,8 +613,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_control((wParam & MK_CONTROL) != 0);
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
-
-			mm->set_pressure((wParam & MK_LBUTTON) ? 1.0f : 0.0f);
 
 			mm->set_button_mask(last_button_state);
 
@@ -660,6 +704,22 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_control((wParam & MK_CONTROL) != 0);
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
+
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not update recently.
+				if (last_pressure_update < 10) {
+					last_pressure_update++;
+				} else {
+					last_tilt = Vector2();
+					last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+				}
+			} else {
+				last_tilt = Vector2();
+				last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+			}
+
+			mm->set_pressure(last_pressure);
+			mm->set_tilt(last_tilt);
 
 			mm->set_button_mask(last_button_state);
 
@@ -1424,6 +1484,39 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (video_mode.always_on_top) {
 		SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	}
+
+	if (!is_wintab_disabled() && wintab_available) {
+		wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
+		wtlc.lcOptions |= CXO_MESSAGES;
+		wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+		wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+		wtlc.lcPktMode = 0;
+		wtlc.lcOutOrgX = 0;
+		wtlc.lcOutExtX = wtlc.lcInExtX;
+		wtlc.lcOutOrgY = 0;
+		wtlc.lcOutExtY = -wtlc.lcInExtY;
+		wtctx = wintab_WTOpen(hWnd, &wtlc, false);
+		if (wtctx) {
+			wintab_WTEnable(wtctx, true);
+			AXIS pressure;
+			if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
+				min_pressure = int(pressure.axMin);
+				max_pressure = int(pressure.axMax);
+			}
+			AXIS orientation[3];
+			if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
+				tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
+			}
+		} else {
+			ERR_PRINT("WinTab context creation falied.");
+		}
+	} else {
+		wtctx = 0;
+	}
+
+	last_pressure = 0;
+	last_pressure_update = 0;
+	last_tilt = Vector2();
 
 #if defined(OPENGL_ENABLED)
 
@@ -3396,7 +3489,19 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	window_focused = true;
 	console_visible = IsWindowVisible(GetConsoleWindow());
 
-	//Note: Functions for pen input, available on Windows 8+
+	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
+	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
+	if (wintab_lib) {
+		wintab_WTOpen = (WTOpenPtr)GetProcAddress(wintab_lib, "WTOpenW");
+		wintab_WTClose = (WTClosePtr)GetProcAddress(wintab_lib, "WTClose");
+		wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
+		wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
+		wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
+
+		wintab_available = wintab_WTOpen && wintab_WTClose && wintab_WTInfo && wintab_WTPacket && wintab_WTEnable;
+	}
+
+	//Note: Windows Ink API for pen input, available on Windows 8+ only.
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
 	if (user32_lib) {
 		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
@@ -3425,6 +3530,11 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
+	if (wintab_available && wtctx) {
+		wintab_WTClose(wtctx);
+		wtctx = 0;
+	}
+
 	if (is_layered_allowed() && layered_window) {
 		DeleteObject(hBitmap);
 		DeleteDC(hDC_dib);
