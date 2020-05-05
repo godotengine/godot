@@ -947,6 +947,18 @@ void GDScript::_save_orphaned_subclasses() {
 }
 
 GDScript::~GDScript() {
+
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->lock();
+	}
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		E->self()->_clear_stack();
+		pending_func_states.remove(E);
+	}
+	if (GDScriptLanguage::get_singleton()->lock) {
+		GDScriptLanguage::get_singleton()->lock->unlock();
+	}
+
 	for (Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
 		memdelete(E->get());
 	}
@@ -1364,16 +1376,22 @@ GDScriptInstance::GDScriptInstance() {
 }
 
 GDScriptInstance::~GDScriptInstance() {
-	if (script.is_valid() && owner) {
 #ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->lock();
+	GDScriptLanguage::singleton->lock->lock();
 #endif
 
-		script->instances.erase(owner);
-#ifndef NO_THREADS
-		GDScriptLanguage::singleton->lock->unlock();
-#endif
+	while (SelfList<GDScriptFunctionState> *E = pending_func_states.first()) {
+		E->self()->_clear_stack();
+		pending_func_states.remove(E);
 	}
+
+	if (script.is_valid() && owner) {
+		script->instances.erase(owner);
+	}
+
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
 }
 
 /************* SCRIPT LANGUAGE **************/
