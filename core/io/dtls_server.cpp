@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  dtls_server.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
-
-#include "crypto_mbedtls.h"
-
+#include "dtls_server.h"
 #include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
+#include "core/project_settings.h"
 
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
+DTLSServer *(*DTLSServer::_create)() = NULL;
+bool DTLSServer::available = false;
 
-class SSLContextMbedTLS;
+DTLSServer *DTLSServer::create() {
 
-class CookieContextMbedTLS : public Reference {
+	return _create();
+}
 
-	friend class SSLContextMbedTLS;
+bool DTLSServer::is_available() {
+	return available;
+}
 
-protected:
-	bool inited;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+void DTLSServer::_bind_methods() {
 
-public:
-	Error setup();
-	void clear();
+	ClassDB::bind_method(D_METHOD("setup", "key", "certificate", "chain"), &DTLSServer::setup, DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("take_connection", "udp_peer"), &DTLSServer::take_connection);
+}
 
-	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
-};
-
-class SSLContextMbedTLS : public Reference {
-
-protected:
-	bool inited;
-
-	static PoolByteArray _read_file(String p_path);
-
-public:
-	static void print_mbedtls_error(int p_ret);
-
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	Ref<CookieContextMbedTLS> cookies;
-	Ref<CryptoKeyMbedTLS> pkey;
-
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
-
-	mbedtls_ssl_context *get_context();
-
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
-};
-
-#endif // SSL_CONTEXT_MBED_TLS_H
+DTLSServer::DTLSServer() {
+}

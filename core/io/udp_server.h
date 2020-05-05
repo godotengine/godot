@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  udp_server.h                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
+#ifndef UDP_SERVER_H
+#define UDP_SERVER_H
 
-#include "crypto_mbedtls.h"
+#include "core/io/net_socket.h"
+#include "core/io/packet_peer_udp.h"
 
-#include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
-
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
-
-class SSLContextMbedTLS;
-
-class CookieContextMbedTLS : public Reference {
-
-	friend class SSLContextMbedTLS;
+class UDPServer : public Reference {
+	GDCLASS(UDPServer, Reference);
 
 protected:
-	bool inited;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+	static void _bind_methods();
+	int bind_port;
+	IP_Address bind_address;
+	Ref<NetSocket> _sock;
 
 public:
-	Error setup();
-	void clear();
+	Error listen(uint16_t p_port, const IP_Address &p_bind_address = IP_Address("*"));
+	bool is_listening() const;
+	bool is_connection_available() const;
+	Ref<PacketPeerUDP> take_connection();
 
-	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
+	void stop();
+
+	UDPServer();
+	~UDPServer();
 };
 
-class SSLContextMbedTLS : public Reference {
-
-protected:
-	bool inited;
-
-	static PoolByteArray _read_file(String p_path);
-
-public:
-	static void print_mbedtls_error(int p_ret);
-
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	Ref<CookieContextMbedTLS> cookies;
-	Ref<CryptoKeyMbedTLS> pkey;
-
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
-
-	mbedtls_ssl_context *get_context();
-
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
-};
-
-#endif // SSL_CONTEXT_MBED_TLS_H
+#endif // UDP_SERVER_H

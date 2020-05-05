@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  dtls_server_mbedtls.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
+#include "dtls_server_mbedtls.h"
+#include "packet_peer_mbed_dtls.h"
 
-#include "crypto_mbedtls.h"
+Error DTLSServerMbedTLS::setup(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
+	ERR_FAIL_COND_V(_cookies->setup() != OK, ERR_ALREADY_IN_USE);
+	_key = p_key;
+	_cert = p_cert;
+	_ca_chain = p_ca_chain;
+	return OK;
+}
 
-#include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
+void DTLSServerMbedTLS::stop() {
+	_cookies->clear();
+}
 
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
+Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_peer) {
+	Ref<PacketPeerMbedDTLS> out;
+	out.instance();
 
-class SSLContextMbedTLS;
+	ERR_FAIL_COND_V(!out.is_valid(), out);
+	ERR_FAIL_COND_V(!p_udp_peer.is_valid(), out);
+	out->accept_peer(p_udp_peer, _key, _cert, _ca_chain, _cookies);
+	return out;
+}
 
-class CookieContextMbedTLS : public Reference {
+DTLSServer *DTLSServerMbedTLS::_create_func() {
 
-	friend class SSLContextMbedTLS;
+	return memnew(DTLSServerMbedTLS);
+}
 
-protected:
-	bool inited;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+void DTLSServerMbedTLS::initialize() {
 
-public:
-	Error setup();
-	void clear();
+	_create = _create_func;
+	available = true;
+}
 
-	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
-};
+void DTLSServerMbedTLS::finalize() {
+	_create = NULL;
+	available = false;
+}
 
-class SSLContextMbedTLS : public Reference {
+DTLSServerMbedTLS::DTLSServerMbedTLS() {
+	_cookies.instance();
+}
 
-protected:
-	bool inited;
-
-	static PoolByteArray _read_file(String p_path);
-
-public:
-	static void print_mbedtls_error(int p_ret);
-
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	Ref<CookieContextMbedTLS> cookies;
-	Ref<CryptoKeyMbedTLS> pkey;
-
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
-
-	mbedtls_ssl_context *get_context();
-
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
-};
-
-#endif // SSL_CONTEXT_MBED_TLS_H
+DTLSServerMbedTLS::~DTLSServerMbedTLS() {
+	stop();
+}
