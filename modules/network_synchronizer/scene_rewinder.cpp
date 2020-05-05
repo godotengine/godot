@@ -1329,17 +1329,21 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			continue;
 		}
 
+		std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.getptr(controller->get_instance_id());
+
 		// Find the best recoverable input_id.
 		uint64_t checkable_input_id = UINT64_MAX;
-		{
-			const uint64_t last_input_id = controller->get_stored_input_id(-1);
-			if (last_input_id != UINT64_MAX) {
-				for (auto snap = server_snaps->rbegin(); snap != server_snaps->rend(); ++snap) {
-					if (snap->input_id <= last_input_id) {
-						// This snapshot can be checked.
-						checkable_input_id = snap->input_id;
+		if (client_snaps != nullptr) {
+			for (auto s_snap = server_snaps->rbegin(); s_snap != server_snaps->rend(); ++s_snap) {
+				for (auto c_snap = client_snaps->begin(); c_snap != client_snaps->end(); ++c_snap) {
+					if (c_snap->input_id == s_snap->input_id) {
+						// This snapshot is present on client can be checked.
+						checkable_input_id = c_snap->input_id;
 						break;
 					}
+				}
+				if (checkable_input_id != UINT64_MAX) {
+					break;
 				}
 			}
 		}
@@ -1368,9 +1372,8 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 		bool need_rewinding = false;
 		std::vector<PostponedRecover> postponed_recover;
-		std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.getptr(controller->get_instance_id());
 
-		if (client_snaps == nullptr) {
+		if (client_snaps == nullptr || client_snaps->empty()) {
 			// We don't have any snapshot on client for this controller.
 			// Just reset all the nodes to the server state.
 			WARN_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
@@ -1389,8 +1392,6 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			// is taken by reading the processed doll inputs, it's guaranteed
 			// that here the snapshot exists.
 			CRASH_COND(client_snaps->empty());
-			print_line("Snapshot size: " + itos(client_snaps->size()));
-			print_line("Snapshot front ID: " + itos(client_snaps->front().input_id));
 			CRASH_COND(client_snaps->front().input_id != checkable_input_id);
 #endif
 
@@ -1548,18 +1549,10 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					print_line(" |- Variable: " + vars[v].name + "; value: " + vars[v].value);
 					node->emit_signal(scene_rewinder->get_changed_event_name(vars[v].name));
 				}
-			}
 
-			// TODO Improve this by Integrating a better way to organize the nodes in Isle.
-			if (client_snaps) {
-				(*client_snaps).back().node_vars.clear();
-				for (
-						const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
-						key != nullptr;
-						key = server_snaps->front().node_vars.next(key)) {
-
-					// Update the last snapshot.
-					(*client_snaps).back().node_vars[*key] = scene_rewinder->data[*key].vars;
+				// Update the last client snapshot.
+				if (client_snaps && client_snaps->empty() == false) {
+					client_snaps->back().node_vars[rew_node_data->instance_id] = rew_node_data->vars;
 				}
 			}
 
