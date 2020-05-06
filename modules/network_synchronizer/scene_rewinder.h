@@ -45,6 +45,8 @@
 class Rewinder;
 class NetworkedController;
 
+// TODO use a name space or put this into the SceneRewinder class.
+
 struct Var {
 	StringName name;
 	Variant value;
@@ -69,17 +71,25 @@ struct NodeData {
 	ObjectID instance_id;
 	bool is_controller;
 	ObjectID controlled_by;
-	int registered_process_count;
 	Vector<VarData> vars;
+	bool has_process_functions; // TODO remove this??
 
 	// This is valid to use only inside the process function.
-	Node *cached_node;
+	Node *node;
 
 	NodeData();
 	NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller);
 
 	// Returns the index to access the variable.
 	int find_var_by_id(uint32_t p_id) const;
+};
+
+struct NodeProcess {
+	Node *node = nullptr;
+	std::vector<StringName> functions;
+
+	NodeProcess() {}
+	void process(const real_t p_delta) const;
 };
 
 /// # SceneRewinder
@@ -205,7 +215,10 @@ private:
 	HashMap<ObjectID, NodeData> data;
 	NetworkedController *main_controller;
 
+	HashMap<ObjectID, NodeProcess> node_processes;
+
 	Vector<ObjectID> controllers;
+	bool controllers_dirty;
 	std::vector<NetworkedController *> cached_controllers;
 
 	real_t time_bank;
@@ -284,13 +297,14 @@ public:
 private:
 	void process();
 
+	void validate_nodes();
 	void cache_controllers();
 
 	real_t get_pretended_delta() const;
 
 	// Read the node variables and store the value if is different from the
 	// previous one and emits a signal.
-	void pull_node_changes(Node *p_node, NodeData *p_node_data = nullptr);
+	void pull_node_changes(NodeData *p_node_data);
 
 	void on_peer_connected(int p_peer_id);
 	void on_peer_disconnected(int p_peer_id);
@@ -436,7 +450,6 @@ private:
 
 	void store_controllers_snapshot(
 			const Snapshot &p_snapshot,
-			bool p_only_new_inputs,
 			HashMap<ObjectID, std::deque<IsleSnapshot>> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);

@@ -347,6 +347,7 @@ int InputsBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compres
 
 	// Unreachable
 	CRASH_NOW_MSG("Was not possible to obtain the bit taken by this input data.");
+	return 0; // Useless, but MS CI is too noisy.
 }
 
 uint64_t InputsBuffer::compress_unit_float(double p_value, double p_scale_factor) {
