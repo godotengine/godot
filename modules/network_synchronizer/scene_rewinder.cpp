@@ -1165,26 +1165,12 @@ void ClientRewinder::clear() {
 	server_snapshot.player_controller_input_id = 0;
 	server_snapshot.controllers_input_id.clear();
 	server_snapshot.data.clear();
-	snapshots.clear();
 }
 
 void ClientRewinder::process(real_t p_delta) {
 	ERR_FAIL_COND_MSG(scene_rewinder->main_controller == nullptr, "Snapshot creation fail, Make sure to track a NetController.");
 
-	// TODO store the snapshot directly into the `SceneIsle` form (The node are combined per controllers)
 	store_snapshot();
-
-	ERR_FAIL_COND(snapshots.empty());
-
-	const bool only_new_inputs = true;
-	store_controllers_snapshot(
-			snapshots.back(),
-			only_new_inputs,
-			client_controllers_snapshots);
-
-	// TODO This is just part of the old approach.
-	snapshots.pop_back();
-	CRASH_COND(snapshots.size() != 0);
 }
 
 void ClientRewinder::post_process(real_t p_delta) {
@@ -1216,27 +1202,61 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 void ClientRewinder::store_snapshot() {
 	ERR_FAIL_COND(scene_rewinder->main_controller == nullptr);
 
-	// Store snapshots, only if the `main_controller` accept new inputs.
-	Snapshot snapshot;
+	for (size_t c = 0; c < scene_rewinder->cached_controllers.size(); c += 1) {
+		const NetworkedController *controller = scene_rewinder->cached_controllers[c];
+		const bool is_main_controller = scene_rewinder->main_controller == controller;
 
-	snapshot.player_controller_input_id = scene_rewinder->main_controller->get_current_input_id();
-#ifdef DEBUG_ENABLED
-	CRASH_COND(snapshot.player_controller_input_id != scene_rewinder->main_controller->get_stored_input_id(-1));
-	CRASH_COND(snapshot.player_controller_input_id == UINT64_MAX);
+		if (controller->player_has_new_input() == false) {
+			// This controller has not a new imput, don't store it;
+			continue;
+		}
+
+		std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.getptr(controller->get_instance_id());
+		if (client_snaps == nullptr) {
+			client_controllers_snapshots.set(controller->get_instance_id(), std::deque<IsleSnapshot>());
+			client_snaps = client_controllers_snapshots.getptr(controller->get_instance_id());
+		}
+
+#ifdef DEBUG_ENABLEyy
+		// Simply unreachable.
+		CRASH_COND(controller_snaps == nullptr);
 #endif
 
-	// Store the controllers input ID
-	for (size_t i = 0; i < scene_rewinder->cached_controllers.size(); i += 1) {
-		snapshot.controllers_input_id.set(
-				scene_rewinder->cached_controllers[i]->get_instance_id(),
-				scene_rewinder->cached_controllers[i]->get_stored_input_id(-1));
+		if (client_snaps->size() > 0) {
+			if (controller->get_current_input_id() <= client_snaps->back().input_id) {
+				NET_DEBUG_WARN("During snapshot creation, for controller " + controller->get_path() + ", was found an ID for an older snapshots. New input ID: " + itos(controller->get_current_input_id()) + " Last saved snapshot input ID: " + itos(client_snaps->back().input_id) + ". This snapshot is not stored.");
+				continue;
+			}
+		}
+
+		IsleSnapshot snap;
+		snap.input_id = controller->get_current_input_id();
+
+		for (
+				const ObjectID *key = scene_rewinder->data.next(nullptr);
+				key != nullptr;
+				key = scene_rewinder->data.next(key)) {
+
+			const NodeData &node_data = scene_rewinder->data.get(*key);
+			if ((*key) == controller->get_instance_id()) {
+				// This is the controller node.
+			} else if (node_data.is_controller) {
+				// This is another controller, SKIP IT.
+				continue;
+			} else if (is_main_controller && node_data.controlled_by.is_null()) {
+				// The main controller takes care to sync all non controlled
+				// nodes.
+			} else if (node_data.controlled_by != controller->get_instance_id()) {
+				// This node is not controlled by this controller. SKIP IT.
+				continue;
+			}
+
+			// This node is part of this isle, store it.
+			snap.node_vars[*key] = node_data.vars;
+		}
+
+		client_snaps->push_back(snap);
 	}
-
-	// Store the current node data
-	snapshot.data = scene_rewinder->data;
-
-	// Archive the snapshot.
-	snapshots.push_back(snapshot);
 }
 
 void ClientRewinder::store_controllers_snapshot(
@@ -1270,7 +1290,7 @@ void ClientRewinder::store_controllers_snapshot(
 			controller_snaps = r_snapshot_storage.getptr(controller->get_instance_id());
 		}
 
-#ifdef DEBUG_ENABLED
+#ifdef DEBUG_ENABLEyy
 		// Simply unreachable.
 		CRASH_COND(controller_snaps == nullptr);
 #endif

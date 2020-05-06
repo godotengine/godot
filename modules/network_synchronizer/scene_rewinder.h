@@ -408,7 +408,6 @@ class ClientRewinder : public Rewinder {
 	uint64_t server_snapshot_id;
 	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
-	std::deque<Snapshot> snapshots;
 	HashMap<ObjectID, std::deque<IsleSnapshot>> client_controllers_snapshots;
 	HashMap<ObjectID, std::deque<IsleSnapshot>> server_controllers_snapshots;
 
@@ -422,6 +421,7 @@ public:
 	virtual void receive_snapshot(Variant p_snapshot);
 
 private:
+	/// Store node data organized per controller.
 	void store_snapshot();
 
 	void store_controllers_snapshot(
