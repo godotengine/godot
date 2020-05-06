@@ -1457,6 +1457,8 @@ public:
 	void set_step(float p_value);
 	float get_step() const;
 
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
 	virtual Vector<StringName> get_editable_properties() const;
 
 	VisualShaderNodeFloatUniform();
@@ -1509,6 +1511,8 @@ public:
 	void set_step(int p_value);
 	int get_step() const;
 
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
 	virtual Vector<StringName> get_editable_properties() const;
 
 	VisualShaderNodeIntUniform();
@@ -1535,6 +1539,8 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
 	VisualShaderNodeBooleanUniform();
 };
 
@@ -1556,6 +1562,8 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	bool is_qualifier_supported(Qualifier p_qual) const;
 
 	VisualShaderNodeColorUniform();
 };
@@ -1579,6 +1587,8 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	bool is_qualifier_supported(Qualifier p_qual) const;
+
 	VisualShaderNodeVec3Uniform();
 };
 
@@ -1600,6 +1610,8 @@ public:
 
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	bool is_qualifier_supported(Qualifier p_qual) const;
 
 	VisualShaderNodeTransformUniform();
 };
@@ -1651,6 +1663,8 @@ public:
 
 	void set_color_default(ColorDefault p_default);
 	ColorDefault get_color_default() const;
+
+	bool is_qualifier_supported(Qualifier p_qual) const;
 
 	VisualShaderNodeTextureUniform();
 };
