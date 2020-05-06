@@ -746,7 +746,9 @@ void RasterizerCanvasGLES2::diagnose_batches(Item::Command *const *p_commands) {
 				bdata.frame_string += "R ";
 				bdata.frame_string += itos(batch.first_command) + "-";
 				bdata.frame_string += itos(batch.num_commands);
-				bdata.frame_string += " [" + itos(batch.batch_texture_id) + "]";
+
+				int tex_id = (int)bdata.batch_textures[batch.batch_texture_id].RID_texture.get_id();
+				bdata.frame_string += " [" + itos(batch.batch_texture_id) + " - " + itos(tex_id) + "]";
 
 				bdata.frame_string += " " + batch.color.to_string();
 
@@ -1751,7 +1753,7 @@ void RasterizerCanvasGLES2::sort_items() {
 		return;
 	}
 
-	for (int s = 0; s < bdata.sort_items.size() - 1; s++) {
+	for (int s = 0; s < bdata.sort_items.size() - 2; s++) {
 		if (sort_items_from(s)) {
 #ifdef DEBUG_ENABLED
 			bdata.stats_items_sorted++;
@@ -1789,8 +1791,11 @@ bool RasterizerCanvasGLES2::sort_items_from(int p_start) {
 		return false;
 	}
 
+	// local cached aabb
+	Rect2 second_AABB = second.item->global_rect_cache;
+
 	// if the start and 2nd items overlap, can do no more
-	if (start.item->global_rect_cache.intersects(second.item->global_rect_cache)) {
+	if (start.item->global_rect_cache.intersects(second_AABB)) {
 		return false;
 	}
 
@@ -1811,17 +1816,26 @@ bool RasterizerCanvasGLES2::sort_items_from(int p_start) {
 			return false;
 		}
 
+		Item *test_item = test_sort_item->item;
+
+		// if the test item overlaps the second item, we can't swap, AT ALL
+		// because swapping an item OVER this one would cause artefacts
+		if (second_AABB.intersects(test_item->global_rect_cache)) {
+			return false;
+		}
+
 		// do they match?
 		if (!_sort_items_match(start, *test_sort_item)) // order is crucial, start first
 		{
 			continue;
 		}
 
-		Item *test_item = test_sort_item->item;
-
 		// we can only swap if there are no AABB overlaps with sandwiched neighbours
 		bool ok = true;
-		for (int sn = 1; sn < test; sn++) {
+
+		// start from 2, no need to check 1 as the second has already been checked against this item
+		// in the intersection test above
+		for (int sn = 2; sn < test; sn++) {
 			BSortItem *sandwich_neighbour = &bdata.sort_items[p_start + sn];
 			if (test_item->global_rect_cache.intersects(sandwich_neighbour->item->global_rect_cache)) {
 				ok = false;
