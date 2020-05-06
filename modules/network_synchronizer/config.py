@@ -7,12 +7,11 @@ def configure(env):
 
 
 def get_doc_classes():
-    return [
-    ]
+    return []
 
 
 def get_doc_path():
-    return ''
+    return ""
 
 
 def is_enabled():
