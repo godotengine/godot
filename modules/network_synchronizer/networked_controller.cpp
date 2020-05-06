@@ -97,6 +97,7 @@ void NetworkedController::_bind_methods() {
 NetworkedController::NetworkedController() :
 		player_input_storage_size(300),
 		max_redundant_inputs(50),
+		controller_type(CONTROLLER_TYPE_NULL),
 		controller(nullptr),
 		scene_rewinder(nullptr),
 		packet_missing(false),
@@ -222,29 +223,29 @@ bool NetworkedController::process_instant(int p_i, real_t p_delta) {
 
 bool NetworkedController::is_server_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
-	if (controller)
-		return dynamic_cast<ServerController *>(controller);
+	if (controller_type != CONTROLLER_TYPE_NULL)
+		return controller_type == CONTROLLER_TYPE_SERVER;
 	return get_tree()->is_network_server();
 }
 
 bool NetworkedController::is_player_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
-	if (controller)
-		return dynamic_cast<PlayerController *>(controller);
+	if (controller_type != CONTROLLER_TYPE_NULL)
+		return controller_type == CONTROLLER_TYPE_PLAYER;
 	return get_tree()->is_network_server() == false && is_network_master();
 }
 
 bool NetworkedController::is_doll_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
-	if (controller)
-		return dynamic_cast<DollController *>(controller);
+	if (controller_type != CONTROLLER_TYPE_NULL)
+		return controller_type == CONTROLLER_TYPE_DOLL;
 	return get_tree()->is_network_server() == false && is_network_master() == false;
 }
 
 bool NetworkedController::is_nonet_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
-	if (controller)
-		return dynamic_cast<NoNetController *>(controller);
+	if (controller_type != CONTROLLER_TYPE_NULL)
+		return controller_type == CONTROLLER_TYPE_NONET;
 	return get_tree()->get_network_peer().is_null();
 }
 
@@ -335,15 +336,19 @@ void NetworkedController::_notification(int p_what) {
 			CRASH_COND(get_tree() == NULL);
 
 			if (get_tree()->get_network_peer().is_null()) {
+				controller_type = CONTROLLER_TYPE_NONET;
 				controller = memnew(NoNetController(this));
 			} else if (get_tree()->is_network_server()) {
+				controller_type = CONTROLLER_TYPE_SERVER;
 				controller = memnew(ServerController(this));
 				get_multiplayer()->connect("network_peer_connected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
 				get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
 				update_active_doll_peers();
 			} else if (is_network_master()) {
+				controller_type = CONTROLLER_TYPE_PLAYER;
 				controller = memnew(PlayerController(this));
 			} else {
+				controller_type = CONTROLLER_TYPE_DOLL;
 				controller = memnew(DollController(this));
 			}
 
@@ -358,6 +363,7 @@ void NetworkedController::_notification(int p_what) {
 
 			memdelete(controller);
 			controller = NULL;
+			controller_type = CONTROLLER_TYPE_NULL;
 
 			if (get_tree()->is_network_server()) {
 				get_multiplayer()->disconnect("network_peer_connected", callable_mp(this, &NetworkedController::_on_peer_connection_change));

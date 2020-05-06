@@ -151,6 +151,15 @@ class SceneRewinder : public Node {
 	friend class ClientRewinder;
 	friend class NoNetRewinder;
 
+public:
+	enum RewinderType {
+		REWINDER_TYPE_NULL,
+		REWINDER_TYPE_NONET,
+		REWINDER_TYPE_CLIENT,
+		REWINDER_TYPE_SERVER
+	};
+
+private:
 	/// Used to set the amount of traced frames to determine the connection healt trend.
 	///
 	/// This parameter depends a lot on the physics iteration per second, and
@@ -186,6 +195,7 @@ class SceneRewinder : public Node {
 	real_t server_notify_state_interval;
 	real_t comparison_float_tolerance;
 
+	RewinderType rewinder_type;
 	Rewinder *rewinder;
 	bool recover_in_progress;
 	bool rewinding_in_progress;

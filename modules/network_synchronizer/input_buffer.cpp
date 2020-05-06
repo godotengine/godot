@@ -38,7 +38,8 @@
 #include <stdint.h>
 
 InputsBuffer::InputsBuffer() :
-		bit_offset(0), is_reading(true) {}
+		bit_offset(0),
+		is_reading(true) {}
 
 int InputsBuffer::get_buffer_size() const {
 	return buffer.get_bytes().size();

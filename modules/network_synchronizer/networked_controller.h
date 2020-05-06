@@ -68,6 +68,14 @@ class NetworkedController : public Node {
 	GDCLASS(NetworkedController, Node);
 
 public:
+	enum ControllerType {
+		CONTROLLER_TYPE_NULL,
+		CONTROLLER_TYPE_NONET,
+		CONTROLLER_TYPE_PLAYER,
+		CONTROLLER_TYPE_SERVER,
+		CONTROLLER_TYPE_DOLL
+	};
+
 	enum InputCompressionLevel {
 		INPUT_COMPRESSION_LEVEL_0 = InputsBuffer::COMPRESSION_LEVEL_0,
 		INPUT_COMPRESSION_LEVEL_1 = InputsBuffer::COMPRESSION_LEVEL_1,
@@ -97,6 +105,7 @@ private:
 	/// are sent in an unreliable way.
 	int max_redundant_inputs;
 
+	ControllerType controller_type;
 	Controller *controller;
 	InputsBuffer inputs_buffer;
 

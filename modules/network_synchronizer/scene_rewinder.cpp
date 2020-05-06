@@ -191,6 +191,7 @@ void SceneRewinder::_notification(int p_what) {
 
 			memdelete(rewinder);
 			rewinder = nullptr;
+			rewinder_type = REWINDER_TYPE_NULL;
 
 			set_physics_process_internal(false);
 		}
@@ -206,6 +207,7 @@ SceneRewinder::SceneRewinder() :
 		out_of_sync_frames_tolerance(120),
 		server_notify_state_interval(1.0),
 		comparison_float_tolerance(0.001),
+		rewinder_type(REWINDER_TYPE_NULL),
 		rewinder(nullptr),
 		recover_in_progress(false),
 		rewinding_in_progress(false),
@@ -230,6 +232,7 @@ SceneRewinder::~SceneRewinder() {
 	if (rewinder) {
 		memdelete(rewinder);
 		rewinder = nullptr;
+		rewinder_type = REWINDER_TYPE_NULL;
 	}
 }
 
@@ -471,15 +474,15 @@ bool SceneRewinder::is_rewinding() const {
 }
 
 void SceneRewinder::force_state_notify() {
-	ServerRewinder *r = dynamic_cast<ServerRewinder *>(rewinder);
-	ERR_FAIL_COND_MSG(r == nullptr, "This function can be called only on server.");
+	ERR_FAIL_COND(rewinder_type != REWINDER_TYPE_SERVER);
+	ServerRewinder *r = static_cast<ServerRewinder *>(rewinder);
 	// + 1.0 is just a ridiculous high number to be sure to avoid float
 	// precision error.
 	r->state_notifier_timer = get_server_notify_state_interval() + 1.0;
 }
 
 void SceneRewinder::reset() {
-	if (dynamic_cast<NoNetRewinder *>(rewinder) != nullptr) {
+	if (rewinder_type == REWINDER_TYPE_NONET) {
 
 		__reset();
 	} else {
@@ -506,19 +509,23 @@ void SceneRewinder::__reset() {
 	if (rewinder) {
 		memdelete(rewinder);
 		rewinder = nullptr;
+		rewinder_type = REWINDER_TYPE_NULL;
 	}
 
 	if (get_tree() == nullptr || get_tree()->get_network_peer().is_null()) {
+		rewinder_type = REWINDER_TYPE_NONET;
 		rewinder = memnew(NoNetRewinder(this));
 		generate_id = true;
 
 	} else if (get_tree()->is_network_server()) {
+		rewinder_type = REWINDER_TYPE_SERVER;
 		rewinder = memnew(ServerRewinder(this));
 		generate_id = true;
 
 		get_multiplayer()->connect("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected));
 		get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &SceneRewinder::on_peer_disconnected));
 	} else {
+		rewinder_type = REWINDER_TYPE_CLIENT;
 		rewinder = memnew(ClientRewinder(this));
 	}
 
@@ -529,7 +536,7 @@ void SceneRewinder::__reset() {
 }
 
 void SceneRewinder::clear() {
-	if (dynamic_cast<NoNetRewinder *>(rewinder) != nullptr) {
+	if (rewinder_type == REWINDER_TYPE_NONET) {
 
 		__clear();
 	} else {
@@ -702,11 +709,7 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 }
 
 bool SceneRewinder::is_client() const {
-	if (rewinder) {
-		return nullptr != dynamic_cast<ClientRewinder *>(rewinder);
-	} else {
-		return false;
-	}
+	return rewinder_type == REWINDER_TYPE_CLIENT;
 }
 
 void SceneRewinder::cache_controllers() {
@@ -1626,8 +1629,8 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	const Variant *raw_snapshot_ptr = raw_snapshot.ptr();
 
 	Node *node = nullptr;
-	NodeData *rewinder_node_data;
-	NodeData *server_snapshot_node_data;
+	NodeData *rewinder_node_data = nullptr;
+	NodeData *server_snapshot_node_data = nullptr;
 	StringName variable_name;
 	int server_snap_variable_index = -1;
 
