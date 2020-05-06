@@ -2056,7 +2056,7 @@ void ObjectDB::cleanup() {
 					extra_info = " - Node name: " + String(node_get_name->call(obj, nullptr, 0, call_error));
 				}
 				if (obj->is_class("Resource")) {
-					node_name = " - Resource path: " + String(obj->call("get_path"));
+					extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
 				}
 
 				uint64_t id = uint64_t(slot) | (uint64_t(object_slots[slot].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[slot].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
