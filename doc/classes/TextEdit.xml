@@ -354,6 +354,17 @@
 				If [code]true[/code], hides the line of the specified index.
 			</description>
 		</method>
+		<method name="set_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="new_text" type="String">
+			</argument>
+			<description>
+				Sets the text for a specific line.
+			</description>
+		</method>
 		<method name="toggle_fold_line">
 			<return type="void">
 			</return>
