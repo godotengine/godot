@@ -2846,7 +2846,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 					wd.tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
 				}
 			} else {
-				ERR_PRINT("WinTab context creation falied.");
+				print_verbose("WinTab context creation failed.");
 			}
 		} else {
 			wd.wtctx = 0;
