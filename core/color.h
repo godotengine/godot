@@ -205,7 +205,7 @@ struct Color {
 	operator String() const;
 
 	/**
-	 * No construct parameters, r=0, g=0, b=0. a=255
+	 * No construct parameters, r=0, g=0, b=0. a=1
 	 */
 	_FORCE_INLINE_ Color() {
 		r = 0;
@@ -221,6 +221,16 @@ struct Color {
 		r = p_r;
 		g = p_g;
 		b = p_b;
+		a = p_a;
+	}
+
+	/**
+	 * Construct a Color from another Color, but with the specified alpha value.
+	 */
+	_FORCE_INLINE_ Color(const Color &p_c, float p_a) {
+		r = p_c.r;
+		g = p_c.g;
+		b = p_c.b;
 		a = p_a;
 	}
 };
