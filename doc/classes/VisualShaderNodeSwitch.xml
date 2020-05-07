@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeSwitch" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		A boolean/vector function for use within the visual shader graph.
 	</brief_description>
 	<description>
+		Returns an associated vector if the provided boolean value is [code]true[/code] or [code]false[/code].
 	</description>
 	<tutorials>
 	</tutorials>
