@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeTextureUniform" inherits="VisualShaderNodeUniform" version="4.0">
 	<brief_description>
+		Performs a uniform texture lookup within the visual shader graph.
 	</brief_description>
 	<description>
+		Performs a lookup operation on the texture provided as a uniform for the shader.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,22 +12,30 @@
 	</methods>
 	<members>
 		<member name="color_default" type="int" setter="set_color_default" getter="get_color_default" enum="VisualShaderNodeTextureUniform.ColorDefault" default="0">
+			Sets the default color if no texture is assigned to the uniform.
 		</member>
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTextureUniform.TextureType" default="0">
+			Defines the type of data provided by the source texture. See [enum TextureType] for options.
 		</member>
 	</members>
 	<constants>
 		<constant name="TYPE_DATA" value="0" enum="TextureType">
+			No hints are added to the uniform declaration.
 		</constant>
 		<constant name="TYPE_COLOR" value="1" enum="TextureType">
+			Adds [code]hint_albedo[/code] as hint to the uniform declaration for proper sRGB to linear conversion.
 		</constant>
 		<constant name="TYPE_NORMALMAP" value="2" enum="TextureType">
+			Adds [code]hint_normal[/code] as hint to the uniform declaration, which internally converts the texture for proper usage as normal map.
 		</constant>
 		<constant name="TYPE_ANISO" value="3" enum="TextureType">
+			Adds [code]hint_aniso[/code] as hint to the uniform declaration to use for a flowmap.
 		</constant>
 		<constant name="COLOR_DEFAULT_WHITE" value="0" enum="ColorDefault">
+			Defaults to white color.
 		</constant>
 		<constant name="COLOR_DEFAULT_BLACK" value="1" enum="ColorDefault">
+			Defaults to black color.
 		</constant>
 	</constants>
 </class>
