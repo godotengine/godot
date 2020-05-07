@@ -507,6 +507,9 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.no_focus = true;
 	}
+	if (p_flags & WINDOW_FLAG_KEEP_MODIFIERS_BIT) {
+		wd.keep_modifiers = true;
+	}
 
 	_update_window_style(window_id);
 
@@ -1057,6 +1060,9 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.no_focus = p_enabled;
 			_update_window_style(p_window);
 		} break;
+		case WINDOW_FLAG_KEEP_MODIFIERS: {
+			wd.keep_modifiers = p_enabled;
+		}
 		case WINDOW_FLAG_MAX: break;
 	}
 }
@@ -1088,6 +1094,10 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 
 			return wd.no_focus;
 		} break;
+		case WINDOW_FLAG_KEEP_MODIFIERS: {
+
+			return wd.keep_modifiers;
+		}
 		case WINDOW_FLAG_MAX: break;
 	}
 
@@ -1796,11 +1806,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	};
 
 	WindowID window_id = INVALID_WINDOW_ID;
+	bool keep_mods = false;
 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		if (E->get().keep_modifiers || keep_mods) {
+			keep_mods = true;
+		}
+
 		if (E->get().hWnd == hWnd) {
 			window_id = E->key();
-			break;
 		}
 	}
 
@@ -1839,14 +1853,19 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
 				windows[window_id].window_focused = true;
-				alt_mem = false;
-				control_mem = false;
-				shift_mem = false;
+
 			} else { // WM_INACTIVE
 				Input::get_singleton()->release_pressed_events();
 				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_OUT);
 				windows[window_id].window_focused = false;
 				alt_mem = false;
+
+				// If any active windows requested to keep modifiers, don't reset them.
+				if (!keep_mods) {
+					alt_mem = false;
+					control_mem = false;
+					shift_mem = false;
+				}
 			};
 
 			if (!OS::get_singleton()->is_wintab_disabled() && wintab_available && windows[window_id].wtctx) {

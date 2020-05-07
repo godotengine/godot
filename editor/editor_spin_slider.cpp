@@ -334,9 +334,7 @@ void EditorSpinSlider::_notification(int p_what) {
 		update();
 	}
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
-			_focus_entered();
-		}
+		_focus_entered();
 		value_input_just_closed = false;
 	}
 }
@@ -510,6 +508,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	value_input = memnew(LineEdit);
 	value_input_popup->add_child(value_input);
 	value_input_popup->set_wrap_controls(true);
+	value_input_popup->set_flag(Window::FLAG_KEEP_MODIFIERS, true);
 	value_input->set_anchors_and_margins_preset(PRESET_WIDE);
 	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_entered", callable_mp(this, &EditorSpinSlider::_value_input_entered));

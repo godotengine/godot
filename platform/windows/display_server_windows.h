@@ -323,6 +323,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool always_on_top = false;
 		bool no_focus = false;
 		bool window_has_focus = false;
+		bool keep_modifiers = false;
 
 		HANDLE wtctx;
 		LOGCONTEXTW wtlc;
