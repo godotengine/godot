@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorDecompose" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Decomposes a [Vector3] into three scalars within the visual shader graph.
 	</brief_description>
 	<description>
+		Takes a [code]vec3[/code] and decomposes it into three scalar values that can be used as separate inputs.
 	</description>
 	<tutorials>
 	</tutorials>

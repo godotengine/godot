@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeTransformCompose" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Composes a [Transform] from four [Vector3]s within the visual shader graph.
 	</brief_description>
 	<description>
+		Creates a 4x4 transform matrix using four vectors of type [code]vec3[/code]. Each vector is one row in the matrix and the last column is a [code]vec4(0, 0, 0, 1)[/code].
 	</description>
 	<tutorials>
 	</tutorials>
