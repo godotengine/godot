@@ -82,7 +82,7 @@ public:
 		Camera() {
 
 			visible_layers = 0xFFFFFFFF;
-			fov = 70;
+			fov = 75;
 			type = PERSPECTIVE;
 			znear = 0.05;
 			zfar = 100;
