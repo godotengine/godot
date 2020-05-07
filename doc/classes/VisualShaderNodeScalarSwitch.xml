@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeScalarSwitch" inherits="VisualShaderNodeSwitch" version="4.0">
 	<brief_description>
+		A boolean/scalar function for use within the visual shader graph.
 	</brief_description>
 	<description>
+		Returns an associated scalar if the provided boolean value is [code]true[/code] or [code]false[/code].
 	</description>
 	<tutorials>
 	</tutorials>
