@@ -418,8 +418,8 @@
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/disable_wintab_api" type="bool" setter="" getter="" default="false">
-            Disables WinTab API and always use Windows Ink API for the pen input (Windows only).
-        </member>
+			Disables WinTab API and always use Windows Ink API for the pen input (Windows only).
+		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
