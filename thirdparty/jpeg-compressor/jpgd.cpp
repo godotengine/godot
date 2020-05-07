@@ -37,16 +37,14 @@
 
 #ifndef JPGD_USE_SSE2
 
-	#if defined(__GNUC__) 
-
-		#if (defined(__x86_64__) || defined(_M_X64)) 
-			#if defined(__SSE2__)
-				#define JPGD_USE_SSE2 (1)
-			#endif
+	#if defined(__GNUC__)
+		#if defined(__SSE2__)
+			#define JPGD_USE_SSE2 (1)
 		#endif
-
-	#else
-		#define JPGD_USE_SSE2 (1)
+	#elif defined(_MSC_VER)
+		#if defined(_M_X64)
+			#define JPGD_USE_SSE2 (1)
+		#endif
 	#endif
 
 #endif
