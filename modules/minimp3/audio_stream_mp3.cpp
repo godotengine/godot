@@ -120,7 +120,10 @@ AudioStreamPlaybackMP3::~AudioStreamPlaybackMP3() {
 Ref<AudioStreamPlayback> AudioStreamMP3::instance_playback() {
 	Ref<AudioStreamPlaybackMP3> mp3s;
 
-	ERR_FAIL_COND_V(data == nullptr, mp3s);
+	ERR_FAIL_COND_V_MSG(data == nullptr, mp3s,
+			"This AudioStreamMP3 does not have an audio file assigned "
+			"to it. AudioStreamMP3 should not be created from the "
+			"inspector or with `.new()`. Instead, load an audio file.");
 
 	mp3s.instance();
 	mp3s->mp3_stream = Ref<AudioStreamMP3>(this);
