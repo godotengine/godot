@@ -1606,12 +1606,12 @@ void TileMap::_validate_property(PropertyInfo &property) const {
 
 Vector2 TileMap::map_to_world(const Vector2 &p_pos, bool p_ignore_ofs) const {
 
-	return _map_to_world(p_pos.x, p_pos.y, p_ignore_ofs);
+	return Node2D::to_global(_map_to_world(p_pos.x, p_pos.y, p_ignore_ofs));
 }
 
 Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 
-	Vector2 ret = get_cell_transform().affine_inverse().xform(p_pos);
+	Vector2 ret = get_cell_transform().affine_inverse().xform(Node2D::to_local(p_pos));
 
 	switch (half_offset) {
 
