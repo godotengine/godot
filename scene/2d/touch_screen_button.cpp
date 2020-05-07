@@ -259,9 +259,10 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	bool check_rect = true;
 
 	if (shape.is_valid()) {
-
 		check_rect = false;
-		Transform2D xform = shape_centered ? Transform2D().translated(shape->get_rect().size * 0.5f) : Transform2D();
+
+		Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
+		Transform2D xform = shape_centered ? Transform2D().translated(size * 0.5f) : Transform2D();
 		touched = shape->collide(xform, unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
