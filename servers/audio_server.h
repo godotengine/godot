@@ -177,7 +177,7 @@ private:
 	int channel_count;
 	int to_mix;
 
-	float global_rate_scale;
+	float playback_speed_scale;
 
 	struct Bus {
 		StringName name;
@@ -316,8 +316,8 @@ public:
 
 	bool is_bus_channel_active(int p_bus, int p_channel) const;
 
-	void set_global_rate_scale(float p_scale);
-	float get_global_rate_scale() const;
+	void set_playback_speed_scale(float p_scale);
+	float get_playback_speed_scale() const;
 
 	virtual void init();
 	virtual void finish();
