@@ -75,15 +75,13 @@ bool VarData::operator==(const VarData &p_other) const {
 
 NodeData::NodeData() :
 		id(0),
-		is_controller(false),
-		has_process_functions(false) {
+		is_controller(false) {
 }
 
 NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
 		id(p_id),
 		instance_id(p_instance_id),
-		is_controller(is_controller),
-		has_process_functions(false) {
+		is_controller(is_controller) {
 }
 
 int NodeData::find_var_by_id(uint32_t p_id) const {
@@ -400,20 +398,32 @@ void SceneRewinder::untrack_variable_changes(Node *p_node, StringName p_variable
 
 void SceneRewinder::set_node_as_controlled_by(Node *p_node, Node *p_controller) {
 	ERR_FAIL_COND(p_node == nullptr);
-	register_node(p_node);
+	NodeData *node_data = register_node(p_node);
+	ERR_FAIL_COND(node_data == nullptr);
+
+	if (node_data->controlled_by.is_null() == false) {
+		NodeData *controller_node_data = data.getptr(node_data->controlled_by);
+		if (controller_node_data) {
+			std::vector<ObjectID>::iterator it = std::find(
+					controller_node_data->controlled_nodes.begin(),
+					controller_node_data->controlled_nodes.end(),
+					p_node->get_instance_id());
+			if (it != controller_node_data->controlled_nodes.end()) {
+				controller_node_data->controlled_nodes.erase(it);
+			}
+		}
+		node_data->controlled_by = ObjectID();
+	}
+
 	if (p_controller) {
 		NetworkedController *c = Object::cast_to<NetworkedController>(p_controller);
 		ERR_FAIL_COND(c == nullptr);
 
-		register_node(p_controller);
-
-		NodeData *node_data = data.getptr(p_node->get_instance_id());
-		ERR_FAIL_COND(node_data == nullptr);
+		NodeData *controller_node_data = register_node(p_controller);
+		ERR_FAIL_COND(controller_node_data == nullptr);
+		ERR_FAIL_COND(controller_node_data->is_controller == false);
+		controller_node_data->controlled_nodes.push_back(p_node->get_instance_id());
 		node_data->controlled_by = p_controller->get_instance_id();
-	} else {
-		NodeData *node_data = data.getptr(p_node->get_instance_id());
-		ERR_FAIL_COND(node_data == nullptr);
-		node_data->controlled_by = ObjectID();
 	}
 }
 
@@ -431,6 +441,9 @@ void SceneRewinder::_register_controller(NetworkedController *p_controller) {
 		CRASH_COND(controllers.find(p_controller->get_instance_id()) != -1);
 		p_controller->set_scene_rewinder(this);
 		controllers.push_back(p_controller->get_instance_id());
+		NodeData *node_data = data.getptr(p_controller->get_instance_id());
+		ERR_FAIL_COND(node_data == nullptr);
+		node_data->is_controller = true;
 		controllers_dirty = true;
 
 		if (p_controller->is_player_controller()) {
@@ -447,6 +460,10 @@ void SceneRewinder::_unregister_controller(NetworkedController *p_controller) {
 	ERR_FAIL_COND_MSG(p_controller->get_scene_rewinder() != this, "This controller is associated with this scene rewinder.");
 	p_controller->set_scene_rewinder(nullptr);
 	controllers.erase(p_controller->get_instance_id());
+	NodeData *node_data = data.getptr(p_controller->get_instance_id());
+	if (node_data) {
+		node_data->is_controller = false;
+	}
 	controllers_dirty = true;
 
 	if (main_controller == p_controller) {
@@ -469,7 +486,6 @@ void SceneRewinder::register_process(Node *p_node, StringName p_function) {
 	if (std::find(node_process->functions.begin(), node_process->functions.end(), p_function) == node_process->functions.end()) {
 		node_process->functions.push_back(p_function);
 	}
-	node_data->has_process_functions = true;
 }
 
 void SceneRewinder::unregister_process(Node *p_node, StringName p_function) {
@@ -481,15 +497,12 @@ void SceneRewinder::unregister_process(Node *p_node, StringName p_function) {
 	if (node_process != nullptr) {
 		if (node_process->functions.size() == 1) {
 			node_processes.erase(p_node->get_instance_id());
-			node_data->has_process_functions = false;
 		} else {
 			std::vector<StringName>::iterator it = std::find(node_process->functions.begin(), node_process->functions.end(), p_function);
 			if (it != node_process->functions.end()) {
 				node_process->functions.erase(it);
 			}
 		}
-	} else {
-		node_data->has_process_functions = false;
 	}
 }
 
@@ -587,12 +600,12 @@ void SceneRewinder::__clear() {
 				// correctly removed
 				unregister_variable(node, object_vars[i].var.name);
 			}
-
-			// TODO remove signal from the node when it's possible.
 		}
 	}
 
 	data.clear();
+	node_processes.clear();
+	controllers.clear();
 	node_counter = 1;
 
 	if (rewinder) {
@@ -616,29 +629,22 @@ void SceneRewinder::_rpc_send_tick_additional_speed(int p_speed) {
 NodeData *SceneRewinder::register_node(Node *p_node) {
 	ERR_FAIL_COND_V(p_node == nullptr, nullptr);
 
-	bool is_controller = false;
-	{
-		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node);
-		if (controller) {
-			if (controller->has_scene_rewinder()) {
-				ERR_FAIL_COND_V_MSG(controller->get_scene_rewinder() != this, nullptr, "This controller is associated with a different scene rewinder.");
-			} else {
-				is_controller = true;
-				_register_controller(controller);
-			}
-		}
-	}
-
 	NodeData *node_data = data.getptr(p_node->get_instance_id());
 	if (node_data == nullptr) {
 		const uint32_t node_id(generate_id ? ++node_counter : 0);
 		data.set(
 				p_node->get_instance_id(),
-				NodeData(node_id, p_node->get_instance_id(), is_controller));
+				NodeData(node_id, p_node->get_instance_id(), false));
 		node_data = data.getptr(p_node->get_instance_id());
 		node_data->node = p_node;
-		node_data->has_process_functions = false;
+
+		// Register this node as controller if it's a controller.
+		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node);
+		if (controller) {
+			_register_controller(controller);
+		}
 	}
+
 	return node_data;
 }
 
@@ -1381,17 +1387,45 @@ void ClientRewinder::store_controllers_snapshot(
 }
 
 void ClientRewinder::process_controllers_recovery(real_t p_delta) {
-	// Each controller is handled completely independently from each other. This
+	// Each controller is responsible for it self and its controlled nodes. This
 	// give much more freedom during the recovering & rewinding; and the
 	// misalignments are recovered atomically (for better performance and avoid
 	// cascading errors).
-
-	// TODO Add a dependency graph or a way to keep track of interactions between
-	// nodes so to rewind the controllers with the nodes that it has interacted
-	// with and so improve recoverability under certain conditions.
+	//
+	// The only exception is the main controller. The client main controller is
+	// also responsible for the scene nodes synchronization.
+	// The scene may have objects that any Player can interact with, and so
+	// change its state.
+	// With the above approach, the world scene is always up to day with the
+	// client reference frame, so the player always interacts with an up to date
+	// version of the node.
+	//
+	// # Dependency Graph
+	// Under some circustances this may not be correct. For example when a doll
+	// is too much behind the scene timeline and interacts with the scene.
+	//
+	// To solve this problem a dependency graph and a dispatcher would be needed,
+	// so to check/rewind the nodes with the reference frame of the node it
+	// interacts with.
+	//
+	// While a dependency graph would solve this cases, integrate it would require
+	// time, would make much more complex this already complex code, and would
+	// introduce some `SceneRewinder` API that would make its usage more difficult.
+	//
+	// As is now the mechanism should be enough to get a really good result,
+	// in allmost all cases. So for now, the dependency graph is not going to
+	// happen.
+	//
+	// # Isle Rewinding
+	// Each controller is a separate isle where the recover / rewind is performed.
+	// The scene may be really big, and not all the nodes of the scene may
+	// require to be recovered / rewinded.
+	// This mechanism, establish the nodes that need a recovered, and perform
+	// the recovering only on such nodes. Saving so performance.
 
 	for (size_t c = 0; c < scene_rewinder->cached_controllers.size(); c += 1) {
 		NetworkedController *controller = scene_rewinder->cached_controllers[c];
+		bool is_main_controller = controller == scene_rewinder->main_controller;
 
 		// --- Phase one, find snapshot to check. ---
 
@@ -1448,14 +1482,33 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 		// --- Phase two, check snapshot. ---
 
 		bool need_rewinding = false;
+		bool rewind_controller = false;
+		std::vector<ObjectID> nodes_to_rewind; // TODO Put the NodeData directly.
 		std::vector<PostponedRecover> postponed_recover;
-		std::vector<ObjectID> nodes_to_rewind; // TODO Use this?
 
 		if (client_snaps == nullptr || client_snaps->empty()) {
 			// We don't have any snapshot on client for this controller.
 			// Just reset all the nodes to the server state.
 			NET_DEBUG_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
 			need_rewinding = true;
+			rewind_controller = true;
+
+			nodes_to_rewind.reserve(server_snaps->size());
+			for (
+					const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
+					key != nullptr;
+					key = server_snaps->front().node_vars.next(key)) {
+
+				NodeData *nd = scene_rewinder->data.getptr(*key);
+				if (nd == nullptr ||
+						nd->controlled_by.is_null() == false ||
+						nd->is_controller) {
+					// This is controller; Skip now, it'll add later.
+					continue;
+				}
+				nodes_to_rewind.push_back(*key);
+			}
+
 		} else {
 			// Drop all the client snapshots until the one that we need.
 
@@ -1479,36 +1532,52 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					key = server_snaps->front().node_vars.next(key)) {
 
 				NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
-				// Unreachable; once received the server snapshot, the parser
-				// make sure that the `scene_rewinder` has the node.
 				if (rew_node_data == nullptr) {
 					continue;
 				}
 
-				const Vector<VarData> *c_vars = client_snaps->front().node_vars.getptr(*key);
-				if (c_vars == nullptr) {
-					NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->node->get_path());
-					need_rewinding = true;
-					//nodes_to_rewind.push_back(*key);
+				bool rewind_this_node = false;
+				if (is_main_controller == false && need_rewinding) {
+					// Shortcut for dolls, that just have controlled nodes; So
+					// check all nodes is not needed when a difference is already
+					// found.
+					rewind_this_node = true;
 				} else {
 
-					const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
+					const Vector<VarData> *c_vars = client_snaps->front().node_vars.getptr(*key);
+					if (c_vars == nullptr) {
+						NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->node->get_path());
+						rewind_this_node = true;
+					} else {
 
-					PostponedRecover rec;
+						const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
 
-					const bool different = compare_vars(
-							rew_node_data,
-							s_vars,
-							*c_vars,
-							rec.vars);
+						PostponedRecover rec;
 
-					if (different) {
-						NET_DEBUG_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->node->get_path());
-						need_rewinding = true;
-						//nodes_to_rewind.push_back(*key);
-					} else if (rec.vars.size() > 0) {
-						rec.node_data = rew_node_data;
-						postponed_recover.push_back(rec);
+						const bool different = compare_vars(
+								rew_node_data,
+								s_vars,
+								*c_vars,
+								rec.vars);
+
+						if (different) {
+							NET_DEBUG_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->node->get_path());
+							rewind_this_node = true;
+						} else if (rec.vars.size() > 0) {
+							rec.node_data = rew_node_data;
+							postponed_recover.push_back(rec);
+						}
+					}
+				}
+
+				if (rewind_this_node) {
+					need_rewinding = true;
+					if (rew_node_data->controlled_by.is_null() == false ||
+							rew_node_data->is_controller) {
+						// Controller node.
+						rewind_controller = true;
+					} else {
+						nodes_to_rewind.push_back(*key);
 					}
 				}
 			}
@@ -1520,20 +1589,29 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 		// --- Phase three, recover and reply. ---
 
 		if (need_rewinding) {
+
+			if (rewind_controller) {
+				// Put the controller and the controllers into the nodes to
+				// rewind.
+				// Note, the controllers are added here to ensure that if the
+				// controller need a recover, all its nodes are added; no matter
+				// at which point the difference is found.
+				NodeData &nd = scene_rewinder->data.get(scene_rewinder->main_controller->get_instance_id());
+				nodes_to_rewind.insert(
+						nodes_to_rewind.end(),
+						nd.controlled_nodes.begin(),
+						nd.controlled_nodes.end());
+				nodes_to_rewind.push_back(scene_rewinder->main_controller->get_instance_id());
+			}
+
 			scene_rewinder->rewinding_in_progress = true;
 
 			// Apply the server snapshot so to go back in time till that moment,
 			// so to be able to correctly reply the movements.
 			for (
-					const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
-					key != nullptr;
-					key = server_snaps->front().node_vars.next(key)) {
-
-				if (nodes_to_rewind.size() > 0 &&
-						std::find(nodes_to_rewind.begin(), nodes_to_rewind.end(), *key) == nodes_to_rewind.end()) {
-					// This node don't need to be rewinded.
-					continue;
-				}
+					std::vector<ObjectID>::iterator key = nodes_to_rewind.begin();
+					key != nodes_to_rewind.end();
+					key += 1) {
 
 				NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
 				if (rew_node_data == nullptr) {
@@ -1543,56 +1621,70 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				VarData *rew_vars = rew_node_data->vars.ptrw();
 				Node *node = rew_node_data->node;
 
-				const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
-				const VarData *s_vars_ptr = s_vars.ptr();
+				const Vector<VarData> *s_vars = server_snaps->front().node_vars.getptr(*key);
+				if (s_vars == nullptr) {
+					NET_DEBUG_WARN("The node: " + rew_node_data->node->get_path() + " was not found on the server snapshot.");
+					// TODO this must not happen so often!
+					continue;
+				}
+				const VarData *s_vars_ptr = s_vars->ptr();
 
 				NET_DEBUG_PRINT("Full reset node: " + node->get_path());
-				for (int i = 0; i < s_vars.size(); i += 1) {
+				for (int i = 0; i < s_vars->size(); i += 1) {
 					node->set(s_vars_ptr[i].var.name, s_vars_ptr[i].var.value);
 
 					// Set the value on the rewinder too.
-					const int rew_var_index = rew_node_data->vars.find(s_vars[i].var.name);
+					const int rew_var_index = rew_node_data->vars.find(s_vars_ptr[i].var.name);
 					// Unreachable, because when the snapshot is received the
 					// algorithm make sure the `scene_rewinder` is traking the
 					// variable.
 					CRASH_COND(rew_var_index <= -1);
 
-					NET_DEBUG_PRINT(" |- Variable: " + s_vars[i].var.name + " New value: " + s_vars[i].var.value + " [Previous value: " + rew_vars[rew_var_index].var.value + "]");
+					NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[i].var.name + " New value: " + s_vars_ptr[i].var.value + " [Previous value: " + rew_vars[rew_var_index].var.value + "]");
 
-					rew_vars[rew_var_index].var.value = s_vars[i].var.value;
+					rew_vars[rew_var_index].var.value = s_vars_ptr[i].var.value;
 
-					node->emit_signal(scene_rewinder->get_changed_event_name(s_vars_ptr[i].var.name));
+					node->emit_signal(
+							scene_rewinder->get_changed_event_name(
+									s_vars_ptr[i].var.name));
 				}
 			}
 			// Rewind this controller.
 
-			// TODO here we should also rewind the `process` that this controller is using.
-			// TODO in this moment all the processes are tight to the main controller.
-			const int remaining_inputs = controller->notify_input_checked(checkable_input_id);
+			const int remaining_inputs =
+					controller->notify_input_checked(checkable_input_id);
 			if (client_snaps) {
 				CRASH_COND(client_snaps->size() != size_t(remaining_inputs));
 			} else {
 				CRASH_COND(remaining_inputs != 0);
 			}
 
-			const bool is_main_controller = controller == scene_rewinder->main_controller;
-
 			bool has_next = false;
 			for (int i = 0; i < remaining_inputs; i += 1) {
-				// Step 1. Process
-				if (is_main_controller) {
-					// Process the entire scene
-					for (const ObjectID *key = scene_rewinder->node_processes.next(nullptr);
-							key != nullptr;
-							key = scene_rewinder->node_processes.next(key)) {
-						scene_rewinder->node_processes.get(*key).process(p_delta);
-					}
-				}
-				has_next = controller->process_instant(i, p_delta);
 
-				// Step 2. Pull node changes and Update snapshots.
+				// Step 1 -- Process the nodes into the scene that need to be
+				// processed.
+				for (
+						std::vector<ObjectID>::iterator it = nodes_to_rewind.begin();
+						it != nodes_to_rewind.end();
+						it += 1) {
+
+					const NodeProcess *p = scene_rewinder->node_processes.getptr(*it);
+					if (p == nullptr) {
+						// This node doesn't have functions to process.
+						continue;
+					}
+
+					p->process(p_delta);
+				}
+
+				if (rewind_controller) {
+					// Step 2 -- Process the controller.
+					has_next = controller->process_instant(i, p_delta);
+				}
+
+				// Step 3 -- Pull node changes and Update snapshots.
 				(*client_snaps)[i].node_vars.clear();
-				// TODO Improve this by Integrating a better way to organize the nodes in Isle.
 				for (
 						const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
 						key != nullptr;

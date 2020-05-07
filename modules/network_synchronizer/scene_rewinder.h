@@ -70,9 +70,9 @@ struct NodeData {
 	uint32_t id;
 	ObjectID instance_id;
 	bool is_controller;
+	std::vector<ObjectID> controlled_nodes;
 	ObjectID controlled_by;
 	Vector<VarData> vars;
-	bool has_process_functions; // TODO remove this??
 
 	// This is valid to use only inside the process function.
 	Node *node;
@@ -212,12 +212,12 @@ private:
 
 	uint32_t node_counter;
 	bool generate_id;
-	HashMap<ObjectID, NodeData> data;
+	HashMap<ObjectID, NodeData> data; // TODO Use std the unordered map
 	NetworkedController *main_controller;
 
-	HashMap<ObjectID, NodeProcess> node_processes;
+	HashMap<ObjectID, NodeProcess> node_processes; // TODO Use std unordered map
 
-	Vector<ObjectID> controllers;
+	Vector<ObjectID> controllers; // TODO use std vector
 	bool controllers_dirty;
 	std::vector<NetworkedController *> cached_controllers;
 
