@@ -1487,7 +1487,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 				tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
 			}
 		} else {
-			ERR_PRINT("WinTab context creation falied.");
+			print_verbose("WinTab context creation failed.");
 		}
 	} else {
 		wtctx = 0;
