@@ -410,7 +410,7 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 	//draw the triangles.
 	glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_INT, 0);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 
 	if (p_bones && p_weights) {
 		//not used so often, so disable when used
@@ -469,7 +469,7 @@ void RasterizerCanvasGLES3::_draw_generic(GLuint p_primitive, int p_vertex_count
 
 	glDrawArrays(p_primitive, 0, p_vertex_count);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -542,7 +542,7 @@ void RasterizerCanvasGLES3::_draw_generic_indices(GLuint p_primitive, const int 
 	//draw the triangles.
 	glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_INT, 0);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -608,7 +608,7 @@ void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_v
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 }
 
 static const GLenum gl_primitive[] = {
@@ -685,7 +685,6 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					}
 #endif
 				}
-
 			} break;
 			case Item::Command::TYPE_POLYLINE: {
 
@@ -790,6 +789,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, rect->flags & CANVAS_RECT_CLIP_UV);
 
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+					storage->info.render._2d_draw_call_count++;
 
 					if (untile) {
 						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -812,9 +812,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(0, 0, 1, 1));
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+					storage->info.render._2d_draw_call_count++;
 				}
-
-				storage->frame.canvas_draw_commands++;
 
 			} break;
 
@@ -857,7 +856,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-				storage->frame.canvas_draw_commands++;
+				storage->info.render._2d_draw_call_count++;
 			} break;
 
 			case Item::Command::TYPE_PRIMITIVE: {
@@ -940,6 +939,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 						} else {
 							glDrawArrays(gl_primitive[s->primitive], 0, s->array_len);
 						}
+						storage->info.render._2d_draw_call_count++;
 
 						glBindVertexArray(0);
 					}
@@ -1057,6 +1057,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					} else {
 						glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount);
 					}
+					storage->info.render._2d_draw_call_count++;
 
 					glBindVertexArray(0);
 				}
@@ -1138,6 +1139,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					glVertexAttribDivisor(12, 1);
 
 					glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, amount);
+					storage->info.render._2d_draw_call_count++;
 				} else {
 					//split
 					int split = int(Math::ceil(particles->phase * particles->amount));
@@ -1160,6 +1162,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 						glVertexAttribDivisor(12, 1);
 
 						glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, amount - split);
+						storage->info.render._2d_draw_call_count++;
 					}
 
 					if (split > 0) {
@@ -1180,6 +1183,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 						glVertexAttribDivisor(12, 1);
 
 						glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, split);
+						storage->info.render._2d_draw_call_count++;
 					}
 				}
 
@@ -1359,6 +1363,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 	while (p_item_list) {
 
 		Item *ci = p_item_list;
+		storage->info.render._2d_item_count++;
 
 		if (prev_distance_field != ci->distance_field) {
 

@@ -861,7 +861,6 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 								}
 #endif
 							}
-							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_RECT: {
@@ -1001,6 +1000,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 									state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(0, 0, 1, 1));
 
 									glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+									storage->info.render._2d_draw_call_count++;
 								} else {
 
 									bool untile = false;
@@ -1043,6 +1043,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 									state.canvas_shader.set_uniform(CanvasShaderGLES2::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
 
 									glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+									storage->info.render._2d_draw_call_count++;
 
 									if (untile) {
 										glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1055,7 +1056,6 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 							}
 
 							state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_REPEAT, false);
-							storage->info.render._2d_draw_call_count++;
 
 						} break;
 
@@ -1263,7 +1263,6 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 							_bind_canvas_texture(RID(), RID());
 
 							_draw_polygon(indices, num_points * 3, num_points + 1, points, NULL, &circle->color, true);
-							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_POLYGON: {
@@ -1296,7 +1295,6 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 								glDisable(GL_LINE_SMOOTH);
 							}
 #endif
-							storage->info.render._2d_draw_call_count++;
 						} break;
 						case Item::Command::TYPE_MESH: {
 
@@ -1536,7 +1534,6 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 									glDisable(GL_LINE_SMOOTH);
 #endif
 							}
-							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_PRIMITIVE: {
@@ -1566,7 +1563,6 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 							}
 
 							_draw_gui_primitive(primitive->points.size(), primitive->points.ptr(), primitive->colors.ptr(), primitive->uvs.ptr());
-							storage->info.render._2d_draw_call_count++;
 						} break;
 
 						case Item::Command::TYPE_TRANSFORM: {

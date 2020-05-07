@@ -471,6 +471,7 @@ void RasterizerCanvasBaseGLES2::_draw_polygon(const int *p_indices, int p_index_
 	if (storage->config.support_32_bits_indices) { //should check for
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
 		glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_INT, 0);
+		storage->info.render._2d_draw_call_count++;
 	} else {
 		uint16_t *index16 = (uint16_t *)alloca(sizeof(uint16_t) * p_index_count);
 		for (int i = 0; i < p_index_count; i++) {
@@ -478,6 +479,7 @@ void RasterizerCanvasBaseGLES2::_draw_polygon(const int *p_indices, int p_index_
 		}
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(uint16_t) * p_index_count, index16);
 		glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_SHORT, 0);
+		storage->info.render._2d_draw_call_count++;
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -522,6 +524,7 @@ void RasterizerCanvasBaseGLES2::_draw_generic(GLuint p_primitive, int p_vertex_c
 	}
 
 	glDrawArrays(p_primitive, 0, p_vertex_count);
+	storage->info.render._2d_draw_call_count++;
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
@@ -573,6 +576,7 @@ void RasterizerCanvasBaseGLES2::_draw_generic_indices(GLuint p_primitive, const 
 	if (storage->config.support_32_bits_indices) { //should check for
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * p_index_count, p_indices);
 		glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_INT, 0);
+		storage->info.render._2d_draw_call_count++;
 	} else {
 		uint16_t *index16 = (uint16_t *)alloca(sizeof(uint16_t) * p_index_count);
 		for (int i = 0; i < p_index_count; i++) {
@@ -580,6 +584,7 @@ void RasterizerCanvasBaseGLES2::_draw_generic_indices(GLuint p_primitive, const 
 		}
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(uint16_t) * p_index_count, index16);
 		glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_SHORT, 0);
+		storage->info.render._2d_draw_call_count++;
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -647,6 +652,7 @@ void RasterizerCanvasBaseGLES2::_draw_gui_primitive(int p_points, const Vector2 
 	}
 
 	glDrawArrays(prim[p_points], 0, p_points);
+	storage->info.render._2d_draw_call_count++;
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
