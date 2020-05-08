@@ -1598,6 +1598,11 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				// at which point the difference is found.
 				NodeData *nd = scene_rewinder->data.getptr(controller->get_instance_id());
 				if (nd) {
+					nodes_to_recover.reserve(
+							nodes_to_recover.size() +
+							nd->controlled_nodes.size() +
+							1);
+
 					nodes_to_recover.push_back(nd);
 
 					for (std::vector<ObjectID>::iterator it = nd->controlled_nodes.begin(); it != nd->controlled_nodes.end(); it += 1) {
@@ -1615,7 +1620,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			// Apply the server snapshot so to go back in time till that moment,
 			// so to be able to correctly reply the movements.
 			for (
-					std::vector<NodeData *>::iterator it = nodes_to_recover.begin();
+					std::vector<NodeData *>::const_iterator it = nodes_to_recover.begin();
 					it != nodes_to_recover.end();
 					it += 1) {
 
@@ -1642,7 +1647,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					// variable.
 					CRASH_COND(rew_var_index <= -1);
 
-					NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[i].var.name + " New value: " + s_vars_ptr[i].var.value + " [Previous value: " + rew_vars[rew_var_index].var.value + "]");
+					NET_DEBUG_PRINT(" |- Variable: " + s_vars_ptr[i].var.name + " New value: " + s_vars_ptr[i].var.value);
 
 					rew_vars[rew_var_index].var.value = s_vars_ptr[i].var.value;
 
@@ -1651,7 +1656,8 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 									s_vars_ptr[i].var.name));
 				}
 			}
-			// Rewind this controller.
+
+			// Rewind phase.
 
 			const int remaining_inputs =
 					controller->notify_input_checked(checkable_input_id);
@@ -1686,26 +1692,25 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				}
 
 				// Step 3 -- Pull node changes and Update snapshots.
-				(*client_snaps)[i].node_vars.clear();
 				for (
-						const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
-						key != nullptr;
-						key = server_snaps->front().node_vars.next(key)) {
+						std::vector<NodeData *>::iterator it = nodes_to_recover.begin();
+						it != nodes_to_recover.end();
+						it += 1) {
 
-					NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
-					if (rew_node_data == nullptr) {
-						continue;
-					}
+					NodeData *rew_node_data = *it;
 
 					scene_rewinder->pull_node_changes(rew_node_data);
 
-					// Update snapshots.
-					(*client_snaps)[i].node_vars[*key] = scene_rewinder->data[*key].vars;
+					// Update client snapshot.
+					(*client_snaps)[i].node_vars[rew_node_data->instance_id] =
+							rew_node_data->vars;
 				}
 			}
 
+#ifdef DEBUG_ENABLED
 			// Unreachable because the above loop consume all instants.
 			CRASH_COND(has_next);
+#endif
 
 			scene_rewinder->rewinding_in_progress = false;
 		} else {
@@ -1713,7 +1718,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			for (
 					std::vector<PostponedRecover>::const_iterator it = postponed_recover.begin();
 					it != postponed_recover.end();
-					++it) {
+					it += 1) {
 
 				NodeData *rew_node_data = it->node_data;
 				Node *node = rew_node_data->node;
