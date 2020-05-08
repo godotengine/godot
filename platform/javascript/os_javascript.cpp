@@ -71,7 +71,7 @@ void OS_JavaScript::initialize() {
 	char locale_ptr[16];
 	/* clang-format off */
 	EM_ASM({
-		stringToUTF8(Module.locale, $0, 16);
+		stringToUTF8(Module['locale'], $0, 16);
 	}, locale_ptr);
 	/* clang-format on */
 	setenv("LANG", locale_ptr, true);
