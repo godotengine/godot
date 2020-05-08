@@ -2,6 +2,7 @@ import os
 
 from emscripten_helpers import parse_config, run_closure_compiler, create_engine_file
 
+
 def is_active():
     return True
 
@@ -16,6 +17,7 @@ def can_build():
 
 def get_opts():
     from SCons.Variables import BoolVariable
+
     return [
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
@@ -55,7 +57,7 @@ def configure(env):
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=["--profiling-funcs"])
-    else: # "debug"
+    else:  # "debug"
         env.Append(CPPDEFINES=["DEBUG_ENABLED"])
         env.Append(CCFLAGS=["-O1", "-g"])
         env.Append(LINKFLAGS=["-O1", "-g"])
@@ -164,6 +166,6 @@ def configure(env):
     env.Append(LINKFLAGS=["-s", "OFFSCREEN_FRAMEBUFFER=1"])
 
     # callMain for manual start, FS for preloading, PATH and ERRNO_CODES for BrowserFS.
-    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain', 'FS', 'PATH', 'ERRNO_CODES']"])
+    env.Append(LINKFLAGS=["-s", "EXTRA_EXPORTED_RUNTIME_METHODS=['callMain', 'FS', 'PATH']"])
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-s", "EXIT_RUNTIME=1"])
