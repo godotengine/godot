@@ -1449,7 +1449,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 				for (auto c_snap = client_snaps->begin(); c_snap != client_snaps->end(); ++c_snap) {
 					if (c_snap->input_id == s_snap->input_id) {
-						// This snapshot is present on client can be checked.
+						// This snapshot is present on client, can be checked.
 						checkable_input_id = c_snap->input_id;
 						break;
 					}
@@ -1481,19 +1481,19 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 #endif
 		// --- Phase two, check snapshot. ---
 
-		bool need_rewinding = false;
-		bool rewind_controller = false;
-		std::vector<ObjectID> nodes_to_rewind; // TODO Put the NodeData directly.
+		bool need_recover = false;
+		bool recover_controller = false;
+		std::vector<NodeData *> nodes_to_recover;
 		std::vector<PostponedRecover> postponed_recover;
 
 		if (client_snaps == nullptr || client_snaps->empty()) {
 			// We don't have any snapshot on client for this controller.
 			// Just reset all the nodes to the server state.
 			NET_DEBUG_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
-			need_rewinding = true;
-			rewind_controller = true;
+			need_recover = true;
+			recover_controller = true;
 
-			nodes_to_rewind.reserve(server_snaps->size());
+			nodes_to_recover.reserve(server_snaps->size());
 			for (
 					const ObjectID *key = server_snaps->front().node_vars.next(nullptr);
 					key != nullptr;
@@ -1503,10 +1503,10 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				if (nd == nullptr ||
 						nd->controlled_by.is_null() == false ||
 						nd->is_controller) {
-					// This is controller; Skip now, it'll add later.
+					// This is a controller; Skip now, it'll be added later.
 					continue;
 				}
-				nodes_to_rewind.push_back(*key);
+				nodes_to_recover.push_back(nd);
 			}
 
 		} else {
@@ -1536,18 +1536,18 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					continue;
 				}
 
-				bool rewind_this_node = false;
-				if (is_main_controller == false && need_rewinding) {
+				bool recover_this_node = false;
+				if (is_main_controller == false && need_recover) {
 					// Shortcut for dolls, that just have controlled nodes; So
 					// check all nodes is not needed when a difference is already
 					// found.
-					rewind_this_node = true;
+					recover_this_node = true;
 				} else {
 
 					const Vector<VarData> *c_vars = client_snaps->front().node_vars.getptr(*key);
 					if (c_vars == nullptr) {
 						NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->node->get_path());
-						rewind_this_node = true;
+						recover_this_node = true;
 					} else {
 
 						const Vector<VarData> &s_vars = server_snaps->front().node_vars.get(*key);
@@ -1562,7 +1562,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 						if (different) {
 							NET_DEBUG_PRINT("Rewind is needed because the node on client is different: " + rew_node_data->node->get_path());
-							rewind_this_node = true;
+							recover_this_node = true;
 						} else if (rec.vars.size() > 0) {
 							rec.node_data = rew_node_data;
 							postponed_recover.push_back(rec);
@@ -1570,14 +1570,14 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					}
 				}
 
-				if (rewind_this_node) {
-					need_rewinding = true;
+				if (recover_this_node) {
+					need_recover = true;
 					if (rew_node_data->controlled_by.is_null() == false ||
 							rew_node_data->is_controller) {
 						// Controller node.
-						rewind_controller = true;
+						recover_controller = true;
 					} else {
-						nodes_to_rewind.push_back(*key);
+						nodes_to_recover.push_back(rew_node_data);
 					}
 				}
 			}
@@ -1588,20 +1588,26 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 		// --- Phase three, recover and reply. ---
 
-		if (need_rewinding) {
+		if (need_recover) {
 
-			if (rewind_controller) {
-				// Put the controller and the controllers into the nodes to
+			if (recover_controller) {
+				// Put the controlled and the controllers into the nodes to
 				// rewind.
-				// Note, the controllers are added here to ensure that if the
+				// Note, the controller stuffs are added here to ensure that if the
 				// controller need a recover, all its nodes are added; no matter
 				// at which point the difference is found.
-				NodeData &nd = scene_rewinder->data.get(scene_rewinder->main_controller->get_instance_id());
-				nodes_to_rewind.insert(
-						nodes_to_rewind.end(),
-						nd.controlled_nodes.begin(),
-						nd.controlled_nodes.end());
-				nodes_to_rewind.push_back(scene_rewinder->main_controller->get_instance_id());
+				NodeData *nd = scene_rewinder->data.getptr(controller->get_instance_id());
+				if (nd) {
+					nodes_to_recover.push_back(nd);
+
+					for (std::vector<ObjectID>::iterator it = nd->controlled_nodes.begin(); it != nd->controlled_nodes.end(); it += 1) {
+
+						NodeData *node_data = scene_rewinder->data.getptr(*it);
+						if (node_data) {
+							nodes_to_recover.push_back(node_data);
+						}
+					}
+				}
 			}
 
 			scene_rewinder->rewinding_in_progress = true;
@@ -1609,22 +1615,18 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			// Apply the server snapshot so to go back in time till that moment,
 			// so to be able to correctly reply the movements.
 			for (
-					std::vector<ObjectID>::iterator key = nodes_to_rewind.begin();
-					key != nodes_to_rewind.end();
-					key += 1) {
+					std::vector<NodeData *>::iterator it = nodes_to_recover.begin();
+					it != nodes_to_recover.end();
+					it += 1) {
 
-				NodeData *rew_node_data = scene_rewinder->data.getptr(*key);
-				if (rew_node_data == nullptr) {
-					continue;
-				}
+				NodeData *rew_node_data = *it;
 
 				VarData *rew_vars = rew_node_data->vars.ptrw();
 				Node *node = rew_node_data->node;
 
-				const Vector<VarData> *s_vars = server_snaps->front().node_vars.getptr(*key);
+				const Vector<VarData> *s_vars = server_snaps->front().node_vars.getptr(rew_node_data->instance_id);
 				if (s_vars == nullptr) {
-					NET_DEBUG_WARN("The node: " + rew_node_data->node->get_path() + " was not found on the server snapshot.");
-					// TODO this must not happen so often!
+					NET_DEBUG_WARN("The node: " + rew_node_data->node->get_path() + " was not found on the server snapshot, this is not supposed to happen a lot.");
 					continue;
 				}
 				const VarData *s_vars_ptr = s_vars->ptr();
@@ -1665,11 +1667,11 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				// Step 1 -- Process the nodes into the scene that need to be
 				// processed.
 				for (
-						std::vector<ObjectID>::iterator it = nodes_to_rewind.begin();
-						it != nodes_to_rewind.end();
+						std::vector<NodeData *>::iterator it = nodes_to_recover.begin();
+						it != nodes_to_recover.end();
 						it += 1) {
 
-					const NodeProcess *p = scene_rewinder->node_processes.getptr(*it);
+					const NodeProcess *p = scene_rewinder->node_processes.getptr((*it)->instance_id);
 					if (p == nullptr) {
 						// This node doesn't have functions to process.
 						continue;
@@ -1678,7 +1680,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					p->process(p_delta);
 				}
 
-				if (rewind_controller) {
+				if (recover_controller) {
 					// Step 2 -- Process the controller.
 					has_next = controller->process_instant(i, p_delta);
 				}
