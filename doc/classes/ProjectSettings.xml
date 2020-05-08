@@ -1070,7 +1070,7 @@
 			Lower-end override for [member rendering/quality/reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
 		</member>
 		<member name="rendering/quality/screen_filters/msaa" type="int" setter="" getter="" default="0">
-			Sets the number of MSAA samples to use. MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
+			Sets the number of MSAA samples to use (as a power of two). MSAA is used to reduce aliasing around the edges of polygons. A higher MSAA value results in smoother edges but can be significantly slower on some hardware.
 			[b]Note:[/b] MSAA is not available on HTML5 export using the GLES2 backend.
 		</member>
 		<member name="rendering/quality/screen_filters/screen_space_aa" type="int" setter="" getter="" default="0">
@@ -1143,9 +1143,8 @@
 		<member name="rendering/quality/subsurface_scattering/subsurface_scattering_scale" type="float" setter="" getter="" default="0.05">
 			Scales the distance over which samples are taken for subsurface scattering effect. Changing this does not impact performance, but higher values will result in significant artifacts as the samples will become obviously spread out. A lower value results in a smaller spread of scattered light.
 		</member>
-		<member name="rendering/quality/texture_filters/max_anisotropy" type="int" setter="" getter="" default="4">
-			Sets the maximum number of samples to take when using anisotropic filtering on textures. A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute.
-			Only power of two values are valid ([code]1[/code], [code]2[/code], [code]4[/code], [code]8[/code], [code]16[/code]). A value of [code]1[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+		<member name="rendering/quality/texture_filters/anisotropic_filtering_level" type="int" setter="" getter="" default="2">
+			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
 		</member>
 		<member name="rendering/quality/texture_filters/use_nearest_mipmap_filter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], uses nearest-neighbor mipmap filtering when using mipmaps (also called "bilinear filtering"), which will result in visible seams appearing between mipmap stages. This may increase performance in mobile as less memory bandwidth is used. If [code]false[/code], linear mipmap filtering (also called "trilinear filtering") is used.
