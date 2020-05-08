@@ -57,7 +57,6 @@ class AudioStreamEditor : public ColorRect {
 protected:
 	void _notification(int p_what);
 	void _preview_changed(ObjectID p_which);
-	void _play();
 	void _stop();
 	void _on_finished();
 	void _draw_preview();
@@ -68,6 +67,7 @@ protected:
 	static void _bind_methods();
 
 public:
+	void play();
 	void edit(Ref<AudioStream> p_stream);
 	AudioStreamEditor();
 };
@@ -85,6 +85,7 @@ public:
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
 	virtual void make_visible(bool p_visible);
+	void play();
 
 	AudioStreamEditorPlugin(EditorNode *p_node);
 	~AudioStreamEditorPlugin();
