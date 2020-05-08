@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
 		FS.syncfs(true, function(err) {
 			ccall('main_after_fs_sync', null, ['string'], [err ? err.message : ""])
 		});
+
 	);
 	/* clang-format on */
 
