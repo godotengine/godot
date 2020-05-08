@@ -191,6 +191,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_disabled_color", "Button", control_font_disabled_color);
 	theme->set_color("font_outline_color", "Button", Color(1, 1, 1));
 
+	theme->set_color("icon_normal_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_pressed_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_hover_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_hover_pressed_color", "Button", Color(1, 1, 1, 1));
+	theme->set_color("icon_disabled_color", "Button", Color(1, 1, 1, 1));
+
 	theme->set_constant("hseparation", "Button", 2 * scale);
 
 	// LinkButton
