@@ -1008,7 +1008,7 @@ void RasterizerCanvasBaseGLES2::finalize() {
 
 RasterizerCanvasBaseGLES2::RasterizerCanvasBaseGLES2() {
 #ifdef GLES_OVER_GL
-	use_nvidia_rect_workaround = GLOBAL_GET("rendering/quality/2d/gles2_use_nvidia_rect_flicker_workaround");
+	use_nvidia_rect_workaround = GLOBAL_GET("rendering/quality/2d/use_nvidia_rect_flicker_workaround");
 #else
 	// Not needed (a priori) on GLES devices
 	use_nvidia_rect_workaround = false;

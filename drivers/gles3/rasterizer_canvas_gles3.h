@@ -95,6 +95,7 @@ public:
 	} state;
 
 	RasterizerStorageGLES3 *storage;
+	bool use_nvidia_rect_workaround;
 
 	struct LightInternal : public RID_Data {
 
@@ -146,6 +147,7 @@ public:
 
 	void draw_generic_textured_rect(const Rect2 &p_rect, const Rect2 &p_src);
 	void draw_lens_distortion_rect(const Rect2 &p_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample);
+	void render_rect_nvidia_workaround(const Item::CommandRect *p_rect, const RasterizerStorageGLES3::Texture *p_texture);
 
 	void initialize();
 	void finalize();
