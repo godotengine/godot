@@ -139,6 +139,21 @@
 		<theme_item name="hseparation" type="int" default="2">
 			The horizontal space between [Button]'s icon and text.
 		</theme_item>
+		<theme_item name="icon_disabled_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is disabled.
+		</theme_item>
+		<theme_item name="icon_hover_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is being hovered.
+		</theme_item>
+		<theme_item name="icon_hover_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is being hovered and pressed.
+		</theme_item>
+		<theme_item name="icon_normal_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Default icon [Color] of the [Button].
+		</theme_item>
+		<theme_item name="icon_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			Icon modulate [Color] used when the [Button] is being pressed.
+		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Default [StyleBox] for the [Button].
 		</theme_item>
