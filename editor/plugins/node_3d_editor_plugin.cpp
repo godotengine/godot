@@ -3193,6 +3193,8 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
 
+	rotation_control->set_visible(!p_activate);
+
 	if (!p_activate) {
 
 		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
