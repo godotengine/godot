@@ -82,6 +82,25 @@ EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, co
 	return false;
 }
 
+// Drag and drop callback (see native/utils.js).
+extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p_filec) {
+	DisplayServerJavaScript *ds = DisplayServerJavaScript::get_singleton();
+	if (!ds) {
+		ERR_FAIL_MSG("Unable to drop files because the DisplayServer is not active");
+	}
+	if (ds->drop_files_callback.is_null())
+		return;
+	Vector<String> files;
+	for (int i = 0; i < p_filec; i++) {
+		files.push_back(String::utf8(p_filev[i]));
+	}
+	Variant v = files;
+	Variant *vp = &v;
+	Variant ret;
+	Callable::CallError ce;
+	ds->drop_files_callback.call((const Variant **)&vp, 1, ret, ce);
+}
+
 // Keys
 
 template <typename T>
@@ -911,11 +930,12 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	/* clang-format off */
 	EM_ASM_ARGS({
 		Module.listeners = {};
+		const canvas = Module['canvas'];
 		const send_window_event = cwrap('send_window_event', null, ['number']);
 		const notifications = arguments;
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
 			Module.listeners[event] = send_window_event.bind(null, notifications[index]);
-			Module['canvas'].addEventListener(event, Module.listeners[event]);
+			canvas.addEventListener(event, Module.listeners[event]);
 		});
 		// Clipboard
 		const update_clipboard = cwrap('update_clipboard', null, ['string']);
@@ -923,6 +943,13 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 			update_clipboard(evt.clipboardData.getData('text'));
 		};
 		window.addEventListener('paste', Module.listeners['paste'], false);
+		Module.listeners['dragover'] = function(ev) {
+			// Prevent default behavior (which would try to open the file(s))
+			ev.preventDefault();
+		};
+		Module.listeners['drop'] = Module.drop_handler; // Defined in native/utils.js
+		canvas.addEventListener('dragover', Module.listeners['dragover'], false);
+		canvas.addEventListener('drop', Module.listeners['drop'], false);
 	},
 		WINDOW_EVENT_MOUSE_ENTER,
 		WINDOW_EVENT_MOUSE_EXIT,
@@ -1044,7 +1071,7 @@ void DisplayServerJavaScript::window_set_input_text_callback(const Callable &p_c
 }
 
 void DisplayServerJavaScript::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
-	// TODO this should be implemented.
+	drop_files_callback = p_callable;
 }
 
 void DisplayServerJavaScript::window_set_title(const String &p_title, WindowID p_window) {
