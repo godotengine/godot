@@ -820,16 +820,16 @@ DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_drive
 	EM_ASM({
 		const canvas = Module['canvas'];
 		var enc = new TextEncoder("utf-8");
-		buffer = new Uint8Array(enc.encode(canvas.id));
-		var len = buffer.length*buffer.BYTES_PER_ELEMENT;
-		var out = Module._malloc(len);
-		Module.HEAPU8.set(buffer, out);
+		var buffer = new Uint8Array(enc.encode(canvas.id));
+		var len = buffer.byteLength;
+		var out = _malloc(len);
+		HEAPU8.set(buffer, out);
 		ccall("_set_canvas_id",
 			"void",
 			["number", "number"],
 			[out, len]
 		);
-		Module._free(out);
+		_free(out);
 	});
 	/* clang-format on */
 

@@ -82,7 +82,7 @@ Function('return this')()['Engine'] = (function() {
 		var me = this;
 		return me.init().then(function() {
 			if (!me.rtenv) {
-				reject(new Error('The engine must be initialized before it can be started'));
+				return Promise.reject(new Error('The engine must be initialized before it can be started'));
 			}
 
 			if (!(me.canvas instanceof HTMLCanvasElement)) {
@@ -124,7 +124,7 @@ Function('return this')()['Engine'] = (function() {
 			}
 			return new Promise(function(resolve, reject) {
 				preloader.preloadedFiles.forEach(function(file) {
-					Utils.copyToFS(me.rtenv['FS'], file.path, file.buffer);
+					me.rtenv['copyToFS'](file.path, file.buffer);
 				});
 				preloader.preloadedFiles.length = 0; // Clear memory
 				me.rtenv['callMain'](args);
@@ -217,7 +217,7 @@ Function('return this')()['Engine'] = (function() {
 		if (this.rtenv == null) {
 			throw new Error("Engine must be inited before copying files");
 		}
-		Utils.copyToFS(this.rtenv['FS'], path, buffer);
+		this.rtenv['copyToFS'](path, buffer);
 	}
 
 	// Closure compiler exported engine methods.
