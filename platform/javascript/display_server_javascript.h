@@ -91,6 +91,7 @@ public:
 	Callable window_event_callback;
 	Callable input_event_callback;
 	Callable input_text_callback;
+	Callable drop_files_callback;
 
 	// from DisplayServer
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
