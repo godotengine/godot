@@ -34,7 +34,7 @@
 
 #include "scene/main/node.h"
 
-#include "core/hash_map.h"
+#include "core/oa_hash_map.h"
 #include "net_utilities.h"
 #include <deque>
 #include <vector>
@@ -212,12 +212,12 @@ private:
 
 	uint32_t node_counter;
 	bool generate_id;
-	HashMap<ObjectID, NodeData> data; // TODO Use std the unordered map
+	OAHashMap<ObjectID, NodeData> data;
 	NetworkedController *main_controller;
 
-	HashMap<ObjectID, NodeProcess> node_processes; // TODO Use std unordered map
+	OAHashMap<ObjectID, NodeProcess> node_processes;
 
-	Vector<ObjectID> controllers; // TODO use std vector
+	Vector<ObjectID> controllers;
 	bool controllers_dirty;
 	std::vector<NetworkedController *> cached_controllers;
 
