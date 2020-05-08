@@ -41,9 +41,9 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 	TTRC("Script Editor"),
 	TTRC("Asset Library"),
 	TTRC("Scene Tree Editing"),
-	TTRC("Import Dock"),
 	TTRC("Node Dock"),
-	TTRC("FileSystem and Import Docks")
+	TTRC("FileSystem Dock"),
+	TTRC("Import Dock"),
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
@@ -51,9 +51,9 @@ const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
 	"script",
 	"asset_lib",
 	"scene_tree",
-	"import_dock",
 	"node_dock",
-	"filesystem_dock"
+	"filesystem_dock",
+	"import_dock",
 };
 
 void EditorFeatureProfile::set_disable_class(const StringName &p_class, bool p_disabled) {
@@ -678,9 +678,16 @@ void EditorFeatureProfileManager::_update_selected_profile() {
 	TreeItem *root = class_list->create_item();
 
 	TreeItem *features = class_list->create_item(root);
+	TreeItem *last_feature;
 	features->set_text(0, TTR("Enabled Features:"));
 	for (int i = 0; i < EditorFeatureProfile::FEATURE_MAX; i++) {
-		TreeItem *feature = class_list->create_item(features);
+		TreeItem *feature;
+		if (i == EditorFeatureProfile::FEATURE_IMPORT_DOCK) {
+			feature = class_list->create_item(last_feature);
+		} else {
+			feature = class_list->create_item(features);
+			last_feature = feature;
+		}
 		feature->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		feature->set_text(0, TTRGET(EditorFeatureProfile::get_feature_name(EditorFeatureProfile::Feature(i))));
 		feature->set_selectable(0, true);
