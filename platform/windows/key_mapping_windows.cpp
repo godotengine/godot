@@ -130,7 +130,7 @@ static _WinTranslatePair _vk_to_keycode[] = {
 
 	{ KEY_MASK_META, VK_LWIN }, //(0x5B)
 	{ KEY_MASK_META, VK_RWIN }, //(0x5C)
-	//VK_APPS (0x5D)
+	{ KEY_MENU, VK_APPS }, //(0x5D)
 	{ KEY_STANDBY, VK_SLEEP }, //(0x5F)
 	{ KEY_KP_0, VK_NUMPAD0 }, //(0x60)
 	{ KEY_KP_1, VK_NUMPAD1 }, //(0x61)
