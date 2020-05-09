@@ -61,7 +61,6 @@ void EditorLog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		//button->set_icon(get_icon("Console","EditorIcons"));
 		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<DynamicFont> df_output_code = get_theme_font("output_source", "EditorFonts");
@@ -136,6 +135,30 @@ void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
+void EditorLog::_gui_input(const Ref<InputEvent> &p_event) {
+
+	const Ref<InputEventMouseButton> mb_ref = p_event;
+	if (mb_ref.is_valid() && mb_ref->is_pressed() && mb_ref->get_button_index() == BUTTON_RIGHT) {
+		const InputEventMouseButton &mb = **mb_ref;
+		context_menu->set_position(get_global_transform().xform(mb.get_position()));
+		context_menu->set_size(Size2(0, 0));
+		context_menu->popup();
+	}
+}
+
+void EditorLog::_on_context_menu_item_selected(int action_id) {
+
+	switch (action_id) {
+		case CONTEXT_COPY:
+			_copy_request();
+			break;
+
+		case CONTEXT_CLEAR:
+			_clear_request();
+			break;
+	}
+}
+
 void EditorLog::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("clear_request"));
@@ -146,25 +169,6 @@ EditorLog::EditorLog() {
 
 	VBoxContainer *vb = this;
 
-	HBoxContainer *hb = memnew(HBoxContainer);
-	vb->add_child(hb);
-	title = memnew(Label);
-	title->set_text(TTR("Output:"));
-	title->set_h_size_flags(SIZE_EXPAND_FILL);
-	hb->add_child(title);
-
-	copybutton = memnew(Button);
-	hb->add_child(copybutton);
-	copybutton->set_text(TTR("Copy"));
-	copybutton->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C));
-	copybutton->connect("pressed", callable_mp(this, &EditorLog::_copy_request));
-
-	clearbutton = memnew(Button);
-	hb->add_child(clearbutton);
-	clearbutton->set_text(TTR("Clear"));
-	clearbutton->set_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K));
-	clearbutton->connect("pressed", callable_mp(this, &EditorLog::_clear_request));
-
 	log = memnew(RichTextLabel);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
@@ -172,8 +176,16 @@ EditorLog::EditorLog() {
 	log->set_custom_minimum_size(Size2(0, 180) * EDSCALE);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
+	log->connect("gui_input", callable_mp(this, &EditorLog::_gui_input));
 	vb->add_child(log);
 	add_message(VERSION_FULL_NAME " (c) 2007-2020 Juan Linietsky, Ariel Manzur & Godot Contributors.");
+
+	context_menu = memnew(PopupMenu);
+	context_menu->connect("id_pressed", callable_mp(this, &EditorLog::_on_context_menu_item_selected));
+	context_menu->add_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C), CONTEXT_COPY);
+	context_menu->add_shortcut(ED_SHORTCUT("editor/clear_output", TTR("Clear Output"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_K), CONTEXT_CLEAR);
+
+	add_child(context_menu);
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
