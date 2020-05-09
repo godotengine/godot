@@ -110,6 +110,8 @@ private:
 	StringName node_added_name;
 	StringName node_removed_name;
 	StringName node_renamed_name;
+	StringName node_grouped_name;
+	StringName node_ungrouped_name;
 
 	int64_t current_frame;
 	int64_t current_event;
@@ -177,6 +179,8 @@ private:
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
 	void node_renamed(Node *p_node);
+	void node_grouped(Node *p_node, const StringName &p_group);
+	void node_ungrouped(Node *p_node, const StringName &p_group);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);

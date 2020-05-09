@@ -124,6 +124,16 @@ void SceneTree::node_renamed(Node *p_node) {
 	emit_signal(node_renamed_name, p_node);
 }
 
+void SceneTree::node_grouped(Node *p_node, const StringName &p_group) {
+
+	emit_signal(node_grouped_name, p_node, p_group);
+}
+
+void SceneTree::node_ungrouped(Node *p_node, const StringName &p_group) {
+
+	emit_signal(node_ungrouped_name, p_node, p_group);
+}
+
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {
 
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
@@ -135,6 +145,9 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 	E->get().nodes.push_back(p_node);
 	//E->get().last_tree_version=0;
 	E->get().changed = true;
+
+	node_grouped(p_node, p_group);
+
 	return &E->get();
 }
 
@@ -144,8 +157,11 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	ERR_FAIL_COND(!E);
 
 	E->get().nodes.erase(p_node);
-	if (E->get().nodes.empty())
+	if (E->get().nodes.empty()) {
 		group_map.erase(E);
+	}
+
+	node_ungrouped(p_node, p_group);
 }
 
 void SceneTree::make_group_changed(const StringName &p_group) {
@@ -1303,6 +1319,8 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_renamed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_grouped", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::STRING_NAME, "group")));
+	ADD_SIGNAL(MethodInfo("node_ungrouped", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::STRING_NAME, "group")));
 	ADD_SIGNAL(MethodInfo("node_configuration_warning_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
 	ADD_SIGNAL(MethodInfo("idle_frame"));
@@ -1400,6 +1418,8 @@ SceneTree::SceneTree() {
 	node_added_name = "node_added";
 	node_removed_name = "node_removed";
 	node_renamed_name = "node_renamed";
+	node_grouped_name = "node_grouped";
+	node_ungrouped_name = "node_ungrouped";
 	ugc_locked = false;
 	call_lock = 0;
 	root_lock = 0;
