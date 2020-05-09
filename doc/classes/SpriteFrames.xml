@@ -4,7 +4,7 @@
 		Sprite frame library for AnimatedSprite.
 	</brief_description>
 	<description>
-		Sprite frame library for [AnimatedSprite]. Contains frames and animation data for playback.
+		Sprite frame library for [AnimatedSprite]. Contains frames and animation data for playback. You can use imported images (or folders containing compatible images) to be used as animation frames for the animation.
 	</description>
 	<tutorials>
 	</tutorials>
