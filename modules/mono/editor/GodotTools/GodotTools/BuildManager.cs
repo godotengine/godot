@@ -219,7 +219,7 @@ namespace GodotTools
             if (File.Exists(editorScriptsMetadataPath))
                 File.Copy(editorScriptsMetadataPath, playerScriptsMetadataPath);
 
-            var currentPlayRequest = GodotSharpEditor.Instance.GodotIdeManager.GodotIdeServer.CurrentPlayRequest;
+            var currentPlayRequest = GodotSharpEditor.Instance.CurrentPlaySettings;
 
             if (currentPlayRequest != null)
             {
@@ -233,7 +233,8 @@ namespace GodotTools
                         ",server=n");
                 }
 
-                return true; // Requested play from an external editor/IDE which already built the project
+                if (!currentPlayRequest.Value.BuildBeforePlaying)
+                    return true; // Requested play from an external editor/IDE which already built the project
             }
 
             var godotDefines = new[]
