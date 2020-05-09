@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimatedSprite" inherits="Node2D" version="4.0">
 	<brief_description>
-		Sprite node that can use multiple textures for animation.
+		Sprite node that contains multiple textures as frames to play for animation.
 	</brief_description>
 	<description>
-		Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
+		This node is similar to the Sprite node, except instead of the [TextureRegion] resource in the Bottom Panel it has the [SpriteFrames] resource. Animations are created using a [SpriteFrames] resource, where it allows you to import image files (or a folder containing said files) to provide the animation frames for the sprite. The [SpriteFrames] resource can be configured in the editor via the SpriteFrames panel.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -37,7 +37,7 @@
 	</methods>
 	<members>
 		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="@&quot;default&quot;">
-			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
+			The current animation from the [SpriteFrames] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.
@@ -52,7 +52,7 @@
 			The displayed animation frame's index.
 		</member>
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
-			The [SpriteFrames] resource containing the animation(s).
+			The [SpriteFrames] resource containing the animation(s). Allows you the option to load, edit, clear, make unique and save the states of the [SpriteFrames] resource.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
