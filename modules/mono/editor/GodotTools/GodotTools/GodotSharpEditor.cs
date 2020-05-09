@@ -256,10 +256,9 @@ namespace GodotTools
 
                     break;
                 }
-
                 case ExternalEditorId.VsCode:
                 {
-                    if (_vsCodePath.Empty() || !File.Exists(_vsCodePath))
+                    if (string.IsNullOrEmpty(_vsCodePath) || !File.Exists(_vsCodePath))
                     {
                         // Try to search it again if it wasn't found last time or if it was removed from its location
                         _vsCodePath = VsCodeNames.SelectFirstNotNull(OS.PathWhich, orElse: string.Empty);
@@ -311,7 +310,7 @@ namespace GodotTools
 
                     if (OS.IsOSX)
                     {
-                        if (!osxAppBundleInstalled && _vsCodePath.Empty())
+                        if (!osxAppBundleInstalled && string.IsNullOrEmpty(_vsCodePath))
                         {
                             GD.PushError("Cannot find code editor: VSCode");
                             return Error.FileNotFound;
@@ -321,7 +320,7 @@ namespace GodotTools
                     }
                     else
                     {
-                        if (_vsCodePath.Empty())
+                        if (string.IsNullOrEmpty(_vsCodePath))
                         {
                             GD.PushError("Cannot find code editor: VSCode");
                             return Error.FileNotFound;
@@ -341,7 +340,6 @@ namespace GodotTools
 
                     break;
                 }
-
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -505,7 +503,7 @@ namespace GodotTools
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +
                                    $",JetBrains Rider:{(int)ExternalEditorId.Rider}";
             }
-            else if (OS.IsUnixLike())
+            else if (OS.IsUnixLike)
             {
                 settingsHintStr += $",MonoDevelop:{(int)ExternalEditorId.MonoDevelop}" +
                                    $",Visual Studio Code:{(int)ExternalEditorId.VsCode}" +

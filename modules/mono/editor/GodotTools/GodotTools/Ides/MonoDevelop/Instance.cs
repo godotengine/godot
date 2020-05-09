@@ -118,7 +118,7 @@ namespace GodotTools.Ides.MonoDevelop
                     {EditorId.MonoDevelop, "MonoDevelop.exe"}
                 };
             }
-            else if (OS.IsUnixLike())
+            else if (OS.IsUnixLike)
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {

@@ -109,9 +109,9 @@ namespace GodotTools.Build
                 buildInfo.LogsDirPath, buildInfo.CustomProperties);
         }
 
-        public static async Task<int> BuildAsync(BuildInfo buildInfo)
+        public static Task<int> BuildAsync(BuildInfo buildInfo)
         {
-            return await BuildAsync(buildInfo.Solution, buildInfo.Configuration,
+            return BuildAsync(buildInfo.Solution, buildInfo.Configuration,
                 buildInfo.LogsDirPath, buildInfo.CustomProperties);
         }
 
