@@ -4,7 +4,7 @@
  *
  *   FreeType validator for TrueTypeGX/AAT tables (body only).
  *
- * Copyright (C) 2005-2019 by
+ * Copyright (C) 2005-2020 by
  * suzuki toshiya, Masatake YAMATO, Red Hat K.K.,
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *

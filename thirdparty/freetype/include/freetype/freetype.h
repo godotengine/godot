@@ -4,7 +4,7 @@
  *
  *   FreeType high-level API and common types (specification only).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1239,7 +1239,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_HORIZONTAL( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_HORIZONTAL )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_HORIZONTAL ) )
 
 
   /**************************************************************************
@@ -1253,7 +1253,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_VERTICAL( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_VERTICAL )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_VERTICAL ) )
 
 
   /**************************************************************************
@@ -1267,7 +1267,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_KERNING( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_KERNING )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_KERNING ) )
 
 
   /**************************************************************************
@@ -1282,7 +1282,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_SCALABLE( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_SCALABLE )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_SCALABLE ) )
 
 
   /**************************************************************************
@@ -1301,7 +1301,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_SFNT( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_SFNT )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_SFNT ) )
 
 
   /**************************************************************************
@@ -1316,7 +1316,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_FIXED_WIDTH( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_FIXED_WIDTH )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_FIXED_WIDTH ) )
 
 
   /**************************************************************************
@@ -1331,7 +1331,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_FIXED_SIZES( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_FIXED_SIZES )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_FIXED_SIZES ) )
 
 
   /**************************************************************************
@@ -1357,7 +1357,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_GLYPH_NAMES( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_GLYPH_NAMES )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_GLYPH_NAMES ) )
 
 
   /**************************************************************************
@@ -1372,7 +1372,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_MULTIPLE_MASTERS( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_MULTIPLE_MASTERS ) )
 
 
   /**************************************************************************
@@ -1394,7 +1394,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_NAMED_INSTANCE( face ) \
-          ( (face)->face_index & 0x7FFF0000L )
+          ( !!( (face)->face_index & 0x7FFF0000L ) )
 
 
   /**************************************************************************
@@ -1412,7 +1412,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_VARIATION( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_VARIATION )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_VARIATION ) )
 
 
   /**************************************************************************
@@ -1429,7 +1429,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_CID_KEYED( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_CID_KEYED )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_CID_KEYED ) )
 
 
   /**************************************************************************
@@ -1443,7 +1443,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_IS_TRICKY( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_TRICKY )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_TRICKY ) )
 
 
   /**************************************************************************
@@ -1460,7 +1460,7 @@ FT_BEGIN_HEADER
    *
    */
 #define FT_HAS_COLOR( face ) \
-          ( (face)->face_flags & FT_FACE_FLAG_COLOR )
+          ( !!( (face)->face_flags & FT_FACE_FLAG_COLOR ) )
 
 
   /**************************************************************************
@@ -2078,7 +2078,8 @@ FT_BEGIN_HEADER
    *     The size in bytes of the file in memory.
    *
    *   pathname ::
-   *     A pointer to an 8-bit file pathname.
+   *     A pointer to an 8-bit file pathname.  The pointer is not owned by
+   *     FreeType.
    *
    *   stream ::
    *     A handle to a source stream object.
@@ -4781,7 +4782,7 @@ FT_BEGIN_HEADER
    */
 #define FREETYPE_MAJOR  2
 #define FREETYPE_MINOR  10
-#define FREETYPE_PATCH  1
+#define FREETYPE_PATCH  2
 
 
   /**************************************************************************

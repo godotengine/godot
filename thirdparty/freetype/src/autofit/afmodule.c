@@ -4,7 +4,7 @@
  *
  *   Auto-fitter module implementation (body).
  *
- * Copyright (C) 2003-2019 by
+ * Copyright (C) 2003-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

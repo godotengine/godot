@@ -4,7 +4,7 @@
  *
  *   TrueType character mapping table (cmap) support (body).
  *
- * Copyright (C) 2002-2019 by
+ * Copyright (C) 2002-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -3764,28 +3764,31 @@
   FT_LOCAL_DEF( FT_Error )
   tt_face_build_cmaps( TT_Face  face )
   {
-    FT_Byte*           table = face->cmap_table;
-    FT_Byte*           limit = table + face->cmap_size;
+    FT_Byte* const     table   = face->cmap_table;
+    FT_Byte*           limit;
     FT_UInt volatile   num_cmaps;
-    FT_Byte* volatile  p     = table;
+    FT_Byte* volatile  p       = table;
     FT_Library         library = FT_FACE_LIBRARY( face );
 
     FT_UNUSED( library );
 
 
-    if ( !p || p + 4 > limit )
+    if ( !p || face->cmap_size < 4 )
       return FT_THROW( Invalid_Table );
 
-    /* only recognize format 0 */
-    if ( TT_NEXT_USHORT( p ) != 0 )
-    {
-      FT_ERROR(( "tt_face_build_cmaps:"
-                 " unsupported `cmap' table format = %d\n",
-                 TT_PEEK_USHORT( p - 2 ) ));
-      return FT_THROW( Invalid_Table );
-    }
+    /* Version 1.8.3 of the OpenType specification contains the following */
+    /* (https://docs.microsoft.com/en-us/typography/opentype/spec/cmap):  */
+    /*                                                                    */
+    /*   The 'cmap' table version number remains at 0x0000 for fonts that */
+    /*   make use of the newer subtable formats.                          */
+    /*                                                                    */
+    /* This essentially means that a version format test is useless.      */
+
+    /* ignore format */
+    p += 2;
 
     num_cmaps = TT_NEXT_USHORT( p );
+    limit     = table + face->cmap_size;
 
     for ( ; num_cmaps > 0 && p + 8 <= limit; num_cmaps-- )
     {
