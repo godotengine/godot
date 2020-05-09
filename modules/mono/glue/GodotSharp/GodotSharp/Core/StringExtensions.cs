@@ -12,7 +12,7 @@ namespace Godot
     {
         private static int GetSliceCount(this string instance, string splitter)
         {
-            if (instance.Empty() || splitter.Empty())
+            if (string.IsNullOrEmpty(instance) || string.IsNullOrEmpty(splitter))
                 return 0;
 
             int pos = 0;
@@ -29,7 +29,7 @@ namespace Godot
 
         private static string GetSliceCharacter(this string instance, char splitter, int slice)
         {
-            if (!instance.Empty() && slice >= 0)
+            if (!string.IsNullOrEmpty(instance) && slice >= 0)
             {
                 int i = 0;
                 int prev = 0;
@@ -237,10 +237,10 @@ namespace Godot
         // </summary>
         public static int CompareTo(this string instance, string to, bool caseSensitive = true)
         {
-            if (instance.Empty())
-                return to.Empty() ? 0 : -1;
+            if (string.IsNullOrEmpty(instance))
+                return string.IsNullOrEmpty(to) ? 0 : -1;
 
-            if (to.Empty())
+            if (string.IsNullOrEmpty(to))
                 return 1;
 
             int instanceIndex = 0;
@@ -284,14 +284,6 @@ namespace Godot
                     toIndex++;
                 }
             }
-        }
-
-        // <summary>
-        // Return true if the string is empty.
-        // </summary>
-        public static bool Empty(this string instance)
-        {
-            return string.IsNullOrEmpty(instance);
         }
 
         // <summary>
