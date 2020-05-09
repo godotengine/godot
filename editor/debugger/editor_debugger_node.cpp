@@ -261,10 +261,12 @@ void EditorDebuggerNode::_notification(int p_what) {
 			debugger_button->set_icon(Ref<Texture2D>());
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-			if (error_count == 0) {
-				debugger_button->set_icon(get_theme_icon("Warning", "EditorIcons"));
-			} else {
+			if (error_count >= 1 && warning_count >= 1) {
+				debugger_button->set_icon(get_theme_icon("ErrorWarning", "EditorIcons"));
+			} else if (error_count >= 1) {
 				debugger_button->set_icon(get_theme_icon("Error", "EditorIcons"));
+			} else {
+				debugger_button->set_icon(get_theme_icon("Warning", "EditorIcons"));
 			}
 		}
 		last_error_count = error_count;
