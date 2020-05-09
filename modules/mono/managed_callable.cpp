@@ -82,6 +82,7 @@ CallableCustom::CompareLessFunc ManagedCallable::get_compare_less_func() const {
 }
 
 ObjectID ManagedCallable::get_object() const {
+	// TODO: If the delegate target extends Godot.Object, use that instead!
 	return CSharpLanguage::get_singleton()->get_managed_callable_middleman()->get_instance_id();
 }
 
