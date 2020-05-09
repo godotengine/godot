@@ -1,6 +1,6 @@
 using System;
 
-namespace GodotTools.IdeConnection
+namespace GodotTools.IdeMessaging
 {
     public interface ILogger
     {
