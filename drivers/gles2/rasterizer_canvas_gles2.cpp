@@ -1728,6 +1728,9 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *p_c
 
 	Item::Command *const *commands = p_item->commands.ptr();
 
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
+#endif
 	// legacy .. just create one massive batch and render everything as before
 	bdata.batches.reset();
 	Batch *batch = _batch_request_new();

@@ -358,7 +358,7 @@ if selected_platform in platform_list:
 
         if methods.using_gcc(env):
             # in Sailfish compiller has name like armv7hl-meego-linux, its mean match version script get version 7, for compiller (but it 4)
-            if version[0] >= '7' : # and env_base['platform'] != 'sailfish' : # in latest SDK gcc major version is 8
+            if version[0] >= 7 : # and env_base['platform'] != 'sailfish' : # in latest SDK gcc major version is 8
                 shadow_local_warning = ['-Wshadow-local']
 
         if (env["warnings"] == 'extra'):
