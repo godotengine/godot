@@ -35,7 +35,6 @@ def configure(env):
             "copy_mono_root", "Make a copy of the mono installation directory to bundle with the editor", False
         )
     )
-    envvars.Add(BoolVariable("xbuild_fallback", "If MSBuild is not found, fallback to xbuild", False))
 
     # TODO: It would be great if this could be detected automatically instead
     envvars.Add(
