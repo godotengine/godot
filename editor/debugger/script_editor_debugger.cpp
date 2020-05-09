@@ -131,10 +131,12 @@ void ScriptEditorDebugger::update_tabs() {
 		tabs->set_tab_icon(errors_tab->get_index(), Ref<Texture2D>());
 	} else {
 		errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
-		if (error_count == 0) {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Warning", "EditorIcons"));
-		} else {
+		if (error_count >= 1 && warning_count >= 1) {
+			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("ErrorWarning", "EditorIcons"));
+		} else if (error_count >= 1) {
 			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Error", "EditorIcons"));
+		} else {
+			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Warning", "EditorIcons"));
 		}
 	}
 }
