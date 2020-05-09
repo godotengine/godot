@@ -4,7 +4,7 @@
  *
  *   OpenType objects manager (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1018,9 +1018,9 @@
       }
 
 #ifndef FT_CONFIG_OPTION_NO_GLYPH_NAMES
-      /* CID-keyed CFF fonts don't have glyph names -- the SFNT loader */
-      /* has unset this flag because of the 3.0 `post' table.          */
-      if ( dict->cid_registry == 0xFFFFU )
+      /* CID-keyed CFF or CFF2 fonts don't have glyph names -- the SFNT */
+      /* loader has unset this flag because of the 3.0 `post' table.    */
+      if ( dict->cid_registry == 0xFFFFU && !cff2 )
         cffface->face_flags |= FT_FACE_FLAG_GLYPH_NAMES;
 #endif
 
