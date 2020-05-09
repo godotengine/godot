@@ -33,23 +33,13 @@ namespace GodotTools.Core
             return rooted ? Path.DirectorySeparatorChar + path : path;
         }
 
-        private static readonly string driveRoot = Path.GetPathRoot(Environment.CurrentDirectory);
+        private static readonly string DriveRoot = Path.GetPathRoot(Environment.CurrentDirectory);
 
         public static bool IsAbsolutePath(this string path)
         {
             return path.StartsWith("/", StringComparison.Ordinal) ||
                    path.StartsWith("\\", StringComparison.Ordinal) ||
-                   path.StartsWith(driveRoot, StringComparison.Ordinal);
-        }
-
-        public static string CsvEscape(this string value, char delimiter = ',')
-        {
-            bool hasSpecialChar = value.IndexOfAny(new char[] { '\"', '\n', '\r', delimiter }) != -1;
-
-            if (hasSpecialChar)
-                return "\"" + value.Replace("\"", "\"\"") + "\"";
-
-            return value;
+                   path.StartsWith(DriveRoot, StringComparison.Ordinal);
         }
 
         public static string ToSafeDirName(this string dirName, bool allowDirSeparator)
