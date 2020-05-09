@@ -1664,6 +1664,10 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		}
 
 		if (!p_imethod.is_internal) {
+			// TODO: This alone adds ~0.2 MB of bloat to the core API assembly. It would be
+			// better to generate a table in the C++ glue instead. That way the strings wouldn't
+			// add that much extra bloat as they're already used in engine code. Also, it would
+			// probably be much faster than looking up the attributes when fetching methods.
 			p_output.append(MEMBER_BEGIN "[GodotMethod(\"");
 			p_output.append(p_imethod.name);
 			p_output.append("\")]");
@@ -2139,7 +2143,7 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 			if (return_type->ret_as_byref_arg) {
 				p_output.append("\tif (" CS_PARAM_INSTANCE " == nullptr) { *arg_ret = ");
 				p_output.append(fail_ret);
-				p_output.append("; ERR_FAIL_MSG(\"Parameter ' arg_ret ' is null.\"); }\n");
+				p_output.append("; ERR_FAIL_MSG(\"Parameter ' " CS_PARAM_INSTANCE " ' is null.\"); }\n");
 			} else {
 				p_output.append("\tERR_FAIL_NULL_V(" CS_PARAM_INSTANCE ", ");
 				p_output.append(fail_ret);
@@ -2390,6 +2394,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			if (property.usage & PROPERTY_USAGE_GROUP || property.usage & PROPERTY_USAGE_SUBGROUP || property.usage & PROPERTY_USAGE_CATEGORY)
 				continue;
 
+			if (property.name.find("/") >= 0) {
+				// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
+				continue;
+			}
+
 			PropertyInterface iprop;
 			iprop.cname = property.name;
 			iprop.setter = ClassDB::get_property_setter(type_cname, iprop.cname);
@@ -2402,7 +2411,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			bool valid = false;
 			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
-			ERR_FAIL_COND_V(!valid, false);
+			ERR_FAIL_COND_V_MSG(!valid, false, "Invalid property: '" + itype.name + "." + String(iprop.cname) + "'.");
 
 			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
 
@@ -2413,8 +2422,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 				iprop.proxy_name += "_";
 			}
-
-			iprop.proxy_name = iprop.proxy_name.replace("/", "__"); // Some members have a slash...
 
 			iprop.prop_doc = nullptr;
 
