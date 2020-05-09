@@ -4,7 +4,7 @@
 		Sprite node that contains multiple textures as frames to play for animation.
 	</brief_description>
 	<description>
-		This node is similar to the Sprite node, except instead of the [TextureRegion] resource in the Bottom Panel it has the [SpriteFrames] resource. Animations are created using a [SpriteFrames] resource, where it allows you to import image files (or a folder containing said files) to provide the animation frames for the sprite. The [SpriteFrames] resource can be configured in the editor via the SpriteFrames panel.
+		This node is similar to the Sprite node, except it carries multiple textures as animation frames. Animations are created using a [SpriteFrames] resource, where it allows you to import image files (or a folder containing said files) to provide the animation frames for the sprite. The [SpriteFrames] resource can be configured in the editor via the SpriteFrames panel.
 	</description>
 	<tutorials>
 	</tutorials>
