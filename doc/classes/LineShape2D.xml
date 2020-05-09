@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="d" type="float" setter="set_d" getter="get_d" default="0.0">
+		<member name="distance" type="float" setter="set_distance" getter="get_distance" default="0.0">
 			The line's distance from the origin.
 		</member>
 		<member name="normal" type="Vector2" setter="set_normal" getter="get_normal" default="Vector2( 0, 1 )">
