@@ -175,7 +175,7 @@ void GDMonoLog::initialize() {
 	log_level_id = get_log_level_id(log_level.get_data());
 
 	if (log_file) {
-		OS::get_singleton()->print("Mono: Logfile is: %s\n", log_file_path.utf8().get_data());
+		OS::get_singleton()->print("Mono: Log file is: '%s'\n", log_file_path.utf8().get_data());
 		mono_trace_set_log_handler(mono_log_callback, this);
 	} else {
 		OS::get_singleton()->printerr("Mono: No log file, using default log handler\n");
