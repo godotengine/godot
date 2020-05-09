@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for Indic writing system (body).
  *
- * Copyright (C) 2007-2019 by
+ * Copyright (C) 2007-2020 by
  * Rahul Bhalerao <rahul.bhalerao@redhat.com>, <b.rahul.pm@gmail.com>.
  *
  * This file is part of the FreeType project, and may only be used,

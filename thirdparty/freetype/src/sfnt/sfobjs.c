@@ -4,7 +4,7 @@
  *
  *   SFNT object management (base).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -22,6 +22,7 @@
 #include "ttcmap.h"
 #include "ttkern.h"
 #include "sfwoff.h"
+#include "sfwoff2.h"
 #include FT_INTERNAL_SFNT_H
 #include FT_INTERNAL_DEBUG_H
 #include FT_TRUETYPE_IDS_H
@@ -341,7 +342,9 @@
   /* synthesized into a TTC with one offset table.              */
   static FT_Error
   sfnt_open_font( FT_Stream  stream,
-                  TT_Face    face )
+                  TT_Face    face,
+                  FT_Int*    face_instance_index,
+                  FT_Long*   woff2_num_faces )
   {
     FT_Memory  memory = stream->memory;
     FT_Error   error;
@@ -377,6 +380,25 @@
         return error;
 
       error = woff_open_font( stream, face );
+      if ( error )
+        return error;
+
+      /* Swap out stream and retry! */
+      stream = face->root.stream;
+      goto retry;
+    }
+
+    if ( tag == TTAG_wOF2 )
+    {
+      FT_TRACE2(( "sfnt_open_font: file is a WOFF2; synthesizing SFNT\n" ));
+
+      if ( FT_STREAM_SEEK( offset ) )
+        return error;
+
+      error = woff2_open_font( stream,
+                               face,
+                               face_instance_index,
+                               woff2_num_faces );
       if ( error )
         return error;
 
@@ -461,9 +483,10 @@
                   FT_Parameter*  params )
   {
     FT_Error      error;
-    FT_Library    library = face->root.driver->root.library;
+    FT_Library    library         = face->root.driver->root.library;
     SFNT_Service  sfnt;
     FT_Int        face_index;
+    FT_Long       woff2_num_faces = 0;
 
 
     /* for now, parameters are unused */
@@ -514,7 +537,10 @@
 
     FT_TRACE2(( "SFNT driver\n" ));
 
-    error = sfnt_open_font( stream, face );
+    error = sfnt_open_font( stream,
+                            face,
+                            &face_instance_index,
+                            &woff2_num_faces );
     if ( error )
       return error;
 
@@ -688,6 +714,10 @@
 
     face->root.num_faces  = face->ttc_header.count;
     face->root.face_index = face_instance_index;
+
+    /* `num_faces' for a WOFF2 needs to be handled separately. */
+    if ( woff2_num_faces )
+      face->root.num_faces = woff2_num_faces;
 
     return error;
   }
