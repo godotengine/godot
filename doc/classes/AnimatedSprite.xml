@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimatedSprite" inherits="Node2D" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Sprite node that can use multiple textures for animation.
+		Sprite node that contains multiple textures as frames to play for animation.
 	</brief_description>
 	<description>
-		Animations are created using a [SpriteFrames] resource, which can be configured in the editor via the SpriteFrames panel.
-		[b]Note:[/b] You can associate a set of normal maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] suffix. For example, having 2 [SpriteFrames] resources [code]run[/code] and [code]run_normal[/code] will make it so the [code]run[/code] animation uses the normal map.
+		[AnimatedSprite] is similar to the [Sprite] node, except it carries multiple textures as animation frames. Animations are created using a [SpriteFrames] resource, which allows you to import image files (or a folder containing said files) to provide the animation frames for the sprite. The [SpriteFrames] resource can be configured in the editor via the SpriteFrames bottom panel.
+		[b]Note:[/b] You can associate a set of normal or specular maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] or [code]_specular[/code] suffix. For example, having 3 [SpriteFrames] resources [code]run[/code], [code]run_normal[/code], and [code]run_specular[/code] will make it so the [code]run[/code] animation uses normal and specular maps.
 	</description>
 	<tutorials>
 		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
@@ -29,7 +29,7 @@
 	</methods>
 	<members>
 		<member name="animation" type="String" setter="set_animation" getter="get_animation" default="&quot;default&quot;">
-			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
+			The current animation from the [member frames] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.
@@ -44,7 +44,7 @@
 			The displayed animation frame's index.
 		</member>
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
-			The [SpriteFrames] resource containing the animation(s).
+			The [SpriteFrames] resource containing the animation(s). Allows you the option to load, edit, clear, make unique and save the states of the [SpriteFrames] resource.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The texture's drawing offset.
