@@ -683,7 +683,7 @@ public:
 	BlockNode *get_completion_block();
 	FunctionNode *get_completion_function();
 	int get_completion_argument_index();
-	int get_completion_identifier_is_function();
+	bool get_completion_identifier_is_function();
 
 	const List<String> &get_dependencies() const { return dependencies; }
 
