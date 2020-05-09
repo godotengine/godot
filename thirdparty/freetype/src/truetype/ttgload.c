@@ -4,7 +4,7 @@
  *
  *   TrueType Glyph Loader (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1102,9 +1102,16 @@
       }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-      /* if we have a HVAR table, `pp1' and/or `pp2' are already adjusted */
-      if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) ||
-           !IS_HINTED( loader->load_flags )                                 )
+      /* if we have a HVAR table, `pp1' and/or `pp2' */
+      /* are already adjusted but unscaled           */
+      if ( ( loader->face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) &&
+           IS_HINTED( loader->load_flags )                                 )
+      {
+        loader->pp1.x = FT_MulFix( loader->pp1.x, x_scale );
+        loader->pp2.x = FT_MulFix( loader->pp2.x, x_scale );
+        /* pp1.y and pp2.y are always zero */
+      }
+      else
 #endif
       {
         loader->pp1 = outline->points[n_points - 4];
@@ -1112,9 +1119,17 @@
       }
 
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
-      /* if we have a VVAR table, `pp3' and/or `pp4' are already adjusted */
-      if ( !( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) ||
-           !IS_HINTED( loader->load_flags )                                 )
+      /* if we have a VVAR table, `pp3' and/or `pp4' */
+      /* are already adjusted but unscaled           */
+      if ( ( loader->face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) &&
+           IS_HINTED( loader->load_flags )                                 )
+      {
+        loader->pp3.x = FT_MulFix( loader->pp3.x, x_scale );
+        loader->pp3.y = FT_MulFix( loader->pp3.y, y_scale );
+        loader->pp4.x = FT_MulFix( loader->pp4.x, x_scale );
+        loader->pp4.y = FT_MulFix( loader->pp4.y, y_scale );
+      }
+      else
 #endif
       {
         loader->pp3 = outline->points[n_points - 2];
@@ -2287,13 +2302,14 @@
       if ( face->vertical_info                   &&
            face->vertical.number_Of_VMetrics > 0 )
       {
-        top = (FT_Short)FT_DivFix( loader->pp3.y - bbox.yMax,
+        top = (FT_Short)FT_DivFix( SUB_LONG( loader->pp3.y, bbox.yMax ),
                                    y_scale );
 
         if ( loader->pp3.y <= loader->pp4.y )
           advance = 0;
         else
-          advance = (FT_UShort)FT_DivFix( loader->pp3.y - loader->pp4.y,
+          advance = (FT_UShort)FT_DivFix( SUB_LONG( loader->pp3.y,
+                                                    loader->pp4.y ),
                                           y_scale );
       }
       else
