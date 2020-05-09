@@ -24,7 +24,7 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the linear velocity of the floor at the last collision point. Only valid after it calls [method move_and_slide] or [method move_and_slide_with_snap] and when [method is_on_floor] returns [code]true[/code].
+				Returns the linear velocity of the floor at the last collision point. Only valid after calling [method move_and_slide] or [method move_and_slide_with_snap] and when [method is_on_floor] returns [code]true[/code].
 			</description>
 		</method>
 		<method name="get_slide_collision">
@@ -67,7 +67,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the body is on a wall. Only updates when it calls [method move_and_slide].
+				Returns [code]true[/code] if the body is on a wall. Only updates when calling [method move_and_slide] or [method move_and_slide_with_snap].
 			</description>
 		</method>
 		<method name="move_and_collide">
@@ -102,11 +102,11 @@
 			<argument index="5" name="infinite_inertia" type="bool" default="true">
 			</argument>
 			<description>
-				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to either make platforms move or rotate, or to make one node push the other node.
+				Moves the body along a vector. If the body collides with another, it will slide along the other body rather than stop immediately. If the other body is a [KinematicBody2D] or [RigidBody2D], it will also be affected by the motion of the other body. You can use this to make moving and rotating platforms, or to make nodes push other nodes.
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				[code]linear_velocity[/code] is the velocity vector in pixels per second. Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity. 
 				[code]up_direction[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
-				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes when you include gravity in [code]linear_velocity[/code] and the body stands still.
+				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes when you include gravity in [code]linear_velocity[/code] and the body is standing still.
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
 				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody2D] nodes, but it won't also detect any collisions with them. If [code]false[/code], it will interact with [RigidBody2D] nodes like with [StaticBody2D].
