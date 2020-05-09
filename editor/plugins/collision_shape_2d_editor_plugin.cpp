@@ -81,7 +81,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 			Ref<LineShape2D> line = node->get_shape();
 
 			if (idx == 0) {
-				return line->get_d();
+				return line->get_distance();
 			} else {
 				return line->get_normal();
 			}
@@ -162,7 +162,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				Ref<LineShape2D> line = node->get_shape();
 
 				if (idx == 0) {
-					line->set_d(p_point.length());
+					line->set_distance(p_point.length());
 				} else {
 					line->set_normal(p_point.normalized());
 				}
@@ -260,9 +260,9 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			Ref<LineShape2D> line = node->get_shape();
 
 			if (idx == 0) {
-				undo_redo->add_do_method(line.ptr(), "set_d", line->get_d());
+				undo_redo->add_do_method(line.ptr(), "set_distance", line->get_distance());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(line.ptr(), "set_d", p_org);
+				undo_redo->add_undo_method(line.ptr(), "set_distance", p_org);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			} else {
 				undo_redo->add_do_method(line.ptr(), "set_normal", line->get_normal());
@@ -485,8 +485,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			Ref<LineShape2D> shape = node->get_shape();
 
 			handles.resize(2);
-			handles.write[0] = shape->get_normal() * shape->get_d();
-			handles.write[1] = shape->get_normal() * (shape->get_d() + 30.0);
+			handles.write[0] = shape->get_normal() * shape->get_distance();
+			handles.write[1] = shape->get_normal() * (shape->get_distance() + 30.0);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
