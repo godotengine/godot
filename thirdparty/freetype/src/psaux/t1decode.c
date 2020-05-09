@@ -4,7 +4,7 @@
  *
  *   PostScript Type 1 decoding routines (body).
  *
- * Copyright (C) 2000-2019 by
+ * Copyright (C) 2000-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -367,6 +367,12 @@
 
     FT_GlyphLoader_Prepare( decoder->builder.loader );  /* prepare loader */
 
+    /* save the left bearing and width of the SEAC   */
+    /* glyph as they will be erased by the next load */
+
+    left_bearing = decoder->builder.left_bearing;
+    advance      = decoder->builder.advance;
+
     /* the seac operator must not be nested */
     decoder->seac = TRUE;
     error = t1_decoder_parse_glyph( decoder, (FT_UInt)bchar_index );
@@ -374,11 +380,14 @@
     if ( error )
       goto Exit;
 
-    /* save the left bearing and width of the base character */
-    /* as they will be erased by the next load.              */
+    /* If the SEAC glyph doesn't have a (H)SBW of its */
+    /* own use the values from the base glyph.        */
 
-    left_bearing = decoder->builder.left_bearing;
-    advance      = decoder->builder.advance;
+    if ( decoder->builder.parse_state != T1_Parse_Have_Width )
+    {
+      left_bearing = decoder->builder.left_bearing;
+      advance      = decoder->builder.advance;
+    }
 
     decoder->builder.left_bearing.x = 0;
     decoder->builder.left_bearing.y = 0;
@@ -396,8 +405,8 @@
     if ( error )
       goto Exit;
 
-    /* restore the left side bearing and   */
-    /* advance width of the base character */
+    /* restore the left side bearing and advance width   */
+    /* of the SEAC glyph or base character (saved above) */
 
     decoder->builder.left_bearing = left_bearing;
     decoder->builder.advance      = advance;
@@ -650,10 +659,8 @@
         if ( value > 32000 || value < -32000 )
         {
           if ( large_int )
-          {
             FT_ERROR(( "t1_decoder_parse_charstrings:"
                        " no `div' after large integer\n" ));
-          }
           else
             large_int = TRUE;
         }
@@ -1690,6 +1697,7 @@
     FT_Byte*         ip;
     FT_Byte*         limit;
     T1_Builder       builder = &decoder->builder;
+    FT_Bool          large_int;
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     FT_Bool          bol = TRUE;
@@ -1706,6 +1714,8 @@
     zone->base           = charstring_base;
     limit = zone->limit  = charstring_base + charstring_len;
     ip    = zone->cursor = zone->base;
+
+    large_int = FALSE;
 
     /* now, execute loop */
     while ( ip < limit )
@@ -1767,6 +1777,9 @@
         case 7:
           op = op_sbw;
           break;
+        case 12:
+          op = op_div;
+          break;
 
         default:
           goto No_Width;
@@ -1796,13 +1809,19 @@
         /* anyway.                                                         */
         if ( value > 32000 || value < -32000 )
         {
-          FT_ERROR(( "t1_decoder_parse_metrics:"
-                     " large integer found for width\n" ));
-          goto Syntax_Error;
+          if ( large_int )
+          {
+            FT_ERROR(( "t1_decoder_parse_metrics:"
+                       " no `div' after large integer\n" ));
+            goto Syntax_Error;
+          }
+          else
+            large_int = TRUE;
         }
         else
         {
-          value = (FT_Int32)( (FT_UInt32)value << 16 );
+          if ( !large_int )
+            value = (FT_Int32)( (FT_UInt32)value << 16 );
         }
 
         break;
@@ -1827,7 +1846,8 @@
               value = -( ( ( ip[-2] - 251 ) * 256 ) + ip[-1] + 108 );
           }
 
-          value = (FT_Int32)( (FT_UInt32)value << 16 );
+          if ( !large_int )
+            value = (FT_Int32)( (FT_UInt32)value << 16 );
         }
         else
         {
@@ -1835,6 +1855,13 @@
                      " invalid byte (%d)\n", ip[-1] ));
           goto Syntax_Error;
         }
+      }
+
+      if ( large_int && !( op == op_none || op == op_div ) )
+      {
+        FT_ERROR(( "t1_decoder_parse_metrics:"
+                   " no `div' after large integer\n" ));
+        goto Syntax_Error;
       }
 
       /**********************************************************************
@@ -1851,6 +1878,9 @@
         }
 
 #ifdef FT_DEBUG_LEVEL_TRACE
+        if ( large_int )
+          FT_TRACE4(( " %d", value ));
+        else
           FT_TRACE4(( " %d", value / 65536 ));
 #endif
 
@@ -1869,11 +1899,14 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
 
-        if ( top - decoder->stack != num_args )
-          FT_TRACE0(( "t1_decoder_parse_metrics:"
-                      " too much operands on the stack"
-                      " (seen %d, expected %d)\n",
-                      top - decoder->stack, num_args ));
+        if ( op != op_div )
+        {
+          if ( top - decoder->stack != num_args )
+            FT_TRACE0(( "t1_decoder_parse_metrics:"
+                        " too much operands on the stack"
+                        " (seen %d, expected %d)\n",
+                        top - decoder->stack, num_args ));
+        }
 
 #endif /* FT_DEBUG_LEVEL_TRACE */
 
@@ -1917,11 +1950,25 @@
           FT_TRACE4(( "\n" ));
           return FT_Err_Ok;
 
+        case op_div:
+          FT_TRACE4(( " div" ));
+
+          /* if `large_int' is set, we divide unscaled numbers; */
+          /* otherwise, we divide numbers in 16.16 format --    */
+          /* in both cases, it is the same operation            */
+          *top = FT_DivFix( top[0], top[1] );
+          top++;
+
+          large_int = FALSE;
+          break;
+
         default:
           FT_ERROR(( "t1_decoder_parse_metrics:"
                      " unhandled opcode %d\n", op ));
           goto Syntax_Error;
         }
+
+        decoder->top = top;
 
       } /* general operator processing */
 

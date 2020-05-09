@@ -4,7 +4,7 @@
  *
  *   FreeType font driver for Windows FNT/FON files
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  * Copyright 2003 Huw D M Davies for Codeweavers
  * Copyright 2007 Dmitry Timoshkov for Codeweavers
@@ -331,7 +331,7 @@
         {
           FT_TRACE2(( "invalid alignment shift count for resource data\n" ));
           error = FT_THROW( Invalid_File_Format );
-          goto Exit;
+          goto Exit1;
         }
 
 
@@ -597,6 +597,10 @@
 
   Exit:
     return error;
+
+  Exit1:
+    FT_FRAME_EXIT();
+    goto Exit;
   }
 
 
