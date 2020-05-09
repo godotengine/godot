@@ -8784,7 +8784,7 @@ int GDScriptParser::get_completion_argument_index() {
 	return completion_argument;
 }
 
-int GDScriptParser::get_completion_identifier_is_function() {
+bool GDScriptParser::get_completion_identifier_is_function() {
 
 	return completion_ident_is_call;
 }
