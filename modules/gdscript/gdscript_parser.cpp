@@ -3171,9 +3171,9 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 								ConstantNode *cn = alloc_node<ConstantNode>();
 								switch (args.size()) {
-									case 1: cn->value = (int)constants[0]; break;
-									case 2: cn->value = Vector2(constants[0], constants[1]); break;
-									case 3: cn->value = Vector3(constants[0], constants[1], constants[2]); break;
+									case 1: cn->value = (int64_t)constants[0]; break;
+									case 2: cn->value = Vector2i(constants[0], constants[1]); break;
+									case 3: cn->value = Vector3i(constants[0], constants[1], constants[2]); break;
 								}
 								cn->datatype = _type_from_variant(cn->value);
 								container = cn;
@@ -3186,8 +3186,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 								switch (args.size()) {
 									case 1: tn->vtype = Variant::INT; break;
-									case 2: tn->vtype = Variant::VECTOR2; break;
-									case 3: tn->vtype = Variant::VECTOR3; break;
+									case 2: tn->vtype = Variant::VECTOR2I; break;
+									case 3: tn->vtype = Variant::VECTOR3I; break;
 								}
 
 								for (int i = 0; i < args.size(); i++) {
@@ -7802,7 +7802,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
 					ConstantNode *tgt_type = alloc_node<ConstantNode>();
 					tgt_type->line = v.line;
-					tgt_type->value = (int)v.data_type.builtin_type;
+					tgt_type->value = (int64_t)v.data_type.builtin_type;
 
 					OperatorNode *convert_call = alloc_node<OperatorNode>();
 					convert_call->line = v.line;
@@ -8179,7 +8179,7 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 
 							ConstantNode *tgt_type = alloc_node<ConstantNode>();
 							tgt_type->line = lv->line;
-							tgt_type->value = (int)lv->datatype.builtin_type;
+							tgt_type->value = (int64_t)lv->datatype.builtin_type;
 							tgt_type->datatype = _type_from_variant(tgt_type->value);
 
 							OperatorNode *convert_call = alloc_node<OperatorNode>();
