@@ -7,14 +7,16 @@ using GodotTools.Utils;
 
 namespace GodotTools.Ides.MonoDevelop
 {
-    public class Instance
+    public class Instance : IDisposable
     {
+        public DateTime LaunchTime { get; private set; }
         private readonly string solutionFile;
         private readonly EditorId editorId;
 
         private Process process;
 
         public bool IsRunning => process != null && !process.HasExited;
+        public bool IsDisposed { get; private set; }
 
         public void Execute()
         {
@@ -59,6 +61,8 @@ namespace GodotTools.Ides.MonoDevelop
             if (command == null)
                 throw new FileNotFoundException();
 
+            LaunchTime = DateTime.Now;
+
             if (newWindow)
             {
                 process = Process.Start(new ProcessStartInfo
@@ -86,6 +90,12 @@ namespace GodotTools.Ides.MonoDevelop
 
             this.solutionFile = solutionFile;
             this.editorId = editorId;
+        }
+
+        public void Dispose()
+        {
+            IsDisposed = true;
+            process?.Dispose();
         }
 
         private static readonly IReadOnlyDictionary<EditorId, string> ExecutableNames;
