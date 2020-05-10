@@ -738,7 +738,7 @@ RES ResourceFormatLoaderTheora::load(const String &p_path, const String &p_origi
 	VideoStreamTheora *stream = memnew(VideoStreamTheora);
 	stream->set_file(p_path);
 
-	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);
+	Ref<VideoStreamTheora> ogv_stream = stream;
 
 	if (r_error) {
 		*r_error = OK;

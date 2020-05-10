@@ -39,7 +39,7 @@ bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
 
 void EditorInspectorPluginStyleBox::parse_begin(Object *p_object) {
 
-	Ref<StyleBox> sb = Ref<StyleBox>(Object::cast_to<StyleBox>(p_object));
+	Ref<StyleBox> sb = Object::cast_to<StyleBox>(p_object);
 
 	StyleBoxPreview *preview = memnew(StyleBoxPreview);
 	preview->edit(sb);

@@ -189,7 +189,7 @@ Ref<Script> NativeScript::get_base_script() const {
 		return Ref<Script>();
 
 	NativeScript *script = (NativeScript *)NSL->create_script();
-	Ref<NativeScript> ns = Ref<NativeScript>(script);
+	Ref<NativeScript> ns = script;
 	ERR_FAIL_COND_V(!ns.is_valid(), Ref<Script>());
 
 	ns->set_class_name(script_data->base);

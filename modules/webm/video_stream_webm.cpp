@@ -487,7 +487,7 @@ RES ResourceFormatLoaderWebm::load(const String &p_path, const String &p_origina
 	VideoStreamWebm *stream = memnew(VideoStreamWebm);
 	stream->set_file(p_path);
 
-	Ref<VideoStreamWebm> webm_stream = Ref<VideoStreamWebm>(stream);
+	Ref<VideoStreamWebm> webm_stream = stream;
 
 	if (r_error) {
 		*r_error = OK;

@@ -131,7 +131,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	Ref<ImageTexture> ptex = memnew(ImageTexture);
 
 	ptex->create_from_image(img);
 	return ptex;
@@ -243,7 +243,7 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size
 
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	Ref<ImageTexture> ptex = memnew(ImageTexture);
 
 	ptex->create_from_image(img);
 	return ptex;
@@ -286,7 +286,7 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	Error err = img->load(path);
 	if (err == OK) {
 
-		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+		Ref<ImageTexture> ptex = memnew(ImageTexture);
 
 		post_process_preview(img);
 		ptex->create_from_image(img);
@@ -348,7 +348,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const RES &p_from, const Si
 		int thumbnail_size = MAX(p_size.x, p_size.y);
 		img->resize(thumbnail_size, thumbnail_size, Image::INTERPOLATE_CUBIC);
 		post_process_preview(img);
-		Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+		Ref<ImageTexture> ptex = memnew(ImageTexture);
 		ptex->create_from_image(img);
 		return ptex;
 	}
@@ -589,7 +589,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	Ref<ImageTexture> ptex = memnew(ImageTexture);
 
 	ptex->create_from_image(img);
 	return ptex;
@@ -674,7 +674,7 @@ Ref<Texture2D> EditorAudioStreamPreviewPlugin::generate(const RES &p_from, const
 
 	//post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	Ref<ImageTexture> ptex = memnew(ImageTexture);
 	Ref<Image> image;
 	image.instance();
 	image->create(w, h, false, Image::FORMAT_RGB8, img);
@@ -752,7 +752,7 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	Ref<ImageTexture> ptex = memnew(ImageTexture);
 	ptex->create_from_image(img);
 	return ptex;
 }
@@ -874,7 +874,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate_from_path(const String &p_path,
 
 	post_process_preview(img);
 
-	Ref<ImageTexture> ptex = Ref<ImageTexture>(memnew(ImageTexture));
+	Ref<ImageTexture> ptex = memnew(ImageTexture);
 	ptex->create_from_image(img);
 
 	return ptex;

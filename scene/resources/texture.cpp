@@ -1395,7 +1395,7 @@ int CurveTexture::get_width() const {
 
 void CurveTexture::ensure_default_setup(float p_min, float p_max) {
 	if (_curve.is_null()) {
-		Ref<Curve> curve = Ref<Curve>(memnew(Curve));
+		Ref<Curve> curve = memnew(Curve);
 		curve->add_point(Vector2(0, 1));
 		curve->add_point(Vector2(1, 1));
 		curve->set_min_value(p_min);

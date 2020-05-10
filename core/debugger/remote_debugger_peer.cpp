@@ -230,7 +230,7 @@ Ref<RemoteDebuggerPeer> RemoteDebuggerPeer::create_from_uri(const String p_uri) 
 		debug_port = debug_host.substr(sep_pos + 1).to_int();
 		debug_host = debug_host.substr(0, sep_pos);
 	}
-	Ref<RemoteDebuggerPeerTCP> peer = Ref<RemoteDebuggerPeer>(memnew(RemoteDebuggerPeerTCP));
+	Ref<RemoteDebuggerPeerTCP> peer = memnew(RemoteDebuggerPeerTCP);
 	Error err = peer->connect_to_host(debug_host, debug_port);
 	if (err != OK)
 		return Ref<RemoteDebuggerPeer>();

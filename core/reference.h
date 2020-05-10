@@ -175,6 +175,23 @@ public:
 		}
 	}
 
+	void operator=(T *p_from) {
+
+		if (p_from == reference) {
+			return;
+		}
+
+		unref();
+
+		if (!p_from) {
+			return;
+		}
+
+		if (p_from->reference()) {
+			reference = p_from;
+		}
+	}
+
 	template <class T_Other>
 	void reference_ptr(T_Other *p_ptr) {
 		if (reference == p_ptr) {

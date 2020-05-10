@@ -51,7 +51,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error) {
 	if (r_error)
 		*r_error = ERR_FILE_CORRUPT;
 
-	Ref<Translation> translation = Ref<Translation>(memnew(Translation));
+	Ref<Translation> translation = memnew(Translation);
 	int line = 1;
 	bool skip_this = false;
 	bool skip_next = false;

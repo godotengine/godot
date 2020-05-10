@@ -256,7 +256,7 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 
 Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
-	Ref<Theme> theme = Ref<Theme>(memnew(Theme));
+	Ref<Theme> theme = memnew(Theme);
 
 	const float default_contrast = 0.25;
 

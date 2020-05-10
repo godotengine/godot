@@ -213,7 +213,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					Object *inst = ClassDB::instance(orig_type);
 
-					Ref<Resource> res = Ref<Resource>(Object::cast_to<Resource>(inst));
+					Ref<Resource> res = Object::cast_to<Resource>(inst);
 
 					ERR_FAIL_COND(res.is_null());
 
@@ -1413,7 +1413,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					propvalues.push_back(p);
 				}
 
-				Ref<Resource> res = Ref<Resource>(ClassDB::instance(res_orig->get_class()));
+				Ref<Resource> res(ClassDB::instance(res_orig->get_class()));
 
 				ERR_FAIL_COND(res.is_null());
 

@@ -691,7 +691,7 @@ Ref<Material> SceneTree::get_debug_navigation_material() {
 	if (navigation_material.is_valid())
 		return navigation_material;
 
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	Ref<StandardMaterial3D> line_material = memnew(StandardMaterial3D);
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
@@ -708,7 +708,7 @@ Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
 	if (navigation_disabled_material.is_valid())
 		return navigation_disabled_material;
 
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	Ref<StandardMaterial3D> line_material = memnew(StandardMaterial3D);
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
@@ -724,7 +724,7 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 	if (collision_material.is_valid())
 		return collision_material;
 
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	Ref<StandardMaterial3D> line_material = memnew(StandardMaterial3D);
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
@@ -743,7 +743,7 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 
 	debug_contact_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
-	Ref<StandardMaterial3D> mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);

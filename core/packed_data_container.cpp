@@ -106,7 +106,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 	if (type == TYPE_ARRAY || type == TYPE_DICT) {
 
 		Ref<PackedDataContainerRef> pdcr = memnew(PackedDataContainerRef);
-		Ref<PackedDataContainer> pdc = Ref<PackedDataContainer>((PackedDataContainer *)this);
+		Ref<PackedDataContainer> pdc = (PackedDataContainer *)this;
 
 		pdcr->from = pdc;
 		pdcr->offset = p_ofs;

@@ -411,7 +411,7 @@ Node *GDScriptWorkspace::_get_owner_scene_node(String p_path) {
 		NodePath owner_path = owners[i];
 		RES owner_res = ResourceLoader::load(owner_path);
 		if (Object::cast_to<PackedScene>(owner_res.ptr())) {
-			Ref<PackedScene> owner_packed_scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*owner_res));
+			Ref<PackedScene> owner_packed_scene = Object::cast_to<PackedScene>(*owner_res);
 			owner_scene_node = owner_packed_scene->instance();
 			break;
 		}
