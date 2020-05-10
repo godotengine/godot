@@ -2420,10 +2420,6 @@ void CSharpScript::_update_member_info_no_exports() {
 
 bool CSharpScript::_update_exports() {
 
-#ifdef TOOLS_ENABLED
-	if (!Engine::get_singleton()->is_editor_hint())
-		return false;
-
 	placeholder_fallback_enabled = true; // until proven otherwise
 
 	if (!valid)
@@ -2572,8 +2568,6 @@ bool CSharpScript::_update_exports() {
 	}
 
 	return changed;
-#endif
-	return false;
 }
 
 void CSharpScript::load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class) {
