@@ -121,7 +121,8 @@ private:
 public:
 	_FORCE_INLINE_ bool in_list() const { return _root; }
 	_FORCE_INLINE_ void remove_from_list() {
-		if (_root) _root->remove(this);
+		if (_root)
+			_root->remove(this);
 	}
 	_FORCE_INLINE_ SelfList<T> *next() { return _next; }
 	_FORCE_INLINE_ SelfList<T> *prev() { return _prev; }

@@ -248,7 +248,8 @@ void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) co
 		info.ip_addresses.push_front(_sockaddr2ip(ifa->ifa_addr));
 	}
 
-	if (ifAddrStruct != nullptr) freeifaddrs(ifAddrStruct);
+	if (ifAddrStruct != nullptr)
+		freeifaddrs(ifAddrStruct);
 }
 #endif
 

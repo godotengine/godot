@@ -373,7 +373,8 @@ NodePath::NodePath(const String &p_path) {
 
 				String str = path.substr(from, i - from);
 				if (str == "") {
-					if (path[i] == 0) continue; // Allow end-of-path :
+					if (path[i] == 0)
+						continue; // Allow end-of-path :
 
 					ERR_FAIL_MSG("Invalid NodePath '" + p_path + "'.");
 				}

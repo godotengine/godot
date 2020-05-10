@@ -74,7 +74,8 @@ void ScriptEditorDebugger::_put_msg(String p_message, Array p_data) {
 
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
-	if (msg == "") return;
+	if (msg == "")
+		return;
 	DisplayServer::get_singleton()->clipboard_set(msg);
 }
 

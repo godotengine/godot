@@ -50,7 +50,8 @@ int iphone_main(int width, int height, int argc, char **argv, String data_dir) {
 	size_t len = strlen(argv[0]);
 
 	while (len--) {
-		if (argv[0][len] == '/') break;
+		if (argv[0][len] == '/')
+			break;
 	}
 
 	if (len >= 0) {

@@ -385,7 +385,8 @@ String ExtendGDScriptParser::parse_documentation(int p_line, bool p_docs_down) {
 	int start_line = p_docs_down ? p_line : p_line - 1;
 	for (int i = start_line; true; i += step) {
 
-		if (i < 0 || i >= lines.size()) break;
+		if (i < 0 || i >= lines.size())
+			break;
 
 		String line_comment = lines[i].strip_edges(true, false);
 		if (line_comment.begins_with("#")) {

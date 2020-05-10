@@ -3082,7 +3082,8 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(editor_data.get_scene_path(old_index));
 	}
 
-	if (p_change_tab) _scene_tab_changed(new_index);
+	if (p_change_tab)
+		_scene_tab_changed(new_index);
 	editor_data.remove_scene(old_index);
 	editor_data.get_undo_redo().clear_history(false);
 	_update_title();

@@ -1786,7 +1786,8 @@ void FindBar::_update_results_count() {
 	results_count = 0;
 
 	String searched = search_text->get_text();
-	if (searched.empty()) return;
+	if (searched.empty())
+		return;
 
 	String full_text = rich_text_label->get_text();
 

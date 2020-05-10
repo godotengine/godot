@@ -414,7 +414,8 @@ Error DirAccessPack::change_dir(String p_dir) {
 
 	nd = nd.simplify_path();
 
-	if (nd == "") nd = ".";
+	if (nd == "")
+		nd = ".";
 
 	if (nd.begins_with("/")) {
 		nd = nd.replace_first("/", "");
