@@ -6,18 +6,18 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" Version="16.5.0" />
-    <PackageReference Include="Microsoft.Build.Runtime" Version="16.5.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GodotTools.Core\GodotTools.Core.csproj" />
   </ItemGroup>
-  <PropertyGroup>
+  <ItemGroup>
     <!--
-    The 'Microsoft.Build.Runtime' package includes an mscorlib reference assembly in contentFiles.
-    This causes our project build to fail. As a workaround, we remove {CandidateAssemblyFiles}
-    from AssemblySearchPaths as described here: https://github.com/microsoft/msbuild/issues/3486.
+    The Microsoft.Build.Runtime package is too problematic so we create a MSBuild.exe stub. The workaround described
+    here doesn't work with Microsoft.NETFramework.ReferenceAssemblies: https://github.com/microsoft/msbuild/issues/3486
+    We need a MSBuild.exe file as there's an issue in Microsoft.Build where it executes platform dependent code when
+    searching for MSBuild.exe before the fallback to not using it. A stub is fine as it should never be executed.
     -->
-    <AssemblySearchPaths>$([System.String]::Copy('$(AssemblySearchPaths)').Replace('{CandidateAssemblyFiles}', ''))</AssemblySearchPaths>
-    <AssemblySearchPaths Condition=" '$(MSBuildRuntimeVersion)' != '' ">$(AssemblySearchPaths.Split(';'))</AssemblySearchPaths>
-  </PropertyGroup>
+    <None Include="MSBuild.exe" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 </Project>

@@ -125,6 +125,12 @@ namespace GodotTools.ProjectEditor
             // References
             var referenceGroup = root.AddItemGroup();
             referenceGroup.AddItem("Reference", "System");
+            var frameworkRefAssembliesItem = referenceGroup.AddItem("PackageReference", "Microsoft.NETFramework.ReferenceAssemblies");
+
+            // Use metadata (child nodes) instead of attributes for the PackageReference.
+            // This is for compatibility with 3.2, where GodotTools uses an old Microsoft.Build.
+            frameworkRefAssembliesItem.AddMetadata("Version", "1.0.0");
+            frameworkRefAssembliesItem.AddMetadata("PrivateAssets", "All");
 
             root.AddImport(Path.Combine("$(MSBuildBinPath)", "Microsoft.CSharp.targets").Replace("/", "\\"));
 
