@@ -8054,17 +8054,6 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 		p_function->return_type.has_type = false;
 		p_function->return_type.may_yield = true;
 	}
-
-#ifdef DEBUG_ENABLED
-	for (Map<StringName, LocalVarNode *>::Element *E = p_function->body->variables.front(); E; E = E->next()) {
-		LocalVarNode *lv = E->get();
-		for (int i = 0; i < current_class->variables.size(); i++) {
-			if (current_class->variables[i].identifier == lv->name) {
-				_add_warning(GDScriptWarning::SHADOWED_VARIABLE, lv->line, lv->name, itos(current_class->variables[i].line));
-			}
-		}
-	}
-#endif // DEBUG_ENABLED
 }
 
 void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
@@ -8171,6 +8160,11 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 					}
 					if (lv->datatype.has_type && assign_type.may_yield && lv->assign->type == Node::TYPE_OPERATOR) {
 						_add_warning(GDScriptWarning::FUNCTION_MAY_YIELD, lv->line, _find_function_name(static_cast<OperatorNode *>(lv->assign)));
+					}
+					for (int i = 0; i < current_class->variables.size(); i++) {
+						if (current_class->variables[i].identifier == lv->name) {
+							_add_warning(GDScriptWarning::SHADOWED_VARIABLE, lv->line, lv->name, itos(current_class->variables[i].line));
+						}
 					}
 #endif // DEBUG_ENABLED
 
