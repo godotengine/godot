@@ -31,4 +31,3 @@
 #include <editor/editor_export.h>
 
 void register_sailfish_exporter();
-

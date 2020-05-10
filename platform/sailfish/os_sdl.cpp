@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/string_builder.h"
 #include "os_sdl.h"
+#include "core/string_builder.h"
 // #ifndef GLES2_ENABLED
 // #include "drivers/gles3/rasterizer_gles3.h"
 // #else

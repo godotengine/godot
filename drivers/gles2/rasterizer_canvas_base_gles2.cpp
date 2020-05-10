@@ -345,7 +345,9 @@ void RasterizerCanvasBaseGLES2::_bind_quad_buffer() {
 }
 
 void RasterizerCanvasBaseGLES2::_set_uniforms() {
+#if SAILFISH_FORCE_LANDSCAPE && SAILFISH_ENABLED
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
+#endif
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX, state.uniforms.projection_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX, state.uniforms.extra_matrix);

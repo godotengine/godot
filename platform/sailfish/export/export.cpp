@@ -319,7 +319,7 @@ protected:
 		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
 		String tool = EDITOR_GET("export/sailfish/tool");
 
-		if( tool == String("ssh") )
+		if (tool == String("ssh"))
 			sdk_tool = SDKConnectType::tool_ssh;
 
 		List<String> args;
@@ -383,13 +383,11 @@ protected:
 		if (!shared_home.empty() && export_path.find(shared_home) == 0) {
 			export_path_part = export_path.substr(shared_home.length(), export_path.length() - shared_home.length()).replace(separator, "/") + String("_buildroot");
 			sdk_shared_path = String("/home/mersdk/share");
-		}
-		else if ( !shared_src.empty() && export_path.find(shared_src) == 0) {
+		} else if (!shared_src.empty() && export_path.find(shared_src) == 0) {
 			export_path_part = export_path.substr(shared_src.length(), export_path.length() - shared_src.length()).replace(separator, "/") + String("_buildroot");
 			sdk_shared_path = String("/home/src1");
-		}
-		else {
-			print_error(String("Export path outside of SharedHome and SharedSrc:\nSharedHome: ") +shared_home + String("\nSharedSrc: ") + shared_src);
+		} else {
+			print_error(String("Export path outside of SharedHome and SharedSrc:\nSharedHome: ") + shared_home + String("\nSharedSrc: ") + shared_src);
 			return ERR_CANT_CREATE;
 		}
 
@@ -541,7 +539,7 @@ protected:
 			print_verbose(String("sfdk") + result_string);
 			String execute_binary = sfdk_tool;
 			String long_parameter;
-			if ( sdk_tool == SDKConnectType::tool_ssh ) {
+			if (sdk_tool == SDKConnectType::tool_ssh) {
 				// here we neet to know where is RSA keys for buildengine
 				String rsa_key_path = p_preset->get(prop_sailfish_sdk_path);
 				rsa_key_path += String(mersdk_rsa_key);
@@ -550,12 +548,12 @@ protected:
 				args.push_back("-o");
 				args.push_back("\"IdentitiesOnly=yes\"");
 				args.push_back("-i");
-				args.push_back( String("\"") + rsa_key_path + String("\"") );
+				args.push_back(String("\"") + rsa_key_path + String("\""));
 				args.push_back("-p");
 				args.push_back(ssh_port); // default is 2222 port
 				args.push_back("mersdk@localhost");
-                
-                buid_script_path = sdk_shared_path + export_path_part + separator + String("buildscript.sh");
+
+				buid_script_path = sdk_shared_path + export_path_part + separator + String("buildscript.sh");
 
 			} else { // SFDK tool
 				args.clear();
@@ -679,7 +677,7 @@ public:
 		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
 		String tool = EDITOR_GET("export/sailfish/tool");
 
-		if( tool == String("ssh") )
+		if (tool == String("ssh"))
 			sdk_tool = SDKConnectType::tool_ssh;
 
 		if (driver == "GLES3") {
@@ -697,8 +695,8 @@ public:
 		else
 			x86_template = String(p_preset->get(prop_custom_binary_x86));
 
-		print_verbose( String("arm_binary: ") + arm_template );
-		print_verbose( String("x86_binary: ") + x86_template );
+		print_verbose(String("arm_binary: ") + arm_template);
+		print_verbose(String("x86_binary: ") + x86_template);
 
 		if (arm_template.empty() && x86_template.empty()) {
 			r_error = TTR("Cant export without SailfishOS export templates");
@@ -741,11 +739,11 @@ public:
 		}
 
 		// ---- if we use ssh, we need RSA keys for build engine
-		if( sdk_tool == SDKConnectType::tool_ssh ) {
+		if (sdk_tool == SDKConnectType::tool_ssh) {
 			String rsa_key_path = sdk_path;
 			rsa_key_path += String("/vmshare/ssh/private_keys/engine/mersdk");
 			DirAccessRef da = DirAccess::open(sdk_path, &err);
-			if( !da  || !da->file_exists(rsa_key_path) ) {
+			if (!da || !da->file_exists(rsa_key_path)) {
 				r_error = TTR("Cant find RSA key for access to build engine:\n") + rsa_key_path;
 				return false;
 			}
@@ -804,7 +802,8 @@ public:
 			return false;
 		}
 
-		String sfdk_path;;
+		String sfdk_path;
+		;
 
 		//  Chek if tool exists --------------------------------
 
@@ -821,19 +820,19 @@ public:
 			}
 		} else {
 			sfdk_path = EDITOR_GET("export/sailfish/ssh_tool_path");
-// #ifdef WINDOWS_ENABLED
-// 			sfdk_path += String(".exe");
-// #endif
+			// #ifdef WINDOWS_ENABLED
+			// 			sfdk_path += String(".exe");
+			// #endif
 			if (err != Error::OK || !da || !da->file_exists(sfdk_path)) {
 				r_error = TTR("Wrong SSH tool path. Setup it in Editor->Settings->Export->Sailfish");
 				return false;
 			}
-            
-            String rsa_key = sdk_path + String(mersdk_rsa_key);
-            if (!da->file_exists(rsa_key)) {
-                r_error = TTR("Cant find RSA key for acces to build engine. Try use SailfishIDE for generate keys.");
-                return false;
-            }
+
+			String rsa_key = sdk_path + String(mersdk_rsa_key);
+			if (!da->file_exists(rsa_key)) {
+				r_error = TTR("Cant find RSA key for acces to build engine. Try use SailfishIDE for generate keys.");
+				return false;
+			}
 		}
 
 		/// PARSE XML ------------------------------------------
@@ -905,7 +904,7 @@ public:
 		}
 
 		String export_path = get_absolute_export_path(p_preset->get_export_path());
-		print_verbose( String("Export path: ") + export_path );
+		print_verbose(String("Export path: ") + export_path);
 		if (!shared_home.empty() && export_path.find(shared_home) >= 0) {
 			//            result = result;
 			return true && result;
@@ -939,7 +938,7 @@ public:
 		SDKConnectType sdk_tool = SDKConnectType::tool_sfdk;
 		String tool = EDITOR_GET("export/sailfish/tool");
 
-		if( tool == String("ssh") ) {
+		if (tool == String("ssh")) {
 			sdk_tool = SDKConnectType::tool_ssh;
 		}
 
@@ -983,18 +982,18 @@ public:
 		List<String> args;
 		List<String> output_list;
 
-		if ( sdk_tool == SDKConnectType::tool_sfdk ) {
+		if (sdk_tool == SDKConnectType::tool_sfdk) {
 			args.push_back("engine");
 			args.push_back("exec");
-		} else { // use SSH 
+		} else { // use SSH
 			String rsa_key_path = sdk_path;
 			rsa_key_path += String("/vmshare/ssh/private_keys/engine/mersdk");
-			sfdk_tool =  EDITOR_GET("export/sailfish/ssh_tool_path");
+			sfdk_tool = EDITOR_GET("export/sailfish/ssh_tool_path");
 			String ssh_port = EDITOR_GET("export/sailfish/ssh_port");
 			args.push_back("-o");
 			args.push_back("\"IdentitiesOnly=yes\"");
 			args.push_back("-i");
-			args.push_back( String("\"") + rsa_key_path + String("\"") );
+			args.push_back(String("\"") + rsa_key_path + String("\""));
 			args.push_back("-p");
 			args.push_back(ssh_port); // default is 2222 port
 			args.push_back("mersdk@localhost");
@@ -1004,9 +1003,9 @@ public:
 
 		ep.step("check build targets", 20);
 		List<MerTarget> targets;
-		{// echo verbose
+		{ // echo verbose
 			String result_cmd = sfdk_tool;
-			for(int i = 0; i < args.size(); i ++ )
+			for (int i = 0; i < args.size(); i++)
 				result_cmd += String(" ") + args[i];
 			print_verbose(result_cmd);
 		}
@@ -1150,11 +1149,11 @@ protected:
 };
 
 void register_sailfish_exporter() {
-    
-    String exe_ext;
-    if (OS::get_singleton()->get_name() == "Windows") {
-        exe_ext = "*.exe";
-    }
+
+	String exe_ext;
+	if (OS::get_singleton()->get_name() == "Windows") {
+		exe_ext = "*.exe";
+	}
 
 	Ref<EditorExportPlatformSailfish> platform;
 	Ref<EditorExportPlatformPC> p;
@@ -1168,22 +1167,22 @@ void register_sailfish_exporter() {
 
 	EDITOR_DEF("export/sailfish/sdk_path", "halllo!");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/sdk_path", PROPERTY_HINT_GLOBAL_DIR));
-//    String stat = EDITOR_GET("export/sailfish/sdk_path");
-    
+	//    String stat = EDITOR_GET("export/sailfish/sdk_path");
+
 #ifdef WINDOWS_ENABLED
 	EDITOR_DEF("export/sailfish/tool", "ssh");
 #else
 	EDITOR_DEF("export/sailfish/tool", "sfdk");
 #endif
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/sailfish/tool", PROPERTY_HINT_ENUM, "sfdk,ssh"));
-    
+
 #ifndef WINDOWS_ENABLED
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if ( da->file_exists("/usr/bin/ssh") )
+	if (da->file_exists("/usr/bin/ssh"))
 		EDITOR_DEF("export/sailfish/ssh_tool_path", "/usr/bin/ssh");
 	else
 		EDITOR_DEF("export/sailfish/ssh_tool_path", "");
-	// da.reset()
+		// da.reset()
 #else
 	EDITOR_DEF("export/sailfish/ssh_tool_path", "");
 #endif
