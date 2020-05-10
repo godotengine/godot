@@ -133,7 +133,7 @@ public:
 	void remove_point(int p_id);
 	bool has_point(int p_id) const;
 	Vector<int> get_point_connections(int p_id);
-	Array get_points();
+	Array get_point_ids();
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
@@ -180,7 +180,7 @@ public:
 	void remove_point(int p_id);
 	bool has_point(int p_id) const;
 	Vector<int> get_point_connections(int p_id);
-	Array get_points();
+	Array get_point_ids();
 
 	void set_point_disabled(int p_id, bool p_disabled = true);
 	bool is_point_disabled(int p_id) const;
