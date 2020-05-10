@@ -1564,6 +1564,13 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 			} break;
 		}
 	}
+
+	// Set the correct end line for p_blocks that have one.
+	// Needed so varaibles within a p_block don't lose scope
+	// on the last line of the p_block for the debugger
+	if (p_block->end_line != -1) {
+		codegen.current_line = p_block->end_line;
+	}
 	codegen.pop_stack_identifiers();
 	return OK;
 }
