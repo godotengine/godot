@@ -130,22 +130,14 @@ void main() {
 #ifdef USE_TEXTURE_RECT
 
 	if (dst_rect.z < 0.0) { // Transpose is encoded as negative dst_rect.z
-		uv = src_rect.xy + abs(src_rect.zw) * vertex.yx;
+		uv = src_rect.xy + (src_rect.zw * vertex.yx);
 	} else {
-		uv = src_rect.xy + abs(src_rect.zw) * vertex;
+		uv = src_rect.xy + (src_rect.zw * vertex.xy);
 	}
 
 	vec4 outvec = vec4(0.0, 0.0, 0.0, 1.0);
+	outvec.xy = dst_rect.xy + (abs(dst_rect.zw) * vertex.xy);
 
-	// This is what is done in the GLES 3 bindings and should
-	// take care of flipped rects.
-	//
-	// But it doesn't.
-	// I don't know why, will need to investigate further.
-
-	outvec.xy = dst_rect.xy + abs(dst_rect.zw) * select(vertex, vec2(1.0, 1.0) - vertex, lessThan(src_rect.zw, vec2(0.0, 0.0)));
-
-	// outvec.xy = dst_rect.xy + abs(dst_rect.zw) * vertex;
 #else
 	vec4 outvec = vec4(vertex.xy, 0.0, 1.0);
 
