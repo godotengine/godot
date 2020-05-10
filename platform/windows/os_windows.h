@@ -49,6 +49,7 @@
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
 
+#include <dwmapi.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
@@ -297,10 +298,6 @@ class OS_Windows : public OS {
 	HWND hWnd;
 	Point2 last_pos;
 
-	HBITMAP hBitmap; //DIB section for layered window
-	uint8_t *dib_data;
-	Size2 dib_size;
-	HDC hDC_dib;
 	bool layered_window;
 
 	uint32_t move_timer_id;
@@ -451,10 +448,6 @@ public:
 
 	virtual bool get_window_per_pixel_transparency_enabled() const;
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled);
-
-	virtual uint8_t *get_layered_buffer_data();
-	virtual Size2 get_layered_buffer_size();
-	virtual void swap_layered_buffer();
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 	virtual Error close_dynamic_library(void *p_library_handle);
