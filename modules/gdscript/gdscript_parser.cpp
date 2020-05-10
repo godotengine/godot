@@ -3160,6 +3160,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 								ConstantNode *c = static_cast<ConstantNode *>(op->arguments[i]);
 								if (c->value.get_type() == Variant::FLOAT || c->value.get_type() == Variant::INT) {
 									constants.push_back(c->value);
+								} else {
+									constant = false;
 								}
 							} else {
 								constant = false;
