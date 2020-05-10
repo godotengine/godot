@@ -121,7 +121,7 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
-static bool single_window = false;
+static bool single_window = true;
 static bool editor = false;
 static bool project_manager = false;
 static String locale;
