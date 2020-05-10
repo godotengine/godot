@@ -326,9 +326,15 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 
 	type = p_type;
 	switch (p_type) {
-		case RS::LIGHT_DIRECTIONAL: light = RenderingServer::get_singleton()->directional_light_create(); break;
-		case RS::LIGHT_OMNI: light = RenderingServer::get_singleton()->omni_light_create(); break;
-		case RS::LIGHT_SPOT: light = RenderingServer::get_singleton()->spot_light_create(); break;
+		case RS::LIGHT_DIRECTIONAL:
+			light = RenderingServer::get_singleton()->directional_light_create();
+			break;
+		case RS::LIGHT_OMNI:
+			light = RenderingServer::get_singleton()->omni_light_create();
+			break;
+		case RS::LIGHT_SPOT:
+			light = RenderingServer::get_singleton()->spot_light_create();
+			break;
 		default: {
 		};
 	}

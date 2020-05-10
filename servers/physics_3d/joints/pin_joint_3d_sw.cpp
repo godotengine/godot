@@ -129,18 +129,27 @@ void PinJoint3DSW::solve(real_t p_step) {
 void PinJoint3DSW::set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value) {
 
 	switch (p_param) {
-		case PhysicsServer3D::PIN_JOINT_BIAS: m_tau = p_value; break;
-		case PhysicsServer3D::PIN_JOINT_DAMPING: m_damping = p_value; break;
-		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP: m_impulseClamp = p_value; break;
+		case PhysicsServer3D::PIN_JOINT_BIAS:
+			m_tau = p_value;
+			break;
+		case PhysicsServer3D::PIN_JOINT_DAMPING:
+			m_damping = p_value;
+			break;
+		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
+			m_impulseClamp = p_value;
+			break;
 	}
 }
 
 real_t PinJoint3DSW::get_param(PhysicsServer3D::PinJointParam p_param) const {
 
 	switch (p_param) {
-		case PhysicsServer3D::PIN_JOINT_BIAS: return m_tau;
-		case PhysicsServer3D::PIN_JOINT_DAMPING: return m_damping;
-		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP: return m_impulseClamp;
+		case PhysicsServer3D::PIN_JOINT_BIAS:
+			return m_tau;
+		case PhysicsServer3D::PIN_JOINT_DAMPING:
+			return m_damping;
+		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
+			return m_impulseClamp;
 	}
 
 	return 0;

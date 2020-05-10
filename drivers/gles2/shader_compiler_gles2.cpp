@@ -55,10 +55,14 @@ static String _typestr(SL::DataType p_type) {
 static String _prestr(SL::DataPrecision p_pres) {
 
 	switch (p_pres) {
-		case SL::PRECISION_LOWP: return "lowp ";
-		case SL::PRECISION_MEDIUMP: return "mediump ";
-		case SL::PRECISION_HIGHP: return "highp ";
-		case SL::PRECISION_DEFAULT: return "";
+		case SL::PRECISION_LOWP:
+			return "lowp ";
+		case SL::PRECISION_MEDIUMP:
+			return "mediump ";
+		case SL::PRECISION_HIGHP:
+			return "highp ";
+		case SL::PRECISION_DEFAULT:
+			return "";
 	}
 	return "";
 }
@@ -66,9 +70,12 @@ static String _prestr(SL::DataPrecision p_pres) {
 static String _qualstr(SL::ArgumentQualifier p_qual) {
 
 	switch (p_qual) {
-		case SL::ARGUMENT_QUALIFIER_IN: return "in ";
-		case SL::ARGUMENT_QUALIFIER_OUT: return "out ";
-		case SL::ARGUMENT_QUALIFIER_INOUT: return "inout ";
+		case SL::ARGUMENT_QUALIFIER_IN:
+			return "in ";
+		case SL::ARGUMENT_QUALIFIER_OUT:
+			return "out ";
+		case SL::ARGUMENT_QUALIFIER_INOUT:
+			return "inout ";
 	}
 	return "";
 }
@@ -96,7 +103,8 @@ static String f2sp0(float p_float) {
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
 
 	switch (p_type) {
-		case SL::TYPE_BOOL: return p_values[0].boolean ? "true" : "false";
+		case SL::TYPE_BOOL:
+			return p_values[0].boolean ? "true" : "false";
 		case SL::TYPE_BVEC2:
 		case SL::TYPE_BVEC3:
 		case SL::TYPE_BVEC4: {
@@ -118,7 +126,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		}
 
 		// GLSL ES 2 doesn't support uints, so we just use signed ints instead...
-		case SL::TYPE_UINT: return itos(p_values[0].uint);
+		case SL::TYPE_UINT:
+			return itos(p_values[0].uint);
 		case SL::TYPE_UVEC2:
 		case SL::TYPE_UVEC3:
 		case SL::TYPE_UVEC4: {
@@ -140,7 +149,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 
 		} break;
 
-		case SL::TYPE_INT: return itos(p_values[0].sint);
+		case SL::TYPE_INT:
+			return itos(p_values[0].sint);
 		case SL::TYPE_IVEC2:
 		case SL::TYPE_IVEC3:
 		case SL::TYPE_IVEC4: {
@@ -161,7 +171,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text.as_string();
 
 		} break;
-		case SL::TYPE_FLOAT: return f2sp0(p_values[0].real);
+		case SL::TYPE_FLOAT:
+			return f2sp0(p_values[0].real);
 		case SL::TYPE_VEC2:
 		case SL::TYPE_VEC3:
 		case SL::TYPE_VEC4: {
@@ -202,7 +213,8 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text.as_string();
 
 		} break;
-		default: ERR_FAIL_V(String());
+		default:
+			ERR_FAIL_V(String());
 	}
 }
 

@@ -1091,9 +1091,15 @@ void PhysicsServer2DSW::joint_set_param(RID p_joint, JointParam p_param, real_t 
 	ERR_FAIL_COND(!joint);
 
 	switch (p_param) {
-		case JOINT_PARAM_BIAS: joint->set_bias(p_value); break;
-		case JOINT_PARAM_MAX_BIAS: joint->set_max_bias(p_value); break;
-		case JOINT_PARAM_MAX_FORCE: joint->set_max_force(p_value); break;
+		case JOINT_PARAM_BIAS:
+			joint->set_bias(p_value);
+			break;
+		case JOINT_PARAM_MAX_BIAS:
+			joint->set_max_bias(p_value);
+			break;
+		case JOINT_PARAM_MAX_FORCE:
+			joint->set_max_force(p_value);
+			break;
 	}
 }
 
@@ -1103,9 +1109,15 @@ real_t PhysicsServer2DSW::joint_get_param(RID p_joint, JointParam p_param) const
 	ERR_FAIL_COND_V(!joint, -1);
 
 	switch (p_param) {
-		case JOINT_PARAM_BIAS: return joint->get_bias(); break;
-		case JOINT_PARAM_MAX_BIAS: return joint->get_max_bias(); break;
-		case JOINT_PARAM_MAX_FORCE: return joint->get_max_force(); break;
+		case JOINT_PARAM_BIAS:
+			return joint->get_bias();
+			break;
+		case JOINT_PARAM_MAX_BIAS:
+			return joint->get_max_bias();
+			break;
+		case JOINT_PARAM_MAX_FORCE:
+			return joint->get_max_force();
+			break;
 	}
 
 	return 0;

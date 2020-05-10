@@ -566,52 +566,66 @@ int RenderingDeviceVulkan::get_format_vertex_size(DataFormat p_format) {
 		case DATA_FORMAT_B8G8R8A8_UNORM:
 		case DATA_FORMAT_B8G8R8A8_SNORM:
 		case DATA_FORMAT_B8G8R8A8_UINT:
-		case DATA_FORMAT_B8G8R8A8_SINT: return 4;
+		case DATA_FORMAT_B8G8R8A8_SINT:
+			return 4;
 		case DATA_FORMAT_R16_UNORM:
 		case DATA_FORMAT_R16_SNORM:
 		case DATA_FORMAT_R16_UINT:
 		case DATA_FORMAT_R16_SINT:
-		case DATA_FORMAT_R16_SFLOAT: return 4;
+		case DATA_FORMAT_R16_SFLOAT:
+			return 4;
 		case DATA_FORMAT_R16G16_UNORM:
 		case DATA_FORMAT_R16G16_SNORM:
 		case DATA_FORMAT_R16G16_UINT:
 		case DATA_FORMAT_R16G16_SINT:
-		case DATA_FORMAT_R16G16_SFLOAT: return 4;
+		case DATA_FORMAT_R16G16_SFLOAT:
+			return 4;
 		case DATA_FORMAT_R16G16B16_UNORM:
 		case DATA_FORMAT_R16G16B16_SNORM:
 		case DATA_FORMAT_R16G16B16_UINT:
 		case DATA_FORMAT_R16G16B16_SINT:
-		case DATA_FORMAT_R16G16B16_SFLOAT: return 8;
+		case DATA_FORMAT_R16G16B16_SFLOAT:
+			return 8;
 		case DATA_FORMAT_R16G16B16A16_UNORM:
 		case DATA_FORMAT_R16G16B16A16_SNORM:
 		case DATA_FORMAT_R16G16B16A16_UINT:
 		case DATA_FORMAT_R16G16B16A16_SINT:
-		case DATA_FORMAT_R16G16B16A16_SFLOAT: return 8;
+		case DATA_FORMAT_R16G16B16A16_SFLOAT:
+			return 8;
 		case DATA_FORMAT_R32_UINT:
 		case DATA_FORMAT_R32_SINT:
-		case DATA_FORMAT_R32_SFLOAT: return 4;
+		case DATA_FORMAT_R32_SFLOAT:
+			return 4;
 		case DATA_FORMAT_R32G32_UINT:
 		case DATA_FORMAT_R32G32_SINT:
-		case DATA_FORMAT_R32G32_SFLOAT: return 8;
+		case DATA_FORMAT_R32G32_SFLOAT:
+			return 8;
 		case DATA_FORMAT_R32G32B32_UINT:
 		case DATA_FORMAT_R32G32B32_SINT:
-		case DATA_FORMAT_R32G32B32_SFLOAT: return 12;
+		case DATA_FORMAT_R32G32B32_SFLOAT:
+			return 12;
 		case DATA_FORMAT_R32G32B32A32_UINT:
 		case DATA_FORMAT_R32G32B32A32_SINT:
-		case DATA_FORMAT_R32G32B32A32_SFLOAT: return 16;
+		case DATA_FORMAT_R32G32B32A32_SFLOAT:
+			return 16;
 		case DATA_FORMAT_R64_UINT:
 		case DATA_FORMAT_R64_SINT:
-		case DATA_FORMAT_R64_SFLOAT: return 8;
+		case DATA_FORMAT_R64_SFLOAT:
+			return 8;
 		case DATA_FORMAT_R64G64_UINT:
 		case DATA_FORMAT_R64G64_SINT:
-		case DATA_FORMAT_R64G64_SFLOAT: return 16;
+		case DATA_FORMAT_R64G64_SFLOAT:
+			return 16;
 		case DATA_FORMAT_R64G64B64_UINT:
 		case DATA_FORMAT_R64G64B64_SINT:
-		case DATA_FORMAT_R64G64B64_SFLOAT: return 24;
+		case DATA_FORMAT_R64G64B64_SFLOAT:
+			return 24;
 		case DATA_FORMAT_R64G64B64A64_UINT:
 		case DATA_FORMAT_R64G64B64A64_SINT:
-		case DATA_FORMAT_R64G64B64A64_SFLOAT: return 32;
-		default: return 0;
+		case DATA_FORMAT_R64G64B64A64_SFLOAT:
+			return 32;
+		default:
+			return 0;
 	}
 }
 
@@ -619,28 +633,32 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 
 	switch (p_format) {
 
-		case DATA_FORMAT_R4G4_UNORM_PACK8: return 1;
+		case DATA_FORMAT_R4G4_UNORM_PACK8:
+			return 1;
 		case DATA_FORMAT_R4G4B4A4_UNORM_PACK16:
 		case DATA_FORMAT_B4G4R4A4_UNORM_PACK16:
 		case DATA_FORMAT_R5G6B5_UNORM_PACK16:
 		case DATA_FORMAT_B5G6R5_UNORM_PACK16:
 		case DATA_FORMAT_R5G5B5A1_UNORM_PACK16:
 		case DATA_FORMAT_B5G5R5A1_UNORM_PACK16:
-		case DATA_FORMAT_A1R5G5B5_UNORM_PACK16: return 2;
+		case DATA_FORMAT_A1R5G5B5_UNORM_PACK16:
+			return 2;
 		case DATA_FORMAT_R8_UNORM:
 		case DATA_FORMAT_R8_SNORM:
 		case DATA_FORMAT_R8_USCALED:
 		case DATA_FORMAT_R8_SSCALED:
 		case DATA_FORMAT_R8_UINT:
 		case DATA_FORMAT_R8_SINT:
-		case DATA_FORMAT_R8_SRGB: return 1;
+		case DATA_FORMAT_R8_SRGB:
+			return 1;
 		case DATA_FORMAT_R8G8_UNORM:
 		case DATA_FORMAT_R8G8_SNORM:
 		case DATA_FORMAT_R8G8_USCALED:
 		case DATA_FORMAT_R8G8_SSCALED:
 		case DATA_FORMAT_R8G8_UINT:
 		case DATA_FORMAT_R8G8_SINT:
-		case DATA_FORMAT_R8G8_SRGB: return 2;
+		case DATA_FORMAT_R8G8_SRGB:
+			return 2;
 		case DATA_FORMAT_R8G8B8_UNORM:
 		case DATA_FORMAT_R8G8B8_SNORM:
 		case DATA_FORMAT_R8G8B8_USCALED:
@@ -654,7 +672,8 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_B8G8R8_SSCALED:
 		case DATA_FORMAT_B8G8R8_UINT:
 		case DATA_FORMAT_B8G8R8_SINT:
-		case DATA_FORMAT_B8G8R8_SRGB: return 3;
+		case DATA_FORMAT_B8G8R8_SRGB:
+			return 3;
 		case DATA_FORMAT_R8G8B8A8_UNORM:
 		case DATA_FORMAT_R8G8B8A8_SNORM:
 		case DATA_FORMAT_R8G8B8A8_USCALED:
@@ -668,7 +687,8 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_B8G8R8A8_SSCALED:
 		case DATA_FORMAT_B8G8R8A8_UINT:
 		case DATA_FORMAT_B8G8R8A8_SINT:
-		case DATA_FORMAT_B8G8R8A8_SRGB: return 4;
+		case DATA_FORMAT_B8G8R8A8_SRGB:
+			return 4;
 		case DATA_FORMAT_A8B8G8R8_UNORM_PACK32:
 		case DATA_FORMAT_A8B8G8R8_SNORM_PACK32:
 		case DATA_FORMAT_A8B8G8R8_USCALED_PACK32:
@@ -687,67 +707,87 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_A2B10G10R10_USCALED_PACK32:
 		case DATA_FORMAT_A2B10G10R10_SSCALED_PACK32:
 		case DATA_FORMAT_A2B10G10R10_UINT_PACK32:
-		case DATA_FORMAT_A2B10G10R10_SINT_PACK32: return 4;
+		case DATA_FORMAT_A2B10G10R10_SINT_PACK32:
+			return 4;
 		case DATA_FORMAT_R16_UNORM:
 		case DATA_FORMAT_R16_SNORM:
 		case DATA_FORMAT_R16_USCALED:
 		case DATA_FORMAT_R16_SSCALED:
 		case DATA_FORMAT_R16_UINT:
 		case DATA_FORMAT_R16_SINT:
-		case DATA_FORMAT_R16_SFLOAT: return 2;
+		case DATA_FORMAT_R16_SFLOAT:
+			return 2;
 		case DATA_FORMAT_R16G16_UNORM:
 		case DATA_FORMAT_R16G16_SNORM:
 		case DATA_FORMAT_R16G16_USCALED:
 		case DATA_FORMAT_R16G16_SSCALED:
 		case DATA_FORMAT_R16G16_UINT:
 		case DATA_FORMAT_R16G16_SINT:
-		case DATA_FORMAT_R16G16_SFLOAT: return 4;
+		case DATA_FORMAT_R16G16_SFLOAT:
+			return 4;
 		case DATA_FORMAT_R16G16B16_UNORM:
 		case DATA_FORMAT_R16G16B16_SNORM:
 		case DATA_FORMAT_R16G16B16_USCALED:
 		case DATA_FORMAT_R16G16B16_SSCALED:
 		case DATA_FORMAT_R16G16B16_UINT:
 		case DATA_FORMAT_R16G16B16_SINT:
-		case DATA_FORMAT_R16G16B16_SFLOAT: return 6;
+		case DATA_FORMAT_R16G16B16_SFLOAT:
+			return 6;
 		case DATA_FORMAT_R16G16B16A16_UNORM:
 		case DATA_FORMAT_R16G16B16A16_SNORM:
 		case DATA_FORMAT_R16G16B16A16_USCALED:
 		case DATA_FORMAT_R16G16B16A16_SSCALED:
 		case DATA_FORMAT_R16G16B16A16_UINT:
 		case DATA_FORMAT_R16G16B16A16_SINT:
-		case DATA_FORMAT_R16G16B16A16_SFLOAT: return 8;
+		case DATA_FORMAT_R16G16B16A16_SFLOAT:
+			return 8;
 		case DATA_FORMAT_R32_UINT:
 		case DATA_FORMAT_R32_SINT:
-		case DATA_FORMAT_R32_SFLOAT: return 4;
+		case DATA_FORMAT_R32_SFLOAT:
+			return 4;
 		case DATA_FORMAT_R32G32_UINT:
 		case DATA_FORMAT_R32G32_SINT:
-		case DATA_FORMAT_R32G32_SFLOAT: return 8;
+		case DATA_FORMAT_R32G32_SFLOAT:
+			return 8;
 		case DATA_FORMAT_R32G32B32_UINT:
 		case DATA_FORMAT_R32G32B32_SINT:
-		case DATA_FORMAT_R32G32B32_SFLOAT: return 12;
+		case DATA_FORMAT_R32G32B32_SFLOAT:
+			return 12;
 		case DATA_FORMAT_R32G32B32A32_UINT:
 		case DATA_FORMAT_R32G32B32A32_SINT:
-		case DATA_FORMAT_R32G32B32A32_SFLOAT: return 16;
+		case DATA_FORMAT_R32G32B32A32_SFLOAT:
+			return 16;
 		case DATA_FORMAT_R64_UINT:
 		case DATA_FORMAT_R64_SINT:
-		case DATA_FORMAT_R64_SFLOAT: return 8;
+		case DATA_FORMAT_R64_SFLOAT:
+			return 8;
 		case DATA_FORMAT_R64G64_UINT:
 		case DATA_FORMAT_R64G64_SINT:
-		case DATA_FORMAT_R64G64_SFLOAT: return 16;
+		case DATA_FORMAT_R64G64_SFLOAT:
+			return 16;
 		case DATA_FORMAT_R64G64B64_UINT:
 		case DATA_FORMAT_R64G64B64_SINT:
-		case DATA_FORMAT_R64G64B64_SFLOAT: return 24;
+		case DATA_FORMAT_R64G64B64_SFLOAT:
+			return 24;
 		case DATA_FORMAT_R64G64B64A64_UINT:
 		case DATA_FORMAT_R64G64B64A64_SINT:
-		case DATA_FORMAT_R64G64B64A64_SFLOAT: return 32;
+		case DATA_FORMAT_R64G64B64A64_SFLOAT:
+			return 32;
 		case DATA_FORMAT_B10G11R11_UFLOAT_PACK32:
-		case DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32: return 4;
-		case DATA_FORMAT_D16_UNORM: return 2;
-		case DATA_FORMAT_X8_D24_UNORM_PACK32: return 4;
-		case DATA_FORMAT_D32_SFLOAT: return 4;
-		case DATA_FORMAT_S8_UINT: return 1;
-		case DATA_FORMAT_D16_UNORM_S8_UINT: return 4;
-		case DATA_FORMAT_D24_UNORM_S8_UINT: return 4;
+		case DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32:
+			return 4;
+		case DATA_FORMAT_D16_UNORM:
+			return 2;
+		case DATA_FORMAT_X8_D24_UNORM_PACK32:
+			return 4;
+		case DATA_FORMAT_D32_SFLOAT:
+			return 4;
+		case DATA_FORMAT_S8_UINT:
+			return 1;
+		case DATA_FORMAT_D16_UNORM_S8_UINT:
+			return 4;
+		case DATA_FORMAT_D24_UNORM_S8_UINT:
+			return 4;
 		case DATA_FORMAT_D32_SFLOAT_S8_UINT:
 			return 5; //?
 		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK:
@@ -765,17 +805,20 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_BC6H_UFLOAT_BLOCK:
 		case DATA_FORMAT_BC6H_SFLOAT_BLOCK:
 		case DATA_FORMAT_BC7_UNORM_BLOCK:
-		case DATA_FORMAT_BC7_SRGB_BLOCK: return 1;
+		case DATA_FORMAT_BC7_SRGB_BLOCK:
+			return 1;
 		case DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
 		case DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
 		case DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
 		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
 		case DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
-		case DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK: return 1;
+		case DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+			return 1;
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
 		case DATA_FORMAT_EAC_R11G11_UNORM_BLOCK:
-		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK: return 1;
+		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK:
+			return 1;
 		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK:
@@ -803,14 +846,17 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_ASTC_12x10_UNORM_BLOCK:
 		case DATA_FORMAT_ASTC_12x10_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_12x12_UNORM_BLOCK:
-		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK: return 1;
+		case DATA_FORMAT_ASTC_12x12_SRGB_BLOCK:
+			return 1;
 		case DATA_FORMAT_G8B8G8R8_422_UNORM:
-		case DATA_FORMAT_B8G8R8G8_422_UNORM: return 4;
+		case DATA_FORMAT_B8G8R8G8_422_UNORM:
+			return 4;
 		case DATA_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
 		case DATA_FORMAT_G8_B8R8_2PLANE_420_UNORM:
 		case DATA_FORMAT_G8_B8_R8_3PLANE_422_UNORM:
 		case DATA_FORMAT_G8_B8R8_2PLANE_422_UNORM:
-		case DATA_FORMAT_G8_B8_R8_3PLANE_444_UNORM: return 4;
+		case DATA_FORMAT_G8_B8_R8_3PLANE_444_UNORM:
+			return 4;
 		case DATA_FORMAT_R10X6_UNORM_PACK16:
 		case DATA_FORMAT_R10X6G10X6_UNORM_2PACK16:
 		case DATA_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16:
@@ -830,14 +876,16 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16:
 		case DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_422_UNORM_3PACK16:
 		case DATA_FORMAT_G12X4_B12X4R12X4_2PLANE_422_UNORM_3PACK16:
-		case DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16: return 2;
+		case DATA_FORMAT_G12X4_B12X4_R12X4_3PLANE_444_UNORM_3PACK16:
+			return 2;
 		case DATA_FORMAT_G16B16G16R16_422_UNORM:
 		case DATA_FORMAT_B16G16R16G16_422_UNORM:
 		case DATA_FORMAT_G16_B16_R16_3PLANE_420_UNORM:
 		case DATA_FORMAT_G16_B16R16_2PLANE_420_UNORM:
 		case DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM:
 		case DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM:
-		case DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM: return 8;
+		case DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM:
+			return 8;
 		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
@@ -845,7 +893,8 @@ uint32_t RenderingDeviceVulkan::get_image_format_pixel_size(DataFormat p_format)
 		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG: return 1;
+		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
+			return 1;
 		default: {
 			ERR_PRINT("Format not handled, bug");
 		}
@@ -943,29 +992,41 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_block_byte_size(Data
 		case DATA_FORMAT_BC1_RGB_UNORM_BLOCK:
 		case DATA_FORMAT_BC1_RGB_SRGB_BLOCK:
 		case DATA_FORMAT_BC1_RGBA_UNORM_BLOCK:
-		case DATA_FORMAT_BC1_RGBA_SRGB_BLOCK: return 8;
+		case DATA_FORMAT_BC1_RGBA_SRGB_BLOCK:
+			return 8;
 		case DATA_FORMAT_BC2_UNORM_BLOCK:
-		case DATA_FORMAT_BC2_SRGB_BLOCK: return 16;
+		case DATA_FORMAT_BC2_SRGB_BLOCK:
+			return 16;
 		case DATA_FORMAT_BC3_UNORM_BLOCK:
-		case DATA_FORMAT_BC3_SRGB_BLOCK: return 16;
+		case DATA_FORMAT_BC3_SRGB_BLOCK:
+			return 16;
 		case DATA_FORMAT_BC4_UNORM_BLOCK:
-		case DATA_FORMAT_BC4_SNORM_BLOCK: return 8;
+		case DATA_FORMAT_BC4_SNORM_BLOCK:
+			return 8;
 		case DATA_FORMAT_BC5_UNORM_BLOCK:
-		case DATA_FORMAT_BC5_SNORM_BLOCK: return 16;
+		case DATA_FORMAT_BC5_SNORM_BLOCK:
+			return 16;
 		case DATA_FORMAT_BC6H_UFLOAT_BLOCK:
-		case DATA_FORMAT_BC6H_SFLOAT_BLOCK: return 16;
+		case DATA_FORMAT_BC6H_SFLOAT_BLOCK:
+			return 16;
 		case DATA_FORMAT_BC7_UNORM_BLOCK:
-		case DATA_FORMAT_BC7_SRGB_BLOCK: return 16;
+		case DATA_FORMAT_BC7_SRGB_BLOCK:
+			return 16;
 		case DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
-		case DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK: return 8;
+		case DATA_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
+			return 8;
 		case DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
-		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK: return 8;
+		case DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
+			return 8;
 		case DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
-		case DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK: return 16;
+		case DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+			return 16;
 		case DATA_FORMAT_EAC_R11_UNORM_BLOCK:
-		case DATA_FORMAT_EAC_R11_SNORM_BLOCK: return 8;
+		case DATA_FORMAT_EAC_R11_SNORM_BLOCK:
+			return 8;
 		case DATA_FORMAT_EAC_R11G11_UNORM_BLOCK:
-		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK: return 16;
+		case DATA_FORMAT_EAC_R11G11_SNORM_BLOCK:
+			return 16;
 		case DATA_FORMAT_ASTC_4x4_UNORM_BLOCK: //again, not sure about astc
 		case DATA_FORMAT_ASTC_4x4_SRGB_BLOCK:
 		case DATA_FORMAT_ASTC_5x4_UNORM_BLOCK:
@@ -1028,11 +1089,13 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 		case DATA_FORMAT_PVRTC1_4BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC2_4BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC1_4BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG: return 1;
+		case DATA_FORMAT_PVRTC2_4BPP_SRGB_BLOCK_IMG:
+			return 1;
 		case DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG: //these formats are quarter byte size, so rshift is 1
 		case DATA_FORMAT_PVRTC2_2BPP_UNORM_BLOCK_IMG:
 		case DATA_FORMAT_PVRTC1_2BPP_SRGB_BLOCK_IMG:
-		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG: return 2;
+		case DATA_FORMAT_PVRTC2_2BPP_SRGB_BLOCK_IMG:
+			return 2;
 		default: {
 		}
 	}
@@ -7222,42 +7285,77 @@ String RenderingDeviceVulkan::get_captured_timestamp_name(uint32_t p_index) cons
 
 int RenderingDeviceVulkan::limit_get(Limit p_limit) {
 	switch (p_limit) {
-		case LIMIT_MAX_BOUND_UNIFORM_SETS: return limits.maxBoundDescriptorSets;
-		case LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS: return limits.maxColorAttachments;
-		case LIMIT_MAX_TEXTURES_PER_UNIFORM_SET: return limits.maxDescriptorSetSampledImages;
-		case LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET: return limits.maxDescriptorSetSamplers;
-		case LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET: return limits.maxDescriptorSetStorageBuffers;
-		case LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET: return limits.maxDescriptorSetStorageImages;
-		case LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET: return limits.maxDescriptorSetUniformBuffers;
-		case LIMIT_MAX_DRAW_INDEXED_INDEX: return limits.maxDrawIndexedIndexValue;
-		case LIMIT_MAX_FRAMEBUFFER_HEIGHT: return limits.maxFramebufferHeight;
-		case LIMIT_MAX_FRAMEBUFFER_WIDTH: return limits.maxFramebufferWidth;
-		case LIMIT_MAX_TEXTURE_ARRAY_LAYERS: return limits.maxImageArrayLayers;
-		case LIMIT_MAX_TEXTURE_SIZE_1D: return limits.maxImageDimension1D;
-		case LIMIT_MAX_TEXTURE_SIZE_2D: return limits.maxImageDimension2D;
-		case LIMIT_MAX_TEXTURE_SIZE_3D: return limits.maxImageDimension3D;
-		case LIMIT_MAX_TEXTURE_SIZE_CUBE: return limits.maxImageDimensionCube;
-		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE: return limits.maxPerStageDescriptorSampledImages;
-		case LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE: return limits.maxPerStageDescriptorSamplers;
-		case LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE: return limits.maxPerStageDescriptorStorageBuffers;
-		case LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE: return limits.maxPerStageDescriptorStorageImages;
-		case LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE: return limits.maxPerStageDescriptorUniformBuffers;
-		case LIMIT_MAX_PUSH_CONSTANT_SIZE: return limits.maxPushConstantsSize;
-		case LIMIT_MAX_UNIFORM_BUFFER_SIZE: return limits.maxUniformBufferRange;
-		case LIMIT_MAX_VERTEX_INPUT_ATTRIBUTE_OFFSET: return limits.maxVertexInputAttributeOffset;
-		case LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES: return limits.maxVertexInputAttributes;
-		case LIMIT_MAX_VERTEX_INPUT_BINDINGS: return limits.maxVertexInputBindings;
-		case LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE: return limits.maxVertexInputBindingStride;
-		case LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT: return limits.minUniformBufferOffsetAlignment;
-		case LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X: return limits.maxComputeWorkGroupCount[0];
-		case LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Y: return limits.maxComputeWorkGroupCount[1];
-		case LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z: return limits.maxComputeWorkGroupCount[2];
-		case LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS: return limits.maxComputeWorkGroupInvocations;
-		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X: return limits.maxComputeWorkGroupSize[0];
-		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y: return limits.maxComputeWorkGroupSize[1];
-		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z: return limits.maxComputeWorkGroupSize[2];
+		case LIMIT_MAX_BOUND_UNIFORM_SETS:
+			return limits.maxBoundDescriptorSets;
+		case LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS:
+			return limits.maxColorAttachments;
+		case LIMIT_MAX_TEXTURES_PER_UNIFORM_SET:
+			return limits.maxDescriptorSetSampledImages;
+		case LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET:
+			return limits.maxDescriptorSetSamplers;
+		case LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET:
+			return limits.maxDescriptorSetStorageBuffers;
+		case LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET:
+			return limits.maxDescriptorSetStorageImages;
+		case LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET:
+			return limits.maxDescriptorSetUniformBuffers;
+		case LIMIT_MAX_DRAW_INDEXED_INDEX:
+			return limits.maxDrawIndexedIndexValue;
+		case LIMIT_MAX_FRAMEBUFFER_HEIGHT:
+			return limits.maxFramebufferHeight;
+		case LIMIT_MAX_FRAMEBUFFER_WIDTH:
+			return limits.maxFramebufferWidth;
+		case LIMIT_MAX_TEXTURE_ARRAY_LAYERS:
+			return limits.maxImageArrayLayers;
+		case LIMIT_MAX_TEXTURE_SIZE_1D:
+			return limits.maxImageDimension1D;
+		case LIMIT_MAX_TEXTURE_SIZE_2D:
+			return limits.maxImageDimension2D;
+		case LIMIT_MAX_TEXTURE_SIZE_3D:
+			return limits.maxImageDimension3D;
+		case LIMIT_MAX_TEXTURE_SIZE_CUBE:
+			return limits.maxImageDimensionCube;
+		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE:
+			return limits.maxPerStageDescriptorSampledImages;
+		case LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE:
+			return limits.maxPerStageDescriptorSamplers;
+		case LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE:
+			return limits.maxPerStageDescriptorStorageBuffers;
+		case LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE:
+			return limits.maxPerStageDescriptorStorageImages;
+		case LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE:
+			return limits.maxPerStageDescriptorUniformBuffers;
+		case LIMIT_MAX_PUSH_CONSTANT_SIZE:
+			return limits.maxPushConstantsSize;
+		case LIMIT_MAX_UNIFORM_BUFFER_SIZE:
+			return limits.maxUniformBufferRange;
+		case LIMIT_MAX_VERTEX_INPUT_ATTRIBUTE_OFFSET:
+			return limits.maxVertexInputAttributeOffset;
+		case LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES:
+			return limits.maxVertexInputAttributes;
+		case LIMIT_MAX_VERTEX_INPUT_BINDINGS:
+			return limits.maxVertexInputBindings;
+		case LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE:
+			return limits.maxVertexInputBindingStride;
+		case LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
+			return limits.minUniformBufferOffsetAlignment;
+		case LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X:
+			return limits.maxComputeWorkGroupCount[0];
+		case LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Y:
+			return limits.maxComputeWorkGroupCount[1];
+		case LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z:
+			return limits.maxComputeWorkGroupCount[2];
+		case LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS:
+			return limits.maxComputeWorkGroupInvocations;
+		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X:
+			return limits.maxComputeWorkGroupSize[0];
+		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y:
+			return limits.maxComputeWorkGroupSize[1];
+		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
+			return limits.maxComputeWorkGroupSize[2];
 
-		default: ERR_FAIL_V(0);
+		default:
+			ERR_FAIL_V(0);
 	}
 
 	return 0;

@@ -230,9 +230,15 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 
 	int len = base->data_bytes;
 	switch (base->format) {
-		case AudioStreamSample::FORMAT_8_BITS: len /= 1; break;
-		case AudioStreamSample::FORMAT_16_BITS: len /= 2; break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM: len *= 2; break;
+		case AudioStreamSample::FORMAT_8_BITS:
+			len /= 1;
+			break;
+		case AudioStreamSample::FORMAT_16_BITS:
+			len /= 2;
+			break;
+		case AudioStreamSample::FORMAT_IMA_ADPCM:
+			len *= 2;
+			break;
 	}
 
 	if (base->stereo) {
@@ -465,9 +471,15 @@ float AudioStreamSample::get_length() const {
 
 	int len = data_bytes;
 	switch (format) {
-		case AudioStreamSample::FORMAT_8_BITS: len /= 1; break;
-		case AudioStreamSample::FORMAT_16_BITS: len /= 2; break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM: len *= 2; break;
+		case AudioStreamSample::FORMAT_8_BITS:
+			len /= 1;
+			break;
+		case AudioStreamSample::FORMAT_16_BITS:
+			len /= 2;
+			break;
+		case AudioStreamSample::FORMAT_IMA_ADPCM:
+			len *= 2;
+			break;
 	}
 
 	if (stereo) {
@@ -536,9 +548,15 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 
 	int byte_pr_sample = 0;
 	switch (format) {
-		case AudioStreamSample::FORMAT_8_BITS: byte_pr_sample = 1; break;
-		case AudioStreamSample::FORMAT_16_BITS: byte_pr_sample = 2; break;
-		case AudioStreamSample::FORMAT_IMA_ADPCM: byte_pr_sample = 4; break;
+		case AudioStreamSample::FORMAT_8_BITS:
+			byte_pr_sample = 1;
+			break;
+		case AudioStreamSample::FORMAT_16_BITS:
+			byte_pr_sample = 2;
+			break;
+		case AudioStreamSample::FORMAT_IMA_ADPCM:
+			byte_pr_sample = 4;
+			break;
 	}
 
 	String file_path = p_path;

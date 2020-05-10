@@ -2212,12 +2212,18 @@ int VisibilityNotifier3DGizmoPlugin::get_priority() const {
 String VisibilityNotifier3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 
 	switch (p_idx) {
-		case 0: return "Size X";
-		case 1: return "Size Y";
-		case 2: return "Size Z";
-		case 3: return "Pos X";
-		case 4: return "Pos Y";
-		case 5: return "Pos Z";
+		case 0:
+			return "Size X";
+		case 1:
+			return "Size Y";
+		case 2:
+			return "Size Z";
+		case 3:
+			return "Pos X";
+		case 4:
+			return "Pos Y";
+		case 5:
+			return "Pos Z";
 	}
 
 	return "";
@@ -2404,12 +2410,18 @@ bool GPUParticles3DGizmoPlugin::is_selectable_when_hidden() const {
 String GPUParticles3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 
 	switch (p_idx) {
-		case 0: return "Size X";
-		case 1: return "Size Y";
-		case 2: return "Size Z";
-		case 3: return "Pos X";
-		case 4: return "Pos Y";
-		case 5: return "Pos Z";
+		case 0:
+			return "Size X";
+		case 1:
+			return "Size Y";
+		case 2:
+			return "Size Z";
+		case 3:
+			return "Pos X";
+		case 4:
+			return "Pos Y";
+		case 5:
+			return "Pos Z";
 	}
 
 	return "";
@@ -2569,12 +2581,18 @@ int ReflectionProbeGizmoPlugin::get_priority() const {
 String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 
 	switch (p_idx) {
-		case 0: return "Extents X";
-		case 1: return "Extents Y";
-		case 2: return "Extents Z";
-		case 3: return "Origin X";
-		case 4: return "Origin Y";
-		case 5: return "Origin Z";
+		case 0:
+			return "Extents X";
+		case 1:
+			return "Extents Y";
+		case 2:
+			return "Extents Z";
+		case 3:
+			return "Origin X";
+		case 4:
+			return "Origin Y";
+		case 5:
+			return "Origin Z";
 	}
 
 	return "";
@@ -2752,9 +2770,12 @@ int DecalGizmoPlugin::get_priority() const {
 String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 
 	switch (p_idx) {
-		case 0: return "Extents X";
-		case 1: return "Extents Y";
-		case 2: return "Extents Z";
+		case 0:
+			return "Extents X";
+		case 1:
+			return "Extents Y";
+		case 2:
+			return "Extents Z";
 	}
 
 	return "";
@@ -2893,9 +2914,12 @@ int GIProbeGizmoPlugin::get_priority() const {
 String GIProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
 
 	switch (p_idx) {
-		case 0: return "Extents X";
-		case 1: return "Extents Y";
-		case 2: return "Extents Z";
+		case 0:
+			return "Extents X";
+		case 1:
+			return "Extents Y";
+		case 2:
+			return "Extents Z";
 	}
 
 	return "";

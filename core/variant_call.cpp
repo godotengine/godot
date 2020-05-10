@@ -861,9 +861,15 @@ struct _VariantCall {
 
 	static void _call_Transform2D_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		switch (p_args[0]->type) {
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Vector2()); return;
-			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Rect2()); return;
-			case Variant::PACKED_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator PackedVector2Array()); return;
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Vector2());
+				return;
+			case Variant::RECT2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Rect2());
+				return;
+			case Variant::PACKED_VECTOR2_ARRAY:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator PackedVector2Array());
+				return;
 			default:
 				r_ret = Variant();
 				ERR_PRINT("Invalid type in function 'xform' in base 'Transform2D'. Valid types are Vector2, Rect2, and PackedVector2Array.");
@@ -872,9 +878,15 @@ struct _VariantCall {
 
 	static void _call_Transform2D_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		switch (p_args[0]->type) {
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector2()); return;
-			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect2()); return;
-			case Variant::PACKED_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator PackedVector2Array()); return;
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector2());
+				return;
+			case Variant::RECT2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect2());
+				return;
+			case Variant::PACKED_VECTOR2_ARRAY:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator PackedVector2Array());
+				return;
 			default:
 				r_ret = Variant();
 				ERR_PRINT("Invalid type in function 'xform_inv' in base 'Transform2D'. Valid types are Vector2, Rect2, and PackedVector2Array.");
@@ -883,7 +895,9 @@ struct _VariantCall {
 
 	static void _call_Transform2D_basis_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		switch (p_args[0]->type) {
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform(p_args[0]->operator Vector2()); return;
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform(p_args[0]->operator Vector2());
+				return;
 			default:
 				r_ret = Variant();
 				ERR_PRINT("Invalid type in function 'basis_xform' in base 'Transform2D'. Only Vector2 is valid.");
@@ -892,7 +906,9 @@ struct _VariantCall {
 
 	static void _call_Transform2D_basis_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		switch (p_args[0]->type) {
-			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform_inv(p_args[0]->operator Vector2()); return;
+			case Variant::VECTOR2:
+				r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform_inv(p_args[0]->operator Vector2());
+				return;
 			default:
 				r_ret = Variant();
 				ERR_PRINT("Invalid type in function 'basis_xform_inv' in base 'Transform2D'. Only Vector2 is valid.");
@@ -929,10 +945,18 @@ struct _VariantCall {
 
 	static void _call_Transform_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		switch (p_args[0]->type) {
-			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3()); return;
-			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane()); return;
-			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB()); return;
-			case Variant::PACKED_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::PackedVector3Array()); return;
+			case Variant::VECTOR3:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3());
+				return;
+			case Variant::PLANE:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane());
+				return;
+			case Variant::AABB:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB());
+				return;
+			case Variant::PACKED_VECTOR3_ARRAY:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::PackedVector3Array());
+				return;
 			default:
 				r_ret = Variant();
 				ERR_PRINT("Invalid type in function 'xform' in base 'Transform'. Valid types are Vector3, Plane, AABB, and PackedVector3Array.");
@@ -941,10 +965,18 @@ struct _VariantCall {
 
 	static void _call_Transform_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		switch (p_args[0]->type) {
-			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3()); return;
-			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane()); return;
-			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB()); return;
-			case Variant::PACKED_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::PackedVector3Array()); return;
+			case Variant::VECTOR3:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3());
+				return;
+			case Variant::PLANE:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane());
+				return;
+			case Variant::AABB:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB());
+				return;
+			case Variant::PACKED_VECTOR3_ARRAY:
+				r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::PackedVector3Array());
+				return;
 			default:
 				r_ret = Variant();
 				ERR_PRINT("Invalid type in function 'xform_inv' in base 'Transform'. Valid types are Vector3, Plane, AABB, and PackedVector3Array.");
@@ -1280,50 +1312,74 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 				return Variant();
 
 			// atomic types
-			case BOOL: return Variant(false);
-			case INT: return 0;
-			case FLOAT: return 0.0f;
+			case BOOL:
+				return Variant(false);
+			case INT:
+				return 0;
+			case FLOAT:
+				return 0.0f;
 			case STRING:
 				return String();
 
 			// math types
 			case VECTOR2:
 				return Vector2();
-			case RECT2: return Rect2();
-			case VECTOR3: return Vector3();
-			case TRANSFORM2D: return Transform2D();
-			case PLANE: return Plane();
-			case QUAT: return Quat();
+			case RECT2:
+				return Rect2();
+			case VECTOR3:
+				return Vector3();
+			case TRANSFORM2D:
+				return Transform2D();
+			case PLANE:
+				return Plane();
+			case QUAT:
+				return Quat();
 			case AABB:
 				return ::AABB();
-			case BASIS: return Basis();
+			case BASIS:
+				return Basis();
 			case TRANSFORM:
 				return Transform();
 
 			// misc types
-			case COLOR: return Color();
+			case COLOR:
+				return Color();
 			case STRING_NAME:
 				return StringName();
 			case NODE_PATH:
 				return NodePath();
-			case _RID: return RID();
-			case OBJECT: return (Object *)nullptr;
-			case CALLABLE: return Callable();
-			case SIGNAL: return Signal();
-			case DICTIONARY: return Dictionary();
+			case _RID:
+				return RID();
+			case OBJECT:
+				return (Object *)nullptr;
+			case CALLABLE:
+				return Callable();
+			case SIGNAL:
+				return Signal();
+			case DICTIONARY:
+				return Dictionary();
 			case ARRAY:
 				return Array();
-			case PACKED_BYTE_ARRAY: return PackedByteArray();
-			case PACKED_INT32_ARRAY: return PackedInt32Array();
-			case PACKED_INT64_ARRAY: return PackedInt64Array();
-			case PACKED_FLOAT32_ARRAY: return PackedFloat32Array();
-			case PACKED_FLOAT64_ARRAY: return PackedFloat64Array();
-			case PACKED_STRING_ARRAY: return PackedStringArray();
+			case PACKED_BYTE_ARRAY:
+				return PackedByteArray();
+			case PACKED_INT32_ARRAY:
+				return PackedInt32Array();
+			case PACKED_INT64_ARRAY:
+				return PackedInt64Array();
+			case PACKED_FLOAT32_ARRAY:
+				return PackedFloat32Array();
+			case PACKED_FLOAT64_ARRAY:
+				return PackedFloat64Array();
+			case PACKED_STRING_ARRAY:
+				return PackedStringArray();
 			case PACKED_VECTOR2_ARRAY:
 				return PackedVector2Array();
-			case PACKED_VECTOR3_ARRAY: return PackedVector3Array();
-			case PACKED_COLOR_ARRAY: return PackedColorArray();
-			default: return Variant();
+			case PACKED_VECTOR3_ARRAY:
+				return PackedVector3Array();
+			case PACKED_COLOR_ARRAY:
+				return PackedColorArray();
+			default:
+				return Variant();
 		}
 
 	} else if (p_argcount == 1 && p_args[0]->type == p_type) {
@@ -1354,46 +1410,68 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case VECTOR2I: {
 				return Vector2i(*p_args[0]);
 			}
-			case RECT2: return (Rect2(*p_args[0]));
-			case RECT2I: return (Rect2i(*p_args[0]));
-			case VECTOR3: return (Vector3(*p_args[0]));
-			case VECTOR3I: return (Vector3i(*p_args[0]));
+			case RECT2:
+				return (Rect2(*p_args[0]));
+			case RECT2I:
+				return (Rect2i(*p_args[0]));
+			case VECTOR3:
+				return (Vector3(*p_args[0]));
+			case VECTOR3I:
+				return (Vector3i(*p_args[0]));
 			case TRANSFORM2D:
 				return (Transform2D(p_args[0]->operator Transform2D()));
-			case PLANE: return (Plane(*p_args[0]));
-			case QUAT: return (p_args[0]->operator Quat());
+			case PLANE:
+				return (Plane(*p_args[0]));
+			case QUAT:
+				return (p_args[0]->operator Quat());
 			case AABB:
 				return (::AABB(*p_args[0]));
-			case BASIS: return (Basis(p_args[0]->operator Basis()));
+			case BASIS:
+				return (Basis(p_args[0]->operator Basis()));
 			case TRANSFORM:
 				return (Transform(p_args[0]->operator Transform()));
 
 			// misc types
-			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
+			case COLOR:
+				return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
 			case STRING_NAME:
 				return (StringName(p_args[0]->operator StringName()));
 			case NODE_PATH:
 				return (NodePath(p_args[0]->operator NodePath()));
-			case _RID: return (RID(*p_args[0]));
-			case OBJECT: return ((Object *)(p_args[0]->operator Object *()));
-			case CALLABLE: return ((Callable)(p_args[0]->operator Callable()));
-			case SIGNAL: return ((Signal)(p_args[0]->operator Signal()));
-			case DICTIONARY: return p_args[0]->operator Dictionary();
+			case _RID:
+				return (RID(*p_args[0]));
+			case OBJECT:
+				return ((Object *)(p_args[0]->operator Object *()));
+			case CALLABLE:
+				return ((Callable)(p_args[0]->operator Callable()));
+			case SIGNAL:
+				return ((Signal)(p_args[0]->operator Signal()));
+			case DICTIONARY:
+				return p_args[0]->operator Dictionary();
 			case ARRAY:
 				return p_args[0]->operator Array();
 
 			// arrays
-			case PACKED_BYTE_ARRAY: return (PackedByteArray(*p_args[0]));
-			case PACKED_INT32_ARRAY: return (PackedInt32Array(*p_args[0]));
-			case PACKED_INT64_ARRAY: return (PackedInt64Array(*p_args[0]));
-			case PACKED_FLOAT32_ARRAY: return (PackedFloat32Array(*p_args[0]));
-			case PACKED_FLOAT64_ARRAY: return (PackedFloat64Array(*p_args[0]));
-			case PACKED_STRING_ARRAY: return (PackedStringArray(*p_args[0]));
+			case PACKED_BYTE_ARRAY:
+				return (PackedByteArray(*p_args[0]));
+			case PACKED_INT32_ARRAY:
+				return (PackedInt32Array(*p_args[0]));
+			case PACKED_INT64_ARRAY:
+				return (PackedInt64Array(*p_args[0]));
+			case PACKED_FLOAT32_ARRAY:
+				return (PackedFloat32Array(*p_args[0]));
+			case PACKED_FLOAT64_ARRAY:
+				return (PackedFloat64Array(*p_args[0]));
+			case PACKED_STRING_ARRAY:
+				return (PackedStringArray(*p_args[0]));
 			case PACKED_VECTOR2_ARRAY:
 				return (PackedVector2Array(*p_args[0]));
-			case PACKED_VECTOR3_ARRAY: return (PackedVector3Array(*p_args[0]));
-			case PACKED_COLOR_ARRAY: return (PackedColorArray(*p_args[0]));
-			default: return Variant();
+			case PACKED_VECTOR3_ARRAY:
+				return (PackedVector3Array(*p_args[0]));
+			case PACKED_COLOR_ARRAY:
+				return (PackedColorArray(*p_args[0]));
+			default:
+				return Variant();
 		}
 	} else if (p_argcount >= 1) {
 
