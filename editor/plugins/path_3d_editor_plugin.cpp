@@ -631,7 +631,8 @@ Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
 	Ref<Path3DGizmo> ref;
 
 	Path3D *path = Object::cast_to<Path3D>(p_spatial);
-	if (path) ref = Ref<Path3DGizmo>(memnew(Path3DGizmo(path)));
+	if (path)
+		ref = Ref<Path3DGizmo>(memnew(Path3DGizmo(path)));
 
 	return ref;
 }

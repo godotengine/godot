@@ -36,10 +36,14 @@
 
 #define FINDMINMAX(x0, x1, x2, min, max) \
 	min = max = x0;                      \
-	if (x1 < min) min = x1;              \
-	if (x1 > max) max = x1;              \
-	if (x2 < min) min = x2;              \
-	if (x2 > max) max = x2;
+	if (x1 < min)                        \
+		min = x1;                        \
+	if (x1 > max)                        \
+		max = x1;                        \
+	if (x2 < min)                        \
+		min = x2;                        \
+	if (x2 > max)                        \
+		max = x2;
 
 static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 	int q;
@@ -53,8 +57,10 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 			vmax[q] = -maxbox[q];
 		}
 	}
-	if (normal.dot(vmin) + d > 0.0f) return false;
-	if (normal.dot(vmax) + d >= 0.0f) return true;
+	if (normal.dot(vmin) + d > 0.0f)
+		return false;
+	if (normal.dot(vmax) + d >= 0.0f)
+		return true;
 
 	return false;
 }
@@ -71,7 +77,8 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 		max = p0;                                  \
 	}                                              \
 	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
+	if (min > rad || max < -rad)                   \
+		return false;
 
 #define AXISTEST_X2(a, b, fa, fb)                  \
 	p0 = a * v0.y - b * v0.z;                      \
@@ -84,7 +91,8 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 		max = p0;                                  \
 	}                                              \
 	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
+	if (min > rad || max < -rad)                   \
+		return false;
 
 /*======================== Y-tests ========================*/
 #define AXISTEST_Y02(a, b, fa, fb)                 \
@@ -98,7 +106,8 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 		max = p0;                                  \
 	}                                              \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
+	if (min > rad || max < -rad)                   \
+		return false;
 
 #define AXISTEST_Y1(a, b, fa, fb)                  \
 	p0 = -a * v0.x + b * v0.z;                     \
@@ -111,7 +120,8 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 		max = p0;                                  \
 	}                                              \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
-	if (min > rad || max < -rad) return false;
+	if (min > rad || max < -rad)                   \
+		return false;
 
 /*======================== Z-tests ========================*/
 
@@ -126,7 +136,8 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 		max = p2;                                  \
 	}                                              \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
-	if (min > rad || max < -rad) return false;
+	if (min > rad || max < -rad)                   \
+		return false;
 
 #define AXISTEST_Z0(a, b, fa, fb)                  \
 	p0 = a * v0.x - b * v0.y;                      \
@@ -139,7 +150,8 @@ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
 		max = p0;                                  \
 	}                                              \
 	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
-	if (min > rad || max < -rad) return false;
+	if (min > rad || max < -rad)                   \
+		return false;
 
 static bool fast_tri_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {
 
@@ -197,15 +209,18 @@ static bool fast_tri_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalf
 
 	/* test in X-direction */
 	FINDMINMAX(v0.x, v1.x, v2.x, min, max);
-	if (min > boxhalfsize.x || max < -boxhalfsize.x) return false;
+	if (min > boxhalfsize.x || max < -boxhalfsize.x)
+		return false;
 
 	/* test in Y-direction */
 	FINDMINMAX(v0.y, v1.y, v2.y, min, max);
-	if (min > boxhalfsize.y || max < -boxhalfsize.y) return false;
+	if (min > boxhalfsize.y || max < -boxhalfsize.y)
+		return false;
 
 	/* test in Z-direction */
 	FINDMINMAX(v0.z, v1.z, v2.z, min, max);
-	if (min > boxhalfsize.z || max < -boxhalfsize.z) return false;
+	if (min > boxhalfsize.z || max < -boxhalfsize.z)
+		return false;
 
 	/* Bullet 2: */
 	/*  test if the box intersects the plane of the triangle */

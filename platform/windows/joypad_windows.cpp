@@ -112,7 +112,8 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 		return false;
 	}
 	dev_list = (PRAWINPUTDEVICELIST)malloc(sizeof(RAWINPUTDEVICELIST) * dev_list_count);
-	if (!dev_list) return false;
+	if (!dev_list)
+		return false;
 
 	if (GetRawInputDeviceList(dev_list, &dev_list_count, sizeof(RAWINPUTDEVICELIST)) == (UINT)-1) {
 		free(dev_list);
@@ -267,7 +268,8 @@ void JoypadWindows::close_joypad(int id) {
 		return;
 	}
 
-	if (!d_joypads[id].attached) return;
+	if (!d_joypads[id].attached)
+		return;
 
 	d_joypads[id].di_joy->Unacquire();
 	d_joypads[id].di_joy->Release();

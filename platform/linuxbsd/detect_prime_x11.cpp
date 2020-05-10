@@ -178,7 +178,8 @@ int detect_prime() {
 
 			close(fdset[0]);
 
-			if (i) setenv("DRI_PRIME", "1", 1);
+			if (i)
+				setenv("DRI_PRIME", "1", 1);
 			create_context();
 
 			const char *vendor = (const char *)glGetString(GL_VENDOR);

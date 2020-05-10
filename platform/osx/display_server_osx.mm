@@ -1656,7 +1656,8 @@ String DisplayServerOSX::global_menu_get_item_submenu(const String &p_menu_root,
 			const NSMenu *sub_menu = [menu_item submenu];
 			if (sub_menu) {
 				for (Map<String, NSMenu *>::Element *E = submenu.front(); E; E = E->next()) {
-					if (E->get() == sub_menu) return E->key();
+					if (E->get() == sub_menu)
+						return E->key();
 				}
 			}
 		}
@@ -2479,7 +2480,8 @@ void DisplayServerOSX::_set_window_per_pixel_transparency_enabled(bool p_enabled
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (!OS_OSX::get_singleton()->is_layered_allowed()) return;
+	if (!OS_OSX::get_singleton()->is_layered_allowed())
+		return;
 	if (wd.layered_window != p_enabled) {
 		if (p_enabled) {
 			[wd.window_object setBackgroundColor:[NSColor clearColor]];

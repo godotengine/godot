@@ -69,7 +69,8 @@ public:
 	void remove(int p_index) { _cowdata.remove(p_index); }
 	void erase(const T &p_val) {
 		int idx = find(p_val);
-		if (idx >= 0) remove(idx);
+		if (idx >= 0)
+			remove(idx);
 	}
 	void invert();
 

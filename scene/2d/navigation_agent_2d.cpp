@@ -288,9 +288,12 @@ String NavigationAgent2D::get_configuration_warning() const {
 
 void NavigationAgent2D::update_navigation() {
 
-	if (agent_parent == nullptr) return;
-	if (navigation == nullptr) return;
-	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) return;
+	if (agent_parent == nullptr)
+		return;
+	if (navigation == nullptr)
+		return;
+	if (update_frame_id == Engine::get_singleton()->get_physics_frames())
+		return;
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 

@@ -113,10 +113,14 @@ public:
 		real_t mub = (d_of(p1, q1, q2, q1) + mua * d_of(q2, q1, p2, p1)) / d_of(q2, q1, q2, q1);
 
 		// Clip the value between [0..1] constraining the solution to lie on the original curves.
-		if (mua < 0) mua = 0;
-		if (mub < 0) mub = 0;
-		if (mua > 1) mua = 1;
-		if (mub > 1) mub = 1;
+		if (mua < 0)
+			mua = 0;
+		if (mub < 0)
+			mub = 0;
+		if (mua > 1)
+			mua = 1;
+		if (mub > 1)
+			mub = 1;
 		c1 = p1.lerp(p2, mua);
 		c2 = q1.lerp(q2, mub);
 	}
@@ -497,7 +501,8 @@ public:
 
 		bool orientation = an.cross(bn) > 0;
 
-		if ((bn.cross(cn) > 0) != orientation) return false;
+		if ((bn.cross(cn) > 0) != orientation)
+			return false;
 
 		return (cn.cross(an) > 0) == orientation;
 	}
@@ -683,7 +688,8 @@ public:
 
 		// If the term we intend to square root is less than 0 then the answer won't be real,
 		// so it definitely won't be t in the range 0 to 1.
-		if (sqrtterm < 0) return -1;
+		if (sqrtterm < 0)
+			return -1;
 
 		// If we can assume that the line segment starts outside the circle (e.g. for continuous time collision detection)
 		// then the following can be skipped and we can just return the equivalent of res1.
@@ -691,8 +697,10 @@ public:
 		real_t res1 = (-b - sqrtterm) / (2 * a);
 		real_t res2 = (-b + sqrtterm) / (2 * a);
 
-		if (res1 >= 0 && res1 <= 1) return res1;
-		if (res2 >= 0 && res2 <= 1) return res2;
+		if (res1 >= 0 && res1 <= 1)
+			return res1;
+		if (res2 >= 0 && res2 <= 1)
+			return res2;
 		return -1;
 	}
 

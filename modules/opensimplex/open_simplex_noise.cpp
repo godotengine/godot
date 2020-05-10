@@ -70,7 +70,8 @@ int OpenSimplexNoise::get_seed() {
 }
 
 void OpenSimplexNoise::set_octaves(int p_octaves) {
-	if (p_octaves == octaves) return;
+	if (p_octaves == octaves)
+		return;
 
 	ERR_FAIL_COND_MSG(p_octaves > MAX_OCTAVES, vformat("The number of OpenSimplexNoise octaves is limited to %d; ignoring the new value.", MAX_OCTAVES));
 
@@ -79,19 +80,22 @@ void OpenSimplexNoise::set_octaves(int p_octaves) {
 }
 
 void OpenSimplexNoise::set_period(float p_period) {
-	if (p_period == period) return;
+	if (p_period == period)
+		return;
 	period = p_period;
 	emit_changed();
 }
 
 void OpenSimplexNoise::set_persistence(float p_persistence) {
-	if (p_persistence == persistence) return;
+	if (p_persistence == persistence)
+		return;
 	persistence = p_persistence;
 	emit_changed();
 }
 
 void OpenSimplexNoise::set_lacunarity(float p_lacunarity) {
-	if (p_lacunarity == lacunarity) return;
+	if (p_lacunarity == lacunarity)
+		return;
 	lacunarity = p_lacunarity;
 	emit_changed();
 }

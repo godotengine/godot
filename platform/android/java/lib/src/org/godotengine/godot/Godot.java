@@ -920,7 +920,8 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		int cnt = 0;
 		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0)
 			;
-		if (cnt == 0) return super.onKeyMultiple(inKeyCode, repeatCount, event);
+		if (cnt == 0)
+			return super.onKeyMultiple(inKeyCode, repeatCount, event);
 		mRenderView.queueOnRenderThread(new Runnable() {
 			// This method will be called on the rendering thread:
 			public void run() {

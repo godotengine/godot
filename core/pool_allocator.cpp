@@ -182,7 +182,8 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 
 	ERR_FAIL_COND_V(p_size < 1, POOL_ALLOCATOR_INVALID_ID);
 #ifdef DEBUG_ENABLED
-	if (p_size > free_mem) OS::get_singleton()->debug_break();
+	if (p_size > free_mem)
+		OS::get_singleton()->debug_break();
 #endif
 	ERR_FAIL_COND_V(p_size > free_mem, POOL_ALLOCATOR_INVALID_ID);
 

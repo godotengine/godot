@@ -558,14 +558,16 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 								if (p.intersects_segment(point, next_point, &res)) {
 									bool inisde = true;
 									for (int k = 0; k < p_plane_count; k++) {
-										if (k == i) continue;
+										if (k == i)
+											continue;
 										const Plane &pp = p_planes[k];
 										if (pp.is_point_over(res)) {
 											inisde = false;
 											break;
 										}
 									}
-									if (inisde) return true;
+									if (inisde)
+										return true;
 								}
 
 								if (p.is_point_over(point)) {
@@ -573,7 +575,8 @@ bool TriangleMesh::intersect_convex_shape(const Plane *p_planes, int p_plane_cou
 									break;
 								}
 							}
-							if (over) return true;
+							if (over)
+								return true;
 						}
 
 						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
@@ -652,7 +655,8 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 			case TEST_AABB_BIT: {
 
 				bool intersects = scale.xform(b.aabb).intersects_convex_shape(p_planes, p_plane_count, p_points, p_point_count);
-				if (!intersects) return false;
+				if (!intersects)
+					return false;
 
 				bool inside = scale.xform(b.aabb).inside_convex_shape(p_planes, p_plane_count);
 				if (inside) {
@@ -667,7 +671,8 @@ bool TriangleMesh::inside_convex_shape(const Plane *p_planes, int p_plane_count,
 							Vector3 point = scale.xform(vertexptr[s.indices[j]]);
 							for (int i = 0; i < p_plane_count; i++) {
 								const Plane &p = p_planes[i];
-								if (p.is_point_over(point)) return false;
+								if (p.is_point_over(point))
+									return false;
 							}
 						}
 

@@ -463,14 +463,16 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_UP: {
 
 					shift_selection_check_pre(k->get_shift());
-					if (get_cursor_position() == 0) handled = false;
+					if (get_cursor_position() == 0)
+						handled = false;
 					set_cursor_position(0);
 					shift_selection_check_post(k->get_shift());
 				} break;
 				case KEY_DOWN: {
 
 					shift_selection_check_pre(k->get_shift());
-					if (get_cursor_position() == text.length()) handled = false;
+					if (get_cursor_position() == text.length())
+						handled = false;
 					set_cursor_position(text.length());
 					shift_selection_check_post(k->get_shift());
 				} break;
@@ -988,7 +990,8 @@ void LineEdit::paste_text() {
 	if (paste_buffer != "") {
 
 		int prev_len = text.length();
-		if (selection.enabled) selection_delete();
+		if (selection.enabled)
+			selection_delete();
 		append_at_cursor(paste_buffer);
 
 		if (!text_changed_dirty) {
@@ -1204,7 +1207,8 @@ void LineEdit::_toggle_draw_caret() {
 
 void LineEdit::delete_char() {
 
-	if ((text.length() <= 0) || (cursor_pos == 0)) return;
+	if ((text.length() <= 0) || (cursor_pos == 0))
+		return;
 
 	Ref<Font> font = get_theme_font("font");
 	if (font != nullptr) {
@@ -1379,7 +1383,8 @@ int LineEdit::get_cursor_position() const {
 void LineEdit::set_window_pos(int p_pos) {
 
 	window_pos = p_pos;
-	if (window_pos < 0) window_pos = 0;
+	if (window_pos < 0)
+		window_pos = 0;
 }
 
 void LineEdit::append_at_cursor(String p_text) {

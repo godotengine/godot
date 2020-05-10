@@ -423,7 +423,8 @@ String EditorExportPlatformIOS::_get_linker_flags() {
 	String result;
 	for (int i = 0; i < export_plugins.size(); ++i) {
 		String flags = export_plugins[i]->get_ios_linker_flags();
-		if (flags.length() == 0) continue;
+		if (flags.length() == 0)
+			continue;
 		if (result.length() > 0) {
 			result += ' ';
 		}
@@ -456,8 +457,10 @@ void EditorExportPlatformIOS::_blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p
 	int xs = (x_pos >= 0) ? 0 : -x_pos;
 	int ys = (y_pos >= 0) ? 0 : -y_pos;
 
-	if (sw + x_pos > p_dst->get_width()) sw = p_dst->get_width() - x_pos;
-	if (sh + y_pos > p_dst->get_height()) sh = p_dst->get_height() - y_pos;
+	if (sw + x_pos > p_dst->get_width())
+		sw = p_dst->get_width() - x_pos;
+	if (sh + y_pos > p_dst->get_height())
+		sh = p_dst->get_height() - y_pos;
 
 	for (int y = ys; y < sh; y++) {
 		for (int x = xs; x < sw; x++) {
