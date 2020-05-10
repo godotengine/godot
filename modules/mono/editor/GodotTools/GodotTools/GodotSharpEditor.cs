@@ -471,6 +471,9 @@ namespace GodotTools
                     // Make sure the existing project has Api assembly references configured correctly
                     ProjectUtils.FixApiHintPath(msbuildProject);
 
+                    // Make sure the existing project references the Microsoft.NETFramework.ReferenceAssemblies nuget package
+                    ProjectUtils.EnsureHasNugetNetFrameworkRefAssemblies(msbuildProject);
+
                     if (msbuildProject.HasUnsavedChanges)
                     {
                         // Save a copy of the project before replacing it
