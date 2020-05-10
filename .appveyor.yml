@@ -39,3 +39,11 @@ before_build:
 
 build_script:
   - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
+
+after_build:
+  - 7z a godot_build.zip bin\*.exe
+  
+artifacts:
+  - path: godot_build.zip
+    name: Build
+    type: zip
