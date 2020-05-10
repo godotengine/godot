@@ -3277,7 +3277,7 @@ uint32_t Variant::hash() const {
 			uint32_t hash = hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->normal.x);
 			hash = hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->normal.y, hash);
 			hash = hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->normal.z, hash);
-			return hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->distance, hash);
+			return hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->d, hash);
 
 		} break;
 		/*
@@ -3625,7 +3625,7 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Plane *r = reinterpret_cast<const Plane *>(p_variant._data._mem);
 
 			return (hash_compare_vector3(l->normal, r->normal)) &&
-				   (hash_compare_scalar(l->distance, r->distance));
+				   (hash_compare_scalar(l->d, r->d));
 		} break;
 
 		case AABB: {

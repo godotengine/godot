@@ -558,7 +558,7 @@ void RasterizerEffectsRD::sub_surface_scattering(RID p_diffuse, RID p_diffuse2, 
 	int32_t y_groups = (p_screen_size.height - 1) / 8 + 1;
 
 	Plane p = p_camera.xform4(Plane(1, 0, -1, 1));
-	p.normal /= p.distance;
+	p.normal /= p.d;
 	float unit_size = p.normal.x;
 
 	{ //scale color and depth to half

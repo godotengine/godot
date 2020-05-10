@@ -752,7 +752,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			value_editor[0]->set_text(String::num(plane.normal.x));
 			value_editor[1]->set_text(String::num(plane.normal.y));
 			value_editor[2]->set_text(String::num(plane.normal.z));
-			value_editor[3]->set_text(String::num(plane.distance));
+			value_editor[3]->set_text(String::num(plane.d));
 
 		} break;
 		case Variant::QUAT: {
@@ -1598,7 +1598,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			pl.normal.x = _parse_real_expression(value_editor[0]->get_text());
 			pl.normal.y = _parse_real_expression(value_editor[1]->get_text());
 			pl.normal.z = _parse_real_expression(value_editor[2]->get_text());
-			pl.distance = _parse_real_expression(value_editor[3]->get_text());
+			pl.d = _parse_real_expression(value_editor[3]->get_text());
 			v = pl;
 			_emit_changed_whole_or_field();
 

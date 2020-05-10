@@ -1368,7 +1368,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 				gui[0] = v.normal.x;
 				gui[1] = v.normal.y;
 				gui[2] = v.normal.z;
-				gui[3] = v.distance;
+				gui[3] = v.d;
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
@@ -4929,7 +4929,7 @@ void RasterizerStorageRD::_global_variable_store_in_buffer(int32_t p_index, RS::
 			bv.x = v.normal.x;
 			bv.y = v.normal.y;
 			bv.z = v.normal.z;
-			bv.w = v.distance;
+			bv.w = v.d;
 		} break;
 		case RS::GLOBAL_VAR_TYPE_COLOR: {
 			GlobalVariables::Value &bv = global_variables.buffer_values[p_index];
