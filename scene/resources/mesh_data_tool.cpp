@@ -58,30 +58,30 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 
 	const Vector3 *vr = varray.ptr();
 
-	const Vector3 *nr;
+	const Vector3 *nr = nullptr;
 	if (arrays[Mesh::ARRAY_NORMAL].get_type() != Variant::NIL)
 		nr = arrays[Mesh::ARRAY_NORMAL].operator Vector<Vector3>().ptr();
 
-	const real_t *ta;
+	const real_t *ta = nullptr;
 	if (arrays[Mesh::ARRAY_TANGENT].get_type() != Variant::NIL)
 		ta = arrays[Mesh::ARRAY_TANGENT].operator Vector<real_t>().ptr();
 
-	const Vector2 *uv;
+	const Vector2 *uv = nullptr;
 	if (arrays[Mesh::ARRAY_TEX_UV].get_type() != Variant::NIL)
 		uv = arrays[Mesh::ARRAY_TEX_UV].operator Vector<Vector2>().ptr();
-	const Vector2 *uv2;
+	const Vector2 *uv2 = nullptr;
 	if (arrays[Mesh::ARRAY_TEX_UV2].get_type() != Variant::NIL)
 		uv2 = arrays[Mesh::ARRAY_TEX_UV2].operator Vector<Vector2>().ptr();
 
-	const Color *col;
+	const Color *col = nullptr;
 	if (arrays[Mesh::ARRAY_COLOR].get_type() != Variant::NIL)
 		col = arrays[Mesh::ARRAY_COLOR].operator Vector<Color>().ptr();
 
-	const int *bo;
+	const int *bo = nullptr;
 	if (arrays[Mesh::ARRAY_BONES].get_type() != Variant::NIL)
 		bo = arrays[Mesh::ARRAY_BONES].operator Vector<int>().ptr();
 
-	const real_t *we;
+	const real_t *we = nullptr;
 	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL)
 		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<real_t>().ptr();
 
@@ -202,43 +202,43 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 		v.resize(vcount);
 		Vector3 *vr = v.ptrw();
 
-		Vector3 *nr;
+		Vector3 *nr = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_NORMAL) {
 			n.resize(vcount);
 			nr = n.ptrw();
 		}
 
-		real_t *ta;
+		real_t *ta = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_TANGENT) {
 			t.resize(vcount * 4);
 			ta = t.ptrw();
 		}
 
-		Vector2 *uv;
+		Vector2 *uv = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_TEX_UV) {
 			u.resize(vcount);
 			uv = u.ptrw();
 		}
 
-		Vector2 *uv2;
+		Vector2 *uv2 = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_TEX_UV2) {
 			u2.resize(vcount);
 			uv2 = u2.ptrw();
 		}
 
-		Color *col;
+		Color *col = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_COLOR) {
 			c.resize(vcount);
 			col = c.ptrw();
 		}
 
-		int *bo;
+		int *bo = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_BONES) {
 			b.resize(vcount * 4);
 			bo = b.ptrw();
 		}
 
-		real_t *we;
+		real_t *we = nullptr;
 		if (format & Mesh::ARRAY_FORMAT_WEIGHTS) {
 			w.resize(vcount * 4);
 			we = w.ptrw();

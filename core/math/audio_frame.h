@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef AUDIOFRAME_H
-#define AUDIOFRAME_H
+#ifndef AUDIO_FRAME_H
+#define AUDIO_FRAME_H
 
 #include "core/math/vector2.h"
 #include "core/typedefs.h"
@@ -104,7 +104,7 @@ struct AudioFrame {
 		r = ::undenormalise(r);
 	}
 
-	_FORCE_INLINE_ AudioFrame linear_interpolate(const AudioFrame &p_b, float p_t) const {
+	_FORCE_INLINE_ AudioFrame lerp(const AudioFrame &p_b, float p_t) const {
 
 		AudioFrame res = *this;
 
@@ -140,4 +140,4 @@ struct AudioFrame {
 	_ALWAYS_INLINE_ AudioFrame() {}
 };
 
-#endif
+#endif // AUDIO_FRAME_H

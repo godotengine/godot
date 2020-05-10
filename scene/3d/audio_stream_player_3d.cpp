@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "audio_stream_player_3d.h"
+
 #include "core/engine.h"
-#include "scene/3d/area.h"
-#include "scene/3d/camera.h"
-#include "scene/3d/listener.h"
-#include "scene/main/viewport.h"
+#include "scene/3d/area_3d.h"
+#include "scene/3d/camera_3d.h"
+#include "scene/3d/listener_3d.h"
+#include "scene/main/window.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)
@@ -96,7 +97,7 @@ static const Vector3 speaker_directions[7] = {
 };
 
 void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, AudioStreamPlayer3D::Output &output) {
-	unsigned int speaker_count; // only main speakers (no LFE)
+	unsigned int speaker_count = 0; // only main speakers (no LFE)
 	switch (AudioServer::get_singleton()->get_speaker_mode()) {
 		case AudioServer::SPEAKER_MODE_STEREO:
 			speaker_count = 2;
@@ -213,7 +214,7 @@ void AudioStreamPlayer3D::_mix_audio() {
 			AudioFrame target_volume = stream_paused_fade_out ? AudioFrame(0.f, 0.f) : current.vol[k];
 			AudioFrame vol_prev = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : prev_outputs[i].vol[k];
 			AudioFrame vol_inc = (target_volume - vol_prev) / float(buffer_size);
-			AudioFrame vol = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : current.vol[k];
+			AudioFrame vol = vol_prev;
 
 			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k))
 				continue; //may have been deleted, will be updated on process
@@ -384,8 +385,8 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				linear_velocity = velocity_tracker->get_tracked_linear_velocity();
 			}
 
-			Ref<World> world = get_world();
-			ERR_FAIL_COND(world.is_null());
+			Ref<World3D> world_3d = get_world_3d();
+			ERR_FAIL_COND(world_3d.is_null());
 
 			int new_output_count = 0;
 
@@ -395,18 +396,18 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			//check if any area is diverting sound into a bus
 
-			PhysicsDirectSpaceState *space_state = PhysicsServer::get_singleton()->space_get_direct_state(world->get_space());
+			PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
 
-			PhysicsDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
+			PhysicsDirectSpaceState3D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
-			Area *area = NULL;
+			Area3D *area = nullptr;
 
 			for (int i = 0; i < areas; i++) {
 				if (!sr[i].collider)
 					continue;
 
-				Area *tarea = Object::cast_to<Area>(sr[i].collider);
+				Area3D *tarea = Object::cast_to<Area3D>(sr[i].collider);
 				if (!tarea)
 					continue;
 
@@ -417,20 +418,20 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				break;
 			}
 
-			List<Camera *> cameras;
-			world->get_camera_list(&cameras);
+			List<Camera3D *> cameras;
+			world_3d->get_camera_list(&cameras);
 
-			for (List<Camera *>::Element *E = cameras.front(); E; E = E->next()) {
+			for (List<Camera3D *>::Element *E = cameras.front(); E; E = E->next()) {
 
-				Camera *camera = E->get();
+				Camera3D *camera = E->get();
 				Viewport *vp = camera->get_viewport();
 				if (!vp->is_audio_listener())
 					continue;
 
 				bool listener_is_camera = true;
-				Spatial *listener_node = camera;
+				Node3D *listener_node = camera;
 
-				Listener *listener = vp->get_listener();
+				Listener3D *listener = vp->get_listener();
 				if (listener) {
 					listener_node = listener;
 					listener_is_camera = false;
@@ -555,7 +556,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 								for (int i = 0; i < vol_index_max; i++) {
 
-									output.reverb_vol[i] = output.reverb_vol[i].linear_interpolate(center_frame, attenuation);
+									output.reverb_vol[i] = output.reverb_vol[i].lerp(center_frame, attenuation);
 								}
 							} else {
 								for (int i = 0; i < vol_index_max; i++) {
@@ -566,7 +567,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 							for (int i = 0; i < vol_index_max; i++) {
 
-								output.reverb_vol[i] = output.vol[i].linear_interpolate(output.reverb_vol[i] * attenuation, uniformity);
+								output.reverb_vol[i] = output.vol[i].lerp(output.reverb_vol[i] * attenuation, uniformity);
 								output.reverb_vol[i] *= area_send;
 							}
 
@@ -708,6 +709,11 @@ float AudioStreamPlayer3D::get_pitch_scale() const {
 }
 
 void AudioStreamPlayer3D::play(float p_from_pos) {
+
+	if (!is_playing()) {
+		// Reset the prev_output_count if the stream is stopped
+		prev_output_count = 0;
+	}
 
 	if (stream_playback.is_valid()) {
 		active = true;

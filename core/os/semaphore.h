@@ -80,4 +80,4 @@ public:
 
 #endif
 
-#endif
+#endif // SEMAPHORE_H

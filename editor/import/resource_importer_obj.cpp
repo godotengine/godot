@@ -32,8 +32,8 @@
 
 #include "core/io/resource_saver.h"
 #include "core/os/file_access.h"
-#include "scene/3d/mesh_instance.h"
-#include "scene/3d/spatial.h"
+#include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/node_3d.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -428,14 +428,14 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 		if (r_err) {
 			*r_err = err;
 		}
-		return NULL;
+		return nullptr;
 	}
 
-	Spatial *scene = memnew(Spatial);
+	Node3D *scene = memnew(Node3D);
 
 	for (List<Ref<Mesh>>::Element *E = meshes.front(); E; E = E->next()) {
 
-		MeshInstance *mi = memnew(MeshInstance);
+		MeshInstance3D *mi = memnew(MeshInstance3D);
 		mi->set_mesh(E->get());
 		mi->set_name(E->get()->get_name());
 		scene->add_child(mi);
@@ -502,7 +502,7 @@ Error ResourceImporterOBJ::import(const String &p_source_file, const String &p_s
 
 	List<Ref<Mesh>> meshes;
 
-	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], NULL);
+	Error err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["optimize_mesh"], p_options["scale_mesh"], p_options["offset_mesh"], nullptr);
 
 	ERR_FAIL_COND_V(err != OK, err);
 	ERR_FAIL_COND_V(meshes.size() != 1, ERR_BUG);

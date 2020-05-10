@@ -33,8 +33,8 @@
 
 #include "collision_object_2d_sw.h"
 #include "core/self_list.h"
-#include "servers/physics_2d_server.h"
-//#include "servers/physics/query_sw.h"
+#include "servers/physics_server_2d.h"
+//#include "servers/physics_3d/query_sw.h"
 
 class Space2DSW;
 class Body2DSW;
@@ -42,7 +42,7 @@ class Constraint2DSW;
 
 class Area2DSW : public CollisionObject2DSW {
 
-	Physics2DServer::AreaSpaceOverrideMode space_override_mode;
+	PhysicsServer2D::AreaSpaceOverrideMode space_override_mode;
 	real_t gravity;
 	Vector2 gravity_vector;
 	bool gravity_is_point;
@@ -121,11 +121,11 @@ public:
 	_FORCE_INLINE_ void add_area_to_query(Area2DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 	_FORCE_INLINE_ void remove_area_from_query(Area2DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape);
 
-	void set_param(Physics2DServer::AreaParameter p_param, const Variant &p_value);
-	Variant get_param(Physics2DServer::AreaParameter p_param) const;
+	void set_param(PhysicsServer2D::AreaParameter p_param, const Variant &p_value);
+	Variant get_param(PhysicsServer2D::AreaParameter p_param) const;
 
-	void set_space_override_mode(Physics2DServer::AreaSpaceOverrideMode p_mode);
-	Physics2DServer::AreaSpaceOverrideMode get_space_override_mode() const { return space_override_mode; }
+	void set_space_override_mode(PhysicsServer2D::AreaSpaceOverrideMode p_mode);
+	PhysicsServer2D::AreaSpaceOverrideMode get_space_override_mode() const { return space_override_mode; }
 
 	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity = p_gravity; }
 	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }

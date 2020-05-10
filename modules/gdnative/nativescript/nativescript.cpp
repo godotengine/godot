@@ -111,6 +111,13 @@ void NativeScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder)
 
 #endif
 
+bool NativeScript::inherits_script(const Ref<Script> &p_script) const {
+#ifndef _MSC_VER
+#warning inheritance needs to be implemented in NativeScript
+#endif
+	return false;
+}
+
 void NativeScript::set_class_name(String p_class_name) {
 	class_name = p_class_name;
 }
@@ -204,7 +211,7 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 	NativeScriptDesc *script_data = get_script_desc();
 
 	if (!script_data) {
-		return NULL;
+		return nullptr;
 	}
 
 	NativeScriptInstance *nsi = memnew(NativeScriptInstance);
@@ -214,7 +221,7 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 
 #ifndef TOOLS_ENABLED
 	if (!ScriptServer::is_scripting_enabled()) {
-		nsi->userdata = NULL;
+		nsi->userdata = nullptr;
 	} else {
 		nsi->userdata = script_data->create_func.create_func((godot_object *)p_this, script_data->create_func.method_data);
 	}
@@ -240,7 +247,7 @@ PlaceHolderScriptInstance *NativeScript::placeholder_instance_create(Object *p_t
 
 	return sins;
 #else
-	return NULL;
+	return nullptr;
 #endif
 }
 
@@ -738,7 +745,7 @@ Variant NativeScript::_new(const Variant **p_args, int p_argcount, Callable::Cal
 	r_error.error = Callable::CallError::CALL_OK;
 
 	REF ref;
-	Object *owner = NULL;
+	Object *owner = nullptr;
 
 	if (!(script_data->base_native_type == "")) {
 		owner = ClassDB::instance(script_data->base_native_type);
@@ -886,7 +893,7 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 					E->get().method.method_data,
 					userdata,
 					0,
-					NULL);
+					nullptr);
 			Variant res = *(Variant *)&result;
 			godot_variant_destroy(&result);
 
@@ -1007,7 +1014,7 @@ void NativeScriptInstance::notification(int p_notification) {
 String NativeScriptInstance::to_string(bool *r_valid) {
 	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
 		Callable::CallError ce;
-		Variant ret = call(CoreStringNames::get_singleton()->_to_string, NULL, 0, ce);
+		Variant ret = call(CoreStringNames::get_singleton()->_to_string, nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid)
@@ -1026,7 +1033,7 @@ String NativeScriptInstance::to_string(bool *r_valid) {
 
 void NativeScriptInstance::refcount_incremented() {
 	Callable::CallError err;
-	call("_refcount_incremented", NULL, 0, err);
+	call("_refcount_incremented", nullptr, 0, err);
 	if (err.error != Callable::CallError::CALL_OK && err.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		ERR_PRINT("Failed to invoke _refcount_incremented - should not happen");
 	}
@@ -1034,7 +1041,7 @@ void NativeScriptInstance::refcount_incremented() {
 
 bool NativeScriptInstance::refcount_decremented() {
 	Callable::CallError err;
-	Variant ret = call("_refcount_decremented", NULL, 0, err);
+	Variant ret = call("_refcount_decremented", nullptr, 0, err);
 	if (err.error != Callable::CallError::CALL_OK && err.error != Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		ERR_PRINT("Failed to invoke _refcount_decremented - should not happen");
 		return true; // assume we can destroy the object
@@ -1525,14 +1532,14 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 }
 
 void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_object) {
-	ERR_FAIL_INDEX_V(p_idx, binding_functions.size(), NULL);
+	ERR_FAIL_INDEX_V(p_idx, binding_functions.size(), nullptr);
 
-	ERR_FAIL_COND_V_MSG(!binding_functions[p_idx].first, NULL, "Tried to get binding data for a nativescript binding that does not exist.");
+	ERR_FAIL_COND_V_MSG(!binding_functions[p_idx].first, nullptr, "Tried to get binding data for a nativescript binding that does not exist.");
 
 	Vector<void *> *binding_data = (Vector<void *> *)p_object->get_script_instance_binding(lang_idx);
 
 	if (!binding_data)
-		return NULL; // should never happen.
+		return nullptr; // should never happen.
 
 	if (binding_data->size() <= p_idx) {
 		// okay, add new elements here.
@@ -1541,7 +1548,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 		binding_data->resize(p_idx + 1);
 
 		for (int i = old_size; i <= p_idx; i++) {
-			(*binding_data).write[i] = NULL;
+			(*binding_data).write[i] = nullptr;
 		}
 	}
 
@@ -1563,7 +1570,7 @@ void *NativeScriptLanguage::alloc_instance_binding_data(Object *p_object) {
 	binding_data->resize(binding_functions.size());
 
 	for (int i = 0; i < binding_functions.size(); i++) {
-		(*binding_data).write[i] = NULL;
+		(*binding_data).write[i] = nullptr;
 	}
 
 	binding_instances.insert(binding_data);
@@ -1652,12 +1659,12 @@ void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_nam
 
 const void *NativeScriptLanguage::get_global_type_tag(int p_idx, StringName p_class_name) const {
 	if (!global_type_tags.has(p_idx))
-		return NULL;
+		return nullptr;
 
 	const HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
 
 	if (!tags.has(p_class_name))
-		return NULL;
+		return nullptr;
 
 	const void *tag = tags.get(p_class_name);
 
@@ -1829,7 +1836,7 @@ void NativeReloadNode::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 
 	switch (p_what) {
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 
 			if (unloaded)
 				break;
@@ -1864,7 +1871,7 @@ void NativeReloadNode::_notification(int p_what) {
 
 		} break;
 
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 
 			if (!unloaded)
 				break;
@@ -1933,7 +1940,7 @@ void NativeReloadNode::_notification(int p_what) {
 #endif
 }
 
-RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error);
 }
 
@@ -1958,7 +1965,7 @@ Error ResourceFormatSaverNativeScript::save(const String &p_path, const RES &p_r
 }
 
 bool ResourceFormatSaverNativeScript::recognize(const RES &p_resource) const {
-	return Object::cast_to<NativeScript>(*p_resource) != NULL;
+	return Object::cast_to<NativeScript>(*p_resource) != nullptr;
 }
 
 void ResourceFormatSaverNativeScript::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {

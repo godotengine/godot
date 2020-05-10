@@ -4,7 +4,7 @@
  *
  *   PNG Bitmap glyph support.
  *
- * Copyright (C) 2013-2019 by
+ * Copyright (C) 2013-2020 by
  * Google, Inc.
  * Written by Stuart Gill and Behdad Esfahbod.
  *

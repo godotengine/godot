@@ -219,9 +219,9 @@ internal class VkThread(private val vkSurfaceView: VkSurfaceView, private val vk
 				vkRenderer.onVkDrawFrame()
 			}
 		} catch (ex: InterruptedException) {
-			Log.i(TAG, ex.message)
+			Log.i(TAG, "InterruptedException", ex)
 		} catch (ex: IllegalStateException) {
-			Log.i(TAG, ex.message)
+			Log.i(TAG, "IllegalStateException", ex)
 		} finally {
 			threadExiting()
 		}

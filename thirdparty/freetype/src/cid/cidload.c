@@ -4,7 +4,7 @@
  *
  *   CID-keyed Type1 font loader (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -715,7 +715,7 @@
       if ( ft_isdigit( *p ) )
         val = (FT_Byte)( *p - '0' );
       else if ( *p >= 'a' && *p <= 'f' )
-        val = (FT_Byte)( *p - 'a' );
+        val = (FT_Byte)( *p - 'a' + 10 );
       else if ( *p >= 'A' && *p <= 'F' )
         val = (FT_Byte)( *p - 'A' + 10 );
       else if ( *p == ' '  ||

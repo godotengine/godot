@@ -113,7 +113,7 @@ CommandQueueMT::CommandQueueMT(bool p_sync) {
 	if (p_sync)
 		sync = memnew(Semaphore);
 	else
-		sync = NULL;
+		sync = nullptr;
 }
 
 CommandQueueMT::~CommandQueueMT() {

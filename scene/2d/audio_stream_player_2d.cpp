@@ -32,7 +32,7 @@
 
 #include "core/engine.h"
 #include "scene/2d/area_2d.h"
-#include "scene/main/viewport.h"
+#include "scene/main/window.h"
 
 void AudioStreamPlayer2D::_mix_audio() {
 
@@ -87,7 +87,7 @@ void AudioStreamPlayer2D::_mix_audio() {
 		AudioFrame target_volume = stream_paused_fade_out ? AudioFrame(0.f, 0.f) : current.vol;
 		AudioFrame vol_prev = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : prev_outputs[i].vol;
 		AudioFrame vol_inc = (target_volume - vol_prev) / float(buffer_size);
-		AudioFrame vol = stream_paused_fade_in ? AudioFrame(0.f, 0.f) : current.vol;
+		AudioFrame vol = vol_prev;
 
 		int cc = AudioServer::get_singleton()->get_channel_count();
 
@@ -187,9 +187,9 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 			//check if any area is diverting sound into a bus
 
-			Physics2DDirectSpaceState *space_state = Physics2DServer::get_singleton()->space_get_direct_state(world_2d->get_space());
+			PhysicsDirectSpaceState2D *space_state = PhysicsServer2D::get_singleton()->space_get_direct_state(world_2d->get_space());
 
-			Physics2DDirectSpaceState::ShapeResult sr[MAX_INTERSECT_AREAS];
+			PhysicsDirectSpaceState2D::ShapeResult sr[MAX_INTERSECT_AREAS];
 
 			int areas = space_state->intersect_point(global_pos, sr, MAX_INTERSECT_AREAS, Set<RID>(), area_mask, false, true);
 

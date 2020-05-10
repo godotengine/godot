@@ -362,13 +362,13 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			const double t = (double)*p_args[2];
 			switch (p_args[0]->get_type() == p_args[1]->get_type() ? p_args[0]->get_type() : Variant::FLOAT) {
 				case Variant::VECTOR2: {
-					r_ret = ((Vector2)*p_args[0]).linear_interpolate((Vector2)*p_args[1], t);
+					r_ret = ((Vector2)*p_args[0]).lerp((Vector2)*p_args[1], t);
 				} break;
 				case Variant::VECTOR3: {
-					r_ret = (p_args[0]->operator Vector3()).linear_interpolate(p_args[1]->operator Vector3(), t);
+					r_ret = (p_args[0]->operator Vector3()).lerp(p_args[1]->operator Vector3(), t);
 				} break;
 				case Variant::COLOR: {
-					r_ret = ((Color)*p_args[0]).linear_interpolate((Color)*p_args[1], t);
+					r_ret = ((Color)*p_args[0]).lerp((Color)*p_args[1], t);
 				} break;
 				default: {
 					VALIDATE_ARG_NUM(0);
@@ -858,7 +858,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 
 			PackedByteArray barr;
 			int len;
-			Error err = encode_variant(*p_args[0], NULL, len, full_objects);
+			Error err = encode_variant(*p_args[0], nullptr, len, full_objects);
 			if (err) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -908,7 +908,7 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			Variant ret;
 			{
 				const uint8_t *r = varr.ptr();
-				Error err = decode_variant(ret, r, varr.size(), NULL, allow_objects);
+				Error err = decode_variant(ret, r, varr.size(), nullptr, allow_objects);
 				if (err != OK) {
 					r_ret = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -1197,8 +1197,12 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 					return;
 				}
 			}
+			r_ret = gdscr->_new(nullptr, -1 /*skip initializer*/, r_error);
 
-			r_ret = gdscr->_new(NULL, 0, r_error);
+			if (r_error.error != Callable::CallError::CALL_OK) {
+				r_ret = Variant();
+				return;
+			}
 
 			GDScriptInstance *ins = static_cast<GDScriptInstance *>(static_cast<Object *>(r_ret)->get_script_instance());
 			Ref<GDScript> gd_ref = ins->get_script();

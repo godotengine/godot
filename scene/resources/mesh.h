@@ -35,8 +35,8 @@
 #include "core/math/triangle_mesh.h"
 #include "core/resource.h"
 #include "scene/resources/material.h"
-#include "scene/resources/shape.h"
-#include "servers/visual_server.h"
+#include "scene/resources/shape_3d.h"
+#include "servers/rendering_server.h"
 
 class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
@@ -51,22 +51,22 @@ protected:
 public:
 	enum {
 
-		NO_INDEX_ARRAY = VisualServer::NO_INDEX_ARRAY,
-		ARRAY_WEIGHTS_SIZE = VisualServer::ARRAY_WEIGHTS_SIZE
+		NO_INDEX_ARRAY = RenderingServer::NO_INDEX_ARRAY,
+		ARRAY_WEIGHTS_SIZE = RenderingServer::ARRAY_WEIGHTS_SIZE
 	};
 
 	enum ArrayType {
 
-		ARRAY_VERTEX = VisualServer::ARRAY_VERTEX,
-		ARRAY_NORMAL = VisualServer::ARRAY_NORMAL,
-		ARRAY_TANGENT = VisualServer::ARRAY_TANGENT,
-		ARRAY_COLOR = VisualServer::ARRAY_COLOR,
-		ARRAY_TEX_UV = VisualServer::ARRAY_TEX_UV,
-		ARRAY_TEX_UV2 = VisualServer::ARRAY_TEX_UV2,
-		ARRAY_BONES = VisualServer::ARRAY_BONES,
-		ARRAY_WEIGHTS = VisualServer::ARRAY_WEIGHTS,
-		ARRAY_INDEX = VisualServer::ARRAY_INDEX,
-		ARRAY_MAX = VisualServer::ARRAY_MAX
+		ARRAY_VERTEX = RenderingServer::ARRAY_VERTEX,
+		ARRAY_NORMAL = RenderingServer::ARRAY_NORMAL,
+		ARRAY_TANGENT = RenderingServer::ARRAY_TANGENT,
+		ARRAY_COLOR = RenderingServer::ARRAY_COLOR,
+		ARRAY_TEX_UV = RenderingServer::ARRAY_TEX_UV,
+		ARRAY_TEX_UV2 = RenderingServer::ARRAY_TEX_UV2,
+		ARRAY_BONES = RenderingServer::ARRAY_BONES,
+		ARRAY_WEIGHTS = RenderingServer::ARRAY_WEIGHTS,
+		ARRAY_INDEX = RenderingServer::ARRAY_INDEX,
+		ARRAY_MAX = RenderingServer::ARRAY_MAX
 
 	};
 
@@ -98,18 +98,18 @@ public:
 	};
 
 	enum PrimitiveType {
-		PRIMITIVE_POINTS = VisualServer::PRIMITIVE_POINTS,
-		PRIMITIVE_LINES = VisualServer::PRIMITIVE_LINES,
-		PRIMITIVE_LINE_STRIP = VisualServer::PRIMITIVE_LINE_STRIP,
-		PRIMITIVE_TRIANGLES = VisualServer::PRIMITIVE_TRIANGLES,
-		PRIMITIVE_TRIANGLE_STRIP = VisualServer::PRIMITIVE_TRIANGLE_STRIP,
-		PRIMITIVE_MAX = VisualServer::PRIMITIVE_MAX,
+		PRIMITIVE_POINTS = RenderingServer::PRIMITIVE_POINTS,
+		PRIMITIVE_LINES = RenderingServer::PRIMITIVE_LINES,
+		PRIMITIVE_LINE_STRIP = RenderingServer::PRIMITIVE_LINE_STRIP,
+		PRIMITIVE_TRIANGLES = RenderingServer::PRIMITIVE_TRIANGLES,
+		PRIMITIVE_TRIANGLE_STRIP = RenderingServer::PRIMITIVE_TRIANGLE_STRIP,
+		PRIMITIVE_MAX = RenderingServer::PRIMITIVE_MAX,
 	};
 
 	enum BlendShapeMode {
 
-		BLEND_SHAPE_MODE_NORMALIZED = VS::BLEND_SHAPE_MODE_NORMALIZED,
-		BLEND_SHAPE_MODE_RELATIVE = VS::BLEND_SHAPE_MODE_RELATIVE,
+		BLEND_SHAPE_MODE_NORMALIZED = RS::BLEND_SHAPE_MODE_NORMALIZED,
+		BLEND_SHAPE_MODE_RELATIVE = RS::BLEND_SHAPE_MODE_RELATIVE,
 	};
 
 	virtual int get_surface_count() const = 0;
@@ -131,8 +131,8 @@ public:
 	void generate_debug_mesh_lines(Vector<Vector3> &r_lines);
 	void generate_debug_mesh_indices(Vector<Vector3> &r_points);
 
-	Ref<Shape> create_trimesh_shape() const;
-	Ref<Shape> create_convex_shape() const;
+	Ref<Shape3D> create_trimesh_shape() const;
+	Ref<Shape3D> create_convex_shape() const;
 
 	Ref<Mesh> create_outline(float p_margin) const;
 
@@ -146,7 +146,7 @@ public:
 
 	static ConvexDecompositionFunc convex_composition_function;
 
-	Vector<Ref<Shape>> convex_decompose() const;
+	Vector<Ref<Shape3D>> convex_decompose() const;
 
 	Mesh();
 };
@@ -193,7 +193,7 @@ protected:
 public:
 	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = ARRAY_COMPRESS_DEFAULT);
 
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes = Vector<Vector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<VS::SurfaceData::LOD> &p_lods = Vector<VS::SurfaceData::LOD>());
+	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<Vector<uint8_t>> &p_blend_shapes = Vector<Vector<uint8_t>>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const;
 	Array surface_get_blend_shape_arrays(int p_surface) const;
@@ -238,6 +238,7 @@ public:
 	void regen_normalmaps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
+	Error lightmap_unwrap_cached(int *&r_cache_data, unsigned int &r_cache_size, bool &r_used_cache, const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);
 
 	virtual void reload_from_file();
 

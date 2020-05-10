@@ -34,7 +34,7 @@
 #include "rasterizer_canvas_gles2.h"
 #include "rasterizer_scene_gles2.h"
 #include "rasterizer_storage_gles2.h"
-#include "servers/visual/rasterizer.h"
+#include "servers/rendering/rasterizer.h"
 
 class RasterizerGLES2 : public Rasterizer {
 

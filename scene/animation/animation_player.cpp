@@ -44,7 +44,7 @@ void AnimatedValuesBackup::update_skeletons() {
 	for (int i = 0; i < entries.size(); i++) {
 		if (entries[i].bone_idx != -1) {
 			// 3D bone
-			Object::cast_to<Skeleton>(entries[i].object)->notification(Skeleton::NOTIFICATION_UPDATE_SKELETON);
+			Object::cast_to<Skeleton3D>(entries[i].object)->notification(Skeleton3D::NOTIFICATION_UPDATE_SKELETON);
 		} else {
 			Bone2D *bone = Object::cast_to<Bone2D>(entries[i].object);
 			if (bone && bone->skeleton) {
@@ -244,7 +244,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 	for (int i = 0; i < a->get_track_count(); i++) {
 
-		p_anim->node_cache.write[i] = NULL;
+		p_anim->node_cache.write[i] = nullptr;
 		RES resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
@@ -252,9 +252,9 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		ObjectID id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
-		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton>(child)) {
+		if (a->track_get_path(i).get_subname_count() == 1 && Object::cast_to<Skeleton3D>(child)) {
 
-			Skeleton *sk = Object::cast_to<Skeleton>(child);
+			Skeleton3D *sk = Object::cast_to<Skeleton3D>(child);
 			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
 			if (bone_idx == -1) {
 
@@ -283,9 +283,9 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 			// special cases and caches for transform tracks
 
 			// cache spatial
-			p_anim->node_cache[i]->spatial = Object::cast_to<Spatial>(child);
+			p_anim->node_cache[i]->spatial = Object::cast_to<Node3D>(child);
 			// cache skeleton
-			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton>(child);
+			p_anim->node_cache[i]->skeleton = Object::cast_to<Skeleton3D>(child);
 			if (p_anim->node_cache[i]->skeleton) {
 				if (a->track_get_path(i).get_subname_count() == 1) {
 					StringName bone_name = a->track_get_path(i).get_subname(0);
@@ -293,13 +293,13 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 					p_anim->node_cache[i]->bone_idx = p_anim->node_cache[i]->skeleton->find_bone(bone_name);
 					if (p_anim->node_cache[i]->bone_idx < 0) {
 						// broken track (nonexistent bone)
-						p_anim->node_cache[i]->skeleton = NULL;
-						p_anim->node_cache[i]->spatial = NULL;
+						p_anim->node_cache[i]->skeleton = nullptr;
+						p_anim->node_cache[i]->spatial = nullptr;
 						ERR_CONTINUE(p_anim->node_cache[i]->bone_idx < 0);
 					}
 				} else {
 					// no property, just use spatialnode
-					p_anim->node_cache[i]->skeleton = NULL;
+					p_anim->node_cache[i]->skeleton = nullptr;
 				}
 			}
 		}
@@ -395,9 +395,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, float 
 
 				} else {
 
-					nc->loc_accum = nc->loc_accum.linear_interpolate(loc, p_interp);
+					nc->loc_accum = nc->loc_accum.lerp(loc, p_interp);
 					nc->rot_accum = nc->rot_accum.slerp(rot, p_interp);
-					nc->scale_accum = nc->scale_accum.linear_interpolate(scale, p_interp);
+					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);
 				}
 
 			} break;
@@ -830,7 +830,7 @@ void AnimationPlayer::_animation_process2(float p_delta, bool p_started) {
 		c.seeked = false;
 	}
 
-	List<Blend>::Element *prev = NULL;
+	List<Blend>::Element *prev = nullptr;
 	for (List<Blend>::Element *E = c.blend.back(); E; E = prev) {
 
 		Blend &b = E->get();
@@ -1242,19 +1242,6 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 bool AnimationPlayer::is_playing() const {
 
 	return playing;
-	/*
-	if (playback.current.from==NULL)
-		return false;
-
-	float len=playback.current.from->animation->get_length();
-	float pos = playback.current.pos;
-	bool loop=playback.current.from->animation->has_loop();
-	if (!loop && pos >= len) {
-		return false;
-	};
-
-	return true;
-	*/
 }
 
 void AnimationPlayer::set_current_animation(const String &p_anim) {
@@ -1296,7 +1283,7 @@ void AnimationPlayer::stop(bool p_reset) {
 	Playback &c = playback;
 	c.blend.clear();
 	if (p_reset) {
-		c.current.from = NULL;
+		c.current.from = nullptr;
 		c.current.speed_scale = 1;
 		c.current.pos = 0;
 	}
@@ -1612,7 +1599,7 @@ void AnimationPlayer::restore_animated_values(const AnimatedValuesBackup &p_back
 		if (entry->bone_idx == -1) {
 			entry->object->set_indexed(entry->subpath, entry->value);
 		} else {
-			Object::cast_to<Skeleton>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
+			Object::cast_to<Skeleton3D>(entry->object)->set_bone_pose(entry->bone_idx, entry->value);
 		}
 	}
 }

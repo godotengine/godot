@@ -911,7 +911,7 @@ Vector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int p_l
 		for (int j = 1; j <= p_lats; j++) {
 
 			// FIXME: This is stupid.
-			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
+			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = angle * p_radius;
 			planes.push_back(Plane(pos, angle));
 			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
@@ -943,7 +943,7 @@ Vector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, i
 
 		for (int j = 1; j <= p_lats; j++) {
 
-			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
+			Vector3 angle = normal.lerp(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = axis * p_height * 0.5 + angle * p_radius;
 			planes.push_back(Plane(pos, angle));
 			planes.push_back(Plane(pos * axis_neg, angle * axis_neg));
@@ -1177,4 +1177,43 @@ Vector<Vector<Point2>> Geometry::_polypath_offset(const Vector<Point2> &p_polypa
 		polypaths.push_back(polypath);
 	}
 	return polypaths;
+}
+
+Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int p_plane_count) {
+
+	Vector<Vector3> points;
+
+	// Iterate through every unique combination of any three planes.
+	for (int i = p_plane_count - 1; i >= 0; i--) {
+		for (int j = i - 1; j >= 0; j--) {
+			for (int k = j - 1; k >= 0; k--) {
+
+				// Find the point where these planes all cross over (if they
+				// do at all).
+				Vector3 convex_shape_point;
+				if (p_planes[i].intersect_3(p_planes[j], p_planes[k], &convex_shape_point)) {
+
+					// See if any *other* plane excludes this point because it's
+					// on the wrong side.
+					bool excluded = false;
+					for (int n = 0; n < p_plane_count; n++) {
+						if (n != i && n != j && n != k) {
+							real_t dp = p_planes[n].normal.dot(convex_shape_point);
+							if (dp - p_planes[n].d > CMP_EPSILON) {
+								excluded = true;
+								break;
+							}
+						}
+					}
+
+					// Only add the point if it passed all tests.
+					if (!excluded) {
+						points.push_back(convex_shape_point);
+					}
+				}
+			}
+		}
+	}
+
+	return points;
 }

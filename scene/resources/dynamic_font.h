@@ -124,6 +124,8 @@ class DynamicFontAtSize : public Reference {
 	float rect_margin;
 	float oversampling;
 	float scale_color_font;
+	float underline_position;
+	float underline_thickness;
 
 	bool valid;
 
@@ -187,6 +189,8 @@ public:
 
 	float get_ascent() const;
 	float get_descent() const;
+	float get_underline_position() const;
+	float get_underline_thickness() const;
 
 	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize>> &p_fallbacks) const;
 
@@ -274,6 +278,8 @@ public:
 
 	virtual float get_ascent() const;
 	virtual float get_descent() const;
+	virtual float get_underline_position() const;
+	virtual float get_underline_thickness() const;
 
 	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
 
@@ -302,7 +308,7 @@ VARIANT_ENUM_CAST(DynamicFont::SpacingType);
 
 class ResourceFormatLoaderDynamicFont : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

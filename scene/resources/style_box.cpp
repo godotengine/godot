@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "style_box.h"
-#include "scene/2d/canvas_item.h"
+
+#include "scene/main/canvas_item.h"
 
 #include <limits.h>
 
@@ -201,7 +202,7 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	if (normal_map.is_valid())
 		normal_rid = normal_map->get_rid();
 
-	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NinePatchAxisMode(axis_h), VS::NinePatchAxisMode(axis_v), draw_center, modulate, normal_rid);
+	RenderingServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), RS::NinePatchAxisMode(axis_h), RS::NinePatchAxisMode(axis_v), draw_center, modulate, normal_rid);
 }
 
 void StyleBoxTexture::set_draw_center(bool p_enabled) {
@@ -852,7 +853,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	}
 
 	//DRAWING
-	VisualServer *vs = VisualServer::get_singleton();
+	RenderingServer *vs = RenderingServer::get_singleton();
 	vs->canvas_item_add_triangle_array(p_canvas_item, indices, verts, colors, uvs);
 }
 
@@ -1049,7 +1050,7 @@ Size2 StyleBoxLine::get_center_size() const {
 }
 
 void StyleBoxLine::draw(RID p_canvas_item, const Rect2 &p_rect) const {
-	VisualServer *vs = VisualServer::get_singleton();
+	RenderingServer *vs = RenderingServer::get_singleton();
 	Rect2i r = p_rect;
 
 	if (vertical) {

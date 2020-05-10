@@ -87,16 +87,16 @@ void GIProbeEditorPlugin::_notification(int p_what) {
 		Color color;
 		if (size_mb <= 16.0 + CMP_EPSILON) {
 			// Fast.
-			color = bake_info->get_color("success_color", "Editor");
+			color = bake_info->get_theme_color("success_color", "Editor");
 		} else if (size_mb <= 64.0 + CMP_EPSILON) {
 			// Medium.
-			color = bake_info->get_color("warning_color", "Editor");
+			color = bake_info->get_theme_color("warning_color", "Editor");
 		} else {
 			// Slow.
-			color = bake_info->get_color("error_color", "Editor");
+			color = bake_info->get_theme_color("error_color", "Editor");
 		}
+		bake_info->add_theme_color_override("font_color", color);
 
-		bake_info->add_color_override("font_color", color);
 		bake_info->set_text(text);
 	}
 }
@@ -113,25 +113,25 @@ void GIProbeEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
-EditorProgress *GIProbeEditorPlugin::tmp_progress = NULL;
+EditorProgress *GIProbeEditorPlugin::tmp_progress = nullptr;
 
 void GIProbeEditorPlugin::bake_func_begin(int p_steps) {
 
-	ERR_FAIL_COND(tmp_progress != NULL);
+	ERR_FAIL_COND(tmp_progress != nullptr);
 
 	tmp_progress = memnew(EditorProgress("bake_gi", TTR("Bake GI Probe"), p_steps));
 }
 
 void GIProbeEditorPlugin::bake_func_step(int p_step, const String &p_description) {
 
-	ERR_FAIL_COND(tmp_progress == NULL);
+	ERR_FAIL_COND(tmp_progress == nullptr);
 	tmp_progress->step(p_description, p_step, false);
 }
 
 void GIProbeEditorPlugin::bake_func_end() {
-	ERR_FAIL_COND(tmp_progress == NULL);
+	ERR_FAIL_COND(tmp_progress == nullptr);
 	memdelete(tmp_progress);
-	tmp_progress = NULL;
+	tmp_progress = nullptr;
 }
 
 void GIProbeEditorPlugin::_giprobe_save_path_and_bake(const String &p_path) {
@@ -153,7 +153,7 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	bake_hb->hide();
 	bake = memnew(ToolButton);
-	bake->set_icon(editor->get_gui_base()->get_icon("Bake", "EditorIcons"));
+	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));
 	bake->set_text(TTR("Bake GI Probe"));
 	bake->connect("pressed", callable_mp(this, &GIProbeEditorPlugin::_bake));
 	bake_hb->add_child(bake);
@@ -163,9 +163,9 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 	bake_hb->add_child(bake_info);
 
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, bake_hb);
-	gi_probe = NULL;
+	gi_probe = nullptr;
 	probe_file = memnew(EditorFileDialog);
-	probe_file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+	probe_file->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	probe_file->add_filter("*.res");
 	probe_file->connect("file_selected", callable_mp(this, &GIProbeEditorPlugin::_giprobe_save_path_and_bake));
 	get_editor_interface()->get_base_control()->add_child(probe_file);

@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 package org.godotengine.godot.input;
+
+import org.godotengine.godot.*;
+
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -37,7 +40,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
-import org.godotengine.godot.*;
 
 public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListener {
 	// ===========================================================
@@ -48,7 +50,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	// ===========================================================
 	// Fields
 	// ===========================================================
-	private final GodotView mView;
+	private final GodotRenderView mRenderView;
 	private final GodotEditText mEdit;
 	private String mOriginText;
 
@@ -56,9 +58,9 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	// Constructors
 	// ===========================================================
 
-	public GodotTextInputWrapper(final GodotView view, final GodotEditText edit) {
-		this.mView = view;
-		this.mEdit = edit;
+	public GodotTextInputWrapper(final GodotRenderView view, final GodotEditText edit) {
+		mRenderView = view;
+		mEdit = edit;
 	}
 
 	// ===========================================================
@@ -66,13 +68,13 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	// ===========================================================
 
 	private boolean isFullScreenEdit() {
-		final TextView textField = this.mEdit;
+		final TextView textField = mEdit;
 		final InputMethodManager imm = (InputMethodManager)textField.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 		return imm.isFullscreenMode();
 	}
 
 	public void setOriginText(final String originText) {
-		this.mOriginText = originText;
+		mOriginText = originText;
 	}
 
 	// ===========================================================
@@ -87,7 +89,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
 		//Log.d(TAG, "beforeTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",after: " + after);
 
-		mView.queueEvent(new Runnable() {
+		mRenderView.queueOnRenderThread(new Runnable() {
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
@@ -106,7 +108,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 		for (int i = start; i < start + count; ++i) {
 			newChars[i - start] = pCharSequence.charAt(i);
 		}
-		mView.queueEvent(new Runnable() {
+		mRenderView.queueOnRenderThread(new Runnable() {
 			@Override
 			public void run() {
 				for (int i = 0; i < count; ++i) {
@@ -124,10 +126,10 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public boolean onEditorAction(final TextView pTextView, final int pActionID, final KeyEvent pKeyEvent) {
-		if (this.mEdit == pTextView && this.isFullScreenEdit()) {
+		if (mEdit == pTextView && isFullScreenEdit()) {
 			final String characters = pKeyEvent.getCharacters();
 
-			mView.queueEvent(new Runnable() {
+			mRenderView.queueOnRenderThread(new Runnable() {
 				@Override
 				public void run() {
 					for (int i = 0; i < characters.length(); i++) {
@@ -144,7 +146,7 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, true);
 			GodotLib.key(KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_ENTER, 0, false);
 
-			this.mView.requestFocus();
+			mRenderView.getView().requestFocus();
 			return true;
 		}
 		return false;

@@ -30,10 +30,11 @@
 
 #include "touch_screen_button.h"
 
-#include "core/input_map.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
+#include "core/input/input_map.h"
 #include "core/os/os.h"
-
+#include "scene/main/window.h"
+#
 void TouchScreenButton::set_texture(const Ref<Texture2D> &p_texture) {
 
 	texture = p_texture;
@@ -114,7 +115,7 @@ void TouchScreenButton::_notification(int p_what) {
 
 			if (!is_inside_tree())
 				return;
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 
 			if (finger_pressed != -1) {
@@ -145,7 +146,7 @@ void TouchScreenButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (!Engine::get_singleton()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 			update();
 
@@ -259,9 +260,10 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	bool check_rect = true;
 
 	if (shape.is_valid()) {
-
 		check_rect = false;
-		Transform2D xform = shape_centered ? Transform2D().translated(shape->get_rect().size * 0.5f) : Transform2D();
+
+		Vector2 size = texture.is_null() ? shape->get_rect().size : texture->get_size();
+		Transform2D xform = shape_centered ? Transform2D().translated(size * 0.5f) : Transform2D();
 		touched = shape->collide(xform, unit_rect, Transform2D(0, coord + Vector2(0.5, 0.5)));
 	}
 
@@ -294,7 +296,7 @@ void TouchScreenButton::_press(int p_finger_pressed) {
 		iea.instance();
 		iea->set_action(action);
 		iea->set_pressed(true);
-		get_tree()->input_event(iea);
+		get_viewport()->input(iea, true);
 	}
 
 	emit_signal("pressed");
@@ -314,7 +316,7 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 			iea.instance();
 			iea->set_action(action);
 			iea->set_pressed(false);
-			get_tree()->input_event(iea);
+			get_viewport()->input(iea, true);
 		}
 	}
 

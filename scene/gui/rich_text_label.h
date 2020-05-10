@@ -98,7 +98,7 @@ private:
 		int maximum_width;
 
 		Line() {
-			from = NULL;
+			from = nullptr;
 			char_count = 0;
 		}
 	};
@@ -119,9 +119,11 @@ private:
 		}
 
 		Item() {
-			parent = NULL;
-			E = NULL;
+			parent = nullptr;
+			E = nullptr;
 			line = 0;
+			index = 0;
+			type = ITEM_FRAME;
 		}
 		virtual ~Item() { _clear_children(); }
 	};
@@ -135,7 +137,7 @@ private:
 
 		ItemFrame() {
 			type = ITEM_FRAME;
-			parent_frame = NULL;
+			parent_frame = nullptr;
 			cell = false;
 			parent_line = 0;
 		}
@@ -368,8 +370,8 @@ private:
 	int visible_characters;
 	float percent_visible;
 
-	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL, int p_char_count = 0);
-	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = NULL, int *r_click_char = NULL, bool *r_outside = NULL);
+	int _process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos = Point2i(), Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, int p_char_count = 0);
+	void _find_click(ItemFrame *p_frame, const Point2i &p_click, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr);
 
 	Ref<Font> _find_font(Item *p_item);
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font);
@@ -377,7 +379,7 @@ private:
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
 	bool _find_strikethrough(Item *p_item);
-	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
+	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = nullptr);
 	bool _find_layout_subitem(Item *from, Item *to);
 	bool _find_by_type(Item *p_item, ItemType p_type);
 	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);

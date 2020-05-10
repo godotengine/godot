@@ -60,7 +60,7 @@ void CPUParticles2DEditorPlugin::make_visible(bool p_visible) {
 void CPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
 
 	source_emission_file = p_file;
-	emission_mask->popup_centered_minsize();
+	emission_mask->popup_centered();
 }
 
 void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
@@ -73,7 +73,7 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
 
-			emission_mask->popup_centered_minsize();
+			emission_mask->popup_centered();
 		} break;
 		case MENU_RESTART: {
 
@@ -241,7 +241,7 @@ void CPUParticles2DEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
-		menu->set_icon(menu->get_popup()->get_icon("Particles2D", "EditorIcons"));
+		menu->set_icon(epoints->get_theme_icon("CPUParticles2D", "EditorIcons"));
 		file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
 	}
 }
@@ -251,7 +251,7 @@ void CPUParticles2DEditorPlugin::_bind_methods() {
 
 CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 
-	particles = NULL;
+	particles = nullptr;
 	editor = p_node;
 	undo_redo = editor->get_undo_redo();
 
@@ -262,11 +262,9 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 	toolbar->add_child(memnew(VSeparator));
 
 	menu = memnew(MenuButton);
-	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
-	menu->get_popup()->add_separator();
 	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
-	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
-	menu->set_text(TTR("Particles"));
+	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
+	menu->set_text(TTR("CPUParticles2D"));
 	menu->set_switch_on_hover(true);
 	toolbar->add_child(menu);
 
@@ -276,7 +274,7 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 	for (List<String>::Element *E = ext.front(); E; E = E->next()) {
 		file->add_filter("*." + E->get() + "; " + E->get().to_upper());
 	}
-	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
 	toolbar->add_child(file);
 
 	epoints = memnew(SpinBox);

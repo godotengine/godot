@@ -36,7 +36,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
-#include "servers/visual/visual_server_raster.h"
+#include "servers/rendering/rendering_server_raster.h"
 
 #include <emscripten.h>
 #include <png.h>
@@ -167,7 +167,7 @@ void OS_JavaScript::set_window_maximized(bool p_enabled) {
 		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-		strategy.canvasResizedCallback = NULL;
+		strategy.canvasResizedCallback = nullptr;
 		emscripten_enter_soft_fullscreen(GODOT_CANVAS_SELECTOR, &strategy);
 		window_maximized = p_enabled;
 	}
@@ -196,7 +196,7 @@ void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-		strategy.canvasResizedCallback = NULL;
+		strategy.canvasResizedCallback = nullptr;
 		EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(GODOT_CANVAS_SELECTOR, false, &strategy);
 		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
 		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
@@ -541,10 +541,10 @@ void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_s
 		PackedByteArray png;
 		size_t len;
 		PackedByteArray data = image->get_data();
-		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, NULL));
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, nullptr));
 
 		png.resize(len);
-		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, NULL));
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
 
 		char *object_url;
 		/* clang-format off */
@@ -824,7 +824,7 @@ const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
 }
 
 // Audio
@@ -962,18 +962,18 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	setenv("LANG", locale_ptr, true);
 
 	AudioDriverManager::initialize(p_audio_driver);
-	VisualServer *visual_server = memnew(VisualServerRaster());
+	RenderingServer *rendering_server = memnew(RenderingServerRaster());
 	input = memnew(InputDefault);
 
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
 		ERR_PRINT("Error while setting " #ev " callback: Code " + itos(result));
-#define SET_EM_CALLBACK(target, ev, cb)                               \
-	result = emscripten_set_##ev##_callback(target, NULL, true, &cb); \
+#define SET_EM_CALLBACK(target, ev, cb)                                  \
+	result = emscripten_set_##ev##_callback(target, nullptr, true, &cb); \
 	EM_CHECK(ev)
-#define SET_EM_CALLBACK_NOTARGET(ev, cb)                      \
-	result = emscripten_set_##ev##_callback(NULL, true, &cb); \
+#define SET_EM_CALLBACK_NOTARGET(ev, cb)                         \
+	result = emscripten_set_##ev##_callback(nullptr, true, &cb); \
 	EM_CHECK(ev)
 	// These callbacks from Emscripten's html5.h suffice to access most
 	// JavaScript APIs. For APIs that are not (sufficiently) exposed, EM_ASM
@@ -981,7 +981,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mousemove, mousemove_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, mousedown, mouse_button_callback)
 	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, mouseup, mouse_button_callback)
-	SET_EM_CALLBACK(EMSCRIPTEN_EVENT_TARGET_WINDOW, wheel, wheel_callback)
+	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, wheel, wheel_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchstart, touch_press_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchmove, touchmove_callback)
 	SET_EM_CALLBACK(GODOT_CANVAS_SELECTOR, touchend, touch_press_callback)
@@ -1009,14 +1009,14 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 			update_clipboard(evt.clipboardData.getData('text'));
 		}, true);
 	},
-		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
-		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
-		MainLoop::NOTIFICATION_WM_FOCUS_IN,
-		MainLoop::NOTIFICATION_WM_FOCUS_OUT
+		NOTIFICATION_WM_MOUSE_ENTER,
+		NOTIFICATION_WM_MOUSE_EXIT,
+		NOTIFICATION_WM_FOCUS_IN,
+		NOTIFICATION_WM_FOCUS_OUT
 	);
 	/* clang-format on */
 
-	visual_server->init();
+	rendering_server->init();
 
 	return OK;
 }
@@ -1072,7 +1072,7 @@ bool OS_JavaScript::main_loop_iterate() {
 			strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
 			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
-			strategy.canvasResizedCallback = NULL;
+			strategy.canvasResizedCallback = nullptr;
 			emscripten_enter_soft_fullscreen(GODOT_CANVAS_SELECTOR, &strategy);
 		} else {
 			emscripten_set_canvas_element_size(GODOT_CANVAS_SELECTOR, windowed_size.width, windowed_size.height);
@@ -1121,8 +1121,8 @@ int OS_JavaScript::get_process_id() const {
 
 extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int p_notification) {
 
-	if (p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER || p_notification == MainLoop::NOTIFICATION_WM_MOUSE_EXIT) {
-		cursor_inside_canvas = p_notification == MainLoop::NOTIFICATION_WM_MOUSE_ENTER;
+	if (p_notification == NOTIFICATION_WM_MOUSE_ENTER || p_notification == NOTIFICATION_WM_MOUSE_EXIT) {
+		cursor_inside_canvas = p_notification == NOTIFICATION_WM_MOUSE_ENTER;
 	}
 	OS_JavaScript::get_singleton()->get_main_loop()->notification(p_notification);
 }
@@ -1182,10 +1182,10 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 	PackedByteArray png;
 	size_t len;
 	PackedByteArray data = icon->get_data();
-	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, NULL));
+	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, data.ptr(), 0, nullptr));
 
 	png.resize(len);
-	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, NULL));
+	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, png.ptrw(), &len, 0, data.ptr(), 0, nullptr));
 
 	/* clang-format off */
 	EM_ASM_ARGS({
@@ -1284,7 +1284,7 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	just_exited_fullscreen = false;
 	transparency_enabled = false;
 
-	main_loop = NULL;
+	main_loop = nullptr;
 
 	idb_available = false;
 	sync_wait_time = -1;

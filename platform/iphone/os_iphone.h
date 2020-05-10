@@ -33,18 +33,16 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
-
 #include "game_center.h"
 #include "icloud.h"
 #include "in_app_store.h"
 #include "ios.h"
-#include "main/input_default.h"
 #include "servers/audio_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
+#include "servers/rendering/rasterizer.h"
+#include "servers/rendering_server.h"
 
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
@@ -62,7 +60,7 @@ private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
 
-	VisualServer *visual_server;
+	RenderingServer *rendering_server;
 
 	AudioDriverCoreAudio audio_driver;
 

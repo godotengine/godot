@@ -796,7 +796,7 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 		Vector2 post = (idx < (bpc - 2)) ? r[idx + 2] : r[idx + 1];
 		return r[idx].cubic_interpolate(r[idx + 1], pre, post, frac);
 	} else {
-		return r[idx].linear_interpolate(r[idx + 1], frac);
+		return r[idx].lerp(r[idx + 1], frac);
 	}
 }
 
@@ -1354,7 +1354,7 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 		Vector3 post = (idx < (bpc - 2)) ? r[idx + 2] : r[idx + 1];
 		return r[idx].cubic_interpolate(r[idx + 1], pre, post, frac);
 	} else {
-		return r[idx].linear_interpolate(r[idx + 1], frac);
+		return r[idx].lerp(r[idx + 1], frac);
 	}
 }
 

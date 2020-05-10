@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-11 12:20+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2020-05-02 01:48+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1457,7 +1457,7 @@ msgstr "Mover Autoload"
 msgid "Remove Autoload"
 msgstr "Quitar Autoload"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Activar"
 
@@ -2954,8 +2954,12 @@ msgid "Q&A"
 msgstr "Q&A"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Registro de problemas"
+msgid "Report a Bug"
+msgstr "Reportar un Bug"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr "Enviar comentarios sobre la documentación"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4015,8 +4019,8 @@ msgid "Reimport"
 msgstr "Reimportar"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
-msgstr "Guardar escenas, reimportar y reiniciar"
+msgid "Save Scenes, Re-Import, and Restart"
+msgstr "Guardar Escenas, Reimportar y Reiniciar"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -6881,14 +6885,6 @@ msgid "Open Godot online documentation."
 msgstr "Abrir la documentación en línea de Godot."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Solicitar Docum."
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Ayudá a mejorar la documentación de Godot dando feedback."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Buscar en la documentación de referencia."
 
@@ -7325,6 +7321,10 @@ msgid "This operation requires a single selected node."
 msgstr "Esta operación requiere un solo nodo seleccionado."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr "Auto Ortogonal Activado"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Trabar Rotación de Vista"
 
@@ -7413,16 +7413,16 @@ msgid "Freelook Slow Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Rotación de Vista Trabada"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "Nota: El valor FPS que se muestra es la velocidad de fotogramas del editor.\n"
 "No se puede utilizar como un indicador fiable del rendimiento en el juego."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Rotación de Vista Trabada"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -8387,7 +8387,7 @@ msgstr "Crear Polígono Cóncavo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Make Polygon Convex"
-msgstr "Crear Polígono Convexo"
+msgstr "Hacer el Polígono Convexo"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Remove Tile"
@@ -9947,6 +9947,17 @@ msgstr ""
 "Actualmente no tenés ningún proyecto.\n"
 "¿Te gustaría explorar los ejemplos oficiales en la Biblioteca de Assets?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+"La casilla de búsqueda filtra los proyectos por nombre y el último "
+"componente de la ruta.\n"
+"Para filtrar los proyectos por nombre y ruta completa, la consulta debe "
+"contener al menos un carácter `/`."
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Tecla "
@@ -10937,6 +10948,14 @@ msgid "Script file already exists."
 msgstr "El archivo de script ya existe."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+"Nota: Los scripts integrados tienen algunas limitaciones y no pueden ser "
+"editados con un editor externo."
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Nombre de Clase:"
 
@@ -11055,6 +11074,10 @@ msgstr "Lista de Uso de Memoria de Video por Recurso:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Total:"
+
+#: editor/script_editor_debugger.cpp
+msgid "Export list to a CSV file"
+msgstr "Exportar lista a un archivo CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12736,6 +12759,10 @@ msgstr ""
 "pueda obtener un tamaño. Alternativamente, haz un RenderTarget y asigna su "
 "textura interna a algún otro nodo para mostrar."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr "El tamaño del viewport debe ser mayor a 0 para poder renderizar."
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Fuente inválida para la vista previa."
@@ -12763,6 +12790,15 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Registro de problemas"
+
+#~ msgid "Request Docs"
+#~ msgstr "Solicitar Docum."
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Ayudá a mejorar la documentación de Godot dando feedback."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "%d ocurrencia(s) Reemplazadas."

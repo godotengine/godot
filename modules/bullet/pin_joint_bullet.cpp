@@ -62,27 +62,27 @@ PinJointBullet::PinJointBullet(RigidBodyBullet *p_body_a, const Vector3 &p_pos_a
 
 PinJointBullet::~PinJointBullet() {}
 
-void PinJointBullet::set_param(PhysicsServer::PinJointParam p_param, real_t p_value) {
+void PinJointBullet::set_param(PhysicsServer3D::PinJointParam p_param, real_t p_value) {
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS:
+		case PhysicsServer3D::PIN_JOINT_BIAS:
 			p2pConstraint->m_setting.m_tau = p_value;
 			break;
-		case PhysicsServer::PIN_JOINT_DAMPING:
+		case PhysicsServer3D::PIN_JOINT_DAMPING:
 			p2pConstraint->m_setting.m_damping = p_value;
 			break;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
 			p2pConstraint->m_setting.m_impulseClamp = p_value;
 			break;
 	}
 }
 
-real_t PinJointBullet::get_param(PhysicsServer::PinJointParam p_param) const {
+real_t PinJointBullet::get_param(PhysicsServer3D::PinJointParam p_param) const {
 	switch (p_param) {
-		case PhysicsServer::PIN_JOINT_BIAS:
+		case PhysicsServer3D::PIN_JOINT_BIAS:
 			return p2pConstraint->m_setting.m_tau;
-		case PhysicsServer::PIN_JOINT_DAMPING:
+		case PhysicsServer3D::PIN_JOINT_DAMPING:
 			return p2pConstraint->m_setting.m_damping;
-		case PhysicsServer::PIN_JOINT_IMPULSE_CLAMP:
+		case PhysicsServer3D::PIN_JOINT_IMPULSE_CLAMP:
 			return p2pConstraint->m_setting.m_impulseClamp;
 	}
 	// Compiler doesn't seem to notice that all code paths are fulfilled...

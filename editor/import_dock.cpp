@@ -424,7 +424,7 @@ void ImportDock::_reimport_attempt() {
 
 	if (need_restart) {
 		label_warning->set_visible(used_in_resources);
-		reimport_confirm->popup_centered_minsize();
+		reimport_confirm->popup_centered();
 		return;
 	}
 
@@ -450,8 +450,8 @@ void ImportDock::_reimport() {
 
 		String importer_name = params->importer->get_importer_name();
 
-		if (params->checking) {
-			//update only what edited (checkboxes)
+		if (params->checking && config->get_value("remap", "importer") == params->importer->get_importer_name()) {
+			//update only what is edited (checkboxes) if the importer is the same
 			for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
 				if (params->checked.has(E->get().name)) {
 					config->set_value("params", E->get().name, params->values[E->get().name]);
@@ -492,13 +492,13 @@ void ImportDock::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			imported->add_style_override("normal", get_stylebox("normal", "LineEdit"));
+			imported->add_theme_style_override("normal", get_theme_stylebox("normal", "LineEdit"));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 
 			import_opts->edit(params);
-			label_warning->add_color_override("font_color", get_color("warning_color", "Editor"));
+			label_warning->add_theme_color_override("font_color", get_theme_color("warning_color", "Editor"));
 		} break;
 	}
 }
@@ -526,7 +526,7 @@ ImportDock::ImportDock() {
 
 	set_name("Import");
 	imported = memnew(Label);
-	imported->add_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_stylebox("normal", "LineEdit"));
+	imported->add_theme_style_override("normal", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox("normal", "LineEdit"));
 	imported->set_clip_text(true);
 	add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -558,7 +558,7 @@ ImportDock::ImportDock() {
 	hb->add_spacer();
 
 	reimport_confirm = memnew(ConfirmationDialog);
-	reimport_confirm->get_ok()->set_text(TTR("Save scenes, re-import and restart"));
+	reimport_confirm->get_ok()->set_text(TTR("Save Scenes, Re-Import, and Restart"));
 	add_child(reimport_confirm);
 	reimport_confirm->connect("confirmed", callable_mp(this, &ImportDock::_reimport_and_restart));
 

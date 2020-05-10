@@ -369,18 +369,37 @@ public:
 class VisualShaderNodeUniform : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUniform, VisualShaderNode);
 
+public:
+	enum Qualifier {
+		QUAL_NONE,
+		QUAL_GLOBAL,
+		QUAL_INSTANCE,
+	};
+
 private:
 	String uniform_name;
+	Qualifier qualifier;
 
 protected:
 	static void _bind_methods();
+	String _get_qual_str() const;
 
 public:
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
 
+	void set_qualifier(Qualifier p_qual);
+	Qualifier get_qualifier() const;
+
+	virtual bool is_qualifier_supported(Qualifier p_qual) const = 0;
+
+	virtual Vector<StringName> get_editable_properties() const;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
 	VisualShaderNodeUniform();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNodeUniform::Qualifier)
 
 class VisualShaderNodeGroupBase : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNode);

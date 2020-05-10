@@ -10,11 +10,12 @@
 # Sami Lehtilä <sami.lehtila@gmail.com>, 2018.
 # Tapani Niemi <tapani.niemi@kapsi.fi>, 2018, 2019, 2020.
 # Tuomas Lähteenmäki <lahtis@gmail.com>, 2019.
+# Matti Niskanen <matti.t.niskanen@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-03-14 15:05+0000\n"
+"PO-Revision-Date: 2020-05-01 11:42+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -23,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1444,7 +1445,7 @@ msgstr "Siirrä automaattisesti ladattavaa"
 msgid "Remove Autoload"
 msgstr "Poista automaattinen lataus"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Ota käyttöön"
 
@@ -2757,7 +2758,7 @@ msgstr "Irrallisten resurssien hallinta..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Lopeta ja palaa projektiluetteloon"
+msgstr "Poistu projektiluetteloon"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/project_export.cpp
@@ -2921,8 +2922,12 @@ msgid "Q&A"
 msgstr "Kysymykset ja vastaukset"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Ilmoita viasta"
+msgid "Report a Bug"
+msgstr "Raportoi bugi"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr "Lähetä palautetta ohjeesta"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -3976,7 +3981,7 @@ msgid "Reimport"
 msgstr "Tuo uudelleen"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Tallenna skenet, tuo uudelleen ja käynnistä uudelleen"
 
 #: editor/import_dock.cpp
@@ -5349,7 +5354,7 @@ msgstr "Palauta oletuslähennystaso"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "Valitse tila"
+msgstr "Valintatila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -5377,7 +5382,7 @@ msgstr "Siirtotila"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
-msgstr "Kääntötila"
+msgstr "Kiertotila"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5537,7 +5542,7 @@ msgstr "Näytä origo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Viewport"
-msgstr "Näytä näyttöikkuna"
+msgstr "Näytä näyttöruutu"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
@@ -6836,14 +6841,6 @@ msgid "Open Godot online documentation."
 msgstr "Avaa Godotin online-dokumentaatio."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Pyydä dokumentaatiota"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Auta parantamaan Godotin dokumentaatiota antamalla palautetta."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Etsi dokumentaatiosta."
 
@@ -7279,6 +7276,10 @@ msgid "This operation requires a single selected node."
 msgstr "Tämä toiminto vaatii yhden valitun solmun."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr "Automaattinen ortogonaalinen päällä"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Lukitse näkymän kierto"
 
@@ -7367,16 +7368,16 @@ msgid "Freelook Slow Modifier"
 msgstr "Liikkumisen hitauskerroin"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Näkymän kierto lukittu"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
 "Huom: näytetty FPS-lukema on editorin kuvataajuus.\n"
 "Sitä ei voi käyttää luotettavana pelin sisäisenä tehokkuuden ilmaisimena."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Näkymän kierto lukittu"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -9892,6 +9893,16 @@ msgstr ""
 "Sinulla ei ole tällä hetkellä yhtään projekteja.\n"
 "Haluaisitko selata virallisia esimerkkiprojekteja Asset-kirjastosta?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+"Hakulaatikko suodattaa projektit nimen ja polun loppuosan mukaan.\n"
+"Suodattaaksesi projektit nimen ja koko polun mukaan, haussa tulee olla "
+"mukana vähintään yksi `/` merkki."
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Näppäin "
@@ -10882,6 +10893,14 @@ msgid "Script file already exists."
 msgstr "Skriptitiedosto on jo olemassa."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+"Huom: sisäänrakennetuilla skripteillä on joitakin rajoituksia, eikä niitä "
+"voi muokata ulkoisella editorilla."
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Luokan nimi:"
 
@@ -11000,6 +11019,10 @@ msgstr "Lista näyttömuistin käytöstä resurssikohtaisesti:"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Yhteensä:"
+
+#: editor/script_editor_debugger.cpp
+msgid "Export list to a CSV file"
+msgstr "Vie lista CSV tiedostoon"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -11770,7 +11793,7 @@ msgstr "Tee funktio"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Refresh Graph"
-msgstr "Päivitä graafi"
+msgstr "Päivitä kaaviokuva"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Member"
@@ -12661,6 +12684,11 @@ msgstr ""
 "saada koon. Muutoin tee siitä RenderTarget ja aseta sen sisäinen tekstuuri "
 "johonkin solmuun näkyväksi."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+"Näyttöruudun koko on oltava suurempi kuin 0, jotta mitään renderöidään."
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Virheellinen lähde esikatselulle."
@@ -12688,6 +12716,15 @@ msgstr "Varying tyypin voi sijoittaa vain vertex-funktiossa."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Vakioita ei voi muokata."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Ilmoita viasta"
+
+#~ msgid "Request Docs"
+#~ msgstr "Pyydä dokumentaatiota"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Auta parantamaan Godotin dokumentaatiota antamalla palautetta."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Korvattu %d osuvuutta."

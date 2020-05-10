@@ -221,7 +221,7 @@ void RasterizerGLES2::initialize() {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		if (GLAD_GL_ARB_debug_output) {
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			glDebugMessageCallbackARB(_gl_debug_print, NULL);
+			glDebugMessageCallbackARB(_gl_debug_print, nullptr);
 			glEnable(_EXT_DEBUG_OUTPUT);
 		} else {
 			print_line("OpenGL debugging not supported!");
@@ -233,12 +233,12 @@ void RasterizerGLES2::initialize() {
 #ifdef CAN_DEBUG
 #ifdef GLES_OVER_GL
 	if (OS::get_singleton()->is_stdout_verbose() && GLAD_GL_ARB_debug_output) {
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
-		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, NULL, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_ERROR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PORTABILITY_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_PERFORMANCE_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
+		glDebugMessageControlARB(_EXT_DEBUG_SOURCE_API_ARB, _EXT_DEBUG_TYPE_OTHER_ARB, _EXT_DEBUG_SEVERITY_HIGH_ARB, 0, nullptr, GL_TRUE);
 		/* glDebugMessageInsertARB(
 			GL_DEBUG_SOURCE_API_ARB,
 			GL_DEBUG_TYPE_OTHER_ARB, 1,
@@ -256,14 +256,14 @@ void RasterizerGLES2::initialize() {
 
 			print_line("godot: ENABLING GL DEBUG");
 			glEnable(_EXT_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-			callback(_gl_debug_print, NULL);
+			callback(_gl_debug_print, nullptr);
 			glEnable(_EXT_DEBUG_OUTPUT);
 		}
 	}
 #endif // GLES_OVER_GL
 #endif // CAN_DEBUG
 
-	print_line("OpenGL ES 2.0 Renderer: " + VisualServer::get_singleton()->get_video_adapter_name());
+	print_line("OpenGL ES 2.0 Renderer: " + RenderingServer::get_singleton()->get_video_adapter_name());
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
@@ -277,9 +277,8 @@ void RasterizerGLES2::begin_frame(double frame_step) {
 		frame_step = 0.001;
 	}
 
-	// double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
-	// if (time_total > time_roll_over)
-	//	time_total = 0; //roll over every day (should be customz
+	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
+	time_total = Math::fmod(time_total, time_roll_over);
 
 	storage->frame.time[0] = time_total;
 	storage->frame.time[1] = Math::fmod(time_total, 3600);
@@ -316,15 +315,15 @@ void RasterizerGLES2::set_current_render_target(RID p_render_target) {
 
 		glViewport(0, 0, rt->width, rt->height);
 	} else {
-		storage->frame.current_rt = NULL;
+		storage->frame.current_rt = nullptr;
 		storage->frame.clear_request = false;
-		glViewport(0, 0, OS::get_singleton()->get_window_size().width, OS::get_singleton()->get_window_size().height);
+		glViewport(0, 0, DisplayServer::get_singleton()->window_get_size().width, DisplayServer::get_singleton()->window_get_size().height);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
 	}
 }
 
 void RasterizerGLES2::restore_render_target(bool p_3d_was_drawn) {
-	ERR_FAIL_COND(storage->frame.current_rt == NULL);
+	ERR_FAIL_COND(storage->frame.current_rt == nullptr);
 	RasterizerStorageGLES2::RenderTarget *rt = storage->frame.current_rt;
 	glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
 	glViewport(0, 0, rt->width, rt->height);
@@ -359,7 +358,7 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	canvas->canvas_begin();
 
 	RID texture = storage->texture_create();
-	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_use_filter ? VS::TEXTURE_FLAG_FILTER : 0);
+	storage->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), RS::TEXTURE_TYPE_2D, p_use_filter ? RS::TEXTURE_FLAG_FILTER : 0);
 	storage->texture_set_data(texture, p_image);
 
 	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());

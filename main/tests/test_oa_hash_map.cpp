@@ -30,9 +30,8 @@
 
 #include "test_oa_hash_map.h"
 
-#include "core/os/os.h"
-
 #include "core/oa_hash_map.h"
+#include "core/os/os.h"
 
 namespace TestOAHashMap {
 
@@ -153,6 +152,6 @@ MainLoop *test() {
 		map.set(5, 1);
 	}
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestOAHashMap

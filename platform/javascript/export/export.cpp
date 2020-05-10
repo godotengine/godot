@@ -252,6 +252,7 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 
 		String current_line = lines[i];
 		current_line = current_line.replace("$GODOT_BASENAME", p_name);
+		current_line = current_line.replace("$GODOT_PROJECT_NAME", ProjectSettings::get_singleton()->get_setting("application/config/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
 		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
 		str_export += current_line + "\n";
@@ -390,7 +391,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		return error;
 	}
 
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 	unzFile pkg = unzOpen2(template_path.utf8().get_data(), &io);
 
@@ -410,7 +411,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
+		unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 

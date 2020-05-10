@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
-if (env["platform"] in ["haiku", "osx", "windows", "x11"]):
+if env["platform"] in ["haiku", "osx", "windows", "linuxbsd"]:
     # Thirdparty source files
     thirdparty_dir = "#thirdparty/glad/"
     thirdparty_sources = [
@@ -12,8 +12,8 @@ if (env["platform"] in ["haiku", "osx", "windows", "x11"]):
 
     env.Prepend(CPPPATH=[thirdparty_dir])
 
-    env.Append(CPPDEFINES=['GLAD_ENABLED'])
-    env.Append(CPPDEFINES=['GLES_OVER_GL'])
+    env.Append(CPPDEFINES=["GLAD_ENABLED"])
+    env.Append(CPPDEFINES=["GLES_OVER_GL"])
 
     env_thirdparty = env.Clone()
     env_thirdparty.disable_warnings()

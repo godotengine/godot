@@ -37,13 +37,13 @@
 #endif
 
 #if defined(VULKAN_ENABLED)
-#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+#include "servers/rendering/rasterizer_rd/rasterizer_rd.h"
 // #import <QuartzCore/CAMetalLayer.h>
 #include <vulkan/vulkan_metal.h>
 #endif
 
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 
 #include "main/main.h"
 
@@ -68,7 +68,7 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
+	ERR_FAIL_V_MSG(nullptr, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -134,16 +134,16 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	RasterizerRD::make_current();
 #endif
 
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
-	visual_server->init();
-	//visual_server->cursor_set_visible(false, 0);
+	rendering_server->init();
+	//rendering_server->cursor_set_visible(false, 0);
 
 #if defined(OPENGL_ENABLED)
-	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
+	// reset this to what it should be, it will have been set to 0 after rendering_server->init() is called
 	RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
 #endif
 
@@ -339,7 +339,7 @@ void OSIPhone::delete_main_loop() {
 		memdelete(main_loop);
 	};
 
-	main_loop = NULL;
+	main_loop = nullptr;
 };
 
 void OSIPhone::finalize() {
@@ -361,8 +361,8 @@ void OSIPhone::finalize() {
 	memdelete(icloud);
 #endif
 
-	visual_server->finish();
-	memdelete(visual_server);
+	rendering_server->finish();
+	memdelete(rendering_server);
 	//	memdelete(rasterizer);
 
 	// Free unhandled events before close
@@ -608,7 +608,7 @@ bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 // so we use this as a hack to ensure certain code is called before
 // everything else, but after all units are initialized.
 typedef void (*init_callback)();
-static init_callback *ios_init_callbacks = NULL;
+static init_callback *ios_init_callbacks = nullptr;
 static int ios_init_callbacks_count = 0;
 static int ios_init_callbacks_capacity = 0;
 
@@ -631,12 +631,12 @@ OSIPhone::OSIPhone(int width, int height, String p_data_dir) {
 		ios_init_callbacks[i]();
 	}
 	free(ios_init_callbacks);
-	ios_init_callbacks = NULL;
+	ios_init_callbacks = nullptr;
 	ios_init_callbacks_count = 0;
 	ios_init_callbacks_capacity = 0;
 
-	main_loop = NULL;
-	visual_server = NULL;
+	main_loop = nullptr;
+	rendering_server = nullptr;
 
 	VideoMode vm;
 	vm.fullscreen = true;

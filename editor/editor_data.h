@@ -257,7 +257,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	Array get_selected_nodes();
+	TypedArray<Node> get_selected_nodes();
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
 	bool is_selected(Node *) const;
@@ -265,7 +265,7 @@ public:
 	template <class T>
 	T *get_node_editor_data(Node *p_node) {
 		if (!selection.has(p_node))
-			return NULL;
+			return nullptr;
 		return Object::cast_to<T>(selection[p_node]);
 	}
 

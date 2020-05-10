@@ -105,7 +105,7 @@ struct GDScriptDataType {
 					return false;
 				}
 
-				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : NULL;
+				Ref<Script> base = obj && obj->get_script_instance() ? obj->get_script_instance()->get_script() : nullptr;
 				bool valid = false;
 				while (base.is_valid()) {
 					if (base == script_type) {
@@ -293,13 +293,16 @@ private:
 public:
 	struct CallState {
 
-		ObjectID instance_id;
+		GDScript *script;
 		GDScriptInstance *instance;
+#ifdef DEBUG_ENABLED
+		StringName function_name;
+		String script_path;
+#endif
 		Vector<uint8_t> stack;
 		int stack_size;
 		Variant self;
 		uint32_t alloca_size;
-		Ref<GDScript> script;
 		int ip;
 		int line;
 		int defarg;
@@ -339,7 +342,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = NULL);
+	Variant call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state = nullptr);
 
 	_FORCE_INLINE_ MultiplayerAPI::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDScriptFunction();
@@ -355,12 +358,18 @@ class GDScriptFunctionState : public Reference {
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Ref<GDScriptFunctionState> first_state;
 
+	SelfList<GDScriptFunctionState> scripts_list;
+	SelfList<GDScriptFunctionState> instances_list;
+
 protected:
 	static void _bind_methods();
 
 public:
 	bool is_valid(bool p_extended_check = false) const;
 	Variant resume(const Variant &p_arg = Variant());
+
+	void _clear_stack();
+
 	GDScriptFunctionState();
 	~GDScriptFunctionState();
 };

@@ -30,7 +30,7 @@
 
 #include "graph_edit.h"
 
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "scene/gui/box_container.h"
 
@@ -281,13 +281,13 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 void GraphEdit::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
-		port_grab_distance_horizontal = get_constant("port_grab_distance_horizontal");
-		port_grab_distance_vertical = get_constant("port_grab_distance_vertical");
+		port_grab_distance_horizontal = get_theme_constant("port_grab_distance_horizontal");
+		port_grab_distance_vertical = get_theme_constant("port_grab_distance_vertical");
 
-		zoom_minus->set_icon(get_icon("minus"));
-		zoom_reset->set_icon(get_icon("reset"));
-		zoom_plus->set_icon(get_icon("more"));
-		snap_button->set_icon(get_icon("snap"));
+		zoom_minus->set_icon(get_theme_icon("minus"));
+		zoom_reset->set_icon(get_theme_icon("reset"));
+		zoom_plus->set_icon(get_theme_icon("more"));
+		snap_button->set_icon(get_theme_icon("snap"));
 	}
 	if (p_what == NOTIFICATION_READY) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -305,7 +305,7 @@ void GraphEdit::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 
-		draw_style_box(get_stylebox("bg"), Rect2(Point2(), get_size()));
+		draw_style_box(get_theme_stylebox("bg"), Rect2(Point2(), get_size()));
 
 		if (is_using_snap()) {
 			//draw grid
@@ -318,8 +318,8 @@ void GraphEdit::_notification(int p_what) {
 			Point2i from = (offset / float(snap)).floor();
 			Point2i len = (size / float(snap)).floor() + Vector2(1, 1);
 
-			Color grid_minor = get_color("grid_minor");
-			Color grid_major = get_color("grid_major");
+			Color grid_minor = get_theme_color("grid_minor");
+			Color grid_major = get_theme_color("grid_major");
 
 			for (int i = from.x; i < from.x + len.x; i++) {
 
@@ -357,7 +357,7 @@ void GraphEdit::_notification(int p_what) {
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
 
-	Ref<Texture2D> port = get_icon("port", "GraphNode");
+	Ref<Texture2D> port = get_theme_icon("port", "GraphNode");
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -389,7 +389,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
 
-		Ref<Texture2D> port = get_icon("port", "GraphNode");
+		Ref<Texture2D> port = get_theme_icon("port", "GraphNode");
 		Vector2 mpos(mb->get_position().x, mb->get_position().y);
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -501,7 +501,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_target = false;
 		top_layer->update();
 
-		Ref<Texture2D> port = get_icon("port", "GraphNode");
+		Ref<Texture2D> port = get_theme_icon("port", "GraphNode");
 		Vector2 mpos = mm->get_position();
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -653,7 +653,7 @@ void GraphEdit::_bake_segment2d(Vector<Vector2> &points, Vector<Color> &colors, 
 	if (p_depth >= p_min_depth && (dp < p_tol || p_depth >= p_max_depth)) {
 
 		points.push_back((beg + end) * 0.5);
-		colors.push_back(p_color.linear_interpolate(p_to_color, mp));
+		colors.push_back(p_color.lerp(p_to_color, mp));
 		lines++;
 	} else {
 		_bake_segment2d(points, colors, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
@@ -666,8 +666,8 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	//cubic bezier code
 	float diff = p_to.x - p_from.x;
 	float cp_offset;
-	int cp_len = get_constant("bezier_len_pos");
-	int cp_neg_len = get_constant("bezier_len_neg");
+	int cp_len = get_theme_constant("bezier_len_pos");
+	int cp_neg_len = get_theme_constant("bezier_len_neg");
 
 	if (diff > 0) {
 		cp_offset = MIN(cp_len, diff * 0.5);
@@ -697,7 +697,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 
 void GraphEdit::_connections_layer_draw() {
 
-	Color activity_color = get_color("activity");
+	Color activity_color = get_theme_color("activity");
 	//draw connections
 	List<List<Connection>::Element *> to_erase;
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
@@ -737,8 +737,8 @@ void GraphEdit::_connections_layer_draw() {
 		Color tocolor = gto->get_connection_input_color(E->get().to_port);
 
 		if (E->get().activity > 0) {
-			color = color.linear_interpolate(activity_color, E->get().activity);
-			tocolor = tocolor.linear_interpolate(activity_color, E->get().activity);
+			color = color.lerp(activity_color, E->get().activity);
+			tocolor = tocolor.lerp(activity_color, E->get().activity);
 		}
 		_draw_cos_line(connections_layer, frompos, topos, color, tocolor);
 	}
@@ -784,8 +784,8 @@ void GraphEdit::_top_layer_draw() {
 	}
 
 	if (box_selecting) {
-		top_layer->draw_rect(box_selecting_rect, get_color("selection_fill"));
-		top_layer->draw_rect(box_selecting_rect, get_color("selection_stroke"), false);
+		top_layer->draw_rect(box_selecting_rect, get_theme_color("selection_fill"));
+		top_layer->draw_rect(box_selecting_rect, get_theme_color("selection_stroke"), false);
 	}
 }
 
@@ -852,9 +852,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			bool in_box = r.intersects(box_selecting_rect);
 
 			if (in_box)
-				gn->set_selected(box_selection_mode_aditive);
+				gn->set_selected(box_selection_mode_additive);
 			else
-				gn->set_selected(previus_selected.find(gn) != NULL);
+				gn->set_selected(previus_selected.find(gn) != nullptr);
 		}
 
 		top_layer->update();
@@ -872,7 +872,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					if (!gn)
 						continue;
 
-					gn->set_selected(previus_selected.find(gn) != NULL);
+					gn->set_selected(previus_selected.find(gn) != nullptr);
 				}
 				top_layer->update();
 			} else {
@@ -922,7 +922,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		if (b->get_button_index() == BUTTON_LEFT && b->is_pressed()) {
 
-			GraphNode *gn = NULL;
+			GraphNode *gn = nullptr;
 
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -951,8 +951,16 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				if (!gn->is_selected() && !Input::get_singleton()->is_key_pressed(KEY_CONTROL)) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
-						if (o_gn)
-							o_gn->set_selected(o_gn == gn);
+						if (o_gn) {
+							if (o_gn == gn) {
+								o_gn->set_selected(true);
+							} else {
+								if (o_gn->is_selected()) {
+									emit_signal("node_unselected", o_gn);
+								}
+								o_gn->set_selected(false);
+							}
+						}
 					}
 				}
 
@@ -974,7 +982,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				box_selecting = true;
 				box_selecting_from = get_local_mouse_position();
 				if (b->get_control()) {
-					box_selection_mode_aditive = true;
+					box_selection_mode_additive = true;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -985,7 +993,7 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						previus_selected.push_back(gn2);
 					}
 				} else if (b->get_shift()) {
-					box_selection_mode_aditive = false;
+					box_selection_mode_additive = false;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
@@ -996,14 +1004,16 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 						previus_selected.push_back(gn2);
 					}
 				} else {
-					box_selection_mode_aditive = true;
+					box_selection_mode_additive = true;
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
 						if (!gn2)
 							continue;
-
+						if (gn2->is_selected()) {
+							emit_signal("node_unselected", gn2);
+						}
 						gn2->set_selected(false);
 					}
 				}
@@ -1311,6 +1321,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
 	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("node_unselected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING_NAME, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING_NAME, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
@@ -1323,7 +1334,7 @@ GraphEdit::GraphEdit() {
 	set_focus_mode(FOCUS_ALL);
 
 	awaiting_scroll_offset_update = false;
-	top_layer = NULL;
+	top_layer = nullptr;
 	top_layer = memnew(GraphEditFilter(this));
 	add_child(top_layer);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);

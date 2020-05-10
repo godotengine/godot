@@ -33,6 +33,7 @@
 #include "editor/editor_node.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/resources/packed_scene.h"
+#include "servers/display_server.h"
 
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
@@ -106,9 +107,9 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position) {
 	item->select(0);
 
 	item_menu->clear();
-	item_menu->add_icon_item(get_icon("CreateNewSceneFrom", "EditorIcons"), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
-	item_menu->add_icon_item(get_icon("CopyNodePath", "EditorIcons"), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
-	item_menu->set_global_position(get_global_mouse_position());
+	item_menu->add_icon_item(get_theme_icon("CreateNewSceneFrom", "EditorIcons"), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
+	item_menu->add_icon_item(get_theme_icon("CopyNodePath", "EditorIcons"), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
+	item_menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 	item_menu->popup();
 }
 
@@ -134,7 +135,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
 	List<Pair<TreeItem *, int>> parents;
 	for (int i = 0; i < p_tree->nodes.size(); i++) {
-		TreeItem *parent = NULL;
+		TreeItem *parent = nullptr;
 		if (parents.size()) { // Find last parent.
 			Pair<TreeItem *, int> &p = parents[0];
 			parent = p.first;
@@ -190,7 +191,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				// Check if parent expects more children.
 				for (int j = 0; j < parents.size(); j++) {
 					if (parents[j].first == item) {
-						parent = NULL;
+						parent = nullptr;
 						break; // Might have more children.
 					}
 				}
@@ -210,7 +211,7 @@ String EditorDebuggerTree::get_selected_path() {
 String EditorDebuggerTree::_get_path(TreeItem *p_item) {
 	ERR_FAIL_COND_V(!p_item, "");
 
-	if (p_item->get_parent() == NULL) {
+	if (p_item->get_parent() == nullptr) {
 		return "/root";
 	}
 	String text = p_item->get_text(0);
@@ -229,7 +230,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 		case ITEM_MENU_SAVE_REMOTE_NODE: {
 
 			file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
-			file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew(PackedScene);
@@ -257,7 +258,7 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 					text = text.substr(slash + 1);
 				}
 			}
-			OS::get_singleton()->set_clipboard(text);
+			DisplayServer::get_singleton()->clipboard_set(text);
 		} break;
 	}
 }

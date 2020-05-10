@@ -12,9 +12,6 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="ARVRServer" type="ARVRServer" setter="" getter="">
-			The [ARVRServer] singleton.
-		</member>
 		<member name="AudioServer" type="AudioServer" setter="" getter="">
 			The [AudioServer] singleton.
 		</member>
@@ -24,14 +21,14 @@
 		<member name="ClassDB" type="ClassDB" setter="" getter="">
 			The [ClassDB] singleton.
 		</member>
+		<member name="DisplayServer" type="DisplayServer" setter="" getter="">
+			The [DisplayServer] singleton.
+		</member>
 		<member name="Engine" type="Engine" setter="" getter="">
 			The [Engine] singleton.
 		</member>
 		<member name="Geometry" type="Geometry" setter="" getter="">
 			The [Geometry] singleton.
-		</member>
-		<member name="GodotSharp" type="GodotSharp" setter="" getter="">
-			The [GodotSharp] singleton. Only available when using Godot's Mono build.
 		</member>
 		<member name="IP" type="IP" setter="" getter="">
 			The [IP] singleton.
@@ -56,14 +53,14 @@
 		<member name="Marshalls" type="Marshalls" setter="" getter="">
 			The [Marshalls] singleton.
 		</member>
-		<member name="Navigation2DServer" type="Navigation2DServer" setter="" getter="">
-			The [Navigation2DServer] singleton.
-		</member>
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
 		</member>
-		<member name="NavigationServer" type="NavigationServer" setter="" getter="">
-			The [NavigationServer] singleton.
+		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
+			The [NavigationServer2D] singleton.
+		</member>
+		<member name="NavigationServer3D" type="NavigationServer3D" setter="" getter="">
+			The [NavigationServer2D] singleton.
 		</member>
 		<member name="OS" type="OS" setter="" getter="">
 			The [OS] singleton.
@@ -71,14 +68,20 @@
 		<member name="Performance" type="Performance" setter="" getter="">
 			The [Performance] singleton.
 		</member>
-		<member name="Physics2DServer" type="Physics2DServer" setter="" getter="">
-			The [Physics2DServer] singleton.
+		<member name="PhysicsServer2D" type="PhysicsServer2D" setter="" getter="">
+			The [PhysicsServer2D] singleton.
 		</member>
-		<member name="PhysicsServer" type="PhysicsServer" setter="" getter="">
-			The [PhysicsServer] singleton.
+		<member name="PhysicsServer3D" type="PhysicsServer3D" setter="" getter="">
+			The [PhysicsServer3D] singleton.
 		</member>
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.
+		</member>
+		<member name="RenderingDevice" type="RenderingDevice" setter="" getter="">
+			The [RenderingDevice] singleton.
+		</member>
+		<member name="RenderingServer" type="RenderingServer" setter="" getter="">
+			The [RenderingServer] singleton.
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader" setter="" getter="">
 			The [ResourceLoader] singleton.
@@ -92,8 +95,8 @@
 		<member name="VisualScriptEditor" type="VisualScriptEditor" setter="" getter="">
 			The [VisualScriptEditor] singleton.
 		</member>
-		<member name="VisualServer" type="VisualServer" setter="" getter="">
-			The [VisualServer] singleton.
+		<member name="XRServer" type="XRServer" setter="" getter="">
+			The [XRServer] singleton.
 		</member>
 	</members>
 	<constants>
@@ -155,7 +158,7 @@
 			Tab key.
 		</constant>
 		<constant name="KEY_BACKTAB" value="16777219" enum="KeyList">
-			Shift+Tab key.
+			Shift + Tab key.
 		</constant>
 		<constant name="KEY_BACKSPACE" value="16777220" enum="KeyList">
 			Backspace key.
@@ -1177,10 +1180,10 @@
 			[codeblock]
 			var err = method_that_returns_error()
 			if err != OK:
-			    print("Failure!)
+			    print("Failure!")
 			# Or, equivalent:
 			if err:
-			    print("Still failing!)
+			    print("Still failing!")
 			[/codeblock]
 		</constant>
 		<constant name="FAILED" value="1" enum="Error">
@@ -1345,52 +1348,52 @@
 		<constant name="PROPERTY_HINT_LENGTH" value="5" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_KEY_ACCEL" value="7" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_KEY_ACCEL" value="6" enum="PropertyHint">
 			Deprecated hint, unused.
 		</constant>
-		<constant name="PROPERTY_HINT_FLAGS" value="8" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FLAGS" value="7" enum="PropertyHint">
 			Hints that an integer property is a bitmask with named bit flags. For example, to allow toggling bits 0, 1, 2 and 4, the hint could be something like [code]"Bit0,Bit1,Bit2,,Bit4"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="9" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_RENDER" value="8" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="10" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_2D_PHYSICS" value="9" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 2D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="11" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_RENDER" value="10" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D render layers.
 		</constant>
-		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="12" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LAYERS_3D_PHYSICS" value="11" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named 3D physics layers.
 		</constant>
-		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE" value="12" enum="PropertyHint">
 			Hints that a string property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_DIR" value="13" enum="PropertyHint">
 			Hints that a string property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="14" enum="PropertyHint">
 			Hints that a string property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
 		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="15" enum="PropertyHint">
 			Hints that a string property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
-		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="16" enum="PropertyHint">
 			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
 		</constant>
-		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="17" enum="PropertyHint">
 			Hints that a string property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
 		</constant>
-		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="19" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PLACEHOLDER_TEXT" value="18" enum="PropertyHint">
 			Hints that a string property should have a placeholder text visible on its input field, whenever the property is empty. The hint string is the placeholder text to use.
 		</constant>
-		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="20" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_COLOR_NO_ALPHA" value="19" enum="PropertyHint">
 			Hints that a color property should be edited without changing its alpha component, i.e. only R, G and B channels are edited.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="21" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSY" value="20" enum="PropertyHint">
 			Hints that an image is compressed using lossy compression.
 		</constant>
-		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="22" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS" value="21" enum="PropertyHint">
 			Hints that an image is compressed using lossless compression.
 		</constant>
 		<constant name="PROPERTY_USAGE_STORAGE" value="1" enum="PropertyUsageFlags">
@@ -1419,6 +1422,9 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_CATEGORY" value="256" enum="PropertyUsageFlags">
 			Used to categorize properties together in the editor.
+		</constant>
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="512" enum="PropertyUsageFlags">
+			Used to group properties together in the editor in a subgroup (under a group).
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="2048" enum="PropertyUsageFlags">
 			The property does not save its state in [PackedScene].

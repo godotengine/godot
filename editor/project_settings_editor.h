@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PROJECT_SETTINGS_H
-#define PROJECT_SETTINGS_H
+#ifndef PROJECT_SETTINGS_EDITOR_H
+#define PROJECT_SETTINGS_EDITOR_H
 
 #include "core/undo_redo.h"
 #include "editor/editor_autoload_settings.h"
 #include "editor/editor_data.h"
 #include "editor/editor_plugin_settings.h"
 #include "editor/editor_sectioned_inspector.h"
+#include "editor/shader_globals_editor.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
 
@@ -85,6 +86,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	OptionButton *device_index;
 	Label *device_index_label;
 	MenuButton *popup_copy_to_feature;
+	ShaderGlobalsEditor *shaders_global_variables_editor;
 
 	LineEdit *action_name;
 	Button *action_add;
@@ -204,4 +206,4 @@ public:
 	ProjectSettingsEditor(EditorData *p_data);
 };
 
-#endif // PROJECT_SETTINGS_H
+#endif // PROJECT_SETTINGS_EDITOR_H

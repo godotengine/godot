@@ -31,8 +31,13 @@
 #ifndef RID_OWNER_H
 #define RID_OWNER_H
 
+#include "core/list.h"
+#include "core/oa_hash_map.h"
+#include "core/os/memory.h"
 #include "core/print_string.h"
 #include "core/rid.h"
+#include "core/safe_refcount.h"
+#include "core/set.h"
 #include "core/spin_lock.h"
 #include <stdio.h>
 #include <typeinfo>
@@ -142,7 +147,7 @@ public:
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
-			return NULL;
+			return nullptr;
 		}
 
 		uint32_t idx_chunk = idx / elements_in_chunk;
@@ -153,7 +158,7 @@ public:
 			if (THREAD_SAFE) {
 				spin_lock.unlock();
 			}
-			return NULL;
+			return nullptr;
 		}
 
 		T *ptr = &chunks[idx_chunk][idx_element];
@@ -236,7 +241,7 @@ public:
 	}
 
 	_FORCE_INLINE_ T *get_ptr_by_index(uint32_t p_index) {
-		ERR_FAIL_INDEX_V(p_index, alloc_count, NULL);
+		ERR_FAIL_INDEX_V(p_index, alloc_count, nullptr);
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
@@ -283,14 +288,14 @@ public:
 	}
 
 	RID_Alloc(uint32_t p_target_chunk_byte_size = 4096) {
-		chunks = NULL;
-		free_list_chunks = NULL;
-		validator_chunks = NULL;
+		chunks = nullptr;
+		free_list_chunks = nullptr;
+		validator_chunks = nullptr;
 
 		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? 1 : (p_target_chunk_byte_size / sizeof(T));
 		max_alloc = 0;
 		alloc_count = 0;
-		description = NULL;
+		description = nullptr;
 	}
 
 	~RID_Alloc() {
@@ -340,7 +345,7 @@ public:
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
 		T **ptr = alloc.getornull(p_rid);
 		if (unlikely(!ptr)) {
-			return NULL;
+			return nullptr;
 		}
 		return *ptr;
 	}

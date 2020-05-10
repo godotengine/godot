@@ -72,7 +72,7 @@ bool TextureBasisU::has_alpha() const {
 void TextureBasisU::set_flags(uint32_t p_flags) {
 
 	flags = p_flags;
-	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
+	RenderingServer::get_singleton()->texture_set_flags(texture, p_flags);
 };
 
 uint32_t TextureBasisU::get_flags() const {
@@ -105,7 +105,7 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 		imgfmt = Image::FORMAT_ETC2_RGBA8;
 	};
 
-	basist::basisu_transcoder tr(NULL);
+	basist::basisu_transcoder tr(nullptr);
 
 	ERR_FAIL_COND(!tr.validate_header(ptr, size));
 
@@ -144,8 +144,8 @@ void TextureBasisU::set_basisu_data(const Vector<uint8_t>& p_data) {
 	img.instance();
 	img->create(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
-	VisualServer::get_singleton()->texture_allocate(texture, tex_size.x, tex_size.y, 0, img->get_format(), VS::TEXTURE_TYPE_2D, flags);
-	VisualServer::get_singleton()->texture_set_data(texture, img);
+	RenderingServer::get_singleton()->texture_allocate(texture, tex_size.x, tex_size.y, 0, img->get_format(), RS::TEXTURE_TYPE_2D, flags);
+	RenderingServer::get_singleton()->texture_set_data(texture, img);
 };
 
 Error TextureBasisU::import(const Ref<Image>& p_img) {
@@ -221,13 +221,13 @@ Vector<uint8_t> TextureBasisU::get_basisu_data() const {
 TextureBasisU::TextureBasisU() {
 
 	flags = FLAGS_DEFAULT;
-	texture = VisualServer::get_singleton()->texture_create();
+	texture = RenderingServer::get_singleton()->texture_create();
 };
 
 
 TextureBasisU::~TextureBasisU() {
 
-	VisualServer::get_singleton()->free(texture);
+	RenderingServer::get_singleton()->free(texture);
 };
 
 #endif

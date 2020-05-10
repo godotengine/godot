@@ -34,17 +34,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
-// va_copy was defined in the C99, but not in C++ standards before C++11.
-// When you compile C++ without --std=c++<XX> option, compilers still define
-// va_copy, otherwise you have to use the internal version (__va_copy).
-#if !defined(va_copy)
-#if defined(__GNUC__)
-#define va_copy(d, s) __va_copy((d), (s))
-#else
-#define va_copy(d, s) ((d) = (s))
-#endif
-#endif
-
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
 #endif
@@ -108,7 +97,7 @@ Logger::~Logger() {}
 void RotatedFileLogger::close_file() {
 	if (file) {
 		memdelete(file);
-		file = NULL;
+		file = nullptr;
 	}
 }
 
@@ -182,7 +171,7 @@ void RotatedFileLogger::rotate_file() {
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
 		base_path(p_base_path.simplify_path()),
 		max_files(p_max_files > 0 ? p_max_files : 1),
-		file(NULL) {
+		file(nullptr) {
 	rotate_file();
 }
 

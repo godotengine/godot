@@ -102,11 +102,6 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "Plane";
 
 		} break;
-		/*
-			case QUAT: {
-
-
-			} break;*/
 		case AABB: {
 
 			return "AABB";
@@ -233,8 +228,8 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 		return (p_type_to == OBJECT);
 	};
 
-	const Type *valid_types = NULL;
-	const Type *invalid_types = NULL;
+	const Type *valid_types = nullptr;
+	const Type *invalid_types = nullptr;
 
 	switch (p_type_to) {
 		case BOOL: {
@@ -570,7 +565,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 		return (p_type_to == OBJECT);
 	};
 
-	const Type *valid_types = NULL;
+	const Type *valid_types = nullptr;
 
 	switch (p_type_to) {
 		case BOOL: {
@@ -1020,7 +1015,7 @@ bool Variant::is_zero() const {
 		} break;
 		case OBJECT: {
 
-			return _get_obj().obj == NULL;
+			return _get_obj().obj == nullptr;
 		} break;
 		case CALLABLE: {
 
@@ -1479,7 +1474,7 @@ void Variant::clear() {
 					memdelete(reference);
 				}
 			}
-			_get_obj().obj = NULL;
+			_get_obj().obj = nullptr;
 			_get_obj().id = ObjectID();
 		} break;
 		case _RID: {
@@ -1864,7 +1859,7 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			stack.push_back(d.id());
 
-			//const String *K=NULL;
+			//const String *K=nullptr;
 			String str("{");
 			List<Variant> keys;
 			d.get_key_list(&keys);
@@ -2227,7 +2222,7 @@ Variant::operator RID() const {
 		};
 #endif
 		Callable::CallError ce;
-		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid, NULL, 0, ce);
+		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK && ret.get_type() == Variant::_RID) {
 			return ret;
 		}
@@ -2242,7 +2237,7 @@ Variant::operator Object *() const {
 	if (type == OBJECT)
 		return _get_obj().obj;
 	else
-		return NULL;
+		return nullptr;
 }
 
 Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const {
@@ -2252,7 +2247,7 @@ Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const
 		return instance;
 	} else {
 		r_previously_freed = false;
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -2260,7 +2255,7 @@ Object *Variant::get_validated_object() const {
 	if (type == OBJECT)
 		return ObjectDB::get_instance(_get_obj().id);
 	else
-		return NULL;
+		return nullptr;
 }
 
 Variant::operator Node *() const {
@@ -2268,14 +2263,14 @@ Variant::operator Node *() const {
 	if (type == OBJECT)
 		return Object::cast_to<Node>(_get_obj().obj);
 	else
-		return NULL;
+		return nullptr;
 }
 Variant::operator Control *() const {
 
 	if (type == OBJECT)
 		return Object::cast_to<Control>(_get_obj().obj);
 	else
-		return NULL;
+		return nullptr;
 }
 
 Variant::operator Dictionary() const {

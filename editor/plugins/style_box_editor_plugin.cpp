@@ -34,7 +34,7 @@
 
 bool EditorInspectorPluginStyleBox::can_handle(Object *p_object) {
 
-	return Object::cast_to<StyleBox>(p_object) != NULL;
+	return Object::cast_to<StyleBox>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginStyleBox::parse_begin(Object *p_object) {
@@ -45,7 +45,7 @@ void EditorInspectorPluginStyleBox::parse_begin(Object *p_object) {
 	preview->edit(sb);
 	add_custom_control(preview);
 }
-bool EditorInspectorPluginStyleBox::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage) {
+bool EditorInspectorPluginStyleBox::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage, bool p_wide) {
 	return false; //do not want
 }
 void EditorInspectorPluginStyleBox::parse_end() {
@@ -57,7 +57,7 @@ void StyleBoxPreview::edit(const Ref<StyleBox> &p_stylebox) {
 		stylebox->disconnect("changed", callable_mp(this, &StyleBoxPreview::_sb_changed));
 	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
-		preview->add_style_override("panel", stylebox);
+		preview->add_theme_style_override("panel", stylebox);
 		stylebox->connect("changed", callable_mp(this, &StyleBoxPreview::_sb_changed));
 	}
 	_sb_changed();

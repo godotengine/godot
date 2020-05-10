@@ -362,7 +362,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::BOOL, pre + "shape_one_way", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, pre + "shape_one_way_margin", PROPERTY_HINT_RANGE, "0,128,0.01", PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, pre + "shapes", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::INT, pre + "z_index", PROPERTY_HINT_RANGE, itos(VS::CANVAS_ITEM_Z_MIN) + "," + itos(VS::CANVAS_ITEM_Z_MAX) + ",1", PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::INT, pre + "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1", PROPERTY_USAGE_NOEDITOR));
 	}
 }
 
@@ -620,7 +620,7 @@ Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
 	//First try to forward selection to script
 	if (p_tilemap_node->get_class_name() == "TileMap") {
-		if (get_script_instance() != NULL) {
+		if (get_script_instance() != nullptr) {
 			if (get_script_instance()->has_method("_forward_subtile_selection")) {
 				Variant ret = get_script_instance()->call("_forward_subtile_selection", p_id, p_bitmask, p_tilemap_node, p_tile_location);
 				if (ret.get_type() == Variant::VECTOR2) {
@@ -681,7 +681,7 @@ Vector2 TileSet::atlastile_get_subtile_by_priority(int p_id, const Node *p_tilem
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Vector2());
 	//First try to forward selection to script
-	if (get_script_instance() != NULL) {
+	if (get_script_instance() != nullptr) {
 		if (get_script_instance()->has_method("_forward_atlas_subtile_selection")) {
 			Variant ret = get_script_instance()->call("_forward_atlas_subtile_selection", p_id, p_tilemap_node, p_tile_location);
 			if (ret.get_type() == Variant::VECTOR2) {
@@ -1108,7 +1108,7 @@ bool TileSet::is_tile_bound(int p_drawn_id, int p_neighbor_id) {
 
 	if (p_drawn_id == p_neighbor_id) {
 		return true;
-	} else if (get_script_instance() != NULL) {
+	} else if (get_script_instance() != nullptr) {
 		if (get_script_instance()->has_method("_is_tile_bound")) {
 			Variant ret = get_script_instance()->call("_is_tile_bound", p_drawn_id, p_neighbor_id);
 			if (ret.get_type() == Variant::BOOL) {

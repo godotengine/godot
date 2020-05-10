@@ -117,8 +117,8 @@ public:
 		if (mub < 0) mub = 0;
 		if (mua > 1) mua = 1;
 		if (mub > 1) mub = 1;
-		c1 = p1.linear_interpolate(p2, mua);
-		c2 = q1.linear_interpolate(q2, mub);
+		c1 = p1.lerp(p2, mua);
+		c2 = q1.lerp(q2, mub);
 	}
 
 	static real_t get_closest_distance_between_segments(const Vector3 &p_from_a, const Vector3 &p_to_a, const Vector3 &p_from_b, const Vector3 &p_to_b) {
@@ -891,7 +891,7 @@ public:
 		for (int i = 0; i < c; i++) {
 			const Vector2 &v1 = p[i];
 			const Vector2 &v2 = p[(i + 1) % c];
-			if (segment_intersects_segment_2d(v1, v2, p_point, further_away, NULL)) {
+			if (segment_intersects_segment_2d(v1, v2, p_point, further_away, nullptr)) {
 				intersections++;
 			}
 		}
@@ -902,7 +902,7 @@ public:
 	static Vector<Vector<Face3>> separate_objects(Vector<Face3> p_array);
 
 	// Create a "wrap" that encloses the given geometry.
-	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = NULL);
+	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = nullptr);
 
 	struct MeshData {
 
@@ -1014,9 +1014,11 @@ public:
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 
+	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
+
 private:
 	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
 	static Vector<Vector<Point2>> _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
 
-#endif
+#endif // GEOMETRY_H

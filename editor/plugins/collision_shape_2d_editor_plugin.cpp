@@ -39,6 +39,13 @@
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
 
+void CollisionShape2DEditor::_node_removed(Node *p_node) {
+
+	if (p_node == node) {
+		node = nullptr;
+	}
+}
+
 Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 
 	switch (shape_type) {
@@ -74,7 +81,7 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 			Ref<LineShape2D> line = node->get_shape();
 
 			if (idx == 0) {
-				return line->get_d();
+				return line->get_distance();
 			} else {
 				return line->get_normal();
 			}
@@ -155,7 +162,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 				Ref<LineShape2D> line = node->get_shape();
 
 				if (idx == 0) {
-					line->set_d(p_point.length());
+					line->set_distance(p_point.length());
 				} else {
 					line->set_normal(p_point.normalized());
 				}
@@ -253,9 +260,9 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
 			Ref<LineShape2D> line = node->get_shape();
 
 			if (idx == 0) {
-				undo_redo->add_do_method(line.ptr(), "set_d", line->get_d());
+				undo_redo->add_do_method(line.ptr(), "set_distance", line->get_distance());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(line.ptr(), "set_d", p_org);
+				undo_redo->add_undo_method(line.ptr(), "set_distance", p_org);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 			} else {
 				undo_redo->add_do_method(line.ptr(), "set_normal", line->get_normal());
@@ -435,7 +442,7 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-	Ref<Texture2D> h = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> h = get_theme_icon("EditorHandle", "EditorIcons");
 	Vector2 size = h->get_size() * 0.5;
 
 	handles.clear();
@@ -478,8 +485,8 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 			Ref<LineShape2D> shape = node->get_shape();
 
 			handles.resize(2);
-			handles.write[0] = shape->get_normal() * shape->get_d();
-			handles.write[1] = shape->get_normal() * (shape->get_d() + 30.0);
+			handles.write[0] = shape->get_normal() * shape->get_distance();
+			handles.write[1] = shape->get_normal() * (shape->get_distance() + 30.0);
 
 			p_overlay->draw_texture(h, gt.xform(handles[0]) - size);
 			p_overlay->draw_texture(h, gt.xform(handles[1]) - size);
@@ -525,6 +532,20 @@ void CollisionShape2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	}
 }
 
+void CollisionShape2DEditor::_notification(int p_what) {
+
+	switch (p_what) {
+
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &CollisionShape2DEditor::_node_removed));
+		} break;
+	}
+}
+
 void CollisionShape2DEditor::edit(Node *p_node) {
 
 	if (!canvas_item_editor) {
@@ -540,7 +561,7 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 		edit_handle = -1;
 		shape_type = -1;
 
-		node = NULL;
+		node = nullptr;
 	}
 
 	canvas_item_editor->update_viewport();
@@ -553,8 +574,8 @@ void CollisionShape2DEditor::_bind_methods() {
 
 CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 
-	node = NULL;
-	canvas_item_editor = NULL;
+	node = nullptr;
+	canvas_item_editor = nullptr;
 	editor = p_editor;
 
 	undo_redo = p_editor->get_undo_redo();
@@ -576,7 +597,7 @@ bool CollisionShape2DEditorPlugin::handles(Object *p_obj) const {
 void CollisionShape2DEditorPlugin::make_visible(bool visible) {
 
 	if (!visible) {
-		edit(NULL);
+		edit(nullptr);
 	}
 }
 

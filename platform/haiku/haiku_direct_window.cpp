@@ -42,10 +42,10 @@ HaikuDirectWindow::HaikuDirectWindow(BRect p_frame) :
 	last_button_mask = 0;
 	last_key_modifier_state = 0;
 
-	view = NULL;
-	update_runner = NULL;
-	input = NULL;
-	main_loop = NULL;
+	view = nullptr;
+	update_runner = nullptr;
+	input = nullptr;
+	main_loop = nullptr;
 }
 
 HaikuDirectWindow::~HaikuDirectWindow() {
@@ -74,7 +74,7 @@ void HaikuDirectWindow::SetMainLoop(MainLoop *p_main_loop) {
 
 bool HaikuDirectWindow::QuitRequested() {
 	StopMessageRunner();
-	main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+	main_loop->notification(NOTIFICATION_WM_CLOSE_REQUEST);
 	return false;
 }
 
@@ -278,7 +278,7 @@ void HaikuDirectWindow::HandleKeyboardEvent(BMessage *message) {
 	event->set_echo(message->HasInt32("be:key_repeat"));
 	event->set_unicode(0);
 
-	const char *bytes = NULL;
+	const char *bytes = nullptr;
 	if (message->FindString("bytes", &bytes) == B_OK) {
 		event->set_unicode(BUnicodeChar::FromUTF8(&bytes));
 	}

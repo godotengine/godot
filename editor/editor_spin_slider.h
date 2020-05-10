@@ -62,6 +62,7 @@ class EditorSpinSlider : public Range {
 	Vector2 grabbing_spinner_mouse_pos;
 	double pre_grab_value;
 
+	Popup *value_input_popup;
 	LineEdit *value_input;
 	bool value_input_just_closed;
 

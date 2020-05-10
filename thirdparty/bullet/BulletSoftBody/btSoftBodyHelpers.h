@@ -148,7 +148,11 @@ struct btSoftBodyHelpers
     
     static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d, const btVector3& p, btVector4& bary);
     
+    static void getBarycentricWeights(const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& p, btVector4& bary);
+    
     static void interpolateBarycentricWeights(btSoftBody* psb);
+    
+    static void extrapolateBarycentricWeights(btSoftBody* psb);
     
     static void generateBoundaryFaces(btSoftBody* psb);
     

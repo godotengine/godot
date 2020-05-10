@@ -35,6 +35,7 @@
 #include "editor/plugins/script_text_editor.h"
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
+#include "servers/display_server.h"
 
 void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
@@ -89,12 +90,12 @@ void GDScriptTextDocument::initialize() {
 
 		const HashMap<StringName, ClassMembers> &native_members = GDScriptLanguageProtocol::get_singleton()->get_workspace()->native_members;
 
-		const StringName *class_ptr = native_members.next(NULL);
+		const StringName *class_ptr = native_members.next(nullptr);
 		while (class_ptr) {
 
 			const ClassMembers &members = native_members.get(*class_ptr);
 
-			const String *name = members.next(NULL);
+			const String *name = members.next(nullptr);
 			while (name) {
 
 				const lsp::DocumentSymbol *symbol = members.get(*name);
@@ -226,7 +227,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	lsp::CompletionParams params;
 	Variant data = p_params["data"];
 
-	const lsp::DocumentSymbol *symbol = NULL;
+	const lsp::DocumentSymbol *symbol = nullptr;
 
 	if (data.get_type() == Variant::DICTIONARY) {
 
@@ -419,7 +420,8 @@ void GDScriptTextDocument::sync_script_content(const String &p_path, const Strin
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
 	ScriptEditor::get_singleton()->call_deferred("_help_class_goto", p_symbol_id);
-	OS::get_singleton()->move_window_to_foreground();
+
+	DisplayServer::get_singleton()->window_move_to_foreground();
 }
 
 Array GDScriptTextDocument::find_symbols(const lsp::TextDocumentPositionParams &p_location, List<const lsp::DocumentSymbol *> &r_list) {

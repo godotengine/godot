@@ -31,7 +31,7 @@
 #include "file_access_android.h"
 #include "core/print_string.h"
 
-AAssetManager *FileAccessAndroid::asset_manager = NULL;
+AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
 /*void FileAccessAndroid::make_default() {
 
@@ -68,12 +68,12 @@ void FileAccessAndroid::close() {
 	if (!a)
 		return;
 	AAsset_close(a);
-	a = NULL;
+	a = nullptr;
 }
 
 bool FileAccessAndroid::is_open() const {
 
-	return a != NULL;
+	return a != nullptr;
 }
 
 void FileAccessAndroid::seek(size_t p_position) {
@@ -175,7 +175,7 @@ bool FileAccessAndroid::file_exists(const String &p_path) {
 }
 
 FileAccessAndroid::FileAccessAndroid() {
-	a = NULL;
+	a = nullptr;
 	eof = false;
 }
 

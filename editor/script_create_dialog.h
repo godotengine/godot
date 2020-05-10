@@ -45,9 +45,11 @@ class CreateDialog;
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
 
+	GridContainer *gc;
 	LineEdit *class_name;
 	Label *error_label;
 	Label *path_error_label;
+	Label *builtin_warning_label;
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;
@@ -123,6 +125,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _update_dialog();
 
 protected:
+	void _theme_changed();
 	void _notification(int p_what);
 	static void _bind_methods();
 

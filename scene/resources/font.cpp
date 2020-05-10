@@ -128,7 +128,7 @@ Vector<int> BitmapFont::_get_chars() const {
 
 	Vector<int> chars;
 
-	const CharType *key = NULL;
+	const CharType *key = nullptr;
 
 	while ((key = char_map.next(key))) {
 
@@ -356,6 +356,16 @@ float BitmapFont::get_descent() const {
 	return height - ascent;
 }
 
+float BitmapFont::get_underline_position() const {
+
+	return 2;
+}
+
+float BitmapFont::get_underline_thickness() const {
+
+	return 1;
+}
+
 void BitmapFont::add_texture(const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
@@ -382,7 +392,7 @@ Vector<CharType> BitmapFont::get_char_keys() const {
 
 	Vector<CharType> chars;
 	chars.resize(char_map.size());
-	const CharType *ct = NULL;
+	const CharType *ct = nullptr;
 	int count = 0;
 	while ((ct = char_map.next(ct))) {
 
@@ -528,7 +538,7 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
-	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != NULL; fallback_child = fallback_child->get_fallback()) {
+	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != nullptr; fallback_child = fallback_child->get_fallback()) {
 		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
 	}
 
@@ -556,7 +566,7 @@ float BitmapFont::draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_c
 		cpos.x += c->h_align;
 		cpos.y -= ascent;
 		cpos.y += c->v_align;
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
+		RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, Rect2(cpos, c->rect.size), textures[c->texture_idx]->get_rid(), c->rect, p_modulate, false, RID(), RID(), Color(1, 1, 1, 1), false);
 	}
 
 	return get_char_size(p_char, p_next).width;
@@ -646,7 +656,7 @@ BitmapFont::~BitmapFont() {
 
 ////////////
 
-RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES ResourceFormatLoaderBMFont::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 
 	if (r_error)
 		*r_error = ERR_FILE_CANT_OPEN;

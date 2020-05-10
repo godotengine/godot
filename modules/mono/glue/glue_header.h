@@ -70,7 +70,7 @@ void godot_register_glue_header_icalls() {
 #include "../mono_gd/gd_mono_utils.h"
 
 #define GODOTSHARP_INSTANCE_OBJECT(m_instance, m_type) \
-	static ClassDB::ClassInfo *ci = NULL;              \
+	static ClassDB::ClassInfo *ci = nullptr;           \
 	if (!ci) {                                         \
 		ci = ClassDB::classes.getptr(m_type);          \
 	}                                                  \

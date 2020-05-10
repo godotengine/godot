@@ -76,9 +76,9 @@ public:
 	_FORCE_INLINE_ int get_parameters_count() const { return params_count; }
 	_FORCE_INLINE_ ManagedType get_return_type() const { return return_type; }
 
-	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = NULL) const;
-	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = NULL) const;
-	MonoObject *invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc = NULL) const;
+	MonoObject *invoke(MonoObject *p_object, const Variant **p_params, MonoException **r_exc = nullptr) const;
+	MonoObject *invoke(MonoObject *p_object, MonoException **r_exc = nullptr) const;
+	MonoObject *invoke_raw(MonoObject *p_object, void **p_params, MonoException **r_exc = nullptr) const;
 
 	String get_full_name(bool p_signature = false) const;
 	String get_full_name_no_class() const;

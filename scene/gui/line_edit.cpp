@@ -36,12 +36,12 @@
 #include "core/print_string.h"
 #include "core/translation.h"
 #include "label.h"
-
+#include "servers/display_server.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #endif
-
+#include "scene/main/window.h"
 static bool _is_text_char(CharType c) {
 
 	return !is_symbol(c);
@@ -56,7 +56,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 		if (b->is_pressed() && b->get_button_index() == BUTTON_RIGHT && context_menu_enabled) {
 			menu->set_position(get_global_transform().xform(get_local_mouse_position()));
 			menu->set_size(Vector2(1, 1));
-			menu->set_scale(get_global_transform().get_scale());
+			//menu->set_scale(get_global_transform().get_scale());
 			menu->popup();
 			grab_focus();
 			accept_event();
@@ -127,8 +127,8 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			selection.creating = false;
 			selection.doubleclick = false;
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD))
+				DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length);
 		}
 
 		update();
@@ -304,10 +304,9 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				case KEY_ENTER: {
 
 					emit_signal("text_entered", text);
-					if (OS::get_singleton()->has_virtual_keyboard())
-						OS::get_singleton()->hide_virtual_keyboard();
+					if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD))
+						DisplayServer::get_singleton()->virtual_keyboard_hide();
 
-					return;
 				} break;
 
 				case KEY_BACKSPACE: {
@@ -553,10 +552,10 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 				case KEY_MENU: {
 					if (context_menu_enabled) {
-						Point2 pos = Point2(get_cursor_pixel_pos(), (get_size().y + get_font("font")->get_height()) / 2);
+						Point2 pos = Point2(get_cursor_pixel_pos(), (get_size().y + get_theme_font("font")->get_height()) / 2);
 						menu->set_position(get_global_transform().xform(pos));
 						menu->set_size(Vector2(1, 1));
-						menu->set_scale(get_global_transform().get_scale());
+						//						menu->set_scale(get_global_transform().get_scale());
 						menu->popup();
 						menu->grab_focus();
 					}
@@ -630,10 +629,10 @@ void LineEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		set_cursor_at_pixel_pos(p_point.x);
 		int selected = selection.end - selection.begin;
 
-		Ref<Font> font = get_font("font");
-		if (font != NULL) {
+		Ref<Font> font = get_theme_font("font");
+		if (font != nullptr) {
 			for (int i = selection.begin; i < selection.end; i++)
-				cached_width -= font->get_char_size(text[i]).width;
+				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 		}
 
 		text.erase(selection.begin, selected);
@@ -655,8 +654,8 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 	if (!clear_button_enabled || !has_point(p_pos)) {
 		return false;
 	}
-	Ref<Texture2D> icon = Control::get_icon("clear");
-	int x_ofs = get_stylebox("normal")->get_offset().x;
+	Ref<Texture2D> icon = Control::get_theme_icon("clear");
+	int x_ofs = get_theme_stylebox("normal")->get_offset().x;
 	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
 }
 
@@ -686,12 +685,12 @@ void LineEdit::_notification(int p_what) {
 			update_placeholder_width();
 			update();
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 			window_has_focus = true;
 			draw_caret = true;
 			update();
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT: {
 			window_has_focus = false;
 			draw_caret = false;
 			update();
@@ -710,19 +709,19 @@ void LineEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> style = get_stylebox("normal");
+			Ref<StyleBox> style = get_theme_stylebox("normal");
 			if (!is_editable()) {
-				style = get_stylebox("read_only");
+				style = get_theme_stylebox("read_only");
 				draw_caret = false;
 			}
 
-			Ref<Font> font = get_font("font");
+			Ref<Font> font = get_theme_font("font");
 
 			style->draw(ci, Rect2(Point2(), size));
 
 			if (has_focus()) {
 
-				get_stylebox("focus")->draw(ci, Rect2(Point2(), size));
+				get_theme_stylebox("focus")->draw(ci, Rect2(Point2(), size));
 			}
 
 			int x_ofs = 0;
@@ -757,10 +756,10 @@ void LineEdit::_notification(int p_what) {
 
 			int font_ascent = font->get_ascent();
 
-			Color selection_color = get_color("selection_color");
-			Color font_color = is_editable() ? get_color("font_color") : get_color("font_color_uneditable");
-			Color font_color_selected = get_color("font_color_selected");
-			Color cursor_color = get_color("cursor_color");
+			Color selection_color = get_theme_color("selection_color");
+			Color font_color = is_editable() ? get_theme_color("font_color") : get_theme_color("font_color_uneditable");
+			Color font_color_selected = get_theme_color("font_color_selected");
+			Color cursor_color = get_theme_color("cursor_color");
 
 			const String &t = using_placeholder ? placeholder_translated : text;
 			// Draw placeholder color.
@@ -769,13 +768,13 @@ void LineEdit::_notification(int p_what) {
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
-				Ref<Texture2D> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
+				Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
 				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
-						color_icon = get_color("clear_button_color_pressed");
+						color_icon = get_theme_color("clear_button_color_pressed");
 					} else {
-						color_icon = get_color("clear_button_color");
+						color_icon = get_theme_color("clear_button_color");
 					}
 				}
 
@@ -816,9 +815,9 @@ void LineEdit::_notification(int p_what) {
 
 							bool selected = ofs >= ime_selection.x && ofs < ime_selection.x + ime_selection.y;
 							if (selected) {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 3)), font_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 3)), font_color);
 							} else {
-								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
 							}
 
 							drawer.draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_color);
@@ -840,7 +839,7 @@ void LineEdit::_notification(int p_what) {
 				bool selected = selection.enabled && char_ofs >= selection.begin && char_ofs < selection.end;
 
 				if (selected)
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(char_width, caret_height)), selection_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(char_width, caret_height)), selection_color);
 
 				int yofs = y_ofs + (caret_height - font->get_height()) / 2;
 				drawer.draw_char(ci, Point2(x_ofs, yofs + font_ascent), cchar, next, selected ? font_color_selected : font_color);
@@ -848,9 +847,9 @@ void LineEdit::_notification(int p_what) {
 				if (char_ofs == cursor_pos && draw_caret && !using_placeholder) {
 					if (ime_text.length() == 0) {
 #ifdef TOOLS_ENABLED
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
 #else
-						VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
+						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
 #endif
 					}
 				}
@@ -875,9 +874,9 @@ void LineEdit::_notification(int p_what) {
 
 						bool selected = ofs >= ime_selection.x && ofs < ime_selection.x + ime_selection.y;
 						if (selected) {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 3)), font_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 3)), font_color);
 						} else {
-							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
+							RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs + caret_height), Size2(im_char_width, 1)), font_color);
 						}
 
 						drawer.draw_char(ci, Point2(x_ofs, y_ofs + font_ascent), cchar, next, font_color);
@@ -906,17 +905,18 @@ void LineEdit::_notification(int p_what) {
 						}
 					}
 #ifdef TOOLS_ENABLED
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(caret_x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(caret_x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
 #else
-					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(caret_x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
+					RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(caret_x_ofs, y_ofs), Size2(1, caret_height)), cursor_color);
 #endif
 				}
 			}
 
 			if (has_focus()) {
-
-				OS::get_singleton()->set_ime_active(true);
-				OS::get_singleton()->set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height));
+				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+					DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + caret_height), get_viewport()->get_window_id());
+				}
 			}
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
@@ -927,12 +927,14 @@ void LineEdit::_notification(int p_what) {
 				draw_caret = true;
 			}
 
-			OS::get_singleton()->set_ime_active(true);
-			Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
-			OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos);
+			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
+				Point2 cursor_pos = Point2(get_cursor_position(), 1) * get_minimum_size().height;
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + cursor_pos, get_viewport()->get_window_id());
+			}
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->show_virtual_keyboard(text, get_global_rect(), max_length);
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD))
+				DisplayServer::get_singleton()->virtual_keyboard_show(text, get_global_rect(), max_length);
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
@@ -941,20 +943,22 @@ void LineEdit::_notification(int p_what) {
 				caret_blink_timer->stop();
 			}
 
-			OS::get_singleton()->set_ime_position(Point2());
-			OS::get_singleton()->set_ime_active(false);
+			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
+				DisplayServer::get_singleton()->window_set_ime_position(Point2(), get_viewport()->get_window_id());
+				DisplayServer::get_singleton()->window_set_ime_active(false, get_viewport()->get_window_id());
+			}
 			ime_text = "";
 			ime_selection = Point2();
 
-			if (OS::get_singleton()->has_virtual_keyboard())
-				OS::get_singleton()->hide_virtual_keyboard();
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD))
+				DisplayServer::get_singleton()->virtual_keyboard_hide();
 
 		} break;
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 
 			if (has_focus()) {
-				ime_text = OS::get_singleton()->get_ime_text();
-				ime_selection = OS::get_singleton()->get_ime_selection();
+				ime_text = DisplayServer::get_singleton()->ime_get_text();
+				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 				update();
 			}
 		} break;
@@ -964,14 +968,14 @@ void LineEdit::_notification(int p_what) {
 void LineEdit::copy_text() {
 
 	if (selection.enabled && !pass) {
-		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayServer::get_singleton()->clipboard_set(text.substr(selection.begin, selection.end - selection.begin));
 	}
 }
 
 void LineEdit::cut_text() {
 
 	if (selection.enabled && !pass) {
-		OS::get_singleton()->set_clipboard(text.substr(selection.begin, selection.end - selection.begin));
+		DisplayServer::get_singleton()->clipboard_set(text.substr(selection.begin, selection.end - selection.begin));
 		selection_delete();
 	}
 }
@@ -979,7 +983,7 @@ void LineEdit::cut_text() {
 void LineEdit::paste_text() {
 
 	// Strip escape characters like \n and \t as they can't be displayed on LineEdit.
-	String paste_buffer = OS::get_singleton()->get_clipboard().strip_escapes();
+	String paste_buffer = DisplayServer::get_singleton()->clipboard_get().strip_escapes();
 
 	if (paste_buffer != "") {
 
@@ -997,7 +1001,7 @@ void LineEdit::paste_text() {
 }
 
 void LineEdit::undo() {
-	if (undo_stack_pos == NULL) {
+	if (undo_stack_pos == nullptr) {
 		if (undo_stack.size() <= 1) {
 			return;
 		}
@@ -1019,7 +1023,7 @@ void LineEdit::undo() {
 }
 
 void LineEdit::redo() {
-	if (undo_stack_pos == NULL) {
+	if (undo_stack_pos == nullptr) {
 		return;
 	}
 	if (undo_stack_pos == undo_stack.back()) {
@@ -1055,13 +1059,13 @@ void LineEdit::shift_selection_check_post(bool p_shift) {
 
 void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
-	Ref<Font> font = get_font("font");
+	Ref<Font> font = get_theme_font("font");
 	int ofs = window_pos;
-	Ref<StyleBox> style = get_stylebox("normal");
+	Ref<StyleBox> style = get_theme_stylebox("normal");
 	int pixel_ofs = 0;
 	Size2 size = get_size();
 	bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
-	int r_icon_width = Control::get_icon("clear")->get_width();
+	int r_icon_width = Control::get_theme_icon("clear")->get_width();
 
 	switch (align) {
 
@@ -1092,12 +1096,8 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 	while (ofs < text.length()) {
 
 		int char_w = 0;
-		if (font != NULL) {
-			if (is_secret()) {
-				char_w = font->get_char_size(secret_character[0]).width;
-			} else {
-				char_w = font->get_char_size(text[ofs]).width;
-			}
+		if (font != nullptr) {
+			char_w = font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		pixel_ofs += char_w;
 
@@ -1113,13 +1113,13 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 
 int LineEdit::get_cursor_pixel_pos() {
 
-	Ref<Font> font = get_font("font");
+	Ref<Font> font = get_theme_font("font");
 	int ofs = window_pos;
-	Ref<StyleBox> style = get_stylebox("normal");
+	Ref<StyleBox> style = get_theme_stylebox("normal");
 	int pixel_ofs = 0;
 	Size2 size = get_size();
 	bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
-	int r_icon_width = Control::get_icon("clear")->get_width();
+	int r_icon_width = Control::get_theme_icon("clear")->get_width();
 
 	switch (align) {
 
@@ -1148,8 +1148,8 @@ int LineEdit::get_cursor_pixel_pos() {
 	}
 
 	while (ofs < cursor_pos) {
-		if (font != NULL) {
-			pixel_ofs += font->get_char_size(text[ofs]).width;
+		if (font != nullptr) {
+			pixel_ofs += font->get_char_size(pass ? secret_character[0] : text[ofs]).width;
 		}
 		ofs++;
 	}
@@ -1206,9 +1206,9 @@ void LineEdit::delete_char() {
 
 	if ((text.length() <= 0) || (cursor_pos == 0)) return;
 
-	Ref<Font> font = get_font("font");
-	if (font != NULL) {
-		cached_width -= font->get_char_size(text[cursor_pos - 1]).width;
+	Ref<Font> font = get_theme_font("font");
+	if (font != nullptr) {
+		cached_width -= font->get_char_size(pass ? secret_character[0] : text[cursor_pos - 1]).width;
 	}
 
 	text.erase(cursor_pos - 1, 1);
@@ -1225,10 +1225,10 @@ void LineEdit::delete_char() {
 void LineEdit::delete_text(int p_from_column, int p_to_column) {
 
 	if (text.size() > 0) {
-		Ref<Font> font = get_font("font");
-		if (font != NULL) {
+		Ref<Font> font = get_theme_font("font");
+		if (font != nullptr) {
 			for (int i = p_from_column; i < p_to_column; i++)
-				cached_width -= font->get_char_size(text[i]).width;
+				cached_width -= font->get_char_size(pass ? secret_character[0] : text[i]).width;
 		}
 	} else {
 		cached_width = 0;
@@ -1323,8 +1323,8 @@ void LineEdit::set_cursor_position(int p_pos) {
 		return;
 	}
 
-	Ref<StyleBox> style = get_stylebox("normal");
-	Ref<Font> font = get_font("font");
+	Ref<StyleBox> style = get_theme_stylebox("normal");
+	Ref<Font> font = get_theme_font("font");
 
 	if (cursor_pos <= window_pos) {
 		// Adjust window if cursor goes too much to the left.
@@ -1334,7 +1334,7 @@ void LineEdit::set_cursor_position(int p_pos) {
 		int window_width = get_size().width - style->get_minimum_size().width;
 		bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
-			Ref<Texture2D> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
+			Ref<Texture2D> r_icon = display_clear_icon ? Control::get_theme_icon("clear") : right_icon;
 			window_width -= r_icon->get_width();
 		}
 
@@ -1352,7 +1352,11 @@ void LineEdit::set_cursor_position(int p_pos) {
 					// Do not do this, because if the cursor is at the end, its just fine that it takes no space.
 					// accum_width = font->get_char_size(' ').width;
 				} else {
-					accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; // Anything should do.
+					if (pass) {
+						accum_width += font->get_char_size(secret_character[0], i + 1 < text.length() ? secret_character[0] : 0).width;
+					} else {
+						accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; // Anything should do.
+					}
 				}
 				if (accum_width > window_width)
 					break;
@@ -1405,14 +1409,14 @@ void LineEdit::clear_internal() {
 
 Size2 LineEdit::get_minimum_size() const {
 
-	Ref<StyleBox> style = get_stylebox("normal");
-	Ref<Font> font = get_font("font");
+	Ref<StyleBox> style = get_theme_stylebox("normal");
+	Ref<Font> font = get_theme_font("font");
 
 	Size2 min_size;
 
 	// Minimum size of text.
 	int space_size = font->get_char_size(' ').x;
-	min_size.width = get_constant("minimum_spaces") * space_size;
+	min_size.width = get_theme_constant("minimum_spaces") * space_size;
 
 	if (expand_to_text_length) {
 		// Add a space because some fonts are too exact, and because cursor needs a bit more when at the end.
@@ -1423,8 +1427,8 @@ Size2 LineEdit::get_minimum_size() const {
 
 	// Take icons into account.
 	if (!text.empty() && is_editable() && clear_button_enabled) {
-		min_size.width = MAX(min_size.width, Control::get_icon("clear")->get_width());
-		min_size.height = MAX(min_size.height, Control::get_icon("clear")->get_height());
+		min_size.width = MAX(min_size.width, Control::get_theme_icon("clear")->get_width());
+		min_size.height = MAX(min_size.height, Control::get_theme_icon("clear")->get_height());
 	}
 	if (right_icon.is_valid()) {
 		min_size.width = MAX(min_size.width, right_icon->get_width());
@@ -1703,9 +1707,9 @@ void LineEdit::_emit_text_change() {
 }
 
 void LineEdit::update_cached_width() {
-	Ref<Font> font = get_font("font");
+	Ref<Font> font = get_theme_font("font");
 	cached_width = 0;
-	if (font != NULL) {
+	if (font != nullptr) {
 		String text = get_text();
 		for (int i = 0; i < text.length(); i++) {
 			cached_width += font->get_char_size(pass ? secret_character[0] : text[i]).width;
@@ -1714,9 +1718,9 @@ void LineEdit::update_cached_width() {
 }
 
 void LineEdit::update_placeholder_width() {
-	Ref<Font> font = get_font("font");
+	Ref<Font> font = get_theme_font("font");
 	cached_placeholder_width = 0;
-	if (font != NULL) {
+	if (font != nullptr) {
 		for (int i = 0; i < placeholder_translated.length(); i++) {
 			cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
 		}
@@ -1725,7 +1729,7 @@ void LineEdit::update_placeholder_width() {
 
 void LineEdit::_clear_redo() {
 	_create_undo_state();
-	if (undo_stack_pos == NULL) {
+	if (undo_stack_pos == nullptr) {
 		return;
 	}
 
@@ -1740,7 +1744,7 @@ void LineEdit::_clear_redo() {
 
 void LineEdit::_clear_undo_stack() {
 	undo_stack.clear();
-	undo_stack_pos = NULL;
+	undo_stack_pos = nullptr;
 	_create_undo_state();
 }
 
@@ -1861,7 +1865,7 @@ void LineEdit::_bind_methods() {
 
 LineEdit::LineEdit() {
 
-	undo_stack_pos = NULL;
+	undo_stack_pos = nullptr;
 	_create_undo_state();
 	align = ALIGN_LEFT;
 	cached_width = 0;

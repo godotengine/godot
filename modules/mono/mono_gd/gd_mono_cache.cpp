@@ -40,11 +40,11 @@ namespace GDMonoCache {
 
 CachedData cached_data;
 
-#define CACHE_AND_CHECK(m_var, m_val)                                               \
-	{                                                                               \
-		CRASH_COND(m_var != NULL);                                                  \
-		m_var = m_val;                                                              \
-		ERR_FAIL_COND_MSG(m_var == NULL, "Mono Cache: Member " #m_var " is null."); \
+#define CACHE_AND_CHECK(m_var, m_val)                                                  \
+	{                                                                                  \
+		CRASH_COND(m_var != nullptr);                                                  \
+		m_var = m_val;                                                                 \
+		ERR_FAIL_COND_MSG(m_var == nullptr, "Mono Cache: Member " #m_var " is null."); \
 	}
 
 #define CACHE_CLASS_AND_CHECK(m_class, m_val) CACHE_AND_CHECK(cached_data.class_##m_class, m_val)
@@ -54,12 +54,12 @@ CachedData cached_data;
 #define CACHE_METHOD_AND_CHECK(m_class, m_method, m_val) CACHE_AND_CHECK(cached_data.method_##m_class##_##m_method, m_val)
 #define CACHE_PROPERTY_AND_CHECK(m_class, m_property, m_val) CACHE_AND_CHECK(cached_data.property_##m_class##_##m_property, m_val)
 
-#define CACHE_METHOD_THUNK_AND_CHECK_IMPL(m_var, m_val)                                        \
-	{                                                                                          \
-		CRASH_COND(!m_var.is_null());                                                          \
-		ERR_FAIL_COND_MSG(m_val == NULL, "Mono Cache: Method for member " #m_var " is null."); \
-		m_var.set_from_method(m_val);                                                          \
-		ERR_FAIL_COND_MSG(m_var.is_null(), "Mono Cache: Member " #m_var " is null.");          \
+#define CACHE_METHOD_THUNK_AND_CHECK_IMPL(m_var, m_val)                                           \
+	{                                                                                             \
+		CRASH_COND(!m_var.is_null());                                                             \
+		ERR_FAIL_COND_MSG(m_val == nullptr, "Mono Cache: Method for member " #m_var " is null."); \
+		m_var.set_from_method(m_val);                                                             \
+		ERR_FAIL_COND_MSG(m_var.is_null(), "Mono Cache: Member " #m_var " is null.");             \
 	}
 
 #define CACHE_METHOD_THUNK_AND_CHECK(m_class, m_method, m_val) CACHE_METHOD_THUNK_AND_CHECK_IMPL(cached_data.methodthunk_##m_class##_##m_method, m_val)
@@ -68,93 +68,94 @@ void CachedData::clear_corlib_cache() {
 
 	corlib_cache_updated = false;
 
-	class_MonoObject = NULL;
-	class_bool = NULL;
-	class_int8_t = NULL;
-	class_int16_t = NULL;
-	class_int32_t = NULL;
-	class_int64_t = NULL;
-	class_uint8_t = NULL;
-	class_uint16_t = NULL;
-	class_uint32_t = NULL;
-	class_uint64_t = NULL;
-	class_float = NULL;
-	class_double = NULL;
-	class_String = NULL;
-	class_IntPtr = NULL;
+	class_MonoObject = nullptr;
+	class_bool = nullptr;
+	class_int8_t = nullptr;
+	class_int16_t = nullptr;
+	class_int32_t = nullptr;
+	class_int64_t = nullptr;
+	class_uint8_t = nullptr;
+	class_uint16_t = nullptr;
+	class_uint32_t = nullptr;
+	class_uint64_t = nullptr;
+	class_float = nullptr;
+	class_double = nullptr;
+	class_String = nullptr;
+	class_IntPtr = nullptr;
 
-	class_System_Collections_IEnumerable = NULL;
-	class_System_Collections_IDictionary = NULL;
+	class_System_Collections_IEnumerable = nullptr;
+	class_System_Collections_ICollection = nullptr;
+	class_System_Collections_IDictionary = nullptr;
 
 #ifdef DEBUG_ENABLED
-	class_System_Diagnostics_StackTrace = NULL;
+	class_System_Diagnostics_StackTrace = nullptr;
 	methodthunk_System_Diagnostics_StackTrace_GetFrames.nullify();
-	method_System_Diagnostics_StackTrace_ctor_bool = NULL;
-	method_System_Diagnostics_StackTrace_ctor_Exception_bool = NULL;
+	method_System_Diagnostics_StackTrace_ctor_bool = nullptr;
+	method_System_Diagnostics_StackTrace_ctor_Exception_bool = nullptr;
 #endif
 
-	class_KeyNotFoundException = NULL;
+	class_KeyNotFoundException = nullptr;
 }
 
 void CachedData::clear_godot_api_cache() {
 
 	godot_api_cache_updated = false;
 
-	rawclass_Dictionary = NULL;
+	rawclass_Dictionary = nullptr;
 
-	class_Vector2 = NULL;
-	class_Vector2i = NULL;
-	class_Rect2 = NULL;
-	class_Rect2i = NULL;
-	class_Transform2D = NULL;
-	class_Vector3 = NULL;
-	class_Vector3i = NULL;
-	class_Basis = NULL;
-	class_Quat = NULL;
-	class_Transform = NULL;
-	class_AABB = NULL;
-	class_Color = NULL;
-	class_Plane = NULL;
-	class_StringName = NULL;
-	class_NodePath = NULL;
-	class_RID = NULL;
-	class_GodotObject = NULL;
-	class_GodotResource = NULL;
-	class_Node = NULL;
-	class_Control = NULL;
-	class_Spatial = NULL;
-	class_WeakRef = NULL;
-	class_Callable = NULL;
-	class_SignalInfo = NULL;
-	class_Array = NULL;
-	class_Dictionary = NULL;
-	class_MarshalUtils = NULL;
-	class_ISerializationListener = NULL;
+	class_Vector2 = nullptr;
+	class_Vector2i = nullptr;
+	class_Rect2 = nullptr;
+	class_Rect2i = nullptr;
+	class_Transform2D = nullptr;
+	class_Vector3 = nullptr;
+	class_Vector3i = nullptr;
+	class_Basis = nullptr;
+	class_Quat = nullptr;
+	class_Transform = nullptr;
+	class_AABB = nullptr;
+	class_Color = nullptr;
+	class_Plane = nullptr;
+	class_StringName = nullptr;
+	class_NodePath = nullptr;
+	class_RID = nullptr;
+	class_GodotObject = nullptr;
+	class_GodotResource = nullptr;
+	class_Node = nullptr;
+	class_Control = nullptr;
+	class_Node3D = nullptr;
+	class_WeakRef = nullptr;
+	class_Callable = nullptr;
+	class_SignalInfo = nullptr;
+	class_Array = nullptr;
+	class_Dictionary = nullptr;
+	class_MarshalUtils = nullptr;
+	class_ISerializationListener = nullptr;
 
 #ifdef DEBUG_ENABLED
-	class_DebuggingUtils = NULL;
+	class_DebuggingUtils = nullptr;
 	methodthunk_DebuggingUtils_GetStackFrameInfo.nullify();
 #endif
 
-	class_ExportAttribute = NULL;
-	field_ExportAttribute_hint = NULL;
-	field_ExportAttribute_hintString = NULL;
-	class_SignalAttribute = NULL;
-	class_ToolAttribute = NULL;
-	class_RemoteAttribute = NULL;
-	class_MasterAttribute = NULL;
-	class_PuppetAttribute = NULL;
-	class_RemoteSyncAttribute = NULL;
-	class_MasterSyncAttribute = NULL;
-	class_PuppetSyncAttribute = NULL;
-	class_GodotMethodAttribute = NULL;
-	field_GodotMethodAttribute_methodName = NULL;
+	class_ExportAttribute = nullptr;
+	field_ExportAttribute_hint = nullptr;
+	field_ExportAttribute_hintString = nullptr;
+	class_SignalAttribute = nullptr;
+	class_ToolAttribute = nullptr;
+	class_RemoteAttribute = nullptr;
+	class_MasterAttribute = nullptr;
+	class_PuppetAttribute = nullptr;
+	class_RemoteSyncAttribute = nullptr;
+	class_MasterSyncAttribute = nullptr;
+	class_PuppetSyncAttribute = nullptr;
+	class_GodotMethodAttribute = nullptr;
+	field_GodotMethodAttribute_methodName = nullptr;
 
-	field_GodotObject_ptr = NULL;
-	field_StringName_ptr = NULL;
-	field_NodePath_ptr = NULL;
-	field_Image_ptr = NULL;
-	field_RID_ptr = NULL;
+	field_GodotObject_ptr = nullptr;
+	field_StringName_ptr = nullptr;
+	field_NodePath_ptr = nullptr;
+	field_Image_ptr = nullptr;
+	field_RID_ptr = nullptr;
 
 	methodthunk_GodotObject_Dispose.nullify();
 	methodthunk_Array_GetPtr.nullify();
@@ -171,21 +172,17 @@ void CachedData::clear_godot_api_cache() {
 
 	methodthunk_MarshalUtils_TypeIsGenericArray.nullify();
 	methodthunk_MarshalUtils_TypeIsGenericDictionary.nullify();
+	methodthunk_MarshalUtils_TypeIsSystemGenericList.nullify();
+	methodthunk_MarshalUtils_TypeIsSystemGenericDictionary.nullify();
+	methodthunk_MarshalUtils_TypeIsGenericIEnumerable.nullify();
+	methodthunk_MarshalUtils_TypeIsGenericICollection.nullify();
+	methodthunk_MarshalUtils_TypeIsGenericIDictionary.nullify();
 
 	methodthunk_MarshalUtils_ArrayGetElementType.nullify();
 	methodthunk_MarshalUtils_DictionaryGetKeyValueTypes.nullify();
 
-	methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType.nullify();
-	methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType.nullify();
-	methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType_with_info.nullify();
-	methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType_with_info.nullify();
-
 	methodthunk_MarshalUtils_MakeGenericArrayType.nullify();
 	methodthunk_MarshalUtils_MakeGenericDictionaryType.nullify();
-
-	methodthunk_MarshalUtils_EnumerableToArray.nullify();
-	methodthunk_MarshalUtils_IDictionaryToDictionary.nullify();
-	methodthunk_MarshalUtils_GenericIDictionaryToDictionary.nullify();
 
 	// End of MarshalUtils methods
 
@@ -213,6 +210,7 @@ void update_corlib_cache() {
 	CACHE_CLASS_AND_CHECK(IntPtr, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_intptr_class()));
 
 	CACHE_CLASS_AND_CHECK(System_Collections_IEnumerable, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IEnumerable"));
+	CACHE_CLASS_AND_CHECK(System_Collections_ICollection, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "ICollection"));
 	CACHE_CLASS_AND_CHECK(System_Collections_IDictionary, GDMono::get_singleton()->get_corlib_assembly()->get_class("System.Collections", "IDictionary"));
 
 #ifdef DEBUG_ENABLED
@@ -251,7 +249,7 @@ void update_godot_api_cache() {
 	CACHE_CLASS_AND_CHECK(GodotResource, GODOT_API_CLASS(Resource));
 	CACHE_CLASS_AND_CHECK(Node, GODOT_API_CLASS(Node));
 	CACHE_CLASS_AND_CHECK(Control, GODOT_API_CLASS(Control));
-	CACHE_CLASS_AND_CHECK(Spatial, GODOT_API_CLASS(Spatial));
+	CACHE_CLASS_AND_CHECK(Node3D, GODOT_API_CLASS(Node3D));
 	CACHE_CLASS_AND_CHECK(WeakRef, GODOT_API_CLASS(WeakRef));
 	CACHE_CLASS_AND_CHECK(Callable, GODOT_API_CLASS(Callable));
 	CACHE_CLASS_AND_CHECK(SignalInfo, GODOT_API_CLASS(SignalInfo));
@@ -297,21 +295,17 @@ void update_godot_api_cache() {
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericArray, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericArray", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsSystemGenericList, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsSystemGenericList", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsSystemGenericDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsSystemGenericDictionary", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIEnumerable, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIEnumerable", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericICollection, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericICollection", 1));
+	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, TypeIsGenericIDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("TypeIsGenericIDictionary", 1));
 
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, ArrayGetElementType, GODOT_API_CLASS(MarshalUtils)->get_method("ArrayGetElementType", 2));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, DictionaryGetKeyValueTypes, GODOT_API_CLASS(MarshalUtils)->get_method("DictionaryGetKeyValueTypes", 3));
 
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIEnumerableIsAssignableFromType, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIEnumerableIsAssignableFromType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryIsAssignableFromType, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIDictionaryIsAssignableFromType", 1));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIEnumerableIsAssignableFromType_with_info, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIEnumerableIsAssignableFromType", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryIsAssignableFromType_with_info, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIDictionaryIsAssignableFromType", 3));
-
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericArrayType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericArrayType", 1));
 	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, MakeGenericDictionaryType, GODOT_API_CLASS(MarshalUtils)->get_method("MakeGenericDictionaryType", 2));
-
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, EnumerableToArray, GODOT_API_CLASS(MarshalUtils)->get_method("EnumerableToArray", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, IDictionaryToDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("IDictionaryToDictionary", 2));
-	CACHE_METHOD_THUNK_AND_CHECK(MarshalUtils, GenericIDictionaryToDictionary, GODOT_API_CLASS(MarshalUtils)->get_method("GenericIDictionaryToDictionary", 2));
 
 	// End of MarshalUtils methods
 

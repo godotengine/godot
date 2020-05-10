@@ -63,7 +63,7 @@ T *unbox_addr(MonoObject *p_obj) {
 #define BOX_PTR(x) mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(IntPtr), x)
 #define BOX_ENUM(m_enum_class, x) mono_value_box(mono_domain_get(), m_enum_class, &x)
 
-Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = NULL);
+Variant::Type managed_to_variant_type(const ManagedType &p_type, bool *r_nil_is_variant = nullptr);
 
 bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type);
 bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type);
@@ -81,7 +81,7 @@ _FORCE_INLINE_ String mono_string_to_godot_not_null(MonoString *p_mono_string) {
 }
 
 _FORCE_INLINE_ String mono_string_to_godot(MonoString *p_mono_string) {
-	if (p_mono_string == NULL)
+	if (p_mono_string == nullptr)
 		return String();
 
 	return mono_string_to_godot_not_null(p_mono_string);
@@ -123,9 +123,18 @@ Variant mono_object_to_variant_no_err(MonoObject *p_obj, const ManagedType &p_ty
 /// If the MonoObject* cannot be converted to Variant, then 'ToString()' is called instead.
 String mono_object_to_variant_string(MonoObject *p_obj, MonoException **r_exc);
 
+// System.Collections.Generic
+
+MonoObject *Dictionary_to_system_generic_dict(const Dictionary &p_dict, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+Dictionary system_generic_dict_to_Dictionary(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+
+MonoObject *Array_to_system_generic_list(const Array &p_array, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+Array system_generic_list_to_Array(MonoObject *p_obj, GDMonoClass *p_class, MonoReflectionType *p_elem_reftype);
+
 // Array
 
 MonoArray *Array_to_mono_array(const Array &p_array);
+MonoArray *Array_to_mono_array(const Array &p_array, GDMonoClass *p_array_type_class);
 Array mono_array_to_Array(MonoArray *p_array);
 
 // PackedInt32Array

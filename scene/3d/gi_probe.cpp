@@ -33,7 +33,7 @@
 #include "core/os/os.h"
 
 #include "core/method_bind_ext.gen.inc"
-#include "mesh_instance.h"
+#include "mesh_instance_3d.h"
 #include "voxelizer.h"
 
 void GIProbeData::_set_data(const Dictionary &p_data) {
@@ -92,7 +92,7 @@ Dictionary GIProbeData::_get_data() const {
 }
 
 void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3 &p_octree_size, const Vector<uint8_t> &p_octree_cells, const Vector<uint8_t> &p_data_cells, const Vector<uint8_t> &p_distance_field, const Vector<int> &p_level_counts) {
-	VS::get_singleton()->gi_probe_allocate(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
+	RS::get_singleton()->gi_probe_allocate(probe, p_to_cell_xform, p_aabb, p_octree_size, p_octree_cells, p_data_cells, p_distance_field, p_level_counts);
 	bounds = p_aabb;
 	to_cell_xform = p_to_cell_xform;
 	octree_size = p_octree_size;
@@ -105,24 +105,24 @@ Vector3 GIProbeData::get_octree_size() const {
 	return octree_size;
 }
 Vector<uint8_t> GIProbeData::get_octree_cells() const {
-	return VS::get_singleton()->gi_probe_get_octree_cells(probe);
+	return RS::get_singleton()->gi_probe_get_octree_cells(probe);
 }
 Vector<uint8_t> GIProbeData::get_data_cells() const {
-	return VS::get_singleton()->gi_probe_get_data_cells(probe);
+	return RS::get_singleton()->gi_probe_get_data_cells(probe);
 }
 Vector<uint8_t> GIProbeData::get_distance_field() const {
-	return VS::get_singleton()->gi_probe_get_distance_field(probe);
+	return RS::get_singleton()->gi_probe_get_distance_field(probe);
 }
 
 Vector<int> GIProbeData::get_level_counts() const {
-	return VS::get_singleton()->gi_probe_get_level_counts(probe);
+	return RS::get_singleton()->gi_probe_get_level_counts(probe);
 }
 Transform GIProbeData::get_to_cell_xform() const {
 	return to_cell_xform;
 }
 
 void GIProbeData::set_dynamic_range(float p_range) {
-	VS::get_singleton()->gi_probe_set_dynamic_range(probe, p_range);
+	RS::get_singleton()->gi_probe_set_dynamic_range(probe, p_range);
 	dynamic_range = p_range;
 }
 
@@ -131,7 +131,7 @@ float GIProbeData::get_dynamic_range() const {
 }
 
 void GIProbeData::set_propagation(float p_propagation) {
-	VS::get_singleton()->gi_probe_set_propagation(probe, p_propagation);
+	RS::get_singleton()->gi_probe_set_propagation(probe, p_propagation);
 	propagation = p_propagation;
 }
 
@@ -140,7 +140,7 @@ float GIProbeData::get_propagation() const {
 }
 
 void GIProbeData::set_anisotropy_strength(float p_anisotropy_strength) {
-	VS::get_singleton()->gi_probe_set_anisotropy_strength(probe, p_anisotropy_strength);
+	RS::get_singleton()->gi_probe_set_anisotropy_strength(probe, p_anisotropy_strength);
 	anisotropy_strength = p_anisotropy_strength;
 }
 
@@ -149,7 +149,7 @@ float GIProbeData::get_anisotropy_strength() const {
 }
 
 void GIProbeData::set_energy(float p_energy) {
-	VS::get_singleton()->gi_probe_set_energy(probe, p_energy);
+	RS::get_singleton()->gi_probe_set_energy(probe, p_energy);
 	energy = p_energy;
 }
 
@@ -158,7 +158,7 @@ float GIProbeData::get_energy() const {
 }
 
 void GIProbeData::set_ao(float p_ao) {
-	VS::get_singleton()->gi_probe_set_ao(probe, p_ao);
+	RS::get_singleton()->gi_probe_set_ao(probe, p_ao);
 	ao = p_ao;
 }
 
@@ -167,7 +167,7 @@ float GIProbeData::get_ao() const {
 }
 
 void GIProbeData::set_ao_size(float p_ao_size) {
-	VS::get_singleton()->gi_probe_set_ao_size(probe, p_ao_size);
+	RS::get_singleton()->gi_probe_set_ao_size(probe, p_ao_size);
 	ao_size = p_ao_size;
 }
 
@@ -176,7 +176,7 @@ float GIProbeData::get_ao_size() const {
 }
 
 void GIProbeData::set_bias(float p_bias) {
-	VS::get_singleton()->gi_probe_set_bias(probe, p_bias);
+	RS::get_singleton()->gi_probe_set_bias(probe, p_bias);
 	bias = p_bias;
 }
 
@@ -185,7 +185,7 @@ float GIProbeData::get_bias() const {
 }
 
 void GIProbeData::set_normal_bias(float p_normal_bias) {
-	VS::get_singleton()->gi_probe_set_normal_bias(probe, p_normal_bias);
+	RS::get_singleton()->gi_probe_set_normal_bias(probe, p_normal_bias);
 	normal_bias = p_normal_bias;
 }
 
@@ -194,7 +194,7 @@ float GIProbeData::get_normal_bias() const {
 }
 
 void GIProbeData::set_interior(bool p_enable) {
-	VS::get_singleton()->gi_probe_set_interior(probe, p_enable);
+	RS::get_singleton()->gi_probe_set_interior(probe, p_enable);
 	interior = p_enable;
 }
 
@@ -203,7 +203,7 @@ bool GIProbeData::is_interior() const {
 }
 
 void GIProbeData::set_use_two_bounces(bool p_enable) {
-	VS::get_singleton()->gi_probe_set_use_two_bounces(probe, p_enable);
+	RS::get_singleton()->gi_probe_set_use_two_bounces(probe, p_enable);
 	use_two_bounces = p_enable;
 }
 
@@ -293,13 +293,14 @@ GIProbeData::GIProbeData() {
 	propagation = 0.7;
 	anisotropy_strength = 0.5;
 	interior = false;
+	use_two_bounces = false;
 
-	probe = VS::get_singleton()->gi_probe_create();
+	probe = RS::get_singleton()->gi_probe_create();
 }
 
 GIProbeData::~GIProbeData() {
 
-	VS::get_singleton()->free(probe);
+	RS::get_singleton()->free(probe);
 }
 
 //////////////////////
@@ -308,9 +309,9 @@ GIProbeData::~GIProbeData() {
 void GIProbe::set_probe_data(const Ref<GIProbeData> &p_data) {
 
 	if (p_data.is_valid()) {
-		VS::get_singleton()->instance_set_base(get_instance(), p_data->get_rid());
+		RS::get_singleton()->instance_set_base(get_instance(), p_data->get_rid());
 	} else {
-		VS::get_singleton()->instance_set_base(get_instance(), RID());
+		RS::get_singleton()->instance_set_base(get_instance(), RID());
 	}
 
 	probe_data = p_data;
@@ -347,8 +348,8 @@ Vector3 GIProbe::get_extents() const {
 
 void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
-	MeshInstance *mi = Object::cast_to<MeshInstance>(p_at_node);
-	if (mi && mi->get_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT) && mi->is_visible_in_tree()) {
+	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
+	if (mi && mi->get_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT) && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 
@@ -369,7 +370,7 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 		}
 	}
 
-	Spatial *s = Object::cast_to<Spatial>(p_at_node);
+	Node3D *s = Object::cast_to<Node3D>(p_at_node);
 	if (s) {
 
 		if (s->is_visible_in_tree()) {
@@ -402,9 +403,9 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 	}
 }
 
-GIProbe::BakeBeginFunc GIProbe::bake_begin_function = NULL;
-GIProbe::BakeStepFunc GIProbe::bake_step_function = NULL;
-GIProbe::BakeEndFunc GIProbe::bake_end_function = NULL;
+GIProbe::BakeBeginFunc GIProbe::bake_begin_function = nullptr;
+GIProbe::BakeStepFunc GIProbe::bake_step_function = nullptr;
+GIProbe::BakeEndFunc GIProbe::bake_end_function = nullptr;
 
 Vector3i GIProbe::get_estimated_cell_size() const {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
@@ -468,7 +469,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	//create the data for visual server
 
 	if (p_create_visual_debug) {
-		MultiMeshInstance *mmi = memnew(MultiMeshInstance);
+		MultiMeshInstance3D *mmi = memnew(MultiMeshInstance3D);
 		mmi->set_multimesh(baker.create_debug_multimesh());
 		add_child(mmi);
 #ifdef TOOLS_ENABLED
@@ -511,7 +512,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 void GIProbe::_debug_bake() {
 
-	bake(NULL, true);
+	bake(nullptr, true);
 }
 
 AABB GIProbe::get_aabb() const {
@@ -526,7 +527,7 @@ Vector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 
 String GIProbe::get_configuration_warning() const {
 
-	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+	if (RenderingServer::get_singleton()->is_low_end()) {
 		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
 	}
 	return String();
@@ -563,10 +564,10 @@ GIProbe::GIProbe() {
 	subdiv = SUBDIV_128;
 	extents = Vector3(10, 10, 10);
 
-	gi_probe = VS::get_singleton()->gi_probe_create();
+	gi_probe = RS::get_singleton()->gi_probe_create();
 	set_disable_scale(true);
 }
 
 GIProbe::~GIProbe() {
-	VS::get_singleton()->free(gi_probe);
+	RS::get_singleton()->free(gi_probe);
 }

@@ -121,4 +121,4 @@ public:
 	~XMLParser();
 };
 
-#endif
+#endif // XML_PARSER_H

@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "spin_box.h"
+
+#include "core/input/input.h"
 #include "core/math/expression.h"
-#include "core/os/input.h"
 
 Size2 SpinBox::get_minimum_size() const {
 
@@ -59,7 +60,7 @@ void SpinBox::_text_entered(const String &p_string) {
 		return;
 	}
 
-	Variant value = expr->execute(Array(), NULL, false);
+	Variant value = expr->execute(Array(), nullptr, false);
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
 		_value_changed(0);
@@ -195,7 +196,7 @@ void SpinBox::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture2D> updown = get_icon("updown");
+		Ref<Texture2D> updown = get_theme_icon("updown");
 
 		_adjust_width_for_icon(updown);
 
@@ -209,7 +210,7 @@ void SpinBox::_notification(int p_what) {
 		//_value_changed(0);
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		_adjust_width_for_icon(get_icon("updown"));
+		_adjust_width_for_icon(get_theme_icon("updown"));
 		_value_changed(0);
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 

@@ -34,13 +34,13 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "navigation_mesh_generator.h"
-#include "scene/3d/mesh_instance.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 
 	if (p_node == node) {
-		node = NULL;
+		node = nullptr;
 
 		hide();
 	}
@@ -50,8 +50,8 @@ void NavigationMeshEditor::_notification(int p_option) {
 
 	if (p_option == NOTIFICATION_ENTER_TREE) {
 
-		button_bake->set_icon(get_icon("Bake", "EditorIcons"));
-		button_reset->set_icon(get_icon("Reload", "EditorIcons"));
+		button_bake->set_icon(get_theme_icon("Bake", "EditorIcons"));
+		button_reset->set_icon(get_theme_icon("Reload", "EditorIcons"));
 	}
 }
 
@@ -61,7 +61,7 @@ void NavigationMeshEditor::_bake_pressed() {
 	ERR_FAIL_COND(!node);
 	if (!node->get_navigation_mesh().is_valid()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
-		err_dialog->popup_centered_minsize();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -84,9 +84,9 @@ void NavigationMeshEditor::_clear_pressed() {
 	}
 }
 
-void NavigationMeshEditor::edit(NavigationRegion *p_nav_region) {
+void NavigationMeshEditor::edit(NavigationRegion3D *p_nav_region) {
 
-	if (p_nav_region == NULL || node == p_nav_region) {
+	if (p_nav_region == nullptr || node == p_nav_region) {
 		return;
 	}
 
@@ -117,7 +117,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
-	node = NULL;
+	node = nullptr;
 }
 
 NavigationMeshEditor::~NavigationMeshEditor() {
@@ -125,12 +125,12 @@ NavigationMeshEditor::~NavigationMeshEditor() {
 
 void NavigationMeshEditorPlugin::edit(Object *p_object) {
 
-	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion>(p_object));
+	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion3D>(p_object));
 }
 
 bool NavigationMeshEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_class("NavigationRegion");
+	return p_object->is_class("NavigationRegion3D");
 }
 
 void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
@@ -142,7 +142,7 @@ void NavigationMeshEditorPlugin::make_visible(bool p_visible) {
 
 		navigation_mesh_editor->hide();
 		navigation_mesh_editor->bake_hbox->hide();
-		navigation_mesh_editor->edit(NULL);
+		navigation_mesh_editor->edit(nullptr);
 	}
 }
 

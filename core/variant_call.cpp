@@ -362,7 +362,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector2, angle_to);
 	VCALL_LOCALMEM1R(Vector2, angle_to_point);
 	VCALL_LOCALMEM1R(Vector2, direction_to);
-	VCALL_LOCALMEM2R(Vector2, linear_interpolate);
+	VCALL_LOCALMEM2R(Vector2, lerp);
 	VCALL_LOCALMEM2R(Vector2, slerp);
 	VCALL_LOCALMEM4R(Vector2, cubic_interpolate);
 	VCALL_LOCALMEM2R(Vector2, move_toward);
@@ -426,7 +426,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector3, inverse);
 	VCALL_LOCALMEM1R(Vector3, snapped);
 	VCALL_LOCALMEM2R(Vector3, rotated);
-	VCALL_LOCALMEM2R(Vector3, linear_interpolate);
+	VCALL_LOCALMEM2R(Vector3, lerp);
 	VCALL_LOCALMEM2R(Vector3, slerp);
 	VCALL_LOCALMEM4R(Vector3, cubic_interpolate);
 	VCALL_LOCALMEM2R(Vector3, move_toward);
@@ -509,7 +509,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Color, to_rgba64);
 	VCALL_LOCALMEM0R(Color, inverted);
 	VCALL_LOCALMEM0R(Color, contrasted);
-	VCALL_LOCALMEM2R(Color, linear_interpolate);
+	VCALL_LOCALMEM2R(Color, lerp);
 	VCALL_LOCALMEM1R(Color, blend);
 	VCALL_LOCALMEM1R(Color, lightened);
 	VCALL_LOCALMEM1R(Color, darkened);
@@ -860,42 +860,42 @@ struct _VariantCall {
 	VCALL_PTR1R(Transform2D, is_equal_approx);
 
 	static void _call_Transform2D_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Vector2()); return;
 			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator Rect2()); return;
 			case Variant::PACKED_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform(p_args[0]->operator PackedVector2Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform' in base 'Transform2D'. Valid types are Vector2, Rect2, and PackedVector2Array.");
 		}
 	}
 
 	static void _call_Transform2D_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector2()); return;
 			case Variant::RECT2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Rect2()); return;
 			case Variant::PACKED_VECTOR2_ARRAY: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->xform_inv(p_args[0]->operator PackedVector2Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform_inv' in base 'Transform2D'. Valid types are Vector2, Rect2, and PackedVector2Array.");
 		}
 	}
 
 	static void _call_Transform2D_basis_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform(p_args[0]->operator Vector2()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'basis_xform' in base 'Transform2D'. Only Vector2 is valid.");
 		}
 	}
 
 	static void _call_Transform2D_basis_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR2: r_ret = reinterpret_cast<Transform2D *>(p_self._data._ptr)->basis_xform_inv(p_args[0]->operator Vector2()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'basis_xform_inv' in base 'Transform2D'. Only Vector2 is valid.");
 		}
 	}
 
@@ -928,36 +928,28 @@ struct _VariantCall {
 	VCALL_PTR1R(Transform, is_equal_approx);
 
 	static void _call_Transform_xform(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator Plane()); return;
 			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::AABB()); return;
 			case Variant::PACKED_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform(p_args[0]->operator ::PackedVector3Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform' in base 'Transform'. Valid types are Vector3, Plane, AABB, and PackedVector3Array.");
 		}
 	}
 
 	static void _call_Transform_xform_inv(Variant &r_ret, Variant &p_self, const Variant **p_args) {
-
 		switch (p_args[0]->type) {
-
 			case Variant::VECTOR3: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator Plane()); return;
 			case Variant::AABB: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::AABB()); return;
 			case Variant::PACKED_VECTOR3_ARRAY: r_ret = reinterpret_cast<Transform *>(p_self._data._ptr)->xform_inv(p_args[0]->operator ::PackedVector3Array()); return;
-			default: r_ret = Variant();
+			default:
+				r_ret = Variant();
+				ERR_PRINT("Invalid type in function 'xform_inv' in base 'Transform'. Valid types are Vector3, Plane, AABB, and PackedVector3Array.");
 		}
 	}
-
-	/*
-	VCALL_PTR0( Transform, invert );
-	VCALL_PTR0( Transform, affine_invert );
-	VCALL_PTR2( Transform, rotate );
-	VCALL_PTR1( Transform, scale );
-	VCALL_PTR1( Transform, translate );
-	VCALL_PTR0( Transform, orthonormalize ); */
 
 	struct ConstructData {
 
@@ -1083,6 +1075,11 @@ struct _VariantCall {
 		r_ret = Color::hex(*p_args[0]);
 	}
 
+	static void Color_init5(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Color(((Color)(*p_args[0])), *p_args[1]);
+	}
+
 	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = ::AABB(*p_args[0], *p_args[1]);
@@ -1191,9 +1188,9 @@ struct _VariantCall {
 	}
 };
 
-_VariantCall::TypeFunc *_VariantCall::type_funcs = NULL;
-_VariantCall::ConstructFunc *_VariantCall::construct_funcs = NULL;
-_VariantCall::ConstantData *_VariantCall::constant_data = NULL;
+_VariantCall::TypeFunc *_VariantCall::type_funcs = nullptr;
+_VariantCall::ConstructFunc *_VariantCall::construct_funcs = nullptr;
+_VariantCall::ConstantData *_VariantCall::constant_data = nullptr;
 
 Variant Variant::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 
@@ -1310,7 +1307,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case NODE_PATH:
 				return NodePath();
 			case _RID: return RID();
-			case OBJECT: return (Object *)NULL;
+			case OBJECT: return (Object *)nullptr;
 			case CALLABLE: return Callable();
 			case SIGNAL: return Signal();
 			case DICTIONARY: return Dictionary();
@@ -1361,6 +1358,8 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			case RECT2I: return (Rect2i(*p_args[0]));
 			case VECTOR3: return (Vector3(*p_args[0]));
 			case VECTOR3I: return (Vector3i(*p_args[0]));
+			case TRANSFORM2D:
+				return (Transform2D(p_args[0]->operator Transform2D()));
 			case PLANE: return (Plane(*p_args[0]));
 			case QUAT: return (p_args[0]->operator Quat());
 			case AABB:
@@ -1809,7 +1808,7 @@ void register_variant_methods() {
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmod, FLOAT, "mod", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, posmodv, VECTOR2, "modv", varray());
 	ADDFUNC1R(VECTOR2, VECTOR2, Vector2, project, VECTOR2, "b", varray());
-	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, linear_interpolate, VECTOR2, "b", FLOAT, "t", varray());
+	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, lerp, VECTOR2, "b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, slerp, VECTOR2, "b", FLOAT, "t", varray());
 	ADDFUNC4R(VECTOR2, VECTOR2, Vector2, cubic_interpolate, VECTOR2, "b", VECTOR2, "pre_a", VECTOR2, "post_b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR2, VECTOR2, Vector2, move_toward, VECTOR2, "to", FLOAT, "delta", varray());
@@ -1874,7 +1873,7 @@ void register_variant_methods() {
 	ADDFUNC0R(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1R(VECTOR3, VECTOR3, Vector3, snapped, VECTOR3, "by", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, rotated, VECTOR3, "axis", FLOAT, "phi", varray());
-	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, linear_interpolate, VECTOR3, "b", FLOAT, "t", varray());
+	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, lerp, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, slerp, VECTOR3, "b", FLOAT, "t", varray());
 	ADDFUNC4R(VECTOR3, VECTOR3, Vector3, cubic_interpolate, VECTOR3, "b", VECTOR3, "pre_a", VECTOR3, "post_b", FLOAT, "t", varray());
 	ADDFUNC2R(VECTOR3, VECTOR3, Vector3, move_toward, VECTOR3, "to", FLOAT, "delta", varray());
@@ -1933,7 +1932,7 @@ void register_variant_methods() {
 	ADDFUNC0R(COLOR, INT, Color, to_rgba64, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, inverted, varray());
 	ADDFUNC0R(COLOR, COLOR, Color, contrasted, varray());
-	ADDFUNC2R(COLOR, COLOR, Color, linear_interpolate, COLOR, "b", FLOAT, "t", varray());
+	ADDFUNC2R(COLOR, COLOR, Color, lerp, COLOR, "b", FLOAT, "t", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, blend, COLOR, "over", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, lightened, FLOAT, "amount", varray());
 	ADDFUNC1R(COLOR, COLOR, Color, darkened, FLOAT, "amount", varray());
@@ -1957,7 +1956,7 @@ void register_variant_methods() {
 	ADDFUNC0NC(DICTIONARY, NIL, Dictionary, clear, varray());
 	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has, NIL, "key", varray());
 	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, has_all, ARRAY, "keys", varray());
-	ADDFUNC1R(DICTIONARY, BOOL, Dictionary, erase, NIL, "key", varray());
+	ADDFUNC1RNC(DICTIONARY, BOOL, Dictionary, erase, NIL, "key", varray());
 	ADDFUNC0R(DICTIONARY, INT, Dictionary, hash, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, keys, varray());
 	ADDFUNC0R(DICTIONARY, ARRAY, Dictionary, values, varray());
@@ -2217,6 +2216,8 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::FLOAT, "g", Variant::FLOAT, "b", Variant::FLOAT, "a", Variant::FLOAT);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::FLOAT, "g", Variant::FLOAT, "b", Variant::FLOAT);
+	// init3 and init4 are the constructors for HTML hex strings and integers respectively which don't need binding here, so we skip to init5.
+	_VariantCall::add_constructor(_VariantCall::Color_init5, Variant::COLOR, "c", Variant::COLOR, "a", Variant::FLOAT);
 
 	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 

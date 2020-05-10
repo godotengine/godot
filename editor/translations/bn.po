@@ -7,12 +7,13 @@
 # Tahmid Karim <tahmidk15@gmail.com>, 2016.
 # Tawhid H. <Tawhidk757@yahoo.com>, 2019.
 # Hasibul Hasan <hasibeng78@gmail.com>, 2019.
+# Oymate <dhruboadittya96@gmail.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-12-13 09:38+0000\n"
-"Last-Translator: Hasibul Hasan <hasibeng78@gmail.com>\n"
+"PO-Revision-Date: 2020-05-04 15:11+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
@@ -20,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Weblate 3.10-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -29,7 +30,7 @@ msgstr "অবৈধ প্রকার রূপান্তর করার �
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr ""
+msgstr "১ (একটি অক্ষর) দৈর্ঘ্য এর স্ট্রিং প্রত্যাশিত।"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -1537,7 +1538,7 @@ msgstr "Autoload স্থানান্তর করুন"
 msgid "Remove Autoload"
 msgstr "Autoload অপসারণ করুন"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "সক্রিয় করুন"
 
@@ -3130,8 +3131,13 @@ msgid "Q&A"
 msgstr "Q&A"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "ইস্যু ট্র্যাকার"
+#, fuzzy
+msgid "Report a Bug"
+msgstr "পুন-ইম্পোর্ট"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4291,7 +4297,7 @@ msgid "Reimport"
 msgstr "পুন-ইম্পোর্ট"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr ""
 
 #: editor/import_dock.cpp
@@ -7354,14 +7360,6 @@ msgid "Open Godot online documentation."
 msgstr "রেফারেন্সের ডকুমেন্টেশনে খুঁজুন।"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "রেফারেন্সের ডকুমেন্টেশনে খুঁজুন।"
 
@@ -7836,6 +7834,11 @@ msgstr "এই কাজটি করার জন্য একটি একক 
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
+msgid "Auto Orthogonal Enabled"
+msgstr "সমকোণীয় (Orthogonal)"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Lock View Rotation"
 msgstr "তথ্য দেখুন"
 
@@ -7935,15 +7938,15 @@ msgid "Freelook Slow Modifier"
 msgstr "ফ্রি লুক স্পিড মডিফায়ার"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "View Rotation Locked"
+msgstr "তথ্য দেখুন"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "View Rotation Locked"
-msgstr "তথ্য দেখুন"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -10557,6 +10560,13 @@ msgid ""
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "কী/চাবি "
@@ -11620,6 +11630,12 @@ msgid "Script file already exists."
 msgstr "'%s' অ্যাকশন ইতিমধ্যেই বিদ্যমান!"
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Class Name:"
 msgstr "ক্লাস নাম:"
@@ -11754,6 +11770,11 @@ msgstr "রিসোর্স অনুসারে ভিডিও মেমো
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "সর্বমোট:"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Export list to a CSV file"
+msgstr "প্রকল্প এক্সপোর্ট করুন"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -13433,6 +13454,10 @@ msgstr ""
 "আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid source for preview."
@@ -13463,6 +13488,9 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Issue Tracker"
+#~ msgstr "ইস্যু ট্র্যাকার"
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "%d সংখ্যক সংঘটন প্রতিস্থাপিত হয়েছে  ।"

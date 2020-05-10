@@ -1,4 +1,5 @@
 using Godot;
+using GodotTools.Core;
 using GodotTools.Export;
 using GodotTools.Utils;
 using System;
@@ -36,6 +37,17 @@ namespace GodotTools
 
         public BottomPanel BottomPanel { get; private set; }
 
+        public static string ProjectAssemblyName
+        {
+            get
+            {
+                var projectAssemblyName = (string)ProjectSettings.GetSetting("application/config/name");
+                if (string.IsNullOrEmpty(projectAssemblyName))
+                    projectAssemblyName = "UnnamedProject";
+                return projectAssemblyName;
+            }
+        }
+
         private bool CreateProjectSolution()
         {
             using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 3))
@@ -45,9 +57,7 @@ namespace GodotTools
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
                 string path = resourceDir;
-                string name = (string)ProjectSettings.GetSetting("application/config/name");
-                if (name.Empty())
-                    name = "UnnamedProject";
+                string name = ProjectAssemblyName;
 
                 string guid = CsProjOperations.GenerateGameProject(path, name);
 
@@ -119,7 +129,7 @@ namespace GodotTools
         {
             bool showOnStart = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
             aboutDialogCheckBox.Pressed = showOnStart;
-            aboutDialog.PopupCenteredMinsize();
+            aboutDialog.PopupCentered();
         }
 
         private void _MenuOptionPressed(int id)
@@ -157,10 +167,10 @@ namespace GodotTools
                 bool showInfoDialog = (bool)editorSettings.GetSetting("mono/editor/show_info_on_start");
                 if (showInfoDialog)
                 {
-                    aboutDialog.PopupExclusive = true;
+                    aboutDialog.Exclusive = true;
                     _ShowAboutDialog();
                     // Once shown a first time, it can be seen again via the Mono menu - it doesn't have to be exclusive from that time on.
-                    aboutDialog.PopupExclusive = false;
+                    aboutDialog.Exclusive = false;
                 }
 
                 var fileSystemDock = GetEditorInterface().GetFileSystemDock();
@@ -203,9 +213,9 @@ namespace GodotTools
 
         public void ShowErrorDialog(string message, string title = "Error")
         {
-            errorDialog.WindowTitle = title;
+            errorDialog.Title = title;
             errorDialog.DialogText = message;
-            errorDialog.PopupCenteredMinsize();
+            errorDialog.PopupCentered();
         }
 
         private static string _vsCodePath = string.Empty;
@@ -374,7 +384,6 @@ namespace GodotTools
 
             menuPopup = new PopupMenu();
             menuPopup.Hide();
-            menuPopup.SetAsToplevel(true);
 
             AddToolSubmenuItem("Mono", menuPopup);
 
@@ -383,7 +392,7 @@ namespace GodotTools
                 menuPopup.AddItem("About C# support".TTR(), (int)MenuOptions.AboutCSharp);
                 aboutDialog = new AcceptDialog();
                 editorBaseControl.AddChild(aboutDialog);
-                aboutDialog.WindowTitle = "Important: C# support is not feature-complete";
+                aboutDialog.Title = "Important: C# support is not feature-complete";
 
                 // We don't use DialogText as the default AcceptDialog Label doesn't play well with the TextureRect and CheckBox
                 // we'll add. Instead we add containers and a new autowrapped Label inside.
@@ -397,7 +406,7 @@ namespace GodotTools
                 aboutVBox.AddChild(aboutHBox);
 
                 var aboutIcon = new TextureRect();
-                aboutIcon.Texture = aboutIcon.GetIcon("NodeWarning", "EditorIcons");
+                aboutIcon.Texture = aboutIcon.GetThemeIcon("NodeWarning", "EditorIcons");
                 aboutHBox.AddChild(aboutIcon);
 
                 var aboutLabel = new Label();
@@ -434,13 +443,27 @@ namespace GodotTools
                 {
                     // Migrate solution from old configuration names to: Debug, ExportDebug and ExportRelease
                     DotNetSolution.MigrateFromOldConfigNames(GodotSharpDirs.ProjectSlnPath);
-                    // Migrate csproj from old configuration names to: Debug, ExportDebug and ExportRelease
-                    ProjectUtils.MigrateFromOldConfigNames(GodotSharpDirs.ProjectCsProjPath);
 
-                    // Apply the other fixes after configurations are migrated
+                    var msbuildProject = ProjectUtils.Open(GodotSharpDirs.ProjectCsProjPath)
+                                         ?? throw new Exception("Cannot open C# project");
+
+                    // NOTE: The order in which changes are made to the project is important
+
+                    // Migrate csproj from old configuration names to: Debug, ExportDebug and ExportRelease
+                    ProjectUtils.MigrateFromOldConfigNames(msbuildProject);
+
+                    // Apply the other fixes only after configurations have been migrated
 
                     // Make sure the existing project has Api assembly references configured correctly
-                    ProjectUtils.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
+                    ProjectUtils.FixApiHintPath(msbuildProject);
+
+                    if (msbuildProject.HasUnsavedChanges)
+                    {
+                        // Save a copy of the project before replacing it
+                        FileUtils.SaveBackupCopy(GodotSharpDirs.ProjectCsProjPath);
+
+                        msbuildProject.Save();
+                    }
                 }
                 catch (Exception e)
                 {

@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-21 23:32+0000\n"
+"PO-Revision-Date: 2020-05-01 11:43+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.11.1\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1458,7 +1458,7 @@ msgstr "Перемістити автозавантаження"
 msgid "Remove Autoload"
 msgstr "Видалити автозавантаження"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Активувати"
 
@@ -2945,8 +2945,12 @@ msgid "Q&A"
 msgstr "Запитання та відповіді"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Відстеження помилок"
+msgid "Report a Bug"
+msgstr "Повідомити про ваду"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr "Надіслати відгук щодо документації"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4001,7 +4005,7 @@ msgid "Reimport"
 msgstr "Переімпортувати"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
+msgid "Save Scenes, Re-Import, and Restart"
 msgstr "Зберегти сцени, повторно імпортувати і перезапустити"
 
 #: editor/import_dock.cpp
@@ -5974,9 +5978,8 @@ msgstr ""
 "Цей найточніший (але найповільніший) варіант для виявлення зіткнень."
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Single Convex Collision Sibling"
-msgstr "Створити єдині опуклі області зіткнення"
+msgstr "Створити єдину опуклу область зіткнення"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid ""
@@ -6865,14 +6868,6 @@ msgid "Open Godot online documentation."
 msgstr "Відкрити онлайнову документацію Godot."
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Запит щодо документації"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Допоможіть у поліпшенні документації Godot наданням відгуків."
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
 msgstr "Пошук довідкової документації."
 
@@ -7310,6 +7305,10 @@ msgid "This operation requires a single selected node."
 msgstr "Ця операція вимагає одного обраного вузла."
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr "Увімкнено автоматичну ортогоналізацію"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
 msgstr "Зафіксувати обертання перегляду"
 
@@ -7398,6 +7397,10 @@ msgid "Freelook Slow Modifier"
 msgstr "Модифікатор швидкості довільного огляду"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Обертання перегляду заблоковано"
+
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
@@ -7405,10 +7408,6 @@ msgstr ""
 "Зауваження: показана частота кадрів є частотою кадрів у редакторі.\n"
 "Її не можна використовувати як надійне джерело даних щодо частоти кадрів у "
 "грі."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Обертання перегляду заблоковано"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -9932,6 +9931,16 @@ msgstr ""
 "Зараз проєктів немає.\n"
 "Хочете вивчити проєкти офіційних прикладів з бібліотеки даних?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+"Поле пошуку фільтрує проєкти за назвою і останнім компонентом шляху.\n"
+"Щоб виконати фільтрування проєктів за назвою і повним шляхом, у запиті має "
+"бути принаймні один символ `/`."
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Клавіша "
@@ -10921,6 +10930,14 @@ msgid "Script file already exists."
 msgstr "Файл скрипту вже існує."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+"Зауваження: для вбудованих скриптів передбачено певні обмеження — їх не "
+"можна редагувати у зовнішньому редакторі."
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Назва класу:"
 
@@ -11039,6 +11056,10 @@ msgstr "Список використання відеопам'яті за ре�
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Загалом:"
+
+#: editor/script_editor_debugger.cpp
+msgid "Export list to a CSV file"
+msgstr "Експортувати список до файла CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12415,6 +12436,8 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"У ConcavePolygonShape не передбачено підтримки RigidBody у режимі, "
+"відмінному від статичного."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -12715,6 +12738,12 @@ msgstr ""
 "Control, щоб у неї був розмір. Крім того, можна зробити її RenderTarget і "
 "пов'язати її внутрішню текстуру з одним із вузлів для показу."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+"Щоб програма могла хоч щось показати, розмір поля перегляду має бути більшим "
+"за 0."
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Некоректне джерело для попереднього перегляду."
@@ -12742,6 +12771,15 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Відстеження помилок"
+
+#~ msgid "Request Docs"
+#~ msgstr "Запит щодо документації"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr "Допоможіть у поліпшенні документації Godot наданням відгуків."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "Замінено %d випадок(-ів)."

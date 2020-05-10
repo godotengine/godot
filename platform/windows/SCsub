@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-Import('env')
+Import("env")
 
 import os
 from platform_methods import run_in_subprocess
@@ -10,21 +10,22 @@ common_win = [
     "godot_windows.cpp",
     "crash_handler_windows.cpp",
     "os_windows.cpp",
+    "display_server_windows.cpp",
     "key_mapping_windows.cpp",
     "joypad_windows.cpp",
     "windows_terminal_logger.cpp",
     "vulkan_context_win.cpp",
-    "context_gl_windows.cpp"
+    "context_gl_windows.cpp",
 ]
 
-res_file = 'godot_res.rc'
+res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
 
-prog = env.add_program('#bin/godot', common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
+prog = env.add_program("#bin/godot", common_win + res_obj, PROGSUFFIX=env["PROGSUFFIX"])
 
 # Microsoft Visual Studio Project Generation
-if env['vsproj']:
+if env["vsproj"]:
     env.vs_srcs = env.vs_srcs + ["platform/windows/" + res_file]
     env.vs_srcs = env.vs_srcs + ["platform/windows/godot.natvis"]
     for x in common_win:

@@ -41,7 +41,7 @@
 #include "core/reference.h"
 
 #define UNHANDLED_EXCEPTION(m_exc)                     \
-	if (unlikely(m_exc != NULL)) {                     \
+	if (unlikely(m_exc != nullptr)) {                  \
 		GDMonoUtils::debug_unhandled_exception(m_exc); \
 		GD_UNREACHABLE();                              \
 	}
@@ -52,21 +52,17 @@ namespace Marshal {
 
 bool type_is_generic_array(MonoReflectionType *p_reftype);
 bool type_is_generic_dictionary(MonoReflectionType *p_reftype);
+bool type_is_system_generic_list(MonoReflectionType *p_reftype);
+bool type_is_system_generic_dictionary(MonoReflectionType *p_reftype);
+bool type_is_generic_ienumerable(MonoReflectionType *p_reftype);
+bool type_is_generic_icollection(MonoReflectionType *p_reftype);
+bool type_is_generic_idictionary(MonoReflectionType *p_reftype);
 
 void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
 void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
 
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype);
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype);
-bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
-bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
-
 GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
 GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
-
-Array enumerable_to_array(MonoObject *p_enumerable);
-Dictionary idictionary_to_dictionary(MonoObject *p_idictionary);
-Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary);
 
 } // namespace Marshal
 
@@ -77,7 +73,7 @@ _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) 
 /**
  * If the object has a csharp script, returns the target of the gchandle stored in the script instance
  * Otherwise returns a newly constructed MonoObject* which is attached to the object
- * Returns NULL on error
+ * Returns nullptr on error
  */
 MonoObject *unmanaged_get_managed(Object *unmanaged);
 
@@ -89,7 +85,7 @@ MonoThread *get_current_thread();
 bool is_thread_attached();
 
 _FORCE_INLINE_ bool is_main_thread() {
-	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
+	return mono_domain_get() != nullptr && mono_thread_get_main() == mono_thread_current();
 }
 
 uint32_t new_strong_gchandle(MonoObject *p_object);
@@ -97,7 +93,7 @@ uint32_t new_strong_gchandle_pinned(MonoObject *p_object);
 uint32_t new_weak_gchandle(MonoObject *p_object);
 void free_gchandle(uint32_t p_gchandle);
 
-void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = NULL);
+void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = nullptr);
 
 bool mono_delegate_equal(MonoDelegate *p_a, MonoDelegate *p_b);
 
@@ -114,6 +110,9 @@ MonoObject *create_managed_from(const Array &p_from, GDMonoClass *p_class);
 MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class);
 
 MonoDomain *create_domain(const String &p_friendly_name);
+
+String get_type_desc(MonoType *p_type);
+String get_type_desc(MonoReflectionType *p_reftype);
 
 String get_exception_name_and_message(MonoException *p_exc);
 void set_exception_message(MonoException *p_exc, String message);

@@ -38,10 +38,12 @@
 
 // Backtrace code code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
 
-#include <psapi.h>
 #include <algorithm>
 #include <iterator>
+#include <string>
 #include <vector>
+
+#include <psapi.h>
 
 #pragma comment(lib, "psapi.lib")
 #pragma comment(lib, "dbghelp.lib")
@@ -121,7 +123,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	DWORD cbNeeded;
 	std::vector<HMODULE> module_handles(1);
 
-	if (OS::get_singleton() == NULL || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
+	if (OS::get_singleton() == nullptr || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
 		return EXCEPTION_CONTINUE_SEARCH;
 	}
 
@@ -131,7 +133,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 
 	// Load the symbols:
-	if (!SymInitialize(process, NULL, false))
+	if (!SymInitialize(process, nullptr, false))
 		return EXCEPTION_CONTINUE_SEARCH;
 
 	SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_UNDNAME);
@@ -193,7 +195,7 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 			n++;
 		}
 
-		if (!StackWalk64(image_type, process, hThread, &frame, context, NULL, SymFunctionTableAccess64, SymGetModuleBase64, NULL))
+		if (!StackWalk64(image_type, process, hThread, &frame, context, nullptr, SymFunctionTableAccess64, SymGetModuleBase64, nullptr))
 			break;
 	} while (frame.AddrReturn.Offset != 0 && n < 256);
 

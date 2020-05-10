@@ -51,7 +51,7 @@ enum PVRFLags {
 
 };
 
-RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress) {
+RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
 
 	if (r_error)
 		*r_error = ERR_CANT_OPEN;
@@ -534,7 +534,7 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 	// local neighbourhood of blocks
 	PVRTCBlock *p_blocks[2][2];
 
-	PVRTCBlock *prev[2][2] = { { NULL, NULL }, { NULL, NULL } };
+	PVRTCBlock *prev[2][2] = { { nullptr, nullptr }, { nullptr, nullptr } };
 
 	struct
 	{

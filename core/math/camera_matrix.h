@@ -124,4 +124,4 @@ Vector3 CameraMatrix::xform(const Vector3 &p_vec3) const {
 	return ret / w;
 }
 
-#endif
+#endif // CAMERA_MATRIX_H

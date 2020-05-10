@@ -24,12 +24,12 @@ ANDROID_SDK_URL=$ANDROID_BASE_URL/$ANDROID_SDK_FILENAME
 ANDROID_SDK_PATH=$GODOT_BUILD_TOOLS_PATH/$ANDROID_SDK_DIR
 ANDROID_SDK_SHA256=92ffee5a1d98d856634e8b71132e8a95d96c83a63fde1099be3d86df3106def9
 
-ANDROID_NDK_RELEASE=r20
+ANDROID_NDK_RELEASE=r21
 ANDROID_NDK_DIR=android-ndk
 ANDROID_NDK_FILENAME=android-ndk-$ANDROID_NDK_RELEASE-linux-x86_64.zip
 ANDROID_NDK_URL=$ANDROID_BASE_URL/$ANDROID_NDK_FILENAME
 ANDROID_NDK_PATH=$GODOT_BUILD_TOOLS_PATH/$ANDROID_NDK_DIR
-ANDROID_NDK_SHA1=8665fc84a1b1f0d6ab3b5fdd1e30200cc7b9adff
+ANDROID_NDK_SHA1=afc9c0b9faad222898ac8168c78ad4ccac8a1b5c
 
 echo
 echo "Download and install Android development tools ..."
@@ -76,7 +76,7 @@ yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager --licenses > /dev/null
 echo "Installing: Android Build and Platform Tools ..."
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'tools' > /dev/null
 yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'platform-tools' > /dev/null
-yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'build-tools;28.0.3' > /dev/null
+yes | $ANDROID_SDK_DIR/tools/bin/sdkmanager 'build-tools;29.0.3' > /dev/null
 echo
 
 EXPORT_VAL="export ANDROID_HOME=$ANDROID_SDK_PATH"

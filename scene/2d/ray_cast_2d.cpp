@@ -33,7 +33,7 @@
 #include "collision_object_2d.h"
 #include "core/engine.h"
 #include "physics_body_2d.h"
-#include "servers/physics_2d_server.h"
+#include "servers/physics_server_2d.h"
 
 void RayCast2D::set_cast_to(const Vector2 &p_point) {
 
@@ -79,7 +79,7 @@ bool RayCast2D::is_colliding() const {
 Object *RayCast2D::get_collider() const {
 
 	if (against.is_null())
-		return NULL;
+		return nullptr;
 
 	return ObjectDB::get_instance(against);
 }
@@ -205,7 +205,7 @@ void RayCast2D::_update_raycast_state() {
 	Ref<World2D> w2d = get_world_2d();
 	ERR_FAIL_COND(w2d.is_null());
 
-	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(w2d->get_space());
+	PhysicsDirectSpaceState2D *dss = PhysicsServer2D::get_singleton()->space_get_direct_state(w2d->get_space());
 	ERR_FAIL_COND(!dss);
 
 	Transform2D gt = get_global_transform();
@@ -214,7 +214,7 @@ void RayCast2D::_update_raycast_state() {
 	if (to == Vector2())
 		to = Vector2(0, 0.01);
 
-	Physics2DDirectSpaceState::RayResult rr;
+	PhysicsDirectSpaceState2D::RayResult rr;
 
 	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
 

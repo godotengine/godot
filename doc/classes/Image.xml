@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Native image datatype. Contains image data, which can be converted to a [Texture2D], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
+		[b]Note:[/b] The maximum image size is 16384×16384 pixels due to graphics hardware limitations. Larger images will fail to import.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -99,7 +100,7 @@
 			</return>
 			<argument index="0" name="mode" type="int" enum="Image.CompressMode">
 			</argument>
-			<argument index="1" name="channels" type="int" enum="Image.CompressSource">
+			<argument index="1" name="channels" type="int" enum="Image.UsedChannels">
 			</argument>
 			<argument index="2" name="lossy_quality" type="float" default="0.7">
 			</argument>
@@ -349,7 +350,7 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads an image from file [code]path[/code].
+				Loads an image from file [code]path[/code]. See [url=https://docs.godotengine.org/en/latest/getting_started/workflow/assets/importing_images.html#supported-image-formats]Supported image formats[/url] for a list of supported image formats and limitations.
 			</description>
 		</method>
 		<method name="load_jpg_from_buffer">

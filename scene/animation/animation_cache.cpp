@@ -94,19 +94,19 @@ void AnimationCache::_update_cache() {
 				ERR_CONTINUE_MSG(animation->track_get_type(i) == Animation::TYPE_TRANSFORM, "Transform tracks can't have a subpath '" + np + "'.");
 			}
 
-			Spatial *sp = Object::cast_to<Spatial>(node);
+			Node3D *sp = Object::cast_to<Node3D>(node);
 
 			if (!sp) {
 
 				path_cache.push_back(Path());
-				ERR_CONTINUE_MSG(!sp, "Transform track not of type Spatial '" + np + "'.");
+				ERR_CONTINUE_MSG(!sp, "Transform track not of type Node3D '" + np + "'.");
 			}
 
 			if (np.get_subname_count() == 1) {
 				StringName property = np.get_subname(0);
 				String ps = property;
 
-				Skeleton *sk = Object::cast_to<Skeleton>(node);
+				Skeleton3D *sk = Object::cast_to<Skeleton3D>(node);
 				if (!sk) {
 
 					path_cache.push_back(Path());
@@ -287,7 +287,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 
 					if (!args.size()) {
 
-						call_track(i, name, NULL, 0, err);
+						call_track(i, name, nullptr, 0, err);
 					} else {
 
 						Vector<const Variant *> argptrs;
@@ -332,7 +332,7 @@ void AnimationCache::set_root(Node *p_root) {
 
 AnimationCache::AnimationCache() {
 
-	root = NULL;
+	root = nullptr;
 	cache_dirty = true;
 	cache_valid = false;
 }

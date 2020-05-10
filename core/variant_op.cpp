@@ -438,7 +438,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(true);
 				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj == NULL);
+					_RETURN(p_b._get_obj().obj == nullptr);
 
 				_RETURN(false);
 			}
@@ -457,7 +457,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == OBJECT)
 					_RETURN((p_a._get_obj().obj == p_b._get_obj().obj));
 				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj == NULL);
+					_RETURN(p_a._get_obj().obj == nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -534,7 +534,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 			CASE_TYPE(math, OP_NOT_EQUAL, NIL) {
 				if (p_b.type == NIL) _RETURN(false);
 				if (p_b.type == OBJECT)
-					_RETURN(p_b._get_obj().obj != NULL);
+					_RETURN(p_b._get_obj().obj != nullptr);
 
 				_RETURN(true);
 			}
@@ -554,7 +554,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				if (p_b.type == OBJECT)
 					_RETURN((p_a._get_obj().obj != p_b._get_obj().obj));
 				if (p_b.type == NIL)
-					_RETURN(p_a._get_obj().obj != NULL);
+					_RETURN(p_a._get_obj().obj != nullptr);
 
 				_RETURN_FAIL;
 			}
@@ -3527,7 +3527,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			if (dic->empty())
 				return false;
 
-			const Variant *next = dic->next(NULL);
+			const Variant *next = dic->next(nullptr);
 			r_iter = *next;
 			return true;
 
@@ -4220,7 +4220,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case VECTOR2: {
-			r_dst = reinterpret_cast<const Vector2 *>(a._data._mem)->linear_interpolate(*reinterpret_cast<const Vector2 *>(b._data._mem), c);
+			r_dst = reinterpret_cast<const Vector2 *>(a._data._mem)->lerp(*reinterpret_cast<const Vector2 *>(b._data._mem), c);
 		}
 			return;
 		case VECTOR2I: {
@@ -4233,7 +4233,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			return;
 
 		case RECT2: {
-			r_dst = Rect2(reinterpret_cast<const Rect2 *>(a._data._mem)->position.linear_interpolate(reinterpret_cast<const Rect2 *>(b._data._mem)->position, c), reinterpret_cast<const Rect2 *>(a._data._mem)->size.linear_interpolate(reinterpret_cast<const Rect2 *>(b._data._mem)->size, c));
+			r_dst = Rect2(reinterpret_cast<const Rect2 *>(a._data._mem)->position.lerp(reinterpret_cast<const Rect2 *>(b._data._mem)->position, c), reinterpret_cast<const Rect2 *>(a._data._mem)->size.lerp(reinterpret_cast<const Rect2 *>(b._data._mem)->size, c));
 		}
 			return;
 		case RECT2I: {
@@ -4254,7 +4254,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 			return;
 
 		case VECTOR3: {
-			r_dst = reinterpret_cast<const Vector3 *>(a._data._mem)->linear_interpolate(*reinterpret_cast<const Vector3 *>(b._data._mem), c);
+			r_dst = reinterpret_cast<const Vector3 *>(a._data._mem)->lerp(*reinterpret_cast<const Vector3 *>(b._data._mem), c);
 		}
 			return;
 		case VECTOR3I: {
@@ -4281,7 +4281,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case AABB: {
-			r_dst = ::AABB(a._data._aabb->position.linear_interpolate(b._data._aabb->position, c), a._data._aabb->size.linear_interpolate(b._data._aabb->size, c));
+			r_dst = ::AABB(a._data._aabb->position.lerp(b._data._aabb->position, c), a._data._aabb->size.lerp(b._data._aabb->size, c));
 		}
 			return;
 		case BASIS: {
@@ -4293,7 +4293,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case COLOR: {
-			r_dst = reinterpret_cast<const Color *>(a._data._mem)->linear_interpolate(*reinterpret_cast<const Color *>(b._data._mem), c);
+			r_dst = reinterpret_cast<const Color *>(a._data._mem)->lerp(*reinterpret_cast<const Color *>(b._data._mem), c);
 		}
 			return;
 		case STRING_NAME: {
@@ -4448,7 +4448,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 					const Vector2 *br = arr_b->ptr();
 
 					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].linear_interpolate(br[i], c);
+						vw[i] = ar[i].lerp(br[i], c);
 					}
 				}
 				r_dst = v;
@@ -4473,7 +4473,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 					const Vector3 *br = arr_b->ptr();
 
 					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].linear_interpolate(br[i], c);
+						vw[i] = ar[i].lerp(br[i], c);
 					}
 				}
 				r_dst = v;
@@ -4497,7 +4497,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 					const Color *br = arr_b->ptr();
 
 					for (int i = 0; i < sz; i++) {
-						vw[i] = ar[i].linear_interpolate(br[i], c);
+						vw[i] = ar[i].lerp(br[i], c);
 					}
 				}
 				r_dst = v;

@@ -306,16 +306,26 @@ namespace Godot
             return res;
         }
 
-        public Color LinearInterpolate(Color c, float t)
+        public Color Lerp(Color to, float weight)
         {
-            var res = this;
+            return new Color
+            (
+                Mathf.Lerp(r, to.r, weight),
+                Mathf.Lerp(g, to.g, weight),
+                Mathf.Lerp(b, to.b, weight),
+                Mathf.Lerp(a, to.a, weight)
+            );
+        }
 
-            res.r += t * (c.r - r);
-            res.g += t * (c.g - g);
-            res.b += t * (c.b - b);
-            res.a += t * (c.a - a);
-
-            return res;
+        public Color Lerp(Color to, Color weight)
+        {
+            return new Color
+            (
+                Mathf.Lerp(r, to.r, weight.r),
+                Mathf.Lerp(g, to.g, weight.g),
+                Mathf.Lerp(b, to.b, weight.b),
+                Mathf.Lerp(a, to.a, weight.a)
+            );
         }
 
         public uint ToAbgr32()
@@ -410,12 +420,20 @@ namespace Godot
             return txt;
         }
 
-        // Constructors 
+        // Constructors
         public Color(float r, float g, float b, float a = 1.0f)
         {
             this.r = r;
             this.g = g;
             this.b = b;
+            this.a = a;
+        }
+
+        public Color(Color c, float a = 1.0f)
+        {
+            r = c.r;
+            g = c.g;
+            b = c.b;
             this.a = a;
         }
 

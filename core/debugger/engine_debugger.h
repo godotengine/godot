@@ -50,10 +50,10 @@ public:
 	class Profiler {
 		friend class EngineDebugger;
 
-		ProfilingToggle toggle = NULL;
-		ProfilingAdd add = NULL;
-		ProfilingTick tick = NULL;
-		void *data = NULL;
+		ProfilingToggle toggle = nullptr;
+		ProfilingAdd add = nullptr;
+		ProfilingTick tick = nullptr;
+		void *data = nullptr;
 		bool active = false;
 
 	public:
@@ -69,8 +69,8 @@ public:
 	class Capture {
 		friend class EngineDebugger;
 
-		CaptureFunc capture = NULL;
-		void *data = NULL;
+		CaptureFunc capture = nullptr;
+		void *data = nullptr;
 
 	public:
 		Capture() {}
@@ -97,7 +97,7 @@ protected:
 
 public:
 	_FORCE_INLINE_ static EngineDebugger *get_singleton() { return singleton; }
-	_FORCE_INLINE_ static bool is_active() { return singleton != NULL && script_debugger != NULL; }
+	_FORCE_INLINE_ static bool is_active() { return singleton != nullptr && script_debugger != nullptr; }
 
 	_FORCE_INLINE_ static ScriptDebugger *get_script_debugger() { return script_debugger; };
 

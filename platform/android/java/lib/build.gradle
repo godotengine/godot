@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 dependencies {
     implementation libraries.supportCoreUtils
@@ -11,7 +12,6 @@ def pathToRootDir = "../../../../"
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
-    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         minSdkVersion versions.minSdk
@@ -26,7 +26,9 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
-        doNotStrip '**/*.so'
+
+        // Should be uncommented for development purpose within Android Studio
+        // doNotStrip '**/*.so'
     }
 
     sourceSets {

@@ -46,7 +46,7 @@ void TextureEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<Texture2D> checkerboard = get_icon("Checkerboard", "EditorIcons");
+		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
 		draw_texture_rect(checkerboard, Rect2(Point2(), size), true);
@@ -79,7 +79,7 @@ void TextureEditor::_notification(int p_what) {
 
 		draw_texture_rect(texture, Rect2(ofs_x, ofs_y, tex_width, tex_height));
 
-		Ref<Font> font = get_font("font", "Label");
+		Ref<Font> font = get_theme_font("font", "Label");
 
 		String format;
 		if (Object::cast_to<ImageTexture>(*texture)) {
@@ -144,7 +144,7 @@ TextureEditor::~TextureEditor() {
 //
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
 
-	return Object::cast_to<ImageTexture>(p_object) != NULL || Object::cast_to<AtlasTexture>(p_object) != NULL || Object::cast_to<StreamTexture>(p_object) != NULL || Object::cast_to<LargeTexture>(p_object) != NULL || Object::cast_to<AnimatedTexture>(p_object) != NULL;
+	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<StreamTexture>(p_object) != nullptr || Object::cast_to<LargeTexture>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

@@ -41,7 +41,7 @@ void TextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	TextEdit *te = code_editor->get_text_edit();
 	te->_set_syntax_highlighting(p_highlighter);
-	if (p_highlighter != NULL) {
+	if (p_highlighter != nullptr) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(p_highlighter->get_name()), true);
 	} else {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text("Standard"), true);
@@ -49,12 +49,12 @@ void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 
 	// little work around. GDScript highlighter goes through text_edit for colours,
 	// so to remove all colours we need to set and unset them here.
-	if (p_highlighter == NULL) { // standard
+	if (p_highlighter == nullptr) { // standard
 		TextEdit *text_edit = code_editor->get_text_edit();
-		text_edit->add_color_override("number_color", colors_cache.font_color);
-		text_edit->add_color_override("function_color", colors_cache.font_color);
-		text_edit->add_color_override("number_color", colors_cache.font_color);
-		text_edit->add_color_override("member_variable_color", colors_cache.font_color);
+		text_edit->add_theme_color_override("number_color", colors_cache.font_color);
+		text_edit->add_theme_color_override("function_color", colors_cache.font_color);
+		text_edit->add_theme_color_override("number_color", colors_cache.font_color);
+		text_edit->add_theme_color_override("member_variable_color", colors_cache.font_color);
 	} else {
 		_load_theme_settings();
 	}
@@ -62,7 +62,7 @@ void TextEditor::set_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 
 void TextEditor::_change_syntax_highlighter(int p_idx) {
 	Map<String, SyntaxHighlighter *>::Element *el = highlighters.front();
-	while (el != NULL) {
+	while (el != nullptr) {
 		highlighter_menu->set_item_checked(highlighter_menu->get_item_idx_from_text(el->key()), false);
 		el = el->next();
 	}
@@ -107,35 +107,35 @@ void TextEditor::_load_theme_settings() {
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 	Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 
-	text_edit->add_color_override("background_color", background_color);
-	text_edit->add_color_override("completion_background_color", completion_background_color);
-	text_edit->add_color_override("completion_selected_color", completion_selected_color);
-	text_edit->add_color_override("completion_existing_color", completion_existing_color);
-	text_edit->add_color_override("completion_scroll_color", completion_scroll_color);
-	text_edit->add_color_override("completion_font_color", completion_font_color);
-	text_edit->add_color_override("font_color", text_color);
-	text_edit->add_color_override("line_number_color", line_number_color);
-	text_edit->add_color_override("caret_color", caret_color);
-	text_edit->add_color_override("caret_background_color", caret_background_color);
-	text_edit->add_color_override("font_color_selected", text_selected_color);
-	text_edit->add_color_override("selection_color", selection_color);
-	text_edit->add_color_override("brace_mismatch_color", brace_mismatch_color);
-	text_edit->add_color_override("current_line_color", current_line_color);
-	text_edit->add_color_override("line_length_guideline_color", line_length_guideline_color);
-	text_edit->add_color_override("word_highlighted_color", word_highlighted_color);
-	text_edit->add_color_override("number_color", number_color);
-	text_edit->add_color_override("function_color", function_color);
-	text_edit->add_color_override("member_variable_color", member_variable_color);
-	text_edit->add_color_override("breakpoint_color", breakpoint_color);
-	text_edit->add_color_override("executing_line_color", executing_line_color);
-	text_edit->add_color_override("mark_color", mark_color);
-	text_edit->add_color_override("bookmark_color", bookmark_color);
-	text_edit->add_color_override("code_folding_color", code_folding_color);
-	text_edit->add_color_override("search_result_color", search_result_color);
-	text_edit->add_color_override("search_result_border_color", search_result_border_color);
-	text_edit->add_color_override("symbol_color", symbol_color);
+	text_edit->add_theme_color_override("background_color", background_color);
+	text_edit->add_theme_color_override("completion_background_color", completion_background_color);
+	text_edit->add_theme_color_override("completion_selected_color", completion_selected_color);
+	text_edit->add_theme_color_override("completion_existing_color", completion_existing_color);
+	text_edit->add_theme_color_override("completion_scroll_color", completion_scroll_color);
+	text_edit->add_theme_color_override("completion_font_color", completion_font_color);
+	text_edit->add_theme_color_override("font_color", text_color);
+	text_edit->add_theme_color_override("line_number_color", line_number_color);
+	text_edit->add_theme_color_override("caret_color", caret_color);
+	text_edit->add_theme_color_override("caret_background_color", caret_background_color);
+	text_edit->add_theme_color_override("font_color_selected", text_selected_color);
+	text_edit->add_theme_color_override("selection_color", selection_color);
+	text_edit->add_theme_color_override("brace_mismatch_color", brace_mismatch_color);
+	text_edit->add_theme_color_override("current_line_color", current_line_color);
+	text_edit->add_theme_color_override("line_length_guideline_color", line_length_guideline_color);
+	text_edit->add_theme_color_override("word_highlighted_color", word_highlighted_color);
+	text_edit->add_theme_color_override("number_color", number_color);
+	text_edit->add_theme_color_override("function_color", function_color);
+	text_edit->add_theme_color_override("member_variable_color", member_variable_color);
+	text_edit->add_theme_color_override("breakpoint_color", breakpoint_color);
+	text_edit->add_theme_color_override("executing_line_color", executing_line_color);
+	text_edit->add_theme_color_override("mark_color", mark_color);
+	text_edit->add_theme_color_override("bookmark_color", bookmark_color);
+	text_edit->add_theme_color_override("code_folding_color", code_folding_color);
+	text_edit->add_theme_color_override("search_result_color", search_result_color);
+	text_edit->add_theme_color_override("search_result_border_color", search_result_border_color);
+	text_edit->add_theme_color_override("symbol_color", symbol_color);
 
-	text_edit->add_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
+	text_edit->add_theme_constant_override("line_spacing", EDITOR_DEF("text_editor/theme/line_spacing", 6));
 
 	colors_cache.font_color = text_color;
 	colors_cache.symbol_color = symbol_color;
@@ -163,7 +163,7 @@ String TextEditor::get_name() {
 	return name;
 }
 
-Ref<Texture2D> TextEditor::get_icon() {
+Ref<Texture2D> TextEditor::get_theme_icon() {
 
 	return EditorNode::get_singleton()->get_object_icon(text_file.operator->(), "");
 }
@@ -533,7 +533,7 @@ static ScriptEditorBase *create_editor(const RES &p_resource) {
 	if (Object::cast_to<TextFile>(*p_resource)) {
 		return memnew(TextEditor);
 	}
-	return NULL;
+	return nullptr;
 }
 
 void TextEditor::register_editor() {
@@ -624,7 +624,7 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 TextEditor::TextEditor() {
 	code_editor = memnew(CodeTextEditor);
 	add_child(code_editor);
-	code_editor->add_constant_override("separation", 0);
+	code_editor->add_theme_constant_override("separation", 0);
 	code_editor->connect("load_theme_settings", callable_mp(this, &TextEditor::_load_theme_settings));
 	code_editor->connect("validate_script", callable_mp(this, &TextEditor::_validate_script));
 	code_editor->set_anchors_and_margins_preset(Control::PRESET_WIDE);
@@ -694,7 +694,7 @@ TextEditor::TextEditor() {
 	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
 	convert_case->connect("id_pressed", callable_mp(this, &TextEditor::_edit_option));
 
-	highlighters["Standard"] = NULL;
+	highlighters["Standard"] = nullptr;
 	highlighter_menu = memnew(PopupMenu);
 	highlighter_menu->set_name("highlighter_menu");
 	edit_menu->get_popup()->add_child(highlighter_menu);
@@ -716,7 +716,7 @@ TextEditor::TextEditor() {
 	goto_menu->get_popup()->add_child(bookmarks_menu);
 	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
-	bookmarks_menu->connect("about_to_show", callable_mp(this, &TextEditor::_update_bookmark_list));
+	bookmarks_menu->connect("about_to_popup", callable_mp(this, &TextEditor::_update_bookmark_list));
 	bookmarks_menu->connect("index_pressed", callable_mp(this, &TextEditor::_bookmark_item_pressed));
 
 	goto_line_dialog = memnew(GotoLineDialog);
@@ -727,7 +727,7 @@ TextEditor::TextEditor() {
 
 TextEditor::~TextEditor() {
 	for (const Map<String, SyntaxHighlighter *>::Element *E = highlighters.front(); E; E = E->next()) {
-		if (E->get() != NULL) {
+		if (E->get() != nullptr) {
 			memdelete(E->get());
 		}
 	}

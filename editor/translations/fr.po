@@ -70,12 +70,14 @@
 # Camille Mohr-Daurat <pouleyketchoup@gmail.com>, 2019.
 # Pierre Stempin <pierre.stempin@gmail.com>, 2019.
 # Pierre Caye <pierrecaye@laposte.net>, 2020.
+# Kevin Bouancheau <kevin.bouancheau@gmail.com>, 2020.
+# LaurentOngaro <laurent@gameamea.com>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-02-27 07:01+0000\n"
-"Last-Translator: Pierre Caye <pierrecaye@laposte.net>\n"
+"PO-Revision-Date: 2020-05-05 14:01+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -83,7 +85,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.0-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -93,7 +95,7 @@ msgstr ""
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
-msgstr "Attendu chaîne de longueur 1 (un caractère)."
+msgstr "Une chaîne de caractères de longueur 1 est attendue (un caractère)."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -103,11 +105,11 @@ msgstr "Pas assez d'octets pour le décodage, ou format non valide."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "Entrée non valide %i (pas passée) dans l’expression"
+msgstr "Entrée non valide %i (non transmise) dans l’expression"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "self ne peut être utilisé car l'instance est null (pas passée)"
+msgstr "self ne peut être utilisé car l'instance est nulle (non passée)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
@@ -1518,7 +1520,7 @@ msgstr "Déplacer l'AutoLoad"
 msgid "Remove Autoload"
 msgstr "Supprimer l'AutoLoad"
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/editor_plugin_settings.cpp
 msgid "Enable"
 msgstr "Activer"
 
@@ -2228,7 +2230,7 @@ msgstr "Nouvelle Fenêtre"
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."
-msgstr "Les ressources importés ne peuvent pas être sauvegarder."
+msgstr "Les ressources importées ne peuvent pas être sauvegardées."
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: scene/gui/dialogs.cpp
@@ -3022,8 +3024,12 @@ msgid "Q&A"
 msgstr "Questions et réponses"
 
 #: editor/editor_node.cpp
-msgid "Issue Tracker"
-msgstr "Traqueur de problèmes"
+msgid "Report a Bug"
+msgstr "Signaler un bug"
+
+#: editor/editor_node.cpp
+msgid "Send Docs Feedback"
+msgstr "Envoyez vos retours sur la documentation"
 
 #: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
 msgid "Community"
@@ -4085,8 +4091,8 @@ msgid "Reimport"
 msgstr "Réimporter"
 
 #: editor/import_dock.cpp
-msgid "Save scenes, re-import and restart"
-msgstr "Sauvegarde des scènes, réimportation et redémarrage"
+msgid "Save Scenes, Re-Import, and Restart"
+msgstr "Sauvegarder les scènes, Réimporter, et Redémarrer"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
@@ -5461,12 +5467,12 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr "Réinitialiser le facteur d'agrandissement"
+msgstr "Réinitialiser le zoom"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "Sélectionner le mode"
+msgstr "Mode sélection"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -5499,7 +5505,7 @@ msgstr "Mode rotation"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr "Mode de mise à l'échelle"
+msgstr "Mode mise à l'échelle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5536,7 +5542,7 @@ msgstr "Activer/Désactiver l'aimantation à la grille."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
-msgstr "Aimanter à la grille"
+msgstr "Utiliser l'aimantation à la grille"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5666,7 +5672,7 @@ msgstr "Centrer sur la sélection"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
-msgstr "Cadrer la sélection"
+msgstr "Encadrer la sélection"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
@@ -6849,7 +6855,7 @@ msgstr "Basculer le tri alphabétique de la liste de méthodes."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Filter methods"
-msgstr "Méthodes de filtrage"
+msgstr "Filtrer les méthodes"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6964,14 +6970,6 @@ msgstr "Déboguer avec un éditeur externe"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation."
 msgstr "Ouvrir la documentation de Godot en ligne."
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Request Docs"
-msgstr "Demande de documentation"
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback."
-msgstr "Aider à améliorer la documentation de Godot en donnant vos réactions."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -7396,7 +7394,7 @@ msgstr "Arrière"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Transform with View"
-msgstr "Aligner le Transform avec la vue"
+msgstr "Aligner Transform avec la vue"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Rotation with View"
@@ -7411,6 +7409,10 @@ msgid "This operation requires a single selected node."
 msgstr ""
 "Cette opération ne peut être réalisée uniquement avec un seul nœud "
 "sélectionné."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Auto Orthogonal Enabled"
+msgstr "Auto Orthogonal Activé"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Lock View Rotation"
@@ -7478,19 +7480,19 @@ msgstr "Vue libre droite"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "Vue libre de devant"
+msgstr "Vue libre avant"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "Vue libre de derrière"
+msgstr "Vue libre arrière"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr "Vue libre de dessus"
+msgstr "Vue libre haut"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr "Vue libre de dessous"
+msgstr "Vue libre bas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
@@ -7498,20 +7500,20 @@ msgstr "Modificateur de vitesse de la vue libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Slow Modifier"
-msgstr "Modificateur de vitesse de la vue libre"
+msgstr "Ralentissement de la vue libre"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "View Rotation Locked"
+msgstr "Rotation de la vue verrouillée"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-"Note : La valeur FPS affichée est la fréquence d'images de l'éditeur.\n"
-"Il ne doit pas être utilisé comme un indicateur fiable de la performance en "
-"jeu."
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "View Rotation Locked"
-msgstr "Verrouiller la rotation de la vue"
+"Note : Les FPS (images par secondes) affichées sont celles de éditeur.\n"
+"Elles ne doivent pas être utilisées comme un indicateur fiable de la "
+"performance en jeu."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -7519,11 +7521,11 @@ msgstr "Dialogue XForm"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
-msgstr "Aligner les nœuds au sol"
+msgstr "Aligner les nœuds avec le sol"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "N'a pas pu trouvé de sol solide pour y attacher la sélection."
+msgstr "Pas de sol solide trouvé pour y attacher la sélection."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7537,11 +7539,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Local Space"
-msgstr "Utiliser l'espace local"
+msgstr "Utiliser les coordonées locales"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Aligner sur la grille"
+msgstr "Aligner avec la grille"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7553,11 +7555,11 @@ msgstr "Vue de dessus"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
-msgstr "Vue arrière"
+msgstr "Vue de derrière"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View"
-msgstr "Vue avant"
+msgstr "Vue de devant"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View"
@@ -7577,7 +7579,7 @@ msgstr "Insérer une clef d'animation"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Origin"
-msgstr "Focaliser l'origine"
+msgstr "Focaliser sur l'origine"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
@@ -8172,7 +8174,7 @@ msgstr "Donnez une ressource TileSet à cette TileMap pour utiliser ses tuiles."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
-msgstr "Peindre la case"
+msgstr "Peindre la tuile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8184,7 +8186,7 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
-msgstr "Sélectionner une case"
+msgstr "Sélectionner une tuile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Left"
@@ -9694,7 +9696,7 @@ msgstr "Fichier ZIP"
 
 #: editor/project_export.cpp
 msgid "Godot Game Pack"
-msgstr "Données de jeu Godot"
+msgstr "Archive Godot"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -10046,6 +10048,17 @@ msgstr ""
 "Vous n'avez pour l'instant aucun projets.\n"
 "Voulez-vous explorer des exemples de projets officiels dans l'Asset Library ?"
 
+#: editor/project_manager.cpp
+msgid ""
+"The search box filters projects by name and last path component.\n"
+"To filter projects by name and full path, the query must contain at least "
+"one `/` character."
+msgstr ""
+"La barre de recherche filtre les projets par leur nom et la dernière partie "
+"de leur chemin d'accès.\n"
+"Pour filter les projects par leur nom et le chemin d'accès complet, la "
+"recherche doit inclure au moins un caractère `/`."
+
 #: editor/project_settings_editor.cpp
 msgid "Key "
 msgstr "Touche "
@@ -10248,19 +10261,19 @@ msgstr "Ajouter un chemin remappé"
 
 #: editor/project_settings_editor.cpp
 msgid "Resource Remap Add Remap"
-msgstr "Réaffectation des ressources ; Ajouter une réaffectation"
+msgstr "Réaffectation (remap) des ressources ; Ajouter une réaffectation"
 
 #: editor/project_settings_editor.cpp
 msgid "Change Resource Remap Language"
-msgstr "Modifier le langage de réaffectation des ressources"
+msgstr "Modifier le langage de réaffectation (remap) des ressources"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap"
-msgstr "Supprimer la réaffectation des ressources"
+msgstr "Supprimer la réaffectation (remap) des ressources"
 
 #: editor/project_settings_editor.cpp
 msgid "Remove Resource Remap Option"
-msgstr "Supprimer option de remap de ressource"
+msgstr "Supprimer l'option de réaffectation (remap) de ressource"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter"
@@ -10268,7 +10281,7 @@ msgstr "Filtre de langue modifié"
 
 #: editor/project_settings_editor.cpp
 msgid "Changed Locale Filter Mode"
-msgstr "Changé le mode de filtrage des langues"
+msgstr "Mode de filtrage des langues modifié"
 
 #: editor/project_settings_editor.cpp
 msgid "Project Settings (project.godot)"
@@ -10280,7 +10293,7 @@ msgstr "Général"
 
 #: editor/project_settings_editor.cpp
 msgid "Override For..."
-msgstr "Écraser pour…"
+msgstr "Surcharge pour…"
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "The editor must be restarted for changes to take effect."
@@ -10324,7 +10337,7 @@ msgstr "Traductions :"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps"
-msgstr "Remaps"
+msgstr "Réaffectation"
 
 #: editor/project_settings_editor.cpp
 msgid "Resources:"
@@ -10332,7 +10345,7 @@ msgstr "Ressources :"
 
 #: editor/project_settings_editor.cpp
 msgid "Remaps by Locale:"
-msgstr "Remaps par langue :"
+msgstr "Réaffectations (remaps) par langue :"
 
 #: editor/project_settings_editor.cpp
 msgid "Locale"
@@ -10496,7 +10509,7 @@ msgstr "Valeur par laquelle le compteur est incrémenté pour chaque nœud"
 
 #: editor/rename_dialog.cpp
 msgid "Padding"
-msgstr "Remplissage"
+msgstr "Remplissage(Padding)"
 
 #: editor/rename_dialog.cpp
 msgid ""
@@ -11034,6 +11047,14 @@ msgid "Script file already exists."
 msgstr "Le fichier de script existe déjà."
 
 #: editor/script_create_dialog.cpp
+msgid ""
+"Note: Built-in scripts have some limitations and can't be edited using an "
+"external editor."
+msgstr ""
+"Remarque : les scripts intégrés ont certaines limitations et ne peuvent pas "
+"être modifiés à l'aide d'un éditeur externe."
+
+#: editor/script_create_dialog.cpp
 msgid "Class Name:"
 msgstr "Nom de la classe :"
 
@@ -11153,6 +11174,10 @@ msgstr "Liste de l'utilisation de la mémoire vidéo par ressource :"
 #: editor/script_editor_debugger.cpp
 msgid "Total:"
 msgstr "Total :"
+
+#: editor/script_editor_debugger.cpp
+msgid "Export list to a CSV file"
+msgstr "Exporter la liste en fichier CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"
@@ -12543,6 +12568,8 @@ msgstr ""
 msgid ""
 "ConcavePolygonShape doesn't support RigidBody in another mode than static."
 msgstr ""
+"ConcavePolygonShape ne supporte pas RigidBody dans un autre mode que le mode "
+"statique."
 
 #: scene/3d/cpu_particles.cpp
 msgid "Nothing is visible because no mesh has been assigned."
@@ -12851,6 +12878,12 @@ msgstr ""
 "nœud de type Control afin qu'il en obtienne une taille. Sinon, faites-en une "
 "RenderTarget et assignez sa texture à un nœud pouvant l'afficher."
 
+#: scene/main/viewport.cpp
+msgid "Viewport size must be greater than 0 to render anything."
+msgstr ""
+"La taille de la fenêtre d'affichage doit être supérieure à 0 pour pouvoir "
+"afficher quoi que ce soit."
+
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for preview."
 msgstr "Source invalide pour la prévisualisation."
@@ -12878,6 +12911,16 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+#~ msgid "Issue Tracker"
+#~ msgstr "Traqueur de problèmes"
+
+#~ msgid "Request Docs"
+#~ msgstr "Demande de documentation"
+
+#~ msgid "Help improve the Godot documentation by giving feedback."
+#~ msgstr ""
+#~ "Aider à améliorer la documentation de Godot en donnant vos réactions."
 
 #~ msgid "Replaced %d occurrence(s)."
 #~ msgstr "%d occurrence(s) remplacée(s)."

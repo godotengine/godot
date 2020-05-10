@@ -81,8 +81,8 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
 
-	const gd::Polygon *begin_poly = NULL;
-	const gd::Polygon *end_poly = NULL;
+	const gd::Polygon *begin_poly = nullptr;
+	const gd::Polygon *end_poly = nullptr;
 	Vector3 begin_point;
 	Vector3 end_point;
 	float begin_d = 1e20;
@@ -146,7 +146,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	open_list.push_back(0);
 
-	const gd::Polygon *reachable_end = NULL;
+	const gd::Polygon *reachable_end = nullptr;
 	float reachable_d = 1e30;
 	bool is_reachable = true;
 
@@ -215,7 +215,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			// so use the further reachable polygon
 			ERR_BREAK_MSG(is_reachable == false, "It's not expect to not find the most reachable polygons");
 			is_reachable = false;
-			if (reachable_end == NULL) {
+			if (reachable_end == nullptr) {
 				// The path is not found and there is not a way out.
 				break;
 			}
@@ -240,7 +240,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			open_list.clear();
 			open_list.push_back(0);
 
-			reachable_end = NULL;
+			reachable_end = nullptr;
 
 			continue;
 		}
@@ -249,7 +249,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		least_cost_id = -1;
 		float least_cost = 1e30;
 
-		for (auto element = open_list.front(); element != NULL; element = element->next()) {
+		for (auto element = open_list.front(); element != nullptr; element = element->next()) {
 			gd::NavigationPoly *np = &navigation_polys[element->get()];
 			float cost = np->traveled_distance;
 #ifdef USE_ENTRY_POINT
@@ -366,7 +366,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					p = &navigation_polys[p->prev_navigation_poly_id];
 				else
 					// The end
-					p = NULL;
+					p = nullptr;
 			}
 
 			if (path[path.size() - 1] != begin_point)
@@ -637,12 +637,12 @@ void NavMap::sync() {
 					gd::Connection c;
 					c.A = &poly;
 					c.A_edge = p;
-					c.B = NULL;
+					c.B = nullptr;
 					c.B_edge = -1;
 					connections[ek] = c;
 
-				} else if (connection->get().B == NULL) {
-					CRASH_COND(connection->get().A == NULL); // Unreachable
+				} else if (connection->get().B == nullptr) {
+					CRASH_COND(connection->get().A == nullptr); // Unreachable
 
 					// Connect the two Polygons by this edge
 					connection->get().B = &poly;
@@ -657,7 +657,7 @@ void NavMap::sync() {
 					connection->get().B->edges[connection->get().B_edge].other_edge = connection->get().A_edge;
 				} else {
 					// The edge is already connected with another edge, skip.
-					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the Navigation's `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
+					ERR_PRINT("Attempted to merge a navigation mesh triangle edge with another already-merged edge. This happens when the Navigation3D's `cell_size` is different from the one used to generate the navigation mesh. This will cause navigation problem.");
 				}
 			}
 		}
@@ -667,8 +667,8 @@ void NavMap::sync() {
 		free_edges.reserve(connections.size());
 
 		for (auto connection_element = connections.front(); connection_element; connection_element = connection_element->next()) {
-			if (connection_element->get().B == NULL) {
-				CRASH_COND(connection_element->get().A == NULL); // Unreachable
+			if (connection_element->get().B == nullptr) {
+				CRASH_COND(connection_element->get().A == nullptr); // Unreachable
 				CRASH_COND(connection_element->get().A_edge < 0); // Unreachable
 
 				// This is a free edge

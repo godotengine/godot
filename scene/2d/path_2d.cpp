@@ -102,7 +102,7 @@ void Path2D::_notification(int p_what) {
 #else
 		const float line_width = 2;
 #endif
-		const Color color = Color(1.0, 1.0, 1.0, 1.0);
+		const Color color = Color(0.5, 0.6, 1.0, 0.7);
 
 		for (int i = 0; i < curve->get_point_count(); i++) {
 
@@ -162,7 +162,6 @@ void Path2D::_bind_methods() {
 Path2D::Path2D() {
 
 	set_curve(Ref<Curve2D>(memnew(Curve2D))); //create one by default
-	set_self_modulate(Color(0.5, 0.6, 1.0, 0.7));
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -242,7 +241,7 @@ void PathFollow2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
-			path = NULL;
+			path = nullptr;
 		} break;
 	}
 }
@@ -321,16 +320,14 @@ void PathFollow2D::set_offset(float p_offset) {
 
 	offset = p_offset;
 	if (path) {
-		if (path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
+		if (path->get_curve().is_valid()) {
 			float path_length = path->get_curve()->get_baked_length();
 
 			if (loop) {
-				while (offset > path_length)
-					offset -= path_length;
-
-				while (offset < 0)
-					offset += path_length;
-
+				offset = Math::fposmod(offset, path_length);
+				if (!Math::is_zero_approx(p_offset) && Math::is_zero_approx(offset)) {
+					offset = path_length;
+				}
 			} else {
 				offset = CLAMP(offset, 0, path_length);
 			}
@@ -421,7 +418,7 @@ PathFollow2D::PathFollow2D() {
 	offset = 0;
 	h_offset = 0;
 	v_offset = 0;
-	path = NULL;
+	path = nullptr;
 	rotate = true;
 	cubic = true;
 	loop = true;

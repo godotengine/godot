@@ -6,7 +6,7 @@
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,6 @@ private:
 	float ground_curve;
 	float ground_energy;
 
-	float sun_angle_min;
 	float sun_angle_max;
 	float sun_curve;
 
@@ -83,9 +82,6 @@ public:
 
 	void set_ground_energy(float p_energy);
 	float get_ground_energy() const;
-
-	void set_sun_angle_min(float p_angle);
-	float get_sun_angle_min() const;
 
 	void set_sun_angle_max(float p_angle);
 	float get_sun_angle_max() const;

@@ -193,7 +193,7 @@
 				Returns the vector's length squared. Prefer this method over [method length] if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
-		<method name="linear_interpolate">
+		<method name="lerp">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="b" type="Vector2">

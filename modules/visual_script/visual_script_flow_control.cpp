@@ -934,6 +934,6 @@ void register_visual_script_flow_control_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("flow_control/iterator", create_node_generic<VisualScriptIterator>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/sequence", create_node_generic<VisualScriptSequence>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/switch", create_node_generic<VisualScriptSwitch>);
-	//VisualScriptLanguage::singleton->add_register_func("flow_control/input_filter", create_node_generic<VisualScriptInputFilter>);
+	//VisualScriptLanguage::singleton->add_register_func("flow_control/input", create_node_generic<VisualScriptInputFilter>);
 	VisualScriptLanguage::singleton->add_register_func("flow_control/type_cast", create_node_generic<VisualScriptTypeCast>);
 }

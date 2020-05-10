@@ -481,8 +481,8 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 
 	AudioServer::get_singleton()->lock();
 	if (data) {
-		AudioServer::get_singleton()->audio_data_free(data);
-		data = NULL;
+		memfree(data);
+		data = nullptr;
 		data_bytes = 0;
 	}
 
@@ -491,7 +491,7 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 
 		const uint8_t *r = p_data.ptr();
 		int alloc_len = datalen + DATA_PAD * 2;
-		data = AudioServer::get_singleton()->audio_data_alloc(alloc_len); //alloc with some padding for interpolation
+		data = memalloc(alloc_len); //alloc with some padding for interpolation
 		zeromem(data, alloc_len);
 		uint8_t *dataptr = (uint8_t *)data;
 		copymem(dataptr + DATA_PAD, r, datalen);
@@ -654,14 +654,14 @@ AudioStreamSample::AudioStreamSample() {
 	loop_begin = 0;
 	loop_end = 0;
 	mix_rate = 44100;
-	data = NULL;
+	data = nullptr;
 	data_bytes = 0;
 }
 
 AudioStreamSample::~AudioStreamSample() {
 	if (data) {
-		AudioServer::get_singleton()->audio_data_free(data);
-		data = NULL;
+		memfree(data);
+		data = nullptr;
 		data_bytes = 0;
 	}
 }

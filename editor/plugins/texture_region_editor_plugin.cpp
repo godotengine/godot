@@ -31,7 +31,7 @@
 #include "texture_region_editor_plugin.h"
 
 #include "core/core_string_names.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 #include "scene/gui/check_box.h"
@@ -43,13 +43,13 @@
 void draw_margin_line(Control *edit_draw, Vector2 from, Vector2 to) {
 	Vector2 line = (to - from).normalized() * 10;
 	while ((to - from).length_squared() > 200) {
-		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_color("mono_color", "Editor"), 2);
+		edit_draw->draw_line(from, from + line, EditorNode::get_singleton()->get_theme_base()->get_theme_color("mono_color", "Editor"), 2);
 		from += line * 2;
 	}
 }
 
 void TextureRegionEditor::_region_draw() {
-	Ref<Texture2D> base_tex = NULL;
+	Ref<Texture2D> base_tex = nullptr;
 	if (node_sprite)
 		base_tex = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -68,9 +68,9 @@ void TextureRegionEditor::_region_draw() {
 	mtx.elements[2] = -draw_ofs * draw_zoom;
 	mtx.scale_basis(Vector2(draw_zoom, draw_zoom));
 
-	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), mtx);
+	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), mtx);
 	edit_draw->draw_texture(base_tex, Point2());
-	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
+	RS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(), Transform2D());
 
 	if (snap_mode == SNAP_GRID) {
 		Color grid_color = Color(1.0, 1.0, 1.0, 0.15);
@@ -134,7 +134,7 @@ void TextureRegionEditor::_region_draw() {
 		}
 	}
 
-	Ref<Texture2D> select_handle = get_icon("EditorHandle", "EditorIcons");
+	Ref<Texture2D> select_handle = get_theme_icon("EditorHandle", "EditorIcons");
 
 	Rect2 scroll_rect(Point2(), base_tex->get_size());
 
@@ -150,7 +150,7 @@ void TextureRegionEditor::_region_draw() {
 		mtx.basis_xform(raw_endpoints[2]),
 		mtx.basis_xform(raw_endpoints[3])
 	};
-	Color color = get_color("mono_color", "Editor");
+	Color color = get_theme_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
 
 		int prev = (i + 3) % 4;
@@ -672,7 +672,7 @@ void TextureRegionEditor::_update_autoslice() {
 	autoslice_is_dirty = false;
 	autoslice_cache.clear();
 
-	Ref<Texture2D> texture = NULL;
+	Ref<Texture2D> texture = nullptr;
 	if (node_sprite)
 		texture = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -741,12 +741,12 @@ void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			edit_draw->add_style_override("panel", get_stylebox("bg", "Tree"));
+			edit_draw->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 		} break;
 		case NOTIFICATION_READY: {
-			zoom_out->set_icon(get_icon("ZoomLess", "EditorIcons"));
-			zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
-			zoom_in->set_icon(get_icon("ZoomMore", "EditorIcons"));
+			zoom_out->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
+			zoom_reset->set_icon(get_theme_icon("ZoomReset", "EditorIcons"));
+			zoom_in->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 
 			vscroll->set_anchors_and_margins_preset(PRESET_RIGHT_WIDE);
 			hscroll->set_anchors_and_margins_preset(PRESET_BOTTOM_WIDE);
@@ -756,7 +756,7 @@ void TextureRegionEditor::_notification(int p_what) {
 				_update_autoslice();
 			}
 		} break;
-		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+		case NOTIFICATION_WM_FOCUS_IN: {
 			// This happens when the user leaves the Editor and returns,
 			// they could have changed the textures, so the cache is cleared.
 			cache_map.clear();
@@ -767,11 +767,11 @@ void TextureRegionEditor::_notification(int p_what) {
 
 void TextureRegionEditor::_node_removed(Object *p_obj) {
 	if (p_obj == node_sprite || p_obj == node_sprite_3d || p_obj == node_ninepatch || p_obj == obj_styleBox.ptr() || p_obj == atlas_tex.ptr()) {
-		node_sprite = NULL;
-		node_sprite_3d = NULL;
-		node_ninepatch = NULL;
-		obj_styleBox = Ref<StyleBox>(NULL);
-		atlas_tex = Ref<AtlasTexture>(NULL);
+		node_sprite = nullptr;
+		node_sprite_3d = nullptr;
+		node_ninepatch = nullptr;
+		obj_styleBox = Ref<StyleBox>(nullptr);
+		atlas_tex = Ref<AtlasTexture>(nullptr);
 		hide();
 	}
 }
@@ -793,14 +793,14 @@ bool TextureRegionEditor::is_atlas_texture() {
 }
 
 bool TextureRegionEditor::is_ninepatch() {
-	return node_ninepatch != NULL;
+	return node_ninepatch != nullptr;
 }
 
 Sprite3D *TextureRegionEditor::get_sprite_3d() {
 	return node_sprite_3d;
 }
 
-Sprite *TextureRegionEditor::get_sprite() {
+Sprite2D *TextureRegionEditor::get_sprite() {
 	return node_sprite;
 }
 
@@ -816,7 +816,7 @@ void TextureRegionEditor::edit(Object *p_obj) {
 	if (atlas_tex.is_valid())
 		atlas_tex->remove_change_receptor(this);
 	if (p_obj) {
-		node_sprite = Object::cast_to<Sprite>(p_obj);
+		node_sprite = Object::cast_to<Sprite2D>(p_obj);
 		node_sprite_3d = Object::cast_to<Sprite3D>(p_obj);
 		node_ninepatch = Object::cast_to<NinePatchRect>(p_obj);
 		if (Object::cast_to<StyleBoxTexture>(p_obj))
@@ -826,11 +826,11 @@ void TextureRegionEditor::edit(Object *p_obj) {
 		p_obj->add_change_receptor(this);
 		_edit_region();
 	} else {
-		node_sprite = NULL;
-		node_sprite_3d = NULL;
-		node_ninepatch = NULL;
-		obj_styleBox = Ref<StyleBoxTexture>(NULL);
-		atlas_tex = Ref<AtlasTexture>(NULL);
+		node_sprite = nullptr;
+		node_sprite_3d = nullptr;
+		node_ninepatch = nullptr;
+		obj_styleBox = Ref<StyleBoxTexture>(nullptr);
+		atlas_tex = Ref<AtlasTexture>(nullptr);
 	}
 	edit_draw->update();
 	if ((node_sprite && !node_sprite->is_region()) || (node_sprite_3d && !node_sprite_3d->is_region())) {
@@ -850,7 +850,7 @@ void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_pro
 }
 
 void TextureRegionEditor::_edit_region() {
-	Ref<Texture2D> texture = NULL;
+	Ref<Texture2D> texture = nullptr;
 	if (node_sprite)
 		texture = node_sprite->get_texture();
 	else if (node_sprite_3d)
@@ -896,11 +896,11 @@ Vector2 TextureRegionEditor::snap_point(Vector2 p_target) const {
 }
 
 TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
-	node_sprite = NULL;
-	node_sprite_3d = NULL;
-	node_ninepatch = NULL;
-	obj_styleBox = Ref<StyleBoxTexture>(NULL);
-	atlas_tex = Ref<AtlasTexture>(NULL);
+	node_sprite = nullptr;
+	node_sprite_3d = nullptr;
+	node_ninepatch = nullptr;
+	obj_styleBox = Ref<StyleBoxTexture>(nullptr);
+	atlas_tex = Ref<AtlasTexture>(nullptr);
 	editor = p_editor;
 	undo_redo = editor->get_undo_redo();
 
@@ -1030,6 +1030,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode *p_editor) {
 	hscroll->connect("value_changed", callable_mp(this, &TextureRegionEditor::_scroll_changed));
 
 	updating_scroll = false;
+	autoslice_is_dirty = true;
 }
 
 void TextureRegionEditorPlugin::edit(Object *p_object) {
@@ -1037,7 +1038,7 @@ void TextureRegionEditorPlugin::edit(Object *p_object) {
 }
 
 bool TextureRegionEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Sprite") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchRect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
+	return p_object->is_class("Sprite2D") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchRect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::_editor_visiblity_changed() {
@@ -1057,7 +1058,7 @@ void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 			manually_hidden = false;
 		}
 		texture_region_button->hide();
-		region_editor->edit(NULL);
+		region_editor->edit(nullptr);
 	}
 }
 

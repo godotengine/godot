@@ -127,7 +127,7 @@ public:
 	}
 
 	SectionedInspectorFilter() {
-		edited = NULL;
+		edited = nullptr;
 	}
 };
 
@@ -142,7 +142,7 @@ void SectionedInspector::_section_selected() {
 		return;
 
 	selected_category = sections->get_selected()->get_metadata(0);
-	filter->set_section(selected_category, sections->get_selected()->get_children() == NULL);
+	filter->set_section(selected_category, sections->get_selected()->get_children() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
 }
 
@@ -177,8 +177,8 @@ void SectionedInspector::edit(Object *p_object) {
 		obj = ObjectID();
 		sections->clear();
 
-		filter->set_edited(NULL);
-		inspector->edit(NULL);
+		filter->set_edited(nullptr);
+		inspector->edit(nullptr);
 
 		return;
 	}
@@ -257,7 +257,7 @@ void SectionedInspector::update_category_list() {
 		for (int i = 0; i < sc; i++) {
 
 			TreeItem *parent = section_map[metasection];
-			parent->set_custom_bg_color(0, get_color("prop_subsection", "Editor"));
+			parent->set_custom_bg_color(0, get_theme_color("prop_subsection", "Editor"));
 
 			if (i > 0) {
 				metasection += "/" + sectionarr[i];
@@ -308,8 +308,8 @@ SectionedInspector::SectionedInspector() :
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
 		inspector(memnew(EditorInspector)),
-		search_box(NULL) {
-	add_constant_override("autohide", 1); // Fixes the dragger always showing up
+		search_box(nullptr) {
+	add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);
 	left_vb->set_custom_minimum_size(Size2(190, 0) * EDSCALE);

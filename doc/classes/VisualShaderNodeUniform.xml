@@ -9,9 +9,17 @@
 	<methods>
 	</methods>
 	<members>
+		<member name="qualifier" type="int" setter="set_qualifier" getter="get_qualifier" enum="VisualShaderNodeUniform.Qualifier" default="0">
+		</member>
 		<member name="uniform_name" type="String" setter="set_uniform_name" getter="get_uniform_name" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>
+		<constant name="QUAL_NONE" value="0" enum="Qualifier">
+		</constant>
+		<constant name="QUAL_GLOBAL" value="1" enum="Qualifier">
+		</constant>
+		<constant name="QUAL_INSTANCE" value="2" enum="Qualifier">
+		</constant>
 	</constants>
 </class>

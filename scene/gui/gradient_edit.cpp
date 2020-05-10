@@ -76,15 +76,15 @@ void GradientEdit::_show_color_picker() {
 	if (grabbed == -1)
 		return;
 	picker->set_pick_color(points[grabbed].color);
-	Size2 minsize = popup->get_combined_minimum_size();
+	Size2 minsize = popup->get_contents_minimum_size();
 	bool show_above = false;
 	if (get_global_position().y + get_size().y + minsize.y > get_viewport_rect().size.y) {
 		show_above = true;
 	}
 	if (show_above) {
-		popup->set_position(get_global_position() - Vector2(0, minsize.y));
+		popup->set_position(get_screen_position() - Vector2(0, minsize.y));
 	} else {
-		popup->set_position(get_global_position() + Vector2(0, get_size().y));
+		popup->set_position(get_screen_position() + Vector2(0, get_size().y));
 	}
 	popup->popup();
 }
@@ -207,7 +207,7 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 			prev = points[pos];
 		}
 
-		newPoint.color = prev.color.linear_interpolate(next.color, (newPoint.offset - prev.offset) / (next.offset - prev.offset));
+		newPoint.color = prev.color.lerp(next.color, (newPoint.offset - prev.offset) / (next.offset - prev.offset));
 
 		points.push_back(newPoint);
 		points.sort();

@@ -307,13 +307,6 @@ public:
 	//
 	btMatrix3x3 localFrameToWorld(int i, const btMatrix3x3 &local_frame) const;
 
-	//
-	// calculate kinetic energy and angular momentum
-	// useful for debugging.
-	//
-
-	btScalar getKineticEnergy() const;
-	btVector3 getAngularMomentum() const;
 
 	//
 	// set external forces and torques. Note all external forces/torques are given in the WORLD frame.

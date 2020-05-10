@@ -31,10 +31,10 @@
 #include "cpu_particles_2d.h"
 
 #include "core/core_string_names.h"
-#include "scene/2d/canvas_item.h"
-#include "scene/2d/particles_2d.h"
+#include "scene/2d/gpu_particles_2d.h"
+#include "scene/main/canvas_item.h"
 #include "scene/resources/particles_material.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 void CPUParticles2D::set_emitting(bool p_emitting) {
 
@@ -60,7 +60,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((8 + 4 + 4) * p_amount);
-	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_2D, true, true);
+	RS::get_singleton()->multimesh_allocate(multimesh, p_amount, RS::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -198,14 +198,14 @@ void CPUParticles2D::_update_mesh_texture() {
 	indices.push_back(0);
 
 	Array arr;
-	arr.resize(VS::ARRAY_MAX);
-	arr[VS::ARRAY_VERTEX] = vertices;
-	arr[VS::ARRAY_TEX_UV] = uvs;
-	arr[VS::ARRAY_COLOR] = colors;
-	arr[VS::ARRAY_INDEX] = indices;
+	arr.resize(RS::ARRAY_MAX);
+	arr[RS::ARRAY_VERTEX] = vertices;
+	arr[RS::ARRAY_TEX_UV] = uvs;
+	arr[RS::ARRAY_COLOR] = colors;
+	arr[RS::ARRAY_INDEX] = indices;
 
-	VS::get_singleton()->mesh_clear(mesh);
-	VS::get_singleton()->mesh_add_surface_from_arrays(mesh, VS::PRIMITIVE_TRIANGLES, arr);
+	RS::get_singleton()->mesh_clear(mesh);
+	RS::get_singleton()->mesh_add_surface_from_arrays(mesh, RS::PRIMITIVE_TRIANGLES, arr);
 }
 
 void CPUParticles2D::set_texture(const Ref<Texture2D> &p_texture) {
@@ -976,7 +976,7 @@ void CPUParticles2D::_update_particle_data_buffer() {
 	int pc = particles.size();
 
 	int *ow;
-	int *order = NULL;
+	int *order = nullptr;
 
 	float *w = particle_data.ptrw();
 	const Particle *r = particles.ptr();
@@ -1046,17 +1046,17 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 		MutexLock lock(update_mutex);
 
 		if (redraw) {
-			VS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
-			VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
+			RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
+			RS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
 
-			VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
+			RS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 		} else {
-			if (VS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread))) {
-				VS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
+			if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread))) {
+				RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &CPUParticles2D::_update_render_thread));
 			}
-			VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
+			RS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
 
-			VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
+			RS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 		}
 	}
 
@@ -1067,7 +1067,7 @@ void CPUParticles2D::_update_render_thread() {
 
 	MutexLock lock(update_mutex);
 
-	VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+	RS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 }
 
 void CPUParticles2D::_notification(int p_what) {
@@ -1098,7 +1098,7 @@ void CPUParticles2D::_notification(int p_what) {
 			normrid = normalmap->get_rid();
 		}
 
-		VS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid, normrid);
+		RS::get_singleton()->canvas_item_add_multimesh(get_canvas_item(), multimesh, texrid, normrid);
 	}
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
@@ -1144,8 +1144,8 @@ void CPUParticles2D::_notification(int p_what) {
 
 void CPUParticles2D::convert_from_particles(Node *p_particles) {
 
-	Particles2D *particles = Object::cast_to<Particles2D>(p_particles);
-	ERR_FAIL_COND_MSG(!particles, "Only Particles2D nodes can be converted to CPUParticles2D.");
+	GPUParticles2D *particles = Object::cast_to<GPUParticles2D>(p_particles);
+	ERR_FAIL_COND_MSG(!particles, "Only GPUParticles2D nodes can be converted to CPUParticles2D.");
 
 	set_emitting(particles->is_emitting());
 	set_amount(particles->get_amount());
@@ -1428,9 +1428,9 @@ CPUParticles2D::CPUParticles2D() {
 	redraw = false;
 	emitting = false;
 
-	mesh = VisualServer::get_singleton()->mesh_create();
-	multimesh = VisualServer::get_singleton()->multimesh_create();
-	VisualServer::get_singleton()->multimesh_set_mesh(multimesh, mesh);
+	mesh = RenderingServer::get_singleton()->mesh_create();
+	multimesh = RenderingServer::get_singleton()->multimesh_create();
+	RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, mesh);
 
 	set_emitting(true);
 	set_one_shot(false);
@@ -1481,6 +1481,6 @@ CPUParticles2D::CPUParticles2D() {
 }
 
 CPUParticles2D::~CPUParticles2D() {
-	VS::get_singleton()->free(multimesh);
-	VS::get_singleton()->free(mesh);
+	RS::get_singleton()->free(multimesh);
+	RS::get_singleton()->free(mesh);
 }

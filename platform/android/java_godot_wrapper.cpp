@@ -80,13 +80,13 @@ jobject GodotJavaWrapper::get_activity() {
 
 jobject GodotJavaWrapper::get_member_object(const char *p_name, const char *p_class, JNIEnv *p_env) {
 	if (cls) {
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 		jfieldID fid = p_env->GetStaticFieldID(cls, p_name, p_class);
 		return p_env->GetStaticObjectField(cls, fid);
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
@@ -96,13 +96,13 @@ jobject GodotJavaWrapper::get_class_loader() {
 		jmethodID getClassLoader = env->GetMethodID(cls, "getClassLoader", "()Ljava/lang/ClassLoader;");
 		return env->CallObjectMethod(godot_instance, getClassLoader);
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 
 void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 	if (_on_video_init)
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 	p_env->CallVoidMethod(godot_instance, _on_video_init);
@@ -110,7 +110,7 @@ void GodotJavaWrapper::on_video_init(JNIEnv *p_env) {
 
 void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 	if (_on_godot_main_loop_started) {
-		if (p_env == NULL) {
+		if (p_env == nullptr) {
 			p_env = ThreadAndroid::get_env();
 		}
 	}
@@ -119,7 +119,7 @@ void GodotJavaWrapper::on_godot_main_loop_started(JNIEnv *p_env) {
 
 void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	if (_restart)
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 	p_env->CallVoidMethod(godot_instance, _restart);
@@ -127,7 +127,7 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 
 void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
 	if (_finish)
-		if (p_env == NULL)
+		if (p_env == nullptr)
 			p_env = ThreadAndroid::get_env();
 
 	p_env->CallVoidMethod(godot_instance, _finish);
@@ -244,7 +244,7 @@ jobject GodotJavaWrapper::get_surface() {
 		JNIEnv *env = ThreadAndroid::get_env();
 		return env->CallObjectMethod(godot_instance, _get_surface);
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }
 

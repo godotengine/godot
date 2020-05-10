@@ -45,7 +45,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 #ifdef DEBUG_ENABLED
 			if (unlikely(!p_instance)) {
 				r_error = "Cannot access self without instance.";
-				return NULL;
+				return nullptr;
 			}
 #endif
 			return &self;
@@ -58,7 +58,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 #ifdef DEBUG_ENABLED
 			if (unlikely(!p_instance)) {
 				r_error = "Cannot access member without instance.";
-				return NULL;
+				return nullptr;
 			}
 #endif
 			//member indexing is O(1)
@@ -69,7 +69,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 			//todo change to index!
 			GDScript *s = p_script;
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_INDEX_V(address, _global_names_count, NULL);
+			ERR_FAIL_INDEX_V(address, _global_names_count, nullptr);
 #endif
 			const StringName *sn = &_global_names_ptr[address];
 
@@ -86,31 +86,31 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 				s = s->_base;
 			}
 
-			ERR_FAIL_V_MSG(NULL, "GDScriptCompiler bug.");
+			ERR_FAIL_V_MSG(nullptr, "GDScriptCompiler bug.");
 		} break;
 		case ADDR_TYPE_LOCAL_CONSTANT: {
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_INDEX_V(address, _constant_count, NULL);
+			ERR_FAIL_INDEX_V(address, _constant_count, nullptr);
 #endif
 			return &_constants_ptr[address];
 		} break;
 		case ADDR_TYPE_STACK:
 		case ADDR_TYPE_STACK_VARIABLE: {
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_INDEX_V(address, _stack_size, NULL);
+			ERR_FAIL_INDEX_V(address, _stack_size, nullptr);
 #endif
 			return &p_stack[address];
 		} break;
 		case ADDR_TYPE_GLOBAL: {
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_INDEX_V(address, GDScriptLanguage::get_singleton()->get_global_array_size(), NULL);
+			ERR_FAIL_INDEX_V(address, GDScriptLanguage::get_singleton()->get_global_array_size(), nullptr);
 #endif
 			return &GDScriptLanguage::get_singleton()->get_global_array()[address];
 		} break;
 #ifdef TOOLS_ENABLED
 		case ADDR_TYPE_NAMED_GLOBAL: {
 #ifdef DEBUG_ENABLED
-			ERR_FAIL_INDEX_V(address, _named_globals_count, NULL);
+			ERR_FAIL_INDEX_V(address, _named_globals_count, nullptr);
 #endif
 			StringName id = _named_globals_ptr[address];
 
@@ -118,7 +118,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 				return (Variant *)&GDScriptLanguage::get_singleton()->get_named_globals_map()[id];
 			} else {
 				r_error = "Autoload singleton '" + String(id) + "' has been removed.";
-				return NULL;
+				return nullptr;
 			}
 		} break;
 #endif
@@ -127,8 +127,8 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 		} break;
 	}
 
-	ERR_FAIL_V_MSG(NULL, "Bad code! (unknown addressing mode).");
-	return NULL;
+	ERR_FAIL_V_MSG(nullptr, "Bad code! (unknown addressing mode).");
+	return nullptr;
 }
 
 #ifdef DEBUG_ENABLED
@@ -272,7 +272,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	Variant self;
 	Variant static_ref;
 	Variant retvalue;
-	Variant *stack = NULL;
+	Variant *stack = nullptr;
 	Variant **call_args;
 	int defarg = 0;
 
@@ -294,11 +294,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		line = p_state->line;
 		ip = p_state->ip;
 		alloca_size = p_state->stack.size();
-		script = p_state->script.ptr();
+		script = p_state->script;
 		p_instance = p_state->instance;
 		defarg = p_state->defarg;
 		self = p_state->self;
-		//stack[p_state->result_pos]=p_state->result; //assign stack with result
 
 	} else {
 
@@ -337,15 +336,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 
 					if (!argument_types[i].is_type(*p_args[i], true)) {
-						if (argument_types[i].is_type(Variant(), true)) {
-							memnew_placement(&stack[i], Variant);
-							continue;
-						} else {
-							r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-							r_err.argument = i;
-							r_err.expected = argument_types[i].kind == GDScriptDataType::BUILTIN ? argument_types[i].builtin_type : Variant::OBJECT;
-							return Variant();
-						}
+						r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+						r_err.argument = i;
+						r_err.expected = argument_types[i].kind == GDScriptDataType::BUILTIN ? argument_types[i].builtin_type : Variant::OBJECT;
+						return Variant();
 					}
 					if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
 						Variant arg = Variant::construct(argument_types[i].builtin_type, &p_args[i], 1, r_err);
@@ -358,7 +352,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					memnew_placement(&stack[i], Variant);
 				}
 			} else {
-				stack = NULL;
+				stack = nullptr;
 			}
 
 			if (_call_size) {
@@ -366,12 +360,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				call_args = (Variant **)&aptr[sizeof(Variant) * _stack_size];
 			} else {
 
-				call_args = NULL;
+				call_args = nullptr;
 			}
 
 		} else {
-			stack = NULL;
-			call_args = NULL;
+			stack = nullptr;
+			call_args = nullptr;
 		}
 
 		if (p_instance) {
@@ -490,7 +484,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				GET_VARIANT_PTR(dst, 3);
 
 #ifdef DEBUG_ENABLED
-				if (b->get_type() != Variant::OBJECT || b->operator Object *() == NULL) {
+				if (b->get_type() != Variant::OBJECT || b->operator Object *() == nullptr) {
 
 					err_text = "Right operand of 'is' is not a class.";
 					OPCODE_BREAK;
@@ -498,7 +492,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 
 				bool extends_ok = false;
-				if (a->get_type() == Variant::OBJECT && a->operator Object *() != NULL) {
+				if (a->get_type() == Variant::OBJECT && a->operator Object *() != nullptr) {
 
 #ifdef DEBUG_ENABLED
 					bool was_freed;
@@ -855,7 +849,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				if (src->get_type() != Variant::NIL && src->operator Object *() != NULL) {
+				if (src->get_type() != Variant::NIL && src->operator Object *() != nullptr) {
 
 					ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
 					if (!scr_inst) {
@@ -960,7 +954,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				bool valid = false;
 
-				if (src->get_type() != Variant::NIL && src->operator Object *() != NULL) {
+				if (src->get_type() != Variant::NIL && src->operator Object *() != nullptr) {
 
 					ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
 
@@ -1099,7 +1093,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					base->call_ptr(*methodname, (const Variant **)argptrs, argc, ret, err);
 				} else {
 
-					base->call_ptr(*methodname, (const Variant **)argptrs, argc, NULL, err);
+					base->call_ptr(*methodname, (const Variant **)argptrs, argc, nullptr, err);
 				}
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
@@ -1137,7 +1131,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				}
 #endif
 
-				//_call_func(NULL,base,*methodname,ip,argc,p_instance,stack);
+				//_call_func(nullptr,base,*methodname,ip,argc,p_instance,stack);
 				ip += argc + 1;
 			}
 			DISPATCH_OPCODE;
@@ -1216,7 +1210,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				const GDScript *gds = _script;
 
-				const Map<StringName, GDScriptFunction *>::Element *E = NULL;
+				const Map<StringName, GDScriptFunction *>::Element *E = nullptr;
 				while (gds->base.ptr()) {
 					gds = gds->base.ptr();
 					E = gds->member_functions.find(*methodname);
@@ -1285,13 +1279,24 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.stack_size = _stack_size;
 				gdfs->state.self = self;
 				gdfs->state.alloca_size = alloca_size;
-				gdfs->state.script = Ref<GDScript>(_script);
 				gdfs->state.ip = ip + ipofs;
 				gdfs->state.line = line;
-				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : ObjectID();
-				//gdfs->state.result_pos=ip+ipofs-1;
+				gdfs->state.script = _script;
+				{
+					MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+					_script->pending_func_states.add(&gdfs->scripts_list);
+					if (p_instance) {
+						gdfs->state.instance = p_instance;
+						p_instance->pending_func_states.add(&gdfs->instances_list);
+					} else {
+						gdfs->state.instance = NULL;
+					}
+				}
+#ifdef DEBUG_ENABLED
+				gdfs->state.function_name = name;
+				gdfs->state.script_path = _script->get_path();
+#endif
 				gdfs->state.defarg = defarg;
-				gdfs->state.instance = p_instance;
 				gdfs->function = this;
 
 				retvalue = gdfs;
@@ -1767,7 +1772,7 @@ GDScriptFunction::GDScriptFunction() :
 	rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 	name = "<anonymous>";
 #ifdef DEBUG_ENABLED
-	_func_cname = NULL;
+	_func_cname = nullptr;
 
 	{
 		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
@@ -1834,13 +1839,20 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 
 bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 
-	if (function == NULL)
+	if (function == nullptr)
 		return false;
 
 	if (p_extended_check) {
-		//class instance gone?
-		if (state.instance_id.is_valid() && !ObjectDB::get_instance(state.instance_id))
+		MutexLock lock(GDScriptLanguage::get_singleton()->lock);
+
+		// Script gone?
+		if (!scripts_list.in_list()) {
 			return false;
+		}
+		// Class instance gone? (if not static function)
+		if (state.instance && !instances_list.in_list()) {
+			return false;
+		}
 	}
 
 	return true;
@@ -1849,17 +1861,31 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 
 	ERR_FAIL_COND_V(!function, Variant());
-	if (state.instance_id.is_valid() && !ObjectDB::get_instance(state.instance_id)) {
+	{
+		MutexLock lock(GDScriptLanguage::singleton->lock);
+
+		if (!scripts_list.in_list()) {
 #ifdef DEBUG_ENABLED
-		ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but script is gone. At script: " + state.script_path + ":" + itos(state.line));
 #else
-		return Variant();
+			return Variant();
 #endif
+		}
+		if (state.instance && !instances_list.in_list()) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_V_MSG(Variant(), "Resumed function '" + state.function_name + "()' after yield, but class instance is gone. At script: " + state.script_path + ":" + itos(state.line));
+#else
+			return Variant();
+#endif
+		}
+		// Do these now to avoid locking again after the call
+		scripts_list.remove_from_list();
+		instances_list.remove_from_list();
 	}
 
 	state.result = p_arg;
 	Callable::CallError err;
-	Variant ret = function->call(NULL, NULL, 0, err, &state);
+	Variant ret = function->call(nullptr, nullptr, 0, err, &state);
 
 	bool completed = true;
 
@@ -1873,10 +1899,12 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		}
 	}
 
-	function = NULL; //cleaned up;
+	function = nullptr; //cleaned up;
 	state.result = Variant();
 
 	if (completed) {
+		_clear_stack();
+
 		if (first_state.is_valid()) {
 			first_state->emit_signal("completed", ret);
 		} else {
@@ -1886,16 +1914,20 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active())
 			GDScriptLanguage::get_singleton()->exit_function();
-		if (state.stack_size) {
-			//free stack
-			Variant *stack = (Variant *)state.stack.ptr();
-			for (int i = 0; i < state.stack_size; i++)
-				stack[i].~Variant();
-		}
 #endif
 	}
 
 	return ret;
+}
+
+void GDScriptFunctionState::_clear_stack() {
+
+	if (state.stack_size) {
+		Variant *stack = (Variant *)state.stack.ptr();
+		for (int i = 0; i < state.stack_size; i++)
+			stack[i].~Variant();
+		state.stack_size = 0;
+	}
 }
 
 void GDScriptFunctionState::_bind_methods() {
@@ -1907,18 +1939,20 @@ void GDScriptFunctionState::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::NIL, "result", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NIL_IS_VARIANT)));
 }
 
-GDScriptFunctionState::GDScriptFunctionState() {
+GDScriptFunctionState::GDScriptFunctionState() :
+		scripts_list(this),
+		instances_list(this) {
 
-	function = NULL;
+	function = nullptr;
 }
 
 GDScriptFunctionState::~GDScriptFunctionState() {
 
-	if (function != NULL) {
-		//never called, deinitialize stack
-		for (int i = 0; i < state.stack_size; i++) {
-			Variant *v = (Variant *)&state.stack[sizeof(Variant) * i];
-			v->~Variant();
-		}
+	_clear_stack();
+
+	{
+		MutexLock lock(GDScriptLanguage::singleton->lock);
+		scripts_list.remove_from_list();
+		instances_list.remove_from_list();
 	}
 }

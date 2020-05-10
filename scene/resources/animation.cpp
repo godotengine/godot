@@ -1570,7 +1570,7 @@ Animation::TransformKey Animation::_interpolate(const Animation::TransformKey &p
 
 Vector3 Animation::_interpolate(const Vector3 &p_a, const Vector3 &p_b, float p_c) const {
 
-	return p_a.linear_interpolate(p_b, p_c);
+	return p_a.lerp(p_b, p_c);
 }
 Quat Animation::_interpolate(const Quat &p_a, const Quat &p_b, float p_c) const {
 
@@ -2432,7 +2432,7 @@ float Animation::bezier_track_interpolate(int p_track, float p_time) const {
 	Vector2 high_pos = _bezier_interp(high, start, start_out, end_in, end);
 	float c = (t - low_pos.x) / (high_pos.x - low_pos.x);
 
-	return low_pos.linear_interpolate(high_pos, c).y;
+	return low_pos.lerp(high_pos, c).y;
 }
 
 int Animation::audio_track_insert_key(int p_track, float p_time, const RES &p_stream, float p_start_offset, float p_end_offset) {

@@ -46,7 +46,7 @@ void unregister_javascript_api() {
 	memdelete(javascript_eval);
 }
 
-JavaScript *JavaScript::singleton = NULL;
+JavaScript *JavaScript::singleton = nullptr;
 
 JavaScript *JavaScript::get_singleton() {
 
@@ -55,7 +55,7 @@ JavaScript *JavaScript::get_singleton() {
 
 JavaScript::JavaScript() {
 
-	ERR_FAIL_COND_MSG(singleton != NULL, "JavaScript singleton already exist.");
+	ERR_FAIL_COND_MSG(singleton != nullptr, "JavaScript singleton already exist.");
 	singleton = this;
 }
 

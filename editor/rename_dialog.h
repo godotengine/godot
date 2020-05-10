@@ -103,7 +103,6 @@ class RenameDialog : public ConfirmationDialog {
 	bool has_errors;
 
 protected:
-	void _notification(int p_what){};
 	static void _bind_methods();
 	virtual void _post_popup();
 
@@ -111,7 +110,7 @@ public:
 	void reset();
 	void rename();
 
-	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = NULL);
+	RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_undo_redo = nullptr);
 	~RenameDialog(){};
 };
 

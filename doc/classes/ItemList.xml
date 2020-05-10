@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This control provides a selectable list of items that may be in a single (or multiple columns) with option of text, icons, or both text and icon. Tooltips are supported and may be different for every item in the list.
-		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing Enter.
+		Selectable items in the list may be selected or deselected and multiple selection may be enabled. Selection with right mouse button may also be enabled to allow use of popup context menus. Items may also be "activated" by double-clicking them or by pressing [kbd]Enter[/kbd].
 		Item text only supports single-line strings, newline characters (e.g. [code]\n[/code]) in the string won't produce a newline. Text wrapping is enabled in [constant ICON_MODE_TOP] mode, but column's width is adjusted to fully fit its content by default. You need to set [member fixed_column_width] greater than zero to wrap the text.
 	</description>
 	<tutorials>
@@ -278,7 +278,7 @@
 			</argument>
 			<description>
 				Disables (or enables) the item at the specified index.
-				Disabled items cannot be selected and do not trigger activation signals (when double-clicking or pressing Enter).
+				Disabled items cannot be selected and do not trigger activation signals (when double-clicking or pressing [kbd]Enter[/kbd]).
 			</description>
 		</method>
 		<method name="set_item_icon">
@@ -452,7 +452,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Triggered when specified list item is activated via double-clicking or by pressing Enter.
+				Triggered when specified list item is activated via double-clicking or by pressing [kbd]Enter[/kbd].
 			</description>
 		</signal>
 		<signal name="item_rmb_selected">
@@ -508,7 +508,7 @@
 			Only allow selecting a single item.
 		</constant>
 		<constant name="SELECT_MULTI" value="1" enum="SelectMode">
-			Allows selecting multiple items by holding Ctrl or Shift.
+			Allows selecting multiple items by holding [kbd]Ctrl[/kbd] or [kbd]Shift[/kbd].
 		</constant>
 	</constants>
 	<theme_items>

@@ -33,11 +33,12 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
 #include "scene/main/node.h"
+#include "servers/display_server.h"
 
 template <typename T>
 void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
@@ -317,7 +318,7 @@ struct RemoteDebugger::ServersProfiler {
 
 	void _send_frame_data(bool p_final) {
 		DebuggerMarshalls::ServersProfilerFrame frame;
-		frame.frame_number = Engine::get_singleton()->get_frames_drawn();
+		frame.frame_number = Engine::get_singleton()->get_idle_frames();
 		frame.frame_time = frame_time;
 		frame.idle_time = idle_time;
 		frame.physics_time = physics_time;
@@ -353,18 +354,18 @@ struct RemoteDebugger::VisualProfiler {
 	Map<StringName, ServerInfo> server_data;
 
 	void toggle(bool p_enable, const Array &p_opts) {
-		VS::get_singleton()->set_frame_profiling_enabled(p_enable);
+		RS::get_singleton()->set_frame_profiling_enabled(p_enable);
 	}
 
 	void add(const Array &p_data) {}
 
 	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
-		Vector<VS::FrameProfileArea> profile_areas = VS::get_singleton()->get_frame_profile();
+		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		DebuggerMarshalls::VisualProfilerFrame frame;
 		if (!profile_areas.size())
 			return;
 
-		frame.frame_number = VS::get_singleton()->get_frame_profile_frame();
+		frame.frame_number = RS::get_singleton()->get_frame_profile_frame();
 		frame.areas.append_array(profile_areas);
 		EngineDebugger::get_singleton()->send_message("visual:profile_frame", frame.serialize());
 	}
@@ -372,7 +373,7 @@ struct RemoteDebugger::VisualProfiler {
 
 struct RemoteDebugger::PerformanceProfiler {
 
-	Object *performance = NULL;
+	Object *performance = nullptr;
 	int last_perf_time = 0;
 
 	void toggle(bool p_enable, const Array &p_opts) {}
@@ -403,10 +404,10 @@ void RemoteDebugger::_send_resource_usage() {
 
 	DebuggerMarshalls::ResourceUsage usage;
 
-	List<VS::TextureInfo> tinfo;
-	VS::get_singleton()->texture_debug_usage(&tinfo);
+	List<RS::TextureInfo> tinfo;
+	RS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (List<VS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
+	for (List<RS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
 
 		DebuggerMarshalls::ResourceInfo info;
 		info.path = E->get().path;
@@ -465,7 +466,7 @@ void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p
 	String s = p_string;
 	int allowed_chars = MIN(MAX(rd->max_chars_per_second - rd->char_count, 0), s.length());
 
-	if (allowed_chars == 0)
+	if (allowed_chars == 0 && s.length() > 0)
 		return;
 
 	if (allowed_chars < s.length()) {
@@ -479,10 +480,16 @@ void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p
 	if (rd->is_peer_connected()) {
 		if (overflowed)
 			s += "[...]";
-		rd->output_strings.push_back(s);
+
+		OutputString output_string;
+		output_string.message = s;
+		output_string.type = p_error ? MESSAGE_TYPE_ERROR : MESSAGE_TYPE_LOG;
+		rd->output_strings.push_back(output_string);
 
 		if (overflowed) {
-			rd->output_strings.push_back("[output overflow, print less text!]");
+			output_string.message = "[output overflow, print less text!]";
+			output_string.type = MESSAGE_TYPE_ERROR;
+			rd->output_strings.push_back(output_string);
 		}
 	}
 }
@@ -516,15 +523,32 @@ void RemoteDebugger::flush_output() {
 	if (output_strings.size()) {
 
 		// Join output strings so we generate less messages.
+		Vector<String> joined_log_strings;
 		Vector<String> strings;
-		strings.resize(output_strings.size());
-		String *w = strings.ptrw();
+		Vector<int> types;
 		for (int i = 0; i < output_strings.size(); i++) {
-			w[i] = output_strings[i];
+			const OutputString &output_string = output_strings[i];
+			if (output_string.type == MESSAGE_TYPE_ERROR) {
+				if (!joined_log_strings.empty()) {
+					strings.push_back(String("\n").join(joined_log_strings));
+					types.push_back(MESSAGE_TYPE_LOG);
+					joined_log_strings.clear();
+				}
+				strings.push_back(output_string.message);
+				types.push_back(MESSAGE_TYPE_ERROR);
+			} else {
+				joined_log_strings.push_back(output_string.message);
+			}
+		}
+
+		if (!joined_log_strings.empty()) {
+			strings.push_back(String("\n").join(joined_log_strings));
+			types.push_back(MESSAGE_TYPE_LOG);
 		}
 
 		Array arr;
 		arr.push_back(strings);
+		arr.push_back(types);
 		_put_msg("output", arr);
 		output_strings.clear();
 	}
@@ -694,7 +718,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "continue") {
 				script_debugger->set_depth(-1);
 				script_debugger->set_lines_left(-1);
-				OS::get_singleton()->move_window_to_foreground();
+				DisplayServer::get_singleton()->window_move_to_foreground();
 				break;
 
 			} else if (command == "break") {
@@ -770,9 +794,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 		// This is for the camera override to stay live even when the game is paused from the editor
 		loop_time_sec = (OS::get_singleton()->get_ticks_usec() - loop_begin_usec) / 1000000.0f;
-		VisualServer::get_singleton()->sync();
-		if (VisualServer::get_singleton()->has_changed()) {
-			VisualServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
+		RenderingServer::get_singleton()->sync();
+		if (RenderingServer::get_singleton()->has_changed()) {
+			RenderingServer::get_singleton()->draw(true, loop_time_sec * Engine::get_singleton()->get_time_scale());
 		}
 	}
 
@@ -866,7 +890,7 @@ RemoteDebugger *RemoteDebugger::create_for_uri(const String &p_uri) {
 	Ref<RemoteDebuggerPeer> peer = RemoteDebuggerPeer::create_from_uri(p_uri);
 	if (peer.is_valid())
 		return memnew(RemoteDebugger(peer));
-	return NULL;
+	return nullptr;
 }
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {

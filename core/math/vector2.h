@@ -82,8 +82,7 @@ struct Vector2 {
 
 	Vector2 clamped(real_t p_len) const;
 
-	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t);
-	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2 &p_b, real_t p_t) const;
+	_FORCE_INLINE_ Vector2 lerp(const Vector2 &p_b, real_t p_t) const;
 	_FORCE_INLINE_ Vector2 slerp(const Vector2 &p_b, real_t p_t) const;
 	Vector2 cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
 	Vector2 move_toward(const Vector2 &p_to, const real_t p_delta) const;
@@ -122,12 +121,6 @@ struct Vector2 {
 	bool operator>=(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
 	real_t angle() const;
-
-	void set_rotation(real_t p_radians) {
-
-		x = Math::cos(p_radians);
-		y = Math::sin(p_radians);
-	}
 
 	_FORCE_INLINE_ Vector2 abs() const {
 
@@ -230,7 +223,7 @@ _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
 }
 
-Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {
+Vector2 Vector2::lerp(const Vector2 &p_b, real_t p_t) const {
 
 	Vector2 res = *this;
 
@@ -252,16 +245,6 @@ Vector2 Vector2::direction_to(const Vector2 &p_b) const {
 	Vector2 ret(p_b.x - x, p_b.y - y);
 	ret.normalize();
 	return ret;
-}
-
-Vector2 Vector2::linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t) {
-
-	Vector2 res = p_a;
-
-	res.x += (p_t * (p_b.x - p_a.x));
-	res.y += (p_t * (p_b.y - p_a.y));
-
-	return res;
 }
 
 typedef Vector2 Size2;

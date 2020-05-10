@@ -35,13 +35,18 @@
 
 #include "core/typedefs.h"
 
-#if !defined(JAVASCRIPT_ENABLED)
+#if !defined(JAVASCRIPT_ENABLED) && !defined(IPHONE_ENABLED)
+// We have custom mono log callbacks for WASM and iOS
+#define GD_MONO_LOG_ENABLED
+#endif
+
+#ifdef GD_MONO_LOG_ENABLED
 #include "core/os/file_access.h"
 #endif
 
 class GDMonoLog {
 
-#if !defined(JAVASCRIPT_ENABLED)
+#ifdef GD_MONO_LOG_ENABLED
 	int log_level_id;
 
 	FileAccess *log_file;

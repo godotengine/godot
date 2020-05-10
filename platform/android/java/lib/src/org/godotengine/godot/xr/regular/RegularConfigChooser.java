@@ -30,11 +30,13 @@
 
 package org.godotengine.godot.xr.regular;
 
+import org.godotengine.godot.utils.GLUtils;
+
 import android.opengl.GLSurfaceView;
+
 import javax.microedition.khronos.egl.EGL10;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.egl.EGLDisplay;
-import org.godotengine.godot.utils.GLUtils;
 
 /**
  * Used to select the egl config for pancake games.

@@ -45,8 +45,8 @@
 #include "main/main.h"
 #include "platform/windows/windows_terminal_logger.h"
 #include "servers/audio_server.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 #include "thread_uwp.h"
 
 #include <ppltasks.h>
@@ -180,7 +180,7 @@ void OS_UWP::screen_size_changed() {
 
 Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	main_loop = NULL;
+	main_loop = nullptr;
 	outside = true;
 
 	// FIXME: Hardcoded for now, add Vulkan support.
@@ -193,7 +193,7 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	if (gl_context->initialize() != OK) {
 		memdelete(gl_context);
-		gl_context = NULL;
+		gl_context = nullptr;
 		gl_initialization_error = true;
 	}
 
@@ -254,13 +254,13 @@ Error OS_UWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	set_video_mode(vm);
 
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
 
-	visual_server->init();
+	rendering_server->init();
 
 	input = memnew(InputDefault);
 
@@ -333,7 +333,7 @@ void OS_UWP::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_UWP::set_main_loop(MainLoop *p_main_loop) {
@@ -347,10 +347,10 @@ void OS_UWP::finalize() {
 	if (main_loop)
 		memdelete(main_loop);
 
-	main_loop = NULL;
+	main_loop = nullptr;
 
-	visual_server->finish();
-	memdelete(visual_server);
+	rendering_server->finish();
+	memdelete(rendering_server);
 #ifdef OPENGL_ENABLED
 	if (gl_context)
 		memdelete(gl_context);
@@ -773,9 +773,9 @@ void OS_UWP::hide_virtual_keyboard() {
 
 static String format_error_message(DWORD id) {
 
-	LPWSTR messageBuffer = NULL;
+	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, NULL);
+			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
 
 	String msg = "Error " + itos(id) + ": " + String(messageBuffer, size);
 
@@ -869,14 +869,14 @@ OS_UWP::OS_UWP() {
 	stdo = fopen("stdout.txt", "wb");
 #endif
 
-	gl_context = NULL;
+	gl_context = nullptr;
 
 	display_request = ref new Windows::System::Display::DisplayRequest();
 
 	managed_object = ref new ManagedType;
 	managed_object->os = this;
 
-	mouse_mode_changed = CreateEvent(NULL, TRUE, FALSE, L"os_mouse_mode_changed");
+	mouse_mode_changed = CreateEvent(nullptr, TRUE, FALSE, L"os_mouse_mode_changed");
 
 	AudioDriverManager::add_driver(&audio_driver);
 

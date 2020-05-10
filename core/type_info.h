@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef GET_TYPE_INFO_H
-#define GET_TYPE_INFO_H
+#ifndef TYPE_INFO_H
+#define TYPE_INFO_H
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -144,6 +144,9 @@ MAKE_TYPE_INFO(String, Variant::STRING)
 MAKE_TYPE_INFO(Vector2, Variant::VECTOR2)
 MAKE_TYPE_INFO(Rect2, Variant::RECT2)
 MAKE_TYPE_INFO(Vector3, Variant::VECTOR3)
+MAKE_TYPE_INFO(Vector2i, Variant::VECTOR2I)
+MAKE_TYPE_INFO(Rect2i, Variant::RECT2I)
+MAKE_TYPE_INFO(Vector3i, Variant::VECTOR3I)
 MAKE_TYPE_INFO(Transform2D, Variant::TRANSFORM2D)
 MAKE_TYPE_INFO(Plane, Variant::PLANE)
 MAKE_TYPE_INFO(Quat, Variant::QUAT)
@@ -273,4 +276,4 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 
 #endif // DEBUG_METHODS_ENABLED
 
-#endif // GET_TYPE_INFO_H
+#endif // TYPE_INFO_H

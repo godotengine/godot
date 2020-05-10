@@ -77,8 +77,8 @@ public:
 	};
 
 	struct EventSignal {
-		GDMonoField *field = NULL;
-		GDMonoMethod *invoke_method = NULL;
+		GDMonoField *field = nullptr;
+		GDMonoMethod *invoke_method = nullptr;
 		Vector<SignalParameter> parameters;
 	};
 
@@ -193,6 +193,8 @@ public:
 
 	virtual bool is_tool() const { return tool; }
 	virtual bool is_valid() const { return valid; }
+
+	bool inherits_script(const Ref<Script> &p_script) const;
 
 	virtual Ref<Script> get_base_script() const;
 	virtual ScriptLanguage *get_language() const;
@@ -331,8 +333,8 @@ struct CSharpScriptBinding {
 
 	CSharpScriptBinding() :
 			inited(false),
-			wrapper_class(NULL),
-			owner(NULL) {
+			wrapper_class(nullptr),
+			owner(nullptr) {
 	}
 };
 
@@ -530,7 +532,7 @@ public:
 
 class ResourceFormatLoaderCSharpScript : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;

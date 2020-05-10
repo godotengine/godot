@@ -760,7 +760,7 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			PackedByteArray barr;
 			bool full_objects = *p_inputs[1];
 			int len;
-			Error err = encode_variant(*p_inputs[0], NULL, len, full_objects);
+			Error err = encode_variant(*p_inputs[0], nullptr, len, full_objects);
 			if (err) {
 				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -791,7 +791,7 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			Variant ret;
 			{
 				const uint8_t *r = varr.ptr();
-				Error err = decode_variant(ret, r, varr.size(), NULL, allow_objects);
+				Error err = decode_variant(ret, r, varr.size(), nullptr, allow_objects);
 				if (err != OK) {
 					r_error_str = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -1298,12 +1298,12 @@ Expression::ENode *Expression::_parse_expression() {
 
 	while (true) {
 		//keep appending stuff to expression
-		ENode *expr = NULL;
+		ENode *expr = nullptr;
 
 		Token tk;
 		_get_token(tk);
 		if (error_set)
-			return NULL;
+			return nullptr;
 
 		switch (tk.type) {
 			case TK_CURLY_BRACKET_OPEN: {
@@ -1321,18 +1321,18 @@ Expression::ENode *Expression::_parse_expression() {
 					//parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
-						return NULL;
+						return nullptr;
 					dn->dict.push_back(subexpr);
 
 					_get_token(tk);
 					if (tk.type != TK_COLON) {
 						_set_error("Expected ':'");
-						return NULL;
+						return nullptr;
 					}
 
 					subexpr = _parse_expression();
 					if (!subexpr)
-						return NULL;
+						return nullptr;
 
 					dn->dict.push_back(subexpr);
 
@@ -1365,7 +1365,7 @@ Expression::ENode *Expression::_parse_expression() {
 					//parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
-						return NULL;
+						return nullptr;
 					an->array.push_back(subexpr);
 
 					cofs = str_ofs;
@@ -1385,11 +1385,11 @@ Expression::ENode *Expression::_parse_expression() {
 				//a suexpression
 				ENode *e = _parse_expression();
 				if (error_set)
-					return NULL;
+					return nullptr;
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_CLOSE) {
 					_set_error("Expected ')'");
-					return NULL;
+					return nullptr;
 				}
 
 				expr = e;
@@ -1419,7 +1419,7 @@ Expression::ENode *Expression::_parse_expression() {
 						//parse an expression
 						ENode *subexpr = _parse_expression();
 						if (!subexpr)
-							return NULL;
+							return nullptr;
 
 						func_call->arguments.push_back(subexpr);
 
@@ -1484,7 +1484,7 @@ Expression::ENode *Expression::_parse_expression() {
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
-					return NULL;
+					return nullptr;
 				}
 
 				ConstructorNode *constructor = alloc_node<ConstructorNode>();
@@ -1501,7 +1501,7 @@ Expression::ENode *Expression::_parse_expression() {
 					//parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
-						return NULL;
+						return nullptr;
 
 					constructor->arguments.push_back(subexpr);
 
@@ -1525,7 +1525,7 @@ Expression::ENode *Expression::_parse_expression() {
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error("Expected '('");
-					return NULL;
+					return nullptr;
 				}
 
 				BuiltinFuncNode *bifunc = alloc_node<BuiltinFuncNode>();
@@ -1542,7 +1542,7 @@ Expression::ENode *Expression::_parse_expression() {
 					//parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
-						return NULL;
+						return nullptr;
 
 					bifunc->arguments.push_back(subexpr);
 
@@ -1584,7 +1584,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 			default: {
 				_set_error("Expected expression.");
-				return NULL;
+				return nullptr;
 			} break;
 		}
 
@@ -1594,7 +1594,7 @@ Expression::ENode *Expression::_parse_expression() {
 			int cofs2 = str_ofs;
 			_get_token(tk);
 			if (error_set)
-				return NULL;
+				return nullptr;
 
 			bool done = false;
 
@@ -1607,14 +1607,14 @@ Expression::ENode *Expression::_parse_expression() {
 
 					ENode *what = _parse_expression();
 					if (!what)
-						return NULL;
+						return nullptr;
 
 					index->index = what;
 
 					_get_token(tk);
 					if (tk.type != TK_BRACKET_CLOSE) {
 						_set_error("Expected ']' at end of index.");
-						return NULL;
+						return nullptr;
 					}
 					expr = index;
 
@@ -1624,7 +1624,7 @@ Expression::ENode *Expression::_parse_expression() {
 					_get_token(tk);
 					if (tk.type != TK_IDENTIFIER) {
 						_set_error("Expected identifier after '.'");
-						return NULL;
+						return nullptr;
 					}
 
 					StringName identifier = tk.value;
@@ -1648,7 +1648,7 @@ Expression::ENode *Expression::_parse_expression() {
 							//parse an expression
 							ENode *subexpr = _parse_expression();
 							if (!subexpr)
-								return NULL;
+								return nullptr;
 
 							func_call->arguments.push_back(subexpr);
 
@@ -1698,7 +1698,7 @@ Expression::ENode *Expression::_parse_expression() {
 		int cofs = str_ofs;
 		_get_token(tk);
 		if (error_set)
-			return NULL;
+			return nullptr;
 
 		Variant::Operator op = Variant::OP_MAX;
 
@@ -1805,7 +1805,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 				default: {
 					_set_error("Parser bug, invalid operator in expression: " + itos(expression[i].op));
-					return NULL;
+					return nullptr;
 				}
 			}
 
@@ -1822,7 +1822,7 @@ Expression::ENode *Expression::_parse_expression() {
 		if (next_op == -1) {
 
 			_set_error("Yet another parser bug....");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V(nullptr);
 		}
 
 		// OK! create operator..
@@ -1835,7 +1835,7 @@ Expression::ENode *Expression::_parse_expression() {
 				if (expr_pos == expression.size()) {
 					//can happen..
 					_set_error("Unexpected end of expression...");
-					return NULL;
+					return nullptr;
 				}
 			}
 
@@ -1845,7 +1845,7 @@ Expression::ENode *Expression::_parse_expression() {
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = expression[i].op;
 				op->nodes[0] = expression[i + 1].node;
-				op->nodes[1] = NULL;
+				op->nodes[1] = nullptr;
 				expression.write[i].is_op = false;
 				expression.write[i].node = op;
 				expression.remove(i + 1);
@@ -1855,7 +1855,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 			if (next_op < 1 || next_op >= (expression.size() - 1)) {
 				_set_error("Parser bug...");
-				ERR_FAIL_V(NULL);
+				ERR_FAIL_V(nullptr);
 			}
 
 			OperatorNode *op = alloc_node<OperatorNode>();
@@ -1864,7 +1864,7 @@ Expression::ENode *Expression::_parse_expression() {
 			if (expression[next_op - 1].is_op) {
 
 				_set_error("Parser bug...");
-				ERR_FAIL_V(NULL);
+				ERR_FAIL_V(nullptr);
 			}
 
 			if (expression[next_op + 1].is_op) {
@@ -1874,7 +1874,7 @@ Expression::ENode *Expression::_parse_expression() {
 				// due to how precedence works, unaries will always disappear first
 
 				_set_error("Unexpected two consecutive operators.");
-				return NULL;
+				return nullptr;
 			}
 
 			op->nodes[0] = expression[next_op - 1].node; //expression goes as left
@@ -1897,8 +1897,8 @@ bool Expression::_compile_expression() {
 
 	if (nodes) {
 		memdelete(nodes);
-		nodes = NULL;
-		root = NULL;
+		nodes = nullptr;
+		root = nullptr;
 	}
 
 	error_str = String();
@@ -1908,11 +1908,11 @@ bool Expression::_compile_expression() {
 	root = _parse_expression();
 
 	if (error_set) {
-		root = NULL;
+		root = nullptr;
 		if (nodes) {
 			memdelete(nodes);
 		}
-		nodes = NULL;
+		nodes = nullptr;
 		return true;
 	}
 
@@ -2151,8 +2151,8 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 
 	if (nodes) {
 		memdelete(nodes);
-		nodes = NULL;
-		root = NULL;
+		nodes = nullptr;
+		root = nullptr;
 	}
 
 	error_str = String();
@@ -2164,11 +2164,11 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	root = _parse_expression();
 
 	if (error_set) {
-		root = NULL;
+		root = nullptr;
 		if (nodes) {
 			memdelete(nodes);
 		}
-		nodes = NULL;
+		nodes = nullptr;
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -2212,9 +2212,11 @@ Expression::Expression() :
 		output_type(Variant::NIL),
 		sequenced(false),
 		error_set(true),
-		root(NULL),
-		nodes(NULL),
+		root(nullptr),
+		nodes(nullptr),
 		execution_error(false) {
+	str_ofs = 0;
+	expression_dirty = false;
 }
 
 Expression::~Expression() {

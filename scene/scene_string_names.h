@@ -44,7 +44,7 @@ class SceneStringNames {
 	static void create() { singleton = memnew(SceneStringNames); }
 	static void free() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	SceneStringNames();
@@ -200,6 +200,15 @@ public:
 	StringName parameters_base_path;
 
 	StringName tracks_changed;
+
+	StringName _window_group;
+	StringName _window_input;
+	StringName _window_unhandled_input;
+	StringName window_input;
+
+	StringName theme_changed;
+	StringName shader_overrides_group;
+	StringName shader_overrides_group_active;
 
 	enum {
 		MAX_MATERIALS = 32

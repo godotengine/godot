@@ -31,18 +31,18 @@
 #include "button.h"
 
 #include "core/translation.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 Size2 Button::get_minimum_size() const {
 
-	Size2 minsize = get_font("font")->get_string_size(xl_text);
+	Size2 minsize = get_theme_font("font")->get_string_size(xl_text);
 	if (clip_text)
 		minsize.width = 0;
 
 	if (!expand_icon) {
 		Ref<Texture2D> _icon;
-		if (icon.is_null() && has_icon("icon"))
-			_icon = Control::get_icon("icon");
+		if (icon.is_null() && has_theme_icon("icon"))
+			_icon = Control::get_theme_icon("icon");
 		else
 			_icon = icon;
 
@@ -51,11 +51,11 @@ Size2 Button::get_minimum_size() const {
 			minsize.height = MAX(minsize.height, _icon->get_height());
 			minsize.width += _icon->get_width();
 			if (xl_text != "")
-				minsize.width += get_constant("hseparation");
+				minsize.width += get_theme_constant("hseparation");
 		}
 	}
 
-	return get_stylebox("normal")->get_minimum_size() + minsize;
+	return get_theme_stylebox("normal")->get_minimum_size() + minsize;
 }
 
 void Button::_set_internal_margin(Margin p_margin, float p_value) {
@@ -79,30 +79,30 @@ void Button::_notification(int p_what) {
 			Color color;
 			Color color_icon(1, 1, 1, 1);
 
-			Ref<StyleBox> style = get_stylebox("normal");
+			Ref<StyleBox> style = get_theme_stylebox("normal");
 
 			switch (get_draw_mode()) {
 				case DRAW_NORMAL: {
 
-					style = get_stylebox("normal");
+					style = get_theme_stylebox("normal");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
-					color = get_color("font_color");
-					if (has_color("icon_color_normal"))
-						color_icon = get_color("icon_color_normal");
+					color = get_theme_color("font_color");
+					if (has_theme_color("icon_color_normal"))
+						color_icon = get_theme_color("icon_color_normal");
 				} break;
 				case DRAW_HOVER_PRESSED: {
 
-					if (has_stylebox("hover_pressed") && has_stylebox_override("hover_pressed")) {
-						style = get_stylebox("hover_pressed");
+					if (has_theme_stylebox("hover_pressed") && has_theme_stylebox_override("hover_pressed")) {
+						style = get_theme_stylebox("hover_pressed");
 						if (!flat)
 							style->draw(ci, Rect2(Point2(0, 0), size));
-						if (has_color("font_color_hover_pressed"))
-							color = get_color("font_color_hover_pressed");
+						if (has_theme_color("font_color_hover_pressed"))
+							color = get_theme_color("font_color_hover_pressed");
 						else
-							color = get_color("font_color");
-						if (has_color("icon_color_hover_pressed"))
-							color_icon = get_color("icon_color_hover_pressed");
+							color = get_theme_color("font_color");
+						if (has_theme_color("icon_color_hover_pressed"))
+							color_icon = get_theme_color("icon_color_hover_pressed");
 
 						break;
 					}
@@ -110,49 +110,49 @@ void Button::_notification(int p_what) {
 				}
 				case DRAW_PRESSED: {
 
-					style = get_stylebox("pressed");
+					style = get_theme_stylebox("pressed");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
-					if (has_color("font_color_pressed"))
-						color = get_color("font_color_pressed");
+					if (has_theme_color("font_color_pressed"))
+						color = get_theme_color("font_color_pressed");
 					else
-						color = get_color("font_color");
-					if (has_color("icon_color_pressed"))
-						color_icon = get_color("icon_color_pressed");
+						color = get_theme_color("font_color");
+					if (has_theme_color("icon_color_pressed"))
+						color_icon = get_theme_color("icon_color_pressed");
 
 				} break;
 				case DRAW_HOVER: {
 
-					style = get_stylebox("hover");
+					style = get_theme_stylebox("hover");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
-					color = get_color("font_color_hover");
-					if (has_color("icon_color_hover"))
-						color_icon = get_color("icon_color_hover");
+					color = get_theme_color("font_color_hover");
+					if (has_theme_color("icon_color_hover"))
+						color_icon = get_theme_color("icon_color_hover");
 
 				} break;
 				case DRAW_DISABLED: {
 
-					style = get_stylebox("disabled");
+					style = get_theme_stylebox("disabled");
 					if (!flat)
 						style->draw(ci, Rect2(Point2(0, 0), size));
-					color = get_color("font_color_disabled");
-					if (has_color("icon_color_disabled"))
-						color_icon = get_color("icon_color_disabled");
+					color = get_theme_color("font_color_disabled");
+					if (has_theme_color("icon_color_disabled"))
+						color_icon = get_theme_color("icon_color_disabled");
 
 				} break;
 			}
 
 			if (has_focus()) {
 
-				Ref<StyleBox> style2 = get_stylebox("focus");
+				Ref<StyleBox> style2 = get_theme_stylebox("focus");
 				style2->draw(ci, Rect2(Point2(), size));
 			}
 
-			Ref<Font> font = get_font("font");
+			Ref<Font> font = get_theme_font("font");
 			Ref<Texture2D> _icon;
-			if (icon.is_null() && has_icon("icon"))
-				_icon = Control::get_icon("icon");
+			if (icon.is_null() && has_theme_icon("icon"))
+				_icon = Control::get_theme_icon("icon");
 			else
 				_icon = icon;
 
@@ -166,14 +166,14 @@ void Button::_notification(int p_what) {
 
 				float icon_ofs_region = 0;
 				if (_internal_margin[MARGIN_LEFT] > 0) {
-					icon_ofs_region = _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
+					icon_ofs_region = _internal_margin[MARGIN_LEFT] + get_theme_constant("hseparation");
 				}
 
 				if (expand_icon) {
 					Size2 _size = get_size() - style->get_offset() * 2;
-					_size.width -= get_constant("hseparation") + icon_ofs_region;
+					_size.width -= get_theme_constant("hseparation") + icon_ofs_region;
 					if (!clip_text)
-						_size.width -= get_font("font")->get_string_size(xl_text).width;
+						_size.width -= get_theme_font("font")->get_string_size(xl_text).width;
 					float icon_width = _icon->get_width() * _size.height / _icon->get_height();
 					float icon_height = _size.height;
 
@@ -188,13 +188,13 @@ void Button::_notification(int p_what) {
 				}
 			}
 
-			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_constant("hseparation"), 0) : Point2();
+			Point2 icon_ofs = !_icon.is_null() ? Point2(icon_region.size.width + get_theme_constant("hseparation"), 0) : Point2();
 			int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
 			if (_internal_margin[MARGIN_LEFT] > 0) {
-				text_clip -= _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
+				text_clip -= _internal_margin[MARGIN_LEFT] + get_theme_constant("hseparation");
 			}
 			if (_internal_margin[MARGIN_RIGHT] > 0) {
-				text_clip -= _internal_margin[MARGIN_RIGHT] + get_constant("hseparation");
+				text_clip -= _internal_margin[MARGIN_RIGHT] + get_theme_constant("hseparation");
 			}
 
 			Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size(xl_text) - Point2(_internal_margin[MARGIN_RIGHT] - _internal_margin[MARGIN_LEFT], 0)) / 2.0;
@@ -202,7 +202,7 @@ void Button::_notification(int p_what) {
 			switch (align) {
 				case ALIGN_LEFT: {
 					if (_internal_margin[MARGIN_LEFT] > 0) {
-						text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
+						text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_theme_constant("hseparation");
 					} else {
 						text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
 					}
@@ -216,7 +216,7 @@ void Button::_notification(int p_what) {
 				} break;
 				case ALIGN_RIGHT: {
 					if (_internal_margin[MARGIN_RIGHT] > 0) {
-						text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x - _internal_margin[MARGIN_RIGHT] - get_constant("hseparation");
+						text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x - _internal_margin[MARGIN_RIGHT] - get_theme_constant("hseparation");
 					} else {
 						text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size(xl_text).x;
 					}

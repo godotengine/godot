@@ -45,37 +45,37 @@ class AreaBullet;
 class SpaceBullet;
 class btRigidBody;
 class GodotMotionState;
-class BulletPhysicsDirectBodyState;
+class BulletPhysicsDirectBodyState3D;
 
 /// This class could be used in multi thread with few changes but currently
 /// is set to be only in one single thread.
 ///
 /// In the system there is only one object at a time that manage all bodies and is
-/// created by BulletPhysicsServer and is held by the "singleton" variable of this class
+/// created by BulletPhysicsServer3D and is held by the "singleton" variable of this class
 /// Each time something require it, the body must be set again.
-class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
-	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
+class BulletPhysicsDirectBodyState3D : public PhysicsDirectBodyState3D {
+	GDCLASS(BulletPhysicsDirectBodyState3D, PhysicsDirectBodyState3D);
 
-	static BulletPhysicsDirectBodyState *singleton;
+	static BulletPhysicsDirectBodyState3D *singleton;
 
 public:
 	/// This class avoid the creation of more object of this class
 	static void initSingleton() {
 		if (!singleton) {
-			singleton = memnew(BulletPhysicsDirectBodyState);
+			singleton = memnew(BulletPhysicsDirectBodyState3D);
 		}
 	}
 
 	static void destroySingleton() {
 		memdelete(singleton);
-		singleton = NULL;
+		singleton = nullptr;
 	}
 
 	static void singleton_setDeltaTime(real_t p_deltaTime) {
 		singleton->deltaTime = p_deltaTime;
 	}
 
-	static BulletPhysicsDirectBodyState *get_singleton(RigidBodyBullet *p_body) {
+	static BulletPhysicsDirectBodyState3D *get_singleton(RigidBodyBullet *p_body) {
 		singleton->body = p_body;
 		return singleton;
 	}
@@ -85,7 +85,7 @@ public:
 	real_t deltaTime;
 
 private:
-	BulletPhysicsDirectBodyState() {}
+	BulletPhysicsDirectBodyState3D() {}
 
 public:
 	virtual Vector3 get_total_gravity() const;
@@ -117,7 +117,7 @@ public:
 	virtual void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 	virtual void apply_torque_impulse(const Vector3 &p_impulse);
 
-	virtual void set_sleep_state(bool p_enable);
+	virtual void set_sleep_state(bool p_sleep);
 	virtual bool is_sleeping() const;
 
 	virtual int get_contact_count() const;
@@ -138,7 +138,7 @@ public:
 		// Skip the execution of this function
 	}
 
-	virtual PhysicsDirectSpaceState *get_space_state();
+	virtual PhysicsDirectSpaceState3D *get_space_state();
 };
 
 class RigidBodyBullet : public RigidCollisionObjectBullet {
@@ -166,7 +166,7 @@ public:
 		btTransform transform;
 
 		KinematicShape() :
-				shape(NULL) {}
+				shape(nullptr) {}
 		bool is_active() const { return shape; }
 	};
 
@@ -187,12 +187,12 @@ public:
 	};
 
 private:
-	friend class BulletPhysicsDirectBodyState;
+	friend class BulletPhysicsDirectBodyState3D;
 
 	// This is required only for Kinematic movement
 	KinematicUtilities *kinematic_utilities;
 
-	PhysicsServer::BodyMode mode;
+	PhysicsServer3D::BodyMode mode;
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
 	uint16_t locked_axis;
@@ -278,14 +278,14 @@ public:
 	void set_omit_forces_integration(bool p_omit);
 	_FORCE_INLINE_ bool get_omit_forces_integration() const { return omit_forces_integration; }
 
-	void set_param(PhysicsServer::BodyParameter p_param, real_t);
-	real_t get_param(PhysicsServer::BodyParameter p_param) const;
+	void set_param(PhysicsServer3D::BodyParameter p_param, real_t);
+	real_t get_param(PhysicsServer3D::BodyParameter p_param) const;
 
-	void set_mode(PhysicsServer::BodyMode p_mode);
-	PhysicsServer::BodyMode get_mode() const;
+	void set_mode(PhysicsServer3D::BodyMode p_mode);
+	PhysicsServer3D::BodyMode get_mode() const;
 
-	void set_state(PhysicsServer::BodyState p_state, const Variant &p_variant);
-	Variant get_state(PhysicsServer::BodyState p_state) const;
+	void set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant);
+	Variant get_state(PhysicsServer3D::BodyState p_state) const;
 
 	void apply_impulse(const Vector3 &p_pos, const Vector3 &p_impulse);
 	void apply_central_impulse(const Vector3 &p_impulse);
@@ -300,8 +300,8 @@ public:
 	void set_applied_torque(const Vector3 &p_torque);
 	Vector3 get_applied_torque() const;
 
-	void set_axis_lock(PhysicsServer::BodyAxis p_axis, bool lock);
-	bool is_axis_locked(PhysicsServer::BodyAxis p_axis) const;
+	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock);
+	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;
 	void reload_axis_lock();
 
 	/// Doc:

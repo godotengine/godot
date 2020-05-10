@@ -95,7 +95,7 @@ godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classnam
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
 	if (class_info)
 		return (godot_class_constructor)class_info->creation_func;
-	return NULL;
+	return nullptr;
 }
 
 godot_dictionary GDAPI godot_get_global_constants() {
@@ -173,14 +173,14 @@ godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id) {
 void *godot_get_class_tag(const godot_string_name *p_class) {
 	StringName class_name = *(StringName *)p_class;
 	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(class_name);
-	return class_info ? class_info->class_ptr : NULL;
+	return class_info ? class_info->class_ptr : nullptr;
 }
 
 godot_object *godot_object_cast_to(const godot_object *p_object, void *p_class_tag) {
-	if (!p_object) return NULL;
+	if (!p_object) return nullptr;
 	Object *o = (Object *)p_object;
 
-	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : NULL;
+	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : nullptr;
 }
 
 #ifdef __cplusplus

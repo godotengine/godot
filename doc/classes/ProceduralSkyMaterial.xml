@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ProceduralSkyMaterial" inherits="Material" version="4.0">
 	<brief_description>
-	A [Material] used with [Sky] to generate a background based on user input parameters.
+		A [Material] used with [Sky] to generate a background based on user input parameters.
 	</brief_description>
 	<description>
 		ProceduralSkyMaterial provides a way to create an effective background quickly by defining procedural parameters for the sun, the sky and the ground. The sky and ground are very similar, they are defined by a color at the horizon, another color, and finally an easing curve to interpolate between these two colors. Similarly, the sun is described by a position in the sky, a color, and an easing curve. However, the sun also defines a minimum and maximum angle, these two values define at what distance the easing curve begins and ends from the sun, and thus end up defining the size of the sun in the sky.
 		The [ProceduralSkyMaterial] uses a lightweight shader to draw the sky and is thus suited for real time updates. When you do not need a quick sky that is not realistic, this is a good option.
-		The [ProceduralSkyMaterial] supports up to 4 suns. Each sun takes its color, energy, and direction from the corresponding [DirectionalLight] in the scene.
+		The [ProceduralSkyMaterial] supports up to 4 suns. Each sun takes its color, energy, and direction from the corresponding [DirectionalLight3D] in the scene.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -40,11 +40,8 @@
 		<member name="sun_angle_max" type="float" setter="set_sun_angle_max" getter="get_sun_angle_max" default="100.0">
 			Distance from center of sun where it fades out completely.
 		</member>
-		<member name="sun_angle_min" type="float" setter="set_sun_angle_min" getter="get_sun_angle_min" default="1.0">
-			Distance from sun where it goes from solid to starting to fade.
-		</member>
 		<member name="sun_curve" type="float" setter="set_sun_curve" getter="get_sun_curve" default="0.05">
-			How quickly the sun fades away between [member sun_angle_min] and [member sun_angle_max].
+			How quickly the sun fades away between the edge of the sun disk and [member sun_angle_max].
 		</member>
 	</members>
 	<constants>

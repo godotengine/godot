@@ -43,10 +43,10 @@ void AudioStreamEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_THEME_CHANGED || p_what == NOTIFICATION_ENTER_TREE) {
-		_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
-		_stop_button->set_icon(get_icon("Stop", "EditorIcons"));
-		_preview->set_frame_color(get_color("dark_color_2", "Editor"));
-		set_frame_color(get_color("dark_color_1", "Editor"));
+		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
+		_stop_button->set_icon(get_theme_icon("Stop", "EditorIcons"));
+		_preview->set_frame_color(get_theme_color("dark_color_2", "Editor"));
+		set_frame_color(get_theme_color("dark_color_1", "Editor"));
 
 		_indicator->update();
 		_preview->update();
@@ -87,9 +87,9 @@ void AudioStreamEditor::_draw_preview() {
 	}
 
 	Vector<Color> color;
-	color.push_back(get_color("contrast_color_2", "Editor"));
+	color.push_back(get_theme_color("contrast_color_2", "Editor"));
 
-	VS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), lines, color);
+	RS::get_singleton()->canvas_item_add_multiline(_preview->get_canvas_item(), lines, color);
 }
 
 void AudioStreamEditor::_preview_changed(ObjectID p_which) {
@@ -110,11 +110,11 @@ void AudioStreamEditor::_play() {
 
 	if (_player->is_playing()) {
 		_player->stop();
-		_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 		set_process(false);
 	} else {
 		_player->play(_current);
-		_play_button->set_icon(get_icon("Pause", "EditorIcons"));
+		_play_button->set_icon(get_theme_icon("Pause", "EditorIcons"));
 		set_process(true);
 	}
 }
@@ -122,7 +122,7 @@ void AudioStreamEditor::_play() {
 void AudioStreamEditor::_stop() {
 
 	_player->stop();
-	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 	_current = 0;
 	_indicator->update();
 	set_process(false);
@@ -130,7 +130,7 @@ void AudioStreamEditor::_stop() {
 
 void AudioStreamEditor::_on_finished() {
 
-	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 	if (_current == _player->get_stream()->get_length()) {
 		_current = 0;
 		_indicator->update();
@@ -146,7 +146,7 @@ void AudioStreamEditor::_draw_indicator() {
 	Rect2 rect = _preview->get_rect();
 	float len = stream->get_length();
 	float ofs_x = _current / len * rect.size.width;
-	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), get_color("accent_color", "Editor"), 1);
+	_indicator->draw_line(Point2(ofs_x, 0), Point2(ofs_x, rect.size.height), get_theme_color("accent_color", "Editor"), 1);
 
 	_current_label->set_text(String::num(_current, 2).pad_decimals(2) + " /");
 }
@@ -225,7 +225,7 @@ AudioStreamEditor::AudioStreamEditor() {
 	_preview->add_child(_indicator);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->add_constant_override("separation", 0);
+	hbox->add_theme_constant_override("separation", 0);
 	vbox->add_child(hbox);
 
 	_play_button = memnew(ToolButton);
@@ -241,12 +241,12 @@ AudioStreamEditor::AudioStreamEditor() {
 	_current_label = memnew(Label);
 	_current_label->set_align(Label::ALIGN_RIGHT);
 	_current_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	_current_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	_current_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
 	_current_label->set_modulate(Color(1, 1, 1, 0.5));
 	hbox->add_child(_current_label);
 
 	_duration_label = memnew(Label);
-	_duration_label->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("status_source", "EditorFonts"));
+	_duration_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font("status_source", "EditorFonts"));
 	hbox->add_child(_duration_label);
 }
 

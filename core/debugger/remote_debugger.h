@@ -40,6 +40,11 @@
 #include "core/ustring.h"
 
 class RemoteDebugger : public EngineDebugger {
+public:
+	enum MessageType {
+		MESSAGE_TYPE_LOG,
+		MESSAGE_TYPE_ERROR,
+	};
 
 private:
 	typedef DebuggerMarshalls::OutputError ErrorMessage;
@@ -50,14 +55,18 @@ private:
 	struct VisualProfiler;
 	struct PerformanceProfiler;
 
-	NetworkProfiler *network_profiler = NULL;
-	ServersProfiler *servers_profiler = NULL;
-	VisualProfiler *visual_profiler = NULL;
-	PerformanceProfiler *performance_profiler = NULL;
+	NetworkProfiler *network_profiler = nullptr;
+	ServersProfiler *servers_profiler = nullptr;
+	VisualProfiler *visual_profiler = nullptr;
+	PerformanceProfiler *performance_profiler = nullptr;
 
 	Ref<RemoteDebuggerPeer> peer;
 
-	List<String> output_strings;
+	struct OutputString {
+		String message;
+		MessageType type;
+	};
+	List<OutputString> output_strings;
 	List<ErrorMessage> errors;
 
 	int n_messages_dropped = 0;

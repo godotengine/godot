@@ -34,12 +34,12 @@
 #include "string_android.h"
 #include "thread_jandroid.h"
 
-jobject DirAccessJAndroid::io = NULL;
-jclass DirAccessJAndroid::cls = NULL;
-jmethodID DirAccessJAndroid::_dir_open = NULL;
-jmethodID DirAccessJAndroid::_dir_next = NULL;
-jmethodID DirAccessJAndroid::_dir_close = NULL;
-jmethodID DirAccessJAndroid::_dir_is_dir = NULL;
+jobject DirAccessJAndroid::io = nullptr;
+jclass DirAccessJAndroid::cls = nullptr;
+jmethodID DirAccessJAndroid::_dir_open = nullptr;
+jmethodID DirAccessJAndroid::_dir_next = nullptr;
+jmethodID DirAccessJAndroid::_dir_close = nullptr;
+jmethodID DirAccessJAndroid::_dir_is_dir = nullptr;
 
 DirAccess *DirAccessJAndroid::create_fs() {
 

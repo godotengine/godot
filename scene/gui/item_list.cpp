@@ -495,7 +495,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 		search_string = ""; //any mousepress cancels
 		Vector2 pos = mb->get_position();
-		Ref<StyleBox> bg = get_stylebox("bg");
+		Ref<StyleBox> bg = get_theme_stylebox("bg");
 		pos -= bg->get_offset();
 		pos.y += scroll_bar->get_value();
 
@@ -820,7 +820,7 @@ void ItemList::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
 
-		Ref<StyleBox> bg = get_stylebox("bg");
+		Ref<StyleBox> bg = get_theme_stylebox("bg");
 
 		int mw = scroll_bar->get_minimum_size().x;
 		scroll_bar->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_END, -mw);
@@ -837,18 +837,18 @@ void ItemList::_notification(int p_what) {
 
 		draw_style_box(bg, Rect2(Point2(), size));
 
-		int hseparation = get_constant("hseparation");
-		int vseparation = get_constant("vseparation");
-		int icon_margin = get_constant("icon_margin");
-		int line_separation = get_constant("line_separation");
+		int hseparation = get_theme_constant("hseparation");
+		int vseparation = get_theme_constant("vseparation");
+		int icon_margin = get_theme_constant("icon_margin");
+		int line_separation = get_theme_constant("line_separation");
 
-		Ref<StyleBox> sbsel = has_focus() ? get_stylebox("selected_focus") : get_stylebox("selected");
-		Ref<StyleBox> cursor = has_focus() ? get_stylebox("cursor") : get_stylebox("cursor_unfocused");
+		Ref<StyleBox> sbsel = has_focus() ? get_theme_stylebox("selected_focus") : get_theme_stylebox("selected");
+		Ref<StyleBox> cursor = has_focus() ? get_theme_stylebox("cursor") : get_theme_stylebox("cursor_unfocused");
 
-		Ref<Font> font = get_font("font");
-		Color guide_color = get_color("guide_color");
-		Color font_color = get_color("font_color");
-		Color font_color_selected = get_color("font_color_selected");
+		Ref<Font> font = get_theme_font("font");
+		Color guide_color = get_theme_color("guide_color");
+		Color font_color = get_theme_color("font_color");
+		Color font_color_selected = get_theme_color("font_color_selected");
 		int font_height = font->get_height();
 		Vector<int> line_size_cache;
 		Vector<int> line_limit_cache;
@@ -859,9 +859,9 @@ void ItemList::_notification(int p_what) {
 		}
 
 		if (has_focus()) {
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
-			draw_style_box(get_stylebox("bg_focus"), Rect2(Point2(), size));
-			VisualServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
+			draw_style_box(get_theme_stylebox("bg_focus"), Rect2(Point2(), size));
+			RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 		}
 
 		if (shape_changed) {
@@ -1251,7 +1251,7 @@ void ItemList::_scroll_changed(double) {
 int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_stylebox("bg");
+	Ref<StyleBox> bg = get_theme_stylebox("bg");
 	pos -= bg->get_offset();
 	pos.y += scroll_bar->get_value();
 
@@ -1286,7 +1286,7 @@ bool ItemList::is_pos_at_end_of_items(const Point2 &p_pos) const {
 		return true;
 
 	Vector2 pos = p_pos;
-	Ref<StyleBox> bg = get_stylebox("bg");
+	Ref<StyleBox> bg = get_theme_stylebox("bg");
 	pos -= bg->get_offset();
 	pos.y += scroll_bar->get_value();
 

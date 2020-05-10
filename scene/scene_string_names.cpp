@@ -30,7 +30,7 @@
 
 #include "scene_string_names.h"
 
-SceneStringNames *SceneStringNames::singleton = NULL;
+SceneStringNames *SceneStringNames::singleton = nullptr;
 
 SceneStringNames::SceneStringNames() {
 
@@ -193,7 +193,16 @@ SceneStringNames::SceneStringNames() {
 		mesh_materials[i] = "material/" + itos(i);
 	}
 
+	_window_group = StaticCString::create("_window_group");
+	_window_input = StaticCString::create("_window_input");
+	window_input = StaticCString::create("window_input");
+	_window_unhandled_input = StaticCString::create("_window_unhandled_input");
+
+	theme_changed = StaticCString::create("theme_changed");
 	parameters_base_path = "parameters/";
 
 	tracks_changed = "tracks_changed";
+
+	shader_overrides_group = StaticCString::create("_shader_overrides_group_");
+	shader_overrides_group_active = StaticCString::create("_shader_overrides_group_active_");
 }

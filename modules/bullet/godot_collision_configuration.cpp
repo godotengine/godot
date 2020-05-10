@@ -42,7 +42,7 @@
 GodotCollisionConfiguration::GodotCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo) :
 		btDefaultCollisionConfiguration(constructionInfo) {
 
-	void *mem = NULL;
+	void *mem = nullptr;
 
 	mem = btAlignedAlloc(sizeof(GodotRayWorldAlgorithm::CreateFunc), 16);
 	m_rayWorldCF = new (mem) GodotRayWorldAlgorithm::CreateFunc(world);
@@ -98,7 +98,7 @@ btCollisionAlgorithmCreateFunc *GodotCollisionConfiguration::getClosestPointsAlg
 GodotSoftCollisionConfiguration::GodotSoftCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo) :
 		btSoftBodyRigidBodyCollisionConfiguration(constructionInfo) {
 
-	void *mem = NULL;
+	void *mem = nullptr;
 
 	mem = btAlignedAlloc(sizeof(GodotRayWorldAlgorithm::CreateFunc), 16);
 	m_rayWorldCF = new (mem) GodotRayWorldAlgorithm::CreateFunc(world);

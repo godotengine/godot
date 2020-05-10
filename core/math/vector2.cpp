@@ -119,11 +119,11 @@ Vector2 Vector2::round() const {
 }
 
 Vector2 Vector2::rotated(real_t p_by) const {
-
-	Vector2 v;
-	v.set_rotation(angle() + p_by);
-	v *= length();
-	return v;
+	real_t sine = Math::sin(p_by);
+	real_t cosi = Math::cos(p_by);
+	return Vector2(
+			x * cosi - y * sine,
+			x * sine + y * cosi);
 }
 
 Vector2 Vector2::posmod(const real_t p_mod) const {

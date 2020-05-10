@@ -43,7 +43,7 @@
 
 #include <zlib.h>
 
-ProjectSettings *ProjectSettings::singleton = NULL;
+ProjectSettings *ProjectSettings::singleton = nullptr;
 
 ProjectSettings *ProjectSettings::get_singleton() {
 
@@ -362,40 +362,29 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// We need to test both possibilities as extensions for Linux binaries are optional
 		// (so both 'mygame.bin' and 'mygame' should be able to find 'mygame.pck').
 
-		bool found = false;
-
 		String exec_dir = exec_path.get_base_dir();
 		String exec_filename = exec_path.get_file();
 		String exec_basename = exec_filename.get_basename();
 
-		// Try to load data pack at the location of the executable
-		// As mentioned above, we have two potential names to attempt
-
-		if (_load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) ||
-				_load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"))) {
-			found = true;
-		} else {
-			// If we couldn't find them next to the executable, we attempt
-			// the current working directory. Same story, two tests.
-			if (_load_resource_pack(exec_basename + ".pck") ||
-					_load_resource_pack(exec_filename + ".pck")) {
-				found = true;
-			}
-		}
+		// Attempt with PCK bundled into executable
+		bool found = _load_resource_pack(exec_path);
 
 #ifdef OSX_ENABLED
-		// Attempt to load PCK from macOS .app bundle resources
 		if (!found) {
-			if (_load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"))) {
-				found = true;
-			}
+			// Attempt to load PCK from macOS .app bundle resources
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().plus_file(exec_basename + ".pck"));
 		}
 #endif
 
-		// Attempt with PCK bundled into executable
 		if (!found) {
-			if (_load_resource_pack(exec_path)) {
-				found = true;
+			// Try to load data pack at the location of the executable
+			// As mentioned above, we have two potential names to attempt
+			found = _load_resource_pack(exec_dir.plus_file(exec_basename + ".pck")) || _load_resource_pack(exec_dir.plus_file(exec_filename + ".pck"));
+
+			if (!found) {
+				// If we couldn't find them next to the executable, we attempt
+				// the current working directory. Same story, two tests.
+				found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
 			}
 		}
 
@@ -532,7 +521,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		d.resize(vlen);
 		f->get_buffer(d.ptrw(), vlen);
 		Variant value;
-		err = decode_variant(value, d.ptr(), d.size(), NULL, true);
+		err = decode_variant(value, d.ptr(), d.size(), nullptr, true);
 		ERR_CONTINUE_MSG(err != OK, "Error decoding property: " + key + ".");
 		set(key, value);
 	}
@@ -571,7 +560,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
 			memdelete(f);
 			// If we're loading a project.godot from source code, we can operate some
@@ -679,7 +668,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 		file->store_string(key);
 
 		int len;
-		err = encode_variant(p_custom_features, NULL, len, false);
+		err = encode_variant(p_custom_features, nullptr, len, false);
 		if (err != OK) {
 			memdelete(file);
 			ERR_FAIL_V(err);
@@ -717,7 +706,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 			file->store_string(key);
 
 			int len;
-			err = encode_variant(value, NULL, len, true);
+			err = encode_variant(value, nullptr, len, true);
 			if (err != OK)
 				memdelete(file);
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
@@ -1220,5 +1209,5 @@ ProjectSettings::ProjectSettings() {
 
 ProjectSettings::~ProjectSettings() {
 
-	singleton = NULL;
+	singleton = nullptr;
 }

@@ -23,7 +23,7 @@ namespace Godot
     /// <example>
     /// This sample shows how to use <see cref="Godot.DynamicGodotObject"/> to dynamically access the engine members of a <see cref="Godot.Object"/>.
     /// <code>
-    /// dynamic sprite = GetNode("Sprite").DynamicGodotObject;
+    /// dynamic sprite = GetNode("Sprite2D").DynamicGodotObject;
     /// sprite.add_child(this);
     ///
     /// if ((sprite.hframes * sprite.vframes) &gt; 0)

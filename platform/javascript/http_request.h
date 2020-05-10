@@ -49,7 +49,7 @@ extern int godot_xhr_new();
 extern void godot_xhr_reset(int p_xhr_id);
 extern bool godot_xhr_free(int p_xhr_id);
 
-extern int godot_xhr_open(int p_xhr_id, const char *p_method, const char *p_url, const char *p_user = NULL, const char *p_password = NULL);
+extern int godot_xhr_open(int p_xhr_id, const char *p_method, const char *p_url, const char *p_user = nullptr, const char *p_password = nullptr);
 
 extern void godot_xhr_set_request_header(int p_xhr_id, const char *p_header, const char *p_value);
 

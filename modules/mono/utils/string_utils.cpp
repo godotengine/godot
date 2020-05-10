@@ -196,23 +196,13 @@ String str_format(const char *p_format, ...) {
 
 	return res;
 }
-// va_copy was defined in the C99, but not in C++ standards before C++11.
-// When you compile C++ without --std=c++<XX> option, compilers still define
-// va_copy, otherwise you have to use the internal version (__va_copy).
-#if !defined(va_copy)
-#if defined(__GNUC__)
-#define va_copy(d, s) __va_copy((d), (s))
-#else
-#define va_copy(d, s) ((d) = (s))
-#endif
-#endif
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER) && _MSC_VER < 1900
 #define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf_s(m_buffer, m_count, _TRUNCATE, m_format, m_args_copy)
 #define gd_vscprintf(m_format, m_args_copy) _vscprintf(m_format, m_args_copy)
 #else
 #define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf(m_buffer, m_count, m_format, m_args_copy)
-#define gd_vscprintf(m_format, m_args_copy) vsnprintf(NULL, 0, p_format, m_args_copy)
+#define gd_vscprintf(m_format, m_args_copy) vsnprintf(nullptr, 0, p_format, m_args_copy)
 #endif
 
 String str_format(const char *p_format, va_list p_list) {

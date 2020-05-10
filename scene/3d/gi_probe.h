@@ -31,8 +31,8 @@
 #ifndef GIPROBE_H
 #define GIPROBE_H
 
-#include "multimesh_instance.h"
-#include "scene/3d/visual_instance.h"
+#include "multimesh_instance_3d.h"
+#include "scene/3d/visual_instance_3d.h"
 
 class GIProbeData : public Resource {
 
@@ -108,8 +108,8 @@ public:
 	~GIProbeData();
 };
 
-class GIProbe : public VisualInstance {
-	GDCLASS(GIProbe, VisualInstance);
+class GIProbe : public VisualInstance3D {
+	GDCLASS(GIProbe, VisualInstance3D);
 
 public:
 	enum Subdiv {
@@ -161,7 +161,7 @@ public:
 	Vector3 get_extents() const;
 	Vector3i get_estimated_cell_size() const;
 
-	void bake(Node *p_from_node = NULL, bool p_create_visual_debug = false);
+	void bake(Node *p_from_node = nullptr, bool p_create_visual_debug = false);
 
 	virtual AABB get_aabb() const;
 	virtual Vector<Face3> get_faces(uint32_t p_usage_flags) const;

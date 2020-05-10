@@ -32,7 +32,7 @@
 
 #include "core/engine.h"
 #include "gd_navigation_server.h"
-#include "servers/navigation_server.h"
+#include "servers/navigation_server_3d.h"
 
 #ifndef _3D_DISABLED
 #include "navigation_mesh_generator.h"
@@ -47,15 +47,15 @@
 */
 
 #ifndef _3D_DISABLED
-NavigationMeshGenerator *_nav_mesh_generator = NULL;
+NavigationMeshGenerator *_nav_mesh_generator = nullptr;
 #endif
 
-NavigationServer *new_server() {
+NavigationServer3D *new_server() {
 	return memnew(GdNavigationServer);
 }
 
 void register_gdnavigation_types() {
-	NavigationServerManager::set_default_server(new_server);
+	NavigationServer3DManager::set_default_server(new_server);
 
 #ifndef _3D_DISABLED
 	_nav_mesh_generator = memnew(NavigationMeshGenerator);

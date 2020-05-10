@@ -32,9 +32,9 @@
 
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "main/main.h"
-#include "servers/physics/physics_server_sw.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/physics_3d/physics_server_3d_sw.h"
+#include "servers/rendering/rendering_server_raster.h"
+#include "servers/rendering/rendering_server_wrap_mt.h"
 
 #include <Screen.h>
 
@@ -85,7 +85,7 @@ int OS_Haiku::get_current_video_driver() const {
 }
 
 Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
-	main_loop = NULL;
+	main_loop = nullptr;
 	current_video_mode = p_desired;
 
 	app = new HaikuApplication();
@@ -116,13 +116,13 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	RasterizerGLES2::make_current();
 #endif
 
-	visual_server = memnew(VisualServerRaster);
+	rendering_server = memnew(RenderingServerRaster);
 	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+		rendering_server = memnew(RenderingServerWrapMT(rendering_server, false));
 	}
 
-	ERR_FAIL_COND_V(!visual_server, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!rendering_server, ERR_UNAVAILABLE);
 
 	video_driver_index = p_video_driver;
 
@@ -130,7 +130,7 @@ Error OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	window->SetInput(input);
 
 	window->Show();
-	visual_server->init();
+	rendering_server->init();
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -142,10 +142,10 @@ void OS_Haiku::finalize() {
 		memdelete(main_loop);
 	}
 
-	main_loop = NULL;
+	main_loop = nullptr;
 
-	visual_server->finish();
-	memdelete(visual_server);
+	rendering_server->finish();
+	memdelete(rendering_server);
 
 	memdelete(input);
 
@@ -169,8 +169,8 @@ void OS_Haiku::delete_main_loop() {
 		memdelete(main_loop);
 	}
 
-	main_loop = NULL;
-	window->SetMainLoop(NULL);
+	main_loop = nullptr;
+	window->SetMainLoop(nullptr);
 }
 
 void OS_Haiku::release_rendering_thread() {
@@ -267,7 +267,7 @@ void OS_Haiku::set_window_position(const Point2 &p_position) {
 void OS_Haiku::set_window_fullscreen(bool p_enabled) {
 	window->SetFullScreen(p_enabled);
 	current_video_mode.fullscreen = p_enabled;
-	visual_server->init();
+	rendering_server->init();
 }
 
 bool OS_Haiku::is_window_fullscreen() const {

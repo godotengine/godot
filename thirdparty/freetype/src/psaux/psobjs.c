@@ -4,7 +4,7 @@
  *
  *   Auxiliary functions for PostScript fonts (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -214,7 +214,7 @@
     }
 
     /* add the object to the base block and adjust offset */
-    table->elements[idx] = table->block + table->cursor;
+    table->elements[idx] = FT_OFFSET( table->block, table->cursor );
     table->lengths [idx] = length;
     FT_MEM_COPY( table->block + table->cursor, object, length );
 
@@ -2577,7 +2577,7 @@
               FT_UShort  seed )
   {
     PS_Conv_EexecDecode( &buffer,
-                         buffer + length,
+                         FT_OFFSET( buffer, length ),
                          buffer,
                          length,
                          &seed );

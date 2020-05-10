@@ -33,7 +33,7 @@
 #include "core/print_string.h"
 #include "drivers/dummy/rasterizer_dummy.h"
 #include "drivers/dummy/texture_loader_dummy.h"
-#include "servers/visual/visual_server_raster.h"
+#include "servers/rendering/rendering_server_raster.h"
 
 #include "main/main.h"
 
@@ -74,14 +74,14 @@ Error OS_Server::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	args = OS::get_singleton()->get_cmdline_args();
 	current_videomode = p_desired;
-	main_loop = NULL;
+	main_loop = nullptr;
 
 	RasterizerDummy::make_current();
 
 	video_driver_index = p_video_driver; // unused in server platform, but should still be initialized
 
-	visual_server = memnew(VisualServerRaster);
-	visual_server->init();
+	rendering_server = memnew(RenderingServerRaster);
+	rendering_server->init();
 
 	AudioDriverManager::initialize(p_audio_driver);
 
@@ -99,10 +99,10 @@ void OS_Server::finalize() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 
-	visual_server->finish();
-	memdelete(visual_server);
+	rendering_server->finish();
+	memdelete(rendering_server);
 
 	memdelete(input);
 
@@ -163,7 +163,7 @@ void OS_Server::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop = NULL;
+	main_loop = nullptr;
 }
 
 void OS_Server::set_main_loop(MainLoop *p_main_loop) {
@@ -289,7 +289,7 @@ String OS_Server::get_system_dir(SystemDir p_dir) const {
 	String pipe;
 	List<String> arg;
 	arg.push_back(xdgparam);
-	Error err = const_cast<OS_Server *>(this)->execute("xdg-user-dir", arg, true, NULL, &pipe);
+	Error err = const_cast<OS_Server *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
 	if (err != OK)
 		return ".";
 	return pipe.strip_edges();

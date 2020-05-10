@@ -6,7 +6,7 @@
 /*                      https://godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 void ProceduralSkyMaterial::set_sky_top_color(const Color &p_sky_top) {
 
 	sky_top_color = p_sky_top;
-	VS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_top_color", sky_top_color.to_linear());
 }
 
 Color ProceduralSkyMaterial::get_sky_top_color() const {
@@ -44,7 +44,7 @@ Color ProceduralSkyMaterial::get_sky_top_color() const {
 void ProceduralSkyMaterial::set_sky_horizon_color(const Color &p_sky_horizon) {
 
 	sky_horizon_color = p_sky_horizon;
-	VS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "sky_horizon_color", sky_horizon_color.to_linear());
 }
 Color ProceduralSkyMaterial::get_sky_horizon_color() const {
 
@@ -54,7 +54,7 @@ Color ProceduralSkyMaterial::get_sky_horizon_color() const {
 void ProceduralSkyMaterial::set_sky_curve(float p_curve) {
 
 	sky_curve = p_curve;
-	VS::get_singleton()->material_set_param(_get_material(), "sky_curve", sky_curve);
+	RS::get_singleton()->material_set_param(_get_material(), "sky_curve", sky_curve);
 }
 float ProceduralSkyMaterial::get_sky_curve() const {
 
@@ -64,7 +64,7 @@ float ProceduralSkyMaterial::get_sky_curve() const {
 void ProceduralSkyMaterial::set_sky_energy(float p_energy) {
 
 	sky_energy = p_energy;
-	VS::get_singleton()->material_set_param(_get_material(), "sky_energy", sky_energy);
+	RS::get_singleton()->material_set_param(_get_material(), "sky_energy", sky_energy);
 }
 float ProceduralSkyMaterial::get_sky_energy() const {
 
@@ -74,7 +74,7 @@ float ProceduralSkyMaterial::get_sky_energy() const {
 void ProceduralSkyMaterial::set_ground_bottom_color(const Color &p_ground_bottom) {
 
 	ground_bottom_color = p_ground_bottom;
-	VS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_bottom_color", ground_bottom_color.to_linear());
 }
 Color ProceduralSkyMaterial::get_ground_bottom_color() const {
 
@@ -84,7 +84,7 @@ Color ProceduralSkyMaterial::get_ground_bottom_color() const {
 void ProceduralSkyMaterial::set_ground_horizon_color(const Color &p_ground_horizon) {
 
 	ground_horizon_color = p_ground_horizon;
-	VS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color.to_linear());
+	RS::get_singleton()->material_set_param(_get_material(), "ground_horizon_color", ground_horizon_color.to_linear());
 }
 Color ProceduralSkyMaterial::get_ground_horizon_color() const {
 
@@ -94,7 +94,7 @@ Color ProceduralSkyMaterial::get_ground_horizon_color() const {
 void ProceduralSkyMaterial::set_ground_curve(float p_curve) {
 
 	ground_curve = p_curve;
-	VS::get_singleton()->material_set_param(_get_material(), "ground_curve", ground_curve);
+	RS::get_singleton()->material_set_param(_get_material(), "ground_curve", ground_curve);
 }
 float ProceduralSkyMaterial::get_ground_curve() const {
 
@@ -104,27 +104,17 @@ float ProceduralSkyMaterial::get_ground_curve() const {
 void ProceduralSkyMaterial::set_ground_energy(float p_energy) {
 
 	ground_energy = p_energy;
-	VS::get_singleton()->material_set_param(_get_material(), "ground_energy", ground_energy);
+	RS::get_singleton()->material_set_param(_get_material(), "ground_energy", ground_energy);
 }
 float ProceduralSkyMaterial::get_ground_energy() const {
 
 	return ground_energy;
 }
 
-void ProceduralSkyMaterial::set_sun_angle_min(float p_angle) {
-
-	sun_angle_min = p_angle;
-	VS::get_singleton()->material_set_param(_get_material(), "sun_angle_min", Math::deg2rad(sun_angle_min));
-}
-float ProceduralSkyMaterial::get_sun_angle_min() const {
-
-	return sun_angle_min;
-}
-
 void ProceduralSkyMaterial::set_sun_angle_max(float p_angle) {
 
 	sun_angle_max = p_angle;
-	VS::get_singleton()->material_set_param(_get_material(), "sun_angle_max", Math::deg2rad(sun_angle_max));
+	RS::get_singleton()->material_set_param(_get_material(), "sun_angle_max", Math::deg2rad(sun_angle_max));
 }
 float ProceduralSkyMaterial::get_sun_angle_max() const {
 
@@ -134,7 +124,7 @@ float ProceduralSkyMaterial::get_sun_angle_max() const {
 void ProceduralSkyMaterial::set_sun_curve(float p_curve) {
 
 	sun_curve = p_curve;
-	VS::get_singleton()->material_set_param(_get_material(), "sun_curve", sun_curve);
+	RS::get_singleton()->material_set_param(_get_material(), "sun_curve", sun_curve);
 }
 float ProceduralSkyMaterial::get_sun_curve() const {
 
@@ -181,9 +171,6 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ground_energy", "energy"), &ProceduralSkyMaterial::set_ground_energy);
 	ClassDB::bind_method(D_METHOD("get_ground_energy"), &ProceduralSkyMaterial::get_ground_energy);
 
-	ClassDB::bind_method(D_METHOD("set_sun_angle_min", "degrees"), &ProceduralSkyMaterial::set_sun_angle_min);
-	ClassDB::bind_method(D_METHOD("get_sun_angle_min"), &ProceduralSkyMaterial::get_sun_angle_min);
-
 	ClassDB::bind_method(D_METHOD("set_sun_angle_max", "degrees"), &ProceduralSkyMaterial::set_sun_angle_max);
 	ClassDB::bind_method(D_METHOD("get_sun_angle_max"), &ProceduralSkyMaterial::get_sun_angle_max);
 
@@ -203,7 +190,6 @@ void ProceduralSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "ground_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_ground_energy", "get_ground_energy");
 
 	ADD_GROUP("Sun", "sun_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_min", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_min", "get_sun_angle_min");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_angle_max", PROPERTY_HINT_RANGE, "0,360,0.01"), "set_sun_angle_max", "get_sun_angle_max");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sun_curve", PROPERTY_HINT_EXP_EASING), "set_sun_curve", "get_sun_curve");
 }
@@ -220,8 +206,7 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	code += "uniform vec4 ground_horizon_color : hint_color = vec4(0.37, 0.33, 0.31, 1.0);\n";
 	code += "uniform float ground_curve : hint_range(0, 1) = 0.02;\n";
 	code += "uniform float ground_energy = 1.0;\n\n";
-	code += "uniform float sun_angle_min = 0.01;\n";
-	code += "uniform float sun_angle_max = 1.0;\n";
+	code += "uniform float sun_angle_max = 1.74;\n";
 	code += "uniform float sun_curve : hint_range(0, 1) = 0.05;\n\n";
 	code += "const float PI = 3.1415926535897932384626433833;\n\n";
 	code += "void fragment() {\n";
@@ -231,37 +216,37 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	code += "\tsky *= sky_energy;\n";
 	code += "\tif (LIGHT0_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT0_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT0_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT0_COLOR * LIGHT0_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT0_SIZE) / (sun_angle_max - LIGHT0_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT0_COLOR * LIGHT0_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
 	code += "\tif (LIGHT1_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT1_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT1_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT1_COLOR * LIGHT1_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT1_SIZE) / (sun_angle_max - LIGHT1_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT1_COLOR * LIGHT1_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
 	code += "\tif (LIGHT2_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT2_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT2_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT2_COLOR * LIGHT2_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT2_SIZE) / (sun_angle_max - LIGHT2_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT2_COLOR * LIGHT2_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
 	code += "\tif (LIGHT3_ENABLED) {\n";
 	code += "\t\tfloat sun_angle = acos(dot(LIGHT3_DIRECTION, EYEDIR));\n";
-	code += "\t\tif (sun_angle < sun_angle_min) {\n";
+	code += "\t\tif (sun_angle < LIGHT3_SIZE) {\n";
 	code += "\t\t\tsky = LIGHT3_COLOR * LIGHT3_ENERGY;\n";
 	code += "\t\t} else if (sun_angle < sun_angle_max) {\n";
-	code += "\t\t\tfloat c2 = (sun_angle - sun_angle_min) / (sun_angle_max - sun_angle_min);\n";
+	code += "\t\t\tfloat c2 = (sun_angle - LIGHT3_SIZE) / (sun_angle_max - LIGHT3_SIZE);\n";
 	code += "\t\t\tsky = mix(LIGHT3_COLOR * LIGHT3_ENERGY, sky, clamp(1.0 - pow(1.0 - c2, 1.0 / sun_curve), 0.0, 1.0));\n";
 	code += "\t\t}\n";
 	code += "\t}\n";
@@ -271,11 +256,11 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	code += "\tCOLOR = mix(ground, sky, step(0.0, EYEDIR.y));\n";
 	code += "}\n";
 
-	shader = VS::get_singleton()->shader_create();
+	shader = RS::get_singleton()->shader_create();
 
-	VS::get_singleton()->shader_set_code(shader, code);
+	RS::get_singleton()->shader_set_code(shader, code);
 
-	VS::get_singleton()->material_set_shader(_get_material(), shader);
+	RS::get_singleton()->material_set_shader(_get_material(), shader);
 
 	set_sky_top_color(Color(0.35, 0.46, 0.71));
 	set_sky_horizon_color(Color(0.55, 0.69, 0.81));
@@ -287,12 +272,13 @@ ProceduralSkyMaterial::ProceduralSkyMaterial() {
 	set_ground_curve(0.02);
 	set_ground_energy(1.0);
 
-	set_sun_angle_min(1.0);
 	set_sun_angle_max(100.0);
 	set_sun_curve(0.05);
 }
 
 ProceduralSkyMaterial::~ProceduralSkyMaterial() {
+	RS::get_singleton()->free(shader);
+	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 
 /////////////////////////////////////////
@@ -301,7 +287,7 @@ ProceduralSkyMaterial::~ProceduralSkyMaterial() {
 void PanoramaSkyMaterial::set_panorama(const Ref<Texture2D> &p_panorama) {
 
 	panorama = p_panorama;
-	VS::get_singleton()->material_set_param(_get_material(), "source_panorama", panorama);
+	RS::get_singleton()->material_set_param(_get_material(), "source_panorama", panorama);
 }
 
 Ref<Texture2D> PanoramaSkyMaterial::get_panorama() const {
@@ -339,16 +325,16 @@ PanoramaSkyMaterial::PanoramaSkyMaterial() {
 	code += "\tCOLOR = texture(source_panorama, SKY_COORDS).rgb;\n";
 	code += "}";
 
-	shader = VS::get_singleton()->shader_create();
+	shader = RS::get_singleton()->shader_create();
 
-	VS::get_singleton()->shader_set_code(shader, code);
+	RS::get_singleton()->shader_set_code(shader, code);
 
-	VS::get_singleton()->material_set_shader(_get_material(), shader);
+	RS::get_singleton()->material_set_shader(_get_material(), shader);
 }
 
 PanoramaSkyMaterial::~PanoramaSkyMaterial() {
-	VS::get_singleton()->free(shader);
-	VS::get_singleton()->material_set_shader(_get_material(), RID());
+	RS::get_singleton()->free(shader);
+	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }
 //////////////////////////////////
 /* PhysicalSkyMaterial */
@@ -356,7 +342,7 @@ PanoramaSkyMaterial::~PanoramaSkyMaterial() {
 void PhysicalSkyMaterial::set_rayleigh_coefficient(float p_rayleigh) {
 
 	rayleigh = p_rayleigh;
-	VS::get_singleton()->material_set_param(_get_material(), "rayleigh", rayleigh);
+	RS::get_singleton()->material_set_param(_get_material(), "rayleigh", rayleigh);
 }
 float PhysicalSkyMaterial::get_rayleigh_coefficient() const {
 
@@ -366,7 +352,7 @@ float PhysicalSkyMaterial::get_rayleigh_coefficient() const {
 void PhysicalSkyMaterial::set_rayleigh_color(Color p_rayleigh_color) {
 
 	rayleigh_color = p_rayleigh_color;
-	VS::get_singleton()->material_set_param(_get_material(), "rayleigh_color", rayleigh_color);
+	RS::get_singleton()->material_set_param(_get_material(), "rayleigh_color", rayleigh_color);
 }
 Color PhysicalSkyMaterial::get_rayleigh_color() const {
 
@@ -376,7 +362,7 @@ Color PhysicalSkyMaterial::get_rayleigh_color() const {
 void PhysicalSkyMaterial::set_mie_coefficient(float p_mie) {
 
 	mie = p_mie;
-	VS::get_singleton()->material_set_param(_get_material(), "mie", mie);
+	RS::get_singleton()->material_set_param(_get_material(), "mie", mie);
 }
 float PhysicalSkyMaterial::get_mie_coefficient() const {
 
@@ -386,7 +372,7 @@ float PhysicalSkyMaterial::get_mie_coefficient() const {
 void PhysicalSkyMaterial::set_mie_eccentricity(float p_eccentricity) {
 
 	mie_eccentricity = p_eccentricity;
-	VS::get_singleton()->material_set_param(_get_material(), "mie_eccentricity", mie_eccentricity);
+	RS::get_singleton()->material_set_param(_get_material(), "mie_eccentricity", mie_eccentricity);
 }
 float PhysicalSkyMaterial::get_mie_eccentricity() const {
 
@@ -396,7 +382,7 @@ float PhysicalSkyMaterial::get_mie_eccentricity() const {
 void PhysicalSkyMaterial::set_mie_color(Color p_mie_color) {
 
 	mie_color = p_mie_color;
-	VS::get_singleton()->material_set_param(_get_material(), "mie_color", mie_color);
+	RS::get_singleton()->material_set_param(_get_material(), "mie_color", mie_color);
 }
 Color PhysicalSkyMaterial::get_mie_color() const {
 	return mie_color;
@@ -405,7 +391,7 @@ Color PhysicalSkyMaterial::get_mie_color() const {
 void PhysicalSkyMaterial::set_turbidity(float p_turbidity) {
 
 	turbidity = p_turbidity;
-	VS::get_singleton()->material_set_param(_get_material(), "turbidity", turbidity);
+	RS::get_singleton()->material_set_param(_get_material(), "turbidity", turbidity);
 }
 float PhysicalSkyMaterial::get_turbidity() const {
 
@@ -415,7 +401,7 @@ float PhysicalSkyMaterial::get_turbidity() const {
 void PhysicalSkyMaterial::set_sun_disk_scale(float p_sun_disk_scale) {
 
 	sun_disk_scale = p_sun_disk_scale;
-	VS::get_singleton()->material_set_param(_get_material(), "sun_disk_scale", sun_disk_scale);
+	RS::get_singleton()->material_set_param(_get_material(), "sun_disk_scale", sun_disk_scale);
 }
 float PhysicalSkyMaterial::get_sun_disk_scale() const {
 
@@ -425,7 +411,7 @@ float PhysicalSkyMaterial::get_sun_disk_scale() const {
 void PhysicalSkyMaterial::set_ground_color(Color p_ground_color) {
 
 	ground_color = p_ground_color;
-	VS::get_singleton()->material_set_param(_get_material(), "ground_color", ground_color);
+	RS::get_singleton()->material_set_param(_get_material(), "ground_color", ground_color);
 }
 Color PhysicalSkyMaterial::get_ground_color() const {
 
@@ -435,7 +421,7 @@ Color PhysicalSkyMaterial::get_ground_color() const {
 void PhysicalSkyMaterial::set_exposure(float p_exposure) {
 
 	exposure = p_exposure;
-	VS::get_singleton()->material_set_param(_get_material(), "exposure", exposure);
+	RS::get_singleton()->material_set_param(_get_material(), "exposure", exposure);
 }
 float PhysicalSkyMaterial::get_exposure() const {
 
@@ -445,7 +431,7 @@ float PhysicalSkyMaterial::get_exposure() const {
 void PhysicalSkyMaterial::set_dither_strength(float p_dither_strength) {
 
 	dither_strength = p_dither_strength;
-	VS::get_singleton()->material_set_param(_get_material(), "dither_strength", dither_strength);
+	RS::get_singleton()->material_set_param(_get_material(), "dither_strength", dither_strength);
 }
 float PhysicalSkyMaterial::get_dither_strength() const {
 
@@ -533,7 +519,6 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "const vec3 UP = vec3( 0.0, 1.0, 0.0 );\n\n";
 
 	code += "// Sun constants\n";
-	code += "const float SOL_SIZE = 0.00872663806;\n";
 	code += "const float SUN_ENERGY = 1000.0;\n\n";
 
 	code += "// optical length at zenith for molecules\n";
@@ -589,8 +574,8 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "\tLin  *= mix(ground_color.rgb, vec3(1.0), smoothstep(-0.1, 0.1, dot(UP, EYEDIR)));\n\n";
 
 	code += "\t// Solar disk and out-scattering\n";
-	code += "\tfloat sunAngularDiameterCos = cos(SOL_SIZE * sun_disk_scale);\n";
-	code += "\tfloat sunAngularDiameterCos2 = cos(SOL_SIZE * sun_disk_scale*0.5);\n";
+	code += "\tfloat sunAngularDiameterCos = cos(LIGHT0_SIZE * sun_disk_scale);\n";
+	code += "\tfloat sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale*0.5);\n";
 	code += "\tfloat sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);\n";
 	code += "\tvec3 L0 = (sun_energy * 1900.0 * extinction) * sundisk * LIGHT0_COLOR;\n";
 	code += "\t// Note: Add nightime here: L0 += night_sky * extinction\n\n";
@@ -602,11 +587,11 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "\tCOLOR += (hash(EYEDIR * 1741.9782) * 0.08 - 0.04) * 0.008 * dither_strength;\n";
 	code += "}\n";
 
-	shader = VS::get_singleton()->shader_create();
+	shader = RS::get_singleton()->shader_create();
 
-	VS::get_singleton()->shader_set_code(shader, code);
+	RS::get_singleton()->shader_set_code(shader, code);
 
-	VS::get_singleton()->material_set_shader(_get_material(), shader);
+	RS::get_singleton()->material_set_shader(_get_material(), shader);
 
 	set_rayleigh_coefficient(2.0);
 	set_rayleigh_color(Color(0.056, 0.14, 0.3));
@@ -621,6 +606,6 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 }
 
 PhysicalSkyMaterial::~PhysicalSkyMaterial() {
-	VS::get_singleton()->free(shader);
-	VS::get_singleton()->material_set_shader(_get_material(), RID());
+	RS::get_singleton()->free(shader);
+	RS::get_singleton()->material_set_shader(_get_material(), RID());
 }

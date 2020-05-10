@@ -108,6 +108,15 @@
 		<member name="ao_texture_channel" type="int" setter="set_ao_texture_channel" getter="get_ao_texture_channel" enum="BaseMaterial3D.TextureChannel">
 			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
+		<member name="backlight" type="Color" setter="set_backlight" getter="get_backlight">
+			The color used by the backlight effect. Represents the light passing through an object.
+		</member>
+		<member name="backlight_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code], the backlight effect is enabled.
+		</member>
+		<member name="backlight_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+			Texture used to control the backlight effect per-pixel. Added to [member backlight].
+		</member>
 		<member name="billboard_keep_scale" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the shader will keep the scale set for the mesh. Otherwise the scale is lost when billboarding. Only applies when [member billboard_mode] is [constant BILLBOARD_ENABLED].
 		</member>
@@ -150,6 +159,7 @@
 		</member>
 		<member name="detail_normal" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture that specifies the per-pixel normal of the detail overlay.
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" enum="BaseMaterial3D.DetailUV">
 			Specifies whether to use [code]UV[/code] or [code]UV2[/code] for the detail layer. See [enum DetailUV] for options.
@@ -241,6 +251,7 @@
 		</member>
 		<member name="normal_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to specify the normal at a given pixel. The [code]normal_texture[/code] only uses the red and green channels. The normal read from [code]normal_texture[/code] is oriented around the surface normal provided by the [Mesh].
+			[b]Note:[/b] Godot expects the normal map to use X+, Y-, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
 		</member>
 		<member name="orm_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
@@ -296,6 +307,7 @@
 			Specifies the channel of the [member ao_texture] in which the ambient occlusion information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
 		<member name="shading_mode" type="int" setter="set_shading_mode" getter="get_shading_mode" enum="BaseMaterial3D.ShadingMode" default="1">
+			Sets whether the shading takes place per-pixel or per-vertex. Per-vertex lighting is faster, making it the best choice for mobile applications, however it looks considerably worse than per-pixel.
 		</member>
 		<member name="shadow_to_opacity" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], enables the "shadow to opacity" render mode where lighting modifies the alpha so shadowed areas are opaque and non-shadowed areas are transparent. Useful for overlaying shadows onto a camera feed in AR.
@@ -306,26 +318,32 @@
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.
 		</member>
+		<member name="subsurf_scatter_skin_mode" type="bool" setter="set_flag" getter="get_flag">
+			If [code]true[/code], subsurface scattering will use a special mode optimized for the color and density of human skin.
+		</member>
 		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength">
 			The strength of the subsurface scattering effect.
 		</member>
 		<member name="subsurf_scatter_texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			Texture used to control the subsurface scattering strength. Stored in the red texture channel. Multiplied by [member subsurf_scatter_strength].
 		</member>
+		<member name="subsurf_scatter_transmittance_boost" type="float" setter="set_transmittance_boost" getter="get_transmittance_boost">
+		</member>
+		<member name="subsurf_scatter_transmittance_color" type="Color" setter="set_transmittance_color" getter="get_transmittance_color">
+		</member>
+		<member name="subsurf_scatter_transmittance_curve" type="float" setter="set_transmittance_curve" getter="get_transmittance_curve">
+		</member>
+		<member name="subsurf_scatter_transmittance_depth" type="float" setter="set_transmittance_depth" getter="get_transmittance_depth">
+		</member>
+		<member name="subsurf_scatter_transmittance_enabled" type="bool" setter="set_feature" getter="get_feature">
+		</member>
+		<member name="subsurf_scatter_transmittance_texture" type="Texture2D" setter="set_texture" getter="get_texture">
+		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum TextureFilter] for options.
 		</member>
 		<member name="texture_repeat" type="bool" setter="set_flag" getter="get_flag" default="true">
 			Repeat flags for the texture. See [enum TextureFilter] for options.
-		</member>
-		<member name="transmission" type="Color" setter="set_transmission" getter="get_transmission">
-			The color used by the transmission effect. Represents the light passing through an object.
-		</member>
-		<member name="transmission_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
-			If [code]true[/code], the transmission effect is enabled.
-		</member>
-		<member name="transmission_texture" type="Texture2D" setter="set_texture" getter="get_texture">
-			Texture used to control the transmission effect per-pixel. Added to [member transmission].
 		</member>
 		<member name="transparency" type="int" setter="set_transparency" getter="get_transparency" enum="BaseMaterial3D.Transparency" default="0">
 			If [code]true[/code], transparency is enabled on the body. See also [member blend_mode].
@@ -405,39 +423,47 @@
 		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="10" enum="TextureParam">
 			Texture specifying per-pixel subsurface scattering.
 		</constant>
-		<constant name="TEXTURE_TRANSMISSION" value="11" enum="TextureParam">
-			Texture specifying per-pixel transmission color.
+		<constant name="TEXTURE_SUBSURFACE_TRANSMITTANCE" value="11" enum="TextureParam">
+			Texture specifying per-pixel transmittance for subsurface scattering.
 		</constant>
-		<constant name="TEXTURE_REFRACTION" value="12" enum="TextureParam">
+		<constant name="TEXTURE_BACKLIGHT" value="12" enum="TextureParam">
+			Texture specifying per-pixel backlight color.
+		</constant>
+		<constant name="TEXTURE_REFRACTION" value="13" enum="TextureParam">
 			Texture specifying per-pixel refraction strength.
 		</constant>
-		<constant name="TEXTURE_DETAIL_MASK" value="13" enum="TextureParam">
+		<constant name="TEXTURE_DETAIL_MASK" value="14" enum="TextureParam">
 			Texture specifying per-pixel detail mask blending value.
 		</constant>
-		<constant name="TEXTURE_DETAIL_ALBEDO" value="14" enum="TextureParam">
+		<constant name="TEXTURE_DETAIL_ALBEDO" value="15" enum="TextureParam">
 			Texture specifying per-pixel detail color.
 		</constant>
-		<constant name="TEXTURE_DETAIL_NORMAL" value="15" enum="TextureParam">
+		<constant name="TEXTURE_DETAIL_NORMAL" value="16" enum="TextureParam">
 			Texture specifying per-pixel detail normal.
 		</constant>
-		<constant name="TEXTURE_ORM" value="16" enum="TextureParam">
+		<constant name="TEXTURE_ORM" value="17" enum="TextureParam">
+			Texture holding ambient occlusion, roughness, and metallic.
 		</constant>
-		<constant name="TEXTURE_MAX" value="17" enum="TextureParam">
+		<constant name="TEXTURE_MAX" value="18" enum="TextureParam">
 			Represents the size of the [enum TextureParam] enum.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST" value="0" enum="TextureFilter">
 			The texture filter reads from the nearest pixel only. The simplest and fastest method of filtering, but the texture will look pixelized.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR" value="1" enum="TextureFilter">
-			The texture filter blends between the nearest four pixels. Use this for most cases where you want to avoid a pixelated style.
+			The texture filter blends between the nearest 4 pixels. Use this when you want to avoid a pixelated style, but do not want mipmaps.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS" value="2" enum="TextureFilter">
+			The texture filter reads from the nearest pixel in the nearest mipmap. The fastest way to read from textures with mipmaps.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS" value="3" enum="TextureFilter">
+			The texture filter blends between the nearest 4 pixels and between the nearest 2 mipmaps. Use this for most cases as mipmaps are important to smooth out pixels that are far from the camera.
 		</constant>
 		<constant name="TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC" value="4" enum="TextureFilter">
+			The texture filter reads from the nearest pixel, but selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera.
 		</constant>
 		<constant name="TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC" value="5" enum="TextureFilter">
+			The texture filter blends between the nearest 4 pixels and selects a mipmap based on the angle between the surface and the camera view. This reduces artifacts on surfaces that are almost in line with the camera. This is the slowest of the filtering options, but results in the highest quality texturing.
 		</constant>
 		<constant name="TEXTURE_FILTER_MAX" value="6" enum="TextureFilter">
 			Represents the size of the [enum TextureFilter] enum.
@@ -455,8 +481,10 @@
 			The material will use the texture's alpha values for transparency.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_SCISSOR" value="2" enum="Transparency">
+			The material will cut off all values below a threshold, the rest will remain opaque.
 		</constant>
 		<constant name="TRANSPARENCY_ALPHA_DEPTH_PRE_PASS" value="3" enum="Transparency">
+			The material will use the texture's alpha value for transparency, but will still be rendered in the pre-pass.
 		</constant>
 		<constant name="TRANSPARENCY_MAX" value="4" enum="Transparency">
 			Represents the size of the [enum Transparency] enum.
@@ -492,20 +520,24 @@
 			Constant for setting [member ao_enabled].
 		</constant>
 		<constant name="FEATURE_HEIGHT_MAPPING" value="6" enum="Feature">
+			Constant for setting [member heightmap_enabled].
 		</constant>
-		<constant name="FEATURE_SUBSURACE_SCATTERING" value="7" enum="Feature">
+		<constant name="FEATURE_SUBSURFACE_SCATTERING" value="7" enum="Feature">
 			Constant for setting [member subsurf_scatter_enabled].
 		</constant>
-		<constant name="FEATURE_TRANSMISSION" value="8" enum="Feature">
-			Constant for setting [member transmission_enabled].
+		<constant name="FEATURE_SUBSURFACE_TRANSMITTANCE" value="8" enum="Feature">
+			Constant for setting [member subsurf_scatter_transmittance_enabled].
 		</constant>
-		<constant name="FEATURE_REFRACTION" value="9" enum="Feature">
+		<constant name="FEATURE_BACKLIGHT" value="9" enum="Feature">
+			Constant for setting [member backlight_enabled].
+		</constant>
+		<constant name="FEATURE_REFRACTION" value="10" enum="Feature">
 			Constant for setting [member refraction_enabled].
 		</constant>
-		<constant name="FEATURE_DETAIL" value="10" enum="Feature">
+		<constant name="FEATURE_DETAIL" value="11" enum="Feature">
 			Constant for setting [member detail_enabled].
 		</constant>
-		<constant name="FEATURE_MAX" value="11" enum="Feature">
+		<constant name="FEATURE_MAX" value="12" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
@@ -587,11 +619,15 @@
 			Enables the shadow to opacity feature.
 		</constant>
 		<constant name="FLAG_USE_TEXTURE_REPEAT" value="16" enum="Flags">
+			Enables the texture to repeat when UV coordinates are outside the 0-1 range. If using one of the linear filtering modes, this can result in artifacts at the edges of a texture when the sampler filters across the edges of the texture.
 		</constant>
 		<constant name="FLAG_INVERT_HEIGHTMAP" value="17" enum="Flags">
 			Invert values read from a depth texture to convert them to height values (heightmap).
 		</constant>
-		<constant name="FLAG_MAX" value="18" enum="Flags">
+		<constant name="FLAG_SUBSURFACE_MODE_SKIN" value="18" enum="Flags">
+			Enables the skin mode for subsurface scattering which is used to improve the look of subsurface scattering when used for human skin.
+		</constant>
+		<constant name="FLAG_MAX" value="19" enum="Flags">
 			Represents the size of the [enum Flags] enum.
 		</constant>
 		<constant name="DIFFUSE_BURLEY" value="0" enum="DiffuseMode">
@@ -634,8 +670,8 @@
 			The object's X axis will always face the camera.
 		</constant>
 		<constant name="BILLBOARD_PARTICLES" value="3" enum="BillboardMode">
-			Used for particle systems when assigned to [Particles] and [CPUParticles] nodes. Enables [code]particles_anim_*[/code] properties.
-			The [member ParticlesMaterial.anim_speed] or [member CPUParticles.anim_speed] should also be set to a positive value for the animation to play.
+			Used for particle systems when assigned to [GPUParticles3D] and [CPUParticles3D] nodes. Enables [code]particles_anim_*[/code] properties.
+			The [member ParticlesMaterial.anim_speed] or [member CPUParticles3D.anim_speed] should also be set to a positive value for the animation to play.
 		</constant>
 		<constant name="TEXTURE_CHANNEL_RED" value="0" enum="TextureChannel">
 			Used to read from the red channel of a texture.

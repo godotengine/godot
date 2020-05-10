@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "test_ordered_hash_map.h"
+
 #include "core/ordered_hash_map.h"
 #include "core/os/os.h"
 #include "core/pair.h"
@@ -139,7 +141,7 @@ TestFunc test_funcs[] = {
 	test_size,
 	test_iteration,
 	test_const_iteration,
-	0
+	nullptr
 
 };
 
@@ -166,6 +168,6 @@ MainLoop *test() {
 
 	OS::get_singleton()->print("Passed %i of %i tests\n", passed, count);
 
-	return NULL;
+	return nullptr;
 }
 } // namespace TestOrderedHashMap

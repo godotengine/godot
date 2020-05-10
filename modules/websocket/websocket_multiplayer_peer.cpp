@@ -42,7 +42,7 @@ WebSocketMultiplayerPeer::WebSocketMultiplayerPeer() {
 	_current_packet.source = 0;
 	_current_packet.destination = 0;
 	_current_packet.size = 0;
-	_current_packet.data = NULL;
+	_current_packet.data = nullptr;
 }
 
 WebSocketMultiplayerPeer::~WebSocketMultiplayerPeer() {
@@ -74,12 +74,12 @@ int WebSocketMultiplayerPeer::_gen_unique_id() const {
 void WebSocketMultiplayerPeer::_clear() {
 
 	_peer_map.clear();
-	if (_current_packet.data != NULL)
+	if (_current_packet.data != nullptr)
 		memfree(_current_packet.data);
 
 	for (List<Packet>::Element *E = _incoming_packets.front(); E; E = E->next()) {
 		memfree(E->get().data);
-		E->get().data = NULL;
+		E->get().data = nullptr;
 	}
 
 	_incoming_packets.clear();
@@ -109,9 +109,9 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 
 	r_buffer_size = 0;
 
-	if (_current_packet.data != NULL) {
+	if (_current_packet.data != nullptr) {
 		memfree(_current_packet.data);
-		_current_packet.data = NULL;
+		_current_packet.data = nullptr;
 	}
 
 	_current_packet = _incoming_packets.front()->get();

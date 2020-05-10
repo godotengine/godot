@@ -236,7 +236,7 @@ public:
 	/* ENVIRONMENT API */
 
 	struct Environment {
-		VS::EnvironmentBG bg_mode;
+		RS::EnvironmentBG bg_mode;
 
 		RID sky;
 		float sky_custom_fov;
@@ -259,7 +259,7 @@ public:
 		float glow_intensity;
 		float glow_strength;
 		float glow_bloom;
-		VS::EnvironmentGlowBlendMode glow_blend_mode;
+		RS::EnvironmentGlowBlendMode glow_blend_mode;
 		float glow_hdr_bleed_threshold;
 		float glow_hdr_bleed_scale;
 		float glow_hdr_luminance_cap;
@@ -269,13 +269,13 @@ public:
 		float dof_blur_far_distance;
 		float dof_blur_far_transition;
 		float dof_blur_far_amount;
-		VS::EnvironmentDOFBlurQuality dof_blur_far_quality;
+		RS::EnvironmentDOFBlurQuality dof_blur_far_quality;
 
 		bool dof_blur_near_enabled;
 		float dof_blur_near_distance;
 		float dof_blur_near_transition;
 		float dof_blur_near_amount;
-		VS::EnvironmentDOFBlurQuality dof_blur_near_quality;
+		RS::EnvironmentDOFBlurQuality dof_blur_near_quality;
 
 		bool adjustments_enabled;
 		float adjustments_brightness;
@@ -300,7 +300,7 @@ public:
 		float fog_height_curve;
 
 		Environment() :
-				bg_mode(VS::ENV_BG_CLEAR_COLOR),
+				bg_mode(RS::ENV_BG_CLEAR_COLOR),
 				sky_custom_fov(0.0),
 				bg_energy(1.0),
 				sky_ambient(0),
@@ -313,7 +313,7 @@ public:
 				glow_intensity(0.8),
 				glow_strength(1.0),
 				glow_bloom(0.0),
-				glow_blend_mode(VS::ENV_GLOW_BLEND_MODE_SOFTLIGHT),
+				glow_blend_mode(RS::ENV_GLOW_BLEND_MODE_SOFTLIGHT),
 				glow_hdr_bleed_threshold(1.0),
 				glow_hdr_bleed_scale(2.0),
 				glow_hdr_luminance_cap(12.0),
@@ -322,12 +322,12 @@ public:
 				dof_blur_far_distance(10),
 				dof_blur_far_transition(5),
 				dof_blur_far_amount(0.1),
-				dof_blur_far_quality(VS::ENV_DOF_BLUR_QUALITY_MEDIUM),
+				dof_blur_far_quality(RS::ENV_DOF_BLUR_QUALITY_MEDIUM),
 				dof_blur_near_enabled(false),
 				dof_blur_near_distance(2),
 				dof_blur_near_transition(1),
 				dof_blur_near_amount(0.1),
-				dof_blur_near_quality(VS::ENV_DOF_BLUR_QUALITY_MEDIUM),
+				dof_blur_near_quality(RS::ENV_DOF_BLUR_QUALITY_MEDIUM),
 				adjustments_enabled(false),
 				adjustments_brightness(1.0),
 				adjustments_contrast(1.0),
@@ -353,7 +353,7 @@ public:
 
 	virtual RID environment_create();
 
-	virtual void environment_set_background(RID p_env, VS::EnvironmentBG p_bg);
+	virtual void environment_set_background(RID p_env, RS::EnvironmentBG p_bg);
 	virtual void environment_set_sky(RID p_env, RID p_sky);
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale);
 	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
@@ -363,15 +363,15 @@ public:
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0);
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id);
 
-	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
+	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, RS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_amount, RS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale);
 	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
 	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_in, float p_fade_out, float p_depth_tolerance, bool p_roughness);
-	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, RS::EnvironmentSSAOQuality p_quality, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness);
 
-	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
+	virtual void environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 
 	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp);
 
@@ -381,7 +381,7 @@ public:
 
 	virtual bool is_environment(RID p_env);
 
-	virtual VS::EnvironmentBG environment_get_background(RID p_env);
+	virtual RS::EnvironmentBG environment_get_background(RID p_env);
 	virtual int environment_get_canvas_max_layer(RID p_env);
 
 	/* LIGHT INSTANCE */
@@ -575,7 +575,7 @@ public:
 
 		_FORCE_INLINE_ Element *add_element() {
 			if (element_count + alpha_element_count >= max_elements)
-				return NULL;
+				return nullptr;
 
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
@@ -583,7 +583,7 @@ public:
 
 		_FORCE_INLINE_ Element *add_alpha_element() {
 			if (element_count + alpha_element_count >= max_elements) {
-				return NULL;
+				return nullptr;
 			}
 
 			int idx = max_elements - alpha_element_count - 1;
@@ -650,7 +650,7 @@ public:
 	virtual bool free(RID p_rid);
 
 	virtual void set_scene_pass(uint64_t p_pass);
-	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
+	virtual void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw);
 
 	void iteration();
 	void initialize();

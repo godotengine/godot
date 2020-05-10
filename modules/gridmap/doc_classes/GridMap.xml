@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GridMap" inherits="Spatial" version="4.0">
+<class name="GridMap" inherits="Node3D" version="4.0">
 	<brief_description>
 		Node for 3D tile-based maps.
 	</brief_description>

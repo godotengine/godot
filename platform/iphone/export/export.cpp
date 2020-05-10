@@ -71,8 +71,8 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_buildphase;
 		String modules_buildgrp;
 	};
-
 	struct ExportArchitecture {
+
 		String name;
 		bool is_default;
 
@@ -106,7 +106,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 
-	bool is_package_name_valid(const String &p_package, String *r_error = NULL) const {
+	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
 
 		String pname = p_package;
 
@@ -795,7 +795,7 @@ void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPrese
 	String pbx_resources_refs;
 
 	const String file_info_format = String("$build_id = {isa = PBXBuildFile; fileRef = $ref_id; };\n") +
-									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = $name; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
+									"$ref_id = {isa = PBXFileReference; lastKnownFileType = $file_type; name = \"$name\"; path = \"$file_path\"; sourceTree = \"<group>\"; };\n";
 	for (int i = 0; i < p_additional_assets.size(); ++i) {
 		String build_id = (++current_id).str();
 		String ref_id = (++current_id).str();
@@ -925,6 +925,13 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		Vector<String> frameworks = export_plugins[i]->get_ios_frameworks();
 		Error err = _export_additional_assets(p_out_dir, frameworks, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
+
+		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
+		for (int j = 0; j < project_static_libs.size(); j++)
+			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
+		err = _export_additional_assets(p_out_dir, project_static_libs, true, r_exported_assets);
+		ERR_FAIL_COND_V(err, err);
+
 		Vector<String> ios_bundle_files = export_plugins[i]->get_ios_bundle_files();
 		err = _export_additional_assets(p_out_dir, ios_bundle_files, false, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
@@ -1076,7 +1083,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	ERR_FAIL_COND_V(!tmp_app_path, ERR_CANT_CREATE);
 
 	print_line("Unzipping...");
-	FileAccess *src_f = NULL;
+	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
@@ -1098,7 +1105,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		//get filename
 		unz_file_info info;
 		char fname[16384];
-		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, NULL, 0, NULL, 0);
+		ret = unzGetCurrentFileInfo(src_pkg_zip, &info, fname, 16384, nullptr, 0, nullptr, 0);
 
 		String file = fname;
 
@@ -1200,6 +1207,22 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		ERR_PRINT("Requested template library '" + library_to_use + "' not found. It might be missing from your template archive.");
 		memdelete(tmp_app_path);
 		return ERR_FILE_NOT_FOUND;
+	}
+
+	// Copy project static libs to the project
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
+		for (int j = 0; j < project_static_libs.size(); j++) {
+			const String &static_lib_path = project_static_libs[j];
+			String dest_lib_file_path = dest_dir + static_lib_path.get_file();
+			Error lib_copy_err = tmp_app_path->copy(static_lib_path, dest_lib_file_path);
+			if (lib_copy_err != OK) {
+				ERR_PRINT("Can't copy '" + static_lib_path + "'.");
+				memdelete(tmp_app_path);
+				return lib_copy_err;
+			}
+		}
 	}
 
 	String iconset_dir = dest_dir + binary_name + "/Images.xcassets/AppIcon.appiconset/";

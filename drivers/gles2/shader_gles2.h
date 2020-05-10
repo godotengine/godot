@@ -44,7 +44,7 @@
 #include "core/math/camera_matrix.h"
 #include "core/pair.h"
 #include "core/variant.h"
-#include "servers/visual/shader_language.h"
+#include "servers/rendering/shader_language.h"
 
 #include <stdio.h>
 
@@ -121,7 +121,7 @@ private:
 			id = 0;
 			vert_id = 0;
 			frag_id = 0;
-			uniform_location = NULL;
+			uniform_location = nullptr;
 			code_version = 0;
 			ok = false;
 		}

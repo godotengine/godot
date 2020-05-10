@@ -31,12 +31,12 @@
 #include "check_button.h"
 
 #include "core/print_string.h"
-#include "servers/visual_server.h"
+#include "servers/rendering_server.h"
 
 Size2 CheckButton::get_icon_size() const {
 
-	Ref<Texture2D> on = Control::get_icon(is_disabled() ? "on_disabled" : "on");
-	Ref<Texture2D> off = Control::get_icon(is_disabled() ? "off_disabled" : "off");
+	Ref<Texture2D> on = Control::get_theme_icon(is_disabled() ? "on_disabled" : "on");
+	Ref<Texture2D> off = Control::get_theme_icon(is_disabled() ? "off_disabled" : "off");
 	Size2 tex_size = Size2(0, 0);
 	if (!on.is_null())
 		tex_size = Size2(on->get_width(), on->get_height());
@@ -52,8 +52,8 @@ Size2 CheckButton::get_minimum_size() const {
 	Size2 tex_size = get_icon_size();
 	minsize.width += tex_size.width;
 	if (get_text().length() > 0)
-		minsize.width += get_constant("hseparation");
-	Ref<StyleBox> sb = get_stylebox("normal");
+		minsize.width += get_theme_constant("hseparation");
+	Ref<StyleBox> sb = get_theme_stylebox("normal");
 	minsize.height = MAX(minsize.height, tex_size.height + sb->get_margin(MARGIN_TOP) + sb->get_margin(MARGIN_BOTTOM));
 
 	return minsize;
@@ -68,15 +68,15 @@ void CheckButton::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 
-		Ref<Texture2D> on = Control::get_icon(is_disabled() ? "on_disabled" : "on");
-		Ref<Texture2D> off = Control::get_icon(is_disabled() ? "off_disabled" : "off");
+		Ref<Texture2D> on = Control::get_theme_icon(is_disabled() ? "on_disabled" : "on");
+		Ref<Texture2D> off = Control::get_theme_icon(is_disabled() ? "off_disabled" : "off");
 
-		Ref<StyleBox> sb = get_stylebox("normal");
+		Ref<StyleBox> sb = get_theme_stylebox("normal");
 		Vector2 ofs;
 		Size2 tex_size = get_icon_size();
 
 		ofs.x = get_size().width - (tex_size.width + sb->get_margin(MARGIN_RIGHT));
-		ofs.y = (get_size().height - tex_size.height) / 2 + get_constant("check_vadjust");
+		ofs.y = (get_size().height - tex_size.height) / 2 + get_theme_constant("check_vadjust");
 
 		if (is_pressed())
 			on->draw(ci, ofs);

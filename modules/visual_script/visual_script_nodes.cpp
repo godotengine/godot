@@ -32,7 +32,7 @@
 
 #include "core/engine.h"
 #include "core/global_constants.h"
-#include "core/os/input.h"
+#include "core/input/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "scene/main/node.h"
@@ -1483,7 +1483,7 @@ void VisualScriptConstant::set_constant_type(Variant::Type p_type) {
 
 	type = p_type;
 	Callable::CallError ce;
-	value = Variant::construct(type, NULL, 0, ce);
+	value = Variant::construct(type, nullptr, 0, ce);
 	ports_changed_notify();
 	_change_notify();
 }
@@ -2548,7 +2548,7 @@ VisualScriptNodeInstance *VisualScriptSceneNode::instance(VisualScriptInstance *
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
 
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene)
-		return NULL;
+		return nullptr;
 
 	Ref<Script> scr = p_current_node->get_script();
 
@@ -2561,7 +2561,7 @@ static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const
 			return n;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 #endif
@@ -4006,7 +4006,7 @@ void VisualScriptDeconstruct::_update_elements() {
 	elements.clear();
 	Variant v;
 	Callable::CallError ce;
-	v = Variant::construct(type, NULL, 0, ce);
+	v = Variant::construct(type, nullptr, 0, ce);
 
 	List<PropertyInfo> pinfo;
 	v.get_property_list(&pinfo);
@@ -4184,9 +4184,12 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("operators/logic/select", create_node_generic<VisualScriptSelect>);
 
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR2), create_node_deconst_typed<Variant::Type::VECTOR2>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR2I), create_node_deconst_typed<Variant::Type::VECTOR2I>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR3), create_node_deconst_typed<Variant::Type::VECTOR3>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::VECTOR3I), create_node_deconst_typed<Variant::Type::VECTOR3I>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::COLOR), create_node_deconst_typed<Variant::Type::COLOR>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::RECT2), create_node_deconst_typed<Variant::Type::RECT2>);
+	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::RECT2I), create_node_deconst_typed<Variant::Type::RECT2I>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::TRANSFORM2D), create_node_deconst_typed<Variant::Type::TRANSFORM2D>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::PLANE), create_node_deconst_typed<Variant::Type::PLANE>);
 	VisualScriptLanguage::singleton->add_register_func("functions/deconstruct/" + Variant::get_type_name(Variant::Type::QUAT), create_node_deconst_typed<Variant::Type::QUAT>);

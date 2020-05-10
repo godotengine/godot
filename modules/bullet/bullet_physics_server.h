@@ -36,7 +36,7 @@
 #include "core/rid_owner.h"
 #include "joint_bullet.h"
 #include "rigid_body_bullet.h"
-#include "servers/physics_server.h"
+#include "servers/physics_server_3d.h"
 #include "shape_bullet.h"
 #include "soft_body_bullet.h"
 #include "space_bullet.h"
@@ -44,8 +44,8 @@
 	@author AndreaCatania
 */
 
-class BulletPhysicsServer : public PhysicsServer {
-	GDCLASS(BulletPhysicsServer, PhysicsServer);
+class BulletPhysicsServer3D : public PhysicsServer3D {
+	GDCLASS(BulletPhysicsServer3D, PhysicsServer3D);
 
 	friend class BulletPhysicsDirectSpaceState;
 
@@ -64,8 +64,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	BulletPhysicsServer();
-	~BulletPhysicsServer();
+	BulletPhysicsServer3D();
+	~BulletPhysicsServer3D();
 
 	_FORCE_INLINE_ RID_PtrOwner<SpaceBullet> *get_space_owner() {
 		return &space_owner;
@@ -111,7 +111,7 @@ public:
 	/// Not supported
 	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const;
 
-	virtual PhysicsDirectSpaceState *space_get_direct_state(RID p_space);
+	virtual PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space);
 
 	virtual void space_set_debug_contacts(RID p_space, int p_max_contacts);
 	virtual Vector<Vector3> space_get_contacts(RID p_space) const;
@@ -252,16 +252,16 @@ public:
 	virtual bool body_is_ray_pickable(RID p_body) const;
 
 	// this function only works on physics process, errors and returns null otherwise
-	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body);
+	virtual PhysicsDirectBodyState3D *body_get_direct_state(RID p_body);
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true);
 	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
 
 	/* SOFT BODY API */
 
 	virtual RID soft_body_create(bool p_init_sleeping = false);
 
-	virtual void soft_body_update_visual_server(RID p_body, class SoftBodyVisualServerHandler *p_visual_server_handler);
+	virtual void soft_body_update_rendering_server(RID p_body, class SoftBodyRenderingServerHandler *p_rendering_server_handler);
 
 	virtual void soft_body_set_space(RID p_body, RID p_space);
 	virtual RID soft_body_get_space(RID p_body) const;
@@ -387,7 +387,7 @@ public:
 	}
 
 	static bool singleton_isActive() {
-		return static_cast<BulletPhysicsServer *>(get_singleton())->active;
+		return static_cast<BulletPhysicsServer3D *>(get_singleton())->active;
 	}
 
 	bool isActive() {
