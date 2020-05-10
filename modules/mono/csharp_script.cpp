@@ -3542,10 +3542,15 @@ bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
 		return false;
 	}
 
-#ifndef _MSC_VER
-#warning TODO: Implement CSharpScript::inherits_script and other relevant changes after GH-38063.
-#endif
-	return false;
+	if (script_class == nullptr || cs->script_class == nullptr) {
+		return false;
+	}
+
+	if (script_class == cs->script_class) {
+		return true;
+	}
+
+	return cs->script_class->is_assignable_from(script_class);
 }
 
 Ref<Script> CSharpScript::get_base_script() const {
