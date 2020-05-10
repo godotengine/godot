@@ -277,7 +277,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			val.normal.x = decode_float(&buf[0]);
 			val.normal.y = decode_float(&buf[4]);
 			val.normal.z = decode_float(&buf[8]);
-			val.d = decode_float(&buf[12]);
+			val.distance = decode_float(&buf[12]);
 			r_variant = val;
 
 			if (r_len)
@@ -1140,7 +1140,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				encode_float(p.normal.x, &buf[0]);
 				encode_float(p.normal.y, &buf[4]);
 				encode_float(p.normal.z, &buf[8]);
-				encode_float(p.d, &buf[12]);
+				encode_float(p.distance, &buf[12]);
 			}
 
 			r_len += 4 * 4;

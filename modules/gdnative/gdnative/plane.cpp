@@ -37,10 +37,10 @@
 extern "C" {
 #endif
 
-void GDAPI godot_plane_new_with_reals(godot_plane *r_dest, const godot_real p_a, const godot_real p_b, const godot_real p_c, const godot_real p_d) {
+void GDAPI godot_plane_new_with_reals(godot_plane *r_dest, const godot_real p_a, const godot_real p_b, const godot_real p_c, const godot_real p_distance) {
 
 	Plane *dest = (Plane *)r_dest;
-	*dest = Plane(p_a, p_b, p_c, p_d);
+	*dest = Plane(p_a, p_b, p_c, p_distance);
 }
 
 void GDAPI godot_plane_new_with_vectors(godot_plane *r_dest, const godot_vector3 *p_v1, const godot_vector3 *p_v2, const godot_vector3 *p_v3) {
@@ -162,14 +162,14 @@ godot_vector3 GDAPI godot_plane_get_normal(const godot_plane *p_self) {
 	return *v3;
 }
 
-godot_real GDAPI godot_plane_get_d(const godot_plane *p_self) {
+godot_real GDAPI godot_plane_get_distance(const godot_plane *p_self) {
 	const Plane *self = (const Plane *)p_self;
-	return self->d;
+	return self->distance;
 }
 
-void GDAPI godot_plane_set_d(godot_plane *p_self, const godot_real p_d) {
+void GDAPI godot_plane_set_distance(godot_plane *p_self, const godot_real p_distance) {
 	Plane *self = (Plane *)p_self;
-	self->d = p_d;
+	self->distance = p_distance;
 }
 
 #ifdef __cplusplus

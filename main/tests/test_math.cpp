@@ -370,7 +370,7 @@ void test_vec(Plane p_vec) {
 	Plane v0 = cm.xform4(p_vec);
 
 	print_line("out: " + v0);
-	v0.normal.z = (v0.d / 100.0 * 2.0 - 1.0) * v0.d;
+	v0.normal.z = (v0.distance / 100.0 * 2.0 - 1.0) * v0.distance;
 	print_line("out_F: " + v0);
 }
 
