@@ -21,7 +21,7 @@
     @returns the host on success and NULL on failure
 
     @remarks ENet will strategically drop packets on specific sides of a connection between hosts
-    to ensure the host's bandwidth is not overwhelmed.  The bandwidth parameters also determine
+    to ensure the host's bandwidth is not overwhelmed. The bandwidth parameters also determine
     the window size of a connection which limits the amount of reliable packets that may be in transit
     at any given time.
 */
