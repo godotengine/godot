@@ -2425,6 +2425,7 @@ bool CSharpScript::_update_exports() {
 	if (is_editor)
 		placeholder_fallback_enabled = true; // until proven otherwise
 #endif
+
 	if (!valid)
 		return false;
 
