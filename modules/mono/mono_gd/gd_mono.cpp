@@ -133,6 +133,10 @@ void gd_mono_debug_init() {
 
 	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
 
+	if (da_args.length()) {
+		OS::get_singleton()->set_environment("GODOT_MONO_DEBUGGER_AGENT", String());
+	}
+
 #ifdef TOOLS_ENABLED
 	int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
 	bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
@@ -515,8 +519,8 @@ void GDMono::add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly) {
 
 GDMonoAssembly *GDMono::get_loaded_assembly(const String &p_name) {
 
-	if (p_name == "mscorlib")
-		return get_corlib_assembly();
+	if (p_name == "mscorlib" && corlib_assembly)
+		return corlib_assembly;
 
 	MonoDomain *domain = mono_domain_get();
 	uint32_t domain_id = domain ? mono_domain_get_id(domain) : 0;
@@ -526,7 +530,9 @@ GDMonoAssembly *GDMono::get_loaded_assembly(const String &p_name) {
 
 bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly) {
 
+#ifdef DEBUG_ENABLED
 	CRASH_COND(!r_assembly);
+#endif
 
 	MonoAssemblyName *aname = mono_assembly_name_new(p_name.utf8());
 	bool result = load_assembly(p_name, aname, r_assembly, p_refonly);
@@ -538,26 +544,27 @@ bool GDMono::load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bo
 
 bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly) {
 
+#ifdef DEBUG_ENABLED
 	CRASH_COND(!r_assembly);
+#endif
+
+	return load_assembly(p_name, p_aname, r_assembly, p_refonly, GDMonoAssembly::get_default_search_dirs());
+}
+
+bool GDMono::load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly, const Vector<String> &p_search_dirs) {
+
+#ifdef DEBUG_ENABLED
+	CRASH_COND(!r_assembly);
+#endif
 
 	print_verbose("Mono: Loading assembly " + p_name + (p_refonly ? " (refonly)" : "") + "...");
 
-	MonoImageOpenStatus status = MONO_IMAGE_OK;
-	MonoAssembly *assembly = mono_assembly_load_full(p_aname, nullptr, &status, p_refonly);
+	GDMonoAssembly *assembly = GDMonoAssembly::load(p_name, p_aname, p_refonly, p_search_dirs);
 
 	if (!assembly)
 		return false;
 
-	ERR_FAIL_COND_V(status != MONO_IMAGE_OK, false);
-
-	uint32_t domain_id = mono_domain_get_id(mono_domain_get());
-
-	GDMonoAssembly **stored_assembly = assemblies[domain_id].getptr(p_name);
-
-	ERR_FAIL_COND_V(stored_assembly == nullptr, false);
-	ERR_FAIL_COND_V((*stored_assembly)->get_assembly() != assembly, false);
-
-	*r_assembly = *stored_assembly;
+	*r_assembly = assembly;
 
 	print_verbose("Mono: Assembly " + p_name + (p_refonly ? " (refonly)" : "") + " loaded from path: " + (*r_assembly)->get_path());
 

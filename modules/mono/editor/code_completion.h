@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  macros.h                                                             */
+/*  code_completion.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,46 +28,29 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef UTIL_MACROS_H
-#define UTIL_MACROS_H
+#ifndef CODE_COMPLETION_H
+#define CODE_COMPLETION_H
 
-#define _GD_VARNAME_CONCAT_B_(m_ignore, m_name) m_name
-#define _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_B_(hello there, m_a##m_b##m_c)
-#define _GD_VARNAME_CONCAT_(m_a, m_b, m_c) _GD_VARNAME_CONCAT_A_(m_a, m_b, m_c)
-#define GD_UNIQUE_NAME(m_name) _GD_VARNAME_CONCAT_(m_name, _, __COUNTER__)
-
-// unreachable
-
-#if defined(_MSC_VER)
-#define GD_UNREACHABLE() __assume(0)
-#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
-#define GD_UNREACHABLE() __builtin_unreachable()
-#else
-#define GD_UNREACHABLE() \
-	CRASH_NOW();         \
-	do {                 \
-	} while (true);
-#endif
+#include "core/ustring.h"
+#include "core/variant.h"
 
 namespace gdmono {
 
-template <typename F>
-struct ScopeExit {
-	ScopeExit(F p_exit_func) :
-			exit_func(p_exit_func) {}
-	~ScopeExit() { exit_func(); }
-	F exit_func;
+enum class CompletionKind {
+	INPUT_ACTIONS = 0,
+	NODE_PATHS,
+	RESOURCE_PATHS,
+	SCENE_PATHS,
+	SHADER_PARAMS,
+	SIGNALS,
+	THEME_COLORS,
+	THEME_CONSTANTS,
+	THEME_FONTS,
+	THEME_STYLES
 };
 
-class ScopeExitAux {
-public:
-	template <typename F>
-	ScopeExit<F> operator+(F p_exit_func) { return ScopeExit<F>(p_exit_func); }
-};
+PackedStringArray get_code_completion(CompletionKind p_kind, const String &p_script_file);
 
 } // namespace gdmono
 
-#define SCOPE_EXIT \
-	auto GD_UNIQUE_NAME(gd_scope_exit) = gdmono::ScopeExitAux() + [=]() -> void
-
-#endif // UTIL_MACROS_H
+#endif // CODE_COMPLETION_H

@@ -15,9 +15,9 @@ namespace GodotTools
     {
         private static readonly List<BuildInfo> BuildsInProgress = new List<BuildInfo>();
 
-        public const string PropNameMsbuildMono = "MSBuild (Mono)";
-        public const string PropNameMsbuildVs = "MSBuild (VS Build Tools)";
-        public const string PropNameMsbuildJetBrains = "MSBuild (JetBrains Rider)";
+        public const string PropNameMSBuildMono = "MSBuild (Mono)";
+        public const string PropNameMSBuildVs = "MSBuild (VS Build Tools)";
+        public const string PropNameMSBuildJetBrains = "MSBuild (JetBrains Rider)";
 
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
         public const string MsBuildLogFileName = "msbuild_log.txt";
@@ -219,7 +219,7 @@ namespace GodotTools
             if (File.Exists(editorScriptsMetadataPath))
                 File.Copy(editorScriptsMetadataPath, playerScriptsMetadataPath);
 
-            var currentPlayRequest = GodotSharpEditor.Instance.GodotIdeManager.GodotIdeServer.CurrentPlayRequest;
+            var currentPlayRequest = GodotSharpEditor.Instance.CurrentPlaySettings;
 
             if (currentPlayRequest != null)
             {
@@ -233,7 +233,8 @@ namespace GodotTools
                         ",server=n");
                 }
 
-                return true; // Requested play from an external editor/IDE which already built the project
+                if (!currentPlayRequest.Value.BuildBeforePlaying)
+                    return true; // Requested play from an external editor/IDE which already built the project
             }
 
             var godotDefines = new[]
@@ -251,9 +252,7 @@ namespace GodotTools
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
             var msbuild = BuildTool.MsBuildMono;
             if (OS.IsWindows)
-                msbuild = RiderPathManager.IsExternalEditorSetToRider(editorSettings)
-                        ? BuildTool.JetBrainsMsBuild
-                        : BuildTool.MsBuildVs;
+                msbuild = RiderPathManager.IsExternalEditorSetToRider(editorSettings) ? BuildTool.JetBrainsMsBuild : BuildTool.MsBuildVs;
 
             EditorDef("mono/builds/build_tool", msbuild);
 
@@ -263,8 +262,8 @@ namespace GodotTools
                 ["name"] = "mono/builds/build_tool",
                 ["hint"] = Godot.PropertyHint.Enum,
                 ["hint_string"] = OS.IsWindows ?
-                    $"{PropNameMsbuildMono},{PropNameMsbuildVs},{PropNameMsbuildJetBrains}" :
-                    $"{PropNameMsbuildMono}"
+                    $"{PropNameMSBuildMono},{PropNameMSBuildVs},{PropNameMSBuildJetBrains}" :
+                    $"{PropNameMSBuildMono}"
             });
 
             EditorDef("mono/builds/print_build_output", false);

@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace GodotTools.Utils
+namespace GodotTools.IdeMessaging.Utils
 {
-    public sealed class NotifyAwaiter<T> : INotifyCompletion
+    public class NotifyAwaiter<T> : INotifyCompletion
     {
         private Action continuation;
         private Exception exception;
