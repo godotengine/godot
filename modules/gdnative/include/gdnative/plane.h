@@ -92,9 +92,9 @@ void GDAPI godot_plane_set_normal(godot_plane *p_self, const godot_vector3 *p_no
 
 godot_vector3 GDAPI godot_plane_get_normal(const godot_plane *p_self);
 
-godot_real GDAPI godot_plane_get_distance(const godot_plane *p_self);
+godot_real GDAPI godot_plane_get_d(const godot_plane *p_self);
 
-void GDAPI godot_plane_set_distance(godot_plane *p_self, const godot_real p_distance);
+void GDAPI godot_plane_set_d(godot_plane *p_self, const godot_real p_d);
 
 #ifdef __cplusplus
 }

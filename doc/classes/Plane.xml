@@ -19,10 +19,10 @@
 			</argument>
 			<argument index="2" name="c" type="float">
 			</argument>
-			<argument index="3" name="distance" type="float">
+			<argument index="3" name="d" type="float">
 			</argument>
 			<description>
-				Creates a plane from the four parameters. The three components of the resulting plane's [member normal] are [code]a[/code], [code]b[/code] and [code]c[/code], and the plane has a distance of [code]distance[/code] from the origin.
+				Creates a plane from the four parameters. The three components of the resulting plane's [member normal] are [code]a[/code], [code]b[/code] and [code]c[/code], and the plane has a distance of [code]d[/code] from the origin.
 			</description>
 		</method>
 		<method name="Plane">
@@ -43,7 +43,7 @@
 			</return>
 			<argument index="0" name="normal" type="Vector3">
 			</argument>
-			<argument index="1" name="distance" type="float">
+			<argument index="1" name="d" type="float">
 			</argument>
 			<description>
 				Creates a plane from the normal and the plane's distance to the origin.

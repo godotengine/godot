@@ -111,7 +111,7 @@ Point2 XRCamera3D::unproject_position(const Vector3 &p_pos) const {
 	Plane p(get_camera_transform().xform_inv(p_pos), 1.0);
 
 	p = cm.xform4(p);
-	p.normal /= p.distance;
+	p.normal /= p.d;
 
 	Point2 res;
 	res.x = (p.normal.x * 0.5 + 0.5) * viewport_size.x;

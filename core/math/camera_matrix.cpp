@@ -59,10 +59,10 @@ Plane CameraMatrix::xform4(const Plane &p_vec4) const {
 
 	Plane ret;
 
-	ret.normal.x = matrix[0][0] * p_vec4.normal.x + matrix[1][0] * p_vec4.normal.y + matrix[2][0] * p_vec4.normal.z + matrix[3][0] * p_vec4.distance;
-	ret.normal.y = matrix[0][1] * p_vec4.normal.x + matrix[1][1] * p_vec4.normal.y + matrix[2][1] * p_vec4.normal.z + matrix[3][1] * p_vec4.distance;
-	ret.normal.z = matrix[0][2] * p_vec4.normal.x + matrix[1][2] * p_vec4.normal.y + matrix[2][2] * p_vec4.normal.z + matrix[3][2] * p_vec4.distance;
-	ret.distance = matrix[0][3] * p_vec4.normal.x + matrix[1][3] * p_vec4.normal.y + matrix[2][3] * p_vec4.normal.z + matrix[3][3] * p_vec4.distance;
+	ret.normal.x = matrix[0][0] * p_vec4.normal.x + matrix[1][0] * p_vec4.normal.y + matrix[2][0] * p_vec4.normal.z + matrix[3][0] * p_vec4.d;
+	ret.normal.y = matrix[0][1] * p_vec4.normal.x + matrix[1][1] * p_vec4.normal.y + matrix[2][1] * p_vec4.normal.z + matrix[3][1] * p_vec4.d;
+	ret.normal.z = matrix[0][2] * p_vec4.normal.x + matrix[1][2] * p_vec4.normal.y + matrix[2][2] * p_vec4.normal.z + matrix[3][2] * p_vec4.d;
+	ret.d = matrix[0][3] * p_vec4.normal.x + matrix[1][3] * p_vec4.normal.y + matrix[2][3] * p_vec4.normal.z + matrix[3][3] * p_vec4.d;
 	return ret;
 }
 
@@ -233,7 +233,7 @@ real_t CameraMatrix::get_z_far() const {
 	new_plane.normal = -new_plane.normal;
 	new_plane.normalize();
 
-	return new_plane.distance;
+	return new_plane.d;
 }
 real_t CameraMatrix::get_z_near() const {
 
@@ -244,7 +244,7 @@ real_t CameraMatrix::get_z_near() const {
 			-matrix[15] - matrix[14]);
 
 	new_plane.normalize();
-	return new_plane.distance;
+	return new_plane.d;
 }
 
 Vector2 CameraMatrix::get_viewport_half_extents() const {

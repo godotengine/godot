@@ -3120,14 +3120,14 @@
         ]
       },
       {
-        "name": "godot_plane_get_distance",
+        "name": "godot_plane_get_d",
         "return_type": "godot_real",
         "arguments": [
           ["const godot_plane *", "p_self"]
         ]
       },
       {
-        "name": "godot_plane_set_distance",
+        "name": "godot_plane_set_d",
         "return_type": "void",
         "arguments": [
           ["godot_plane *", "p_self"],

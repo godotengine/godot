@@ -255,7 +255,7 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 				ta[i * 4 + 0] = vtx.tangent.normal.x;
 				ta[i * 4 + 1] = vtx.tangent.normal.y;
 				ta[i * 4 + 2] = vtx.tangent.normal.z;
-				ta[i * 4 + 3] = vtx.tangent.distance;
+				ta[i * 4 + 3] = vtx.tangent.d;
 			}
 			if (uv)
 				uv[i] = vtx.uv;
