@@ -162,7 +162,8 @@ void HingeJointBullet::set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_v
 		case PhysicsServer3D::HINGE_JOINT_FLAG_ENABLE_MOTOR:
 			hingeConstraint->enableMotor(p_value);
 			break;
-		case PhysicsServer3D::HINGE_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::HINGE_JOINT_FLAG_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 

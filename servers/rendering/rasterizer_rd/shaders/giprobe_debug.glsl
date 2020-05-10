@@ -130,12 +130,24 @@ void main() {
 
 	float strength = 0.0;
 	switch (side) {
-		case POS_X: strength = aniso_pos.x; break;
-		case POS_Y: strength = aniso_pos.y; break;
-		case POS_Z: strength = aniso_pos.z; break;
-		case NEG_X: strength = aniso_neg.x; break;
-		case NEG_Y: strength = aniso_neg.y; break;
-		case NEG_Z: strength = aniso_neg.z; break;
+		case POS_X:
+			strength = aniso_pos.x;
+			break;
+		case POS_Y:
+			strength = aniso_pos.y;
+			break;
+		case POS_Z:
+			strength = aniso_pos.z;
+			break;
+		case NEG_X:
+			strength = aniso_neg.x;
+			break;
+		case NEG_Y:
+			strength = aniso_neg.y;
+			break;
+		case NEG_Z:
+			strength = aniso_neg.z;
+			break;
 	}
 
 	color_interp.xyz *= strength;

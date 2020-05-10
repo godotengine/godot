@@ -199,14 +199,24 @@ class GetClassAndNamespace {
 
 							switch (next) {
 
-								case 'b': res = 8; break;
-								case 't': res = 9; break;
-								case 'n': res = 10; break;
-								case 'f': res = 12; break;
+								case 'b':
+									res = 8;
+									break;
+								case 't':
+									res = 9;
+									break;
+								case 'n':
+									res = 10;
+									break;
+								case 'f':
+									res = 12;
+									break;
 								case 'r':
 									res = 13;
 									break;
-								case '\"': res = '\"'; break;
+								case '\"':
+									res = '\"';
+									break;
 								case '\\':
 									res = '\\';
 									break;

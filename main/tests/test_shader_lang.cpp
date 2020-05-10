@@ -61,10 +61,14 @@ static String _typestr(SL::DataType p_type) {
 static String _prestr(SL::DataPrecision p_pres) {
 
 	switch (p_pres) {
-		case SL::PRECISION_LOWP: return "lowp ";
-		case SL::PRECISION_MEDIUMP: return "mediump ";
-		case SL::PRECISION_HIGHP: return "highp ";
-		case SL::PRECISION_DEFAULT: return "";
+		case SL::PRECISION_LOWP:
+			return "lowp ";
+		case SL::PRECISION_MEDIUMP:
+			return "mediump ";
+		case SL::PRECISION_HIGHP:
+			return "highp ";
+		case SL::PRECISION_DEFAULT:
+			return "";
 	}
 	return "";
 }
@@ -77,23 +81,40 @@ static String _opstr(SL::Operator p_op) {
 static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNode::Value> &p_values) {
 
 	switch (p_type) {
-		case SL::TYPE_BOOL: return p_values[0].boolean ? "true" : "false";
-		case SL::TYPE_BVEC2: return String() + "bvec2(" + (p_values[0].boolean ? "true" : "false") + (p_values[1].boolean ? "true" : "false") + ")";
-		case SL::TYPE_BVEC3: return String() + "bvec3(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + ")";
-		case SL::TYPE_BVEC4: return String() + "bvec4(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + "," + (p_values[3].boolean ? "true" : "false") + ")";
-		case SL::TYPE_INT: return rtos(p_values[0].sint);
-		case SL::TYPE_IVEC2: return String() + "ivec2(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + ")";
-		case SL::TYPE_IVEC3: return String() + "ivec3(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + ")";
-		case SL::TYPE_IVEC4: return String() + "ivec4(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + "," + rtos(p_values[3].sint) + ")";
-		case SL::TYPE_UINT: return rtos(p_values[0].real);
-		case SL::TYPE_UVEC2: return String() + "uvec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
-		case SL::TYPE_UVEC3: return String() + "uvec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
-		case SL::TYPE_UVEC4: return String() + "uvec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
-		case SL::TYPE_FLOAT: return rtos(p_values[0].real);
-		case SL::TYPE_VEC2: return String() + "vec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
-		case SL::TYPE_VEC3: return String() + "vec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
-		case SL::TYPE_VEC4: return String() + "vec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
-		default: ERR_FAIL_V(String());
+		case SL::TYPE_BOOL:
+			return p_values[0].boolean ? "true" : "false";
+		case SL::TYPE_BVEC2:
+			return String() + "bvec2(" + (p_values[0].boolean ? "true" : "false") + (p_values[1].boolean ? "true" : "false") + ")";
+		case SL::TYPE_BVEC3:
+			return String() + "bvec3(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + ")";
+		case SL::TYPE_BVEC4:
+			return String() + "bvec4(" + (p_values[0].boolean ? "true" : "false") + "," + (p_values[1].boolean ? "true" : "false") + "," + (p_values[2].boolean ? "true" : "false") + "," + (p_values[3].boolean ? "true" : "false") + ")";
+		case SL::TYPE_INT:
+			return rtos(p_values[0].sint);
+		case SL::TYPE_IVEC2:
+			return String() + "ivec2(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + ")";
+		case SL::TYPE_IVEC3:
+			return String() + "ivec3(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + ")";
+		case SL::TYPE_IVEC4:
+			return String() + "ivec4(" + rtos(p_values[0].sint) + "," + rtos(p_values[1].sint) + "," + rtos(p_values[2].sint) + "," + rtos(p_values[3].sint) + ")";
+		case SL::TYPE_UINT:
+			return rtos(p_values[0].real);
+		case SL::TYPE_UVEC2:
+			return String() + "uvec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
+		case SL::TYPE_UVEC3:
+			return String() + "uvec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
+		case SL::TYPE_UVEC4:
+			return String() + "uvec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
+		case SL::TYPE_FLOAT:
+			return rtos(p_values[0].real);
+		case SL::TYPE_VEC2:
+			return String() + "vec2(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + ")";
+		case SL::TYPE_VEC3:
+			return String() + "vec3(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + ")";
+		case SL::TYPE_VEC4:
+			return String() + "vec4(" + rtos(p_values[0].real) + "," + rtos(p_values[1].real) + "," + rtos(p_values[2].real) + "," + rtos(p_values[3].real) + ")";
+		default:
+			ERR_FAIL_V(String());
 	}
 }
 

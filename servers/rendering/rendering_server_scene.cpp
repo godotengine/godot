@@ -1523,9 +1523,15 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 			int splits = 0;
 			switch (RSG::storage->light_directional_get_shadow_mode(p_instance->base)) {
-				case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL: splits = 1; break;
-				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS: splits = 2; break;
-				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: splits = 4; break;
+				case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
+					splits = 1;
+					break;
+				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+					splits = 2;
+					break;
+				case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
+					splits = 4;
+					break;
 			}
 
 			real_t distances[5];

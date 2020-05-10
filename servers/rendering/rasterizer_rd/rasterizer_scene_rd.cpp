@@ -1990,8 +1990,12 @@ int RasterizerSceneRD::get_directional_light_shadow_size(RID p_light_intance) {
 	switch (storage->light_directional_get_shadow_mode(light_instance->light)) {
 		case RS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
 			break; //none
-		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS: r.size.height /= 2; break;
-		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: r.size /= 2; break;
+		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+			r.size.height /= 2;
+			break;
+		case RS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:
+			r.size /= 2;
+			break;
 	}
 
 	return MAX(r.size.width, r.size.height);
