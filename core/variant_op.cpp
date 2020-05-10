@@ -78,38 +78,38 @@
 #define TYPE(PREFIX, OP, TYPE) &&PREFIX##_##OP##_##TYPE
 
 /* clang-format off */
-#define TYPES(PREFIX, OP) {                   \
-		TYPE(PREFIX, OP, NIL),                \
-		TYPE(PREFIX, OP, BOOL),               \
-		TYPE(PREFIX, OP, INT),                \
-		TYPE(PREFIX, OP, FLOAT),               \
-		TYPE(PREFIX, OP, STRING),             \
-		TYPE(PREFIX, OP, VECTOR2),            \
-		TYPE(PREFIX, OP, VECTOR2I),            \
-		TYPE(PREFIX, OP, RECT2),              \
-	TYPE(PREFIX, OP, RECT2I),              \
-		TYPE(PREFIX, OP, VECTOR3),            \
-	TYPE(PREFIX, OP, VECTOR3I),            \
-		TYPE(PREFIX, OP, TRANSFORM2D),        \
-		TYPE(PREFIX, OP, PLANE),              \
-		TYPE(PREFIX, OP, QUAT),               \
-		TYPE(PREFIX, OP, AABB),              \
-		TYPE(PREFIX, OP, BASIS),              \
-		TYPE(PREFIX, OP, TRANSFORM),          \
-		TYPE(PREFIX, OP, COLOR),              \
+#define TYPES(PREFIX, OP) {                     \
+		TYPE(PREFIX, OP, NIL),                  \
+		TYPE(PREFIX, OP, BOOL),                 \
+		TYPE(PREFIX, OP, INT),                  \
+		TYPE(PREFIX, OP, FLOAT),                \
+		TYPE(PREFIX, OP, STRING),               \
+		TYPE(PREFIX, OP, VECTOR2),              \
+		TYPE(PREFIX, OP, VECTOR2I),             \
+		TYPE(PREFIX, OP, RECT2),                \
+		TYPE(PREFIX, OP, RECT2I),               \
+		TYPE(PREFIX, OP, VECTOR3),              \
+		TYPE(PREFIX, OP, VECTOR3I),             \
+		TYPE(PREFIX, OP, TRANSFORM2D),          \
+		TYPE(PREFIX, OP, PLANE),                \
+		TYPE(PREFIX, OP, QUAT),                 \
+		TYPE(PREFIX, OP, AABB),                 \
+		TYPE(PREFIX, OP, BASIS),                \
+		TYPE(PREFIX, OP, TRANSFORM),            \
+		TYPE(PREFIX, OP, COLOR),                \
 		TYPE(PREFIX, OP, STRING_NAME),          \
-		TYPE(PREFIX, OP, NODE_PATH),          \
-		TYPE(PREFIX, OP, _RID),               \
-		TYPE(PREFIX, OP, OBJECT),             \
+		TYPE(PREFIX, OP, NODE_PATH),            \
+		TYPE(PREFIX, OP, _RID),                 \
+		TYPE(PREFIX, OP, OBJECT),               \
 		TYPE(PREFIX, OP, CALLABLE),             \
-		TYPE(PREFIX, OP, SIGNAL),             \
-		TYPE(PREFIX, OP, DICTIONARY),         \
-		TYPE(PREFIX, OP, ARRAY),              \
+		TYPE(PREFIX, OP, SIGNAL),               \
+		TYPE(PREFIX, OP, DICTIONARY),           \
+		TYPE(PREFIX, OP, ARRAY),                \
 		TYPE(PREFIX, OP, PACKED_BYTE_ARRAY),    \
-		TYPE(PREFIX, OP, PACKED_INT32_ARRAY),     \
-		TYPE(PREFIX, OP, PACKED_INT64_ARRAY),     \
-		TYPE(PREFIX, OP, PACKED_FLOAT32_ARRAY),    \
-		TYPE(PREFIX, OP, PACKED_FLOAT64_ARRAY),    \
+		TYPE(PREFIX, OP, PACKED_INT32_ARRAY),   \
+		TYPE(PREFIX, OP, PACKED_INT64_ARRAY),   \
+		TYPE(PREFIX, OP, PACKED_FLOAT32_ARRAY), \
+		TYPE(PREFIX, OP, PACKED_FLOAT64_ARRAY), \
 		TYPE(PREFIX, OP, PACKED_STRING_ARRAY),  \
 		TYPE(PREFIX, OP, PACKED_VECTOR2_ARRAY), \
 		TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY), \
@@ -3458,17 +3458,25 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return _data._float > 0.0;
 		} break;
 		case VECTOR2: {
-			int64_t from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
-			int64_t to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
+			double from = reinterpret_cast<const Vector2 *>(_data._mem)->x;
+			double to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
+
+			r_iter = from;
+
+			return from < to;
+		} break;
+		case VECTOR2I: {
+			int64_t from = reinterpret_cast<const Vector2i *>(_data._mem)->x;
+			int64_t to = reinterpret_cast<const Vector2i *>(_data._mem)->y;
 
 			r_iter = from;
 
 			return from < to;
 		} break;
 		case VECTOR3: {
-			int64_t from = reinterpret_cast<const Vector3 *>(_data._mem)->x;
-			int64_t to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
-			int64_t step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
+			double from = reinterpret_cast<const Vector3 *>(_data._mem)->x;
+			double to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
+			double step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
 
 			r_iter = from;
 
@@ -3476,10 +3484,22 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 				return false;
 			} else if (from < to) {
 				return step > 0;
-			} else {
-				return step < 0;
 			}
-			//return true;
+			return step < 0;
+		} break;
+		case VECTOR3I: {
+			int64_t from = reinterpret_cast<const Vector3i *>(_data._mem)->x;
+			int64_t to = reinterpret_cast<const Vector3i *>(_data._mem)->y;
+			int64_t step = reinterpret_cast<const Vector3i *>(_data._mem)->z;
+
+			r_iter = from;
+
+			if (from == to) {
+				return false;
+			} else if (from < to) {
+				return step > 0;
+			}
+			return step < 0;
 		} break;
 		case OBJECT: {
 
@@ -3640,7 +3660,19 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case VECTOR2: {
-			int64_t to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
+			double to = reinterpret_cast<const Vector2 *>(_data._mem)->y;
+
+			double idx = r_iter;
+			idx++;
+
+			if (idx >= to)
+				return false;
+
+			r_iter = idx;
+			return true;
+		} break;
+		case VECTOR2I: {
+			int64_t to = reinterpret_cast<const Vector2i *>(_data._mem)->y;
 
 			int64_t idx = r_iter;
 			idx++;
@@ -3652,8 +3684,24 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case VECTOR3: {
-			int64_t to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
-			int64_t step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
+			double to = reinterpret_cast<const Vector3 *>(_data._mem)->y;
+			double step = reinterpret_cast<const Vector3 *>(_data._mem)->z;
+
+			double idx = r_iter;
+			idx += step;
+
+			if (step < 0 && idx <= to)
+				return false;
+
+			if (step > 0 && idx >= to)
+				return false;
+
+			r_iter = idx;
+			return true;
+		} break;
+		case VECTOR3I: {
+			int64_t to = reinterpret_cast<const Vector3i *>(_data._mem)->y;
+			int64_t step = reinterpret_cast<const Vector3i *>(_data._mem)->z;
 
 			int64_t idx = r_iter;
 			idx += step;
@@ -3844,7 +3892,15 @@ Variant Variant::iter_get(const Variant &r_iter, bool &r_valid) const {
 
 			return r_iter;
 		} break;
+		case VECTOR2I: {
+
+			return r_iter;
+		} break;
 		case VECTOR3: {
+
+			return r_iter;
+		} break;
+		case VECTOR3I: {
 
 			return r_iter;
 		} break;
