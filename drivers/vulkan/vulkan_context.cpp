@@ -601,12 +601,13 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 	_create_device();
 
 	static PFN_vkGetDeviceProcAddr g_gdpa = nullptr;
-#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                              \
-	{                                                                                                      \
-		if (!g_gdpa) g_gdpa = (PFN_vkGetDeviceProcAddr)vkGetInstanceProcAddr(inst, "vkGetDeviceProcAddr"); \
-		fp##entrypoint = (PFN_vk##entrypoint)g_gdpa(dev, "vk" #entrypoint);                                \
-		ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                                    \
-				"vkGetDeviceProcAddr failed to find vk" #entrypoint);                                      \
+#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                                                     \
+	{                                                                                             \
+		if (!g_gdpa)                                                                              \
+			g_gdpa = (PFN_vkGetDeviceProcAddr)vkGetInstanceProcAddr(inst, "vkGetDeviceProcAddr"); \
+		fp##entrypoint = (PFN_vk##entrypoint)g_gdpa(dev, "vk" #entrypoint);                       \
+		ERR_FAIL_COND_V_MSG(fp##entrypoint == nullptr, ERR_CANT_CREATE,                           \
+				"vkGetDeviceProcAddr failed to find vk" #entrypoint);                             \
 	}
 
 	GET_DEVICE_PROC_ADDR(device, CreateSwapchainKHR);

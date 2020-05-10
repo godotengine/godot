@@ -2260,7 +2260,8 @@ bool Main::iteration() {
 		uint64_t time_step = 1000000L / target_fps;
 		target_ticks += time_step;
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
-		if (current_ticks < target_ticks) OS::get_singleton()->delay_usec(target_ticks - current_ticks);
+		if (current_ticks < target_ticks)
+			OS::get_singleton()->delay_usec(target_ticks - current_ticks);
 		current_ticks = OS::get_singleton()->get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - time_step), current_ticks + time_step);
 	}

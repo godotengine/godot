@@ -177,7 +177,8 @@ void *godot_get_class_tag(const godot_string_name *p_class) {
 }
 
 godot_object *godot_object_cast_to(const godot_object *p_object, void *p_class_tag) {
-	if (!p_object) return nullptr;
+	if (!p_object)
+		return nullptr;
 	Object *o = (Object *)p_object;
 
 	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : nullptr;

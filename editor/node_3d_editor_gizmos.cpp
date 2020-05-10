@@ -431,7 +431,8 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 	ERR_FAIL_COND_V(!spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) return false;
+	if (hidden && !gizmo_plugin->is_selectable_when_hidden())
+		return false;
 
 	if (selectable_icon_size > 0.0f) {
 		Vector3 origin = spatial_node->get_global_transform().get_origin();
@@ -470,10 +471,12 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 					break;
 				}
 			}
-			if (any_out) break;
+			if (any_out)
+				break;
 		}
 
-		if (!any_out) return true;
+		if (!any_out)
+			return true;
 	}
 
 	if (collision_mesh.is_valid()) {
@@ -504,7 +507,8 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	ERR_FAIL_COND_V(!spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) return false;
+	if (hidden && !gizmo_plugin->is_selectable_when_hidden())
+		return false;
 
 	if (r_gizmo_handle && !hidden) {
 
@@ -785,7 +789,8 @@ EditorNode3DGizmo::EditorNode3DGizmo() {
 
 EditorNode3DGizmo::~EditorNode3DGizmo() {
 
-	if (gizmo_plugin != nullptr) gizmo_plugin->unregister_gizmo(this);
+	if (gizmo_plugin != nullptr)
+		gizmo_plugin->unregister_gizmo(this);
 	clear();
 }
 

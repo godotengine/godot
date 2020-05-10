@@ -265,7 +265,8 @@ void AppxPackager::make_content_types(const String &p_path) {
 
 		String ext = file_metadata[i].name.get_extension();
 
-		if (types.has(ext)) continue;
+		if (types.has(ext))
+			continue;
 
 		types[ext] = content_type(ext);
 
@@ -664,8 +665,10 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 	bool _valid_resource_name(const String &p_name) const {
 
-		if (p_name.empty()) return false;
-		if (p_name.ends_with(".")) return false;
+		if (p_name.empty())
+			return false;
+		if (p_name.ends_with("."))
+			return false;
 
 		static const char *invalid_names[] = {
 			"CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
@@ -675,7 +678,8 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 		const char **t = invalid_names;
 		while (*t) {
-			if (p_name == *t) return false;
+			if (p_name == *t)
+				return false;
 			t++;
 		}
 
@@ -686,19 +690,25 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 		Vector<String> parts = p_guid.split("-");
 
-		if (parts.size() != 5) return false;
-		if (parts[0].length() != 8) return false;
+		if (parts.size() != 5)
+			return false;
+		if (parts[0].length() != 8)
+			return false;
 		for (int i = 1; i < 4; i++)
-			if (parts[i].length() != 4) return false;
-		if (parts[4].length() != 12) return false;
+			if (parts[i].length() != 4)
+				return false;
+		if (parts[4].length() != 12)
+			return false;
 
 		return true;
 	}
 
 	bool _valid_bgcolor(const String &p_color) const {
 
-		if (p_color.empty()) return true;
-		if (p_color.begins_with("#") && p_color.is_valid_html_color()) return true;
+		if (p_color.empty())
+			return true;
+		if (p_color.begins_with("#") && p_color.is_valid_html_color())
+			return true;
 
 		// Colors from https://msdn.microsoft.com/en-us/library/windows/apps/dn934817.aspx
 		static const char *valid_colors[] = {
@@ -732,7 +742,8 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		const char **color = valid_colors;
 
 		while (*color) {
-			if (p_color == *color) return true;
+			if (p_color == *color)
+				return true;
 			color++;
 		}
 
@@ -896,7 +907,8 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			ERR_PRINT("Unable to load logo");
 		}
 
-		if (!image) return data;
+		if (!image)
+			return data;
 
 		String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("uwp_tmp_logo.png");
 
@@ -1301,7 +1313,8 @@ public:
 				path = path.replace(".scale-100", "");
 
 				data = _get_image_data(p_preset, path);
-				if (data.size() > 0) do_read = false;
+				if (data.size() > 0)
+					do_read = false;
 			}
 
 			//read

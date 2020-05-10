@@ -6688,7 +6688,8 @@ static int _get_first_ident_pos(const String &p_code) {
 		if (GETCHAR(0) == '/' && GETCHAR(1) == '/') {
 			idx += 2;
 			while (true) {
-				if (GETCHAR(0) == 0) return 0;
+				if (GETCHAR(0) == 0)
+					return 0;
 				if (GETCHAR(0) == '\n') {
 					idx++;
 					break; // loop
@@ -6698,7 +6699,8 @@ static int _get_first_ident_pos(const String &p_code) {
 		} else if (GETCHAR(0) == '/' && GETCHAR(1) == '*') {
 			idx += 2;
 			while (true) {
-				if (GETCHAR(0) == 0) return 0;
+				if (GETCHAR(0) == 0)
+					return 0;
 				if (GETCHAR(0) == '*' && GETCHAR(1) == '/') {
 					idx += 2;
 					break; // loop
