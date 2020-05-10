@@ -883,17 +883,14 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 		ret = script_instance->call(p_method, p_args, p_argcount, r_error);
 		//force jumptable
 		switch (r_error.error) {
-
-			case Callable::CallError::CALL_OK:
-				return ret;
 			case Callable::CallError::CALL_ERROR_INVALID_METHOD:
+			case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL:
 				break;
+			case Callable::CallError::CALL_OK:
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
 				return ret;
-			case Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL: {
-			}
 		}
 	}
 

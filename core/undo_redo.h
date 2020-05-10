@@ -130,6 +130,8 @@ public:
 
 	UndoRedo();
 	~UndoRedo();
+
+	Map<String, int> argument_count;
 };
 
 VARIANT_ENUM_CAST(UndoRedo::MergeMode);

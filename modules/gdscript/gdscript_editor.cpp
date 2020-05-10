@@ -119,8 +119,8 @@ void GDScriptLanguage::make_template(const String &p_class_name, const String &p
 	p_script->set_source_code(_template);
 }
 
-bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
-
+bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path,
+		List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	GDScriptParser parser;
 
 	Error err = parser.parse(p_script, p_path.get_base_dir(), true, p_path, false, r_safe_lines);
@@ -150,29 +150,30 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 		const GDScriptParser::ClassNode *cl = static_cast<const GDScriptParser::ClassNode *>(root);
 		Map<int, String> funcs;
 		for (int i = 0; i < cl->functions.size(); i++) {
-
-			funcs[cl->functions[i]->line] = cl->functions[i]->name;
+			funcs[cl->functions[i]->line] = String(cl->functions[i]->name) + ":" + itos(cl->functions[i]->arguments.size());
 		}
 
 		for (int i = 0; i < cl->static_functions.size(); i++) {
 
-			funcs[cl->static_functions[i]->line] = cl->static_functions[i]->name;
+			funcs[cl->static_functions[i]->line] = String(cl->static_functions[i]->name) + ":" + itos(cl->static_functions[i]->arguments.size());
 		}
 
 		for (int i = 0; i < cl->subclasses.size(); i++) {
 			for (int j = 0; j < cl->subclasses[i]->functions.size(); j++) {
 
-				funcs[cl->subclasses[i]->functions[j]->line] = String(cl->subclasses[i]->name) + "." + cl->subclasses[i]->functions[j]->name;
+				funcs[cl->subclasses[i]->functions[j]->line] = String(cl->subclasses[i]->name) + "." + cl->subclasses[i]->functions[j]->name
+															   + ":" + itos(cl->subclasses[i]->functions[j]->arguments.size());
 			}
 			for (int j = 0; j < cl->subclasses[i]->static_functions.size(); j++) {
 
-				funcs[cl->subclasses[i]->static_functions[j]->line] = String(cl->subclasses[i]->name) + "." + cl->subclasses[i]->static_functions[j]->name;
+				funcs[cl->subclasses[i]->static_functions[j]->line] = String(cl->subclasses[i]->name) + "." + cl->subclasses[i]->static_functions[j]->name
+																	  + ":" + itos(cl->subclasses[i]->static_functions[j]->arguments.size());
 			}
 		}
 
 		for (Map<int, String>::Element *E = funcs.front(); E; E = E->next()) {
 
-			r_functions->push_back(E->get() + ":" + itos(E->key()));
+			r_functions->push_back(E->get().split(":")[0] + ":" + itos(E->key()) + ":" + E->get().split(":")[1]);
 		}
 	}
 
