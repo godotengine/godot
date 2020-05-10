@@ -142,6 +142,7 @@ void RasterizerCanvasBaseGLES2::canvas_begin() {
 		state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
 #else
 	state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_FORCE_LANDSCAPE, false);
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
 #endif
 
 	_bind_quad_buffer();
@@ -344,6 +345,7 @@ void RasterizerCanvasBaseGLES2::_bind_quad_buffer() {
 }
 
 void RasterizerCanvasBaseGLES2::_set_uniforms() {
+	state.canvas_shader.set_uniform(CanvasShaderGLES2::FORCE_LANDSCAPE, 0);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX, state.uniforms.projection_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, state.uniforms.modelview_matrix);
 	state.canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX, state.uniforms.extra_matrix);
