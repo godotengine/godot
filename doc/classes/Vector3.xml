@@ -299,7 +299,7 @@
 			<argument index="0" name="by" type="Vector3">
 			</argument>
 			<description>
-				Returns a copy of the vector snapped to the lowest neared multiple.
+				Returns the vector snapped to a grid with the given size.
 			</description>
 		</method>
 		<method name="to_diagonal_matrix">
