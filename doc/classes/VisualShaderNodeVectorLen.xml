@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorLen" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Returns the length of a [Vector3] within the visual shader graph.
 	</brief_description>
 	<description>
+		Translated to [code]length(p0)[/code] in the shader language.
 	</description>
 	<tutorials>
 	</tutorials>
