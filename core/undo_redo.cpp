@@ -279,16 +279,15 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
 				Vector<const Variant *> argptrs;
 				argptrs.resize(VARIANT_ARG_MAX);
-				int argc = obj->get_call_arg_count(op.name);
-//				int argc = 0;
+				int argc = 0;
 
-				/*for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+				for (int i = 0; i < VARIANT_ARG_MAX; i++) {
 					if (op.args[i].get_type() == Variant::NIL) {
 						break;
 					}
 					argptrs.write[i] = &op.args[i];
 					argc++;
-				}*/
+				}
 				argptrs.resize(argc);
 
 				Callable::CallError ce;

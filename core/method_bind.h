@@ -186,11 +186,6 @@ VARIANT_ENUM_CAST(MethodFlags);
 VARIANT_ENUM_CAST(Variant::Type);
 VARIANT_ENUM_CAST(Variant::Operator);
 
-template <typename R, typename ... Types> constexpr size_t getArgumentCount( R(*f)(Types ...))
-{
-    return sizeof...(Types);
-}
-
 template <>
 struct VariantCaster<wchar_t> {
 	static _FORCE_INLINE_ wchar_t cast(const Variant &p_variant) {
@@ -280,7 +275,6 @@ public:
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
 	virtual String get_instance_class() const = 0;
-
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
