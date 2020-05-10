@@ -95,18 +95,35 @@ void CanvasItemMaterial::_update_shader() {
 
 	String code = "shader_type canvas_item;\nrender_mode ";
 	switch (blend_mode) {
-		case BLEND_MODE_MIX: code += "blend_mix"; break;
-		case BLEND_MODE_ADD: code += "blend_add"; break;
-		case BLEND_MODE_SUB: code += "blend_sub"; break;
-		case BLEND_MODE_MUL: code += "blend_mul"; break;
-		case BLEND_MODE_PREMULT_ALPHA: code += "blend_premul_alpha"; break;
-		case BLEND_MODE_DISABLED: code += "blend_disabled"; break;
+		case BLEND_MODE_MIX:
+			code += "blend_mix";
+			break;
+		case BLEND_MODE_ADD:
+			code += "blend_add";
+			break;
+		case BLEND_MODE_SUB:
+			code += "blend_sub";
+			break;
+		case BLEND_MODE_MUL:
+			code += "blend_mul";
+			break;
+		case BLEND_MODE_PREMULT_ALPHA:
+			code += "blend_premul_alpha";
+			break;
+		case BLEND_MODE_DISABLED:
+			code += "blend_disabled";
+			break;
 	}
 
 	switch (light_mode) {
-		case LIGHT_MODE_NORMAL: break;
-		case LIGHT_MODE_UNSHADED: code += ",unshaded"; break;
-		case LIGHT_MODE_LIGHT_ONLY: code += ",light_only"; break;
+		case LIGHT_MODE_NORMAL:
+			break;
+		case LIGHT_MODE_UNSHADED:
+			code += ",unshaded";
+			break;
+		case LIGHT_MODE_LIGHT_ONLY:
+			code += ",light_only";
+			break;
 	}
 
 	code += ";\n";
@@ -1372,10 +1389,18 @@ void CanvasItem::_update_texture_filter_changed(bool p_propagate) {
 		} else {
 			//from viewport
 			switch (get_viewport()->get_default_canvas_item_texture_filter()) {
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST: texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST; break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR: texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR; break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS; break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS; break;
+				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST:
+					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST;
+					break;
+				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR:
+					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
+					break;
+				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+					break;
+				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+					texture_filter_cache = RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+					break;
 				default: {
 				}
 			}
@@ -1421,9 +1446,15 @@ void CanvasItem::_update_texture_repeat_changed(bool p_propagate) {
 		} else {
 			//from viewport
 			switch (get_viewport()->get_default_canvas_item_texture_repeat()) {
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED; break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED; break;
-				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR; break;
+				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_DISABLED:
+					texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
+					break;
+				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_ENABLED:
+					texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+					break;
+				case Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_REPEAT_MIRROR:
+					texture_repeat_cache = RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR;
+					break;
 				default: {
 				}
 			}

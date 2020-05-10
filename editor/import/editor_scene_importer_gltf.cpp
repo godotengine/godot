@@ -538,12 +538,18 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 String EditorSceneImporterGLTF::_get_component_type_name(const uint32_t p_component) {
 
 	switch (p_component) {
-		case COMPONENT_TYPE_BYTE: return "Byte";
-		case COMPONENT_TYPE_UNSIGNED_BYTE: return "UByte";
-		case COMPONENT_TYPE_SHORT: return "Short";
-		case COMPONENT_TYPE_UNSIGNED_SHORT: return "UShort";
-		case COMPONENT_TYPE_INT: return "Int";
-		case COMPONENT_TYPE_FLOAT: return "Float";
+		case COMPONENT_TYPE_BYTE:
+			return "Byte";
+		case COMPONENT_TYPE_UNSIGNED_BYTE:
+			return "UByte";
+		case COMPONENT_TYPE_SHORT:
+			return "Short";
+		case COMPONENT_TYPE_UNSIGNED_SHORT:
+			return "UShort";
+		case COMPONENT_TYPE_INT:
+			return "Int";
+		case COMPONENT_TYPE_FLOAT:
+			return "Float";
 	}
 
 	return "<Error>";
@@ -655,12 +661,24 @@ Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, double *dst
 int EditorSceneImporterGLTF::_get_component_type_size(const int component_type) {
 
 	switch (component_type) {
-		case COMPONENT_TYPE_BYTE: return 1; break;
-		case COMPONENT_TYPE_UNSIGNED_BYTE: return 1; break;
-		case COMPONENT_TYPE_SHORT: return 2; break;
-		case COMPONENT_TYPE_UNSIGNED_SHORT: return 2; break;
-		case COMPONENT_TYPE_INT: return 4; break;
-		case COMPONENT_TYPE_FLOAT: return 4; break;
+		case COMPONENT_TYPE_BYTE:
+			return 1;
+			break;
+		case COMPONENT_TYPE_UNSIGNED_BYTE:
+			return 1;
+			break;
+		case COMPONENT_TYPE_SHORT:
+			return 2;
+			break;
+		case COMPONENT_TYPE_UNSIGNED_SHORT:
+			return 2;
+			break;
+		case COMPONENT_TYPE_INT:
+			return 4;
+			break;
+		case COMPONENT_TYPE_FLOAT:
+			return 4;
+			break;
 		default: {
 			ERR_FAIL_V(0);
 		}

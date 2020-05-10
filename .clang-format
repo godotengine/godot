@@ -13,7 +13,7 @@ AlignAfterOpenBracket: DontAlign
 AlignTrailingComments: false
 AllowAllParametersOfDeclarationOnNextLine: false
 # AllowShortBlocksOnASingleLine: false
-AllowShortCaseLabelsOnASingleLine: true
+# AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 # AllowShortIfStatementsOnASingleLine: false
 # AllowShortLoopsOnASingleLine: false

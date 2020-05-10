@@ -522,7 +522,8 @@ void Generic6DOFJoint3DSW::set_param(Vector3::Axis p_axis, PhysicsServer3D::G6DO
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT: {
 			// Not implemented in GodotPhysics3D backend
 		} break;
-		case PhysicsServer3D::G6DOF_JOINT_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::G6DOF_JOINT_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 
@@ -622,7 +623,8 @@ real_t Generic6DOFJoint3DSW::get_param(Vector3::Axis p_axis, PhysicsServer3D::G6
 		case PhysicsServer3D::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT: {
 			// Not implemented in GodotPhysics3D backend
 		} break;
-		case PhysicsServer3D::G6DOF_JOINT_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::G6DOF_JOINT_MAX:
+			break; // Can't happen, but silences warning
 	}
 	return 0;
 }
@@ -653,7 +655,8 @@ void Generic6DOFJoint3DSW::set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOF
 		case PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING: {
 			// Not implemented in GodotPhysics3D backend
 		} break;
-		case PhysicsServer3D::G6DOF_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::G6DOF_JOINT_FLAG_MAX:
+			break; // Can't happen, but silences warning
 	}
 }
 bool Generic6DOFJoint3DSW::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const {
@@ -681,7 +684,8 @@ bool Generic6DOFJoint3DSW::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOF
 		case PhysicsServer3D::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING: {
 			// Not implemented in GodotPhysics3D backend
 		} break;
-		case PhysicsServer3D::G6DOF_JOINT_FLAG_MAX: break; // Can't happen, but silences warning
+		case PhysicsServer3D::G6DOF_JOINT_FLAG_MAX:
+			break; // Can't happen, but silences warning
 	}
 
 	return 0;
