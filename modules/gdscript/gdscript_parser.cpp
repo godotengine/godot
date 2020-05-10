@@ -7831,6 +7831,10 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 					_set_error("The assigned value doesn't have a set type; the variable type can't be inferred.", v.line);
 					return;
 				}
+				if (expr_type.kind == DataType::BUILTIN && expr_type.builtin_type == Variant::NIL) {
+					_set_error("The variable type cannot be inferred because its value is \"null\".", v.line);
+					return;
+				}
 				v.data_type = expr_type;
 				v.data_type.is_constant = false;
 			}
@@ -8210,6 +8214,10 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 					if (lv->datatype.infer_type) {
 						if (!assign_type.has_type) {
 							_set_error("The assigned value doesn't have a set type; the variable type can't be inferred.", lv->line);
+							return;
+						}
+						if (assign_type.kind == DataType::BUILTIN && assign_type.builtin_type == Variant::NIL) {
+							_set_error("The variable type cannot be inferred because its value is \"null\".", lv->line);
 							return;
 						}
 						lv->datatype = assign_type;
