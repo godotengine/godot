@@ -1058,7 +1058,8 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.no_focus = p_enabled;
 			_update_window_style(p_window);
 		} break;
-		case WINDOW_FLAG_MAX: break;
+		case WINDOW_FLAG_MAX:
+			break;
 	}
 }
 
@@ -1089,7 +1090,8 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 
 			return wd.no_focus;
 		} break;
-		case WINDOW_FLAG_MAX: break;
+		case WINDOW_FLAG_MAX:
+			break;
 	}
 
 	return false;

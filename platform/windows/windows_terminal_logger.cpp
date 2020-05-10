@@ -89,20 +89,36 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 		uint32_t basecol = 0;
 		switch (p_type) {
-			case ERR_ERROR: basecol = FOREGROUND_RED; break;
-			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
-			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
-			case ERR_SHADER: basecol = FOREGROUND_GREEN | FOREGROUND_BLUE; break;
+			case ERR_ERROR:
+				basecol = FOREGROUND_RED;
+				break;
+			case ERR_WARNING:
+				basecol = FOREGROUND_RED | FOREGROUND_GREEN;
+				break;
+			case ERR_SCRIPT:
+				basecol = FOREGROUND_RED | FOREGROUND_BLUE;
+				break;
+			case ERR_SHADER:
+				basecol = FOREGROUND_GREEN | FOREGROUND_BLUE;
+				break;
 		}
 
 		basecol |= current_bg;
 
 		SetConsoleTextAttribute(hCon, basecol | FOREGROUND_INTENSITY);
 		switch (p_type) {
-			case ERR_ERROR: logf("ERROR:"); break;
-			case ERR_WARNING: logf("WARNING:"); break;
-			case ERR_SCRIPT: logf("SCRIPT ERROR:"); break;
-			case ERR_SHADER: logf("SHADER ERROR:"); break;
+			case ERR_ERROR:
+				logf("ERROR:");
+				break;
+			case ERR_WARNING:
+				logf("WARNING:");
+				break;
+			case ERR_SCRIPT:
+				logf("SCRIPT ERROR:");
+				break;
+			case ERR_SHADER:
+				logf("SHADER ERROR:");
+				break;
 		}
 
 		SetConsoleTextAttribute(hCon, basecol);
@@ -115,10 +131,18 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 		// `FOREGROUND_INTENSITY` alone results in gray text.
 		SetConsoleTextAttribute(hCon, FOREGROUND_INTENSITY);
 		switch (p_type) {
-			case ERR_ERROR: logf("   at: "); break;
-			case ERR_WARNING: logf("     at: "); break;
-			case ERR_SCRIPT: logf("          at: "); break;
-			case ERR_SHADER: logf("          at: "); break;
+			case ERR_ERROR:
+				logf("   at: ");
+				break;
+			case ERR_WARNING:
+				logf("     at: ");
+				break;
+			case ERR_SCRIPT:
+				logf("          at: ");
+				break;
+			case ERR_SHADER:
+				logf("          at: ");
+				break;
 		}
 
 		if (p_rationale && p_rationale[0]) {

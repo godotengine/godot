@@ -2184,7 +2184,8 @@ String GDScriptWarning::get_message() const {
 		case STANDALONE_TERNARY: {
 			return "Standalone ternary conditional operator: the return value is being discarded.";
 		}
-		case WARNING_MAX: break; // Can't happen, but silences warning
+		case WARNING_MAX:
+			break; // Can't happen, but silences warning
 	}
 	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
 

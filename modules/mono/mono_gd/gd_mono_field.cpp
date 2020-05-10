@@ -501,7 +501,8 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				case Variant::PACKED_COLOR_ARRAY: {
 					SET_FROM_ARRAY(PackedColorArray);
 				} break;
-				default: break;
+				default:
+					break;
 			}
 		} break;
 

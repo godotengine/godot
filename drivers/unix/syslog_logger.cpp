@@ -49,11 +49,21 @@ void SyslogLogger::print_error(const char *p_function, const char *p_file, int p
 
 	const char *err_type = "**ERROR**";
 	switch (p_type) {
-		case ERR_ERROR: err_type = "**ERROR**"; break;
-		case ERR_WARNING: err_type = "**WARNING**"; break;
-		case ERR_SCRIPT: err_type = "**SCRIPT ERROR**"; break;
-		case ERR_SHADER: err_type = "**SHADER ERROR**"; break;
-		default: ERR_PRINT("Unknown error type"); break;
+		case ERR_ERROR:
+			err_type = "**ERROR**";
+			break;
+		case ERR_WARNING:
+			err_type = "**WARNING**";
+			break;
+		case ERR_SCRIPT:
+			err_type = "**SCRIPT ERROR**";
+			break;
+		case ERR_SHADER:
+			err_type = "**SHADER ERROR**";
+			break;
+		default:
+			ERR_PRINT("Unknown error type");
+			break;
 	}
 
 	const char *err_details;

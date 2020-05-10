@@ -320,7 +320,8 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 		case ATTENUATION_LOGARITHMIC: {
 			att = -20 * Math::log(p_distance / unit_size + CMP_EPSILON);
 		} break;
-		case ATTENUATION_DISABLED: break;
+		case ATTENUATION_DISABLED:
+			break;
 		default: {
 			ERR_PRINT("Unknown attenuation type");
 			break;

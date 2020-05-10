@@ -243,11 +243,21 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 
 						switch (next) {
 
-							case 'b': res = 8; break;
-							case 't': res = 9; break;
-							case 'n': res = 10; break;
-							case 'f': res = 12; break;
-							case 'r': res = 13; break;
+							case 'b':
+								res = 8;
+								break;
+							case 't':
+								res = 9;
+								break;
+							case 'n':
+								res = 10;
+								break;
+							case 'f':
+								res = 12;
+								break;
+							case 'r':
+								res = 13;
+								break;
 							case 'u': {
 								//hex number
 								for (int j = 0; j < 4; j++) {

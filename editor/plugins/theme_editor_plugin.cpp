@@ -74,11 +74,21 @@ void ThemeEditor::_name_menu_about_to_show() {
 
 		switch (type_select->get_selected()) {
 
-			case 0: Theme::get_default()->get_icon_list(fromtype, &names); break;
-			case 1: Theme::get_default()->get_stylebox_list(fromtype, &names); break;
-			case 2: Theme::get_default()->get_font_list(fromtype, &names); break;
-			case 3: Theme::get_default()->get_color_list(fromtype, &names); break;
-			case 4: Theme::get_default()->get_constant_list(fromtype, &names); break;
+			case 0:
+				Theme::get_default()->get_icon_list(fromtype, &names);
+				break;
+			case 1:
+				Theme::get_default()->get_stylebox_list(fromtype, &names);
+				break;
+			case 2:
+				Theme::get_default()->get_font_list(fromtype, &names);
+				break;
+			case 3:
+				Theme::get_default()->get_color_list(fromtype, &names);
+				break;
+			case 4:
+				Theme::get_default()->get_constant_list(fromtype, &names);
+				break;
 		}
 	} else if (popup_mode == POPUP_REMOVE) {
 
@@ -324,11 +334,21 @@ void ThemeEditor::_dialog_cbk() {
 
 			switch (type_select->get_selected()) {
 
-				case 0: theme->set_icon(name_edit->get_text(), type_edit->get_text(), Ref<Texture2D>()); break;
-				case 1: theme->set_stylebox(name_edit->get_text(), type_edit->get_text(), Ref<StyleBox>()); break;
-				case 2: theme->set_font(name_edit->get_text(), type_edit->get_text(), Ref<Font>()); break;
-				case 3: theme->set_color(name_edit->get_text(), type_edit->get_text(), Color()); break;
-				case 4: theme->set_constant(name_edit->get_text(), type_edit->get_text(), 0); break;
+				case 0:
+					theme->set_icon(name_edit->get_text(), type_edit->get_text(), Ref<Texture2D>());
+					break;
+				case 1:
+					theme->set_stylebox(name_edit->get_text(), type_edit->get_text(), Ref<StyleBox>());
+					break;
+				case 2:
+					theme->set_font(name_edit->get_text(), type_edit->get_text(), Ref<Font>());
+					break;
+				case 3:
+					theme->set_color(name_edit->get_text(), type_edit->get_text(), Color());
+					break;
+				case 4:
+					theme->set_constant(name_edit->get_text(), type_edit->get_text(), 0);
+					break;
 			}
 
 		} break;
@@ -376,11 +396,21 @@ void ThemeEditor::_dialog_cbk() {
 		case POPUP_REMOVE: {
 			switch (type_select->get_selected()) {
 
-				case 0: theme->clear_icon(name_edit->get_text(), type_edit->get_text()); break;
-				case 1: theme->clear_stylebox(name_edit->get_text(), type_edit->get_text()); break;
-				case 2: theme->clear_font(name_edit->get_text(), type_edit->get_text()); break;
-				case 3: theme->clear_color(name_edit->get_text(), type_edit->get_text()); break;
-				case 4: theme->clear_constant(name_edit->get_text(), type_edit->get_text()); break;
+				case 0:
+					theme->clear_icon(name_edit->get_text(), type_edit->get_text());
+					break;
+				case 1:
+					theme->clear_stylebox(name_edit->get_text(), type_edit->get_text());
+					break;
+				case 2:
+					theme->clear_font(name_edit->get_text(), type_edit->get_text());
+					break;
+				case 3:
+					theme->clear_color(name_edit->get_text(), type_edit->get_text());
+					break;
+				case 4:
+					theme->clear_constant(name_edit->get_text(), type_edit->get_text());
+					break;
 			}
 
 		} break;

@@ -90,9 +90,12 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int 
 
 		CSGBox3D *s = Object::cast_to<CSGBox3D>(cs);
 		switch (p_idx) {
-			case 0: return s->get_width();
-			case 1: return s->get_height();
-			case 2: return s->get_depth();
+			case 0:
+				return s->get_width();
+			case 1:
+				return s->get_height();
+			case 2:
+				return s->get_depth();
 		}
 	}
 
@@ -157,9 +160,15 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = 0.001;
 
 		switch (p_idx) {
-			case 0: s->set_width(d * 2); break;
-			case 1: s->set_height(d * 2); break;
-			case 2: s->set_depth(d * 2); break;
+			case 0:
+				s->set_width(d * 2);
+				break;
+			case 1:
+				s->set_height(d * 2);
+				break;
+			case 2:
+				s->set_depth(d * 2);
+				break;
 		}
 	}
 
@@ -229,9 +238,15 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		CSGBox3D *s = Object::cast_to<CSGBox3D>(cs);
 		if (p_cancel) {
 			switch (p_idx) {
-				case 0: s->set_width(p_restore); break;
-				case 1: s->set_height(p_restore); break;
-				case 2: s->set_depth(p_restore); break;
+				case 0:
+					s->set_width(p_restore);
+					break;
+				case 1:
+					s->set_height(p_restore);
+					break;
+				case 2:
+					s->set_depth(p_restore);
+					break;
 			}
 			return;
 		}
@@ -241,9 +256,15 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		static const char *method[3] = { "set_width", "set_height", "set_depth" };
 		float current = 0;
 		switch (p_idx) {
-			case 0: current = s->get_width(); break;
-			case 1: current = s->get_height(); break;
-			case 2: current = s->get_depth(); break;
+			case 0:
+				current = s->get_width();
+				break;
+			case 1:
+				current = s->get_height();
+				break;
+			case 2:
+				current = s->get_depth();
+				break;
 		}
 
 		ur->add_do_method(s, method[p_idx], current);
