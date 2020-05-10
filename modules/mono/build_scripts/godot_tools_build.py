@@ -15,7 +15,7 @@ def build_godot_tools(source, target, env):
 
     from .solution_builder import build_solution
 
-    build_solution(env, solution_path, build_config, restore=True)
+    build_solution(env, solution_path, build_config)
     # No need to copy targets. The GodotTools csproj takes care of copying them.
 
 

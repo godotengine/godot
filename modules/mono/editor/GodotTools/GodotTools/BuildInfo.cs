@@ -10,6 +10,7 @@ namespace GodotTools
     public sealed class BuildInfo : Reference // TODO Remove Reference once we have proper serialization
     {
         public string Solution { get; }
+        public string[] Targets { get; }
         public string Configuration { get; }
         public Array<string> CustomProperties { get; } = new Array<string>(); // TODO Use List once we have proper serialization
 
@@ -38,9 +39,10 @@ namespace GodotTools
         {
         }
 
-        public BuildInfo(string solution, string configuration)
+        public BuildInfo(string solution, string[] targets, string configuration)
         {
             Solution = solution;
+            Targets = targets;
             Configuration = configuration;
         }
     }
