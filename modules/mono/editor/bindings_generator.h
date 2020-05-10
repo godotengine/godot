@@ -619,7 +619,8 @@ class BindingsGenerator {
 	const List<InternalCall>::Element *find_icall_by_name(const String &p_name, const List<InternalCall> &p_list) {
 		const List<InternalCall>::Element *it = p_list.front();
 		while (it) {
-			if (it->get().name == p_name) return it;
+			if (it->get().name == p_name)
+				return it;
 			it = it->next();
 		}
 		return nullptr;

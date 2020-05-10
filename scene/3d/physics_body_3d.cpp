@@ -1346,7 +1346,8 @@ Vector3 KinematicCollision3D::get_remainder() const {
 	return collision.remainder;
 }
 Object *KinematicCollision3D::get_local_shape() const {
-	if (!owner) return nullptr;
+	if (!owner)
+		return nullptr;
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }

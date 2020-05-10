@@ -148,7 +148,8 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 
 String JSONRPC::process_string(const String &p_input) {
 
-	if (p_input.empty()) return String();
+	if (p_input.empty())
+		return String();
 
 	Variant ret;
 	Variant input;

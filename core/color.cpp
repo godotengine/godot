@@ -406,7 +406,8 @@ bool Color::html_is_valid(const String &p_color) {
 }
 
 Color Color::named(const String &p_name) {
-	if (_named_colors.empty()) _populate_named_colors(); // from color_names.inc
+	if (_named_colors.empty())
+		_populate_named_colors(); // from color_names.inc
 	String name = p_name;
 	// Normalize name
 	name = name.replace(" ", "");

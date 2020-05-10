@@ -253,7 +253,8 @@
 		cmd->method = p_method;                                              \
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                 \
 		unlock();                                                            \
-		if (sync) sync->post();                                              \
+		if (sync)                                                            \
+			sync->post();                                                    \
 	}
 
 #define CMD_RET_TYPE(N) CommandRet##N<T, M, COMMA_SEP_LIST(TYPE_ARG, N) COMMA(N) R>
@@ -269,7 +270,8 @@
 		cmd->ret = r_ret;                                                                      \
 		cmd->sync_sem = ss;                                                                    \
 		unlock();                                                                              \
-		if (sync) sync->post();                                                                \
+		if (sync)                                                                              \
+			sync->post();                                                                      \
 		ss->sem.wait();                                                                        \
 		ss->in_use = false;                                                                    \
 	}
@@ -286,7 +288,8 @@
 		SEMIC_SEP_LIST(CMD_ASSIGN_PARAM, N);                                          \
 		cmd->sync_sem = ss;                                                           \
 		unlock();                                                                     \
-		if (sync) sync->post();                                                       \
+		if (sync)                                                                     \
+			sync->post();                                                             \
 		ss->sem.wait();                                                               \
 		ss->in_use = false;                                                           \
 	}
@@ -418,12 +421,14 @@ class CommandQueueMT {
 	}
 
 	bool flush_one(bool p_lock = true) {
-		if (p_lock) lock();
+		if (p_lock)
+			lock();
 	tryagain:
 
 		// tried to read an empty queue
 		if (read_ptr == write_ptr) {
-			if (p_lock) unlock();
+			if (p_lock)
+				unlock();
 			return false;
 		}
 
@@ -442,15 +447,18 @@ class CommandQueueMT {
 
 		read_ptr += size;
 
-		if (p_lock) unlock();
+		if (p_lock)
+			unlock();
 		cmd->call();
-		if (p_lock) lock();
+		if (p_lock)
+			lock();
 
 		cmd->post();
 		cmd->~CommandBase();
 		*(uint32_t *)&command_mem[size_ptr] &= ~1;
 
-		if (p_lock) unlock();
+		if (p_lock)
+			unlock();
 		return true;
 	}
 

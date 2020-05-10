@@ -123,7 +123,8 @@ bool OS_UWP::is_window_fullscreen() const {
 
 void OS_UWP::set_keep_screen_on(bool p_enabled) {
 
-	if (is_keep_screen_on() == p_enabled) return;
+	if (is_keep_screen_on() == p_enabled)
+		return;
 
 	if (p_enabled)
 		display_request->RequestActive();
@@ -826,7 +827,8 @@ void OS_UWP::run() {
 	while (!force_quit) {
 
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-		if (managed_object->alert_close_handle) continue;
+		if (managed_object->alert_close_handle)
+			continue;
 		process_events(); // get rid of pending events
 		if (Main::iteration())
 			break;

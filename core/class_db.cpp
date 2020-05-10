@@ -1456,16 +1456,19 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 	}
 
 	if (!default_values.has(p_class)) {
-		if (r_valid != nullptr) *r_valid = false;
+		if (r_valid != nullptr)
+			*r_valid = false;
 		return Variant();
 	}
 
 	if (!default_values[p_class].has(p_property)) {
-		if (r_valid != nullptr) *r_valid = false;
+		if (r_valid != nullptr)
+			*r_valid = false;
 		return Variant();
 	}
 
-	if (r_valid != nullptr) *r_valid = true;
+	if (r_valid != nullptr)
+		*r_valid = true;
 	return default_values[p_class][p_property];
 }
 
