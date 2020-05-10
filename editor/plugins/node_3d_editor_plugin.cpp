@@ -682,11 +682,11 @@ void Node3DEditorViewport::_select_region() {
 	}
 
 	Plane near(cam_pos, -_get_camera_normal());
-	near.distance -= get_znear();
+	near.d -= get_znear();
 	frustum.push_back(near);
 
 	Plane far = -near;
-	far.distance += get_zfar();
+	far.d += get_zfar();
 	frustum.push_back(far);
 
 	Vector<ObjectID> instances = RenderingServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world_3d()->get_scenario());

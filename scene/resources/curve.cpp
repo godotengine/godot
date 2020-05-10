@@ -1237,7 +1237,7 @@ void Curve3D::_bake() const {
 				p = mid;
 				Plane post;
 				post.normal = pos;
-				post.distance = Math::lerp(points[i].tilt, points[i + 1].tilt, mid);
+				post.d = Math::lerp(points[i].tilt, points[i + 1].tilt, mid);
 				pointlist.push_back(post);
 			} else {
 
@@ -1274,7 +1274,7 @@ void Curve3D::_bake() const {
 	for (List<Plane>::Element *E = pointlist.front(); E; E = E->next()) {
 
 		w[idx] = E->get().normal;
-		wt[idx] = E->get().distance;
+		wt[idx] = E->get().d;
 
 		if (!up_vector_enabled) {
 			idx++;

@@ -3753,10 +3753,10 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector3 n2 = p.normal.cross(n1).normalized();
 
 		Vector3 pface[4] = {
-			p.normal * p.distance + n1 * 10.0 + n2 * 10.0,
-			p.normal * p.distance + n1 * 10.0 + n2 * -10.0,
-			p.normal * p.distance + n1 * -10.0 + n2 * -10.0,
-			p.normal * p.distance + n1 * -10.0 + n2 * 10.0,
+			p.normal * p.d + n1 * 10.0 + n2 * 10.0,
+			p.normal * p.d + n1 * 10.0 + n2 * -10.0,
+			p.normal * p.d + n1 * -10.0 + n2 * -10.0,
+			p.normal * p.d + n1 * -10.0 + n2 * 10.0,
 		};
 
 		points.push_back(pface[0]);
@@ -3767,8 +3767,8 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		points.push_back(pface[3]);
 		points.push_back(pface[3]);
 		points.push_back(pface[0]);
-		points.push_back(p.normal * p.distance);
-		points.push_back(p.normal * p.distance + p.normal * 3);
+		points.push_back(p.normal * p.d);
+		points.push_back(p.normal * p.d + p.normal * 3);
 
 		p_gizmo->add_lines(points, material);
 		p_gizmo->add_collision_segments(points);
