@@ -780,7 +780,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const Vector<Plane> &p_planes) {
 					if (Math::is_zero_approx(den))
 						continue; // Point too short.
 
-					real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;
+					real_t dist = -(clip.normal.dot(edge0_A) - clip.distance) / den;
 					Vector3 inters = edge0_A + rel * dist;
 					new_vertices.push_back(inters);
 				}
@@ -1199,7 +1199,7 @@ Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int 
 					for (int n = 0; n < p_plane_count; n++) {
 						if (n != i && n != j && n != k) {
 							real_t dp = p_planes[n].normal.dot(convex_shape_point);
-							if (dp - p_planes[n].d > CMP_EPSILON) {
+							if (dp - p_planes[n].distance > CMP_EPSILON) {
 								excluded = true;
 								break;
 							}

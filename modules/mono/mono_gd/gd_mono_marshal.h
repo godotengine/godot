@@ -274,7 +274,7 @@ enum {
 
 	MATCHES_Plane = (MATCHES_Vector3 && MATCHES_real_t && (sizeof(Plane) == (sizeof(Vector3) + sizeof(real_t))) &&
 					 offsetof(Plane, normal) == 0 &&
-					 offsetof(Plane, d) == sizeof(Vector3))
+					 offsetof(Plane, distance) == sizeof(Vector3))
 };
 
 // In the future we may force this if we want to ref return these structs
@@ -466,14 +466,14 @@ struct M_Color {
 
 struct M_Plane {
 	M_Vector3 normal;
-	real_t d;
+	real_t distance;
 
 	static _FORCE_INLINE_ Plane convert_to(const M_Plane &p_from) {
-		return Plane(M_Vector3::convert_to(p_from.normal), p_from.d);
+		return Plane(M_Vector3::convert_to(p_from.normal), p_from.distance);
 	}
 
 	static _FORCE_INLINE_ M_Plane convert_from(const Plane &p_from) {
-		M_Plane ret = { M_Vector3::convert_from(p_from.normal), p_from.d };
+		M_Plane ret = { M_Vector3::convert_from(p_from.normal), p_from.distance };
 		return ret;
 	}
 };

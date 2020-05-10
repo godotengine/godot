@@ -214,7 +214,7 @@ Error ResourceLoaderBinary::parse_variant(Variant &r_v) {
 			v.normal.x = f->get_real();
 			v.normal.y = f->get_real();
 			v.normal.z = f->get_real();
-			v.d = f->get_real();
+			v.distance = f->get_real();
 			r_v = v;
 		} break;
 		case VARIANT_QUAT: {
@@ -1458,7 +1458,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 			f->store_real(val.normal.x);
 			f->store_real(val.normal.y);
 			f->store_real(val.normal.z);
-			f->store_real(val.d);
+			f->store_real(val.distance);
 
 		} break;
 		case Variant::QUAT: {
