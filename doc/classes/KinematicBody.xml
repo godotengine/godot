@@ -48,28 +48,28 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide].
+				Returns the number of times the body collided and changed direction during the last call to [method move_and_slide] and [method move_and_slide_with_snap].
 			</description>
 		</method>
 		<method name="is_on_ceiling" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the body is on the ceiling. Only updates when calling [method move_and_slide].
+				Returns [code]true[/code] if the body is on the ceiling. Only updates when calling [method move_and_slide] or [method move_and_slide_with_snap].
 			</description>
 		</method>
 		<method name="is_on_floor" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the body is on the floor. Only updates when calling [method move_and_slide].
+				Returns [code]true[/code] if the body is on the floor. Only updates when calling [method move_and_slide] or [method move_and_slide_with_snap].
 			</description>
 		</method>
 		<method name="is_on_wall" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the body is on a wall. Only updates when calling [method move_and_slide].
+				Returns [code]true[/code] if the body is on a wall. Only updates when calling [method move_and_slide] or [method move_and_slide_with_snap].
 			</description>
 		</method>
 		<method name="move_and_collide">
