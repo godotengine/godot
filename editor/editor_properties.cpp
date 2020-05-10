@@ -1611,7 +1611,7 @@ void EditorPropertyPlane::_value_changed(double val, const String &p_name) {
 	p.normal.x = spin[0]->get_value();
 	p.normal.y = spin[1]->get_value();
 	p.normal.z = spin[2]->get_value();
-	p.d = spin[3]->get_value();
+	p.distance = spin[3]->get_value();
 	emit_changed(get_edited_property(), p, p_name);
 }
 
@@ -1621,7 +1621,7 @@ void EditorPropertyPlane::update_property() {
 	spin[0]->set_value(val.normal.x);
 	spin[1]->set_value(val.normal.y);
 	spin[2]->set_value(val.normal.z);
-	spin[3]->set_value(val.d);
+	spin[3]->set_value(val.distance);
 	setting = false;
 }
 void EditorPropertyPlane::_notification(int p_what) {

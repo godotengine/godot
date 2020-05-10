@@ -385,7 +385,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 
 	Plane p;
 	p.normal[edit_axis] = 1.0;
-	p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
+	p.distance = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 
 	Vector3 inters;
 	if (!p.intersects_segment(from, from + normal * settings_pick_distance->get_value(), &inters))
@@ -1137,7 +1137,7 @@ void GridMapEditor::_notification(int p_what) {
 
 				Plane p;
 				p.normal[edit_axis] = 1.0;
-				p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
+				p.distance = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 				p = node->get_transform().xform(p); // plane to snap
 
 				Node3DEditorPlugin *sep = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());

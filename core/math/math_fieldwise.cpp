@@ -89,7 +89,7 @@ Variant fieldwise_assign(const Variant &p_target, const Variant &p_source, const
 			/**/ TRY_TRANSFER_FIELD("x", normal.x)
 			else TRY_TRANSFER_FIELD("y", normal.y)
 			else TRY_TRANSFER_FIELD("z", normal.z)
-			else TRY_TRANSFER_FIELD("d", d)
+			else TRY_TRANSFER_FIELD("d", distance)
 
 			return target;
 		}

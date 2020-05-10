@@ -45,7 +45,7 @@ void Plane::normalize() {
 		return;
 	}
 	normal /= l;
-	d /= l;
+	distance /= l;
 }
 
 Plane Plane::normalized() const {
@@ -57,7 +57,7 @@ Plane Plane::normalized() const {
 
 Vector3 Plane::get_any_point() const {
 
-	return get_normal() * d;
+	return get_normal() * distance;
 }
 
 Vector3 Plane::get_any_perpendicular_normal() const {
@@ -92,9 +92,9 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 		return false;
 
 	if (r_result) {
-		*r_result = ((vec3_cross(normal1, normal2) * p_plane0.d) +
-							(vec3_cross(normal2, normal0) * p_plane1.d) +
-							(vec3_cross(normal0, normal1) * p_plane2.d)) /
+		*r_result = ((vec3_cross(normal1, normal2) * p_plane0.distance) +
+							(vec3_cross(normal2, normal0) * p_plane1.distance) +
+							(vec3_cross(normal0, normal1) * p_plane2.distance)) /
 					denom;
 	}
 
@@ -112,7 +112,7 @@ bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 		return false;
 	}
 
-	real_t dist = (normal.dot(p_from) - d) / den;
+	real_t dist = (normal.dot(p_from) - distance) / den;
 	//printf("dist is %i\n",dist);
 
 	if (dist > CMP_EPSILON) { //this is a ray, before the emitting pos (p_from) doesn't exist
@@ -137,7 +137,7 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 		return false;
 	}
 
-	real_t dist = (normal.dot(p_begin) - d) / den;
+	real_t dist = (normal.dot(p_begin) - distance) / den;
 	//printf("dist is %i\n",dist);
 
 	if (dist < -CMP_EPSILON || dist > (1.0 + CMP_EPSILON)) {
@@ -155,10 +155,10 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 
 bool Plane::is_equal_approx(const Plane &p_plane) const {
 
-	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);
+	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(distance, p_plane.distance);
 }
 
 Plane::operator String() const {
 
-	return normal.operator String() + ", " + rtos(d);
+	return normal.operator String() + ", " + rtos(distance);
 }
