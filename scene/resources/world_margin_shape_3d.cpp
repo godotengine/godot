@@ -41,10 +41,10 @@ Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
 	Vector3 n2 = p.normal.cross(n1).normalized();
 
 	Vector3 pface[4] = {
-		p.normal * p.distance + n1 * 10.0 + n2 * 10.0,
-		p.normal * p.distance + n1 * 10.0 + n2 * -10.0,
-		p.normal * p.distance + n1 * -10.0 + n2 * -10.0,
-		p.normal * p.distance + n1 * -10.0 + n2 * 10.0,
+		p.normal * p.d + n1 * 10.0 + n2 * 10.0,
+		p.normal * p.d + n1 * 10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * -10.0,
+		p.normal * p.d + n1 * -10.0 + n2 * 10.0,
 	};
 
 	points.push_back(pface[0]);
@@ -55,8 +55,8 @@ Vector<Vector3> WorldMarginShape3D::get_debug_mesh_lines() {
 	points.push_back(pface[3]);
 	points.push_back(pface[3]);
 	points.push_back(pface[0]);
-	points.push_back(p.normal * p.distance);
-	points.push_back(p.normal * p.distance + p.normal * 3);
+	points.push_back(p.normal * p.d);
+	points.push_back(p.normal * p.d + p.normal * 3);
 
 	return points;
 }

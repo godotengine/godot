@@ -189,7 +189,7 @@ void PlaneShapeBullet::setup(const Plane &p_plane) {
 btCollisionShape *PlaneShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
 	btVector3 btPlaneNormal;
 	G_TO_B(plane.normal, btPlaneNormal);
-	return prepare(PlaneShapeBullet::create_shape_plane(btPlaneNormal, plane.distance));
+	return prepare(PlaneShapeBullet::create_shape_plane(btPlaneNormal, plane.d));
 }
 
 /* Sphere */

@@ -194,7 +194,7 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 				// calculate intersection
 				Vector3 rel = edge1_A - edge0_A;
 				real_t den = clip.normal.dot(rel);
-				real_t dist = -(clip.normal.dot(edge0_A) - clip.distance) / den;
+				real_t dist = -(clip.normal.dot(edge0_A) - clip.d) / den;
 				Vector3 inters = edge0_A + rel * dist;
 
 				ERR_FAIL_COND(dst_idx >= max_clip);

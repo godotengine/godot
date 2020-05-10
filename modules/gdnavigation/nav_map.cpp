@@ -783,7 +783,7 @@ void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys
 	if (cut_plane.normal == Vector3())
 		return;
 	cut_plane.normal.normalize();
-	cut_plane.distance = cut_plane.normal.dot(from);
+	cut_plane.d = cut_plane.normal.dot(from);
 
 	while (from_poly != p_to_poly) {
 
