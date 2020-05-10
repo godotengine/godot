@@ -2661,7 +2661,6 @@ void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 	if (!is_layered_allowed()) return;
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
-			set_borderless_window(true);
 			GLint opacity = 0;
 			[window_object setBackgroundColor:[NSColor clearColor]];
 			[window_object setOpaque:NO];
@@ -2691,9 +2690,6 @@ void OS_OSX::set_borderless_window(bool p_borderless) {
 	if (p_borderless) {
 		[window_object setStyleMask:NSWindowStyleMaskBorderless];
 	} else {
-		if (layered_window)
-			set_window_per_pixel_transparency_enabled(false);
-
 		[window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (resizable ? NSWindowStyleMaskResizable : 0)];
 
 		// Force update of the window styles

@@ -2210,7 +2210,6 @@ void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 	if (!is_layered_allowed()) return;
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
-			set_borderless_window(true);
 			//enable per-pixel alpha
 
 			DWM_BLURBEHIND bb = { 0 };
@@ -2238,9 +2237,6 @@ void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 void OS_Windows::set_borderless_window(bool p_borderless) {
 	if (video_mode.borderless_window == p_borderless)
 		return;
-
-	if (!p_borderless && layered_window)
-		set_window_per_pixel_transparency_enabled(false);
 
 	video_mode.borderless_window = p_borderless;
 
