@@ -107,7 +107,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 	vtx.weights = last_weights;
 	vtx.bones = last_bones;
 	vtx.tangent = last_tangent.normal;
-	vtx.binormal = last_normal.cross(last_tangent.normal).normalized() * last_tangent.d;
+	vtx.binormal = last_normal.cross(last_tangent.normal).normalized() * last_tangent.distance;
 
 	const int expected_vertices = 4;
 
@@ -575,7 +575,7 @@ Vector<SurfaceTool::Vertex> SurfaceTool::create_vertex_array_from_triangle_array
 		if (lformat & RS::ARRAY_FORMAT_TANGENT) {
 			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
 			v.tangent = p.normal;
-			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
+			v.binormal = p.normal.cross(v.tangent).normalized() * p.distance;
 		}
 		if (lformat & RS::ARRAY_FORMAT_COLOR)
 			v.color = carr[i];
@@ -658,7 +658,7 @@ void SurfaceTool::_create_list_from_arrays(Array arr, List<Vertex> *r_vertex, Li
 		if (lformat & RS::ARRAY_FORMAT_TANGENT) {
 			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
 			v.tangent = p.normal;
-			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
+			v.binormal = p.normal.cross(v.tangent).normalized() * p.distance;
 		}
 		if (lformat & RS::ARRAY_FORMAT_COLOR)
 			v.color = carr[i];

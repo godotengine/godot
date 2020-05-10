@@ -1550,7 +1550,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->normal.z = p_value._data._int;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->d) {
-					v->d = p_value._data._int;
+					v->distance = p_value._data._int;
 					valid = true;
 				}
 			} else if (p_value.type == Variant::FLOAT) {
@@ -1565,7 +1565,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 					v->normal.z = p_value._data._float;
 					valid = true;
 				} else if (p_index == CoreStringNames::singleton->d) {
-					v->d = p_value._data._float;
+					v->distance = p_value._data._float;
 					valid = true;
 				}
 
@@ -1851,7 +1851,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 			} else if (p_index == CoreStringNames::singleton->z) {
 				return v->normal.z;
 			} else if (p_index == CoreStringNames::singleton->d) {
-				return v->d;
+				return v->distance;
 			} else if (p_index == CoreStringNames::singleton->normal) {
 				return v->normal;
 			}
@@ -2334,7 +2334,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 					return;
 				} else if (*str == "d") {
 					valid = true;
-					v->d = p_value;
+					v->distance = p_value;
 					return;
 				}
 			}
@@ -2841,7 +2841,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 					return v->normal;
 				} else if (*str == "d") {
 					valid = true;
-					return v->d;
+					return v->distance;
 				}
 			}
 

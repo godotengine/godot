@@ -56,29 +56,29 @@ namespace Godot
             }
         }
 
-        public real_t D { get; set; }
+        public real_t Distance { get; set; }
 
         public Vector3 Center
         {
             get
             {
-                return _normal * D;
+                return _normal * Distance;
             }
         }
 
         public real_t DistanceTo(Vector3 point)
         {
-            return _normal.Dot(point) - D;
+            return _normal.Dot(point) - Distance;
         }
 
         public Vector3 GetAnyPoint()
         {
-            return _normal * D;
+            return _normal * Distance;
         }
 
         public bool HasPoint(Vector3 point, real_t epsilon = Mathf.Epsilon)
         {
-            real_t dist = _normal.Dot(point) - D;
+            real_t dist = _normal.Dot(point) - Distance;
             return Mathf.Abs(dist) <= epsilon;
         }
 
@@ -89,9 +89,9 @@ namespace Godot
             if (Mathf.IsZeroApprox(denom))
                 return null;
 
-            Vector3 result = b._normal.Cross(c._normal) * D +
-                                c._normal.Cross(_normal) * b.D +
-                                _normal.Cross(b._normal) * c.D;
+            Vector3 result = b._normal.Cross(c._normal) * Distance +
+                                c._normal.Cross(_normal) * b.Distance +
+                                _normal.Cross(b._normal) * c.Distance;
 
             return result / denom;
         }
@@ -103,7 +103,7 @@ namespace Godot
             if (Mathf.IsZeroApprox(den))
                 return null;
 
-            real_t dist = (_normal.Dot(from) - D) / den;
+            real_t dist = (_normal.Dot(from) - Distance) / den;
 
             // This is a ray, before the emitting pos (from) does not exist
             if (dist > Mathf.Epsilon)
@@ -120,7 +120,7 @@ namespace Godot
             if (Mathf.IsZeroApprox(den))
                 return null;
 
-            real_t dist = (_normal.Dot(begin) - D) / den;
+            real_t dist = (_normal.Dot(begin) - Distance) / den;
 
             // Only allow dist to be in the range of 0 to 1, with tolerance.
             if (dist < -Mathf.Epsilon || dist > 1.0f + Mathf.Epsilon)
@@ -131,7 +131,7 @@ namespace Godot
 
         public bool IsPointOver(Vector3 point)
         {
-            return _normal.Dot(point) > D;
+            return _normal.Dot(point) > Distance;
         }
 
         public Plane Normalized()
@@ -141,7 +141,7 @@ namespace Godot
             if (len == 0)
                 return new Plane(0, 0, 0, 0);
 
-            return new Plane(_normal / len, D / len);
+            return new Plane(_normal / len, Distance / len);
         }
 
         public Vector3 Project(Vector3 point)
@@ -159,27 +159,27 @@ namespace Godot
         public static Plane PlaneXY { get { return _planeXY; } }
 
         // Constructors
-        public Plane(real_t a, real_t b, real_t c, real_t d)
+        public Plane(real_t a, real_t b, real_t c, real_t distance)
         {
             _normal = new Vector3(a, b, c);
-            this.D = d;
+            this.Distance = distance;
         }
-        public Plane(Vector3 normal, real_t d)
+        public Plane(Vector3 normal, real_t distance)
         {
             this._normal = normal;
-            this.D = d;
+            this.Distance = distance;
         }
 
         public Plane(Vector3 v1, Vector3 v2, Vector3 v3)
         {
             _normal = (v1 - v3).Cross(v1 - v2);
             _normal.Normalize();
-            D = _normal.Dot(v1);
+            Distance = _normal.Dot(v1);
         }
 
         public static Plane operator -(Plane plane)
         {
-            return new Plane(-plane._normal, -plane.D);
+            return new Plane(-plane._normal, -plane.Distance);
         }
 
         public static bool operator ==(Plane left, Plane right)
@@ -204,17 +204,17 @@ namespace Godot
 
         public bool Equals(Plane other)
         {
-            return _normal == other._normal && D == other.D;
+            return _normal == other._normal && Distance == other.Distance;
         }
 
         public bool IsEqualApprox(Plane other)
         {
-            return _normal.IsEqualApprox(other._normal) && Mathf.IsEqualApprox(D, other.D);
+            return _normal.IsEqualApprox(other._normal) && Mathf.IsEqualApprox(Distance, other.Distance);
         }
 
         public override int GetHashCode()
         {
-            return _normal.GetHashCode() ^ D.GetHashCode();
+            return _normal.GetHashCode() ^ Distance.GetHashCode();
         }
 
         public override string ToString()
@@ -222,7 +222,7 @@ namespace Godot
             return String.Format("({0}, {1})", new object[]
             {
                 _normal.ToString(),
-                D.ToString()
+                Distance.ToString()
             });
         }
 
@@ -231,7 +231,7 @@ namespace Godot
             return String.Format("({0}, {1})", new object[]
             {
                 _normal.ToString(format),
-                D.ToString(format)
+                Distance.ToString(format)
             });
         }
     }

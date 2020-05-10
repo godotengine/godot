@@ -766,7 +766,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 						Vector3 tangent = Vector3(tangent_src->array[tangent_pos + 0], tangent_src->array[tangent_pos + 1], tangent_src->array[tangent_pos + 2]);
 
 						vertex.tangent.normal = tangent;
-						vertex.tangent.d = vertex.normal.cross(tangent).dot(binormal) > 0 ? 1 : -1;
+						vertex.tangent.distance = vertex.normal.cross(tangent).dot(binormal) > 0 ? 1 : -1;
 					}
 				}
 
@@ -794,7 +794,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 #ifndef NO_UP_AXIS_SWAP
 				if (collada.state.up_axis == Vector3::AXIS_Z) {
 
-					Vector3 bn = vertex.normal.cross(vertex.tangent.normal) * vertex.tangent.d;
+					Vector3 bn = vertex.normal.cross(vertex.tangent.normal) * vertex.tangent.distance;
 
 					SWAP(vertex.vertex.z, vertex.vertex.y);
 					vertex.vertex.z = -vertex.vertex.z;
@@ -805,7 +805,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					SWAP(bn.z, bn.y);
 					bn.z = -bn.z;
 
-					vertex.tangent.d = vertex.normal.cross(vertex.tangent.normal).dot(bn) > 0 ? 1 : -1;
+					vertex.tangent.distance = vertex.normal.cross(vertex.tangent.normal).dot(bn) > 0 ? 1 : -1;
 				}
 
 #endif

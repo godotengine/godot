@@ -36,7 +36,7 @@
 class Plane {
 public:
 	Vector3 normal;
-	real_t d;
+	real_t distance;
 
 	void set_normal(const Vector3 &p_normal);
 	_FORCE_INLINE_ Vector3 get_normal() const { return normal; }; ///Point is coplanar, CMP_EPSILON for precision
@@ -46,7 +46,7 @@ public:
 
 	/* Plane-Point operations */
 
-	_FORCE_INLINE_ Vector3 center() const { return normal * d; }
+	_FORCE_INLINE_ Vector3 center() const { return normal * distance; }
 	Vector3 get_any_point() const;
 	Vector3 get_any_perpendicular_normal() const;
 
@@ -67,7 +67,7 @@ public:
 
 	/* misc */
 
-	Plane operator-() const { return Plane(-normal, -d); }
+	Plane operator-() const { return Plane(-normal, -distance); }
 	bool is_equal_approx(const Plane &p_plane) const;
 
 	_FORCE_INLINE_ bool operator==(const Plane &p_plane) const;
@@ -75,41 +75,41 @@ public:
 	operator String() const;
 
 	_FORCE_INLINE_ Plane() :
-			d(0) {}
+			distance(0) {}
 	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
 			normal(p_a, p_b, p_c),
-			d(p_d) {}
+			distance(p_d) {}
 
-	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_d);
+	_FORCE_INLINE_ Plane(const Vector3 &p_normal, real_t p_distance);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point, const Vector3 &p_normal);
 	_FORCE_INLINE_ Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir = CLOCKWISE);
 };
 
 bool Plane::is_point_over(const Vector3 &p_point) const {
 
-	return (normal.dot(p_point) > d);
+	return (normal.dot(p_point) > distance);
 }
 
 real_t Plane::distance_to(const Vector3 &p_point) const {
 
-	return (normal.dot(p_point) - d);
+	return (normal.dot(p_point) - distance);
 }
 
 bool Plane::has_point(const Vector3 &p_point, real_t _epsilon) const {
 
-	real_t dist = normal.dot(p_point) - d;
+	real_t dist = normal.dot(p_point) - distance;
 	dist = ABS(dist);
 	return (dist <= _epsilon);
 }
 
-Plane::Plane(const Vector3 &p_normal, real_t p_d) :
+Plane::Plane(const Vector3 &p_normal, real_t p_distance) :
 		normal(p_normal),
-		d(p_d) {
+		distance(p_distance) {
 }
 
 Plane::Plane(const Vector3 &p_point, const Vector3 &p_normal) :
 		normal(p_normal),
-		d(p_normal.dot(p_point)) {
+		distance(p_normal.dot(p_point)) {
 }
 
 Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_point3, ClockDirection p_dir) {
@@ -120,17 +120,17 @@ Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_
 		normal = (p_point1 - p_point2).cross(p_point1 - p_point3);
 
 	normal.normalize();
-	d = normal.dot(p_point1);
+	distance = normal.dot(p_point1);
 }
 
 bool Plane::operator==(const Plane &p_plane) const {
 
-	return normal == p_plane.normal && d == p_plane.d;
+	return normal == p_plane.normal && distance == p_plane.distance;
 }
 
 bool Plane::operator!=(const Plane &p_plane) const {
 
-	return normal != p_plane.normal || d != p_plane.d;
+	return normal != p_plane.normal || distance != p_plane.distance;
 }
 
 #endif // PLANE_H
