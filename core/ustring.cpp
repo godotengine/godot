@@ -1882,7 +1882,8 @@ bool String::is_numeric() const {
 	};
 
 	int s = 0;
-	if (operator[](0) == '-') ++s;
+	if (operator[](0) == '-')
+		++s;
 	bool dot = false;
 	for (int i = s; i < length(); i++) {
 
@@ -4182,9 +4183,14 @@ String String::sprintf(const Array &values, bool *error) const {
 					int base = 16;
 					bool capitalize = false;
 					switch (c) {
-						case 'd': base = 10; break;
-						case 'o': base = 8; break;
-						case 'x': break;
+						case 'd':
+							base = 10;
+							break;
+						case 'o':
+							base = 8;
+							break;
+						case 'x':
+							break;
 						case 'X':
 							base = 16;
 							capitalize = true;

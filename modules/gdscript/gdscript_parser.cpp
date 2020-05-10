@@ -920,10 +920,18 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			e.is_op = true;
 
 			switch (tokenizer->get_token()) {
-				case GDScriptTokenizer::TK_OP_ADD: e.op = OperatorNode::OP_POS; break;
-				case GDScriptTokenizer::TK_OP_SUB: e.op = OperatorNode::OP_NEG; break;
-				case GDScriptTokenizer::TK_OP_NOT: e.op = OperatorNode::OP_NOT; break;
-				case GDScriptTokenizer::TK_OP_BIT_INVERT: e.op = OperatorNode::OP_BIT_INVERT; break;
+				case GDScriptTokenizer::TK_OP_ADD:
+					e.op = OperatorNode::OP_POS;
+					break;
+				case GDScriptTokenizer::TK_OP_SUB:
+					e.op = OperatorNode::OP_NEG;
+					break;
+				case GDScriptTokenizer::TK_OP_NOT:
+					e.op = OperatorNode::OP_NOT;
+					break;
+				case GDScriptTokenizer::TK_OP_BIT_INVERT:
+					e.op = OperatorNode::OP_BIT_INVERT;
+					break;
 				default: {
 				}
 			}
@@ -1339,25 +1347,55 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		switch (tokenizer->get_token()) { //see operator
 
-			case GDScriptTokenizer::TK_OP_IN: op = OperatorNode::OP_IN; break;
-			case GDScriptTokenizer::TK_OP_EQUAL: op = OperatorNode::OP_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_NOT_EQUAL: op = OperatorNode::OP_NOT_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_LESS: op = OperatorNode::OP_LESS; break;
-			case GDScriptTokenizer::TK_OP_LESS_EQUAL: op = OperatorNode::OP_LESS_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_GREATER: op = OperatorNode::OP_GREATER; break;
-			case GDScriptTokenizer::TK_OP_GREATER_EQUAL: op = OperatorNode::OP_GREATER_EQUAL; break;
-			case GDScriptTokenizer::TK_OP_AND: op = OperatorNode::OP_AND; break;
-			case GDScriptTokenizer::TK_OP_OR: op = OperatorNode::OP_OR; break;
-			case GDScriptTokenizer::TK_OP_ADD: op = OperatorNode::OP_ADD; break;
-			case GDScriptTokenizer::TK_OP_SUB: op = OperatorNode::OP_SUB; break;
-			case GDScriptTokenizer::TK_OP_MUL: op = OperatorNode::OP_MUL; break;
-			case GDScriptTokenizer::TK_OP_DIV: op = OperatorNode::OP_DIV; break;
+			case GDScriptTokenizer::TK_OP_IN:
+				op = OperatorNode::OP_IN;
+				break;
+			case GDScriptTokenizer::TK_OP_EQUAL:
+				op = OperatorNode::OP_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_NOT_EQUAL:
+				op = OperatorNode::OP_NOT_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_LESS:
+				op = OperatorNode::OP_LESS;
+				break;
+			case GDScriptTokenizer::TK_OP_LESS_EQUAL:
+				op = OperatorNode::OP_LESS_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_GREATER:
+				op = OperatorNode::OP_GREATER;
+				break;
+			case GDScriptTokenizer::TK_OP_GREATER_EQUAL:
+				op = OperatorNode::OP_GREATER_EQUAL;
+				break;
+			case GDScriptTokenizer::TK_OP_AND:
+				op = OperatorNode::OP_AND;
+				break;
+			case GDScriptTokenizer::TK_OP_OR:
+				op = OperatorNode::OP_OR;
+				break;
+			case GDScriptTokenizer::TK_OP_ADD:
+				op = OperatorNode::OP_ADD;
+				break;
+			case GDScriptTokenizer::TK_OP_SUB:
+				op = OperatorNode::OP_SUB;
+				break;
+			case GDScriptTokenizer::TK_OP_MUL:
+				op = OperatorNode::OP_MUL;
+				break;
+			case GDScriptTokenizer::TK_OP_DIV:
+				op = OperatorNode::OP_DIV;
+				break;
 			case GDScriptTokenizer::TK_OP_MOD:
 				op = OperatorNode::OP_MOD;
 				break;
 			//case GDScriptTokenizer::TK_OP_NEG: op=OperatorNode::OP_NEG ; break;
-			case GDScriptTokenizer::TK_OP_SHIFT_LEFT: op = OperatorNode::OP_SHIFT_LEFT; break;
-			case GDScriptTokenizer::TK_OP_SHIFT_RIGHT: op = OperatorNode::OP_SHIFT_RIGHT; break;
+			case GDScriptTokenizer::TK_OP_SHIFT_LEFT:
+				op = OperatorNode::OP_SHIFT_LEFT;
+				break;
+			case GDScriptTokenizer::TK_OP_SHIFT_RIGHT:
+				op = OperatorNode::OP_SHIFT_RIGHT;
+				break;
 			case GDScriptTokenizer::TK_OP_ASSIGN: {
 				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN;
 
@@ -1374,23 +1412,57 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				}
 
 			} break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_ADD: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_ADD; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_SUB: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SUB; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_MUL: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MUL; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_DIV: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_DIV; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_MOD: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MOD; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_LEFT: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_LEFT; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_RIGHT; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_AND; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_OR: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_OR; break;
-			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_XOR: _VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_XOR; break;
-			case GDScriptTokenizer::TK_OP_BIT_AND: op = OperatorNode::OP_BIT_AND; break;
-			case GDScriptTokenizer::TK_OP_BIT_OR: op = OperatorNode::OP_BIT_OR; break;
-			case GDScriptTokenizer::TK_OP_BIT_XOR: op = OperatorNode::OP_BIT_XOR; break;
-			case GDScriptTokenizer::TK_PR_IS: op = OperatorNode::OP_IS; break;
-			case GDScriptTokenizer::TK_CF_IF: op = OperatorNode::OP_TERNARY_IF; break;
-			case GDScriptTokenizer::TK_CF_ELSE: op = OperatorNode::OP_TERNARY_ELSE; break;
-			default: valid = false; break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_ADD:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_ADD;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_SUB:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SUB;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_MUL:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MUL;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_DIV:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_DIV;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_MOD:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_MOD;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_LEFT:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_LEFT;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_SHIFT_RIGHT;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_AND:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_AND;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_OR:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_OR;
+				break;
+			case GDScriptTokenizer::TK_OP_ASSIGN_BIT_XOR:
+				_VALIDATE_ASSIGN op = OperatorNode::OP_ASSIGN_BIT_XOR;
+				break;
+			case GDScriptTokenizer::TK_OP_BIT_AND:
+				op = OperatorNode::OP_BIT_AND;
+				break;
+			case GDScriptTokenizer::TK_OP_BIT_OR:
+				op = OperatorNode::OP_BIT_OR;
+				break;
+			case GDScriptTokenizer::TK_OP_BIT_XOR:
+				op = OperatorNode::OP_BIT_XOR;
+				break;
+			case GDScriptTokenizer::TK_PR_IS:
+				op = OperatorNode::OP_IS;
+				break;
+			case GDScriptTokenizer::TK_CF_IF:
+				op = OperatorNode::OP_TERNARY_IF;
+				break;
+			case GDScriptTokenizer::TK_CF_ELSE:
+				op = OperatorNode::OP_TERNARY_ELSE;
+				break;
+			default:
+				valid = false;
+				break;
 		}
 
 		if (valid) {
@@ -1443,36 +1515,74 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					unary = true;
 					break;
 
-				case OperatorNode::OP_MUL: priority = 2; break;
-				case OperatorNode::OP_DIV: priority = 2; break;
-				case OperatorNode::OP_MOD: priority = 2; break;
+				case OperatorNode::OP_MUL:
+					priority = 2;
+					break;
+				case OperatorNode::OP_DIV:
+					priority = 2;
+					break;
+				case OperatorNode::OP_MOD:
+					priority = 2;
+					break;
 
-				case OperatorNode::OP_ADD: priority = 3; break;
-				case OperatorNode::OP_SUB: priority = 3; break;
+				case OperatorNode::OP_ADD:
+					priority = 3;
+					break;
+				case OperatorNode::OP_SUB:
+					priority = 3;
+					break;
 
-				case OperatorNode::OP_SHIFT_LEFT: priority = 4; break;
-				case OperatorNode::OP_SHIFT_RIGHT: priority = 4; break;
+				case OperatorNode::OP_SHIFT_LEFT:
+					priority = 4;
+					break;
+				case OperatorNode::OP_SHIFT_RIGHT:
+					priority = 4;
+					break;
 
-				case OperatorNode::OP_BIT_AND: priority = 5; break;
-				case OperatorNode::OP_BIT_XOR: priority = 6; break;
-				case OperatorNode::OP_BIT_OR: priority = 7; break;
+				case OperatorNode::OP_BIT_AND:
+					priority = 5;
+					break;
+				case OperatorNode::OP_BIT_XOR:
+					priority = 6;
+					break;
+				case OperatorNode::OP_BIT_OR:
+					priority = 7;
+					break;
 
-				case OperatorNode::OP_LESS: priority = 8; break;
-				case OperatorNode::OP_LESS_EQUAL: priority = 8; break;
-				case OperatorNode::OP_GREATER: priority = 8; break;
-				case OperatorNode::OP_GREATER_EQUAL: priority = 8; break;
+				case OperatorNode::OP_LESS:
+					priority = 8;
+					break;
+				case OperatorNode::OP_LESS_EQUAL:
+					priority = 8;
+					break;
+				case OperatorNode::OP_GREATER:
+					priority = 8;
+					break;
+				case OperatorNode::OP_GREATER_EQUAL:
+					priority = 8;
+					break;
 
-				case OperatorNode::OP_EQUAL: priority = 8; break;
-				case OperatorNode::OP_NOT_EQUAL: priority = 8; break;
+				case OperatorNode::OP_EQUAL:
+					priority = 8;
+					break;
+				case OperatorNode::OP_NOT_EQUAL:
+					priority = 8;
+					break;
 
-				case OperatorNode::OP_IN: priority = 10; break;
+				case OperatorNode::OP_IN:
+					priority = 10;
+					break;
 
 				case OperatorNode::OP_NOT:
 					priority = 11;
 					unary = true;
 					break;
-				case OperatorNode::OP_AND: priority = 12; break;
-				case OperatorNode::OP_OR: priority = 13; break;
+				case OperatorNode::OP_AND:
+					priority = 12;
+					break;
+				case OperatorNode::OP_OR:
+					priority = 13;
+					break;
 
 				case OperatorNode::OP_TERNARY_IF:
 					priority = 14;
@@ -1485,17 +1595,39 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					// Rigth-to-left should be false in this case, otherwise it would always error.
 					break;
 
-				case OperatorNode::OP_ASSIGN: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_ADD: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SUB: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_MUL: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_DIV: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_MOD: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_LEFT: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_AND: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_OR: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_XOR: priority = 15; break;
+				case OperatorNode::OP_ASSIGN:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_ADD:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_SUB:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_MUL:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_DIV:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_MOD:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_SHIFT_LEFT:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_BIT_AND:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_BIT_OR:
+					priority = 15;
+					break;
+				case OperatorNode::OP_ASSIGN_BIT_XOR:
+					priority = 15;
+					break;
 
 				default: {
 					_set_error("GDScriptParser bug, invalid operator in expression: " + itos(expression[i].op));
@@ -2047,7 +2179,8 @@ bool GDScriptParser::_reduce_export_var_type(Variant &p_value, int p_line) {
 	if (p_value.get_type() == Variant::ARRAY) {
 		Array arr = p_value;
 		for (int i = 0; i < arr.size(); i++) {
-			if (!_reduce_export_var_type(arr[i], p_line)) return false;
+			if (!_reduce_export_var_type(arr[i], p_line))
+				return false;
 		}
 		return true;
 	}
@@ -2056,7 +2189,8 @@ bool GDScriptParser::_reduce_export_var_type(Variant &p_value, int p_line) {
 		Dictionary dict = p_value;
 		for (int i = 0; i < dict.size(); i++) {
 			Variant value = dict.get_value_at_index(i);
-			if (!_reduce_export_var_type(value, p_line)) return false;
+			if (!_reduce_export_var_type(value, p_line))
+				return false;
 		}
 		return true;
 	}
@@ -3182,9 +3316,15 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 								ConstantNode *cn = alloc_node<ConstantNode>();
 								switch (args.size()) {
-									case 1: cn->value = (int64_t)constants[0]; break;
-									case 2: cn->value = Vector2i(constants[0], constants[1]); break;
-									case 3: cn->value = Vector3i(constants[0], constants[1], constants[2]); break;
+									case 1:
+										cn->value = (int64_t)constants[0];
+										break;
+									case 2:
+										cn->value = Vector2i(constants[0], constants[1]);
+										break;
+									case 3:
+										cn->value = Vector3i(constants[0], constants[1], constants[2]);
+										break;
 								}
 								cn->datatype = _type_from_variant(cn->value);
 								container = cn;
@@ -3196,9 +3336,15 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 								on->arguments.push_back(tn);
 
 								switch (args.size()) {
-									case 1: tn->vtype = Variant::INT; break;
-									case 2: tn->vtype = Variant::VECTOR2I; break;
-									case 3: tn->vtype = Variant::VECTOR3I; break;
+									case 1:
+										tn->vtype = Variant::INT;
+										break;
+									case 2:
+										tn->vtype = Variant::VECTOR2I;
+										break;
+									case 3:
+										tn->vtype = Variant::VECTOR3I;
+										break;
 								}
 
 								for (int i = 0; i < args.size(); i++) {
@@ -3337,7 +3483,8 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				_parse_pattern_block(compiled_branches, match_node->branches, p_static);
 
-				if (error_set) return;
+				if (error_set)
+					return;
 
 				ControlFlowNode *match_cf_node = alloc_node<ControlFlowNode>();
 				match_cf_node->cf_type = ControlFlowNode::CF_MATCH;
@@ -4934,7 +5081,8 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							return;
 						}
 
-						if (!_reduce_export_var_type(cn->value, member.line)) return;
+						if (!_reduce_export_var_type(cn->value, member.line))
+							return;
 
 						member._export.type = cn->value.get_type();
 						member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
@@ -5451,8 +5599,10 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 					}
 				}
 
-				if (base_class) break;
-				if (found) continue;
+				if (base_class)
+					break;
+				if (found)
+					continue;
 
 				if (p->constant_expressions.has(base)) {
 					if (p->constant_expressions[base].expression->type != Node::TYPE_CONSTANT) {
@@ -5554,10 +5704,12 @@ void GDScriptParser::_determine_inheritance(ClassNode *p_class, bool p_recursive
 }
 
 String GDScriptParser::DataType::to_string() const {
-	if (!has_type) return "var";
+	if (!has_type)
+		return "var";
 	switch (kind) {
 		case BUILTIN: {
-			if (builtin_type == Variant::NIL) return "null";
+			if (builtin_type == Variant::NIL)
+				return "null";
 			return Variant::get_type_name(builtin_type);
 		} break;
 		case NATIVE: {
@@ -5721,8 +5873,10 @@ bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
 }
 
 GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source, int p_line) {
-	if (!p_source.has_type) return p_source;
-	if (p_source.kind != DataType::UNRESOLVED) return p_source;
+	if (!p_source.has_type)
+		return p_source;
+	if (p_source.kind != DataType::UNRESOLVED)
+		return p_source;
 
 	Vector<String> full_name = p_source.native_type.operator String().split(".", false);
 	int name_part = 0;
@@ -6962,7 +7116,8 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 		native = "_" + native.operator String();
 	}
 	if (!ClassDB::class_exists(native)) {
-		if (!check_types) return false;
+		if (!check_types)
+			return false;
 		ERR_FAIL_V_MSG(false, "Parser bug: Class '" + String(native) + "' not found.");
 	}
 
@@ -7053,7 +7208,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 				par_types.write[i - 1] = _reduce_node_type(p_call->arguments[i]);
 			}
 
-			if (error_set) return DataType();
+			if (error_set)
+				return DataType();
 
 			// Special case: check copy constructor. Those are defined implicitly in Variant.
 			if (par_types.size() == 1) {
@@ -7121,7 +7277,8 @@ GDScriptParser::DataType GDScriptParser::_reduce_function_call_type(const Operat
 				err += "' matches the signature '";
 				err += Variant::get_type_name(tn->vtype) + "(";
 				for (int i = 0; i < par_types.size(); i++) {
-					if (i > 0) err += ", ";
+					if (i > 0)
+						err += ", ";
 					err += par_types[i].to_string();
 				}
 				err += ")'.";
@@ -7479,7 +7636,8 @@ bool GDScriptParser::_get_member_type(const DataType &p_base_type, const StringN
 		native = "_" + native.operator String();
 	}
 	if (!ClassDB::class_exists(native)) {
-		if (!check_types) return false;
+		if (!check_types)
+			return false;
 		ERR_FAIL_V_MSG(false, "Parser bug: Class \"" + String(native) + "\" not found.");
 	}
 
@@ -7776,12 +7934,14 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 	// Function declarations
 	for (int i = 0; i < p_class->static_functions.size(); i++) {
 		_check_function_types(p_class->static_functions[i]);
-		if (error_set) return;
+		if (error_set)
+			return;
 	}
 
 	for (int i = 0; i < p_class->functions.size(); i++) {
 		_check_function_types(p_class->functions[i]);
-		if (error_set) return;
+		if (error_set)
+			return;
 	}
 
 	// Class variables
@@ -7856,7 +8016,8 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		}
 
 		// Setter and getter
-		if (v.setter == StringName() && v.getter == StringName()) continue;
+		if (v.setter == StringName() && v.getter == StringName())
+			continue;
 
 		bool found_getter = false;
 		bool found_setter = false;
@@ -7899,10 +8060,12 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 					return;
 				}
 			}
-			if (found_getter && found_setter) break;
+			if (found_getter && found_setter)
+				break;
 		}
 
-		if ((found_getter || v.getter == StringName()) && (found_setter || v.setter == StringName())) continue;
+		if ((found_getter || v.getter == StringName()) && (found_setter || v.setter == StringName()))
+			continue;
 
 		// Check for static functions
 		for (int j = 0; j < p_class->static_functions.size(); j++) {
@@ -7933,7 +8096,8 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 	for (int i = 0; i < p_class->subclasses.size(); i++) {
 		current_class = p_class->subclasses[i];
 		_check_class_level_types(current_class);
-		if (error_set) return;
+		if (error_set)
+			return;
 		current_class = p_class;
 	}
 }
@@ -8081,7 +8245,8 @@ void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
 		_check_block_types(current_block);
 		current_block = nullptr;
 		current_function = nullptr;
-		if (error_set) return;
+		if (error_set)
+			return;
 	}
 
 	for (int i = 0; i < p_class->functions.size(); i++) {
@@ -8091,7 +8256,8 @@ void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
 		_check_block_types(current_block);
 		current_block = nullptr;
 		current_function = nullptr;
-		if (error_set) return;
+		if (error_set)
+			return;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -8112,7 +8278,8 @@ void GDScriptParser::_check_class_blocks_types(ClassNode *p_class) {
 	for (int i = 0; i < p_class->subclasses.size(); i++) {
 		current_class = p_class->subclasses[i];
 		_check_class_blocks_types(current_class);
-		if (error_set) return;
+		if (error_set)
+			return;
 		current_class = p_class;
 	}
 }
@@ -8375,7 +8542,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							_add_warning(GDScriptWarning::RETURN_VALUE_DISCARDED, op->line, func_name);
 						}
 #endif // DEBUG_ENABLED
-						if (error_set) return;
+						if (error_set)
+							return;
 					} break;
 					case OperatorNode::OP_YIELD: {
 						_mark_line_as_safe(op->line);
@@ -8410,7 +8578,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 							}
 						}
 
-						if (!function_type.has_type) break;
+						if (!function_type.has_type)
+							break;
 
 						if (function_type.kind == DataType::BUILTIN && function_type.builtin_type == Variant::NIL) {
 							// Return void, should not have arguments
@@ -8470,7 +8639,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 		current_block = p_block->sub_blocks[i];
 		_check_block_types(current_block);
 		current_block = p_block;
-		if (error_set) return;
+		if (error_set)
+			return;
 	}
 
 #ifdef DEBUG_ENABLED
@@ -8613,7 +8783,8 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 	current_function = nullptr;
 	current_block = nullptr;
 
-	if (for_completion) check_types = false;
+	if (for_completion)
+		check_types = false;
 
 	// Resolve all class-level stuff before getting into function blocks
 	_check_class_level_types(main_class);

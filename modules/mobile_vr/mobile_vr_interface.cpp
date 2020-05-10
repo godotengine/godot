@@ -61,13 +61,19 @@ Vector3 MobileVRInterface::scale_magneto(const Vector3 &p_magnetometer) {
 	};
 
 	// adjust our min and max
-	if (mag_raw.x > mag_next_max.x) mag_next_max.x = mag_raw.x;
-	if (mag_raw.y > mag_next_max.y) mag_next_max.y = mag_raw.y;
-	if (mag_raw.z > mag_next_max.z) mag_next_max.z = mag_raw.z;
+	if (mag_raw.x > mag_next_max.x)
+		mag_next_max.x = mag_raw.x;
+	if (mag_raw.y > mag_next_max.y)
+		mag_next_max.y = mag_raw.y;
+	if (mag_raw.z > mag_next_max.z)
+		mag_next_max.z = mag_raw.z;
 
-	if (mag_raw.x < mag_next_min.x) mag_next_min.x = mag_raw.x;
-	if (mag_raw.y < mag_next_min.y) mag_next_min.y = mag_raw.y;
-	if (mag_raw.z < mag_next_min.z) mag_next_min.z = mag_raw.z;
+	if (mag_raw.x < mag_next_min.x)
+		mag_next_min.x = mag_raw.x;
+	if (mag_raw.y < mag_next_min.y)
+		mag_next_min.y = mag_raw.y;
+	if (mag_raw.z < mag_next_min.z)
+		mag_next_min.z = mag_raw.z;
 
 	// scale our x, y and z
 	if (!(mag_current_max.x - mag_current_min.x)) {

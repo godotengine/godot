@@ -48,7 +48,8 @@ void JoypadUWP::process_controllers() {
 
 		ControllerDevice &joy = controllers[i];
 
-		if (!joy.connected) break;
+		if (!joy.connected)
+			break;
 
 		switch (joy.type) {
 

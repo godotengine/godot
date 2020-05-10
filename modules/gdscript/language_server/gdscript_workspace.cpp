@@ -185,7 +185,8 @@ Array GDScriptWorkspace::symbol(const Dictionary &p_params) {
 }
 
 Error GDScriptWorkspace::initialize() {
-	if (initialized) return OK;
+	if (initialized)
+		return OK;
 
 	DocData *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {

@@ -1372,7 +1372,8 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 
 SceneTree::SceneTree() {
 
-	if (singleton == nullptr) singleton = this;
+	if (singleton == nullptr)
+		singleton = this;
 	_quit = false;
 	accept_quit = true;
 	quit_on_go_back = true;
@@ -1478,5 +1479,6 @@ SceneTree::~SceneTree() {
 		memdelete(root);
 	}
 
-	if (singleton == this) singleton = nullptr;
+	if (singleton == this)
+		singleton = nullptr;
 }

@@ -5297,10 +5297,18 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				}
 
 				switch (animation->track_get_type(i)) {
-					case Animation::TYPE_TRANSFORM: text += " (Transform)"; break;
-					case Animation::TYPE_METHOD: text += " (Methods)"; break;
-					case Animation::TYPE_BEZIER: text += " (Bezier)"; break;
-					case Animation::TYPE_AUDIO: text += " (Audio)"; break;
+					case Animation::TYPE_TRANSFORM:
+						text += " (Transform)";
+						break;
+					case Animation::TYPE_METHOD:
+						text += " (Methods)";
+						break;
+					case Animation::TYPE_BEZIER:
+						text += " (Bezier)";
+						break;
+					case Animation::TYPE_AUDIO:
+						text += " (Audio)";
+						break;
 					default: {
 					};
 				}

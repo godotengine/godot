@@ -446,11 +446,13 @@ void ProjectSettingsEditor::_show_last_added(const Ref<InputEvent> &p_event, con
 			}
 			child = child->get_next();
 		}
-		if (found) break;
+		if (found)
+			break;
 		r = r->get_next();
 	}
 
-	if (found) input_editor->ensure_cursor_is_visible();
+	if (found)
+		input_editor->ensure_cursor_is_visible();
 }
 
 void ProjectSettingsEditor::_wait_for_key(const Ref<InputEvent> &p_event) {
@@ -804,12 +806,23 @@ void ProjectSettingsEditor::_update_actions() {
 			if (mb.is_valid()) {
 				String str = _get_device_string(mb->get_device()) + ", ";
 				switch (mb->get_button_index()) {
-					case BUTTON_LEFT: str += TTR("Left Button"); break;
-					case BUTTON_RIGHT: str += TTR("Right Button"); break;
-					case BUTTON_MIDDLE: str += TTR("Middle Button"); break;
-					case BUTTON_WHEEL_UP: str += TTR("Wheel Up"); break;
-					case BUTTON_WHEEL_DOWN: str += TTR("Wheel Down"); break;
-					default: str += vformat(TTR("%d Button"), mb->get_button_index());
+					case BUTTON_LEFT:
+						str += TTR("Left Button");
+						break;
+					case BUTTON_RIGHT:
+						str += TTR("Right Button");
+						break;
+					case BUTTON_MIDDLE:
+						str += TTR("Middle Button");
+						break;
+					case BUTTON_WHEEL_UP:
+						str += TTR("Wheel Up");
+						break;
+					case BUTTON_WHEEL_DOWN:
+						str += TTR("Wheel Down");
+						break;
+					default:
+						str += vformat(TTR("%d Button"), mb->get_button_index());
 				}
 
 				action2->set_text(0, str);
@@ -1596,7 +1609,8 @@ void ProjectSettingsEditor::_update_translations() {
 			String n = names[i];
 			String l = langs[i];
 			bool is_checked = l_filter.has(l);
-			if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && !is_checked) continue;
+			if (filter_mode == SHOW_ONLY_SELECTED_LOCALES && !is_checked)
+				continue;
 
 			TreeItem *t = translation_filter->create_item(root);
 			t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);

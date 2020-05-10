@@ -551,7 +551,8 @@ int DisplayServerX11::get_screen_count() const {
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) return 0;
+	if (!ext_okay)
+		return 0;
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
@@ -600,11 +601,13 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
-	if (!ext_okay) return Rect2i(0, 0, 0, 0);
+	if (!ext_okay)
+		return Rect2i(0, 0, 0, 0);
 
 	int count;
 	XineramaScreenInfo *xsi = XineramaQueryScreens(x11_display, &count);
-	if (p_screen >= count) return Rect2i(0, 0, 0, 0);
+	if (p_screen >= count)
+		return Rect2i(0, 0, 0, 0);
 
 	Rect2i rect = Rect2i(xsi[p_screen].x_org, xsi[p_screen].y_org, xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
@@ -827,7 +830,8 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	WindowData &wd = windows[p_window];
 
 	int count = get_screen_count();
-	if (p_screen >= count) return;
+	if (p_screen >= count)
+		return;
 
 	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN) {
 		Point2i position = screen_get_position(p_screen);

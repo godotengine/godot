@@ -2429,12 +2429,24 @@ ProjectManager::ProjectManager() {
 #endif
 			} break;
 
-			case 1: editor_set_scale(0.75); break;
-			case 2: editor_set_scale(1.0); break;
-			case 3: editor_set_scale(1.25); break;
-			case 4: editor_set_scale(1.5); break;
-			case 5: editor_set_scale(1.75); break;
-			case 6: editor_set_scale(2.0); break;
+			case 1:
+				editor_set_scale(0.75);
+				break;
+			case 2:
+				editor_set_scale(1.0);
+				break;
+			case 3:
+				editor_set_scale(1.25);
+				break;
+			case 4:
+				editor_set_scale(1.5);
+				break;
+			case 5:
+				editor_set_scale(1.75);
+				break;
+			case 6:
+				editor_set_scale(2.0);
+				break;
 
 			default: {
 				editor_set_scale(custom_display_scale);

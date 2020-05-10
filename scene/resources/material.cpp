@@ -414,13 +414,26 @@ void BaseMaterial3D::_update_shader() {
 
 	String texfilter_str;
 	switch (texture_filter) {
-		case TEXTURE_FILTER_NEAREST: texfilter_str = "filter_nearest"; break;
-		case TEXTURE_FILTER_LINEAR: texfilter_str = "filter_linear"; break;
-		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS: texfilter_str = "filter_nearest_mipmap"; break;
-		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: texfilter_str = "filter_linear_mipmap"; break;
-		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC: texfilter_str = "filter_nearest_mipmap_aniso"; break;
-		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: texfilter_str = "filter_linear_mipmap_aniso"; break;
-		case TEXTURE_FILTER_MAX: break; // Internal value, skip.
+		case TEXTURE_FILTER_NEAREST:
+			texfilter_str = "filter_nearest";
+			break;
+		case TEXTURE_FILTER_LINEAR:
+			texfilter_str = "filter_linear";
+			break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
+			texfilter_str = "filter_nearest_mipmap";
+			break;
+		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+			texfilter_str = "filter_linear_mipmap";
+			break;
+		case TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
+			texfilter_str = "filter_nearest_mipmap_aniso";
+			break;
+		case TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
+			texfilter_str = "filter_linear_mipmap_aniso";
+			break;
+		case TEXTURE_FILTER_MAX:
+			break; // Internal value, skip.
 	}
 
 	if (flags[FLAG_USE_TEXTURE_REPEAT]) {
@@ -433,10 +446,18 @@ void BaseMaterial3D::_update_shader() {
 
 	String code = "shader_type spatial;\nrender_mode ";
 	switch (blend_mode) {
-		case BLEND_MODE_MIX: code += "blend_mix"; break;
-		case BLEND_MODE_ADD: code += "blend_add"; break;
-		case BLEND_MODE_SUB: code += "blend_sub"; break;
-		case BLEND_MODE_MUL: code += "blend_mul"; break;
+		case BLEND_MODE_MIX:
+			code += "blend_mix";
+			break;
+		case BLEND_MODE_ADD:
+			code += "blend_add";
+			break;
+		case BLEND_MODE_SUB:
+			code += "blend_sub";
+			break;
+		case BLEND_MODE_MUL:
+			code += "blend_mul";
+			break;
 	}
 
 	DepthDrawMode ddm = depth_draw_mode;
@@ -445,9 +466,15 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	switch (ddm) {
-		case DEPTH_DRAW_OPAQUE_ONLY: code += ",depth_draw_opaque"; break;
-		case DEPTH_DRAW_ALWAYS: code += ",depth_draw_always"; break;
-		case DEPTH_DRAW_DISABLED: code += ",depth_draw_never"; break;
+		case DEPTH_DRAW_OPAQUE_ONLY:
+			code += ",depth_draw_opaque";
+			break;
+		case DEPTH_DRAW_ALWAYS:
+			code += ",depth_draw_always";
+			break;
+		case DEPTH_DRAW_DISABLED:
+			code += ",depth_draw_never";
+			break;
 	}
 
 	if (transparency == TRANSPARENCY_ALPHA_DEPTH_PRE_PASS) {
@@ -455,23 +482,49 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	switch (cull_mode) {
-		case CULL_BACK: code += ",cull_back"; break;
-		case CULL_FRONT: code += ",cull_front"; break;
-		case CULL_DISABLED: code += ",cull_disabled"; break;
+		case CULL_BACK:
+			code += ",cull_back";
+			break;
+		case CULL_FRONT:
+			code += ",cull_front";
+			break;
+		case CULL_DISABLED:
+			code += ",cull_disabled";
+			break;
 	}
 	switch (diffuse_mode) {
-		case DIFFUSE_BURLEY: code += ",diffuse_burley"; break;
-		case DIFFUSE_LAMBERT: code += ",diffuse_lambert"; break;
-		case DIFFUSE_LAMBERT_WRAP: code += ",diffuse_lambert_wrap"; break;
-		case DIFFUSE_OREN_NAYAR: code += ",diffuse_oren_nayar"; break;
-		case DIFFUSE_TOON: code += ",diffuse_toon"; break;
+		case DIFFUSE_BURLEY:
+			code += ",diffuse_burley";
+			break;
+		case DIFFUSE_LAMBERT:
+			code += ",diffuse_lambert";
+			break;
+		case DIFFUSE_LAMBERT_WRAP:
+			code += ",diffuse_lambert_wrap";
+			break;
+		case DIFFUSE_OREN_NAYAR:
+			code += ",diffuse_oren_nayar";
+			break;
+		case DIFFUSE_TOON:
+			code += ",diffuse_toon";
+			break;
 	}
 	switch (specular_mode) {
-		case SPECULAR_SCHLICK_GGX: code += ",specular_schlick_ggx"; break;
-		case SPECULAR_BLINN: code += ",specular_blinn"; break;
-		case SPECULAR_PHONG: code += ",specular_phong"; break;
-		case SPECULAR_TOON: code += ",specular_toon"; break;
-		case SPECULAR_DISABLED: code += ",specular_disabled"; break;
+		case SPECULAR_SCHLICK_GGX:
+			code += ",specular_schlick_ggx";
+			break;
+		case SPECULAR_BLINN:
+			code += ",specular_blinn";
+			break;
+		case SPECULAR_PHONG:
+			code += ",specular_phong";
+			break;
+		case SPECULAR_TOON:
+			code += ",specular_toon";
+			break;
+		case SPECULAR_DISABLED:
+			code += ",specular_disabled";
+			break;
 	}
 	if (features[FEATURE_SUBSURFACE_SCATTERING] && flags[FLAG_SUBSURFACE_MODE_SKIN]) {
 		code += ",sss_mode_skin";

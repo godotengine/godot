@@ -185,9 +185,15 @@ CSGBrush *CSGShape3D::_get_brush() {
 				CSGBrushOperation bop;
 
 				switch (child->get_operation()) {
-					case CSGShape3D::OPERATION_UNION: bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap); break;
-					case CSGShape3D::OPERATION_INTERSECTION: bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap); break;
-					case CSGShape3D::OPERATION_SUBTRACTION: bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap); break;
+					case CSGShape3D::OPERATION_UNION:
+						bop.merge_brushes(CSGBrushOperation::OPERATION_UNION, *n, *nn2, *nn, snap);
+						break;
+					case CSGShape3D::OPERATION_INTERSECTION:
+						bop.merge_brushes(CSGBrushOperation::OPERATION_INTERSECTION, *n, *nn2, *nn, snap);
+						break;
+					case CSGShape3D::OPERATION_SUBTRACTION:
+						bop.merge_brushes(CSGBrushOperation::OPERATION_SUBSTRACTION, *n, *nn2, *nn, snap);
+						break;
 				}
 				memdelete(n);
 				memdelete(nn2);
@@ -1783,11 +1789,15 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			final_polygon_min = p;
 			final_polygon_max = final_polygon_min;
 		} else {
-			if (p.x < final_polygon_min.x) final_polygon_min.x = p.x;
-			if (p.y < final_polygon_min.y) final_polygon_min.y = p.y;
+			if (p.x < final_polygon_min.x)
+				final_polygon_min.x = p.x;
+			if (p.y < final_polygon_min.y)
+				final_polygon_min.y = p.y;
 
-			if (p.x > final_polygon_max.x) final_polygon_max.x = p.x;
-			if (p.y > final_polygon_max.y) final_polygon_max.y = p.y;
+			if (p.x > final_polygon_max.x)
+				final_polygon_max.x = p.x;
+			if (p.y > final_polygon_max.y)
+				final_polygon_max.y = p.y;
 		}
 	}
 	Vector2 final_polygon_size = final_polygon_max - final_polygon_min;
@@ -1826,8 +1836,12 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 	int face_count = 0;
 
 	switch (mode) {
-		case MODE_DEPTH: face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2; break;
-		case MODE_SPIN: face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (final_polygon.size()) * 2 * spin_sides; break;
+		case MODE_DEPTH:
+			face_count = triangles.size() * 2 / 3 + (final_polygon.size()) * 2;
+			break;
+		case MODE_SPIN:
+			face_count = (spin_degrees < 360 ? triangles.size() * 2 / 3 : 0) + (final_polygon.size()) * 2 * spin_sides;
+			break;
 		case MODE_PATH: {
 			float bl = curve->get_baked_length();
 			int splits = MAX(2, Math::ceil(bl / path_interval));

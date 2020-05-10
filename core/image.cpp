@@ -114,23 +114,36 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1; //luminance
 		case FORMAT_LA8:
 			return 2; //luminance-alpha
-		case FORMAT_R8: return 1;
-		case FORMAT_RG8: return 2;
-		case FORMAT_RGB8: return 3;
-		case FORMAT_RGBA8: return 4;
-		case FORMAT_RGBA4444: return 2;
-		case FORMAT_RGB565: return 2;
+		case FORMAT_R8:
+			return 1;
+		case FORMAT_RG8:
+			return 2;
+		case FORMAT_RGB8:
+			return 3;
+		case FORMAT_RGBA8:
+			return 4;
+		case FORMAT_RGBA4444:
+			return 2;
+		case FORMAT_RGB565:
+			return 2;
 		case FORMAT_RF:
 			return 4; //float
-		case FORMAT_RGF: return 8;
-		case FORMAT_RGBF: return 12;
-		case FORMAT_RGBAF: return 16;
+		case FORMAT_RGF:
+			return 8;
+		case FORMAT_RGBF:
+			return 12;
+		case FORMAT_RGBAF:
+			return 16;
 		case FORMAT_RH:
 			return 2; //half float
-		case FORMAT_RGH: return 4;
-		case FORMAT_RGBH: return 6;
-		case FORMAT_RGBAH: return 8;
-		case FORMAT_RGBE9995: return 4;
+		case FORMAT_RGH:
+			return 4;
+		case FORMAT_RGBH:
+			return 6;
+		case FORMAT_RGBAH:
+			return 8;
+		case FORMAT_RGBE9995:
+			return 4;
 		case FORMAT_DXT1:
 			return 1; //s3tc bc1
 		case FORMAT_DXT3:
@@ -149,22 +162,32 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1; //unsigned float
 		case FORMAT_PVRTC2:
 			return 1; //pvrtc
-		case FORMAT_PVRTC2A: return 1;
-		case FORMAT_PVRTC4: return 1;
-		case FORMAT_PVRTC4A: return 1;
+		case FORMAT_PVRTC2A:
+			return 1;
+		case FORMAT_PVRTC4:
+			return 1;
+		case FORMAT_PVRTC4A:
+			return 1;
 		case FORMAT_ETC:
 			return 1; //etc1
 		case FORMAT_ETC2_R11:
 			return 1; //etc2
 		case FORMAT_ETC2_R11S:
 			return 1; //signed: return 1; NOT srgb.
-		case FORMAT_ETC2_RG11: return 1;
-		case FORMAT_ETC2_RG11S: return 1;
-		case FORMAT_ETC2_RGB8: return 1;
-		case FORMAT_ETC2_RGBA8: return 1;
-		case FORMAT_ETC2_RGB8A1: return 1;
-		case FORMAT_ETC2_RA_AS_RG: return 1;
-		case FORMAT_DXT5_RA_AS_RG: return 1;
+		case FORMAT_ETC2_RG11:
+			return 1;
+		case FORMAT_ETC2_RG11S:
+			return 1;
+		case FORMAT_ETC2_RGB8:
+			return 1;
+		case FORMAT_ETC2_RGBA8:
+			return 1;
+		case FORMAT_ETC2_RGB8A1:
+			return 1;
+		case FORMAT_ETC2_RA_AS_RG:
+			return 1;
+		case FORMAT_DXT5_RA_AS_RG:
+			return 1;
 		case FORMAT_MAX: {
 		}
 	}
@@ -478,36 +501,96 @@ void Image::convert(Format p_new_format) {
 
 	switch (conversion_type) {
 
-		case FORMAT_L8 | (FORMAT_LA8 << 8): _convert<1, false, 1, true, true, true>(width, height, rptr, wptr); break;
-		case FORMAT_L8 | (FORMAT_R8 << 8): _convert<1, false, 1, false, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_L8 | (FORMAT_RG8 << 8): _convert<1, false, 2, false, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_L8 | (FORMAT_RGB8 << 8): _convert<1, false, 3, false, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_L8 | (FORMAT_RGBA8 << 8): _convert<1, false, 3, true, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_LA8 | (FORMAT_L8 << 8): _convert<1, true, 1, false, true, true>(width, height, rptr, wptr); break;
-		case FORMAT_LA8 | (FORMAT_R8 << 8): _convert<1, true, 1, false, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_LA8 | (FORMAT_RG8 << 8): _convert<1, true, 2, false, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_LA8 | (FORMAT_RGB8 << 8): _convert<1, true, 3, false, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_LA8 | (FORMAT_RGBA8 << 8): _convert<1, true, 3, true, true, false>(width, height, rptr, wptr); break;
-		case FORMAT_R8 | (FORMAT_L8 << 8): _convert<1, false, 1, false, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_R8 | (FORMAT_LA8 << 8): _convert<1, false, 1, true, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_R8 | (FORMAT_RG8 << 8): _convert<1, false, 2, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_R8 | (FORMAT_RGB8 << 8): _convert<1, false, 3, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_R8 | (FORMAT_RGBA8 << 8): _convert<1, false, 3, true, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RG8 | (FORMAT_L8 << 8): _convert<2, false, 1, false, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_RG8 | (FORMAT_LA8 << 8): _convert<2, false, 1, true, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_RG8 | (FORMAT_R8 << 8): _convert<2, false, 1, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RG8 | (FORMAT_RGB8 << 8): _convert<2, false, 3, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RG8 | (FORMAT_RGBA8 << 8): _convert<2, false, 3, true, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RGB8 | (FORMAT_L8 << 8): _convert<3, false, 1, false, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_RGB8 | (FORMAT_LA8 << 8): _convert<3, false, 1, true, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_RGB8 | (FORMAT_R8 << 8): _convert<3, false, 1, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RGB8 | (FORMAT_RG8 << 8): _convert<3, false, 2, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RGB8 | (FORMAT_RGBA8 << 8): _convert<3, false, 3, true, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RGBA8 | (FORMAT_L8 << 8): _convert<3, true, 1, false, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_RGBA8 | (FORMAT_LA8 << 8): _convert<3, true, 1, true, false, true>(width, height, rptr, wptr); break;
-		case FORMAT_RGBA8 | (FORMAT_R8 << 8): _convert<3, true, 1, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RGBA8 | (FORMAT_RG8 << 8): _convert<3, true, 2, false, false, false>(width, height, rptr, wptr); break;
-		case FORMAT_RGBA8 | (FORMAT_RGB8 << 8): _convert<3, true, 3, false, false, false>(width, height, rptr, wptr); break;
+		case FORMAT_L8 | (FORMAT_LA8 << 8):
+			_convert<1, false, 1, true, true, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_L8 | (FORMAT_R8 << 8):
+			_convert<1, false, 1, false, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_L8 | (FORMAT_RG8 << 8):
+			_convert<1, false, 2, false, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_L8 | (FORMAT_RGB8 << 8):
+			_convert<1, false, 3, false, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_L8 | (FORMAT_RGBA8 << 8):
+			_convert<1, false, 3, true, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_LA8 | (FORMAT_L8 << 8):
+			_convert<1, true, 1, false, true, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_LA8 | (FORMAT_R8 << 8):
+			_convert<1, true, 1, false, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_LA8 | (FORMAT_RG8 << 8):
+			_convert<1, true, 2, false, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_LA8 | (FORMAT_RGB8 << 8):
+			_convert<1, true, 3, false, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_LA8 | (FORMAT_RGBA8 << 8):
+			_convert<1, true, 3, true, true, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_R8 | (FORMAT_L8 << 8):
+			_convert<1, false, 1, false, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_R8 | (FORMAT_LA8 << 8):
+			_convert<1, false, 1, true, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_R8 | (FORMAT_RG8 << 8):
+			_convert<1, false, 2, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_R8 | (FORMAT_RGB8 << 8):
+			_convert<1, false, 3, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_R8 | (FORMAT_RGBA8 << 8):
+			_convert<1, false, 3, true, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RG8 | (FORMAT_L8 << 8):
+			_convert<2, false, 1, false, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RG8 | (FORMAT_LA8 << 8):
+			_convert<2, false, 1, true, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RG8 | (FORMAT_R8 << 8):
+			_convert<2, false, 1, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RG8 | (FORMAT_RGB8 << 8):
+			_convert<2, false, 3, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RG8 | (FORMAT_RGBA8 << 8):
+			_convert<2, false, 3, true, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGB8 | (FORMAT_L8 << 8):
+			_convert<3, false, 1, false, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGB8 | (FORMAT_LA8 << 8):
+			_convert<3, false, 1, true, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGB8 | (FORMAT_R8 << 8):
+			_convert<3, false, 1, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGB8 | (FORMAT_RG8 << 8):
+			_convert<3, false, 2, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGB8 | (FORMAT_RGBA8 << 8):
+			_convert<3, false, 3, true, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGBA8 | (FORMAT_L8 << 8):
+			_convert<3, true, 1, false, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGBA8 | (FORMAT_LA8 << 8):
+			_convert<3, true, 1, true, false, true>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGBA8 | (FORMAT_R8 << 8):
+			_convert<3, true, 1, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGBA8 | (FORMAT_RG8 << 8):
+			_convert<3, true, 2, false, false, false>(width, height, rptr, wptr);
+			break;
+		case FORMAT_RGBA8 | (FORMAT_RGB8 << 8):
+			_convert<3, true, 3, false, false, false>(width, height, rptr, wptr);
+			break;
 	}
 
 	bool gen_mipmaps = mipmaps;
@@ -949,25 +1032,49 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
-					case 1: _scale_nearest<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 2: _scale_nearest<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 3: _scale_nearest<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_nearest<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 1:
+						_scale_nearest<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 2:
+						_scale_nearest<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 3:
+						_scale_nearest<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 4:
+						_scale_nearest<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
 				switch (get_format_pixel_size(format)) {
-					case 4: _scale_nearest<1, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_nearest<2, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 12: _scale_nearest<3, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 16: _scale_nearest<4, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4:
+						_scale_nearest<1, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 8:
+						_scale_nearest<2, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 12:
+						_scale_nearest<3, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 16:
+						_scale_nearest<4, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 
 			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
 				switch (get_format_pixel_size(format)) {
-					case 2: _scale_nearest<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_nearest<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 6: _scale_nearest<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_nearest<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 2:
+						_scale_nearest<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 4:
+						_scale_nearest<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 6:
+						_scale_nearest<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 8:
+						_scale_nearest<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			}
 
@@ -1013,24 +1120,48 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 				if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
 					switch (get_format_pixel_size(format)) {
-						case 1: _scale_bilinear<1, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 2: _scale_bilinear<2, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 3: _scale_bilinear<3, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 4: _scale_bilinear<4, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 1:
+							_scale_bilinear<1, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 2:
+							_scale_bilinear<2, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 3:
+							_scale_bilinear<3, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 4:
+							_scale_bilinear<4, uint8_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
 					}
 				} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
 					switch (get_format_pixel_size(format)) {
-						case 4: _scale_bilinear<1, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 8: _scale_bilinear<2, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 12: _scale_bilinear<3, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 16: _scale_bilinear<4, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 4:
+							_scale_bilinear<1, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 8:
+							_scale_bilinear<2, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 12:
+							_scale_bilinear<3, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 16:
+							_scale_bilinear<4, float>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
 					}
 				} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
 					switch (get_format_pixel_size(format)) {
-						case 2: _scale_bilinear<1, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 4: _scale_bilinear<2, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 6: _scale_bilinear<3, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
-						case 8: _scale_bilinear<4, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height); break;
+						case 2:
+							_scale_bilinear<1, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 4:
+							_scale_bilinear<2, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 6:
+							_scale_bilinear<3, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
+						case 8:
+							_scale_bilinear<4, uint16_t>(src_ptr, w_ptr, src_width, src_height, p_width, p_height);
+							break;
 					}
 				}
 			}
@@ -1046,24 +1177,48 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
-					case 1: _scale_cubic<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 2: _scale_cubic<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 3: _scale_cubic<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_cubic<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 1:
+						_scale_cubic<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 2:
+						_scale_cubic<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 3:
+						_scale_cubic<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 4:
+						_scale_cubic<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
 				switch (get_format_pixel_size(format)) {
-					case 4: _scale_cubic<1, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_cubic<2, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 12: _scale_cubic<3, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 16: _scale_cubic<4, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4:
+						_scale_cubic<1, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 8:
+						_scale_cubic<2, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 12:
+						_scale_cubic<3, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 16:
+						_scale_cubic<4, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
 				switch (get_format_pixel_size(format)) {
-					case 2: _scale_cubic<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_cubic<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 6: _scale_cubic<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_cubic<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 2:
+						_scale_cubic<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 4:
+						_scale_cubic<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 6:
+						_scale_cubic<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 8:
+						_scale_cubic<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			}
 		} break;
@@ -1071,24 +1226,48 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 			if (format >= FORMAT_L8 && format <= FORMAT_RGBA8) {
 				switch (get_format_pixel_size(format)) {
-					case 1: _scale_lanczos<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 2: _scale_lanczos<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 3: _scale_lanczos<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_lanczos<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 1:
+						_scale_lanczos<1, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 2:
+						_scale_lanczos<2, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 3:
+						_scale_lanczos<3, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 4:
+						_scale_lanczos<4, uint8_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			} else if (format >= FORMAT_RF && format <= FORMAT_RGBAF) {
 				switch (get_format_pixel_size(format)) {
-					case 4: _scale_lanczos<1, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_lanczos<2, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 12: _scale_lanczos<3, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 16: _scale_lanczos<4, float>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 4:
+						_scale_lanczos<1, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 8:
+						_scale_lanczos<2, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 12:
+						_scale_lanczos<3, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 16:
+						_scale_lanczos<4, float>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			} else if (format >= FORMAT_RH && format <= FORMAT_RGBAH) {
 				switch (get_format_pixel_size(format)) {
-					case 2: _scale_lanczos<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 4: _scale_lanczos<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 6: _scale_lanczos<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
-					case 8: _scale_lanczos<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height); break;
+					case 2:
+						_scale_lanczos<1, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 4:
+						_scale_lanczos<2, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 6:
+						_scale_lanczos<3, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
+					case 8:
+						_scale_lanczos<4, uint16_t>(r_ptr, w_ptr, width, height, p_width, p_height);
+						break;
 				}
 			}
 		} break;
@@ -1403,23 +1582,51 @@ void Image::shrink_x2() {
 			switch (format) {
 
 				case FORMAT_L8:
-				case FORMAT_R8: _generate_po2_mipmap<uint8_t, 1, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height); break;
-				case FORMAT_LA8: _generate_po2_mipmap<uint8_t, 2, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height); break;
-				case FORMAT_RG8: _generate_po2_mipmap<uint8_t, 2, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height); break;
-				case FORMAT_RGB8: _generate_po2_mipmap<uint8_t, 3, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height); break;
-				case FORMAT_RGBA8: _generate_po2_mipmap<uint8_t, 4, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height); break;
+				case FORMAT_R8:
+					_generate_po2_mipmap<uint8_t, 1, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height);
+					break;
+				case FORMAT_LA8:
+					_generate_po2_mipmap<uint8_t, 2, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height);
+					break;
+				case FORMAT_RG8:
+					_generate_po2_mipmap<uint8_t, 2, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height);
+					break;
+				case FORMAT_RGB8:
+					_generate_po2_mipmap<uint8_t, 3, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height);
+					break;
+				case FORMAT_RGBA8:
+					_generate_po2_mipmap<uint8_t, 4, false, Image::average_4_uint8, Image::renormalize_uint8>(r, w, width, height);
+					break;
 
-				case FORMAT_RF: _generate_po2_mipmap<float, 1, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height); break;
-				case FORMAT_RGF: _generate_po2_mipmap<float, 2, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height); break;
-				case FORMAT_RGBF: _generate_po2_mipmap<float, 3, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height); break;
-				case FORMAT_RGBAF: _generate_po2_mipmap<float, 4, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height); break;
+				case FORMAT_RF:
+					_generate_po2_mipmap<float, 1, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height);
+					break;
+				case FORMAT_RGF:
+					_generate_po2_mipmap<float, 2, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height);
+					break;
+				case FORMAT_RGBF:
+					_generate_po2_mipmap<float, 3, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height);
+					break;
+				case FORMAT_RGBAF:
+					_generate_po2_mipmap<float, 4, false, Image::average_4_float, Image::renormalize_float>(reinterpret_cast<const float *>(r), reinterpret_cast<float *>(w), width, height);
+					break;
 
-				case FORMAT_RH: _generate_po2_mipmap<uint16_t, 1, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height); break;
-				case FORMAT_RGH: _generate_po2_mipmap<uint16_t, 2, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height); break;
-				case FORMAT_RGBH: _generate_po2_mipmap<uint16_t, 3, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height); break;
-				case FORMAT_RGBAH: _generate_po2_mipmap<uint16_t, 4, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height); break;
+				case FORMAT_RH:
+					_generate_po2_mipmap<uint16_t, 1, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height);
+					break;
+				case FORMAT_RGH:
+					_generate_po2_mipmap<uint16_t, 2, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height);
+					break;
+				case FORMAT_RGBH:
+					_generate_po2_mipmap<uint16_t, 3, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height);
+					break;
+				case FORMAT_RGBAH:
+					_generate_po2_mipmap<uint16_t, 4, false, Image::average_4_half, Image::renormalize_half>(reinterpret_cast<const uint16_t *>(r), reinterpret_cast<uint16_t *>(w), width, height);
+					break;
 
-				case FORMAT_RGBE9995: _generate_po2_mipmap<uint32_t, 1, false, Image::average_4_rgbe9995, Image::renormalize_rgbe9995>(reinterpret_cast<const uint32_t *>(r), reinterpret_cast<uint32_t *>(w), width, height); break;
+				case FORMAT_RGBE9995:
+					_generate_po2_mipmap<uint32_t, 1, false, Image::average_4_rgbe9995, Image::renormalize_rgbe9995>(reinterpret_cast<const uint32_t *>(r), reinterpret_cast<uint32_t *>(w), width, height);
+					break;
 				default: {
 				}
 			}
@@ -1485,9 +1692,13 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 		switch (format) {
 
 			case FORMAT_L8:
-			case FORMAT_R8: _generate_po2_mipmap<uint8_t, 1, false, Image::average_4_uint8, Image::renormalize_uint8>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_R8:
+				_generate_po2_mipmap<uint8_t, 1, false, Image::average_4_uint8, Image::renormalize_uint8>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				break;
 			case FORMAT_LA8:
-			case FORMAT_RG8: _generate_po2_mipmap<uint8_t, 2, false, Image::average_4_uint8, Image::renormalize_uint8>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h); break;
+			case FORMAT_RG8:
+				_generate_po2_mipmap<uint8_t, 2, false, Image::average_4_uint8, Image::renormalize_uint8>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
+				break;
 			case FORMAT_RGB8:
 				if (p_renormalize)
 					_generate_po2_mipmap<uint8_t, 3, true, Image::average_4_uint8, Image::renormalize_uint8>(&wp[prev_ofs], &wp[ofs], prev_w, prev_h);
@@ -1911,12 +2122,24 @@ void Image::create(const char **p_xpm) {
 								break;
 
 							switch (i) {
-								case 0: col_r = v << 4; break;
-								case 1: col_r |= v; break;
-								case 2: col_g = v << 4; break;
-								case 3: col_g |= v; break;
-								case 4: col_b = v << 4; break;
-								case 5: col_b |= v; break;
+								case 0:
+									col_r = v << 4;
+									break;
+								case 1:
+									col_r |= v;
+									break;
+								case 2:
+									col_g = v << 4;
+									break;
+								case 3:
+									col_g |= v;
+									break;
+								case 4:
+									col_b = v << 4;
+									break;
+								case 5:
+									col_b |= v;
+									break;
 							};
 						}
 
@@ -2901,12 +3124,24 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) {
 
 void Image::optimize_channels() {
 	switch (detect_used_channels()) {
-		case USED_CHANNELS_L: convert(FORMAT_L8); break;
-		case USED_CHANNELS_LA: convert(FORMAT_LA8); break;
-		case USED_CHANNELS_R: convert(FORMAT_R8); break;
-		case USED_CHANNELS_RG: convert(FORMAT_RG8); break;
-		case USED_CHANNELS_RGB: convert(FORMAT_RGB8); break;
-		case USED_CHANNELS_RGBA: convert(FORMAT_RGBA8); break;
+		case USED_CHANNELS_L:
+			convert(FORMAT_L8);
+			break;
+		case USED_CHANNELS_LA:
+			convert(FORMAT_LA8);
+			break;
+		case USED_CHANNELS_R:
+			convert(FORMAT_R8);
+			break;
+		case USED_CHANNELS_RG:
+			convert(FORMAT_RG8);
+			break;
+		case USED_CHANNELS_RGB:
+			convert(FORMAT_RGB8);
+			break;
+		case USED_CHANNELS_RGBA:
+			convert(FORMAT_RGBA8);
+			break;
 	}
 }
 
@@ -3152,11 +3387,13 @@ void Image::bumpmap_to_normalmap(float bump_scale) {
 
 		for (int ty = 0; ty < height; ty++) {
 			int py = ty + 1;
-			if (py >= height) py -= height;
+			if (py >= height)
+				py -= height;
 
 			for (int tx = 0; tx < width; tx++) {
 				int px = tx + 1;
-				if (px >= width) px -= width;
+				if (px >= width)
+					px -= width;
 				float here = read_ptr[ty * width + tx];
 				float to_right = read_ptr[ty * width + px];
 				float above = read_ptr[py * width + tx];

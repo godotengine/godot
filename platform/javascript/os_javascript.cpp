@@ -324,12 +324,23 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	dom2godot_mod(p_event, ev);
 
 	switch (p_event->button) {
-		case DOM_BUTTON_LEFT: ev->set_button_index(BUTTON_LEFT); break;
-		case DOM_BUTTON_MIDDLE: ev->set_button_index(BUTTON_MIDDLE); break;
-		case DOM_BUTTON_RIGHT: ev->set_button_index(BUTTON_RIGHT); break;
-		case DOM_BUTTON_XBUTTON1: ev->set_button_index(BUTTON_XBUTTON1); break;
-		case DOM_BUTTON_XBUTTON2: ev->set_button_index(BUTTON_XBUTTON2); break;
-		default: return false;
+		case DOM_BUTTON_LEFT:
+			ev->set_button_index(BUTTON_LEFT);
+			break;
+		case DOM_BUTTON_MIDDLE:
+			ev->set_button_index(BUTTON_MIDDLE);
+			break;
+		case DOM_BUTTON_RIGHT:
+			ev->set_button_index(BUTTON_RIGHT);
+			break;
+		case DOM_BUTTON_XBUTTON1:
+			ev->set_button_index(BUTTON_XBUTTON1);
+			break;
+		case DOM_BUTTON_XBUTTON2:
+			ev->set_button_index(BUTTON_XBUTTON2);
+			break;
+		default:
+			return false;
 	}
 
 	if (ev->is_pressed()) {
@@ -413,22 +424,38 @@ static const char *godot2dom_cursor(OS::CursorShape p_shape) {
 		case OS::CURSOR_ARROW:
 		default:
 			return "auto";
-		case OS::CURSOR_IBEAM: return "text";
-		case OS::CURSOR_POINTING_HAND: return "pointer";
-		case OS::CURSOR_CROSS: return "crosshair";
-		case OS::CURSOR_WAIT: return "progress";
-		case OS::CURSOR_BUSY: return "wait";
-		case OS::CURSOR_DRAG: return "grab";
-		case OS::CURSOR_CAN_DROP: return "grabbing";
-		case OS::CURSOR_FORBIDDEN: return "no-drop";
-		case OS::CURSOR_VSIZE: return "ns-resize";
-		case OS::CURSOR_HSIZE: return "ew-resize";
-		case OS::CURSOR_BDIAGSIZE: return "nesw-resize";
-		case OS::CURSOR_FDIAGSIZE: return "nwse-resize";
-		case OS::CURSOR_MOVE: return "move";
-		case OS::CURSOR_VSPLIT: return "row-resize";
-		case OS::CURSOR_HSPLIT: return "col-resize";
-		case OS::CURSOR_HELP: return "help";
+		case OS::CURSOR_IBEAM:
+			return "text";
+		case OS::CURSOR_POINTING_HAND:
+			return "pointer";
+		case OS::CURSOR_CROSS:
+			return "crosshair";
+		case OS::CURSOR_WAIT:
+			return "progress";
+		case OS::CURSOR_BUSY:
+			return "wait";
+		case OS::CURSOR_DRAG:
+			return "grab";
+		case OS::CURSOR_CAN_DROP:
+			return "grabbing";
+		case OS::CURSOR_FORBIDDEN:
+			return "no-drop";
+		case OS::CURSOR_VSIZE:
+			return "ns-resize";
+		case OS::CURSOR_HSIZE:
+			return "ew-resize";
+		case OS::CURSOR_BDIAGSIZE:
+			return "nesw-resize";
+		case OS::CURSOR_FDIAGSIZE:
+			return "nwse-resize";
+		case OS::CURSOR_MOVE:
+			return "move";
+		case OS::CURSOR_VSPLIT:
+			return "row-resize";
+		case OS::CURSOR_HSPLIT:
+			return "col-resize";
+		case OS::CURSOR_HELP:
+			return "help";
 	}
 }
 

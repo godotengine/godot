@@ -1037,8 +1037,10 @@ bool AtlasTexture::is_pixel_opaque(int p_x, int p_y) const {
 	int y = p_y + region.position.y - margin.position.y;
 
 	// margin edge may outside of atlas
-	if (x < 0 || x >= atlas->get_width()) return false;
-	if (y < 0 || y >= atlas->get_height()) return false;
+	if (x < 0 || x >= atlas->get_width())
+		return false;
+	if (y < 0 || y >= atlas->get_height())
+		return false;
 
 	return atlas->is_pixel_opaque(x, y);
 }

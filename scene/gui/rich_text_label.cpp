@@ -230,10 +230,18 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		} else {                                                                                                                                                \
 			int used = wofs - margin;                                                                                                                           \
 			switch (align) {                                                                                                                                    \
-				case ALIGN_LEFT: l.offset_caches.push_back(0); break;                                                                                           \
-				case ALIGN_CENTER: l.offset_caches.push_back(((p_width - margin) - used) / 2); break;                                                           \
-				case ALIGN_RIGHT: l.offset_caches.push_back(((p_width - margin) - used)); break;                                                                \
-				case ALIGN_FILL: l.offset_caches.push_back(line_wrapped ? ((p_width - margin) - used) : 0); break;                                              \
+				case ALIGN_LEFT:                                                                                                                                \
+					l.offset_caches.push_back(0);                                                                                                               \
+					break;                                                                                                                                      \
+				case ALIGN_CENTER:                                                                                                                              \
+					l.offset_caches.push_back(((p_width - margin) - used) / 2);                                                                                 \
+					break;                                                                                                                                      \
+				case ALIGN_RIGHT:                                                                                                                               \
+					l.offset_caches.push_back(((p_width - margin) - used));                                                                                     \
+					break;                                                                                                                                      \
+				case ALIGN_FILL:                                                                                                                                \
+					l.offset_caches.push_back(line_wrapped ? ((p_width - margin) - used) : 0);                                                                  \
+					break;                                                                                                                                      \
 			}                                                                                                                                                   \
 			l.height_caches.push_back(line_height);                                                                                                             \
 			l.ascent_caches.push_back(line_ascent);                                                                                                             \
@@ -255,7 +263,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 			line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;                                                                         \
 		}                                                                                                                                                       \
 		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x < p_ofs.x + wofs) { \
-			if (r_outside) *r_outside = true;                                                                                                                   \
+			if (r_outside)                                                                                                                                      \
+				*r_outside = true;                                                                                                                              \
 			*r_click_item = it;                                                                                                                                 \
 			*r_click_char = rchar;                                                                                                                              \
 			RETURN;                                                                                                                                             \
@@ -275,7 +284,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		}                                                                                                                                   \
 		const bool x_in_range = (p_click_pos.x > p_ofs.x + wofs) && (!p_frame->cell || p_click_pos.x < p_ofs.x + p_width);                  \
 		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && x_in_range) { \
-			if (r_outside) *r_outside = true;                                                                                               \
+			if (r_outside)                                                                                                                  \
+				*r_outside = true;                                                                                                          \
 			*r_click_item = it;                                                                                                             \
 			*r_click_char = rchar;                                                                                                          \
 			RETURN;                                                                                                                         \
@@ -286,7 +296,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 #define ADVANCE(m_width)                                                                                                                                                                                     \
 	{                                                                                                                                                                                                        \
 		if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh && p_click_pos.x >= p_ofs.x + wofs && p_click_pos.x < p_ofs.x + wofs + m_width) { \
-			if (r_outside) *r_outside = false;                                                                                                                                                               \
+			if (r_outside)                                                                                                                                                                                   \
+				*r_outside = false;                                                                                                                                                                          \
 			*r_click_item = it;                                                                                                                                                                              \
 			*r_click_char = rchar;                                                                                                                                                                           \
 			RETURN;                                                                                                                                                                                          \
@@ -855,7 +866,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 			if (p_mode == PROCESS_POINTER && r_click_item && p_click_pos.y >= p_ofs.y + y && p_click_pos.y <= p_ofs.y + y + lh) {
 				//went to next line, but pointer was on the previous one
-				if (r_outside) *r_outside = true;
+				if (r_outside)
+					*r_outside = true;
 				*r_click_item = itp;
 				*r_click_char = rchar;
 				RETURN;

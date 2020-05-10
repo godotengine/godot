@@ -257,7 +257,8 @@ String GPUParticles3D::get_configuration_warning() const {
 				StandardMaterial3D *spat = Object::cast_to<StandardMaterial3D>(draw_passes[i]->surface_get_material(j).ptr());
 				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == StandardMaterial3D::BILLBOARD_PARTICLES);
 			}
-			if (anim_material_found) break;
+			if (anim_material_found)
+				break;
 		}
 	}
 

@@ -721,14 +721,16 @@ public:
 	Color get_default_clear_color() const {
 		return default_clear_color;
 	}
-#define TIMESTAMP_BEGIN()                                                                 \
-	{                                                                                     \
-		if (RSG::storage->capturing_timestamps) RSG::storage->capture_timestamps_begin(); \
+#define TIMESTAMP_BEGIN()                             \
+	{                                                 \
+		if (RSG::storage->capturing_timestamps)       \
+			RSG::storage->capture_timestamps_begin(); \
 	}
 
-#define RENDER_TIMESTAMP(m_text)                                                         \
-	{                                                                                    \
-		if (RSG::storage->capturing_timestamps) RSG::storage->capture_timestamp(m_text); \
+#define RENDER_TIMESTAMP(m_text)                     \
+	{                                                \
+		if (RSG::storage->capturing_timestamps)      \
+			RSG::storage->capture_timestamp(m_text); \
 	}
 
 	bool capturing_timestamps = false;
@@ -857,7 +859,8 @@ public:
 
 		_FORCE_INLINE_ TextureBinding() { binding_id = 0; }
 		_FORCE_INLINE_ ~TextureBinding() {
-			if (binding_id) singleton->free_texture_binding(binding_id);
+			if (binding_id)
+				singleton->free_texture_binding(binding_id);
 		}
 	};
 
@@ -886,7 +889,8 @@ public:
 
 		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
 		_FORCE_INLINE_ ~Polygon() {
-			if (polygon_id) singleton->free_polygon(polygon_id);
+			if (polygon_id)
+				singleton->free_polygon(polygon_id);
 		}
 	};
 
@@ -1288,7 +1292,8 @@ public:
 			for (int i = 0; i < blocks.size(); i++) {
 				memfree(blocks[i].memory);
 			}
-			if (copy_back_buffer) memdelete(copy_back_buffer);
+			if (copy_back_buffer)
+				memdelete(copy_back_buffer);
 			if (custom_data) {
 				memdelete(custom_data);
 			}
