@@ -40,7 +40,7 @@
 
 int TileMap::_get_quadrant_size() const {
 
-	if (y_sort_mode)
+	if (use_y_sort)
 		return 1;
 	else
 		return quadrant_size;
@@ -1649,18 +1649,18 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 	return ret.floor();
 }
 
-void TileMap::set_y_sort_mode(bool p_enable) {
+void TileMap::set_y_sort_enabled(bool p_enable) {
 
 	_clear_quadrants();
-	y_sort_mode = p_enable;
-	RS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), y_sort_mode);
+	use_y_sort = p_enable;
+	RS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), use_y_sort);
 	_recreate_quadrants();
 	emit_signal("settings_changed");
 }
 
-bool TileMap::is_y_sort_mode_enabled() const {
+bool TileMap::is_y_sort_enabled() const {
 
-	return y_sort_mode;
+	return use_y_sort;
 }
 
 void TileMap::set_compatibility_mode(bool p_enable) {
@@ -1703,7 +1703,7 @@ TypedArray<Vector2i> TileMap::get_used_cells() const {
 	return a;
 }
 
-TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_id) const {
+TypedArray<Vector2i> TileMap::get_used_cells_by_index(int p_id) const {
 
 	TypedArray<Vector2i> a;
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
@@ -1823,8 +1823,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_uv", "enable"), &TileMap::set_clip_uv);
 	ClassDB::bind_method(D_METHOD("get_clip_uv"), &TileMap::get_clip_uv);
 
-	ClassDB::bind_method(D_METHOD("set_y_sort_mode", "enable"), &TileMap::set_y_sort_mode);
-	ClassDB::bind_method(D_METHOD("is_y_sort_mode_enabled"), &TileMap::is_y_sort_mode_enabled);
+	ClassDB::bind_method(D_METHOD("set_y_sort_enabled", "enable"), &TileMap::set_y_sort_enabled);
+	ClassDB::bind_method(D_METHOD("is_y_sort_enabled"), &TileMap::is_y_sort_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_compatibility_mode", "enable"), &TileMap::set_compatibility_mode);
 	ClassDB::bind_method(D_METHOD("is_compatibility_mode_enabled"), &TileMap::is_compatibility_mode_enabled);
@@ -1874,7 +1874,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TileMap::clear);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &TileMap::get_used_cells);
-	ClassDB::bind_method(D_METHOD("get_used_cells_by_id", "id"), &TileMap::get_used_cells_by_id);
+	ClassDB::bind_method(D_METHOD("get_used_cells_by_index", "index"), &TileMap::get_used_cells_by_index);
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
 
 	ClassDB::bind_method(D_METHOD("map_to_world", "map_position", "ignore_half_ofs"), &TileMap::map_to_world, DEFVAL(false));
@@ -1898,7 +1898,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "cell_custom_transform"), "set_custom_transform", "get_custom_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_half_offset", PROPERTY_HINT_ENUM, "Offset X,Offset Y,Disabled,Offset Negative X,Offset Negative Y"), "set_half_offset", "get_half_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_tile_origin", PROPERTY_HINT_ENUM, "Top Left,Center,Bottom Left"), "set_tile_origin", "get_tile_origin");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_y_sort"), "set_y_sort_mode", "is_y_sort_mode_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_y_sort"), "set_y_sort_enabled", "is_y_sort_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "compatibility_mode"), "set_compatibility_mode", "is_compatibility_mode_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered_textures"), "set_centered_textures", "is_centered_textures_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cell_clip_uv"), "set_clip_uv", "get_clip_uv");
@@ -1960,7 +1960,7 @@ TileMap::TileMap() {
 	collision_parent = nullptr;
 	use_kinematic = false;
 	navigation = nullptr;
-	y_sort_mode = false;
+	use_y_sort = false;
 	compatibility_mode = false;
 	centered_textures = false;
 	occluder_light_mask = 1;

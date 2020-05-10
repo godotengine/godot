@@ -187,7 +187,7 @@ private:
 	Rect2 used_size_cache;
 	bool used_size_cache_dirty;
 	bool quadrant_order_dirty;
-	bool y_sort_mode;
+	bool use_y_sort;
 	bool compatibility_mode;
 	bool centered_textures;
 	bool clip_uv;
@@ -319,8 +319,8 @@ public:
 	Vector2 map_to_world(const Vector2 &p_pos, bool p_ignore_ofs = false) const;
 	Vector2 world_to_map(const Vector2 &p_pos) const;
 
-	void set_y_sort_mode(bool p_enable);
-	bool is_y_sort_mode_enabled() const;
+	void set_y_sort_enabled(bool p_enable);
+	bool is_y_sort_enabled() const;
 
 	void set_compatibility_mode(bool p_enable);
 	bool is_compatibility_mode_enabled() const;
@@ -329,7 +329,7 @@ public:
 	bool is_centered_textures_enabled() const;
 
 	TypedArray<Vector2i> get_used_cells() const;
-	TypedArray<Vector2i> get_used_cells_by_id(int p_id) const;
+	TypedArray<Vector2i> get_used_cells_by_index(int p_index) const;
 	Rect2 get_used_rect(); // Not const because of cache
 
 	void set_occluder_light_mask(int p_mask);
