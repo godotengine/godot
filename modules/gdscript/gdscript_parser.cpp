@@ -7991,6 +7991,9 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 		if (_get_function_signature(base_type, p_function->name, return_type, arg_types, default_arg_count, _static, vararg)) {
 			bool valid = _static == p_function->_static;
 			valid = valid && return_type == p_function->return_type;
+			if (!p_function->return_type.has_type) {
+				p_function->return_type = return_type;
+			}
 			int argsize_diff = p_function->arguments.size() - arg_types.size();
 			valid = valid && argsize_diff >= 0;
 			valid = valid && p_function->default_values.size() >= default_arg_count + argsize_diff;
