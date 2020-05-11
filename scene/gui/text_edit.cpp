@@ -1150,7 +1150,7 @@ void TextEdit::_notification(int p_what) {
 						highlighted_text_col = _get_column_pos_of_word(highlighted_text, str, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 
 					if (select_identifiers_enabled && highlighted_word.length() != 0) {
-						if (_is_char(highlighted_word[0])) {
+						if (_is_char(highlighted_word[0]) || highlighted_word[0] == '.') {
 							highlighted_word_col = _get_column_pos_of_word(highlighted_word, fullstr, SEARCH_MATCH_CASE | SEARCH_WHOLE_WORDS, 0);
 						}
 					}

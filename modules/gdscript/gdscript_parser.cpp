@@ -8551,7 +8551,13 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 		_set_error("Parse error: " + tokenizer->get_token_error());
 	}
 
-	if (error_set && !for_completion) {
+	bool for_completion_error_set = false;
+	if (error_set && for_completion) {
+		for_completion_error_set = true;
+		error_set = false;
+	}
+
+	if (error_set) {
 		return ERR_PARSE_ERROR;
 	}
 
@@ -8580,6 +8586,10 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 
 	// Resolve the function blocks
 	_check_class_blocks_types(main_class);
+
+	if (for_completion_error_set) {
+		error_set = true;
+	}
 
 	if (error_set) {
 		return ERR_PARSE_ERROR;
