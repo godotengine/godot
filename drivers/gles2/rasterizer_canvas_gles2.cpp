@@ -1908,6 +1908,7 @@ void RasterizerCanvasGLES2::join_sorted_items() {
 			_render_item_state.joined_item->num_item_refs = 1;
 			_render_item_state.joined_item->bounding_rect = ci->global_rect_cache;
 			_render_item_state.joined_item->z_index = z;
+			_render_item_state.joined_item->flags = bdata.joined_item_batch_flags;
 
 			// add the reference
 			BItemRef *r = bdata.item_refs.request_with_grow();
@@ -2184,7 +2185,8 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	}
 
 	// if there are any state changes we change join to false
-	// we also set r_batch_break to true if we don't want this item joined
+	// we also set r_batch_break to true if we don't want this item joined to the next
+	// (e.g. an item that must not be joined at all)
 	r_batch_break = false;
 	bool join = true;
 
@@ -2271,17 +2273,6 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	bool unshaded = r_ris.shader_cache && (r_ris.shader_cache->canvas_item.light_mode == RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_UNSHADED || (blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX && blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_PMALPHA));
 	bool reclip = false;
 
-	// does the shader contain BUILTINs which should break the batching?
-	if (r_ris.shader_cache && !unshaded) {
-		const unsigned int test_flags = RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING | RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_VERTEX_BAKING;
-		if (r_ris.shader_cache->canvas_item.batch_flags & test_flags) {
-			// we will do this same test on the shader during the rendering pass in order to set a bool not to bake vertex colors
-			// instead of saving this info as it is cheap to calculate
-			join = false;
-			r_batch_break = true;
-		}
-	}
-
 	// we are precalculating the final_modulate ahead of time because we need this for baking of final modulate into vertex colors
 	// (only in software transform mode)
 	// This maybe inefficient storing it...
@@ -2290,6 +2281,33 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 	if (r_ris.last_blend_mode != blend_mode) {
 		join = false;
 		r_ris.last_blend_mode = blend_mode;
+	}
+
+	// does the shader contain BUILTINs which should break the batching?
+	bdata.joined_item_batch_flags = 0;
+	if (r_ris.shader_cache && !unshaded) {
+
+		unsigned int and_flags = r_ris.shader_cache->canvas_item.batch_flags & (RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING | RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_VERTEX_BAKING);
+		if (and_flags) {
+
+			bool break_batching = true;
+
+			if (and_flags == RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING) {
+				// in some circumstances, if the modulate is identity, we still allow baking because reading modulate / color
+				// will still be okay to do in the shader with no ill effects
+				if (r_ris.final_modulate == Color(1, 1, 1, 1)) {
+					break_batching = false;
+				}
+			}
+
+			if (break_batching) {
+				join = false;
+				r_batch_break = true;
+
+				// save the flags so that they don't need to be recalculated in the 2nd pass
+				bdata.joined_item_batch_flags |= r_ris.shader_cache->canvas_item.batch_flags;
+			}
+		}
 	}
 
 	if ((blend_mode == RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX || blend_mode == RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_PMALPHA) && r_ris.item_group_light && !unshaded) {
@@ -3003,12 +3021,6 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 	int blend_mode = r_ris.shader_cache ? r_ris.shader_cache->canvas_item.blend_mode : RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX;
 	bool unshaded = r_ris.shader_cache && (r_ris.shader_cache->canvas_item.light_mode == RasterizerStorageGLES2::Shader::CanvasItem::LIGHT_MODE_UNSHADED || (blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_MIX && blend_mode != RasterizerStorageGLES2::Shader::CanvasItem::BLEND_MODE_PMALPHA));
 	bool reclip = false;
-
-	// does the shader contain BUILTINs which break the batching and should prevent color baking or vertex baking?
-	bdata.joined_item_batch_flags = 0;
-	if (r_ris.shader_cache && !unshaded) {
-		bdata.joined_item_batch_flags = r_ris.shader_cache->canvas_item.batch_flags;
-	}
 
 	if (r_ris.last_blend_mode != blend_mode) {
 
