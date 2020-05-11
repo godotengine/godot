@@ -1,9 +1,11 @@
-namespace GodotTools.IdeConnection
+namespace GodotTools.IdeMessaging
 {
-    public struct GodotIdeMetadata
+    public readonly struct GodotIdeMetadata
     {
         public int Port { get; }
         public string EditorExecutablePath { get; }
+
+        public const string DefaultFileName = "ide_messaging_meta.txt";
 
         public GodotIdeMetadata(int port, string editorExecutablePath)
         {
