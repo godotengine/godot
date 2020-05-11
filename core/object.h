@@ -442,10 +442,10 @@ private:
 
 		struct Slot {
 
-			int reference_count;
+			int reference_count = 0;
 			Connection conn;
-			List<Connection>::Element *cE;
-			Slot() { reference_count = 0; }
+			List<Connection>::Element *cE = nullptr;
+			Slot() {}
 		};
 
 		MethodInfo user;
