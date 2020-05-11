@@ -196,6 +196,7 @@ public:
 	void update_active_doll_peers();
 
 	int notify_input_checked(uint64_t p_input_id);
+	uint64_t last_known_input() const;
 	uint64_t get_stored_input_id(int p_i) const;
 	bool process_instant(int p_i, real_t p_delta);
 
@@ -292,6 +293,7 @@ struct Controller {
 	virtual void physics_process(real_t p_delta) = 0;
 	virtual void receive_inputs(Vector<uint8_t> p_data) = 0;
 	virtual int notify_input_checked(uint64_t p_input_id) = 0;
+	virtual uint64_t last_known_input() const = 0;
 	virtual uint64_t get_stored_input_id(int p_i) const = 0;
 	virtual bool process_instant(int p_i, real_t p_delta) = 0;
 	virtual uint64_t get_current_input_id() const = 0;
@@ -307,6 +309,7 @@ struct ServerController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
+	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_input_id() const;
@@ -328,6 +331,7 @@ struct PlayerController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
+	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_input_id() const;
@@ -366,6 +370,7 @@ struct DollController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
+	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_input_id() const;
@@ -390,6 +395,7 @@ struct NoNetController : public Controller {
 	virtual void physics_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int notify_input_checked(uint64_t p_input_id);
+	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_input_id() const;

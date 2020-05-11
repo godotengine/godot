@@ -213,6 +213,10 @@ int NetworkedController::notify_input_checked(uint64_t p_input_id) {
 	return controller->notify_input_checked(p_input_id);
 }
 
+uint64_t NetworkedController::last_known_input() const {
+	return controller->last_known_input();
+}
+
 uint64_t NetworkedController::get_stored_input_id(int p_i) const {
 	return controller->get_stored_input_id(p_i);
 }
@@ -580,6 +584,14 @@ int ServerController::notify_input_checked(uint64_t p_input_id) {
 	return 0;
 }
 
+uint64_t ServerController::last_known_input() const {
+	if (snapshots.size() > 0) {
+		return snapshots.back().id;
+	} else {
+		return UINT64_MAX;
+	}
+}
+
 uint64_t ServerController::get_stored_input_id(int p_i) const {
 	ERR_PRINT("The method `get_input_id` must not be called on server. Be sure why it happened.");
 	return UINT64_MAX;
@@ -782,6 +794,10 @@ int PlayerController::notify_input_checked(uint64_t p_input_id) {
 	// Unreachable, because the next input have always the next `p_input_id` or empty.
 	CRASH_COND(frames_snapshot.empty() == false && (p_input_id + 1) != frames_snapshot.front().id);
 	return frames_snapshot.size();
+}
+
+uint64_t PlayerController::last_known_input() const {
+	return get_stored_input_id(-1);
 }
 
 uint64_t PlayerController::get_stored_input_id(int p_i) const {
@@ -1014,6 +1030,10 @@ int DollController::notify_input_checked(uint64_t p_input_id) {
 	return player_controller.notify_input_checked(p_input_id);
 }
 
+uint64_t DollController::last_known_input() const {
+	return server_controller.last_known_input();
+}
+
 uint64_t DollController::get_stored_input_id(int p_i) const {
 	return player_controller.get_stored_input_id(p_i);
 }
@@ -1101,6 +1121,11 @@ void NoNetController::receive_inputs(Vector<uint8_t> p_data) {
 int NoNetController::notify_input_checked(uint64_t p_input_id) {
 	// Nothing to do.
 	return 0;
+}
+
+uint64_t NoNetController::last_known_input() const {
+	// Nothing to do.
+	return UINT64_MAX;
 }
 
 uint64_t NoNetController::get_stored_input_id(int p_i) const {

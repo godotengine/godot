@@ -1351,7 +1351,7 @@ void ClientRewinder::store_controllers_snapshot(
 			controller_snaps = r_snapshot_storage.getptr(controller->get_instance_id());
 		}
 
-#ifdef DEBUG_ENABLEyy
+#ifdef DEBUG_ENABLED
 		// Simply unreachable.
 		CRASH_COND(controller_snaps == nullptr);
 #endif
@@ -1445,28 +1445,42 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 		// Find the best recoverable input_id.
 		uint64_t checkable_input_id = UINT64_MAX;
-		if (client_snaps == nullptr || client_snaps->empty()) {
-			checkable_input_id = server_snaps->back().input_id;
-		} else {
-			for (
-					auto s_snap = server_snaps->rbegin();
-					checkable_input_id == UINT64_MAX && s_snap != server_snaps->rend();
-					++s_snap) {
+		if (controller->last_known_input() != UINT64_MAX && controller->get_stored_input_id(-1) != UINT64_MAX) {
+			int diff = controller->last_known_input() - controller->get_stored_input_id(-1);
+			if (diff >= 60) { // TODO make this a parameter
+				// This happens to the dolls that may be too behind. Just reset
+				// to the newer state possible with a small padding.
+				for (
+						auto s_snap = server_snaps->rbegin();
+						checkable_input_id == UINT64_MAX && s_snap != server_snaps->rend();
+						++s_snap) {
 
-				for (auto c_snap = client_snaps->begin(); c_snap != client_snaps->end(); ++c_snap) {
-					if (c_snap->input_id == s_snap->input_id) {
-						// This snapshot is present on client, can be checked.
-						checkable_input_id = c_snap->input_id;
-						break;
+					if (s_snap->input_id < (controller->last_known_input() - 2)) {
+						checkable_input_id = s_snap->input_id;
+					}
+				}
+			} else {
+				// Find the best snapshot to recovere from the one already
+				// processed.
+				if (client_snaps != nullptr && client_snaps->empty() == false) {
+					for (
+							auto s_snap = server_snaps->rbegin();
+							checkable_input_id == UINT64_MAX && s_snap != server_snaps->rend();
+							++s_snap) {
+
+						for (auto c_snap = client_snaps->begin(); c_snap != client_snaps->end(); ++c_snap) {
+							if (c_snap->input_id == s_snap->input_id) {
+								// This snapshot is present on client, can be checked.
+								checkable_input_id = c_snap->input_id;
+								break;
+							}
+						}
 					}
 				}
 			}
 		}
 
 		if (checkable_input_id == UINT64_MAX) {
-			// TODO If the server is too faraway from the client this will always be true
-			// Make sure to hard reset the doll if the server is too faraway.
-			// We don't have any snapshot to compare yet for this controller.
 			continue;
 		}
 
@@ -1478,6 +1492,12 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 		while (server_snaps->front().input_id < checkable_input_id) {
 			// Drop any older snapshot.
 			server_snaps->pop_front();
+		}
+
+		// Drop all the client snapshots until the one that we need.
+		while (client_snaps != nullptr && client_snaps->empty() == false && client_snaps->front().input_id < checkable_input_id) {
+			// Drop any olded snapshot.
+			client_snaps->pop_front();
 		}
 
 #ifdef DEBUG_ENABLED
@@ -1492,7 +1512,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 		std::vector<NodeData *> nodes_to_recover;
 		std::vector<PostponedRecover> postponed_recover;
 
-		if (client_snaps == nullptr || client_snaps->empty()) {
+		if (client_snaps == nullptr || client_snaps->empty() || client_snaps->front().input_id != checkable_input_id) {
 			// We don't have any snapshot on client for this controller.
 			// Just reset all the nodes to the server state.
 			NET_DEBUG_PRINT("During recovering was not found any client doll snapshot for this doll: " + controller->get_path() + "; The server snapshot is apllied.");
@@ -1516,12 +1536,6 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			}
 
 		} else {
-			// Drop all the client snapshots until the one that we need.
-
-			while (client_snaps->empty() == false && client_snaps->front().input_id < checkable_input_id) {
-				// Drop any olded snapshot.
-				client_snaps->pop_front();
-			}
 
 #ifdef DEBUG_ENABLED
 			// This is unreachable, because we store all the client shapshots
