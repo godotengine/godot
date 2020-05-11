@@ -14,16 +14,6 @@ namespace GodotTools.Build
 {
     public static class BuildSystem
     {
-        private static string GetMsBuildPath()
-        {
-            string msbuildPath = MsBuildFinder.FindMsBuild();
-
-            if (msbuildPath == null)
-                throw new FileNotFoundException("Cannot find the MSBuild executable.");
-
-            return msbuildPath;
-        }
-
         private static string MonoWindowsBinDir
         {
             get
@@ -46,8 +36,8 @@ namespace GodotTools.Build
             {
                 if (OS.IsWindows)
                 {
-                    return (BuildManager.BuildTool)EditorSettings.GetSetting("mono/builds/build_tool")
-                           == BuildManager.BuildTool.MsBuildMono;
+                    return (BuildTool)EditorSettings.GetSetting("mono/builds/build_tool")
+                           == BuildTool.MsBuildMono;
                 }
 
                 return false;
@@ -57,16 +47,21 @@ namespace GodotTools.Build
         private static bool PrintBuildOutput =>
             (bool)EditorSettings.GetSetting("mono/builds/print_build_output");
 
-        private static Process LaunchBuild(string solution, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)
+        private static Process LaunchBuild(string solution, IEnumerable<string> targets, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)
         {
+            (string msbuildPath, BuildTool buildTool) = MsBuildFinder.FindMsBuild();
+
+            if (msbuildPath == null)
+                throw new FileNotFoundException("Cannot find the MSBuild executable.");
+
             var customPropertiesList = new List<string>();
 
             if (customProperties != null)
                 customPropertiesList.AddRange(customProperties);
 
-            string compilerArgs = BuildArguments(solution, config, loggerOutputDir, customPropertiesList);
+            string compilerArgs = BuildArguments(buildTool, solution, targets, config, loggerOutputDir, customPropertiesList);
 
-            var startInfo = new ProcessStartInfo(GetMsBuildPath(), compilerArgs);
+            var startInfo = new ProcessStartInfo(msbuildPath, compilerArgs);
 
             bool redirectOutput = !IsDebugMsBuildRequested() && !PrintBuildOutput;
 
@@ -90,7 +85,7 @@ namespace GodotTools.Build
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
 
-            var process = new Process { StartInfo = startInfo };
+            var process = new Process {StartInfo = startInfo};
 
             process.Start();
 
@@ -105,19 +100,19 @@ namespace GodotTools.Build
 
         public static int Build(BuildInfo buildInfo)
         {
-            return Build(buildInfo.Solution, buildInfo.Configuration,
+            return Build(buildInfo.Solution, buildInfo.Targets, buildInfo.Configuration,
                 buildInfo.LogsDirPath, buildInfo.CustomProperties);
         }
 
-        public static async Task<int> BuildAsync(BuildInfo buildInfo)
+        public static Task<int> BuildAsync(BuildInfo buildInfo)
         {
-            return await BuildAsync(buildInfo.Solution, buildInfo.Configuration,
+            return BuildAsync(buildInfo.Solution, buildInfo.Targets, buildInfo.Configuration,
                 buildInfo.LogsDirPath, buildInfo.CustomProperties);
         }
 
-        public static int Build(string solution, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)
+        public static int Build(string solution, string[] targets, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)
         {
-            using (var process = LaunchBuild(solution, config, loggerOutputDir, customProperties))
+            using (var process = LaunchBuild(solution, targets, config, loggerOutputDir, customProperties))
             {
                 process.WaitForExit();
 
@@ -125,9 +120,9 @@ namespace GodotTools.Build
             }
         }
 
-        public static async Task<int> BuildAsync(string solution, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)
+        public static async Task<int> BuildAsync(string solution, IEnumerable<string> targets, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)
         {
-            using (var process = LaunchBuild(solution, config, loggerOutputDir, customProperties))
+            using (var process = LaunchBuild(solution, targets, config, loggerOutputDir, customProperties))
             {
                 await process.WaitForExitAsync();
 
@@ -135,10 +130,15 @@ namespace GodotTools.Build
             }
         }
 
-        private static string BuildArguments(string solution, string config, string loggerOutputDir, List<string> customProperties)
+        private static string BuildArguments(BuildTool buildTool, string solution, IEnumerable<string> targets, string config, string loggerOutputDir, IEnumerable<string> customProperties)
         {
-            string arguments = $@"""{solution}"" /v:normal /t:Build ""/p:{"Configuration=" + config}"" " +
-                               $@"""/l:{typeof(GodotBuildLogger).FullName},{GodotBuildLogger.AssemblyPath};{loggerOutputDir}""";
+            string arguments = string.Empty;
+
+            if (buildTool == BuildTool.DotnetCli)
+                arguments += "msbuild "; // `dotnet msbuild` command
+
+            arguments += $@"""{solution}"" /v:normal /t:{string.Join(",", targets)} ""/p:{"Configuration=" + config}"" " +
+                         $@"""/l:{typeof(GodotBuildLogger).FullName},{GodotBuildLogger.AssemblyPath};{loggerOutputDir}""";
 
             foreach (string customProperty in customProperties)
             {

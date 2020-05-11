@@ -5,7 +5,29 @@ import os
 verbose = False
 
 
-def find_msbuild_unix(filename):
+def find_dotnet_cli():
+    import os.path
+
+    if os.name == "nt":
+        windows_exts = os.environ["PATHEXT"]
+        windows_exts = windows_exts.split(os.pathsep) if windows_exts else []
+
+        for hint_dir in os.environ["PATH"].split(os.pathsep):
+            hint_dir = hint_dir.strip('"')
+            hint_path = os.path.join(hint_dir, "dotnet")
+            if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
+                return hint_path
+            if os.path.isfile(hint_path + ".exe") and os.access(hint_path + ".exe", os.X_OK):
+                return hint_path + ".exe"
+    else:
+        for hint_dir in os.environ["PATH"].split(os.pathsep):
+            hint_dir = hint_dir.strip('"')
+            hint_path = os.path.join(hint_dir, "dotnet")
+            if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
+                return hint_path
+
+
+def find_msbuild_unix():
     import os.path
     import sys
 
@@ -86,15 +108,7 @@ def run_command(command, args, env_override=None, name=None):
         raise RuntimeError("'%s' exited with error code: %s" % (name, e.returncode))
 
 
-def nuget_restore(env, *args):
-    global verbose
-    verbose = env['verbose']
-
-    # Do NuGet restore
-    run_command(nuget_path, ['restore'] + list(args), name='nuget restore')
-
-
-def build_solution(env, solution_path, build_config, extra_msbuild_args=[], restore=False):
+def build_solution(env, solution_path, build_config, extra_msbuild_args=[]):
     global verbose
     verbose = env['verbose']
 
@@ -104,27 +118,33 @@ def build_solution(env, solution_path, build_config, extra_msbuild_args=[], rest
     if 'PLATFORM' in msbuild_env:
         del msbuild_env['PLATFORM']
 
-    # Find MSBuild
-    if os.name == 'nt':
-        msbuild_info = find_msbuild_windows(env)
-        if msbuild_info is None:
-            raise RuntimeError('Cannot find MSBuild executable')
-        msbuild_path = msbuild_info[0]
-        msbuild_env.update(msbuild_info[1])
+    msbuild_args = []
+
+    dotnet_cli = find_dotnet_cli()
+
+    if dotnet_cli:
+        msbuild_path = dotnet_cli
+        msbuild_args += ["msbuild"] # `dotnet msbuild` command
     else:
-        msbuild_path = find_msbuild_unix('msbuild')
-        if msbuild_path is None:
-            raise RuntimeError("Cannot find MSBuild executable")
+        # Find MSBuild
+        if os.name == "nt":
+            msbuild_info = find_msbuild_windows(env)
+            if msbuild_info is None:
+                raise RuntimeError("Cannot find MSBuild executable")
+            msbuild_path = msbuild_info[0]
+            msbuild_env.update(msbuild_info[1])
+        else:
+            msbuild_path = find_msbuild_unix()
+            if msbuild_path is None:
+                raise RuntimeError("Cannot find MSBuild executable")
 
     print('MSBuild path: ' + msbuild_path)
 
     # Build solution
 
-    targets = ["Build"]
-    if restore:
-        targets.insert(0, "Restore")
+    targets = ["Restore", "Build"]
 
-    msbuild_args = [solution_path, "/t:%s" % ",".join(targets), "/p:Configuration=" + build_config]
+    msbuild_args += [solution_path, "/t:%s" % ",".join(targets), "/p:Configuration=" + build_config]
     msbuild_args += extra_msbuild_args
 
     run_command(msbuild_path, msbuild_args, env_override=msbuild_env, name='msbuild')
