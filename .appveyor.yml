@@ -32,9 +32,13 @@ build_script:
   - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% debug_symbols=no verbose=yes progress=no gdnative_wrapper=yes
 
 after_build:
-  - 7z a godot_build.zip bin\*.exe
+  - git rev-parse --short=9 HEAD > VERSION_HASH.txt
+  - set /P VERSION_HASH= < VERSION_HASH.txt
+  - cd bin
+  - mv godot.windows.opt.tools.64.exe godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.exe
+  - 7z a -mx9 godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.zip *.exe
 
 artifacts:
-  - path: godot_build.zip
-    name: Build
+  - path: bin/godot_${APPVEYOR_REPO_BRANCH}-${VERSION_HASH}_win64.zip
+    name: Win64 release_debug editor build
     type: zip
