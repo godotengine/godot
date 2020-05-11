@@ -409,6 +409,7 @@
 			</return>
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
+				[b]Note:[/b] This method may not always work when called directly (it may do nothing). As a workaround, defer the call by one frame using [code]call_deferred("grab_focus")[/code] instead. This won't block your script's execution.
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
