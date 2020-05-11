@@ -77,9 +77,6 @@
 		<member name="ProjectSettings" type="ProjectSettings" setter="" getter="">
 			The [ProjectSettings] singleton.
 		</member>
-		<member name="RenderingDevice" type="RenderingDevice" setter="" getter="">
-			The [RenderingDevice] singleton.
-		</member>
 		<member name="RenderingServer" type="RenderingServer" setter="" getter="">
 			The [RenderingServer] singleton.
 		</member>
