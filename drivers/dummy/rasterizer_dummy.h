@@ -59,6 +59,7 @@ public:
 	void sky_set_texture(RID p_sky, RID p_panorama) {}
 	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
 	void sky_set_material(RID p_sky, RID p_material) {}
+	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) { return Ref<Image>(); }
 
 	/* ENVIRONMENT API */
 
@@ -93,6 +94,8 @@ public:
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
 	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
 	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
+
+	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) { return Ref<Image>(); }
 
 	bool is_environment(RID p_env) const { return false; }
 	RS::EnvironmentBG environment_get_background(RID p_env) const { return RS::ENV_BG_KEEP; }
@@ -134,7 +137,7 @@ public:
 	virtual bool gi_probe_needs_update(RID p_probe) const { return false; }
 	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) {}
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {}
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {}
 	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {}
 	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {}
 
@@ -150,6 +153,8 @@ public:
 
 	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) {}
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) {}
+
+	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) { return TypedArray<Image>(); }
 
 	bool free(RID p_rid) { return true; }
 	virtual void update() {}
@@ -202,7 +207,7 @@ public:
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) {}
 
 	virtual RID texture_2d_placeholder_create() { return RID(); }
-	virtual RID texture_2d_layered_placeholder_create() { return RID(); }
+	virtual RID texture_2d_layered_placeholder_create(RenderingServer::TextureLayeredType p_layered_type) { return RID(); }
 	virtual RID texture_3d_placeholder_create() { return RID(); }
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const { return Ref<Image>(); }
@@ -685,6 +690,7 @@ public:
 	uint32_t gi_probe_get_version(RID p_gi_probe) { return 0; }
 
 	/* LIGHTMAP CAPTURE */
+#if 0
 	struct Instantiable {
 
 		SelfList<RasterizerScene::InstanceBase>::List instance_list;
@@ -751,6 +757,23 @@ public:
 		ERR_FAIL_COND_V(!capture, nullptr);
 		return &capture->octree;
 	}
+#endif
+
+	virtual RID lightmap_create() { return RID(); }
+
+	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {}
+	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) {}
+	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) {}
+	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {}
+	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const { return PackedVector3Array(); }
+	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const { return PackedColorArray(); }
+	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const { return PackedInt32Array(); }
+	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const { return PackedInt32Array(); }
+	virtual AABB lightmap_get_aabb(RID p_lightmap) const { return AABB(); }
+	virtual void lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) {}
+	virtual bool lightmap_is_interior(RID p_lightmap) const { return false; }
+	virtual void lightmap_set_probe_capture_update_speed(float p_speed) {}
+	virtual float lightmap_get_probe_capture_update_speed() const { return 0; }
 
 	/* PARTICLES */
 
@@ -900,6 +923,10 @@ public:
 };
 
 class RasterizerDummy : public Rasterizer {
+private:
+	uint64_t frame = 1;
+	float delta = 0;
+
 protected:
 	RasterizerCanvasDummy canvas;
 	RasterizerStorageDummy storage;
@@ -913,7 +940,10 @@ public:
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) {}
 
 	void initialize() {}
-	void begin_frame(double frame_step) {}
+	void begin_frame(double frame_step) {
+		frame++;
+		delta = frame_step;
+	}
 
 	virtual void prepare_for_blitting_render_targets() {}
 	virtual void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) {}
@@ -939,6 +969,8 @@ public:
 	}
 
 	virtual bool is_low_end() const { return true; }
+	virtual uint64_t get_frame_number() const { return frame; }
+	virtual float get_frame_delta_time() const { return delta; }
 
 	RasterizerDummy() {}
 	~RasterizerDummy() {}
