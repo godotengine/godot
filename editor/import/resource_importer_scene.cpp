@@ -1490,7 +1490,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		post_import_script->init(base_path, p_source_file);
 		scene = post_import_script->post_import(scene);
 		if (!scene) {
-			EditorNode::add_io_error(TTR("Error running post-import script:") + " " + post_import_script_path);
+			EditorNode::add_io_error(
+					TTR("Error running post-import script:") + " " + post_import_script_path + "\n" +
+					TTR("Did you return a Node-derived object in the `post_import()` method?"));
 			return err;
 		}
 	}
