@@ -346,20 +346,12 @@ void CSGShape3D::_update_shape() {
 		}
 	}
 
-	//fill arrays
-	Vector<Vector3> physics_faces;
-	bool fill_physics_faces = false;
+	// Update collision faces.
 	if (root_collision_shape.is_valid()) {
+
+		Vector<Vector3> physics_faces;
 		physics_faces.resize(n->faces.size() * 3);
-		fill_physics_faces = true;
-	}
-
-	{
-		Vector3 *physicsw;
-
-		if (fill_physics_faces) {
-			physicsw = physics_faces.ptrw();
-		}
+		Vector3 *physicsw = physics_faces.ptrw();
 
 		for (int i = 0; i < n->faces.size(); i++) {
 
@@ -369,10 +361,22 @@ void CSGShape3D::_update_shape() {
 				SWAP(order[1], order[2]);
 			}
 
-			if (fill_physics_faces) {
-				physicsw[i * 3 + 0] = n->faces[i].vertices[order[0]];
-				physicsw[i * 3 + 1] = n->faces[i].vertices[order[1]];
-				physicsw[i * 3 + 2] = n->faces[i].vertices[order[2]];
+			physicsw[i * 3 + 0] = n->faces[i].vertices[order[0]];
+			physicsw[i * 3 + 1] = n->faces[i].vertices[order[1]];
+			physicsw[i * 3 + 2] = n->faces[i].vertices[order[2]];
+		}
+
+		root_collision_shape->set_faces(physics_faces);
+	}
+
+	//fill arrays
+	{
+		for (int i = 0; i < n->faces.size(); i++) {
+
+			int order[3] = { 0, 1, 2 };
+
+			if (n->faces[i].invert) {
+				SWAP(order[1], order[2]);
 			}
 
 			int mat = n->faces[i].material;
@@ -456,10 +460,6 @@ void CSGShape3D::_update_shape() {
 		int idx = root_mesh->get_surface_count();
 		root_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, array);
 		root_mesh->surface_set_material(idx, surfaces[i].material);
-	}
-
-	if (root_collision_shape.is_valid()) {
-		root_collision_shape->set_faces(physics_faces);
 	}
 
 	set_base(root_mesh->get_rid());
