@@ -190,19 +190,43 @@ void AudioDriverJavaScript::lock() {
 void AudioDriverJavaScript::unlock() {
 }
 
-void AudioDriverJavaScript::finish() {
+void AudioDriverJavaScript::finish_async() {
+
+	// Close the context, add the operation to the async_finish list in module.
+	int id = _driver_id;
+	_driver_id = 0;
 
 	/* clang-format off */
 	EM_ASM({
+		var ref = Module.IDHandler.get($0);
+		Module.async_finish.push(new Promise(function(accept, reject) {
+			if (!ref) {
+				console.log("Ref not found!", $0, Module.IDHandler);
+				setTimeout(accept, 0);
+			} else {
+				const context = ref['context'];
+				// Disconnect script and input.
+				ref['script'].disconnect();
+				if (ref['input'])
+					ref['input'].disconnect();
+				ref = null;
+				context.close().then(function() {
+					accept();
+				}).catch(function(e) {
+					accept();
+				});
+			}
+		}));
 		Module.IDHandler.remove($0);
-	}, _driver_id);
+	}, id);
 	/* clang-format on */
+}
 
+void AudioDriverJavaScript::finish() {
 	if (internal_buffer) {
 		memdelete_arr(internal_buffer);
 		internal_buffer = nullptr;
 	}
-	_driver_id = 0;
 }
 
 Error AudioDriverJavaScript::capture_start() {

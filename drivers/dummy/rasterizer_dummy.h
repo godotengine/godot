@@ -78,10 +78,11 @@ public:
 #endif
 
 	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_mix, float p_bloom_threshold, RS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap) {}
-
+	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) {}
 	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
 
-	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
+	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance) {}
+	virtual void environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {}
 	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_bias, float p_light_affect, float p_ao_channel_affect, RS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
 	virtual void environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size) {}
 
@@ -105,9 +106,12 @@ public:
 	virtual void camera_effects_set_dof_blur(RID p_camera_effects, bool p_far_enable, float p_far_distance, float p_far_transition, bool p_near_enable, float p_near_distance, float p_near_transition, float p_amount) {}
 	virtual void camera_effects_set_custom_exposure(RID p_camera_effects, bool p_enable, float p_exposure) {}
 
+	virtual void shadows_quality_set(RS::ShadowQuality p_quality) {}
+	virtual void directional_shadow_quality_set(RS::ShadowQuality p_quality) {}
+
 	RID light_instance_create(RID p_light) { return RID(); }
 	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) {}
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0) {}
+	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_shadow_texel_size, float p_bias_scale = 1.0, float p_range_begin = 0, const Vector2 &p_uv_scale = Vector2()) {}
 	void light_instance_mark_visible(RID p_light_instance) {}
 
 	RID reflection_atlas_create() { return RID(); }
@@ -121,13 +125,16 @@ public:
 	bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) { return false; }
 	bool reflection_probe_instance_postprocess_step(RID p_instance) { return true; }
 
+	virtual RID decal_instance_create(RID p_decal) { return RID(); }
+	virtual void decal_instance_set_transform(RID p_decal, const Transform &p_transform) {}
+
 	virtual RID gi_probe_instance_create(RID p_gi_probe) { return RID(); }
 	void gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data) {}
 	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {}
 	virtual bool gi_probe_needs_update(RID p_probe) const { return false; }
 	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) {}
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {}
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {}
 	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {}
 	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {}
 
@@ -136,10 +143,13 @@ public:
 	void set_debug_draw_mode(RS::ViewportDebugDraw p_debug_draw) {}
 
 	virtual RID render_buffers_create() { return RID(); }
-	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa) {}
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, RS::ViewportMSAA p_msaa, RS::ViewportScreenSpaceAA p_screen_space_aa) {}
 
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) {}
 	virtual bool screen_space_roughness_limiter_is_active() const { return false; }
+
+	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) {}
+	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) {}
 
 	bool free(RID p_rid) { return true; }
 	virtual void update() {}
@@ -216,6 +226,9 @@ public:
 	virtual void texture_debug_usage(List<RS::TextureInfo> *r_info) {}
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) {}
 	virtual Size2 texture_size_with_proxy(RID p_proxy) { return Size2(); }
+
+	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) {}
+	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) {}
 
 #if 0
 	RID texture_create() {
@@ -345,6 +358,7 @@ public:
 
 	bool material_is_animated(RID p_material) { return false; }
 	bool material_casts_shadows(RID p_material) { return false; }
+	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {}
 	void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) {}
 
 	/* MESH API */
@@ -608,6 +622,21 @@ public:
 	virtual void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {}
 	virtual void skeleton_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {}
 
+	/* DECAL API */
+
+	virtual RID decal_create() { return RID(); }
+	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) {}
+	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {}
+	virtual void decal_set_emission_energy(RID p_decal, float p_energy) {}
+	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) {}
+	virtual void decal_set_modulate(RID p_decal, const Color &p_modulate) {}
+	virtual void decal_set_cull_mask(RID p_decal, uint32_t p_layers) {}
+	virtual void decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {}
+	virtual void decal_set_fade(RID p_decal, float p_above, float p_below) {}
+	virtual void decal_set_normal_fade(RID p_decal, float p_fade) {}
+
+	virtual AABB decal_get_aabb(RID p_decal) const { return AABB(); }
+
 	/* GI PROBE API */
 
 	RID gi_probe_create() { return RID(); }
@@ -757,6 +786,24 @@ public:
 	int particles_get_draw_passes(RID p_particles) const { return 0; }
 	RID particles_get_draw_pass_mesh(RID p_particles, int p_pass) const { return RID(); }
 
+	/* GLOBAL VARIABLES */
+
+	virtual void global_variable_add(const StringName &p_name, RS::GlobalVariableType p_type, const Variant &p_value) {}
+	virtual void global_variable_remove(const StringName &p_name) {}
+	virtual Vector<StringName> global_variable_get_list() const { return Vector<StringName>(); }
+
+	virtual void global_variable_set(const StringName &p_name, const Variant &p_value) {}
+	virtual void global_variable_set_override(const StringName &p_name, const Variant &p_value) {}
+	virtual Variant global_variable_get(const StringName &p_name) const { return Variant(); }
+	virtual RS::GlobalVariableType global_variable_get_type(const StringName &p_name) const { return RS::GLOBAL_VAR_TYPE_MAX; }
+
+	virtual void global_variables_load_settings(bool p_load_textures = true) {}
+	virtual void global_variables_clear() {}
+
+	virtual int32_t global_variables_instance_allocate(RID p_instance) { return 0; }
+	virtual void global_variables_instance_free(RID p_instance) {}
+	virtual void global_variables_instance_update(RID p_instance, int p_index, const Variant &p_value) {}
+
 	virtual bool particles_is_inactive(RID p_particles) const { return false; }
 
 	/* RENDER TARGET */
@@ -871,7 +918,12 @@ public:
 	virtual void prepare_for_blitting_render_targets() {}
 	virtual void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) {}
 
-	void end_frame(bool p_swap_buffers) { OS::get_singleton()->swap_buffers(); }
+	void end_frame(bool p_swap_buffers) {
+		if (p_swap_buffers) {
+			DisplayServer::get_singleton()->swap_buffers();
+		}
+	}
+
 	void finalize() {}
 
 	static Error is_viable() {

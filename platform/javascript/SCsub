@@ -4,6 +4,7 @@ Import("env")
 
 javascript_files = [
     "audio_driver_javascript.cpp",
+    "display_server_javascript.cpp",
     "http_client_javascript.cpp",
     "javascript_eval.cpp",
     "javascript_main.cpp",
@@ -17,22 +18,22 @@ if env["threads_enabled"]:
 build = env.add_program(build_targets, javascript_files)
 
 js_libraries = [
-    "http_request.js",
+    "native/http_request.js",
 ]
 for lib in js_libraries:
     env.Append(LINKFLAGS=["--js-library", env.File(lib).path])
 env.Depends(build, js_libraries)
 
-js_modules = [
-    "id_handler.js",
+js_pre = [
+    "native/id_handler.js",
+    "native/utils.js",
 ]
-for module in js_modules:
-    env.Append(LINKFLAGS=["--pre-js", env.File(module).path])
-env.Depends(build, js_modules)
+for js in js_pre:
+    env.Append(LINKFLAGS=["--pre-js", env.File(js).path])
+env.Depends(build, js_pre)
 
 engine = [
     "engine/preloader.js",
-    "engine/loader.js",
     "engine/utils.js",
     "engine/engine.js",
 ]
@@ -47,11 +48,17 @@ wrap_list = [
 js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
 
 zip_dir = env.Dir("#bin/.javascript_zip")
-out_files = [zip_dir.File("godot.js"), zip_dir.File("godot.wasm"), zip_dir.File("godot.html")]
-in_files = [js_wrapped, build[1], "#misc/dist/html/full-size.html"]
+binary_name = "godot.tools" if env["tools"] else "godot"
+out_files = [
+    zip_dir.File(binary_name + ".js"),
+    zip_dir.File(binary_name + ".wasm"),
+    zip_dir.File(binary_name + ".html"),
+]
+html_file = "#misc/dist/html/full-size.html"
+in_files = [js_wrapped, build[1], html_file]
 if env["threads_enabled"]:
     in_files.append(build[2])
-    out_files.append(zip_dir.File("godot.worker.js"))
+    out_files.append(zip_dir.File(binary_name + ".worker.js"))
 
 zip_files = env.InstallAs(out_files, in_files)
 env.Zip(

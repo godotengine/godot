@@ -142,14 +142,14 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 
 			}
 			var len = buffer.length*buffer.BYTES_PER_ELEMENT;
-			var out = Module._malloc(len);
-			Module.HEAPU8.set(buffer, out);
+			var out = _malloc(len);
+			HEAPU8.set(buffer, out);
 			ccall("_esws_on_message",
 				"void",
 				["number", "number", "number", "number"],
 				[c_ptr, out, len, is_string]
 			);
-			Module._free(out);
+			_free(out);
 		});
 
 		socket.addEventListener("error", function (event) {
