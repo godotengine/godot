@@ -538,6 +538,61 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					} else {
 						last_tilt = Vector2();
 					}
+
+					POINT coords;
+					GetCursorPos(&coords);
+					ScreenToClient(hWnd, &coords);
+
+					// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
+					if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
+						break;
+
+					Ref<InputEventMouseMotion> mm;
+					mm.instance();
+					mm->set_control(GetKeyState(VK_CONTROL) != 0);
+					mm->set_shift(GetKeyState(VK_SHIFT) != 0);
+					mm->set_alt(alt_mem);
+
+					mm->set_pressure(last_pressure);
+					mm->set_tilt(last_tilt);
+
+					mm->set_button_mask(last_button_state);
+
+					mm->set_position(Vector2(coords.x, coords.y));
+					mm->set_global_position(Vector2(coords.x, coords.y));
+
+					if (mouse_mode == MOUSE_MODE_CAPTURED) {
+
+						Point2i c(video_mode.width / 2, video_mode.height / 2);
+						old_x = c.x;
+						old_y = c.y;
+
+						if (mm->get_position() == c) {
+							center = c;
+							return 0;
+						}
+
+						Point2i ncenter = mm->get_position();
+						center = ncenter;
+						POINT pos = { (int)c.x, (int)c.y };
+						ClientToScreen(hWnd, &pos);
+						SetCursorPos(pos.x, pos.y);
+					}
+
+					input->set_mouse_position(mm->get_position());
+					mm->set_speed(input->get_last_mouse_speed());
+
+					if (old_invalid) {
+						old_x = mm->get_position().x;
+						old_y = mm->get_position().y;
+						old_invalid = false;
+					}
+
+					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+					old_x = mm->get_position().x;
+					old_y = mm->get_position().y;
+					if (window_has_focus && main_loop)
+						input->parse_input_event(mm);
 				}
 				return 0;
 			}
