@@ -242,6 +242,12 @@
 				Removes all items from the [PopupMenu].
 			</description>
 		</method>
+		<method name="get_current_index" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_item_accelerator" qualifiers="const">
 			<return type="int">
 			</return>
