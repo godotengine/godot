@@ -17,7 +17,7 @@ thirdparty_sources = [
     "core/network.cpp",
     "core/autoencoder.cpp",
     "core/transfer_function.cpp",
-    "weights/rtlightmap_hdr.cpp",
+    "weights/rtlightmap_hdr.gen.cpp",
     "mkl-dnn/src/common/batch_normalization.cpp",
     "mkl-dnn/src/common/concat.cpp",
     "mkl-dnn/src/common/convolution.cpp",
@@ -110,7 +110,7 @@ env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 weights_in_path = thirdparty_dir + "weights/rtlightmap_hdr.tza"
-weights_out_path = thirdparty_dir + "weights/rtlightmap_hdr.cpp"
+weights_out_path = thirdparty_dir + "weights/rtlightmap_hdr.gen.cpp"
 
 env_thirdparty.Depends(weights_out_path, weights_in_path)
 env_thirdparty.CommandNoCache(weights_out_path, weights_in_path, resource_to_cpp.tza_to_cpp)

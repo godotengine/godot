@@ -32,7 +32,7 @@
 
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
-#include "core/math/delaunay.h"
+#include "core/math/delaunay_2d.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_scale.h"
