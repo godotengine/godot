@@ -200,9 +200,12 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		// to alternate batching method and add color to the vertex format.
 		int total_color_changes;
 
-		// if the shader is using MODULATE, we prevent baking so the final_modulate can
-		// be read in the shader
-		bool prevent_color_baking;
+		// if the shader is using MODULATE, we prevent baking color so the final_modulate can
+		// be read in the shader.
+		// if the shader is reading VERTEX, we prevent baking vertex positions with extra matrices etc
+		// to prevent the read position being incorrect.
+		// These flags are defined in RasterizerStorageGLES2::Shader::CanvasItem::BatchFlags
+		unsigned int joined_item_batch_flags;
 
 		// measured in pixels, recalculated each frame
 		float scissor_threshold_area;
