@@ -47,6 +47,8 @@ class NetworkedController;
 
 // TODO use a name space or put this into the SceneRewinder class.
 
+typedef ObjectID ControllerID;
+
 struct Var {
 	StringName name;
 	Variant value;
@@ -70,9 +72,12 @@ struct NodeData {
 	uint32_t id;
 	ObjectID instance_id;
 	bool is_controller;
+	bool is_main_controller;
+	ControllerID controlled_by;
+	ControllerID isle_id;
 	std::vector<ObjectID> controlled_nodes;
-	ObjectID controlled_by;
 	Vector<VarData> vars;
+	std::vector<StringName> functions;
 
 	// This is valid to use only inside the process function.
 	Node *node;
@@ -82,14 +87,15 @@ struct NodeData {
 
 	// Returns the index to access the variable.
 	int find_var_by_id(uint32_t p_id) const;
+	bool can_be_part_of_isle(ControllerID p_controller_id) const;
+	void process(const real_t p_delta) const;
 };
 
-struct NodeProcess {
-	Node *node = nullptr;
-	std::vector<StringName> functions;
+struct IsleData {
+	ControllerID controller_instance_id;
+	std::vector<ObjectID> nodes;
 
-	NodeProcess() {}
-	void process(const real_t p_delta) const;
+	NetworkedController *controller = nullptr;
 };
 
 /// # SceneRewinder
@@ -200,7 +206,7 @@ private:
 
 	/// How much frames the doll is allowed to be processed out of sync.
 	/// This is useful to avoid time jumps each rewinding.
-	int out_of_sync_frames_tolerance;
+	int doll_desync_tolerance;
 
 	real_t server_notify_state_interval;
 	real_t comparison_float_tolerance;
@@ -212,14 +218,9 @@ private:
 
 	uint32_t node_counter;
 	bool generate_id;
+	OAHashMap<ControllerID, IsleData> isle_data;
 	OAHashMap<ObjectID, NodeData> data;
 	NetworkedController *main_controller;
-
-	OAHashMap<ObjectID, NodeProcess> node_processes;
-
-	Vector<ObjectID> controllers;
-	bool controllers_dirty;
-	std::vector<NetworkedController *> cached_controllers;
 
 	real_t time_bank;
 	real_t tick_additional_speed;
@@ -248,8 +249,8 @@ public:
 	void set_server_input_storage_size(int p_size);
 	int get_server_input_storage_size() const;
 
-	void set_out_of_sync_frames_tolerance(int p_tolerance);
-	int get_out_of_sync_frames_tolerance() const;
+	void set_doll_desync_tolerance(int p_tolerance);
+	int get_doll_desync_tolerance() const;
 
 	void set_server_notify_state_interval(real_t p_interval);
 	real_t get_server_notify_state_interval() const;
@@ -295,10 +296,12 @@ public:
 	void _rpc_send_tick_additional_speed(int p_speed);
 
 private:
+	void put_into_isle(ObjectID p_node_id, ControllerID p_isle_id);
+	void remove_from_isle(ObjectID p_node_id, ControllerID p_isle_id);
+
 	void process();
 
 	void validate_nodes();
-	void cache_controllers();
 
 	real_t get_pretended_delta() const;
 
@@ -432,8 +435,9 @@ class ClientRewinder : public Rewinder {
 	uint64_t server_snapshot_id;
 	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
-	HashMap<ObjectID, std::deque<IsleSnapshot>> client_controllers_snapshots;
-	HashMap<ObjectID, std::deque<IsleSnapshot>> server_controllers_snapshots;
+	// TODO use OAHashMap
+	HashMap<ControllerID, std::deque<IsleSnapshot>> client_controllers_snapshots;
+	HashMap<ControllerID, std::deque<IsleSnapshot>> server_controllers_snapshots;
 
 public:
 	ClientRewinder(SceneRewinder *p_node);
@@ -446,11 +450,11 @@ public:
 
 private:
 	/// Store node data organized per controller.
-	void store_snapshot();
+	void store_snapshot(const NetworkedController *p_controller);
 
 	void store_controllers_snapshot(
 			const Snapshot &p_snapshot,
-			HashMap<ObjectID, std::deque<IsleSnapshot>> &r_snapshot_storage);
+			HashMap<ControllerID, std::deque<IsleSnapshot>> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
