@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  delaunay.h                                                           */
+/*  delaunay_2d.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef DELAUNAY_H
-#define DELAUNAY_H
+#ifndef DELAUNAY_2D_H
+#define DELAUNAY_2D_H
 
 #include "core/math/rect2.h"
 
@@ -170,4 +170,4 @@ public:
 	}
 };
 
-#endif // DELAUNAY_H
+#endif // DELAUNAY_2D_H
