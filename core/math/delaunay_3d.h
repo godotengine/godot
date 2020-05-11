@@ -10,7 +10,8 @@
 #include "core/print_string.h"
 #include "core/variant.h"
 #include "core/vector.h"
-#include "thirdparty/r128/r128.h"
+
+#include "thirdparty/misc/r128.h"
 
 class Delaunay3D {
 	struct Simplex;

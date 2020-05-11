@@ -77,7 +77,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #  define R128_S32 int32_t
 #  define R128_U32 uint32_t
 #  define R128_S64 int64_t
-#  define R128_U64 long long unsigned int
+#  define R128_U64 uint64_t
 #  define R128_LIT_S64(x) x##ll
 #  define R128_LIT_U64(x) x##ull
 #endif
@@ -703,12 +703,12 @@ static R128_U32 r128__udiv64(R128_U32 nlo, R128_U32 nhi, R128_U32 d, R128_U32 *r
 }
 #elif !defined(_M_X64) || defined(R128_STDC_ONLY)
 #define r128__umul64(a, b) ((a) * (R128_U64)(b))
-/*static R128_U32 r128__udiv64(R128_U32 nlo, R128_U32 nhi, R128_U32 d, R128_U32 *rem)
+static R128_U32 r128__udiv64(R128_U32 nlo, R128_U32 nhi, R128_U32 d, R128_U32 *rem)
 {
    R128_U64 n64 = ((R128_U64)nhi << 32) | nlo;
    *rem = (R128_U32)(n64 % d);
    return (R128_U32)(n64 / d);
-}*/
+}
 #endif   //!R128_64BIT
 
 static void r128__neg(R128 *dst, const R128 *src)
@@ -1188,7 +1188,7 @@ static int r128__format(char *dst, size_t dstSize, const R128 *v, const R128ToSt
       // print a maximum of 20 digits
       fullPrecision = 0;
       precision = 20;
-   } else if (precision > (int)sizeof(buf) - 21) {
+   } else if (precision > sizeof(buf) - 21) {
       trail = precision - (sizeof(buf) - 21);
       precision -= trail;
    }
@@ -2121,4 +2121,3 @@ void r128Ceil(R128 *dst, const R128 *v)
 }
 
 #endif   //R128_IMPLEMENTATION
-
