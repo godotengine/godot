@@ -33,6 +33,8 @@
 #include "core/print_string.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/triangulator.h"
+#define STB_RECT_PACK_IMPLEMENTATION
+#include "thirdparty/stb_rect_pack/stb_rect_pack.h"
 
 #define SCALE_FACTOR 100000.0 // Based on CMP_EPSILON.
 
@@ -1241,4 +1243,196 @@ Vector<Vector3> Geometry::compute_convex_mesh_points(const Plane *p_planes, int 
 	}
 
 	return points;
+}
+
+Vector<Point2i> Geometry::pack_rects(const Vector<Size2i> &p_sizes, const Size2i &p_atlas_size) {
+
+	Vector<stbrp_node> nodes;
+	nodes.resize(p_atlas_size.width);
+
+	stbrp_context context;
+	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);
+
+	Vector<stbrp_rect> rects;
+	rects.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		rects.write[i].id = 0;
+		rects.write[i].w = p_sizes[i].width;
+		rects.write[i].h = p_sizes[i].height;
+		rects.write[i].x = 0;
+		rects.write[i].y = 0;
+		rects.write[i].was_packed = 0;
+	}
+
+	int res = stbrp_pack_rects(&context, rects.ptrw(), rects.size());
+	if (res == 0) { //pack failed
+		return Vector<Point2i>();
+	}
+
+	Vector<Point2i> ret;
+	ret.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		Point2i r(rects[i].x, rects[i].y);
+		ret.write[i] = r;
+	}
+
+	return ret;
+}
+
+Vector<Vector3i> Geometry::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {
+
+	Vector<stbrp_node> nodes;
+	nodes.resize(p_atlas_size.width);
+	zeromem(nodes.ptrw(), sizeof(stbrp_node) * nodes.size());
+
+	stbrp_context context;
+	stbrp_init_target(&context, p_atlas_size.width, p_atlas_size.height, nodes.ptrw(), p_atlas_size.width);
+
+	Vector<stbrp_rect> rects;
+	rects.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		rects.write[i].id = i;
+		rects.write[i].w = p_sizes[i].width;
+		rects.write[i].h = p_sizes[i].height;
+		rects.write[i].x = 0;
+		rects.write[i].y = 0;
+		rects.write[i].was_packed = 0;
+	}
+
+	stbrp_pack_rects(&context, rects.ptrw(), rects.size());
+
+	Vector<Vector3i> ret;
+	ret.resize(p_sizes.size());
+
+	for (int i = 0; i < p_sizes.size(); i++) {
+		ret.write[rects[i].id] = Vector3i(rects[i].x, rects[i].y, rects[i].was_packed != 0 ? 1 : 0);
+	}
+
+	return ret;
+}
+
+#define square(m_s) ((m_s) * (m_s))
+#define INF 1e20
+
+/* dt of 1d function using squared distance */
+static void edt(float *f, int stride, int n) {
+
+	float *d = (float *)alloca(sizeof(float) * n + sizeof(int) * n + sizeof(float) * (n + 1));
+	int *v = (int *)&(d[n]);
+	float *z = (float *)&v[n];
+
+	int k = 0;
+	v[0] = 0;
+	z[0] = -INF;
+	z[1] = +INF;
+	for (int q = 1; q <= n - 1; q++) {
+		float s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
+		while (s <= z[k]) {
+			k--;
+			s = ((f[q * stride] + square(q)) - (f[v[k] * stride] + square(v[k]))) / (2 * q - 2 * v[k]);
+		}
+		k++;
+		v[k] = q;
+
+		z[k] = s;
+		z[k + 1] = +INF;
+	}
+
+	k = 0;
+	for (int q = 0; q <= n - 1; q++) {
+		while (z[k + 1] < q)
+			k++;
+		d[q] = square(q - v[k]) + f[v[k] * stride];
+	}
+
+	for (int i = 0; i < n; i++) {
+		f[i * stride] = d[i];
+	}
+}
+
+#undef square
+
+Vector<uint32_t> Geometry::generate_edf(const Vector<bool> &p_voxels, const Vector3i &p_size, bool p_negative) {
+
+	uint32_t float_count = p_size.x * p_size.y * p_size.z;
+
+	ERR_FAIL_COND_V((uint32_t)p_voxels.size() != float_count, Vector<uint32_t>());
+
+	float *work_memory = memnew_arr(float, float_count);
+	for (uint32_t i = 0; i < float_count; i++) {
+		work_memory[i] = INF;
+	}
+
+	uint32_t y_mult = p_size.x;
+	uint32_t z_mult = y_mult * p_size.y;
+
+	//plot solid cells
+	{
+		const bool *voxr = p_voxels.ptr();
+		for (uint32_t i = 0; i < float_count; i++) {
+
+			bool plot = voxr[i];
+			if (p_negative) {
+				plot = !plot;
+			}
+			if (plot) {
+				work_memory[i] = 0;
+			}
+		}
+	}
+
+	//process in each direction
+
+	//xy->z
+
+	for (int i = 0; i < p_size.x; i++) {
+		for (int j = 0; j < p_size.y; j++) {
+			edt(&work_memory[i + j * y_mult], z_mult, p_size.z);
+		}
+	}
+
+	//xz->y
+
+	for (int i = 0; i < p_size.x; i++) {
+		for (int j = 0; j < p_size.z; j++) {
+			edt(&work_memory[i + j * z_mult], y_mult, p_size.y);
+		}
+	}
+
+	//yz->x
+	for (int i = 0; i < p_size.y; i++) {
+		for (int j = 0; j < p_size.z; j++) {
+			edt(&work_memory[i * y_mult + j * z_mult], 1, p_size.x);
+		}
+	}
+
+	Vector<uint32_t> ret;
+	ret.resize(float_count);
+	{
+		uint32_t *w = ret.ptrw();
+		for (uint32_t i = 0; i < float_count; i++) {
+			w[i] = uint32_t(Math::sqrt(work_memory[i]));
+		}
+	}
+
+	return ret;
+}
+
+Vector<int8_t> Geometry::generate_sdf8(const Vector<uint32_t> &p_positive, const Vector<uint32_t> &p_negative) {
+	ERR_FAIL_COND_V(p_positive.size() != p_negative.size(), Vector<int8_t>());
+	Vector<int8_t> sdf8;
+	int s = p_positive.size();
+	sdf8.resize(s);
+
+	const uint32_t *rpos = p_positive.ptr();
+	const uint32_t *rneg = p_negative.ptr();
+	int8_t *wsdf = sdf8.ptrw();
+	for (int i = 0; i < s; i++) {
+		int32_t diff = int32_t(rpos[i]) - int32_t(rneg[i]);
+		wsdf[i] = CLAMP(diff, -128, 127);
+	}
+	return sdf8;
 }

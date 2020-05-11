@@ -153,6 +153,10 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 
 /* misc */
 
+bool Plane::is_equal_approx_any_side(const Plane &p_plane) const {
+	return (normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d)) || (normal.is_equal_approx(-p_plane.normal) && Math::is_equal_approx(d, -p_plane.d));
+}
+
 bool Plane::is_equal_approx(const Plane &p_plane) const {
 
 	return normal.is_equal_approx(p_plane.normal) && Math::is_equal_approx(d, p_plane.d);

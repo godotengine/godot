@@ -598,6 +598,13 @@ if selected_platform in platform_list:
                 )
             }
         )
+        env.Append(
+            BUILDERS={
+                "GLSL_HEADER": env.Builder(
+                    action=run_in_subprocess(gles_builders.build_raw_headers), suffix="glsl.gen.h", src_suffix=".glsl"
+                )
+            }
+        )
 
     scons_cache_path = os.environ.get("SCONS_CACHE")
     if scons_cache_path != None:

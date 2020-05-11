@@ -239,7 +239,17 @@ bool GeometryInstance3D::_set(const StringName &p_name, const Variant &p_value) 
 		set_shader_instance_uniform(*r, p_value);
 		return true;
 	}
+#ifndef DISABLE_DEPRECATED
+	if (p_name == SceneStringNames::get_singleton()->use_in_baked_light && bool(p_value)) {
+		set_gi_mode(GI_MODE_BAKED);
+		return true;
+	}
 
+	if (p_name == SceneStringNames::get_singleton()->use_dynamic_gi && bool(p_value)) {
+		set_gi_mode(GI_MODE_DYNAMIC);
+		return true;
+	}
+#endif
 	return false;
 }
 
@@ -271,23 +281,6 @@ void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 		pi.name = "shader_params/" + pi.name;
 		p_list->push_back(pi);
 	}
-}
-
-void GeometryInstance3D::set_flag(Flags p_flag, bool p_value) {
-
-	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
-	if (flags[p_flag] == p_value)
-		return;
-
-	flags[p_flag] = p_value;
-	RS::get_singleton()->instance_geometry_set_flag(get_instance(), (RS::InstanceFlags)p_flag, p_value);
-}
-
-bool GeometryInstance3D::get_flag(Flags p_flag) const {
-
-	ERR_FAIL_INDEX_V(p_flag, FLAG_MAX, false);
-
-	return flags[p_flag];
 }
 
 void GeometryInstance3D::set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting) {
@@ -335,13 +328,44 @@ void GeometryInstance3D::set_custom_aabb(AABB aabb) {
 	RS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
 }
 
+void GeometryInstance3D::set_lightmap_scale(LightmapScale p_scale) {
+	ERR_FAIL_INDEX(p_scale, LIGHTMAP_SCALE_MAX);
+	lightmap_scale = p_scale;
+}
+
+GeometryInstance3D::LightmapScale GeometryInstance3D::get_lightmap_scale() const {
+	return lightmap_scale;
+}
+
+void GeometryInstance3D::set_gi_mode(GIMode p_mode) {
+
+	switch (p_mode) {
+		case GI_MODE_DISABLED: {
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+		} break;
+		case GI_MODE_BAKED: {
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, true);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, false);
+
+		} break;
+		case GI_MODE_DYNAMIC: {
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
+			RS::get_singleton()->instance_geometry_set_flag(get_instance(), RS::INSTANCE_FLAG_USE_DYNAMIC_GI, true);
+		} break;
+	}
+
+	gi_mode = p_mode;
+}
+
+GeometryInstance3D::GIMode GeometryInstance3D::get_gi_mode() const {
+	return gi_mode;
+}
+
 void GeometryInstance3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_material_override", "material"), &GeometryInstance3D::set_material_override);
 	ClassDB::bind_method(D_METHOD("get_material_override"), &GeometryInstance3D::get_material_override);
-
-	ClassDB::bind_method(D_METHOD("set_flag", "flag", "value"), &GeometryInstance3D::set_flag);
-	ClassDB::bind_method(D_METHOD("get_flag", "flag"), &GeometryInstance3D::get_flag);
 
 	ClassDB::bind_method(D_METHOD("set_cast_shadows_setting", "shadow_casting_setting"), &GeometryInstance3D::set_cast_shadows_setting);
 	ClassDB::bind_method(D_METHOD("get_cast_shadows_setting"), &GeometryInstance3D::get_cast_shadows_setting);
@@ -364,6 +388,12 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
 
+	ClassDB::bind_method(D_METHOD("set_lightmap_scale", "scale"), &GeometryInstance3D::set_lightmap_scale);
+	ClassDB::bind_method(D_METHOD("get_lightmap_scale"), &GeometryInstance3D::get_lightmap_scale);
+
+	ClassDB::bind_method(D_METHOD("set_gi_mode", "mode"), &GeometryInstance3D::set_gi_mode);
+	ClassDB::bind_method(D_METHOD("get_gi_mode"), &GeometryInstance3D::get_gi_mode);
+
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
@@ -372,8 +402,9 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material_override", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DEFERRED_SET_RESOURCE), "set_material_override", "get_material_override");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01"), "set_extra_cull_margin", "get_extra_cull_margin");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_in_baked_light"), "set_flag", "get_flag", FLAG_USE_BAKED_LIGHT);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "use_dynamic_gi"), "set_flag", "get_flag", FLAG_USE_DYNAMIC_GI);
+	ADD_GROUP("Global Illumination", "gi_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Baked,Dynamic"), "set_gi_mode", "get_gi_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, "1x,2x,4x,8x"), "set_lightmap_scale", "get_lightmap_scale");
 
 	ADD_GROUP("LOD", "lod_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "lod_min_distance", PROPERTY_HINT_RANGE, "0,32768,0.01"), "set_lod_min_distance", "get_lod_min_distance");
@@ -388,10 +419,15 @@ void GeometryInstance3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_DOUBLE_SIDED);
 	BIND_ENUM_CONSTANT(SHADOW_CASTING_SETTING_SHADOWS_ONLY);
 
-	BIND_ENUM_CONSTANT(FLAG_USE_BAKED_LIGHT);
-	BIND_ENUM_CONSTANT(FLAG_USE_DYNAMIC_GI);
-	BIND_ENUM_CONSTANT(FLAG_DRAW_NEXT_FRAME_IF_VISIBLE);
-	BIND_ENUM_CONSTANT(FLAG_MAX);
+	BIND_ENUM_CONSTANT(GI_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(GI_MODE_BAKED);
+	BIND_ENUM_CONSTANT(GI_MODE_DYNAMIC);
+
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_1X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_2X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_4X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_8X);
+	BIND_ENUM_CONSTANT(LIGHTMAP_SCALE_MAX);
 }
 
 GeometryInstance3D::GeometryInstance3D() {
@@ -400,9 +436,8 @@ GeometryInstance3D::GeometryInstance3D() {
 	lod_min_hysteresis = 0;
 	lod_max_hysteresis = 0;
 
-	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = false;
-	}
+	gi_mode = GI_MODE_DISABLED;
+	lightmap_scale = LIGHTMAP_SCALE_1X;
 
 	shadow_casting_setting = SHADOW_CASTING_SETTING_ON;
 	extra_cull_margin = 0;

@@ -2453,7 +2453,7 @@ Vector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint32_t 
 		uint32_t buffer_size = get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, tex->mipmaps, &width, &height, &depth);
 
 		//allocate buffer
-		VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
+		VkCommandBuffer command_buffer = frames[frame].draw_command_buffer; //makes more sense to retrieve
 		Buffer tmp_buffer;
 		_buffer_allocate(&tmp_buffer, buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
 
@@ -6859,6 +6859,7 @@ void RenderingDeviceVulkan::sync() {
 
 	context->local_device_sync(local_device);
 	_begin_frame();
+	local_device_processing = false;
 }
 
 void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
@@ -6975,6 +6976,12 @@ uint32_t RenderingDeviceVulkan::get_frame_delay() const {
 	return frame_count;
 }
 
+uint64_t RenderingDeviceVulkan::get_memory_usage() const {
+	VmaStats stats;
+	vmaCalculateStats(allocator, &stats);
+	return stats.total.usedBytes;
+}
+
 void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 
 	if (local_device.is_valid() && !p_current_frame) {
@@ -7039,6 +7046,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context, bool p_local_de
 	if (p_local_device) {
 		frame_count = 1;
 		local_device = p_context->local_device_create();
+		device = p_context->local_device_get_vk_device(local_device);
 	} else {
 		frame_count = p_context->get_swapchain_image_count() + 1; //always need one extra to ensure it's unused at any time, without having to use a fence for this.
 	}

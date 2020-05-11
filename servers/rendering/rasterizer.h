@@ -57,6 +57,7 @@ public:
 	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
 	virtual void sky_set_mode(RID p_sky, RS::SkyMode p_samples) = 0;
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
+	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
 	/* ENVIRONMENT API */
 
@@ -93,6 +94,8 @@ public:
 	virtual void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) = 0;
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
+
+	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
 	virtual bool is_environment(RID p_env) const = 0;
 	virtual RS::EnvironmentBG environment_get_background(RID p_env) const = 0;
@@ -160,9 +163,11 @@ public:
 
 		SelfList<InstanceBase> dependency_item;
 
-		InstanceBase *lightmap_capture;
-		RID lightmap;
-		Vector<Color> lightmap_capture_data; //in a array (12 values) to avoid wasting space if unused. Alpha is unused, but needed to send to shader
+		InstanceBase *lightmap;
+		Rect2 lightmap_uv_scale;
+		int lightmap_slice_index;
+		uint32_t lightmap_cull_index;
+		Vector<Color> lightmap_sh; //spherical harmonic
 
 		AABB aabb;
 		AABB transformed_aabb;
@@ -178,8 +183,8 @@ public:
 		bool instance_allocated_shader_parameters = false;
 		int32_t instance_allocated_shader_parameters_offset = -1;
 
-		virtual void dependency_deleted(RID p_dependency) = 0;
-		virtual void dependency_changed(bool p_aabb, bool p_dependencies) = 0;
+		virtual void dependency_deleted(RID p_dependency) {}
+		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {}
 
 		Set<InstanceDependency *> dependencies;
 
@@ -233,7 +238,9 @@ public:
 			baked_light = false;
 			dynamic_gi = false;
 			redraw_if_visible = false;
-			lightmap_capture = nullptr;
+			lightmap_slice_index = 0;
+			lightmap = nullptr;
+			lightmap_cull_index = 0;
 		}
 
 		virtual ~InstanceBase() {
@@ -268,7 +275,7 @@ public:
 	virtual bool gi_probe_needs_update(RID p_probe) const = 0;
 	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) = 0;
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID *p_decal_cull_result, int p_decal_cull_count, InstanceBase **p_lightmap_cull_result, int p_lightmap_cull_count, RID p_environment, RID p_camera_effects, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
@@ -285,6 +292,8 @@ public:
 
 	virtual void sub_surface_scattering_set_quality(RS::SubSurfaceScatteringQuality p_quality) = 0;
 	virtual void sub_surface_scattering_set_scale(float p_scale, float p_depth_scale) = 0;
+
+	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 
@@ -311,7 +320,7 @@ public:
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
-	virtual RID texture_2d_layered_placeholder_create() = 0;
+	virtual RID texture_2d_layered_placeholder_create(RenderingServer::TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_placeholder_create() = 0;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
@@ -593,29 +602,21 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	struct LightmapCaptureOctree {
+	virtual RID lightmap_create() = 0;
 
-		enum {
-			CHILD_EMPTY = 0xFFFFFFFF
-		};
-
-		uint16_t light[6][3]; //anisotropic light
-		float alpha;
-		uint32_t children[8];
-	};
-
-	virtual RID lightmap_capture_create() = 0;
-	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) = 0;
-	virtual AABB lightmap_capture_get_bounds(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) = 0;
-	virtual Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) = 0;
-	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) = 0;
-	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
-	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
-	virtual const Vector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const = 0;
+	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) = 0;
+	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) = 0;
+	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) = 0;
+	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) = 0;
+	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const = 0;
+	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const = 0;
+	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const = 0;
+	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const = 0;
+	virtual AABB lightmap_get_aabb(RID p_lightmap) const = 0;
+	virtual void lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) = 0;
+	virtual bool lightmap_is_interior(RID p_lightmap) const = 0;
+	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
+	virtual float lightmap_get_probe_capture_update_speed() const = 0;
 
 	/* PARTICLES */
 
@@ -1370,6 +1371,8 @@ public:
 
 	virtual void end_frame(bool p_swap_buffers) = 0;
 	virtual void finalize() = 0;
+	virtual uint64_t get_frame_number() const = 0;
+	virtual float get_frame_delta_time() const = 0;
 
 	virtual bool is_low_end() const = 0;
 

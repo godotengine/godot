@@ -22,7 +22,7 @@ layout(location = 3) in vec4 color_attrib;
 
 layout(location = 4) in vec2 uv_attrib;
 
-#if defined(UV2_USED) || defined(USE_LIGHTMAP)
+#if defined(UV2_USED) || defined(USE_LIGHTMAP) || defined(MODE_RENDER_MATERIAL)
 layout(location = 5) in vec2 uv2_attrib;
 #endif
 
@@ -49,7 +49,7 @@ layout(location = 6) out vec3 binormal_interp;
 #endif
 
 #ifdef USE_MATERIAL_UNIFORMS
-layout(set = 5, binding = 0, std140) uniform MaterialUniforms{
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
 	/* clang-format off */
 MATERIAL_UNIFORMS
 	/* clang-format on */
@@ -263,6 +263,14 @@ VERTEX_SHADER_CODE
 		}
 	}
 #endif
+
+#ifdef MODE_RENDER_MATERIAL
+	if (scene_data.material_uv2_mode) {
+		gl_Position.xy = (uv2_attrib.xy + draw_call.bake_uv2_offset) * 2.0 - 1.0;
+		gl_Position.z = 0.00001;
+		gl_Position.w = 1.0;
+	}
+#endif
 }
 
 /* clang-format off */
@@ -315,7 +323,7 @@ layout(location = 8) in float dp_clip;
 #endif
 
 #ifdef USE_MATERIAL_UNIFORMS
-layout(set = 5, binding = 0, std140) uniform MaterialUniforms{
+layout(set = MATERIAL_UNIFORM_SET, binding = 0, std140) uniform MaterialUniforms{
 	/* clang-format off */
 MATERIAL_UNIFORMS
 	/* clang-format on */
@@ -1917,42 +1925,96 @@ FRAGMENT_SHADER_CODE
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 	//gi probes
 
-	//lightmap
+#ifdef USE_LIGHTMAP
 
+	//lightmap
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE)) { //has lightmap capture
+		uint index = instances.data[instance_index].gi_offset;
+
+		vec3 wnormal = mat3(scene_data.camera_matrix) * normal;
+		const float c1 = 0.429043;
+		const float c2 = 0.511664;
+		const float c3 = 0.743125;
+		const float c4 = 0.886227;
+		const float c5 = 0.247708;
+		ambient_light += (c1 * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y) +
+						  c3 * lightmap_captures.data[index].sh[6].rgb * wnormal.z * wnormal.z +
+						  c4 * lightmap_captures.data[index].sh[0].rgb -
+						  c5 * lightmap_captures.data[index].sh[6].rgb +
+						  2.0 * c1 * lightmap_captures.data[index].sh[4].rgb * wnormal.x * wnormal.y +
+						  2.0 * c1 * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
+						  2.0 * c1 * lightmap_captures.data[index].sh[5].rgb * wnormal.y * wnormal.z +
+						  2.0 * c2 * lightmap_captures.data[index].sh[3].rgb * wnormal.x +
+						  2.0 * c2 * lightmap_captures.data[index].sh[1].rgb * wnormal.y +
+						  2.0 * c2 * lightmap_captures.data[index].sh[2].rgb * wnormal.z);
+
+	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
+		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
+		uint ofs = instances.data[instance_index].gi_offset & 0xFFF;
+		vec3 uvw;
+		uvw.xy = uv2 * instances.data[instance_index].lightmap_uv_scale.zw + instances.data[instance_index].lightmap_uv_scale.xy;
+		uvw.z = float((instances.data[instance_index].gi_offset >> 12) & 0xFF);
+
+		if (uses_sh) {
+			uvw.z *= 4.0; //SH textures use 4 times more data
+			vec3 lm_light_l0 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 0.0), 0.0).rgb;
+			vec3 lm_light_l1n1 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 1.0), 0.0).rgb;
+			vec3 lm_light_l1_0 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 2.0), 0.0).rgb;
+			vec3 lm_light_l1p1 = textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw + vec3(0.0, 0.0, 3.0), 0.0).rgb;
+
+			uint idx = instances.data[instance_index].gi_offset >> 20;
+			vec3 n = normalize(lightmaps.data[idx].normal_xform * normal);
+
+			ambient_light += lm_light_l0 * 0.282095f;
+			ambient_light += lm_light_l1n1 * 0.32573 * n.y;
+			ambient_light += lm_light_l1_0 * 0.32573 * n.z;
+			ambient_light += lm_light_l1p1 * 0.32573 * n.x;
+			if (metallic > 0.01) { // since the more direct bounced light is lost, we can kind of fake it with this trick
+				vec3 r = reflect(normalize(-vertex), normal);
+				specular_light += lm_light_l1n1 * 0.32573 * r.y;
+				specular_light += lm_light_l1_0 * 0.32573 * r.z;
+				specular_light += lm_light_l1p1 * 0.32573 * r.x;
+			}
+
+		} else {
+
+			ambient_light += textureLod(sampler2DArray(lightmap_textures[ofs], material_samplers[SAMPLER_LINEAR_CLAMP]), uvw, 0.0).rgb;
+		}
+	}
+#endif
 	//lightmap capture
 
 #ifdef USE_VOXEL_CONE_TRACING
-	{ // process giprobes
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_GIPROBE)) { // process giprobes
+
 		uint index1 = instances.data[instance_index].gi_offset & 0xFFFF;
-		if (index1 != 0xFFFF) {
-			vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
-			//find arbitrary tangent and bitangent, then build a matrix
-			vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
-			vec3 tangent = normalize(cross(v0, normal));
-			vec3 bitangent = normalize(cross(tangent, normal));
-			mat3 normal_mat = mat3(tangent, bitangent, normal);
+		vec3 ref_vec = normalize(reflect(normalize(vertex), normal));
+		//find arbitrary tangent and bitangent, then build a matrix
+		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+		vec3 tangent = normalize(cross(v0, normal));
+		vec3 bitangent = normalize(cross(tangent, normal));
+		mat3 normal_mat = mat3(tangent, bitangent, normal);
 
-			vec4 amb_accum = vec4(0.0);
-			vec4 spec_accum = vec4(0.0);
-			gi_probe_compute(index1, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
+		vec4 amb_accum = vec4(0.0);
+		vec4 spec_accum = vec4(0.0);
+		gi_probe_compute(index1, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 
-			uint index2 = instances.data[instance_index].gi_offset >> 16;
+		uint index2 = instances.data[instance_index].gi_offset >> 16;
 
-			if (index2 != 0xFFFF) {
-				gi_probe_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
-			}
-
-			if (amb_accum.a > 0.0) {
-				amb_accum.rgb /= amb_accum.a;
-			}
-
-			if (spec_accum.a > 0.0) {
-				spec_accum.rgb /= spec_accum.a;
-			}
-
-			specular_light = spec_accum.rgb;
-			ambient_light = amb_accum.rgb;
+		if (index2 != 0xFFFF) {
+			gi_probe_compute(index2, vertex, normal, ref_vec, normal_mat, roughness * roughness, ambient_light, specular_light, spec_accum, amb_accum);
 		}
+
+		if (amb_accum.a > 0.0) {
+			amb_accum.rgb /= amb_accum.a;
+		}
+
+		if (spec_accum.a > 0.0) {
+			spec_accum.rgb /= spec_accum.a;
+		}
+
+		specular_light = spec_accum.rgb;
+		ambient_light = amb_accum.rgb;
 	}
 #endif
 
@@ -2424,7 +2486,6 @@ FRAGMENT_SHADER_CODE
 	ao_light_affect = mix(1.0, ao, ao_light_affect);
 	specular_light = mix(scene_data.ao_color.rgb, specular_light, ao_light_affect);
 	diffuse_light = mix(scene_data.ao_color.rgb, diffuse_light, ao_light_affect);
-
 #else
 
 	if (scene_data.ssao_enabled) {

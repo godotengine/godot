@@ -610,7 +610,113 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 
 RID RasterizerStorageRD::texture_2d_layered_create(const Vector<Ref<Image>> &p_layers, RS::TextureLayeredType p_layered_type) {
 
-	return RID();
+	ERR_FAIL_COND_V(p_layers.size() == 0, RID());
+
+	ERR_FAIL_COND_V(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers.size() != 6, RID());
+	ERR_FAIL_COND_V(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY && (p_layers.size() < 6 || (p_layers.size() % 6) != 0), RID());
+
+	TextureToRDFormat ret_format;
+	Vector<Ref<Image>> images;
+	{
+		int valid_width = 0;
+		int valid_height = 0;
+		bool valid_mipmaps = false;
+		Image::Format valid_format = Image::FORMAT_MAX;
+
+		for (int i = 0; i < p_layers.size(); i++) {
+			ERR_FAIL_COND_V(p_layers[i]->empty(), RID());
+
+			if (i == 0) {
+				valid_width = p_layers[i]->get_width();
+				valid_height = p_layers[i]->get_height();
+				valid_format = p_layers[i]->get_format();
+				valid_mipmaps = p_layers[i]->has_mipmaps();
+			} else {
+				ERR_FAIL_COND_V(p_layers[i]->get_width() != valid_width, RID());
+				ERR_FAIL_COND_V(p_layers[i]->get_height() != valid_height, RID());
+				ERR_FAIL_COND_V(p_layers[i]->get_format() != valid_format, RID());
+				ERR_FAIL_COND_V(p_layers[i]->has_mipmaps() != valid_mipmaps, RID());
+			}
+
+			images.push_back(_validate_texture_format(p_layers[i], ret_format));
+		}
+	}
+
+	Texture texture;
+
+	texture.type = Texture::TYPE_LAYERED;
+	texture.layered_type = p_layered_type;
+
+	texture.width = p_layers[0]->get_width();
+	texture.height = p_layers[0]->get_height();
+	texture.layers = p_layers.size();
+	texture.mipmaps = p_layers[0]->get_mipmap_count() + 1;
+	texture.depth = 1;
+	texture.format = p_layers[0]->get_format();
+	texture.validated_format = images[0]->get_format();
+
+	switch (p_layered_type) {
+		case RS::TEXTURE_LAYERED_2D_ARRAY: {
+			texture.rd_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		} break;
+		case RS::TEXTURE_LAYERED_CUBEMAP: {
+			texture.rd_type = RD::TEXTURE_TYPE_CUBE;
+		} break;
+		case RS::TEXTURE_LAYERED_CUBEMAP_ARRAY: {
+			texture.rd_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+		} break;
+	}
+
+	texture.rd_format = ret_format.format;
+	texture.rd_format_srgb = ret_format.format_srgb;
+
+	RD::TextureFormat rd_format;
+	RD::TextureView rd_view;
+	{ //attempt register
+		rd_format.format = texture.rd_format;
+		rd_format.width = texture.width;
+		rd_format.height = texture.height;
+		rd_format.depth = 1;
+		rd_format.array_layers = texture.layers;
+		rd_format.mipmaps = texture.mipmaps;
+		rd_format.type = texture.rd_type;
+		rd_format.samples = RD::TEXTURE_SAMPLES_1;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
+		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+			rd_format.shareable_formats.push_back(texture.rd_format);
+			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+		}
+	}
+	{
+		rd_view.swizzle_r = ret_format.swizzle_r;
+		rd_view.swizzle_g = ret_format.swizzle_g;
+		rd_view.swizzle_b = ret_format.swizzle_b;
+		rd_view.swizzle_a = ret_format.swizzle_a;
+	}
+	Vector<Vector<uint8_t>> data_slices;
+	for (int i = 0; i < images.size(); i++) {
+		Vector<uint8_t> data = images[i]->get_data(); //use image data
+		data_slices.push_back(data);
+	}
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view, data_slices);
+	ERR_FAIL_COND_V(texture.rd_texture.is_null(), RID());
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_view.format_override = texture.rd_format_srgb;
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free(texture.rd_texture);
+			ERR_FAIL_COND_V(texture.rd_texture_srgb.is_null(), RID());
+		}
+	}
+
+	//used for 2D, overridable
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.rd_view = rd_view;
+	texture.is_proxy = false;
+
+	return texture_owner.make_rid(texture);
 }
 RID RasterizerStorageRD::texture_3d_create(const Vector<Ref<Image>> &p_slices) {
 
@@ -729,9 +835,31 @@ RID RasterizerStorageRD::texture_2d_placeholder_create() {
 
 	return texture_2d_create(image);
 }
-RID RasterizerStorageRD::texture_2d_layered_placeholder_create() {
+RID RasterizerStorageRD::texture_2d_layered_placeholder_create(RS::TextureLayeredType p_layered_type) {
 
-	return RID();
+	//this could be better optimized to reuse an existing image , done this way
+	//for now to get it working
+	Ref<Image> image;
+	image.instance();
+	image->create(4, 4, false, Image::FORMAT_RGBA8);
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			image->set_pixel(i, j, Color(1, 0, 1, 1));
+		}
+	}
+
+	Vector<Ref<Image>> images;
+	if (p_layered_type == RS::TEXTURE_LAYERED_2D_ARRAY) {
+		images.push_back(image);
+	} else {
+		//cube
+		for (int i = 0; i < 6; i++) {
+			images.push_back(image);
+		}
+	}
+
+	return texture_2d_layered_create(images, p_layered_type);
 }
 RID RasterizerStorageRD::texture_3d_placeholder_create() {
 
@@ -4139,6 +4267,180 @@ RID RasterizerStorageRD::gi_probe_get_sdf_texture(RID p_gi_probe) {
 
 	return gi_probe->sdf_texture;
 }
+/* LIGHTMAP API */
+
+RID RasterizerStorageRD::lightmap_create() {
+	return lightmap_owner.make_rid(Lightmap());
+}
+
+void RasterizerStorageRD::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) {
+
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND(!lm);
+
+	lightmap_array_version++;
+
+	//erase lightmap users
+	if (lm->light_texture.is_valid()) {
+		Texture *t = texture_owner.getornull(lm->light_texture);
+		if (t) {
+			t->lightmap_users.erase(p_lightmap);
+		}
+	}
+
+	Texture *t = texture_owner.getornull(p_light);
+	lm->light_texture = p_light;
+	lm->uses_spherical_harmonics = p_uses_spherical_haromics;
+
+	RID default_2d_array = default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE];
+	if (!t) {
+
+		if (using_lightmap_array) {
+			if (lm->array_index >= 0) {
+				lightmap_textures.write[lm->array_index] = default_2d_array;
+				lm->array_index = -1;
+			}
+		}
+
+		return;
+	}
+
+	t->lightmap_users.insert(p_lightmap);
+
+	if (using_lightmap_array) {
+		if (lm->array_index < 0) {
+			//not in array, try to put in array
+			for (int i = 0; i < lightmap_textures.size(); i++) {
+				if (lightmap_textures[i] == default_2d_array) {
+					lm->array_index = i;
+					break;
+				}
+			}
+		}
+		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will nod display properly.");
+
+		lightmap_textures.write[lm->array_index] = t->rd_texture;
+	}
+}
+
+void RasterizerStorageRD::lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) {
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND(!lm);
+	lm->bounds = p_bounds;
+}
+
+void RasterizerStorageRD::lightmap_set_probe_interior(RID p_lightmap, bool p_interior) {
+
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND(!lm);
+	lm->interior = p_interior;
+}
+
+void RasterizerStorageRD::lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) {
+
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND(!lm);
+
+	if (p_points.size()) {
+		ERR_FAIL_COND(p_points.size() * 9 != p_point_sh.size());
+		ERR_FAIL_COND((p_tetrahedra.size() % 4) != 0);
+		ERR_FAIL_COND((p_bsp_tree.size() % 6) != 0);
+	}
+
+	lm->points = p_points;
+	lm->bsp_tree = p_bsp_tree;
+	lm->point_sh = p_point_sh;
+	lm->tetrahedra = p_tetrahedra;
+}
+
+PackedVector3Array RasterizerStorageRD::lightmap_get_probe_capture_points(RID p_lightmap) const {
+
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND_V(!lm, PackedVector3Array());
+
+	return lm->points;
+}
+PackedColorArray RasterizerStorageRD::lightmap_get_probe_capture_sh(RID p_lightmap) const {
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND_V(!lm, PackedColorArray());
+	return lm->point_sh;
+}
+PackedInt32Array RasterizerStorageRD::lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const {
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND_V(!lm, PackedInt32Array());
+	return lm->tetrahedra;
+}
+PackedInt32Array RasterizerStorageRD::lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const {
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND_V(!lm, PackedInt32Array());
+	return lm->bsp_tree;
+}
+
+void RasterizerStorageRD::lightmap_set_probe_capture_update_speed(float p_speed) {
+	lightmap_probe_capture_update_speed = p_speed;
+}
+
+void RasterizerStorageRD::lightmap_tap_sh_light(RID p_lightmap, const Vector3 &p_point, Color *r_sh) {
+	Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND(!lm);
+
+	for (int i = 0; i < 9; i++) {
+		r_sh[i] = Color(0, 0, 0, 0);
+	}
+
+	if (!lm->points.size() || !lm->bsp_tree.size() || !lm->tetrahedra.size()) {
+		return;
+	}
+
+	static_assert(sizeof(Lightmap::BSP) == 24);
+
+	const Lightmap::BSP *bsp = (const Lightmap::BSP *)lm->bsp_tree.ptr();
+	int32_t node = 0;
+	while (node >= 0) {
+
+		if (Plane(bsp[node].plane[0], bsp[node].plane[1], bsp[node].plane[2], bsp[node].plane[3]).is_point_over(p_point)) {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND(bsp[node].over >= 0 && bsp[node].over < node);
+#endif
+
+			node = bsp[node].over;
+		} else {
+#ifdef DEBUG_ENABLED
+			ERR_FAIL_COND(bsp[node].under >= 0 && bsp[node].under < node);
+#endif
+			node = bsp[node].under;
+		}
+	}
+
+	if (node == Lightmap::BSP::EMPTY_LEAF) {
+		return; //nothing could be done
+	}
+
+	node = ABS(node) - 1;
+
+	uint32_t *tetrahedron = (uint32_t *)&lm->tetrahedra[node * 4];
+	Vector3 points[4] = { lm->points[tetrahedron[0]], lm->points[tetrahedron[1]], lm->points[tetrahedron[2]], lm->points[tetrahedron[3]] };
+	const Color *sh_colors[4]{ &lm->point_sh[tetrahedron[0] * 9], &lm->point_sh[tetrahedron[1] * 9], &lm->point_sh[tetrahedron[2] * 9], &lm->point_sh[tetrahedron[3] * 9] };
+	Color barycentric = Geometry::tetrahedron_get_barycentric_coords(points[0], points[1], points[2], points[3], p_point);
+
+	for (int i = 0; i < 4; i++) {
+		float c = CLAMP(barycentric[i], 0.0, 1.0);
+		for (int j = 0; j < 9; j++) {
+			r_sh[j] += sh_colors[i][j] * c;
+		}
+	}
+}
+
+bool RasterizerStorageRD::lightmap_is_interior(RID p_lightmap) const {
+	const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND_V(!lm, false);
+	return lm->interior;
+}
+AABB RasterizerStorageRD::lightmap_get_aabb(RID p_lightmap) const {
+	const Lightmap *lm = lightmap_owner.getornull(p_lightmap);
+	ERR_FAIL_COND_V(!lm, AABB());
+	return lm->bounds;
+}
 
 /* RENDER TARGET API */
 
@@ -4491,6 +4793,9 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	} else if (gi_probe_owner.owns(p_base)) {
 		GIProbe *gip = gi_probe_owner.getornull(p_base);
 		p_instance->update_dependency(&gip->instance_dependency);
+	} else if (lightmap_owner.owns(p_base)) {
+		Lightmap *lm = lightmap_owner.getornull(p_base);
+		p_instance->update_dependency(&lm->instance_dependency);
 	} else if (light_owner.owns(p_base)) {
 		Light *l = light_owner.getornull(p_base);
 		p_instance->update_dependency(&l->instance_dependency);
@@ -4524,6 +4829,9 @@ RS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	}
 	if (light_owner.owns(p_rid)) {
 		return RS::INSTANCE_LIGHT;
+	}
+	if (lightmap_owner.owns(p_rid)) {
+		return RS::INSTANCE_LIGHTMAP;
 	}
 
 	return RS::INSTANCE_NONE;
@@ -4678,7 +4986,7 @@ void RasterizerStorageRD::_update_decal_atlas() {
 			DecalAtlas::Texture *t = decal_atlas.textures.getptr(items[i].texture);
 			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
 			t->uv_rect.size = items[i].pixel_size;
-			//print_line("blitrect: " + t->uv_rect);
+
 			t->uv_rect.position /= Size2(decal_atlas.size);
 			t->uv_rect.size /= Size2(decal_atlas.size);
 		}
@@ -5563,6 +5871,11 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		GIProbe *gi_probe = gi_probe_owner.getornull(p_rid);
 		gi_probe->instance_dependency.instance_notify_deleted(p_rid);
 		gi_probe_owner.free(p_rid);
+	} else if (lightmap_owner.owns(p_rid)) {
+		lightmap_set_textures(p_rid, RID(), false);
+		Lightmap *lightmap = lightmap_owner.getornull(p_rid);
+		lightmap->instance_dependency.instance_notify_deleted(p_rid);
+		lightmap_owner.free(p_rid);
 
 	} else if (light_owner.owns(p_rid)) {
 
@@ -5801,6 +6114,32 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		}
 	}
 
+	{ //create default array
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.array_layers = 1;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.type = RD::TEXTURE_TYPE_2D_ARRAY;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 255);
+			pv.set(i * 4 + 1, 255);
+			pv.set(i * 4 + 2, 255);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
 	//default samplers
 	for (int i = 1; i < RS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
 		for (int j = 1; j < RS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
@@ -5872,124 +6211,133 @@ RasterizerStorageRD::RasterizerStorageRD() {
 	//default rd buffers
 	{
 
-		//vertex
+		Vector<uint8_t> buffer;
 		{
 
-				Vector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 3);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_VERTEX] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
 
-	buffer.resize(sizeof(float) * 3);
-	{
-		uint8_t *w = buffer.ptrw();
-		float *fptr = (float *)w;
-		fptr[0] = 0.0;
-		fptr[1] = 0.0;
-		fptr[2] = 0.0;
-	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_VERTEX] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
+		{ //normal
+			buffer.resize(sizeof(float) * 3);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 1.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_NORMAL] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
 
-{ //normal
-	Vector<uint8_t> buffer;
-	buffer.resize(sizeof(float) * 3);
-	{
-		uint8_t *w = buffer.ptrw();
-		float *fptr = (float *)w;
-		fptr[0] = 1.0;
-		fptr[1] = 0.0;
-		fptr[2] = 0.0;
-	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_NORMAL] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
+		{ //tangent
+			buffer.resize(sizeof(float) * 4);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 1.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+				fptr[3] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TANGENT] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
 
-{ //tangent
-	Vector<uint8_t> buffer;
-	buffer.resize(sizeof(float) * 4);
-	{
-		uint8_t *w = buffer.ptrw();
-		float *fptr = (float *)w;
-		fptr[0] = 1.0;
-		fptr[1] = 0.0;
-		fptr[2] = 0.0;
-		fptr[3] = 0.0;
-	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TANGENT] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
+		{ //color
+			buffer.resize(sizeof(float) * 4);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 1.0;
+				fptr[1] = 1.0;
+				fptr[2] = 1.0;
+				fptr[3] = 1.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_COLOR] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
 
-{ //color
-	Vector<uint8_t> buffer;
-	buffer.resize(sizeof(float) * 4);
-	{
-		uint8_t *w = buffer.ptrw();
-		float *fptr = (float *)w;
-		fptr[0] = 1.0;
-		fptr[1] = 1.0;
-		fptr[2] = 1.0;
-		fptr[3] = 1.0;
-	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_COLOR] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
+		{ //tex uv 1
+			buffer.resize(sizeof(float) * 2);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+		{ //tex uv 2
+			buffer.resize(sizeof(float) * 2);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
 
-{ //tex uv 1
-	Vector<uint8_t> buffer;
-	buffer.resize(sizeof(float) * 2);
-	{
-		uint8_t *w = buffer.ptrw();
-		float *fptr = (float *)w;
-		fptr[0] = 0.0;
-		fptr[1] = 0.0;
-	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
-{ //tex uv 2
-	Vector<uint8_t> buffer;
-	buffer.resize(sizeof(float) * 2);
-	{
-		uint8_t *w = buffer.ptrw();
-		float *fptr = (float *)w;
-		fptr[0] = 0.0;
-		fptr[1] = 0.0;
-	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
+		{ //bones
+			buffer.resize(sizeof(uint32_t) * 4);
+			{
+				uint8_t *w = buffer.ptrw();
+				uint32_t *fptr = (uint32_t *)w;
+				fptr[0] = 0;
+				fptr[1] = 0;
+				fptr[2] = 0;
+				fptr[3] = 0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_BONES] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
 
-{ //bones
-	Vector<uint8_t> buffer;
-	buffer.resize(sizeof(uint32_t) * 4);
-	{
-		uint8_t *w = buffer.ptrw();
-		uint32_t *fptr = (uint32_t *)w;
-		fptr[0] = 0;
-		fptr[1] = 0;
-		fptr[2] = 0;
-		fptr[3] = 0;
+		{ //weights
+			buffer.resize(sizeof(float) * 4);
+			{
+				uint8_t *w = buffer.ptrw();
+				float *fptr = (float *)w;
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+				fptr[3] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_WEIGHTS] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
 	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_BONES] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
 
-{ //weights
-	Vector<uint8_t> buffer;
-	buffer.resize(sizeof(float) * 4);
 	{
-		uint8_t *w = buffer.ptrw();
-		float *fptr = (float *)w;
-		fptr[0] = 0.0;
-		fptr[1] = 0.0;
-		fptr[2] = 0.0;
-		fptr[3] = 0.0;
+		Vector<String> sdf_versions;
+		sdf_versions.push_back(""); //one only
+		giprobe_sdf_shader.initialize(sdf_versions);
+		giprobe_sdf_shader_version = giprobe_sdf_shader.version_create();
+		giprobe_sdf_shader.version_set_compute_code(giprobe_sdf_shader_version, "", "", "", Vector<String>());
+		giprobe_sdf_shader_version_shader = giprobe_sdf_shader.version_get_shader(giprobe_sdf_shader_version, 0);
+		giprobe_sdf_shader_pipeline = RD::get_singleton()->compute_pipeline_create(giprobe_sdf_shader_version_shader);
 	}
-	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_WEIGHTS] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-}
-}
 
-{
-	Vector<String> sdf_versions;
-	sdf_versions.push_back(""); //one only
-	giprobe_sdf_shader.initialize(sdf_versions);
-	giprobe_sdf_shader_version = giprobe_sdf_shader.version_create();
-	giprobe_sdf_shader.version_set_compute_code(giprobe_sdf_shader_version, "", "", "", Vector<String>());
-	giprobe_sdf_shader_version_shader = giprobe_sdf_shader.version_get_shader(giprobe_sdf_shader_version, 0);
-	giprobe_sdf_shader_pipeline = RD::get_singleton()->compute_pipeline_create(giprobe_sdf_shader_version_shader);
-}
+	using_lightmap_array = true; // high end
+	if (using_lightmap_array) {
+
+		uint32_t textures_per_stage = RD::get_singleton()->limit_get(RD::LIMIT_MAX_TEXTURES_PER_SHADER_STAGE);
+
+		if (textures_per_stage <= 256) {
+			lightmap_textures.resize(32);
+		} else {
+			lightmap_textures.resize(1024);
+		}
+
+		for (int i = 0; i < lightmap_textures.size(); i++) {
+			lightmap_textures.write[i] = default_rd_textures[DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE];
+		}
+	}
+
+	lightmap_probe_capture_update_speed = GLOBAL_GET("rendering/lightmapper/probe_capture_update_speed");
 }
 
 RasterizerStorageRD::~RasterizerStorageRD() {
