@@ -145,6 +145,16 @@ Error CryptoCore::AESContext::decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst
 	return ret ? FAILED : OK;
 }
 
+Error CryptoCore::AESContext::encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_ENCRYPT, p_length, r_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
+Error CryptoCore::AESContext::decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst) {
+	int ret = mbedtls_aes_crypt_cbc((mbedtls_aes_context *)ctx, MBEDTLS_AES_DECRYPT, p_length, r_iv, p_src, r_dst);
+	return ret ? FAILED : OK;
+}
+
 // CryptoCore
 String CryptoCore::b64_encode_str(const uint8_t *p_src, int p_src_len) {
 	int b64len = p_src_len / 3 * 4 + 4 + 1;

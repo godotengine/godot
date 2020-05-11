@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  crypto_core.h                                                        */
+/*  aes_context.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,79 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef CRYPTO_CORE_H
-#define CRYPTO_CORE_H
+#ifndef AES_CONTEXT_H
+#define AES_CONTEXT_H
 
+#include "core/crypto/crypto_core.h"
 #include "core/reference.h"
 
-class CryptoCore {
+class AESContext : public Reference {
+	GDCLASS(AESContext, Reference);
 
 public:
-	class MD5Context {
-
-	private:
-		void *ctx; // To include, or not to include...
-
-	public:
-		MD5Context();
-		~MD5Context();
-
-		Error start();
-		Error update(const uint8_t *p_src, size_t p_len);
-		Error finish(unsigned char r_hash[16]);
+	enum Mode {
+		MODE_ECB_ENCRYPT,
+		MODE_ECB_DECRYPT,
+		MODE_CBC_ENCRYPT,
+		MODE_CBC_DECRYPT,
+		MODE_MAX
 	};
 
-	class SHA1Context {
+private:
+	Mode mode;
+	CryptoCore::AESContext ctx;
+	PoolByteArray iv;
 
-	private:
-		void *ctx; // To include, or not to include...
+protected:
+	static void _bind_methods();
 
-	public:
-		SHA1Context();
-		~SHA1Context();
+public:
+	Error start(Mode p_mode, PoolByteArray p_key, PoolByteArray p_iv = PoolByteArray());
+	PoolByteArray update(PoolByteArray p_src);
+	PoolByteArray get_iv_state();
+	void finish();
 
-		Error start();
-		Error update(const uint8_t *p_src, size_t p_len);
-		Error finish(unsigned char r_hash[20]);
-	};
-
-	class SHA256Context {
-
-	private:
-		void *ctx; // To include, or not to include...
-
-	public:
-		SHA256Context();
-		~SHA256Context();
-
-		Error start();
-		Error update(const uint8_t *p_src, size_t p_len);
-		Error finish(unsigned char r_hash[32]);
-	};
-
-	class AESContext {
-
-	private:
-		void *ctx; // To include, or not to include...
-
-	public:
-		AESContext();
-		~AESContext();
-
-		Error set_encode_key(const uint8_t *p_key, size_t p_bits);
-		Error set_decode_key(const uint8_t *p_key, size_t p_bits);
-		Error encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
-		Error decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
-		Error encrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
-		Error decrypt_cbc(size_t p_length, uint8_t r_iv[16], const uint8_t *p_src, uint8_t *r_dst);
-	};
-
-	static String b64_encode_str(const uint8_t *p_src, int p_src_len);
-	static Error b64_encode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len);
-	static Error b64_decode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len);
-
-	static Error md5(const uint8_t *p_src, int p_src_len, unsigned char r_hash[16]);
-	static Error sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash[20]);
-	static Error sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]);
+	AESContext();
 };
-#endif // CRYPTO_CORE_H
+
+VARIANT_ENUM_CAST(AESContext::Mode);
+
+#endif // AES_CONTEXT_H
