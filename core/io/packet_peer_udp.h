@@ -52,6 +52,7 @@ protected:
 
 	IP_Address peer_addr;
 	int peer_port;
+	bool connected;
 	bool blocking;
 	bool broadcast;
 	Ref<NetSocket> _sock;
@@ -70,6 +71,11 @@ public:
 	void close();
 	Error wait();
 	bool is_listening() const;
+
+	Error connect_socket(Ref<NetSocket> p_sock); // Used by UDPServer
+	Error connect_to_host(const IP_Address &p_host, int p_port);
+	bool is_connected_to_host() const;
+
 	IP_Address get_packet_address() const;
 	int get_packet_port() const;
 	void set_dest_address(const IP_Address &p_address, int p_port);

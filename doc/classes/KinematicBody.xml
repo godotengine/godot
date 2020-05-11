@@ -108,7 +108,7 @@
 				This method should be used in [method Node._physics_process] (or in a method called by [method Node._physics_process]), as it uses the physics step's [code]delta[/code] value automatically in calculations. Otherwise, the simulation will run at an incorrect speed.
 				[code]linear_velocity[/code] is the velocity vector (typically meters per second). Unlike in [method move_and_collide], you should [i]not[/i] multiply it by [code]delta[/code] — the physics engine handles applying the velocity. 
 				[code]up_direction[/code] is the up direction, used to determine what is a wall and what is a floor or a ceiling. If set to the default value of [code]Vector3(0, 0, 0)[/code], everything is considered a wall.
-				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes if you include gravity in [code]linear_velocity[/code].
+				If [code]stop_on_slope[/code] is [code]true[/code], body will not slide on slopes when you include gravity in [code]linear_velocity[/code] and the body is standing still.
 				If the body collides, it will change direction a maximum of [code]max_slides[/code] times before it stops.
 				[code]floor_max_angle[/code] is the maximum angle (in radians) where a slope is still considered a floor (or a ceiling), rather than a wall. The default value equals 45 degrees.
 				If [code]infinite_inertia[/code] is [code]true[/code], body will be able to push [RigidBody] nodes, but it won't also detect any collisions with them. If [code]false[/code], it will interact with [RigidBody] nodes like with [StaticBody].

@@ -186,6 +186,8 @@ protected:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	String _get_absolute_path(const String &rel_path);
+
 public:
 	void _update_connected_methods();
 

@@ -70,10 +70,6 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #define WM_TOUCH 576
 #endif
 
-#ifndef WM_POINTERUPDATE
-#define WM_POINTERUPDATE 0x0245
-#endif
-
 #if defined(__GNUC__)
 // Workaround GCC warning from -Wcast-function-type.
 #define GetProcAddress (void *)GetProcAddress
@@ -201,6 +197,15 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 	}
 }
 
+// WinTab API
+bool OS_Windows::wintab_available = false;
+WTOpenPtr OS_Windows::wintab_WTOpen = nullptr;
+WTClosePtr OS_Windows::wintab_WTClose = nullptr;
+WTInfoPtr OS_Windows::wintab_WTInfo = nullptr;
+WTPacketPtr OS_Windows::wintab_WTPacket = nullptr;
+WTEnablePtr OS_Windows::wintab_WTEnable = nullptr;
+
+// Windows Ink API
 GetPointerTypePtr OS_Windows::win8p_GetPointerType = NULL;
 GetPointerPenInfoPtr OS_Windows::win8p_GetPointerPenInfo = NULL;
 
@@ -368,7 +373,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				alt_mem = false;
 			};
 
-			return 0; // Return To The Message Loop
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				wintab_WTEnable(wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
+			}
+
+			return 0; // Return  To The Message Loop
 		}
 		case WM_GETMINMAXINFO: {
 			if (video_mode.resizable && !video_mode.fullscreen) {
@@ -447,6 +456,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				mm->set_shift(shift_mem);
 				mm->set_alt(alt_mem);
 
+				mm->set_pressure((raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN) ? 1.0f : 0.0f);
+
 				mm->set_button_mask(last_button_state);
 
 				Point2i c(video_mode.width / 2, video_mode.height / 2);
@@ -494,6 +505,97 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					input->accumulate_input_event(mm);
 			}
 			delete[] lpb;
+		} break;
+		case WT_CSRCHANGE:
+		case WT_PROXIMITY: {
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				AXIS pressure;
+				if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
+					min_pressure = int(pressure.axMin);
+					max_pressure = int(pressure.axMax);
+				}
+				AXIS orientation[3];
+				if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
+					tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
+				}
+				return 0;
+			}
+		} break;
+		case WT_PACKET: {
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				PACKET packet;
+				if (wintab_WTPacket(wtctx, wParam, &packet)) {
+
+					float pressure = float(packet.pkNormalPressure - min_pressure) / float(max_pressure - min_pressure);
+					last_pressure = pressure;
+					last_pressure_update = 0;
+
+					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
+					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+
+					if (tilt_supported) {
+						last_tilt = Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt));
+					} else {
+						last_tilt = Vector2();
+					}
+
+					POINT coords;
+					GetCursorPos(&coords);
+					ScreenToClient(hWnd, &coords);
+
+					// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
+					if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
+						break;
+
+					Ref<InputEventMouseMotion> mm;
+					mm.instance();
+					mm->set_control(GetKeyState(VK_CONTROL) != 0);
+					mm->set_shift(GetKeyState(VK_SHIFT) != 0);
+					mm->set_alt(alt_mem);
+
+					mm->set_pressure(last_pressure);
+					mm->set_tilt(last_tilt);
+
+					mm->set_button_mask(last_button_state);
+
+					mm->set_position(Vector2(coords.x, coords.y));
+					mm->set_global_position(Vector2(coords.x, coords.y));
+
+					if (mouse_mode == MOUSE_MODE_CAPTURED) {
+
+						Point2i c(video_mode.width / 2, video_mode.height / 2);
+						old_x = c.x;
+						old_y = c.y;
+
+						if (mm->get_position() == c) {
+							center = c;
+							return 0;
+						}
+
+						Point2i ncenter = mm->get_position();
+						center = ncenter;
+						POINT pos = { (int)c.x, (int)c.y };
+						ClientToScreen(hWnd, &pos);
+						SetCursorPos(pos.x, pos.y);
+					}
+
+					input->set_mouse_position(mm->get_position());
+					mm->set_speed(input->get_last_mouse_speed());
+
+					if (old_invalid) {
+						old_x = mm->get_position().x;
+						old_y = mm->get_position().y;
+						old_invalid = false;
+					}
+
+					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+					old_x = mm->get_position().x;
+					old_y = mm->get_position().y;
+					if (window_has_focus && main_loop)
+						input->parse_input_event(mm);
+				}
+				return 0;
+			}
 		} break;
 		case WM_POINTERUPDATE: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -554,8 +656,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			Ref<InputEventMouseMotion> mm;
 			mm.instance();
 
-			mm->set_pressure(pen_info.pressure ? (float)pen_info.pressure / 1024 : 0);
-			mm->set_tilt(Vector2(pen_info.tiltX ? (float)pen_info.tiltX / 90 : 0, pen_info.tiltY ? (float)pen_info.tiltY / 90 : 0));
+			if (pen_info.penMask & PEN_MASK_PRESSURE) {
+				mm->set_pressure((float)pen_info.pressure / 1024);
+			} else {
+				mm->set_pressure((HIWORD(wParam) & POINTER_MESSAGE_FLAG_FIRSTBUTTON) ? 1.0f : 0.0f);
+			}
+			if ((pen_info.penMask & PEN_MASK_TILT_X) && (pen_info.penMask & PEN_MASK_TILT_Y)) {
+				mm->set_tilt(Vector2((float)pen_info.tiltX / 90, (float)pen_info.tiltY / 90));
+			}
 
 			mm->set_control((wParam & MK_CONTROL) != 0);
 			mm->set_shift((wParam & MK_SHIFT) != 0);
@@ -651,6 +759,22 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_control((wParam & MK_CONTROL) != 0);
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
+
+			if (!is_wintab_disabled() && wintab_available && wtctx) {
+				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not update recently.
+				if (last_pressure_update < 10) {
+					last_pressure_update++;
+				} else {
+					last_tilt = Vector2();
+					last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+				}
+			} else {
+				last_tilt = Vector2();
+				last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
+			}
+
+			mm->set_pressure(last_pressure);
+			mm->set_tilt(last_tilt);
 
 			mm->set_button_mask(last_button_state);
 
@@ -904,27 +1028,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			} else if (wParam == SIZE_RESTORED) {
 				maximized = false;
 				minimized = false;
-			}
-			if (is_layered_allowed() && layered_window) {
-				DeleteObject(hBitmap);
-
-				RECT r;
-				GetWindowRect(hWnd, &r);
-				dib_size = Size2i(r.right - r.left, r.bottom - r.top);
-
-				BITMAPINFO bmi;
-				ZeroMemory(&bmi, sizeof(BITMAPINFO));
-				bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				bmi.bmiHeader.biWidth = dib_size.x;
-				bmi.bmiHeader.biHeight = dib_size.y;
-				bmi.bmiHeader.biPlanes = 1;
-				bmi.bmiHeader.biBitCount = 32;
-				bmi.bmiHeader.biCompression = BI_RGB;
-				bmi.bmiHeader.biSizeImage = dib_size.x * dib_size.y * 4;
-				hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, NULL, 0x0);
-				SelectObject(hDC_dib, hBitmap);
-
-				ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
 			}
 			//return 0;								// Jump Back
 		} break;
@@ -1415,6 +1518,39 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	if (video_mode.always_on_top) {
 		SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	}
+
+	if (!is_wintab_disabled() && wintab_available) {
+		wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
+		wtlc.lcOptions |= CXO_MESSAGES;
+		wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+		wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+		wtlc.lcPktMode = 0;
+		wtlc.lcOutOrgX = 0;
+		wtlc.lcOutExtX = wtlc.lcInExtX;
+		wtlc.lcOutOrgY = 0;
+		wtlc.lcOutExtY = -wtlc.lcInExtY;
+		wtctx = wintab_WTOpen(hWnd, &wtlc, false);
+		if (wtctx) {
+			wintab_WTEnable(wtctx, true);
+			AXIS pressure;
+			if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
+				min_pressure = int(pressure.axMin);
+				max_pressure = int(pressure.axMax);
+			}
+			AXIS orientation[3];
+			if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
+				tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
+			}
+		} else {
+			print_verbose("WinTab context creation failed.");
+		}
+	} else {
+		wtctx = 0;
+	}
+
+	last_pressure = 0;
+	last_pressure_update = 0;
+	last_tilt = Vector2();
 
 #if defined(OPENGL_ENABLED)
 
@@ -2129,85 +2265,33 @@ void OS_Windows::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 	if (!is_layered_allowed()) return;
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
-			set_borderless_window(true);
 			//enable per-pixel alpha
-			hDC_dib = CreateCompatibleDC(GetDC(hWnd));
 
-			SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-
-			RECT r;
-			GetWindowRect(hWnd, &r);
-			dib_size = Size2(r.right - r.left, r.bottom - r.top);
-
-			BITMAPINFO bmi;
-			ZeroMemory(&bmi, sizeof(BITMAPINFO));
-			bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-			bmi.bmiHeader.biWidth = dib_size.x;
-			bmi.bmiHeader.biHeight = dib_size.y;
-			bmi.bmiHeader.biPlanes = 1;
-			bmi.bmiHeader.biBitCount = 32;
-			bmi.bmiHeader.biCompression = BI_RGB;
-			bmi.bmiHeader.biSizeImage = dib_size.x * dib_size.y * 4;
-			hBitmap = CreateDIBSection(hDC_dib, &bmi, DIB_RGB_COLORS, (void **)&dib_data, NULL, 0x0);
-			SelectObject(hDC_dib, hBitmap);
-
-			ZeroMemory(dib_data, dib_size.x * dib_size.y * 4);
+			DWM_BLURBEHIND bb = { 0 };
+			HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+			bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+			bb.hRgnBlur = hRgn;
+			bb.fEnable = TRUE;
+			DwmEnableBlurBehindWindow(hWnd, &bb);
 
 			layered_window = true;
 		} else {
 			//disable per-pixel alpha
 			layered_window = false;
 
-			SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
-
-			//cleanup
-			DeleteObject(hBitmap);
-			DeleteDC(hDC_dib);
+			DWM_BLURBEHIND bb = { 0 };
+			HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+			bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+			bb.hRgnBlur = hRgn;
+			bb.fEnable = FALSE;
+			DwmEnableBlurBehindWindow(hWnd, &bb);
 		}
-	}
-}
-
-uint8_t *OS_Windows::get_layered_buffer_data() {
-
-	return (is_layered_allowed() && layered_window) ? dib_data : NULL;
-}
-
-Size2 OS_Windows::get_layered_buffer_size() {
-
-	return (is_layered_allowed() && layered_window) ? dib_size : Size2();
-}
-
-void OS_Windows::swap_layered_buffer() {
-
-	if (is_layered_allowed() && layered_window) {
-
-		//premultiply alpha
-		for (int y = 0; y < dib_size.y; y++) {
-			for (int x = 0; x < dib_size.x; x++) {
-				float alpha = (float)dib_data[y * (int)dib_size.x * 4 + x * 4 + 3] / (float)0xFF;
-				dib_data[y * (int)dib_size.x * 4 + x * 4 + 0] *= alpha;
-				dib_data[y * (int)dib_size.x * 4 + x * 4 + 1] *= alpha;
-				dib_data[y * (int)dib_size.x * 4 + x * 4 + 2] *= alpha;
-			}
-		}
-		//swap layered window buffer
-		POINT ptSrc = { 0, 0 };
-		SIZE sizeWnd = { (long)dib_size.x, (long)dib_size.y };
-		BLENDFUNCTION bf;
-		bf.BlendOp = AC_SRC_OVER;
-		bf.BlendFlags = 0;
-		bf.AlphaFormat = AC_SRC_ALPHA;
-		bf.SourceConstantAlpha = 0xFF;
-		UpdateLayeredWindow(hWnd, NULL, NULL, &sizeWnd, hDC_dib, &ptSrc, 0, &bf, ULW_ALPHA);
 	}
 }
 
 void OS_Windows::set_borderless_window(bool p_borderless) {
 	if (video_mode.borderless_window == p_borderless)
 		return;
-
-	if (!p_borderless && layered_window)
-		set_window_per_pixel_transparency_enabled(false);
 
 	video_mode.borderless_window = p_borderless;
 
@@ -3375,7 +3459,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	drop_events = false;
 	key_event_pos = 0;
 	layered_window = false;
-	hBitmap = NULL;
 	force_quit = false;
 	alt_mem = false;
 	gr_mem = false;
@@ -3387,7 +3470,19 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	window_focused = true;
 	console_visible = IsWindowVisible(GetConsoleWindow());
 
-	//Note: Functions for pen input, available on Windows 8+
+	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
+	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
+	if (wintab_lib) {
+		wintab_WTOpen = (WTOpenPtr)GetProcAddress(wintab_lib, "WTOpenW");
+		wintab_WTClose = (WTClosePtr)GetProcAddress(wintab_lib, "WTClose");
+		wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
+		wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
+		wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
+
+		wintab_available = wintab_WTOpen && wintab_WTClose && wintab_WTInfo && wintab_WTPacket && wintab_WTEnable;
+	}
+
+	//Note: Windows Ink API for pen input, available on Windows 8+ only.
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
 	if (user32_lib) {
 		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
@@ -3416,9 +3511,9 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 }
 
 OS_Windows::~OS_Windows() {
-	if (is_layered_allowed() && layered_window) {
-		DeleteObject(hBitmap);
-		DeleteDC(hDC_dib);
+	if (wintab_available && wtctx) {
+		wintab_WTClose(wtctx);
+		wtctx = 0;
 	}
 #ifdef STDOUT_FILE
 	fclose(stdo);

@@ -29,6 +29,9 @@
 /*************************************************************************/
 
 package org.godotengine.godot;
+
+import org.godotengine.godot.input.*;
+
 import android.content.*;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -39,11 +42,10 @@ import android.os.*;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
-import org.godotengine.godot.input.*;
-//android.os.Build
 
 // Wrapper for native library
 

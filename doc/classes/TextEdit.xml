@@ -343,6 +343,17 @@
 				Select all the text.
 			</description>
 		</method>
+		<method name="set_line">
+			<return type="void">
+			</return>
+			<argument index="0" name="line" type="int">
+			</argument>
+			<argument index="1" name="new_text" type="String">
+			</argument>
+			<description>
+				Sets the text for a specific line.
+			</description>
+		</method>
 		<method name="set_line_as_hidden">
 			<return type="void">
 			</return>

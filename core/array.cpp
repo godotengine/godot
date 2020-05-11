@@ -223,59 +223,49 @@ Array Array::duplicate(bool p_deep) const {
 	return new_arr;
 }
 
-int Array::_fix_slice_index(int p_index, int p_arr_len, int p_top_mod) {
-	p_index = CLAMP(p_index, -p_arr_len, p_arr_len + p_top_mod);
-	if (p_index < 0) {
-		p_index = (p_index % p_arr_len + p_arr_len) % p_arr_len; // positive modulo
+int Array::_clamp_slice_index(int p_index) const {
+
+	int arr_size = size();
+	int fixed_index = CLAMP(p_index, -arr_size, arr_size - 1);
+	if (fixed_index < 0) {
+		fixed_index = arr_size + fixed_index;
 	}
-	return p_index;
+	return fixed_index;
 }
-
-int Array::_clamp_index(int p_index) const {
-	return CLAMP(p_index, -size() + 1, size() - 1);
-}
-
-#define ARRAY_GET_DEEP(idx, is_deep) is_deep ? get(idx).duplicate(is_deep) : get(idx)
 
 Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
+
 	Array new_arr;
+
+	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
 
 	if (empty()) // Don't try to slice empty arrays.
 		return new_arr;
-
-	p_begin = Array::_fix_slice_index(p_begin, size(), -1); // can't start out of range
-	p_end = Array::_fix_slice_index(p_end, size(), 0);
-
-	int x = p_begin;
-	int new_arr_i = 0;
-
-	ERR_FAIL_COND_V(p_step == 0, new_arr);
-	if (Array::_clamp_index(p_begin) == Array::_clamp_index(p_end)) { // don't include element twice
-		new_arr.resize(1);
-		// new_arr[0] = 1;
-		new_arr[0] = ARRAY_GET_DEEP(Array::_clamp_index(p_begin), p_deep);
-		return new_arr;
-	} else {
-		int element_count = ceil((int)MAX(0, (p_end - p_begin) / p_step)) + 1;
-		if (element_count == 1) { // delta going in wrong direction to reach end
-			new_arr.resize(0);
+	if (p_step > 0) {
+		if (p_begin >= size() || p_end < -size())
 			return new_arr;
-		}
-		new_arr.resize(element_count);
+	} else { // p_step < 0
+		if (p_begin < -size() || p_end >= size())
+			return new_arr;
 	}
 
-	// if going backwards, have to have a different terminating condition
-	if (p_step < 0) {
-		while (x >= p_end) {
-			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
-			x += p_step;
-			new_arr_i += 1;
+	int begin = _clamp_slice_index(p_begin);
+	int end = _clamp_slice_index(p_end);
+
+	int new_arr_size = MAX(((end - begin + p_step) / p_step), 0);
+	new_arr.resize(new_arr_size);
+
+	if (p_step > 0) {
+		int dest_idx = 0;
+		for (int idx = begin; idx <= end; idx += p_step) {
+			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
+			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
 		}
-	} else if (p_step > 0) {
-		while (x <= p_end) {
-			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
-			x += p_step;
-			new_arr_i += 1;
+	} else { // p_step < 0
+		int dest_idx = 0;
+		for (int idx = begin; idx >= end; idx += p_step) {
+			ERR_FAIL_COND_V_MSG(dest_idx < 0 || dest_idx >= new_arr_size, Array(), "Bug in Array slice()");
+			new_arr[dest_idx++] = p_deep ? get(idx).duplicate(p_deep) : get(idx);
 		}
 	}
 

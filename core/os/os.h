@@ -61,6 +61,7 @@ class OS {
 	bool _allow_layered;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
+	bool _disable_wintab;
 
 	char *last_error;
 
@@ -245,10 +246,6 @@ public:
 
 	virtual bool get_window_per_pixel_transparency_enabled() const { return false; }
 	virtual void set_window_per_pixel_transparency_enabled(bool p_enabled) {}
-
-	virtual uint8_t *get_layered_buffer_data() { return NULL; }
-	virtual Size2 get_layered_buffer_size() { return Size2(0, 0); }
-	virtual void swap_layered_buffer() {}
 
 	virtual void set_ime_active(const bool p_active) {}
 	virtual void set_ime_position(const Point2 &p_pos) {}
@@ -528,6 +525,7 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
+	bool is_wintab_disabled() const { return _disable_wintab; }
 
 	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
 	bool is_restart_on_exit_set() const;

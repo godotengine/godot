@@ -29,12 +29,7 @@
 /*************************************************************************/
 
 package org.godotengine.godot;
-import android.annotation.SuppressLint;
-import android.graphics.PixelFormat;
-import android.opengl.GLSurfaceView;
-import android.view.GestureDetector;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
+
 import org.godotengine.godot.input.GodotGestureHandler;
 import org.godotengine.godot.input.GodotInputHandler;
 import org.godotengine.godot.utils.GLUtils;
@@ -45,6 +40,13 @@ import org.godotengine.godot.xr.ovr.OvrWindowSurfaceFactory;
 import org.godotengine.godot.xr.regular.RegularConfigChooser;
 import org.godotengine.godot.xr.regular.RegularContextFactory;
 import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
+
+import android.annotation.SuppressLint;
+import android.graphics.PixelFormat;
+import android.opengl.GLSurfaceView;
+import android.view.GestureDetector;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 
 /**
  * A simple GLSurfaceView sub-class that demonstrate how to perform

@@ -34,6 +34,9 @@
 #include "editor_scale.h"
 
 String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
+	if (grabber->is_visible()) {
+		return rtos(get_value()) + "\n\n" + TTR("Hold Ctrl to round to integers. Hold Shift for more precise changes.");
+	}
 	return rtos(get_value());
 }
 
@@ -109,7 +112,21 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (grabbing_spinner) {
+				// Don't make the user scroll all the way back to 'in range' if they went off the end.
+				if (pre_grab_value < get_min() && !is_lesser_allowed()) {
+					pre_grab_value = get_min();
+				}
+				if (pre_grab_value > get_max() && !is_greater_allowed()) {
+					pre_grab_value = get_max();
+				}
+
 				if (mm->get_control()) {
+					// If control was just pressed, don't make the value do a huge jump in magnitude.
+					if (grabbing_spinner_dist_cache != 0) {
+						pre_grab_value += grabbing_spinner_dist_cache * get_step();
+						grabbing_spinner_dist_cache = 0;
+					}
+
 					set_value(Math::round(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10));
 				} else {
 					set_value(pre_grab_value + get_step() * grabbing_spinner_dist_cache);

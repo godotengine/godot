@@ -701,6 +701,11 @@ float AudioStreamPlayer3D::get_pitch_scale() const {
 
 void AudioStreamPlayer3D::play(float p_from_pos) {
 
+	if (!is_playing()) {
+		// Reset the prev_output_count if the stream is stopped
+		prev_output_count = 0;
+	}
+
 	if (stream_playback.is_valid()) {
 		active = true;
 		setplay = p_from_pos;

@@ -410,7 +410,7 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 	//draw the triangles.
 	glDrawElements(GL_TRIANGLES, p_index_count, GL_UNSIGNED_INT, 0);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 
 	if (p_bones && p_weights) {
 		//not used so often, so disable when used
@@ -469,7 +469,7 @@ void RasterizerCanvasGLES3::_draw_generic(GLuint p_primitive, int p_vertex_count
 
 	glDrawArrays(p_primitive, 0, p_vertex_count);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -542,7 +542,7 @@ void RasterizerCanvasGLES3::_draw_generic_indices(GLuint p_primitive, const int 
 	//draw the triangles.
 	glDrawElements(p_primitive, p_index_count, GL_UNSIGNED_INT, 0);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -608,7 +608,7 @@ void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_v
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	storage->frame.canvas_draw_commands++;
+	storage->info.render._2d_draw_call_count++;
 }
 
 static const GLenum gl_primitive[] = {
@@ -620,6 +620,82 @@ static const GLenum gl_primitive[] = {
 	GL_TRIANGLE_STRIP,
 	GL_TRIANGLE_FAN
 };
+
+void RasterizerCanvasGLES3::render_rect_nvidia_workaround(const Item::CommandRect *p_rect, const RasterizerStorageGLES3::Texture *p_texture) {
+
+	_set_texture_rect_mode(false);
+
+	if (p_texture) {
+
+		bool untile = false;
+
+		if (p_rect->flags & CANVAS_RECT_TILE && !(p_texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			untile = true;
+		}
+
+		Size2 texpixel_size(1.0 / p_texture->width, 1.0 / p_texture->height);
+
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, p_rect->flags & CANVAS_RECT_CLIP_UV);
+
+		Vector2 points[4] = {
+			p_rect->rect.position,
+			p_rect->rect.position + Vector2(p_rect->rect.size.x, 0.0),
+			p_rect->rect.position + p_rect->rect.size,
+			p_rect->rect.position + Vector2(0.0, p_rect->rect.size.y),
+		};
+
+		if (p_rect->rect.size.x < 0) {
+			SWAP(points[0], points[1]);
+			SWAP(points[2], points[3]);
+		}
+		if (p_rect->rect.size.y < 0) {
+			SWAP(points[0], points[3]);
+			SWAP(points[1], points[2]);
+		}
+		Rect2 src_rect = (p_rect->flags & CANVAS_RECT_REGION) ? Rect2(p_rect->source.position * texpixel_size, p_rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
+
+		Vector2 uvs[4] = {
+			src_rect.position,
+			src_rect.position + Vector2(src_rect.size.x, 0.0),
+			src_rect.position + src_rect.size,
+			src_rect.position + Vector2(0.0, src_rect.size.y),
+		};
+
+		if (p_rect->flags & CANVAS_RECT_TRANSPOSE) {
+			SWAP(uvs[1], uvs[3]);
+		}
+
+		if (p_rect->flags & CANVAS_RECT_FLIP_H) {
+			SWAP(uvs[0], uvs[1]);
+			SWAP(uvs[2], uvs[3]);
+		}
+		if (p_rect->flags & CANVAS_RECT_FLIP_V) {
+			SWAP(uvs[0], uvs[3]);
+			SWAP(uvs[1], uvs[2]);
+		}
+
+		_draw_gui_primitive(4, points, NULL, uvs);
+
+		if (untile) {
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		}
+
+	} else {
+		state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
+
+		Vector2 points[4] = {
+			p_rect->rect.position,
+			p_rect->rect.position + Vector2(p_rect->rect.size.x, 0.0),
+			p_rect->rect.position + p_rect->rect.size,
+			p_rect->rect.position + Vector2(0.0, p_rect->rect.size.y),
+		};
+
+		_draw_gui_primitive(4, points, NULL, nullptr);
+	}
+}
 
 void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *current_clip, bool &reclip) {
 
@@ -685,7 +761,6 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					}
 #endif
 				}
-
 			} break;
 			case Item::Command::TYPE_POLYLINE: {
 
@@ -741,83 +816,86 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				Item::CommandRect *rect = static_cast<Item::CommandRect *>(c);
 
-				_set_texture_rect_mode(true);
-
 				//set color
 				glVertexAttrib4f(VS::ARRAY_COLOR, rect->modulate.r, rect->modulate.g, rect->modulate.b, rect->modulate.a);
 
 				RasterizerStorageGLES3::Texture *texture = _bind_canvas_texture(rect->texture, rect->normal_map);
 
-				if (texture) {
-
-					bool untile = false;
-
-					if (rect->flags & CANVAS_RECT_TILE && !(texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
-						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-						untile = true;
-					}
-
-					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
-					Rect2 src_rect = (rect->flags & CANVAS_RECT_REGION) ? Rect2(rect->source.position * texpixel_size, rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
-					Rect2 dst_rect = Rect2(rect->rect.position, rect->rect.size);
-
-					if (dst_rect.size.width < 0) {
-						dst_rect.position.x += dst_rect.size.width;
-						dst_rect.size.width *= -1;
-					}
-					if (dst_rect.size.height < 0) {
-						dst_rect.position.y += dst_rect.size.height;
-						dst_rect.size.height *= -1;
-					}
-
-					if (rect->flags & CANVAS_RECT_FLIP_H) {
-						src_rect.size.x *= -1;
-					}
-
-					if (rect->flags & CANVAS_RECT_FLIP_V) {
-						src_rect.size.y *= -1;
-					}
-
-					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
-						dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
-					}
-
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
-
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, rect->flags & CANVAS_RECT_CLIP_UV);
-
-					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-					if (untile) {
-						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-					}
-
+				if (use_nvidia_rect_workaround) {
+					render_rect_nvidia_workaround(rect, texture);
 				} else {
-					Rect2 dst_rect = Rect2(rect->rect.position, rect->rect.size);
 
-					if (dst_rect.size.width < 0) {
-						dst_rect.position.x += dst_rect.size.width;
-						dst_rect.size.width *= -1;
+					_set_texture_rect_mode(true);
+
+					if (texture) {
+
+						bool untile = false;
+
+						if (rect->flags & CANVAS_RECT_TILE && !(texture->flags & VS::TEXTURE_FLAG_REPEAT)) {
+							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+							untile = true;
+						}
+
+						Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
+						Rect2 src_rect = (rect->flags & CANVAS_RECT_REGION) ? Rect2(rect->source.position * texpixel_size, rect->source.size * texpixel_size) : Rect2(0, 0, 1, 1);
+						Rect2 dst_rect = Rect2(rect->rect.position, rect->rect.size);
+
+						if (dst_rect.size.width < 0) {
+							dst_rect.position.x += dst_rect.size.width;
+							dst_rect.size.width *= -1;
+						}
+						if (dst_rect.size.height < 0) {
+							dst_rect.position.y += dst_rect.size.height;
+							dst_rect.size.height *= -1;
+						}
+
+						if (rect->flags & CANVAS_RECT_FLIP_H) {
+							src_rect.size.x *= -1;
+						}
+
+						if (rect->flags & CANVAS_RECT_FLIP_V) {
+							src_rect.size.y *= -1;
+						}
+
+						if (rect->flags & CANVAS_RECT_TRANSPOSE) {
+							dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
+						}
+
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
+
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, rect->flags & CANVAS_RECT_CLIP_UV);
+
+						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+						storage->info.render._2d_draw_call_count++;
+
+						if (untile) {
+							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+							glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+						}
+
+					} else {
+						Rect2 dst_rect = Rect2(rect->rect.position, rect->rect.size);
+
+						if (dst_rect.size.width < 0) {
+							dst_rect.position.x += dst_rect.size.width;
+							dst_rect.size.width *= -1;
+						}
+						if (dst_rect.size.height < 0) {
+							dst_rect.position.y += dst_rect.size.height;
+							dst_rect.size.height *= -1;
+						}
+
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(0, 0, 1, 1));
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
+						glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+						storage->info.render._2d_draw_call_count++;
 					}
-					if (dst_rect.size.height < 0) {
-						dst_rect.position.y += dst_rect.size.height;
-						dst_rect.size.height *= -1;
-					}
-
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(0, 0, 1, 1));
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, false);
-					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-				}
-
-				storage->frame.canvas_draw_commands++;
-
+				} // if not use nvidia workaround
 			} break;
-
 			case Item::Command::TYPE_NINEPATCH: {
 
 				Item::CommandNinePatch *np = static_cast<Item::CommandNinePatch *>(c);
@@ -857,9 +935,8 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-				storage->frame.canvas_draw_commands++;
+				storage->info.render._2d_draw_call_count++;
 			} break;
-
 			case Item::Command::TYPE_PRIMITIVE: {
 
 				Item::CommandPrimitive *primitive = static_cast<Item::CommandPrimitive *>(c);
@@ -940,6 +1017,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 						} else {
 							glDrawArrays(gl_primitive[s->primitive], 0, s->array_len);
 						}
+						storage->info.render._2d_draw_call_count++;
 
 						glBindVertexArray(0);
 					}
@@ -1057,6 +1135,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					} else {
 						glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount);
 					}
+					storage->info.render._2d_draw_call_count++;
 
 					glBindVertexArray(0);
 				}
@@ -1138,6 +1217,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					glVertexAttribDivisor(12, 1);
 
 					glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, amount);
+					storage->info.render._2d_draw_call_count++;
 				} else {
 					//split
 					int split = int(Math::ceil(particles->phase * particles->amount));
@@ -1160,6 +1240,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 						glVertexAttribDivisor(12, 1);
 
 						glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, amount - split);
+						storage->info.render._2d_draw_call_count++;
 					}
 
 					if (split > 0) {
@@ -1180,6 +1261,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 						glVertexAttribDivisor(12, 1);
 
 						glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, split);
+						storage->info.render._2d_draw_call_count++;
 					}
 				}
 
@@ -1359,6 +1441,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 	while (p_item_list) {
 
 		Item *ci = p_item_list;
+		storage->info.render._2d_item_count++;
 
 		if (prev_distance_field != ci->distance_field) {
 
@@ -2260,4 +2343,10 @@ void RasterizerCanvasGLES3::finalize() {
 }
 
 RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
+	// Not needed (a priori) on GLES devices
+	use_nvidia_rect_workaround = false;
+
+#ifdef GLES_OVER_GL
+	use_nvidia_rect_workaround = GLOBAL_GET("rendering/quality/2d/use_nvidia_rect_flicker_workaround");
+#endif
 }

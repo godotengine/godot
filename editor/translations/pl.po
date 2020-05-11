@@ -42,7 +42,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-27 08:25+0000\n"
+"PO-Revision-Date: 2020-05-01 11:42+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.0.2\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -9933,6 +9933,10 @@ msgid ""
 "To filter projects by name and full path, the query must contain at least "
 "one `/` character."
 msgstr ""
+"Pasek wyszukiwania filtruje projekty po nazwie i ostatnim komponencie "
+"ścieżki.\n"
+"By filtrować po nazwie i pełnej ścieżce, zapytanie musi zawierać "
+"przynajmniej jeden znak \"/\"."
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -11049,9 +11053,8 @@ msgid "Total:"
 msgstr "Całkowity:"
 
 #: editor/script_editor_debugger.cpp
-#, fuzzy
 msgid "Export list to a CSV file"
-msgstr "Eksportuj profil"
+msgstr "Eksportuj listę do pliku CSV"
 
 #: editor/script_editor_debugger.cpp
 msgid "Resource Path"

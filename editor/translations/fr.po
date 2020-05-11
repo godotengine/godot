@@ -76,8 +76,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2020-04-23 20:21+0000\n"
-"Last-Translator: LaurentOngaro <laurent@gameamea.com>\n"
+"PO-Revision-Date: 2020-05-05 14:01+0000\n"
+"Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -85,7 +85,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.0.2-dev\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -5467,12 +5467,12 @@ msgstr ""
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
 msgid "Zoom Reset"
-msgstr "Réinitialiser le facteur d'agrandissement"
+msgstr "Réinitialiser le zoom"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
-msgstr "Sélectionner le mode"
+msgstr "Mode sélection"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Drag: Rotate"
@@ -5505,7 +5505,7 @@ msgstr "Mode rotation"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
-msgstr "Mode de mise à l'échelle"
+msgstr "Mode mise à l'échelle"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5542,7 +5542,7 @@ msgstr "Activer/Désactiver l'aimantation à la grille."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Use Grid Snap"
-msgstr "Aimanter à la grille"
+msgstr "Utiliser l'aimantation à la grille"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snapping Options"
@@ -5672,7 +5672,7 @@ msgstr "Centrer sur la sélection"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Frame Selection"
-msgstr "Cadrer la sélection"
+msgstr "Encadrer la sélection"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
@@ -7394,7 +7394,7 @@ msgstr "Arrière"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Transform with View"
-msgstr "Aligner le Transform avec la vue"
+msgstr "Aligner Transform avec la vue"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Align Rotation with View"
@@ -7480,19 +7480,19 @@ msgstr "Vue libre droite"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Forward"
-msgstr "Vue libre de devant"
+msgstr "Vue libre avant"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Backwards"
-msgstr "Vue libre de derrière"
+msgstr "Vue libre arrière"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Up"
-msgstr "Vue libre de dessus"
+msgstr "Vue libre haut"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Down"
-msgstr "Vue libre de dessous"
+msgstr "Vue libre bas"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Speed Modifier"
@@ -7500,20 +7500,20 @@ msgstr "Modificateur de vitesse de la vue libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Freelook Slow Modifier"
-msgstr "Modificateur de vitesse de la vue libre"
+msgstr "Ralentissement de la vue libre"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Rotation Locked"
-msgstr "Verrouiller la rotation de la vue"
+msgstr "Rotation de la vue verrouillée"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-"Note : La valeur FPS affichée est la fréquence d'images de l'éditeur.\n"
-"Il ne doit pas être utilisé comme un indicateur fiable de la performance en "
-"jeu."
+"Note : Les FPS (images par secondes) affichées sont celles de éditeur.\n"
+"Elles ne doivent pas être utilisées comme un indicateur fiable de la "
+"performance en jeu."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "XForm Dialog"
@@ -7521,11 +7521,11 @@ msgstr "Dialogue XForm"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes To Floor"
-msgstr "Aligner les nœuds au sol"
+msgstr "Aligner les nœuds avec le sol"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr "N'a pas pu trouvé de sol solide pour y attacher la sélection."
+msgstr "Pas de sol solide trouvé pour y attacher la sélection."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7539,11 +7539,11 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Local Space"
-msgstr "Utiliser l'espace local"
+msgstr "Utiliser les coordonées locales"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
-msgstr "Aligner sur la grille"
+msgstr "Aligner avec la grille"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7555,11 +7555,11 @@ msgstr "Vue de dessus"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rear View"
-msgstr "Vue arrière"
+msgstr "Vue de derrière"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Front View"
-msgstr "Vue avant"
+msgstr "Vue de devant"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Left View"
@@ -7579,7 +7579,7 @@ msgstr "Insérer une clef d'animation"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Origin"
-msgstr "Focaliser l'origine"
+msgstr "Focaliser sur l'origine"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
@@ -8174,7 +8174,7 @@ msgstr "Donnez une ressource TileSet à cette TileMap pour utiliser ses tuiles."
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
-msgstr "Peindre la case"
+msgstr "Peindre la tuile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
@@ -8186,7 +8186,7 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
-msgstr "Sélectionner une case"
+msgstr "Sélectionner une tuile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Rotate Left"

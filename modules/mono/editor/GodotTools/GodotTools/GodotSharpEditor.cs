@@ -37,6 +37,8 @@ namespace GodotTools
 
         public BottomPanel BottomPanel { get; private set; }
 
+        public PlaySettings? CurrentPlaySettings { get; set; }
+
         public static string ProjectAssemblyName
         {
             get
@@ -240,12 +242,12 @@ namespace GodotTools
         [UsedImplicitly]
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
-            var editor = (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor");
+            var editorId = (ExternalEditorId)editorSettings.GetSetting("mono/editor/external_editor");
 
-            switch (editor)
+            switch (editorId)
             {
                 case ExternalEditorId.None:
-                    // Tells the caller to fallback to the global external editor settings or the built-in editor
+                    // Not an error. Tells the caller to fallback to the global external editor settings or the built-in editor.
                     return Error.Unavailable;
                 case ExternalEditorId.VisualStudio:
                     throw new NotSupportedException();
@@ -261,10 +263,14 @@ namespace GodotTools
                 {
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
 
-                    if (line >= 0)
-                        GodotIdeManager.SendOpenFile(scriptPath, line + 1, col);
-                    else
-                        GodotIdeManager.SendOpenFile(scriptPath);
+                    GodotIdeManager.LaunchIdeAsync().ContinueWith(launchTask =>
+                    {
+                        var editorPick = launchTask.Result;
+                        if (line >= 0)
+                            editorPick?.SendOpenFile(scriptPath, line + 1, col);
+                        else
+                            editorPick?.SendOpenFile(scriptPath);
+                    });
 
                     break;
                 }
@@ -312,7 +318,7 @@ namespace GodotTools
                     if (line >= 0)
                     {
                         args.Add("-g");
-                        args.Add($"{scriptPath}:{line + 1}:{col}");
+                        args.Add($"{scriptPath}:{line}:{col}");
                     }
                     else
                     {
