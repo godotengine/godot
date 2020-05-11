@@ -77,7 +77,6 @@ NodeData::NodeData() :
 		id(0),
 		instance_id(uint64_t(0)),
 		is_controller(false),
-		is_main_controller(false),
 		controlled_by(uint64_t(0)),
 		isle_id(uint64_t(0)) {
 }
@@ -86,7 +85,6 @@ NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
 		id(p_id),
 		instance_id(p_instance_id),
 		is_controller(is_controller),
-		is_main_controller(false),
 		controlled_by(uint64_t(0)),
 		isle_id(uint64_t(0)) {
 }
@@ -104,12 +102,12 @@ int NodeData::find_var_by_id(uint32_t p_id) const {
 	return -1;
 }
 
-bool NodeData::can_be_part_of_isle(ControllerID p_controller_id) const {
+bool NodeData::can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_controller) const {
 	if (instance_id == p_controller_id) {
 		return true;
 	} else if (controlled_by == p_controller_id) {
 		return true;
-	} else if (is_controller == false && controlled_by.is_null() && is_main_controller) {
+	} else if (is_controller == false && controlled_by.is_null() && p_is_main_controller) {
 		return true;
 	} else {
 		return false;
@@ -452,6 +450,10 @@ void SceneRewinder::set_node_as_controlled_by(Node *p_node, Node *p_controller) 
 		ERR_FAIL_COND(controller_node_data->is_controller == false);
 		controller_node_data->controlled_nodes.push_back(p_node->get_instance_id());
 		node_data->controlled_by = p_controller->get_instance_id();
+
+		// This MUST never be false.
+		CRASH_COND(node_data->can_be_part_of_isle(p_controller->get_instance_id(), p_controller == main_controller) == false);
+
 		put_into_isle(node_data->instance_id, p_controller->get_instance_id());
 		node_data->isle_id = p_controller->get_instance_id();
 	}
@@ -489,26 +491,22 @@ void SceneRewinder::_register_controller(NetworkedController *p_controller) {
 		p_controller->set_scene_rewinder(this);
 
 		node_data->is_controller = true;
-		node_data->is_main_controller = false;
 
 		if (p_controller->is_player_controller()) {
 			if (main_controller == nullptr) {
 				main_controller = p_controller;
-				node_data->is_main_controller = true;
 			}
 		}
 
-		if (p_controller == main_controller) {
-			// Make sure to put all nodes that, have right, in this isle.
-			for (
-					OAHashMap<ObjectID, NodeData>::Iterator it = data.iter();
-					it.valid;
-					it = data.next_iter(it)) {
+		// Make sure to put all nodes that, have the rights to be in this isle.
+		for (
+				OAHashMap<ObjectID, NodeData>::Iterator it = data.iter();
+				it.valid;
+				it = data.next_iter(it)) {
 
-				if (it.value->can_be_part_of_isle(p_controller->get_instance_id())) {
-					isle->nodes.push_back(*it.key);
-					it.value->isle_id = p_controller->get_instance_id();
-				}
+			if (it.value->can_be_part_of_isle(p_controller->get_instance_id(), p_controller == main_controller)) {
+				isle->nodes.push_back(*it.key);
+				it.value->isle_id = p_controller->get_instance_id();
 			}
 		}
 	}
@@ -552,7 +550,7 @@ void SceneRewinder::register_process(Node *p_node, StringName p_function) {
 void SceneRewinder::unregister_process(Node *p_node, StringName p_function) {
 	ERR_FAIL_COND(p_node == nullptr);
 	ERR_FAIL_COND(p_function == StringName());
-	NodeData *node_data = data.lookup_ptr(p_node->get_instance_id());
+	NodeData *node_data = register_node(p_node);
 	ERR_FAIL_COND(node_data == nullptr);
 	std::vector<StringName>::iterator it = std::find(node_data->functions.begin(), node_data->functions.end(), p_function);
 	if (it != node_data->functions.end()) {
@@ -807,10 +805,11 @@ void SceneRewinder::validate_nodes() {
 			null_objects.push_back(it.value->instance_id);
 			if (it.value->isle_id.is_null() == false) {
 				remove_from_isle(*it.key, it.value->isle_id);
+				it.value->isle_id = uint64_t(0);
 			}
 		} else {
 			if (it.value->isle_id.is_null()) {
-				if (main_controller && it.value->can_be_part_of_isle(main_controller->get_instance_id())) {
+				if (main_controller && it.value->can_be_part_of_isle(main_controller->get_instance_id(), true)) {
 					put_into_isle(*it.key, main_controller->get_instance_id());
 					it.value->isle_id = *it.key;
 				}
@@ -1356,8 +1355,6 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 	ERR_FAIL_COND(scene_rewinder->main_controller == nullptr);
 
-	const bool is_main_controller = scene_rewinder->main_controller == p_controller;
-
 	std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.getptr(p_controller->get_instance_id());
 	if (client_snaps == nullptr) {
 		client_controllers_snapshots.set(p_controller->get_instance_id(), std::deque<IsleSnapshot>());
@@ -1379,26 +1376,17 @@ void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 	IsleSnapshot snap;
 	snap.input_id = p_controller->get_current_input_id();
 
+	IsleData *isle_data = scene_rewinder->isle_data.lookup_ptr(p_controller->get_instance_id());
+	ERR_FAIL_COND(isle_data == nullptr);
+
 	for (
-			OAHashMap<ObjectID, NodeData>::Iterator it = scene_rewinder->data.iter();
-			it.valid;
-			it = scene_rewinder->data.next_iter(it)) {
+			std::vector<ObjectID>::iterator it = isle_data->nodes.begin();
+			it != isle_data->nodes.end();
+			it += 1) {
 
-		const NodeData *node_data = it.value;
-		if ((node_data->instance_id) == p_controller->get_instance_id()) {
-			// This is the controller node.
-		} else if (node_data->is_controller) {
-			// This is another controller, SKIP IT.
-			continue;
-		} else if (is_main_controller && node_data->controlled_by.is_null()) {
-			// The main controller takes care to sync all non controlled
-			// nodes.
-		} else if (node_data->controlled_by != p_controller->get_instance_id()) {
-			// This node is not controlled by this controller. SKIP IT.
-			continue;
-		}
+		const NodeData *node_data = scene_rewinder->data.lookup_ptr(*it);
+		ERR_CONTINUE(node_data == nullptr);
 
-		// This node is part of this isle, store it.
 		snap.node_vars[node_data->instance_id] = node_data->vars;
 	}
 
@@ -1418,7 +1406,6 @@ void ClientRewinder::store_controllers_snapshot(
 			it.valid;
 			it = scene_rewinder->isle_data.next_iter(it)) {
 		const NetworkedController *controller = it.value->controller;
-		const bool is_main_controller = scene_rewinder->main_controller == controller;
 
 		const uint64_t *input_id = p_snapshot.controllers_input_id.getptr(controller->get_instance_id());
 		if (input_id == nullptr || *input_id == UINT64_MAX) {
@@ -1446,27 +1433,18 @@ void ClientRewinder::store_controllers_snapshot(
 		IsleSnapshot snap;
 		snap.input_id = *input_id;
 
-		for (const ObjectID *key = p_snapshot.data.next(nullptr); key != nullptr; key = p_snapshot.data.next(key)) {
+		for (
+				const ObjectID *key = p_snapshot.data.next(nullptr);
+				key != nullptr;
+				key = p_snapshot.data.next(key)) {
 			const NodeData *node_data = scene_rewinder->data.lookup_ptr(*key);
-			if (node_data == nullptr) {
-				// Not enough information to decide what to do with this node
-				// so SKIP IT.
-				continue;
-			} else if ((*key) == controller->get_instance_id()) {
-				// This is the controller node.
-			} else if (node_data->is_controller) {
-				// This is another controller, SKIP IT.
-				continue;
-			} else if (is_main_controller && node_data->controlled_by.is_null()) {
-				// The main controller takes care to sync all non controlled
-				// nodes.
-			} else if (node_data->controlled_by != controller->get_instance_id()) {
-				// This node is not controlled by this controller. SKIP IT.
-				continue;
-			}
 
-			// This node is part of this isle, store it.
-			snap.node_vars[*key] = p_snapshot.data[*key].vars;
+			if (
+					node_data != nullptr &&
+					node_data->isle_id != controller->get_instance_id()) {
+				// This node is part of this isle.
+				snap.node_vars[*key] = p_snapshot.data[*key].vars;
+			}
 		}
 
 		controller_snaps->push_back(snap);

@@ -72,7 +72,6 @@ struct NodeData {
 	uint32_t id;
 	ObjectID instance_id;
 	bool is_controller;
-	bool is_main_controller;
 	ControllerID controlled_by;
 	ControllerID isle_id;
 	std::vector<ObjectID> controlled_nodes;
@@ -87,7 +86,7 @@ struct NodeData {
 
 	// Returns the index to access the variable.
 	int find_var_by_id(uint32_t p_id) const;
-	bool can_be_part_of_isle(ControllerID p_controller_id) const;
+	bool can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_controller) const;
 	void process(const real_t p_delta) const;
 };
 
