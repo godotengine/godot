@@ -530,6 +530,9 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 	//motion=linear_velocity*p_step;
 
+	applied_force = Vector2();
+	applied_torque = 0.0f;
+
 	first_integration = false;
 	biased_angular_velocity = 0;
 	biased_linear_velocity = Vector2();
