@@ -2267,7 +2267,8 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 
 	// does the shader contain BUILTINs which should break the batching?
 	if (r_ris.shader_cache && !unshaded) {
-		if (r_ris.shader_cache->canvas_item.prevent_color_baking) {
+		const unsigned int test_flags = RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING | RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_VERTEX_BAKING;
+		if (r_ris.shader_cache->canvas_item.batch_flags & test_flags) {
 			// we will do this same test on the shader during the rendering pass in order to set a bool not to bake vertex colors
 			// instead of saving this info as it is cheap to calculate
 			join = false;
@@ -3000,7 +3001,7 @@ void RasterizerCanvasGLES2::render_joined_item(const BItemJoined &p_bij, RenderI
 	// does the shader contain BUILTINs which break the batching and should prevent color baking?
 	bdata.prevent_color_baking = false;
 	if (r_ris.shader_cache && !unshaded) {
-		if (r_ris.shader_cache->canvas_item.prevent_color_baking) {
+		if (r_ris.shader_cache->canvas_item.batch_flags & RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING) {
 			bdata.prevent_color_baking = true;
 		}
 	}
