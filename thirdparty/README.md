@@ -384,11 +384,19 @@ Collection of single-file libraries used in Godot components.
   * Upstream: http://www.pcg-random.org
   * Version: minimal C implementation, http://www.pcg-random.org/download.html
   * License: Apache 2.0
+- `r128.h`
+  * Upstream: https://github.com/fahickman/r128
+  * Version: 1.4.3 (2019)
+  * License: Public Domain
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
   * Version: git (150e125cbae2e8fd20dd332432776ce13395d4d4, 2009)
   * License: BSD-3-Clause
   * Modifications: use `const char*` instead of `char*` for input string
+- `stb_rect_pack.h`
+  * Upstream: https://github.com/nothings/stb
+  * Version: 1.00 (2019)
+  * License: Public Domain (Unlicense) or MIT
 - `triangulator.{cpp,h}`
   * Upstream: https://github.com/ivanfratric/polypartition (`src/polypartition.cpp`)
   * Version: TBD, class was renamed
@@ -435,6 +443,17 @@ Files extracted from the upstream source:
 
 - All .h files in `src/`
 - LICENSE.txt
+
+
+## oidn
+
+- Upstream: https://github.com/OpenImageDenoise/oidn
+- Version: TBD
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- TBD
 
 
 ## opus
