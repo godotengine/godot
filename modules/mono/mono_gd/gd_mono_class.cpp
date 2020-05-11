@@ -79,12 +79,26 @@ bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
 }
 
-GDMonoClass *GDMonoClass::get_parent_class() {
+StringName GDMonoClass::get_namespace() const {
+	GDMonoClass *nesting_class = get_nesting_class();
+	if (!nesting_class)
+		return namespace_name;
+	return nesting_class->get_namespace();
+}
+
+String GDMonoClass::get_name_for_lookup() const {
+	GDMonoClass *nesting_class = get_nesting_class();
+	if (!nesting_class)
+		return class_name;
+	return nesting_class->get_name_for_lookup() + "/" + class_name;
+}
+
+GDMonoClass *GDMonoClass::get_parent_class() const {
 	MonoClass *parent_mono_class = mono_class_get_parent(mono_class);
 	return parent_mono_class ? GDMono::get_singleton()->get_class(parent_mono_class) : NULL;
 }
 
-GDMonoClass *GDMonoClass::get_nesting_class() {
+GDMonoClass *GDMonoClass::get_nesting_class() const {
 	MonoClass *nesting_type = mono_class_get_nesting_type(mono_class);
 	return nesting_type ? GDMono::get_singleton()->get_class(nesting_type) : NULL;
 }

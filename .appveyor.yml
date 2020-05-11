@@ -30,3 +30,11 @@ before_build:
 
 build_script:
   - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% debug_symbols=no verbose=yes progress=no gdnative_wrapper=yes
+
+after_build:
+  - 7z a godot_build.zip bin\*.exe
+
+artifacts:
+  - path: godot_build.zip
+    name: Build
+    type: zip

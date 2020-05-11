@@ -195,12 +195,20 @@ void ViewportRotationControl::_gui_input(Ref<InputEvent> p_event) {
 				_update_focus();
 			}
 			orbiting = false;
+			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+				Input::get_singleton()->warp_mouse_position(orbiting_mouse_start);
+			}
 		}
 	}
 
 	const Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		if (orbiting) {
+			if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
+				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
+				orbiting_mouse_start = mm->get_global_position();
+			}
 			viewport->_nav_orbit(mm, viewport->_get_warped_mouse_motion(mm));
 			focused_axis = -1;
 		} else {
@@ -2182,14 +2190,14 @@ void SpatialEditorViewport::set_freelook_active(bool active_now) {
 		}
 
 		// Hide mouse like in an FPS (warping doesn't work)
-		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_CAPTURED);
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 
 	} else if (freelook_active && !active_now) {
 		// Sync camera cursor to cursor to "cut" interpolation jumps due to changing referential
 		cursor = camera_cursor;
 
 		// Restore mouse
-		OS::get_singleton()->set_mouse_mode(OS::MOUSE_MODE_VISIBLE);
+		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 	}
 
 	freelook_active = active_now;
@@ -3089,6 +3097,8 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
+
+	rotation_control->set_visible(!p_activate);
 
 	if (!p_activate) {
 

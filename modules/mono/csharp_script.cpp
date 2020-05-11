@@ -795,7 +795,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		to_reload.push_back(script);
 
 		if (script->get_path().empty()) {
-			script->tied_class_name_for_reload = script->script_class->get_name();
+			script->tied_class_name_for_reload = script->script_class->get_name_for_lookup();
 			script->tied_class_namespace_for_reload = script->script_class->get_namespace();
 		}
 

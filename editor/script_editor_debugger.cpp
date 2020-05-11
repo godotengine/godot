@@ -1326,12 +1326,15 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				} else {
 					errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
 					debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-					if (error_count == 0) {
-						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
-						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Warning", "EditorIcons"));
-					} else {
+					if (error_count >= 1 && warning_count >= 1) {
+						debugger_button->set_icon(get_icon("ErrorWarning", "EditorIcons"));
+						tabs->set_tab_icon(errors_tab->get_index(), get_icon("ErrorWarning", "EditorIcons"));
+					} else if (error_count >= 1) {
 						debugger_button->set_icon(get_icon("Error", "EditorIcons"));
 						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Error", "EditorIcons"));
+					} else {
+						debugger_button->set_icon(get_icon("Warning", "EditorIcons"));
+						tabs->set_tab_icon(errors_tab->get_index(), get_icon("Warning", "EditorIcons"));
 					}
 				}
 				last_error_count = error_count;

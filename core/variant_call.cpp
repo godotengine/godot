@@ -1211,6 +1211,8 @@ Variant Variant::construct(const Variant::Type p_type, const Variant **p_args, i
 			}
 			case RECT2: return (Rect2(*p_args[0]));
 			case VECTOR3: return (Vector3(*p_args[0]));
+			case TRANSFORM2D:
+				return (Transform2D(p_args[0]->operator Transform2D()));
 			case PLANE: return (Plane(*p_args[0]));
 			case QUAT: return (p_args[0]->operator Quat());
 			case AABB:
