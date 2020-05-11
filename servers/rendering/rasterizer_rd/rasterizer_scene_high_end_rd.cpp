@@ -3410,6 +3410,8 @@ RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
 		memdelete_arr(scene_state.gi_probes);
 		memdelete_arr(scene_state.directional_lights);
 		memdelete_arr(scene_state.lights);
+		memdelete_arr(scene_state.lightmaps);
+		memdelete_arr(scene_state.lightmap_captures);
 		memdelete_arr(scene_state.reflections);
 		memdelete_arr(scene_state.decals);
 	}
