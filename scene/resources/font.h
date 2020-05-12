@@ -167,10 +167,10 @@ public:
 	float get_height() const;
 
 	void set_ascent(float p_ascent);
-	float get_ascent() const;
-	float get_descent() const;
-	float get_underline_position() const;
-	float get_underline_thickness() const;
+	virtual float get_ascent() const;
+	virtual float get_descent() const;
+	virtual float get_underline_position() const;
+	virtual float get_underline_thickness() const;
 
 	void add_texture(const Ref<Texture2D> &p_texture);
 	void add_char(CharType p_char, int p_texture_idx, const Rect2 &p_rect, const Size2 &p_align, float p_advance = -1);
