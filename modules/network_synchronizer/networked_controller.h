@@ -37,6 +37,7 @@
 #include "core/math/transform.h"
 #include "core/node_path.h"
 #include "input_buffer.h"
+#include "net_utilities.h"
 #include <deque>
 #include <vector>
 
@@ -105,6 +106,34 @@ private:
 	/// are sent in an unreliable way.
 	int max_redundant_inputs;
 
+	/// Used to set the amount of traced frames to determine the connection healt trend.
+	///
+	/// This parameter depends a lot on the physics iteration per second, and
+	/// an optimal parameter, with 60 physics iteration per second, is 1200;
+	/// that is equivalent of the latest 20 seconds frames.
+	///
+	/// A smaller value will make the recovery mechanism too noisy and so useless,
+	/// on the other hand a too big value will make the recovery mechanism too
+	/// slow.
+	int network_traced_frames;
+
+	/// Max tolerance for missing snapshots in the `network_traced_frames`.
+	int missing_input_max_tolerance;
+
+	/// Used to control the `player` tick acceleration, so to produce more
+	/// inputs.
+	real_t tick_acceleration;
+
+	/// The "optimal input size" is dynamically updated and its size
+	/// change at a rate that can be controlled by this parameter.
+	real_t optimal_size_acceleration;
+
+	/// The server is several frames behind the client, the maxim amount
+	/// of these frames is defined by the value of this parameter.
+	///
+	/// To prevent introducing virtual lag.
+	int server_input_storage_size;
+
 	ControllerType controller_type;
 	Controller *controller;
 	InputsBuffer inputs_buffer;
@@ -129,6 +158,21 @@ public:
 
 	void set_max_redundant_inputs(int p_max);
 	int get_max_redundant_inputs() const;
+
+	void set_network_traced_frames(int p_size);
+	int get_network_traced_frames() const;
+
+	void set_missing_snapshots_max_tolerance(int p_tolerance);
+	int get_missing_snapshots_max_tolerance() const;
+
+	void set_tick_acceleration(real_t p_acceleration);
+	real_t get_tick_acceleration() const;
+
+	void set_optimal_size_acceleration(real_t p_acceleration);
+	real_t get_optimal_size_acceleration() const;
+
+	void set_server_input_storage_size(int p_size);
+	int get_server_input_storage_size() const;
 
 	uint64_t get_current_input_id() const;
 
@@ -195,6 +239,7 @@ public:
 	void _on_peer_connection_change(int p_peer_id);
 	void update_active_doll_peers();
 
+	int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	int notify_input_checked(uint64_t p_input_id);
 	uint64_t last_known_input() const;
 	uint64_t get_stored_input_id(int p_i) const;
@@ -206,9 +251,6 @@ public:
 	bool is_nonet_controller() const;
 
 public:
-	void set_packet_missing(bool p_missing);
-	bool get_packet_missing() const;
-
 	void set_inputs_buffer(const BitArray &p_new_buffer);
 
 	void set_scene_rewinder(SceneRewinder *p_rewinder);
@@ -218,13 +260,15 @@ public:
 	/* On server rpc functions. */
 	void _rpc_server_send_inputs(Vector<uint8_t> p_data);
 
+	/* On client rpc functions. */
+	void _rpc_send_tick_additional_speed(int p_speed);
+
 	/* On puppet rpc functions. */
 	void _rpc_doll_send_inputs(Vector<uint8_t> p_data);
 	void _rpc_doll_notify_connection_status(bool p_open);
 
 	void process(real_t p_delta);
-
-	int server_get_inputs_count() const;
+	void post_process(real_t p_delta);
 
 	void player_set_has_new_input(bool p_has);
 	bool player_has_new_input() const;
@@ -291,7 +335,9 @@ struct Controller {
 	virtual ~Controller() {}
 
 	virtual void physics_process(real_t p_delta) = 0;
+	virtual void post_process(real_t p_delta) = 0;
 	virtual void receive_inputs(Vector<uint8_t> p_data) = 0;
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) = 0;
 	virtual int notify_input_checked(uint64_t p_input_id) = 0;
 	virtual uint64_t last_known_input() const = 0;
 	virtual uint64_t get_stored_input_id(int p_i) const = 0;
@@ -302,12 +348,21 @@ struct Controller {
 struct ServerController : public Controller {
 	uint64_t current_input_buffer_id;
 	uint32_t ghost_input_count;
+	real_t optimal_snapshots_size;
+	real_t client_tick_additional_speed;
+	// It goes from -100 to 100
+	int client_tick_additional_speed_compressed;
+	NetworkTracer network_tracer;
 	std::deque<FrameSnapshotSkinny> snapshots;
 
-	ServerController(NetworkedController *p_node);
+	ServerController(
+			NetworkedController *p_node,
+			int p_traced_frames);
 
 	virtual void physics_process(real_t p_delta);
+	virtual void post_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;
@@ -318,23 +373,43 @@ struct ServerController : public Controller {
 
 	/// Fetch the next inputs, returns true if the input is new.
 	bool fetch_next_input();
+
+	/// This function updates the `tick_additional_speed` so that the `frames_inputs`
+	/// size is enough to reduce the missing packets to 0.
+	///
+	/// When the internet connection is bad, the packets need more time to arrive.
+	/// To heal this problem, the server tells the client to speed up a little bit
+	/// so it send the inputs a bit earlier than the usual.
+	///
+	/// If the `frames_inputs` size is too big the input lag between the client and
+	/// the server is artificial and no more dependent on the internet. For this
+	/// reason the server tells the client to slowdown so to keep the `frames_inputs`
+	/// size moderate to the needs.
+	void adjust_player_tick_rate(real_t p_delta);
 };
 
 struct PlayerController : public Controller {
 	uint64_t current_input_id;
 	uint64_t input_buffers_counter;
+	real_t time_bank;
+	real_t tick_additional_speed;
+
 	std::deque<FrameSnapshot> frames_snapshot;
 	std::vector<uint8_t> cached_packet_data;
 
 	PlayerController(NetworkedController *p_node);
 
 	virtual void physics_process(real_t p_delta);
+	virtual void post_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;
 	virtual bool process_instant(int p_i, real_t p_delta);
 	virtual uint64_t get_current_input_id() const;
+
+	real_t get_pretended_delta(real_t p_iteration_per_second) const;
 
 	void store_input_buffer(uint64_t p_id);
 
@@ -368,7 +443,9 @@ struct DollController : public Controller {
 	DollController(NetworkedController *p_node);
 
 	virtual void physics_process(real_t p_delta);
+	virtual void post_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;
@@ -393,7 +470,9 @@ struct NoNetController : public Controller {
 	NoNetController(NetworkedController *p_node);
 
 	virtual void physics_process(real_t p_delta);
+	virtual void post_process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
+	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);
 	virtual uint64_t last_known_input() const;
 	virtual uint64_t get_stored_input_id(int p_i) const;

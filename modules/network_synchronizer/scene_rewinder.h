@@ -35,7 +35,6 @@
 #include "scene/main/node.h"
 
 #include "core/oa_hash_map.h"
-#include "net_utilities.h"
 #include <deque>
 #include <vector>
 
@@ -175,34 +174,6 @@ public:
 	};
 
 private:
-	/// Used to set the amount of traced frames to determine the connection healt trend.
-	///
-	/// This parameter depends a lot on the physics iteration per second, and
-	/// an optimal parameter, with 60 physics iteration per second, is 1200;
-	/// that is equivalent of the latest 20 seconds frames.
-	///
-	/// A smaller value will make the recovery mechanism too noisy and so useless,
-	/// on the other hand a too big value will make the recovery mechanism too
-	/// slow.
-	int network_traced_frames;
-
-	/// Max tolerance for missing snapshots in the `network_traced_frames`.
-	int missing_input_max_tolerance;
-
-	/// Used to control the `player` tick acceleration, so to produce more
-	/// inputs.
-	real_t tick_acceleration;
-
-	/// The "optimal input size" is dynamically updated and its size
-	/// change at a rate that can be controlled by this parameter.
-	real_t optimal_size_acceleration;
-
-	/// The server is several frames behind the client, the maxim amount
-	/// of these frames is defined by the value of this parameter.
-	///
-	/// To prevent introducing virtual lag.
-	int server_input_storage_size;
-
 	/// How much frames the doll is allowed to be processed out of sync.
 	/// This is useful to avoid time jumps each rewinding.
 	int doll_desync_tolerance;
@@ -221,9 +192,6 @@ private:
 	OAHashMap<ObjectID, NodeData> data;
 	NetworkedController *main_controller;
 
-	real_t time_bank;
-	real_t tick_additional_speed;
-
 public:
 	static void _bind_methods();
 
@@ -232,21 +200,6 @@ public:
 public:
 	SceneRewinder();
 	~SceneRewinder();
-
-	void set_network_traced_frames(int p_size);
-	int get_network_traced_frames() const;
-
-	void set_missing_snapshots_max_tolerance(int p_tolerance);
-	int get_missing_snapshots_max_tolerance() const;
-
-	void set_tick_acceleration(real_t p_acceleration);
-	real_t get_tick_acceleration() const;
-
-	void set_optimal_size_acceleration(real_t p_acceleration);
-	real_t get_optimal_size_acceleration() const;
-
-	void set_server_input_storage_size(int p_size);
-	int get_server_input_storage_size() const;
 
 	void set_doll_desync_tolerance(int p_tolerance);
 	int get_doll_desync_tolerance() const;
@@ -292,7 +245,6 @@ public:
 	void __clear();
 
 	void _rpc_send_state(Variant p_snapshot);
-	void _rpc_send_tick_additional_speed(int p_speed);
 
 private:
 	void put_into_isle(ObjectID p_node_id, ControllerID p_isle_id);
@@ -308,9 +260,6 @@ private:
 	// previous one and emits a signal.
 	void pull_node_changes(NodeData *p_node_data);
 
-	void on_peer_connected(int p_peer_id);
-	void on_peer_disconnected(int p_peer_id);
-
 	NodeData *register_node(Node *p_node);
 
 	// Returns true when the vectors are the same.
@@ -321,20 +270,6 @@ private:
 	bool rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2);
 
 	bool is_client() const;
-};
-
-struct PeerData {
-	int peer;
-	real_t optimal_snapshots_size;
-	real_t client_tick_additional_speed;
-	// It goes from -100 to 100
-	int client_tick_additional_speed_compressed;
-	NetworkTracer network_tracer;
-
-	PeerData();
-	PeerData(int p_peer, int traced_frames);
-
-	bool operator==(const PeerData &p_other) const;
 };
 
 struct Snapshot {
@@ -370,7 +305,7 @@ public:
 
 	virtual void clear() = 0;
 
-	virtual void process(real_t p_delta) = 0;
+	virtual void process_isle(real_t p_delta, NetworkedController *p_controller) = 0;
 	virtual void post_process(real_t p_delta) = 0;
 	virtual void receive_snapshot(Variant p_snapshot) = 0;
 };
@@ -383,7 +318,7 @@ public:
 
 	virtual void clear();
 
-	virtual void process(real_t p_delta);
+	virtual void process_isle(real_t p_delta, NetworkedController *p_controller);
 	virtual void post_process(real_t p_delta);
 	virtual void receive_snapshot(Variant p_snapshot);
 };
@@ -392,7 +327,6 @@ class ServerRewinder : public Rewinder {
 	friend class SceneRewinder;
 
 	real_t state_notifier_timer;
-	Vector<PeerData> peers_data;
 	uint64_t snapshot_count;
 
 public:
@@ -400,28 +334,11 @@ public:
 
 	virtual void clear();
 
-	void on_peer_connected(int p_peer_id);
-	void on_peer_disconnected(int p_peer_id);
-
 	Variant generate_snapshot();
 
-	virtual void process(real_t p_delta);
+	virtual void process_isle(real_t p_delta, NetworkedController *p_controller);
 	virtual void post_process(real_t p_delta);
 	virtual void receive_snapshot(Variant p_snapshot);
-
-private:
-	/// This function updates the `tick_additional_speed` so that the `frames_inputs`
-	/// size is enough to reduce the missing packets to 0.
-	///
-	/// When the internet connection is bad, the packets need more time to arrive.
-	/// To heal this problem, the server tells the client to speed up a little bit
-	/// so it send the inputs a bit earlier than the usual.
-	///
-	/// If the `frames_inputs` size is too big the input lag between the client and
-	/// the server is artificial and no more dependent on the internet. For this
-	/// reason the server tells the client to slowdown so to keep the `frames_inputs`
-	/// size moderate to the needs.
-	void adjust_player_tick_rate(real_t p_delta);
 };
 
 class ClientRewinder : public Rewinder {
@@ -443,7 +360,7 @@ public:
 
 	virtual void clear();
 
-	virtual void process(real_t p_delta);
+	virtual void process_isle(real_t p_delta, NetworkedController *p_controller);
 	virtual void post_process(real_t p_delta);
 	virtual void receive_snapshot(Variant p_snapshot);
 

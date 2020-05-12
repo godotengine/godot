@@ -39,24 +39,26 @@ NetworkTracer::NetworkTracer(int p_packets_to_track) :
 	flags.resize(p_packets_to_track);
 
 	// Let's pretend that the connection is good.
-	for (int i = 0; i < flags.size(); i += 1) {
-		flags.write[i] = true;
+	for (size_t i = 0; i < flags.size(); i += 1) {
+		flags[i] = true;
 	}
 }
 
 void NetworkTracer::notify_packet_arrived() {
+	if (flags.size() == 0) return;
 	id = (id + 1) % flags.size();
-	flags.write[id] = true;
+	flags[id] = true;
 }
 
 void NetworkTracer::notify_missing_packet() {
+	if (flags.size() == 0) return;
 	id = (id + 1) % flags.size();
-	flags.write[id] = false;
+	flags[id] = false;
 }
 
 int NetworkTracer::get_missing_packets() const {
 	int l = 0;
-	for (int i = 0; i < flags.size(); i += 1) {
+	for (size_t i = 0; i < flags.size(); i += 1) {
 		if (flags[i] == false) {
 			l += 1;
 		}

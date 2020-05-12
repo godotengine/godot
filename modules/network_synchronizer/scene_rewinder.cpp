@@ -39,14 +39,6 @@
 #include "scene/main/window.h"
 #include <algorithm>
 
-// Don't go below 2 so to take into account internet latency
-#define MIN_SNAPSHOTS_SIZE 2
-
-#define MAX_ADDITIONAL_TICK_SPEED 2.0
-
-// 2%
-#define TICK_SPEED_CHANGE_NOTIF_THRESHOLD 4
-
 // TODO add back the DOLL disabling
 
 VarData::VarData() :
@@ -129,21 +121,6 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reset"), &SceneRewinder::reset);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneRewinder::clear);
 
-	ClassDB::bind_method(D_METHOD("set_network_traced_frames", "size"), &SceneRewinder::set_network_traced_frames);
-	ClassDB::bind_method(D_METHOD("get_network_traced_frames"), &SceneRewinder::get_network_traced_frames);
-
-	ClassDB::bind_method(D_METHOD("set_missing_snapshots_max_tolerance", "tolerance"), &SceneRewinder::set_missing_snapshots_max_tolerance);
-	ClassDB::bind_method(D_METHOD("get_missing_snapshots_max_tolerance"), &SceneRewinder::get_missing_snapshots_max_tolerance);
-
-	ClassDB::bind_method(D_METHOD("set_tick_acceleration", "acceleration"), &SceneRewinder::set_tick_acceleration);
-	ClassDB::bind_method(D_METHOD("get_tick_acceleration"), &SceneRewinder::get_tick_acceleration);
-
-	ClassDB::bind_method(D_METHOD("set_optimal_size_acceleration", "acceleration"), &SceneRewinder::set_optimal_size_acceleration);
-	ClassDB::bind_method(D_METHOD("get_optimal_size_acceleration"), &SceneRewinder::get_optimal_size_acceleration);
-
-	ClassDB::bind_method(D_METHOD("set_server_input_storage_size", "size"), &SceneRewinder::set_server_input_storage_size);
-	ClassDB::bind_method(D_METHOD("get_server_input_storage_size"), &SceneRewinder::get_server_input_storage_size);
-
 	ClassDB::bind_method(D_METHOD("set_doll_desync_tolerance", "tolerance"), &SceneRewinder::set_doll_desync_tolerance);
 	ClassDB::bind_method(D_METHOD("get_doll_desync_tolerance"), &SceneRewinder::get_doll_desync_tolerance);
 
@@ -175,13 +152,7 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneRewinder::__clear);
 	ClassDB::bind_method(D_METHOD("__reset"), &SceneRewinder::__reset);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneRewinder::_rpc_send_state);
-	ClassDB::bind_method(D_METHOD("_rpc_send_tick_additional_speed"), &SceneRewinder::_rpc_send_tick_additional_speed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "network_traced_frames", PROPERTY_HINT_RANGE, "100,10000,1"), "set_network_traced_frames", "get_network_traced_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "missing_snapshots_max_tolerance", PROPERTY_HINT_RANGE, "3,50,1"), "set_missing_snapshots_max_tolerance", "get_missing_snapshots_max_tolerance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "optimal_size_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_optimal_size_acceleration", "get_optimal_size_acceleration");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "server_input_storage_size", PROPERTY_HINT_RANGE, "10,100,1"), "set_server_input_storage_size", "get_server_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_desync_tolerance", PROPERTY_HINT_RANGE, "1,10000,1"), "set_doll_desync_tolerance", "get_doll_desync_tolerance");
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "server_notify_state_interval", PROPERTY_HINT_RANGE, "0.001,10.0,0.0001"), "set_server_notify_state_interval", "get_server_notify_state_interval");
@@ -210,11 +181,6 @@ void SceneRewinder::_notification(int p_what) {
 
 			__clear();
 
-			if (get_tree()->is_network_server()) {
-				get_multiplayer()->disconnect("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected));
-				get_multiplayer()->disconnect("network_peer_disconnected", callable_mp(this, &SceneRewinder::on_peer_disconnected));
-			}
-
 			memdelete(rewinder);
 			rewinder = nullptr;
 			rewinder_type = REWINDER_TYPE_NULL;
@@ -225,11 +191,6 @@ void SceneRewinder::_notification(int p_what) {
 }
 
 SceneRewinder::SceneRewinder() :
-		network_traced_frames(1200),
-		missing_input_max_tolerance(4),
-		tick_acceleration(2.0),
-		optimal_size_acceleration(2.5),
-		server_input_storage_size(30),
 		doll_desync_tolerance(120),
 		server_notify_state_interval(1.0),
 		comparison_float_tolerance(0.001),
@@ -239,9 +200,7 @@ SceneRewinder::SceneRewinder() :
 		rewinding_in_progress(false),
 		node_counter(1),
 		generate_id(false),
-		main_controller(nullptr),
-		time_bank(0.0),
-		tick_additional_speed(0.0) {
+		main_controller(nullptr) {
 
 	rpc_config("__reset", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -255,46 +214,6 @@ SceneRewinder::~SceneRewinder() {
 		rewinder = nullptr;
 		rewinder_type = REWINDER_TYPE_NULL;
 	}
-}
-
-void SceneRewinder::set_network_traced_frames(int p_size) {
-	network_traced_frames = p_size;
-}
-
-int SceneRewinder::get_network_traced_frames() const {
-	return network_traced_frames;
-}
-
-void SceneRewinder::set_missing_snapshots_max_tolerance(int p_tolerance) {
-	missing_input_max_tolerance = p_tolerance;
-}
-
-int SceneRewinder::get_missing_snapshots_max_tolerance() const {
-	return missing_input_max_tolerance;
-}
-
-void SceneRewinder::set_tick_acceleration(real_t p_acceleration) {
-	tick_acceleration = p_acceleration;
-}
-
-real_t SceneRewinder::get_tick_acceleration() const {
-	return tick_acceleration;
-}
-
-void SceneRewinder::set_optimal_size_acceleration(real_t p_acceleration) {
-	optimal_size_acceleration = p_acceleration;
-}
-
-real_t SceneRewinder::get_optimal_size_acceleration() const {
-	return optimal_size_acceleration;
-}
-
-void SceneRewinder::set_server_input_storage_size(int p_size) {
-	server_input_storage_size = p_size;
-}
-
-int SceneRewinder::get_server_input_storage_size() const {
-	return server_input_storage_size;
 }
 
 void SceneRewinder::set_doll_desync_tolerance(int p_tolerance) {
@@ -591,14 +510,6 @@ void SceneRewinder::__reset() {
 	set_physics_process_internal(false);
 	generate_id = false;
 
-	if (get_tree()) {
-		if (get_multiplayer()->is_connected("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected))) {
-
-			get_multiplayer()->disconnect("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected));
-			get_multiplayer()->disconnect("network_peer_disconnected", callable_mp(this, &SceneRewinder::on_peer_disconnected));
-		}
-	}
-
 	if (rewinder) {
 		memdelete(rewinder);
 		rewinder = nullptr;
@@ -614,9 +525,6 @@ void SceneRewinder::__reset() {
 		rewinder_type = REWINDER_TYPE_SERVER;
 		rewinder = memnew(ServerRewinder(this));
 		generate_id = true;
-
-		get_multiplayer()->connect("network_peer_connected", callable_mp(this, &SceneRewinder::on_peer_connected));
-		get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &SceneRewinder::on_peer_disconnected));
 	} else {
 		rewinder_type = REWINDER_TYPE_CLIENT;
 		rewinder = memnew(ClientRewinder(this));
@@ -667,13 +575,6 @@ void SceneRewinder::_rpc_send_state(Variant p_snapshot) {
 	ERR_FAIL_COND(get_tree()->is_network_server() == true);
 
 	rewinder->receive_snapshot(p_snapshot);
-}
-
-void SceneRewinder::_rpc_send_tick_additional_speed(int p_speed) {
-	ERR_FAIL_COND(get_tree()->is_network_server() == true);
-
-	tick_additional_speed = (static_cast<real_t>(p_speed) / 100.0) * MAX_ADDITIONAL_TICK_SPEED;
-	tick_additional_speed = CLAMP(tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
 }
 
 NodeData *SceneRewinder::register_node(Node *p_node) {
@@ -854,92 +755,56 @@ void SceneRewinder::process() {
 	// `delta` to step the controllers.
 
 	const real_t delta = get_physics_process_delta_time();
+	const real_t iteration_per_second = Engine::get_singleton()->get_iterations_per_second();
 
-	//for (size_t c = 0; c < cached_controllers.size(); c += 1) {
-	//	NetworkedController* controller = cached_controllers[c];
-
-	//	cached_controllers[c]->player_set_has_new_input(false);
-
-	//	for (OAHashMap<ObjectID, NodeProcess>::Iterator it = node_processes.iter();
-	//			it.valid;
-	//			it = node_processes.next_iter(it)) {
-
-	//		it.value->process(delta);
-	//	}
-	//	controller->process(delta);
-
-	//}
-
-	uint32_t sub_ticks = 1;
-
-	if (is_client()) {
-		const real_t pretended_delta = get_pretended_delta();
-
-		time_bank += delta;
-		sub_ticks = static_cast<uint32_t>(time_bank / pretended_delta);
-		time_bank -= static_cast<real_t>(sub_ticks) * pretended_delta;
-	}
-
-	// Not all controllers are processed at the same time. Make sure to set
-	// as it has not new input; so the snapshot will not be created, for them,
-	// untill they are processed.
 	for (
 			OAHashMap<ControllerID, IsleData>::Iterator it = isle_data.iter();
 			it.valid;
 			it = isle_data.next_iter(it)) {
-		it.value->controller->player_set_has_new_input(false);
-	}
+		NetworkedController *controller = it.value->controller;
 
-	while (sub_ticks > 0) {
+		int sub_ticks = controller->calculates_sub_ticks(
+				delta,
+				iteration_per_second);
 
-		// Process the entire scene
-		for (OAHashMap<ObjectID, NodeData>::Iterator it = data.iter();
-				it.valid;
-				it = data.next_iter(it)) {
-			it.value->process(delta);
-		}
+		while (sub_ticks > 0) {
 
-		// Process the controllers
-		if (sub_ticks == 1) {
-			// This is a legit iteration, so step all controllers.
-			// [Happens as last]
+			// Process the nodes of this controller.
 			for (
-					OAHashMap<ControllerID, IsleData>::Iterator it = isle_data.iter();
-					it.valid;
-					it = isle_data.next_iter(it)) {
-				it.value->controller->process(delta);
+					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
+					node_it != it.value->nodes.end();
+					node_it += 1) {
+
+				NodeData *node_data = data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
+				ERR_CONTINUE(node_data == nullptr);
+				node_data->process(delta);
 			}
-		} else {
-			// Step only the main controller because we don't want that the dolls
-			// are speed up too (This because we don't want to consume client
-			// inputs too fast).
-			// This may be a problem in some cases when the result of the doll
-			// depends on the state of the world that is still processing.
-			main_controller->process(delta);
+
+			// Process the controller
+			controller->process(delta);
+
+			// TODO find a way to not iterate this again or avoid the below `look_up`.
+			// Iterate all the nodes and compare the isle??
+			for (
+					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
+					node_it != it.value->nodes.end();
+					node_it += 1) {
+
+				NodeData *node_data = data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
+				ERR_CONTINUE(node_data == nullptr);
+
+				pull_node_changes(node_data);
+			}
+
+			rewinder->process_isle(delta, it.value->controller);
+
+			sub_ticks -= 1;
 		}
 
-		for (OAHashMap<ObjectID, NodeData>::Iterator it = data.iter(); it.valid; it = data.next_iter(it)) {
-			NodeData *node_data = it.value;
-
-#ifdef DEBUG_ENABLED
-			// Unreachable.
-			CRASH_COND(node_data == nullptr);
-			CRASH_COND(node_data->node == nullptr);
-#endif
-
-			pull_node_changes(node_data);
-		}
-
-		rewinder->process(delta);
-
-		sub_ticks -= 1;
+		controller->post_process(delta);
 	}
 
 	rewinder->post_process(delta);
-}
-
-real_t SceneRewinder::get_pretended_delta() const {
-	return 1.0 / (static_cast<real_t>(Engine::get_singleton()->get_iterations_per_second()) + tick_additional_speed);
 }
 
 void SceneRewinder::pull_node_changes(NodeData *p_node_data) {
@@ -961,38 +826,6 @@ void SceneRewinder::pull_node_changes(NodeData *p_node_data) {
 			node->emit_signal(get_changed_event_name(object_vars[i].var.name));
 		}
 	}
-}
-
-void SceneRewinder::on_peer_connected(int p_peer_id) {
-	// No check of any kind!
-	ServerRewinder *server_rewinder = static_cast<ServerRewinder *>(rewinder);
-	server_rewinder->on_peer_connected(p_peer_id);
-}
-
-void SceneRewinder::on_peer_disconnected(int p_peer_id) {
-	// No check of any kind!
-	ServerRewinder *server_rewinder = static_cast<ServerRewinder *>(rewinder);
-	server_rewinder->on_peer_disconnected(p_peer_id);
-}
-
-PeerData::PeerData() :
-		peer(0),
-		optimal_snapshots_size(0.0),
-		client_tick_additional_speed(0.0),
-		client_tick_additional_speed_compressed(0),
-		network_tracer(0) {
-}
-
-PeerData::PeerData(int p_peer, int p_traced_frames) :
-		peer(p_peer),
-		optimal_snapshots_size(0.0),
-		client_tick_additional_speed(0.0),
-		client_tick_additional_speed_compressed(0),
-		network_tracer(p_traced_frames) {
-}
-
-bool PeerData::operator==(const PeerData &p_other) const {
-	return peer == p_other.peer;
 }
 
 Snapshot::operator String() const {
@@ -1070,7 +903,7 @@ NoNetRewinder::NoNetRewinder(SceneRewinder *p_node) :
 void NoNetRewinder::clear() {
 }
 
-void NoNetRewinder::process(real_t _p_delta) {
+void NoNetRewinder::process_isle(real_t _p_delta, NetworkedController *p_controller) {
 }
 
 void NoNetRewinder::post_process(real_t _p_delta) {
@@ -1087,16 +920,6 @@ ServerRewinder::ServerRewinder(SceneRewinder *p_node) :
 void ServerRewinder::clear() {
 	state_notifier_timer = 0.0;
 	snapshot_count = 0;
-}
-
-void ServerRewinder::on_peer_connected(int p_peer_id) {
-	ERR_FAIL_COND_MSG(peers_data.find(PeerData(p_peer_id, 0)) != -1, "This peer is already connected, is likely a bug.");
-	peers_data.push_back(PeerData(p_peer_id, scene_rewinder->get_network_traced_frames()));
-}
-
-void ServerRewinder::on_peer_disconnected(int p_peer_id) {
-	ERR_FAIL_COND_MSG(peers_data.find(PeerData(p_peer_id, 0)) == -1, "This peer is already disconnected, is likely a bug.");
-	peers_data.erase(PeerData(p_peer_id, 0));
 }
 
 Variant ServerRewinder::generate_snapshot() {
@@ -1188,9 +1011,11 @@ Variant ServerRewinder::generate_snapshot() {
 	return snapshot_data;
 }
 
-void ServerRewinder::process(real_t p_delta) {
+void ServerRewinder::process_isle(real_t p_delta, NetworkedController *p_controller) {
+	// Nothing.
+}
 
-	adjust_player_tick_rate(p_delta);
+void ServerRewinder::post_process(real_t p_delta) {
 
 	state_notifier_timer += p_delta;
 	if (state_notifier_timer >= scene_rewinder->get_server_notify_state_interval()) {
@@ -1204,90 +1029,9 @@ void ServerRewinder::process(real_t p_delta) {
 	}
 }
 
-void ServerRewinder::post_process(real_t p_delta) {
-	// Nothing.
-}
-
 void ServerRewinder::receive_snapshot(Variant _p_snapshot) {
 	// Unreachable
 	CRASH_NOW();
-}
-
-void ServerRewinder::adjust_player_tick_rate(real_t p_delta) {
-
-	PeerData *peers = peers_data.ptrw();
-
-	for (int p = 0; p < peers_data.size(); p += 1) {
-
-		PeerData *peer = peers + p;
-		NetworkedController *controller = nullptr;
-
-		// Deduce the controller pointer.
-		// TODO exist a safe way to not iterate each time?
-		for (
-				OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
-				it.valid;
-				it = scene_rewinder->isle_data.next_iter(it)) {
-
-			if (peer->peer == it.value->controller->get_network_master()) {
-				controller = it.value->controller;
-				break;
-			}
-		}
-		ERR_CONTINUE_MSG(controller == nullptr, "The controller was not found, the controller seems not correctly initialized.");
-
-		if (controller->get_packet_missing()) {
-			peer->network_tracer.notify_missing_packet();
-		} else {
-			peer->network_tracer.notify_packet_arrived();
-		}
-
-		const int miss_packets = peer->network_tracer.get_missing_packets();
-		const int inputs_count = controller->server_get_inputs_count();
-
-		{
-			// The first step to establish the client speed up amount is to define the
-			// optimal `frames_inputs` size.
-			// This size is increased and decreased using an acceleration, so any speed
-			// change is spread across a long period rather a little one.
-			const real_t acceleration_level = CLAMP(
-					(static_cast<real_t>(miss_packets) -
-							static_cast<real_t>(inputs_count)) /
-							static_cast<real_t>(scene_rewinder->get_missing_snapshots_max_tolerance()),
-					-2.0,
-					2.0);
-			peer->optimal_snapshots_size += acceleration_level * scene_rewinder->get_optimal_size_acceleration() * p_delta;
-			peer->optimal_snapshots_size = CLAMP(peer->optimal_snapshots_size, MIN_SNAPSHOTS_SIZE, scene_rewinder->get_server_input_storage_size());
-		}
-
-		{
-			// The client speed is determined using an acceleration so to have much
-			// more control over it, and avoid nervous changes.
-			const real_t acceleration_level = CLAMP((peer->optimal_snapshots_size - static_cast<real_t>(inputs_count)) / scene_rewinder->get_server_input_storage_size(), -1.0, 1.0);
-			const real_t acc = acceleration_level * scene_rewinder->get_tick_acceleration() * p_delta;
-			const real_t damp = peer->client_tick_additional_speed * -0.9;
-
-			// The damping is fully applyied only if it points in the opposite `acc`
-			// direction.
-			// I want to cut down the oscilations when the target is the same for a while,
-			// but I need to move fast toward new targets when they appear.
-			peer->client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
-			peer->client_tick_additional_speed = CLAMP(peer->client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
-
-			int new_speed = 100 * (peer->client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED);
-
-			if (ABS(peer->client_tick_additional_speed_compressed - new_speed) >= TICK_SPEED_CHANGE_NOTIF_THRESHOLD) {
-				peer->client_tick_additional_speed_compressed = new_speed;
-
-				// TODO Send bytes please.
-				// TODO consider to send this unreliably each X sec
-				scene_rewinder->rpc_id(
-						peer->peer,
-						"_rpc_send_tick_additional_speed",
-						peer->client_tick_additional_speed_compressed);
-			}
-		}
-	}
 }
 
 ClientRewinder::ClientRewinder(SceneRewinder *p_node) :
@@ -1305,22 +1049,15 @@ void ClientRewinder::clear() {
 	server_snapshot.data.clear();
 }
 
-void ClientRewinder::process(real_t p_delta) {
+void ClientRewinder::process_isle(real_t p_delta, NetworkedController *p_controller) {
 	ERR_FAIL_COND_MSG(scene_rewinder->main_controller == nullptr, "Snapshot creation fail, Make sure to track a NetController.");
 
-	for (
-			OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
-			it.valid;
-			it = scene_rewinder->isle_data.next_iter(it)) {
-		const NetworkedController *controller = it.value->controller;
-
-		if (controller->player_has_new_input() == false) {
-			// This controller has not a new imput, don't store it;
-			continue;
-		}
-
-		store_snapshot(controller);
+	if (p_controller->player_has_new_input() == false) {
+		// This controller has not a new imput, don't store it;
+		return;
 	}
+
+	store_snapshot(p_controller);
 }
 
 void ClientRewinder::post_process(real_t p_delta) {
