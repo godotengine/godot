@@ -49,7 +49,7 @@ struct PtrToArg {
 			return *reinterpret_cast<const m_type *>(p_ptr);           \
 		}                                                              \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
+			memnew_placement(p_ptr, m_type(p_val));                    \
 		}                                                              \
 	};                                                                 \
 	template <>                                                        \
@@ -58,7 +58,7 @@ struct PtrToArg {
 			return *reinterpret_cast<const m_type *>(p_ptr);           \
 		}                                                              \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                \
+			memnew_placement(p_ptr, m_type(p_val));                    \
 		}                                                              \
 	}
 
@@ -69,7 +69,7 @@ struct PtrToArg {
 			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
 		}                                                                         \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
-			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
+			memnew_placement(p_ptr, m_type(static_cast<m_conv>(p_val)));          \
 		}                                                                         \
 	};                                                                            \
 	template <>                                                                   \
@@ -78,7 +78,7 @@ struct PtrToArg {
 			return static_cast<m_type>(*reinterpret_cast<const m_conv *>(p_ptr)); \
 		}                                                                         \
 		_FORCE_INLINE_ static void encode(m_type p_val, void *p_ptr) {            \
-			*((m_conv *)p_ptr) = static_cast<m_conv>(p_val);                      \
+			memnew_placement(p_ptr, m_type(static_cast<m_conv>(p_val)));          \
 		}                                                                         \
 	}
 
@@ -89,7 +89,7 @@ struct PtrToArg {
 			return *reinterpret_cast<const m_type *>(p_ptr);                  \
 		}                                                                     \
 		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                       \
+			memnew_placement(p_ptr, m_type(p_val));                           \
 		}                                                                     \
 	};                                                                        \
 	template <>                                                               \
@@ -98,7 +98,7 @@ struct PtrToArg {
 			return *reinterpret_cast<const m_type *>(p_ptr);                  \
 		}                                                                     \
 		_FORCE_INLINE_ static void encode(const m_type &p_val, void *p_ptr) { \
-			*((m_type *)p_ptr) = p_val;                                       \
+			memnew_placement(p_ptr, m_type(p_val));                           \
 		}                                                                     \
 	}
 

@@ -292,9 +292,9 @@ struct PtrToArg<Ref<T>> {
 		return Ref<T>(const_cast<T *>(reinterpret_cast<const T *>(p_ptr)));
 	}
 
-	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
+	_FORCE_INLINE_ static void encode(Ref<T> p_val, void *p_ptr) {
 
-		*(Ref<Reference> *)p_ptr = p_val;
+		memnew_placement(p_ptr, Ref<Reference>(p_val));
 	}
 };
 
