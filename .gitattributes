@@ -13,3 +13,4 @@ thirdparty/* linguist-vendored
 *.jar binary
 *.png binary
 *.ttf binary
+*.tza binary
