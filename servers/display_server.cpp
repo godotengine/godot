@@ -185,6 +185,10 @@ DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, uint
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
 
+void DisplayServer::show_window(WindowID p_id) {
+	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
+}
+
 void DisplayServer::delete_sub_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }
