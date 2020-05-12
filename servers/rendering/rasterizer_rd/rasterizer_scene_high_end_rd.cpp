@@ -3404,6 +3404,8 @@ RasterizerSceneHighEndRD::~RasterizerSceneHighEndRD() {
 		RD::get_singleton()->free(scene_state.gi_probe_buffer);
 		RD::get_singleton()->free(scene_state.directional_light_buffer);
 		RD::get_singleton()->free(scene_state.light_buffer);
+		RD::get_singleton()->free(scene_state.lightmap_buffer);
+		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);
 		RD::get_singleton()->free(scene_state.reflection_buffer);
 		RD::get_singleton()->free(scene_state.decal_buffer);
 		memdelete_arr(scene_state.instances);
