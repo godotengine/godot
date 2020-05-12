@@ -1441,7 +1441,7 @@ void ClientRewinder::store_controllers_snapshot(
 
 			if (
 					node_data != nullptr &&
-					node_data->isle_id != controller->get_instance_id()) {
+					node_data->isle_id == controller->get_instance_id()) {
 				// This node is part of this isle.
 				snap.node_vars[*key] = p_snapshot.data[*key].vars;
 			}
@@ -1591,7 +1591,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				if (nd == nullptr ||
 						nd->controlled_by.is_null() == false ||
 						nd->is_controller) {
-					// This is a controller; Skip now, it'll be added later.
+					// This is a controller or a piece of controller; Skip now, it'll be added later.
 					continue;
 				}
 				nodes_to_recover.push_back(nd);
