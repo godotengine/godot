@@ -100,7 +100,7 @@ public:
 	void serialize(Array &r_arr);
 	void deserialize(const Array &p_arr);
 	SceneDebuggerTree(Node *p_root);
-	SceneDebuggerTree(){};
+	SceneDebuggerTree() {}
 };
 
 class LiveEditor {

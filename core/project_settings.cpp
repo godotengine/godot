@@ -989,10 +989,6 @@ void ProjectSettings::_bind_methods() {
 ProjectSettings::ProjectSettings() {
 
 	singleton = this;
-	last_order = NO_BUILTIN_ORDER_BASE;
-	last_builtin_order = 0;
-	disable_feature_overrides = false;
-	registering_order = true;
 
 	Array events;
 	Dictionary action;
@@ -1203,8 +1199,6 @@ ProjectSettings::ProjectSettings() {
 
 	Compression::gzip_level = GLOBAL_DEF("compression/formats/gzip/compression_level", Z_DEFAULT_COMPRESSION);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
-
-	using_datapack = false;
 }
 
 ProjectSettings::~ProjectSettings() {

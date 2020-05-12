@@ -78,9 +78,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 	}
 }
 
-NavigationObstacle2D::NavigationObstacle2D() :
-		navigation(nullptr),
-		agent(RID()) {
+NavigationObstacle2D::NavigationObstacle2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
 }
 

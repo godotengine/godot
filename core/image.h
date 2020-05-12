@@ -33,7 +33,6 @@
 
 #include "core/color.h"
 #include "core/math/rect2.h"
-
 #include "core/resource.h"
 
 /**
@@ -172,10 +171,11 @@ private:
 		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
 	}
 
-	Format format;
+	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
-	int width, height;
-	bool mipmaps;
+	int width = 0;
+	int height = 0;
+	bool mipmaps = false;
 
 	void _copy_internals_from(const Image &p_image) {
 		format = p_image.format;
@@ -286,7 +286,7 @@ public:
 	/**
 	 * create an empty image
 	 */
-	Image();
+	Image() {}
 	/**
 	 * create an empty image of a specific size and format
 	 */
@@ -295,6 +295,8 @@ public:
 	 * import an image of a specific size and format from a pointer
 	 */
 	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+
+	~Image() {}
 
 	enum AlphaMode {
 		ALPHA_NONE,
@@ -386,8 +388,6 @@ public:
 		mipmaps = p_image->mipmaps;
 		data = p_image->data;
 	}
-
-	~Image();
 };
 
 VARIANT_ENUM_CAST(Image::Format)

@@ -32,6 +32,7 @@
 #define SPIN_LOCK_H
 
 #include "core/typedefs.h"
+
 #include <atomic>
 
 class SpinLock {

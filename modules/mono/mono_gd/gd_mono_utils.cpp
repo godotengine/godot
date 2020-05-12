@@ -664,8 +664,7 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 
 } // namespace Marshal
 
-ScopeThreadAttach::ScopeThreadAttach() :
-		mono_thread(nullptr) {
+ScopeThreadAttach::ScopeThreadAttach() {
 	if (likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get())) {
 		mono_thread = GDMonoUtils::attach_current_thread();
 	}

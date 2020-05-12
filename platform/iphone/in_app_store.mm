@@ -334,6 +334,6 @@ void InAppStore::set_auto_finish_transaction(bool b) {
 	auto_finish_transactions = b;
 }
 
-InAppStore::~InAppStore(){};
+InAppStore::~InAppStore() {}
 
 #endif

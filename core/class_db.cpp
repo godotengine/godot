@@ -258,19 +258,6 @@ HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
 HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
 
-ClassDB::ClassInfo::ClassInfo() {
-
-	api = API_NONE;
-	class_ptr = nullptr;
-	creation_func = nullptr;
-	inherits_ptr = nullptr;
-	disabled = false;
-	exposed = false;
-}
-
-ClassDB::ClassInfo::~ClassInfo() {
-}
-
 bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) {
 
 	OBJTYPE_RLOCK;

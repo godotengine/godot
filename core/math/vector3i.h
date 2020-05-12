@@ -49,7 +49,7 @@ struct Vector3i {
 			int32_t z;
 		};
 
-		int32_t coord[3];
+		int32_t coord[3] = { 0 };
 	};
 
 	_FORCE_INLINE_ const int32_t &operator[](int p_axis) const {
@@ -100,12 +100,12 @@ struct Vector3i {
 
 	operator String() const;
 
+	_FORCE_INLINE_ Vector3i() {}
 	_FORCE_INLINE_ Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) {
 		x = p_x;
 		y = p_y;
 		z = p_z;
 	}
-	_FORCE_INLINE_ Vector3i() { x = y = z = 0; }
 };
 
 Vector3i Vector3i::abs() const {

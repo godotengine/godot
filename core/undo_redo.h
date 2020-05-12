@@ -77,25 +77,25 @@ private:
 	};
 
 	Vector<Action> actions;
-	int current_action;
-	int action_level;
-	MergeMode merge_mode;
-	bool merging;
-	uint64_t version;
+	int current_action = -1;
+	int action_level = 0;
+	MergeMode merge_mode = MERGE_DISABLE;
+	bool merging = false;
+	uint64_t version = 1;
 
 	void _pop_history_tail();
 	void _process_operation_list(List<Operation>::Element *E);
 	void _discard_redo();
 
-	CommitNotifyCallback callback;
-	void *callback_ud;
-	void *method_callbck_ud;
-	void *prop_callback_ud;
+	CommitNotifyCallback callback = nullptr;
+	void *callback_ud = nullptr;
+	void *method_callbck_ud = nullptr;
+	void *prop_callback_ud = nullptr;
 
-	MethodNotifyCallback method_callback;
-	PropertyNotifyCallback property_callback;
+	MethodNotifyCallback method_callback = nullptr;
+	PropertyNotifyCallback property_callback = nullptr;
 
-	int committing;
+	int committing = 0;
 
 protected:
 	static void _bind_methods();
@@ -128,7 +128,7 @@ public:
 	void set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud);
 	void set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud);
 
-	UndoRedo();
+	UndoRedo() {}
 	~UndoRedo();
 };
 

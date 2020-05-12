@@ -40,7 +40,7 @@ class PhysicalBone3DEditor : public Object {
 	HBoxContainer *spatial_editor_hb;
 	ToolButton *button_transform_joint;
 
-	PhysicalBone3D *selected;
+	PhysicalBone3D *selected = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -51,7 +51,7 @@ private:
 
 public:
 	PhysicalBone3DEditor(EditorNode *p_editor);
-	~PhysicalBone3DEditor();
+	~PhysicalBone3DEditor() {}
 
 	void set_selected(PhysicalBone3D *p_pb);
 
@@ -63,7 +63,7 @@ class PhysicalBone3DEditorPlugin : public EditorPlugin {
 	GDCLASS(PhysicalBone3DEditorPlugin, EditorPlugin);
 
 	EditorNode *editor;
-	PhysicalBone3D *selected;
+	PhysicalBone3D *selected = nullptr;
 	PhysicalBone3DEditor physical_bone_editor;
 
 public:

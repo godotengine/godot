@@ -86,9 +86,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 	}
 }
 
-NavigationObstacle3D::NavigationObstacle3D() :
-		navigation(nullptr),
-		agent(RID()) {
+NavigationObstacle3D::NavigationObstacle3D() {
 	agent = NavigationServer3D::get_singleton()->agent_create();
 }
 

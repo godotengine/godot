@@ -389,25 +389,6 @@ Error FileAccessCompressed::_set_unix_permissions(const String &p_file, uint32_t
 	return FAILED;
 }
 
-FileAccessCompressed::FileAccessCompressed() :
-		cmode(Compression::MODE_ZSTD),
-		writing(false),
-		write_ptr(nullptr),
-		write_buffer_size(0),
-		write_max(0),
-		block_size(0),
-		read_eof(false),
-		at_end(false),
-		read_ptr(nullptr),
-		read_block(0),
-		read_block_count(0),
-		read_block_size(0),
-		read_pos(0),
-		read_total(0),
-		magic("GCMP"),
-		f(nullptr) {
-}
-
 FileAccessCompressed::~FileAccessCompressed() {
 
 	if (f)

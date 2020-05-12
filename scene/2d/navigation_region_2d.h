@@ -46,7 +46,7 @@ class NavigationPolygon : public Resource {
 	Vector<Vector<Vector2>> outlines;
 
 	mutable Rect2 item_rect;
-	mutable bool rect_cache_dirty;
+	mutable bool rect_cache_dirty = true;
 
 	Mutex navmesh_generation;
 	// Navigation mesh
@@ -88,8 +88,8 @@ public:
 
 	Ref<NavigationMesh> get_mesh();
 
-	NavigationPolygon();
-	~NavigationPolygon();
+	NavigationPolygon() {}
+	~NavigationPolygon() {}
 };
 
 class Navigation2D;
@@ -98,9 +98,9 @@ class NavigationRegion2D : public Node2D {
 
 	GDCLASS(NavigationRegion2D, Node2D);
 
-	bool enabled;
+	bool enabled = true;
 	RID region;
-	Navigation2D *navigation;
+	Navigation2D *navigation = nullptr;
 	Ref<NavigationPolygon> navpoly;
 
 	void _navpoly_changed();

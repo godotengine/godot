@@ -434,15 +434,7 @@ void SkeletonIK3D::_notification(int p_what) {
 	}
 }
 
-SkeletonIK3D::SkeletonIK3D() :
-		interpolation(1),
-		override_tip_basis(true),
-		use_magnet(false),
-		min_distance(0.01),
-		max_iterations(10),
-		skeleton(nullptr),
-		target_node_override(nullptr),
-		task(nullptr) {
+SkeletonIK3D::SkeletonIK3D() {
 }
 
 SkeletonIK3D::~SkeletonIK3D() {

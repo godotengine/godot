@@ -133,15 +133,7 @@ void NavigationAgent2D::_notification(int p_what) {
 	}
 }
 
-NavigationAgent2D::NavigationAgent2D() :
-		agent_parent(nullptr),
-		navigation(nullptr),
-		agent(RID()),
-		target_desired_distance(1.0),
-		path_max_distance(3.0),
-		velocity_submitted(false),
-		target_reached(false),
-		navigation_finished(true) {
+NavigationAgent2D::NavigationAgent2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
 	set_neighbor_dist(500.0);
 	set_max_neighbors(10);

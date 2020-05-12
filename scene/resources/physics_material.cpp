@@ -69,9 +69,3 @@ void PhysicsMaterial::set_absorbent(bool p_val) {
 	absorbent = p_val;
 	emit_changed();
 }
-
-PhysicsMaterial::PhysicsMaterial() :
-		friction(1),
-		rough(false),
-		bounce(0),
-		absorbent(false) {}

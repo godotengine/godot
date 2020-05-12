@@ -40,7 +40,7 @@
 
 class Quat {
 public:
-	real_t x, y, z, w;
+	real_t x = 0, y = 0, z = 0, w = 1;
 
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quat &p_quat) const;
@@ -112,7 +112,9 @@ public:
 		z = p_z;
 		w = p_w;
 	}
-	inline Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
+
+	_FORCE_INLINE_ Quat() {}
+	_FORCE_INLINE_ Quat(real_t p_x, real_t p_y, real_t p_z, real_t p_w) :
 			x(p_x),
 			y(p_y),
 			z(p_z),
@@ -156,13 +158,6 @@ public:
 			z = c.z * rs;
 			w = s * 0.5;
 		}
-	}
-
-	inline Quat() :
-			x(0),
-			y(0),
-			z(0),
-			w(1) {
 	}
 };
 

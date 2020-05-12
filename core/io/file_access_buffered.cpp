@@ -166,11 +166,3 @@ Error FileAccessBuffered::get_error() const {
 
 	return last_error;
 }
-
-FileAccessBuffered::FileAccessBuffered() {
-
-	cache_size = DEFAULT_CACHE_SIZE;
-}
-
-FileAccessBuffered::~FileAccessBuffered() {
-}

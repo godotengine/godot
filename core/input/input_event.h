@@ -157,7 +157,7 @@ enum MidiMessageList {
 class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource);
 
-	int device;
+	int device = 0;
 
 protected:
 	static void _bind_methods();
@@ -177,7 +177,6 @@ public:
 	// To be removed someday, since they do not make sense for all events
 	virtual bool is_pressed() const;
 	virtual bool is_echo() const;
-	// ...-.
 
 	virtual String as_text() const;
 
@@ -188,14 +187,15 @@ public:
 	virtual bool is_action_type() const;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
-	InputEvent();
+
+	InputEvent() {}
 };
 
 class InputEventFromWindow : public InputEvent {
 
 	GDCLASS(InputEventFromWindow, InputEvent);
 
-	int64_t window_id;
+	int64_t window_id = 0;
 
 protected:
 	static void _bind_methods();
@@ -204,28 +204,27 @@ public:
 	void set_window_id(int64_t p_id);
 	int64_t get_window_id() const;
 
-	InputEventFromWindow();
+	InputEventFromWindow() {}
 };
 
 class InputEventWithModifiers : public InputEventFromWindow {
 	GDCLASS(InputEventWithModifiers, InputEventFromWindow);
 
-	bool shift;
-	bool alt;
+	bool shift = false;
+	bool alt = false;
 #ifdef APPLE_STYLE_KEYS
 	union {
 		bool command;
-		bool meta; //< windows/mac key
+		bool meta = false; //< windows/mac key
 	};
 
-	bool control;
+	bool control = false;
 #else
 	union {
 		bool command; //< windows/mac key
-		bool control;
+		bool control = false;
 	};
-	bool meta; //< windows/mac key
-
+	bool meta = false; //< windows/mac key
 #endif
 
 protected:
@@ -249,20 +248,20 @@ public:
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 
-	InputEventWithModifiers();
+	InputEventWithModifiers() {}
 };
 
 class InputEventKey : public InputEventWithModifiers {
 
 	GDCLASS(InputEventKey, InputEventWithModifiers);
 
-	bool pressed; /// otherwise release
+	bool pressed = false; /// otherwise release
 
-	uint32_t keycode; ///< check keyboard.h , KeyCode enum, without modifier masks
-	uint32_t physical_keycode;
-	uint32_t unicode; ///unicode
+	uint32_t keycode = 0; ///< check keyboard.h , KeyCode enum, without modifier masks
+	uint32_t physical_keycode = 0;
+	uint32_t unicode = 0; ///unicode
 
-	bool echo; /// true if this is an echo key
+	bool echo = false; /// true if this is an echo key
 
 protected:
 	static void _bind_methods();
@@ -293,14 +292,14 @@ public:
 
 	virtual String as_text() const;
 
-	InputEventKey();
+	InputEventKey() {}
 };
 
 class InputEventMouse : public InputEventWithModifiers {
 
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	int button_mask;
+	int button_mask = 0;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -318,17 +317,17 @@ public:
 	void set_global_position(const Vector2 &p_global_pos);
 	Vector2 get_global_position() const;
 
-	InputEventMouse();
+	InputEventMouse() {}
 };
 
 class InputEventMouseButton : public InputEventMouse {
 
 	GDCLASS(InputEventMouseButton, InputEventMouse);
 
-	float factor;
-	int button_index;
-	bool pressed; //otherwise released
-	bool doubleclick; //last even less than doubleclick time
+	float factor = 1;
+	int button_index = 0;
+	bool pressed = false; //otherwise released
+	bool doubleclick = false; //last even less than doubleclick time
 
 protected:
 	static void _bind_methods();
@@ -352,7 +351,7 @@ public:
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
-	InputEventMouseButton();
+	InputEventMouseButton() {}
 };
 
 class InputEventMouseMotion : public InputEventMouse {
@@ -360,7 +359,7 @@ class InputEventMouseMotion : public InputEventMouse {
 	GDCLASS(InputEventMouseMotion, InputEventMouse);
 
 	Vector2 tilt;
-	float pressure;
+	float pressure = 0;
 	Vector2 relative;
 	Vector2 speed;
 
@@ -385,14 +384,14 @@ public:
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event);
 
-	InputEventMouseMotion();
+	InputEventMouseMotion() {}
 };
 
 class InputEventJoypadMotion : public InputEvent {
 
 	GDCLASS(InputEventJoypadMotion, InputEvent);
-	int axis; ///< Joypad axis
-	float axis_value; ///< -1 to 1
+	int axis = 0; ///< Joypad axis
+	float axis_value = 0; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
@@ -411,15 +410,15 @@ public:
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
-	InputEventJoypadMotion();
+	InputEventJoypadMotion() {}
 };
 
 class InputEventJoypadButton : public InputEvent {
 	GDCLASS(InputEventJoypadButton, InputEvent);
 
-	int button_index;
-	bool pressed;
-	float pressure; //0 to 1
+	int button_index = 0;
+	bool pressed = false;
+	float pressure = 0; //0 to 1
 protected:
 	static void _bind_methods();
 
@@ -439,14 +438,14 @@ public:
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
-	InputEventJoypadButton();
+	InputEventJoypadButton() {}
 };
 
 class InputEventScreenTouch : public InputEventFromWindow {
 	GDCLASS(InputEventScreenTouch, InputEventFromWindow);
-	int index;
+	int index = 0;
 	Vector2 pos;
-	bool pressed;
+	bool pressed = false;
 
 protected:
 	static void _bind_methods();
@@ -464,13 +463,13 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
 
-	InputEventScreenTouch();
+	InputEventScreenTouch() {}
 };
 
 class InputEventScreenDrag : public InputEventFromWindow {
 
 	GDCLASS(InputEventScreenDrag, InputEventFromWindow);
-	int index;
+	int index = 0;
 	Vector2 pos;
 	Vector2 relative;
 	Vector2 speed;
@@ -494,7 +493,7 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
 
-	InputEventScreenDrag();
+	InputEventScreenDrag() {}
 };
 
 class InputEventAction : public InputEvent {
@@ -502,8 +501,8 @@ class InputEventAction : public InputEvent {
 	GDCLASS(InputEventAction, InputEvent);
 
 	StringName action;
-	bool pressed;
-	float strength;
+	bool pressed = false;
+	float strength = 1.0f;
 
 protected:
 	static void _bind_methods();
@@ -526,7 +525,7 @@ public:
 	virtual bool is_action_type() const { return true; }
 	virtual String as_text() const;
 
-	InputEventAction();
+	InputEventAction() {}
 };
 
 class InputEventGesture : public InputEventWithModifiers {
@@ -546,7 +545,7 @@ public:
 class InputEventMagnifyGesture : public InputEventGesture {
 
 	GDCLASS(InputEventMagnifyGesture, InputEventGesture);
-	real_t factor;
+	real_t factor = 1.0;
 
 protected:
 	static void _bind_methods();
@@ -558,7 +557,7 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
 
-	InputEventMagnifyGesture();
+	InputEventMagnifyGesture() {}
 };
 
 class InputEventPanGesture : public InputEventGesture {
@@ -576,20 +575,20 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const;
 	virtual String as_text() const;
 
-	InputEventPanGesture();
+	InputEventPanGesture() {}
 };
 
 class InputEventMIDI : public InputEvent {
 	GDCLASS(InputEventMIDI, InputEvent);
 
-	int channel;
-	int message;
-	int pitch;
-	int velocity;
-	int instrument;
-	int pressure;
-	int controller_number;
-	int controller_value;
+	int channel = 0;
+	int message = 0;
+	int pitch = 0;
+	int velocity = 0;
+	int instrument = 0;
+	int pressure = 0;
+	int controller_number = 0;
+	int controller_value = 0;
 
 protected:
 	static void _bind_methods();
@@ -621,7 +620,7 @@ public:
 
 	virtual String as_text() const;
 
-	InputEventMIDI();
+	InputEventMIDI() {}
 };
 
 #endif // INPUT_EVENT_H

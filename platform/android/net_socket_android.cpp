@@ -72,11 +72,6 @@ void NetSocketAndroid::make_default() {
 	_create = _create_func;
 }
 
-NetSocketAndroid::NetSocketAndroid() :
-		wants_broadcast(false),
-		multicast_groups(0) {
-}
-
 NetSocketAndroid::~NetSocketAndroid() {
 	close();
 }

@@ -38,7 +38,7 @@ class Navigation2D;
 class NavigationObstacle2D : public Node {
 	GDCLASS(NavigationObstacle2D, Node);
 
-	Navigation2D *navigation;
+	Navigation2D *navigation = nullptr;
 
 	RID agent;
 

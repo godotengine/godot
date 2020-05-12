@@ -109,19 +109,13 @@ void Shape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "margin", PROPERTY_HINT_RANGE, "0.001,10,0.001"), "set_margin", "get_margin");
 }
 
-Shape3D::Shape3D() :
-		margin(0.04) {
-
-	ERR_PRINT("Constructor must not be called!");
+Shape3D::Shape3D() {
+	ERR_PRINT("Default constructor must not be called!");
 }
 
 Shape3D::Shape3D(RID p_shape) :
-		margin(0.04) {
-
-	shape = p_shape;
-}
+		shape(p_shape) {}
 
 Shape3D::~Shape3D() {
-
 	PhysicsServer3D::get_singleton()->free(shape);
 }

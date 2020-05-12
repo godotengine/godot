@@ -39,7 +39,7 @@ class PCKPacker : public Reference {
 
 	GDCLASS(PCKPacker, Reference);
 
-	FileAccess *file;
+	FileAccess *file = nullptr;
 	int alignment;
 
 	static void _bind_methods();
@@ -58,7 +58,7 @@ public:
 	Error add_file(const String &p_file, const String &p_src);
 	Error flush(bool p_verbose = false);
 
-	PCKPacker();
+	PCKPacker() {}
 	~PCKPacker();
 };
 

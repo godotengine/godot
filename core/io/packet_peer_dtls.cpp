@@ -57,6 +57,3 @@ void PacketPeerDTLS::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATUS_ERROR);
 	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
 }
-
-PacketPeerDTLS::PacketPeerDTLS() {
-}

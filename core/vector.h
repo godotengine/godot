@@ -119,8 +119,6 @@ public:
 		insert(i, p_val);
 	}
 
-	_FORCE_INLINE_ Vector() {}
-	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 	inline Vector &operator=(const Vector &p_from) {
 		_cowdata._ref(p_from._cowdata);
 		return *this;
@@ -156,6 +154,9 @@ public:
 
 		return slice;
 	}
+
+	_FORCE_INLINE_ Vector() {}
+	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
 
 	_FORCE_INLINE_ ~Vector() {}
 };

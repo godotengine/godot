@@ -48,9 +48,9 @@ enum Type {
 };
 
 struct Version {
-	uint64_t godot_api_hash;
-	uint32_t bindings_version;
-	uint32_t cs_glue_version;
+	uint64_t godot_api_hash = 0;
+	uint32_t bindings_version = 0;
+	uint32_t cs_glue_version = 0;
 
 	bool operator==(const Version &p_other) const {
 		return godot_api_hash == p_other.godot_api_hash &&
@@ -58,11 +58,7 @@ struct Version {
 			   cs_glue_version == p_other.cs_glue_version;
 	}
 
-	Version() :
-			godot_api_hash(0),
-			bindings_version(0),
-			cs_glue_version(0) {
-	}
+	Version() {}
 
 	Version(uint64_t p_godot_api_hash,
 			uint32_t p_bindings_version,
@@ -87,13 +83,10 @@ public:
 	};
 
 	struct LoadedApiAssembly {
-		GDMonoAssembly *assembly;
-		bool out_of_sync;
+		GDMonoAssembly *assembly = nullptr;
+		bool out_of_sync = false;
 
-		LoadedApiAssembly() :
-				assembly(nullptr),
-				out_of_sync(false) {
-		}
+		LoadedApiAssembly() {}
 	};
 
 private:

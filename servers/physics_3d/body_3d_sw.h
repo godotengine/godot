@@ -54,7 +54,7 @@ class Body3DSW : public CollisionObject3DSW {
 	real_t angular_damp;
 	real_t gravity_scale;
 
-	uint16_t locked_axis;
+	uint16_t locked_axis = 0;
 
 	real_t kinematic_safe_margin;
 	real_t _inv_mass;

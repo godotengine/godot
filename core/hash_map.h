@@ -75,8 +75,8 @@ public:
 		friend class HashMap;
 
 		uint32_t hash;
-		Element *next;
-		Element() { next = 0; }
+		Element *next = nullptr;
+		Element() {}
 		Pair pair;
 
 	public:
@@ -94,9 +94,9 @@ public:
 	};
 
 private:
-	Element **hash_table;
-	uint8_t hash_table_power;
-	uint32_t elements;
+	Element **hash_table = nullptr;
+	uint8_t hash_table_power = 0;
+	uint32_t elements = 0;
 
 	void make_hash_table() {
 
@@ -551,12 +551,6 @@ public:
 		copy_from(p_table);
 	}
 
-	HashMap() {
-		hash_table = nullptr;
-		elements = 0;
-		hash_table_power = 0;
-	}
-
 	void get_key_value_ptr_array(const Pair **p_pairs) const {
 		if (unlikely(!hash_table))
 			return;
@@ -584,17 +578,13 @@ public:
 		}
 	}
 
+	HashMap() {}
+
 	HashMap(const HashMap &p_table) {
-
-		hash_table = nullptr;
-		elements = 0;
-		hash_table_power = 0;
-
 		copy_from(p_table);
 	}
 
 	~HashMap() {
-
 		clear();
 	}
 };

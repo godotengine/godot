@@ -119,22 +119,20 @@ private:
 
 	struct Input {
 
-		Variant::Type type;
+		Variant::Type type = Variant::NIL;
 		String name;
 
-		Input() :
-				type(Variant::NIL) {
-		}
+		Input() {}
 	};
 
 	Vector<Input> inputs;
-	Variant::Type output_type;
+	Variant::Type output_type = Variant::NIL;
 
 	String expression;
 
-	bool sequenced;
-	int str_ofs;
-	bool expression_dirty;
+	bool sequenced = false;
+	int str_ofs = 0;
+	bool expression_dirty = false;
 
 	bool _compile_expression();
 
@@ -197,7 +195,7 @@ private:
 	Error _get_token(Token &r_token);
 
 	String error_str;
-	bool error_set;
+	bool error_set = true;
 
 	struct ENode {
 
@@ -215,11 +213,11 @@ private:
 			TYPE_CALL
 		};
 
-		ENode *next;
+		ENode *next = nullptr;
 
 		Type type;
 
-		ENode() { next = nullptr; }
+		ENode() {}
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -339,12 +337,12 @@ private:
 		return node;
 	}
 
-	ENode *root;
-	ENode *nodes;
+	ENode *root = nullptr;
+	ENode *nodes = nullptr;
 
 	Vector<String> input_names;
 
-	bool execution_error;
+	bool execution_error = false;
 	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, String &r_error_str);
 
 protected:
@@ -356,7 +354,7 @@ public:
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
-	Expression();
+	Expression() {}
 	~Expression();
 };
 

@@ -343,12 +343,6 @@ void PacketPeerUDP::_bind_methods() {
 }
 
 PacketPeerUDP::PacketPeerUDP() :
-		packet_port(0),
-		queue_count(0),
-		peer_port(0),
-		connected(false),
-		blocking(true),
-		broadcast(false),
 		_sock(Ref<NetSocket>(NetSocket::create())) {
 	rb.resize(16);
 }

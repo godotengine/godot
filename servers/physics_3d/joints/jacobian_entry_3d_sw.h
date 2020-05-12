@@ -54,7 +54,7 @@ subject to the following restrictions:
 
 class JacobianEntry3DSW {
 public:
-	JacobianEntry3DSW(){};
+	JacobianEntry3DSW() {}
 	//constraint between two different rigidbodies
 	JacobianEntry3DSW(
 			const Basis &world2A,

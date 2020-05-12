@@ -33,6 +33,7 @@
 #include "core/os/threaded_array_processor.h"
 #include "nav_region.h"
 #include "rvo_agent.h"
+
 #include <algorithm>
 
 /**
@@ -40,16 +41,6 @@
 */
 
 #define USE_ENTRY_POINT
-
-NavMap::NavMap() :
-		up(0, 1, 0),
-		cell_size(0.3),
-		edge_connection_margin(5.0),
-		regenerate_polygons(true),
-		regenerate_links(true),
-		agents_dirty(false),
-		deltatime(0.0),
-		map_update_id(0) {}
 
 void NavMap::set_up(Vector3 p_up) {
 	up = p_up;

@@ -253,14 +253,12 @@ struct ScriptCodeCompletionOption {
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
 	};
-	Kind kind;
+	Kind kind = KIND_PLAIN_TEXT;
 	String display;
 	String insert_text;
 	RES icon;
 
-	ScriptCodeCompletionOption() {
-		kind = KIND_PLAIN_TEXT;
-	}
+	ScriptCodeCompletionOption() {}
 
 	ScriptCodeCompletionOption(const String &p_text, Kind p_kind) {
 		display = p_text;

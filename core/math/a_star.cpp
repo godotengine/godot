@@ -585,11 +585,6 @@ void AStar::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
 }
 
-AStar::AStar() {
-	last_free_id = 0;
-	pass = 1;
-}
-
 AStar::~AStar() {
 	clear();
 }
@@ -909,10 +904,4 @@ void AStar2D::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
 	BIND_VMETHOD(MethodInfo(Variant::FLOAT, "_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
-}
-
-AStar2D::AStar2D() {
-}
-
-AStar2D::~AStar2D() {
 }

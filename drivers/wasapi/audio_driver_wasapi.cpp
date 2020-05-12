@@ -69,13 +69,11 @@ static bool default_render_device_changed = false;
 static bool default_capture_device_changed = false;
 
 class CMMNotificationClient : public IMMNotificationClient {
-	LONG _cRef;
-	IMMDeviceEnumerator *_pEnumerator;
+	LONG _cRef = 1;
+	IMMDeviceEnumerator *_pEnumerator = nullptr;
 
 public:
-	CMMNotificationClient() :
-			_cRef(1),
-			_pEnumerator(nullptr) {}
+	CMMNotificationClient() {}
 	virtual ~CMMNotificationClient() {
 		if ((_pEnumerator) != nullptr) {
 			(_pEnumerator)->Release();
@@ -854,17 +852,7 @@ String AudioDriverWASAPI::capture_get_device() {
 }
 
 AudioDriverWASAPI::AudioDriverWASAPI() {
-
-	thread = nullptr;
-
 	samples_in.clear();
-
-	channels = 0;
-	mix_rate = 0;
-	buffer_frames = 0;
-
-	thread_exited = false;
-	exit_thread = false;
 }
 
-#endif
+#endif // WASAPI_ENABLED

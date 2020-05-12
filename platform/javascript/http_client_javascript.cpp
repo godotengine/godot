@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "core/io/http_client.h"
+
 #include "http_request.h"
 
 Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
@@ -281,15 +282,6 @@ Error HTTPClient::poll() {
 HTTPClient::HTTPClient() {
 
 	xhr_id = godot_xhr_new();
-	read_limit = 4096;
-	status = STATUS_DISCONNECTED;
-	port = -1;
-	use_tls = false;
-	polled_response_code = 0;
-#ifdef DEBUG_ENABLED
-	has_polled = false;
-	last_polling_frame = 0;
-#endif
 }
 
 HTTPClient::~HTTPClient() {

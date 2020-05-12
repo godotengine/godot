@@ -764,7 +764,7 @@ void Body3DSW::set_kinematic_margin(real_t p_margin) {
 
 Body3DSW::Body3DSW() :
 		CollisionObject3DSW(TYPE_BODY),
-		locked_axis(0),
+
 		active_list(this),
 		inertia_update_list(this),
 		direct_state_query_list(this) {

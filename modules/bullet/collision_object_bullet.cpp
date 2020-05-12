@@ -89,18 +89,7 @@ void CollisionObjectBullet::ShapeWrapper::claim_bt_shape(const btVector3 &body_s
 
 CollisionObjectBullet::CollisionObjectBullet(Type p_type) :
 		RIDBullet(),
-		type(p_type),
-		instance_id(ObjectID()),
-		collisionLayer(0),
-		collisionMask(0),
-		collisionsEnabled(true),
-		m_isStatic(false),
-		ray_pickable(false),
-		bt_collision_object(nullptr),
-		body_scale(1., 1., 1.),
-		force_shape_reset(false),
-		space(nullptr),
-		isTransformChanged(false) {}
+		type(p_type) {}
 
 CollisionObjectBullet::~CollisionObjectBullet() {
 	// Remove all overlapping, notify is not required since godot take care of it
@@ -223,11 +212,6 @@ const btTransform &CollisionObjectBullet::get_transform__bullet() const {
 
 void CollisionObjectBullet::notify_transform_changed() {
 	isTransformChanged = true;
-}
-
-RigidCollisionObjectBullet::RigidCollisionObjectBullet(Type p_type) :
-		CollisionObjectBullet(p_type),
-		mainShape(nullptr) {
 }
 
 RigidCollisionObjectBullet::~RigidCollisionObjectBullet() {

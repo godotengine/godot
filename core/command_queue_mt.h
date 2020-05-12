@@ -301,14 +301,14 @@ class CommandQueueMT {
 	struct SyncSemaphore {
 
 		Semaphore sem;
-		bool in_use;
+		bool in_use = false;
 	};
 
 	struct CommandBase {
 
 		virtual void call() = 0;
-		virtual void post(){};
-		virtual ~CommandBase(){};
+		virtual void post() {}
+		virtual ~CommandBase() {}
 	};
 
 	struct SyncCommand : public CommandBase {
@@ -339,13 +339,13 @@ class CommandQueueMT {
 		SYNC_SEMAPHORES = 8
 	};
 
-	uint8_t *command_mem;
-	uint32_t read_ptr;
-	uint32_t write_ptr;
-	uint32_t dealloc_ptr;
+	uint8_t *command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
+	uint32_t read_ptr = 0;
+	uint32_t write_ptr = 0;
+	uint32_t dealloc_ptr = 0;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex mutex;
-	Semaphore *sync;
+	Semaphore *sync = nullptr;
 
 	template <class T>
 	T *allocate() {

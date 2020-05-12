@@ -45,18 +45,15 @@ class ZipArchive : public PackSource {
 public:
 	struct File {
 
-		int package;
+		int package = -1;
 		unz_file_pos file_pos;
-		File() {
-
-			package = -1;
-		};
+		File() {}
 	};
 
 private:
 	struct Package {
 		String filename;
-		unzFile zfile;
+		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 

@@ -362,10 +362,7 @@ void StreamPeerTCP::_bind_methods() {
 }
 
 StreamPeerTCP::StreamPeerTCP() :
-		_sock(Ref<NetSocket>(NetSocket::create())),
-		timeout(0),
-		status(STATUS_NONE),
-		peer_port(0) {
+		_sock(Ref<NetSocket>(NetSocket::create())) {
 }
 
 StreamPeerTCP::~StreamPeerTCP() {

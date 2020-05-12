@@ -3671,14 +3671,3 @@ Ref<Resource> Image::duplicate(bool p_subresources) const {
 void Image::set_as_black() {
 	zeromem(data.ptrw(), data.size());
 }
-
-Image::Image() {
-
-	width = 0;
-	height = 0;
-	mipmaps = false;
-	format = FORMAT_L8;
-}
-
-Image::~Image() {
-}

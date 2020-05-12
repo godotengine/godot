@@ -48,16 +48,12 @@ typedef void (*ErrorHandlerFunc)(void *, const char *, const char *, int p_line,
 
 struct ErrorHandlerList {
 
-	ErrorHandlerFunc errfunc;
-	void *userdata;
+	ErrorHandlerFunc errfunc = nullptr;
+	void *userdata = nullptr;
 
-	ErrorHandlerList *next;
+	ErrorHandlerList *next = nullptr;
 
-	ErrorHandlerList() {
-		errfunc = 0;
-		next = 0;
-		userdata = 0;
-	}
+	ErrorHandlerList() {}
 };
 
 void add_error_handler(ErrorHandlerList *p_handler);

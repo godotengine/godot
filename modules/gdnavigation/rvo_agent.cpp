@@ -36,8 +36,7 @@
 	@author AndreaCatania
 */
 
-RvoAgent::RvoAgent() :
-		map(nullptr) {
+RvoAgent::RvoAgent() {
 	callback.id = ObjectID();
 }
 

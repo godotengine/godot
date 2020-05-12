@@ -334,18 +334,18 @@ struct GDScriptWarning {
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded
 		WARNING_MAX,
-	} code;
+	};
+
+	Code code = WARNING_MAX;
 	Vector<String> symbols;
-	int line;
+	int line = -1;
 
 	String get_name() const;
 	String get_message() const;
 	static String get_name_from_code(Code p_code);
 	static Code get_code_from_name(const String &p_name);
 
-	GDScriptWarning() :
-			code(WARNING_MAX),
-			line(-1) {}
+	GDScriptWarning() {}
 };
 #endif // DEBUG_ENABLED
 

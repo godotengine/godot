@@ -33,6 +33,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
+
 #include <stdint.h>
 
 #define NODE_ID_COMPRESSION_SHIFT 3
@@ -1261,10 +1262,7 @@ void MultiplayerAPI::_bind_methods() {
 	BIND_ENUM_CONSTANT(RPC_MODE_PUPPETSYNC);
 }
 
-MultiplayerAPI::MultiplayerAPI() :
-		allow_object_decoding(false) {
-	rpc_sender_id = 0;
-	root_node = nullptr;
+MultiplayerAPI::MultiplayerAPI() {
 	clear();
 }
 

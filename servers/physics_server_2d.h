@@ -640,11 +640,9 @@ typedef PhysicsServer2D *(*CreatePhysicsServer2DCallback)();
 class PhysicsServer2DManager {
 	struct ClassInfo {
 		String name;
-		CreatePhysicsServer2DCallback create_callback;
+		CreatePhysicsServer2DCallback create_callback = nullptr;
 
-		ClassInfo() :
-				name(""),
-				create_callback(nullptr) {}
+		ClassInfo() {}
 
 		ClassInfo(String p_name, CreatePhysicsServer2DCallback p_create_callback) :
 				name(p_name),

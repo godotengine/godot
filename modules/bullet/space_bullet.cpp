@@ -331,22 +331,7 @@ Vector3 BulletPhysicsDirectSpaceState::get_closest_point_to_object_volume(RID p_
 	}
 }
 
-SpaceBullet::SpaceBullet() :
-		broadphase(nullptr),
-		collisionConfiguration(nullptr),
-		dispatcher(nullptr),
-		solver(nullptr),
-		dynamicsWorld(nullptr),
-		soft_body_world_info(nullptr),
-		ghostPairCallback(nullptr),
-		godotFilterCallback(nullptr),
-		gravityDirection(0, -1, 0),
-		gravityMagnitude(10),
-		linear_damp(0.0),
-		angular_damp(0.0),
-		contactDebugCount(0),
-		delta_time(0.) {
-
+SpaceBullet::SpaceBullet() {
 	create_empty_world(GLOBAL_DEF("physics/3d/active_soft_world", true));
 	direct_access = memnew(BulletPhysicsDirectSpaceState(this));
 }

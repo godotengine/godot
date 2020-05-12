@@ -489,7 +489,7 @@ public:
 
 	void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, const Transform2D &p_canvas_transform);
 
-	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow){};
+	void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) {}
 
 	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
 
