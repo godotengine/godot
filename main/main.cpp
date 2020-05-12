@@ -2015,7 +2015,7 @@ bool Main::start() {
 		if (!project_manager && !editor) { // game
 
 			// Load SSL Certificates from Project Settings (or builtin).
-			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificates", ""));
+			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificate_bundle_override", ""));
 
 			if (game_path != "") {
 				Node *scene = nullptr;
