@@ -2311,18 +2311,23 @@ DisplayServer::WindowID DisplayServerOSX::create_sub_window(WindowMode p_mode, u
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_rect);
-	WindowData &wd = windows[id];
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
 		}
 	}
+
+	return id;
+}
+
+void DisplayServerOSX::show_window(WindowID p_id) {
+	WindowData &wd = windows[p_id];
+
 	if (wd.no_focus) {
 		[wd.window_object orderFront:nil];
 	} else {
 		[wd.window_object makeKeyAndOrderFront:nil];
 	}
-	return id;
 }
 
 void DisplayServerOSX::_send_window_event(const WindowData &wd, WindowEvent p_event) {
@@ -3755,7 +3760,7 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	[windows[main_window].window_object makeKeyAndOrderFront:nil];
+	show_window(MAIN_WINDOW_ID);
 
 #if defined(OPENGL_ENABLED)
 	if (rendering_driver == "opengl_es") {
