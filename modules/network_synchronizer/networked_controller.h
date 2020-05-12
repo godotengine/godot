@@ -435,6 +435,7 @@ struct DollController : public Controller {
 	bool is_server_state_update_received;
 	uint64_t last_checked_input_id;
 	bool is_flow_open;
+	real_t time_bank;
 
 	DollController(NetworkedController *p_node);
 

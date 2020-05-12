@@ -41,7 +41,7 @@
 #include <algorithm>
 
 // Don't go below 2 so to take into account internet latency
-#define MIN_SNAPSHOTS_SIZE 2
+#define MIN_SNAPSHOTS_SIZE 2.0
 
 #define MAX_ADDITIONAL_TICK_SPEED 2.0
 
@@ -1142,7 +1142,8 @@ DollController::DollController(NetworkedController *p_node) :
 		is_server_communication_detected(false),
 		is_server_state_update_received(false),
 		last_checked_input_id(0),
-		is_flow_open(true) {
+		is_flow_open(true),
+		time_bank(0) {
 }
 
 void DollController::physics_process(real_t p_delta) {
@@ -1181,7 +1182,25 @@ void DollController::receive_inputs(Vector<uint8_t> p_data) {
 }
 
 int DollController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
-	return 1; // TODO
+	// TODO use the same algorithm the server uses to determinates the speedup
+	// so the input pool is enlarged when interned problems are detected and constrained
+	// otherwise.
+	real_t speed_up = 0.0;
+
+	if (server_controller.last_known_input() != UINT64_MAX &&
+			player_controller.get_stored_input_id(-1) != UINT64_MAX) {
+
+		// Try to stay only 2 frames behind the server.
+		const real_t difference = server_controller.last_known_input() - player_controller.get_stored_input_id(-1);
+		speed_up = CLAMP((difference - MIN_SNAPSHOTS_SIZE) / MIN_SNAPSHOTS_SIZE, -1.0, 1.0) * MAX_ADDITIONAL_TICK_SPEED;
+	}
+
+	const real_t pretended_delta = 1.0 / (p_iteration_per_seconds + speed_up);
+	time_bank += p_delta;
+	const int sub_ticks = static_cast<uint32_t>(time_bank / pretended_delta);
+	time_bank -= static_cast<real_t>(sub_ticks) * pretended_delta;
+
+	return sub_ticks;
 }
 
 int DollController::notify_input_checked(uint64_t p_input_id) {
@@ -1260,6 +1279,8 @@ void DollController::hard_reset_to_server_state() {
 
 	// The next frame the recover mechanism will naturally reset the player
 	// state back in sync.
+
+	time_bank = 0.0;
 }
 
 NoNetController::NoNetController(NetworkedController *p_node) :
