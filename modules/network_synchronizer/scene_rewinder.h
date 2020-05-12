@@ -305,8 +305,7 @@ public:
 
 	virtual void clear() = 0;
 
-	virtual void process_isle(real_t p_delta, NetworkedController *p_controller) = 0;
-	virtual void post_process(real_t p_delta) = 0;
+	virtual void process() = 0;
 	virtual void receive_snapshot(Variant p_snapshot) = 0;
 };
 
@@ -318,8 +317,7 @@ public:
 
 	virtual void clear();
 
-	virtual void process_isle(real_t p_delta, NetworkedController *p_controller);
-	virtual void post_process(real_t p_delta);
+	virtual void process();
 	virtual void receive_snapshot(Variant p_snapshot);
 };
 
@@ -336,8 +334,7 @@ public:
 
 	Variant generate_snapshot();
 
-	virtual void process_isle(real_t p_delta, NetworkedController *p_controller);
-	virtual void post_process(real_t p_delta);
+	virtual void process();
 	virtual void receive_snapshot(Variant p_snapshot);
 };
 
@@ -360,8 +357,7 @@ public:
 
 	virtual void clear();
 
-	virtual void process_isle(real_t p_delta, NetworkedController *p_controller);
-	virtual void post_process(real_t p_delta);
+	virtual void process();
 	virtual void receive_snapshot(Variant p_snapshot);
 
 private:

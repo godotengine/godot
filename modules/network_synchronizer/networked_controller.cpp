@@ -399,12 +399,6 @@ void NetworkedController::process(real_t p_delta) {
 	}
 }
 
-void NetworkedController::post_process(real_t p_delta) {
-	if (controller) {
-		controller->post_process(p_delta);
-	}
-}
-
 void NetworkedController::player_set_has_new_input(bool p_has) {
 	has_player_new_input = p_has;
 }
@@ -579,9 +573,7 @@ void ServerController::physics_process(real_t p_delta) {
 
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta);
-}
 
-void ServerController::post_process(real_t p_delta) {
 	adjust_player_tick_rate(p_delta);
 }
 
@@ -935,10 +927,6 @@ void PlayerController::physics_process(real_t p_delta) {
 	node->player_set_has_new_input(accept_new_inputs);
 }
 
-void PlayerController::post_process(real_t p_delta) {
-	// Nothing
-}
-
 void PlayerController::receive_inputs(Vector<uint8_t> p_data) {
 	ERR_PRINT("The player is not supposed to receive snapshots. Check why this happened.");
 }
@@ -1186,10 +1174,6 @@ void DollController::physics_process(real_t p_delta) {
 	soft_reset_to_server_state();
 }
 
-void DollController::post_process(real_t p_delta) {
-	// Nothing
-}
-
 void DollController::receive_inputs(Vector<uint8_t> p_data) {
 	if (is_flow_open == false)
 		return;
@@ -1290,10 +1274,6 @@ void NoNetController::physics_process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta);
 	frame_id += 1;
-}
-
-void NoNetController::post_process(real_t p_delta) {
-	// Nothing
 }
 
 void NoNetController::receive_inputs(Vector<uint8_t> p_data) {

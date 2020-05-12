@@ -744,67 +744,8 @@ void SceneRewinder::remove_from_isle(ObjectID p_node_id, ControllerID p_isle_id)
 }
 
 void SceneRewinder::process() {
-
 	validate_nodes();
-
-	// Due to some lag we may want to speed up the input_packet
-	// generation, for this reason here I'm performing a sub tick.
-	//
-	// keep in mind that we are just pretending that the time
-	// is advancing faster, for this reason we are still using
-	// `delta` to step the controllers.
-
-	const real_t delta = get_physics_process_delta_time();
-	const real_t iteration_per_second = Engine::get_singleton()->get_iterations_per_second();
-
-	for (
-			OAHashMap<ControllerID, IsleData>::Iterator it = isle_data.iter();
-			it.valid;
-			it = isle_data.next_iter(it)) {
-		NetworkedController *controller = it.value->controller;
-
-		int sub_ticks = controller->calculates_sub_ticks(
-				delta,
-				iteration_per_second);
-
-		while (sub_ticks > 0) {
-
-			// Process the nodes of this controller.
-			for (
-					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
-					node_it != it.value->nodes.end();
-					node_it += 1) {
-
-				NodeData *node_data = data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
-				ERR_CONTINUE(node_data == nullptr);
-				node_data->process(delta);
-			}
-
-			// Process the controller
-			controller->process(delta);
-
-			// TODO find a way to not iterate this again or avoid the below `look_up`.
-			// Iterate all the nodes and compare the isle??
-			for (
-					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
-					node_it != it.value->nodes.end();
-					node_it += 1) {
-
-				NodeData *node_data = data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
-				ERR_CONTINUE(node_data == nullptr);
-
-				pull_node_changes(node_data);
-			}
-
-			rewinder->process_isle(delta, it.value->controller);
-
-			sub_ticks -= 1;
-		}
-
-		controller->post_process(delta);
-	}
-
-	rewinder->post_process(delta);
+	rewinder->process();
 }
 
 void SceneRewinder::pull_node_changes(NodeData *p_node_data) {
@@ -903,10 +844,42 @@ NoNetRewinder::NoNetRewinder(SceneRewinder *p_node) :
 void NoNetRewinder::clear() {
 }
 
-void NoNetRewinder::process_isle(real_t _p_delta, NetworkedController *p_controller) {
-}
+void NoNetRewinder::process() {
+	const real_t delta = scene_rewinder->get_physics_process_delta_time();
 
-void NoNetRewinder::post_process(real_t _p_delta) {
+	// Process the scene
+	for (
+			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->data.iter();
+			it.valid;
+			it = scene_rewinder->data.next_iter(it)) {
+
+		NodeData *node_data = it.value;
+		ERR_CONTINUE(node_data == nullptr);
+
+		node_data->process(delta);
+	}
+
+	// Process the controllers
+	for (
+			OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
+			it.valid;
+			it = scene_rewinder->isle_data.next_iter(it)) {
+		NetworkedController *controller = it.value->controller;
+
+		controller->process(delta);
+	}
+
+	// Pull the changes.
+	for (
+			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->data.iter();
+			it.valid;
+			it = scene_rewinder->data.next_iter(it)) {
+
+		NodeData *node_data = it.value;
+		ERR_CONTINUE(node_data == nullptr);
+
+		scene_rewinder->pull_node_changes(node_data);
+	}
 }
 
 void NoNetRewinder::receive_snapshot(Variant _p_snapshot) {
@@ -1011,13 +984,46 @@ Variant ServerRewinder::generate_snapshot() {
 	return snapshot_data;
 }
 
-void ServerRewinder::process_isle(real_t p_delta, NetworkedController *p_controller) {
-	// Nothing.
-}
+void ServerRewinder::process() {
 
-void ServerRewinder::post_process(real_t p_delta) {
+	const real_t delta = scene_rewinder->get_physics_process_delta_time();
 
-	state_notifier_timer += p_delta;
+	// Process the scene
+	for (
+			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->data.iter();
+			it.valid;
+			it = scene_rewinder->data.next_iter(it)) {
+
+		NodeData *node_data = it.value;
+		ERR_CONTINUE(node_data == nullptr);
+
+		node_data->process(delta);
+	}
+
+	// Process the controllers
+	for (
+			OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
+			it.valid;
+			it = scene_rewinder->isle_data.next_iter(it)) {
+		NetworkedController *controller = it.value->controller;
+
+		controller->process(delta);
+	}
+
+	// Pull the changes.
+	for (
+			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->data.iter();
+			it.valid;
+			it = scene_rewinder->data.next_iter(it)) {
+
+		NodeData *node_data = it.value;
+		ERR_CONTINUE(node_data == nullptr);
+
+		scene_rewinder->pull_node_changes(node_data);
+	}
+
+	// Notify the state if needed
+	state_notifier_timer += delta;
 	if (state_notifier_timer >= scene_rewinder->get_server_notify_state_interval()) {
 		state_notifier_timer = 0.0;
 
@@ -1049,21 +1055,70 @@ void ClientRewinder::clear() {
 	server_snapshot.data.clear();
 }
 
-void ClientRewinder::process_isle(real_t p_delta, NetworkedController *p_controller) {
-	ERR_FAIL_COND_MSG(scene_rewinder->main_controller == nullptr, "Snapshot creation fail, Make sure to track a NetController.");
+void ClientRewinder::process() {
 
-	if (p_controller->player_has_new_input() == false) {
-		// This controller has not a new imput, don't store it;
-		return;
+	const real_t delta = scene_rewinder->get_physics_process_delta_time();
+	const real_t iteration_per_second = Engine::get_singleton()->get_iterations_per_second();
+
+	for (
+			OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
+			it.valid;
+			it = scene_rewinder->isle_data.next_iter(it)) {
+		NetworkedController *controller = it.value->controller;
+
+		// Due to some lag we may want to speed up the input_packet
+		// generation, for this reason here I'm performing a sub tick.
+		//
+		// keep in mind that we are just pretending that the time
+		// is advancing faster, for this reason we are still using
+		// `delta` to step the controllers.
+		//
+		// The dolls may want to speed up too, so to consume the inputs faster
+		// and get back in time with the server.
+		int sub_ticks = controller->calculates_sub_ticks(
+				delta,
+				iteration_per_second);
+
+		while (sub_ticks > 0) {
+
+			// Process the nodes of this controller.
+			for (
+					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
+					node_it != it.value->nodes.end();
+					node_it += 1) {
+
+				NodeData *node_data = scene_rewinder->data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
+				ERR_CONTINUE(node_data == nullptr);
+				node_data->process(delta);
+			}
+
+			// Process the controller
+			controller->process(delta);
+
+			// TODO find a way to not iterate this again or avoid the below `look_up`.
+			// Iterate all the nodes and compare the isle??
+			for (
+					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
+					node_it != it.value->nodes.end();
+					node_it += 1) {
+
+				NodeData *node_data = scene_rewinder->data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
+				ERR_CONTINUE(node_data == nullptr);
+
+				scene_rewinder->pull_node_changes(node_data);
+			}
+
+			if (controller->player_has_new_input()) {
+				store_snapshot(controller);
+			}
+
+			sub_ticks -= 1;
+		}
 	}
 
-	store_snapshot(p_controller);
-}
-
-void ClientRewinder::post_process(real_t p_delta) {
 	scene_rewinder->recover_in_progress = true;
 
-	process_controllers_recovery(p_delta);
+	process_controllers_recovery(delta);
 
 	scene_rewinder->recover_in_progress = false;
 }
