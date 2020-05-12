@@ -60,12 +60,6 @@ void MainLoop::set_init_script(const Ref<Script> &p_init_script) {
 	init_script = p_init_script;
 }
 
-MainLoop::MainLoop() {
-}
-
-MainLoop::~MainLoop() {
-}
-
 void MainLoop::init() {
 
 	if (init_script.is_valid())

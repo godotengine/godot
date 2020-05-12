@@ -43,7 +43,7 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 
-	TranslationLoaderPO();
+	TranslationLoaderPO() {}
 };
 
 #endif // TRANSLATION_LOADER_PO_H

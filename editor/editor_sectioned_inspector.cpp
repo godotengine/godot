@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "editor_sectioned_inspector.h"
+
 #include "editor_scale.h"
+
 class SectionedInspectorFilter : public Object {
 
 	GDCLASS(SectionedInspectorFilter, Object);
@@ -307,8 +309,7 @@ EditorInspector *SectionedInspector::get_inspector() {
 SectionedInspector::SectionedInspector() :
 		sections(memnew(Tree)),
 		filter(memnew(SectionedInspectorFilter)),
-		inspector(memnew(EditorInspector)),
-		search_box(nullptr) {
+		inspector(memnew(EditorInspector)) {
 	add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up
 
 	VBoxContainer *left_vb = memnew(VBoxContainer);

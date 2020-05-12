@@ -48,7 +48,7 @@ class NodePath {
 		mutable uint32_t hash_cache;
 	};
 
-	mutable Data *data;
+	mutable Data *data = nullptr;
 	void unref();
 
 	void _update_hash_cache() const;
@@ -93,7 +93,7 @@ public:
 	NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute);
 	NodePath(const NodePath &p_path);
 	NodePath(const String &p_path);
-	NodePath();
+	NodePath() {}
 	~NodePath();
 };
 

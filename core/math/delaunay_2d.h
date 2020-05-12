@@ -36,24 +36,21 @@
 class Delaunay2D {
 public:
 	struct Triangle {
-
 		int points[3];
-		bool bad;
-		Triangle() { bad = false; }
+		bool bad = false;
+		Triangle() {}
 		Triangle(int p_a, int p_b, int p_c) {
 			points[0] = p_a;
 			points[1] = p_b;
 			points[2] = p_c;
-			bad = false;
 		}
 	};
 
 	struct Edge {
 		int edge[2];
-		bool bad;
-		Edge() { bad = false; }
+		bool bad = false;
+		Edge() {}
 		Edge(int p_a, int p_b) {
-			bad = false;
 			edge[0] = p_a;
 			edge[1] = p_b;
 		}

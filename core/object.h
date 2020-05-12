@@ -139,12 +139,12 @@ enum PropertyUsageFlags {
 
 struct PropertyInfo {
 
-	Variant::Type type;
+	Variant::Type type = Variant::NIL;
 	String name;
 	StringName class_name; //for classes
-	PropertyHint hint;
+	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
-	uint32_t usage;
+	uint32_t usage = PROPERTY_USAGE_DEFAULT;
 
 	_FORCE_INLINE_ PropertyInfo added_usage(int p_fl) const {
 		PropertyInfo pi = *this;
@@ -156,11 +156,7 @@ struct PropertyInfo {
 
 	static PropertyInfo from_dict(const Dictionary &p_dict);
 
-	PropertyInfo() :
-			type(Variant::NIL),
-			hint(PROPERTY_HINT_NONE),
-			usage(PROPERTY_USAGE_DEFAULT) {
-	}
+	PropertyInfo() {}
 
 	PropertyInfo(Variant::Type p_type, const String p_name, PropertyHint p_hint = PROPERTY_HINT_NONE, const String &p_hint_string = "", uint32_t p_usage = PROPERTY_USAGE_DEFAULT, const StringName &p_class_name = StringName()) :
 			type(p_type),
@@ -178,10 +174,7 @@ struct PropertyInfo {
 
 	PropertyInfo(const StringName &p_class_name) :
 			type(Variant::OBJECT),
-			class_name(p_class_name),
-			hint(PROPERTY_HINT_NONE),
-			usage(PROPERTY_USAGE_DEFAULT) {
-	}
+			class_name(p_class_name) {}
 
 	bool operator==(const PropertyInfo &p_info) const {
 		return ((type == p_info.type) &&
@@ -203,8 +196,8 @@ struct MethodInfo {
 
 	String name;
 	PropertyInfo return_val;
-	uint32_t flags;
-	int id;
+	uint32_t flags; // NOLINT - prevent clang-tidy to assign method_bind.h constant here, it should stay in .cpp.
+	int id = 0;
 	List<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
 
@@ -214,6 +207,7 @@ struct MethodInfo {
 	operator Dictionary() const;
 
 	static MethodInfo from_dict(const Dictionary &p_dict);
+
 	MethodInfo();
 	MethodInfo(const String &p_name);
 	MethodInfo(const String &p_name, const PropertyInfo &p_param1);
@@ -416,14 +410,13 @@ public:
 		::Signal signal;
 		Callable callable;
 
-		uint32_t flags;
+		uint32_t flags = 0;
 		Vector<Variant> binds;
 		bool operator<(const Connection &p_conn) const;
 
 		operator Variant() const;
-		Connection() {
-			flags = 0;
-		}
+
+		Connection() {}
 		Connection(const Variant &p_variant);
 	};
 
@@ -441,16 +434,13 @@ private:
 	struct SignalData {
 
 		struct Slot {
-
-			int reference_count;
+			int reference_count = 0;
 			Connection conn;
-			List<Connection>::Element *cE;
-			Slot() { reference_count = 0; }
+			List<Connection>::Element *cE = nullptr;
 		};
 
 		MethodInfo user;
 		VMap<Callable, Slot> slot_map;
-		SignalData() {}
 	};
 
 	HashMap<StringName, SignalData> signal_map;
@@ -458,24 +448,24 @@ private:
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif
-	bool _block_signals;
-	int _predelete_ok;
+	bool _block_signals = false;
+	int _predelete_ok = 0;
 	Set<Object *> change_receptors;
 	ObjectID _instance_id;
 	bool _predelete();
 	void _postinitialize();
-	bool _can_translate;
-	bool _emitting;
+	bool _can_translate = true;
+	bool _emitting = false;
 #ifdef TOOLS_ENABLED
-	bool _edited;
-	uint32_t _edited_version;
+	bool _edited = false;
+	uint32_t _edited_version = 0;
 	Set<String> editor_section_folding;
 #endif
-	ScriptInstance *script_instance;
+	ScriptInstance *script_instance = nullptr;
 	Variant script; //reference does not yet exist, store it in a
 	Dictionary metadata;
 	mutable StringName _class_name;
-	mutable const StringName *_class_ptr;
+	mutable const StringName *_class_ptr = nullptr;
 
 	void _add_user_signal(const String &p_name, const Array &p_args = Array());
 	bool _has_user_signal(const StringName &p_name) const;
@@ -494,8 +484,9 @@ private:
 
 	friend class Reference;
 	bool type_is_reference = false;
-	uint32_t instance_binding_count;
+	uint32_t instance_binding_count = 0;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
+
 	Object(bool p_reference);
 
 protected:
@@ -503,14 +494,14 @@ protected:
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) { return false; };
 	virtual bool _getv(const StringName &p_name, Variant &r_property) const { return false; };
 	virtual void _get_property_listv(List<PropertyInfo> *p_list, bool p_reversed) const {};
-	virtual void _notificationv(int p_notification, bool p_reversed){};
+	virtual void _notificationv(int p_notification, bool p_reversed) {}
 
 	static String _get_category() { return ""; }
 	static void _bind_methods();
 	bool _set(const StringName &p_name, const Variant &p_property) { return false; };
 	bool _get(const StringName &p_name, Variant &r_property) const { return false; };
 	void _get_property_list(List<PropertyInfo> *p_list) const {};
-	void _notification(int p_notification){};
+	void _notification(int p_notification) {}
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
@@ -559,7 +550,7 @@ protected:
 
 public: //should be protected, but bug in clang++
 	static void initialize_class();
-	_FORCE_INLINE_ static void register_custom_data_to_otdb(){};
+	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
 
 public:
 #ifdef TOOLS_ENABLED
@@ -579,8 +570,8 @@ public:
 	bool _is_gpl_reversed() const { return false; }
 
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
-	// this is used for editors
 
+	// this is used for editors
 	void add_change_receptor(Object *p_receptor);
 	void remove_change_receptor(Object *p_receptor);
 
@@ -613,7 +604,6 @@ public:
 	}
 
 	enum {
-
 		NOTIFICATION_POSTINITIALIZE = 0,
 		NOTIFICATION_PREDELETE = 1
 	};
@@ -723,7 +713,7 @@ public:
 
 	StringName tr(const StringName &p_message) const; // translate message (internationalization)
 
-	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
+	bool _is_queued_for_deletion = false; // set to true by SceneTree::queue_delete()
 	bool is_queued_for_deletion() const;
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate = p_enable; }
@@ -745,6 +735,7 @@ public:
 	void clear_internal_resource_paths();
 
 	_ALWAYS_INLINE_ bool is_reference() const { return type_is_reference; }
+
 	Object();
 	virtual ~Object();
 };

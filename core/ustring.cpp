@@ -28,10 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
-#endif
-
 #include "ustring.h"
 
 #include "core/color.h"
@@ -49,6 +45,10 @@
 #ifndef NO_USE_STDLIB
 #include <stdio.h>
 #include <stdlib.h>
+#endif
+
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
 #endif
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)

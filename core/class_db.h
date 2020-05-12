@@ -114,9 +114,10 @@ public:
 
 	struct ClassInfo {
 
-		APIType api;
-		ClassInfo *inherits_ptr;
-		void *class_ptr;
+		APIType api = API_NONE;
+		ClassInfo *inherits_ptr = nullptr;
+		void *class_ptr = nullptr;
+
 		HashMap<StringName, MethodBind *> method_map;
 		HashMap<StringName, int> constant_map;
 		HashMap<StringName, List<StringName>> enum_map;
@@ -133,11 +134,12 @@ public:
 
 		StringName inherits;
 		StringName name;
-		bool disabled;
-		bool exposed;
-		Object *(*creation_func)();
-		ClassInfo();
-		~ClassInfo();
+		bool disabled = false;
+		bool exposed = false;
+		Object *(*creation_func)() = nullptr;
+
+		ClassInfo() {}
+		~ClassInfo() {}
 	};
 
 	template <class T>

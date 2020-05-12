@@ -1480,11 +1480,7 @@ void EditorAudioMeterNotches::_draw_audio_notches() {
 	}
 }
 
-EditorAudioMeterNotches::EditorAudioMeterNotches() :
-		line_length(5.0f),
-		label_space(2.0f),
-		btm_padding(9.0f),
-		top_padding(5.0f) {
+EditorAudioMeterNotches::EditorAudioMeterNotches() {
 
 	notch_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1, 1, 1) : Color(0, 0, 0);
 }

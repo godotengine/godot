@@ -52,7 +52,7 @@ class btBvhTriangleMeshShape;
 class ShapeBullet : public RIDBullet {
 
 	Map<ShapeOwnerBullet *, int> owners;
-	real_t margin;
+	real_t margin = 0.04;
 
 protected:
 	/// return self
@@ -200,7 +200,7 @@ private:
 };
 
 class ConcavePolygonShapeBullet : public ShapeBullet {
-	class btBvhTriangleMeshShape *meshShape;
+	class btBvhTriangleMeshShape *meshShape = nullptr;
 
 public:
 	Vector<Vector3> faces;
@@ -240,8 +240,8 @@ private:
 class RayShapeBullet : public ShapeBullet {
 
 public:
-	real_t length;
-	bool slips_on_slope;
+	real_t length = 1;
+	bool slips_on_slope = false;
 
 	RayShapeBullet();
 

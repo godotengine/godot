@@ -381,11 +381,6 @@ void PackedDataContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "__data__"), "_set_data", "_get_data");
 }
 
-PackedDataContainer::PackedDataContainer() {
-
-	datalen = 0;
-}
-
 //////////////////
 
 Variant PackedDataContainerRef::_iter_init(const Array &p_iter) {
@@ -429,6 +424,3 @@ int PackedDataContainerRef::size() const {
 
 	return from->_size(offset);
 };
-
-PackedDataContainerRef::PackedDataContainerRef() {
-}

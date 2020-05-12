@@ -353,15 +353,8 @@ Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_
 	return ERR_UNAVAILABLE;
 }
 
-FileAccessWindows::FileAccessWindows() :
-		f(nullptr),
-		flags(0),
-		prev_op(0),
-		last_error(OK) {
-}
 FileAccessWindows::~FileAccessWindows() {
-
 	close();
 }
 
-#endif
+#endif // WINDOWS_ENABLED

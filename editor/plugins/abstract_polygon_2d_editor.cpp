@@ -34,24 +34,6 @@
 #include "core/os/keyboard.h"
 #include "editor/editor_scale.h"
 
-AbstractPolygon2DEditor::Vertex::Vertex() :
-		polygon(-1),
-		vertex(-1) {
-	// invalid vertex
-}
-
-AbstractPolygon2DEditor::Vertex::Vertex(int p_vertex) :
-		polygon(-1),
-		vertex(p_vertex) {
-	// vertex p_vertex of current wip polygon
-}
-
-AbstractPolygon2DEditor::Vertex::Vertex(int p_polygon, int p_vertex) :
-		polygon(p_polygon),
-		vertex(p_vertex) {
-	// vertex p_vertex of polygon p_polygon
-}
-
 bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
 
 	return polygon == p_vertex.polygon && vertex == p_vertex.vertex;
@@ -65,20 +47,6 @@ bool AbstractPolygon2DEditor::Vertex::operator!=(const AbstractPolygon2DEditor::
 bool AbstractPolygon2DEditor::Vertex::valid() const {
 
 	return vertex >= 0;
-}
-
-AbstractPolygon2DEditor::PosVertex::PosVertex() {
-	// invalid vertex
-}
-
-AbstractPolygon2DEditor::PosVertex::PosVertex(const Vertex &p_vertex, const Vector2 &p_pos) :
-		Vertex(p_vertex.polygon, p_vertex.vertex),
-		pos(p_pos) {
-}
-
-AbstractPolygon2DEditor::PosVertex::PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos) :
-		Vertex(p_polygon, p_vertex),
-		pos(p_pos) {
 }
 
 bool AbstractPolygon2DEditor::_is_empty() const {

@@ -193,12 +193,7 @@ float MainTimerSync::get_cpu_idle_step() {
 	return cpu_ticks_elapsed / 1000000.0;
 }
 
-MainTimerSync::MainTimerSync() :
-		last_cpu_ticks_usec(0),
-		current_cpu_ticks_usec(0),
-		time_accum(0),
-		time_deficit(0),
-		fixed_fps(0) {
+MainTimerSync::MainTimerSync() {
 	for (int i = CONTROL_STEPS - 1; i >= 0; --i) {
 		typical_physics_steps[i] = i;
 		accumulated_physics_steps[i] = i;

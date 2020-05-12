@@ -63,15 +63,15 @@ class MessageQueue {
 	};
 
 	uint8_t *buffer;
-	uint32_t buffer_end;
-	uint32_t buffer_max_used;
+	uint32_t buffer_end = 0;
+	uint32_t buffer_max_used = 0;
 	uint32_t buffer_size;
 
 	void _call_function(const Callable &p_callable, const Variant *p_args, int p_argcount, bool p_show_error);
 
 	static MessageQueue *singleton;
 
-	bool flushing;
+	bool flushing = false;
 
 public:
 	static MessageQueue *get_singleton();

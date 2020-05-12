@@ -180,11 +180,6 @@ Error PCKPacker::flush(bool p_verbose) {
 	return OK;
 };
 
-PCKPacker::PCKPacker() {
-
-	file = nullptr;
-};
-
 PCKPacker::~PCKPacker() {
 	if (file != nullptr) {
 		memdelete(file);

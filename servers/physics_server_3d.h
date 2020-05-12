@@ -781,11 +781,9 @@ typedef PhysicsServer3D *(*CreatePhysicsServer3DCallback)();
 class PhysicsServer3DManager {
 	struct ClassInfo {
 		String name;
-		CreatePhysicsServer3DCallback create_callback;
+		CreatePhysicsServer3DCallback create_callback = nullptr;
 
-		ClassInfo() :
-				name(""),
-				create_callback(nullptr) {}
+		ClassInfo() {}
 
 		ClassInfo(String p_name, CreatePhysicsServer3DCallback p_create_callback) :
 				name(p_name),

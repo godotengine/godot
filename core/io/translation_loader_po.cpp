@@ -212,6 +212,3 @@ String TranslationLoaderPO::get_resource_type(const String &p_path) const {
 		return "Translation";
 	return "";
 }
-
-TranslationLoaderPO::TranslationLoaderPO() {
-}

@@ -128,10 +128,6 @@ void HashingContext::_bind_methods() {
 	BIND_ENUM_CONSTANT(HASH_SHA256);
 }
 
-HashingContext::HashingContext() {
-	ctx = nullptr;
-}
-
 HashingContext::~HashingContext() {
 	if (ctx != nullptr)
 		_delete_ctx();

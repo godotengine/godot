@@ -109,9 +109,6 @@ Reference::Reference() :
 	refcount_init.init();
 }
 
-Reference::~Reference() {
-}
-
 Variant WeakRef::get_ref() const {
 
 	if (ref.is_null())
@@ -136,9 +133,6 @@ void WeakRef::set_obj(Object *p_object) {
 void WeakRef::set_ref(const REF &p_ref) {
 
 	ref = p_ref.is_valid() ? p_ref->get_instance_id() : ObjectID();
-}
-
-WeakRef::WeakRef() {
 }
 
 void WeakRef::_bind_methods() {

@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "thread_work_pool.h"
+
 #include "core/os/os.h"
 
 void ThreadWorkPool::_thread_function(ThreadData *p_thread) {

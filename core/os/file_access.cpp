@@ -278,7 +278,7 @@ class CharBuffer {
 
 	char *buffer;
 	int capacity;
-	int written;
+	int written = 0;
 
 	bool grow() {
 
@@ -305,8 +305,7 @@ class CharBuffer {
 public:
 	_FORCE_INLINE_ CharBuffer() :
 			buffer(stack_buffer),
-			capacity(sizeof(stack_buffer) / sizeof(char)),
-			written(0) {
+			capacity(sizeof(stack_buffer) / sizeof(char)) {
 	}
 
 	_FORCE_INLINE_ void push_back(char c) {
@@ -716,10 +715,3 @@ String FileAccess::get_sha256(const String &p_file) {
 	memdelete(f);
 	return String::hex_encode_buffer(hash, 32);
 }
-
-FileAccess::FileAccess() {
-
-	endian_swap = false;
-	real_is_double = false;
-	_access_type = ACCESS_FILESYSTEM;
-};

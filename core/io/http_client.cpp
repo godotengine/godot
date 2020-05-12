@@ -729,27 +729,10 @@ int HTTPClient::get_read_chunk_size() const {
 }
 
 HTTPClient::HTTPClient() {
-
 	tcp_connection.instance();
-	resolving = IP::RESOLVER_INVALID_ID;
-	status = STATUS_DISCONNECTED;
-	head_request = false;
-	conn_port = -1;
-	body_size = -1;
-	chunked = false;
-	body_left = 0;
-	read_until_eof = false;
-	chunk_left = 0;
-	chunk_trailer_part = false;
-	response_num = 0;
-	ssl = false;
-	blocking = false;
-	handshaking = false;
-	read_chunk_size = 4096;
 }
 
-HTTPClient::~HTTPClient() {
-}
+HTTPClient::~HTTPClient() {}
 
 #endif // #ifndef JAVASCRIPT_ENABLED
 

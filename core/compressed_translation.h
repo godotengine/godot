@@ -86,7 +86,7 @@ public:
 	virtual StringName get_message(const StringName &p_src_text) const; //overridable for other implementations
 	void generate(const Ref<Translation> &p_from);
 
-	PHashTranslation();
+	PHashTranslation() {}
 };
 
 #endif // COMPRESSED_TRANSLATION_H

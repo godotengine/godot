@@ -65,7 +65,6 @@
 #include "core/math/triangle_mesh.h"
 #include "core/os/main_loop.h"
 #include "core/packed_data_container.h"
-#include "core/path_remap.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
 #include "core/undo_redo.h"

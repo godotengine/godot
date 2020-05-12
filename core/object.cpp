@@ -127,11 +127,6 @@ MethodInfo::operator Dictionary() const {
 	return d;
 }
 
-MethodInfo::MethodInfo() :
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
-}
-
 MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 
 	MethodInfo mi;
@@ -165,29 +160,28 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	return mi;
 }
 
+MethodInfo::MethodInfo() :
+		flags(METHOD_FLAG_NORMAL) {}
+
 MethodInfo::MethodInfo(const String &p_name) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 }
 MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 }
 MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 }
 
 MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
@@ -195,8 +189,7 @@ MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const
 
 MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
@@ -205,8 +198,7 @@ MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const
 
 MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
@@ -215,28 +207,24 @@ MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const
 }
 
 MethodInfo::MethodInfo(Variant::Type ret) :
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 }
 
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 }
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 	arguments.push_back(p_param1);
 }
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
@@ -244,8 +232,7 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
@@ -254,8 +241,7 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
@@ -265,8 +251,7 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
 		name(p_name),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
@@ -278,23 +263,20 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyIn
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name) :
 		name(p_name),
 		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 }
 
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1) :
 		name(p_name),
 		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 }
 
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
 		name(p_name),
 		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 }
@@ -302,8 +284,7 @@ MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const Pr
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3) :
 		name(p_name),
 		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
@@ -312,8 +293,7 @@ MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const Pr
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4) :
 		name(p_name),
 		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
@@ -323,8 +303,7 @@ MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const Pr
 MethodInfo::MethodInfo(const PropertyInfo &p_ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2, const PropertyInfo &p_param3, const PropertyInfo &p_param4, const PropertyInfo &p_param5) :
 		name(p_name),
 		return_val(p_ret),
-		flags(METHOD_FLAG_NORMAL),
-		id(0) {
+		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 	arguments.push_back(p_param2);
 	arguments.push_back(p_param3);
@@ -1923,32 +1902,19 @@ void Object::set_script_instance_binding(int p_script_language_index, void *p_da
 
 void Object::_construct_object(bool p_reference) {
 	type_is_reference = p_reference;
-	_class_ptr = nullptr;
-	_block_signals = false;
-	_predelete_ok = 0;
 	_instance_id = ObjectDB::add_instance(this);
-	_can_translate = true;
-	_is_queued_for_deletion = false;
-	_emitting = false;
-	instance_binding_count = 0;
 	memset(_script_instance_bindings, 0, sizeof(void *) * MAX_SCRIPT_INSTANCE_BINDINGS);
-	script_instance = nullptr;
-#ifdef TOOLS_ENABLED
-
-	_edited = false;
-	_edited_version = 0;
-#endif
 
 #ifdef DEBUG_ENABLED
 	_lock_index.init(1);
 #endif
 }
+
 Object::Object(bool p_reference) {
 	_construct_object(p_reference);
 }
 
 Object::Object() {
-
 	_construct_object(false);
 }
 

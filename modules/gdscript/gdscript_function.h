@@ -43,15 +43,18 @@ class GDScriptInstance;
 class GDScript;
 
 struct GDScriptDataType {
-	bool has_type;
-	enum {
+	enum Kind {
 		UNINITIALIZED,
 		BUILTIN,
 		NATIVE,
 		SCRIPT,
 		GDSCRIPT,
-	} kind;
-	Variant::Type builtin_type;
+	};
+
+	Kind kind = UNINITIALIZED;
+
+	bool has_type = false;
+	Variant::Type builtin_type = Variant::NIL;
 	StringName native_type;
 	Ref<Script> script_type;
 
@@ -147,10 +150,7 @@ struct GDScriptDataType {
 		return info;
 	}
 
-	GDScriptDataType() :
-			has_type(false),
-			kind(UNINITIALIZED),
-			builtin_type(Variant::NIL) {}
+	GDScriptDataType() {}
 };
 
 class GDScriptFunction {

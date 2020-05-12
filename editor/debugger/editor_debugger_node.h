@@ -76,7 +76,7 @@ private:
 			return line < p_b.line;
 		}
 
-		Breakpoint(){};
+		Breakpoint() {}
 
 		Breakpoint(const String &p_source, int p_line) {
 			line = p_line;

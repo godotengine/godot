@@ -176,7 +176,7 @@ public:
 	virtual bool is_ignoring_warnings() const = 0;
 #endif // DEBUG_ENABLED
 
-	virtual ~GDScriptTokenizer(){};
+	virtual ~GDScriptTokenizer() {}
 };
 
 class GDScriptTokenizerText : public GDScriptTokenizer {

@@ -62,6 +62,8 @@ static const unsigned int MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
+////// _ResourceLoader //////
+
 _ResourceLoader *_ResourceLoader::singleton = nullptr;
 
 Error _ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads) {
@@ -150,10 +152,7 @@ void _ResourceLoader::_bind_methods() {
 	BIND_ENUM_CONSTANT(THREAD_LOAD_LOADED);
 }
 
-_ResourceLoader::_ResourceLoader() {
-
-	singleton = this;
-}
+////// _ResourceSaver //////
 
 Error _ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path '" + String(p_path) + "'.");
@@ -189,10 +188,7 @@ void _ResourceSaver::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_REPLACE_SUBRESOURCE_PATHS);
 }
 
-_ResourceSaver::_ResourceSaver() {
-
-	singleton = this;
-}
+////// _OS //////
 
 PackedStringArray _OS::get_connected_midi_inputs() {
 	return OS::get_singleton()->get_connected_midi_inputs();
@@ -318,50 +314,6 @@ bool _OS::has_feature(const String &p_feature) const {
 
 	return OS::get_singleton()->has_feature(p_feature);
 }
-
-/*
-enum Weekday {
-	DAY_SUNDAY,
-	DAY_MONDAY,
-	DAY_TUESDAY,
-	DAY_WEDNESDAY,
-	DAY_THURSDAY,
-	DAY_FRIDAY,
-	DAY_SATURDAY
-};
-
-enum Month {
-	MONTH_JANUARY,
-	MONTH_FEBRUARY,
-	MONTH_MARCH,
-	MONTH_APRIL,
-	MONTH_MAY,
-	MONTH_JUNE,
-	MONTH_JULY,
-	MONTH_AUGUST,
-	MONTH_SEPTEMBER,
-	MONTH_OCTOBER,
-	MONTH_NOVEMBER,
-	MONTH_DECEMBER
-};
-*/
-/*
-struct Date {
-
-	int year;
-	Month month;
-	int day;
-	Weekday weekday;
-	bool dst;
-};
-
-struct Time {
-
-	int hour;
-	int min;
-	int sec;
-};
-*/
 
 uint64_t _OS::get_static_memory_usage() const {
 
@@ -783,6 +735,7 @@ Vector<String> _OS::get_granted_permissions() const {
 String _OS::get_unique_id() const {
 	return OS::get_singleton()->get_unique_id();
 }
+
 _OS *_OS::singleton = nullptr;
 
 void _OS::_bind_methods() {
@@ -838,8 +791,6 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("can_use_threads"), &_OS::can_use_threads);
 
 	ClassDB::bind_method(D_METHOD("is_debug_build"), &_OS::is_debug_build);
-
-	//ClassDB::bind_method(D_METHOD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 
 	ClassDB::bind_method(D_METHOD("dump_memory_to_file", "file"), &_OS::dump_memory_to_file);
 	ClassDB::bind_method(D_METHOD("dump_resources_to_file", "file"), &_OS::dump_resources_to_file);
@@ -914,12 +865,7 @@ void _OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_RINGTONES);
 }
 
-_OS::_OS() {
-
-	singleton = this;
-}
-
-///////////////////// GEOMETRY
+////// _Geometry //////
 
 _Geometry *_Geometry::singleton = nullptr;
 
@@ -1296,11 +1242,7 @@ void _Geometry::_bind_methods() {
 	BIND_ENUM_CONSTANT(END_ROUND);
 }
 
-_Geometry::_Geometry() {
-	singleton = this;
-}
-
-///////////////////////// FILE
+////// _File //////
 
 Error _File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
 
@@ -1736,19 +1678,12 @@ void _File::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESSION_GZIP);
 }
 
-_File::_File() {
-
-	f = nullptr;
-	eswap = false;
-}
-
 _File::~_File() {
-
 	if (f)
 		memdelete(f);
 }
 
-///////////////////////////////////////////////////////
+////// _Directory //////
 
 Error _Directory::open(const String &p_path) {
 	Error err;
@@ -1929,15 +1864,15 @@ void _Directory::_bind_methods() {
 }
 
 _Directory::_Directory() {
-
 	d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 }
 
 _Directory::~_Directory() {
-
 	if (d)
 		memdelete(d);
 }
+
+////// _Marshalls //////
 
 _Marshalls *_Marshalls::singleton = nullptr;
 
@@ -2046,7 +1981,7 @@ void _Marshalls::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("base64_to_utf8", "base64_str"), &_Marshalls::base64_to_utf8);
 };
 
-////////////////
+////// _Semaphore //////
 
 void _Semaphore::wait() {
 
@@ -2070,7 +2005,7 @@ void _Semaphore::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
 }
 
-///////////////
+////// _Mutex //////
 
 void _Mutex::lock() {
 
@@ -2094,7 +2029,7 @@ void _Mutex::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unlock"), &_Mutex::unlock);
 }
 
-///////////////
+////// _Thread //////
 
 void _Thread::_start_func(void *ud) {
 
@@ -2204,19 +2139,12 @@ void _Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
 }
-_Thread::_Thread() {
-
-	active = false;
-	thread = nullptr;
-	target_instance = nullptr;
-}
 
 _Thread::~_Thread() {
-
 	ERR_FAIL_COND_MSG(active, "Reference to a Thread object was lost while the thread is still running...");
 }
 
-/////////////////////////////////////
+////// _ClassDB //////
 
 PackedStringArray _ClassDB::get_class_list() const {
 
@@ -2425,11 +2353,7 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_class_enabled", "class"), &_ClassDB::is_class_enabled);
 }
 
-_ClassDB::_ClassDB() {
-}
-_ClassDB::~_ClassDB() {
-}
-///////////////////////////////
+////// _Engine //////
 
 void _Engine::set_iterations_per_second(int p_ips) {
 
@@ -2588,9 +2512,7 @@ void _Engine::_bind_methods() {
 
 _Engine *_Engine::singleton = nullptr;
 
-_Engine::_Engine() {
-	singleton = this;
-}
+////// _JSON //////
 
 void JSONParseResult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error"), &JSONParseResult::get_error);
@@ -2663,7 +2585,3 @@ Ref<JSONParseResult> _JSON::parse(const String &p_json) {
 }
 
 _JSON *_JSON::singleton = nullptr;
-
-_JSON::_JSON() {
-	singleton = this;
-}

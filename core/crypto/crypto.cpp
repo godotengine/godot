@@ -94,9 +94,6 @@ Ref<X509Certificate> Crypto::generate_self_signed_certificate(Ref<CryptoKey> p_k
 	ERR_FAIL_V_MSG(nullptr, "generate_self_signed_certificate is not available when mbedtls module is disabled.");
 }
 
-Crypto::Crypto() {
-}
-
 /// Resource loader/saver
 
 RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {

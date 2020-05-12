@@ -43,34 +43,33 @@ public:
 		virtual bool is_utf8() const = 0;
 		virtual bool is_eof() const = 0;
 
-		CharType saved;
+		CharType saved = 0;
 
-		Stream() :
-				saved(0) {}
+		Stream() {}
 		virtual ~Stream() {}
 	};
 
 	struct StreamFile : public Stream {
 
-		FileAccess *f;
+		FileAccess *f = nullptr;
 
 		virtual CharType get_char();
 		virtual bool is_utf8() const;
 		virtual bool is_eof() const;
 
-		StreamFile() { f = nullptr; }
+		StreamFile() {}
 	};
 
 	struct StreamString : public Stream {
 
 		String s;
-		int pos;
+		int pos = 0;
 
 		virtual CharType get_char();
 		virtual bool is_utf8() const;
 		virtual bool is_eof() const;
 
-		StreamString() { pos = 0; }
+		StreamString() {}
 	};
 
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);

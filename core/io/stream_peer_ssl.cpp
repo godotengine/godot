@@ -73,7 +73,3 @@ void StreamPeerSSL::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATUS_ERROR);
 	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
 }
-
-StreamPeerSSL::StreamPeerSSL() {
-	blocking_handshake = true;
-}

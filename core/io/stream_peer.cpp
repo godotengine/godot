@@ -536,8 +536,3 @@ Ref<StreamPeerBuffer> StreamPeerBuffer::duplicate() const {
 	spb->data = data;
 	return spb;
 }
-
-StreamPeerBuffer::StreamPeerBuffer() {
-
-	pointer = 0;
-}

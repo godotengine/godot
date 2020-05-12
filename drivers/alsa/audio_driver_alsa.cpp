@@ -331,14 +331,4 @@ void AudioDriverALSA::finish() {
 	finish_device();
 }
 
-AudioDriverALSA::AudioDriverALSA() :
-		thread(nullptr),
-		pcm_handle(nullptr),
-		device_name("Default"),
-		new_device("Default") {
-}
-
-AudioDriverALSA::~AudioDriverALSA() {
-}
-
-#endif
+#endif // ALSA_ENABLED

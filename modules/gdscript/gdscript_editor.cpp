@@ -492,31 +492,24 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 
 struct GDScriptCompletionContext {
 
-	const GDScriptParser::ClassNode *_class;
-	const GDScriptParser::FunctionNode *function;
-	const GDScriptParser::BlockNode *block;
-	Object *base;
+	const GDScriptParser::ClassNode *_class = nullptr;
+	const GDScriptParser::FunctionNode *function = nullptr;
+	const GDScriptParser::BlockNode *block = nullptr;
+	Object *base = nullptr;
 	String base_path;
-	int line;
-	uint32_t depth;
+	int line = 0;
+	uint32_t depth = 0;
 
-	GDScriptCompletionContext() :
-			_class(nullptr),
-			function(nullptr),
-			block(nullptr),
-			base(nullptr),
-			line(0),
-			depth(0) {}
+	GDScriptCompletionContext() {}
 };
 
 struct GDScriptCompletionIdentifier {
 	GDScriptParser::DataType type;
 	String enumeration;
 	Variant value;
-	const GDScriptParser::Node *assigned_expression;
+	const GDScriptParser::Node *assigned_expression = nullptr;
 
-	GDScriptCompletionIdentifier() :
-			assigned_expression(nullptr) {}
+	GDScriptCompletionIdentifier() {}
 };
 
 static void _get_directory_contents(EditorFileSystemDirectory *p_dir, Map<String, ScriptCodeCompletionOption> &r_list) {

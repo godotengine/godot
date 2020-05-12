@@ -317,15 +317,6 @@ Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t 
 	return ERR_UNAVAILABLE;
 }
 
-FileAccessEncrypted::FileAccessEncrypted() {
-
-	file = nullptr;
-	pos = 0;
-	eofed = false;
-	mode = MODE_MAX;
-	writing = false;
-}
-
 FileAccessEncrypted::~FileAccessEncrypted() {
 
 	if (file)

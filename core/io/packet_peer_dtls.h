@@ -60,7 +60,7 @@ public:
 	static PacketPeerDTLS *create();
 	static bool is_available();
 
-	PacketPeerDTLS();
+	PacketPeerDTLS() {}
 };
 
 VARIANT_ENUM_CAST(PacketPeerDTLS::Status);

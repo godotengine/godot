@@ -43,7 +43,7 @@ public:
 	};
 
 private:
-	int cache_size;
+	int cache_size = DEFAULT_CACHE_SIZE;
 
 	int cache_data_left() const;
 	mutable Error last_error;
@@ -87,8 +87,8 @@ public:
 
 	virtual Error get_error() const;
 
-	FileAccessBuffered();
-	virtual ~FileAccessBuffered();
+	FileAccessBuffered() {}
+	virtual ~FileAccessBuffered() {}
 };
 
 #endif

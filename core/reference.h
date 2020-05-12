@@ -52,13 +52,13 @@ public:
 	int reference_get_count() const;
 
 	Reference();
-	~Reference();
+	~Reference() {}
 };
 
 template <class T>
 class Ref {
 
-	T *reference;
+	T *reference = nullptr;
 
 	void ref(const Ref &p_from) {
 
@@ -189,15 +189,11 @@ public:
 	}
 
 	Ref(const Ref &p_from) {
-
-		reference = nullptr;
 		ref(p_from);
 	}
 
 	template <class T_Other>
 	Ref(const Ref<T_Other> &p_from) {
-
-		reference = nullptr;
 		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
 		if (!refb) {
 			unref();
@@ -210,26 +206,20 @@ public:
 	}
 
 	Ref(T *p_reference) {
-
-		reference = nullptr;
 		if (p_reference)
 			ref_pointer(p_reference);
 	}
 
 	Ref(const Variant &p_variant) {
-
 		Object *object = p_variant.get_validated_object();
 
 		if (!object) {
-			reference = nullptr;
 			return;
 		}
 
 		T *r = Object::cast_to<T>(object);
 		if (r && r->reference()) {
 			reference = r;
-		} else {
-			reference = nullptr;
 		}
 	}
 
@@ -252,13 +242,9 @@ public:
 		ref(memnew(T));
 	}
 
-	Ref() {
-
-		reference = nullptr;
-	}
+	Ref() {}
 
 	~Ref() {
-
 		unref();
 	}
 };
@@ -279,7 +265,7 @@ public:
 	void set_obj(Object *p_object);
 	void set_ref(const REF &p_ref);
 
-	WeakRef();
+	WeakRef() {}
 };
 
 #ifdef PTRCALL_ENABLED

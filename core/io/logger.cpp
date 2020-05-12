@@ -102,8 +102,6 @@ void Logger::logf_error(const char *p_format, ...) {
 	va_end(argp);
 }
 
-Logger::~Logger() {}
-
 void RotatedFileLogger::close_file() {
 	if (file) {
 		memdelete(file);
@@ -180,8 +178,7 @@ void RotatedFileLogger::rotate_file() {
 
 RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files) :
 		base_path(p_base_path.simplify_path()),
-		max_files(p_max_files > 0 ? p_max_files : 1),
-		file(nullptr) {
+		max_files(p_max_files > 0 ? p_max_files : 1) {
 	rotate_file();
 }
 
@@ -235,8 +232,6 @@ void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 #endif
 	}
 }
-
-StdLogger::~StdLogger() {}
 
 CompositeLogger::CompositeLogger(Vector<Logger *> p_loggers) :
 		loggers(p_loggers) {

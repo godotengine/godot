@@ -256,25 +256,7 @@ void RigidBodyBullet::KinematicUtilities::just_delete_shapes(int new_size) {
 }
 
 RigidBodyBullet::RigidBodyBullet() :
-		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_RIGID_BODY),
-		kinematic_utilities(nullptr),
-		locked_axis(0),
-		mass(1),
-		gravity_scale(1),
-		linearDamp(0),
-		angularDamp(0),
-		can_sleep(true),
-		omit_forces_integration(false),
-		can_integrate_forces(false),
-		maxCollisionsDetection(0),
-		collisionsCount(0),
-		prev_collision_count(0),
-		maxAreasWhereIam(10),
-		areaWhereIamCount(0),
-		countGravityPointSpaces(0),
-		isScratchedSpaceOverrideModificator(false),
-		previousActiveState(true),
-		force_integration_callback(nullptr) {
+		RigidCollisionObjectBullet(CollisionObjectBullet::TYPE_RIGID_BODY) {
 
 	godotMotionState = bulletnew(GodotMotionState(this));
 

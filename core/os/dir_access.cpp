@@ -446,11 +446,3 @@ bool DirAccess::exists(String p_dir) {
 	memdelete(da);
 	return valid;
 }
-
-DirAccess::DirAccess() {
-
-	_access_type = ACCESS_FILESYSTEM;
-}
-
-DirAccess::~DirAccess() {
-}

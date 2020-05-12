@@ -1433,16 +1433,6 @@ int Input::get_joy_axis_index_from_string(String p_axis) {
 Input::Input() {
 
 	singleton = this;
-	use_accumulated_input = true;
-	mouse_button_mask = 0;
-	mouse_window = 0;
-	emulate_touch_from_mouse = false;
-	emulate_mouse_from_touch = false;
-	mouse_from_touch_index = -1;
-	event_dispatch_function = nullptr;
-	default_shape = CURSOR_ARROW;
-
-	fallback_mapping = -1;
 
 	// Parse default mappings.
 	{

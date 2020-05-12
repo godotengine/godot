@@ -242,14 +242,8 @@ void NavigationRegion3D::_changed_callback(Object *p_changed, const char *p_prop
 }
 
 NavigationRegion3D::NavigationRegion3D() {
-
-	enabled = true;
 	set_notify_transform(true);
 	region = NavigationServer3D::get_singleton()->region_create();
-
-	navigation = nullptr;
-	debug_view = nullptr;
-	bake_thread = nullptr;
 }
 
 NavigationRegion3D::~NavigationRegion3D() {

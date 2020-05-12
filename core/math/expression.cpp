@@ -2298,17 +2298,6 @@ void Expression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
 }
 
-Expression::Expression() :
-		output_type(Variant::NIL),
-		sequenced(false),
-		error_set(true),
-		root(nullptr),
-		nodes(nullptr),
-		execution_error(false) {
-	str_ofs = 0;
-	expression_dirty = false;
-}
-
 Expression::~Expression() {
 
 	if (nodes) {

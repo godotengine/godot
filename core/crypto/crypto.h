@@ -31,11 +31,10 @@
 #ifndef CRYPTO_H
 #define CRYPTO_H
 
-#include "core/reference.h"
-#include "core/resource.h"
-
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/reference.h"
+#include "core/resource.h"
 
 class CryptoKey : public Resource {
 	GDCLASS(CryptoKey, Resource);
@@ -80,7 +79,7 @@ public:
 	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
 	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after);
 
-	Crypto();
+	Crypto() {}
 };
 
 class ResourceFormatLoaderCrypto : public ResourceFormatLoader {

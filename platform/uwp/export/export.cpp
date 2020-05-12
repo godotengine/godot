@@ -115,21 +115,15 @@ class AppxPackager {
 	struct FileMeta {
 
 		String name;
-		int lfh_size;
-		bool compressed;
-		size_t compressed_size;
-		size_t uncompressed_size;
+		int lfh_size = 0;
+		bool compressed = false;
+		size_t compressed_size = 0;
+		size_t uncompressed_size = 0;
 		Vector<BlockHash> hashes;
-		uLong file_crc32;
-		ZPOS64_T zip_offset;
+		uLong file_crc32 = 0;
+		ZPOS64_T zip_offset = 0;
 
-		FileMeta() :
-				lfh_size(0),
-				compressed(false),
-				compressed_size(0),
-				uncompressed_size(0),
-				file_crc32(0),
-				zip_offset(0) {}
+		FileMeta() {}
 	};
 
 	String progress_task;

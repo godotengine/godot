@@ -45,12 +45,12 @@ class Delaunay3D {
 
 	struct Triangle {
 		uint32_t triangle[3];
-		bool bad;
+		bool bad = false;
 		_FORCE_INLINE_ bool operator==(const Triangle &p_triangle) const {
 			return triangle[0] == p_triangle.triangle[0] && triangle[1] == p_triangle.triangle[1] && triangle[2] == p_triangle.triangle[2];
 		}
 
-		_FORCE_INLINE_ Triangle() { bad = false; }
+		_FORCE_INLINE_ Triangle() {}
 		_FORCE_INLINE_ Triangle(uint32_t p_a, uint32_t p_b, uint32_t p_c) {
 			if (p_a > p_b)
 				SWAP(p_a, p_b);
@@ -59,7 +59,6 @@ class Delaunay3D {
 			if (p_a > p_b)
 				SWAP(p_a, p_b);
 
-			bad = false;
 			triangle[0] = p_a;
 			triangle[1] = p_b;
 			triangle[2] = p_c;
@@ -72,9 +71,6 @@ class Delaunay3D {
 			h = hash_djb2_one_32(p_triangle.triangle[1], h);
 			return hash_djb2_one_32(p_triangle.triangle[2], h);
 		}
-	};
-
-	struct FPVal {
 	};
 
 	_FORCE_INLINE_ static void circum_sphere_compute(const Vector3 *p_points, Simplex *p_simplex) {

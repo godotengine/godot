@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "export.h"
+
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
@@ -74,12 +75,9 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	struct ExportArchitecture {
 
 		String name;
-		bool is_default;
+		bool is_default = false;
 
-		ExportArchitecture() :
-				name(""),
-				is_default(false) {
-		}
+		ExportArchitecture() {}
 
 		ExportArchitecture(String p_name, bool p_is_default) {
 			name = p_name;

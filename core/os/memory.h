@@ -194,7 +194,7 @@ void memdelete_arr(T *p_class) {
 
 struct _GlobalNil {
 
-	int color;
+	int color = 1;
 	_GlobalNil *right;
 	_GlobalNil *left;
 	_GlobalNil *parent;

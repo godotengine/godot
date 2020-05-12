@@ -44,7 +44,7 @@ struct Color {
 			float b;
 			float a;
 		};
-		float components[4];
+		float components[4] = { 0, 0, 0, 1.0 };
 	};
 
 	bool operator==(const Color &p_color) const { return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a); }
@@ -204,15 +204,7 @@ struct Color {
 	_FORCE_INLINE_ bool operator<(const Color &p_color) const; //used in set keys
 	operator String() const;
 
-	/**
-	 * No construct parameters, r=0, g=0, b=0. a=1
-	 */
-	_FORCE_INLINE_ Color() {
-		r = 0;
-		g = 0;
-		b = 0;
-		a = 1.0;
-	}
+	_FORCE_INLINE_ Color() {}
 
 	/**
 	 * RGB / RGBA construct parameters. Alpha is optional, but defaults to 1.0

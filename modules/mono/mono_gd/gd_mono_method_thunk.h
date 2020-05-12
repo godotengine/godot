@@ -50,7 +50,7 @@ struct GDMonoMethodThunk {
 
 	typedef void(GD_MONO_STDCALL *M)(ParamTypes... p_args, MonoException **);
 
-	M mono_method_thunk;
+	M mono_method_thunk = nullptr;
 
 public:
 	_FORCE_INLINE_ void invoke(ParamTypes... p_args, MonoException **r_exc) {
@@ -81,9 +81,7 @@ public:
 		mono_method_thunk = (M)mono_method_get_unmanaged_thunk(p_mono_method->get_mono_ptr());
 	}
 
-	GDMonoMethodThunk() :
-			mono_method_thunk(nullptr) {
-	}
+	GDMonoMethodThunk() {}
 
 	explicit GDMonoMethodThunk(GDMonoMethod *p_mono_method) {
 		set_from_method(p_mono_method);
@@ -95,7 +93,7 @@ struct GDMonoMethodThunkR {
 
 	typedef R(GD_MONO_STDCALL *M)(ParamTypes... p_args, MonoException **);
 
-	M mono_method_thunk;
+	M mono_method_thunk = nullptr;
 
 public:
 	_FORCE_INLINE_ R invoke(ParamTypes... p_args, MonoException **r_exc) {
@@ -127,9 +125,7 @@ public:
 		mono_method_thunk = (M)mono_method_get_unmanaged_thunk(p_mono_method->get_mono_ptr());
 	}
 
-	GDMonoMethodThunkR() :
-			mono_method_thunk(nullptr) {
-	}
+	GDMonoMethodThunkR() {}
 
 	explicit GDMonoMethodThunkR(GDMonoMethod *p_mono_method) {
 #ifdef DEBUG_ENABLED
@@ -248,7 +244,7 @@ struct VariadicInvokeMonoMethodR<1, R, P1> {
 template <class... ParamTypes>
 struct GDMonoMethodThunk {
 
-	GDMonoMethod *mono_method;
+	GDMonoMethod *mono_method = nullptr;
 
 public:
 	_FORCE_INLINE_ void invoke(ParamTypes... p_args, MonoException **r_exc) {
@@ -277,9 +273,7 @@ public:
 		mono_method = p_mono_method;
 	}
 
-	GDMonoMethodThunk() :
-			mono_method(nullptr) {
-	}
+	GDMonoMethodThunk() {}
 
 	explicit GDMonoMethodThunk(GDMonoMethod *p_mono_method) {
 		set_from_method(p_mono_method);
@@ -289,7 +283,7 @@ public:
 template <class R, class... ParamTypes>
 struct GDMonoMethodThunkR {
 
-	GDMonoMethod *mono_method;
+	GDMonoMethod *mono_method = nullptr;
 
 public:
 	_FORCE_INLINE_ R invoke(ParamTypes... p_args, MonoException **r_exc) {
@@ -318,9 +312,7 @@ public:
 		mono_method = p_mono_method;
 	}
 
-	GDMonoMethodThunkR() :
-			mono_method(nullptr) {
-	}
+	GDMonoMethodThunkR() {}
 
 	explicit GDMonoMethodThunkR(GDMonoMethod *p_mono_method) {
 		set_from_method(p_mono_method);
