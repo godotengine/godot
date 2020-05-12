@@ -39,9 +39,9 @@
 
 class CallableCustomMethodPointerBase : public CallableCustom {
 
-	uint32_t *comp_ptr;
-	uint32_t comp_size;
-	uint32_t h;
+	uint32_t *comp_ptr = nullptr;
+	uint32_t comp_size = 0;
+	uint32_t h = 0;
 #ifdef DEBUG_METHODS_ENABLED
 	const char *text = "";
 #endif
@@ -68,6 +68,8 @@ public:
 	virtual CompareLessFunc get_compare_less_func() const;
 
 	virtual uint32_t hash() const;
+
+	CallableCustomMethodPointerBase() {}
 };
 
 #ifdef DEBUG_METHODS_ENABLED
