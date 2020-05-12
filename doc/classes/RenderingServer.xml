@@ -1282,7 +1282,7 @@
 			<argument index="1" name="base" type="RID">
 			</argument>
 			<description>
-				Sets the base of the instance. A base can be any of the 3D objects that are created in the RenderingServer that can be displayed. For example, any of the light types, mesh, multimesh, immediate geometry, particle system, reflection probe, lightmap capture, and the GI probe are all types that can be set as the base of an instance in order to be displayed in the scenario.
+				Sets the base of the instance. A base can be any of the 3D objects that are created in the RenderingServer that can be displayed. For example, any of the light types, mesh, multimesh, immediate geometry, particle system, reflection probe, lightmap, and the GI probe are all types that can be set as the base of an instance in order to be displayed in the scenario.
 			</description>
 		</method>
 		<method name="instance_set_blend_shape_weight">
@@ -1375,19 +1375,6 @@
 			</argument>
 			<description>
 				Sets the world space transform of the instance. Equivalent to [member Node3D.transform].
-			</description>
-		</method>
-		<method name="instance_set_use_lightmap">
-			<return type="void">
-			</return>
-			<argument index="0" name="instance" type="RID">
-			</argument>
-			<argument index="1" name="lightmap_instance" type="RID">
-			</argument>
-			<argument index="2" name="lightmap" type="RID">
-			</argument>
-			<description>
-				Sets the lightmap to use with this instance.
 			</description>
 		</method>
 		<method name="instance_set_visible">
@@ -1582,115 +1569,6 @@
 			</argument>
 			<description>
 				Sets whether GI probes capture light information from this light.
-			</description>
-		</method>
-		<method name="lightmap_capture_create">
-			<return type="RID">
-			</return>
-			<description>
-				Creates a lightmap capture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]lightmap_capture_*[/code] RenderingServer functions.
-				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
-				To place in a scene, attach this lightmap capture to an instance using [method instance_set_base] using the returned RID.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_bounds" qualifiers="const">
-			<return type="AABB">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the size of the lightmap capture area.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_energy" qualifiers="const">
-			<return type="float">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the energy multiplier used by the lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_octree" qualifiers="const">
-			<return type="PackedByteArray">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the octree used by the lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_octree_cell_subdiv" qualifiers="const">
-			<return type="int">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the cell subdivision amount used by this lightmap capture's octree.
-			</description>
-		</method>
-		<method name="lightmap_capture_get_octree_cell_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<description>
-				Returns the cell transform for this lightmap capture's octree.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_bounds">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="bounds" type="AABB">
-			</argument>
-			<description>
-				Sets the size of the area covered by the lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_energy">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="energy" type="float">
-			</argument>
-			<description>
-				Sets the energy multiplier for this lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_octree">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="octree" type="PackedByteArray">
-			</argument>
-			<description>
-				Sets the octree to be used by this lightmap capture.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_octree_cell_subdiv">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="subdiv" type="int">
-			</argument>
-			<description>
-				Sets the subdivision level of this lightmap capture's octree.
-			</description>
-		</method>
-		<method name="lightmap_capture_set_octree_cell_transform">
-			<return type="void">
-			</return>
-			<argument index="0" name="capture" type="RID">
-			</argument>
-			<argument index="1" name="xform" type="Transform">
-			</argument>
-			<description>
-				Sets the octree cell transform for this lightmap capture's octree.
 			</description>
 		</method>
 		<method name="make_sphere_mesh">
@@ -3725,8 +3603,8 @@
 		<constant name="INSTANCE_GI_PROBE" value="8" enum="InstanceType">
 			The instance is a GI probe.
 		</constant>
-		<constant name="INSTANCE_LIGHTMAP_CAPTURE" value="9" enum="InstanceType">
-			The instance is a lightmap capture.
+		<constant name="INSTANCE_LIGHTMAP" value="9" enum="InstanceType">
+			The instance is a lightmap.
 		</constant>
 		<constant name="INSTANCE_MAX" value="10" enum="InstanceType">
 			Represents the size of the [enum InstanceType] enum.
