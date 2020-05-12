@@ -58,7 +58,7 @@ private:
 
 	uint32_t capacity;
 
-	uint32_t num_elements;
+	uint32_t num_elements = 0;
 
 	static const uint32_t EMPTY_HASH = 0;
 
@@ -350,7 +350,6 @@ public:
 	OAHashMap(uint32_t p_initial_capacity = 64) {
 
 		capacity = p_initial_capacity;
-		num_elements = 0;
 
 		keys = memnew_arr(TKey, p_initial_capacity);
 		values = memnew_arr(TValue, p_initial_capacity);

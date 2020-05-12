@@ -87,41 +87,37 @@ private:
 	struct TrackNodeCache {
 
 		NodePath path;
-		uint32_t id;
+		uint32_t id = 0;
 		RES resource;
-		Node *node;
-		Node3D *spatial;
-		Node2D *node_2d;
-		Skeleton3D *skeleton;
-		int bone_idx;
+		Node *node = nullptr;
+		Node3D *spatial = nullptr;
+		Node2D *node_2d = nullptr;
+		Skeleton3D *skeleton = nullptr;
+		int bone_idx = -1;
 		// accumulated transforms
 
 		Vector3 loc_accum;
 		Quat rot_accum;
 		Vector3 scale_accum;
-		uint64_t accum_pass;
+		uint64_t accum_pass = 0;
 
-		bool audio_playing;
-		float audio_start;
-		float audio_len;
+		bool audio_playing = false;
+		float audio_start = 0.0;
+		float audio_len = 0.0;
 
-		bool animation_playing;
+		bool animation_playing = false;
 
 		struct PropertyAnim {
 
-			TrackNodeCache *owner;
-			SpecialProperty special; //small optimization
+			TrackNodeCache *owner = nullptr;
+			SpecialProperty special = SP_NONE; //small optimization
 			Vector<StringName> subpath;
-			Object *object;
+			Object *object = nullptr;
 			Variant value_accum;
-			uint64_t accum_pass;
+			uint64_t accum_pass = 0;
 			Variant capture;
 
-			PropertyAnim() :
-					owner(nullptr),
-					special(SP_NONE),
-					object(nullptr),
-					accum_pass(0) {}
+			PropertyAnim() {}
 		};
 
 		Map<StringName, PropertyAnim> property_anim;
@@ -129,32 +125,17 @@ private:
 		struct BezierAnim {
 
 			Vector<StringName> bezier_property;
-			TrackNodeCache *owner;
-			float bezier_accum;
-			Object *object;
-			uint64_t accum_pass;
+			TrackNodeCache *owner = nullptr;
+			float bezier_accum = 0.0;
+			Object *object = nullptr;
+			uint64_t accum_pass = 0;
 
-			BezierAnim() :
-					owner(nullptr),
-					bezier_accum(0.0),
-					object(nullptr),
-					accum_pass(0) {}
+			BezierAnim() {}
 		};
 
 		Map<StringName, BezierAnim> bezier_anim;
 
-		TrackNodeCache() :
-				id(0),
-				node(nullptr),
-				spatial(nullptr),
-				node_2d(nullptr),
-				skeleton(nullptr),
-				bone_idx(-1),
-				accum_pass(0),
-				audio_playing(false),
-				audio_start(0.0),
-				audio_len(0.0),
-				animation_playing(false) {}
+		TrackNodeCache() {}
 	};
 
 	struct TrackNodeCacheKey {

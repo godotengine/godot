@@ -960,8 +960,7 @@ RID Generic6DOFJoint3D::_configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *b
 	return j;
 }
 
-Generic6DOFJoint3D::Generic6DOFJoint3D() :
-		precision(1) {
+Generic6DOFJoint3D::Generic6DOFJoint3D() {
 
 	set_param_x(PARAM_LINEAR_LOWER_LIMIT, 0);
 	set_param_x(PARAM_LINEAR_UPPER_LIMIT, 0);

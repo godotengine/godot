@@ -173,7 +173,7 @@ class TooltipPanel : public PopupPanel {
 	GDCLASS(TooltipPanel, PopupPanel);
 
 public:
-	TooltipPanel(){};
+	TooltipPanel() {}
 };
 
 class TooltipLabel : public Label {
@@ -181,7 +181,7 @@ class TooltipLabel : public Label {
 	GDCLASS(TooltipLabel, Label);
 
 public:
-	TooltipLabel(){};
+	TooltipLabel() {}
 };
 
 Viewport::GUI::GUI() {

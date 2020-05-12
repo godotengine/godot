@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "label.h"
+
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/translation.h"
@@ -693,24 +694,8 @@ void Label::_bind_methods() {
 }
 
 Label::Label(const String &p_text) {
-
-	align = ALIGN_LEFT;
-	valign = VALIGN_TOP;
-	xl_text = "";
-	word_cache = nullptr;
-	word_cache_dirty = true;
-	autowrap = false;
-	line_count = 0;
-	set_v_size_flags(0);
-	clip = false;
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
-	total_char_cache = 0;
-	visible_chars = -1;
-	percent_visible = 1;
-	lines_skipped = 0;
-	max_lines_visible = -1;
 	set_text(p_text);
-	uppercase = false;
 	set_v_size_flags(SIZE_SHRINK_CENTER);
 }
 

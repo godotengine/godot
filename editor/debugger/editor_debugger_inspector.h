@@ -61,7 +61,7 @@ public:
 
 	void update() { _change_notify(); }
 
-	EditorDebuggerRemoteObject(){};
+	EditorDebuggerRemoteObject() {}
 };
 
 class EditorDebuggerInspector : public EditorInspector {

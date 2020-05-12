@@ -48,7 +48,7 @@ public:
 
 	static RWLock *create(); ///< Create a rwlock
 
-	virtual ~RWLock();
+	virtual ~RWLock() {}
 };
 
 class RWLockRead {

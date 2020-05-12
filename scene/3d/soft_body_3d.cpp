@@ -97,9 +97,7 @@ void SoftBodyRenderingServerHandler::set_aabb(const AABB &p_aabb) {
 	RS::get_singleton()->mesh_set_custom_aabb(mesh, p_aabb);
 }
 
-SoftBody3D::PinnedPoint::PinnedPoint() :
-		point_index(-1),
-		spatial_attachment(nullptr) {
+SoftBody3D::PinnedPoint::PinnedPoint() {
 }
 
 SoftBody3D::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
@@ -702,13 +700,7 @@ bool SoftBody3D::is_ray_pickable() const {
 }
 
 SoftBody3D::SoftBody3D() :
-		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()),
-		mesh_owner(false),
-		collision_mask(1),
-		collision_layer(1),
-		simulation_started(false),
-		pinned_points_cache_dirty(true),
-		ray_pickable(true) {
+		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()) {
 
 	PhysicsServer3D::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 }

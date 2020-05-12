@@ -36,18 +36,7 @@
 #include "space_bullet.h"
 
 SoftBodyBullet::SoftBodyBullet() :
-		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
-		bt_soft_body(nullptr),
-		isScratched(false),
-		simulation_precision(5),
-		total_mass(1.),
-		linear_stiffness(0.5),
-		areaAngular_stiffness(0.5),
-		volume_stiffness(0.5),
-		pressure_coefficient(0.),
-		pose_matching_coefficient(0.),
-		damping_coefficient(0.01),
-		drag_coefficient(0.) {}
+		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY) {}
 
 SoftBodyBullet::~SoftBodyBullet() {
 }

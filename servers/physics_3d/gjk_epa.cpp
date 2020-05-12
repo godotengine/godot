@@ -513,16 +513,16 @@ struct	GJK
 		};
 		struct	sList
 		{
-			sFace*		root;
-			U			count;
-			sList() : root(nullptr),count(0)	{}
+			sFace*		root = nullptr;
+			U			count = 0;
+			sList() 	{}
 		};
 		struct	sHorizon
 		{
-			sFace*		cf;
-			sFace*		ff;
-			U			nf;
-			sHorizon() : cf(nullptr),ff(nullptr),nf(0)	{}
+			sFace*		cf = nullptr;
+			sFace*		ff = nullptr;
+			U			nf = 0;
+			sHorizon() 	{}
 		};
 		struct	eStatus { enum _ {
 			Valid,

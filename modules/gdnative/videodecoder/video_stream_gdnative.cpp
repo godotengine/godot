@@ -202,22 +202,7 @@ void VideoStreamPlaybackGDNative::update_texture() {
 // ctor and dtor
 
 VideoStreamPlaybackGDNative::VideoStreamPlaybackGDNative() :
-		texture(Ref<ImageTexture>(memnew(ImageTexture))),
-		playing(false),
-		paused(false),
-		mix_udata(nullptr),
-		mix_callback(nullptr),
-		num_channels(-1),
-		time(0),
-		seek_backward(false),
-		mix_rate(0),
-		delay_compensation(0),
-		pcm(nullptr),
-		pcm_write_idx(0),
-		samples_decoded(0),
-		file(nullptr),
-		interface(nullptr),
-		data_struct(nullptr) {}
+		texture(Ref<ImageTexture>(memnew(ImageTexture))) {}
 
 VideoStreamPlaybackGDNative::~VideoStreamPlaybackGDNative() {
 	cleanup();

@@ -550,11 +550,6 @@ MultiplayerAPI::RPCMode PluginScript::get_rset_mode(const StringName &p_variable
 }
 
 PluginScript::PluginScript() :
-		_data(nullptr),
-		_desc(nullptr),
-		_language(nullptr),
-		_tool(false),
-		_valid(false),
 		_script_list(this) {
 }
 

@@ -52,7 +52,6 @@ GodotRayWorldAlgorithm::GodotRayWorldAlgorithm(const btDiscreteDynamicsWorld *wo
 		btActivatingCollisionAlgorithm(ci, body0Wrap, body1Wrap),
 		m_world(world),
 		m_manifoldPtr(mf),
-		m_ownManifold(false),
 		m_isSwapped(isSwapped) {}
 
 GodotRayWorldAlgorithm::~GodotRayWorldAlgorithm() {

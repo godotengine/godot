@@ -372,8 +372,8 @@ void OSIPhone::finalize() {
 	event_count = 0;
 };
 
-void OSIPhone::set_mouse_show(bool p_show){};
-void OSIPhone::set_mouse_grab(bool p_grab){};
+void OSIPhone::set_mouse_show(bool p_show) {}
+void OSIPhone::set_mouse_grab(bool p_grab) {}
 
 bool OSIPhone::is_mouse_grab_enabled() const {
 
@@ -390,7 +390,7 @@ int OSIPhone::get_mouse_button_state() const {
 	return 0;
 };
 
-void OSIPhone::set_window_title(const String &p_title){};
+void OSIPhone::set_window_title(const String &p_title) {}
 
 void OSIPhone::alert(const String &p_alert, const String &p_title) {
 

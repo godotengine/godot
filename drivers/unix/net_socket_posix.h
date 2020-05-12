@@ -48,8 +48,8 @@ class NetSocketPosix : public NetSocket {
 
 private:
 	SOCKET_TYPE _sock;
-	IP::Type _ip_type;
-	bool _is_stream;
+	IP::Type _ip_type = IP::TYPE_NONE;
+	bool _is_stream = false;
 
 	enum NetError {
 		ERR_NET_WOULD_BLOCK,

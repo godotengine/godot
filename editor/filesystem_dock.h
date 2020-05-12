@@ -148,11 +148,9 @@ private:
 	class FileOrFolder {
 	public:
 		String path;
-		bool is_file;
+		bool is_file = false;
 
-		FileOrFolder() :
-				path(""),
-				is_file(false) {}
+		FileOrFolder() {}
 		FileOrFolder(const String &p_path, bool p_is_file) :
 				path(p_path),
 				is_file(p_is_file) {}

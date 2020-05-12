@@ -508,24 +508,9 @@ void OS::close_midi_inputs() {
 OS::OS() {
 	void *volatile stack_bottom;
 
-	restart_on_exit = false;
 	singleton = this;
-	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
-	low_processor_usage_mode = false;
-	low_processor_usage_mode_sleep_usec = 10000;
-	_verbose_stdout = false;
-	_no_window = false;
-	_exit_code = 0;
 
-	_render_thread_mode = RENDER_THREAD_SAFE;
-
-	_allow_hidpi = false;
-	_allow_layered = false;
 	_stack_bottom = (void *)(&stack_bottom);
-
-	_logger = nullptr;
-
-	has_server_feature_callback = nullptr;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(StdLogger));

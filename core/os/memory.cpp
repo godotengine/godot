@@ -204,8 +204,6 @@ uint64_t Memory::get_mem_max_usage() {
 }
 
 _GlobalNil::_GlobalNil() {
-
-	color = 1;
 	left = this;
 	right = this;
 	parent = this;

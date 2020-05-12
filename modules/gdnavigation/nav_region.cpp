@@ -36,11 +36,6 @@
 	@author AndreaCatania
 */
 
-NavRegion::NavRegion() :
-		map(nullptr),
-		polygons_dirty(true) {
-}
-
 void NavRegion::set_map(NavMap *p_map) {
 	map = p_map;
 	polygons_dirty = true;

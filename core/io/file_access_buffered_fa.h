@@ -132,12 +132,6 @@ public:
 		set_error(OK);
 	};
 
-	/*
-	static void make_default() {
-		FileAccess::create_func = FileAccessBufferedFA<T>::create;
-	};
-	*/
-
 	virtual uint64_t _get_modified_time(const String &p_file) {
 
 		return f._get_modified_time(p_file);
@@ -151,9 +145,7 @@ public:
 		return f._set_unix_permissions(p_file, p_permissions);
 	}
 
-	FileAccessBufferedFA(){
-
-	};
+	FileAccessBufferedFA() {}
 };
 
 #endif // FILE_ACCESS_BUFFERED_FA_H

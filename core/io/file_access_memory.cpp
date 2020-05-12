@@ -193,8 +193,3 @@ void FileAccessMemory::store_buffer(const uint8_t *p_src, int p_length) {
 	copymem(&data[pos], p_src, write);
 	pos += p_length;
 }
-
-FileAccessMemory::FileAccessMemory() {
-
-	data = nullptr;
-}

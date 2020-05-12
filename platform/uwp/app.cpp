@@ -78,16 +78,6 @@ public:
 	return 0;
 }
 
-App::App() :
-		mWindowClosed(false),
-		mWindowVisible(true),
-		mWindowWidth(0),
-		mWindowHeight(0),
-		mEglDisplay(EGL_NO_DISPLAY),
-		mEglContext(EGL_NO_CONTEXT),
-		mEglSurface(EGL_NO_SURFACE) {
-}
-
 // The first method called when the IFrameworkView is being created.
 void App::Initialize(CoreApplicationView ^ applicationView) {
 	// Register event handlers for app lifecycle. This example includes Activated, so that we
