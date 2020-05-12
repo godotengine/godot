@@ -685,6 +685,14 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, u
 	return id;
 }
 
+void DisplayServerX11::show_window(WindowID p_id) {
+	_THREAD_SAFE_METHOD_
+
+	WindowData &wd = windows[p_id];
+
+	XMapWindow(x11_display, wd.x11_window);
+}
+
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
@@ -3218,8 +3226,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		WindowData wd;
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
-		XMapWindow(x11_display, wd.x11_window);
-
 		//associate PID
 		// make PID known to X11
 		{
@@ -3414,6 +3420,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 	if (cursors[current_cursor] != None) {
 		XDefineCursor(x11_display, wd.x11_window, cursors[current_cursor]);
 	}
+
 	return id;
 }
 
@@ -3653,6 +3660,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
+	show_window(main_window);
 
 //create RenderingDevice if used
 #if defined(VULKAN_ENABLED)
