@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef BAKED_INDIRECT_LIGHT_H
-#define BAKED_INDIRECT_LIGHT_H
+#ifndef BAKED_LIGHTMAP_H
+#define BAKED_LIGHTMAP_H
 
 #include "core/local_vector.h"
 #include "scene/3d/light_3d.h"
@@ -110,6 +110,7 @@ public:
 		BAKE_QUALITY_HIGH,
 		BAKE_QUALITY_ULTRA,
 	};
+
 	enum GenerateProbes {
 		GENERATE_PROBES_DISABLED,
 		GENERATE_PROBES_SUBDIV_4,
@@ -125,8 +126,7 @@ public:
 		BAKE_ERROR_NO_MESHES,
 		BAKE_ERROR_MESHES_INVALID,
 		BAKE_ERROR_CANT_CREATE_IMAGE,
-		BAKE_ERROR_USER_ABORTED
-
+		BAKE_ERROR_USER_ABORTED,
 	};
 
 	enum EnvironmentMode {
@@ -276,9 +276,9 @@ public:
 	BakedLightmap();
 };
 
-VARIANT_ENUM_CAST(BakedLightmap::GenerateProbes);
 VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
+VARIANT_ENUM_CAST(BakedLightmap::GenerateProbes);
 VARIANT_ENUM_CAST(BakedLightmap::BakeError);
 VARIANT_ENUM_CAST(BakedLightmap::EnvironmentMode);
 
-#endif // BAKED_INDIRECT_LIGHT_H
+#endif // BAKED_LIGHTMAP_H
