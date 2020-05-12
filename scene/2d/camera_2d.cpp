@@ -102,6 +102,8 @@ Transform2D Camera2D::get_camera_transform() {
 	Point2 new_camera_pos = get_global_transform().get_origin();
 	Point2 ret_camera_pos;
 
+	const float delta_time = process_mode == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time();
+
 	if (!first) {
 
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
@@ -158,9 +160,9 @@ Transform2D Camera2D::get_camera_transform() {
 				camera_pos.y -= screen_rect.position.y - limit[MARGIN_TOP];
 		}
 
-		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
+		if (follow_smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
 
-			float c = smoothing * (process_mode == CAMERA2D_PROCESS_PHYSICS ? get_physics_process_delta_time() : get_process_delta_time());
+			float c = follow_smoothing * delta_time;
 			smoothed_camera_pos = ((camera_pos - smoothed_camera_pos) * c) + smoothed_camera_pos;
 			ret_camera_pos = smoothed_camera_pos;
 			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
@@ -176,9 +178,15 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
 
-	float angle = get_global_transform().get_rotation();
 	if (rotating) {
-		screen_offset = screen_offset.rotated(angle);
+		if (rotation_smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
+			float step = rotation_smoothing * delta_time;
+			camera_angle = Math::lerp_angle(camera_angle, get_global_transform().get_rotation(), step);
+			screen_offset = screen_offset.rotated(camera_angle);
+		} else {
+			camera_angle = get_global_transform().get_rotation();
+			screen_offset = screen_offset.rotated(camera_angle);
+		}
 	}
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom);
@@ -201,7 +209,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 	Transform2D xform;
 	if (rotating) {
-		xform.set_rotation(angle);
+		xform.set_rotation(camera_angle);
 	}
 	xform.scale_basis(zoom);
 	xform.set_origin(screen_rect.position /*.floor()*/);
@@ -373,6 +381,12 @@ Camera2D::AnchorMode Camera2D::get_anchor_mode() const {
 void Camera2D::set_rotating(bool p_rotating) {
 
 	rotating = p_rotating;
+
+	// Reset back to zero so it matches the camera rotation when rotating is disabled.
+	if (!rotating) {
+		camera_angle = 0.0;
+	}
+
 	_update_scroll();
 }
 
@@ -412,6 +426,14 @@ void Camera2D::_set_current(bool p_current) {
 
 	current = p_current;
 	update();
+}
+
+void Camera2D::_enable_process_internal_if_needed_for_smoothing() {
+
+	const bool is_not_in_scene_or_editor = !(is_inside_tree() && Engine::get_singleton()->is_editor_hint());
+	const bool is_any_smoothing_valid = follow_smoothing > 0 || rotation_smoothing > 0;
+	const bool enable = is_any_smoothing_valid && is_not_in_scene_or_editor;
+	set_process_internal(enable);
 }
 
 bool Camera2D::is_current() const {
@@ -518,16 +540,34 @@ void Camera2D::align() {
 
 void Camera2D::set_follow_smoothing(float p_speed) {
 
-	smoothing = p_speed;
-	if (smoothing > 0 && !(is_inside_tree() && Engine::get_singleton()->is_editor_hint()))
-		set_process_internal(true);
-	else
-		set_process_internal(false);
+	follow_smoothing = p_speed;
+	_enable_process_internal_if_needed_for_smoothing();
 }
 
 float Camera2D::get_follow_smoothing() const {
 
-	return smoothing;
+	return follow_smoothing;
+}
+
+void Camera2D::set_rotation_smoothing(float p_speed) {
+
+	rotation_smoothing = p_speed;
+	_enable_process_internal_if_needed_for_smoothing();
+}
+
+float Camera2D::get_rotation_smoothing() const {
+
+	return rotation_smoothing;
+}
+
+void Camera2D::set_enable_rotation_smoothing(bool p_enabled) {
+
+	rotation_smoothing_enabled = p_enabled;
+}
+
+bool Camera2D::is_rotation_smoothing_enabled() const {
+
+	return rotation_smoothing_enabled;
 }
 
 Point2 Camera2D::get_camera_screen_center() const {
@@ -581,19 +621,19 @@ float Camera2D::get_h_offset() const {
 void Camera2D::_set_old_smoothing(float p_enable) {
 	//compatibility
 	if (p_enable > 0) {
-		smoothing_enabled = true;
+		follow_smoothing_enabled = true;
 		set_follow_smoothing(p_enable);
 	}
 }
 
 void Camera2D::set_enable_follow_smoothing(bool p_enabled) {
 
-	smoothing_enabled = p_enabled;
+	follow_smoothing_enabled = p_enabled;
 }
 
 bool Camera2D::is_follow_smoothing_enabled() const {
 
-	return smoothing_enabled;
+	return follow_smoothing_enabled;
 }
 
 void Camera2D::set_custom_viewport(Node *p_viewport) {
@@ -717,6 +757,12 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enable_follow_smoothing", "follow_smoothing"), &Camera2D::set_enable_follow_smoothing);
 	ClassDB::bind_method(D_METHOD("is_follow_smoothing_enabled"), &Camera2D::is_follow_smoothing_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_enable_rotation_smoothing", "rotation_smoothing"), &Camera2D::set_enable_rotation_smoothing);
+	ClassDB::bind_method(D_METHOD("is_rotation_smoothing_enabled"), &Camera2D::is_rotation_smoothing_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_rotation_smoothing", "rotation_smoothing"), &Camera2D::set_rotation_smoothing);
+	ClassDB::bind_method(D_METHOD("get_rotation_smoothing"), &Camera2D::get_rotation_smoothing);
+
 	ClassDB::bind_method(D_METHOD("force_update_scroll"), &Camera2D::force_update_scroll);
 	ClassDB::bind_method(D_METHOD("reset_smoothing"), &Camera2D::reset_smoothing);
 	ClassDB::bind_method(D_METHOD("align"), &Camera2D::align);
@@ -755,6 +801,10 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smoothing_enabled"), "set_enable_follow_smoothing", "is_follow_smoothing_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "smoothing_speed"), "set_follow_smoothing", "get_follow_smoothing");
 
+	ADD_GROUP("Rotation Smoothing", "rotation_smoothing_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotation_smoothing_enabled"), "set_enable_rotation_smoothing", "is_rotation_smoothing_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_smoothing_speed"), "set_rotation_smoothing", "get_rotation_smoothing");
+
 	ADD_GROUP("Offset", "offset_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_h", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "offset_v", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_v_offset", "get_v_offset");
@@ -791,14 +841,17 @@ Camera2D::Camera2D() {
 	drag_margin[MARGIN_RIGHT] = 0.2;
 	drag_margin[MARGIN_BOTTOM] = 0.2;
 	camera_pos = Vector2();
+	camera_angle = 0.0;
 	first = true;
-	smoothing_enabled = false;
+	follow_smoothing_enabled = false;
+	rotation_smoothing_enabled = false;
 	limit_smoothing_enabled = false;
 	custom_viewport = nullptr;
 
 	process_mode = CAMERA2D_PROCESS_IDLE;
 
-	smoothing = 5.0;
+	follow_smoothing = 5.0;
+	rotation_smoothing = 5.0;
 	zoom = Vector2(1, 1);
 
 	screen_drawing_enabled = true;
