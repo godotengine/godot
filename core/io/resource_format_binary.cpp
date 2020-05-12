@@ -1024,18 +1024,6 @@ String ResourceLoaderBinary::recognize(FileAccess *p_f) {
 	return type;
 }
 
-ResourceLoaderBinary::ResourceLoaderBinary() :
-		translation_remapped(false),
-		ver_format(0),
-		f(nullptr),
-		importmd_ofs(0),
-		error(OK) {
-
-	use_nocache = false;
-	progress = nullptr;
-	use_sub_threads = false;
-}
-
 ResourceLoaderBinary::~ResourceLoaderBinary() {
 
 	if (f)
@@ -2118,6 +2106,5 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const RES &p_resource,
 ResourceFormatSaverBinary *ResourceFormatSaverBinary::singleton = nullptr;
 
 ResourceFormatSaverBinary::ResourceFormatSaverBinary() {
-
 	singleton = this;
 }

@@ -52,7 +52,6 @@ public:
 
 private:
 	enum {
-
 		NEG = 0,
 		POS = 1,
 	};
@@ -106,49 +105,35 @@ private:
 		// cached for FAST plane check
 		AABB aabb;
 
-		uint64_t last_pass;
-		Octant *parent;
-		Octant *children[8];
+		uint64_t last_pass = 0;
+		Octant *parent = nullptr;
+		Octant *children[8] = { nullptr };
 
-		int children_count; // cache for amount of childrens (fast check for removal)
-		int parent_index; // cache for parent index (fast check for removal)
+		int children_count = 0; // cache for amount of childrens (fast check for removal)
+		int parent_index = -1; // cache for parent index (fast check for removal)
 
 		List<Element *, AL> pairable_elements;
 		List<Element *, AL> elements;
 
-		Octant() {
-			children_count = 0;
-			parent_index = -1;
-			last_pass = 0;
-			parent = nullptr;
-			for (int i = 0; i < 8; i++)
-				children[i] = nullptr;
-		}
-
-		~Octant() {
-
-			/*
-			for (int i=0;i<8;i++)
-				memdelete_notnull(children[i]);
-			*/
-		}
+		Octant() {}
+		~Octant() {}
 	};
 
 	struct PairData;
 
 	struct Element {
 
-		Octree *octree;
+		Octree *octree = nullptr;
 
-		T *userdata;
-		int subindex;
-		bool pairable;
-		uint32_t pairable_mask;
-		uint32_t pairable_type;
+		T *userdata = nullptr;
+		int subindex = 0;
+		bool pairable = false;
+		uint32_t pairable_mask = 0;
+		uint32_t pairable_type = 0;
 
-		uint64_t last_pass;
-		OctreeElementID _id;
-		Octant *common_parent;
+		uint64_t last_pass = 0;
+		OctreeElementID _id = 0;
+		Octant *common_parent = nullptr;
 
 		AABB aabb;
 		AABB container_aabb;
@@ -163,17 +148,7 @@ private:
 
 		List<OctantOwner, AL> octant_owners;
 
-		Element() {
-			last_pass = 0;
-			_id = 0;
-			pairable = false;
-			subindex = 0;
-			userdata = 0;
-			octree = 0;
-			pairable_mask = 0;
-			pairable_type = 0;
-			common_parent = nullptr;
-		}
+		Element() {}
 	};
 
 	struct PairData {

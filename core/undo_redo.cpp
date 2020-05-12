@@ -409,23 +409,6 @@ void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_ca
 	prop_callback_ud = p_ud;
 }
 
-UndoRedo::UndoRedo() {
-
-	committing = 0;
-	version = 1;
-	action_level = 0;
-	current_action = -1;
-	merge_mode = MERGE_DISABLE;
-	merging = false;
-	callback = nullptr;
-	callback_ud = nullptr;
-
-	method_callbck_ud = nullptr;
-	prop_callback_ud = nullptr;
-	method_callback = nullptr;
-	property_callback = nullptr;
-}
-
 UndoRedo::~UndoRedo() {
 
 	clear_history();

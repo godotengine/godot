@@ -543,9 +543,6 @@ int XMLParser::get_current_line() const {
 }
 
 XMLParser::XMLParser() {
-
-	data = nullptr;
-	close();
 	special_characters.push_back("&amp;");
 	special_characters.push_back("<lt;");
 	special_characters.push_back(">gt;");

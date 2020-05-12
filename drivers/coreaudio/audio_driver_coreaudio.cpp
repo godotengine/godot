@@ -676,19 +676,8 @@ String AudioDriverCoreAudio::capture_get_device() {
 
 #endif
 
-AudioDriverCoreAudio::AudioDriverCoreAudio() :
-		audio_unit(nullptr),
-		input_unit(nullptr),
-		active(false),
-		device_name("Default"),
-		capture_device_name("Default"),
-		mix_rate(0),
-		channels(2),
-		capture_channels(2),
-		buffer_frames(0) {
+AudioDriverCoreAudio::AudioDriverCoreAudio() {
 	samples_in.clear();
 }
 
-AudioDriverCoreAudio::~AudioDriverCoreAudio(){};
-
-#endif
+#endif // COREAUDIO_ENABLED

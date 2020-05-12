@@ -354,6 +354,6 @@ ICloud::ICloud() {
 					}];
 }
 
-ICloud::~ICloud(){};
+ICloud::~ICloud() {}
 
 #endif

@@ -36,7 +36,7 @@
 class Plane {
 public:
 	Vector3 normal;
-	real_t d;
+	real_t d = 0;
 
 	void set_normal(const Vector3 &p_normal);
 	_FORCE_INLINE_ Vector3 get_normal() const { return normal; }; ///Point is coplanar, CMP_EPSILON for precision
@@ -75,8 +75,7 @@ public:
 	_FORCE_INLINE_ bool operator!=(const Plane &p_plane) const;
 	operator String() const;
 
-	_FORCE_INLINE_ Plane() :
-			d(0) {}
+	_FORCE_INLINE_ Plane() {}
 	_FORCE_INLINE_ Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :
 			normal(p_a, p_b, p_c),
 			d(p_d) {}

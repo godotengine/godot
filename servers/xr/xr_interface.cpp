@@ -122,7 +122,7 @@ XRInterface::XRInterface() {
 	tracking_state = XR_UNKNOWN_TRACKING;
 };
 
-XRInterface::~XRInterface(){};
+XRInterface::~XRInterface() {}
 
 // optional render to external texture which enhances performance on those platforms that require us to submit our end result into special textures.
 unsigned int XRInterface::get_external_texture_for_eye(XRInterface::Eyes p_eye) {

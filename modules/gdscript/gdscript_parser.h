@@ -45,25 +45,27 @@ public:
 	struct ClassNode;
 
 	struct DataType {
-		enum {
+		enum Kind {
 			BUILTIN,
 			NATIVE,
 			SCRIPT,
 			GDSCRIPT,
 			CLASS,
 			UNRESOLVED
-		} kind;
+		};
 
-		bool has_type;
-		bool is_constant;
-		bool is_meta_type; // Whether the value can be used as a type
-		bool infer_type;
-		bool may_yield; // For function calls
+		Kind kind = UNRESOLVED;
 
-		Variant::Type builtin_type;
+		bool has_type = false;
+		bool is_constant = false;
+		bool is_meta_type = false; // Whether the value can be used as a type
+		bool infer_type = false;
+		bool may_yield = false; // For function calls
+
+		Variant::Type builtin_type = Variant::NIL;
 		StringName native_type;
 		Ref<Script> script_type;
-		ClassNode *class_type;
+		ClassNode *class_type = nullptr;
 
 		String to_string() const;
 
@@ -94,15 +96,7 @@ public:
 			return false;
 		}
 
-		DataType() :
-				kind(UNRESOLVED),
-				has_type(false),
-				is_constant(false),
-				is_meta_type(false),
-				infer_type(false),
-				may_yield(false),
-				builtin_type(Variant::NIL),
-				class_type(nullptr) {}
+		DataType() {}
 	};
 
 	struct Node {
@@ -236,66 +230,63 @@ public:
 
 	struct BlockNode : public Node {
 
-		ClassNode *parent_class;
-		BlockNode *parent_block;
+		ClassNode *parent_class = nullptr;
+		BlockNode *parent_block = nullptr;
 		List<Node *> statements;
 		Map<StringName, LocalVarNode *> variables;
-		bool has_return;
+		bool has_return = false;
 
-		Node *if_condition; //tiny hack to improve code completion on if () blocks
+		Node *if_condition = nullptr; //tiny hack to improve code completion on if () blocks
 
 		//the following is useful for code completion
 		List<BlockNode *> sub_blocks;
-		int end_line;
+		int end_line = -1;
+
 		BlockNode() {
-			if_condition = nullptr;
 			type = TYPE_BLOCK;
-			end_line = -1;
-			parent_block = nullptr;
-			parent_class = nullptr;
-			has_return = false;
 		}
 	};
 
 	struct TypeNode : public Node {
-
 		Variant::Type vtype;
-		TypeNode() { type = TYPE_TYPE; }
+
+		TypeNode() {
+			type = TYPE_TYPE;
+		}
 	};
+
 	struct BuiltInFunctionNode : public Node {
 		GDScriptFunctions::Function function;
-		BuiltInFunctionNode() { type = TYPE_BUILT_IN_FUNCTION; }
+
+		BuiltInFunctionNode() {
+			type = TYPE_BUILT_IN_FUNCTION;
+		}
 	};
 
 	struct IdentifierNode : public Node {
-
 		StringName name;
-		BlockNode *declared_block; // Simplify lookup by checking if it is declared locally
+		BlockNode *declared_block = nullptr; // Simplify lookup by checking if it is declared locally
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+
 		IdentifierNode() {
 			type = TYPE_IDENTIFIER;
-			declared_block = nullptr;
 		}
 	};
 
 	struct LocalVarNode : public Node {
-
 		StringName name;
-		Node *assign;
-		OperatorNode *assign_op;
-		int assignments;
-		int usages;
+		Node *assign = nullptr;
+		OperatorNode *assign_op = nullptr;
+		int assignments = 0;
+		int usages = 0;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+
 		LocalVarNode() {
 			type = TYPE_LOCAL_VAR;
-			assign = nullptr;
-			assign_op = nullptr;
-			assignments = 0;
-			usages = 0;
 		}
 	};
 
@@ -304,15 +295,18 @@ public:
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
-		ConstantNode() { type = TYPE_CONSTANT; }
+
+		ConstantNode() {
+			type = TYPE_CONSTANT;
+		}
 	};
 
 	struct ArrayNode : public Node {
-
 		Vector<Node *> elements;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+
 		ArrayNode() {
 			type = TYPE_ARRAY;
 			datatype.has_type = true;
@@ -324,7 +318,6 @@ public:
 	struct DictionaryNode : public Node {
 
 		struct Pair {
-
 			Node *key;
 			Node *value;
 		};
@@ -333,6 +326,7 @@ public:
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
+
 		DictionaryNode() {
 			type = TYPE_DICTIONARY;
 			datatype.has_type = true;
@@ -342,7 +336,9 @@ public:
 	};
 
 	struct SelfNode : public Node {
-		SelfNode() { type = TYPE_SELF; }
+		SelfNode() {
+			type = TYPE_SELF;
+		}
 	};
 
 	struct OperatorNode : public Node {
@@ -404,7 +400,9 @@ public:
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
-		OperatorNode() { type = TYPE_OPERATOR; }
+		OperatorNode() {
+			type = TYPE_OPERATOR;
+		}
 	};
 
 	struct PatternNode : public Node {
@@ -454,19 +452,17 @@ public:
 			CF_MATCH
 		};
 
-		CFType cf_type;
+		CFType cf_type = CF_IF;
 		Vector<Node *> arguments;
-		BlockNode *body;
-		BlockNode *body_else;
+		BlockNode *body = nullptr;
+		BlockNode *body_else = nullptr;
 
 		MatchNode *match;
 
 		ControlFlowNode *_else; //used for if
+
 		ControlFlowNode() {
 			type = TYPE_CONTROL_FLOW;
-			cf_type = CF_IF;
-			body = nullptr;
-			body_else = nullptr;
 		}
 	};
 
@@ -476,29 +472,34 @@ public:
 		DataType return_type;
 		virtual DataType get_datatype() const { return return_type; }
 		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
-		CastNode() { type = TYPE_CAST; }
+
+		CastNode() {
+			type = TYPE_CAST;
+		}
 	};
 
 	struct AssertNode : public Node {
-		Node *condition;
-		Node *message;
-		AssertNode() :
-				condition(0),
-				message(0) {
+		Node *condition = nullptr;
+		Node *message = nullptr;
+
+		AssertNode() {
 			type = TYPE_ASSERT;
 		}
 	};
 
 	struct BreakpointNode : public Node {
-		BreakpointNode() { type = TYPE_BREAKPOINT; }
+		BreakpointNode() {
+			type = TYPE_BREAKPOINT;
+		}
 	};
 
 	struct NewLineNode : public Node {
-		NewLineNode() { type = TYPE_NEWLINE; }
+		NewLineNode() {
+			type = TYPE_NEWLINE;
+		}
 	};
 
 	struct Expression {
-
 		bool is_op;
 		union {
 			OperatorNode::Operator op;
@@ -553,8 +554,8 @@ private:
 	int pending_newline;
 
 	struct IndentLevel {
-		int indent;
-		int tabs;
+		int indent = 0;
+		int tabs = 0;
 
 		bool is_mixed(IndentLevel other) {
 			return (
@@ -563,9 +564,7 @@ private:
 					(indent < other.indent && tabs > other.tabs));
 		}
 
-		IndentLevel() :
-				indent(0),
-				tabs(0) {}
+		IndentLevel() {}
 
 		IndentLevel(int p_indent, int p_tabs) :
 				indent(p_indent),

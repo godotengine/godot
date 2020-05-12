@@ -109,8 +109,6 @@ PackedData::PackedData() {
 
 	singleton = this;
 	root = memnew(PackedDir);
-	root->parent = nullptr;
-	disabled = false;
 
 	add_pack_source(memnew(PackedSourcePCK));
 }
@@ -506,10 +504,5 @@ String DirAccessPack::get_filesystem_type() const {
 }
 
 DirAccessPack::DirAccessPack() {
-
 	current = PackedData::get_singleton()->root;
-	cdir = false;
-}
-
-DirAccessPack::~DirAccessPack() {
 }

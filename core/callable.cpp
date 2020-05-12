@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "callable.h"
+
 #include "core/script_language.h"
 #include "message_queue.h"
 #include "object.h"
@@ -255,12 +256,7 @@ Callable::~Callable() {
 	}
 }
 
-Callable::Callable() {
-	object = 0;
-}
-
 CallableCustom::CallableCustom() {
-	referenced = false;
 	ref_count.init();
 }
 
@@ -349,6 +345,7 @@ Array Signal::get_connections() const {
 	}
 	return arr;
 }
+
 Signal::Signal(const Object *p_object, const StringName &p_name) {
 
 	ERR_FAIL_COND_MSG(p_object == nullptr, "Object argument to Signal constructor must be non-null");
@@ -356,10 +353,9 @@ Signal::Signal(const Object *p_object, const StringName &p_name) {
 	object = p_object->get_instance_id();
 	name = p_name;
 }
+
 Signal::Signal(ObjectID p_object, const StringName &p_name) {
 
 	object = p_object;
 	name = p_name;
-}
-Signal::Signal() {
 }

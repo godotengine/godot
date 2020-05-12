@@ -48,7 +48,7 @@ class SectionedInspector : public HSplitContainer {
 
 	Map<String, TreeItem *> section_map;
 	EditorInspector *inspector;
-	LineEdit *search_box;
+	LineEdit *search_box = nullptr;
 
 	String selected_category;
 

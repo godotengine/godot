@@ -3189,15 +3189,8 @@ Variant::Variant(const IP_Address &p_address) {
 
 Variant::Variant(const Variant &p_variant) {
 
-	type = NIL;
 	reference(p_variant);
 }
-
-/*
-Variant::~Variant() {
-
-	clear();
-}*/
 
 uint32_t Variant::hash() const {
 

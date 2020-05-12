@@ -222,17 +222,11 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 FileAccessNetworkClient *FileAccessNetworkClient::singleton = nullptr;
 
 FileAccessNetworkClient::FileAccessNetworkClient() {
-
-	thread = nullptr;
-	quit = false;
 	singleton = this;
-	last_id = 0;
 	client.instance();
-	lockcount = 0;
 }
 
 FileAccessNetworkClient::~FileAccessNetworkClient() {
-
 	if (thread) {
 		quit = true;
 		sem.post();
@@ -513,9 +507,6 @@ void FileAccessNetwork::configure() {
 
 FileAccessNetwork::FileAccessNetwork() {
 
-	eof_flag = false;
-	opened = false;
-	pos = 0;
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
 	id = nc->last_id++;
@@ -523,9 +514,6 @@ FileAccessNetwork::FileAccessNetwork() {
 	nc->unlock_mutex();
 	page_size = GLOBAL_GET("network/remote_fs/page_size");
 	read_ahead = GLOBAL_GET("network/remote_fs/page_read_ahead");
-	last_activity_val = 0;
-	waiting_on_page = -1;
-	last_page = -1;
 }
 
 FileAccessNetwork::~FileAccessNetwork() {

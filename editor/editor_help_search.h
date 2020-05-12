@@ -95,7 +95,7 @@ class EditorHelpSearch::Runner : public Reference {
 		PHASE_SELECT_MATCH,
 		PHASE_MAX
 	};
-	int phase;
+	int phase = 0;
 
 	struct ClassMatch {
 		DocData::ClassDoc *doc;

@@ -49,7 +49,7 @@ class RvoAgent : public NavRid {
 		Variant new_velocity;
 	};
 
-	NavMap *map;
+	NavMap *map = nullptr;
 	RVO::Agent agent;
 	AvoidanceComputedCallback callback;
 	uint32_t map_update_id;

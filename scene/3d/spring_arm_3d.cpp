@@ -29,17 +29,11 @@
 /*************************************************************************/
 
 #include "spring_arm_3d.h"
+
 #include "core/engine.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "servers/physics_server_3d.h"
-
-SpringArm3D::SpringArm3D() :
-		spring_length(1),
-		current_spring_length(0),
-		keep_child_basis(false),
-		mask(1),
-		margin(0.01) {}
 
 void SpringArm3D::_notification(int p_what) {
 	switch (p_what) {

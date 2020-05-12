@@ -43,14 +43,14 @@ struct MainFrameTime {
 
 class MainTimerSync {
 	// wall clock time measured on the main thread
-	uint64_t last_cpu_ticks_usec;
-	uint64_t current_cpu_ticks_usec;
+	uint64_t last_cpu_ticks_usec = 0;
+	uint64_t current_cpu_ticks_usec = 0;
 
 	// logical game time since last physics timestep
-	float time_accum;
+	float time_accum = 0;
 
 	// current difference between wall clock time and reported sum of idle_steps
-	float time_deficit;
+	float time_deficit = 0;
 
 	// number of frames back for keeping accumulated physics steps roughly constant.
 	// value of 12 chosen because that is what is required to make 144 Hz monitors
@@ -64,7 +64,7 @@ class MainTimerSync {
 	// typical value for accumulated_physics_steps[i] is either this or this plus one
 	int typical_physics_steps[CONTROL_STEPS];
 
-	int fixed_fps;
+	int fixed_fps = 0;
 
 protected:
 	// returns the fraction of p_frame_slice required for the timer to overshoot

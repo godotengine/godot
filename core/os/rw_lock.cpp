@@ -42,6 +42,3 @@ RWLock *RWLock::create() {
 
 	return create_func();
 }
-
-RWLock::~RWLock() {
-}

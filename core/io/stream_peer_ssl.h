@@ -43,7 +43,7 @@ protected:
 
 	static bool available;
 
-	bool blocking_handshake;
+	bool blocking_handshake = true;
 
 public:
 	enum Status {
@@ -68,7 +68,7 @@ public:
 
 	static bool is_available();
 
-	StreamPeerSSL();
+	StreamPeerSSL() {}
 };
 
 VARIANT_ENUM_CAST(StreamPeerSSL::Status);

@@ -85,16 +85,12 @@ class BindingsGenerator {
 
 	struct TypeReference {
 		StringName cname;
-		bool is_enum;
+		bool is_enum = false;
 
-		TypeReference() :
-				is_enum(false) {
-		}
+		TypeReference() {}
 
 		TypeReference(const StringName &p_cname) :
-				cname(p_cname),
-				is_enum(false) {
-		}
+				cname(p_cname) {}
 	};
 
 	struct ArgumentInterface {
@@ -107,7 +103,7 @@ class BindingsGenerator {
 		TypeReference type;
 
 		String name;
-		DefaultParamMode def_param_mode;
+		DefaultParamMode def_param_mode = CONSTANT;
 
 		/**
 		 * Determines the expression for the parameter default value.
@@ -116,9 +112,7 @@ class BindingsGenerator {
 		 */
 		String default_argument;
 
-		ArgumentInterface() {
-			def_param_mode = CONSTANT;
-		}
+		ArgumentInterface() {}
 	};
 
 	struct MethodInterface {
@@ -138,19 +132,19 @@ class BindingsGenerator {
 		/**
 		 * Determines if the method has a variable number of arguments (VarArg)
 		 */
-		bool is_vararg;
+		bool is_vararg = false;
 
 		/**
 		 * Virtual methods ("virtual" as defined by the Godot API) are methods that by default do nothing,
 		 * but can be overridden by the user to add custom functionality.
 		 * e.g.: _ready, _process, etc.
 		 */
-		bool is_virtual;
+		bool is_virtual = false;
 
 		/**
 		 * Determines if the call should fallback to Godot's object.Call(string, params) in C#.
 		 */
-		bool requires_object_call;
+		bool requires_object_call = false;
 
 		/**
 		 * Determines if the method visibility is 'internal' (visible only to files in the same assembly).
@@ -158,27 +152,20 @@ class BindingsGenerator {
 		 * but are required by properties as getters or setters.
 		 * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.
 		 */
-		bool is_internal;
+		bool is_internal = false;
 
 		List<ArgumentInterface> arguments;
 
-		const DocData::MethodDoc *method_doc;
+		const DocData::MethodDoc *method_doc = nullptr;
 
-		bool is_deprecated;
+		bool is_deprecated = false;
 		String deprecation_message;
 
 		void add_argument(const ArgumentInterface &argument) {
 			arguments.push_back(argument);
 		}
 
-		MethodInterface() {
-			is_vararg = false;
-			is_virtual = false;
-			requires_object_call = false;
-			is_internal = false;
-			method_doc = nullptr;
-			is_deprecated = false;
-		}
+		MethodInterface() {}
 	};
 
 	struct SignalInterface {
@@ -192,19 +179,16 @@ class BindingsGenerator {
 
 		List<ArgumentInterface> arguments;
 
-		const DocData::MethodDoc *method_doc;
+		const DocData::MethodDoc *method_doc = nullptr;
 
-		bool is_deprecated;
+		bool is_deprecated = false;
 		String deprecation_message;
 
 		void add_argument(const ArgumentInterface &argument) {
 			arguments.push_back(argument);
 		}
 
-		SignalInterface() {
-			method_doc = nullptr;
-			is_deprecated = false;
-		}
+		SignalInterface() {}
 	};
 
 	struct TypeInterface {
@@ -225,26 +209,26 @@ class BindingsGenerator {
 		 */
 		String proxy_name;
 
-		ClassDB::APIType api_type;
+		ClassDB::APIType api_type = ClassDB::API_NONE;
 
-		bool is_enum;
-		bool is_object_type;
-		bool is_singleton;
-		bool is_reference;
+		bool is_enum = false;
+		bool is_object_type = false;
+		bool is_singleton = false;
+		bool is_reference = false;
 
 		/**
 		 * Used only by Object-derived types.
 		 * Determines if this type is not abstract (incomplete).
 		 * e.g.: CanvasItem cannot be instantiated.
 		 */
-		bool is_instantiable;
+		bool is_instantiable = false;
 
 		/**
 		 * Used only by Object-derived types.
 		 * Determines if the C# class owns the native handle and must free it somehow when disposed.
 		 * e.g.: Reference types must notify when the C# instance is disposed, for proper refcounting.
 		 */
-		bool memory_own;
+		bool memory_own = false;
 
 		/**
 		 * This must be set to true for any struct bigger than 32-bits. Those cannot be passed/returned by value
@@ -252,7 +236,7 @@ class BindingsGenerator {
 		 * In this case, [c_out] and [cs_out] must have a different format, explained below.
 		 * The Mono IL interpreter icall trampolines don't support passing structs bigger than 32-bits by value (at least not on WASM).
 		 */
-		bool ret_as_byref_arg;
+		bool ret_as_byref_arg = false;
 
 		// !! The comments of the following fields make reference to other fields via square brackets, e.g.: [field_name]
 		// !! When renaming those fields, make sure to rename their references in the comments
@@ -279,7 +263,7 @@ class BindingsGenerator {
 		 * Formatting elements:
 		 * %0 or %s: name of the parameter
 		 */
-		String c_arg_in;
+		String c_arg_in = "%s";
 
 		/**
 		 * One or more statements that determine how a variable of this type is returned from a function.
@@ -362,7 +346,7 @@ class BindingsGenerator {
 		 */
 		String im_type_out;
 
-		const DocData::ClassDoc *class_doc;
+		const DocData::ClassDoc *class_doc = nullptr;
 
 		List<ConstantInterface> constants;
 		List<EnumInterface> enums;
@@ -482,24 +466,7 @@ class BindingsGenerator {
 			r_enum_itype.class_doc = &EditorHelp::get_doc_data()->class_list[r_enum_itype.proxy_name];
 		}
 
-		TypeInterface() {
-
-			api_type = ClassDB::API_NONE;
-
-			is_enum = false;
-			is_object_type = false;
-			is_singleton = false;
-			is_reference = false;
-			is_instantiable = false;
-
-			memory_own = false;
-
-			ret_as_byref_arg = false;
-
-			c_arg_in = "%s";
-
-			class_doc = nullptr;
-		}
+		TypeInterface() {}
 	};
 
 	struct InternalCall {
@@ -532,8 +499,8 @@ class BindingsGenerator {
 		}
 	};
 
-	bool log_print_enabled;
-	bool initialized;
+	bool log_print_enabled = true;
+	bool initialized = false;
 
 	OrderedHashMap<StringName, TypeInterface> obj_types;
 
@@ -697,9 +664,7 @@ public:
 
 	static void handle_cmdline_args(const List<String> &p_cmdline_args);
 
-	BindingsGenerator() :
-			log_print_enabled(true),
-			initialized(false) {
+	BindingsGenerator() {
 		_initialize();
 	}
 };

@@ -61,26 +61,22 @@ public:
 
 		struct Channel {
 
-			int uv_idx;
+			int uv_idx = 0;
 			String texture;
 			Color color;
-			Channel() { uv_idx = 0; }
+			Channel() {}
 		};
 
 		Channel diffuse, specular, emission, bump;
-		float shininess;
-		bool found_double_sided;
-		bool double_sided;
-		bool unshaded;
+		float shininess = 40;
+		bool found_double_sided = false;
+		bool double_sided = true;
+		bool unshaded = false;
 
 		String get_texture_path(const String &p_source, Collada &state) const;
 
 		Effect() {
 			diffuse.color = Color(1, 1, 1, 1);
-			double_sided = true;
-			found_double_sided = false;
-			shininess = 40;
-			unshaded = false;
 		}
 	};
 
@@ -91,31 +87,24 @@ public:
 			MODE_ORTHOGONAL
 		};
 
-		Mode mode;
+		Mode mode = MODE_PERSPECTIVE;
 
 		union {
 			struct {
-				float x_fov;
-				float y_fov;
+				float x_fov = 0;
+				float y_fov = 0;
 			} perspective;
 			struct {
-				float x_mag;
-				float y_mag;
+				float x_mag = 0;
+				float y_mag = 0;
 			} orthogonal;
 		};
 
-		float aspect;
-		float z_near;
-		float z_far;
+		float aspect = 1;
+		float z_near = 0.1;
+		float z_far = 100;
 
-		CameraData() :
-				mode(MODE_PERSPECTIVE),
-				aspect(1),
-				z_near(0.1),
-				z_far(100) {
-			perspective.x_fov = 0;
-			perspective.y_fov = 0;
-		}
+		CameraData() {}
 	};
 
 	struct LightData {
@@ -127,26 +116,18 @@ public:
 			MODE_SPOT
 		};
 
-		Mode mode;
+		Mode mode = MODE_AMBIENT;
 
-		Color color;
+		Color color = Color(1, 1, 1, 1);
 
-		float constant_att;
-		float linear_att;
-		float quad_att;
+		float constant_att = 0;
+		float linear_att = 0;
+		float quad_att = 0;
 
-		float spot_angle;
-		float spot_exp;
+		float spot_angle = 45;
+		float spot_exp = 1;
 
-		LightData() :
-				mode(MODE_AMBIENT),
-				color(Color(1, 1, 1, 1)),
-				constant_att(0),
-				linear_att(0),
-				quad_att(0),
-				spot_angle(45),
-				spot_exp(1) {
-		}
+		LightData() {}
 	};
 
 	struct MeshData {
@@ -185,19 +166,16 @@ public:
 
 		Vector<Primitives> primitives;
 
-		bool found_double_sided;
-		bool double_sided;
+		bool found_double_sided = false;
+		bool double_sided = true;
 
-		MeshData() {
-			found_double_sided = false;
-			double_sided = true;
-		}
+		MeshData() {}
 	};
 
 	struct CurveData {
 
 		String name;
-		bool closed;
+		bool closed = false;
 
 		struct Source {
 
@@ -210,15 +188,13 @@ public:
 
 		Map<String, String> control_vertices;
 
-		CurveData() {
-
-			closed = false;
-		}
+		CurveData() {}
 	};
+
 	struct SkinControllerData {
 
 		String base;
-		bool use_idrefs;
+		bool use_idrefs = false;
 
 		Transform bind_shape;
 
@@ -226,10 +202,8 @@ public:
 
 			Vector<String> sarray; //maybe for names
 			Vector<float> array;
-			int stride;
-			Source() {
-				stride = 1;
-			}
+			int stride = 1;
+			Source() {}
 		};
 
 		Map<String, Source> sources;
@@ -256,7 +230,7 @@ public:
 
 		Map<String, Transform> bone_rest_map;
 
-		SkinControllerData() { use_idrefs = false; }
+		SkinControllerData() {}
 	};
 
 	struct MorphControllerData {
@@ -266,10 +240,10 @@ public:
 
 		struct Source {
 
-			int stride;
+			int stride = 1;
 			Vector<String> sarray; //maybe for names
 			Vector<float> array;
-			Source() { stride = 1; }
+			Source() {}
 		};
 
 		Map<String, Source> sources;
@@ -280,14 +254,14 @@ public:
 
 	struct Vertex {
 
-		int idx;
+		int idx = 0;
 		Vector3 vertex;
 		Vector3 normal;
 		Vector3 uv;
 		Vector3 uv2;
 		Plane tangent;
 		Color color;
-		int uid;
+		int uid = 0;
 		struct Weight {
 			int bone_idx;
 			float weight;
@@ -350,11 +324,9 @@ public:
 				return uid < p_vert.uid;
 		}
 
-		Vertex() {
-			uid = 0;
-			idx = 0;
-		}
+		Vertex() {}
 	};
+
 	struct Node {
 
 		enum Type {
@@ -382,31 +354,26 @@ public:
 			Vector<float> data;
 		};
 
-		Type type;
+		Type type = TYPE_NODE;
 
 		String name;
 		String id;
 		String empty_draw_type;
-		bool noname;
+		bool noname = false;
 		Vector<XForm> xform_list;
 		Transform default_transform;
 		Transform post_transform;
 		Vector<Node *> children;
 
-		Node *parent;
+		Node *parent = nullptr;
 
 		Transform compute_transform(Collada &state) const;
 		Transform get_global_transform() const;
 		Transform get_transform() const;
 
-		bool ignore_anim;
+		bool ignore_anim = false;
 
-		Node() {
-			noname = false;
-			type = TYPE_NODE;
-			parent = nullptr;
-			ignore_anim = false;
-		}
+		Node() {}
 		virtual ~Node() {
 			for (int i = 0; i < children.size(); i++)
 				memdelete(children[i]);
@@ -420,11 +387,10 @@ public:
 
 	struct NodeJoint : public Node {
 
-		NodeSkeleton *owner;
+		NodeSkeleton *owner = nullptr;
 		String sid;
 		NodeJoint() {
 			type = TYPE_JOINT;
-			owner = nullptr;
 		}
 	};
 
@@ -471,14 +437,11 @@ public:
 	struct AnimationClip {
 
 		String name;
-		float begin;
-		float end;
+		float begin = 0;
+		float end = 1;
 		Vector<String> tracks;
 
-		AnimationClip() {
-			begin = 0;
-			end = 1;
-		}
+		AnimationClip() {}
 	};
 
 	struct AnimationTrack {
@@ -487,7 +450,7 @@ public:
 		String target;
 		String param;
 		String component;
-		bool property;
+		bool property = false;
 
 		enum InterpolationType {
 			INTERP_LINEAR,
@@ -505,16 +468,16 @@ public:
 			Vector<float> data;
 			Point2 in_tangent;
 			Point2 out_tangent;
-			InterpolationType interp_type;
+			InterpolationType interp_type = INTERP_LINEAR;
 
-			Key() { interp_type = INTERP_LINEAR; }
+			Key() {}
 		};
 
 		Vector<float> get_value_at_time(float p_time) const;
 
 		Vector<Key> keys;
 
-		AnimationTrack() { property = false; }
+		AnimationTrack() {}
 	};
 
 	/****************/
@@ -523,10 +486,10 @@ public:
 
 	struct State {
 
-		int import_flags;
+		int import_flags = 0;
 
-		float unit_scale;
-		Vector3::Axis up_axis;
+		float unit_scale = 1.0;
+		Vector3::Axis up_axis = Vector3::AXIS_Y;
 		bool z_up;
 
 		struct Version {
@@ -573,14 +536,9 @@ public:
 		Map<String, Vector<int>> referenced_tracks;
 		Map<String, Vector<int>> by_id_tracks;
 
-		float animation_length;
+		float animation_length = 0;
 
-		State() :
-				import_flags(0),
-				unit_scale(1.0),
-				up_axis(Vector3::AXIS_Y),
-				animation_length(0) {
-		}
+		State() {}
 	} state;
 
 	Error load(const String &p_path, int p_flags = 0);

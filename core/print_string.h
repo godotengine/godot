@@ -39,16 +39,12 @@ typedef void (*PrintHandlerFunc)(void *, const String &p_string, bool p_error);
 
 struct PrintHandlerList {
 
-	PrintHandlerFunc printfunc;
-	void *userdata;
+	PrintHandlerFunc printfunc = nullptr;
+	void *userdata = nullptr;
 
-	PrintHandlerList *next;
+	PrintHandlerList *next = nullptr;
 
-	PrintHandlerList() {
-		printfunc = 0;
-		next = 0;
-		userdata = 0;
-	}
+	PrintHandlerList() {}
 };
 
 void add_print_handler(PrintHandlerList *p_handler);

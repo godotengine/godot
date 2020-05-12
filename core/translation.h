@@ -39,7 +39,7 @@ class Translation : public Resource {
 	OBJ_SAVE_TYPE(Translation);
 	RES_BASE_EXTENSION("translation");
 
-	String locale;
+	String locale = "en";
 	Map<StringName, StringName> translation_map;
 
 	Vector<String> _get_message_list() const;
@@ -61,14 +61,14 @@ public:
 	void get_message_list(List<StringName> *r_messages) const;
 	int get_message_count() const;
 
-	Translation();
+	Translation() {}
 };
 
 class TranslationServer : public Object {
 
 	GDCLASS(TranslationServer, Object);
 
-	String locale;
+	String locale = "en";
 	String fallback;
 
 	Set<Ref<Translation>> translations;
@@ -77,7 +77,7 @@ class TranslationServer : public Object {
 
 	Map<String, String> locale_name_map;
 
-	bool enabled;
+	bool enabled = true;
 
 	static TranslationServer *singleton;
 	bool _load_translations(const String &p_from);

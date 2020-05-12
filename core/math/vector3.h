@@ -52,7 +52,7 @@ struct Vector3 {
 			real_t z;
 		};
 
-		real_t coord[3];
+		real_t coord[3] = { 0 };
 	};
 
 	_FORCE_INLINE_ const real_t &operator[](int p_axis) const {
@@ -152,18 +152,17 @@ struct Vector3 {
 		return Vector3i(x, y, z);
 	}
 
+	_FORCE_INLINE_ Vector3() {}
 	_FORCE_INLINE_ Vector3(const Vector3i &p_ivec) {
 		x = p_ivec.x;
 		y = p_ivec.y;
 		z = p_ivec.z;
 	}
-
 	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
 		x = p_x;
 		y = p_y;
 		z = p_z;
 	}
-	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
 };
 
 Vector3 Vector3::cross(const Vector3 &p_b) const {

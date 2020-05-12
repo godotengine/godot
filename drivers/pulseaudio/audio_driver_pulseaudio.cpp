@@ -793,30 +793,9 @@ String AudioDriverPulseAudio::capture_get_device() {
 	return name;
 }
 
-AudioDriverPulseAudio::AudioDriverPulseAudio() :
-		thread(nullptr),
-		pa_ml(nullptr),
-		pa_ctx(nullptr),
-		pa_str(nullptr),
-		pa_rec_str(nullptr),
-		device_name("Default"),
-		new_device("Default"),
-		default_device(""),
-		mix_rate(0),
-		buffer_frames(0),
-		pa_buffer_size(0),
-		channels(0),
-		pa_ready(0),
-		pa_status(0),
-		active(false),
-		thread_exited(false),
-		exit_thread(false),
-		latency(0) {
+AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	samples_in.clear();
 	samples_out.clear();
 }
 
-AudioDriverPulseAudio::~AudioDriverPulseAudio() {
-}
-
-#endif
+#endif // PULSEAUDIO_ENABLED

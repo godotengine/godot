@@ -395,6 +395,6 @@ GameCenter::GameCenter() {
 	authenticated = false;
 };
 
-GameCenter::~GameCenter(){};
+GameCenter::~GameCenter() {}
 
 #endif
