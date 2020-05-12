@@ -121,7 +121,7 @@ namespace GodotTools.IdeMessaging
             this.messageHandler = messageHandler;
             this.logger = logger;
 
-            string projectMetadataDir = Path.Combine(godotProjectDir, ".mono", "metadata");
+            string projectMetadataDir = Path.Combine(godotProjectDir, ".godot", "mono", "metadata");
 
             MetaFilePath = Path.Combine(projectMetadataDir, GodotIdeMetadata.DefaultFileName);
 
