@@ -96,10 +96,12 @@
 			Extra spacing at the bottom in pixels.
 		</member>
 		<member name="extra_spacing_char" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra character spacing in pixels.
+			Extra spacing for each character in pixels.
+			This can be a negative number to make the distance between characters smaller.
 		</member>
 		<member name="extra_spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra space spacing in pixels.
+			Extra spacing for the space character (in addition to [member extra_spacing_char]) in pixels.
+			This can be a negative number to make the distance between words smaller.
 		</member>
 		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the top in pixels.
@@ -132,10 +134,10 @@
 			Spacing at the bottom.
 		</constant>
 		<constant name="SPACING_CHAR" value="2" enum="SpacingType">
-			Character spacing.
+			Spacing for each character.
 		</constant>
 		<constant name="SPACING_SPACE" value="3" enum="SpacingType">
-			Space spacing.
+			Spacing for the space character.
 		</constant>
 	</constants>
 </class>
