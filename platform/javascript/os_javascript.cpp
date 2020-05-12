@@ -30,12 +30,18 @@
 
 #include "os_javascript.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/file_access_buffered_fa.h"
 #include "core/io/json.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
+#include "modules/modules_enabled.gen.h"
 #include "platform/javascript/display_server_javascript.h"
+
+#ifdef MODULE_WEBSOCKET_ENABLED
+#include "modules/websocket/remote_debugger_peer_websocket.h"
+#endif
 
 #include <emscripten.h>
 #include <stdlib.h>
@@ -67,6 +73,11 @@ void OS_JavaScript::initialize() {
 	OS_Unix::initialize_core();
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix>>(FileAccess::ACCESS_RESOURCES);
 	DisplayServerJavaScript::register_javascript_driver();
+
+#ifdef MODULE_WEBSOCKET_ENABLED
+	EngineDebugger::register_uri_handler("ws://", RemoteDebuggerPeerWebSocket::create);
+	EngineDebugger::register_uri_handler("wss://", RemoteDebuggerPeerWebSocket::create);
+#endif
 
 	char locale_ptr[16];
 	/* clang-format off */
