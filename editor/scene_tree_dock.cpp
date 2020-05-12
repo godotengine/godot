@@ -579,7 +579,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 				dup->set_name(parent->validate_child_name(dup));
 
-				editor_data->get_undo_redo().add_do_method(parent, "add_child_below_node", add_below_node, dup);
+				editor_data->get_undo_redo().add_do_method(add_below_node, "add_sibling", dup);
+
 				for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
 					if (!duplimap.has(F->get())) {
 						continue;
