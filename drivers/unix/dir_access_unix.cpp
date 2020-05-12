@@ -34,6 +34,7 @@
 
 #include "core/list.h"
 #include "core/os/memory.h"
+#include "core/os/os.h"
 #include "core/print_string.h"
 
 #include <errno.h>
@@ -199,6 +200,7 @@ static bool _filter_drive(struct mntent *mnt) {
 
 static void _get_drives(List<String> *list) {
 
+// Add mounted partitions
 #if defined(HAVE_MNTENT) && defined(X11_ENABLED)
 	// Check /etc/mtab for the list of mounted partitions
 	FILE *mtab = setmntent("/etc/mtab", "r");
@@ -227,17 +229,17 @@ static void _get_drives(List<String> *list) {
 			list->push_back(home);
 		}
 
-		// Check $HOME/.config/gtk-3.0/bookmarks
 		char path[1024];
 		snprintf(path, 1024, "%s/.config/gtk-3.0/bookmarks", home);
 		FILE *fd = fopen(path, "r");
+		String fpath;
 		if (fd) {
 			char string[1024];
 			while (fgets(string, 1024, fd)) {
 				// Parse only file:// links
 				if (strncmp(string, "file://", 7) == 0) {
 					// Strip any unwanted edges on the strings and push_back if it's not a duplicate
-					String fpath = String(string + 7).strip_edges().split_spaces()[0].percent_decode();
+					fpath = String(string + 7).strip_edges().split_spaces()[0].percent_decode();
 					if (!list->find(fpath)) {
 						list->push_back(fpath);
 					}
@@ -245,6 +247,12 @@ static void _get_drives(List<String> *list) {
 			}
 
 			fclose(fd);
+		}
+
+		// Add $HOME/Desktop
+		fpath = OS::get_singleton()->get_system_dir(OS::SystemDir::SYSTEM_DIR_DESKTOP);
+		if (fpath.length() > 0 && !list->find(fpath)) {
+			list->push_back(fpath);
 		}
 	}
 
