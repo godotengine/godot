@@ -86,7 +86,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns an array of all cells with the given tile [code]id[/code].
+				Returns an array of all cells with the given tile index specified in [code]id[/code].
 			</description>
 		</method>
 		<method name="get_used_rect">
