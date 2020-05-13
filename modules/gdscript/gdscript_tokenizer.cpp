@@ -952,7 +952,7 @@ void GDScriptTokenizerText::_advance() {
 
 					INCPOS(i);
 					if (hexa_found) {
-						int64_t val = str.hex_to_int64();
+						int64_t val = str.hex_to_int();
 						_make_constant(val);
 					} else if (bin_found) {
 						int64_t val = str.bin_to_int64();

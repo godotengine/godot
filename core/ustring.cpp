@@ -1618,49 +1618,7 @@ String::String(const StrRange &p_range) {
 	copy_from(p_range.c_str, p_range.len);
 }
 
-int String::hex_to_int(bool p_with_prefix) const {
-	if (p_with_prefix && length() < 3) {
-		return 0;
-	}
-
-	const CharType *s = ptr();
-
-	int sign = s[0] == '-' ? -1 : 1;
-
-	if (sign < 0) {
-		s++;
-	}
-
-	if (p_with_prefix) {
-		if (s[0] != '0' || s[1] != 'x') {
-			return 0;
-		}
-		s += 2;
-	}
-
-	int hex = 0;
-
-	while (*s) {
-		CharType c = LOWERCASE(*s);
-		int n;
-		if (c >= '0' && c <= '9') {
-			n = c - '0';
-		} else if (c >= 'a' && c <= 'f') {
-			n = (c - 'a') + 10;
-		} else {
-			return 0;
-		}
-
-		ERR_FAIL_COND_V_MSG(hex > INT32_MAX / 16, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
-		hex *= 16;
-		hex += n;
-		s++;
-	}
-
-	return hex * sign;
-}
-
-int64_t String::hex_to_int64(bool p_with_prefix) const {
+int64_t String::hex_to_int(bool p_with_prefix) const {
 	if (p_with_prefix && length() < 3) {
 		return 0;
 	}
@@ -3813,7 +3771,7 @@ bool String::is_valid_ip_address() const {
 				continue;
 			}
 			if (n.is_valid_hex_number(false)) {
-				int nint = n.hex_to_int(false);
+				int64_t nint = n.hex_to_int(false);
 				if (nint < 0 || nint > 0xffff) {
 					return false;
 				}
