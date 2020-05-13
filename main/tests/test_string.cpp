@@ -370,7 +370,7 @@ bool test_22() {
 	static const int num[4] = { 1237461283, -22, 0, -1123412 };
 
 	for (int i = 0; i < 4; i++) {
-		OS::get_singleton()->print("\tString: \"%s\" as Int is %i\n", nums[i], String(nums[i]).to_int());
+		OS::get_singleton()->print("\tString: \"%s\" as Int is %lli\n", nums[i], (long long)(String(nums[i]).to_int()));
 
 		if (String(nums[i]).to_int() != num[i]) {
 			return false;

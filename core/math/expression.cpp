@@ -1064,7 +1064,7 @@ Error Expression::_get_token(Token &r_token) {
 					if (is_float) {
 						r_token.value = num.to_double();
 					} else {
-						r_token.value = num.to_int64();
+						r_token.value = num.to_int();
 					}
 					return OK;
 
