@@ -659,14 +659,7 @@ void DisplayServerJavaScript::process_joypads() {
 			for (int button = 0; button < button_count; button++) {
 
 				float value = state.analogButton[button];
-				if (String::utf8(state.mapping) == "standard" && (button == JOY_ANALOG_L2 || button == JOY_ANALOG_R2)) {
-					Input::JoyAxis joy_axis;
-					joy_axis.min = 0;
-					joy_axis.value = value;
-					input->joy_axis(joypad, button, joy_axis);
-				} else {
-					input->joy_button(joypad, button, value);
-				}
+				input->joy_button(joypad, button, value);
 			}
 			for (int axis = 0; axis < axis_count; axis++) {
 
