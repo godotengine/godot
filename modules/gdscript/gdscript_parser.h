@@ -635,7 +635,7 @@ private:
 	DataType _get_operation_type(const Variant::Operator p_op, const DataType &p_a, const DataType &p_b, bool &r_valid) const;
 	Variant::Operator _get_variant_operation(const OperatorNode::Operator &p_op) const;
 	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
-	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const;
+	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type, bool *r_is_const = nullptr) const;
 	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
 	Node *_get_default_value_for_type(const DataType &p_type, int p_line = -1);
 
