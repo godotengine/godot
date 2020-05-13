@@ -148,26 +148,61 @@ private:
 		TYPE_MAX,
 	};
 
+	enum JoyAxisRange {
+		NEGATIVE_HALF_AXIS = -1,
+		FULL_AXIS = 0,
+		POSITIVE_HALF_AXIS = 1
+	};
+
 	struct JoyEvent {
 		int type;
 		int index;
-		int value;
+		float value;
+	};
+
+	struct JoyBinding {
+		JoyType inputType;
+		union {
+			int button;
+
+			struct {
+				int axis;
+				JoyAxisRange range;
+				bool invert;
+			} axis;
+
+			struct {
+				int hat;
+				HatMask hat_mask;
+			} hat;
+
+		} input;
+
+		JoyType outputType;
+		union {
+			JoystickList button;
+
+			struct {
+				JoystickList axis;
+				JoyAxisRange range;
+			} axis;
+
+		} output;
 	};
 
 	struct JoyDeviceMapping {
-
 		String uid;
 		String name;
-		Map<int, JoyEvent> buttons;
-		Map<int, JoyEvent> axis;
-		JoyEvent hat[HAT_MAX];
+		Vector<JoyBinding> bindings;
 	};
-
-	JoyEvent hat_map_default[HAT_MAX];
 
 	Vector<JoyDeviceMapping> map_db;
 
-	JoyEvent _find_to_event(String p_to);
+	JoyEvent _get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button);
+	JoyEvent _get_mapped_axis_event(const JoyDeviceMapping &mapping, int p_axis, const JoyAxis &p_value);
+	void _get_mapped_hat_events(const JoyDeviceMapping &mapping, int p_hat, JoyEvent r_events[HAT_MAX]);
+	JoystickList _get_output_button(String output);
+	JoystickList _get_output_axis(String output);
 	void _button_event(int p_device, int p_index, bool p_pressed);
 	void _axis_event(int p_device, int p_axis, float p_value);
 	float _handle_deadzone(int p_device, int p_axis, float p_value);
