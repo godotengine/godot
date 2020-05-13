@@ -377,13 +377,13 @@ void EditorPropertyMember::_property_select() {
 		selector->select_method_from_base_type(hint_text, current);
 
 	} else if (hint == MEMBER_METHOD_OF_INSTANCE) {
-		Object *instance = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
+		Object *instance = ObjectDB::get_instance(ObjectID(hint_text.to_int()));
 		if (instance) {
 			selector->select_method_from_instance(instance, current);
 		}
 
 	} else if (hint == MEMBER_METHOD_OF_SCRIPT) {
-		Object *obj = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
+		Object *obj = ObjectDB::get_instance(ObjectID(hint_text.to_int()));
 		if (Object::cast_to<Script>(obj)) {
 			selector->select_method_from_script(Object::cast_to<Script>(obj), current);
 		}
@@ -408,13 +408,13 @@ void EditorPropertyMember::_property_select() {
 		selector->select_property_from_base_type(hint_text, current);
 
 	} else if (hint == MEMBER_PROPERTY_OF_INSTANCE) {
-		Object *instance = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
+		Object *instance = ObjectDB::get_instance(ObjectID(hint_text.to_int()));
 		if (instance) {
 			selector->select_property_from_instance(instance, current);
 		}
 
 	} else if (hint == MEMBER_PROPERTY_OF_SCRIPT) {
-		Object *obj = ObjectDB::get_instance(ObjectID(hint_text.to_int64()));
+		Object *obj = ObjectDB::get_instance(ObjectID(hint_text.to_int()));
 		if (Object::cast_to<Script>(obj)) {
 			selector->select_property_from_script(Object::cast_to<Script>(obj), current);
 		}
@@ -488,7 +488,7 @@ void EditorPropertyEnum::setup(const Vector<String> &p_options) {
 	for (int i = 0; i < p_options.size(); i++) {
 		Vector<String> text_split = p_options[i].split(":");
 		if (text_split.size() != 1) {
-			current_val = text_split[1].to_int64();
+			current_val = text_split[1].to_int();
 		}
 		options->add_item(text_split[0]);
 		options->set_item_metadata(i, current_val);
