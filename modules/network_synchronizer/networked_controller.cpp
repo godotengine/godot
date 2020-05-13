@@ -422,8 +422,8 @@ void NetworkedController::_notification(int p_what) {
 			} else if (get_tree()->is_network_server()) {
 				controller_type = CONTROLLER_TYPE_SERVER;
 				controller = memnew(ServerController(this, get_network_traced_frames()));
-				get_multiplayer()->connect("network_peer_connected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
-				get_multiplayer()->connect("network_peer_disconnected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
+				get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
+				get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
 				update_active_doll_peers();
 			} else if (is_network_master()) {
 				controller_type = CONTROLLER_TYPE_PLAYER;
@@ -447,8 +447,8 @@ void NetworkedController::_notification(int p_what) {
 			controller_type = CONTROLLER_TYPE_NULL;
 
 			if (get_tree()->is_network_server()) {
-				get_multiplayer()->disconnect("network_peer_connected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
-				get_multiplayer()->disconnect("network_peer_disconnected", callable_mp(this, &NetworkedController::_on_peer_connection_change));
+				get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connection_change"));
+				get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_connection_change"));
 			}
 		} break;
 	}
