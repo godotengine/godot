@@ -416,7 +416,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 		int *axes = godot_webxr_get_controller_axes(p_controller_id);
 		if (axes) {
 			for (int i = 0; i < axes[0]; i++) {
-				Input::JoyAxis joy_axis;
+				Input::JoyAxisValue joy_axis;
 				joy_axis.min = -1;
 				joy_axis.value = *((float *)axes + (i + 1));
 				input->joy_axis(p_controller_id + 100, i, joy_axis);

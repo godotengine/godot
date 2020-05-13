@@ -62,7 +62,7 @@
 			<argument index="0" name="button" type="int">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoyButtonList].
+				Returns [code]true[/code] if the button at index [code]button[/code] is pressed. See [enum JoyButton].
 			</description>
 		</method>
 	</methods>
