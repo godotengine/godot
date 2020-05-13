@@ -961,7 +961,7 @@ void GDScriptTokenizerText::_advance() {
 						double val = str.to_double();
 						_make_constant(val);
 					} else {
-						int64_t val = str.to_int64();
+						int64_t val = str.to_int();
 						_make_constant(val);
 					}
 

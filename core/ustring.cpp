@@ -1742,32 +1742,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 	return binary * sign;
 }
 
-int String::to_int() const {
-	if (length() == 0) {
-		return 0;
-	}
-
-	int to = (find(".") >= 0) ? find(".") : length();
-
-	int integer = 0;
-	int sign = 1;
-
-	for (int i = 0; i < to; i++) {
-		CharType c = operator[](i);
-		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
-			integer *= 10;
-			integer += c - '0';
-
-		} else if (integer == 0 && c == '-') {
-			sign = -sign;
-		}
-	}
-
-	return integer * sign;
-}
-
-int64_t String::to_int64() const {
+int64_t String::to_int() const {
 	if (length() == 0) {
 		return 0;
 	}
@@ -1780,7 +1755,7 @@ int64_t String::to_int64() const {
 	for (int i = 0; i < to; i++) {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
-			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as an integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
