@@ -696,6 +696,28 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 			}
 		}
 		return false;
+	} else if (v_1.get_type() == Variant::DICTIONARY) {
+		const Dictionary a = v_1;
+		const Dictionary b = v_2;
+
+		List<Variant> l;
+		a.get_key_list(&l);
+
+		for (List<Variant>::Element *key = l.front(); key; key = key->next()) {
+			if (b.has(key->get()) == false) {
+				return false;
+			}
+
+			Variant x;
+			Variant y;
+			a.get(key->get(), x);
+			b.get(key->get(), y);
+			if (rewinder_variant_evaluation(x, y) == false) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	// Default evaluation methods
