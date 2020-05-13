@@ -245,7 +245,7 @@ _FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IP_Address p_ip, St
 			continue;
 		}
 
-		if_v6id = (uint32_t)c.index.to_int64();
+		if_v6id = (uint32_t)c.index.to_int();
 		if (type == IP::TYPE_IPV6) {
 			break; // IPv6 uses index.
 		}

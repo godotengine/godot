@@ -233,9 +233,9 @@ void EditorFileSystem::_scan_filesystem() {
 
 				FileCache fc;
 				fc.type = split[1];
-				fc.modification_time = split[2].to_int64();
-				fc.import_modification_time = split[3].to_int64();
-				fc.import_valid = split[4].to_int64() != 0;
+				fc.modification_time = split[2].to_int();
+				fc.import_modification_time = split[3].to_int();
+				fc.import_valid = split[4].to_int() != 0;
 				fc.import_group_file = split[5].strip_edges();
 				fc.script_class_name = split[6].get_slice("<>", 0);
 				fc.script_class_extends = split[6].get_slice("<>", 1);

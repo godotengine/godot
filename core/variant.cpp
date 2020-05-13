@@ -1409,7 +1409,7 @@ Variant::operator int64_t() const {
 		case FLOAT:
 			return _data._float;
 		case STRING:
-			return operator String().to_int64();
+			return operator String().to_int();
 		default: {
 			return 0;
 		}
