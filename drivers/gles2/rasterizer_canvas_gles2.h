@@ -135,7 +135,10 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 
 		// note the z_index  may only be correct for the first of the joined item references
 		// this has implications for light culling with z ranged lights.
-		int z_index;
+		int16_t z_index;
+
+		// these are defined in RasterizerStorageGLES2::Shader::CanvasItem::BatchFlags
+		uint16_t flags;
 
 		// we are always splitting items with lots of commands,
 		// and items with unhandled primitives (default)
@@ -205,7 +208,7 @@ class RasterizerCanvasGLES2 : public RasterizerCanvasBaseGLES2 {
 		// if the shader is reading VERTEX, we prevent baking vertex positions with extra matrices etc
 		// to prevent the read position being incorrect.
 		// These flags are defined in RasterizerStorageGLES2::Shader::CanvasItem::BatchFlags
-		unsigned int joined_item_batch_flags;
+		uint32_t joined_item_batch_flags;
 
 		// measured in pixels, recalculated each frame
 		float scissor_threshold_area;
