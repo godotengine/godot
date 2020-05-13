@@ -7787,6 +7787,7 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
 		_mark_line_as_safe(v.line);
 		v.data_type = _resolve_type(v.data_type, v.line);
+		v.initial_assignment->arguments[0]->set_datatype(v.data_type);
 
 		if (v.expression) {
 			DataType expr_type = _reduce_node_type(v.expression);
