@@ -477,7 +477,7 @@ void DisplayServerAndroid::process_joy_event(DisplayServerAndroid::JoypadEvent p
 			Input::get_singleton()->joy_button(p_event.device, p_event.index, p_event.pressed);
 			break;
 		case JOY_EVENT_AXIS:
-			Input::JoyAxis value;
+			Input::JoyAxisValue value;
 			value.min = -1;
 			value.value = p_event.value;
 			Input::get_singleton()->joy_axis(p_event.device, p_event.index, value);

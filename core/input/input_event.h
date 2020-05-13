@@ -59,7 +59,7 @@ enum MouseButton {
 	MOUSE_BUTTON_MASK_XBUTTON2 = (1 << (MOUSE_BUTTON_XBUTTON2 - 1))
 };
 
-enum JoyButtonList {
+enum JoyButton {
 	JOY_BUTTON_INVALID = -1,
 	JOY_BUTTON_A = 0,
 	JOY_BUTTON_B = 1,
@@ -86,7 +86,7 @@ enum JoyButtonList {
 	JOY_BUTTON_MAX = 36, // Android supports up to 36 buttons.
 };
 
-enum JoyAxisList {
+enum JoyAxis {
 	JOY_AXIS_INVALID = -1,
 	JOY_AXIS_LEFT_X = 0,
 	JOY_AXIS_LEFT_Y = 1,
@@ -98,7 +98,7 @@ enum JoyAxisList {
 	JOY_AXIS_MAX = 10, // OpenVR supports up to 5 Joysticks making a total of 10 axes.
 };
 
-enum MidiMessageList {
+enum MIDIMessage {
 	MIDI_MESSAGE_NOTE_OFF = 0x8,
 	MIDI_MESSAGE_NOTE_ON = 0x9,
 	MIDI_MESSAGE_AFTERTOUCH = 0xA,

@@ -45,7 +45,7 @@ enum {
 	SPKEY = (1 << 24)
 };
 
-enum KeyList {
+enum Key {
 	/* CURSOR/FUNCTION/BROWSER/MULTIMEDIA/MISC KEYS */
 	KEY_ESCAPE = SPKEY | 0x01,
 	KEY_TAB = SPKEY | 0x02,
