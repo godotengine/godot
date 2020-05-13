@@ -36,7 +36,6 @@
 
 #include "core/oa_hash_map.h"
 #include <deque>
-#include <vector>
 
 #ifndef SCENE_REWINDER_H
 #define SCENE_REWINDER_H
@@ -73,9 +72,9 @@ struct NodeData {
 	bool is_controller;
 	ControllerID controlled_by;
 	ControllerID isle_id;
-	std::vector<ObjectID> controlled_nodes;
+	Vector<ObjectID> controlled_nodes;
 	Vector<VarData> vars;
-	std::vector<StringName> functions;
+	Vector<StringName> functions;
 
 	// This is valid to use only inside the process function.
 	Node *node;
@@ -91,7 +90,7 @@ struct NodeData {
 
 struct IsleData {
 	ControllerID controller_instance_id;
-	std::vector<ObjectID> nodes;
+	Vector<ObjectID> nodes;
 
 	NetworkedController *controller = nullptr;
 };

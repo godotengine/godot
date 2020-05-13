@@ -37,7 +37,6 @@
 #include "net_utilities.h"
 #include "networked_controller.h"
 #include "scene/main/window.h"
-#include <algorithm>
 
 // TODO add back the DOLL disabling
 
@@ -70,7 +69,8 @@ NodeData::NodeData() :
 		instance_id(uint64_t(0)),
 		is_controller(false),
 		controlled_by(uint64_t(0)),
-		isle_id(uint64_t(0)) {
+		isle_id(uint64_t(0)),
+		node(nullptr) {
 }
 
 NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
@@ -78,7 +78,8 @@ NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
 		instance_id(p_instance_id),
 		is_controller(is_controller),
 		controlled_by(uint64_t(0)),
-		isle_id(uint64_t(0)) {
+		isle_id(uint64_t(0)),
+		node(nullptr) {
 }
 
 int NodeData::find_var_by_id(uint32_t p_id) const {
@@ -107,12 +108,17 @@ bool NodeData::can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_
 }
 
 void NodeData::process(const real_t p_delta) const {
+	if (functions.size() <= 0)
+		return;
+
 	const Variant var_delta = p_delta;
 	const Variant *fake_array_vars = &var_delta;
 
+	const StringName *funcs = functions.ptr();
+
 	Callable::CallError e;
-	for (size_t i = 0; i < functions.size(); i += 1) {
-		node->call(functions[i], &fake_array_vars, 1, e);
+	for (int i = 0; i < functions.size(); i += 1) {
+		node->call(funcs[i], &fake_array_vars, 1, e);
 	}
 }
 
@@ -162,6 +168,9 @@ void SceneRewinder::_bind_methods() {
 void SceneRewinder::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			if (Engine::get_singleton()->is_editor_hint())
+				return;
+
 			const int lowest_priority_number = INT32_MAX;
 			ERR_FAIL_COND_MSG(get_process_priority() != lowest_priority_number, "The process priority MUST not be changed, is likely there is a better way of doing what you are trying to do, if you really need it please open an issue.");
 
@@ -181,9 +190,11 @@ void SceneRewinder::_notification(int p_what) {
 
 			__clear();
 
-			memdelete(rewinder);
-			rewinder = nullptr;
-			rewinder_type = REWINDER_TYPE_NULL;
+			if (rewinder) {
+				memdelete(rewinder);
+				rewinder = nullptr;
+				rewinder_type = REWINDER_TYPE_NULL;
+			}
 
 			set_physics_process_internal(false);
 		}
@@ -205,10 +216,10 @@ SceneRewinder::SceneRewinder() :
 	rpc_config("__reset", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
-	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
 SceneRewinder::~SceneRewinder() {
+	__clear();
 	if (rewinder) {
 		memdelete(rewinder);
 		rewinder = nullptr;
@@ -344,13 +355,7 @@ void SceneRewinder::set_node_as_controlled_by(Node *p_node, Node *p_controller) 
 	if (node_data->controlled_by.is_null() == false) {
 		NodeData *controller_node_data = data.lookup_ptr(node_data->controlled_by);
 		if (controller_node_data) {
-			std::vector<ObjectID>::iterator it = std::find(
-					controller_node_data->controlled_nodes.begin(),
-					controller_node_data->controlled_nodes.end(),
-					p_node->get_instance_id());
-			if (it != controller_node_data->controlled_nodes.end()) {
-				controller_node_data->controlled_nodes.erase(it);
-			}
+			controller_node_data->controlled_nodes.erase(p_node->get_instance_id());
 		}
 		node_data->controlled_by = ObjectID();
 	}
@@ -461,7 +466,7 @@ void SceneRewinder::register_process(Node *p_node, StringName p_function) {
 	NodeData *node_data = register_node(p_node);
 	ERR_FAIL_COND(node_data == nullptr);
 
-	if (std::find(node_data->functions.begin(), node_data->functions.end(), p_function) == node_data->functions.end()) {
+	if (node_data->functions.find(p_function) == -1) {
 		node_data->functions.push_back(p_function);
 	}
 }
@@ -471,10 +476,7 @@ void SceneRewinder::unregister_process(Node *p_node, StringName p_function) {
 	ERR_FAIL_COND(p_function == StringName());
 	NodeData *node_data = register_node(p_node);
 	ERR_FAIL_COND(node_data == nullptr);
-	std::vector<StringName>::iterator it = std::find(node_data->functions.begin(), node_data->functions.end(), p_function);
-	if (it != node_data->functions.end()) {
-		node_data->functions.erase(it);
-	}
+	node_data->functions.erase(p_function);
 }
 
 bool SceneRewinder::is_recovered() const {
@@ -561,9 +563,15 @@ void SceneRewinder::__clear() {
 				unregister_variable(node, object_vars[i].var.name);
 			}
 		}
+
+		it.value->vars.clear();
+		it.value->controlled_nodes.clear();
+		it.value->functions.clear();
+		it.value->node = nullptr;
 	}
 
 	data.clear();
+	isle_data.clear();
 	node_counter = 1;
 
 	if (rewinder) {
@@ -728,8 +736,8 @@ void SceneRewinder::validate_nodes() {
 void SceneRewinder::put_into_isle(ObjectID p_node_id, ControllerID p_isle_id) {
 	IsleData *isle = isle_data.lookup_ptr(p_isle_id);
 	ERR_FAIL_COND(isle == nullptr);
-	auto it = std::find(isle->nodes.begin(), isle->nodes.end(), p_node_id);
-	if (it == isle->nodes.end()) {
+	const int index = isle->nodes.find(p_node_id);
+	if (index == -1) {
 		isle->nodes.push_back(p_node_id);
 	}
 }
@@ -737,10 +745,7 @@ void SceneRewinder::put_into_isle(ObjectID p_node_id, ControllerID p_isle_id) {
 void SceneRewinder::remove_from_isle(ObjectID p_node_id, ControllerID p_isle_id) {
 	IsleData *isle = isle_data.lookup_ptr(p_isle_id);
 	ERR_FAIL_COND(isle == nullptr);
-	auto it = std::find(isle->nodes.begin(), isle->nodes.end(), p_node_id);
-	if (it != isle->nodes.end()) {
-		isle->nodes.erase(it);
-	}
+	isle->nodes.erase(p_node_id);
 }
 
 void SceneRewinder::process() {
@@ -1082,12 +1087,13 @@ void ClientRewinder::process() {
 		while (sub_ticks > 0) {
 
 			// Process the nodes of this controller.
+			const ObjectID *nodes = it.value->nodes.ptr();
 			for (
-					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
-					node_it != it.value->nodes.end();
-					node_it += 1) {
+					int node_i = 0;
+					node_i < it.value->nodes.size();
+					node_i += 1) {
 
-				NodeData *node_data = scene_rewinder->data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
+				NodeData *node_data = scene_rewinder->data.lookup_ptr(nodes[node_i]); // TODO Is possible to avoid this?
 				ERR_CONTINUE(node_data == nullptr);
 				node_data->process(delta);
 			}
@@ -1098,11 +1104,11 @@ void ClientRewinder::process() {
 			// TODO find a way to not iterate this again or avoid the below `look_up`.
 			// Iterate all the nodes and compare the isle??
 			for (
-					std::vector<ObjectID>::iterator node_it = it.value->nodes.begin();
-					node_it != it.value->nodes.end();
-					node_it += 1) {
+					int node_i = 0;
+					node_i < it.value->nodes.size();
+					node_i += 1) {
 
-				NodeData *node_data = scene_rewinder->data.lookup_ptr(*node_it); // TODO Is possible to avoid this?
+				NodeData *node_data = scene_rewinder->data.lookup_ptr(nodes[node_i]); // TODO Is possible to avoid this?
 				ERR_CONTINUE(node_data == nullptr);
 
 				scene_rewinder->pull_node_changes(node_data);
@@ -1171,12 +1177,13 @@ void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 	IsleData *isle_data = scene_rewinder->isle_data.lookup_ptr(p_controller->get_instance_id());
 	ERR_FAIL_COND(isle_data == nullptr);
 
+	const ObjectID *nodes = isle_data->nodes.ptr();
 	for (
-			std::vector<ObjectID>::iterator it = isle_data->nodes.begin();
-			it != isle_data->nodes.end();
-			it += 1) {
+			int node_i = 0;
+			node_i < isle_data->nodes.size();
+			node_i += 1) {
 
-		const NodeData *node_data = scene_rewinder->data.lookup_ptr(*it);
+		const NodeData *node_data = scene_rewinder->data.lookup_ptr(nodes[node_i]);
 		ERR_CONTINUE(node_data == nullptr);
 
 		snap.node_vars[node_data->instance_id] = node_data->vars;
@@ -1479,9 +1486,13 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 					nodes_to_recover.push_back(nd);
 
-					for (std::vector<ObjectID>::iterator it = nd->controlled_nodes.begin(); it != nd->controlled_nodes.end(); it += 1) {
+					const ObjectID *controlled_nodes = nd->controlled_nodes.ptr();
+					for (
+							int i = 0;
+							i < nd->controlled_nodes.size();
+							i += 1) {
 
-						NodeData *node_data = scene_rewinder->data.lookup_ptr(*it);
+						NodeData *node_data = scene_rewinder->data.lookup_ptr(controlled_nodes[i]);
 						if (node_data) {
 							nodes_to_recover.push_back(node_data);
 						}
