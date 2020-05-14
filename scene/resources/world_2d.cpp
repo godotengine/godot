@@ -103,8 +103,9 @@ struct SpatialIndexer2D {
 				Map<CellKey, CellData>::Element *E = cells.find(ck);
 
 				if (p_add) {
-					if (!E)
+					if (!E) {
 						E = cells.insert(ck, CellData());
+					}
 					E->get().notifiers[p_notifier].inc();
 				} else {
 					ERR_CONTINUE(!E);
@@ -129,8 +130,9 @@ struct SpatialIndexer2D {
 	void _notifier_update(VisibilityNotifier2D *p_notifier, const Rect2 &p_rect) {
 		Map<VisibilityNotifier2D *, Rect2>::Element *E = notifiers.find(p_notifier);
 		ERR_FAIL_COND(!E);
-		if (E->get() == p_rect)
+		if (E->get() == p_rect) {
 			return;
+		}
 
 		_notifier_update_cells(p_notifier, p_rect, true);
 		_notifier_update_cells(p_notifier, E->get(), false);
@@ -173,8 +175,9 @@ struct SpatialIndexer2D {
 	void _update_viewport(Viewport *p_viewport, const Rect2 &p_rect) {
 		Map<Viewport *, ViewportData>::Element *E = viewports.find(p_viewport);
 		ERR_FAIL_COND(!E);
-		if (E->get().rect == p_rect)
+		if (E->get().rect == p_rect) {
 			return;
+		}
 		E->get().rect = p_rect;
 		changed = true;
 	}
@@ -195,8 +198,9 @@ struct SpatialIndexer2D {
 	}
 
 	void _update() {
-		if (!changed)
+		if (!changed) {
 			return;
+		}
 
 		for (Map<Viewport *, ViewportData>::Element *E = viewports.front(); E; E = E->next()) {
 			Point2i begin = E->get().rect.position;
@@ -215,10 +219,12 @@ struct SpatialIndexer2D {
 				for (Map<CellKey, CellData>::Element *F = cells.front(); F; F = F->next()) {
 					const CellKey &ck = F->key();
 
-					if (ck.x < begin.x || ck.x > end.x)
+					if (ck.x < begin.x || ck.x > end.x) {
 						continue;
-					if (ck.y < begin.y || ck.y > end.y)
+					}
+					if (ck.y < begin.y || ck.y > end.y) {
 						continue;
+					}
 
 					//notifiers in cell
 					for (Map<VisibilityNotifier2D *, CellRef>::Element *G = F->get().notifiers.front(); G; G = G->next()) {
@@ -260,8 +266,9 @@ struct SpatialIndexer2D {
 			}
 
 			for (Map<VisibilityNotifier2D *, uint64_t>::Element *F = E->get().notifiers.front(); F; F = F->next()) {
-				if (F->get() != pass)
+				if (F->get() != pass) {
 					removed.push_back(F->key());
+				}
 			}
 
 			while (!added.empty()) {

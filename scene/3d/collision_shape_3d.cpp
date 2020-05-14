@@ -46,8 +46,9 @@
 
 void CollisionShape3D::make_convex_from_brothers() {
 	Node *p = get_parent();
-	if (!p)
+	if (!p) {
 		return;
+	}
 
 	for (int i = 0; i < p->get_child_count(); i++) {
 		Node *n = p->get_child(i);
@@ -64,8 +65,9 @@ void CollisionShape3D::make_convex_from_brothers() {
 
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 }
 
@@ -162,8 +164,9 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 		}
 	}
 
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_shape_changed();
+	}
 	update_configuration_warning();
 }
 
@@ -193,8 +196,9 @@ CollisionShape3D::CollisionShape3D() {
 }
 
 CollisionShape3D::~CollisionShape3D() {
-	if (!shape.is_null())
+	if (!shape.is_null()) {
 		shape->unregister_owner(this);
+	}
 	//RenderingServer::get_singleton()->free(indicator);
 }
 
@@ -207,8 +211,9 @@ void CollisionShape3D::_update_debug_shape() {
 	}
 
 	Ref<Shape3D> s = get_shape();
-	if (s.is_null())
+	if (s.is_null()) {
 		return;
+	}
 
 	Ref<Mesh> mesh = s->get_debug_mesh();
 	MeshInstance3D *mi = memnew(MeshInstance3D);

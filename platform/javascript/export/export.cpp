@@ -148,11 +148,13 @@ public:
 	}
 
 	void poll() {
-		if (!server->is_listening())
+		if (!server->is_listening()) {
 			return;
+		}
 		if (connection.is_null()) {
-			if (!server->is_connection_available())
+			if (!server->is_connection_available()) {
 				return;
+			}
 			connection = server->take_connection();
 			time = OS::get_singleton()->get_ticks_usec();
 		}
@@ -160,8 +162,9 @@ public:
 			_clear_client();
 			return;
 		}
-		if (connection->get_status() != StreamPeerTCP::STATUS_CONNECTED)
+		if (connection->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 			return;
+		}
 
 		while (true) {
 			char *r = (char *)req_buf;
@@ -339,8 +342,9 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	if (!err.empty())
+	if (!err.empty()) {
 		r_error = err;
+	}
 
 	return valid;
 }
@@ -363,10 +367,11 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	template_path = template_path.strip_edges();
 
 	if (template_path == String()) {
-		if (p_debug)
+		if (p_debug) {
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
-		else
+		} else {
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
+		}
 	}
 
 	if (!DirAccess::exists(p_path.get_base_dir())) {
@@ -618,10 +623,11 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	run_icon->create_from_image(img);
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	if (theme.is_valid())
+	if (theme.is_valid()) {
 		stop_icon = theme->get_icon("Stop", "EditorIcons");
-	else
+	} else {
 		stop_icon.instance();
+	}
 
 	menu_options = 0;
 }

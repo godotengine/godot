@@ -34,13 +34,15 @@
 #include "scene/main/viewport.h"
 
 Size2 SubViewportContainer::get_minimum_size() const {
-	if (stretch)
+	if (stretch) {
 		return Size2();
+	}
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
 		Size2 minsize = c->get_size();
 		ms.width = MAX(ms.width, minsize.width);
@@ -62,18 +64,21 @@ bool SubViewportContainer::is_stretch_enabled() const {
 
 void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 	ERR_FAIL_COND(p_shrink < 1);
-	if (shrink == p_shrink)
+	if (shrink == p_shrink) {
 		return;
+	}
 
 	shrink = p_shrink;
 
-	if (!stretch)
+	if (!stretch) {
 		return;
+	}
 
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
 		c->set_size(get_size() / shrink);
 	}
@@ -87,13 +92,15 @@ int SubViewportContainer::get_stretch_shrink() const {
 
 void SubViewportContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_RESIZED) {
-		if (!stretch)
+		if (!stretch) {
 			return;
+		}
 
 		for (int i = 0; i < get_child_count(); i++) {
 			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
+			}
 
 			c->set_size(get_size() / shrink);
 		}
@@ -102,13 +109,15 @@ void SubViewportContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 		for (int i = 0; i < get_child_count(); i++) {
 			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
+			}
 
-			if (is_visible_in_tree())
+			if (is_visible_in_tree()) {
 				c->set_update_mode(SubViewport::UPDATE_ALWAYS);
-			else
+			} else {
 				c->set_update_mode(SubViewport::UPDATE_DISABLED);
+			}
 
 			c->set_handle_input_locally(false); //do not handle input locally here
 		}
@@ -117,20 +126,23 @@ void SubViewportContainer::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		for (int i = 0; i < get_child_count(); i++) {
 			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-			if (!c)
+			if (!c) {
 				continue;
+			}
 
-			if (stretch)
+			if (stretch) {
 				draw_texture_rect(c->get_texture(), Rect2(Vector2(), get_size()));
-			else
+			} else {
 				draw_texture_rect(c->get_texture(), Rect2(Vector2(), c->get_size()));
+			}
 		}
 	}
 }
 
 void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
-	if (Engine::get_singleton()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	Transform2D xform = get_global_transform();
 
@@ -144,16 +156,18 @@ void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c || c->is_input_disabled())
+		if (!c || c->is_input_disabled()) {
 			continue;
+		}
 
 		c->input(ev);
 	}
 }
 
 void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
-	if (Engine::get_singleton()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	Transform2D xform = get_global_transform();
 
@@ -167,8 +181,9 @@ void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-		if (!c || c->is_input_disabled())
+		if (!c || c->is_input_disabled()) {
 			continue;
+		}
 
 		c->unhandled_input(ev);
 	}

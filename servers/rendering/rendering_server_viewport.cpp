@@ -205,8 +205,9 @@ void RenderingServerViewport::_draw_viewport(Viewport *p_viewport, XRInterface::
 				Transform2D xf = _canvas_get_transform(p_viewport, canvas, &E->get(), clip_rect.size);
 
 				for (Set<RasterizerCanvas::LightOccluderInstance *>::Element *F = canvas->occluders.front(); F; F = F->next()) {
-					if (!F->get()->enabled)
+					if (!F->get()->enabled) {
 						continue;
+					}
 					F->get()->xform_cache = xf * F->get()->xform;
 					if (shadow_rect.intersects_transformed(F->get()->xform_cache, F->get()->aabb_cache)) {
 						F->get()->next = occluders;
@@ -321,8 +322,9 @@ void RenderingServerViewport::draw_viewports() {
 
 		Viewport *vp = active_viewports[i];
 
-		if (vp->update_mode == RS::VIEWPORT_UPDATE_DISABLED)
+		if (vp->update_mode == RS::VIEWPORT_UPDATE_DISABLED) {
 			continue;
+		}
 
 		if (!vp->render_target.is_valid()) {
 			continue;
@@ -550,8 +552,9 @@ void RenderingServerViewport::viewport_set_render_direct_to_screen(RID p_viewpor
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	if (p_enable == viewport->viewport_render_direct_to_screen)
+	if (p_enable == viewport->viewport_render_direct_to_screen) {
 		return;
+	}
 
 	// if disabled, reset render_target size and position
 	if (!p_enable) {
@@ -722,8 +725,9 @@ int RenderingServerViewport::viewport_get_render_info(RID p_viewport, RS::Viewpo
 	ERR_FAIL_INDEX_V(p_info, RS::VIEWPORT_RENDER_INFO_MAX, -1);
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	if (!viewport)
+	if (!viewport) {
 		return 0; //there should be a lock here..
+	}
 
 	return viewport->render_info[p_info];
 }

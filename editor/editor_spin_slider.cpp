@@ -47,8 +47,9 @@ String EditorSpinSlider::get_text_value() const {
 }
 
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
-	if (read_only)
+	if (read_only) {
 		return;
+	}
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
@@ -84,8 +85,9 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-			if (grabber->is_visible())
+			if (grabber->is_visible()) {
 				call_deferred("update");
+			}
 		}
 	}
 
@@ -169,8 +171,9 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && grabbing_grabber) {
-		if (mousewheel_over_grabber)
+		if (mousewheel_over_grabber) {
 			return;
+		}
 
 		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range);
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
@@ -361,8 +364,9 @@ void EditorSpinSlider::_evaluate_input_text() {
 	}
 
 	Variant v = expr->execute(Array(), nullptr, false);
-	if (v.get_type() == Variant::NIL)
+	if (v.get_type() == Variant::NIL) {
 		return;
+	}
 	set_value(v);
 }
 
@@ -381,8 +385,9 @@ void EditorSpinSlider::_value_input_closed() {
 //focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
 	// discontinue because the focus_exit was caused by right-click context menu
-	if (value_input->get_menu()->is_visible())
+	if (value_input->get_menu()->is_visible()) {
 		return;
+	}
 
 	_evaluate_input_text();
 	// focus is not on the same element after the vlalue_input was exited

@@ -100,8 +100,9 @@ public:
 
 	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2 &p_cast, const Vector2 &p_normal, const Transform2D &p_xform, Vector2 *r_supports, int &r_amount) const {
 		get_supports(p_xform.basis_xform_inv(p_normal).normalized(), r_supports, r_amount);
-		for (int i = 0; i < r_amount; i++)
+		for (int i = 0; i < r_amount; i++) {
 			r_supports[i] = p_xform.xform(r_supports[i]);
+		}
 
 		if (r_amount == 1) {
 			if (Math::abs(p_normal.dot(p_cast.normalized())) < (1.0 - _SEGMENT_IS_VALID_SUPPORT_THRESHOLD)) {
@@ -325,10 +326,12 @@ public:
 		for (int i = 0; i < 4; i++) {
 			real_t d = p_normal.dot(p_transform.xform(Vector2(((i & 1) * 2 - 1) * half_extents.x, ((i >> 1) * 2 - 1) * half_extents.y)));
 
-			if (d > r_max)
+			if (d > r_max) {
 				r_max = d;
-			if (d < r_min)
+			}
+			if (d < r_min) {
 				r_min = d;
+			}
 		}
 	}
 
@@ -452,10 +455,12 @@ public:
 		r_min = r_max = p_normal.dot(p_transform.xform(points[0].pos));
 		for (int i = 1; i < point_count; i++) {
 			real_t d = p_normal.dot(p_transform.xform(points[i].pos));
-			if (d > r_max)
+			if (d > r_max) {
 				r_max = d;
-			if (d < r_min)
+			}
+			if (d < r_min) {
 				r_min = d;
+			}
 		}
 	}
 

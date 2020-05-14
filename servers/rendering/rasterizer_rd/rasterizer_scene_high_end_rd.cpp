@@ -1297,8 +1297,9 @@ void RasterizerSceneHighEndRD::_add_geometry(InstanceBase *p_instance, uint32_t 
 
 	while (material->next_pass.is_valid()) {
 		material = (MaterialData *)storage->material_get_data(material->next_pass, RasterizerStorageRD::SHADER_TYPE_3D);
-		if (!material || !material->shader_data->valid)
+		if (!material || !material->shader_data->valid) {
 			break;
+		}
 		_add_geometry_with_material(p_instance, p_surface, material, material->next_pass, p_pass_mode, p_geometry_index);
 	}
 }
@@ -1347,8 +1348,9 @@ void RasterizerSceneHighEndRD::_add_geometry_with_material(InstanceBase *p_insta
 
 	RenderList::Element *e = (has_alpha || p_material->shader_data->depth_test == ShaderData::DEPTH_TEST_DISABLED) ? render_list.add_alpha_element() : render_list.add_element();
 
-	if (!e)
+	if (!e) {
 		return;
+	}
 
 	e->instance = p_instance;
 	e->material = p_material;

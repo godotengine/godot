@@ -96,10 +96,11 @@ uint32_t PhysicsBody2D::get_collision_mask() const {
 
 void PhysicsBody2D::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -109,10 +110,11 @@ bool PhysicsBody2D::get_collision_mask_bit(int p_bit) const {
 
 void PhysicsBody2D::set_collision_layer_bit(int p_bit, bool p_value) {
 	uint32_t collision_layer = get_collision_layer();
-	if (p_value)
+	if (p_value) {
 		collision_layer |= 1 << p_bit;
-	else
+	} else {
 		collision_layer &= ~(1 << p_bit);
+	}
 	set_collision_layer(collision_layer);
 }
 
@@ -296,8 +298,9 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 			//E->get().rc++;
 		}
 
-		if (node)
+		if (node) {
 			E->get().shapes.insert(ShapePair(p_body_shape, p_local_shape));
+		}
 
 		if (E->get().in_scene) {
 			emit_signal(SceneStringNames::get_singleton()->body_shape_entered, objid, node, p_body_shape, p_local_shape);
@@ -306,8 +309,9 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 	} else {
 		//E->get().rc--;
 
-		if (node)
+		if (node) {
 			E->get().shapes.erase(ShapePair(p_body_shape, p_local_shape));
+		}
 
 		bool in_scene = E->get().in_scene;
 
@@ -315,8 +319,9 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->tree_entered, callable_mp(this, &RigidBody2D::_body_enter_tree));
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &RigidBody2D::_body_exit_tree));
-				if (in_scene)
+				if (in_scene) {
 					emit_signal(SceneStringNames::get_singleton()->body_exited, node);
+				}
 			}
 
 			contact_monitor->body_map.erase(E);
@@ -335,8 +340,9 @@ struct _RigidBody2DInOut {
 
 bool RigidBody2D::_test_motion(const Vector2 &p_motion, bool p_infinite_inertia, float p_margin, const Ref<PhysicsTestMotionResult2D> &p_result) {
 	PhysicsServer2D::MotionResult *r = nullptr;
-	if (p_result.is_valid())
+	if (p_result.is_valid()) {
 		r = p_result->get_result_ptr();
+	}
 	return PhysicsServer2D::get_singleton()->body_test_motion(get_rid(), get_global_transform(), p_motion, p_infinite_inertia, p_margin, r);
 }
 
@@ -348,16 +354,18 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 #endif
 
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
-	if (mode != MODE_KINEMATIC)
+	if (mode != MODE_KINEMATIC) {
 		set_global_transform(state->get_transform());
+	}
 	linear_velocity = state->get_linear_velocity();
 	angular_velocity = state->get_angular_velocity();
 	if (sleeping != state->is_sleeping()) {
 		sleeping = state->is_sleeping();
 		emit_signal(SceneStringNames::get_singleton()->sleeping_state_changed);
 	}
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_integrate_forces", state);
+	}
 	set_block_transform_notify(false); // want it back
 
 	if (contact_monitor) {
@@ -555,9 +563,9 @@ void RigidBody2D::set_axis_velocity(const Vector2 &p_axis) {
 
 void RigidBody2D::set_linear_velocity(const Vector2 &p_velocity) {
 	linear_velocity = p_velocity;
-	if (state)
+	if (state) {
 		state->set_linear_velocity(linear_velocity);
-	else {
+	} else {
 		PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_LINEAR_VELOCITY, linear_velocity);
 	}
 }
@@ -568,10 +576,11 @@ Vector2 RigidBody2D::get_linear_velocity() const {
 
 void RigidBody2D::set_angular_velocity(real_t p_velocity) {
 	angular_velocity = p_velocity;
-	if (state)
+	if (state) {
 		state->set_angular_velocity(angular_velocity);
-	else
+	} else {
 		PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
+	}
 }
 
 real_t RigidBody2D::get_angular_velocity() const {
@@ -579,8 +588,9 @@ real_t RigidBody2D::get_angular_velocity() const {
 }
 
 void RigidBody2D::set_use_custom_integrator(bool p_enable) {
-	if (custom_integrator == p_enable)
+	if (custom_integrator == p_enable) {
 		return;
+	}
 
 	custom_integrator = p_enable;
 	PhysicsServer2D::get_singleton()->body_set_omit_force_integration(get_rid(), p_enable);
@@ -685,8 +695,9 @@ TypedArray<Node2D> RigidBody2D::get_colliding_bodies() const {
 }
 
 void RigidBody2D::set_contact_monitor(bool p_enabled) {
-	if (p_enabled == is_contact_monitor_enabled())
+	if (p_enabled == is_contact_monitor_enabled()) {
 		return;
+	}
 
 	if (!p_enabled) {
 		ERR_FAIL_COND_MSG(contact_monitor->locked, "Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\", false) instead.");
@@ -881,8 +892,9 @@ RigidBody2D::RigidBody2D() :
 }
 
 RigidBody2D::~RigidBody2D() {
-	if (contact_monitor)
+	if (contact_monitor) {
 		memdelete(contact_monitor);
+	}
 }
 
 void RigidBody2D::_reload_physics_characteristics() {
@@ -1062,8 +1074,9 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 			}
 		}
 
-		if (!found_collision || motion == Vector2())
+		if (!found_collision || motion == Vector2()) {
 			break;
+		}
 
 		--p_max_slides;
 	}
@@ -1174,8 +1187,9 @@ void KinematicBody2D::set_sync_to_physics(bool p_enable) {
 	}
 	sync_to_physics = p_enable;
 
-	if (Engine::get_singleton()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 
 	if (p_enable) {
 		PhysicsServer2D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
@@ -1193,8 +1207,9 @@ bool KinematicBody2D::is_sync_to_physics_enabled() const {
 }
 
 void KinematicBody2D::_direct_state_changed(Object *p_state) {
-	if (!sync_to_physics)
+	if (!sync_to_physics) {
 		return;
+	}
 
 	PhysicsDirectBodyState2D *state = Object::cast_to<PhysicsDirectBodyState2D>(p_state);
 
@@ -1297,8 +1312,9 @@ Vector2 KinematicCollision2D::get_remainder() const {
 }
 
 Object *KinematicCollision2D::get_local_shape() const {
-	if (!owner)
+	if (!owner) {
 		return nullptr;
+	}
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }

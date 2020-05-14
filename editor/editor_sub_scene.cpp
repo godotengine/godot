@@ -47,17 +47,20 @@ void EditorSubScene::_path_changed(const String &p_path) {
 		scene = nullptr;
 	}
 
-	if (p_path == "")
+	if (p_path == "") {
 		return;
+	}
 
 	Ref<PackedScene> ps = ResourceLoader::load(p_path, "PackedScene");
 
-	if (ps.is_null())
+	if (ps.is_null()) {
 		return;
+	}
 
 	scene = ps->instance();
-	if (!scene)
+	if (!scene) {
 		return;
+	}
 
 	_fill_tree(scene, nullptr);
 }
@@ -84,8 +87,9 @@ void EditorSubScene::_fill_tree(Node *p_node, TreeItem *p_parent) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		if (c->get_owner() != scene)
+		if (c->get_owner() != scene) {
 			continue;
+		}
 		_fill_tree(c, it);
 	}
 }
@@ -108,8 +112,9 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 
 		Node *n = item->get_metadata(0);
 
-		if (!n)
+		if (!n) {
 			return;
+		}
 		if (p_selected) {
 			if (n == scene) {
 				is_root = true;
@@ -119,8 +124,9 @@ void EditorSubScene::_item_multi_selected(Object *p_object, int p_cell, bool p_s
 		} else {
 			List<Node *>::Element *E = selection.find(n);
 
-			if (E)
+			if (E) {
 				selection.erase(E);
+			}
 		}
 	}
 }

@@ -69,8 +69,9 @@ public:
 			int which = name.get_slice("/", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			params.write[which] = p_value;
-		} else
+		} else {
 			return false;
+		}
 
 		return true;
 	}
@@ -82,8 +83,9 @@ public:
 			int which = name.get_slice("/", 1).to_int() - 1;
 			ERR_FAIL_INDEX_V(which, params.size(), false);
 			r_ret = params[which];
-		} else
+		} else {
 			return false;
+		}
 
 		return true;
 	}
@@ -144,8 +146,9 @@ void ConnectDialog::_text_entered(const String &p_text) {
 void ConnectDialog::_tree_node_selected() {
 	Node *current = tree->get_selected();
 
-	if (!current)
+	if (!current) {
 		return;
+	}
 
 	dst_path = source->get_path_to(current);
 	_update_ok_enabled();
@@ -155,8 +158,9 @@ void ConnectDialog::_tree_node_selected() {
  * Adds a new parameter bind to connection.
  */
 void ConnectDialog::_add_bind() {
-	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
+	if (cdbinds->params.size() >= VARIANT_ARG_MAX) {
 		return;
+	}
 	Variant::Type vt = (Variant::Type)type_list->get_item_id(type_list->get_selected());
 
 	Variant value;
@@ -220,8 +224,9 @@ void ConnectDialog::_add_bind() {
  */
 void ConnectDialog::_remove_bind() {
 	String st = bind_editor->get_selected_path();
-	if (st == "")
+	if (st == "") {
 		return;
+	}
 	int idx = st.get_slice("/", 1).to_int() - 1;
 
 	ERR_FAIL_INDEX(idx, cdbinds->params.size());
@@ -280,8 +285,9 @@ void ConnectDialog::set_dst_node(Node *p_node) {
 
 StringName ConnectDialog::get_dst_method_name() const {
 	String txt = dst_method->get_text();
-	if (txt.find("(") != -1)
+	if (txt.find("(") != -1) {
 		txt = txt.left(txt.find("(")).strip_edges();
+	}
 	return txt;
 }
 
@@ -345,8 +351,9 @@ void ConnectDialog::init(ConnectionData c, bool bEdit) {
 void ConnectDialog::popup_dialog(const String &p_for_signal) {
 	from_signal->set_text(p_for_signal);
 	error_label->add_theme_color_override("font_color", error_label->get_theme_color("error_color", "Editor"));
-	if (!advanced->is_pressed())
+	if (!advanced->is_pressed()) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
+	}
 
 	popup_centered();
 }
@@ -588,8 +595,9 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData cToMake) {
 	Node *source = static_cast<Node *>(cToMake.source);
 	Node *target = static_cast<Node *>(cToMake.target);
 
-	if (!source || !target)
+	if (!source || !target) {
 		return;
+	}
 
 	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"), String(cToMake.signal), String(cToMake.method)));
 
@@ -633,8 +641,9 @@ void ConnectionsDock::_disconnect(TreeItem &item) {
 void ConnectionsDock::_disconnect_all() {
 	TreeItem *item = tree->get_selected();
 
-	if (!_is_item_signal(*item))
+	if (!_is_item_signal(*item)) {
 		return;
+	}
 
 	TreeItem *child = item->get_children();
 	String signalName = item->get_metadata(0).operator Dictionary()["name"];
@@ -674,8 +683,9 @@ void ConnectionsDock::_tree_item_activated() { // "Activation" on double-click.
 
 	TreeItem *item = tree->get_selected();
 
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	if (_is_item_signal(*item)) {
 		_open_connection_dialog(*item);
@@ -746,20 +756,23 @@ void ConnectionsDock::_open_connection_dialog(ConnectDialog::ConnectionData cToE
  * Open slot method location in script editor.
  */
 void ConnectionsDock::_go_to_script(TreeItem &item) {
-	if (_is_item_signal(item))
+	if (_is_item_signal(item)) {
 		return;
+	}
 
 	Connection cd = item.get_metadata(0);
 	ConnectDialog::ConnectionData c = cd;
 	ERR_FAIL_COND(c.source != selectedNode); //shouldn't happen but...bugcheck
 
-	if (!c.target)
+	if (!c.target) {
 		return;
+	}
 
 	Ref<Script> script = c.target->get_script();
 
-	if (script.is_null())
+	if (script.is_null()) {
 		return;
+	}
 
 	if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, c.method)) {
 		editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
@@ -769,8 +782,9 @@ void ConnectionsDock::_go_to_script(TreeItem &item) {
 void ConnectionsDock::_handle_signal_menu_option(int option) {
 	TreeItem *item = tree->get_selected();
 
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	switch (option) {
 		case CONNECT: {
@@ -787,8 +801,9 @@ void ConnectionsDock::_handle_signal_menu_option(int option) {
 void ConnectionsDock::_handle_slot_menu_option(int option) {
 	TreeItem *item = tree->get_selected();
 
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	switch (option) {
 		case EDIT: {
@@ -808,8 +823,9 @@ void ConnectionsDock::_handle_slot_menu_option(int option) {
 void ConnectionsDock::_rmb_pressed(Vector2 position) {
 	TreeItem *item = tree->get_selected();
 
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	Vector2 global_position = tree->get_global_position() + position;
 
@@ -859,8 +875,9 @@ void ConnectionsDock::set_node(Node *p_node) {
 void ConnectionsDock::update_tree() {
 	tree->clear();
 
-	if (!selectedNode)
+	if (!selectedNode) {
 		return;
+	}
 
 	TreeItem *root = tree->create_item();
 
@@ -880,10 +897,11 @@ void ConnectionsDock::update_tree() {
 			Ref<Script> scr = selectedNode->get_script();
 			if (scr.is_valid()) {
 				scr->get_script_signal_list(&node_signals2);
-				if (scr->get_path().is_resource_file())
+				if (scr->get_path().is_resource_file()) {
 					name = scr->get_path().get_file();
-				else
+				} else {
 					name = scr->get_class();
+				}
 
 				if (has_theme_icon(scr->get_class(), "EditorIcons")) {
 					icon = get_theme_icon(scr->get_class(), "EditorIcons");
@@ -923,8 +941,9 @@ void ConnectionsDock::update_tree() {
 				for (int i = 0; i < mi.arguments.size(); i++) {
 					PropertyInfo &pi = mi.arguments[i];
 
-					if (i > 0)
+					if (i > 0) {
 						signaldesc += ", ";
+					}
 					String tname = "var";
 					if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
 						tname = pi.class_name.operator String();
@@ -988,24 +1007,29 @@ void ConnectionsDock::update_tree() {
 
 			for (List<Object::Connection>::Element *F = connections.front(); F; F = F->next()) {
 				Connection cn = F->get();
-				if (!(cn.flags & CONNECT_PERSIST))
+				if (!(cn.flags & CONNECT_PERSIST)) {
 					continue;
+				}
 				ConnectDialog::ConnectionData c = cn;
 
 				Node *target = Object::cast_to<Node>(c.target);
-				if (!target)
+				if (!target) {
 					continue;
+				}
 
 				String path = String(selectedNode->get_path_to(target)) + " :: " + c.method + "()";
-				if (c.flags & CONNECT_DEFERRED)
+				if (c.flags & CONNECT_DEFERRED) {
 					path += " (deferred)";
-				if (c.flags & CONNECT_ONESHOT)
+				}
+				if (c.flags & CONNECT_ONESHOT) {
 					path += " (oneshot)";
+				}
 				if (c.binds.size()) {
 					path += " binds(";
 					for (int i = 0; i < c.binds.size(); i++) {
-						if (i > 0)
+						if (i > 0) {
 							path += ", ";
+						}
 						path += c.binds[i].operator String();
 					}
 					path += ")";

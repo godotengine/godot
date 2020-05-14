@@ -151,11 +151,13 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || c == panel)
+		if (!c || c == panel) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2 cms = c->get_combined_minimum_size();
 		ms.x = MAX(cms.x, ms.x);
@@ -173,11 +175,13 @@ void PopupPanel::_update_child_rects() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		if (c == panel) {
 			c->set_position(Vector2());

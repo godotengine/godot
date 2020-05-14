@@ -100,8 +100,9 @@ void AcceptDialog::_text_entered(const String &p_text) {
 }
 
 void AcceptDialog::_ok_pressed() {
-	if (hide_on_ok)
+	if (hide_on_ok) {
 		set_visible(false);
+	}
 	ok_pressed();
 	emit_signal("confirmed");
 }
@@ -155,8 +156,9 @@ bool AcceptDialog::has_autowrap() {
 void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
-	if (line_edit)
+	if (line_edit) {
 		line_edit->connect("text_entered", callable_mp(this, &AcceptDialog::_text_entered));
+	}
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -173,11 +175,13 @@ void AcceptDialog::_update_child_rects() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c == hbc || c == label || c == bg || c->is_set_as_toplevel())
+		if (c == hbc || c == label || c == bg || c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		c->set_position(cpos);
 		c->set_size(csize);
@@ -199,11 +203,13 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c == hbc || c == label || c->is_set_as_toplevel())
+		if (c == hbc || c == label || c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2 cminsize = c->get_combined_minimum_size();
 		minsize.x = MAX(cminsize.x, minsize.x);
@@ -247,8 +253,9 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 
 Button *AcceptDialog::add_cancel(const String &p_cancel) {
 	String c = p_cancel;
-	if (p_cancel == "")
+	if (p_cancel == "") {
 		c = RTR("Cancel");
+	}
 	Button *b = swap_ok_cancel ? add_button(c, true) : add_button(c);
 	b->connect("pressed", callable_mp(this, &AcceptDialog::_cancel_pressed));
 	return b;

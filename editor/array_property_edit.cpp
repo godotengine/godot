@@ -37,8 +37,9 @@
 
 Variant ArrayPropertyEdit::get_array() const {
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return Array();
+	}
 	Variant arr = o->get(property);
 	if (!arr.is_array()) {
 		Callable::CallError ce;
@@ -59,8 +60,9 @@ void ArrayPropertyEdit::_set_size(int p_size) {
 	Variant arr = get_array();
 	arr.call("resize", p_size);
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return;
+	}
 
 	o->set(property, arr);
 }
@@ -69,8 +71,9 @@ void ArrayPropertyEdit::_set_value(int p_idx, const Variant &p_value) {
 	Variant arr = get_array();
 	arr.set(p_idx, p_value);
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return;
+	}
 
 	o->set(property, arr);
 }
@@ -84,8 +87,9 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			int size = arr.call("size");
 
 			int newsize = p_value;
-			if (newsize == size)
+			if (newsize == size) {
 				return true;
+			}
 
 			UndoRedo *ur = EditorNode::get_undo_redo();
 			ur->create_action(TTR("Resize Array"));
@@ -184,8 +188,9 @@ bool ArrayPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
 			int idx = pn.get_slicec('/', 1).get_slicec('_', 0).to_int();
 			bool valid;
 			r_ret = arr.get(idx, &valid);
-			if (valid)
+			if (valid) {
 				r_ret = r_ret.get_type();
+			}
 			return valid;
 
 		} else {
@@ -210,8 +215,9 @@ void ArrayPropertyEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	p_list->push_back(PropertyInfo(Variant::INT, "array/size", PROPERTY_HINT_RANGE, "0,100000,1"));
 	int pages = size / ITEMS_PER_PAGE;
-	if (pages > 0)
+	if (pages > 0) {
 		p_list->push_back(PropertyInfo(Variant::INT, "array/page", PROPERTY_HINT_RANGE, "0," + itos(pages) + ",1"));
+	}
 
 	int offset = page * ITEMS_PER_PAGE;
 
@@ -288,8 +294,9 @@ void ArrayPropertyEdit::_bind_methods() {
 ArrayPropertyEdit::ArrayPropertyEdit() {
 	page = 0;
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (i > 0)
+		if (i > 0) {
 			vtypes += ",";
+		}
 		vtypes += Variant::get_type_name(Variant::Type(i));
 	}
 	default_type = Variant::NIL;

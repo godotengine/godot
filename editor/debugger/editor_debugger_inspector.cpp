@@ -36,8 +36,9 @@
 #include "scene/debugger/scene_debugger.h"
 
 bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p_value) {
-	if (!editable || !prop_values.has(p_name) || String(p_name).begins_with("Constants/"))
+	if (!editable || !prop_values.has(p_name) || String(p_name).begins_with("Constants/")) {
 		return false;
+	}
 
 	prop_values[p_name] = p_value;
 	emit_signal("value_edited", remote_object_id, p_name, p_value);
@@ -45,8 +46,9 @@ bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p
 }
 
 bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) const {
-	if (!prop_values.has(p_name))
+	if (!prop_values.has(p_name)) {
 		return false;
+	}
 
 	r_ret = prop_values[p_name];
 	return true;
@@ -60,10 +62,11 @@ void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) 
 }
 
 String EditorDebuggerRemoteObject::get_title() {
-	if (remote_object_id.is_valid())
+	if (remote_object_id.is_valid()) {
 		return TTR("Remote ") + String(type_name) + ": " + itos(remote_object_id);
-	else
+	} else {
 		return "<null>";
+	}
 }
 
 Variant EditorDebuggerRemoteObject::get_variant(const StringName &p_name) {
@@ -211,8 +214,9 @@ void EditorDebuggerInspector::clear_cache() {
 }
 
 Object *EditorDebuggerInspector::get_object(ObjectID p_id) {
-	if (remote_objects.has(p_id))
+	if (remote_objects.has(p_id)) {
 		return remote_objects[p_id];
+	}
 	return nullptr;
 }
 

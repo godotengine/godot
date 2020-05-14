@@ -36,8 +36,9 @@
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	++last_metric;
-	if (last_metric >= frame_metrics.size())
+	if (last_metric >= frame_metrics.size()) {
 		last_metric = 0;
+	}
 
 	frame_metrics.write[last_metric] = p_metric;
 	//	_make_metric_ptrs(frame_metrics.write[last_metric]);
@@ -130,12 +131,14 @@ Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signat
 }
 
 void EditorVisualProfiler::_item_selected() {
-	if (updating_frame)
+	if (updating_frame) {
 		return;
+	}
 
 	TreeItem *item = variables->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 	selected_area = item->get_metadata(0);
 	_update_plot();
 }
@@ -170,8 +173,9 @@ void EditorVisualProfiler::_update_plot() {
 
 	for (int i = 0; i < frame_metrics.size(); i++) {
 		const Metric &m = frame_metrics[i];
-		if (!m.valid)
+		if (!m.valid) {
 			continue;
+		}
 
 		if (m.areas.size()) {
 			highest_cpu = MAX(highest_cpu, m.areas[m.areas.size() - 1].cpu_time);
@@ -216,8 +220,9 @@ void EditorVisualProfiler::_update_plot() {
 			if (next > frame_metrics.size()) {
 				next = frame_metrics.size();
 			}
-			if (next == current)
+			if (next == current) {
 				next = current + 1; //just because for loop must work
+			}
 
 			for (int j = current; j < next; j++) {
 				//wrap
@@ -425,14 +430,16 @@ void EditorVisualProfiler::_notification(int p_what) {
 }
 
 void EditorVisualProfiler::_graph_tex_draw() {
-	if (last_metric < 0)
+	if (last_metric < 0) {
 		return;
+	}
 	Ref<Font> font = get_theme_font("font", "Label");
 	if (seeking) {
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
-		if (frame < 0)
+		if (frame < 0) {
 			frame = 0;
+		}
 
 		int half_width = graph->get_size().x / 2;
 		int cur_x = frame * half_width / max_frames;
@@ -488,16 +495,18 @@ void EditorVisualProfiler::_graph_tex_mouse_exit() {
 }
 
 void EditorVisualProfiler::_cursor_metric_changed(double) {
-	if (updating_frame)
+	if (updating_frame) {
 		return;
+	}
 
 	graph->update();
 	_update_frame();
 }
 
 void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
-	if (last_metric < 0)
+	if (last_metric < 0) {
 		return;
+	}
 
 	Ref<InputEventMouse> me = p_ev;
 	Ref<InputEventMouseButton> mb = p_ev;
@@ -549,8 +558,9 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 				}
 
 				metric++;
-				if (metric >= frame_metrics.size())
+				if (metric >= frame_metrics.size()) {
 					metric = 0;
+				}
 			}
 
 			if (!valid) {
@@ -610,10 +620,12 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 }
 
 int EditorVisualProfiler::_get_cursor_index() const {
-	if (last_metric < 0)
+	if (last_metric < 0) {
 		return 0;
-	if (!frame_metrics[last_metric].valid)
+	}
+	if (!frame_metrics[last_metric].valid) {
 		return 0;
+	}
 
 	int diff = (frame_metrics[last_metric].frame_number - cursor_metric_edit->get_value());
 

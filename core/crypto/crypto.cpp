@@ -38,8 +38,9 @@
 
 CryptoKey *(*CryptoKey::_create)() = nullptr;
 CryptoKey *CryptoKey::create() {
-	if (_create)
+	if (_create) {
 		return _create();
+	}
 	return nullptr;
 }
 
@@ -50,8 +51,9 @@ void CryptoKey::_bind_methods() {
 
 X509Certificate *(*X509Certificate::_create)() = nullptr;
 X509Certificate *X509Certificate::create() {
-	if (_create)
+	if (_create) {
 		return _create();
+	}
 	return nullptr;
 }
 
@@ -65,14 +67,16 @@ void X509Certificate::_bind_methods() {
 void (*Crypto::_load_default_certificates)(String p_path) = nullptr;
 Crypto *(*Crypto::_create)() = nullptr;
 Crypto *Crypto::create() {
-	if (_create)
+	if (_create) {
 		return _create();
+	}
 	return memnew(Crypto);
 }
 
 void Crypto::load_default_certificates(String p_path) {
-	if (_load_default_certificates)
+	if (_load_default_certificates) {
 		_load_default_certificates(p_path);
+	}
 }
 
 void Crypto::_bind_methods() {
@@ -99,13 +103,15 @@ RES ResourceFormatLoaderCrypto::load(const String &p_path, const String &p_origi
 	String el = p_path.get_extension().to_lower();
 	if (el == "crt") {
 		X509Certificate *cert = X509Certificate::create();
-		if (cert)
+		if (cert) {
 			cert->load(p_path);
+		}
 		return cert;
 	} else if (el == "key") {
 		CryptoKey *key = CryptoKey::create();
-		if (key)
+		if (key) {
 			key->load(p_path);
+		}
 		return key;
 	}
 	return nullptr;
@@ -122,10 +128,11 @@ bool ResourceFormatLoaderCrypto::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderCrypto::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	if (el == "crt")
+	if (el == "crt") {
 		return "X509Certificate";
-	else if (el == "key")
+	} else if (el == "key") {
 		return "CryptoKey";
+	}
 	return "";
 }
 

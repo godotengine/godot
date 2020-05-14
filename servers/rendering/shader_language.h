@@ -770,8 +770,9 @@ private:
 	}
 
 	void _set_error(const String &p_str) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 
 		error_line = tk_line;
 		error_set = true;

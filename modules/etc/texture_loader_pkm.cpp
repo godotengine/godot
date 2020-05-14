@@ -43,17 +43,20 @@ struct ETC1Header {
 };
 
 RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
+	}
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f)
+	if (!f) {
 		return RES();
+	}
 
 	FileAccessRef fref(f);
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
+	}
 
 	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open PKM texture file '" + p_path + "'.");
 
@@ -86,8 +89,9 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(img);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	f->close();
 	memdelete(f);
@@ -103,7 +107,8 @@ bool ResourceFormatPKM::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatPKM::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "pkm")
+	if (p_path.get_extension().to_lower() == "pkm") {
 		return "ImageTexture";
+	}
 	return "";
 }

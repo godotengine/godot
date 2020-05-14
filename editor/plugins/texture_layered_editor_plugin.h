@@ -35,6 +35,7 @@
 #include "editor/editor_plugin.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
+
 class TextureLayeredEditor : public Control {
 	GDCLASS(TextureLayeredEditor, Control);
 
@@ -54,8 +55,9 @@ class TextureLayeredEditor : public Control {
 	void _update_material();
 	bool setting;
 	void _layer_changed(double) {
-		if (!setting)
+		if (!setting) {
 			_update_material();
+		}
 	}
 
 	void _texture_rect_update_area();

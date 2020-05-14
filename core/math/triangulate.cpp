@@ -102,16 +102,19 @@ bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, in
 	// To avoid that we allow zero-area triangles if all else failed.
 	float threshold = relaxed ? -CMP_EPSILON : CMP_EPSILON;
 
-	if (threshold > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax))))
+	if (threshold > (((Bx - Ax) * (Cy - Ay)) - ((By - Ay) * (Cx - Ax)))) {
 		return false;
+	}
 
 	for (p = 0; p < n; p++) {
-		if ((p == u) || (p == v) || (p == w))
+		if ((p == u) || (p == v) || (p == w)) {
 			continue;
+		}
 		Px = contour[V[p]].x;
 		Py = contour[V[p]].y;
-		if (is_inside_triangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py, relaxed))
+		if (is_inside_triangle(Ax, Ay, Bx, By, Cx, Cy, Px, Py, relaxed)) {
 			return false;
+		}
 	}
 
 	return true;
@@ -121,20 +124,24 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 	/* allocate and initialize list of Vertices in polygon */
 
 	int n = contour.size();
-	if (n < 3)
+	if (n < 3) {
 		return false;
+	}
 
 	Vector<int> V;
 	V.resize(n);
 
 	/* we want a counter-clockwise polygon in V */
 
-	if (0.0 < get_area(contour))
-		for (int v = 0; v < n; v++)
+	if (0.0 < get_area(contour)) {
+		for (int v = 0; v < n; v++) {
 			V.write[v] = v;
-	else
-		for (int v = 0; v < n; v++)
+		}
+	} else {
+		for (int v = 0; v < n; v++) {
 			V.write[v] = (n - 1) - v;
+		}
+	}
 
 	bool relaxed = false;
 
@@ -164,14 +171,17 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 
 		/* three consecutive vertices in current polygon, <u,v,w> */
 		int u = v;
-		if (nv <= u)
+		if (nv <= u) {
 			u = 0; /* previous */
+		}
 		v = u + 1;
-		if (nv <= v)
+		if (nv <= v) {
 			v = 0; /* new v    */
+		}
 		int w = v + 1;
-		if (nv <= w)
+		if (nv <= w) {
 			w = 0; /* next     */
+		}
 
 		if (snip(contour, u, v, w, nv, V, relaxed)) {
 			int a, b, c, s, t;
@@ -187,8 +197,9 @@ bool Triangulate::triangulate(const Vector<Vector2> &contour, Vector<int> &resul
 			result.push_back(c);
 
 			/* remove v from remaining polygon */
-			for (s = v, t = v + 1; t < nv; s++, t++)
+			for (s = v, t = v + 1; t < nv; s++, t++) {
 				V.write[s] = V[t];
+			}
 
 			nv--;
 

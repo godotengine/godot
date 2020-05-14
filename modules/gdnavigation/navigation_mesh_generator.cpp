@@ -74,8 +74,9 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		current_vertex_count = p_verticies.size() / 3;
 
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 
 		int index_count = 0;
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
@@ -314,8 +315,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	rcContext ctx;
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Setting up Configuration..."), 1);
+	}
 #endif
 
 	const float *verts = vertices.ptr();
@@ -351,14 +353,16 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[2] = bmax[2];
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Calculating grid size..."), 2);
+	}
 #endif
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Creating heightfield..."), 3);
+	}
 #endif
 	hf = rcAllocHeightfield();
 
@@ -366,8 +370,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Marking walkable triangles..."), 4);
+	}
 #endif
 	{
 		Vector<unsigned char> tri_areas;
@@ -381,16 +386,20 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 		ERR_FAIL_COND(!rcRasterizeTriangles(&ctx, verts, nverts, tris, tri_areas.ptr(), ntris, *hf, cfg.walkableClimb));
 	}
 
-	if (p_nav_mesh->get_filter_low_hanging_obstacles())
+	if (p_nav_mesh->get_filter_low_hanging_obstacles()) {
 		rcFilterLowHangingWalkableObstacles(&ctx, cfg.walkableClimb, *hf);
-	if (p_nav_mesh->get_filter_ledge_spans())
+	}
+	if (p_nav_mesh->get_filter_ledge_spans()) {
 		rcFilterLedgeSpans(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf);
-	if (p_nav_mesh->get_filter_walkable_low_height_spans())
+	}
+	if (p_nav_mesh->get_filter_walkable_low_height_spans()) {
 		rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hf);
+	}
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Constructing compact heightfield..."), 5);
+	}
 #endif
 
 	chf = rcAllocCompactHeightfield();
@@ -402,15 +411,17 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	hf = nullptr;
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Eroding walkable area..."), 6);
+	}
 #endif
 
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Partitioning..."), 7);
+	}
 #endif
 
 	if (p_nav_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
@@ -423,8 +434,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	}
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Creating contours..."), 8);
+	}
 #endif
 
 	cset = rcAllocContourSet();
@@ -433,8 +445,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Creating polymesh..."), 9);
+	}
 #endif
 
 	poly_mesh = rcAllocPolyMesh();
@@ -451,8 +464,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cset = nullptr;
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Converting to native navigation mesh..."), 10);
+	}
 #endif
 
 	_convert_detail_mesh_to_native_navigation_mesh(detail_mesh, p_nav_mesh);
@@ -483,8 +497,9 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 		ep = memnew(EditorProgress("bake", TTR("Navigation Mesh Generator Setup:"), 11));
 	}
 
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Parsing Geometry..."), 0);
+	}
 #endif
 
 	Vector<float> vertices;
@@ -543,11 +558,13 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	}
 
 #ifdef TOOLS_ENABLED
-	if (ep)
+	if (ep) {
 		ep->step(TTR("Done!"), 11);
+	}
 
-	if (ep)
+	if (ep) {
 		memdelete(ep);
+	}
 #endif
 }
 

@@ -70,13 +70,15 @@ void NavRegion::update_polygons() {
 		return;
 	}
 
-	if (mesh.is_null())
+	if (mesh.is_null()) {
 		return;
+	}
 
 	Vector<Vector3> vertices = mesh->get_vertices();
 	int len = vertices.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	const Vector3 *vertices_r = vertices.ptr();
 

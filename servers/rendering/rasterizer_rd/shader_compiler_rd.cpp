@@ -265,8 +265,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_BVEC4: {
 			String text = "bvec" + itos(p_type - SL::TYPE_BOOL + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += p_values[i].boolean ? "true" : "false";
 			}
@@ -281,8 +282,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_IVEC4: {
 			String text = "ivec" + itos(p_type - SL::TYPE_INT + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += itos(p_values[i].sint);
 			}
@@ -297,8 +299,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_UVEC4: {
 			String text = "uvec" + itos(p_type - SL::TYPE_UINT + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += itos(p_values[i].uint) + "u";
 			}
@@ -312,8 +315,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_VEC4: {
 			String text = "vec" + itos(p_type - SL::TYPE_FLOAT + 1) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += f2sp0(p_values[i].real);
 			}
@@ -326,8 +330,9 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 		case SL::TYPE_MAT4: {
 			String text = "mat" + itos(p_type - SL::TYPE_MAT2 + 2) + "(";
 			for (int i = 0; i < p_values.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					text += ",";
+				}
 
 				text += f2sp0(p_values[i].real);
 			}
@@ -391,8 +396,9 @@ void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const S
 			header = _typestr(fnode->return_type) + " " + _mkid(fnode->name) + "(";
 		}
 		for (int i = 0; i < fnode->arguments.size(); i++) {
-			if (i > 0)
+			if (i > 0) {
 				header += ", ";
+			}
 			if (fnode->arguments[i].type == SL::TYPE_STRUCT) {
 				header += _qualstr(fnode->arguments[i].qualifier) + _mkid(fnode->arguments[i].type_str) + " " + _mkid(fnode->arguments[i].name);
 			} else {
@@ -828,9 +834,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				used_flag_pointers.insert(vnode->name);
 			}
 
-			if (p_default_actions.renames.has(vnode->name))
+			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
-			else {
+			} else {
 				if (shader->uniforms.has(vnode->name)) {
 					//its a uniform!
 					const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[vnode->name];
@@ -953,10 +959,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				used_flag_pointers.insert(anode->name);
 			}
 
-			if (p_default_actions.renames.has(anode->name))
+			if (p_default_actions.renames.has(anode->name)) {
 				code = p_default_actions.renames[anode->name];
-			else
+			} else {
 				code = _mkid(anode->name);
+			}
 
 			if (anode->call_expression != nullptr) {
 				code += ".";
@@ -1038,8 +1045,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					code += "(";
 
 					for (int i = 1; i < onode->arguments.size(); i++) {
-						if (i > 1)
+						if (i > 1) {
 							code += ", ";
+						}
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 						if (is_texture_func && i == 1 && onode->arguments[i]->type == SL::Node::TYPE_VARIABLE) {
 							//need to map from texture to sampler in order to sample

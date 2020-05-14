@@ -69,17 +69,19 @@ struct LocalDebugger::ScriptsProfiler {
 	void _print_frame_data(bool p_accumulated) {
 		uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
 
-		if (!p_accumulated && diff < 1000000) //show every one second
+		if (!p_accumulated && diff < 1000000) { //show every one second
 			return;
+		}
 
 		idle_accum = OS::get_singleton()->get_ticks_usec();
 
 		int ofs = 0;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-			if (p_accumulated)
+			if (p_accumulated) {
 				ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&pinfo.write[ofs], pinfo.size() - ofs);
-			else
+			} else {
 				ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&pinfo.write[ofs], pinfo.size() - ofs);
+			}
 		}
 
 		SortArray<ScriptLanguage::ProfilingInfo, ProfileInfoSort> sort;
@@ -141,9 +143,9 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			print_line("\nDebugger Break, Reason: '" + script_lang->debug_get_error() + "'");
 			print_line("*Frame " + itos(current_frame) + " - " + script_lang->debug_get_stack_level_source(current_frame) + ":" + itos(script_lang->debug_get_stack_level_line(current_frame)) + " in function '" + script_lang->debug_get_stack_level_function(current_frame) + "'");
 			print_line("Enter \"help\" for assistance.");
-		} else if (line == "c" || line == "continue")
+		} else if (line == "c" || line == "continue") {
 			break;
-		else if (line == "bt" || line == "breakpoint") {
+		} else if (line == "bt" || line == "breakpoint") {
 			for (int i = 0; i < total_frames; i++) {
 				String cfi = (current_frame == i) ? "*" : " "; //current frame indicator
 				print_line(cfi + "Frame " + itos(i) + " - " + script_lang->debug_get_stack_level_source(i) + ":" + itos(script_lang->debug_get_stack_level_line(i)) + " in function '" + script_lang->debug_get_stack_level_function(i) + "'");
@@ -257,8 +259,9 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				String source = breakpoint.first;
 				int linenr = breakpoint.second;
 
-				if (source.empty())
+				if (source.empty()) {
 					continue;
+				}
 
 				script_debugger->insert_breakpoint(linenr, source);
 
@@ -282,8 +285,9 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				String source = breakpoint.first;
 				int linenr = breakpoint.second;
 
-				if (source.empty())
+				if (source.empty()) {
 					continue;
+				}
 
 				script_debugger->remove_breakpoint(linenr, source);
 
@@ -377,6 +381,7 @@ LocalDebugger::LocalDebugger() {
 
 LocalDebugger::~LocalDebugger() {
 	unregister_profiler("scripts");
-	if (scripts_profiler)
+	if (scripts_profiler) {
 		memdelete(scripts_profiler);
+	}
 }

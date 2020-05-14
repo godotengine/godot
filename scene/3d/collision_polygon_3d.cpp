@@ -35,17 +35,20 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {
-	if (!parent)
+	if (!parent) {
 		return;
+	}
 
 	parent->shape_owner_clear_shapes(owner_id);
 
-	if (polygon.size() == 0)
+	if (polygon.size() == 0) {
 		return;
+	}
 
 	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(polygon);
-	if (decomp.size() == 0)
+	if (decomp.size() == 0) {
 		return;
+	}
 
 	//here comes the sun, lalalala
 	//decompose concave into multiple convex polygons and add them
@@ -73,8 +76,9 @@ void CollisionPolygon3D::_build_polygon() {
 
 void CollisionPolygon3D::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 }
 

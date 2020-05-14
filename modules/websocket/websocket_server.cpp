@@ -109,8 +109,9 @@ void WebSocketServer::set_ca_chain(Ref<X509Certificate> p_ca_chain) {
 }
 
 NetworkedMultiplayerPeer::ConnectionStatus WebSocketServer::get_connection_status() const {
-	if (is_listening())
+	if (is_listening()) {
 		return CONNECTION_CONNECTED;
+	}
 
 	return CONNECTION_DISCONNECTED;
 }

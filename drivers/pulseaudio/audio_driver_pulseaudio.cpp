@@ -581,14 +581,16 @@ void AudioDriverPulseAudio::set_device(String device) {
 }
 
 void AudioDriverPulseAudio::lock() {
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.lock();
 }
 
 void AudioDriverPulseAudio::unlock() {
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.unlock();
 }
 
@@ -601,8 +603,9 @@ void AudioDriverPulseAudio::finish_device() {
 }
 
 void AudioDriverPulseAudio::finish() {
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 
 	exit_thread = true;
 	Thread::wait_to_finish(thread);

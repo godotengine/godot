@@ -37,9 +37,9 @@ void MeshEditor::_gui_input(Ref<InputEvent> p_event) {
 	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT) {
 		rot_x -= mm->get_relative().y * 0.01;
 		rot_y -= mm->get_relative().x * 0.01;
-		if (rot_x < -Math_PI / 2)
+		if (rot_x < -Math_PI / 2) {
 			rot_x = -Math_PI / 2;
-		else if (rot_x > Math_PI / 2) {
+		} else if (rot_x > Math_PI / 2) {
 			rot_x = Math_PI / 2;
 		}
 		_update_rotation();

@@ -60,11 +60,13 @@ void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, 
 
 	Vector2 ofs(p_x - icon->get_width() / 2, int(get_size().height - icon->get_height()) / 2);
 
-	if (ofs.x + icon->get_width() / 2 < p_clip_left)
+	if (ofs.x + icon->get_width() / 2 < p_clip_left) {
 		return;
+	}
 
-	if (ofs.x + icon->get_width() / 2 > p_clip_right)
+	if (ofs.x + icon->get_width() / 2 > p_clip_right) {
 		return;
+	}
 
 	draw_texture(icon, ofs);
 
@@ -99,8 +101,9 @@ void AnimationTrackEditColor::draw_key_link(int p_index, float p_pixels_sec, int
 	int x_to = p_next_x - fh / 2 + 1;
 	fh /= 3;
 
-	if (x_from > p_clip_right || x_to < p_clip_left)
+	if (x_from > p_clip_right || x_to < p_clip_left) {
 		return;
+	}
 
 	Color color = get_animation()->track_get_key_value(get_track(), p_index);
 	Color color_next = get_animation()->track_get_key_value(get_track(), p_index + 1);
@@ -162,8 +165,9 @@ void AnimationTrackEditColor::draw_key(int p_index, float p_pixels_sec, int p_x,
 void AnimationTrackEditAudio::_preview_changed(ObjectID p_which) {
 	Object *object = ObjectDB::get_instance(id);
 
-	if (!object)
+	if (!object) {
 		return;
+	}
 
 	Ref<AudioStream> stream = object->call("get_stream");
 
@@ -251,11 +255,13 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 		int pixel_begin = p_x;
 		int pixel_end = p_x + pixel_len;
 
-		if (pixel_end < p_clip_left)
+		if (pixel_end < p_clip_left) {
 			return;
+		}
 
-		if (pixel_begin > p_clip_right)
+		if (pixel_begin > p_clip_right) {
 			return;
+		}
 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
@@ -266,8 +272,9 @@ void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x,
 			to_x = MIN(limit_x, to_x);
 		}
 
-		if (to_x <= from_x)
+		if (to_x <= from_x) {
 			return;
+		}
 
 		Ref<Font> font = get_theme_font("font", "Label");
 		float fh = int(font->get_height() * 1.5);
@@ -495,11 +502,13 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 	Rect2 rect(p_x, int(get_size().height - height) / 2, width, height);
 
-	if (rect.position.x + rect.size.x < p_clip_left)
+	if (rect.position.x + rect.size.x < p_clip_left) {
 		return;
+	}
 
-	if (rect.position.x > p_clip_right)
+	if (rect.position.x > p_clip_right) {
 		return;
+	}
 
 	Color accent = get_theme_color("accent_color", "Editor");
 	Color bg = accent;
@@ -596,17 +605,20 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 		int pixel_begin = p_x;
 		int pixel_end = p_x + pixel_len;
 
-		if (pixel_end < p_clip_left)
+		if (pixel_end < p_clip_left) {
 			return;
+		}
 
-		if (pixel_begin > p_clip_right)
+		if (pixel_begin > p_clip_right) {
 			return;
+		}
 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
 
-		if (to_x <= from_x)
+		if (to_x <= from_x) {
 			return;
+		}
 
 		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 1.5;
@@ -634,8 +646,9 @@ void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_
 					float ofs = animation->track_get_key_time(i, j);
 					int x = p_x + ofs * p_pixels_sec + 2;
 
-					if (x < from_x || x >= (to_x - 4))
+					if (x < from_x || x >= (to_x - 4)) {
 						continue;
+					}
 
 					lines.push_back(Point2(x, y));
 					lines.push_back(Point2(x + 1, y));
@@ -705,8 +718,9 @@ void AnimationTrackEditVolumeDB::draw_fg(int p_clip_left, int p_clip_right) {
 }
 
 void AnimationTrackEditVolumeDB::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
-	if (p_x > p_clip_right || p_next_x < p_clip_left)
+	if (p_x > p_clip_right || p_next_x < p_clip_left) {
 		return;
+	}
 
 	float db = get_animation()->track_get_key_value(get_track(), p_index);
 	float db_n = get_animation()->track_get_key_value(get_track(), p_index + 1);
@@ -809,12 +823,14 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 		float ofs_local = -len_resizing_rel / get_timeline()->get_zoom_scale();
 		if (len_resizing_start) {
 			start_ofs += ofs_local;
-			if (start_ofs < 0)
+			if (start_ofs < 0) {
 				start_ofs = 0;
+			}
 		} else {
 			end_ofs += ofs_local;
-			if (end_ofs < 0)
+			if (end_ofs < 0) {
 				end_ofs = 0;
+			}
 		}
 	}
 
@@ -845,11 +861,13 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	int pixel_begin = p_x;
 	int pixel_end = p_x + pixel_len;
 
-	if (pixel_end < p_clip_left)
+	if (pixel_end < p_clip_left) {
 		return;
+	}
 
-	if (pixel_begin > p_clip_right)
+	if (pixel_begin > p_clip_right) {
 		return;
+	}
 
 	int from_x = MAX(pixel_begin, p_clip_left);
 	int to_x = MIN(pixel_end, p_clip_right);
@@ -1152,17 +1170,20 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 		int pixel_begin = p_x;
 		int pixel_end = p_x + pixel_len;
 
-		if (pixel_end < p_clip_left)
+		if (pixel_end < p_clip_left) {
 			return;
+		}
 
-		if (pixel_begin > p_clip_right)
+		if (pixel_begin > p_clip_right) {
 			return;
+		}
 
 		int from_x = MAX(pixel_begin, p_clip_left);
 		int to_x = MIN(pixel_end, p_clip_right);
 
-		if (to_x <= from_x)
+		if (to_x <= from_x) {
 			return;
+		}
 
 		Ref<Font> font = get_theme_font("font", "Label");
 		int fh = font->get_height() * 1.5;
@@ -1190,8 +1211,9 @@ void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, 
 					float ofs = animation->track_get_key_time(i, j);
 					int x = p_x + ofs * p_pixels_sec + 2;
 
-					if (x < from_x || x >= (to_x - 4))
+					if (x < from_x || x >= (to_x - 4)) {
 						continue;
+					}
 
 					lines.push_back(Point2(x, y));
 					lines.push_back(Point2(x + 1, y));

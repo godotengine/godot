@@ -43,8 +43,9 @@
 #include "servers/audio/audio_stream.h"
 
 void post_process_preview(Ref<Image> p_image) {
-	if (p_image->get_format() != Image::FORMAT_RGBA8)
+	if (p_image->get_format() != Image::FORMAT_RGBA8) {
 		p_image->convert(Image::FORMAT_RGBA8);
+	}
 
 	const int w = p_image->get_width();
 	const int h = p_image->get_height();
@@ -105,14 +106,16 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const RES &p_from, const Siz
 		}
 	}
 
-	if (img.is_null() || img->empty())
+	if (img.is_null() || img->empty()) {
 		return Ref<Texture2D>();
+	}
 
 	img->clear_mipmaps();
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Texture2D>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -146,15 +149,17 @@ bool EditorImagePreviewPlugin::handles(const String &p_type) const {
 Ref<Texture2D> EditorImagePreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Image> img = p_from;
 
-	if (img.is_null() || img->empty())
+	if (img.is_null() || img->empty()) {
 		return Ref<Image>();
+	}
 
 	img = img->duplicate();
 	img->clear_mipmaps();
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Image>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -220,8 +225,9 @@ Ref<Texture2D> EditorBitmapPreviewPlugin::generate(const RES &p_from, const Size
 	img->create(bm->get_size().width, bm->get_size().height, false, Image::FORMAT_L8, data);
 
 	if (img->is_compressed()) {
-		if (img->decompress() != OK)
+		if (img->decompress() != OK) {
 			return Ref<Texture2D>();
+		}
 	} else if (img->get_format() != Image::FORMAT_RGB8 && img->get_format() != Image::FORMAT_RGBA8) {
 		img->convert(Image::FORMAT_RGBA8);
 	}
@@ -269,8 +275,9 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 
 	String path = cache_base + ".png";
 
-	if (!FileAccess::exists(path))
+	if (!FileAccess::exists(path)) {
 		return Ref<Texture2D>();
+	}
 
 	Ref<Image> img;
 	img.instance();
@@ -468,12 +475,14 @@ bool EditorScriptPreviewPlugin::handles(const String &p_type) const {
 
 Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size2 &p_size) const {
 	Ref<Script> scr = p_from;
-	if (scr.is_null())
+	if (scr.is_null()) {
 		return Ref<Texture2D>();
+	}
 
 	String code = scr->get_source_code().strip_edges();
-	if (code == "")
+	if (code == "") {
 		return Ref<Texture2D>();
+	}
 
 	List<String> kwors;
 	scr->get_language()->get_reserved_words(&kwors);
@@ -496,8 +505,9 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 	Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 	Color symbol_color = EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color");
 
-	if (bg_color.a == 0)
+	if (bg_color.a == 0) {
 		bg_color = Color(0, 0, 0, 0);
+	}
 	bg_color.a = MAX(bg_color.a, 0.2); // some background
 
 	for (int i = 0; i < thumbnail_size; i++) {
@@ -530,15 +540,17 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 						pos++;
 					}
 					String word = code.substr(i, pos - i);
-					if (keywords.has(word))
+					if (keywords.has(word)) {
 						in_keyword = true;
+					}
 
 				} else if (!_is_text_char(c)) {
 					in_keyword = false;
 				}
 
-				if (in_keyword)
+				if (in_keyword) {
 					color = keyword_color;
+				}
 
 				Color ul = color;
 				ul.a *= 0.5;
@@ -554,8 +566,9 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 			if (c == '\n') {
 				col = x0;
 				line++;
-				if (line >= available_height / 2)
+				if (line >= available_height / 2) {
 					break;
+				}
 			} else if (c == '\t') {
 				col += 3;
 			}
@@ -686,8 +699,9 @@ Ref<Texture2D> EditorMeshPreviewPlugin::generate(const RES &p_from, const Size2 
 	xform.basis = Basis().rotated(Vector3(1, 0, 0), Math_PI * 0.125) * xform.basis;
 	AABB rot_aabb = xform.xform(aabb);
 	float m = MAX(rot_aabb.size.x, rot_aabb.size.y) * 0.5;
-	if (m == 0)
+	if (m == 0) {
 		return Ref<Texture2D>();
+	}
 	m = 1.0 / m;
 	m *= 0.5;
 	xform.basis.scale(Vector3(m, m, m));

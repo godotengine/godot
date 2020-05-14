@@ -33,15 +33,17 @@
 #include "core/os/os.h"
 
 void UndoRedo::_discard_redo() {
-	if (current_action == actions.size() - 1)
+	if (current_action == actions.size() - 1) {
 		return;
+	}
 
 	for (int i = current_action + 1; i < actions.size(); i++) {
 		for (List<Operation>::Element *E = actions.write[i].do_ops.front(); E; E = E->next()) {
 			if (E->get().type == Operation::TYPE_REFERENCE) {
 				Object *obj = ObjectDB::get_instance(E->get().object);
-				if (obj)
+				if (obj) {
 					memdelete(obj);
+				}
 			}
 		}
 		//ERASE do data
@@ -68,8 +70,9 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 					if (E->get().type == Operation::TYPE_REFERENCE) {
 						Object *obj = ObjectDB::get_instance(E->get().object);
 
-						if (obj)
+						if (obj) {
 							memdelete(obj);
+						}
 					}
 
 					E = E->next();
@@ -101,8 +104,9 @@ void UndoRedo::add_do_method(Object *p_object, const StringName &p_method, VARIA
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Resource>(p_object))
+	if (Object::cast_to<Resource>(p_object)) {
 		do_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
+	}
 
 	do_op.type = Operation::TYPE_METHOD;
 	do_op.name = p_method;
@@ -120,13 +124,15 @@ void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VAR
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
 	// No undo if the merge mode is MERGE_ENDS
-	if (merge_mode == MERGE_ENDS)
+	if (merge_mode == MERGE_ENDS) {
 		return;
+	}
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Resource>(p_object))
+	if (Object::cast_to<Resource>(p_object)) {
 		undo_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
+	}
 
 	undo_op.type = Operation::TYPE_METHOD;
 	undo_op.name = p_method;
@@ -143,8 +149,9 @@ void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, c
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Resource>(p_object))
+	if (Object::cast_to<Resource>(p_object)) {
 		do_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
+	}
 
 	do_op.type = Operation::TYPE_PROPERTY;
 	do_op.name = p_property;
@@ -158,13 +165,15 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
 	// No undo if the merge mode is MERGE_ENDS
-	if (merge_mode == MERGE_ENDS)
+	if (merge_mode == MERGE_ENDS) {
 		return;
+	}
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Resource>(p_object))
+	if (Object::cast_to<Resource>(p_object)) {
 		undo_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
+	}
 
 	undo_op.type = Operation::TYPE_PROPERTY;
 	undo_op.name = p_property;
@@ -178,8 +187,9 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 	Operation do_op;
 	do_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Resource>(p_object))
+	if (Object::cast_to<Resource>(p_object)) {
 		do_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
+	}
 
 	do_op.type = Operation::TYPE_REFERENCE;
 	actions.write[current_action + 1].do_ops.push_back(do_op);
@@ -191,13 +201,15 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 	ERR_FAIL_COND((current_action + 1) >= actions.size());
 
 	// No undo if the merge mode is MERGE_ENDS
-	if (merge_mode == MERGE_ENDS)
+	if (merge_mode == MERGE_ENDS) {
 		return;
+	}
 
 	Operation undo_op;
 	undo_op.object = p_object->get_instance_id();
-	if (Object::cast_to<Resource>(p_object))
+	if (Object::cast_to<Resource>(p_object)) {
 		undo_op.resref = Ref<Resource>(Object::cast_to<Resource>(p_object));
+	}
 
 	undo_op.type = Operation::TYPE_REFERENCE;
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
@@ -206,14 +218,16 @@ void UndoRedo::add_undo_reference(Object *p_object) {
 void UndoRedo::_pop_history_tail() {
 	_discard_redo();
 
-	if (!actions.size())
+	if (!actions.size()) {
 		return;
+	}
 
 	for (List<Operation>::Element *E = actions.write[0].undo_ops.front(); E; E = E->next()) {
 		if (E->get().type == Operation::TYPE_REFERENCE) {
 			Object *obj = ObjectDB::get_instance(E->get().object);
-			if (obj)
+			if (obj) {
 				memdelete(obj);
+			}
 		}
 	}
 
@@ -230,8 +244,9 @@ bool UndoRedo::is_committing_action() const {
 void UndoRedo::commit_action() {
 	ERR_FAIL_COND(action_level <= 0);
 	action_level--;
-	if (action_level > 0)
+	if (action_level > 0) {
 		return; //still nested
+	}
 
 	if (merging) {
 		version--;
@@ -251,8 +266,9 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 		Operation &op = E->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
-		if (!obj) //may have been deleted and this is fine
+		if (!obj) { //may have been deleted and this is fine
 			continue;
+		}
 
 		switch (op.type) {
 			case Operation::TYPE_METHOD: {
@@ -276,8 +292,9 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				}
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);
-				if (res)
+				if (res) {
 					res->set_edited(true);
+				}
 
 #endif
 
@@ -289,8 +306,9 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 				obj->set(op.name, op.args[0]);
 #ifdef TOOLS_ENABLED
 				Resource *res = Object::cast_to<Resource>(obj);
-				if (res)
+				if (res) {
 					res->set_edited(true);
+				}
 #endif
 				if (property_callback) {
 					property_callback(prop_callback_ud, obj, op.name, op.args[0]);
@@ -306,8 +324,9 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 bool UndoRedo::redo() {
 	ERR_FAIL_COND_V(action_level > 0, false);
 
-	if ((current_action + 1) >= actions.size())
+	if ((current_action + 1) >= actions.size()) {
 		return false; //nothing to redo
+	}
 
 	current_action++;
 
@@ -320,8 +339,9 @@ bool UndoRedo::redo() {
 
 bool UndoRedo::undo() {
 	ERR_FAIL_COND_V(action_level > 0, false);
-	if (current_action < 0)
+	if (current_action < 0) {
 		return false; //nothing to redo
+	}
 	_process_operation_list(actions.write[current_action].undo_ops.front());
 	current_action--;
 	version--;
@@ -334,8 +354,9 @@ void UndoRedo::clear_history(bool p_increase_version) {
 	ERR_FAIL_COND(action_level > 0);
 	_discard_redo();
 
-	while (actions.size())
+	while (actions.size()) {
 		_pop_history_tail();
+	}
 
 	if (p_increase_version) {
 		version++;
@@ -345,8 +366,9 @@ void UndoRedo::clear_history(bool p_increase_version) {
 
 String UndoRedo::get_current_action_name() const {
 	ERR_FAIL_COND_V(action_level > 0, "");
-	if (current_action < 0)
+	if (current_action < 0) {
 		return "";
+	}
 	return actions[current_action].name;
 }
 

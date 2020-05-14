@@ -38,18 +38,22 @@ Size2 TextureButton::get_minimum_size() const {
 	if (!expand) {
 		if (normal.is_null()) {
 			if (pressed.is_null()) {
-				if (hover.is_null())
-					if (click_mask.is_null())
+				if (hover.is_null()) {
+					if (click_mask.is_null()) {
 						rscale = Size2();
-					else
+					} else {
 						rscale = click_mask->get_size();
-				else
+					}
+				} else {
 					rscale = hover->get_size();
-			} else
+				}
+			} else {
 				rscale = pressed->get_size();
+			}
 
-		} else
+		} else {
 			rscale = normal->get_size();
+		}
 	}
 
 	return rscale.abs();
@@ -121,36 +125,44 @@ void TextureButton::_notification(int p_what) {
 
 			switch (draw_mode) {
 				case DRAW_NORMAL: {
-					if (normal.is_valid())
+					if (normal.is_valid()) {
 						texdraw = normal;
+					}
 				} break;
 				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
 					if (pressed.is_null()) {
 						if (hover.is_null()) {
-							if (normal.is_valid())
+							if (normal.is_valid()) {
 								texdraw = normal;
-						} else
+							}
+						} else {
 							texdraw = hover;
+						}
 
-					} else
+					} else {
 						texdraw = pressed;
+					}
 				} break;
 				case DRAW_HOVER: {
 					if (hover.is_null()) {
-						if (pressed.is_valid() && is_pressed())
+						if (pressed.is_valid() && is_pressed()) {
 							texdraw = pressed;
-						else if (normal.is_valid())
+						} else if (normal.is_valid()) {
 							texdraw = normal;
-					} else
+						}
+					} else {
 						texdraw = hover;
+					}
 				} break;
 				case DRAW_DISABLED: {
 					if (disabled.is_null()) {
-						if (normal.is_valid())
+						if (normal.is_valid()) {
 							texdraw = normal;
-					} else
+						}
+					} else {
 						texdraw = disabled;
+					}
 				} break;
 			}
 

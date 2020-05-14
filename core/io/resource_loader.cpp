@@ -59,8 +59,9 @@ bool ResourceFormatLoader::recognize_path(const String &p_path, const String &p_
 	}
 
 	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-		if (E->get().nocasecmp_to(extension) == 0)
+		if (E->get().nocasecmp_to(extension) == 0) {
 			return true;
+		}
 	}
 
 	return false;
@@ -84,8 +85,9 @@ String ResourceFormatLoader::get_resource_type(const String &p_path) const {
 }
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
-	if (p_type == "" || handles_type(p_type))
+	if (p_type == "" || handles_type(p_type)) {
 		get_recognized_extensions(p_extensions);
+	}
 }
 
 void ResourceLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) {
@@ -116,12 +118,14 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 		Variant res = get_script_instance()->call("load", p_path, p_original_path, p_use_sub_threads);
 
 		if (res.get_type() == Variant::INT) {
-			if (r_error)
+			if (r_error) {
 				*r_error = (Error)res.operator int64_t();
+			}
 
 		} else {
-			if (r_error)
+			if (r_error) {
 				*r_error = OK;
+			}
 			return res;
 		}
 
@@ -240,8 +244,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	if (load_task.resource.is_valid()) {
 		load_task.resource->set_path(load_task.local_path);
 
-		if (load_task.xl_remapped)
+		if (load_task.xl_remapped) {
 			load_task.resource->set_as_translation_remapped(true);
+		}
 
 #ifdef TOOLS_ENABLED
 
@@ -263,10 +268,11 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, const String &p_source_resource) {
 	String local_path;
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		local_path = "res://" + p_path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	}
 
 	thread_load_mutex->lock();
 
@@ -392,10 +398,11 @@ float ResourceLoader::_dependency_get_progress(const String &p_path) {
 
 ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const String &p_path, float *r_progress) {
 	String local_path;
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		local_path = "res://" + p_path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	}
 
 	thread_load_mutex->lock();
 	if (!thread_load_tasks.has(local_path)) {
@@ -416,10 +423,11 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 
 RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	String local_path;
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		local_path = "res://" + p_path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	}
 
 	thread_load_mutex->lock();
 	if (!thread_load_tasks.has(local_path)) {
@@ -496,14 +504,16 @@ RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 }
 
 RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache, Error *r_error) {
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
+	}
 
 	String local_path;
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		local_path = "res://" + p_path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	}
 
 	if (!p_no_cache) {
 		thread_load_mutex->lock();
@@ -586,8 +596,9 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 			return RES();
 		}
 
-		if (xl_remapped)
+		if (xl_remapped) {
 			res->set_as_translation_remapped(true);
+		}
 
 #ifdef TOOLS_ENABLED
 
@@ -605,10 +616,11 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 
 bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 	String local_path;
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		local_path = "res://" + p_path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	}
 
 	if (ResourceCache::has(local_path)) {
 		return true; // If cached, it probably exists
@@ -623,8 +635,9 @@ bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 			continue;
 		}
 
-		if (loader[i]->exists(path))
+		if (loader[i]->exists(path)) {
 			return true;
+		}
 	}
 
 	return false;
@@ -651,8 +664,9 @@ void ResourceLoader::remove_resource_format_loader(Ref<ResourceFormatLoader> p_f
 	// Find loader
 	int i = 0;
 	for (; i < loader_count; ++i) {
-		if (loader[i] == p_format_loader)
+		if (loader[i] == p_format_loader) {
 			break;
+		}
 	}
 
 	ERR_FAIL_COND(i >= loader_count); // Not found
@@ -669,14 +683,16 @@ int ResourceLoader::get_import_order(const String &p_path) {
 	String path = _path_remap(p_path);
 
 	String local_path;
-	if (path.is_rel_path())
+	if (path.is_rel_path()) {
 		local_path = "res://" + path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path))
+		if (!loader[i]->recognize_path(local_path)) {
 			continue;
+		}
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
@@ -692,14 +708,16 @@ String ResourceLoader::get_import_group_file(const String &p_path) {
 	String path = _path_remap(p_path);
 
 	String local_path;
-	if (path.is_rel_path())
+	if (path.is_rel_path()) {
 		local_path = "res://" + path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path))
+		if (!loader[i]->recognize_path(local_path)) {
 			continue;
+		}
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
@@ -715,14 +733,16 @@ bool ResourceLoader::is_import_valid(const String &p_path) {
 	String path = _path_remap(p_path);
 
 	String local_path;
-	if (path.is_rel_path())
+	if (path.is_rel_path()) {
 		local_path = "res://" + path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path))
+		if (!loader[i]->recognize_path(local_path)) {
 			continue;
+		}
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
@@ -738,14 +758,16 @@ bool ResourceLoader::is_imported(const String &p_path) {
 	String path = _path_remap(p_path);
 
 	String local_path;
-	if (path.is_rel_path())
+	if (path.is_rel_path()) {
 		local_path = "res://" + path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path))
+		if (!loader[i]->recognize_path(local_path)) {
 			continue;
+		}
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
@@ -761,14 +783,16 @@ void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_depe
 	String path = _path_remap(p_path);
 
 	String local_path;
-	if (path.is_rel_path())
+	if (path.is_rel_path()) {
 		local_path = "res://" + path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path))
+		if (!loader[i]->recognize_path(local_path)) {
 			continue;
+		}
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
@@ -782,14 +806,16 @@ Error ResourceLoader::rename_dependencies(const String &p_path, const Map<String
 	String path = _path_remap(p_path);
 
 	String local_path;
-	if (path.is_rel_path())
+	if (path.is_rel_path()) {
 		local_path = "res://" + path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
-		if (!loader[i]->recognize_path(local_path))
+		if (!loader[i]->recognize_path(local_path)) {
 			continue;
+		}
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
@@ -803,10 +829,11 @@ Error ResourceLoader::rename_dependencies(const String &p_path, const Map<String
 
 String ResourceLoader::get_resource_type(const String &p_path) {
 	String local_path;
-	if (p_path.is_rel_path())
+	if (p_path.is_rel_path()) {
 		local_path = "res://" + p_path;
-	else
+	} else {
 		local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	}
 
 	for (int i = 0; i < loader_count; i++) {
 		String result = loader[i]->get_resource_type(local_path);
@@ -951,8 +978,9 @@ void ResourceLoader::reload_translation_remaps() {
 }
 
 void ResourceLoader::load_translation_remaps() {
-	if (!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"))
+	if (!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps")) {
 		return;
+	}
 
 	Dictionary remaps = ProjectSettings::get_singleton()->get("locale/translation_remaps");
 	List<Variant> keys;
@@ -974,8 +1002,9 @@ void ResourceLoader::clear_translation_remaps() {
 }
 
 void ResourceLoader::load_path_remaps() {
-	if (!ProjectSettings::get_singleton()->has_setting("path_remap/remapped_paths"))
+	if (!ProjectSettings::get_singleton()->has_setting("path_remap/remapped_paths")) {
 		return;
+	}
 
 	Vector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
 	int rc = remaps.size();
@@ -1007,8 +1036,9 @@ Ref<ResourceFormatLoader> ResourceLoader::_find_custom_resource_format_loader(St
 }
 
 bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
-	if (_find_custom_resource_format_loader(script_path).is_valid())
+	if (_find_custom_resource_format_loader(script_path).is_valid()) {
 		return false;
+	}
 
 	Ref<Resource> res = ResourceLoader::load(script_path);
 	ERR_FAIL_COND_V(res.is_null(), false);
@@ -1032,8 +1062,9 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 
 void ResourceLoader::remove_custom_resource_format_loader(String script_path) {
 	Ref<ResourceFormatLoader> custom_loader = _find_custom_resource_format_loader(script_path);
-	if (custom_loader.is_valid())
+	if (custom_loader.is_valid()) {
 		remove_resource_format_loader(custom_loader);
+	}
 }
 
 void ResourceLoader::add_custom_loaders() {

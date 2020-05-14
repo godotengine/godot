@@ -81,8 +81,9 @@ String OS_LinuxBSD::get_unique_id() const {
 }
 
 void OS_LinuxBSD::finalize() {
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 	main_loop = nullptr;
 
 #ifdef ALSAMIDI_ENABLED
@@ -99,8 +100,9 @@ MainLoop *OS_LinuxBSD::get_main_loop() const {
 }
 
 void OS_LinuxBSD::delete_main_loop() {
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 	main_loop = nullptr;
 }
 
@@ -125,11 +127,13 @@ Error OS_LinuxBSD::shell_open(String p_uri) {
 	List<String> args;
 	args.push_back(p_uri);
 	ok = execute("xdg-open", args, false);
-	if (ok == OK)
+	if (ok == OK) {
 		return OK;
+	}
 	ok = execute("gnome-open", args, false);
-	if (ok == OK)
+	if (ok == OK) {
 		return OK;
+	}
 	ok = execute("kde-open", args, false);
 	return ok;
 }
@@ -209,16 +213,18 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
 	List<String> arg;
 	arg.push_back(xdgparam);
 	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
-	if (err != OK)
+	if (err != OK) {
 		return ".";
+	}
 	return pipe.strip_edges();
 }
 
 void OS_LinuxBSD::run() {
 	force_quit = false;
 
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->init();
 
@@ -232,8 +238,9 @@ void OS_LinuxBSD::run() {
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
-		if (Main::iteration())
+		if (Main::iteration()) {
 			break;
+		}
 	};
 
 	main_loop->finish();

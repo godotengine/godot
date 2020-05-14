@@ -36,14 +36,16 @@
 // Kept for compatibility from 3.x to 4.0.
 
 void MultiMesh::_set_transform_array(const Vector<Vector3> &p_array) {
-	if (transform_format != TRANSFORM_3D)
+	if (transform_format != TRANSFORM_3D) {
 		return;
+	}
 
 	const Vector<Vector3> &xforms = p_array;
 	int len = xforms.size();
 	ERR_FAIL_COND((len / 4) != instance_count);
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	const Vector3 *r = xforms.ptr();
 
@@ -59,11 +61,13 @@ void MultiMesh::_set_transform_array(const Vector<Vector3> &p_array) {
 }
 
 Vector<Vector3> MultiMesh::_get_transform_array() const {
-	if (transform_format != TRANSFORM_3D)
+	if (transform_format != TRANSFORM_3D) {
 		return Vector<Vector3>();
+	}
 
-	if (instance_count == 0)
+	if (instance_count == 0) {
 		return Vector<Vector3>();
+	}
 
 	Vector<Vector3> xforms;
 	xforms.resize(instance_count * 4);
@@ -82,14 +86,16 @@ Vector<Vector3> MultiMesh::_get_transform_array() const {
 }
 
 void MultiMesh::_set_transform_2d_array(const Vector<Vector2> &p_array) {
-	if (transform_format != TRANSFORM_2D)
+	if (transform_format != TRANSFORM_2D) {
 		return;
+	}
 
 	const Vector<Vector2> &xforms = p_array;
 	int len = xforms.size();
 	ERR_FAIL_COND((len / 3) != instance_count);
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	const Vector2 *r = xforms.ptr();
 
@@ -104,11 +110,13 @@ void MultiMesh::_set_transform_2d_array(const Vector<Vector2> &p_array) {
 }
 
 Vector<Vector2> MultiMesh::_get_transform_2d_array() const {
-	if (transform_format != TRANSFORM_2D)
+	if (transform_format != TRANSFORM_2D) {
 		return Vector<Vector2>();
+	}
 
-	if (instance_count == 0)
+	if (instance_count == 0) {
 		return Vector<Vector2>();
+	}
 
 	Vector<Vector2> xforms;
 	xforms.resize(instance_count * 3);
@@ -128,8 +136,9 @@ Vector<Vector2> MultiMesh::_get_transform_2d_array() const {
 void MultiMesh::_set_color_array(const Vector<Color> &p_array) {
 	const Vector<Color> &colors = p_array;
 	int len = colors.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 	ERR_FAIL_COND(len != instance_count);
 
 	const Color *r = colors.ptr();
@@ -140,8 +149,9 @@ void MultiMesh::_set_color_array(const Vector<Color> &p_array) {
 }
 
 Vector<Color> MultiMesh::_get_color_array() const {
-	if (instance_count == 0 || !use_colors)
+	if (instance_count == 0 || !use_colors) {
 		return Vector<Color>();
+	}
 
 	Vector<Color> colors;
 	colors.resize(instance_count);
@@ -156,8 +166,9 @@ Vector<Color> MultiMesh::_get_color_array() const {
 void MultiMesh::_set_custom_data_array(const Vector<Color> &p_array) {
 	const Vector<Color> &custom_datas = p_array;
 	int len = custom_datas.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 	ERR_FAIL_COND(len != instance_count);
 
 	const Color *r = custom_datas.ptr();
@@ -168,8 +179,9 @@ void MultiMesh::_set_custom_data_array(const Vector<Color> &p_array) {
 }
 
 Vector<Color> MultiMesh::_get_custom_data_array() const {
-	if (instance_count == 0 || !use_custom_data)
+	if (instance_count == 0 || !use_custom_data) {
 		return Vector<Color>();
+	}
 
 	Vector<Color> custom_datas;
 	custom_datas.resize(instance_count);
@@ -192,10 +204,11 @@ Vector<float> MultiMesh::get_buffer() const {
 
 void MultiMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 	mesh = p_mesh;
-	if (!mesh.is_null())
+	if (!mesh.is_null()) {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
-	else
+	} else {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, RID());
+	}
 }
 
 Ref<Mesh> MultiMesh::get_mesh() const {

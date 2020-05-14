@@ -52,8 +52,9 @@ GraphEditFilter::GraphEditFilter(GraphEdit *p_edit) {
 }
 
 Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
-	if (is_node_connected(p_from, p_from_port, p_to, p_to_port))
+	if (is_node_connected(p_from, p_from_port, p_to, p_to_port)) {
 		return OK;
+	}
 	Connection c;
 	c.from = p_from;
 	c.from_port = p_from_port;
@@ -70,8 +71,9 @@ Error GraphEdit::connect_node(const StringName &p_from, int p_from_port, const S
 
 bool GraphEdit::is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port) {
 	for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
-		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port)
+		if (E->get().from == p_from && E->get().from_port == p_from_port && E->get().to == p_to && E->get().to_port == p_to_port) {
 			return true;
+		}
 	}
 
 	return false;
@@ -127,8 +129,9 @@ void GraphEdit::_update_scroll_offset() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn)
+		if (!gn) {
 			continue;
+		}
 
 		Point2 pos = gn->get_offset() * zoom;
 		pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
@@ -144,8 +147,9 @@ void GraphEdit::_update_scroll_offset() {
 }
 
 void GraphEdit::_update_scroll() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	updating = true;
 
@@ -154,8 +158,9 @@ void GraphEdit::_update_scroll() {
 	Rect2 screen;
 	for (int i = 0; i < get_child_count(); i++) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn)
+		if (!gn) {
 			continue;
+		}
 
 		Rect2 r;
 		r.position = gn->get_offset() * zoom;
@@ -169,19 +174,21 @@ void GraphEdit::_update_scroll() {
 	h_scroll->set_min(screen.position.x);
 	h_scroll->set_max(screen.position.x + screen.size.x);
 	h_scroll->set_page(get_size().x);
-	if (h_scroll->get_max() - h_scroll->get_min() <= h_scroll->get_page())
+	if (h_scroll->get_max() - h_scroll->get_min() <= h_scroll->get_page()) {
 		h_scroll->hide();
-	else
+	} else {
 		h_scroll->show();
+	}
 
 	v_scroll->set_min(screen.position.y);
 	v_scroll->set_max(screen.position.y + screen.size.y);
 	v_scroll->set_page(get_size().y);
 
-	if (v_scroll->get_max() - v_scroll->get_min() <= v_scroll->get_page())
+	if (v_scroll->get_max() - v_scroll->get_min() <= v_scroll->get_page()) {
 		v_scroll->hide();
-	else
+	} else {
 		v_scroll->show();
+	}
 
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
@@ -301,10 +308,11 @@ void GraphEdit::_notification(int p_what) {
 			for (int i = from.x; i < from.x + len.x; i++) {
 				Color color;
 
-				if (ABS(i) % 10 == 0)
+				if (ABS(i) % 10 == 0) {
 					color = grid_major;
-				else
+				} else {
 					color = grid_minor;
+				}
 
 				float base_ofs = i * snap * zoom - offset.x * zoom;
 				draw_line(Vector2(base_ofs, 0), Vector2(base_ofs, get_size().height), color);
@@ -313,10 +321,11 @@ void GraphEdit::_notification(int p_what) {
 			for (int i = from.y; i < from.y + len.y; i++) {
 				Color color;
 
-				if (ABS(i) % 10 == 0)
+				if (ABS(i) % 10 == 0) {
 					color = grid_major;
-				else
+				} else {
 					color = grid_minor;
+				}
 
 				float base_ofs = i * snap * zoom - offset.y * zoom;
 				draw_line(Vector2(0, base_ofs), Vector2(get_size().width, base_ofs), color);
@@ -335,13 +344,15 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn)
+		if (!gn) {
 			continue;
+		}
 
 		for (int j = 0; j < gn->get_connection_output_count(); j++) {
 			Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
-			if (is_in_hot_zone(pos, p_point))
+			if (is_in_hot_zone(pos, p_point)) {
 				return true;
+			}
 		}
 
 		for (int j = 0; j < gn->get_connection_input_count(); j++) {
@@ -362,8 +373,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		Vector2 mpos(mb->get_position().x, mb->get_position().y);
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-			if (!gn)
+			if (!gn) {
 				continue;
+			}
 
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 				Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
@@ -462,8 +474,9 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 		Vector2 mpos = mm->get_position();
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-			if (!gn)
+			if (!gn) {
 				continue;
+			}
 
 			if (!connecting_out) {
 				for (int j = 0; j < gn->get_connection_output_count(); j++) {
@@ -526,15 +539,17 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 }
 
 bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos) {
-	if (p_control->is_set_as_toplevel() || !p_control->is_visible())
+	if (p_control->is_set_as_toplevel() || !p_control->is_visible()) {
 		return false;
+	}
 
 	if (!p_control->has_point(pos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
 		//test children
 		for (int i = 0; i < p_control->get_child_count(); i++) {
 			Control *subchild = Object::cast_to<Control>(p_control->get_child(i));
-			if (!subchild)
+			if (!subchild) {
 				continue;
+			}
 			if (_check_clickable_control(subchild, pos - subchild->get_position())) {
 				return true;
 			}
@@ -547,13 +562,15 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &pos)
 }
 
 bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
-	if (!Rect2(pos.x - port_grab_distance_horizontal, pos.y - port_grab_distance_vertical, port_grab_distance_horizontal * 2, port_grab_distance_vertical * 2).has_point(p_mouse_pos))
+	if (!Rect2(pos.x - port_grab_distance_horizontal, pos.y - port_grab_distance_vertical, port_grab_distance_horizontal * 2, port_grab_distance_vertical * 2).has_point(p_mouse_pos)) {
 		return false;
+	}
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child)
+		if (!child) {
 			continue;
+		}
 		Rect2 rect = child->get_rect();
 		if (rect.has_point(p_mouse_pos)) {
 			//check sub-controls
@@ -561,8 +578,9 @@ bool GraphEdit::is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos) {
 
 			for (int j = 0; j < child->get_child_count(); j++) {
 				Control *subchild = Object::cast_to<Control>(child->get_child(j));
-				if (!subchild)
+				if (!subchild) {
 					continue;
+				}
 
 				if (_check_clickable_control(subchild, subpos - subchild->get_position())) {
 					return false;
@@ -700,10 +718,11 @@ void GraphEdit::_top_layer_draw() {
 		GraphNode *from = Object::cast_to<GraphNode>(fromn);
 		ERR_FAIL_COND(!from);
 		Vector2 pos;
-		if (connecting_out)
+		if (connecting_out) {
 			pos = from->get_connection_output_position(connecting_index);
-		else
+		} else {
 			pos = from->get_connection_input_position(connecting_index);
+		}
 		pos += from->get_position();
 
 		Vector2 topos;
@@ -732,8 +751,9 @@ void GraphEdit::_top_layer_draw() {
 void GraphEdit::set_selected(Node *p_child) {
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-		if (!gn)
+		if (!gn) {
 			continue;
+		}
 
 		gn->set_selected(gn == p_child);
 	}
@@ -778,17 +798,19 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 		for (int i = get_child_count() - 1; i >= 0; i--) {
 			GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-			if (!gn)
+			if (!gn) {
 				continue;
+			}
 
 			Rect2 r = gn->get_rect();
 			r.size *= zoom;
 			bool in_box = r.intersects(box_selecting_rect);
 
-			if (in_box)
+			if (in_box) {
 				gn->set_selected(box_selection_mode_additive);
-			else
+			} else {
 				gn->set_selected(previus_selected.find(gn) != nullptr);
+			}
 		}
 
 		top_layer->update();
@@ -801,8 +823,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				box_selecting = false;
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-					if (!gn)
+					if (!gn) {
 						continue;
+					}
 
 					gn->set_selected(previus_selected.find(gn) != nullptr);
 				}
@@ -826,8 +849,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					if (gn) {
 						Rect2 r = gn->get_rect();
 						r.size *= zoom;
-						if (r.has_point(get_local_mouse_position()))
+						if (r.has_point(get_local_mouse_position())) {
 							gn->set_selected(false);
+						}
 					}
 				}
 			}
@@ -837,8 +861,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
-					if (gn && gn->is_selected())
+					if (gn && gn->is_selected()) {
 						gn->set_drag(false);
+					}
 				}
 
 				emit_signal("_end_node_move");
@@ -858,8 +883,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				GraphNode *gn_selected = Object::cast_to<GraphNode>(get_child(i));
 
 				if (gn_selected) {
-					if (gn_selected->is_resizing())
+					if (gn_selected->is_resizing()) {
 						continue;
+					}
 
 					if (gn_selected->has_point(gn_selected->get_local_mouse_position())) {
 						gn = gn_selected;
@@ -869,8 +895,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			if (gn) {
-				if (_filter_input(b->get_position()))
+				if (_filter_input(b->get_position())) {
 					return;
+				}
 
 				dragging = true;
 				drag_accum = Vector2();
@@ -895,17 +922,21 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 				gn->set_selected(true);
 				for (int i = 0; i < get_child_count(); i++) {
 					GraphNode *o_gn = Object::cast_to<GraphNode>(get_child(i));
-					if (!o_gn)
+					if (!o_gn) {
 						continue;
-					if (o_gn->is_selected())
+					}
+					if (o_gn->is_selected()) {
 						o_gn->set_drag(true);
+					}
 				}
 
 			} else {
-				if (_filter_input(b->get_position()))
+				if (_filter_input(b->get_position())) {
 					return;
-				if (Input::get_singleton()->is_key_pressed(KEY_SPACE))
+				}
+				if (Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 					return;
+				}
 
 				box_selecting = true;
 				box_selecting_from = get_local_mouse_position();
@@ -914,8 +945,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
-						if (!gn2 || !gn2->is_selected())
+						if (!gn2 || !gn2->is_selected()) {
 							continue;
+						}
 
 						previus_selected.push_back(gn2);
 					}
@@ -924,8 +956,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
-						if (!gn2 || !gn2->is_selected())
+						if (!gn2 || !gn2->is_selected()) {
 							continue;
+						}
 
 						previus_selected.push_back(gn2);
 					}
@@ -934,8 +967,9 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 					previus_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
 						GraphNode *gn2 = Object::cast_to<GraphNode>(get_child(i));
-						if (!gn2)
+						if (!gn2) {
 							continue;
+						}
 						if (gn2->is_selected()) {
 							emit_signal("node_unselected", gn2);
 						}
@@ -1036,8 +1070,9 @@ void GraphEdit::set_zoom(float p_zoom) {
 
 void GraphEdit::set_zoom_custom(float p_zoom, const Vector2 &p_center) {
 	p_zoom = CLAMP(p_zoom, MIN_ZOOM, MAX_ZOOM);
-	if (zoom == p_zoom)
+	if (zoom == p_zoom) {
 		return;
+	}
 
 	zoom_minus->set_disabled(zoom == MIN_ZOOM);
 	zoom_plus->set_disabled(zoom == MAX_ZOOM);

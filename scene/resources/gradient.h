@@ -76,8 +76,9 @@ public:
 	Vector<Color> get_colors() const;
 
 	_FORCE_INLINE_ Color get_color_at_offset(float p_offset) {
-		if (points.empty())
+		if (points.empty()) {
 			return Color(0, 0, 0, 1);
+		}
 
 		if (!is_sorted) {
 			points.sort();
@@ -90,8 +91,9 @@ public:
 		int middle = 0;
 
 #ifdef DEBUG_ENABLED
-		if (low > high)
+		if (low > high) {
 			ERR_PRINT("low > high, this may be a bug");
+		}
 #endif
 
 		while (low <= high) {
@@ -112,10 +114,12 @@ public:
 		}
 		int first = middle;
 		int second = middle + 1;
-		if (second >= points.size())
+		if (second >= points.size()) {
 			return points[points.size() - 1].color;
-		if (first < 0)
+		}
+		if (first < 0) {
 			return points[0].color;
+		}
 		const Point &pointFirst = points[first];
 		const Point &pointSecond = points[second];
 		return pointFirst.color.lerp(pointSecond.color, (p_offset - pointFirst.offset) / (pointSecond.offset - pointFirst.offset));

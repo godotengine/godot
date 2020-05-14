@@ -62,13 +62,15 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 }
 
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
-	if (shape.is_valid())
+	if (shape.is_valid()) {
 		shape->disconnect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
+	}
 
 	shape = p_shape;
 
-	if (shape.is_valid())
+	if (shape.is_valid()) {
 		shape->connect("changed", callable_mp((CanvasItem *)this, &CanvasItem::update));
+	}
 
 	update();
 }
@@ -98,26 +100,32 @@ bool TouchScreenButton::is_shape_centered() const {
 void TouchScreenButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				return;
-			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			}
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY) {
 				return;
-
-			if (finger_pressed != -1) {
-				if (texture_pressed.is_valid())
-					draw_texture(texture_pressed, Point2());
-				else if (texture.is_valid())
-					draw_texture(texture, Point2());
-
-			} else {
-				if (texture.is_valid())
-					draw_texture(texture, Point2());
 			}
 
-			if (!shape_visible)
+			if (finger_pressed != -1) {
+				if (texture_pressed.is_valid()) {
+					draw_texture(texture_pressed, Point2());
+				} else if (texture.is_valid()) {
+					draw_texture(texture, Point2());
+				}
+
+			} else {
+				if (texture.is_valid()) {
+					draw_texture(texture, Point2());
+				}
+			}
+
+			if (!shape_visible) {
 				return;
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
+			}
+			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				return;
+			}
 			if (shape.is_valid()) {
 				Color draw_col = get_tree()->get_debug_collisions_color();
 
@@ -129,32 +137,38 @@ void TouchScreenButton::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!Engine::get_singleton()->is_editor_hint() && !!DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id())) && visibility == VISIBILITY_TOUCHSCREEN_ONLY) {
 				return;
+			}
 			update();
 
-			if (!Engine::get_singleton()->is_editor_hint())
+			if (!Engine::get_singleton()->is_editor_hint()) {
 				set_process_input(is_visible_in_tree());
+			}
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (is_pressed())
+			if (is_pressed()) {
 				_release(true);
+			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (Engine::get_singleton()->is_editor_hint())
+			if (Engine::get_singleton()->is_editor_hint()) {
 				break;
+			}
 			if (is_visible_in_tree()) {
 				set_process_input(true);
 			} else {
 				set_process_input(false);
-				if (is_pressed())
+				if (is_pressed()) {
 					_release();
+				}
 			}
 		} break;
 		case NOTIFICATION_PAUSED: {
-			if (is_pressed())
+			if (is_pressed()) {
 				_release();
+			}
 		} break;
 	}
 }
@@ -172,11 +186,13 @@ String TouchScreenButton::get_action() const {
 }
 
 void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
-	if (!get_tree())
+	if (!get_tree()) {
 		return;
+	}
 
-	if (p_event->get_device() != 0)
+	if (p_event->get_device() != 0) {
 		return;
+	}
 
 	ERR_FAIL_COND(!is_visible_in_tree());
 
@@ -210,8 +226,9 @@ void TouchScreenButton::_input(const Ref<InputEvent> &p_event) {
 		if (st) {
 			if (st->is_pressed()) {
 				const bool can_press = finger_pressed == -1;
-				if (!can_press)
+				if (!can_press) {
 					return; //already fingering
+				}
 
 				if (_is_point_inside(st->get_position())) {
 					_press(st->get_index());
@@ -242,14 +259,16 @@ bool TouchScreenButton::_is_point_inside(const Point2 &p_point) {
 	if (bitmask.is_valid()) {
 		check_rect = false;
 		if (!touched && Rect2(Point2(), bitmask->get_size()).has_point(coord)) {
-			if (bitmask->get_bit(coord))
+			if (bitmask->get_bit(coord)) {
 				touched = true;
+			}
 		}
 	}
 
 	if (!touched && check_rect) {
-		if (texture.is_valid())
+		if (texture.is_valid()) {
 			touched = Rect2(Size2(), texture->get_size()).has_point(coord);
+		}
 	}
 
 	return touched;
@@ -293,8 +312,9 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 
 #ifdef TOOLS_ENABLED
 Rect2 TouchScreenButton::_edit_get_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return CanvasItem::_edit_get_rect();
+	}
 
 	return Rect2(Size2(), texture->get_size());
 }
@@ -305,8 +325,9 @@ bool TouchScreenButton::_edit_use_rect() const {
 #endif
 
 Rect2 TouchScreenButton::get_anchorable_rect() const {
-	if (texture.is_null())
+	if (texture.is_null()) {
 		return CanvasItem::get_anchorable_rect();
+	}
 
 	return Rect2(Size2(), texture->get_size());
 }

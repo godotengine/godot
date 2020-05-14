@@ -105,8 +105,9 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
 			String name = String(E->get()).replace_first("AnimationNode", "");
-			if (name == "Animation")
+			if (name == "Animation") {
 				continue; // nope
+			}
 			int idx = menu->get_item_count();
 			menu->add_item(vformat("Add %s", name), idx);
 			menu->set_item_metadata(idx, E->get());
@@ -179,8 +180,9 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 		selected_point = -1;
 
 		for (int i = 0; i < points.size(); i++) {
-			if (making_triangle.find(i) != -1)
+			if (making_triangle.find(i) != -1) {
 				continue;
+			}
 
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
 				making_triangle.push_back(i);
@@ -578,8 +580,9 @@ void AnimationNodeBlendSpace2DEditor::_snap_toggled() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_update_space() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	updating = true;
 
@@ -611,8 +614,9 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	updating = true;
 	undo_redo->create_action(TTR("Change BlendSpace2D Limits"));
@@ -633,8 +637,9 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 }
 
 void AnimationNodeBlendSpace2DEditor::_labels_changed(String) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	updating = true;
 	undo_redo->create_action(TTR("Change BlendSpace2D Labels"), UndoRedo::MERGE_ENDS);
@@ -687,8 +692,9 @@ void AnimationNodeBlendSpace2DEditor::_erase_selected() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_update_edited_point_pos() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	if (selected_point >= 0 && selected_point < blend_space->get_blend_point_count()) {
 		Vector2 pos = blend_space->get_blend_point_position(selected_point);
@@ -707,8 +713,9 @@ void AnimationNodeBlendSpace2DEditor::_update_edited_point_pos() {
 }
 
 void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	updating = true;
 	undo_redo->create_action(TTR("Move Node Point"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, Vector2(edit_x->get_value(), edit_y->get_value()));

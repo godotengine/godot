@@ -42,16 +42,20 @@ bool AreaPair3DSW::setup(real_t p_step) {
 
 	if (result != colliding) {
 		if (result) {
-			if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED)
+			if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
 				body->add_area(area);
-			if (area->has_monitor_callback())
+			}
+			if (area->has_monitor_callback()) {
 				area->add_body_to_query(body, body_shape, area_shape);
+			}
 
 		} else {
-			if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED)
+			if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
 				body->remove_area(area);
-			if (area->has_monitor_callback())
+			}
+			if (area->has_monitor_callback()) {
 				area->remove_body_from_query(body, body_shape, area_shape);
+			}
 		}
 
 		colliding = result;
@@ -71,16 +75,19 @@ AreaPair3DSW::AreaPair3DSW(Body3DSW *p_body, int p_body_shape, Area3DSW *p_area,
 	colliding = false;
 	body->add_constraint(this, 0);
 	area->add_constraint(this);
-	if (p_body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC)
+	if (p_body->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		p_body->set_active(true);
+	}
 }
 
 AreaPair3DSW::~AreaPair3DSW() {
 	if (colliding) {
-		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED)
+		if (area->get_space_override_mode() != PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED) {
 			body->remove_area(area);
-		if (area->has_monitor_callback())
+		}
+		if (area->has_monitor_callback()) {
 			area->remove_body_from_query(body, body_shape, area_shape);
+		}
 	}
 	body->remove_constraint(this);
 	area->remove_constraint(this);
@@ -98,18 +105,22 @@ bool Area2Pair3DSW::setup(real_t p_step) {
 
 	if (result != colliding) {
 		if (result) {
-			if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
+			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
 				area_b->add_area_to_query(area_a, shape_a, shape_b);
+			}
 
-			if (area_a->has_area_monitor_callback() && area_b->is_monitorable())
+			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
 				area_a->add_area_to_query(area_b, shape_b, shape_a);
+			}
 
 		} else {
-			if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
+			if (area_b->has_area_monitor_callback() && area_a->is_monitorable()) {
 				area_b->remove_area_from_query(area_a, shape_a, shape_b);
+			}
 
-			if (area_a->has_area_monitor_callback() && area_b->is_monitorable())
+			if (area_a->has_area_monitor_callback() && area_b->is_monitorable()) {
 				area_a->remove_area_from_query(area_b, shape_b, shape_a);
+			}
 		}
 
 		colliding = result;
@@ -133,11 +144,13 @@ Area2Pair3DSW::Area2Pair3DSW(Area3DSW *p_area_a, int p_shape_a, Area3DSW *p_area
 
 Area2Pair3DSW::~Area2Pair3DSW() {
 	if (colliding) {
-		if (area_b->has_area_monitor_callback())
+		if (area_b->has_area_monitor_callback()) {
 			area_b->remove_area_from_query(area_a, shape_a, shape_b);
+		}
 
-		if (area_a->has_area_monitor_callback())
+		if (area_a->has_area_monitor_callback()) {
 			area_a->remove_area_from_query(area_b, shape_b, shape_a);
+		}
 	}
 
 	area_a->remove_constraint(this);

@@ -144,10 +144,11 @@ RID PhysicsServer3DSW::space_create() {
 void PhysicsServer3DSW::space_set_active(RID p_space, bool p_active) {
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND(!space);
-	if (p_active)
+	if (p_active) {
 		active_spaces.insert(space);
-	else
+	} else {
 		active_spaces.erase(space);
+	}
 }
 
 bool PhysicsServer3DSW::space_is_active(RID p_space) const {
@@ -213,8 +214,9 @@ void PhysicsServer3DSW::area_set_space(RID p_area, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (area->get_space() == space)
+	if (area->get_space() == space) {
 		return; //pointless
+	}
 
 	area->clear_constraints();
 	area->set_space(space);
@@ -225,8 +227,9 @@ RID PhysicsServer3DSW::area_get_space(RID p_area) const {
 	ERR_FAIL_COND_V(!area, RID());
 
 	Space3DSW *space = area->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 };
 
@@ -307,8 +310,9 @@ void PhysicsServer3DSW::area_clear_shapes(RID p_area) {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
-	while (area->get_shape_count())
+	while (area->get_shape_count()) {
 		area->remove_shape(0);
+	}
 }
 
 void PhysicsServer3DSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
@@ -427,10 +431,12 @@ void PhysicsServer3DSW::area_set_area_monitor_callback(RID p_area, Object *p_rec
 
 RID PhysicsServer3DSW::body_create(BodyMode p_mode, bool p_init_sleeping) {
 	Body3DSW *body = memnew(Body3DSW);
-	if (p_mode != BODY_MODE_RIGID)
+	if (p_mode != BODY_MODE_RIGID) {
 		body->set_mode(p_mode);
-	if (p_init_sleeping)
+	}
+	if (p_init_sleeping) {
 		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
+	}
 	RID rid = body_owner.make_rid(body);
 	body->set_self(rid);
 	return rid;
@@ -446,8 +452,9 @@ void PhysicsServer3DSW::body_set_space(RID p_body, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (body->get_space() == space)
+	if (body->get_space() == space) {
 		return; //pointless
+	}
 
 	body->clear_constraint_map();
 	body->set_space(space);
@@ -458,8 +465,9 @@ RID PhysicsServer3DSW::body_get_space(RID p_body) const {
 	ERR_FAIL_COND_V(!body, RID());
 
 	Space3DSW *space = body->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 };
 
@@ -549,8 +557,9 @@ void PhysicsServer3DSW::body_clear_shapes(RID p_body) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	while (body->get_shape_count())
+	while (body->get_shape_count()) {
 		body->remove_shape(0);
+	}
 }
 
 void PhysicsServer3DSW::body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) {
@@ -1288,8 +1297,9 @@ void PhysicsServer3DSW::init() {
 void PhysicsServer3DSW::step(real_t p_step) {
 #ifndef _3D_DISABLED
 
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	_update_shapes();
 
@@ -1317,8 +1327,9 @@ void PhysicsServer3DSW::sync(){
 void PhysicsServer3DSW::flush_queries() {
 #ifndef _3D_DISABLED
 
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	doing_sync = true;
 
@@ -1399,8 +1410,9 @@ void PhysicsServer3DSW::_update_shapes() {
 void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
 	CollCbkData *cbk = (CollCbkData *)p_userdata;
 
-	if (cbk->max == 0)
+	if (cbk->max == 0) {
 		return;
+	}
 
 	if (cbk->amount == cbk->max) {
 		//find least deep
@@ -1415,8 +1427,9 @@ void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &
 		}
 
 		real_t d = p_point_A.distance_squared_to(p_point_B);
-		if (d < min_depth)
+		if (d < min_depth) {
 			return;
+		}
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
 		cbk->ptr[min_depth_idx * 2 + 1] = p_point_B;
 

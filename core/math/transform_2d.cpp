@@ -165,8 +165,9 @@ bool Transform2D::is_equal_approx(const Transform2D &p_transform) const {
 
 bool Transform2D::operator==(const Transform2D &p_transform) const {
 	for (int i = 0; i < 3; i++) {
-		if (elements[i] != p_transform.elements[i])
+		if (elements[i] != p_transform.elements[i]) {
 			return false;
+		}
 	}
 
 	return true;
@@ -174,8 +175,9 @@ bool Transform2D::operator==(const Transform2D &p_transform) const {
 
 bool Transform2D::operator!=(const Transform2D &p_transform) const {
 	for (int i = 0; i < 3; i++) {
-		if (elements[i] != p_transform.elements[i])
+		if (elements[i] != p_transform.elements[i]) {
 			return true;
+		}
 	}
 
 	return false;

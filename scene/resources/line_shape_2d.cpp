@@ -39,8 +39,9 @@ bool LineShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tol
 
 	for (int i = 0; i < 2; i++) {
 		Vector2 closest = Geometry::get_closest_point_to_segment_2d(p_point, l[i]);
-		if (p_point.distance_to(closest) < p_tolerance)
+		if (p_point.distance_to(closest) < p_tolerance) {
 			return true;
+		}
 	}
 
 	return false;

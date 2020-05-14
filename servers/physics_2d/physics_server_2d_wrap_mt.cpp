@@ -77,10 +77,11 @@ void PhysicsServer2DWrapMT::step(real_t p_step) {
 
 void PhysicsServer2DWrapMT::sync() {
 	if (thread) {
-		if (first_frame)
+		if (first_frame) {
 			first_frame = false;
-		else
+		} else {
 			step_sem.wait(); //must not wait if a step was not issued
+		}
 	}
 	physics_2d_server->sync();
 }
