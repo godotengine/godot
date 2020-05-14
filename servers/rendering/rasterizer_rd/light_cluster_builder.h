@@ -170,7 +170,6 @@ public:
 				_add_item(aabb, ITEM_TYPE_OMNI_LIGHT, light_count);
 			} break;
 			case LIGHT_TYPE_SPOT: {
-
 				float r = ld.radius;
 				real_t len = Math::tan(Math::deg2rad(ld.spot_aperture)) * r;
 
@@ -187,7 +186,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void add_reflection_probe(const Transform &p_transform, const Vector3 &p_half_extents) {
-
 		if (unlikely(refprobe_count == refprobe_max)) {
 			refprobe_max = nearest_power_of_2_templated(refprobe_max + 1);
 			refprobes = (OrientedBoxData *)memrealloc(refprobes, sizeof(OrientedBoxData) * refprobe_max);
@@ -233,7 +231,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void add_decal(const Transform &p_transform, const Vector3 &p_half_extents) {
-
 		if (unlikely(decal_count == decal_max)) {
 			decal_max = nearest_power_of_2_templated(decal_max + 1);
 			decals = (OrientedBoxData *)memrealloc(decals, sizeof(OrientedBoxData) * decal_max);

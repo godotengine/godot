@@ -35,7 +35,6 @@
 #include "editor/editor_settings.h"
 
 void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
-
 	++last_metric;
 	if (last_metric >= frame_metrics.size())
 		last_metric = 0;
@@ -60,7 +59,6 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 		}
 
 		if (name[0] == '>') {
-
 			stack.push_back(full_name + "/");
 		}
 
@@ -83,7 +81,6 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	updating_frame = false;
 
 	if (frame_delay->is_stopped()) {
-
 		frame_delay->set_wait_time(0.1);
 		frame_delay->start();
 	}
@@ -95,7 +92,6 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 }
 
 void EditorVisualProfiler::clear() {
-
 	int metric_size = EditorSettings::get_singleton()->get("debugger/profiler_frame_history_size");
 	metric_size = CLAMP(metric_size, 60, 1024);
 	frame_metrics.clear();
@@ -114,7 +110,6 @@ void EditorVisualProfiler::clear() {
 }
 
 String EditorVisualProfiler::_get_time_as_text(float p_time) {
-
 	int dmode = display_mode->get_selected();
 
 	if (dmode == DISPLAY_FRAME_TIME) {
@@ -127,7 +122,6 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 }
 
 Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signature) const {
-
 	Color bc = get_theme_color("error_color", "Editor");
 	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
@@ -136,7 +130,6 @@ Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signat
 }
 
 void EditorVisualProfiler::_item_selected() {
-
 	if (updating_frame)
 		return;
 
@@ -148,7 +141,6 @@ void EditorVisualProfiler::_item_selected() {
 }
 
 void EditorVisualProfiler::_update_plot() {
-
 	int w = graph->get_size().width;
 	int h = graph->get_size().height;
 
@@ -188,7 +180,6 @@ void EditorVisualProfiler::_update_plot() {
 	}
 
 	if (highest_cpu > 0 || highest_gpu > 0) {
-
 		if (frame_relative->is_pressed()) {
 			highest_cpu = MAX(graph_limit, highest_cpu);
 			highest_gpu = MAX(graph_limit, highest_gpu);
@@ -229,7 +220,6 @@ void EditorVisualProfiler::_update_plot() {
 				next = current + 1; //just because for loop must work
 
 			for (int j = current; j < next; j++) {
-
 				//wrap
 				int idx = last_metric + 1 + j;
 				while (idx >= frame_metrics.size()) {
@@ -262,7 +252,6 @@ void EditorVisualProfiler::_update_plot() {
 
 			//plot CPU
 			for (int j = 0; j < h; j++) {
-
 				uint8_t r, g, b;
 
 				if (column_cpu[j].a == 0) {
@@ -283,7 +272,6 @@ void EditorVisualProfiler::_update_plot() {
 			}
 			//plot GPU
 			for (int j = 0; j < h; j++) {
-
 				uint8_t r, g, b;
 
 				if (column_gpu[j].a == 0) {
@@ -310,7 +298,6 @@ void EditorVisualProfiler::_update_plot() {
 	img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
-
 		if (graph_texture.is_null()) {
 			graph_texture.instance();
 		}
@@ -324,7 +311,6 @@ void EditorVisualProfiler::_update_plot() {
 }
 
 void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
-
 	int cursor_metric = _get_cursor_index();
 
 	Ref<Texture> track_icon = get_theme_icon("TrackColor", "EditorIcons");
@@ -343,7 +329,6 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 	TreeItem *ensure_selected = nullptr;
 
 	for (int i = 1; i < m.areas.size() - 1; i++) {
-
 		TreeItem *parent = stack.size() ? stack.back()->get() : root;
 
 		String name = m.areas[i].name;
@@ -416,7 +401,6 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 }
 
 void EditorVisualProfiler::_activate_pressed() {
-
 	if (activate->is_pressed()) {
 		activate->set_icon(get_theme_icon("Stop", "EditorIcons"));
 		activate->set_text(TTR("Stop"));
@@ -429,13 +413,11 @@ void EditorVisualProfiler::_activate_pressed() {
 }
 
 void EditorVisualProfiler::_clear_pressed() {
-
 	clear();
 	_update_plot();
 }
 
 void EditorVisualProfiler::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		activate->set_icon(get_theme_icon("Play", "EditorIcons"));
 		clear_button->set_icon(get_theme_icon("Clear", "EditorIcons"));
@@ -443,12 +425,10 @@ void EditorVisualProfiler::_notification(int p_what) {
 }
 
 void EditorVisualProfiler::_graph_tex_draw() {
-
 	if (last_metric < 0)
 		return;
 	Ref<Font> font = get_theme_font("font", "Label");
 	if (seeking) {
-
 		int max_frames = frame_metrics.size();
 		int frame = cursor_metric_edit->get_value() - (frame_metrics[last_metric].frame_number - max_frames + 1);
 		if (frame < 0)
@@ -503,7 +483,6 @@ void EditorVisualProfiler::_graph_tex_draw() {
 }
 
 void EditorVisualProfiler::_graph_tex_mouse_exit() {
-
 	hover_metric = -1;
 	graph->update();
 }
@@ -517,7 +496,6 @@ void EditorVisualProfiler::_cursor_metric_changed(double) {
 }
 
 void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
-
 	if (last_metric < 0)
 		return;
 
@@ -528,7 +506,6 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 	if (
 			(mb.is_valid() && mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) ||
 			(mm.is_valid())) {
-
 		int half_w = graph->get_size().width / 2;
 		int x = me->get_position().x;
 		if (x > half_w) {
@@ -553,7 +530,6 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (show_hover) {
-
 			hover_metric = metric;
 
 		} else {
@@ -567,7 +543,6 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			//metric may be invalid, so look for closest metric that is valid, this makes snap feel better
 			bool valid = false;
 			for (int i = 0; i < frame_metrics.size(); i++) {
-
 				if (frame_metrics[metric].valid) {
 					valid = true;
 					break;
@@ -607,7 +582,6 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			int last_valid = -1;
 			bool found = false;
 			for (int i = 0; i < area_count - 1; i++) {
-
 				if (areas[i].name[0] != '<' && areas[i].name[0] != '>') {
 					last_valid = i;
 				}
@@ -636,7 +610,6 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 }
 
 int EditorVisualProfiler::_get_cursor_index() const {
-
 	if (last_metric < 0)
 		return 0;
 	if (!frame_metrics[last_metric].valid)
@@ -653,24 +626,20 @@ int EditorVisualProfiler::_get_cursor_index() const {
 }
 
 void EditorVisualProfiler::disable_seeking() {
-
 	seeking = false;
 	graph->update();
 }
 
 void EditorVisualProfiler::_combo_changed(int) {
-
 	_update_frame();
 	_update_plot();
 }
 
 void EditorVisualProfiler::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
 }
 
 void EditorVisualProfiler::set_enabled(bool p_enable) {
-
 	activate->set_disabled(!p_enable);
 }
 
@@ -736,7 +705,6 @@ Vector<Vector<String>> EditorVisualProfiler::get_data_as_csv() const {
 }
 
 EditorVisualProfiler::EditorVisualProfiler() {
-
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 	activate = memnew(Button);

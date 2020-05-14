@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class CenterContainer : public Container {
-
 	GDCLASS(CenterContainer, Container);
 
 	bool use_top_left;

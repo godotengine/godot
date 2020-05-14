@@ -39,7 +39,6 @@
 #include "step_3d_sw.h"
 
 class PhysicsServer3DSW : public PhysicsServer3D {
-
 	GDCLASS(PhysicsServer3DSW, PhysicsServer3D);
 
 	friend class PhysicsDirectSpaceState3DSW;
@@ -74,7 +73,6 @@ public:
 	static PhysicsServer3DSW *singleton;
 
 	struct CollCbkData {
-
 		int max;
 		int amount;
 		Vector3 *ptr;

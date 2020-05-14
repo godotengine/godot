@@ -55,7 +55,6 @@ namespace AssimpImporter {
  * This makes the code simpler and contains useful lookups.
  */
 struct ImportState {
-
 	String path;
 	Node3D *root;
 	const aiScene *assimp_scene;

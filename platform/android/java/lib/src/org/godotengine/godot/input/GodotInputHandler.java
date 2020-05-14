@@ -51,7 +51,6 @@ import java.util.List;
  * Handles input related events for the {@link GodotRenderView} view.
  */
 public class GodotInputHandler implements InputDeviceListener {
-
 	private final ArrayList<Joystick> mJoysticksDevices = new ArrayList<Joystick>();
 
 	private final GodotRenderView mRenderView;
@@ -86,7 +85,6 @@ public class GodotInputHandler implements InputDeviceListener {
 
 		int source = event.getSource();
 		if (isKeyEvent_GameDevice(source)) {
-
 			final int button = getGodotButton(keyCode);
 			final int device_id = findJoystickDevice(event.getDeviceId());
 
@@ -129,7 +127,6 @@ public class GodotInputHandler implements InputDeviceListener {
 		//Log.e(TAG, String.format("Key down! source %d, device %d, joystick %d, %d, %d", event.getDeviceId(), source, (source & InputDevice.SOURCE_JOYSTICK), (source & InputDevice.SOURCE_DPAD), (source & InputDevice.SOURCE_GAMEPAD)));
 
 		if (isKeyEvent_GameDevice(source)) {
-
 			if (event.getRepeatCount() > 0) // ignore key echo
 				return true;
 
@@ -161,7 +158,6 @@ public class GodotInputHandler implements InputDeviceListener {
 
 	public boolean onGenericMotionEvent(MotionEvent event) {
 		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
-
 			final int device_id = findJoystickDevice(event.getDeviceId());
 
 			// Check if the device exists

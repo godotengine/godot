@@ -58,7 +58,6 @@ public:
 };
 
 class AudioStreamGeneratorPlayback : public AudioStreamPlaybackResampled {
-
 	GDCLASS(AudioStreamGeneratorPlayback, AudioStreamPlaybackResampled);
 	friend class AudioStreamGenerator;
 	RingBuffer<AudioFrame> buffer;

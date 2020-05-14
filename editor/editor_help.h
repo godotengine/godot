@@ -88,7 +88,6 @@ public:
 };
 
 class EditorHelp : public VBoxContainer {
-
 	GDCLASS(EditorHelp, VBoxContainer);
 
 	enum Page {
@@ -193,7 +192,6 @@ public:
 };
 
 class EditorHelpBit : public MarginContainer {
-
 	GDCLASS(EditorHelpBit, MarginContainer);
 
 	RichTextLabel *rich_text;

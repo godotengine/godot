@@ -41,19 +41,16 @@
 #define DEBUG_TIME(m_what)
 
 void FileAccessNetworkClient::lock_mutex() {
-
 	mutex.lock();
 	lockcount++;
 }
 
 void FileAccessNetworkClient::unlock_mutex() {
-
 	lockcount--;
 	mutex.unlock();
 }
 
 void FileAccessNetworkClient::put_32(int p_32) {
-
 	uint8_t buf[4];
 	encode_uint32(p_32, buf);
 	client->put_data(buf, 4);
@@ -61,7 +58,6 @@ void FileAccessNetworkClient::put_32(int p_32) {
 }
 
 void FileAccessNetworkClient::put_64(int64_t p_64) {
-
 	uint8_t buf[8];
 	encode_uint64(p_64, buf);
 	client->put_data(buf, 8);
@@ -69,24 +65,20 @@ void FileAccessNetworkClient::put_64(int64_t p_64) {
 }
 
 int FileAccessNetworkClient::get_32() {
-
 	uint8_t buf[4];
 	client->get_data(buf, 4);
 	return decode_uint32(buf);
 }
 
 int64_t FileAccessNetworkClient::get_64() {
-
 	uint8_t buf[8];
 	client->get_data(buf, 8);
 	return decode_uint64(buf);
 }
 
 void FileAccessNetworkClient::_thread_func() {
-
 	client->set_no_delay(true);
 	while (!quit) {
-
 		DEBUG_PRINT("SEM WAIT - " + itos(sem->get()));
 		sem.wait();
 		DEBUG_TIME("sem_unlock");
@@ -127,9 +119,7 @@ void FileAccessNetworkClient::_thread_func() {
 			fa = accesses[id];
 
 		switch (response) {
-
 			case FileAccessNetwork::RESPONSE_OPEN: {
-
 				DEBUG_TIME("sem_open");
 				int status = get_32();
 				if (status != OK) {
@@ -143,7 +133,6 @@ void FileAccessNetworkClient::_thread_func() {
 
 			} break;
 			case FileAccessNetwork::RESPONSE_DATA: {
-
 				int64_t offset = get_64();
 				uint32_t len = get_32();
 
@@ -156,14 +145,12 @@ void FileAccessNetworkClient::_thread_func() {
 
 			} break;
 			case FileAccessNetwork::RESPONSE_FILE_EXISTS: {
-
 				int status = get_32();
 				fa->exists_modtime = status != 0;
 				fa->sem.post();
 
 			} break;
 			case FileAccessNetwork::RESPONSE_GET_MODTIME: {
-
 				uint64_t status = get_64();
 				fa->exists_modtime = status;
 				fa->sem.post();
@@ -176,14 +163,12 @@ void FileAccessNetworkClient::_thread_func() {
 }
 
 void FileAccessNetworkClient::_thread_func(void *s) {
-
 	FileAccessNetworkClient *self = (FileAccessNetworkClient *)s;
 
 	self->_thread_func();
 }
 
 Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const String &p_password) {
-
 	IP_Address ip;
 
 	if (p_host.is_valid_ip_address()) {
@@ -236,7 +221,6 @@ FileAccessNetworkClient::~FileAccessNetworkClient() {
 }
 
 void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block) {
-
 	int page = p_offset / page_size;
 	ERR_FAIL_INDEX(page, pages.size());
 	if (page < pages.size() - 1) {
@@ -258,7 +242,6 @@ void FileAccessNetwork::_set_block(int p_offset, const Vector<uint8_t> &p_block)
 }
 
 void FileAccessNetwork::_respond(size_t p_len, Error p_status) {
-
 	DEBUG_PRINT("GOT RESPONSE - len: " + itos(p_len) + " status: " + itos(p_status));
 	response = p_status;
 	if (response != OK)
@@ -270,7 +253,6 @@ void FileAccessNetwork::_respond(size_t p_len, Error p_status) {
 }
 
 Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
-
 	ERR_FAIL_COND_V(p_mode_flags != READ, ERR_UNAVAILABLE);
 	if (opened)
 		close();
@@ -305,7 +287,6 @@ Error FileAccessNetwork::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessNetwork::close() {
-
 	if (!opened)
 		return;
 
@@ -320,12 +301,10 @@ void FileAccessNetwork::close() {
 	nc->unlock_mutex();
 }
 bool FileAccessNetwork::is_open() const {
-
 	return opened;
 }
 
 void FileAccessNetwork::seek(size_t p_position) {
-
 	ERR_FAIL_COND_MSG(!opened, "File must be opened before use.");
 	eof_flag = p_position > total_size;
 
@@ -337,39 +316,32 @@ void FileAccessNetwork::seek(size_t p_position) {
 }
 
 void FileAccessNetwork::seek_end(int64_t p_position) {
-
 	seek(total_size + p_position);
 }
 size_t FileAccessNetwork::get_position() const {
-
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return pos;
 }
 size_t FileAccessNetwork::get_len() const {
-
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return total_size;
 }
 
 bool FileAccessNetwork::eof_reached() const {
-
 	ERR_FAIL_COND_V_MSG(!opened, false, "File must be opened before use.");
 	return eof_flag;
 }
 
 uint8_t FileAccessNetwork::get_8() const {
-
 	uint8_t v;
 	get_buffer(&v, 1);
 	return v;
 }
 
 void FileAccessNetwork::_queue_page(int p_page) const {
-
 	if (p_page >= pages.size())
 		return;
 	if (pages[p_page].buffer.empty() && !pages[p_page].queued) {
-
 		FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 		{
 			MutexLock lock(nc->blockrequest_mutex);
@@ -388,7 +360,6 @@ void FileAccessNetwork::_queue_page(int p_page) const {
 }
 
 int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
-
 	//bool eof=false;
 	if (pos + p_length > total_size) {
 		eof_flag = true;
@@ -402,7 +373,6 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 	uint8_t *buff = last_page_buff;
 
 	for (int i = 0; i < p_length; i++) {
-
 		int page = pos / page_size;
 
 		if (page != last_page) {
@@ -410,7 +380,6 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 			if (pages[page].buffer.empty()) {
 				waiting_on_page = page;
 				for (int j = 0; j < read_ahead; j++) {
-
 					_queue_page(page + j);
 				}
 				buffer_mutex.unlock();
@@ -418,9 +387,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 				page_sem.wait();
 				DEBUG_PRINT("done");
 			} else {
-
 				for (int j = 0; j < read_ahead; j++) {
-
 					_queue_page(page + j);
 				}
 				//queue pages
@@ -440,7 +407,6 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 }
 
 Error FileAccessNetwork::get_error() const {
-
 	return pos == total_size ? ERR_FILE_EOF : OK;
 }
 
@@ -449,12 +415,10 @@ void FileAccessNetwork::flush() {
 }
 
 void FileAccessNetwork::store_8(uint8_t p_dest) {
-
 	ERR_FAIL();
 }
 
 bool FileAccessNetwork::file_exists(const String &p_path) {
-
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
 	nc->put_32(id);
@@ -471,7 +435,6 @@ bool FileAccessNetwork::file_exists(const String &p_path) {
 }
 
 uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
-
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
 	nc->put_32(id);
@@ -498,7 +461,6 @@ Error FileAccessNetwork::_set_unix_permissions(const String &p_file, uint32_t p_
 }
 
 void FileAccessNetwork::configure() {
-
 	GLOBAL_DEF("network/remote_fs/page_size", 65536);
 	ProjectSettings::get_singleton()->set_custom_property_info("network/remote_fs/page_size", PropertyInfo(Variant::INT, "network/remote_fs/page_size", PROPERTY_HINT_RANGE, "1,65536,1,or_greater")); //is used as denominator and can't be zero
 	GLOBAL_DEF("network/remote_fs/page_read_ahead", 4);
@@ -506,7 +468,6 @@ void FileAccessNetwork::configure() {
 }
 
 FileAccessNetwork::FileAccessNetwork() {
-
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();
 	id = nc->last_id++;
@@ -517,7 +478,6 @@ FileAccessNetwork::FileAccessNetwork() {
 }
 
 FileAccessNetwork::~FileAccessNetwork() {
-
 	close();
 
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;

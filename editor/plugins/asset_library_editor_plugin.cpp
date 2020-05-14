@@ -40,7 +40,6 @@
 #include "editor/project_settings_editor.h"
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
-
 	title->set_text(p_title);
 	asset_id = p_asset_id;
 	category->set_text(p_category);
@@ -51,7 +50,6 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 }
 
 void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
-
 	ERR_FAIL_COND(p_type != EditorAssetLibrary::IMAGE_QUEUE_ICON);
 	ERR_FAIL_COND(p_index != 0);
 
@@ -59,9 +57,7 @@ void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Textur
 }
 
 void EditorAssetLibraryItem::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		icon->set_normal_texture(get_theme_icon("ProjectIconLoading", "EditorIcons"));
 		category->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_theme_color_override("font_color", Color(0.5, 0.5, 0.5));
@@ -70,21 +66,17 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 }
 
 void EditorAssetLibraryItem::_asset_clicked() {
-
 	emit_signal("asset_selected", asset_id);
 }
 
 void EditorAssetLibraryItem::_category_clicked() {
-
 	emit_signal("category_selected", category_id);
 }
 void EditorAssetLibraryItem::_author_clicked() {
-
 	emit_signal("author_selected", author_id);
 }
 
 void EditorAssetLibraryItem::_bind_methods() {
-
 	ClassDB::bind_method("set_image", &EditorAssetLibraryItem::set_image);
 	ADD_SIGNAL(MethodInfo("asset_selected"));
 	ADD_SIGNAL(MethodInfo("category_selected"));
@@ -92,7 +84,6 @@ void EditorAssetLibraryItem::_bind_methods() {
 }
 
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
-
 	Ref<StyleBoxEmpty> border;
 	border.instance();
 	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
@@ -143,16 +134,12 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 //////////////////////////////////////////////////////////////////////////////
 
 void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const Ref<Texture2D> &p_image) {
-
 	switch (p_type) {
-
 		case EditorAssetLibrary::IMAGE_QUEUE_ICON: {
-
 			item->call("set_image", p_type, p_index, p_image);
 			icon = p_image;
 		} break;
 		case EditorAssetLibrary::IMAGE_QUEUE_THUMBNAIL: {
-
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					if (preview_images[i].is_video) {
@@ -181,7 +168,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 			}
 		} break;
 		case EditorAssetLibrary::IMAGE_QUEUE_SCREENSHOT: {
-
 			for (int i = 0; i < preview_images.size(); i++) {
 				if (preview_images[i].id == p_index) {
 					preview_images.write[i].image = p_image;
@@ -231,7 +217,6 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 }
 
 void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
-
 	asset_id = p_asset_id;
 	title = p_title;
 	download_url = p_download_url;
@@ -249,7 +234,6 @@ void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_a
 }
 
 void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, const String &p_url) {
-
 	Preview preview;
 	preview.id = p_id;
 	preview.video_link = p_url;
@@ -270,7 +254,6 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 }
 
 EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
-
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	add_child(hbox);
 	VBoxContainer *desc_vbox = memnew(VBoxContainer);
@@ -317,11 +300,9 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 ///////////////////////////////////////////////////////////////////////////////////
 
 void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-
 	String error_text;
 
 	switch (p_status) {
-
 		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED: {
@@ -388,7 +369,6 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 }
 
 void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asset_id, const Ref<Texture2D> &p_preview, const String &p_download_url, const String &p_sha256_hash) {
-
 	title->set_text(p_title);
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
@@ -400,17 +380,13 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 }
 
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
-
 	switch (p_what) {
-
 		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
 		case NOTIFICATION_ENTER_TREE: {
-
 			add_theme_style_override("panel", get_theme_stylebox("panel", "TabContainer"));
 			dismiss->set_normal_texture(get_theme_icon("Close", "EditorIcons"));
 		} break;
 		case NOTIFICATION_PROCESS: {
-
 			// Make the progress bar visible again when retrying the download.
 			progress->set_modulate(Color(1, 1, 1, 1));
 
@@ -438,7 +414,6 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
 			if (cstatus != prev_status) {
 				switch (cstatus) {
-
 					case HTTPClient::STATUS_RESOLVING: {
 						status->set_text(TTR("Resolving..."));
 						progress->set_max(1);
@@ -463,14 +438,12 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	}
 }
 void EditorAssetLibraryItemDownload::_close() {
-
 	// Clean up downloaded file.
 	DirAccess::remove_file_or_error(download->get_download_file());
 	queue_delete();
 }
 
 void EditorAssetLibraryItemDownload::_install() {
-
 	String file = download->get_download_file();
 
 	if (external_install) {
@@ -494,12 +467,10 @@ void EditorAssetLibraryItemDownload::_make_request() {
 }
 
 void EditorAssetLibraryItemDownload::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 
 EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
-
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_child(hb);
 	icon = memnew(TextureRect);
@@ -566,11 +537,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 ////////////////////////////////////////////////////////////////////////////////
 void EditorAssetLibrary::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_READY: {
-
 			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
 			filter->set_right_icon(get_theme_icon("Search", "EditorIcons"));
 			filter->set_clear_button_enabled(true);
@@ -578,13 +546,11 @@ void EditorAssetLibrary::_notification(int p_what) {
 			error_label->raise();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			if (is_visible() && initial_loading) {
 				_repository_changed(0); // Update when shown for the first time.
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
-
 			HTTPClient::Status s = request->get_http_client_status();
 			const bool loading = s != HTTPClient::STATUS_DISCONNECTED;
 
@@ -601,7 +567,6 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			library_scroll_bg->add_theme_style_override("panel", get_theme_stylebox("bg", "Tree"));
 			downloads_scroll->add_theme_style_override("bg", get_theme_stylebox("bg", "Tree"));
 			error_tr->set_texture(get_theme_icon("Error", "EditorIcons"));
@@ -612,13 +577,10 @@ void EditorAssetLibrary::_notification(int p_what) {
 }
 
 void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
-
 	const Ref<InputEventKey> key = p_event;
 
 	if (key.is_valid() && key->is_pressed()) {
-
 		if (key->get_keycode_with_modifiers() == (KEY_MASK_CMD | KEY_F) && is_visible_in_tree()) {
-
 			filter->grab_focus();
 			filter->select_all();
 			accept_event();
@@ -627,14 +589,11 @@ void EditorAssetLibrary::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorAssetLibrary::_install_asset() {
-
 	ERR_FAIL_COND(!description);
 
 	for (int i = 0; i < downloads_hb->get_child_count(); i++) {
-
 		EditorAssetLibraryItemDownload *d = Object::cast_to<EditorAssetLibraryItemDownload>(downloads_hb->get_child(i));
 		if (d && d->get_asset_id() == description->get_asset_id()) {
-
 			if (EditorNode::get_singleton() != nullptr)
 				EditorNode::get_singleton()->show_warning(TTR("Download for this asset is already in progress!"));
 			return;
@@ -676,14 +635,11 @@ const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
 };
 
 void EditorAssetLibrary::_select_author(int p_id) {
-
 	// Open author window.
 }
 
 void EditorAssetLibrary::_select_category(int p_id) {
-
 	for (int i = 0; i < categories->get_item_count(); i++) {
-
 		if (i == 0)
 			continue;
 		int id = categories->get_item_metadata(i);
@@ -695,7 +651,6 @@ void EditorAssetLibrary::_select_category(int p_id) {
 	}
 }
 void EditorAssetLibrary::_select_asset(int p_id) {
-
 	_api_request("asset/" + itos(p_id), REQUESTING_ASSET);
 }
 
@@ -780,11 +735,9 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PackedB
 }
 
 void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id) {
-
 	ERR_FAIL_COND(!image_queue.has(p_queue_id));
 
 	if (p_status == HTTPRequest::RESULT_SUCCESS && p_code < HTTPClient::RESPONSE_BAD_REQUEST) {
-
 		if (p_code != HTTPClient::RESPONSE_NOT_MODIFIED) {
 			for (int i = 0; i < headers.size(); i++) {
 				if (headers[i].findn("ETag:") == 0) { // Save etag
@@ -830,14 +783,12 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 }
 
 void EditorAssetLibrary::_update_image_queue() {
-
 	const int max_images = 6;
 	int current_images = 0;
 
 	List<int> to_delete;
 	for (Map<int, ImageQueue>::Element *E = image_queue.front(); E; E = E->next()) {
 		if (!E->get().active && current_images < max_images) {
-
 			String cache_filename_base = EditorSettings::get_singleton()->get_cache_dir().plus_file("assetimage_" + E->get().image_url.md5_text());
 			Vector<String> headers;
 
@@ -870,7 +821,6 @@ void EditorAssetLibrary::_update_image_queue() {
 }
 
 void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, ImageType p_type, int p_image_index) {
-
 	ImageQueue iq;
 	iq.image_url = p_image_url;
 	iq.image_index = p_image_index;
@@ -911,7 +861,6 @@ void EditorAssetLibrary::_rerun_search(int p_ignore) {
 }
 
 void EditorAssetLibrary::_search(int p_page) {
-
 	String args;
 
 	if (templates_only) {
@@ -935,7 +884,6 @@ void EditorAssetLibrary::_search(int p_page) {
 	}
 
 	if (categories->get_selected() > 0) {
-
 		args += "&category=" + itos(categories->get_item_metadata(categories->get_selected()));
 	}
 
@@ -956,12 +904,10 @@ void EditorAssetLibrary::_search(int p_page) {
 }
 
 void EditorAssetLibrary::_search_text_entered(const String &p_text) {
-
 	_search();
 }
 
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
-
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	if (p_page_count < 2)
@@ -1000,9 +946,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 	hbc->add_child(memnew(VSeparator));
 
 	for (int i = from; i < to; i++) {
-
 		if (i == p_page) {
-
 			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
 			current->set_disabled(true);
@@ -1010,7 +954,6 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 			hbc->add_child(current);
 		} else {
-
 			Button *current = memnew(Button);
 			current->set_text(itos(i + 1));
 			current->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), varray(i));
@@ -1046,7 +989,6 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 }
 
 void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_request_type, const String &p_arguments) {
-
 	if (requesting != REQUESTING_NONE) {
 		request->cancel_request();
 	}
@@ -1058,7 +1000,6 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 }
 
 void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-
 	String str;
 
 	{
@@ -1070,7 +1011,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 	bool error_abort = true;
 
 	switch (p_status) {
-
 		case HTTPRequest::RESULT_CANT_RESOLVE: {
 			error_label->set_text(TTR("Can't resolve hostname:") + " " + host);
 		} break;
@@ -1097,7 +1037,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			if (p_code != 200) {
 				error_label->set_text(TTR("Request failed, return code:") + " " + itos(p_code));
 			} else {
-
 				error_abort = false;
 			}
 		} break;
@@ -1122,7 +1061,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 	switch (requested) {
 		case REQUESTING_CONFIG: {
-
 			categories->clear();
 			categories->add_item(TTR("All"));
 			categories->set_item_metadata(0, 0);
@@ -1143,7 +1081,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			_search();
 		} break;
 		case REQUESTING_SEARCH: {
-
 			initial_loading = false;
 
 			// The loading text only needs to be displayed before the first page is loaded.
@@ -1214,7 +1151,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			}
 
 			for (int i = 0; i < result.size(); i++) {
-
 				Dictionary r = result[i];
 
 				ERR_CONTINUE(!r.has("title"));
@@ -1273,7 +1209,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				Array previews = d["previews"];
 
 				for (int i = 0; i < previews.size(); i++) {
-
 					Dictionary p = previews[i];
 
 					ERR_CONTINUE(!p.has("type"));
@@ -1303,7 +1238,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 }
 
 void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
-
 	if (asset_installer) {
 		memdelete(asset_installer);
 		asset_installer = nullptr;
@@ -1315,18 +1249,15 @@ void EditorAssetLibrary::_asset_file_selected(const String &p_file) {
 }
 
 void EditorAssetLibrary::_asset_open() {
-
 	asset_open->popup_centered_ratio();
 }
 
 void EditorAssetLibrary::_manage_plugins() {
-
 	ProjectSettingsEditor::get_singleton()->popup_project_settings();
 	ProjectSettingsEditor::get_singleton()->set_plugins_page();
 }
 
 void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_title) {
-
 	emit_signal("install_asset", p_zip_path, p_title);
 }
 
@@ -1335,14 +1266,12 @@ void EditorAssetLibrary::disable_community_support() {
 }
 
 void EditorAssetLibrary::_bind_methods() {
-
 	ClassDB::bind_method("_unhandled_input", &EditorAssetLibrary::_unhandled_input);
 
 	ADD_SIGNAL(MethodInfo("install_asset", PropertyInfo(Variant::STRING, "zip_path"), PropertyInfo(Variant::STRING, "name")));
 }
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
-
 	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
 	initial_loading = true;
@@ -1527,18 +1456,14 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 ///////
 
 void AssetLibraryEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
-
 		addon_library->show();
 	} else {
-
 		addon_library->hide();
 	}
 }
 
 AssetLibraryEditorPlugin::AssetLibraryEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	addon_library = memnew(EditorAssetLibrary);
 	addon_library->set_v_size_flags(Control::SIZE_EXPAND_FILL);

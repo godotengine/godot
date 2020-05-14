@@ -84,7 +84,6 @@ public:
 };
 
 class EditorHelpSearch::Runner : public Reference {
-
 	enum Phase {
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,

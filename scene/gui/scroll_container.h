@@ -36,7 +36,6 @@
 #include "scroll_bar.h"
 
 class ScrollContainer : public Container {
-
 	GDCLASS(ScrollContainer, Container);
 
 	HScrollBar *h_scroll;

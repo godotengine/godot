@@ -40,7 +40,6 @@
 #include <vulkan/vulkan.h>
 
 class VulkanContext {
-
 	enum {
 		MAX_EXTENSIONS = 128,
 		MAX_LAYERS = 64,
@@ -81,7 +80,6 @@ class VulkanContext {
 	} SwapchainImageResources;
 
 	struct Window {
-
 		bool is_minimzed;
 		VkSurfaceKHR surface;
 		VkSwapchainKHR swapchain;

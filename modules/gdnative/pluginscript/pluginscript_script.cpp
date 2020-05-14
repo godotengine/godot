@@ -56,7 +56,6 @@ void PluginScript::_bind_methods() {
 }
 
 PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, Callable::CallError &r_error) {
-
 	r_error.error = Callable::CallError::CALL_OK;
 
 	// Create instance
@@ -84,7 +83,6 @@ PluginScriptInstance *PluginScript::_create_instance(const Variant **p_args, int
 }
 
 Variant PluginScript::_new(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
-
 	r_error.error = Callable::CallError::CALL_OK;
 
 	if (!_valid) {
@@ -167,7 +165,6 @@ void PluginScript::update_exports() {
 #ifdef TOOLS_ENABLED
 	ASSERT_SCRIPT_VALID();
 	if (placeholders.size()) {
-
 		//update placeholders if any
 		Map<StringName, Variant> propdefvalues;
 		List<PropertyInfo> propinfos;
@@ -281,7 +278,6 @@ Error PluginScript::reload(bool p_keep_state) {
 	// ClassDB name (i.e. `Node2D`) or a resource path (i.e. `res://foo/bar.gd`)
 	StringName *base_name = (StringName *)&manifest.base;
 	if (*base_name) {
-
 		if (ClassDB::class_exists(*base_name)) {
 			_native_parent = *base_name;
 		} else {
@@ -434,7 +430,6 @@ ScriptLanguage *PluginScript::get_language() const {
 }
 
 Error PluginScript::load_source_code(const String &p_path) {
-
 	Vector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);

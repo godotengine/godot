@@ -37,7 +37,6 @@
 PhysicsServer3D *PhysicsServer3D::singleton = nullptr;
 
 void PhysicsDirectBodyState3D::integrate_forces() {
-
 	real_t step = get_step();
 	Vector3 lv = get_linear_velocity();
 	lv += get_total_gravity() * step;
@@ -62,19 +61,16 @@ void PhysicsDirectBodyState3D::integrate_forces() {
 }
 
 Object *PhysicsDirectBodyState3D::get_contact_collider_object(int p_contact_idx) const {
-
 	ObjectID objid = get_contact_collider_id(p_contact_idx);
 	Object *obj = ObjectDB::get_instance(objid);
 	return obj;
 }
 
 PhysicsServer3D *PhysicsServer3D::get_singleton() {
-
 	return singleton;
 }
 
 void PhysicsDirectBodyState3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_total_gravity"), &PhysicsDirectBodyState3D::get_total_gravity);
 	ClassDB::bind_method(D_METHOD("get_total_linear_damp"), &PhysicsDirectBodyState3D::get_total_linear_damp);
 	ClassDB::bind_method(D_METHOD("get_total_angular_damp"), &PhysicsDirectBodyState3D::get_total_angular_damp);
@@ -139,58 +135,47 @@ PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
 ///////////////////////////////////////////////////////
 
 void PhysicsShapeQueryParameters3D::set_shape(const RES &p_shape) {
-
 	ERR_FAIL_COND(p_shape.is_null());
 	shape = p_shape->get_rid();
 }
 
 void PhysicsShapeQueryParameters3D::set_shape_rid(const RID &p_shape) {
-
 	shape = p_shape;
 }
 
 RID PhysicsShapeQueryParameters3D::get_shape_rid() const {
-
 	return shape;
 }
 
 void PhysicsShapeQueryParameters3D::set_transform(const Transform &p_transform) {
-
 	transform = p_transform;
 }
 Transform PhysicsShapeQueryParameters3D::get_transform() const {
-
 	return transform;
 }
 
 void PhysicsShapeQueryParameters3D::set_margin(float p_margin) {
-
 	margin = p_margin;
 }
 
 float PhysicsShapeQueryParameters3D::get_margin() const {
-
 	return margin;
 }
 
 void PhysicsShapeQueryParameters3D::set_collision_mask(int p_collision_mask) {
-
 	collision_mask = p_collision_mask;
 }
 int PhysicsShapeQueryParameters3D::get_collision_mask() const {
-
 	return collision_mask;
 }
 
 void PhysicsShapeQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
-
 	exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++)
 		exclude.insert(p_exclude[i]);
 }
 
 Vector<RID> PhysicsShapeQueryParameters3D::get_exclude() const {
-
 	Vector<RID> ret;
 	ret.resize(exclude.size());
 	int idx = 0;
@@ -217,7 +202,6 @@ bool PhysicsShapeQueryParameters3D::is_collide_with_areas_enabled() const {
 }
 
 void PhysicsShapeQueryParameters3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &PhysicsShapeQueryParameters3D::set_shape);
 	ClassDB::bind_method(D_METHOD("set_shape_rid", "shape"), &PhysicsShapeQueryParameters3D::set_shape_rid);
 	ClassDB::bind_method(D_METHOD("get_shape_rid"), &PhysicsShapeQueryParameters3D::get_shape_rid);
@@ -251,7 +235,6 @@ void PhysicsShapeQueryParameters3D::_bind_methods() {
 }
 
 PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
-
 	margin = 0;
 	collision_mask = 0x7FFFFFFF;
 	collide_with_bodies = true;
@@ -261,7 +244,6 @@ PhysicsShapeQueryParameters3D::PhysicsShapeQueryParameters3D() {
 /////////////////////////////////////
 
 Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Vector3 &p_from, const Vector3 &p_to, const Vector<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
-
 	RayResult inters;
 	Set<RID> exclude;
 	for (int i = 0; i < p_exclude.size(); i++)
@@ -284,7 +266,6 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Vector3 &p_from, cons
 }
 
 Array PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
 	Vector<ShapeResult> sr;
@@ -293,7 +274,6 @@ Array PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryPar
 	Array ret;
 	ret.resize(rc);
 	for (int i = 0; i < rc; i++) {
-
 		Dictionary d;
 		d["rid"] = sr[i].rid;
 		d["collider_id"] = sr[i].collider_id;
@@ -306,7 +286,6 @@ Array PhysicsDirectSpaceState3D::_intersect_shape(const Ref<PhysicsShapeQueryPar
 }
 
 Array PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, const Vector3 &p_motion) {
-
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
 	float closest_safe, closest_unsafe;
@@ -320,7 +299,6 @@ Array PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQueryParamet
 	return ret;
 }
 Array PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
-
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
 	Vector<Vector3> ret;
@@ -336,7 +314,6 @@ Array PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParam
 	return r;
 }
 Dictionary PhysicsDirectSpaceState3D::_get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
-
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Dictionary());
 
 	ShapeRestInfo sri;
@@ -360,7 +337,6 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("intersect_ray", "from", "to", "exclude", "collision_mask", "collide_with_bodies", "collide_with_areas"), &PhysicsDirectSpaceState3D::_intersect_ray, DEFVAL(Array()), DEFVAL(0x7FFFFFFF), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("intersect_shape", "shape", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "shape", "motion"), &PhysicsDirectSpaceState3D::_cast_motion);
@@ -369,23 +345,18 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 }
 
 int PhysicsShapeQueryResult3D::get_result_count() const {
-
 	return result.size();
 }
 RID PhysicsShapeQueryResult3D::get_result_rid(int p_idx) const {
-
 	return result[p_idx].rid;
 }
 ObjectID PhysicsShapeQueryResult3D::get_result_object_id(int p_idx) const {
-
 	return result[p_idx].collider_id;
 }
 Object *PhysicsShapeQueryResult3D::get_result_object(int p_idx) const {
-
 	return result[p_idx].collider;
 }
 int PhysicsShapeQueryResult3D::get_result_object_shape(int p_idx) const {
-
 	return result[p_idx].shape;
 }
 
@@ -393,7 +364,6 @@ PhysicsShapeQueryResult3D::PhysicsShapeQueryResult3D() {
 }
 
 void PhysicsShapeQueryResult3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_result_count"), &PhysicsShapeQueryResult3D::get_result_count);
 	ClassDB::bind_method(D_METHOD("get_result_rid", "idx"), &PhysicsShapeQueryResult3D::get_result_rid);
 	ClassDB::bind_method(D_METHOD("get_result_object_id", "idx"), &PhysicsShapeQueryResult3D::get_result_object_id);
@@ -404,7 +374,6 @@ void PhysicsShapeQueryResult3D::_bind_methods() {
 ///////////////////////////////////////
 
 void PhysicsServer3D::_bind_methods() {
-
 #ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("shape_create", "type"), &PhysicsServer3D::shape_create);
@@ -724,13 +693,11 @@ void PhysicsServer3D::_bind_methods() {
 }
 
 PhysicsServer3D::PhysicsServer3D() {
-
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 }
 
 PhysicsServer3D::~PhysicsServer3D() {
-
 	singleton = nullptr;
 }
 
@@ -740,7 +707,6 @@ int PhysicsServer3DManager::default_server_priority = -1;
 const String PhysicsServer3DManager::setting_property_name("physics/3d/physics_engine");
 
 void PhysicsServer3DManager::on_servers_changed() {
-
 	String physics_servers2("DEFAULT");
 	for (int i = get_servers_count() - 1; 0 <= i; --i) {
 		physics_servers2 += "," + get_server_name(i);
@@ -749,7 +715,6 @@ void PhysicsServer3DManager::on_servers_changed() {
 }
 
 void PhysicsServer3DManager::register_server(const String &p_name, CreatePhysicsServer3DCallback p_creat_callback) {
-
 	ERR_FAIL_COND(!p_creat_callback);
 	ERR_FAIL_COND(find_server_id(p_name) != -1);
 	physics_servers.push_back(ClassInfo(p_name, p_creat_callback));
@@ -757,7 +722,6 @@ void PhysicsServer3DManager::register_server(const String &p_name, CreatePhysics
 }
 
 void PhysicsServer3DManager::set_default_server(const String &p_name, int p_priority) {
-
 	const int id = find_server_id(p_name);
 	ERR_FAIL_COND(id == -1); // Not found
 	if (default_server_priority < p_priority) {
@@ -767,7 +731,6 @@ void PhysicsServer3DManager::set_default_server(const String &p_name, int p_prio
 }
 
 int PhysicsServer3DManager::find_server_id(const String &p_name) {
-
 	for (int i = physics_servers.size() - 1; 0 <= i; --i) {
 		if (p_name == physics_servers[i].name) {
 			return i;

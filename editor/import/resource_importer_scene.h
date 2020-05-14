@@ -39,7 +39,6 @@
 class Material;
 
 class EditorSceneImporter : public Reference {
-
 	GDCLASS(EditorSceneImporter, Reference);
 
 protected:
@@ -73,7 +72,6 @@ public:
 };
 
 class EditorScenePostImport : public Reference {
-
 	GDCLASS(EditorScenePostImport, Reference);
 
 	String source_folder;

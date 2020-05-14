@@ -35,7 +35,6 @@
 #include "core/reference.h"
 
 class EditorDebuggerServer : public Reference {
-
 public:
 	typedef EditorDebuggerServer *(*CreateServerFunc)(const String &p_uri);
 

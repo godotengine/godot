@@ -110,7 +110,6 @@ out vec4 weight_out; //tfb:ENABLE_SKELETON
 uniform float blend_amount;
 
 void main() {
-
 #ifdef ENABLE_BLEND
 
 	vertex_out = vertex_attrib_blend + vertex_attrib * blend_amount;

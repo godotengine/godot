@@ -36,13 +36,11 @@
 #include "core/ustring.h"
 
 struct StaticCString {
-
 	const char *ptr;
 	static StaticCString create(const char *p_ptr);
 };
 
 class StringName {
-
 	enum {
 
 		STRING_TABLE_BITS = 12,
@@ -68,7 +66,6 @@ class StringName {
 	_Data *_data = nullptr;
 
 	union _HashUnion {
-
 		_Data *ptr;
 		uint32_t hash;
 	};
@@ -91,7 +88,6 @@ public:
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
-
 		return _data < p_name._data;
 	}
 	_FORCE_INLINE_ bool operator==(const StringName &p_name) const {
@@ -100,7 +96,6 @@ public:
 		return _data == p_name._data;
 	}
 	_FORCE_INLINE_ uint32_t hash() const {
-
 		if (_data)
 			return _data->hash;
 		else
@@ -112,7 +107,6 @@ public:
 	bool operator!=(const StringName &p_name) const;
 
 	_FORCE_INLINE_ operator String() const {
-
 		if (_data) {
 			if (_data->cname)
 				return String(_data->cname);
@@ -128,20 +122,16 @@ public:
 	static StringName search(const String &p_name);
 
 	struct AlphCompare {
-
 		_FORCE_INLINE_ bool operator()(const StringName &l, const StringName &r) const {
-
 			const char *l_cname = l._data ? l._data->cname : "";
 			const char *r_cname = r._data ? r._data->cname : "";
 
 			if (l_cname) {
-
 				if (r_cname)
 					return is_str_less(l_cname, r_cname);
 				else
 					return is_str_less(l_cname, r._data->name.ptr());
 			} else {
-
 				if (r_cname)
 					return is_str_less(l._data->name.ptr(), r_cname);
 				else

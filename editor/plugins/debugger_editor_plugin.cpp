@@ -114,7 +114,6 @@ void DebuggerEditorPlugin::_select_run_count(int p_index) {
 void DebuggerEditorPlugin::_menu_option(int p_option) {
 	switch (p_option) {
 		case RUN_FILE_SERVER: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_FILE_SERVER));
 
 			if (ischecked) {
@@ -128,7 +127,6 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_LIVE_DEBUG: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG));
 
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_LIVE_DEBUG), !ischecked);
@@ -137,28 +135,24 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 
 		} break;
 		case RUN_DEPLOY_REMOTE_DEBUG: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
 
 		} break;
 		case RUN_DEBUG_COLLISONS: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_COLLISONS));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_COLLISONS), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
 
 		} break;
 		case RUN_DEBUG_NAVIGATION: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION), !ischecked);
 			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
 
 		} break;
 		case RUN_RELOAD_SCRIPTS: {
-
 			bool ischecked = debug_menu->get_popup()->is_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS));
 			debug_menu->get_popup()->set_item_checked(debug_menu->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS), !ischecked);
 

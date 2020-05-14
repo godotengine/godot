@@ -67,7 +67,6 @@ public:
 };
 
 class NavigationMeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(NavigationMeshEditorPlugin, EditorPlugin);
 
 	NavigationMeshEditor *navigation_mesh_editor;

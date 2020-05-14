@@ -138,7 +138,6 @@ enum PropertyUsageFlags {
 #define ADD_SUBGROUP(m_name, m_prefix) ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
 
 struct PropertyInfo {
-
 	Variant::Type type = Variant::NIL;
 	String name;
 	StringName class_name; //for classes
@@ -164,7 +163,6 @@ struct PropertyInfo {
 			hint(p_hint),
 			hint_string(p_hint_string),
 			usage(p_usage) {
-
 		if (hint == PROPERTY_HINT_RESOURCE_TYPE) {
 			class_name = hint_string;
 		} else {
@@ -193,7 +191,6 @@ struct PropertyInfo {
 Array convert_property_list(const List<PropertyInfo> *p_list);
 
 struct MethodInfo {
-
 	String name;
 	PropertyInfo return_val;
 	uint32_t flags; // NOLINT - prevent clang-tidy to assign method_bind.h constant here, it should stay in .cpp.
@@ -297,7 +294,6 @@ public:                                                                         
 	virtual bool is_class_ptr(void *p_ptr) const { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
                                                                                                                                         \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                     \
-                                                                                                                                        \
 		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                              \
 			m_class::_get_valid_parents_static(p_parents);                                                                              \
 		}                                                                                                                               \
@@ -406,7 +402,6 @@ public:
 	};
 
 	struct Connection {
-
 		::Signal signal;
 		Callable callable;
 
@@ -432,7 +427,6 @@ private:
 	friend void postinitialize_handler(Object *);
 
 	struct SignalData {
-
 		struct Slot {
 			int reference_count = 0;
 			Connection conn;
@@ -744,7 +738,6 @@ bool predelete_handler(Object *p_object);
 void postinitialize_handler(Object *p_object);
 
 class ObjectDB {
-
 //this needs to add up to 63, 1 bit is for reference
 #define OBJECTDB_VALIDATOR_BITS 39
 #define OBJECTDB_VALIDATOR_MASK ((uint64_t(1) << OBJECTDB_VALIDATOR_BITS) - 1)
@@ -779,7 +772,6 @@ public:
 	typedef void (*DebugFunc)(Object *p_obj);
 
 	_ALWAYS_INLINE_ static Object *get_instance(ObjectID p_instance_id) {
-
 		uint64_t id = p_instance_id;
 		uint32_t slot = id & OBJECTDB_SLOT_MAX_COUNT_MASK;
 

@@ -36,7 +36,6 @@
 #include "core/object.h"
 
 class GameCenter : public Object {
-
 	GDCLASS(GameCenter, Object);
 
 	static GameCenter *instance;

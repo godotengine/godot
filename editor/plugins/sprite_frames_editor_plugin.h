@@ -41,7 +41,6 @@
 #include "scene/gui/tree.h"
 
 class SpriteFramesEditor : public HSplitContainer {
-
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
 	ToolButton *load;
@@ -134,7 +133,6 @@ public:
 };
 
 class SpriteFramesEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor;

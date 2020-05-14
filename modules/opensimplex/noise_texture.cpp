@@ -59,7 +59,6 @@ NoiseTexture::~NoiseTexture() {
 }
 
 void NoiseTexture::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &NoiseTexture::set_width);
 	ClassDB::bind_method(D_METHOD("set_height", "height"), &NoiseTexture::set_height);
 
@@ -88,7 +87,6 @@ void NoiseTexture::_bind_methods() {
 }
 
 void NoiseTexture::_validate_property(PropertyInfo &property) const {
-
 	if (property.name == "bump_strength") {
 		if (!as_normalmap) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
@@ -110,7 +108,6 @@ void NoiseTexture::_set_texture_data(const Ref<Image> &p_image) {
 }
 
 void NoiseTexture::_thread_done(const Ref<Image> &p_image) {
-
 	_set_texture_data(p_image);
 	Thread::wait_to_finish(noise_thread);
 	memdelete(noise_thread);
@@ -127,7 +124,6 @@ void NoiseTexture::_thread_function(void *p_ud) {
 }
 
 void NoiseTexture::_queue_update() {
-
 	if (update_queued)
 		return;
 
@@ -136,7 +132,6 @@ void NoiseTexture::_queue_update() {
 }
 
 Ref<Image> NoiseTexture::_generate_texture() {
-
 	// Prevent memdelete due to unref() on other thread.
 	Ref<OpenSimplexNoise> ref_noise = noise;
 
@@ -169,7 +164,6 @@ void NoiseTexture::_update_texture() {
 	use_thread = false;
 #endif
 	if (use_thread) {
-
 		if (!noise_thread) {
 			noise_thread = Thread::create(_thread_function, this);
 			regen_queued = false;
@@ -239,7 +233,6 @@ bool NoiseTexture::is_normalmap() {
 }
 
 void NoiseTexture::set_bump_strength(float p_bump_strength) {
-
 	if (p_bump_strength == bump_strength)
 		return;
 	bump_strength = p_bump_strength;
@@ -248,17 +241,14 @@ void NoiseTexture::set_bump_strength(float p_bump_strength) {
 }
 
 float NoiseTexture::get_bump_strength() {
-
 	return bump_strength;
 }
 
 int NoiseTexture::get_width() const {
-
 	return size.x;
 }
 
 int NoiseTexture::get_height() const {
-
 	return size.y;
 }
 
@@ -271,6 +261,5 @@ RID NoiseTexture::get_rid() const {
 }
 
 Ref<Image> NoiseTexture::get_data() const {
-
 	return data;
 }

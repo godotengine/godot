@@ -35,7 +35,6 @@
 #include "scene/resources/navigation_mesh.h"
 
 class NavigationPolygon : public Resource {
-
 	GDCLASS(NavigationPolygon, Resource);
 
 	Vector<Vector2> vertices;
@@ -95,7 +94,6 @@ public:
 class Navigation2D;
 
 class NavigationRegion2D : public Node2D {
-
 	GDCLASS(NavigationRegion2D, Node2D);
 
 	bool enabled = true;

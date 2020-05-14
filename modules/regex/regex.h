@@ -39,7 +39,6 @@
 #include "core/vector.h"
 
 class RegExMatch : public Reference {
-
 	GDCLASS(RegExMatch, Reference);
 
 	struct Range {
@@ -70,7 +69,6 @@ public:
 };
 
 class RegEx : public Reference {
-
 	GDCLASS(RegEx, Reference);
 
 	void *general_ctx;

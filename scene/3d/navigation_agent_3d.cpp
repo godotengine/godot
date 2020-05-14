@@ -35,7 +35,6 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent3D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent3D::get_target_desired_distance);
 
@@ -99,7 +98,6 @@ void NavigationAgent3D::_bind_methods() {
 void NavigationAgent3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			agent_parent = Object::cast_to<Node3D>(get_parent());
 
 			NavigationServer3D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
@@ -128,7 +126,6 @@ void NavigationAgent3D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
-
 				NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
 				if (!target_reached) {
 					if (distance_to_target() < target_desired_distance) {
@@ -296,7 +293,6 @@ String NavigationAgent3D::get_configuration_warning() const {
 }
 
 void NavigationAgent3D::update_navigation() {
-
 	if (agent_parent == nullptr)
 		return;
 	if (navigation == nullptr)

@@ -52,7 +52,6 @@ extern "C" void _native_script_hook() {
 // Script API
 
 void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_instance_create_func p_create_func, godot_instance_destroy_func p_destroy_func) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc> *classes = &NSL->library_classes[*s];
@@ -85,7 +84,6 @@ void GDAPI godot_nativescript_register_class(void *p_gdnative_handle, const char
 }
 
 void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const char *p_name, const char *p_base, godot_instance_create_func p_create_func, godot_instance_destroy_func p_destroy_func) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc> *classes = &NSL->library_classes[*s];
@@ -119,7 +117,6 @@ void GDAPI godot_nativescript_register_tool_class(void *p_gdnative_handle, const
 }
 
 void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const char *p_name, const char *p_function_name, godot_method_attributes p_attr, godot_instance_method p_method) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc>::Element *E = NSL->library_classes[*s].find(p_name);
@@ -139,7 +136,6 @@ void GDAPI godot_nativescript_register_method(void *p_gdnative_handle, const cha
 }
 
 void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const char *p_name, const char *p_path, godot_property_attributes *p_attr, godot_property_set_func p_set_func, godot_property_get_func p_get_func) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc>::Element *E = NSL->library_classes[*s].find(p_name);
@@ -164,7 +160,6 @@ void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const c
 }
 
 void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_signal *p_signal) {
-
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc>::Element *E = NSL->library_classes[*s].find(p_name);
@@ -315,7 +310,6 @@ void GDAPI godot_nativescript_set_type_tag(void *p_gdnative_handle, const char *
 }
 
 const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object) {
-
 	const Object *o = (Object *)p_object;
 
 	if (!o->get_script_instance()) {

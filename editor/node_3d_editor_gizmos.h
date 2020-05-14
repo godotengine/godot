@@ -37,7 +37,6 @@
 class Camera3D;
 
 class Light3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(Light3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -55,7 +54,6 @@ public:
 };
 
 class AudioStreamPlayer3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(AudioStreamPlayer3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -73,7 +71,6 @@ public:
 };
 
 class Camera3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(Camera3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -91,7 +88,6 @@ public:
 };
 
 class MeshInstance3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(MeshInstance3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -105,7 +101,6 @@ public:
 };
 
 class Sprite3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(Sprite3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -119,7 +114,6 @@ public:
 };
 
 class Position3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(Position3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Ref<ArrayMesh> pos3d_mesh;
@@ -135,7 +129,6 @@ public:
 };
 
 class Skeleton3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(Skeleton3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -148,7 +141,6 @@ public:
 };
 
 class PhysicalBone3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(PhysicalBone3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -161,7 +153,6 @@ public:
 };
 
 class RayCast3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(RayCast3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -174,7 +165,6 @@ public:
 };
 
 class SpringArm3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(SpringArm3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -187,7 +177,6 @@ public:
 };
 
 class VehicleWheel3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(VehicleWheel3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -200,7 +189,6 @@ public:
 };
 
 class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -219,7 +207,6 @@ public:
 };
 
 class VisibilityNotifier3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(VisibilityNotifier3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -249,7 +236,6 @@ public:
 };
 
 class GPUParticles3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(GPUParticles3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -268,7 +254,6 @@ public:
 };
 
 class ReflectionProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(ReflectionProbeGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -286,7 +271,6 @@ public:
 };
 
 class DecalGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(DecalGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -304,7 +288,6 @@ public:
 };
 
 class GIProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(GIProbeGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -322,7 +305,6 @@ public:
 };
 
 class BakedLightmapGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(BakedLightmapGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -340,7 +322,6 @@ public:
 };
 
 class LightmapProbeGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(LightmapProbeGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -358,7 +339,6 @@ public:
 };
 
 class CollisionShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(CollisionShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:
@@ -387,11 +367,9 @@ public:
 };
 
 class NavigationRegion3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(NavigationRegion3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	struct _EdgeKey {
-
 		Vector3 from;
 		Vector3 to;
 
@@ -423,7 +401,6 @@ public:
 };
 
 class Joint3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(Joint3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 	Timer *update_timer;

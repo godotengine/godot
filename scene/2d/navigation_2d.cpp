@@ -54,7 +54,6 @@ void Navigation2D::_notification(int p_what) {
 			NavigationServer2D::get_singleton()->map_set_active(map, true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			NavigationServer2D::get_singleton()->map_set_active(map, false);
 		} break;
 	}
@@ -83,7 +82,6 @@ RID Navigation2D::get_closest_point_owner(const Vector2 &p_point) const {
 }
 
 Navigation2D::Navigation2D() {
-
 	map = NavigationServer2D::get_singleton()->map_create();
 	set_cell_size(10); // Ten pixels
 	set_edge_connection_margin(100);

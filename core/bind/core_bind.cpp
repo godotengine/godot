@@ -67,7 +67,6 @@ static const unsigned int MONTH_DAYS_TABLE[2][12] = {
 _ResourceLoader *_ResourceLoader::singleton = nullptr;
 
 Error _ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads) {
-
 	return ResourceLoader::load_threaded_request(p_path, p_type_hint, p_use_sub_threads);
 }
 _ResourceLoader::ThreadLoadStatus _ResourceLoader::load_threaded_get_status(const String &p_path, Array r_progress) {
@@ -84,7 +83,6 @@ RES _ResourceLoader::load_threaded_get(const String &p_path) {
 }
 
 RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p_no_cache) {
-
 	Error err = OK;
 	RES ret = ResourceLoader::load(p_path, p_type_hint, p_no_cache, &err);
 
@@ -93,12 +91,10 @@ RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool 
 }
 
 Vector<String> _ResourceLoader::get_recognized_extensions_for_type(const String &p_type) {
-
 	List<String> exts;
 	ResourceLoader::get_recognized_extensions_for_type(p_type, &exts);
 	Vector<String> ret;
 	for (List<String>::Element *E = exts.front(); E; E = E->next()) {
-
 		ret.push_back(E->get());
 	}
 
@@ -106,12 +102,10 @@ Vector<String> _ResourceLoader::get_recognized_extensions_for_type(const String 
 }
 
 void _ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
-
 	ResourceLoader::set_abort_on_missing_resources(p_abort);
 }
 
 PackedStringArray _ResourceLoader::get_dependencies(const String &p_path) {
-
 	List<String> deps;
 	ResourceLoader::get_dependencies(p_path, &deps);
 
@@ -124,7 +118,6 @@ PackedStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 };
 
 bool _ResourceLoader::has_cached(const String &p_path) {
-
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	return ResourceCache::has(local_path);
 }
@@ -134,7 +127,6 @@ bool _ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 }
 
 void _ResourceLoader::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("load_threaded_request", "path", "type_hint", "use_sub_threads"), &_ResourceLoader::load_threaded_request, DEFVAL(""), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_threaded_get_status", "path", "progress"), &_ResourceLoader::load_threaded_get_status, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("load_threaded_get", "path"), &_ResourceLoader::load_threaded_get);
@@ -160,13 +152,11 @@ Error _ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFla
 }
 
 Vector<String> _ResourceSaver::get_recognized_extensions(const RES &p_resource) {
-
 	ERR_FAIL_COND_V_MSG(p_resource.is_null(), Vector<String>(), "It's not a reference to a valid Resource object.");
 	List<String> exts;
 	ResourceSaver::get_recognized_extensions(p_resource, &exts);
 	Vector<String> ret;
 	for (List<String>::Element *E = exts.front(); E; E = E->next()) {
-
 		ret.push_back(E->get());
 	}
 	return ret;
@@ -175,7 +165,6 @@ Vector<String> _ResourceSaver::get_recognized_extensions(const RES &p_resource) 
 _ResourceSaver *_ResourceSaver::singleton = nullptr;
 
 void _ResourceSaver::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("save", "path", "resource", "flags"), &_ResourceSaver::save, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_recognized_extensions", "type"), &_ResourceSaver::get_recognized_extensions);
 
@@ -203,36 +192,29 @@ void _OS::close_midi_inputs() {
 }
 
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
-
 	FileAccess::set_backup_save(p_enable);
 }
 
 void _OS::set_low_processor_usage_mode(bool p_enabled) {
-
 	OS::get_singleton()->set_low_processor_usage_mode(p_enabled);
 }
 bool _OS::is_in_low_processor_usage_mode() const {
-
 	return OS::get_singleton()->is_in_low_processor_usage_mode();
 }
 
 void _OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
-
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(p_usec);
 }
 
 int _OS::get_low_processor_usage_mode_sleep_usec() const {
-
 	return OS::get_singleton()->get_low_processor_usage_mode_sleep_usec();
 }
 
 String _OS::get_executable_path() const {
-
 	return OS::get_singleton()->get_executable_path();
 }
 
 Error _OS::shell_open(String p_uri) {
-
 	if (p_uri.begins_with("res://")) {
 		WARN_PRINT("Attempting to open an URL with the \"res://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	} else if (p_uri.begins_with("user://")) {
@@ -242,7 +224,6 @@ Error _OS::shell_open(String p_uri) {
 };
 
 int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr) {
-
 	OS::ProcessID pid = -2;
 	int exitcode = 0;
 	List<String> args;
@@ -261,34 +242,27 @@ int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p
 }
 
 Error _OS::kill(int p_pid) {
-
 	return OS::get_singleton()->kill(p_pid);
 }
 
 int _OS::get_process_id() const {
-
 	return OS::get_singleton()->get_process_id();
 };
 
 bool _OS::has_environment(const String &p_var) const {
-
 	return OS::get_singleton()->has_environment(p_var);
 }
 String _OS::get_environment(const String &p_var) const {
-
 	return OS::get_singleton()->get_environment(p_var);
 }
 
 String _OS::get_name() const {
-
 	return OS::get_singleton()->get_name();
 }
 Vector<String> _OS::get_cmdline_args() {
-
 	List<String> cmdline = OS::get_singleton()->get_cmdline_args();
 	Vector<String> cmdlinev;
 	for (List<String>::Element *E = cmdline.front(); E; E = E->next()) {
-
 		cmdlinev.push_back(E->get());
 	}
 
@@ -296,42 +270,34 @@ Vector<String> _OS::get_cmdline_args() {
 }
 
 String _OS::get_locale() const {
-
 	return OS::get_singleton()->get_locale();
 }
 
 String _OS::get_model_name() const {
-
 	return OS::get_singleton()->get_model_name();
 }
 
 Error _OS::set_thread_name(const String &p_name) {
-
 	return Thread::set_name(p_name);
 };
 
 bool _OS::has_feature(const String &p_feature) const {
-
 	return OS::get_singleton()->has_feature(p_feature);
 }
 
 uint64_t _OS::get_static_memory_usage() const {
-
 	return OS::get_singleton()->get_static_memory_usage();
 }
 
 uint64_t _OS::get_static_memory_peak_usage() const {
-
 	return OS::get_singleton()->get_static_memory_peak_usage();
 }
 
 int _OS::get_exit_code() const {
-
 	return OS::get_singleton()->get_exit_code();
 }
 
 void _OS::set_exit_code(int p_code) {
-
 	if (p_code < 0 || p_code > 125) {
 		WARN_PRINT("For portability reasons, the exit code should be set between 0 and 125 (inclusive).");
 	}
@@ -344,7 +310,6 @@ void _OS::set_exit_code(int p_code) {
  *     dst
  */
 Dictionary _OS::get_datetime(bool utc) const {
-
 	Dictionary dated = get_date(utc);
 	Dictionary timed = get_time(utc);
 
@@ -359,7 +324,6 @@ Dictionary _OS::get_datetime(bool utc) const {
 }
 
 Dictionary _OS::get_date(bool utc) const {
-
 	OS::Date date = OS::get_singleton()->get_date(utc);
 	Dictionary dated;
 	dated[YEAR_KEY] = date.year;
@@ -371,7 +335,6 @@ Dictionary _OS::get_date(bool utc) const {
 }
 
 Dictionary _OS::get_time(bool utc) const {
-
 	OS::Time time = OS::get_singleton()->get_time(utc);
 	Dictionary timed;
 	timed[HOUR_KEY] = time.hour;
@@ -393,7 +356,6 @@ Dictionary _OS::get_time(bool utc) const {
  * @return epoch calculated
  */
 int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
-
 	// Bunch of conversion constants
 	static const unsigned int SECONDS_PER_MINUTE = 60;
 	static const unsigned int MINUTES_PER_HOUR = 60;
@@ -466,7 +428,6 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
  * @return dictionary of date and time values
  */
 Dictionary _OS::get_datetime_from_unix_time(int64_t unix_time_val) const {
-
 	OS::Date date;
 	OS::Time time;
 
@@ -530,7 +491,6 @@ Dictionary _OS::get_time_zone_info() const {
 }
 
 uint64_t _OS::get_unix_time() const {
-
 	return OS::get_singleton()->get_unix_time();
 }
 
@@ -543,57 +503,46 @@ uint64_t _OS::get_system_time_msecs() const {
 }
 
 void _OS::delay_usec(uint32_t p_usec) const {
-
 	OS::get_singleton()->delay_usec(p_usec);
 }
 
 void _OS::delay_msec(uint32_t p_msec) const {
-
 	OS::get_singleton()->delay_usec(int64_t(p_msec) * 1000);
 }
 
 uint32_t _OS::get_ticks_msec() const {
-
 	return OS::get_singleton()->get_ticks_msec();
 }
 
 uint64_t _OS::get_ticks_usec() const {
-
 	return OS::get_singleton()->get_ticks_usec();
 }
 
 uint32_t _OS::get_splash_tick_msec() const {
-
 	return OS::get_singleton()->get_splash_tick_msec();
 }
 
 bool _OS::can_use_threads() const {
-
 	return OS::get_singleton()->can_use_threads();
 }
 
 bool _OS::is_userfs_persistent() const {
-
 	return OS::get_singleton()->is_userfs_persistent();
 }
 
 int _OS::get_processor_count() const {
-
 	return OS::get_singleton()->get_processor_count();
 }
 
 bool _OS::is_stdout_verbose() const {
-
 	return OS::get_singleton()->is_stdout_verbose();
 }
 
 void _OS::dump_memory_to_file(const String &p_file) {
-
 	OS::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
 }
 
 struct _OSCoreBindImg {
-
 	String path;
 	Size2 size;
 	int fmt;
@@ -603,7 +552,6 @@ struct _OSCoreBindImg {
 };
 
 void _OS::print_all_textures_by_size() {
-
 	List<_OSCoreBindImg> imgs;
 	int total = 0;
 	{
@@ -611,7 +559,6 @@ void _OS::print_all_textures_by_size() {
 		ResourceCache::get_cached_resources(&rsrc);
 
 		for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
-
 			if (!E->get()->is_class("ImageTexture"))
 				continue;
 
@@ -632,13 +579,11 @@ void _OS::print_all_textures_by_size() {
 	imgs.sort();
 
 	for (List<_OSCoreBindImg>::Element *E = imgs.front(); E; E = E->next()) {
-
 		total -= E->get().vram;
 	}
 }
 
 void _OS::print_resources_by_type(const Vector<String> &p_types) {
-
 	Map<String, int> type_count;
 
 	List<Ref<Resource>> resources;
@@ -648,7 +593,6 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 	ResourceCache::get_cached_resources(&rsrc);
 
 	for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
-
 		Ref<Resource> r = E->get();
 
 		bool found = false;
@@ -669,27 +613,22 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 };
 
 void _OS::print_all_resources(const String &p_to_file) {
-
 	OS::get_singleton()->print_all_resources(p_to_file);
 }
 
 void _OS::print_resources_in_use(bool p_short) {
-
 	OS::get_singleton()->print_resources_in_use(p_short);
 }
 
 void _OS::dump_resources_to_file(const String &p_file) {
-
 	OS::get_singleton()->dump_resources_to_file(p_file.utf8().get_data());
 }
 
 String _OS::get_user_data_dir() const {
-
 	return OS::get_singleton()->get_user_data_dir();
 };
 
 bool _OS::is_debug_build() const {
-
 #ifdef DEBUG_ENABLED
 	return true;
 #else
@@ -698,37 +637,30 @@ bool _OS::is_debug_build() const {
 }
 
 String _OS::get_system_dir(SystemDir p_dir) const {
-
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
 }
 
 String _OS::get_keycode_string(uint32_t p_code) const {
-
 	return keycode_get_string(p_code);
 }
 
 bool _OS::is_keycode_unicode(uint32_t p_unicode) const {
-
 	return keycode_has_unicode(p_unicode);
 }
 
 int _OS::find_keycode_from_string(const String &p_code) const {
-
 	return find_keycode(p_code);
 }
 
 bool _OS::request_permission(const String &p_name) {
-
 	return OS::get_singleton()->request_permission(p_name);
 }
 
 bool _OS::request_permissions() {
-
 	return OS::get_singleton()->request_permissions();
 }
 
 Vector<String> _OS::get_granted_permissions() const {
-
 	return OS::get_singleton()->get_granted_permissions();
 }
 
@@ -739,7 +671,6 @@ String _OS::get_unique_id() const {
 _OS *_OS::singleton = nullptr;
 
 void _OS::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_connected_midi_inputs"), &_OS::get_connected_midi_inputs);
 	ClassDB::bind_method(D_METHOD("open_midi_inputs"), &_OS::open_midi_inputs);
 	ClassDB::bind_method(D_METHOD("close_midi_inputs"), &_OS::close_midi_inputs);
@@ -870,39 +801,31 @@ void _OS::_bind_methods() {
 _Geometry *_Geometry::singleton = nullptr;
 
 _Geometry *_Geometry::get_singleton() {
-
 	return singleton;
 }
 
 Vector<Plane> _Geometry::build_box_planes(const Vector3 &p_extents) {
-
 	return Geometry::build_box_planes(p_extents);
 }
 
 Vector<Plane> _Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
-
 	return Geometry::build_cylinder_planes(p_radius, p_height, p_sides, p_axis);
 }
 Vector<Plane> _Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
-
 	return Geometry::build_capsule_planes(p_radius, p_height, p_sides, p_lats, p_axis);
 }
 
 bool _Geometry::is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-
 	return Geometry::is_point_in_circle(p_point, p_circle_pos, p_circle_radius);
 }
 
 real_t _Geometry::segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-
 	return Geometry::segment_intersects_circle(p_from, p_to, p_circle_pos, p_circle_radius);
 }
 
 Variant _Geometry::segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b) {
-
 	Vector2 result;
 	if (Geometry::segment_intersects_segment_2d(p_from_a, p_to_a, p_from_b, p_to_b, &result)) {
-
 		return result;
 	} else {
 		return Variant();
@@ -910,7 +833,6 @@ Variant _Geometry::segment_intersects_segment_2d(const Vector2 &p_from_a, const 
 };
 
 Variant _Geometry::line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b) {
-
 	Vector2 result;
 	if (Geometry::line_intersects_line_2d(p_from_a, p_dir_a, p_from_b, p_dir_b, result)) {
 		return result;
@@ -920,7 +842,6 @@ Variant _Geometry::line_intersects_line_2d(const Vector2 &p_from_a, const Vector
 }
 
 Vector<Vector2> _Geometry::get_closest_points_between_segments_2d(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2) {
-
 	Vector2 r1, r2;
 	Geometry::get_closest_points_between_segments(p1, q1, p2, q2, r1, r2);
 	Vector<Vector2> r;
@@ -931,7 +852,6 @@ Vector<Vector2> _Geometry::get_closest_points_between_segments_2d(const Vector2 
 }
 
 Vector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2) {
-
 	Vector3 r1, r2;
 	Geometry::get_closest_points_between_segments(p1, p2, q1, q2, r1, r2);
 	Vector<Vector3> r;
@@ -941,27 +861,22 @@ Vector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3 &p1
 	return r;
 }
 Vector2 _Geometry::get_closest_point_to_segment_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-
 	Vector2 s[2] = { p_a, p_b };
 	return Geometry::get_closest_point_to_segment_2d(p_point, s);
 }
 Vector3 _Geometry::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-
 	Vector3 s[2] = { p_a, p_b };
 	return Geometry::get_closest_point_to_segment(p_point, s);
 }
 Vector2 _Geometry::get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-
 	Vector2 s[2] = { p_a, p_b };
 	return Geometry::get_closest_point_to_segment_uncapped_2d(p_point, s);
 }
 Vector3 _Geometry::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-
 	Vector3 s[2] = { p_a, p_b };
 	return Geometry::get_closest_point_to_segment_uncapped(p_point, s);
 }
 Variant _Geometry::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
-
 	Vector3 res;
 	if (Geometry::ray_intersects_triangle(p_from, p_dir, p_v0, p_v1, p_v2, &res))
 		return res;
@@ -969,7 +884,6 @@ Variant _Geometry::ray_intersects_triangle(const Vector3 &p_from, const Vector3 
 		return Variant();
 }
 Variant _Geometry::segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
-
 	Vector3 res;
 	if (Geometry::segment_intersects_triangle(p_from, p_to, p_v0, p_v1, p_v2, &res))
 		return res;
@@ -978,12 +892,10 @@ Variant _Geometry::segment_intersects_triangle(const Vector3 &p_from, const Vect
 }
 
 bool _Geometry::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
-
 	return Geometry::is_point_in_triangle(s, a, b, c);
 }
 
 Vector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius) {
-
 	Vector<Vector3> r;
 	Vector3 res, norm;
 	if (!Geometry::segment_intersects_sphere(p_from, p_to, p_sphere_pos, p_sphere_radius, &res, &norm))
@@ -995,7 +907,6 @@ Vector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, cons
 	return r;
 }
 Vector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius) {
-
 	Vector<Vector3> r;
 	Vector3 res, norm;
 	if (!Geometry::segment_intersects_cylinder(p_from, p_to, p_height, p_radius, &res, &norm))
@@ -1007,7 +918,6 @@ Vector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from, co
 	return r;
 }
 Vector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
-
 	Vector<Vector3> r;
 	Vector3 res, norm;
 	if (!Geometry::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm))
@@ -1020,37 +930,30 @@ Vector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, cons
 }
 
 bool _Geometry::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
-
 	return Geometry::is_polygon_clockwise(p_polygon);
 }
 
 bool _Geometry::is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon) {
-
 	return Geometry::is_point_in_polygon(p_point, p_polygon);
 }
 
 Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2> &p_polygon) {
-
 	return Geometry::triangulate_polygon(p_polygon);
 }
 
 Vector<int> _Geometry::triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
-
 	return Geometry::triangulate_delaunay_2d(p_points);
 }
 
 Vector<Point2> _Geometry::convex_hull_2d(const Vector<Point2> &p_points) {
-
 	return Geometry::convex_hull_2d(p_points);
 }
 
 Vector<Vector3> _Geometry::clip_polygon(const Vector<Vector3> &p_points, const Plane &p_plane) {
-
 	return Geometry::clip_polygon(p_points, p_plane);
 }
 
 Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-
 	Vector<Vector<Point2>> polys = Geometry::merge_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -1062,7 +965,6 @@ Array _Geometry::merge_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vec
 }
 
 Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-
 	Vector<Vector<Point2>> polys = Geometry::clip_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -1074,7 +976,6 @@ Array _Geometry::clip_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vect
 }
 
 Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-
 	Vector<Vector<Point2>> polys = Geometry::intersect_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -1086,7 +987,6 @@ Array _Geometry::intersect_polygons_2d(const Vector<Vector2> &p_polygon_a, const
 }
 
 Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const Vector<Vector2> &p_polygon_b) {
-
 	Vector<Vector<Point2>> polys = Geometry::exclude_polygons_2d(p_polygon_a, p_polygon_b);
 
 	Array ret;
@@ -1098,7 +998,6 @@ Array _Geometry::exclude_polygons_2d(const Vector<Vector2> &p_polygon_a, const V
 }
 
 Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
 	Vector<Vector<Point2>> polys = Geometry::clip_polyline_with_polygon_2d(p_polyline, p_polygon);
 
 	Array ret;
@@ -1110,7 +1009,6 @@ Array _Geometry::clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline
 }
 
 Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
 	Vector<Vector<Point2>> polys = Geometry::intersect_polyline_with_polygon_2d(p_polyline, p_polygon);
 
 	Array ret;
@@ -1122,7 +1020,6 @@ Array _Geometry::intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_pol
 }
 
 Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
-
 	Vector<Vector<Point2>> polys = Geometry::offset_polygon_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type));
 
 	Array ret;
@@ -1134,7 +1031,6 @@ Array _Geometry::offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_de
 }
 
 Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-
 	Vector<Vector<Point2>> polys = Geometry::offset_polyline_2d(p_polygon, p_delta, Geometry::PolyJoinType(p_join_type), Geometry::PolyEndType(p_end_type));
 
 	Array ret;
@@ -1146,12 +1042,10 @@ Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_d
 }
 
 Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
-
 	Dictionary ret;
 
 	Vector<Size2i> rects;
 	for (int i = 0; i < p_rects.size(); i++) {
-
 		rects.push_back(p_rects[i]);
 	};
 
@@ -1163,7 +1057,6 @@ Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
 	Size2 r_size = size;
 	Vector<Point2> r_result;
 	for (int i = 0; i < result.size(); i++) {
-
 		r_result.push_back(result[i]);
 	};
 
@@ -1174,12 +1067,10 @@ Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
 };
 
 int _Geometry::get_uv84_normal_bit(const Vector3 &p_vector) {
-
 	return Geometry::get_uv84_normal_bit(p_vector);
 }
 
 void _Geometry::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("build_box_planes", "extents"), &_Geometry::build_box_planes);
 	ClassDB::bind_method(D_METHOD("build_cylinder_planes", "radius", "height", "sides", "axis"), &_Geometry::build_cylinder_planes, DEFVAL(Vector3::AXIS_Z));
 	ClassDB::bind_method(D_METHOD("build_capsule_planes", "radius", "height", "sides", "lats", "axis"), &_Geometry::build_capsule_planes, DEFVAL(Vector3::AXIS_Z));
@@ -1245,7 +1136,6 @@ void _Geometry::_bind_methods() {
 ////// _File //////
 
 Error _File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
-
 	Error err = open(p_path, p_mode_flags);
 	if (err)
 		return err;
@@ -1262,7 +1152,6 @@ Error _File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const 
 }
 
 Error _File::open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass) {
-
 	Error err = open(p_path, p_mode_flags);
 	if (err)
 		return err;
@@ -1280,7 +1169,6 @@ Error _File::open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, c
 }
 
 Error _File::open_compressed(const String &p_path, ModeFlags p_mode_flags, CompressionMode p_compress_mode) {
-
 	FileAccessCompressed *fac = memnew(FileAccessCompressed);
 
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
@@ -1297,7 +1185,6 @@ Error _File::open_compressed(const String &p_path, ModeFlags p_mode_flags, Compr
 }
 
 Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
-
 	close();
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
@@ -1307,94 +1194,77 @@ Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
 }
 
 void _File::close() {
-
 	if (f)
 		memdelete(f);
 	f = nullptr;
 }
 bool _File::is_open() const {
-
 	return f != nullptr;
 }
 String _File::get_path() const {
-
 	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
 	return f->get_path();
 }
 
 String _File::get_path_absolute() const {
-
 	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
 	return f->get_path_absolute();
 }
 
 void _File::seek(int64_t p_position) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	f->seek(p_position);
 }
 void _File::seek_end(int64_t p_position) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	f->seek_end(p_position);
 }
 int64_t _File::get_position() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_position();
 }
 
 int64_t _File::get_len() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_len();
 }
 
 bool _File::eof_reached() const {
-
 	ERR_FAIL_COND_V_MSG(!f, false, "File must be opened before use.");
 	return f->eof_reached();
 }
 
 uint8_t _File::get_8() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_8();
 }
 uint16_t _File::get_16() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_16();
 }
 uint32_t _File::get_32() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_32();
 }
 uint64_t _File::get_64() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_64();
 }
 
 float _File::get_float() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_float();
 }
 double _File::get_double() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_double();
 }
 real_t _File::get_real() const {
-
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	return f->get_real();
 }
 
 Vector<uint8_t> _File::get_buffer(int p_length) const {
-
 	Vector<uint8_t> data;
 	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use.");
 
@@ -1416,7 +1286,6 @@ Vector<uint8_t> _File::get_buffer(int p_length) const {
 }
 
 String _File::get_as_text() const {
-
 	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
 
 	String text;
@@ -1436,17 +1305,14 @@ String _File::get_as_text() const {
 }
 
 String _File::get_md5(const String &p_path) const {
-
 	return FileAccess::get_md5(p_path);
 }
 
 String _File::get_sha256(const String &p_path) const {
-
 	return FileAccess::get_sha256(p_path);
 }
 
 String _File::get_line() const {
-
 	ERR_FAIL_COND_V_MSG(!f, String(), "File must be opened before use.");
 	return f->get_line();
 }
@@ -1462,90 +1328,76 @@ Vector<String> _File::get_csv_line(const String &p_delim) const {
  */
 
 void _File::set_endian_swap(bool p_swap) {
-
 	eswap = p_swap;
 	if (f)
 		f->set_endian_swap(p_swap);
 }
 bool _File::get_endian_swap() {
-
 	return eswap;
 }
 
 Error _File::get_error() const {
-
 	if (!f)
 		return ERR_UNCONFIGURED;
 	return f->get_error();
 }
 
 void _File::store_8(uint8_t p_dest) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_8(p_dest);
 }
 void _File::store_16(uint16_t p_dest) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_16(p_dest);
 }
 void _File::store_32(uint32_t p_dest) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_32(p_dest);
 }
 void _File::store_64(uint64_t p_dest) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_64(p_dest);
 }
 
 void _File::store_float(float p_dest) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_float(p_dest);
 }
 void _File::store_double(double p_dest) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_double(p_dest);
 }
 void _File::store_real(real_t p_real) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_real(p_real);
 }
 
 void _File::store_string(const String &p_string) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_string(p_string);
 }
 
 void _File::store_pascal_string(const String &p_string) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_pascal_string(p_string);
 };
 
 String _File::get_pascal_string() {
-
 	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
 
 	return f->get_pascal_string();
 };
 
 void _File::store_line(const String &p_string) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	f->store_line(p_string);
 }
@@ -1556,7 +1408,6 @@ void _File::store_csv_line(const Vector<String> &p_values, const String &p_delim
 }
 
 void _File::store_buffer(const Vector<uint8_t> &p_buffer) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	int len = p_buffer.size();
@@ -1569,12 +1420,10 @@ void _File::store_buffer(const Vector<uint8_t> &p_buffer) {
 }
 
 bool _File::file_exists(const String &p_name) const {
-
 	return FileAccess::exists(p_name);
 }
 
 void _File::store_var(const Variant &p_var, bool p_full_objects) {
-
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	int len;
 	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
@@ -1592,7 +1441,6 @@ void _File::store_var(const Variant &p_var, bool p_full_objects) {
 }
 
 Variant _File::get_var(bool p_allow_objects) const {
-
 	ERR_FAIL_COND_V_MSG(!f, Variant(), "File must be opened before use.");
 	uint32_t len = get_32();
 	Vector<uint8_t> buff = get_buffer(len);
@@ -1608,12 +1456,10 @@ Variant _File::get_var(bool p_allow_objects) const {
 }
 
 uint64_t _File::get_modified_time(const String &p_file) const {
-
 	return FileAccess::get_modified_time(p_file);
 }
 
 void _File::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("open_encrypted", "path", "mode_flags", "key"), &_File::open_encrypted);
 	ClassDB::bind_method(D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &_File::open_encrypted_pass);
 	ClassDB::bind_method(D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &_File::open_compressed, DEFVAL(0));
@@ -1699,7 +1545,6 @@ Error _Directory::open(const String &p_path) {
 }
 
 Error _Directory::list_dir_begin(bool p_skip_navigational, bool p_skip_hidden) {
-
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 
 	_list_skip_navigational = p_skip_navigational;
@@ -1709,35 +1554,29 @@ Error _Directory::list_dir_begin(bool p_skip_navigational, bool p_skip_hidden) {
 }
 
 String _Directory::get_next() {
-
 	ERR_FAIL_COND_V_MSG(!d, "", "Directory must be opened before use.");
 
 	String next = d->get_next();
 	while (next != "" && ((_list_skip_navigational && (next == "." || next == "..")) || (_list_skip_hidden && d->current_is_hidden()))) {
-
 		next = d->get_next();
 	}
 	return next;
 }
 bool _Directory::current_is_dir() const {
-
 	ERR_FAIL_COND_V_MSG(!d, false, "Directory must be opened before use.");
 	return d->current_is_dir();
 }
 
 void _Directory::list_dir_end() {
-
 	ERR_FAIL_COND_MSG(!d, "Directory must be opened before use.");
 	d->list_dir_end();
 }
 
 int _Directory::get_drive_count() {
-
 	ERR_FAIL_COND_V_MSG(!d, 0, "Directory must be opened before use.");
 	return d->get_drive_count();
 }
 String _Directory::get_drive(int p_drive) {
-
 	ERR_FAIL_COND_V_MSG(!d, "", "Directory must be opened before use.");
 	return d->get_drive(p_drive);
 }
@@ -1747,17 +1586,14 @@ int _Directory::get_current_drive() {
 }
 
 Error _Directory::change_dir(String p_dir) {
-
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	return d->change_dir(p_dir);
 }
 String _Directory::get_current_dir() {
-
 	ERR_FAIL_COND_V_MSG(!d, "", "Directory must be opened before use.");
 	return d->get_current_dir();
 }
 Error _Directory::make_dir(String p_dir) {
-
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_dir.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_dir);
@@ -1768,7 +1604,6 @@ Error _Directory::make_dir(String p_dir) {
 	return d->make_dir(p_dir);
 }
 Error _Directory::make_dir_recursive(String p_dir) {
-
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_dir.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_dir);
@@ -1780,7 +1615,6 @@ Error _Directory::make_dir_recursive(String p_dir) {
 }
 
 bool _Directory::file_exists(String p_file) {
-
 	ERR_FAIL_COND_V_MSG(!d, false, "Directory must be opened before use.");
 
 	if (!p_file.is_rel_path()) {
@@ -1793,7 +1627,6 @@ bool _Directory::file_exists(String p_file) {
 bool _Directory::dir_exists(String p_dir) {
 	ERR_FAIL_COND_V_MSG(!d, false, "Directory must be opened before use.");
 	if (!p_dir.is_rel_path()) {
-
 		DirAccess *d = DirAccess::create_for_path(p_dir);
 		bool exists = d->dir_exists(p_dir);
 		memdelete(d);
@@ -1805,18 +1638,15 @@ bool _Directory::dir_exists(String p_dir) {
 }
 
 int _Directory::get_space_left() {
-
 	ERR_FAIL_COND_V_MSG(!d, 0, "Directory must be opened before use.");
 	return d->get_space_left() / 1024 * 1024; //return value in megabytes, given binding is int
 }
 
 Error _Directory::copy(String p_from, String p_to) {
-
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	return d->copy(p_from, p_to);
 }
 Error _Directory::rename(String p_from, String p_to) {
-
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_from.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_from);
@@ -1828,7 +1658,6 @@ Error _Directory::rename(String p_from, String p_to) {
 	return d->rename(p_from, p_to);
 }
 Error _Directory::remove(String p_name) {
-
 	ERR_FAIL_COND_V_MSG(!d, ERR_UNCONFIGURED, "Directory must be opened before use.");
 	if (!p_name.is_rel_path()) {
 		DirAccess *d = DirAccess::create_for_path(p_name);
@@ -1841,7 +1670,6 @@ Error _Directory::remove(String p_name) {
 }
 
 void _Directory::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("open", "path"), &_Directory::open);
 	ClassDB::bind_method(D_METHOD("list_dir_begin", "skip_navigational", "skip_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_next"), &_Directory::get_next);
@@ -1881,7 +1709,6 @@ _Marshalls *_Marshalls::get_singleton() {
 }
 
 String _Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) {
-
 	int len;
 	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
 	ERR_FAIL_COND_V_MSG(err != OK, "", "Error when trying to encode Variant.");
@@ -1900,7 +1727,6 @@ String _Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) 
 };
 
 Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects) {
-
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
@@ -1919,14 +1745,12 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 };
 
 String _Marshalls::raw_to_base64(const Vector<uint8_t> &p_arr) {
-
 	String ret = CryptoCore::b64_encode_str(p_arr.ptr(), p_arr.size());
 	ERR_FAIL_COND_V(ret == "", ret);
 	return ret;
 };
 
 Vector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
-
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
@@ -1944,7 +1768,6 @@ Vector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
 };
 
 String _Marshalls::utf8_to_base64(const String &p_str) {
-
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
 	ERR_FAIL_COND_V(ret == "", ret);
@@ -1952,7 +1775,6 @@ String _Marshalls::utf8_to_base64(const String &p_str) {
 };
 
 String _Marshalls::base64_to_utf8(const String &p_str) {
-
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
@@ -1970,7 +1792,6 @@ String _Marshalls::base64_to_utf8(const String &p_str) {
 };
 
 void _Marshalls::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("variant_to_base64", "variant", "full_objects"), &_Marshalls::variant_to_base64, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("base64_to_variant", "base64_str", "allow_objects"), &_Marshalls::base64_to_variant, DEFVAL(false));
 
@@ -1984,22 +1805,18 @@ void _Marshalls::_bind_methods() {
 ////// _Semaphore //////
 
 void _Semaphore::wait() {
-
 	semaphore.wait();
 }
 
 Error _Semaphore::try_wait() {
-
 	return semaphore.try_wait() ? OK : ERR_BUSY;
 }
 
 void _Semaphore::post() {
-
 	semaphore.post();
 }
 
 void _Semaphore::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("wait"), &_Semaphore::wait);
 	ClassDB::bind_method(D_METHOD("try_wait"), &_Semaphore::try_wait);
 	ClassDB::bind_method(D_METHOD("post"), &_Semaphore::post);
@@ -2008,22 +1825,18 @@ void _Semaphore::_bind_methods() {
 ////// _Mutex //////
 
 void _Mutex::lock() {
-
 	mutex.lock();
 }
 
 Error _Mutex::try_lock() {
-
 	return mutex.try_lock();
 }
 
 void _Mutex::unlock() {
-
 	mutex.unlock();
 }
 
 void _Mutex::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("lock"), &_Mutex::lock);
 	ClassDB::bind_method(D_METHOD("try_lock"), &_Mutex::try_lock);
 	ClassDB::bind_method(D_METHOD("unlock"), &_Mutex::unlock);
@@ -2032,7 +1845,6 @@ void _Mutex::_bind_methods() {
 ////// _Thread //////
 
 void _Thread::_start_func(void *ud) {
-
 	Ref<_Thread> *tud = (Ref<_Thread> *)ud;
 	Ref<_Thread> t = *tud;
 	memdelete(tud);
@@ -2043,23 +1855,18 @@ void _Thread::_start_func(void *ud) {
 
 	t->ret = t->target_instance->call(t->target_method, arg, 1, ce);
 	if (ce.error != Callable::CallError::CALL_OK) {
-
 		String reason;
 		switch (ce.error) {
 			case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
-
 				reason = "Invalid Argument #" + itos(ce.argument);
 			} break;
 			case Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
-
 				reason = "Too Many Arguments";
 			} break;
 			case Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
-
 				reason = "Too Few Arguments";
 			} break;
 			case Callable::CallError::CALL_ERROR_INVALID_METHOD: {
-
 				reason = "Method Not Found";
 			} break;
 			default: {
@@ -2071,7 +1878,6 @@ void _Thread::_start_func(void *ud) {
 }
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {
-
 	ERR_FAIL_COND_V_MSG(active, ERR_ALREADY_IN_USE, "Thread already started.");
 	ERR_FAIL_COND_V(!p_instance, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_method == StringName(), ERR_INVALID_PARAMETER);
@@ -2100,7 +1906,6 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 }
 
 String _Thread::get_id() const {
-
 	if (!thread)
 		return String();
 
@@ -2108,11 +1913,9 @@ String _Thread::get_id() const {
 }
 
 bool _Thread::is_active() const {
-
 	return active;
 }
 Variant _Thread::wait_to_finish() {
-
 	ERR_FAIL_COND_V_MSG(!thread, Variant(), "Thread must exist to wait for its completion.");
 	ERR_FAIL_COND_V_MSG(!active, Variant(), "Thread must be active to wait for its completion.");
 	Thread::wait_to_finish(thread);
@@ -2129,7 +1932,6 @@ Variant _Thread::wait_to_finish() {
 }
 
 void _Thread::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("start", "instance", "method", "userdata", "priority"), &_Thread::start, DEFVAL(Variant()), DEFVAL(PRIORITY_NORMAL));
 	ClassDB::bind_method(D_METHOD("get_id"), &_Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_active"), &_Thread::is_active);
@@ -2147,7 +1949,6 @@ _Thread::~_Thread() {
 ////// _ClassDB //////
 
 PackedStringArray _ClassDB::get_class_list() const {
-
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
 
@@ -2161,7 +1962,6 @@ PackedStringArray _ClassDB::get_class_list() const {
 	return ret;
 }
 PackedStringArray _ClassDB::get_inheriters_from_class(const StringName &p_class) const {
-
 	List<StringName> classes;
 	ClassDB::get_inheriters_from_class(p_class, &classes);
 
@@ -2175,23 +1975,18 @@ PackedStringArray _ClassDB::get_inheriters_from_class(const StringName &p_class)
 	return ret;
 }
 StringName _ClassDB::get_parent_class(const StringName &p_class) const {
-
 	return ClassDB::get_parent_class(p_class);
 }
 bool _ClassDB::class_exists(const StringName &p_class) const {
-
 	return ClassDB::class_exists(p_class);
 }
 bool _ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inherits) const {
-
 	return ClassDB::is_parent_class(p_class, p_inherits);
 }
 bool _ClassDB::can_instance(const StringName &p_class) const {
-
 	return ClassDB::can_instance(p_class);
 }
 Variant _ClassDB::instance(const StringName &p_class) const {
-
 	Object *obj = ClassDB::instance(p_class);
 	if (!obj)
 		return Variant();
@@ -2205,11 +2000,9 @@ Variant _ClassDB::instance(const StringName &p_class) const {
 }
 
 bool _ClassDB::has_signal(StringName p_class, StringName p_signal) const {
-
 	return ClassDB::has_signal(p_class, p_signal);
 }
 Dictionary _ClassDB::get_signal(StringName p_class, StringName p_signal) const {
-
 	MethodInfo signal;
 	if (ClassDB::get_signal(p_class, p_signal, &signal)) {
 		return signal.operator Dictionary();
@@ -2218,7 +2011,6 @@ Dictionary _ClassDB::get_signal(StringName p_class, StringName p_signal) const {
 	}
 }
 Array _ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const {
-
 	List<MethodInfo> signals;
 	ClassDB::get_signal_list(p_class, &signals, p_no_inheritance);
 	Array ret;
@@ -2231,7 +2023,6 @@ Array _ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const
 }
 
 Array _ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
-
 	List<PropertyInfo> plist;
 	ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	Array ret;
@@ -2260,12 +2051,10 @@ Error _ClassDB::set_property(Object *p_object, const StringName &p_property, con
 }
 
 bool _ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
-
 	return ClassDB::has_method(p_class, p_method, p_no_inheritance);
 }
 
 Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const {
-
 	List<MethodInfo> methods;
 	ClassDB::get_method_list(p_class, &methods, p_no_inheritance);
 	Array ret;
@@ -2284,7 +2073,6 @@ Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const
 }
 
 PackedStringArray _ClassDB::get_integer_constant_list(const StringName &p_class, bool p_no_inheritance) const {
-
 	List<String> constants;
 	ClassDB::get_integer_constant_list(p_class, &constants, p_no_inheritance);
 
@@ -2299,31 +2087,26 @@ PackedStringArray _ClassDB::get_integer_constant_list(const StringName &p_class,
 }
 
 bool _ClassDB::has_integer_constant(const StringName &p_class, const StringName &p_name) const {
-
 	bool success;
 	ClassDB::get_integer_constant(p_class, p_name, &success);
 	return success;
 }
 
 int _ClassDB::get_integer_constant(const StringName &p_class, const StringName &p_name) const {
-
 	bool found;
 	int c = ClassDB::get_integer_constant(p_class, p_name, &found);
 	ERR_FAIL_COND_V(!found, 0);
 	return c;
 }
 StringName _ClassDB::get_category(const StringName &p_node) const {
-
 	return ClassDB::get_category(p_node);
 }
 
 bool _ClassDB::is_class_enabled(StringName p_class) const {
-
 	return ClassDB::is_class_enabled(p_class);
 }
 
 void _ClassDB::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_class_list"), &_ClassDB::get_class_list);
 	ClassDB::bind_method(D_METHOD("get_inheriters_from_class", "class"), &_ClassDB::get_inheriters_from_class);
 	ClassDB::bind_method(D_METHOD("get_parent_class", "class"), &_ClassDB::get_parent_class);
@@ -2356,11 +2139,9 @@ void _ClassDB::_bind_methods() {
 ////// _Engine //////
 
 void _Engine::set_iterations_per_second(int p_ips) {
-
 	Engine::get_singleton()->set_iterations_per_second(p_ips);
 }
 int _Engine::get_iterations_per_second() const {
-
 	return Engine::get_singleton()->get_iterations_per_second();
 }
 
@@ -2385,17 +2166,14 @@ int _Engine::get_target_fps() const {
 }
 
 float _Engine::get_frames_per_second() const {
-
 	return Engine::get_singleton()->get_frames_per_second();
 }
 
 uint64_t _Engine::get_physics_frames() const {
-
 	return Engine::get_singleton()->get_physics_frames();
 }
 
 uint64_t _Engine::get_idle_frames() const {
-
 	return Engine::get_singleton()->get_idle_frames();
 }
 
@@ -2404,23 +2182,19 @@ void _Engine::set_time_scale(float p_scale) {
 }
 
 float _Engine::get_time_scale() {
-
 	return Engine::get_singleton()->get_time_scale();
 }
 
 int _Engine::get_frames_drawn() {
-
 	return Engine::get_singleton()->get_frames_drawn();
 }
 
 MainLoop *_Engine::get_main_loop() const {
-
 	//needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here
 	return OS::get_singleton()->get_main_loop();
 }
 
 Dictionary _Engine::get_version_info() const {
-
 	return Engine::get_singleton()->get_version_info();
 }
 
@@ -2449,27 +2223,22 @@ bool _Engine::is_in_physics_frame() const {
 }
 
 bool _Engine::has_singleton(const String &p_name) const {
-
 	return Engine::get_singleton()->has_singleton(p_name);
 }
 
 Object *_Engine::get_singleton_object(const String &p_name) const {
-
 	return Engine::get_singleton()->get_singleton_object(p_name);
 }
 
 void _Engine::set_editor_hint(bool p_enabled) {
-
 	Engine::get_singleton()->set_editor_hint(p_enabled);
 }
 
 bool _Engine::is_editor_hint() const {
-
 	return Engine::get_singleton()->is_editor_hint();
 }
 
 void _Engine::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_iterations_per_second", "iterations_per_second"), &_Engine::set_iterations_per_second);
 	ClassDB::bind_method(D_METHOD("get_iterations_per_second"), &_Engine::get_iterations_per_second);
 	ClassDB::bind_method(D_METHOD("set_physics_jitter_fix", "physics_jitter_fix"), &_Engine::set_physics_jitter_fix);

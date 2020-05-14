@@ -36,7 +36,6 @@
 #include "scene/debugger/scene_debugger.h"
 
 bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p_value) {
-
 	if (!editable || !prop_values.has(p_name) || String(p_name).begins_with("Constants/"))
 		return false;
 
@@ -46,7 +45,6 @@ bool EditorDebuggerRemoteObject::_set(const StringName &p_name, const Variant &p
 }
 
 bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) const {
-
 	if (!prop_values.has(p_name))
 		return false;
 
@@ -55,7 +53,6 @@ bool EditorDebuggerRemoteObject::_get(const StringName &p_name, Variant &r_ret) 
 }
 
 void EditorDebuggerRemoteObject::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	p_list->clear(); //sorry, no want category
 	for (const List<PropertyInfo>::Element *E = prop_list.front(); E; E = E->next()) {
 		p_list->push_back(E->get());
@@ -76,7 +73,6 @@ Variant EditorDebuggerRemoteObject::get_variant(const StringName &p_name) {
 }
 
 void EditorDebuggerRemoteObject::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_title"), &EditorDebuggerRemoteObject::get_title);
 	ClassDB::bind_method(D_METHOD("get_variant"), &EditorDebuggerRemoteObject::get_variant);
 	ClassDB::bind_method(D_METHOD("clear"), &EditorDebuggerRemoteObject::clear);
@@ -115,12 +111,10 @@ void EditorDebuggerInspector::_notification(int p_what) {
 }
 
 void EditorDebuggerInspector::_object_edited(ObjectID p_id, const String &p_prop, const Variant &p_value) {
-
 	emit_signal("object_edited", p_id, p_prop, p_value);
 }
 
 void EditorDebuggerInspector::_object_selected(ObjectID p_object) {
-
 	emit_signal("object_selected", p_object);
 }
 
@@ -147,7 +141,6 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 	int new_props_added = 0;
 	Set<String> changed;
 	for (int i = 0; i < obj.properties.size(); i++) {
-
 		PropertyInfo &pinfo = obj.properties[i].first;
 		Variant &var = obj.properties[i].second;
 
@@ -187,7 +180,6 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 			new_props_added++;
 			debugObj->prop_values[pinfo.name] = var;
 		} else {
-
 			if (bool(Variant::evaluate(Variant::OP_NOT_EQUAL, debugObj->prop_values[pinfo.name], var))) {
 				debugObj->prop_values[pinfo.name] = var;
 				changed.insert(pinfo.name);
@@ -225,7 +217,6 @@ Object *EditorDebuggerInspector::get_object(ObjectID p_id) {
 }
 
 void EditorDebuggerInspector::add_stack_variable(const Array &p_array) {
-
 	DebuggerMarshalls::ScriptStackVariable var;
 	var.deserialize(p_array);
 	String n = var.name;

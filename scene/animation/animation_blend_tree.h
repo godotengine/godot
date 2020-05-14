@@ -34,7 +34,6 @@
 #include "scene/animation/animation_tree.h"
 
 class AnimationNodeAnimation : public AnimationRootNode {
-
 	GDCLASS(AnimationNodeAnimation, AnimationRootNode);
 
 	StringName animation;
@@ -268,7 +267,6 @@ class AnimationNodeTransition : public AnimationNode {
 		MAX_INPUTS = 32
 	};
 	struct InputData {
-
 		String name;
 		bool auto_advance;
 		InputData() { auto_advance = false; }

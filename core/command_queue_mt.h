@@ -297,22 +297,18 @@
 #define MAX_CMD_PARAMS 15
 
 class CommandQueueMT {
-
 	struct SyncSemaphore {
-
 		Semaphore sem;
 		bool in_use = false;
 	};
 
 	struct CommandBase {
-
 		virtual void call() = 0;
 		virtual void post() {}
 		virtual ~CommandBase() {}
 	};
 
 	struct SyncCommand : public CommandBase {
-
 		SyncSemaphore *sync_sem;
 
 		virtual void post() {
@@ -349,7 +345,6 @@ class CommandQueueMT {
 
 	template <class T>
 	T *allocate() {
-
 		// alloc size is size+T+safeguard
 		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
 
@@ -358,7 +353,6 @@ class CommandQueueMT {
 		if (write_ptr < dealloc_ptr) {
 			// behind dealloc_ptr, check that there is room
 			if ((dealloc_ptr - write_ptr) <= alloc_size) {
-
 				// There is no more room, try to deallocate something
 				if (dealloc_one()) {
 					goto tryagain;
@@ -405,12 +399,10 @@ class CommandQueueMT {
 
 	template <class T>
 	T *allocate_and_lock() {
-
 		lock();
 		T *ret;
 
 		while ((ret = allocate<T>()) == nullptr) {
-
 			unlock();
 			// sleep a little until fetch happened and some room is made
 			wait_for_flush();
@@ -488,7 +480,6 @@ public:
 	}
 
 	void flush_all() {
-
 		//ERR_FAIL_COND(sync);
 		lock();
 		while (flush_one(false))

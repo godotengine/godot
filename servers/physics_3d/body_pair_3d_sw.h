@@ -53,7 +53,6 @@ class BodyPair3DSW : public Constraint3DSW {
 	int shape_B;
 
 	struct Contact {
-
 		Vector3 position;
 		Vector3 normal;
 		Vector3 local_A, local_B;

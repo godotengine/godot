@@ -36,13 +36,11 @@
 #include "gdscript_parser.h"
 
 class GDScriptCompiler {
-
 	const GDScriptParser *parser;
 	Set<GDScript *> parsed_classes;
 	Set<GDScript *> parsing_classes;
 	GDScript *main_script;
 	struct CodeGen {
-
 		GDScript *script;
 		const GDScriptParser::ClassNode *class_node;
 		const GDScriptParser::FunctionNode *function_node;
@@ -71,7 +69,6 @@ class GDScriptCompiler {
 		void push_stack_identifiers() {
 			stack_id_stack.push_back(stack_identifiers);
 			if (debug_stack) {
-
 				block_identifier_stack.push_back(block_identifiers);
 				block_identifiers.clear();
 			}
@@ -83,7 +80,6 @@ class GDScriptCompiler {
 
 			if (debug_stack) {
 				for (Map<StringName, int>::Element *E = block_identifiers.front(); E; E = E->next()) {
-
 					GDScriptFunction::StackDebug sd;
 					sd.added = false;
 					sd.identifier = E->key();

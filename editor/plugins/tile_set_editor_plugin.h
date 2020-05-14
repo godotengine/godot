@@ -41,7 +41,6 @@
 class TilesetEditorContext;
 
 class TileSetEditor : public HSplitContainer {
-
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
@@ -252,7 +251,6 @@ private:
 };
 
 class TilesetEditorContext : public Object {
-
 	friend class TileSetEditor;
 	GDCLASS(TilesetEditorContext, Object);
 
@@ -278,7 +276,6 @@ public:
 };
 
 class TileSetEditorPlugin : public EditorPlugin {
-
 	GDCLASS(TileSetEditorPlugin, EditorPlugin);
 
 	TileSetEditor *tileset_editor;

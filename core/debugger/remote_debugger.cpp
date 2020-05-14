@@ -57,7 +57,6 @@ void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
 }
 
 struct RemoteDebugger::NetworkProfiler {
-
 public:
 	typedef DebuggerMarshalls::MultiplayerNodeInfo NodeInfo;
 	struct BandwidthFrame {
@@ -191,7 +190,6 @@ struct RemoteDebugger::ScriptsProfiler {
 	typedef DebuggerMarshalls::ScriptFunctionSignature FunctionSignature;
 	typedef DebuggerMarshalls::ScriptFunctionInfo FunctionInfo;
 	struct ProfileInfoSort {
-
 		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
 			return A->total_time < B->total_time;
 		}
@@ -270,7 +268,6 @@ struct RemoteDebugger::ScriptsProfiler {
 };
 
 struct RemoteDebugger::ServersProfiler {
-
 	bool skip_profile_frame = false;
 	typedef DebuggerMarshalls::ServerInfo ServerInfo;
 	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
@@ -347,7 +344,6 @@ struct RemoteDebugger::ServersProfiler {
 };
 
 struct RemoteDebugger::VisualProfiler {
-
 	typedef DebuggerMarshalls::ServerInfo ServerInfo;
 	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
 
@@ -372,7 +368,6 @@ struct RemoteDebugger::VisualProfiler {
 };
 
 struct RemoteDebugger::PerformanceProfiler {
-
 	Object *performance = nullptr;
 	int last_perf_time = 0;
 
@@ -401,14 +396,12 @@ struct RemoteDebugger::PerformanceProfiler {
 };
 
 void RemoteDebugger::_send_resource_usage() {
-
 	DebuggerMarshalls::ResourceUsage usage;
 
 	List<RS::TextureInfo> tinfo;
 	RS::get_singleton()->texture_debug_usage(&tinfo);
 
 	for (List<RS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
-
 		DebuggerMarshalls::ResourceInfo info;
 		info.path = E->get().path;
 		info.vram = E->get().bytes;
@@ -436,7 +429,6 @@ Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 }
 
 void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type) {
-
 	if (p_type == ERR_HANDLER_SCRIPT)
 		return; //ignore script errors, those go through debugger
 
@@ -457,7 +449,6 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 }
 
 void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error) {
-
 	RemoteDebugger *rd = (RemoteDebugger *)p_this;
 
 	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) // Can't handle recursive prints during flush.
@@ -521,7 +512,6 @@ void RemoteDebugger::flush_output() {
 	}
 
 	if (output_strings.size()) {
-
 		// Join output strings so we generate less messages.
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
@@ -574,7 +564,6 @@ void RemoteDebugger::flush_output() {
 }
 
 void RemoteDebugger::send_message(const String &p_message, const Array &p_args) {
-
 	MutexLock lock(mutex);
 	if (is_peer_connected()) {
 		_put_msg(p_message, p_args);
@@ -582,7 +571,6 @@ void RemoteDebugger::send_message(const String &p_message, const Array &p_args) 
 }
 
 void RemoteDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) {
-
 	ErrorMessage oe;
 	oe.error = p_err;
 	oe.error_descr = p_descr;
@@ -609,7 +597,6 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	}
 
 	if (is_peer_connected()) {
-
 		if (oe.warning) {
 			if (warn_count > max_warnings_per_second) {
 				n_warnings_dropped++;
@@ -664,7 +651,6 @@ Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, boo
 }
 
 void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
-
 	//this function is called when there is a debugger break (bug on script)
 	//or when execution is paused from editor
 
@@ -698,7 +684,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		peer->poll();
 
 		if (peer->has_message()) {
-
 			Array cmd = peer->get_message();
 
 			ERR_CONTINUE(cmd.size() != 2);
@@ -816,7 +801,6 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 	flush_output();
 	peer->poll();
 	while (peer->has_message()) {
-
 		Array arr = peer->get_message();
 
 		ERR_CONTINUE(arr.size() != 2);

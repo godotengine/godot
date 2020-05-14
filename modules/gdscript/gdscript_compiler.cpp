@@ -33,7 +33,6 @@
 #include "gdscript.h"
 
 bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringName &p_name) {
-
 	if (codegen.function_node && codegen.function_node->_static)
 		return false;
 
@@ -44,11 +43,9 @@ bool GDScriptCompiler::_is_class_member_property(CodeGen &codegen, const StringN
 }
 
 bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringName &p_name) {
-
 	GDScript *scr = owner;
 	GDScriptNativeClass *nc = nullptr;
 	while (scr) {
-
 		if (scr->native.is_valid())
 			nc = scr->native.ptr();
 		scr = scr->_base;
@@ -60,7 +57,6 @@ bool GDScriptCompiler::_is_class_member_property(GDScript *owner, const StringNa
 }
 
 void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::Node *p_node) {
-
 	if (error != "")
 		return;
 
@@ -75,7 +71,6 @@ void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::N
 }
 
 bool GDScriptCompiler::_create_unary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level) {
-
 	ERR_FAIL_COND_V(on->arguments.size() != 1, false);
 
 	int src_address_a = _parse_expression(codegen, on->arguments[0], p_stack_level);
@@ -91,7 +86,6 @@ bool GDScriptCompiler::_create_unary_operator(CodeGen &codegen, const GDScriptPa
 }
 
 bool GDScriptCompiler::_create_binary_operator(CodeGen &codegen, const GDScriptParser::OperatorNode *on, Variant::Operator op, int p_stack_level, bool p_initializer, int p_index_addr) {
-
 	ERR_FAIL_COND_V(on->arguments.size() != 2, false);
 
 	int src_address_a = _parse_expression(codegen, on->arguments[0], p_stack_level, false, p_initializer, p_index_addr);
@@ -172,11 +166,9 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 }
 
 int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDScriptParser::OperatorNode *p_expression, int p_stack_level, int p_index_addr) {
-
 	Variant::Operator var_op = Variant::OP_MAX;
 
 	switch (p_expression->op) {
-
 		case GDScriptParser::OperatorNode::OP_ASSIGN_ADD:
 			var_op = Variant::OP_ADD;
 			break;
@@ -209,11 +201,9 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 			break;
 		case GDScriptParser::OperatorNode::OP_INIT_ASSIGN:
 		case GDScriptParser::OperatorNode::OP_ASSIGN: {
-
 			//none
 		} break;
 		default: {
-
 			ERR_FAIL_V(-1);
 		}
 	}
@@ -221,7 +211,6 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 	bool initializer = p_expression->op == GDScriptParser::OperatorNode::OP_INIT_ASSIGN;
 
 	if (var_op == Variant::OP_MAX) {
-
 		return _parse_expression(codegen, p_expression->arguments[1], p_stack_level, false, initializer);
 	}
 
@@ -235,7 +224,6 @@ int GDScriptCompiler::_parse_assign_right_expression(CodeGen &codegen, const GDS
 }
 
 int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::Node *p_expression, int p_stack_level, bool p_root, bool p_initializer, int p_index_addr) {
-
 	switch (p_expression->type) {
 		//should parse variable declaration and adjust stack accordingly...
 		case GDScriptParser::Node::TYPE_IDENTIFIER: {
@@ -251,7 +239,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 			// TRY STACK!
 			if (!p_initializer && codegen.stack_identifiers.has(identifier)) {
-
 				int pos = codegen.stack_identifiers[identifier];
 				return pos | (GDScriptFunction::ADDR_TYPE_STACK_VARIABLE << GDScriptFunction::ADDR_BITS);
 			}
@@ -269,11 +256,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 			//TRY MEMBERS!
 			if (!codegen.function_node || !codegen.function_node->_static) {
-
 				// TRY MEMBER VARIABLES!
 				//static function
 				if (codegen.script->member_indices.has(identifier)) {
-
 					int idx = codegen.script->member_indices[identifier].index;
 					return idx | (GDScriptFunction::ADDR_TYPE_MEMBER << GDScriptFunction::ADDR_BITS); //argument (stack root)
 				}
@@ -283,13 +268,10 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 			GDScript *owner = codegen.script;
 			while (owner) {
-
 				GDScript *scr = owner;
 				GDScriptNativeClass *nc = nullptr;
 				while (scr) {
-
 					if (scr->constants.has(identifier)) {
-
 						//int idx=scr->constants[identifier];
 						int idx = codegen.get_name_map_pos(identifier);
 						return idx | (GDScriptFunction::ADDR_TYPE_CLASS_CONSTANT << GDScriptFunction::ADDR_BITS); //argument (stack root)
@@ -302,7 +284,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				// CLASS C++ Integer Constant
 
 				if (nc) {
-
 					bool success = false;
 					int constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
 					if (success) {
@@ -310,7 +291,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						int idx;
 
 						if (!codegen.constant_map.has(key)) {
-
 							idx = codegen.constant_map.size();
 							codegen.constant_map[key] = idx;
 
@@ -326,7 +306,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			}
 
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
-
 				int idx = GDScriptLanguage::get_singleton()->get_global_map()[identifier];
 				return idx | (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
 			}
@@ -334,7 +313,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			/* TRY GLOBAL CLASSES */
 
 			if (ScriptServer::is_global_class(identifier)) {
-
 				const GDScriptParser::ClassNode *class_node = codegen.class_node;
 				while (class_node->owner) {
 					class_node = class_node->owner;
@@ -355,7 +333,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				int idx;
 
 				if (!codegen.constant_map.has(key)) {
-
 					idx = codegen.constant_map.size();
 					codegen.constant_map[key] = idx;
 
@@ -368,7 +345,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 #ifdef TOOLS_ENABLED
 			if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(identifier)) {
-
 				int idx = codegen.named_globals.find(identifier);
 				if (idx == -1) {
 					idx = codegen.named_globals.size();
@@ -392,7 +368,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			int idx;
 
 			if (!codegen.constant_map.has(cn->value)) {
-
 				idx = codegen.constant_map.size();
 				codegen.constant_map[cn->value] = idx;
 
@@ -412,14 +387,12 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 			return (GDScriptFunction::ADDR_TYPE_SELF << GDScriptFunction::ADDR_BITS);
 		} break;
 		case GDScriptParser::Node::TYPE_ARRAY: {
-
 			const GDScriptParser::ArrayNode *an = static_cast<const GDScriptParser::ArrayNode *>(p_expression);
 			Vector<int> values;
 
 			int slevel = p_stack_level;
 
 			for (int i = 0; i < an->elements.size(); i++) {
-
 				int ret = _parse_expression(codegen, an->elements[i], slevel);
 				if (ret < 0)
 					return ret;
@@ -443,14 +416,12 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 		} break;
 		case GDScriptParser::Node::TYPE_DICTIONARY: {
-
 			const GDScriptParser::DictionaryNode *dn = static_cast<const GDScriptParser::DictionaryNode *>(p_expression);
 			Vector<int> values;
 
 			int slevel = p_stack_level;
 
 			for (int i = 0; i < dn->elements.size(); i++) {
-
 				int ret = _parse_expression(codegen, dn->elements[i].key, slevel);
 				if (ret < 0)
 					return ret;
@@ -505,7 +476,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				case GDScriptDataType::NATIVE: {
 					int class_idx;
 					if (GDScriptLanguage::get_singleton()->get_global_map().has(cast_type.native_type)) {
-
 						class_idx = GDScriptLanguage::get_singleton()->get_global_map()[cast_type.native_type];
 						class_idx |= (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
 					} else {
@@ -517,7 +487,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				} break;
 				case GDScriptDataType::SCRIPT:
 				case GDScriptDataType::GDSCRIPT: {
-
 					Variant script = cast_type.script_type;
 					int idx = codegen.get_constant_pos(script);
 					idx |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS; //make it a local constant (faster access)
@@ -543,10 +512,8 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 			const GDScriptParser::OperatorNode *on = static_cast<const GDScriptParser::OperatorNode *>(p_expression);
 			switch (on->op) {
-
 				//call/constructor operator
 				case GDScriptParser::OperatorNode::OP_PARENT_CALL: {
-
 					ERR_FAIL_COND_V(on->arguments.size() < 1, -1);
 
 					const GDScriptParser::IdentifierNode *in = (const GDScriptParser::IdentifierNode *)on->arguments[0];
@@ -554,7 +521,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					Vector<int> arguments;
 					int slevel = p_stack_level;
 					for (int i = 1; i < on->arguments.size(); i++) {
-
 						int ret = _parse_expression(codegen, on->arguments[i], slevel);
 						if (ret < 0)
 							return ret;
@@ -576,7 +542,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 				} break;
 				case GDScriptParser::OperatorNode::OP_CALL: {
-
 					if (on->arguments[0]->type == GDScriptParser::Node::TYPE_TYPE) {
 						//construct a basic type
 						ERR_FAIL_COND_V(on->arguments.size() < 1, -1);
@@ -587,7 +552,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						Vector<int> arguments;
 						int slevel = p_stack_level;
 						for (int i = 1; i < on->arguments.size(); i++) {
-
 							int ret = _parse_expression(codegen, on->arguments[i], slevel);
 							if (ret < 0)
 								return ret;
@@ -614,7 +578,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						Vector<int> arguments;
 						int slevel = p_stack_level;
 						for (int i = 1; i < on->arguments.size(); i++) {
-
 							int ret = _parse_expression(codegen, on->arguments[i], slevel);
 							if (ret < 0)
 								return ret;
@@ -648,14 +611,12 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						int slevel = p_stack_level;
 
 						for (int i = 0; i < on->arguments.size(); i++) {
-
 							int ret;
 
 							if (i == 0 && on->arguments[i]->type == GDScriptParser::Node::TYPE_SELF && codegen.function_node && codegen.function_node->_static) {
 								//static call to self
 								ret = (GDScriptFunction::ADDR_TYPE_CLASS << GDScriptFunction::ADDR_BITS);
 							} else if (i == 1) {
-
 								if (on->arguments[i]->type != GDScriptParser::Node::TYPE_IDENTIFIER) {
 									_set_error("Attempt to call a non-identifier.", on);
 									return -1;
@@ -664,7 +625,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 								ret = codegen.get_name_map_pos(id->name);
 
 							} else {
-
 								ret = _parse_expression(codegen, on->arguments[i], slevel);
 								if (ret < 0)
 									return ret;
@@ -684,13 +644,11 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					}
 				} break;
 				case GDScriptParser::OperatorNode::OP_YIELD: {
-
 					ERR_FAIL_COND_V(on->arguments.size() && on->arguments.size() != 2, -1);
 
 					Vector<int> arguments;
 					int slevel = p_stack_level;
 					for (int i = 0; i < on->arguments.size(); i++) {
-
 						int ret = _parse_expression(codegen, on->arguments[i], slevel);
 						if (ret < 0)
 							return ret;
@@ -713,7 +671,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				//indexing operator
 				case GDScriptParser::OperatorNode::OP_INDEX:
 				case GDScriptParser::OperatorNode::OP_INDEX_NAMED: {
-
 					ERR_FAIL_COND_V(on->arguments.size() != 2, -1);
 
 					int slevel = p_stack_level;
@@ -728,7 +685,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						index = p_index_addr;
 					} else if (named) {
 						if (on->arguments[0]->type == GDScriptParser::Node::TYPE_SELF && codegen.script && codegen.function_node && !codegen.function_node->_static) {
-
 							GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(on->arguments[1]);
 							const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(identifier->name);
 
@@ -749,7 +705,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						index = codegen.get_name_map_pos(static_cast<GDScriptParser::IdentifierNode *>(on->arguments[1])->name);
 
 					} else {
-
 						if (on->arguments[1]->type == GDScriptParser::Node::TYPE_CONSTANT && static_cast<const GDScriptParser::ConstantNode *>(on->arguments[1])->value.get_type() == Variant::STRING) {
 							//also, somehow, named (speed up anyway)
 							StringName name = static_cast<const GDScriptParser::ConstantNode *>(on->arguments[1])->value;
@@ -775,7 +730,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 				} break;
 				case GDScriptParser::OperatorNode::OP_AND: {
-
 					// AND operator with early out on failure
 
 					int res = _parse_expression(codegen, on->arguments[0], p_stack_level);
@@ -808,7 +762,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 				} break;
 				case GDScriptParser::OperatorNode::OP_OR: {
-
 					// OR operator with early out on success
 
 					int res = _parse_expression(codegen, on->arguments[0], p_stack_level);
@@ -842,7 +795,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				} break;
 				// ternary operators
 				case GDScriptParser::OperatorNode::OP_TERNARY_IF: {
-
 					// x IF a ELSE y operator with early out on failure
 
 					int res = _parse_expression(codegen, on->arguments[0], p_stack_level);
@@ -981,18 +933,15 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				case GDScriptParser::OperatorNode::OP_ASSIGN_BIT_XOR:
 				case GDScriptParser::OperatorNode::OP_INIT_ASSIGN:
 				case GDScriptParser::OperatorNode::OP_ASSIGN: {
-
 					ERR_FAIL_COND_V(on->arguments.size() != 2, -1);
 
 					if (on->arguments[0]->type == GDScriptParser::Node::TYPE_OPERATOR && (static_cast<GDScriptParser::OperatorNode *>(on->arguments[0])->op == GDScriptParser::OperatorNode::OP_INDEX || static_cast<GDScriptParser::OperatorNode *>(on->arguments[0])->op == GDScriptParser::OperatorNode::OP_INDEX_NAMED)) {
-
 						// SET (chained) MODE!
 #ifdef DEBUG_ENABLED
 						if (static_cast<GDScriptParser::OperatorNode *>(on->arguments[0])->op == GDScriptParser::OperatorNode::OP_INDEX_NAMED) {
 							const GDScriptParser::OperatorNode *inon = static_cast<GDScriptParser::OperatorNode *>(on->arguments[0]);
 
 							if (inon->arguments[0]->type == GDScriptParser::Node::TYPE_SELF && codegen.script && codegen.function_node && !codegen.function_node->_static) {
-
 								const Map<StringName, GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(static_cast<GDScriptParser::IdentifierNode *>(inon->arguments[1])->name);
 								if (MI && MI->get().setter == codegen.function_node->name) {
 									String n = static_cast<GDScriptParser::IdentifierNode *>(inon->arguments[1])->name;
@@ -1017,13 +966,10 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							//create get/set chain
 							GDScriptParser::OperatorNode *n = op;
 							while (true) {
-
 								chain.push_back(n);
 								if (n->arguments[0]->type != GDScriptParser::Node::TYPE_OPERATOR) {
-
 									//check for a built-in property
 									if (n->arguments[0]->type == GDScriptParser::Node::TYPE_IDENTIFIER) {
-
 										GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(n->arguments[0]);
 										if (_is_class_member_property(codegen, identifier->name)) {
 											assign_property = identifier->name;
@@ -1053,7 +999,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						Vector<int> setchain;
 
 						if (assign_property != StringName()) {
-
 							// recover and assign at the end, this allows stuff like
 							// position.x+=2.0
 							// in Node2D
@@ -1063,7 +1008,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						}
 
 						for (List<GDScriptParser::OperatorNode *>::Element *E = chain.back(); E; E = E->prev()) {
-
 							if (E == chain.front()) //ignore first
 								break;
 
@@ -1071,12 +1015,10 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 							int key_idx;
 
 							if (named) {
-
 								key_idx = codegen.get_name_map_pos(static_cast<const GDScriptParser::IdentifierNode *>(E->get()->arguments[1])->name);
 								//printf("named key %x\n",key_idx);
 
 							} else {
-
 								if (prev_pos & (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS)) {
 									slevel++;
 									codegen.alloc_stack(slevel);
@@ -1117,11 +1059,9 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						bool named = false;
 
 						if (op->op == GDScriptParser::OperatorNode::OP_INDEX_NAMED) {
-
 							set_index = codegen.get_name_map_pos(static_cast<const GDScriptParser::IdentifierNode *>(op->arguments[1])->name);
 							named = true;
 						} else {
-
 							set_index = _parse_expression(codegen, op->arguments[1], slevel + 1);
 							named = false;
 						}
@@ -1144,7 +1084,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 						codegen.opcodes.push_back(set_value);
 
 						for (int i = 0; i < setchain.size(); i++) {
-
 							codegen.opcodes.push_back(setchain[i]);
 						}
 
@@ -1167,7 +1106,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 
 						return GDScriptFunction::ADDR_TYPE_NIL << GDScriptFunction::ADDR_BITS;
 					} else {
-
 						//REGULAR ASSIGNMENT MODE!!
 
 						int slevel = p_stack_level;
@@ -1199,7 +1137,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 								case GDScriptDataType::NATIVE: {
 									int class_idx;
 									if (GDScriptLanguage::get_singleton()->get_global_map().has(assign_type.native_type)) {
-
 										class_idx = GDScriptLanguage::get_singleton()->get_global_map()[assign_type.native_type];
 										class_idx |= (GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS); //argument (stack root)
 									} else {
@@ -1213,7 +1150,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 								} break;
 								case GDScriptDataType::SCRIPT:
 								case GDScriptDataType::GDSCRIPT: {
-
 									Variant script = assign_type.script_type;
 									int idx = codegen.get_constant_pos(script);
 									idx |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS; //make it a local constant (faster access)
@@ -1242,7 +1178,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					}
 				} break;
 				case GDScriptParser::OperatorNode::OP_IS: {
-
 					ERR_FAIL_COND_V(on->arguments.size() != 2, false);
 
 					int slevel = p_stack_level;
@@ -1283,7 +1218,6 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					codegen.opcodes.push_back((int)tn->vtype); // argument 2 (unary only takes one parameter)
 				} break;
 				default: {
-
 					ERR_FAIL_V_MSG(0, "Bug in bytecode compiler, unexpected operator #" + itos(on->op) + " in parse tree while parsing expression."); //unreachable code
 
 				} break;
@@ -1296,20 +1230,17 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 		} break;
 		//TYPE_TYPE,
 		default: {
-
 			ERR_FAIL_V_MSG(-1, "Bug in bytecode compiler, unexpected node in parse tree while parsing expression."); //unreachable code
 		} break;
 	}
 }
 
 Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::BlockNode *p_block, int p_stack_level, int p_break_addr, int p_continue_addr) {
-
 	codegen.push_stack_identifiers();
 	int new_identifiers = 0;
 	codegen.current_line = p_block->line;
 
 	for (int i = 0; i < p_block->statements.size(); i++) {
-
 		const GDScriptParser::Node *s = p_block->statements[i];
 
 		switch (s->type) {
@@ -1327,7 +1258,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 				const GDScriptParser::ControlFlowNode *cf = static_cast<const GDScriptParser::ControlFlowNode *>(s);
 
 				switch (cf->cf_type) {
-
 					case GDScriptParser::ControlFlowNode::CF_MATCH: {
 						GDScriptParser::MatchNode *match = cf->match;
 
@@ -1401,7 +1331,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 					} break;
 
 					case GDScriptParser::ControlFlowNode::CF_IF: {
-
 						int ret2 = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
 						if (ret2 < 0)
 							return ERR_PARSE_ERROR;
@@ -1416,7 +1345,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 							return err;
 
 						if (cf->body_else) {
-
 							codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
 							int end_addr = codegen.opcodes.size();
 							codegen.opcodes.push_back(0);
@@ -1434,7 +1362,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_FOR: {
-
 						int slevel = p_stack_level;
 						int iter_stack_pos = slevel;
 						int iterator_pos = (slevel++) | (GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS);
@@ -1486,7 +1413,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_WHILE: {
-
 						codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
 						codegen.opcodes.push_back(codegen.opcodes.size() + 3);
 						int break_addr = codegen.opcodes.size();
@@ -1510,9 +1436,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_BREAK: {
-
 						if (p_break_addr < 0) {
-
 							_set_error("'break'' not within loop", cf);
 							return ERR_COMPILATION_FAILED;
 						}
@@ -1521,9 +1445,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_CONTINUE: {
-
 						if (p_continue_addr < 0) {
-
 							_set_error("'continue' not within loop", cf);
 							return ERR_COMPILATION_FAILED;
 						}
@@ -1533,17 +1455,14 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 					} break;
 					case GDScriptParser::ControlFlowNode::CF_RETURN: {
-
 						int ret2;
 
 						if (cf->arguments.size()) {
-
 							ret2 = _parse_expression(codegen, cf->arguments[0], p_stack_level, false);
 							if (ret2 < 0)
 								return ERR_PARSE_ERROR;
 
 						} else {
-
 							ret2 = GDScriptFunction::ADDR_TYPE_NIL << GDScriptFunction::ADDR_BITS;
 						}
 
@@ -1582,7 +1501,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 #endif
 			} break;
 			case GDScriptParser::Node::TYPE_LOCAL_VAR: {
-
 				const GDScriptParser::LocalVarNode *lv = static_cast<const GDScriptParser::LocalVarNode *>(s);
 
 				// since we are using properties now for most class access, allow shadowing of class members to make user's life easier.
@@ -1610,7 +1528,6 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 }
 
 Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser::ClassNode *p_class, const GDScriptParser::FunctionNode *p_func, bool p_for_ready) {
-
 	Vector<int> bytecode;
 	CodeGen codegen;
 
@@ -1651,7 +1568,6 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	if (is_initializer || (p_func && String(p_func->name) == "_init")) {
 		//parse initializer for class members
 		if (!p_func && p_class->extends_used && p_script->native.is_null()) {
-
 			//call implicit parent constructor
 			codegen.opcodes.push_back(GDScriptFunction::OPCODE_CALL_SELF_BASE);
 			codegen.opcodes.push_back(codegen.get_name_map_pos("_init"));
@@ -1679,13 +1595,10 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 	StringName func_name;
 
 	if (p_func) {
-
 		if (p_func->default_values.size()) {
-
 			codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP_TO_DEF_ARGUMENT);
 			defarg_addr.push_back(codegen.opcodes.size());
 			for (int i = 0; i < p_func->default_values.size(); i++) {
-
 				_parse_expression(codegen, p_func->default_values[i], stack_level, true);
 				defarg_addr.push_back(codegen.opcodes.size());
 			}
@@ -1747,17 +1660,14 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 			gdfunc->constants.write[idx] = *K;
 		}
 	} else {
-
 		gdfunc->_constants_ptr = nullptr;
 		gdfunc->_constant_count = 0;
 	}
 	//global names
 	if (codegen.name_map.size()) {
-
 		gdfunc->global_names.resize(codegen.name_map.size());
 		gdfunc->_global_names_ptr = &gdfunc->global_names[0];
 		for (Map<StringName, int>::Element *E = codegen.name_map.front(); E; E = E->next()) {
-
 			gdfunc->global_names.write[E->get()] = E->key();
 		}
 		gdfunc->_global_names_count = gdfunc->global_names.size();
@@ -1780,19 +1690,16 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 #endif
 
 	if (codegen.opcodes.size()) {
-
 		gdfunc->code = codegen.opcodes;
 		gdfunc->_code_ptr = &gdfunc->code[0];
 		gdfunc->_code_size = codegen.opcodes.size();
 
 	} else {
-
 		gdfunc->_code_ptr = nullptr;
 		gdfunc->_code_size = 0;
 	}
 
 	if (defarg_addr.size()) {
-
 		gdfunc->default_arguments = defarg_addr;
 		gdfunc->_default_arg_count = defarg_addr.size() - 1;
 		gdfunc->_default_arg_ptr = &gdfunc->default_arguments[0];
@@ -1860,7 +1767,6 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 }
 
 Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
-
 	parsing_classes.insert(p_script);
 
 	if (p_class->owner && p_class->owner->owner) {
@@ -1931,7 +1837,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	}
 
 	for (int i = 0; i < p_class->variables.size(); i++) {
-
 		StringName name = p_class->variables[i].identifier;
 
 		GDScript::MemberInfo minfo;
@@ -1946,7 +1851,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		PropertyInfo export_info = p_class->variables[i]._export;
 
 		if (export_info.type != Variant::NIL) {
-
 			if (!minfo.data_type.has_type) {
 				prop_info.type = export_info.type;
 				prop_info.class_name = export_info.class_name;
@@ -1973,7 +1877,6 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	}
 
 	for (Map<StringName, GDScriptParser::ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
-
 		StringName name = E->key();
 
 		ERR_CONTINUE(E->get().expression->type != GDScriptParser::Node::TYPE_CONSTANT);
@@ -1988,13 +1891,11 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 	}
 
 	for (int i = 0; i < p_class->_signals.size(); i++) {
-
 		StringName name = p_class->_signals[i].name;
 
 		GDScript *c = p_script;
 
 		while (c) {
-
 			if (c->_signals.has(name)) {
 				_set_error("Signal '" + name + "' redefined (in current or parent class)", p_class);
 				return ERR_ALREADY_EXISTS;
@@ -2052,7 +1953,6 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 	bool has_ready = false;
 
 	for (int i = 0; i < p_class->functions.size(); i++) {
-
 		if (!has_initializer && p_class->functions[i]->name == "_init")
 			has_initializer = true;
 		if (!has_ready && p_class->functions[i]->name == "_ready")
@@ -2065,7 +1965,6 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 	//parse static methods
 
 	for (int i = 0; i < p_class->static_functions.size(); i++) {
-
 		Error err = _parse_function(p_script, p_class, p_class->static_functions[i]);
 		if (err)
 			return err;
@@ -2091,7 +1990,6 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 	if (p_keep_state) {
 		for (Set<Object *>::Element *E = p_script->instances.front(); E;) {
-
 			Set<Object *>::Element *N = E->next();
 
 			ScriptInstance *si = E->get()->get_script_instance();
@@ -2126,7 +2024,6 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 				}
 #endif
 			} else {
-
 				GDScriptInstance *gi = static_cast<GDScriptInstance *>(si);
 				gi->reload_members();
 			}
@@ -2151,7 +2048,6 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 }
 
 void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
-
 	Map<StringName, Ref<GDScript>> old_subclasses;
 
 	if (p_keep_state) {
@@ -2186,7 +2082,6 @@ void GDScriptCompiler::_make_scripts(GDScript *p_script, const GDScriptParser::C
 }
 
 Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_script, bool p_keep_state) {
-
 	err_line = -1;
 	err_column = -1;
 	error = "";
@@ -2218,15 +2113,12 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 }
 
 String GDScriptCompiler::get_error() const {
-
 	return error;
 }
 int GDScriptCompiler::get_error_line() const {
-
 	return err_line;
 }
 int GDScriptCompiler::get_error_column() const {
-
 	return err_column;
 }
 

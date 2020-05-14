@@ -31,7 +31,6 @@
 #include "physics_material.h"
 
 void PhysicsMaterial::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &PhysicsMaterial::set_friction);
 	ClassDB::bind_method(D_METHOD("get_friction"), &PhysicsMaterial::get_friction);
 

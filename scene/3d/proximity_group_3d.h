@@ -34,7 +34,6 @@
 #include "node_3d.h"
 
 class ProximityGroup3D : public Node3D {
-
 	GDCLASS(ProximityGroup3D, Node3D);
 	OBJ_CATEGORY("3D");
 

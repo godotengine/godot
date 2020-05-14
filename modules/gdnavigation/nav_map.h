@@ -46,7 +46,6 @@ class RvoAgent;
 class NavRegion;
 
 class NavMap : public NavRid {
-
 	/// Map Up
 	Vector3 up = Vector3(0, 1, 0);
 

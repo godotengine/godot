@@ -46,7 +46,6 @@ void exit_callback() {
 }
 
 void main_loop_callback() {
-
 	if (os->main_loop_iterate()) {
 		emscripten_cancel_main_loop(); // Cancel current loop and wait for finalize_async.
 		EM_ASM({
@@ -69,7 +68,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void cleanup_after_sync() {
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
-
 	String idbfs_err = String::utf8(p_idbfs_err);
 	if (!idbfs_err.empty()) {
 		print_line("IndexedDB not available: " + idbfs_err);
@@ -85,7 +83,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void main_after_fs_sync(char *p_idbfs_err) {
 }
 
 int main(int argc, char *argv[]) {
-
 	os = new OS_JavaScript();
 	Main::setup(argv[0], argc - 1, &argv[1], false);
 	emscripten_set_main_loop(main_loop_callback, -1, false);

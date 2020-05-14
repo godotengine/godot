@@ -57,7 +57,6 @@ public:
 };
 
 void OS_Android::initialize_core() {
-
 	OS_Unix::initialize_core();
 
 	if (use_apk_expansion)
@@ -121,17 +120,14 @@ GodotIOJavaWrapper *OS_Android::get_godot_io_java() {
 }
 
 bool OS_Android::request_permission(const String &p_name) {
-
 	return godot_java->request_permission(p_name);
 }
 
 bool OS_Android::request_permissions() {
-
 	return godot_java->request_permissions();
 }
 
 Vector<String> OS_Android::get_granted_permissions() const {
-
 	return godot_java->get_granted_permissions();
 }
 
@@ -142,30 +138,25 @@ Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_han
 }
 
 String OS_Android::get_name() const {
-
 	return "Android";
 }
 
 MainLoop *OS_Android::get_main_loop() const {
-
 	return main_loop;
 }
 
 void OS_Android::main_loop_begin() {
-
 	if (main_loop)
 		main_loop->init();
 }
 
 bool OS_Android::main_loop_iterate() {
-
 	if (!main_loop)
 		return false;
 	return Main::iteration();
 }
 
 void OS_Android::main_loop_end() {
-
 	if (main_loop)
 		main_loop->finish();
 }
@@ -185,17 +176,14 @@ void OS_Android::main_loop_request_go_back() {
 }
 
 Error OS_Android::shell_open(String p_uri) {
-
 	return godot_io_java->open_uri(p_uri);
 }
 
 String OS_Android::get_resource_dir() const {
-
 	return "/"; //android has its own filesystem for resources inside the APK
 }
 
 String OS_Android::get_locale() const {
-
 	String locale = godot_io_java->get_locale();
 	if (locale != "") {
 		return locale;
@@ -205,7 +193,6 @@ String OS_Android::get_locale() const {
 }
 
 String OS_Android::get_model_name() const {
-
 	String model = godot_io_java->get_model();
 	if (model != "")
 		return model;
@@ -214,13 +201,11 @@ String OS_Android::get_model_name() const {
 }
 
 String OS_Android::get_user_data_dir() const {
-
 	if (data_dir_cache != String())
 		return data_dir_cache;
 
 	String data_dir = godot_io_java->get_user_data_dir();
 	if (data_dir != "") {
-
 		//store current dir
 		char real_current_dir_name[2048];
 		getcwd(real_current_dir_name, 2048);
@@ -245,7 +230,6 @@ String OS_Android::get_user_data_dir() const {
 }
 
 String OS_Android::get_unique_id() const {
-
 	String unique_id = godot_io_java->get_unique_id();
 	if (unique_id != "")
 		return unique_id;
@@ -254,7 +238,6 @@ String OS_Android::get_unique_id() const {
 }
 
 String OS_Android::get_system_dir(SystemDir p_dir) const {
-
 	return godot_io_java->get_system_dir(p_dir);
 }
 

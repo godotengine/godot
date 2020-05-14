@@ -41,7 +41,6 @@
 #include "scene/gui/box_container.h"
 
 void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_select_type) {
-
 	type_list.clear();
 	ClassDB::get_class_list(&type_list);
 	ScriptServer::get_global_class_list(&type_list);
@@ -52,7 +51,6 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("create_recent." + base_type), FileAccess::READ);
 
 	if (f) {
-
 		TreeItem *root = recent->create_item();
 
 		while (!f->eof_reached()) {
@@ -75,7 +73,6 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 	favorite_list.clear();
 
 	if (f) {
-
 		while (!f->eof_reached()) {
 			String l = f->get_line().strip_edges();
 
@@ -120,25 +117,21 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 }
 
 void CreateDialog::_text_changed(const String &p_newtext) {
-
 	_update_search();
 }
 
 void CreateDialog::_sbox_input(const Ref<InputEvent> &p_ie) {
-
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid() && (k->get_keycode() == KEY_UP ||
 								k->get_keycode() == KEY_DOWN ||
 								k->get_keycode() == KEY_PAGEUP ||
 								k->get_keycode() == KEY_PAGEDOWN)) {
-
 		search_options->call("_gui_input", k);
 		search_box->accept_event();
 	}
 }
 
 void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select) {
-
 	if (p_types.has(p_type))
 		return;
 
@@ -171,9 +164,7 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 	TreeItem *parent = p_root;
 
 	if (inherits.length()) {
-
 		if (!p_types.has(inherits)) {
-
 			add_type(inherits, p_types, p_root, to_select);
 		}
 
@@ -267,7 +258,6 @@ bool CreateDialog::_is_type_prefered(const String &type) {
 }
 
 bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_class) {
-
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	if (profile.is_null()) {
 		return false;
@@ -277,7 +267,6 @@ bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_cla
 }
 
 void CreateDialog::select_type(const String &p_type) {
-
 	TreeItem *to_select;
 	if (search_options_types.has(p_type)) {
 		to_select = search_options_types[p_type];
@@ -317,7 +306,6 @@ void CreateDialog::_update_search() {
 	TreeItem *to_select = search_box->get_text() == base_type ? root : nullptr;
 
 	for (List<StringName>::Element *I = type_list.front(); I; I = I->next()) {
-
 		String type = I->get();
 
 		if (_is_class_disabled_by_feature_profile(type)) {
@@ -345,7 +333,6 @@ void CreateDialog::_update_search() {
 		if (search_box->get_text() == "") {
 			add_type(type, search_options_types, root, &to_select);
 		} else {
-
 			bool found = false;
 			String type2 = type;
 
@@ -355,7 +342,6 @@ void CreateDialog::_update_search() {
 
 			while (type2 != "" && (cpp_type ? ClassDB::is_parent_class(type2, base_type) : ed.script_class_is_parent(type2, base_type)) && type2 != base_type) {
 				if (search_box->get_text().is_subsequence_ofi(type2)) {
-
 					found = true;
 					break;
 				}
@@ -377,7 +363,6 @@ void CreateDialog::_update_search() {
 
 			const Vector<EditorData::CustomType> &ct = EditorNode::get_editor_data().get_custom_types()[type];
 			for (int i = 0; i < ct.size(); i++) {
-
 				bool show = search_box->get_text().is_subsequence_ofi(ct[i].name);
 
 				if (!show)
@@ -421,7 +406,6 @@ void CreateDialog::_update_search() {
 }
 
 void CreateDialog::_confirmed() {
-
 	TreeItem *ti = search_options->get_selected();
 	if (!ti)
 		return;
@@ -436,7 +420,6 @@ void CreateDialog::_confirmed() {
 		int count = 0;
 		while (t) {
 			if (t->get_text(0) != get_selected_type()) {
-
 				f->store_line(t->get_text(0));
 			}
 
@@ -456,7 +439,6 @@ void CreateDialog::_confirmed() {
 }
 
 void CreateDialog::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &CreateDialog::_confirmed));
@@ -480,7 +462,6 @@ void CreateDialog::_notification(int p_what) {
 }
 
 void CreateDialog::set_base_type(const String &p_base) {
-
 	base_type = p_base;
 	if (is_replace_mode)
 		set_title(vformat(TTR("Change %s Type"), p_base));
@@ -491,7 +472,6 @@ void CreateDialog::set_base_type(const String &p_base) {
 }
 
 String CreateDialog::get_base_type() const {
-
 	return base_type;
 }
 
@@ -500,11 +480,9 @@ void CreateDialog::set_preferred_search_result_type(const String &p_preferred_ty
 }
 
 String CreateDialog::get_preferred_search_result_type() {
-
 	return preferred_search_result_type;
 }
 String CreateDialog::get_selected_type() {
-
 	TreeItem *selected = search_options->get_selected();
 	if (selected)
 		return selected->get_text(0);
@@ -513,11 +491,9 @@ String CreateDialog::get_selected_type() {
 }
 
 Object *CreateDialog::instance_selected() {
-
 	TreeItem *selected = search_options->get_selected();
 
 	if (selected) {
-
 		Variant md = selected->get_metadata(0);
 
 		String custom;
@@ -542,7 +518,6 @@ Object *CreateDialog::instance_selected() {
 }
 
 void CreateDialog::_item_selected() {
-
 	TreeItem *item = search_options->get_selected();
 	if (!item)
 		return;
@@ -565,7 +540,6 @@ void CreateDialog::_hide_requested() {
 }
 
 void CreateDialog::_favorite_toggled() {
-
 	TreeItem *item = search_options->get_selected();
 	if (!item)
 		return;
@@ -584,11 +558,9 @@ void CreateDialog::_favorite_toggled() {
 }
 
 void CreateDialog::_save_favorite_list() {
-
 	FileAccess *f = FileAccess::open(EditorSettings::get_singleton()->get_project_settings_dir().plus_file("favorites." + base_type), FileAccess::WRITE);
 
 	if (f) {
-
 		for (int i = 0; i < favorite_list.size(); i++) {
 			String l = favorite_list[i];
 			String name = l.split(" ")[0];
@@ -601,7 +573,6 @@ void CreateDialog::_save_favorite_list() {
 }
 
 void CreateDialog::_update_favorite_list() {
-
 	favorites->clear();
 	TreeItem *root = favorites->create_item();
 	for (int i = 0; i < favorite_list.size(); i++) {
@@ -617,7 +588,6 @@ void CreateDialog::_update_favorite_list() {
 }
 
 void CreateDialog::_history_selected() {
-
 	TreeItem *item = recent->get_selected();
 	if (!item)
 		return;
@@ -628,7 +598,6 @@ void CreateDialog::_history_selected() {
 }
 
 void CreateDialog::_favorite_selected() {
-
 	TreeItem *item = favorites->get_selected();
 	if (!item)
 		return;
@@ -639,19 +608,16 @@ void CreateDialog::_favorite_selected() {
 }
 
 void CreateDialog::_history_activated() {
-
 	_history_selected();
 	_confirmed();
 }
 
 void CreateDialog::_favorite_activated() {
-
 	_favorite_selected();
 	_confirmed();
 }
 
 Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-
 	TreeItem *ti = favorites->get_item_at_position(p_point);
 	if (ti) {
 		Dictionary d;
@@ -670,7 +636,6 @@ Variant CreateDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 }
 
 bool CreateDialog::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-
 	Dictionary d = p_data;
 	if (d.has("type") && String(d["type"]) == "create_favorite_drag") {
 		favorites->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
@@ -680,7 +645,6 @@ bool CreateDialog::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 	return false;
 }
 void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-
 	Dictionary d = p_data;
 
 	TreeItem *ti = favorites->get_item_at_position(p_point);
@@ -727,7 +691,6 @@ void CreateDialog::_save_and_update_favorite_list() {
 }
 
 void CreateDialog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_save_and_update_favorite_list"), &CreateDialog::_save_and_update_favorite_list);
 
 	ClassDB::bind_method("get_drag_data_fw", &CreateDialog::get_drag_data_fw);
@@ -739,7 +702,6 @@ void CreateDialog::_bind_methods() {
 }
 
 CreateDialog::CreateDialog() {
-
 	is_replace_mode = false;
 
 	HSplitContainer *hsc = memnew(HSplitContainer);

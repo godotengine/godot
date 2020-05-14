@@ -35,7 +35,6 @@
 #include "core/resource.h"
 
 class UndoRedo : public Object {
-
 	GDCLASS(UndoRedo, Object);
 	OBJ_SAVE_TYPE(UndoRedo);
 
@@ -55,7 +54,6 @@ public:
 
 private:
 	struct Operation {
-
 		enum Type {
 			TYPE_METHOD,
 			TYPE_PROPERTY,

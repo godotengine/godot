@@ -36,7 +36,6 @@
 #endif
 
 void register_gridmap_types() {
-
 #ifndef _3D_DISABLED
 	ClassDB::register_class<GridMap>();
 #ifdef TOOLS_ENABLED

@@ -40,7 +40,6 @@
 #include "servers/rendering_server.h"
 
 class RenderingServerRaster : public RenderingServer {
-
 	enum {
 
 		MAX_INSTANCE_CULL = 8192,
@@ -61,7 +60,6 @@ class RenderingServerRaster : public RenderingServer {
 	RID black_image[4];
 
 	struct FrameDrawnCallbacks {
-
 		ObjectID object;
 		StringName method;
 		Variant param;

@@ -39,11 +39,8 @@
 #include "scene/3d/camera_3d.h"
 
 void CollisionPolygon3DEditor::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_READY: {
-
 			button_create->set_icon(get_theme_icon("Edit", "EditorIcons"));
 			button_edit->set_icon(get_theme_icon("MovePoint", "EditorIcons"));
 			button_edit->set_pressed(true);
@@ -64,7 +61,6 @@ void CollisionPolygon3DEditor::_notification(int p_what) {
 	}
 }
 void CollisionPolygon3DEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = nullptr;
 		if (imgeom->get_parent() == p_node)
@@ -75,17 +71,13 @@ void CollisionPolygon3DEditor::_node_removed(Node *p_node) {
 }
 
 void CollisionPolygon3DEditor::_menu_option(int p_option) {
-
 	switch (p_option) {
-
 		case MODE_CREATE: {
-
 			mode = MODE_CREATE;
 			button_create->set_pressed(true);
 			button_edit->set_pressed(false);
 		} break;
 		case MODE_EDIT: {
-
 			mode = MODE_EDIT;
 			button_create->set_pressed(false);
 			button_edit->set_pressed(true);
@@ -94,7 +86,6 @@ void CollisionPolygon3DEditor::_menu_option(int p_option) {
 }
 
 void CollisionPolygon3DEditor::_wip_close() {
-
 	undo_redo->create_action(TTR("Create Polygon3D"));
 	undo_redo->add_undo_method(node, "set_polygon", node->call("get_polygon"));
 	undo_redo->add_do_method(node, "set_polygon", wip);
@@ -110,7 +101,6 @@ void CollisionPolygon3DEditor::_wip_close() {
 }
 
 bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-
 	if (!node)
 		return false;
 
@@ -123,7 +113,6 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid()) {
-
 		Vector2 gpoint = mb->get_position();
 		Vector3 ray_from = p_camera->project_ray_origin(gpoint);
 		Vector3 ray_dir = p_camera->project_ray_normal(gpoint);
@@ -147,13 +136,9 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 		real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 
 		switch (mode) {
-
 			case MODE_CREATE: {
-
 				if (mb->get_button_index() == BUTTON_LEFT && mb->is_pressed()) {
-
 					if (!wip_active) {
-
 						wip.clear();
 						wip.push_back(cpoint);
 						wip_active = true;
@@ -163,14 +148,12 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 						edited_point = 1;
 						return true;
 					} else {
-
 						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_threshold) {
 							//wip closed
 							_wip_close();
 
 							return true;
 						} else {
-
 							wip.push_back(cpoint);
 							edited_point = wip.size();
 							snap_ignore = false;
@@ -185,14 +168,10 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 			} break;
 
 			case MODE_EDIT: {
-
 				if (mb->get_button_index() == BUTTON_LEFT) {
 					if (mb->is_pressed()) {
-
 						if (mb->get_control()) {
-
 							if (poly.size() < 3) {
-
 								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_undo_method(node, "set_polygon", poly);
 								poly.push_back(cpoint);
@@ -208,7 +187,6 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
-
 								Vector2 points[2] = {
 									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth))),
 									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)))
@@ -227,7 +205,6 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							}
 
 							if (closest_idx >= 0) {
-
 								pre_move_edit = poly;
 								poly.insert(closest_idx + 1, cpoint);
 								edited_point = closest_idx + 1;
@@ -239,14 +216,12 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 								return true;
 							}
 						} else {
-
 							//look for points to move
 
 							int closest_idx = -1;
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
-
 								Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 								real_t d = cp.distance_to(gpoint);
@@ -258,7 +233,6 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							}
 
 							if (closest_idx >= 0) {
-
 								pre_move_edit = poly;
 								edited_point = closest_idx;
 								edited_point_pos = poly[closest_idx];
@@ -268,11 +242,9 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 							}
 						}
 					} else {
-
 						snap_ignore = false;
 
 						if (edited_point != -1) {
-
 							//apply
 
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), false);
@@ -290,12 +262,10 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 					}
 				}
 				if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed() && edited_point == -1) {
-
 					int closest_idx = -1;
 					Vector2 closest_pos;
 					real_t closest_dist = 1e10;
 					for (int i = 0; i < poly.size(); i++) {
-
 						Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
 						real_t d = cp.distance_to(gpoint);
@@ -307,7 +277,6 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 					}
 
 					if (closest_idx >= 0) {
-
 						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 						undo_redo->add_undo_method(node, "set_polygon", poly);
 						poly.remove(closest_idx);
@@ -327,7 +296,6 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 	if (mm.is_valid()) {
 		if (edited_point != -1 && (wip_active || mm->get_button_mask() & BUTTON_MASK_LEFT)) {
-
 			Vector2 gpoint = mm->get_position();
 
 			Vector3 ray_from = p_camera->project_ray_origin(gpoint);
@@ -361,7 +329,6 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 }
 
 float CollisionPolygon3DEditor::_get_depth() {
-
 	if (bool(node->call("_has_editable_3d_polygon_no_depth")))
 		return 0;
 
@@ -369,7 +336,6 @@ float CollisionPolygon3DEditor::_get_depth() {
 }
 
 void CollisionPolygon3DEditor::_polygon_draw() {
-
 	if (!node)
 		return;
 
@@ -389,7 +355,6 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 	Rect2 rect;
 
 	for (int i = 0; i < poly.size(); i++) {
-
 		Vector2 p, p2;
 		p = i == edited_point ? edited_point_pos : poly[i];
 		if ((wip_active && i == poly.size() - 1) || (((i + 1) % poly.size()) == edited_point))
@@ -472,11 +437,9 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 	a.resize(Mesh::ARRAY_MAX);
 	Vector<Vector3> va;
 	{
-
 		va.resize(poly.size());
 		Vector3 *w = va.ptrw();
 		for (int i = 0; i < poly.size(); i++) {
-
 			Vector2 p, p2;
 			p = i == edited_point ? edited_point_pos : poly[i];
 
@@ -490,9 +453,7 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 }
 
 void CollisionPolygon3DEditor::edit(Node *p_collision_polygon) {
-
 	if (p_collision_polygon) {
-
 		node = Object::cast_to<Node3D>(p_collision_polygon);
 		//Enable the pencil tool if the polygon is empty
 		if (Vector<Vector2>(node->call("get_polygon")).size() == 0) {
@@ -517,12 +478,10 @@ void CollisionPolygon3DEditor::edit(Node *p_collision_polygon) {
 }
 
 void CollisionPolygon3DEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_polygon_draw"), &CollisionPolygon3DEditor::_polygon_draw);
 }
 
 CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
-
 	node = nullptr;
 	editor = p_editor;
 	undo_redo = EditorNode::get_undo_redo();
@@ -570,33 +529,27 @@ CollisionPolygon3DEditor::CollisionPolygon3DEditor(EditorNode *p_editor) {
 }
 
 CollisionPolygon3DEditor::~CollisionPolygon3DEditor() {
-
 	memdelete(imgeom);
 }
 
 void Polygon3DEditorPlugin::edit(Object *p_object) {
-
 	collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool Polygon3DEditorPlugin::handles(Object *p_object) const {
-
 	return Object::cast_to<Node3D>(p_object) && bool(p_object->call("_is_editable_3d_polygon"));
 }
 
 void Polygon3DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		collision_polygon_editor->show();
 	} else {
-
 		collision_polygon_editor->hide();
 		collision_polygon_editor->edit(nullptr);
 	}
 }
 
 Polygon3DEditorPlugin::Polygon3DEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	collision_polygon_editor = memnew(CollisionPolygon3DEditor(p_node));
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);

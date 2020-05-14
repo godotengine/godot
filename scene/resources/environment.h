@@ -37,7 +37,6 @@
 #include "servers/rendering_server.h"
 
 class Environment : public Resource {
-
 	GDCLASS(Environment, Resource);
 
 public:
@@ -369,7 +368,6 @@ VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::SSAOBlur)
 
 class CameraEffects : public Resource {
-
 	GDCLASS(CameraEffects, Resource);
 
 private:

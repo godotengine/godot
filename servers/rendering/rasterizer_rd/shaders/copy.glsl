@@ -60,7 +60,6 @@ layout(rgba32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_bu
 #endif
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 	if (any(greaterThanEqual(pos, params.section.zw))) { //too large, do nothing
@@ -84,7 +83,6 @@ void main() {
 	//Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect
 
 	if (bool(params.flags & FLAG_HORIZONTAL)) {
-
 		ivec2 base_pos = (pos + params.section.xy) << 1;
 		vec4 color = texelFetch(source_color, base_pos + ivec2(0, 0), 0) * 0.214607;
 		color += texelFetch(source_color, base_pos + ivec2(1, 0), 0) * 0.189879;
@@ -95,7 +93,6 @@ void main() {
 		color += texelFetch(source_color, base_pos + ivec2(-3, 0), 0) * 0.071303;
 		imageStore(dest_buffer, pos + params.target, color);
 	} else {
-
 		ivec2 base_pos = (pos + params.section.xy);
 		vec4 color = texelFetch(source_color, base_pos + ivec2(0, 0), 0) * 0.38774;
 		color += texelFetch(source_color, base_pos + ivec2(0, 1), 0) * 0.24477;
@@ -121,7 +118,6 @@ void main() {
 	vec4 color = vec4(0.0);
 
 	if (bool(params.flags & FLAG_HORIZONTAL)) {
-
 		ivec2 base_pos = (pos + params.section.xy) << 1;
 		ivec2 section_begin = params.section.xy << 1;
 		ivec2 section_end = section_begin + (params.section.zw << 1);
@@ -135,7 +131,6 @@ void main() {
 		GLOW_ADD(ivec2(-3, 0), 0.106595);
 		color *= params.glow_strength;
 	} else {
-
 		ivec2 base_pos = pos + params.section.xy;
 		ivec2 section_begin = params.section.xy;
 		ivec2 section_end = section_begin + params.section.zw;

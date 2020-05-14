@@ -38,7 +38,6 @@
 #include <thread>
 
 class ThreadUWP : public Thread {
-
 	std::thread thread;
 
 	static Thread *create_func_uwp(ThreadCreateCallback p_callback, void *, const Settings &);

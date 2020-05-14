@@ -40,7 +40,6 @@ int add_path(int, char **);
 int add_cmdline(int, char **);
 
 int add_path(int p_argc, char **p_args) {
-
 	NSString *str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
 	if (!str)
 		return p_argc;
@@ -54,13 +53,11 @@ int add_path(int p_argc, char **p_args) {
 };
 
 int add_cmdline(int p_argc, char **p_args) {
-
 	NSArray *arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
 	if (!arr)
 		return p_argc;
 
 	for (int i = 0; i < [arr count]; i++) {
-
 		NSString *str = [arr objectAtIndex:i];
 		if (!str)
 			continue;
@@ -81,7 +78,6 @@ int add_cmdline(int p_argc, char **p_args) {
 @implementation ViewController
 
 - (void)didReceiveMemoryWarning {
-
 	printf("*********** did receive memory warning!\n");
 };
 

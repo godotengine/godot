@@ -33,7 +33,6 @@
 #include "scene/3d/skeleton_ik_3d.h"
 
 void SkeletonIK3DEditorPlugin::_play() {
-
 	if (!skeleton_ik)
 		return;
 
@@ -49,7 +48,6 @@ void SkeletonIK3DEditorPlugin::_play() {
 }
 
 void SkeletonIK3DEditorPlugin::edit(Object *p_object) {
-
 	if (p_object != skeleton_ik) {
 		if (skeleton_ik) {
 			play_btn->set_pressed(false);
@@ -65,12 +63,10 @@ void SkeletonIK3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool SkeletonIK3DEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("SkeletonIK3D");
 }
 
 void SkeletonIK3DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible)
 		play_btn->show();
 	else
@@ -81,7 +77,6 @@ void SkeletonIK3DEditorPlugin::_bind_methods() {
 }
 
 SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	play_btn = memnew(Button);
 	play_btn->set_icon(editor->get_gui_base()->get_theme_icon("Play", "EditorIcons"));

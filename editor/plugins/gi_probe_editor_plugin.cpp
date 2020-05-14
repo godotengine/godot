@@ -31,7 +31,6 @@
 #include "gi_probe_editor_plugin.h"
 
 void GIProbeEditorPlugin::_bake() {
-
 	if (gi_probe) {
 		if (gi_probe->get_probe_data().is_null()) {
 			String path = get_tree()->get_edited_scene_root()->get_filename();
@@ -50,7 +49,6 @@ void GIProbeEditorPlugin::_bake() {
 }
 
 void GIProbeEditorPlugin::edit(Object *p_object) {
-
 	GIProbe *s = Object::cast_to<GIProbe>(p_object);
 	if (!s)
 		return;
@@ -59,12 +57,10 @@ void GIProbeEditorPlugin::edit(Object *p_object) {
 }
 
 bool GIProbeEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("GIProbe");
 }
 
 void GIProbeEditorPlugin::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_PROCESS) {
 		if (!gi_probe) {
 			return;
@@ -102,12 +98,10 @@ void GIProbeEditorPlugin::_notification(int p_what) {
 }
 
 void GIProbeEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		bake_hb->show();
 		set_process(true);
 	} else {
-
 		bake_hb->hide();
 		set_process(false);
 	}
@@ -116,14 +110,12 @@ void GIProbeEditorPlugin::make_visible(bool p_visible) {
 EditorProgress *GIProbeEditorPlugin::tmp_progress = nullptr;
 
 void GIProbeEditorPlugin::bake_func_begin(int p_steps) {
-
 	ERR_FAIL_COND(tmp_progress != nullptr);
 
 	tmp_progress = memnew(EditorProgress("bake_gi", TTR("Bake GI Probe"), p_steps));
 }
 
 void GIProbeEditorPlugin::bake_func_step(int p_step, const String &p_description) {
-
 	ERR_FAIL_COND(tmp_progress == nullptr);
 	tmp_progress->step(p_description, p_step, false);
 }
@@ -147,7 +139,6 @@ void GIProbeEditorPlugin::_bind_methods() {
 }
 
 GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	bake_hb = memnew(HBoxContainer);
 	bake_hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);

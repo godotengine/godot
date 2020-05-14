@@ -36,7 +36,6 @@ const char *VulkanContextWindows::_get_platform_surface_extension() const {
 }
 
 int VulkanContextWindows::window_create(DisplayServer::WindowID p_window_id, HWND p_window, HINSTANCE p_instance, int p_width, int p_height) {
-
 	VkWin32SurfaceCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
 	createInfo.pNext = nullptr;

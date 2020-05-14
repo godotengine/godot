@@ -41,7 +41,6 @@
 #include "scene/gui/tool_button.h"
 
 class EditorSettingsDialog : public AcceptDialog {
-
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
 	bool updating;

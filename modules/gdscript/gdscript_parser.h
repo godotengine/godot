@@ -100,7 +100,6 @@ public:
 	};
 
 	struct Node {
-
 		enum Type {
 			TYPE_CLASS,
 			TYPE_FUNCTION,
@@ -139,7 +138,6 @@ public:
 	struct OperatorNode;
 
 	struct ClassNode : public Node {
-
 		bool tool;
 		StringName name;
 		bool extends_used;
@@ -200,7 +198,6 @@ public:
 	};
 
 	struct FunctionNode : public Node {
-
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
 		bool has_yield;
@@ -229,7 +226,6 @@ public:
 	};
 
 	struct BlockNode : public Node {
-
 		ClassNode *parent_class = nullptr;
 		BlockNode *parent_block = nullptr;
 		List<Node *> statements;
@@ -316,7 +312,6 @@ public:
 	};
 
 	struct DictionaryNode : public Node {
-
 		struct Pair {
 			Node *key;
 			Node *value;
@@ -406,7 +401,6 @@ public:
 	};
 
 	struct PatternNode : public Node {
-
 		enum PatternType {
 			PT_CONSTANT,
 			PT_BIND,

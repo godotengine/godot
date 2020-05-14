@@ -36,7 +36,6 @@
 #include "gdnative.h"
 
 class GDNativeLibraryEditor : public Control {
-
 	GDCLASS(GDNativeLibraryEditor, Control);
 
 	struct NativePlatformConfig {
@@ -94,7 +93,6 @@ public:
 };
 
 class GDNativeLibraryEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GDNativeLibraryEditorPlugin, EditorPlugin);
 
 	GDNativeLibraryEditor *library_editor;

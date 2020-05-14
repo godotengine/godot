@@ -41,10 +41,8 @@
 #include <stdlib.h>
 
 class ZipArchive : public PackSource {
-
 public:
 	struct File {
-
 		int package = -1;
 		unz_file_pos file_pos;
 		File() {}
@@ -81,7 +79,6 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
-
 	unzFile zfile;
 	unz_file_info64 file_info;
 

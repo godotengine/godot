@@ -219,7 +219,6 @@
 #define DOM_VK_WIN_OEM_CLEAR 0xFE
 
 int dom2godot_keycode(int dom_keycode) {
-
 	if (DOM_VK_0 <= dom_keycode && dom_keycode <= DOM_VK_Z) {
 		// ASCII intersection
 		return dom_keycode;

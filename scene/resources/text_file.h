@@ -35,7 +35,6 @@
 #include "core/io/resource_saver.h"
 
 class TextFile : public Resource {
-
 	GDCLASS(TextFile, Resource);
 
 private:

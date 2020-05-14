@@ -41,7 +41,6 @@ import android.util.Log;
 import com.android.vending.billing.IInAppBillingService;
 
 abstract public class PurchaseTask {
-
 	private Activity context;
 
 	private IInAppBillingService mService;

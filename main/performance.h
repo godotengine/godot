@@ -37,7 +37,6 @@
 #define PERF_WARN_PROCESS_SYNC
 
 class Performance : public Object {
-
 	GDCLASS(Performance, Object);
 
 	static Performance *singleton;

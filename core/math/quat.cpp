@@ -107,7 +107,6 @@ Vector3 Quat::get_euler_yxz() const {
 }
 
 void Quat::operator*=(const Quat &q) {
-
 	set(w * q.x + x * q.w + y * q.z - z * q.y,
 			w * q.y + y * q.w + z * q.x - x * q.z,
 			w * q.z + z * q.w + x * q.y - y * q.x,
@@ -115,19 +114,16 @@ void Quat::operator*=(const Quat &q) {
 }
 
 Quat Quat::operator*(const Quat &q) const {
-
 	Quat r = *this;
 	r *= q;
 	return r;
 }
 
 bool Quat::is_equal_approx(const Quat &p_quat) const {
-
 	return Math::is_equal_approx(x, p_quat.x) && Math::is_equal_approx(y, p_quat.y) && Math::is_equal_approx(z, p_quat.z) && Math::is_equal_approx(w, p_quat.w);
 }
 
 real_t Quat::length() const {
-
 	return Math::sqrt(length_squared());
 }
 
@@ -233,7 +229,6 @@ Quat Quat::cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const
 }
 
 Quat::operator String() const {
-
 	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 

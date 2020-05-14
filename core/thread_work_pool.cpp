@@ -33,7 +33,6 @@
 #include "core/os/os.h"
 
 void ThreadWorkPool::_thread_function(ThreadData *p_thread) {
-
 	while (true) {
 		p_thread->start.wait();
 		if (p_thread->exit.load()) {
@@ -60,7 +59,6 @@ void ThreadWorkPool::init(int p_thread_count) {
 }
 
 void ThreadWorkPool::finish() {
-
 	if (threads == nullptr) {
 		return;
 	}
@@ -79,6 +77,5 @@ void ThreadWorkPool::finish() {
 }
 
 ThreadWorkPool::~ThreadWorkPool() {
-
 	finish();
 }

@@ -59,7 +59,6 @@ static bool check_error(const png_image &image) {
 }
 
 Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
-
 	png_image png_img;
 	zeromem(&png_img, sizeof(png_img));
 	png_img.version = PNG_IMAGE_VERSION;
@@ -121,7 +120,6 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 }
 
 Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
-
 	Ref<Image> source_image = p_image->duplicate();
 
 	if (source_image->is_compressed())
@@ -179,7 +177,6 @@ Error image_to_png(const Ref<Image> &p_image, Vector<uint8_t> &p_buffer) {
 		ERR_FAIL_COND_V_MSG(check_error(png_img), FAILED, png_img.message);
 	}
 	if (!success) {
-
 		// buffer was big enough, must be some other error
 		ERR_FAIL_COND_V(compressed_size <= png_size_estimate, FAILED);
 

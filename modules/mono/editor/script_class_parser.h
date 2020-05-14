@@ -36,7 +36,6 @@
 #include "core/vector.h"
 
 class ScriptClassParser {
-
 public:
 	struct NameDecl {
 		enum Type {

@@ -38,7 +38,6 @@
 #include "core/os/thread.h"
 
 class EditorFileServer : public Object {
-
 	GDCLASS(EditorFileServer, Object);
 
 	enum Command {
@@ -48,7 +47,6 @@ class EditorFileServer : public Object {
 	};
 
 	struct ClientData {
-
 		Thread *thread;
 		Ref<StreamPeerTCP> connection;
 		Map<int, FileAccess *> files;

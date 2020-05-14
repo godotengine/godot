@@ -41,17 +41,14 @@
 #include "scene/main/window.h"
 
 void ColorPicker::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-
 			btn_pick->set_icon(get_theme_icon("screen_picker", "ColorPicker"));
 			bt_add_preset->set_icon(get_theme_icon("add_preset"));
 
 			_update_controls();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
 			btn_pick->set_icon(get_theme_icon("screen_picker", "ColorPicker"));
 			bt_add_preset->set_icon(get_theme_icon("add_preset"));
 
@@ -68,18 +65,15 @@ void ColorPicker::_notification(int p_what) {
 #endif
 		} break;
 		case NOTIFICATION_PARENTED: {
-
 			for (int i = 0; i < 4; i++)
 				set_margin((Margin)i, get_theme_constant("margin"));
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			Popup *p = Object::cast_to<Popup>(get_parent());
 			if (p)
 				p->set_size(Size2(get_combined_minimum_size().width + get_theme_constant("margin") * 2, get_combined_minimum_size().height + get_theme_constant("margin") * 2));
 		} break;
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
-
 			if (screen != nullptr && screen->is_visible())
 				screen->hide();
 		} break;
@@ -87,12 +81,10 @@ void ColorPicker::_notification(int p_what) {
 }
 
 void ColorPicker::set_focus_on_line_edit() {
-
 	c_text->call_deferred("grab_focus");
 }
 
 void ColorPicker::_update_controls() {
-
 	const char *rgb[3] = { "R", "G", "B" };
 	const char *hsv[3] = { "H", "S", "V" };
 
@@ -127,7 +119,6 @@ void ColorPicker::_update_controls() {
 }
 
 void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
-
 	color = p_color;
 	if (color != last_hsv) {
 		h = color.get_h();
@@ -143,12 +134,10 @@ void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
 }
 
 void ColorPicker::set_pick_color(const Color &p_color) {
-
 	_set_pick_color(p_color, true); //because setters can't have more arguments
 }
 
 void ColorPicker::set_edit_alpha(bool p_show) {
-
 	edit_alpha = p_show;
 	_update_controls();
 
@@ -160,12 +149,10 @@ void ColorPicker::set_edit_alpha(bool p_show) {
 }
 
 bool ColorPicker::is_editing_alpha() const {
-
 	return edit_alpha;
 }
 
 void ColorPicker::_value_changed(double) {
-
 	if (updating)
 		return;
 
@@ -185,7 +172,6 @@ void ColorPicker::_value_changed(double) {
 }
 
 void ColorPicker::_html_entered(const String &p_html) {
-
 	if (updating || text_is_constructor || !c_text->is_visible())
 		return;
 
@@ -202,11 +188,9 @@ void ColorPicker::_html_entered(const String &p_html) {
 }
 
 void ColorPicker::_update_color(bool p_update_sliders) {
-
 	updating = true;
 
 	if (p_update_sliders) {
-
 		if (hsv_mode_enabled) {
 			for (int i = 0; i < 4; i++) {
 				scroll[i]->set_step(1.0);
@@ -266,7 +250,6 @@ void ColorPicker::_update_presets() {
 }
 
 void ColorPicker::_text_type_toggled() {
-
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {
 		text_type->set_text("");
@@ -283,12 +266,10 @@ void ColorPicker::_text_type_toggled() {
 }
 
 Color ColorPicker::get_pick_color() const {
-
 	return color;
 }
 
 void ColorPicker::add_preset(const Color &p_color) {
-
 	if (presets.find(p_color)) {
 		presets.move_to_back(presets.find(p_color));
 	} else {
@@ -305,7 +286,6 @@ void ColorPicker::add_preset(const Color &p_color) {
 }
 
 void ColorPicker::erase_preset(const Color &p_color) {
-
 	if (presets.find(p_color)) {
 		presets.erase(presets.find(p_color));
 		preset->update();
@@ -320,7 +300,6 @@ void ColorPicker::erase_preset(const Color &p_color) {
 }
 
 PackedColorArray ColorPicker::get_presets() const {
-
 	PackedColorArray arr;
 	arr.resize(presets.size());
 	for (int i = 0; i < presets.size(); i++) {
@@ -330,7 +309,6 @@ PackedColorArray ColorPicker::get_presets() const {
 }
 
 void ColorPicker::set_hsv_mode(bool p_enabled) {
-
 	if (hsv_mode_enabled == p_enabled || raw_mode_enabled)
 		return;
 	hsv_mode_enabled = p_enabled;
@@ -345,12 +323,10 @@ void ColorPicker::set_hsv_mode(bool p_enabled) {
 }
 
 bool ColorPicker::is_hsv_mode() const {
-
 	return hsv_mode_enabled;
 }
 
 void ColorPicker::set_raw_mode(bool p_enabled) {
-
 	if (raw_mode_enabled == p_enabled || hsv_mode_enabled)
 		return;
 	raw_mode_enabled = p_enabled;
@@ -365,7 +341,6 @@ void ColorPicker::set_raw_mode(bool p_enabled) {
 }
 
 bool ColorPicker::is_raw_mode() const {
-
 	return raw_mode_enabled;
 }
 
@@ -458,7 +433,6 @@ void ColorPicker::_hsv_draw(int p_which, Control *c) {
 }
 
 void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
@@ -501,11 +475,9 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event) {
 }
 
 void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
-
 		if (bev->is_pressed() && bev->get_button_index() == BUTTON_LEFT) {
 			changing_color = true;
 			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
@@ -526,7 +498,6 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mev = p_event;
 
 	if (mev.is_valid()) {
-
 		if (!changing_color)
 			return;
 		float y = CLAMP((float)mev->get_position().y, 0, w_edit->get_size().height);
@@ -541,7 +512,6 @@ void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
 }
 
 void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> bev = p_event;
 
 	if (bev.is_valid()) {
@@ -569,7 +539,6 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mev = p_event;
 
 	if (mev.is_valid()) {
-
 		int index = mev->get_position().x * presets.size();
 		if (preset->get_size().x != 0) {
 			index /= preset->get_size().x;
@@ -581,7 +550,6 @@ void ColorPicker::_preset_input(const Ref<InputEvent> &p_event) {
 }
 
 void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> bev = p_event;
 	if (bev.is_valid() && bev->get_button_index() == BUTTON_LEFT && !bev->is_pressed()) {
 		emit_signal("color_changed", color);
@@ -596,7 +564,6 @@ void ColorPicker::_screen_input(const Ref<InputEvent> &p_event) {
 
 		Ref<Image> img = r->get_texture()->get_data();
 		if (img.is_valid() && !img->empty()) {
-
 			Vector2 ofs = mev->get_global_position() - r->get_visible_rect().get_position();
 			Color c = img->get_pixel(ofs.x, r->get_visible_rect().size.height - ofs.y);
 
@@ -688,7 +655,6 @@ bool ColorPicker::are_presets_visible() const {
 }
 
 void ColorPicker::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPicker::set_pick_color);
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPicker::get_pick_color);
 	ClassDB::bind_method(D_METHOD("set_hsv_mode"), &ColorPicker::set_hsv_mode);
@@ -722,7 +688,6 @@ void ColorPicker::_bind_methods() {
 
 ColorPicker::ColorPicker() :
 		BoxContainer(true) {
-
 	updating = true;
 	edit_alpha = true;
 	text_is_constructor = false;
@@ -779,7 +744,6 @@ ColorPicker::ColorPicker() :
 	vbr->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	for (int i = 0; i < 4; i++) {
-
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		labels[i] = memnew(Label());
@@ -826,13 +790,11 @@ ColorPicker::ColorPicker() :
 	text_type->set_text("#");
 	text_type->set_tooltip(TTR("Switch between hexadecimal and code values."));
 	if (Engine::get_singleton()->is_editor_hint()) {
-
 #ifdef TOOLS_ENABLED
 		text_type->set_custom_minimum_size(Size2(28 * EDSCALE, 0)); // Adjust for the width of the "Script" icon.
 #endif
 		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
-
 		text_type->set_flat(true);
 		text_type->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	}
@@ -873,19 +835,16 @@ ColorPicker::ColorPicker() :
 /////////////////
 
 void ColorPickerButton::_color_changed(const Color &p_color) {
-
 	color = p_color;
 	update();
 	emit_signal("color_changed", color);
 }
 
 void ColorPickerButton::_modal_closed() {
-
 	emit_signal("popup_closed");
 }
 
 void ColorPickerButton::pressed() {
-
 	_update_picker();
 
 	popup->set_as_minsize();
@@ -904,7 +863,6 @@ void ColorPickerButton::pressed() {
 		if (i & 1) {
 			cp_rect.position.x = get_screen_position().x;
 		} else {
-
 			cp_rect.position.x = get_screen_position().x - MAX(0, (cp_rect.size.x - get_size().x));
 		}
 
@@ -918,10 +876,8 @@ void ColorPickerButton::pressed() {
 }
 
 void ColorPickerButton::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-
 			const Ref<StyleBox> normal = get_theme_stylebox("normal");
 			const Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
 			draw_texture_rect(Control::get_theme_icon("bg", "ColorPickerButton"), r, true);
@@ -933,7 +889,6 @@ void ColorPickerButton::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_WM_CLOSE_REQUEST: {
-
 			if (popup)
 				popup->hide();
 		} break;
@@ -947,7 +902,6 @@ void ColorPickerButton::_notification(int p_what) {
 }
 
 void ColorPickerButton::set_pick_color(const Color &p_color) {
-
 	color = p_color;
 	if (picker) {
 		picker->set_pick_color(p_color);
@@ -956,12 +910,10 @@ void ColorPickerButton::set_pick_color(const Color &p_color) {
 	update();
 }
 Color ColorPickerButton::get_pick_color() const {
-
 	return color;
 }
 
 void ColorPickerButton::set_edit_alpha(bool p_show) {
-
 	edit_alpha = p_show;
 	if (picker) {
 		picker->set_edit_alpha(p_show);
@@ -969,18 +921,15 @@ void ColorPickerButton::set_edit_alpha(bool p_show) {
 }
 
 bool ColorPickerButton::is_editing_alpha() const {
-
 	return edit_alpha;
 }
 
 ColorPicker *ColorPickerButton::get_picker() {
-
 	_update_picker();
 	return picker;
 }
 
 PopupPanel *ColorPickerButton::get_popup() {
-
 	_update_picker();
 	return popup;
 }
@@ -1004,7 +953,6 @@ void ColorPickerButton::_update_picker() {
 }
 
 void ColorPickerButton::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_pick_color", "color"), &ColorPickerButton::set_pick_color);
 	ClassDB::bind_method(D_METHOD("get_pick_color"), &ColorPickerButton::get_pick_color);
 	ClassDB::bind_method(D_METHOD("get_picker"), &ColorPickerButton::get_picker);
@@ -1020,7 +968,6 @@ void ColorPickerButton::_bind_methods() {
 }
 
 ColorPickerButton::ColorPickerButton() {
-
 	// Initialization is now done deferred,
 	// this improves performance in the inspector as the color picker
 	// can be expensive to initialize.

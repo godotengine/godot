@@ -39,7 +39,6 @@ class MenuButton;
 class PopupMenu;
 
 class DebuggerEditorPlugin : public EditorPlugin {
-
 	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
 
 private:

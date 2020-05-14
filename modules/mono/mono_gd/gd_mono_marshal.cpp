@@ -787,7 +787,6 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 }
 
 Variant mono_object_to_variant_impl(MonoObject *p_obj, const ManagedType &p_type, bool p_fail_with_err = true) {
-
 	ERR_FAIL_COND_V(!p_type.type_class, Variant());
 
 	switch (p_type.type_encoding) {

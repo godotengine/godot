@@ -76,7 +76,6 @@ import javax.microedition.khronos.opengles.GL10;
  * 'godot/plugin/v1/[PluginName]/'
  */
 public abstract class GodotPlugin {
-
 	private static final String TAG = GodotPlugin.class.getSimpleName();
 
 	private final Godot godot;

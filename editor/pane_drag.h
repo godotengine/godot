@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class PaneDrag : public Control {
-
 	GDCLASS(PaneDrag, Control);
 
 	bool mouse_over;

@@ -71,7 +71,6 @@ import org.apache.http.util.EntityUtils;
  * @author Luis Linietsky <luis.linietsky@gmail.com>
  */
 public class HttpRequester {
-
 	private Context context;
 	private static final int TTL = 600000; // 10 minutos
 	private long cttl = 0;

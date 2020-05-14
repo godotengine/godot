@@ -31,12 +31,10 @@
 #include "core/math/transform_2d.h" // Includes rect2.h but Rect2 needs Transform2D
 
 bool Rect2::is_equal_approx(const Rect2 &p_rect) const {
-
 	return position.is_equal_approx(p_rect.position) && size.is_equal_approx(p_rect.size);
 }
 
 bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 *r_pos, Point2 *r_normal) const {
-
 	real_t min = 0, max = 1;
 	int axis = 0;
 	real_t sign = 0;
@@ -50,7 +48,6 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 		real_t csign;
 
 		if (seg_from < seg_to) {
-
 			if (seg_from > box_end || seg_to < box_begin)
 				return false;
 			real_t length = seg_to - seg_from;
@@ -59,7 +56,6 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 			csign = -1.0;
 
 		} else {
-
 			if (seg_to > box_end || seg_from < box_begin)
 				return false;
 			real_t length = seg_to - seg_from;
@@ -94,7 +90,6 @@ bool Rect2::intersects_segment(const Point2 &p_from, const Point2 &p_to, Point2 
 }
 
 bool Rect2::intersects_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
-
 	//SAT intersection between local and transformed rect2
 
 	Vector2 xf_points[4] = {

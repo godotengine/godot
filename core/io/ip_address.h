@@ -34,7 +34,6 @@
 #include "core/ustring.h"
 
 struct IP_Address {
-
 private:
 	union {
 		uint8_t field8[16];

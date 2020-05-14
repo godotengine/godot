@@ -36,7 +36,6 @@
 #include "editor_file_dialog.h"
 
 class EditorAutoloadSettings : public VBoxContainer {
-
 	GDCLASS(EditorAutoloadSettings, VBoxContainer);
 
 	enum {

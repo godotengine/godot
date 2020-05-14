@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class GraphNode : public Container {
-
 	GDCLASS(GraphNode, Container);
 
 public:

@@ -34,9 +34,7 @@
 #include "core/map.h"
 #include "space_2d_sw.h"
 class BroadPhase2DBasic : public BroadPhase2DSW {
-
 	struct Element {
-
 		CollisionObject2DSW *owner;
 		bool _static;
 		Rect2 aabb;
@@ -48,7 +46,6 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 	ID current;
 
 	struct PairKey {
-
 		union {
 			struct {
 				ID a;

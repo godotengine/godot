@@ -17,7 +17,6 @@ attribute highp vec2 uv; // attrib:4
 varying highp vec2 uv_interp;
 
 void main() {
-
 	uv_interp = uv;
 	gl_Position = vec4(vertex, 0, 1);
 }
@@ -87,7 +86,6 @@ uniform sampler2D radical_inverse_vdc_cache; // texunit:1
 #ifdef USE_SOURCE_PANORAMA
 
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
-
 	vec2 st = vec2(
 			atan(normal.x, normal.z),
 			acos(normal.y));
@@ -179,7 +177,6 @@ vec2 Hammersley(int i, int N) {
 uniform bool z_flip;
 
 void main() {
-
 	vec3 color = vec3(0.0);
 
 	vec2 uv = (uv_interp * 2.0) - 1.0;
@@ -200,7 +197,6 @@ void main() {
 	vec4 sum = vec4(0.0);
 
 	for (int sample_num = 0; sample_num < SAMPLE_COUNT; sample_num++) {
-
 		vec2 xi = Hammersley(sample_num, SAMPLE_COUNT);
 
 		vec3 H = ImportanceSampleGGX(xi, roughness, N);

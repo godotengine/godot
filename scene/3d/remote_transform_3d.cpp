@@ -43,7 +43,6 @@ void RemoteTransform3D::_update_cache() {
 }
 
 void RemoteTransform3D::_update_remote() {
-
 	if (!is_inside_tree())
 		return;
 
@@ -59,7 +58,6 @@ void RemoteTransform3D::_update_remote() {
 
 	//todo make faster
 	if (use_global_coordinates) {
-
 		if (update_remote_position && update_remote_rotation && update_remote_scale) {
 			n->set_global_transform(get_global_transform());
 		} else {
@@ -102,11 +100,8 @@ void RemoteTransform3D::_update_remote() {
 }
 
 void RemoteTransform3D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			_update_cache();
 
 		} break;
@@ -115,7 +110,6 @@ void RemoteTransform3D::_notification(int p_what) {
 				break;
 
 			if (cache.is_valid()) {
-
 				_update_remote();
 			}
 
@@ -124,7 +118,6 @@ void RemoteTransform3D::_notification(int p_what) {
 }
 
 void RemoteTransform3D::set_remote_node(const NodePath &p_remote_node) {
-
 	remote_node = p_remote_node;
 	if (is_inside_tree()) {
 		_update_cache();
@@ -135,7 +128,6 @@ void RemoteTransform3D::set_remote_node(const NodePath &p_remote_node) {
 }
 
 NodePath RemoteTransform3D::get_remote_node() const {
-
 	return remote_node;
 }
 
@@ -179,7 +171,6 @@ void RemoteTransform3D::force_update_cache() {
 }
 
 String RemoteTransform3D::get_configuration_warning() const {
-
 	if (!has_node(remote_node) || !Object::cast_to<Node3D>(get_node(remote_node))) {
 		return TTR("The \"Remote Path\" property must point to a valid Node3D or Node3D-derived node to work.");
 	}
@@ -188,7 +179,6 @@ String RemoteTransform3D::get_configuration_warning() const {
 }
 
 void RemoteTransform3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_remote_node", "path"), &RemoteTransform3D::set_remote_node);
 	ClassDB::bind_method(D_METHOD("get_remote_node"), &RemoteTransform3D::get_remote_node);
 	ClassDB::bind_method(D_METHOD("force_update_cache"), &RemoteTransform3D::force_update_cache);
@@ -213,7 +203,6 @@ void RemoteTransform3D::_bind_methods() {
 }
 
 RemoteTransform3D::RemoteTransform3D() {
-
 	use_global_coordinates = true;
 	update_remote_position = true;
 	update_remote_rotation = true;

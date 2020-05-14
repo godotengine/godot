@@ -36,7 +36,6 @@ const char *VulkanContextOSX::_get_platform_surface_extension() const {
 }
 
 Error VulkanContextOSX::window_create(DisplayServer::WindowID p_window_id, id p_window, int p_width, int p_height) {
-
 	VkMacOSSurfaceCreateInfoMVK createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
 	createInfo.pNext = NULL;

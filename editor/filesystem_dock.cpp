@@ -93,7 +93,6 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	if (display_mode == DISPLAY_MODE_TREE_ONLY) {
 		String main_scene = ProjectSettings::get_singleton()->get("application/run/main_scene");
 		for (int i = 0; i < p_dir->get_file_count(); i++) {
-
 			String file_type = p_dir->get_file_type(i);
 
 			if (_is_file_type_disabled_by_feature_profile(file_type)) {
@@ -554,7 +553,6 @@ bool FileSystemDock::_is_file_type_disabled_by_feature_profile(const StringName 
 	StringName class_name = p_class;
 
 	while (class_name != StringName()) {
-
 		if (profile->is_class_disabled(class_name)) {
 			return true;
 		}
@@ -576,7 +574,6 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path, List<FileInfo> *
 		String file = p_path->get_file(i);
 
 		if (file.to_lower().find(searched_string) != -1) {
-
 			FileInfo fi;
 			fi.name = file;
 			fi.type = p_path->get_file_type(i);
@@ -860,9 +857,7 @@ void FileSystemDock::_file_list_activate_file(int p_idx) {
 
 void FileSystemDock::_preview_invalidated(const String &p_path) {
 	if (file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS && p_path.get_base_dir() == path && searched_string.length() == 0 && file_list_vb->is_visible_in_tree()) {
-
 		for (int i = 0; i < files->get_item_count(); i++) {
-
 			if (files->get_item_metadata(i) == p_path) {
 				// Re-request preview.
 				Array udata;
@@ -1728,7 +1723,6 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_INFO: {
-
 		} break;
 
 		case FILE_REIMPORT: {
@@ -1905,7 +1899,6 @@ bool FileSystemDock::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 	Dictionary drag_data = p_data;
 
 	if (drag_data.has("favorite")) {
-
 		if (String(drag_data["favorite"]) != "all") {
 			return false;
 		}
@@ -1976,7 +1969,6 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	Vector<String> dirs = EditorSettings::get_singleton()->get_favorites();
 
 	if (drag_data.has("favorite")) {
-
 		if (String(drag_data["favorite"]) != "all") {
 			return;
 		}
@@ -2350,7 +2342,6 @@ void FileSystemDock::_file_multi_selected(int p_index, bool p_selected) {
 }
 
 void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
-
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
 		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
@@ -2366,7 +2357,6 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 }
 
 void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
-
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
 		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
@@ -2451,7 +2441,6 @@ void FileSystemDock::_feature_profile_changed() {
 }
 
 void FileSystemDock::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_update_tree"), &FileSystemDock::_update_tree);
 
 	ClassDB::bind_method(D_METHOD("_file_list_thumbnail_done"), &FileSystemDock::_file_list_thumbnail_done);

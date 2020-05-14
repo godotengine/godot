@@ -49,7 +49,6 @@ public:
 };
 
 class AnimationTreeEditor : public VBoxContainer {
-
 	GDCLASS(AnimationTreeEditor, VBoxContainer);
 
 	ScrollContainer *path_edit;
@@ -95,7 +94,6 @@ public:
 };
 
 class AnimationTreeEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
 	AnimationTreeEditor *anim_tree_editor;

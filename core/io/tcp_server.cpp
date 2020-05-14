@@ -31,7 +31,6 @@
 #include "tcp_server.h"
 
 void TCP_Server::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCP_Server::is_connection_available);
 	ClassDB::bind_method(D_METHOD("is_listening"), &TCP_Server::is_listening);
@@ -40,7 +39,6 @@ void TCP_Server::_bind_methods() {
 }
 
 Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
-
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -62,7 +60,6 @@ Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	err = _sock->bind(p_bind_address, p_port);
 
 	if (err != OK) {
-
 		_sock->close();
 		return ERR_ALREADY_IN_USE;
 	}
@@ -83,7 +80,6 @@ bool TCP_Server::is_listening() const {
 }
 
 bool TCP_Server::is_connection_available() const {
-
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
 	if (!_sock->is_open())
@@ -94,7 +90,6 @@ bool TCP_Server::is_connection_available() const {
 }
 
 Ref<StreamPeerTCP> TCP_Server::take_connection() {
-
 	Ref<StreamPeerTCP> conn;
 	if (!is_connection_available()) {
 		return conn;
@@ -113,7 +108,6 @@ Ref<StreamPeerTCP> TCP_Server::take_connection() {
 }
 
 void TCP_Server::stop() {
-
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
@@ -124,6 +118,5 @@ TCP_Server::TCP_Server() :
 }
 
 TCP_Server::~TCP_Server() {
-
 	stop();
 }

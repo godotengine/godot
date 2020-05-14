@@ -198,7 +198,6 @@ class LightmapperRD : public Lightmapper {
 	};
 
 	struct RasterSeamsPushConstant {
-
 		uint32_t base_index;
 		uint32_t slice;
 		float uv_offset[2];

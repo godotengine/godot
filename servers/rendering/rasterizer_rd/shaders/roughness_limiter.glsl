@@ -21,7 +21,6 @@ params;
 #define HALF_PI 1.5707963267948966
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 	if (any(greaterThan(pos, params.screen_size))) { //too large, do nothing

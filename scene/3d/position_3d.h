@@ -34,7 +34,6 @@
 #include "scene/3d/node_3d.h"
 
 class Position3D : public Node3D {
-
 	GDCLASS(Position3D, Node3D);
 
 public:

@@ -105,7 +105,6 @@ public:
 };
 
 class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackGDNative, VideoStreamPlayback);
 
 	Ref<ImageTexture> texture;
@@ -175,7 +174,6 @@ public:
 };
 
 class VideoStreamGDNative : public VideoStream {
-
 	GDCLASS(VideoStreamGDNative, VideoStream);
 
 	String file;

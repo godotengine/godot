@@ -35,7 +35,6 @@
 #include "scene/resources/bit_map.h"
 
 class LinkButton : public BaseButton {
-
 	GDCLASS(LinkButton, BaseButton);
 
 public:

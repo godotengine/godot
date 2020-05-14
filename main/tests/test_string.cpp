@@ -45,7 +45,6 @@
 namespace TestString {
 
 bool test_1() {
-
 	OS::get_singleton()->print("\n\nTest 1: Assign from cstr\n");
 
 	String s = "Hello";
@@ -57,7 +56,6 @@ bool test_1() {
 }
 
 bool test_2() {
-
 	OS::get_singleton()->print("\n\nTest 2: Assign from string (operator=)\n");
 
 	String s = "Dolly";
@@ -70,7 +68,6 @@ bool test_2() {
 }
 
 bool test_3() {
-
 	OS::get_singleton()->print("\n\nTest 3: Assign from c-string (copycon)\n");
 
 	String s("Sheep");
@@ -83,7 +80,6 @@ bool test_3() {
 }
 
 bool test_4() {
-
 	OS::get_singleton()->print("\n\nTest 4: Assign from c-widechar (operator=)\n");
 
 	String s(L"Give me");
@@ -95,7 +91,6 @@ bool test_4() {
 }
 
 bool test_5() {
-
 	OS::get_singleton()->print("\n\nTest 5: Assign from c-widechar (copycon)\n");
 
 	String s(L"Wool");
@@ -107,7 +102,6 @@ bool test_5() {
 }
 
 bool test_6() {
-
 	OS::get_singleton()->print("\n\nTest 6: comparisons (equal)\n");
 
 	String s = "Test Compare";
@@ -127,7 +121,6 @@ bool test_6() {
 }
 
 bool test_7() {
-
 	OS::get_singleton()->print("\n\nTest 7: comparisons (unequal)\n");
 
 	String s = "Test Compare";
@@ -147,7 +140,6 @@ bool test_7() {
 }
 
 bool test_8() {
-
 	OS::get_singleton()->print("\n\nTest 8: comparisons (operator<)\n");
 
 	String s = "Bees";
@@ -167,7 +159,6 @@ bool test_8() {
 }
 
 bool test_9() {
-
 	OS::get_singleton()->print("\n\nTest 9: Concatenation\n");
 
 	String s;
@@ -186,7 +177,6 @@ bool test_9() {
 }
 
 bool test_10() {
-
 	OS::get_singleton()->print("\n\nTest 10: Misc funcs (size/length/empty/etc)\n");
 
 	if (!String("").empty())
@@ -202,7 +192,6 @@ bool test_10() {
 }
 
 bool test_11() {
-
 	OS::get_singleton()->print("\n\nTest 11: Operator[]\n");
 
 	String a = "Kugar Sane";
@@ -220,7 +209,6 @@ bool test_11() {
 }
 
 bool test_12() {
-
 	OS::get_singleton()->print("\n\nTest 12: case functions\n");
 
 	String a = "MoMoNgA";
@@ -235,7 +223,6 @@ bool test_12() {
 }
 
 bool test_13() {
-
 	OS::get_singleton()->print("\n\nTest 13: UTF8\n");
 
 	/* how can i embed UTF in here? */
@@ -252,7 +239,6 @@ bool test_13() {
 }
 
 bool test_14() {
-
 	OS::get_singleton()->print("\n\nTest 14: ASCII\n");
 
 	String s = L"Primero Leche";
@@ -263,7 +249,6 @@ bool test_14() {
 }
 
 bool test_15() {
-
 	OS::get_singleton()->print("\n\nTest 15: substr\n");
 
 	String s = "Killer Baby";
@@ -273,7 +258,6 @@ bool test_15() {
 }
 
 bool test_16() {
-
 	OS::get_singleton()->print("\n\nTest 16: find\n");
 
 	String s = "Pretty Woman";
@@ -291,7 +275,6 @@ bool test_16() {
 }
 
 bool test_17() {
-
 	OS::get_singleton()->print("\n\nTest 17: find no case\n");
 
 	String s = "Pretty Whale";
@@ -309,7 +292,6 @@ bool test_17() {
 }
 
 bool test_18() {
-
 	OS::get_singleton()->print("\n\nTest 18: find no case\n");
 
 	String s = "Pretty Whale";
@@ -327,7 +309,6 @@ bool test_18() {
 }
 
 bool test_19() {
-
 	OS::get_singleton()->print("\n\nTest 19: Search & replace\n");
 
 	String s = "Happy Birthday, Anna!";
@@ -340,7 +321,6 @@ bool test_19() {
 }
 
 bool test_20() {
-
 	OS::get_singleton()->print("\n\nTest 20: Insertion\n");
 
 	String s = "Who is Frederic?";
@@ -353,7 +333,6 @@ bool test_20() {
 }
 
 bool test_21() {
-
 	OS::get_singleton()->print("\n\nTest 21: Number -> String\n");
 
 	OS::get_singleton()->print("\tPi is %f\n", 33.141593);
@@ -363,7 +342,6 @@ bool test_21() {
 }
 
 bool test_22() {
-
 	OS::get_singleton()->print("\n\nTest 22: String -> Int\n");
 
 	static const char *nums[4] = { "1237461283", "- 22", "0", " - 1123412" };
@@ -380,7 +358,6 @@ bool test_22() {
 }
 
 bool test_23() {
-
 	OS::get_singleton()->print("\n\nTest 23: String -> Float\n");
 
 	static const char *nums[4] = { "-12348298412.2", "0.05", "2.0002", " -0.0001" };
@@ -397,7 +374,6 @@ bool test_23() {
 }
 
 bool test_24() {
-
 	OS::get_singleton()->print("\n\nTest 24: Slicing\n");
 
 	String s = "Mars,Jupiter,Saturn,Uranus";
@@ -407,7 +383,6 @@ bool test_24() {
 	OS::get_singleton()->print("\tSlicing \"%ls\" by \"%s\"..\n", s.c_str(), ",");
 
 	for (int i = 0; i < s.get_slice_count(","); i++) {
-
 		OS::get_singleton()->print("\t\t%i- %ls\n", i + 1, s.get_slice(",", i).c_str());
 
 		if (s.get_slice(",", i) != slices[i])
@@ -418,7 +393,6 @@ bool test_24() {
 }
 
 bool test_25() {
-
 	OS::get_singleton()->print("\n\nTest 25: Erasing\n");
 
 	String s = "Josephine is such a cute girl!";
@@ -433,7 +407,6 @@ bool test_25() {
 }
 
 bool test_26() {
-
 	OS::get_singleton()->print("\n\nTest 26: RegEx substitution\n");
 
 #ifndef MODULE_REGEX_ENABLED
@@ -461,7 +434,6 @@ struct test_27_data {
 };
 
 bool test_27() {
-
 	OS::get_singleton()->print("\n\nTest 27: begins_with\n");
 	test_27_data tc[] = {
 		{ "res://foobar", "res://", true },
@@ -486,7 +458,6 @@ bool test_27() {
 };
 
 bool test_28() {
-
 	OS::get_singleton()->print("\n\nTest 28: sprintf\n");
 
 	bool success, state = true;
@@ -822,7 +793,6 @@ bool test_28() {
 }
 
 bool test_29() {
-
 	bool state = true;
 
 	IP_Address ip0("2001:0db8:85a3:0000:0000:8a2e:0370:7334");
@@ -997,7 +967,6 @@ bool test_31() {
 };
 
 bool test_32() {
-
 #define STRIP_TEST(x)                                            \
 	{                                                            \
 		bool success = x;                                        \
@@ -1173,7 +1142,6 @@ TestFunc test_funcs[] = {
 };
 
 MainLoop *test() {
-
 	/** A character length != wchar_t may be forced, so the tests won't work */
 
 	static_assert(sizeof(CharType) == sizeof(wchar_t));

@@ -48,7 +48,6 @@
 #include <sys/stat.h>
 
 class EditorExportPlatformIOS : public EditorExportPlatform {
-
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatform);
 
 	int version_code;
@@ -73,7 +72,6 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_buildgrp;
 	};
 	struct ExportArchitecture {
-
 		String name;
 		bool is_default = false;
 
@@ -105,7 +103,6 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
-
 		String pname = p_package;
 
 		if (pname.length() == 0) {
@@ -148,7 +145,6 @@ public:
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 
 	virtual void get_platform_features(List<String> *r_features) {
-
 		r_features->push_back("mobile");
 		r_features->push_back("iOS");
 	}
@@ -161,7 +157,6 @@ public:
 };
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
-
 	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
 	if (driver == "GLES2") {
 		r_features->push_back("etc");
@@ -207,7 +202,6 @@ static const LoadingScreenInfo loading_screen_infos[] = {
 };
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
-
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
@@ -442,7 +436,6 @@ String EditorExportPlatformIOS::_get_cpp_code() {
 }
 
 void EditorExportPlatformIOS::_blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p_src, bool p_rot) {
-
 	ERR_FAIL_COND(p_dst.is_null());
 	ERR_FAIL_COND(p_src.is_null());
 
@@ -1311,7 +1304,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-
 	String err;
 	bool valid = false;
 
@@ -1376,7 +1368,6 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
-
 	Ref<Image> img = memnew(Image(_iphone_logo));
 	logo.instance();
 	logo->create_from_image(img);
@@ -1386,7 +1377,6 @@ EditorExportPlatformIOS::~EditorExportPlatformIOS() {
 }
 
 void register_iphone_exporter() {
-
 	Ref<EditorExportPlatformIOS> platform;
 	platform.instance();
 

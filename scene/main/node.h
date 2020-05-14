@@ -43,7 +43,6 @@
 class Viewport;
 class SceneState;
 class Node : public Object {
-
 	GDCLASS(Node, Object);
 	OBJ_CATEGORY("Nodes");
 
@@ -67,12 +66,10 @@ public:
 	};
 
 	struct Comparator {
-
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
 	struct ComparatorWithPriority {
-
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
 	};
 
@@ -80,7 +77,6 @@ public:
 
 private:
 	struct GroupData {
-
 		bool persistent;
 		SceneTree::Group *group;
 		GroupData() { persistent = false; }
@@ -92,7 +88,6 @@ private:
 	};
 
 	struct Data {
-
 		String filename;
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
@@ -305,7 +300,6 @@ public:
 	bool is_in_group(const StringName &p_identifier) const;
 
 	struct GroupInfo {
-
 		StringName name;
 		bool persistent;
 	};

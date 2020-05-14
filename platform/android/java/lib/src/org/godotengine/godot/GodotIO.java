@@ -50,7 +50,6 @@ import java.util.Locale;
 // Wrapper for native library
 
 public class GodotIO {
-
 	AssetManager am;
 	Godot activity;
 	GodotEditText edit;
@@ -70,7 +69,6 @@ public class GodotIO {
 	public int last_file_id = 1;
 
 	class AssetData {
-
 		public boolean eof = false;
 		public String path;
 		public InputStream is;
@@ -81,7 +79,6 @@ public class GodotIO {
 	SparseArray<AssetData> streams;
 
 	public int file_open(String path, boolean write) {
-
 		//System.out.printf("file_open: Attempt to Open %s\n",path);
 
 		//Log.v("MyApp", "TRYING TO OPEN FILE: " + path);
@@ -94,7 +91,6 @@ public class GodotIO {
 			ad.is = am.open(path);
 
 		} catch (Exception e) {
-
 			//System.out.printf("Exception on file_open: %s\n",path);
 			return -1;
 		}
@@ -102,7 +98,6 @@ public class GodotIO {
 		try {
 			ad.len = ad.is.available();
 		} catch (Exception e) {
-
 			System.out.printf("Exception availabling on file_open: %s\n", path);
 			return -1;
 		}
@@ -115,7 +110,6 @@ public class GodotIO {
 		return last_file_id;
 	}
 	public int file_get_size(int id) {
-
 		if (streams.get(id) == null) {
 			System.out.printf("file_get_size: Invalid file id: %d\n", id);
 			return -1;
@@ -124,7 +118,6 @@ public class GodotIO {
 		return streams.get(id).len;
 	}
 	public void file_seek(int id, int bytes) {
-
 		if (streams.get(id) == null) {
 			System.out.printf("file_get_size: Invalid file id: %d\n", id);
 			return;
@@ -137,7 +130,6 @@ public class GodotIO {
 			bytes = 0;
 
 		try {
-
 			if (bytes > (int)ad.pos) {
 				int todo = bytes - (int)ad.pos;
 				while (todo > 0) {
@@ -145,7 +137,6 @@ public class GodotIO {
 				}
 				ad.pos = bytes;
 			} else if (bytes < (int)ad.pos) {
-
 				ad.is = am.open(ad.path);
 
 				ad.pos = bytes;
@@ -157,14 +148,12 @@ public class GodotIO {
 
 			ad.eof = false;
 		} catch (IOException e) {
-
 			System.out.printf("Exception on file_seek: %s\n", e);
 			return;
 		}
 	}
 
 	public int file_tell(int id) {
-
 		if (streams.get(id) == null) {
 			System.out.printf("file_read: Can't tell eof for invalid file id: %d\n", id);
 			return 0;
@@ -174,7 +163,6 @@ public class GodotIO {
 		return ad.pos;
 	}
 	public boolean file_eof(int id) {
-
 		if (streams.get(id) == null) {
 			System.out.printf("file_read: Can't check eof for invalid file id: %d\n", id);
 			return false;
@@ -185,7 +173,6 @@ public class GodotIO {
 	}
 
 	public byte[] file_read(int id, int bytes) {
-
 		if (streams.get(id) == null) {
 			System.out.printf("file_read: Can't read invalid file id: %d\n", id);
 			return new byte[0];
@@ -194,13 +181,11 @@ public class GodotIO {
 		AssetData ad = streams.get(id);
 
 		if (ad.pos + bytes > ad.len) {
-
 			bytes = ad.len - ad.pos;
 			ad.eof = true;
 		}
 
 		if (bytes == 0) {
-
 			return new byte[0];
 		}
 
@@ -209,7 +194,6 @@ public class GodotIO {
 		try {
 			r = ad.is.read(buf1);
 		} catch (IOException e) {
-
 			System.out.printf("Exception on file_read: %s\n", e);
 			return new byte[bytes];
 		}
@@ -221,19 +205,16 @@ public class GodotIO {
 		ad.pos += r;
 
 		if (r < bytes) {
-
 			byte[] buf2 = new byte[r];
 			for (int i = 0; i < r; i++)
 				buf2[i] = buf1[i];
 			return buf2;
 		} else {
-
 			return buf1;
 		}
 	}
 
 	public void file_close(int id) {
-
 		if (streams.get(id) == null) {
 			System.out.printf("file_close: Can't close invalid file id: %d\n", id);
 			return;
@@ -247,7 +228,6 @@ public class GodotIO {
 	/////////////////////////
 
 	class AssetDir {
-
 		public String[] files;
 		public int current;
 		public String path;
@@ -258,7 +238,6 @@ public class GodotIO {
 	SparseArray<AssetDir> dirs;
 
 	public int dir_open(String path) {
-
 		AssetDir ad = new AssetDir();
 		ad.current = 0;
 		ad.path = path;
@@ -271,7 +250,6 @@ public class GodotIO {
 				return -1;
 			}
 		} catch (IOException e) {
-
 			System.out.printf("Exception on dir_open: %s\n", e);
 			return -1;
 		}
@@ -310,7 +288,6 @@ public class GodotIO {
 	}
 
 	public String dir_next(int id) {
-
 		if (dirs.get(id) == null) {
 			System.out.printf("dir_next: invalid dir id: %d\n", id);
 			return "";
@@ -329,7 +306,6 @@ public class GodotIO {
 	}
 
 	public void dir_close(int id) {
-
 		if (dirs.get(id) == null) {
 			System.out.printf("dir_close: invalid dir id: %d\n", id);
 			return;
@@ -339,7 +315,6 @@ public class GodotIO {
 	}
 
 	GodotIO(Godot p_activity) {
-
 		am = p_activity.getAssets();
 		activity = p_activity;
 		//streams = new HashMap<Integer, AssetData>();
@@ -430,7 +405,6 @@ public class GodotIO {
 	}
 
 	public void audioPause(boolean p_pause) {
-
 		if (p_pause)
 			mAudioTrack.pause();
 		else
@@ -442,7 +416,6 @@ public class GodotIO {
 	/////////////////////////
 
 	public int openURI(String p_uri) {
-
 		try {
 			Log.v("MyApp", "TRYING TO OPEN URI: " + p_uri);
 			String path = p_uri;
@@ -451,7 +424,6 @@ public class GodotIO {
 				//absolute path to filesystem, prepend file://
 				path = "file://" + path;
 				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
-
 					type = "image/*";
 				}
 			}
@@ -467,18 +439,15 @@ public class GodotIO {
 			activity.startActivity(intent);
 			return 0;
 		} catch (ActivityNotFoundException e) {
-
 			return 1;
 		}
 	}
 
 	public String getDataDir() {
-
 		return activity.getFilesDir().getAbsolutePath();
 	}
 
 	public String getLocale() {
-
 		return Locale.getDefault().toString();
 	}
 
@@ -505,9 +474,7 @@ public class GodotIO {
 	};
 
 	public void setScreenOrientation(int p_orientation) {
-
 		switch (p_orientation) {
-
 			case SCREEN_LANDSCAPE: {
 				activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 			} break;
@@ -550,7 +517,6 @@ public class GodotIO {
 	public static final int SYSTEM_DIR_RINGTONES = 7;
 
 	public String getSystemDir(int idx) {
-
 		String what = "";
 		switch (idx) {
 			case SYSTEM_DIR_DESKTOP: {
@@ -595,7 +561,6 @@ public class GodotIO {
 
 	public static String unique_id = "";
 	public String getUniqueID() {
-
 		return unique_id;
 	}
 }

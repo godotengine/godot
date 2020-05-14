@@ -40,7 +40,6 @@ import java.util.Arrays;
  * Store information about a {@link GodotPlugin}'s signal.
  */
 public final class SignalInfo {
-
 	private final String name;
 	private final Class<?>[] paramTypes;
 	private final String[] paramTypesNames;

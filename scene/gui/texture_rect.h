@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class TextureRect : public Control {
-
 	GDCLASS(TextureRect, Control);
 
 public:

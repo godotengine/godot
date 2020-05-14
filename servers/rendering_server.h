@@ -42,7 +42,6 @@
 #include "servers/rendering/shader_language.h"
 
 class RenderingServer : public Object {
-
 	GDCLASS(RenderingServer, Object);
 
 	static RenderingServer *singleton;
@@ -244,7 +243,6 @@ public:
 	};
 
 	struct SurfaceData {
-
 		PrimitiveType primitive = PRIMITIVE_MAX;
 
 		uint32_t format = 0;

@@ -38,12 +38,10 @@
 #endif
 
 class JNISingleton : public Object {
-
 	GDCLASS(JNISingleton, Object);
 
 #ifdef ANDROID_ENABLED
 	struct MethodData {
-
 		jmethodID method;
 		Variant::Type ret_type;
 		Vector<Variant::Type> argtypes;
@@ -63,7 +61,6 @@ public:
 		bool call_error = !E || E->get().argtypes.size() != p_argcount;
 		if (!call_error) {
 			for (int i = 0; i < p_argcount; i++) {
-
 				if (!Variant::can_convert(p_args[i]->get_type(), E->get().argtypes[i])) {
 					call_error = true;
 					break;
@@ -83,7 +80,6 @@ public:
 		jvalue *v = nullptr;
 
 		if (p_argcount) {
-
 			v = (jvalue *)alloca(sizeof(jvalue) * p_argcount);
 		}
 
@@ -95,7 +91,6 @@ public:
 
 		List<jobject> to_erase;
 		for (int i = 0; i < p_argcount; i++) {
-
 			jvalret vr = _variant_to_jvalue(env, E->get().argtypes[i], p_args[i]);
 			v[i] = vr.val;
 			if (vr.obj)
@@ -105,31 +100,24 @@ public:
 		Variant ret;
 
 		switch (E->get().ret_type) {
-
 			case Variant::NIL: {
-
 				env->CallVoidMethodA(instance, E->get().method, v);
 			} break;
 			case Variant::BOOL: {
-
 				ret = env->CallBooleanMethodA(instance, E->get().method, v) == JNI_TRUE;
 			} break;
 			case Variant::INT: {
-
 				ret = env->CallIntMethodA(instance, E->get().method, v);
 			} break;
 			case Variant::FLOAT: {
-
 				ret = env->CallFloatMethodA(instance, E->get().method, v);
 			} break;
 			case Variant::STRING: {
-
 				jobject o = env->CallObjectMethodA(instance, E->get().method, v);
 				ret = jstring_to_string((jstring)o, env);
 				env->DeleteLocalRef(o);
 			} break;
 			case Variant::PACKED_STRING_ARRAY: {
-
 				jobjectArray arr = (jobjectArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				ret = _jobject_to_variant(env, arr);
@@ -137,7 +125,6 @@ public:
 				env->DeleteLocalRef(arr);
 			} break;
 			case Variant::PACKED_INT32_ARRAY: {
-
 				jintArray arr = (jintArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				int fCount = env->GetArrayLength(arr);
@@ -150,7 +137,6 @@ public:
 				env->DeleteLocalRef(arr);
 			} break;
 			case Variant::PACKED_FLOAT32_ARRAY: {
-
 				jfloatArray arr = (jfloatArray)env->CallObjectMethodA(instance, E->get().method, v);
 
 				int fCount = env->GetArrayLength(arr);
@@ -167,14 +153,12 @@ public:
 #warning This is missing 64 bits arrays, I have no idea how to do it in JNI
 #endif
 			case Variant::DICTIONARY: {
-
 				jobject obj = env->CallObjectMethodA(instance, E->get().method, v);
 				ret = _jobject_to_variant(env, obj);
 				env->DeleteLocalRef(obj);
 
 			} break;
 			default: {
-
 				env->PopLocalFrame(nullptr);
 				ERR_FAIL_V(Variant());
 			} break;
@@ -197,17 +181,14 @@ public:
 
 #ifdef ANDROID_ENABLED
 	jobject get_instance() const {
-
 		return instance;
 	}
 
 	void set_instance(jobject p_instance) {
-
 		instance = p_instance;
 	}
 
 	void add_method(const StringName &p_name, jmethodID p_method, const Vector<Variant::Type> &p_args, Variant::Type p_ret_type) {
-
 		MethodData md;
 		md.method = p_method;
 		md.argtypes = p_args;

@@ -493,7 +493,6 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			if (touch.size()) {
 				//end all if exist
 				for (int i = 0; i < touch.size(); i++) {
-
 					Ref<InputEventScreenTouch> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);
@@ -511,7 +510,6 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 
 			//send touch
 			for (int i = 0; i < touch.size(); i++) {
-
 				Ref<InputEventScreenTouch> ev;
 				ev.instance();
 				ev->set_index(touch[i].id);
@@ -525,10 +523,8 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			ERR_FAIL_COND(touch.size() != p_points.size());
 
 			for (int i = 0; i < touch.size(); i++) {
-
 				int idx = -1;
 				for (int j = 0; j < p_points.size(); j++) {
-
 					if (touch[i].id == p_points[j].id) {
 						idx = j;
 						break;
@@ -554,7 +550,6 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 			if (touch.size()) {
 				//end all if exist
 				for (int i = 0; i < touch.size(); i++) {
-
 					Ref<InputEventScreenTouch> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);
@@ -586,7 +581,6 @@ void DisplayServerAndroid::process_touch(int p_what, int p_pointer, const Vector
 		case 4: { // remove touch
 			for (int i = 0; i < touch.size(); i++) {
 				if (touch[i].id == p_pointer) {
-
 					Ref<InputEventScreenTouch> ev;
 					ev.instance();
 					ev->set_index(touch[i].id);

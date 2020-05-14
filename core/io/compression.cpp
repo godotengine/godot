@@ -40,10 +40,8 @@
 #include <zstd.h>
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode) {
-
 	switch (p_mode) {
 		case MODE_FASTLZ: {
-
 			if (p_src_size < 16) {
 				uint8_t src[16];
 				zeromem(&src[p_src_size], 16 - p_src_size);
@@ -56,7 +54,6 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
-
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -97,10 +94,8 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 }
 
 int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
-
 	switch (p_mode) {
 		case MODE_FASTLZ: {
-
 			int ss = p_src_size + p_src_size * 6 / 100;
 			if (ss < 66)
 				ss = 66;
@@ -109,7 +104,6 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
-
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;
@@ -124,7 +118,6 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 			return aout;
 		} break;
 		case MODE_ZSTD: {
-
 			return ZSTD_compressBound(p_src_size);
 		} break;
 	}
@@ -133,10 +126,8 @@ int Compression::get_max_compressed_buffer_size(int p_src_size, Mode p_mode) {
 }
 
 int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p_src, int p_src_size, Mode p_mode) {
-
 	switch (p_mode) {
 		case MODE_FASTLZ: {
-
 			int ret_size = 0;
 
 			if (p_dst_max_size < 16) {
@@ -150,7 +141,6 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 		} break;
 		case MODE_DEFLATE:
 		case MODE_GZIP: {
-
 			int window_bits = p_mode == MODE_DEFLATE ? 15 : 15 + 16;
 
 			z_stream strm;

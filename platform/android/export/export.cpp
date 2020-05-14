@@ -235,14 +235,12 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 };
 
 class EditorExportPlatformAndroid : public EditorExportPlatform {
-
 	GDCLASS(EditorExportPlatformAndroid, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 	Ref<ImageTexture> run_icon;
 
 	struct Device {
-
 		String id;
 		String name;
 		String description;
@@ -250,7 +248,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	};
 
 	struct APKExportData {
-
 		zipFile apk;
 		EditorProgress *ep;
 	};
@@ -262,14 +259,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	volatile bool quit_request;
 
 	static void _device_poll_thread(void *ud) {
-
 		EditorExportPlatformAndroid *ea = (EditorExportPlatformAndroid *)ud;
 
 		while (!ea->quit_request) {
-
 			String adb = EditorSettings::get_singleton()->get("export/android/adb");
 			if (FileAccess::exists(adb)) {
-
 				String devices;
 				List<String> args;
 				args.push_back("devices");
@@ -279,7 +273,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				Vector<String> ds = devices.split("\n");
 				Vector<String> ldevices;
 				for (int i = 1; i < ds.size(); i++) {
-
 					String d = ds[i];
 					int dpos = d.find("device");
 					if (dpos == -1)
@@ -293,12 +286,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				bool different = false;
 
 				if (ea->devices.size() != ldevices.size()) {
-
 					different = true;
 				} else {
-
 					for (int i = 0; i < ea->devices.size(); i++) {
-
 						if (ea->devices[i].id != ldevices[i]) {
 							different = true;
 							break;
@@ -307,11 +297,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				}
 
 				if (different) {
-
 					Vector<Device> ndevices;
 
 					for (int i = 0; i < ldevices.size(); i++) {
-
 						Device d;
 						d.id = ldevices[i];
 						for (int j = 0; j < ea->devices.size(); j++) {
@@ -340,7 +328,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							d.description = "Device ID: " + d.id + "\n";
 							d.api_level = 0;
 							for (int j = 0; j < props.size(); j++) {
-
 								// got information by `shell cat /system/build.prop` before and its format is "property=value"
 								// it's now changed to use `shell getporp` because of permission issue with Android 8.0 and above
 								// its format is "[property]: [value]" so changed it as like build.prop
@@ -407,7 +394,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	String get_project_name(const String &p_name) const {
-
 		String aname;
 		if (p_name != "") {
 			aname = p_name;
@@ -423,7 +409,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	String get_package_name(const String &p_package) const {
-
 		String pname = p_package;
 		String basename = ProjectSettings::get_singleton()->get("application/config/name");
 		basename = basename.to_lower();
@@ -449,7 +434,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
-
 		String pname = p_package;
 
 		if (pname.length() == 0) {
@@ -513,7 +497,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data) {
-
 		/*
 		 *  By not compressing files with little or not benefit in doing so,
 		 *  a performance gain is expected attime. Moreover, if the APK is
@@ -560,7 +543,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	static zip_fileinfo get_zip_fileinfo() {
-
 		OS::Time time = OS::get_singleton()->get_time();
 		OS::Date date = OS::get_singleton()->get_date();
 
@@ -649,7 +631,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
-
 		// Leaving the unused types commented because looking these constants up
 		// again later would be annoying
 		// const int CHUNK_AXML_FILE = 0x00080003;
@@ -695,7 +676,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		const char **aperms = android_perms;
 		while (*aperms) {
-
 			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
 			if (enabled)
 				perms.push_back("android.permission." + String(*aperms));
@@ -717,14 +697,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		while (ofs < (uint32_t)p_manifest.size()) {
-
 			uint32_t chunk = decode_uint32(&p_manifest[ofs]);
 			uint32_t size = decode_uint32(&p_manifest[ofs + 4]);
 
 			switch (chunk) {
-
 				case CHUNK_STRINGS: {
-
 					int iofs = ofs + 8;
 
 					string_count = decode_uint32(&p_manifest[iofs]);
@@ -745,14 +722,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					string_table_begins = st_offset;
 
 					for (uint32_t i = 0; i < string_count; i++) {
-
 						uint32_t string_at = decode_uint32(&p_manifest[st_offset + i * 4]);
 						string_at += st_offset + string_count * 4;
 
 						ERR_FAIL_COND_MSG(string_flags & UTF8_FLAG, "Unimplemented, can't read UTF-8 string table.");
 
 						if (string_flags & UTF8_FLAG) {
-
 						} else {
 							uint32_t len = decode_uint16(&p_manifest[string_at]);
 							Vector<CharType> ucstring;
@@ -775,7 +750,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 				} break;
 				case CHUNK_XML_START_TAG: {
-
 					int iofs = ofs + 8;
 					uint32_t name = decode_uint32(&p_manifest[iofs + 12]);
 
@@ -814,26 +788,20 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						}
 
 						if (tname == "activity" && attrname == "screenOrientation") {
-
 							encode_uint32(orientation == 0 ? 0 : 1, &p_manifest.write[iofs + 16]);
 						}
 
 						if (tname == "supports-screens") {
-
 							if (attrname == "smallScreens") {
-
 								encode_uint32(screen_support_small ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 
 							} else if (attrname == "normalScreens") {
-
 								encode_uint32(screen_support_normal ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 
 							} else if (attrname == "largeScreens") {
-
 								encode_uint32(screen_support_large ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 
 							} else if (attrname == "xlargeScreens") {
-
 								encode_uint32(screen_support_xlarge ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
 							}
 						}
@@ -1038,7 +1006,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						}
 					}
 					if (tname == "manifest") {
-
 						// save manifest ending so we can restore it
 						Vector<uint8_t> manifest_end;
 						uint32_t manifest_cur_size = p_manifest.size();
@@ -1124,13 +1091,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		ret.resize(string_table_begins + string_table.size() * 4);
 
 		for (uint32_t i = 0; i < string_table_begins; i++) {
-
 			ret.write[i] = p_manifest[i];
 		}
 
 		ofs = 0;
 		for (int i = 0; i < string_table.size(); i++) {
-
 			encode_uint32(ofs, &ret.write[string_table_begins + i * 4]);
 			ofs += string_table[i].length() * 2 + 2 + 2;
 		}
@@ -1139,7 +1104,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		string_data_offset = ret.size() - ofs;
 		uint8_t *chars = &ret.write[string_data_offset];
 		for (int i = 0; i < string_table.size(); i++) {
-
 			String s = string_table[i];
 			encode_uint16(s.length(), chars);
 			chars += 2;
@@ -1178,7 +1142,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	}
 
 	static String _parse_string(const uint8_t *p_bytes, bool p_utf8) {
-
 		uint32_t offset = 0;
 		uint32_t len = 0;
 
@@ -1208,7 +1171,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		if (p_utf8) {
-
 			Vector<uint8_t> str8;
 			str8.resize(len + 1);
 			for (uint32_t i = 0; i < len; i++) {
@@ -1219,7 +1181,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			str.parse_utf8((const char *)str8.ptr());
 			return str;
 		} else {
-
 			String str;
 			for (uint32_t i = 0; i < len; i++) {
 				CharType c = decode_uint16(&p_bytes[offset + i * 2]);
@@ -1231,7 +1192,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 	}
 	void _fix_resources(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest) {
-
 		const int UTF8_FLAG = 0x00000100;
 
 		uint32_t string_block_len = decode_uint32(&p_manifest[16]);
@@ -1244,20 +1204,17 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		String package_name = p_preset->get("package/name");
 
 		for (uint32_t i = 0; i < string_count; i++) {
-
 			uint32_t offset = decode_uint32(&p_manifest[string_table_begins + i * 4]);
 			offset += string_table_begins + string_count * 4;
 
 			String str = _parse_string(&p_manifest[offset], string_flags & UTF8_FLAG);
 
 			if (str.begins_with("godot-project-name")) {
-
 				if (str == "godot-project-name") {
 					//project name
 					str = get_project_name(package_name);
 
 				} else {
-
 					String lang = str.substr(str.find_last("-") + 1, str.length()).replace("-", "_");
 					String prop = "application/config/name_" + lang;
 					if (ProjectSettings::get_singleton()->has_setting(prop)) {
@@ -1276,13 +1233,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		ret.resize(string_table_begins + string_table.size() * 4);
 
 		for (uint32_t i = 0; i < string_table_begins; i++) {
-
 			ret.write[i] = p_manifest[i];
 		}
 
 		int ofs = 0;
 		for (int i = 0; i < string_table.size(); i++) {
-
 			encode_uint32(ofs, &ret.write[string_table_begins + i * 4]);
 			ofs += string_table[i].length() * 2 + 2 + 2;
 		}
@@ -1290,7 +1245,6 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		ret.resize(ret.size() + ofs);
 		uint8_t *chars = &ret.write[ret.size() - ofs];
 		for (int i = 0; i < string_table.size(); i++) {
-
 			String s = string_table[i];
 			encode_uint16(s.length(), chars);
 			chars += 2;
@@ -1363,7 +1317,6 @@ public:
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
-
 		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
 		if (driver == "GLES2") {
 			r_features->push_back("etc");
@@ -1380,7 +1333,6 @@ public:
 	}
 
 	virtual void get_export_options(List<ExportOption> *r_options) {
-
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
@@ -1427,7 +1379,6 @@ public:
 
 		const char **perms = android_perms;
 		while (*perms) {
-
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "permissions/" + String(*perms).to_lower()), false));
 			perms++;
 		}
@@ -1446,7 +1397,6 @@ public:
 	}
 
 	virtual bool poll_export() {
-
 		bool dc = devices_changed;
 		if (dc) {
 			// don't clear unless we're reporting true, to avoid race
@@ -1456,25 +1406,21 @@ public:
 	}
 
 	virtual int get_options_count() const {
-
 		MutexLock lock(device_lock);
 		return devices.size();
 	}
 
 	virtual String get_options_tooltip() const {
-
 		return TTR("Select device from the list");
 	}
 
 	virtual String get_option_label(int p_index) const {
-
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		MutexLock lock(device_lock);
 		return devices[p_index].name;
 	}
 
 	virtual String get_option_tooltip(int p_index) const {
-
 		ERR_FAIL_INDEX_V(p_index, devices.size(), "");
 		MutexLock lock(device_lock);
 		String s = devices[p_index].description;
@@ -1488,7 +1434,6 @@ public:
 	}
 
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
-
 		ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
 
 		String can_export_error;
@@ -1572,7 +1517,6 @@ public:
 
 		if (use_remote) {
 			if (use_reverse) {
-
 				static const char *const msg = "--- Device API >= 21; debugging over USB ---";
 				EditorNode::get_singleton()->get_log()->add_message(msg, EditorLog::MSG_TYPE_EDITOR);
 				print_line(String(msg).to_upper());
@@ -1585,7 +1529,6 @@ public:
 				OS::get_singleton()->execute(adb, args, true, nullptr, nullptr, &rv);
 
 				if (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) {
-
 					int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
 					args.clear();
 					args.push_back("-s");
@@ -1599,7 +1542,6 @@ public:
 				}
 
 				if (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT) {
-
 					int fs_port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
 
 					args.clear();
@@ -1613,7 +1555,6 @@ public:
 					print_line("Reverse result2: " + itos(rv));
 				}
 			} else {
-
 				static const char *const msg = "--- Device API < 21; debugging over Wi-Fi ---";
 				EditorNode::get_singleton()->get_log()->add_message(msg, EditorLog::MSG_TYPE_EDITOR);
 				print_line(String(msg).to_upper());
@@ -1653,7 +1594,6 @@ public:
 	}
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-
 		String err;
 		bool valid = false;
 
@@ -1687,7 +1627,6 @@ public:
 		String adb = EditorSettings::get_singleton()->get("export/android/adb");
 
 		if (!FileAccess::exists(adb)) {
-
 			valid = false;
 			err += TTR("ADB executable not configured in the Editor Settings.") + "\n";
 		}
@@ -1695,7 +1634,6 @@ public:
 		String js = EditorSettings::get_singleton()->get("export/android/jarsigner");
 
 		if (!FileAccess::exists(js)) {
-
 			valid = false;
 			err += TTR("OpenJDK jarsigner not configured in the Editor Settings.") + "\n";
 		}
@@ -1703,7 +1641,6 @@ public:
 		String dk = p_preset->get("keystore/debug");
 
 		if (!FileAccess::exists(dk)) {
-
 			dk = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 			if (!FileAccess::exists(dk)) {
 				valid = false;
@@ -1726,7 +1663,6 @@ public:
 			}
 
 			if (!FileAccess::exists("res://android/build/build.gradle")) {
-
 				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
 				valid = false;
 			}
@@ -1735,7 +1671,6 @@ public:
 		bool apk_expansion = p_preset->get("apk_expansion/enable");
 
 		if (apk_expansion) {
-
 			String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
 			if (apk_expansion_pkey == "") {
@@ -1749,7 +1684,6 @@ public:
 		String pn_err;
 
 		if (!is_package_name_valid(get_package_name(pn), &pn_err)) {
-
 			valid = false;
 			err += TTR("Invalid package name:") + " " + pn_err + "\n";
 		}
@@ -1771,7 +1705,6 @@ public:
 	}
 
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0) {
-
 		ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 		String src_apk;
@@ -1846,7 +1779,6 @@ public:
 			}
 
 		} else {
-
 			if (p_debug)
 				src_apk = p_preset->get("custom_template/debug");
 			else
@@ -1879,7 +1811,6 @@ public:
 
 		unzFile pkg = unzOpen2(src_apk.utf8().get_data(), &io);
 		if (!pkg) {
-
 			EditorNode::add_io_error("Could not find template APK to export:\n" + src_apk);
 			return ERR_FILE_NOT_FOUND;
 		}
@@ -1953,7 +1884,6 @@ public:
 
 		Vector<String> invalid_abis(enabled_abis);
 		while (ret == UNZ_OK) {
-
 			//get filename
 			unz_file_info info;
 			char fname[16384];
@@ -2059,7 +1989,6 @@ public:
 		gen_export_flags(cl, p_flags);
 
 		if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
-
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
@@ -2068,7 +1997,6 @@ public:
 			//all files
 
 			if (apk_expansion) {
-
 				String apkfname = "main." + itos(version_code) + "." + get_package_name(package_name) + ".obb";
 				String fullpath = p_path.get_base_dir().plus_file(apkfname);
 				err = save_pack(p_preset, fullpath);
@@ -2087,7 +2015,6 @@ public:
 				cl.push_back(apk_expansion_pkey.strip_edges());
 
 			} else {
-
 				APKExportData ed;
 				ed.ep = &ep;
 				ed.apk = unaligned_apk;
@@ -2119,7 +2046,6 @@ public:
 			clf.resize(4);
 			encode_uint32(cl.size(), &clf.write[0]);
 			for (int i = 0; i < cl.size(); i++) {
-
 				print_line(itos(i) + " param: " + cl[i]);
 				CharString txt = cl[i].utf8();
 				int base = clf.size();
@@ -2156,7 +2082,6 @@ public:
 		}
 
 		if (_signed) {
-
 			String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
 			if (!FileAccess::exists(jarsigner)) {
 				EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting APK is unsigned.");
@@ -2167,13 +2092,11 @@ public:
 			String password;
 			String user;
 			if (p_debug) {
-
 				keystore = p_preset->get("keystore/debug");
 				password = p_preset->get("keystore/debug_password");
 				user = p_preset->get("keystore/debug_user");
 
 				if (keystore.empty()) {
-
 					keystore = EditorSettings::get_singleton()->get("export/android/debug_keystore");
 					password = EditorSettings::get_singleton()->get("export/android/debug_keystore_pass");
 					user = EditorSettings::get_singleton()->get("export/android/debug_keystore_user");
@@ -2250,7 +2173,6 @@ public:
 
 		unzFile tmp_unaligned = unzOpen2(tmp_unaligned_path.utf8().get_data(), &io);
 		if (!tmp_unaligned) {
-
 			EditorNode::add_io_error("Could not unzip temporary unaligned APK.");
 			CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
 		}
@@ -2267,7 +2189,6 @@ public:
 		// following what is done in https://github.com/android/platform_build/blob/master/tools/zipalign/ZipAlign.cpp
 		int bias = 0;
 		while (ret == UNZ_OK) {
-
 			unz_file_info info;
 			memset(&info, 0, sizeof(info));
 
@@ -2326,7 +2247,6 @@ public:
 	}
 
 	virtual void get_platform_features(List<String> *r_features) {
-
 		r_features->push_back("mobile");
 		r_features->push_back("Android");
 	}
@@ -2335,7 +2255,6 @@ public:
 	}
 
 	EditorExportPlatformAndroid() {
-
 		Ref<Image> img = memnew(Image(_android_logo));
 		logo.instance();
 		logo->create_from_image(img);
@@ -2357,7 +2276,6 @@ public:
 };
 
 void register_android_exporter() {
-
 	String exe_ext;
 	if (OS::get_singleton()->get_name() == "Windows") {
 		exe_ext = "*.exe";

@@ -37,7 +37,6 @@
 #include <emscripten/html5.h>
 
 class DisplayServerJavaScript : public DisplayServer {
-
 	//int video_driver_index;
 
 	Vector2 windowed_size;

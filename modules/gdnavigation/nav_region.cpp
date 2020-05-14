@@ -84,7 +84,6 @@ void NavRegion::update_polygons() {
 
 	// Build
 	for (size_t i(0); i < polygons.size(); i++) {
-
 		gd::Polygon &p = polygons[i];
 		p.owner = this;
 
@@ -98,7 +97,6 @@ void NavRegion::update_polygons() {
 		float sum(0);
 
 		for (int j(0); j < mesh_poly.size(); j++) {
-
 			int idx = indices[j];
 			if (idx < 0 || idx >= len) {
 				valid = false;

@@ -35,7 +35,6 @@
 #include "scene/2d/line_2d.h"
 
 class Line2DEditor : public AbstractPolygon2DEditor {
-
 	GDCLASS(Line2DEditor, AbstractPolygon2DEditor);
 
 	Line2D *node;
@@ -54,7 +53,6 @@ public:
 };
 
 class Line2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
-
 	GDCLASS(Line2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:

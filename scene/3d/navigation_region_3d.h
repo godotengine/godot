@@ -38,7 +38,6 @@
 class Navigation3D;
 
 class NavigationRegion3D : public Node3D {
-
 	GDCLASS(NavigationRegion3D, Node3D);
 
 	bool enabled = true;

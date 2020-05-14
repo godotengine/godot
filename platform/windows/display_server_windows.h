@@ -275,7 +275,6 @@ class DisplayServerWindows : public DisplayServer {
 	};
 
 	struct KeyEvent {
-
 		WindowID window_id;
 		bool alt, shift, control, meta;
 		UINT uMsg;

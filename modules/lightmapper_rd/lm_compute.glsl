@@ -97,7 +97,6 @@ params;
 
 //check it, but also return distance and barycentric coords (for uv lookup)
 bool ray_hits_triangle(vec3 from, vec3 dir, float max_dist, vec3 p0, vec3 p1, vec3 p2, out float r_distance, out vec3 r_barycentric) {
-
 	const vec3 e0 = p1 - p0;
 	const vec3 e1 = p0 - p2;
 	vec3 triangleNormal = cross(e1, e0);
@@ -146,7 +145,6 @@ bool trace_ray(vec3 p_from, vec3 p_to
 
 	uint iters = 0;
 	while (all(greaterThanEqual(icell, ivec3(0))) && all(lessThan(icell, ivec3(params.grid_size))) && iters < 1000) {
-
 		uvec2 cell_data = texelFetch(usampler3D(grid, linear_sampler), icell, 0).xy;
 		if (cell_data.x > 0) { //triangles here
 
@@ -258,7 +256,6 @@ float quick_hash(vec2 pos) {
 }
 
 void main() {
-
 #ifdef MODE_LIGHT_PROBES
 	int probe_index = int(gl_GlobalInvocationID.x);
 	if (probe_index >= params.atlas_size.x) { //too large, do nothing
@@ -294,7 +291,6 @@ void main() {
 #endif
 
 	for (uint i = 0; i < params.light_count; i++) {
-
 		vec3 light_pos;
 		float attenuation;
 		if (lights.data[i].type == LIGHT_TYPE_DIRECTIONAL) {
@@ -313,7 +309,6 @@ void main() {
 			attenuation = pow(max(1.0 - d, 0.0), lights.data[i].attenuation);
 
 			if (lights.data[i].type == LIGHT_TYPE_SPOT) {
-
 				vec3 rel = normalize(position - light_pos);
 				float angle = acos(dot(rel, lights.data[i].direction));
 				if (angle > lights.data[i].spot_angle) {
@@ -512,7 +507,6 @@ void main() {
 		vec3 norm;
 
 		if (trace_ray(base_pos, ray_to, d, norm)) {
-
 			if (d < min_d) {
 				vertex_pos = base_pos + rays[i] * d + norm * params.bias * 10.0; //this bias needs to be greater than the regular bias, because otherwise later, rays will go the other side when pointing back.
 				min_d = d;
@@ -561,7 +555,6 @@ void main() {
 			light = textureLod(sampler2DArray(source_light, linear_sampler), uvw, 0.0).rgb;
 			light += textureLod(sampler2DArray(source_direct_light, linear_sampler), uvw, 0.0).rgb;
 		} else {
-
 			//did not hit a triangle, reach out for the sky
 			vec3 sky_dir = normalize(mat3(params.env_transform) * ray_dir);
 

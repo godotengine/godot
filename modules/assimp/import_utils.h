@@ -162,7 +162,6 @@ public:
 	}
 
 	static String get_anim_string_from_assimp(const aiString &p_string) {
-
 		String name;
 		name.parse_utf8(p_string.C_Str() /*,p_string.length*/);
 		if (name.find(":") != -1) {
@@ -354,7 +353,6 @@ public:
 	  * Load or load from cache image :)
 	  */
 	static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path) {
-
 		Map<String, Ref<Image>>::Element *match = state.path_to_image_cache.find(p_path);
 
 		// if our cache contains this image then don't bother

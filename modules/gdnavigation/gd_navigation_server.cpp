@@ -249,7 +249,6 @@ COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 	ERR_FAIL_COND(region == nullptr);
 
 	if (region->get_map() != nullptr) {
-
 		if (region->get_map()->get_self() == p_map)
 			return; // Pointless
 

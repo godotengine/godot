@@ -56,7 +56,6 @@
 namespace GDMonoUtils {
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
-
 	if (!unmanaged)
 		return nullptr;
 

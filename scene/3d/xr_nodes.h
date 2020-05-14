@@ -44,7 +44,6 @@
 	XRCamera is a subclass of camera which will register itself with its parent XROrigin and as a result is automatically positioned
 */
 class XRCamera3D : public Camera3D {
-
 	GDCLASS(XRCamera3D, Camera3D);
 
 protected:
@@ -69,7 +68,6 @@ public:
 */
 
 class XRController3D : public Node3D {
-
 	GDCLASS(XRController3D, Node3D);
 
 private:
@@ -150,7 +148,6 @@ public:
 	This node will automatically locate any camera child nodes and update its position while our XRController3D node will handle tracked controllers.
 */
 class XROrigin3D : public Node3D {
-
 	GDCLASS(XROrigin3D, Node3D);
 
 private:

@@ -37,7 +37,6 @@ class SceneDebuggerTree;
 class EditorFileDialog;
 
 class EditorDebuggerTree : public Tree {
-
 	GDCLASS(EditorDebuggerTree, Tree);
 
 private:

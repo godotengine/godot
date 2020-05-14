@@ -43,7 +43,6 @@ void Window::set_title(const String &p_title) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-
 		DisplayServer::get_singleton()->window_set_title(p_title, window_id);
 	}
 }
@@ -65,14 +64,12 @@ int Window::get_current_screen() const {
 }
 
 void Window::set_position(const Point2i &p_position) {
-
 	position = p_position;
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-
 		DisplayServer::get_singleton()->window_set_position(p_position, window_id);
 	}
 }
@@ -85,12 +82,10 @@ void Window::set_size(const Size2i &p_size) {
 	_update_window_size();
 }
 Size2i Window::get_size() const {
-
 	return size;
 }
 
 Size2i Window::get_real_size() const {
-
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_get_real_size(window_id);
 	}
@@ -128,20 +123,17 @@ Size2i Window::get_min_size() const {
 }
 
 void Window::set_mode(Mode p_mode) {
-
 	mode = p_mode;
 
 	if (embedder) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-
 		DisplayServer::get_singleton()->window_set_mode(DisplayServer::WindowMode(p_mode), window_id);
 	}
 }
 
 Window::Mode Window::get_mode() const {
-
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		mode = (Mode)DisplayServer::get_singleton()->window_get_mode(window_id);
 	}
@@ -156,7 +148,6 @@ void Window::set_flag(Flags p_flag, bool p_enabled) {
 		embedder->_sub_window_update(this);
 
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-
 		DisplayServer::get_singleton()->window_set_flag(DisplayServer::WindowFlags(p_flag), p_enabled, window_id);
 	}
 }
@@ -182,7 +173,6 @@ void Window::request_attention() {
 	}
 }
 void Window::move_to_foreground() {
-
 	if (embedder) {
 		embedder->_sub_window_grab_focus(this);
 
@@ -252,7 +242,6 @@ void Window::_make_window() {
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 }
 void Window::_update_from_window() {
-
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 	mode = (Mode)DisplayServer::get_singleton()->window_get_mode(window_id);
 	for (int i = 0; i < FLAG_MAX; i++) {
@@ -283,7 +272,6 @@ void Window::_clear_window() {
 }
 
 void Window::_rect_changed_callback(const Rect2i &p_callback) {
-
 	//we must always accept this as the truth
 	if (size == p_callback.size && position == p_callback.position) {
 		return;
@@ -309,7 +297,6 @@ void Window::_propagate_window_notification(Node *p_node, int p_notification) {
 }
 
 void Window::_event_callback(DisplayServer::WindowEvent p_event) {
-
 	switch (p_event) {
 		case DisplayServer::WINDOW_EVENT_MOUSE_ENTER: {
 			_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_ENTER);
@@ -356,7 +343,6 @@ void Window::hide() {
 }
 
 void Window::set_visible(bool p_visible) {
-
 	if (visible == p_visible) {
 		return;
 	}
@@ -478,7 +464,6 @@ bool Window::is_transient() const {
 }
 
 void Window::set_exclusive(bool p_exclusive) {
-
 	if (exclusive == p_exclusive) {
 		return;
 	}
@@ -506,7 +491,6 @@ bool Window::is_visible() const {
 }
 
 void Window::_update_window_size() {
-
 	Size2i size_limit;
 	if (wrap_controls) {
 		size_limit = get_contents_minimum_size();
@@ -545,12 +529,10 @@ void Window::_update_viewport_size() {
 	float font_oversampling = 1.0;
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
-
 		stretch_transform = Transform2D();
 		final_size = size;
 
 	} else {
-
 		//actual screen video mode
 		Size2 video_mode = size;
 		Size2 desired_res = content_scale_size;
@@ -569,7 +551,6 @@ void Window::_update_viewport_size() {
 			// screen ratio is smaller vertically
 
 			if (content_scale_aspect == CONTENT_SCALE_ASPECT_KEEP_HEIGHT || content_scale_aspect == CONTENT_SCALE_ASPECT_EXPAND) {
-
 				//will stretch horizontally
 				viewport_size.x = desired_res.y * video_mode_aspect;
 				viewport_size.y = desired_res.y;
@@ -584,7 +565,6 @@ void Window::_update_viewport_size() {
 		} else {
 			//screen ratio is smaller horizontally
 			if (content_scale_aspect == CONTENT_SCALE_ASPECT_KEEP_WIDTH || content_scale_aspect == CONTENT_SCALE_ASPECT_EXPAND) {
-
 				//will stretch horizontally
 				viewport_size.x = desired_res.x;
 				viewport_size.y = desired_res.x / video_mode_aspect;
@@ -622,14 +602,12 @@ void Window::_update_viewport_size() {
 				//_update_font_oversampling(1.0);
 			} break;
 			case CONTENT_SCALE_MODE_OBJECTS: {
-
 				final_size = screen_size;
 				final_size_override = viewport_size;
 				attach_to_screen_rect = Rect2(margin, screen_size);
 				font_oversampling = screen_size.x / viewport_size.x;
 			} break;
 			case CONTENT_SCALE_MODE_PIXELS: {
-
 				final_size = viewport_size;
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
@@ -652,12 +630,10 @@ void Window::_update_viewport_size() {
 	}
 
 	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-
 		if (!use_font_oversampling) {
 			font_oversampling = 1.0;
 		}
 		if (DynamicFontAtSize::font_oversampling != font_oversampling) {
-
 			DynamicFontAtSize::font_oversampling = font_oversampling;
 			DynamicFont::update_oversampling();
 		}
@@ -679,11 +655,9 @@ void Window::_update_window_callbacks() {
 }
 
 Viewport *Window::_get_embedder() const {
-
 	Viewport *vp = get_parent_viewport();
 
 	while (vp) {
-
 		if (vp->is_embedding_subwindows()) {
 			return vp;
 		}
@@ -699,10 +673,8 @@ Viewport *Window::_get_embedder() const {
 
 void Window::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		bool embedded = false;
 		{
-
 			embedder = _get_embedder();
 
 			if (embedder) {
@@ -757,29 +729,24 @@ void Window::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_READY) {
-
 		if (wrap_controls) {
 			_update_child_controls();
 		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
 		if (transient) {
 			_clear_transient();
 		}
 
 		if (!is_embedded() && window_id != DisplayServer::INVALID_WINDOW_ID) {
-
 			if (window_id == DisplayServer::MAIN_WINDOW_ID) {
-
 				RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 				_update_window_callbacks();
 			} else {
 				_clear_window();
 			}
 		} else {
-
 			if (embedder) {
 				embedder->_sub_window_remove(this);
 				embedder = nullptr;
@@ -862,7 +829,6 @@ Size2 Window::_get_contents_minimum_size() const {
 	return max;
 }
 void Window::_update_child_controls() {
-
 	if (!updating_child_controls) {
 		return;
 	}
@@ -872,7 +838,6 @@ void Window::_update_child_controls() {
 	updating_child_controls = false;
 }
 void Window::child_controls_changed() {
-
 	if (!is_inside_tree() || !visible || updating_child_controls) {
 		return;
 	}
@@ -913,7 +878,6 @@ void Window::_window_drop_files(const Vector<String> &p_files) {
 }
 
 Viewport *Window::get_parent_viewport() const {
-
 	if (get_parent()) {
 		return get_parent()->get_viewport();
 	} else {
@@ -922,7 +886,6 @@ Viewport *Window::get_parent_viewport() const {
 }
 
 Window *Window::get_parent_visible_window() const {
-
 	Viewport *vp = get_parent_viewport();
 	Window *window = nullptr;
 	while (vp) {
@@ -940,7 +903,6 @@ Window *Window::get_parent_visible_window() const {
 }
 
 void Window::popup_on_parent(const Rect2i &p_parent_rect) {
-
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
@@ -958,7 +920,6 @@ void Window::popup_on_parent(const Rect2i &p_parent_rect) {
 }
 
 void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio) {
-
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
@@ -1009,7 +970,6 @@ void Window::popup_centered(const Size2i &p_minsize) {
 }
 
 void Window::popup_centered_ratio(float p_ratio) {
-
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
@@ -1032,7 +992,6 @@ void Window::popup_centered_ratio(float p_ratio) {
 }
 
 void Window::popup(const Rect2i &p_screen_rect) {
-
 	emit_signal("about_to_popup");
 
 	if (p_screen_rect != Rect2i()) {
@@ -1074,7 +1033,6 @@ Rect2i Window::get_usable_parent_rect() const {
 	if (is_embedded()) {
 		parent = _get_embedder()->get_visible_rect();
 	} else {
-
 		const Window *w = is_visible() ? this : get_parent_visible_window();
 		//find a parent that can contain us
 		ERR_FAIL_COND_V(!w, Rect2());
@@ -1085,7 +1043,6 @@ Rect2i Window::get_usable_parent_rect() const {
 }
 
 void Window::add_child_notify(Node *p_child) {
-
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && child_c->data.theme.is_null() && (theme_owner || theme_owner_window)) {
@@ -1104,7 +1061,6 @@ void Window::add_child_notify(Node *p_child) {
 }
 
 void Window::remove_child_notify(Node *p_child) {
-
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
@@ -1123,19 +1079,16 @@ void Window::remove_child_notify(Node *p_child) {
 }
 
 void Window::set_theme(const Ref<Theme> &p_theme) {
-
 	if (theme == p_theme)
 		return;
 
 	theme = p_theme;
 
 	if (!p_theme.is_null()) {
-
 		theme_owner = nullptr;
 		theme_owner_window = this;
 		Control::_propagate_theme_changed(this, nullptr, this);
 	} else {
-
 		Control *parent_c = cast_to<Control>(get_parent());
 		if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
 			Control::_propagate_theme_changed(this, parent_c->data.theme_owner, parent_c->data.theme_owner_window);
@@ -1240,7 +1193,6 @@ Rect2i Window::get_parent_rect() const {
 }
 
 void Window::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &Window::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &Window::get_title);
 

@@ -47,7 +47,6 @@
 #include <nativescript/godot_nativescript.h>
 
 struct NativeScriptDesc {
-
 	struct Method {
 		godot_instance_method method;
 		MethodInfo info;
@@ -194,7 +193,6 @@ public:
 };
 
 class NativeScriptInstance : public ScriptInstance {
-
 	friend class NativeScript;
 
 	Object *owner;
@@ -245,7 +243,6 @@ public:
 class NativeReloadNode;
 
 class NativeScriptLanguage : public ScriptLanguage {
-
 	friend class NativeScript;
 	friend class NativeScriptInstance;
 	friend class NativeReloadNode;

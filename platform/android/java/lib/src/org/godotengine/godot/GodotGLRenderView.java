@@ -68,7 +68,6 @@ import android.view.SurfaceView;
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
 public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
-
 	private final Godot activity;
 	private final GodotInputHandler inputHandler;
 	private final GestureDetector detector;
@@ -140,11 +139,9 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	}
 
 	private void init(XRMode xrMode, boolean translucent, int depth, int stencil) {
-
 		setPreserveEGLContextOnPause(true);
 		setFocusableInTouchMode(true);
 		switch (xrMode) {
-
 			case OVR:
 				// Replace the default egl config chooser.
 				setEGLConfigChooser(new OvrConfigChooser());

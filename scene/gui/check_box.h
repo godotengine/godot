@@ -36,7 +36,6 @@
 @author Mariano Suligoy <marianognu.esyrpg@gmail.com>
 */
 class CheckBox : public Button {
-
 	GDCLASS(CheckBox, Button);
 
 protected:

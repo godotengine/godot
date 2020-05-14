@@ -35,7 +35,6 @@
 #include "core/variant.h"
 
 struct ContainerTypeValidate {
-
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
@@ -76,7 +75,6 @@ struct ContainerTypeValidate {
 	}
 
 	_FORCE_INLINE_ bool validate(const Variant &p_variant, const char *p_operation = "use") {
-
 		if (type == Variant::NIL) {
 			return true;
 		}

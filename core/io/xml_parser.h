@@ -41,7 +41,6 @@
 */
 
 class XMLParser : public Reference {
-
 	GDCLASS(XMLParser, Reference);
 
 public:

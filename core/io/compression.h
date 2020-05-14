@@ -34,7 +34,6 @@
 #include "core/typedefs.h"
 
 class Compression {
-
 public:
 	static int zlib_level;
 	static int gzip_level;

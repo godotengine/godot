@@ -36,7 +36,6 @@
 #include "core/object.h"
 
 class ICloud : public Object {
-
 	GDCLASS(ICloud, Object);
 
 	static ICloud *instance;

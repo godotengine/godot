@@ -36,7 +36,6 @@
 #include "i_mono_class_member.h"
 
 class GDMonoProperty : public IMonoClassMember {
-
 	GDMonoClass *owner;
 	MonoProperty *mono_property;
 

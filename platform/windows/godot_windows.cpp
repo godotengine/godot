@@ -136,7 +136,6 @@ char *wc_to_utf8(const wchar_t *wc) {
 }
 
 int widechar_main(int argc, wchar_t **argv) {
-
 	OS_Windows os(nullptr);
 
 	setlocale(LC_CTYPE, "");

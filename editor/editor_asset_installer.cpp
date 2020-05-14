@@ -37,7 +37,6 @@
 #include "progress_dialog.h"
 
 void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool p_first) {
-
 	if (p_check) {
 		if (p_item->get_custom_color(0) == Color()) {
 			p_item->set_checked(0, true);
@@ -56,7 +55,6 @@ void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool
 }
 
 void EditorAssetInstaller::_item_edited() {
-
 	if (updating)
 		return;
 
@@ -81,7 +79,6 @@ void EditorAssetInstaller::_item_edited() {
 }
 
 void EditorAssetInstaller::open(const String &p_path, int p_depth) {
-
 	package_path = p_path;
 	Set<String> files_sorted;
 
@@ -90,7 +87,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
-
 		error->set_text(TTR("Error opening package file, not in ZIP format."));
 		return;
 	}
@@ -98,7 +94,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	int ret = unzGoToFirstFile(pkg);
 
 	while (ret == UNZ_OK) {
-
 		//get filename
 		unz_file_info info;
 		char fname[16384];
@@ -137,7 +132,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	Map<String, TreeItem *> dir_map;
 
 	for (Set<String>::Element *E = files_sorted.front(); E; E = E->next()) {
-
 		String path = E->get();
 		int depth = p_depth;
 		bool skip = false;
@@ -211,13 +205,11 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 }
 
 void EditorAssetInstaller::ok_pressed() {
-
 	FileAccess *src_f = nullptr;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
-
 		error->set_text(TTR("Error opening package file, not in ZIP format."));
 		return;
 	}
@@ -230,7 +222,6 @@ void EditorAssetInstaller::ok_pressed() {
 
 	int idx = 0;
 	while (ret == UNZ_OK) {
-
 		//get filename
 		unz_file_info info;
 		char fname[16384];
@@ -239,7 +230,6 @@ void EditorAssetInstaller::ok_pressed() {
 		String name = fname;
 
 		if (status_map.has(name) && status_map[name]->is_checked(0)) {
-
 			String path = status_map[name]->get_metadata(0);
 			if (path == String()) { // a dir
 
@@ -259,7 +249,6 @@ void EditorAssetInstaller::ok_pressed() {
 				memdelete(da);
 
 			} else {
-
 				Vector<uint8_t> data;
 				data.resize(info.uncompressed_size);
 
@@ -290,7 +279,6 @@ void EditorAssetInstaller::ok_pressed() {
 	if (failed_files.size()) {
 		String msg = TTR("The following files failed extraction from package:") + "\n\n";
 		for (int i = 0; i < failed_files.size(); i++) {
-
 			if (i > 15) {
 				msg += "\n" + vformat(TTR("And %s more files."), itos(failed_files.size() - i));
 				break;
@@ -310,7 +298,6 @@ void EditorAssetInstaller::_bind_methods() {
 }
 
 EditorAssetInstaller::EditorAssetInstaller() {
-
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
 

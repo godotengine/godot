@@ -58,12 +58,10 @@ void ICloud::_bind_methods() {
 };
 
 int ICloud::get_pending_event_count() {
-
 	return pending_events.size();
 };
 
 Variant ICloud::pop_pending_event() {
-
 	Variant front = pending_events.front()->get();
 	pending_events.pop_front();
 

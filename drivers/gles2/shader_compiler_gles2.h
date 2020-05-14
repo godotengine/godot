@@ -40,7 +40,6 @@
 class ShaderCompilerGLES2 {
 public:
 	struct IdentifierActions {
-
 		Map<StringName, Pair<int *, int>> render_mode_values;
 		Map<StringName, bool *> render_mode_flags;
 		Map<StringName, bool *> usage_flag_pointers;
@@ -50,7 +49,6 @@ public:
 	};
 
 	struct GeneratedCode {
-
 		Vector<CharString> custom_defines;
 		Vector<StringName> uniforms;
 		Vector<StringName> texture_uniforms;
@@ -71,7 +69,6 @@ private:
 	ShaderLanguage parser;
 
 	struct DefaultIdentifierActions {
-
 		Map<StringName, String> renames;
 		Map<StringName, String> render_mode_defines;
 		Map<StringName, String> usage_defines;
