@@ -130,15 +130,15 @@ static const TBuiltInResource default_builtin_resource = {
 	/*maxTaskWorkGroupSizeZ_NV*/ 0,
 	/*maxMeshViewCountNV*/ 0,
 	/*limits*/ {
-			/*nonInductiveForLoops*/ 1,
-			/*whileLoops*/ 1,
-			/*doWhileLoops*/ 1,
-			/*generalUniformIndexing*/ 1,
-			/*generalAttributeMatrixVectorIndexing*/ 1,
-			/*generalVaryingIndexing*/ 1,
-			/*generalSamplerIndexing*/ 1,
-			/*generalVariableIndexing*/ 1,
-			/*generalConstantMatrixVectorIndexing*/ 1,
+			/*nonInductiveForLoops*/ true,
+			/*whileLoops*/ true,
+			/*doWhileLoops*/ true,
+			/*generalUniformIndexing*/ true,
+			/*generalAttributeMatrixVectorIndexing*/ true,
+			/*generalVaryingIndexing*/ true,
+			/*generalSamplerIndexing*/ true,
+			/*generalVariableIndexing*/ true,
+			/*generalConstantMatrixVectorIndexing*/ true,
 	}
 };
 

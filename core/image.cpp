@@ -474,7 +474,7 @@ void Image::convert(Format p_new_format) {
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
 
 		//use put/set pixel which is slower but works with non byte formats
-		Image new_img(width, height, 0, p_new_format);
+		Image new_img(width, height, false, p_new_format);
 
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
@@ -492,7 +492,7 @@ void Image::convert(Format p_new_format) {
 		return;
 	}
 
-	Image new_img(width, height, 0, p_new_format);
+	Image new_img(width, height, false, p_new_format);
 
 	const uint8_t *rptr = data.ptr();
 	uint8_t *wptr = new_img.data.ptrw();
@@ -991,7 +991,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	if (p_width == width && p_height == height)
 		return;
 
-	Image dst(p_width, p_height, 0, format);
+	Image dst(p_width, p_height, false, format);
 
 	// Setup mipmap-aware scaling
 	Image dst2;
@@ -1011,7 +1011,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	}
 	bool interpolate_mipmaps = mipmap_aware && mip1 != mip2;
 	if (interpolate_mipmaps) {
-		dst2.create(p_width, p_height, 0, format);
+		dst2.create(p_width, p_height, false, format);
 	}
 
 	bool had_mipmaps = mipmaps;
@@ -1304,7 +1304,7 @@ void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 	uint8_t pdata[16]; //largest is 16
 	uint32_t pixel_size = get_format_pixel_size(format);
 
-	Image dst(p_width, p_height, 0, format);
+	Image dst(p_width, p_height, false, format);
 
 	{
 		const uint8_t *r = data.ptr();
@@ -2157,7 +2157,7 @@ void Image::create(const char **p_xpm) {
 				if (line == colormap_size) {
 
 					status = READING_PIXELS;
-					create(size_width, size_height, 0, has_alpha ? FORMAT_RGBA8 : FORMAT_RGB8);
+					create(size_width, size_height, false, has_alpha ? FORMAT_RGBA8 : FORMAT_RGB8);
 					w = data.ptrw();
 					pixel_size = has_alpha ? 4 : 3;
 				}
@@ -3329,7 +3329,7 @@ Ref<Image> Image::rgbe_to_srgb() {
 
 	Ref<Image> new_image;
 	new_image.instance();
-	new_image->create(width, height, 0, Image::FORMAT_RGB8);
+	new_image->create(width, height, false, Image::FORMAT_RGB8);
 
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
