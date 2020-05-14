@@ -688,5 +688,5 @@ bool Generic6DOFJoint3DSW::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOF
 			break; // Can't happen, but silences warning
 	}
 
-	return 0;
+	return false;
 }

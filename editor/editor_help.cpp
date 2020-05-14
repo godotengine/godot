@@ -526,7 +526,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
-		class_desc->set_table_column_expand(1, 1);
+		class_desc->set_table_column_expand(1, true);
 
 		for (int i = 0; i < cd.properties.size(); i++) {
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
@@ -629,7 +629,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
-		class_desc->set_table_column_expand(1, 1);
+		class_desc->set_table_column_expand(1, true);
 
 		bool any_previous = false;
 		for (int pass = 0; pass < 2; pass++) {
@@ -698,7 +698,7 @@ void EditorHelp::_update_doc() {
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
-		class_desc->set_table_column_expand(1, 1);
+		class_desc->set_table_column_expand(1, true);
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
 
@@ -1005,7 +1005,7 @@ void EditorHelp::_update_doc() {
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
 
 			class_desc->push_table(2);
-			class_desc->set_table_column_expand(1, 1);
+			class_desc->set_table_column_expand(1, true);
 
 			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);

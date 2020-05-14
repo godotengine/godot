@@ -168,7 +168,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 
 	//generate previews!
 
-	if (1) {
+	if (true) {
 
 		Vector<Ref<Mesh>> meshes;
 		Vector<Transform> transforms;

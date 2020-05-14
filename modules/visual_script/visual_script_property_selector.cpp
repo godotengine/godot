@@ -172,7 +172,7 @@ void VisualScriptPropertySelector::_update_search() {
 					item->set_metadata(0, F->get().name);
 					item->set_icon(0, type_icons[F->get().type]);
 					item->set_metadata(1, "get");
-					item->set_collapsed(1);
+					item->set_collapsed(true);
 					item->set_selectable(0, true);
 					item->set_selectable(1, false);
 					item->set_selectable(2, false);
@@ -257,7 +257,7 @@ void VisualScriptPropertySelector::_update_search() {
 			item->set_selectable(0, true);
 
 			item->set_metadata(1, "method");
-			item->set_collapsed(1);
+			item->set_collapsed(true);
 			item->set_selectable(1, false);
 
 			item->set_selectable(2, false);
@@ -320,7 +320,7 @@ void VisualScriptPropertySelector::create_visualscript_item(const String &name, 
 		item->set_metadata(0, name);
 		item->set_metadata(1, "action");
 		item->set_selectable(0, true);
-		item->set_collapsed(1);
+		item->set_collapsed(true);
 		item->set_selectable(1, false);
 		item->set_selectable(2, false);
 		item->set_metadata(2, connecting);
