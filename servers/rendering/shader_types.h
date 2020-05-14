@@ -36,9 +36,7 @@
 #include "shader_language.h"
 
 class ShaderTypes {
-
 	struct Type {
-
 		Map<StringName, ShaderLanguage::FunctionInfo> functions;
 		Vector<StringName> modes;
 	};

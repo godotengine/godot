@@ -36,7 +36,6 @@
 #include "editor/node_3d_editor_gizmos.h"
 
 class CSGShape3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-
 	GDCLASS(CSGShape3DGizmoPlugin, EditorNode3DGizmoPlugin);
 
 public:

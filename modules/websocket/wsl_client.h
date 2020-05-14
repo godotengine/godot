@@ -41,7 +41,6 @@
 #include "wslay/wslay.h"
 
 class WSLClient : public WebSocketClient {
-
 	GDCIIMPL(WSLClient, WebSocketClient);
 
 private:

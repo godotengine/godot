@@ -36,7 +36,6 @@
 #include "websocket_macros.h"
 
 class WebSocketPeer : public PacketPeer {
-
 	GDCLASS(WebSocketPeer, PacketPeer);
 	GDCICLASS(WebSocketPeer);
 

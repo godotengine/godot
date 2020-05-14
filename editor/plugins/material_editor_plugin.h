@@ -44,7 +44,6 @@
 class SubViewportContainer;
 
 class MaterialEditor : public Control {
-
 	GDCLASS(MaterialEditor, Control);
 
 	SubViewportContainer *vc;
@@ -91,7 +90,6 @@ public:
 };
 
 class MaterialEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MaterialEditorPlugin, EditorPlugin);
 
 public:

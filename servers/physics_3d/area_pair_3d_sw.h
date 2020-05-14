@@ -36,7 +36,6 @@
 #include "constraint_3d_sw.h"
 
 class AreaPair3DSW : public Constraint3DSW {
-
 	Body3DSW *body;
 	Area3DSW *area;
 	int body_shape;
@@ -52,7 +51,6 @@ public:
 };
 
 class Area2Pair3DSW : public Constraint3DSW {
-
 	Area3DSW *area_a;
 	Area3DSW *area_b;
 	int shape_a;

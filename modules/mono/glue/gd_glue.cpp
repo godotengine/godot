@@ -91,7 +91,6 @@ void godot_icall_GD_print(MonoArray *p_what) {
 }
 
 void godot_icall_GD_printerr(MonoArray *p_what) {
-
 	String str;
 	int length = mono_array_length(p_what);
 

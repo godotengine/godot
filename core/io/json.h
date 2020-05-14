@@ -34,7 +34,6 @@
 #include "core/variant.h"
 
 class JSON {
-
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
 		TK_CURLY_BRACKET_CLOSE,
@@ -58,7 +57,6 @@ class JSON {
 	};
 
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};

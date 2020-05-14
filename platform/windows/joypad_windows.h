@@ -70,7 +70,6 @@ private:
 	};
 
 	struct dinput_gamepad {
-
 		int id;
 		bool attached;
 		bool confirmed;
@@ -93,7 +92,6 @@ private:
 	};
 
 	struct xinput_gamepad {
-
 		int id;
 		bool attached;
 		bool vibrating;

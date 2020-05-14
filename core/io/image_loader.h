@@ -53,7 +53,6 @@ public:
 };
 
 class ImageLoader {
-
 	static Vector<ImageFormatLoader *> loader;
 	friend class ResourceFormatLoaderImage;
 

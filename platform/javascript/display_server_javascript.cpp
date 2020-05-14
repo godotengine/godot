@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  display_server_javascript.cpp                                        */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "platform/javascript/display_server_javascript.h"
 
 #include "drivers/dummy/rasterizer_dummy.h"
@@ -26,7 +56,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _set_canvas_id(uint8_t *p_data, int p_data_
 }
 
 static void focus_canvas() {
-
 	/* clang-format off */
 	EM_ASM(
 		Module['canvas'].focus();
@@ -35,7 +64,6 @@ static void focus_canvas() {
 }
 
 static bool is_canvas_focused() {
-
 	/* clang-format off */
 	return EM_ASM_INT_V(
 		return document.activeElement == Module['canvas'];
@@ -66,7 +94,6 @@ static Point2 compute_position_in_canvas(int x, int y) {
 static bool cursor_inside_canvas = true;
 
 EM_BOOL DisplayServerJavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
-
 	DisplayServerJavaScript *display = get_singleton();
 	// Empty ID is canvas.
 	String target_id = String::utf8(p_event->id);
@@ -105,7 +132,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void _drop_files_callback(char *p_filev[], int p
 
 template <typename T>
 static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> godot_event) {
-
 	godot_event->set_shift(emscripten_event_ptr->shiftKey);
 	godot_event->set_alt(emscripten_event_ptr->altKey);
 	godot_event->set_control(emscripten_event_ptr->ctrlKey);
@@ -113,7 +139,6 @@ static void dom2godot_mod(T *emscripten_event_ptr, Ref<InputEventWithModifiers> 
 }
 
 static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
-
 	Ref<InputEventKey> ev;
 	ev.instance();
 	ev->set_echo(emscripten_event->repeat);
@@ -135,7 +160,6 @@ static Ref<InputEventKey> setup_key_event(const EmscriptenKeyboardEvent *emscrip
 }
 
 EM_BOOL DisplayServerJavaScript::keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data) {
-
 	DisplayServerJavaScript *display = get_singleton();
 	Ref<InputEventKey> ev = setup_key_event(p_event);
 	ev->set_pressed(true);
@@ -150,7 +174,6 @@ EM_BOOL DisplayServerJavaScript::keydown_callback(int p_event_type, const Emscri
 }
 
 EM_BOOL DisplayServerJavaScript::keypress_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data) {
-
 	DisplayServerJavaScript *display = get_singleton();
 	display->deferred_key_event->set_unicode(p_event->charCode);
 	Input::get_singleton()->parse_input_event(display->deferred_key_event);
@@ -158,7 +181,6 @@ EM_BOOL DisplayServerJavaScript::keypress_callback(int p_event_type, const Emscr
 }
 
 EM_BOOL DisplayServerJavaScript::keyup_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data) {
-
 	Ref<InputEventKey> ev = setup_key_event(p_event);
 	ev->set_pressed(false);
 	Input::get_singleton()->parse_input_event(ev);
@@ -168,7 +190,6 @@ EM_BOOL DisplayServerJavaScript::keyup_callback(int p_event_type, const Emscript
 // Mouse
 
 EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
-
 	DisplayServerJavaScript *display = get_singleton();
 
 	Ref<InputEventMouseButton> ev;
@@ -199,13 +220,10 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 	}
 
 	if (ev->is_pressed()) {
-
 		double diff = emscripten_get_now() - display->last_click_ms;
 
 		if (ev->get_button_index() == display->last_click_button_index) {
-
 			if (diff < 400 && Point2(display->last_click_pos).distance_to(ev->get_position()) < 5) {
-
 				display->last_click_ms = 0;
 				display->last_click_pos = Point2(-100, -100);
 				display->last_click_button_index = -1;
@@ -245,7 +263,6 @@ EM_BOOL DisplayServerJavaScript::mouse_button_callback(int p_event_type, const E
 }
 
 EM_BOOL DisplayServerJavaScript::mousemove_callback(int p_event_type, const EmscriptenMouseEvent *p_event, void *p_user_data) {
-
 	Input *input = Input::get_singleton();
 	int input_mask = input->get_mouse_button_mask();
 	Point2 pos = compute_position_in_canvas(p_event->clientX, p_event->clientY);
@@ -273,7 +290,6 @@ EM_BOOL DisplayServerJavaScript::mousemove_callback(int p_event_type, const Emsc
 
 // Cursor
 static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape) {
-
 	switch (p_shape) {
 		case DisplayServer::CURSOR_ARROW:
 			return "auto";
@@ -315,7 +331,6 @@ static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape) {
 }
 
 static void set_css_cursor(const char *p_cursor) {
-
 	/* clang-format off */
 	EM_ASM_({
 		Module['canvas'].style.cursor = UTF8ToString($0);
@@ -324,7 +339,6 @@ static void set_css_cursor(const char *p_cursor) {
 }
 
 static bool is_css_cursor_hidden() {
-
 	/* clang-format off */
 	return EM_ASM_INT({
 		return Module['canvas'].style.cursor === 'none';
@@ -333,7 +347,6 @@ static bool is_css_cursor_hidden() {
 }
 
 void DisplayServerJavaScript::cursor_set_shape(CursorShape p_shape) {
-
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
 	if (mouse_get_mode() == MOUSE_MODE_VISIBLE) {
@@ -353,9 +366,7 @@ DisplayServer::CursorShape DisplayServerJavaScript::cursor_get_shape() const {
 }
 
 void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-
 	if (p_cursor.is_valid()) {
-
 		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
@@ -483,25 +494,21 @@ void DisplayServerJavaScript::cursor_set_custom_image(const RES &p_cursor, Curso
 
 // Mouse mode
 void DisplayServerJavaScript::mouse_set_mode(MouseMode p_mode) {
-
 	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED, "MOUSE_MODE_CONFINED is not supported for the HTML5 platform.");
 	if (p_mode == mouse_get_mode())
 		return;
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
-
 		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
 		set_css_cursor(godot2dom_cursor(cursor_shape));
 		cursor_set_shape(cursor_shape);
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-
 		set_css_cursor("none");
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_CAPTURED) {
-
 		EMSCRIPTEN_RESULT result = emscripten_request_pointerlock("canvas", false);
 		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
 		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
@@ -512,7 +519,6 @@ void DisplayServerJavaScript::mouse_set_mode(MouseMode p_mode) {
 }
 
 DisplayServer::MouseMode DisplayServerJavaScript::mouse_get_mode() const {
-
 	if (is_css_cursor_hidden())
 		return MOUSE_MODE_HIDDEN;
 
@@ -524,7 +530,6 @@ DisplayServer::MouseMode DisplayServerJavaScript::mouse_get_mode() const {
 // Wheel
 
 EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEvent *p_event, void *p_user_data) {
-
 	ERR_FAIL_COND_V(p_event_type != EMSCRIPTEN_EVENT_WHEEL, false);
 	if (!is_canvas_focused()) {
 		if (cursor_inside_canvas) {
@@ -574,13 +579,11 @@ EM_BOOL DisplayServerJavaScript::wheel_callback(int p_event_type, const Emscript
 
 // Touch
 EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
-
 	DisplayServerJavaScript *display = get_singleton();
 	Ref<InputEventScreenTouch> ev;
 	ev.instance();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
-
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
 		if (lowest_id_index == -1 || touch.identifier < p_event->touches[lowest_id_index].identifier)
 			lowest_id_index = i;
@@ -598,13 +601,11 @@ EM_BOOL DisplayServerJavaScript::touch_press_callback(int p_event_type, const Em
 }
 
 EM_BOOL DisplayServerJavaScript::touchmove_callback(int p_event_type, const EmscriptenTouchEvent *p_event, void *p_user_data) {
-
 	DisplayServerJavaScript *display = get_singleton();
 	Ref<InputEventScreenDrag> ev;
 	ev.instance();
 	int lowest_id_index = -1;
 	for (int i = 0; i < p_event->numTouches; ++i) {
-
 		const EmscriptenTouchPoint &touch = p_event->touches[i];
 		if (lowest_id_index == -1 || touch.identifier < p_event->touches[lowest_id_index].identifier)
 			lowest_id_index = i;
@@ -628,10 +629,8 @@ bool DisplayServerJavaScript::screen_is_touchscreen(int p_screen) const {
 // Gamepad
 
 EM_BOOL DisplayServerJavaScript::gamepad_change_callback(int p_event_type, const EmscriptenGamepadEvent *p_event, void *p_user_data) {
-
 	Input *input = Input::get_singleton();
 	if (p_event_type == EMSCRIPTEN_EVENT_GAMEPADCONNECTED) {
-
 		String guid = "";
 		if (String::utf8(p_event->mapping) == "standard")
 			guid = "Default HTML5 Gamepad";
@@ -643,7 +642,6 @@ EM_BOOL DisplayServerJavaScript::gamepad_change_callback(int p_event_type, const
 }
 
 void DisplayServerJavaScript::process_joypads() {
-
 	int joypad_count = emscripten_get_num_gamepads();
 	Input *input = Input::get_singleton();
 	for (int joypad = 0; joypad < joypad_count; joypad++) {
@@ -653,16 +651,13 @@ void DisplayServerJavaScript::process_joypads() {
 		ERR_CONTINUE(query_result != EMSCRIPTEN_RESULT_SUCCESS &&
 					 query_result != EMSCRIPTEN_RESULT_NO_DATA);
 		if (query_result == EMSCRIPTEN_RESULT_SUCCESS && state.connected) {
-
 			int button_count = MIN(state.numButtons, 18);
 			int axis_count = MIN(state.numAxes, 8);
 			for (int button = 0; button < button_count; button++) {
-
 				float value = state.analogButton[button];
 				input->joy_button(joypad, button, value);
 			}
 			for (int axis = 0; axis < axis_count; axis++) {
-
 				Input::JoyAxis joy_axis;
 				joy_axis.min = -1;
 				joy_axis.value = state.axis[axis];
@@ -677,6 +672,7 @@ bool DisplayServerJavaScript::is_joy_known(int p_device) {
 
 	return Input::get_singleton()->is_joy_mapped(p_device);
 }
+
 
 String DisplayServerJavaScript::get_joy_guid(int p_device) const {
 
@@ -730,7 +726,6 @@ String DisplayServerJavaScript::clipboard_get() const {
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void send_window_event(int p_notification) {
-
 	if (p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER || p_notification == DisplayServer::WINDOW_EVENT_MOUSE_EXIT) {
 		cursor_inside_canvas = p_notification == DisplayServer::WINDOW_EVENT_MOUSE_ENTER;
 	}
@@ -748,7 +743,6 @@ extern "C" EMSCRIPTEN_KEEPALIVE void send_window_event(int p_notification) {
 }
 
 void DisplayServerJavaScript::alert(const String &p_alert, const String &p_title) {
-
 	/* clang-format off */
 	EM_ASM_({
 		window.alert(UTF8ToString($0));
@@ -757,7 +751,6 @@ void DisplayServerJavaScript::alert(const String &p_alert, const String &p_title
 }
 
 void DisplayServerJavaScript::set_icon(const Ref<Image> &p_icon) {
-
 	ERR_FAIL_COND(p_icon.is_null());
 	Ref<Image> icon = p_icon;
 	if (icon->is_compressed()) {
@@ -827,7 +820,6 @@ DisplayServer *DisplayServerJavaScript::create_func(const String &p_rendering_dr
 }
 
 DisplayServerJavaScript::DisplayServerJavaScript(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-
 	/* clang-format off */
 	EM_ASM({
 		const canvas = Module['canvas'];
@@ -1012,7 +1004,6 @@ Point2i DisplayServerJavaScript::screen_get_position(int p_screen) const {
 }
 
 Size2i DisplayServerJavaScript::screen_get_size(int p_screen) const {
-
 	EmscriptenFullscreenChangeEvent ev;
 	EMSCRIPTEN_RESULT result = emscripten_get_fullscreen_status(&ev);
 	ERR_FAIL_COND_V(result != EMSCRIPTEN_RESULT_SUCCESS, Size2i());
@@ -1086,6 +1077,7 @@ void DisplayServerJavaScript::window_set_current_screen(int p_screen, WindowID p
 Point2i DisplayServerJavaScript::window_get_position(WindowID p_window) const {
 	return Point2i(); // TODO Does this need implementation?
 }
+
 void DisplayServerJavaScript::window_set_position(const Point2i &p_position, WindowID p_window) {
 	// Not supported.
 }

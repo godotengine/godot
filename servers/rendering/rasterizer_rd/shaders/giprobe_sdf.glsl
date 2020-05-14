@@ -20,6 +20,7 @@ struct CellChildren {
 layout(set = 0, binding = 1, std430) buffer CellChildrenBuffer {
 	CellChildren data[];
 }
+
 cell_children;
 
 struct CellData {
@@ -32,6 +33,7 @@ struct CellData {
 layout(set = 0, binding = 2, std430) buffer CellDataBuffer {
 	CellData data[];
 }
+
 cell_data;
 
 layout(r8ui, set = 0, binding = 3) uniform restrict writeonly uimage3D sdf_tex;
@@ -42,10 +44,10 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint pad0;
 	uint pad1;
 }
+
 params;
 
 void main() {
-
 	vec3 pos = vec3(gl_GlobalInvocationID);
 	float closest_dist = 100000.0;
 
@@ -81,6 +83,7 @@ float distance_to_aabb(ivec3 pos, ivec3 aabb_pos, ivec3 aabb_size) {
 	vec3 delta = vec3(max(ivec3(0), max(aabb_pos - pos, pos - (aabb_pos + aabb_size - ivec3(1)))));
 	return length(delta);
 }
+
 
 void main() {
 

@@ -34,7 +34,6 @@
 #include "script_editor_plugin.h"
 
 class TextEditor : public ScriptEditorBase {
-
 	GDCLASS(TextEditor, ScriptEditorBase);
 
 private:

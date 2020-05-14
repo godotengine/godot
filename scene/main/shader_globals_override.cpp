@@ -35,7 +35,6 @@
 #include "scene/scene_string_names.h"
 
 StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
-
 	StringName *r = param_remaps.getptr(p_name);
 	if (!r) {
 		//not cached, do caching
@@ -49,8 +48,8 @@ StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 
 	return r;
 }
-bool ShaderGlobalsOverride::_set(const StringName &p_name, const Variant &p_value) {
 
+bool ShaderGlobalsOverride::_set(const StringName &p_name, const Variant &p_value) {
 	StringName *r = _remap(p_name);
 
 	if (r) {
@@ -75,7 +74,6 @@ bool ShaderGlobalsOverride::_set(const StringName &p_name, const Variant &p_valu
 }
 
 bool ShaderGlobalsOverride::_get(const StringName &p_name, Variant &r_ret) const {
-
 	StringName *r = _remap(p_name);
 
 	if (r) {
@@ -90,7 +88,6 @@ bool ShaderGlobalsOverride::_get(const StringName &p_name, Variant &r_ret) const
 }
 
 void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	Vector<StringName> variables;
 	variables = RS::get_singleton()->global_variable_get_list();
 	for (int i = 0; i < variables.size(); i++) {
@@ -198,7 +195,6 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 				pinfo.hint_string = "Cubemap";
 			} break;
 			default: {
-
 			} break;
 		}
 
@@ -221,7 +217,6 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 }
 
 void ShaderGlobalsOverride::_activate() {
-
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group(SceneStringNames::get_singleton()->shader_overrides_group_active, &nodes);
 	if (nodes.size() == 0) {
@@ -242,14 +237,11 @@ void ShaderGlobalsOverride::_activate() {
 }
 
 void ShaderGlobalsOverride::_notification(int p_what) {
-
 	if (p_what == Node3D::NOTIFICATION_ENTER_TREE) {
-
 		add_to_group(SceneStringNames::get_singleton()->shader_overrides_group);
 		_activate();
 
 	} else if (p_what == Node3D::NOTIFICATION_EXIT_TREE) {
-
 		if (active) {
 			//remove overrides
 			const StringName *K = nullptr;
@@ -269,7 +261,6 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 }
 
 String ShaderGlobalsOverride::get_configuration_warning() const {
-
 	if (!active) {
 		return TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene.");
 	}
@@ -278,7 +269,6 @@ String ShaderGlobalsOverride::get_configuration_warning() const {
 }
 
 void ShaderGlobalsOverride::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_activate"), &ShaderGlobalsOverride::_activate);
 }
 

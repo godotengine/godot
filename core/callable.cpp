@@ -40,7 +40,6 @@ void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const 
 }
 
 void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
-
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		r_call_error.argument = 0;
@@ -73,6 +72,7 @@ ObjectID Callable::get_object_id() const {
 		return ObjectID(object);
 	}
 }
+
 StringName Callable::get_method() const {
 	ERR_FAIL_COND_V_MSG(is_custom(), StringName(),
 			vformat("Can't get method on CallableCustom \"%s\".", operator String()));
@@ -118,9 +118,11 @@ bool Callable::operator==(const Callable &p_callable) const {
 		return false;
 	}
 }
+
 bool Callable::operator!=(const Callable &p_callable) const {
 	return !(*this == p_callable);
 }
+
 bool Callable::operator<(const Callable &p_callable) const {
 	bool custom_a = is_custom();
 	bool custom_b = p_callable.is_custom();
@@ -179,7 +181,6 @@ void Callable::operator=(const Callable &p_callable) {
 }
 
 Callable::operator String() const {
-
 	if (is_custom()) {
 		return custom->get_as_text();
 	} else {
@@ -192,7 +193,6 @@ Callable::operator String() const {
 			String class_name = base->get_class();
 			Ref<Script> script = base->get_script();
 			if (script.is_valid() && script->get_path().is_resource_file()) {
-
 				class_name += "(" + script->get_path().get_file() + ")";
 			}
 			return class_name + "::" + String(method);
@@ -225,6 +225,7 @@ Callable::Callable(ObjectID p_object, const StringName &p_method) {
 	object = p_object;
 	method = p_method;
 }
+
 Callable::Callable(CallableCustom *p_custom) {
 	if (p_custom->referenced) {
 		object = 0;
@@ -234,6 +235,7 @@ Callable::Callable(CallableCustom *p_custom) {
 	object = 0; //ensure object is all zero, since pointer may be 32 bits
 	custom = p_custom;
 }
+
 Callable::Callable(const Callable &p_callable) {
 	if (p_callable.is_custom()) {
 		if (!p_callable.custom->ref_count.ref()) {
@@ -265,9 +267,11 @@ CallableCustom::CallableCustom() {
 Object *Signal::get_object() const {
 	return ObjectDB::get_instance(object);
 }
+
 ObjectID Signal::get_object_id() const {
 	return object;
 }
+
 StringName Signal::get_name() const {
 	return name;
 }
@@ -294,7 +298,6 @@ Signal::operator String() const {
 		String class_name = base->get_class();
 		Ref<Script> script = base->get_script();
 		if (script.is_valid() && script->get_path().is_resource_file()) {
-
 			class_name += "(" + script->get_path().get_file() + ")";
 		}
 		return class_name + "::[signal]" + String(name);
@@ -311,18 +314,20 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 
 	return obj->emit_signal(name, p_arguments, p_argcount);
 }
-Error Signal::connect(const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
 
+Error Signal::connect(const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
 	Object *object = get_object();
 	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
 
 	return object->connect(name, p_callable, p_binds, p_flags);
 }
+
 void Signal::disconnect(const Callable &p_callable) {
 	Object *object = get_object();
 	ERR_FAIL_COND(!object);
 	object->disconnect(name, p_callable);
 }
+
 bool Signal::is_connected(const Callable &p_callable) const {
 	Object *object = get_object();
 	ERR_FAIL_COND_V(!object, false);
@@ -347,7 +352,6 @@ Array Signal::get_connections() const {
 }
 
 Signal::Signal(const Object *p_object, const StringName &p_name) {
-
 	ERR_FAIL_COND_MSG(p_object == nullptr, "Object argument to Signal constructor must be non-null");
 
 	object = p_object->get_instance_id();
@@ -355,7 +359,6 @@ Signal::Signal(const Object *p_object, const StringName &p_name) {
 }
 
 Signal::Signal(ObjectID p_object, const StringName &p_name) {
-
 	object = p_object;
 	name = p_name;
 }

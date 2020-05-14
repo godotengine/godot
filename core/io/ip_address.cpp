@@ -39,20 +39,23 @@ IP_Address::operator Variant() const {
 #include <string.h>
 
 IP_Address::operator String() const {
-
-	if (wildcard)
+	if (wildcard) {
 		return "*";
+	}
 
-	if (!valid)
+	if (!valid) {
 		return "";
+	}
 
-	if (is_ipv4())
+	if (is_ipv4()) {
 		// IPv4 address mapped to IPv6
 		return itos(field8[12]) + "." + itos(field8[13]) + "." + itos(field8[14]) + "." + itos(field8[15]);
+	}
 	String ret;
 	for (int i = 0; i < 8; i++) {
-		if (i > 0)
+		if (i > 0) {
 			ret = ret + ":";
+		}
 		uint16_t num = (field8[i * 2] << 8) + field8[i * 2 + 1];
 		ret = ret + String::num_int64(num, 16);
 	};
@@ -61,10 +64,8 @@ IP_Address::operator String() const {
 }
 
 static void _parse_hex(const String &p_string, int p_start, uint8_t *p_dst) {
-
 	uint16_t ret = 0;
 	for (int i = p_start; i < p_start + 4; i++) {
-
 		if (i >= p_string.length()) {
 			break;
 		};
@@ -72,7 +73,6 @@ static void _parse_hex(const String &p_string, int p_start, uint8_t *p_dst) {
 		int n = 0;
 		CharType c = p_string[i];
 		if (c >= '0' && c <= '9') {
-
 			n = c - '0';
 		} else if (c >= 'a' && c <= 'f') {
 			n = 10 + (c - 'a');
@@ -92,7 +92,6 @@ static void _parse_hex(const String &p_string, int p_start, uint8_t *p_dst) {
 };
 
 void IP_Address::_parse_ipv6(const String &p_string) {
-
 	static const int parts_total = 8;
 	int parts[parts_total] = { 0 };
 	int parts_count = 0;
@@ -102,10 +101,8 @@ void IP_Address::_parse_ipv6(const String &p_string) {
 	int parts_idx = 0;
 
 	for (int i = 0; i < p_string.length(); i++) {
-
 		CharType c = p_string[i];
 		if (c == ':') {
-
 			if (i == 0) {
 				continue; // next must be a ":"
 			};
@@ -115,7 +112,6 @@ void IP_Address::_parse_ipv6(const String &p_string) {
 			};
 			part_found = false;
 		} else if (c == '.') {
-
 			part_ipv4 = true;
 
 		} else if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')) {
@@ -136,9 +132,7 @@ void IP_Address::_parse_ipv6(const String &p_string) {
 
 	int idx = 0;
 	for (int i = 0; i < parts_idx; i++) {
-
 		if (parts[i] == -1) {
-
 			for (int j = 0; j < parts_extra; j++) {
 				field16[idx++] = 0;
 			};
@@ -154,7 +148,6 @@ void IP_Address::_parse_ipv6(const String &p_string) {
 };
 
 void IP_Address::_parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret) {
-
 	String ip;
 	if (p_start != 0) {
 		ip = p_string.substr(p_start, p_string.length() - p_start);
@@ -170,7 +163,6 @@ void IP_Address::_parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret
 };
 
 void IP_Address::clear() {
-
 	memset(&field8[0], 0, sizeof(field8));
 	valid = false;
 	wildcard = false;
@@ -199,12 +191,12 @@ const uint8_t *IP_Address::get_ipv6() const {
 void IP_Address::set_ipv6(const uint8_t *p_buf) {
 	clear();
 	valid = true;
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 16; i++) {
 		field8[i] = p_buf[i];
+	}
 }
 
 IP_Address::IP_Address(const String &p_string) {
-
 	clear();
 
 	if (p_string == "*") {
@@ -228,7 +220,6 @@ IP_Address::IP_Address(const String &p_string) {
 }
 
 _FORCE_INLINE_ static void _32_to_buf(uint8_t *p_dst, uint32_t p_n) {
-
 	p_dst[0] = (p_n >> 24) & 0xff;
 	p_dst[1] = (p_n >> 16) & 0xff;
 	p_dst[2] = (p_n >> 8) & 0xff;
@@ -236,7 +227,6 @@ _FORCE_INLINE_ static void _32_to_buf(uint8_t *p_dst, uint32_t p_n) {
 };
 
 IP_Address::IP_Address(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6) {
-
 	clear();
 	valid = true;
 	if (!is_v6) {
@@ -247,7 +237,6 @@ IP_Address::IP_Address(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, b
 		field8[14] = p_c;
 		field8[15] = p_d;
 	} else {
-
 		_32_to_buf(&field8[0], p_a);
 		_32_to_buf(&field8[4], p_b);
 		_32_to_buf(&field8[8], p_c);

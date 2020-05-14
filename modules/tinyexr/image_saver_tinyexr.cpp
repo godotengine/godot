@@ -140,7 +140,6 @@ static int get_channel_count(Image::Format p_format) {
 }
 
 Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) {
-
 	Image::Format format = p_img->get_format();
 
 	if (!is_supported_format(format)) {
@@ -192,7 +191,6 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 		const uint8_t *src_r = src_data.ptr();
 
 		for (int channel_index = 0; channel_index < channel_count; ++channel_index) {
-
 			// De-interleave channels
 
 			PackedByteArray &dst = channels[channel_index];
@@ -201,7 +199,6 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 			uint8_t *dst_w = dst.ptrw();
 
 			if (src_pixel_type == SRC_FLOAT && target_pixel_type == TINYEXR_PIXELTYPE_FLOAT) {
-
 				// Note: we don't save mipmaps
 				CRASH_COND(src_data.size() < pixel_count * channel_count * target_pixel_type_size);
 
@@ -213,7 +210,6 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 				}
 
 			} else if (src_pixel_type == SRC_HALF && target_pixel_type == TINYEXR_PIXELTYPE_HALF) {
-
 				CRASH_COND(src_data.size() < pixel_count * channel_count * target_pixel_type_size);
 
 				const uint16_t *src_rp = (uint16_t *)src_r;
@@ -224,7 +220,6 @@ Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale) 
 				}
 
 			} else if (src_pixel_type == SRC_BYTE && target_pixel_type == TINYEXR_PIXELTYPE_HALF) {
-
 				CRASH_COND(src_data.size() < pixel_count * channel_count);
 
 				const uint8_t *src_rp = (uint8_t *)src_r;

@@ -40,7 +40,6 @@
 #include <pulse/pulseaudio.h>
 
 class AudioDriverPulseAudio : public AudioDriver {
-
 	Thread *thread = nullptr;
 	Mutex mutex;
 

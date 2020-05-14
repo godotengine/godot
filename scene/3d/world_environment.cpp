@@ -32,9 +32,7 @@
 #include "scene/main/window.h"
 
 void WorldEnvironment::_notification(int p_what) {
-
 	if (p_what == Node3D::NOTIFICATION_ENTER_WORLD || p_what == Node3D::NOTIFICATION_ENTER_TREE) {
-
 		if (environment.is_valid()) {
 			if (get_viewport()->find_world_3d()->get_environment().is_valid()) {
 				WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
@@ -52,7 +50,6 @@ void WorldEnvironment::_notification(int p_what) {
 		}
 
 	} else if (p_what == Node3D::NOTIFICATION_EXIT_WORLD || p_what == Node3D::NOTIFICATION_EXIT_TREE) {
-
 		if (environment.is_valid() && get_viewport()->find_world_3d()->get_environment() == environment) {
 			get_viewport()->find_world_3d()->set_environment(Ref<Environment>());
 			remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
@@ -66,7 +63,6 @@ void WorldEnvironment::_notification(int p_what) {
 }
 
 void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
-
 	if (is_inside_tree() && environment.is_valid() && get_viewport()->find_world_3d()->get_environment() == environment) {
 		get_viewport()->find_world_3d()->set_environment(Ref<Environment>());
 		remove_from_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
@@ -86,12 +82,10 @@ void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
 }
 
 Ref<Environment> WorldEnvironment::get_environment() const {
-
 	return environment;
 }
 
 void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
-
 	if (is_inside_tree() && camera_effects.is_valid() && get_viewport()->find_world_3d()->get_camera_effects() == camera_effects) {
 		get_viewport()->find_world_3d()->set_camera_effects(Ref<CameraEffects>());
 		remove_from_group("_world_camera_effects_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()));
@@ -111,18 +105,17 @@ void WorldEnvironment::set_camera_effects(const Ref<CameraEffects> &p_camera_eff
 }
 
 Ref<CameraEffects> WorldEnvironment::get_camera_effects() const {
-
 	return camera_effects;
 }
 
 String WorldEnvironment::get_configuration_warning() const {
-
 	if (!environment.is_valid()) {
 		return TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
 	}
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return String();
+	}
 
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), &nodes);
@@ -135,7 +128,6 @@ String WorldEnvironment::get_configuration_warning() const {
 }
 
 void WorldEnvironment::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &WorldEnvironment::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &WorldEnvironment::get_environment);
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");

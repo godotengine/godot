@@ -47,7 +47,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class GodotPayment extends GodotPlugin {
-
 	private Integer purchaseCallbackId = 0;
 	private String accessToken;
 	private String purchaseValidationUrlPrefix;

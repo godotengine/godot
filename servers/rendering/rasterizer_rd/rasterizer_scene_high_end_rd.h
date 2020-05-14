@@ -38,7 +38,6 @@
 #include "servers/rendering/rasterizer_rd/shaders/scene_high_end.glsl.gen.h"
 
 class RasterizerSceneHighEndRD : public RasterizerSceneRD {
-
 	enum {
 		SCENE_UNIFORM_SET = 0,
 		RADIANCE_UNIFORM_SET = 1,
@@ -75,7 +74,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	/* Material */
 
 	struct ShaderData : public RasterizerStorageRD::ShaderData {
-
 		enum BlendMode { //used internally
 			BLEND_MODE_MIX,
 			BLEND_MODE_ADD,
@@ -288,7 +286,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	};
 
 	struct DirectionalLightData {
-
 		float direction[3];
 		float energy;
 		float color[3];
@@ -489,7 +486,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	/* Render List */
 
 	struct RenderList {
-
 		int max_elements;
 
 		struct Element {
@@ -520,7 +516,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		int alpha_element_count;
 
 		void clear() {
-
 			element_count = 0;
 			alpha_element_count = 0;
 		}
@@ -528,14 +523,12 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		//should eventually be replaced by radix
 
 		struct SortByKey {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->sort_key < B->sort_key;
 			}
 		};
 
 		void sort_by_key(bool p_alpha) {
-
 			SortArray<Element *, SortByKey> sorter;
 			if (p_alpha) {
 				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
@@ -545,7 +538,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		}
 
 		struct SortByDepth {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->instance->depth < B->instance->depth;
 			}
@@ -562,7 +554,6 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		}
 
 		struct SortByReverseDepthAndPriority {
-
 			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				uint32_t layer_A = uint32_t(A->priority);
 				uint32_t layer_B = uint32_t(B->priority);
@@ -585,17 +576,17 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		}
 
 		_FORCE_INLINE_ Element *add_element() {
-
-			if (element_count + alpha_element_count >= max_elements)
+			if (element_count + alpha_element_count >= max_elements) {
 				return nullptr;
+			}
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
 		}
 
 		_FORCE_INLINE_ Element *add_alpha_element() {
-
-			if (element_count + alpha_element_count >= max_elements)
+			if (element_count + alpha_element_count >= max_elements) {
 				return nullptr;
+			}
 			int idx = max_elements - alpha_element_count - 1;
 			elements[idx] = &base_elements[idx];
 			alpha_element_count++;
@@ -603,17 +594,16 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		}
 
 		void init() {
-
 			element_count = 0;
 			alpha_element_count = 0;
 			elements = memnew_arr(Element *, max_elements);
 			base_elements = memnew_arr(Element, max_elements);
-			for (int i = 0; i < max_elements; i++)
+			for (int i = 0; i < max_elements; i++) {
 				elements[i] = &base_elements[i]; // assign elements
+			}
 		}
 
 		RenderList() {
-
 			max_elements = 0;
 		}
 

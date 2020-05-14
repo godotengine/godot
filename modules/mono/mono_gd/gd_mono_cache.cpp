@@ -65,7 +65,6 @@ CachedData cached_data;
 #define CACHE_METHOD_THUNK_AND_CHECK(m_class, m_method, m_val) CACHE_METHOD_THUNK_AND_CHECK_IMPL(cached_data.methodthunk_##m_class##_##m_method, m_val)
 
 void CachedData::clear_corlib_cache() {
-
 	corlib_cache_updated = false;
 
 	class_MonoObject = nullptr;
@@ -98,7 +97,6 @@ void CachedData::clear_corlib_cache() {
 }
 
 void CachedData::clear_godot_api_cache() {
-
 	godot_api_cache_updated = false;
 
 	rawclass_Dictionary = nullptr;
@@ -193,7 +191,6 @@ void CachedData::clear_godot_api_cache() {
 #define GODOT_API_NS_CLASS(m_ns, m_class) (GDMono::get_singleton()->get_core_api_assembly()->get_class(m_ns, #m_class))
 
 void update_corlib_cache() {
-
 	CACHE_CLASS_AND_CHECK(MonoObject, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_object_class()));
 	CACHE_CLASS_AND_CHECK(bool, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_boolean_class()));
 	CACHE_CLASS_AND_CHECK(int8_t, GDMono::get_singleton()->get_corlib_assembly()->get_class(mono_get_sbyte_class()));
@@ -228,7 +225,6 @@ void update_corlib_cache() {
 }
 
 void update_godot_api_cache() {
-
 	CACHE_CLASS_AND_CHECK(Vector2, GODOT_API_CLASS(Vector2));
 	CACHE_CLASS_AND_CHECK(Vector2i, GODOT_API_CLASS(Vector2i));
 	CACHE_CLASS_AND_CHECK(Rect2, GODOT_API_CLASS(Rect2));

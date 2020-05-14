@@ -36,7 +36,6 @@
 
 class CollisionObject3D;
 class CollisionPolygon3D : public Node3D {
-
 	GDCLASS(CollisionPolygon3D, Node3D);
 
 protected:

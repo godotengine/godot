@@ -35,12 +35,10 @@
 #include "visual_script_builtin_funcs.h"
 
 class VisualScriptExpression : public VisualScriptNode {
-
 	GDCLASS(VisualScriptExpression, VisualScriptNode);
 	friend class VisualScriptNodeInstanceExpression;
 
 	struct Input {
-
 		Variant::Type type;
 		String name;
 
@@ -101,14 +99,14 @@ class VisualScriptExpression : public VisualScriptNode {
 
 	static const char *token_name[TK_MAX];
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
 
 	void _set_error(const String &p_err) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 		error_str = p_err;
 		error_set = true;
 	}
@@ -119,7 +117,6 @@ class VisualScriptExpression : public VisualScriptNode {
 	bool error_set;
 
 	struct ENode {
-
 		enum Type {
 			TYPE_INPUT,
 			TYPE_CONSTANT,
@@ -147,7 +144,6 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct Expression {
-
 		bool is_op;
 		union {
 			Variant::Operator op;
@@ -158,7 +154,6 @@ class VisualScriptExpression : public VisualScriptNode {
 	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
-
 		int index;
 		InputNode() {
 			type = TYPE_INPUT;
@@ -166,7 +161,6 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct ConstantNode : public ENode {
-
 		Variant value;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
@@ -174,7 +168,6 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct OperatorNode : public ENode {
-
 		Variant::Operator op;
 
 		ENode *nodes[2];
@@ -185,7 +178,6 @@ class VisualScriptExpression : public VisualScriptNode {
 	};
 
 	struct SelfNode : public ENode {
-
 		SelfNode() {
 			type = TYPE_SELF;
 		}

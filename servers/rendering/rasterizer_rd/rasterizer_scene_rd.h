@@ -52,7 +52,6 @@ protected:
 
 	// Skys need less info from Directional Lights than the normal shaders
 	struct SkyDirectionalLightData {
-
 		float direction[3];
 		float energy;
 		float color[3];
@@ -62,7 +61,6 @@ protected:
 	};
 
 	struct SkySceneState {
-
 		SkyDirectionalLightData *directional_lights;
 		SkyDirectionalLightData *last_frame_directional_lights;
 		uint32_t max_directional_lights;
@@ -74,7 +72,6 @@ protected:
 	} sky_scene_state;
 
 	struct RenderBufferData {
-
 		virtual void configure(RID p_color_buffer, RID p_depth_buffer, int p_width, int p_height, RS::ViewportMSAA p_msaa) = 0;
 		virtual ~RenderBufferData() {}
 	};
@@ -112,7 +109,6 @@ private:
 	RasterizerStorageRD *storage;
 
 	struct ReflectionData {
-
 		struct Layer {
 			struct Mipmap {
 				RID framebuffers[6];
@@ -287,7 +283,6 @@ private:
 	/* REFLECTION ATLAS */
 
 	struct ReflectionAtlas {
-
 		int count = 0;
 		int size = 0;
 
@@ -309,7 +304,6 @@ private:
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance {
-
 		RID probe;
 		int atlas_index = -1;
 		RID atlas;
@@ -331,7 +325,6 @@ private:
 	/* REFLECTION PROBE INSTANCE */
 
 	struct DecalInstance {
-
 		RID decal;
 		Transform transform;
 	};
@@ -341,7 +334,6 @@ private:
 	/* GIPROBE INSTANCE */
 
 	struct GIProbeLight {
-
 		uint32_t type;
 		float energy;
 		float radius;
@@ -358,7 +350,6 @@ private:
 	};
 
 	struct GIProbePushConstant {
-
 		int32_t limits[3];
 		uint32_t stack_size;
 
@@ -374,7 +365,6 @@ private:
 	};
 
 	struct GIProbeDynamicPushConstant {
-
 		int32_t limits[3];
 		uint32_t light_count;
 		int32_t x_dir[3];
@@ -396,7 +386,6 @@ private:
 	};
 
 	struct GIProbeInstance {
-
 		RID probe;
 		RID texture;
 		RID anisotropy[2]; //only if anisotropy is used
@@ -496,7 +485,6 @@ private:
 	/* SHADOW ATLAS */
 
 	struct ShadowAtlas {
-
 		enum {
 			QUADRANT_SHIFT = 27,
 			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
@@ -504,7 +492,6 @@ private:
 		};
 
 		struct Quadrant {
-
 			uint32_t subdivision;
 
 			struct Shadow {
@@ -568,7 +555,6 @@ private:
 	/* SHADOW CUBEMAPS */
 
 	struct ShadowCubemap {
-
 		RID cubemap;
 		RID side_fb[6];
 	};
@@ -589,9 +575,7 @@ private:
 	/* LIGHT INSTANCE */
 
 	struct LightInstance {
-
 		struct ShadowTransform {
-
 			CameraMatrix camera;
 			Transform transform;
 			float farplane;
@@ -638,7 +622,6 @@ private:
 	/* ENVIRONMENT */
 
 	struct Environent {
-
 		// BG
 		RS::EnvironmentBG background = RS::ENV_BG_CLEAR_COLOR;
 		RID sky;
@@ -711,7 +694,6 @@ private:
 	/* CAMERA EFFECTS */
 
 	struct CameraEffects {
-
 		bool dof_blur_far_enabled = false;
 		float dof_blur_far_distance = 10;
 		float dof_blur_far_transition = 5;
@@ -738,7 +720,6 @@ private:
 	/* RENDER BUFFERS */
 
 	struct RenderBuffers {
-
 		RenderBufferData *data = nullptr;
 		int width = 0, height = 0;
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
@@ -767,7 +748,6 @@ private:
 		Blur blur[2]; //the second one starts from the first mipmap
 
 		struct Luminance {
-
 			Vector<RID> reduce;
 			RID current;
 		} luminance;
@@ -928,7 +908,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Rect2 light_instance_get_shadow_atlas_rect(RID p_light_instance, RID p_shadow_atlas) {
-
 		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		uint32_t key = shadow_atlas->shadow_owners[li->self];
@@ -955,13 +934,11 @@ public:
 	}
 
 	_FORCE_INLINE_ CameraMatrix light_instance_get_shadow_camera(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].camera;
 	}
 
 	_FORCE_INLINE_ float light_instance_get_shadow_texel_size(RID p_light_instance, RID p_shadow_atlas) {
-
 #ifdef DEBUG_ENABLED
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		ERR_FAIL_COND_V(!li->shadow_atlases.has(p_shadow_atlas), 0);
@@ -984,46 +961,38 @@ public:
 
 	_FORCE_INLINE_ Transform
 	light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].transform;
 	}
 	_FORCE_INLINE_ float light_instance_get_shadow_bias_scale(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].bias_scale;
 	}
 	_FORCE_INLINE_ float light_instance_get_shadow_range(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].farplane;
 	}
 	_FORCE_INLINE_ float light_instance_get_shadow_range_begin(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].range_begin;
 	}
 
 	_FORCE_INLINE_ Vector2 light_instance_get_shadow_uv_scale(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].uv_scale;
 	}
 
 	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_rect(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].atlas_rect;
 	}
 
 	_FORCE_INLINE_ float light_instance_get_directional_shadow_split(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].split;
 	}
 
 	_FORCE_INLINE_ float light_instance_get_directional_shadow_texel_size(RID p_light_instance, int p_index) {
-
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].shadow_texel_size;
 	}

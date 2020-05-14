@@ -75,7 +75,6 @@ String to_string(Type p_type);
 } // namespace ApiAssemblyInfo
 
 class GDMono {
-
 public:
 	enum UnhandledExceptionPolicy {
 		POLICY_TERMINATE_APP,
@@ -249,7 +248,6 @@ public:
 namespace gdmono {
 
 class ScopeDomain {
-
 	MonoDomain *prev_domain;
 
 public:

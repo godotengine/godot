@@ -47,7 +47,6 @@ class DynamicFontAtSize;
 class DynamicFont;
 
 class DynamicFontData : public Resource {
-
 	GDCLASS(DynamicFontData, Resource);
 
 public:
@@ -109,7 +108,6 @@ public:
 VARIANT_ENUM_CAST(DynamicFontData::Hinting);
 
 class DynamicFontAtSize : public Reference {
-
 	GDCLASS(DynamicFontAtSize, Reference);
 
 	_THREAD_SAFE_CLASS_
@@ -130,7 +128,6 @@ class DynamicFontAtSize : public Reference {
 	bool valid;
 
 	struct CharTexture {
-
 		Vector<uint8_t> imgdata;
 		int texture_size;
 		Vector<int> offsets;
@@ -140,7 +137,6 @@ class DynamicFontAtSize : public Reference {
 	Vector<CharTexture> textures;
 
 	struct Character {
-
 		bool found;
 		int texture_idx;
 		Rect2 rect;
@@ -206,7 +202,6 @@ public:
 ///////////////
 
 class DynamicFont : public Font {
-
 	GDCLASS(DynamicFont, Font);
 
 public:

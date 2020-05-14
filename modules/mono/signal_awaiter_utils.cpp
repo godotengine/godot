@@ -77,7 +77,6 @@ String SignalAwaiterCallable::get_as_text() const {
 		String class_name = base->get_class();
 		Ref<Script> script = base->get_script();
 		if (script.is_valid() && script->get_path().is_resource_file()) {
-
 			class_name += "(" + script->get_path().get_file() + ")";
 		}
 		return class_name + "::SignalAwaiterMiddleman::" + String(signal);

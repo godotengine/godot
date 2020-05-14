@@ -37,15 +37,14 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float exposure_adjust;
 	float pad[3];
 }
+
 params;
 
 void main() {
-
 	uint t = gl_LocalInvocationID.y * BLOCK_SIZE + gl_LocalInvocationID.x;
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
 	if (any(lessThan(pos, params.source_size))) {
-
 #ifdef READ_TEXTURE
 		vec3 v = texelFetch(source_texture, pos, 0).rgb;
 		tmp_data[t] = max(v.r, max(v.g, v.b));

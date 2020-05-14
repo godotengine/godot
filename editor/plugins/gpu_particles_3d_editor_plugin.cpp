@@ -36,25 +36,22 @@
 #include "scene/resources/particles_material.h"
 
 bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3> &normals) {
-
 	bool use_normals = emission_fill->get_selected() == 1;
 
 	if (emission_fill->get_selected() < 2) {
-
 		float area_accum = 0;
 		Map<float, int> triangle_area_map;
 
 		for (int i = 0; i < geometry.size(); i++) {
-
 			float area = geometry[i].get_area();
-			if (area < CMP_EPSILON)
+			if (area < CMP_EPSILON) {
 				continue;
+			}
 			triangle_area_map[area_accum] = i;
 			area_accum += area;
 		}
 
 		if (!triangle_area_map.size() || area_accum == 0) {
-
 			EditorNode::get_singleton()->show_warning(TTR("The geometry's faces don't contain any area."));
 			return false;
 		}
@@ -62,7 +59,6 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 		int emissor_count = emission_amount->get_value();
 
 		for (int i = 0; i < emissor_count; i++) {
-
 			float areapos = Math::random(0.0f, area_accum);
 
 			Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
@@ -84,11 +80,9 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 			}
 		}
 	} else {
-
 		int gcount = geometry.size();
 
 		if (gcount == 0) {
-
 			EditorNode::get_singleton()->show_warning(TTR("The geometry doesn't contain any faces."));
 			return false;
 		}
@@ -98,24 +92,21 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 		AABB aabb;
 
 		for (int i = 0; i < gcount; i++) {
-
 			for (int j = 0; j < 3; j++) {
-
-				if (i == 0 && j == 0)
+				if (i == 0 && j == 0) {
 					aabb.position = r[i].vertex[j];
-				else
+				} else {
 					aabb.expand_to(r[i].vertex[j]);
+				}
 			}
 		}
 
 		int emissor_count = emission_amount->get_value();
 
 		for (int i = 0; i < emissor_count; i++) {
-
 			int attempts = 5;
 
 			for (int j = 0; j < attempts; j++) {
-
 				Vector3 dir;
 				dir[Math::rand() % 3] = 1.0;
 				Vector3 ofs = (Vector3(1, 1, 1) - dir) * Vector3(Math::randf(), Math::randf(), Math::randf()) * aabb.size + aabb.position;
@@ -129,24 +120,25 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 				float max = -1e7, min = 1e7;
 
 				for (int k = 0; k < gcount; k++) {
-
 					const Face3 &f3 = r[k];
 
 					Vector3 res;
 					if (f3.intersects_segment(ofs, ofsv, &res)) {
-
 						res -= ofs;
 						float d = dir.dot(res);
 
-						if (d < min)
+						if (d < min) {
 							min = d;
-						if (d > max)
+						}
+						if (d > max) {
 							max = d;
+						}
 					}
 				}
 
-				if (max < min)
+				if (max < min) {
 					continue; //lost attempt
+				}
 
 				float val = min + (max - min) * Math::randf();
 
@@ -162,20 +154,18 @@ bool GPUParticles3DEditorBase::_generate(Vector<Vector3> &points, Vector<Vector3
 }
 
 void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
-
 	Node *sel = get_node(p_path);
-	if (!sel)
+	if (!sel) {
 		return;
+	}
 
 	if (!sel->is_class("Node3D")) {
-
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't inherit from Node3D."), sel->get_name()));
 		return;
 	}
 
 	VisualInstance3D *vi = Object::cast_to<VisualInstance3D>(sel);
 	if (!vi) {
-
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain geometry."), sel->get_name()));
 		return;
 	}
@@ -183,7 +173,6 @@ void GPUParticles3DEditorBase::_node_selected(const NodePath &p_path) {
 	geometry = vi->get_faces(VisualInstance3D::FACES_SOLID);
 
 	if (geometry.size() == 0) {
-
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}
@@ -206,7 +195,6 @@ void GPUParticles3DEditorBase::_bind_methods() {
 }
 
 GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
-
 	emission_dialog = memnew(ConfirmationDialog);
 	emission_dialog->set_title(TTR("Create Emitter"));
 	add_child(emission_dialog);
@@ -234,7 +222,6 @@ GPUParticles3DEditorBase::GPUParticles3DEditorBase() {
 }
 
 void GPUParticles3DEditor::_node_removed(Node *p_node) {
-
 	if (p_node == node) {
 		node = nullptr;
 		hide();
@@ -242,7 +229,6 @@ void GPUParticles3DEditor::_node_removed(Node *p_node) {
 }
 
 void GPUParticles3DEditor::_notification(int p_notification) {
-
 	if (p_notification == NOTIFICATION_ENTER_TREE) {
 		options->set_icon(options->get_popup()->get_theme_icon("GPUParticles3D", "EditorIcons"));
 		get_tree()->connect("node_removed", callable_mp(this, &GPUParticles3DEditor::_node_removed));
@@ -250,16 +236,15 @@ void GPUParticles3DEditor::_notification(int p_notification) {
 }
 
 void GPUParticles3DEditor::_menu_option(int p_option) {
-
 	switch (p_option) {
-
 		case MENU_OPTION_GENERATE_AABB: {
 			float gen_time = node->get_lifetime();
 
-			if (gen_time < 1.0)
+			if (gen_time < 1.0) {
 				generate_seconds->set_value(1.0);
-			else
+			} else {
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
+			}
 			generate_aabb->popup_centered();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
@@ -273,7 +258,6 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
-
 			CPUParticles3D *cpu_particles = memnew(CPUParticles3D);
 			cpu_particles->convert_from_particles(node);
 			cpu_particles->set_name(node->get_name());
@@ -291,7 +275,6 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_RESTART: {
-
 			node->restart();
 
 		} break;
@@ -299,7 +282,6 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 }
 
 void GPUParticles3DEditor::_generate_aabb() {
-
 	float time = generate_seconds->get_value();
 
 	float running = 0.0;
@@ -315,16 +297,16 @@ void GPUParticles3DEditor::_generate_aabb() {
 	AABB rect;
 
 	while (running < time) {
-
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 		ep.step("Generating...", int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		AABB capture = node->capture_aabb();
-		if (rect == AABB())
+		if (rect == AABB()) {
 			rect = capture;
-		else
+		} else {
 			rect.merge_with(capture);
+		}
 
 		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
 	}
@@ -341,13 +323,11 @@ void GPUParticles3DEditor::_generate_aabb() {
 }
 
 void GPUParticles3DEditor::edit(GPUParticles3D *p_particles) {
-
 	base_node = p_particles;
 	node = p_particles;
 }
 
 void GPUParticles3DEditor::_generate_emission_points() {
-
 	/// hacer codigo aca
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
@@ -385,7 +365,6 @@ void GPUParticles3DEditor::_generate_emission_points() {
 	ERR_FAIL_COND(material.is_null());
 
 	if (normals.size() > 0) {
-
 		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_DIRECTED_POINTS);
 		material->set_emission_point_count(point_count);
 		material->set_emission_point_texture(tex);
@@ -412,7 +391,6 @@ void GPUParticles3DEditor::_generate_emission_points() {
 
 		material->set_emission_normal_texture(tex2);
 	} else {
-
 		material->set_emission_shape(ParticlesMaterial::EMISSION_SHAPE_POINTS);
 		material->set_emission_point_count(point_count);
 		material->set_emission_point_texture(tex);
@@ -423,7 +401,6 @@ void GPUParticles3DEditor::_bind_methods() {
 }
 
 GPUParticles3DEditor::GPUParticles3DEditor() {
-
 	node = nullptr;
 	particles_editor_hb = memnew(HBoxContainer);
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
@@ -456,17 +433,14 @@ GPUParticles3DEditor::GPUParticles3DEditor() {
 }
 
 void GPUParticles3DEditorPlugin::edit(Object *p_object) {
-
 	particles_editor->edit(Object::cast_to<GPUParticles3D>(p_object));
 }
 
 bool GPUParticles3DEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("GPUParticles3D");
 }
 
 void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		particles_editor->show();
 		particles_editor->particles_editor_hb->show();
@@ -478,7 +452,6 @@ void GPUParticles3DEditorPlugin::make_visible(bool p_visible) {
 }
 
 GPUParticles3DEditorPlugin::GPUParticles3DEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	particles_editor = memnew(GPUParticles3DEditor);
 	editor->get_viewport()->add_child(particles_editor);

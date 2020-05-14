@@ -9,7 +9,6 @@ layout(location = 0) out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
-
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
 	uv_interp = base_arr[gl_VertexIndex];
 	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
@@ -53,6 +52,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool use_fxaa;
 	uint pad;
 }
+
 params;
 
 layout(location = 0) out vec4 frag_color;
@@ -260,7 +260,6 @@ vec3 apply_color_correction(vec3 color, sampler3D correction_tex) {
 }
 
 vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
-
 	const float FXAA_REDUCE_MIN = (1.0 / 128.0);
 	const float FXAA_REDUCE_MUL = (1.0 / 8.0);
 	const float FXAA_SPAN_MAX = 8.0;
@@ -320,7 +319,6 @@ void main() {
 	// Early Tonemap & SRGB Conversion
 
 	if (params.use_glow && params.glow_mode == GLOW_MODE_MIX) {
-
 		vec3 glow = gather_glow(source_glow, uv_interp);
 		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
@@ -335,7 +333,6 @@ void main() {
 	// Glow
 
 	if (params.use_glow && params.glow_mode != GLOW_MODE_MIX) {
-
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity;
 
 		// high dynamic range -> SRGB

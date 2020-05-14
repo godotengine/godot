@@ -11,6 +11,7 @@ struct Vertex {
 layout(set = 0, binding = 1, std430) restrict readonly buffer Vertices {
 	Vertex data[];
 }
+
 vertices;
 
 struct Triangle {
@@ -21,6 +22,7 @@ struct Triangle {
 layout(set = 0, binding = 2, std430) restrict readonly buffer Triangles {
 	Triangle data[];
 }
+
 triangles;
 
 struct Box {
@@ -33,11 +35,13 @@ struct Box {
 layout(set = 0, binding = 3, std430) restrict readonly buffer Boxes {
 	Box data[];
 }
+
 boxes;
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer GridIndices {
 	uint data[];
 }
+
 grid_indices;
 
 #define LIGHT_TYPE_DIRECTIONAL 0
@@ -66,6 +70,7 @@ struct Light {
 layout(set = 0, binding = 5, std430) restrict readonly buffer Lights {
 	Light data[];
 }
+
 lights;
 
 struct Seam {
@@ -76,11 +81,13 @@ struct Seam {
 layout(set = 0, binding = 6, std430) restrict readonly buffer Seams {
 	Seam data[];
 }
+
 seams;
 
 layout(set = 0, binding = 7, std430) restrict readonly buffer Probes {
 	vec4 data[];
 }
+
 probe_positions;
 
 layout(set = 0, binding = 8) uniform utexture3D grid;

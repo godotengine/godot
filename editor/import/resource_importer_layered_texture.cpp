@@ -40,7 +40,6 @@
 #include "scene/resources/texture.h"
 
 String ResourceImporterLayeredTexture::get_importer_name() const {
-
 	switch (mode) {
 		case MODE_CUBEMAP: {
 			return "cubemap_texture";
@@ -60,7 +59,6 @@ String ResourceImporterLayeredTexture::get_importer_name() const {
 }
 
 String ResourceImporterLayeredTexture::get_visible_name() const {
-
 	switch (mode) {
 		case MODE_CUBEMAP: {
 			return "Cubemap";
@@ -78,10 +76,11 @@ String ResourceImporterLayeredTexture::get_visible_name() const {
 
 	ERR_FAIL_V("");
 }
-void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_extensions) const {
 
+void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
+
 String ResourceImporterLayeredTexture::get_save_extension() const {
 	switch (mode) {
 		case MODE_CUBEMAP: {
@@ -102,7 +101,6 @@ String ResourceImporterLayeredTexture::get_save_extension() const {
 }
 
 String ResourceImporterLayeredTexture::get_resource_type() const {
-
 	switch (mode) {
 		case MODE_CUBEMAP: {
 			return "StreamCubemap";
@@ -121,7 +119,6 @@ String ResourceImporterLayeredTexture::get_resource_type() const {
 }
 
 bool ResourceImporterLayeredTexture::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
-
 	if (p_option == "compress/lossy_quality" && p_options.has("compress/mode")) {
 		return int(p_options["compress/mode"]) == COMPRESS_LOSSY;
 	}
@@ -131,13 +128,12 @@ bool ResourceImporterLayeredTexture::get_option_visibility(const String &p_optio
 int ResourceImporterLayeredTexture::get_preset_count() const {
 	return 0;
 }
-String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
 
+String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
 	return "";
 }
 
 void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_options, int p_preset) const {
-
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,Video RAM,Uncompressed,Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
@@ -160,9 +156,7 @@ void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_op
 }
 
 void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, const String &p_to_path, int p_compress_mode, float p_lossy, Image::CompressMode p_vram_compression, Image::CompressSource p_csource, Image::UsedChannels used_channels, bool p_mipmaps, bool p_force_po2) {
-
 	for (int i = 0; i < p_images.size(); i++) {
-
 		if (p_force_po2) {
 			p_images.write[i]->resize_to_po2();
 		}
@@ -199,7 +193,6 @@ void ResourceImporterLayeredTexture::_save_tex(Vector<Ref<Image>> p_images, cons
 }
 
 Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-
 	int compress_mode = p_options["compress/mode"];
 	float lossy = p_options["compress/lossy_quality"];
 	int hdr_compression = p_options["compress/hdr_compression"];
@@ -246,8 +239,9 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	Ref<Image> image;
 	image.instance();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, false, 1.0);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {
 		//basis universal does not support float formats, fall back
@@ -315,7 +309,6 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		bool can_compress_hdr = hdr_compression > 0;
 
 		if (is_hdr && can_compress_hdr) {
-
 			if (used_channels == Image::USED_CHANNELS_LA || used_channels == Image::USED_CHANNELS_RGBA) {
 				//can compress hdr, but hdr with alpha is not compressible
 
@@ -337,9 +330,7 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 			}
 
 			if (can_compress_hdr) {
-
 				if (!can_bptc) {
-
 					//default to rgbe
 					if (image->get_format() != Image::FORMAT_RGBE9995) {
 						for (int i = 0; i < slices.size(); i++) {
@@ -366,14 +357,12 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
-
 			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
 			r_platform_variants->push_back("etc2");
 			formats_imported.push_back("etc2");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
-
 			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, lossy, Image::COMPRESS_ETC2, csource, used_channels, mipmaps, true);
 			r_platform_variants->push_back("pvrtc");
 			formats_imported.push_back("pvrtc");
@@ -408,7 +397,6 @@ const char *ResourceImporterLayeredTexture::compression_formats[] = {
 	nullptr
 };
 String ResourceImporterLayeredTexture::get_import_settings_string() const {
-
 	String s;
 
 	int index = 0;
@@ -425,7 +413,6 @@ String ResourceImporterLayeredTexture::get_import_settings_string() const {
 }
 
 bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
-
 	//will become invalid if formats are missing to import
 	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
 
@@ -463,7 +450,6 @@ bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_p
 ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = nullptr;
 
 ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
-
 	singleton = this;
 	mode = MODE_CUBEMAP;
 }

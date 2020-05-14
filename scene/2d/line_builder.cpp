@@ -53,8 +53,9 @@ static SegmentIntersectionResult segment_intersection(
 		float ub = (ab.x * (a.y - c.y) - ab.y * (a.x - c.x)) / div;
 		*out_intersection = a + ua * ab;
 		if (ua >= 0.f && ua <= 1.f &&
-				ub >= 0.f && ub <= 1.f)
+				ub >= 0.f && ub <= 1.f) {
 			return SEGMENT_INTERSECT;
+		}
 		return SEGMENT_NO_INTERSECT;
 	}
 
@@ -117,7 +118,6 @@ void LineBuilder::clear_output() {
 }
 
 void LineBuilder::build() {
-
 	// Need at least 2 points to draw a line
 	if (points.size() < 2) {
 		clear_output();
@@ -158,28 +158,32 @@ void LineBuilder::build() {
 		//Adjust totalDistance.
 		// The line's outer length will be a little higher due to begin and end caps
 		if (begin_cap_mode == Line2D::LINE_CAP_BOX || begin_cap_mode == Line2D::LINE_CAP_ROUND) {
-			if (retrieve_curve)
+			if (retrieve_curve) {
 				total_distance += width * curve->interpolate_baked(0.f) * 0.5f;
-			else
+			} else {
 				total_distance += width * 0.5f;
+			}
 		}
 		if (end_cap_mode == Line2D::LINE_CAP_BOX || end_cap_mode == Line2D::LINE_CAP_ROUND) {
-			if (retrieve_curve)
+			if (retrieve_curve) {
 				total_distance += width * curve->interpolate_baked(1.f) * 0.5f;
-			else
+			} else {
 				total_distance += width * 0.5f;
+			}
 		}
 	}
-	if (_interpolate_color)
+	if (_interpolate_color) {
 		color0 = gradient->get_color(0);
-	else
+	} else {
 		colors.push_back(default_color);
+	}
 
 	float uvx0 = 0.f;
 	float uvx1 = 0.f;
 
-	if (retrieve_curve)
+	if (retrieve_curve) {
 		width_factor = curve->interpolate_baked(0.f);
+	}
 
 	pos_up0 += u0 * hw * width_factor;
 	pos_down0 -= u0 * hw * width_factor;
@@ -220,7 +224,6 @@ void LineBuilder::build() {
 
 	// For each additional segment
 	for (int i = 1; i < len - 1; ++i) {
-
 		pos1 = points[i];
 		Vector2 pos2 = points[i + 1];
 
@@ -271,10 +274,10 @@ void LineBuilder::build() {
 				pos1 + inner_normal1, pos2 + inner_normal1,
 				&corner_pos_in);
 
-		if (intersection_result == SEGMENT_INTERSECT)
+		if (intersection_result == SEGMENT_INTERSECT) {
 			// Inner parts of the segments intersect
 			corner_pos_out = 2.f * pos1 - corner_pos_in;
-		else {
+		} else {
 			// No intersection, segments are either parallel or too sharp
 			corner_pos_in = pos1 + inner_normal0;
 			corner_pos_out = pos1 - inner_normal0;
@@ -359,7 +362,6 @@ void LineBuilder::build() {
 
 		// Add joint geometry
 		if (current_joint_mode != Line2D::LINE_JOINT_SHARP) {
-
 			/* ________________ cbegin
 			 *               / \
 			 *              /   \
@@ -386,10 +388,11 @@ void LineBuilder::build() {
 				strip_add_arc(pos1, vbegin.angle_to(vend), orientation);
 			}
 
-			if (intersection_result != SEGMENT_INTERSECT)
+			if (intersection_result != SEGMENT_INTERSECT) {
 				// In this case the joint is too corrputed to be re-used,
 				// start again the strip with fallback points
 				strip_begin(pos_up0, pos_down0, color1, uvx1);
+			}
 		}
 	}
 	// Last (or only) segment
@@ -541,7 +544,6 @@ void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
 }
 
 void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation orientation) {
-
 	// Take the two last vertices and extrude an arc made of triangles
 	// that all share one of the initial vertices
 
@@ -551,8 +553,9 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 	float angle_step = Math_PI / static_cast<float>(round_precision);
 	float steps = Math::abs(angle_delta) / angle_step;
 
-	if (angle_delta < 0.f)
+	if (angle_delta < 0.f) {
 		angle_step = -angle_step;
+	}
 
 	float t = Vector2(1, 0).angle_to(vbegin);
 	float end_angle = t + angle_delta;
@@ -570,7 +573,6 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 }
 
 void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Color color, Rect2 uv_rect) {
-
 	// Make a standalone arc that doesn't use existing vertices,
 	// with undistorted UVs from within a square section
 
@@ -578,8 +580,9 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	float angle_step = Math_PI / static_cast<float>(round_precision);
 	float steps = Math::abs(angle_delta) / angle_step;
 
-	if (angle_delta < 0.f)
+	if (angle_delta < 0.f) {
 		angle_step = -angle_step;
+	}
 
 	float t = Vector2(1, 0).angle_to(vbegin);
 	float end_angle = t + angle_delta;
@@ -590,10 +593,12 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	// Center vertice
 	int vi = vertices.size();
 	vertices.push_back(center);
-	if (_interpolate_color)
+	if (_interpolate_color) {
 		colors.push_back(color);
-	if (texture_mode != Line2D::LINE_TEXTURE_NONE)
+	}
+	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		uvs.push_back(interpolate(uv_rect, Vector2(0.5f, 0.5f)));
+	}
 
 	// Arc vertices
 	for (int ti = 0; ti < steps; ++ti, t += angle_step) {
@@ -601,8 +606,9 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 		rpos = center + sc * radius;
 
 		vertices.push_back(rpos);
-		if (_interpolate_color)
+		if (_interpolate_color) {
 			colors.push_back(color);
+		}
 		if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 			Vector2 tsc = Vector2(Math::cos(tt), Math::sin(tt));
 			uvs.push_back(interpolate(uv_rect, 0.5f * (tsc + Vector2(1.f, 1.f))));
@@ -614,8 +620,9 @@ void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Col
 	Vector2 sc = Vector2(Math::cos(end_angle), Math::sin(end_angle));
 	rpos = center + sc * radius;
 	vertices.push_back(rpos);
-	if (_interpolate_color)
+	if (_interpolate_color) {
 		colors.push_back(color);
+	}
 	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		tt = tt_begin + angle_delta;
 		Vector2 tsc = Vector2(Math::cos(tt), Math::sin(tt));

@@ -93,7 +93,6 @@ const vec4 skin_kernel[kernel_size] = vec4[](
 #endif //USE_11_SAMPLES
 
 layout(push_constant, binding = 1, std430) uniform Params {
-
 	ivec2 screen_size;
 	float camera_z_far;
 	float camera_z_near;
@@ -106,6 +105,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float depth_scale;
 	uint pad[3];
 }
+
 params;
 
 layout(set = 0, binding = 0) uniform sampler2D source_image;
@@ -113,7 +113,6 @@ layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly image2D dest_im
 layout(set = 2, binding = 0) uniform sampler2D source_depth;
 
 void do_filter(inout vec3 color_accum, inout vec3 divisor, vec2 uv, vec2 step, bool p_skin) {
-
 	// Accumulate the other samples:
 	for (int i = 1; i < kernel_size; i++) {
 		// Fetch color and depth for current sample:
@@ -138,7 +137,6 @@ void do_filter(inout vec3 color_accum, inout vec3 divisor, vec2 uv, vec2 step, b
 }
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
@@ -153,7 +151,6 @@ void main() {
 	float strength = abs(base_color.a);
 
 	if (strength > 0.0) {
-
 		vec2 dir = params.vertical ? vec2(0.0, 1.0) : vec2(1.0, 0.0);
 
 		// Fetch linear depth of current pixel:

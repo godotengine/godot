@@ -40,34 +40,33 @@ void DictionaryPropertyEdit::_notif_changev(const String &p_v) {
 }
 
 void DictionaryPropertyEdit::_set_key(const Variant &p_old_key, const Variant &p_new_key) {
-
 	// TODO: Set key of a dictionary is not allowed yet
 }
 
 void DictionaryPropertyEdit::_set_value(const Variant &p_key, const Variant &p_value) {
-
 	Dictionary dict = get_dictionary();
 	dict[p_key] = p_value;
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return;
+	}
 
 	o->set(property, dict);
 }
 
 Variant DictionaryPropertyEdit::get_dictionary() const {
-
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return Dictionary();
+	}
 	Variant dict = o->get(property);
-	if (dict.get_type() != Variant::DICTIONARY)
+	if (dict.get_type() != Variant::DICTIONARY) {
 		return Dictionary();
+	}
 	return dict;
 }
 
 void DictionaryPropertyEdit::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	Dictionary dict = get_dictionary();
 
 	Array keys = dict.keys();
@@ -87,16 +86,15 @@ void DictionaryPropertyEdit::_get_property_list(List<PropertyInfo> *p_list) cons
 }
 
 void DictionaryPropertyEdit::edit(Object *p_obj, const StringName &p_prop) {
-
 	property = p_prop;
 	obj = p_obj->get_instance_id();
 }
 
 Node *DictionaryPropertyEdit::get_node() {
-
 	Object *o = ObjectDB::get_instance(obj);
-	if (!o)
+	if (!o) {
 		return nullptr;
+	}
 
 	return cast_to<Node>(o);
 }
@@ -106,7 +104,6 @@ bool DictionaryPropertyEdit::_dont_undo_redo() {
 }
 
 void DictionaryPropertyEdit::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_set_key"), &DictionaryPropertyEdit::_set_key);
 	ClassDB::bind_method(D_METHOD("_set_value"), &DictionaryPropertyEdit::_set_value);
 	ClassDB::bind_method(D_METHOD("_notif_change"), &DictionaryPropertyEdit::_notif_change);
@@ -115,7 +112,6 @@ void DictionaryPropertyEdit::_bind_methods() {
 }
 
 bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
-
 	Dictionary dict = get_dictionary();
 	Array keys = dict.keys();
 	keys.sort();
@@ -126,7 +122,6 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 		String type = pn.substr(slash + 2, pn.length());
 		int index = pn.substr(0, slash).to_int();
 		if (type == "key" && index < keys.size()) {
-
 			const Variant &key = keys[index];
 			UndoRedo *ur = EditorNode::get_undo_redo();
 
@@ -141,7 +136,6 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 		} else if (type == "value" && index < keys.size()) {
 			const Variant &key = keys[index];
 			if (dict.has(key)) {
-
 				Variant value = dict[key];
 				UndoRedo *ur = EditorNode::get_undo_redo();
 
@@ -161,7 +155,6 @@ bool DictionaryPropertyEdit::_set(const StringName &p_name, const Variant &p_val
 }
 
 bool DictionaryPropertyEdit::_get(const StringName &p_name, Variant &r_ret) const {
-
 	Dictionary dict = get_dictionary();
 	Array keys = dict.keys();
 	keys.sort();
@@ -170,7 +163,6 @@ bool DictionaryPropertyEdit::_get(const StringName &p_name, Variant &r_ret) cons
 	int slash = pn.find(": ");
 
 	if (slash != -1 && pn.length() > slash) {
-
 		String type = pn.substr(slash + 2, pn.length());
 		int index = pn.substr(0, slash).to_int();
 

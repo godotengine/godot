@@ -34,7 +34,6 @@
 #include "core/reference.h"
 
 class FuncRef : public Reference {
-
 	GDCLASS(FuncRef, Reference);
 	ObjectID id;
 	StringName function;

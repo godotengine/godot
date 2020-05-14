@@ -44,23 +44,19 @@ public:
 	};
 
 	struct Image {
-
 		String path;
 	};
 
 	struct Material {
-
 		String name;
 		String instance_effect;
 	};
 
 	struct Effect {
-
 		String name;
 		Map<String, Variant> params;
 
 		struct Channel {
-
 			int uv_idx = 0;
 			String texture;
 			Color color;
@@ -81,7 +77,6 @@ public:
 	};
 
 	struct CameraData {
-
 		enum Mode {
 			MODE_PERSPECTIVE,
 			MODE_ORTHOGONAL
@@ -108,7 +103,6 @@ public:
 	};
 
 	struct LightData {
-
 		enum Mode {
 			MODE_AMBIENT,
 			MODE_DIRECTIONAL,
@@ -131,10 +125,8 @@ public:
 	};
 
 	struct MeshData {
-
 		String name;
 		struct Source {
-
 			Vector<float> array;
 			int stride;
 		};
@@ -142,16 +134,13 @@ public:
 		Map<String, Source> sources;
 
 		struct Vertices {
-
 			Map<String, String> sources;
 		};
 
 		Map<String, Vertices> vertices;
 
 		struct Primitives {
-
 			struct SourceRef {
-
 				String source;
 				int offset;
 			};
@@ -173,12 +162,10 @@ public:
 	};
 
 	struct CurveData {
-
 		String name;
 		bool closed = false;
 
 		struct Source {
-
 			Vector<String> sarray;
 			Vector<float> array;
 			int stride;
@@ -192,14 +179,12 @@ public:
 	};
 
 	struct SkinControllerData {
-
 		String base;
 		bool use_idrefs = false;
 
 		Transform bind_shape;
 
 		struct Source {
-
 			Vector<String> sarray; //maybe for names
 			Vector<float> array;
 			int stride = 1;
@@ -209,14 +194,11 @@ public:
 		Map<String, Source> sources;
 
 		struct Joints {
-
 			Map<String, String> sources;
 		} joints;
 
 		struct Weights {
-
 			struct SourceRef {
-
 				String source;
 				int offset;
 			};
@@ -234,12 +216,10 @@ public:
 	};
 
 	struct MorphControllerData {
-
 		String mesh;
 		String mode;
 
 		struct Source {
-
 			int stride = 1;
 			Vector<String> sarray; //maybe for names
 			Vector<float> array;
@@ -253,7 +233,6 @@ public:
 	};
 
 	struct Vertex {
-
 		int idx = 0;
 		Vector3 vertex;
 		Vector3 normal;
@@ -271,40 +250,40 @@ public:
 		Vector<Weight> weights;
 
 		void fix_weights() {
-
 			weights.sort();
 			if (weights.size() > 4) {
 				//cap to 4 and make weights add up 1
 				weights.resize(4);
 				float total = 0;
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < 4; i++) {
 					total += weights[i].weight;
-				if (total)
-					for (int i = 0; i < 4; i++)
+				}
+				if (total) {
+					for (int i = 0; i < 4; i++) {
 						weights.write[i].weight /= total;
+					}
+				}
 			}
 		}
 
 		void fix_unit_scale(Collada &state);
 
 		bool operator<(const Vertex &p_vert) const {
-
 			if (uid == p_vert.uid) {
 				if (vertex == p_vert.vertex) {
 					if (normal == p_vert.normal) {
 						if (uv == p_vert.uv) {
 							if (uv2 == p_vert.uv2) {
-
 								if (!weights.empty() || !p_vert.weights.empty()) {
-
 									if (weights.size() == p_vert.weights.size()) {
-
 										for (int i = 0; i < weights.size(); i++) {
-											if (weights[i].bone_idx != p_vert.weights[i].bone_idx)
+											if (weights[i].bone_idx != p_vert.weights[i].bone_idx) {
 												return weights[i].bone_idx < p_vert.weights[i].bone_idx;
+											}
 
-											if (weights[i].weight != p_vert.weights[i].weight)
+											if (weights[i].weight != p_vert.weights[i].weight) {
 												return weights[i].weight < p_vert.weights[i].weight;
+											}
 										}
 									} else {
 										return weights.size() < p_vert.weights.size();
@@ -312,23 +291,27 @@ public:
 								}
 
 								return (color < p_vert.color);
-							} else
+							} else {
 								return (uv2 < p_vert.uv2);
-						} else
+							}
+						} else {
 							return (uv < p_vert.uv);
-					} else
+						}
+					} else {
 						return (normal < p_vert.normal);
-				} else
+					}
+				} else {
 					return vertex < p_vert.vertex;
-			} else
+				}
+			} else {
 				return uid < p_vert.uid;
+			}
 		}
 
 		Vertex() {}
 	};
 
 	struct Node {
-
 		enum Type {
 
 			TYPE_NODE,
@@ -340,7 +323,6 @@ public:
 		};
 
 		struct XForm {
-
 			enum Op {
 				OP_ROTATE,
 				OP_SCALE,
@@ -375,18 +357,17 @@ public:
 
 		Node() {}
 		virtual ~Node() {
-			for (int i = 0; i < children.size(); i++)
+			for (int i = 0; i < children.size(); i++) {
 				memdelete(children[i]);
+			}
 		};
 	};
 
 	struct NodeSkeleton : public Node {
-
 		NodeSkeleton() { type = TYPE_SKELETON; }
 	};
 
 	struct NodeJoint : public Node {
-
 		NodeSkeleton *owner = nullptr;
 		String sid;
 		NodeJoint() {
@@ -395,7 +376,6 @@ public:
 	};
 
 	struct NodeGeometry : public Node {
-
 		bool controller;
 		String source;
 
@@ -410,32 +390,29 @@ public:
 	};
 
 	struct NodeCamera : public Node {
-
 		String camera;
 
 		NodeCamera() { type = TYPE_CAMERA; }
 	};
 
 	struct NodeLight : public Node {
-
 		String light;
 
 		NodeLight() { type = TYPE_LIGHT; }
 	};
 
 	struct VisualScene {
-
 		String name;
 		Vector<Node *> root_nodes;
 
 		~VisualScene() {
-			for (int i = 0; i < root_nodes.size(); i++)
+			for (int i = 0; i < root_nodes.size(); i++) {
 				memdelete(root_nodes[i]);
+			}
 		}
 	};
 
 	struct AnimationClip {
-
 		String name;
 		float begin = 0;
 		float end = 1;
@@ -445,7 +422,6 @@ public:
 	};
 
 	struct AnimationTrack {
-
 		String id;
 		String target;
 		String param;
@@ -458,7 +434,6 @@ public:
 		};
 
 		struct Key {
-
 			enum Type {
 				TYPE_FLOAT,
 				TYPE_MATRIX
@@ -485,7 +460,6 @@ public:
 	/****************/
 
 	struct State {
-
 		int import_flags = 0;
 
 		float unit_scale = 1.0;
@@ -493,7 +467,6 @@ public:
 		bool z_up;
 
 		struct Version {
-
 			int major, minor, rev;
 
 			bool operator<(const Version &p_ver) const { return (major == p_ver.major) ? ((minor == p_ver.minor) ? (rev < p_ver.rev) : minor < p_ver.minor) : major < p_ver.major; }

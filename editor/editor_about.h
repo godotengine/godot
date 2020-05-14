@@ -45,7 +45,6 @@
 #include "editor_scale.h"
 
 class EditorAbout : public AcceptDialog {
-
 	GDCLASS(EditorAbout, AcceptDialog);
 
 private:

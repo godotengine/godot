@@ -40,7 +40,6 @@
 #include "core/variant.h"
 
 class ShaderLanguage {
-
 public:
 	enum TokenType {
 		TK_EMPTY,
@@ -533,14 +532,12 @@ public:
 	};
 
 	struct StructNode : public Node {
-
 		List<MemberNode *> members;
 		StructNode() :
 				Node(TYPE_STRUCT) {}
 	};
 
 	struct FunctionNode : public Node {
-
 		struct Argument {
 			ArgumentQualifier qualifier;
 			StringName name;
@@ -570,7 +567,6 @@ public:
 	};
 
 	struct ShaderNode : public Node {
-
 		struct Constant {
 			StringName name;
 			DataType type;
@@ -774,8 +770,9 @@ private:
 	}
 
 	void _set_error(const String &p_str) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 
 		error_line = tk_line;
 		error_set = true;

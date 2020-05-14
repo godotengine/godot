@@ -18,6 +18,7 @@ struct CellChildren {
 layout(set = 0, binding = 1, std430) buffer CellChildrenBuffer {
 	CellChildren data[];
 }
+
 cell_children;
 
 struct CellData {
@@ -30,6 +31,7 @@ struct CellData {
 layout(set = 0, binding = 2, std430) buffer CellDataBuffer {
 	CellData data[];
 }
+
 cell_data;
 
 #define LIGHT_TYPE_DIRECTIONAL 0
@@ -57,6 +59,7 @@ struct Light {
 layout(set = 0, binding = 3, std140) uniform Lights {
 	Light data[MAX_LIGHTS];
 }
+
 lights;
 
 #endif
@@ -74,17 +77,18 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint cell_count;
 	uint pad[2];
 }
+
 params;
 
 layout(set = 0, binding = 4, std140) uniform Outputs {
 	vec4 data[];
 }
+
 output;
 
 #ifdef MODE_COMPUTE_LIGHT
 
 uint raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
-
 	uint result = NO_CHILDREN;
 
 	ivec3 size = ivec3(max(max(params.limits.x, params.limits.y), params.limits.z));
@@ -96,12 +100,10 @@ uint raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
 		ivec3 pos = ivec3(from);
 
 		if (all(greaterThanEqual(pos, ivec3(0))) && all(lessThan(pos, size))) {
-
 			ivec3 ofs = ivec3(0);
 			ivec3 half_size = size / 2;
 
 			for (int i = 0; i < params.stack_size - 1; i++) {
-
 				bvec3 greater = greaterThanEqual(pos, ofs + half_size);
 
 				ofs += mix(ivec3(0), half_size, greater);
@@ -137,14 +139,11 @@ uint raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
 }
 
 bool compute_light_vector(uint light, uint cell, vec3 pos, out float attenuation, out vec3 light_pos) {
-
 	if (lights.data[light].type == LIGHT_TYPE_DIRECTIONAL) {
-
 		light_pos = pos - lights.data[light].direction * length(vec3(params.limits));
 		attenuation = 1.0;
 
 	} else {
-
 		light_pos = lights.data[light].position;
 		float distance = length(pos - light_pos);
 		if (distance >= lights.data[light].radius) {
@@ -154,7 +153,6 @@ bool compute_light_vector(uint light, uint cell, vec3 pos, out float attenuation
 		attenuation = pow(clamp(1.0 - distance / lights.data[light].radius, 0.0001, 1.0), lights.data[light].attenuation);
 
 		if (lights.data[light].type == LIGHT_TYPE_SPOT) {
-
 			vec3 rel = normalize(pos - light_pos);
 			float angle = acos(dot(rel, lights.data[light].direction));
 			if (angle > lights.data[light].spot_angle_radians) {
@@ -170,7 +168,6 @@ bool compute_light_vector(uint light, uint cell, vec3 pos, out float attenuation
 }
 
 float get_normal_advance(vec3 p_normal) {
-
 	vec3 normal = p_normal;
 	vec3 unorm = abs(normal);
 
@@ -195,7 +192,6 @@ float get_normal_advance(vec3 p_normal) {
 #endif
 
 void main() {
-
 	uint cell_index = gl_GlobalInvocationID.x;
 	if (cell_index >= params.cell_count) {
 		return;
@@ -220,7 +216,6 @@ void main() {
 #endif
 
 	for (uint i = 0; i < params.light_count; i++) {
-
 		float attenuation;
 		vec3 light_pos;
 
@@ -237,7 +232,6 @@ void main() {
 		}
 
 		if (lights.data[i].has_shadow) {
-
 			float distance_adv = get_normal_advance(light_dir);
 
 			distance += distance_adv - mod(distance, distance_adv); //make it reach the center of the box always

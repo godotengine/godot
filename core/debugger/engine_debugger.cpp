@@ -111,8 +111,9 @@ Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_ms
 
 void EngineDebugger::line_poll() {
 	// The purpose of this is just processing events every now and then when the script might get too busy otherwise bugs like infinite loops can't be caught
-	if (poll_every % 2048 == 0)
+	if (poll_every % 2048 == 0) {
 		poll_events(false);
+	}
 	poll_every++;
 }
 
@@ -124,8 +125,9 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, ui
 	// Notify tick to running profilers
 	for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
 		Profiler &p = E->get();
-		if (!p.active || !p.tick)
+		if (!p.active || !p.tick) {
 			continue;
+		}
 		p.tick(p.data, frame_time, idle_time, physics_time, physics_frame_time);
 	}
 	singleton->poll_events(true);
@@ -133,8 +135,9 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_idle_ticks, ui
 
 void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Vector<String> p_breakpoints) {
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
-	if (p_uri.empty())
+	if (p_uri.empty()) {
 		return;
+	}
 	if (p_uri == "local://") {
 		singleton = memnew(LocalDebugger);
 		script_debugger = memnew(ScriptDebugger);
@@ -142,11 +145,13 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		OS::get_singleton()->initialize_debugging();
 	} else if (p_uri.find("://") >= 0) {
 		const String proto = p_uri.substr(0, p_uri.find("://") + 3);
-		if (!protocols.has(proto))
+		if (!protocols.has(proto)) {
 			return;
+		}
 		RemoteDebuggerPeer *peer = protocols[proto](p_uri);
-		if (!peer)
+		if (!peer) {
 			return;
+		}
 		singleton = memnew(RemoteDebugger(Ref<RemoteDebuggerPeer>(peer)));
 		script_debugger = memnew(ScriptDebugger);
 		// Notify editor of our pid (to allow focus stealing).
@@ -154,15 +159,15 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, Ve
 		msg.push_back(OS::get_singleton()->get_process_id());
 		singleton->send_message("set_pid", msg);
 	}
-	if (!singleton)
+	if (!singleton) {
 		return;
+	}
 
 	// There is a debugger, parse breakpoints.
 	ScriptDebugger *singleton_script_debugger = singleton->get_script_debugger();
 	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
-
 		String bp = p_breakpoints[i];
 		int sp = bp.find_last(":");
 		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
@@ -175,8 +180,9 @@ void EngineDebugger::deinitialize() {
 	if (singleton) {
 		// Stop all profilers
 		for (Map<StringName, Profiler>::Element *E = profilers.front(); E; E = E->next()) {
-			if (E->get().active)
+			if (E->get().active) {
 				singleton->profiler_enable(E->key(), false);
+			}
 		}
 
 		// Flush any remaining message
@@ -193,8 +199,9 @@ void EngineDebugger::deinitialize() {
 }
 
 EngineDebugger::~EngineDebugger() {
-	if (script_debugger)
+	if (script_debugger) {
 		memdelete(script_debugger);
+	}
 	script_debugger = nullptr;
 	singleton = nullptr;
 }

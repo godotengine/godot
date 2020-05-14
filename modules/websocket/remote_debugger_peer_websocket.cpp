@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  script_debugger_websocket.cpp                                        */
+/*  remote_debugger_peer_websocket.cpp                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,6 @@
 #include "core/project_settings.h"
 
 Error RemoteDebuggerPeerWebSocket::connect_to_host(const String &p_uri) {
-
 	Vector<String> protocols;
 	protocols.push_back("binary"); // Compatibility for emscripten TCP-to-WebSocket.
 
@@ -41,7 +40,6 @@ Error RemoteDebuggerPeerWebSocket::connect_to_host(const String &p_uri) {
 	ws_client->poll();
 
 	if (ws_client->get_connection_status() == WebSocketClient::CONNECTION_DISCONNECTED) {
-
 		ERR_PRINT("Remote Debugger: Unable to connect. Status: " + String::num(ws_client->get_connection_status()) + ".");
 		return FAILED;
 	}
@@ -90,8 +88,9 @@ Array RemoteDebuggerPeerWebSocket::get_message() {
 }
 
 Error RemoteDebuggerPeerWebSocket::put_message(const Array &p_arr) {
-	if (out_queue.size() >= max_queued_messages)
+	if (out_queue.size() >= max_queued_messages) {
 		return ERR_OUT_OF_MEMORY;
+	}
 	out_queue.push_back(p_arr);
 	return OK;
 }

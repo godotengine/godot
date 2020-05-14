@@ -37,54 +37,45 @@
 #include "scene/resources/particles_material.h"
 
 void GPUParticles2DEditorPlugin::edit(Object *p_object) {
-
 	particles = Object::cast_to<GPUParticles2D>(p_object);
 }
 
 bool GPUParticles2DEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("GPUParticles2D");
 }
 
 void GPUParticles2DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
-
 		toolbar->show();
 	} else {
-
 		toolbar->hide();
 	}
 }
 
 void GPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
-
 	source_emission_file = p_file;
 	emission_mask->popup_centered();
 }
 
 void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
-
 	switch (p_idx) {
 		case MENU_GENERATE_VISIBILITY_RECT: {
 			float gen_time = particles->get_lifetime();
-			if (gen_time < 1.0)
+			if (gen_time < 1.0) {
 				generate_seconds->set_value(1.0);
-			else
+			} else {
 				generate_seconds->set_value(trunc(gen_time) + 1.0);
+			}
 			generate_visibility_rect->popup_centered();
 		} break;
 		case MENU_LOAD_EMISSION_MASK: {
-
 			file->popup_centered_ratio();
 
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
-
 			emission_mask->popup_centered();
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
-
 			CPUParticles2D *cpu_particles = memnew(CPUParticles2D);
 			cpu_particles->convert_from_particles(particles);
 			cpu_particles->set_name(particles->get_name());
@@ -103,14 +94,12 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 		} break;
 		case MENU_RESTART: {
-
 			particles->restart();
 		}
 	}
 }
 
 void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
-
 	float time = generate_seconds->get_value();
 
 	float running = 0.0;
@@ -125,16 +114,16 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 
 	Rect2 rect;
 	while (running < time) {
-
 		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
 		ep.step("Generating...", int(running), true);
 		OS::get_singleton()->delay_usec(1000);
 
 		Rect2 capture = particles->capture_rect();
-		if (rect == Rect2())
+		if (rect == Rect2()) {
 			rect = capture;
-		else
+		} else {
 			rect = rect.merge(capture);
+		}
 
 		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
 	}
@@ -150,7 +139,6 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 }
 
 void GPUParticles2DEditorPlugin::_generate_emission_mask() {
-
 	Ref<ParticlesMaterial> pm = particles->get_process_material();
 	if (!pm.is_valid()) {
 		EditorNode::get_singleton()->show_warning(TTR("Can only set point into a ParticlesMaterial process material"));
@@ -196,13 +184,10 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		for (int i = 0; i < s.width; i++) {
 			for (int j = 0; j < s.height; j++) {
-
 				uint8_t a = r[(j * s.width + i) * 4 + 3];
 
 				if (a > 128) {
-
 					if (emode == EMISSION_MODE_SOLID) {
-
 						if (capture_colors) {
 							valid_colors.write[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
 							valid_colors.write[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
@@ -212,19 +197,18 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 						valid_positions.write[vpc++] = Point2(i, j);
 
 					} else {
-
 						bool on_border = false;
 						for (int x = i - 1; x <= i + 1; x++) {
 							for (int y = j - 1; y <= j + 1; y++) {
-
 								if (x < 0 || y < 0 || x >= s.width || y >= s.height || r[(y * s.width + x) * 4 + 3] <= 128) {
 									on_border = true;
 									break;
 								}
 							}
 
-							if (on_border)
+							if (on_border) {
 								break;
+							}
 						}
 
 						if (on_border) {
@@ -234,9 +218,9 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 								Vector2 normal;
 								for (int x = i - 2; x <= i + 2; x++) {
 									for (int y = j - 2; y <= j + 2; y++) {
-
-										if (x == i && y == j)
+										if (x == i && y == j) {
 											continue;
+										}
 
 										if (x < 0 || y < 0 || x >= s.width || y >= s.height || r[(y * s.width + x) * 4 + 3] <= 128) {
 											normal += Vector2(x - i, y - j).normalized();
@@ -281,7 +265,6 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 		uint8_t *tw = texdata.ptrw();
 		float *twf = (float *)tw;
 		for (int i = 0; i < vpc; i++) {
-
 			twf[i * 2 + 0] = valid_positions[i].x;
 			twf[i * 2 + 1] = valid_positions[i].y;
 		}
@@ -298,14 +281,12 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 	pm->set_emission_point_count(vpc);
 
 	if (capture_colors) {
-
 		Vector<uint8_t> colordata;
 		colordata.resize(w * h * 4); //use RG texture
 
 		{
 			uint8_t *tw = colordata.ptrw();
 			for (int i = 0; i < vpc * 4; i++) {
-
 				tw[i] = valid_colors[i];
 			}
 		}
@@ -346,9 +327,7 @@ void GPUParticles2DEditorPlugin::_generate_emission_mask() {
 }
 
 void GPUParticles2DEditorPlugin::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &GPUParticles2DEditorPlugin::_menu_callback));
 		menu->set_icon(menu->get_theme_icon("GPUParticles2D", "EditorIcons"));
 		file->connect("file_selected", callable_mp(this, &GPUParticles2DEditorPlugin::_file_selected));
@@ -359,7 +338,6 @@ void GPUParticles2DEditorPlugin::_bind_methods() {
 }
 
 GPUParticles2DEditorPlugin::GPUParticles2DEditorPlugin(EditorNode *p_node) {
-
 	particles = nullptr;
 	editor = p_node;
 	undo_redo = editor->get_undo_redo();

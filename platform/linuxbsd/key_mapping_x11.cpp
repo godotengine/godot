@@ -33,7 +33,6 @@
 /***** SCAN CODE CONVERSION ******/
 
 struct _XTranslatePair {
-
 	KeySym keysym;
 	unsigned int keycode;
 };
@@ -181,7 +180,6 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 };
 
 struct _TranslatePair {
-
 	unsigned int keysym;
 	unsigned int keycode;
 };
@@ -301,10 +299,8 @@ static _TranslatePair _scancode_to_keycode[] = {
 };
 
 unsigned int KeyMappingX11::get_scancode(unsigned int p_code) {
-
 	unsigned int keycode = KEY_UNKNOWN;
 	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
-
 		if (_scancode_to_keycode[i].keycode == p_code) {
 			keycode = _scancode_to_keycode[i].keysym;
 			break;
@@ -315,34 +311,34 @@ unsigned int KeyMappingX11::get_scancode(unsigned int p_code) {
 }
 
 unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
-
 	// kinda bruteforce.. could optimize.
 
-	if (p_keysym < 0x100) // Latin 1, maps 1-1
+	if (p_keysym < 0x100) { // Latin 1, maps 1-1
 		return p_keysym;
+	}
 
 	// look for special key
 	for (int idx = 0; _xkeysym_to_keycode[idx].keysym != 0; idx++) {
-
-		if (_xkeysym_to_keycode[idx].keysym == p_keysym)
+		if (_xkeysym_to_keycode[idx].keysym == p_keysym) {
 			return _xkeysym_to_keycode[idx].keycode;
+		}
 	}
 
 	return 0;
 }
 
 KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
-
 	// kinda bruteforce.. could optimize.
 
-	if (p_code < 0x100) // Latin 1, maps 1-1
+	if (p_code < 0x100) { // Latin 1, maps 1-1
 		return p_code;
+	}
 
 	// look for special key
 	for (int idx = 0; _xkeysym_to_keycode[idx].keysym != 0; idx++) {
-
-		if (_xkeysym_to_keycode[idx].keycode == p_code)
+		if (_xkeysym_to_keycode[idx].keycode == p_code) {
 			return _xkeysym_to_keycode[idx].keysym;
+		}
 	}
 
 	return 0;
@@ -353,7 +349,6 @@ KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 // Tables taken from FOX toolkit
 
 struct _XTranslateUnicodePair {
-
 	KeySym keysym;
 	unsigned int unicode;
 };
@@ -1125,37 +1120,41 @@ static _XTranslateUnicodePair _xkeysym_to_unicode[_KEYSYM_MAX] = {
 };
 
 unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
-
 	/* Latin-1 */
-	if (p_keysym >= 0x20 && p_keysym <= 0x7e)
+	if (p_keysym >= 0x20 && p_keysym <= 0x7e) {
 		return p_keysym;
-	if (p_keysym >= 0xa0 && p_keysym <= 0xff)
+	}
+	if (p_keysym >= 0xa0 && p_keysym <= 0xff) {
 		return p_keysym;
+	}
 	// keypad to latin1 is easy
-	if (p_keysym >= 0xffaa && p_keysym <= 0xffb9)
+	if (p_keysym >= 0xffaa && p_keysym <= 0xffb9) {
 		return p_keysym - 0xff80;
+	}
 
 	/* Unicode (may be present)*/
 
-	if ((p_keysym & 0xff000000) == 0x01000000)
+	if ((p_keysym & 0xff000000) == 0x01000000) {
 		return p_keysym & 0x00ffffff;
+	}
 
 	int middle, low = 0, high = _KEYSYM_MAX - 1;
 	do {
 		middle = (high + low) / 2;
-		if (_xkeysym_to_unicode[middle].keysym == p_keysym)
+		if (_xkeysym_to_unicode[middle].keysym == p_keysym) {
 			return _xkeysym_to_unicode[middle].unicode;
-		if (_xkeysym_to_unicode[middle].keysym <= p_keysym)
+		}
+		if (_xkeysym_to_unicode[middle].keysym <= p_keysym) {
 			low = middle + 1;
-		else
+		} else {
 			high = middle - 1;
+		}
 	} while (high >= low);
 
 	return 0;
 }
 
 struct _XTranslateUnicodePairReverse {
-
 	unsigned int unicode;
 	KeySym keysym;
 };
@@ -1919,24 +1918,27 @@ static _XTranslateUnicodePairReverse _unicode_to_xkeysym[_UNICODE_MAX] = {
 };
 
 KeySym KeyMappingX11::get_keysym_from_unicode(unsigned int p_unicode) {
-
 	/* Latin 1 */
 
-	if (p_unicode >= 0x20 && p_unicode <= 0x7e)
+	if (p_unicode >= 0x20 && p_unicode <= 0x7e) {
 		return p_unicode;
+	}
 
-	if (p_unicode >= 0xa0 && p_unicode <= 0xff)
+	if (p_unicode >= 0xa0 && p_unicode <= 0xff) {
 		return p_unicode;
+	}
 
 	int middle, low = 0, high = _UNICODE_MAX - 1;
 	do {
 		middle = (high + low) / 2;
-		if (_unicode_to_xkeysym[middle].keysym == p_unicode)
+		if (_unicode_to_xkeysym[middle].keysym == p_unicode) {
 			return _unicode_to_xkeysym[middle].keysym;
-		if (_unicode_to_xkeysym[middle].keysym <= p_unicode)
+		}
+		if (_unicode_to_xkeysym[middle].keysym <= p_unicode) {
 			low = middle + 1;
-		else
+		} else {
 			high = middle - 1;
+		}
 	} while (high >= low);
 
 	// if not found, let's hope X understands it as unicode

@@ -14,10 +14,10 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 position_multiplier;
 	float time;
 }
+
 params;
 
 void main() {
-
 	vec2 base_arr[4] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0), vec2(1.0, -1.0));
 	uv_interp = base_arr[gl_VertexIndex];
 	gl_Position = vec4(uv_interp, 1.0, 1.0);
@@ -41,6 +41,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 position_multiplier;
 	float time; //TODO consider adding vec2 screen res, and float radiance size
 }
+
 params;
 
 #define SAMPLER_NEAREST_CLAMP 0
@@ -61,6 +62,7 @@ layout(set = 0, binding = 0) uniform sampler material_samplers[12];
 layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
+
 global_variables;
 
 #ifdef USE_MATERIAL_UNIFORMS
@@ -109,6 +111,7 @@ struct DirectionalLightData {
 layout(set = 3, binding = 0, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
+
 directional_lights;
 
 /* clang-format off */
@@ -120,7 +123,6 @@ FRAGMENT_SHADER_GLOBALS
 layout(location = 0) out vec4 frag_color;
 
 void main() {
-
 	vec3 cube_normal;
 	cube_normal.z = -1.0;
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.proj.x)) / params.proj.y;

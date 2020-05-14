@@ -41,7 +41,6 @@
 #include "servers/rendering_server.h"
 
 class TestPhysics3DMainLoop : public MainLoop {
-
 	GDCLASS(TestPhysics3DMainLoop, MainLoop);
 
 	enum {
@@ -69,7 +68,6 @@ class TestPhysics3DMainLoop : public MainLoop {
 	Map<PhysicsServer3D::ShapeType, RID> type_mesh_map;
 
 	void body_changed_transform(Object *p_state, RID p_visual_instance) {
-
 		PhysicsDirectBodyState3D *state = (PhysicsDirectBodyState3D *)p_state;
 		RenderingServer *vs = RenderingServer::get_singleton();
 		Transform t = state->get_transform();
@@ -80,12 +78,10 @@ class TestPhysics3DMainLoop : public MainLoop {
 
 protected:
 	static void _bind_methods() {
-
 		ClassDB::bind_method("body_changed_transform", &TestPhysics3DMainLoop::body_changed_transform);
 	}
 
 	RID create_body(PhysicsServer3D::ShapeType p_shape, PhysicsServer3D::BodyMode p_body, const Transform p_location, bool p_active_default = true, const Transform &p_shape_xform = Transform()) {
-
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
@@ -101,14 +97,12 @@ protected:
 		bodies.push_back(body);
 
 		if (p_body == PhysicsServer3D::BODY_MODE_STATIC) {
-
 			vs->instance_set_transform(mesh_instance, p_location);
 		}
 		return body;
 	}
 
 	RID create_static_plane(const Plane &p_plane) {
-
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
 		RID world_margin_shape = ps->shape_create(PhysicsServer3D::SHAPE_PLANE);
@@ -122,7 +116,6 @@ protected:
 	}
 
 	void configure_body(RID p_body, float p_mass, float p_friction, float p_bounce) {
-
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_MASS, p_mass);
 		ps->body_set_param(p_body, PhysicsServer3D::BODY_PARAM_FRICTION, p_friction);
@@ -130,7 +123,6 @@ protected:
 	}
 
 	void init_shapes() {
-
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
@@ -188,7 +180,6 @@ protected:
 	}
 
 	void make_trimesh(Vector<Vector3> p_faces, const Transform &p_xform = Transform()) {
-
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 		RID trimesh_shape = ps->shape_create(PhysicsServer3D::SHAPE_CONCAVE_POLYGON);
@@ -196,7 +187,6 @@ protected:
 		p_faces = ps->shape_get_data(trimesh_shape); // optimized one
 		Vector<Vector3> normals; // for drawing
 		for (int i = 0; i < p_faces.size() / 3; i++) {
-
 			Plane p(p_faces[i * 3 + 0], p_faces[i * 3 + 1], p_faces[i * 3 + 2]);
 			normals.push_back(p.normal);
 			normals.push_back(p.normal);
@@ -222,17 +212,14 @@ protected:
 	}
 
 	void make_grid(int p_width, int p_height, float p_cellsize, float p_cellheight, const Transform &p_xform = Transform()) {
-
 		Vector<Vector<float>> grid;
 
 		grid.resize(p_width);
 
 		for (int i = 0; i < p_width; i++) {
-
 			grid.write[i].resize(p_height);
 
 			for (int j = 0; j < p_height; j++) {
-
 				grid.write[i].write[j] = 1.0 + Math::random(-p_cellheight, p_cellheight);
 			}
 		}
@@ -240,9 +227,7 @@ protected:
 		Vector<Vector3> faces;
 
 		for (int i = 1; i < p_width; i++) {
-
 			for (int j = 1; j < p_height; j++) {
-
 #define MAKE_VERTEX(m_x, m_z) \
 	faces.push_back(Vector3((m_x - p_width / 2) * p_cellsize, grid[m_x][m_z], (m_z - p_height / 2) * p_cellsize))
 
@@ -261,21 +246,17 @@ protected:
 
 public:
 	virtual void input_event(const Ref<InputEvent> &p_event) {
-
 		Ref<InputEventMouseMotion> mm = p_event;
 		if (mm.is_valid() && mm->get_button_mask() & 4) {
-
 			ofs_y -= mm->get_relative().y / 200.0;
 			ofs_x += mm->get_relative().x / 200.0;
 		}
 
 		if (mm.is_valid() && mm->get_button_mask() & 1) {
-
 			float y = -mm->get_relative().y / 20.0;
 			float x = mm->get_relative().x / 20.0;
 
 			if (mover.is_valid()) {
-
 				PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 				Transform t = ps->body_get_state(mover, PhysicsServer3D::BODY_STATE_TRANSFORM);
 				t.origin += Vector3(x, y, 0);
@@ -286,11 +267,9 @@ public:
 	}
 
 	virtual void request_quit() {
-
 		quit = true;
 	}
 	virtual void init() {
-
 		ofs_x = ofs_y = 0;
 		init_shapes();
 
@@ -332,7 +311,6 @@ public:
 		quit = false;
 	}
 	virtual bool iteration(float p_time) {
-
 		if (mover.is_valid()) {
 			static float joy_speed = 10;
 			PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
@@ -360,7 +338,6 @@ public:
 	}
 
 	void test_character() {
-
 		RenderingServer *vs = RenderingServer::get_singleton();
 		PhysicsServer3D *ps = PhysicsServer3D::get_singleton();
 
@@ -393,9 +370,7 @@ public:
 	}
 
 	void test_fall() {
-
 		for (int i = 0; i < 35; i++) {
-
 			static const PhysicsServer3D::ShapeType shape_idx[] = {
 				PhysicsServer3D::SHAPE_CAPSULE,
 				PhysicsServer3D::SHAPE_BOX,
@@ -417,7 +392,6 @@ public:
 	}
 
 	void test_activate() {
-
 		create_body(PhysicsServer3D::SHAPE_BOX, PhysicsServer3D::BODY_MODE_RIGID, Transform(Basis(), Vector3(0, 2, 0)), true);
 		create_static_plane(Plane(Vector3(0, 1, 0), -1));
 	}
@@ -433,7 +407,7 @@ public:
 namespace TestPhysics3D {
 
 MainLoop *test() {
-
 	return memnew(TestPhysics3DMainLoop);
 }
+
 } // namespace TestPhysics3D

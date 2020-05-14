@@ -45,7 +45,6 @@ public:                                                                         
 private:
 
 class Resource : public Reference {
-
 	GDCLASS(Resource, Reference);
 	OBJ_CATEGORY("Resources");
 	RES_BASE_EXTENSION("res");

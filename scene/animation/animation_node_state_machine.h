@@ -134,7 +134,6 @@ public:
 };
 
 class AnimationNodeStateMachine : public AnimationRootNode {
-
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 private:
@@ -148,7 +147,6 @@ private:
 	Map<StringName, State> states;
 
 	struct Transition {
-
 		StringName from;
 		StringName to;
 		Ref<AnimationNodeStateMachineTransition> transition;

@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Container : public Control {
-
 	GDCLASS(Container, Control);
 
 	bool pending_sort;

@@ -37,7 +37,6 @@
 class RenderingServerCanvas {
 public:
 	struct Item : public RasterizerCanvas::Item {
-
 		RID parent; // canvas it belongs to
 		List<Item *>::Element *E;
 		int z_index;
@@ -76,26 +75,22 @@ public:
 	};
 
 	struct ItemIndexSort {
-
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
-
 			return p_left->index < p_right->index;
 		}
 	};
 
 	struct ItemPtrSort {
-
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
-
-			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y))
+			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y)) {
 				return p_left->ysort_pos.x < p_right->ysort_pos.x;
+			}
 
 			return p_left->ysort_pos.y < p_right->ysort_pos.y;
 		}
 	};
 
 	struct LightOccluderPolygon {
-
 		bool active;
 		Rect2 aabb;
 		RS::CanvasOccluderPolygonCullMode cull_mode;
@@ -113,10 +108,8 @@ public:
 	RID_PtrOwner<RasterizerCanvas::LightOccluderInstance> canvas_light_occluder_owner;
 
 	struct Canvas : public RenderingServerViewport::CanvasBase {
-
 		Set<RID> viewports;
 		struct ChildItem {
-
 			Point2 mirror;
 			Item *item;
 			bool operator<(const ChildItem &p_item) const {
@@ -136,15 +129,17 @@ public:
 
 		int find_item(Item *p_item) {
 			for (int i = 0; i < child_items.size(); i++) {
-				if (child_items[i].item == p_item)
+				if (child_items[i].item == p_item) {
 					return i;
+				}
 			}
 			return -1;
 		}
 		void erase_item(Item *p_item) {
 			int idx = find_item(p_item);
-			if (idx >= 0)
+			if (idx >= 0) {
 				child_items.remove(idx);
+			}
 		}
 
 		Canvas() {

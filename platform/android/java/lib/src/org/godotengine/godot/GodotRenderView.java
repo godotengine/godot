@@ -33,7 +33,6 @@ package org.godotengine.godot;
 import android.view.SurfaceView;
 
 public interface GodotRenderView {
-
 	abstract public SurfaceView getView();
 
 	abstract public void initInputDevices();

@@ -38,7 +38,6 @@
 #include "scene/resources/style_box.h"
 
 class StyleBoxPreview : public VBoxContainer {
-
 	GDCLASS(StyleBoxPreview, VBoxContainer);
 
 	Control *preview;
@@ -67,7 +66,6 @@ public:
 };
 
 class StyleBoxEditorPlugin : public EditorPlugin {
-
 	GDCLASS(StyleBoxEditorPlugin, EditorPlugin);
 
 public:

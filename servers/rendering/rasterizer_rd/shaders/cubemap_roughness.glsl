@@ -21,6 +21,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool use_direct_write;
 	float face_size;
 }
+
 params;
 
 #define M_PI 3.14159265359
@@ -119,10 +120,8 @@ void main() {
 	//vec4 color = color_interp;
 
 	if (params.use_direct_write) {
-
 		imageStore(dest_cubemap, ivec3(id), vec4(texture(source_cube, N).rgb, 1.0));
 	} else {
-
 		vec4 sum = vec4(0.0, 0.0, 0.0, 0.0);
 
 		for (uint sampleNum = 0u; sampleNum < params.sample_count; sampleNum++) {
@@ -135,7 +134,6 @@ void main() {
 			float ndotl = clamp(dot(N, L), 0.0, 1.0);
 
 			if (ndotl > 0.0) {
-
 				sum.rgb += textureLod(source_cube, L, 0.0).rgb * ndotl;
 				sum.a += ndotl;
 			}

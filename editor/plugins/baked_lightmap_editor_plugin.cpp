@@ -31,7 +31,6 @@
 #include "baked_lightmap_editor_plugin.h"
 
 void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
-
 	if (lightmap) {
 		BakedLightmap::BakeError err;
 		if (get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root() == lightmap) {
@@ -71,30 +70,26 @@ void BakedLightmapEditorPlugin::_bake_select_file(const String &p_file) {
 }
 
 void BakedLightmapEditorPlugin::_bake() {
-
 	_bake_select_file("");
 }
 
 void BakedLightmapEditorPlugin::edit(Object *p_object) {
-
 	BakedLightmap *s = Object::cast_to<BakedLightmap>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	lightmap = s;
 }
 
 bool BakedLightmapEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("BakedLightmap");
 }
 
 void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		bake->show();
 	} else {
-
 		bake->hide();
 	}
 }
@@ -102,7 +97,6 @@ void BakedLightmapEditorPlugin::make_visible(bool p_visible) {
 EditorProgress *BakedLightmapEditorPlugin::tmp_progress = nullptr;
 
 bool BakedLightmapEditorPlugin::bake_func_step(float p_progress, const String &p_description, void *, bool p_refresh) {
-
 	if (!tmp_progress) {
 		tmp_progress = memnew(EditorProgress("bake_lightmaps", TTR("Bake Lightmaps"), 1000, false));
 		ERR_FAIL_COND_V(tmp_progress == nullptr, false);
@@ -118,12 +112,10 @@ void BakedLightmapEditorPlugin::bake_func_end() {
 }
 
 void BakedLightmapEditorPlugin::_bind_methods() {
-
 	ClassDB::bind_method("_bake", &BakedLightmapEditorPlugin::_bake);
 }
 
 BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	bake = memnew(ToolButton);
 	bake->set_icon(editor->get_gui_base()->get_theme_icon("Bake", "EditorIcons"));

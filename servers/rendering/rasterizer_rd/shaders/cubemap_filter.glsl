@@ -51,11 +51,13 @@ layout(rgba16f, set = 2, binding = 6) uniform restrict writeonly imageCube dest_
 layout(set = 1, binding = 0, std430) buffer restrict readonly Data {
 	vec4[7][5][3][24] coeffs;
 }
+
 data;
 #else
 layout(set = 1, binding = 0, std430) buffer restrict readonly Data {
 	vec4[7][5][6] coeffs;
 }
+
 data;
 #endif
 

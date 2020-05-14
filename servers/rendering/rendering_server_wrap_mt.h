@@ -36,7 +36,6 @@
 #include "servers/rendering_server.h"
 
 class RenderingServerWrapMT : public RenderingServer {
-
 	// the real visual server
 	mutable RenderingServer *rendering_server;
 

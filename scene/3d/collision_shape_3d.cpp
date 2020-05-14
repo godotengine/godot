@@ -45,20 +45,17 @@
 //TODO: Implement CylinderShape and HeightMapShape?
 
 void CollisionShape3D::make_convex_from_brothers() {
-
 	Node *p = get_parent();
-	if (!p)
+	if (!p) {
 		return;
+	}
 
 	for (int i = 0; i < p->get_child_count(); i++) {
-
 		Node *n = p->get_child(i);
 		MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(n);
 		if (mi) {
-
 			Ref<Mesh> m = mi->get_mesh();
 			if (m.is_valid()) {
-
 				Ref<Shape3D> s = m->create_convex_shape();
 				set_shape(s);
 			}
@@ -68,15 +65,14 @@ void CollisionShape3D::make_convex_from_brothers() {
 
 void CollisionShape3D::_update_in_shape_owner(bool p_xform_only) {
 	parent->shape_owner_set_transform(owner_id, get_transform());
-	if (p_xform_only)
+	if (p_xform_only) {
 		return;
+	}
 	parent->shape_owner_set_disabled(owner_id, disabled);
 }
 
 void CollisionShape3D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_PARENTED: {
 			parent = Object::cast_to<CollisionObject3D>(get_parent());
 			if (parent) {
@@ -111,12 +107,10 @@ void CollisionShape3D::_notification(int p_what) {
 }
 
 void CollisionShape3D::resource_changed(RES res) {
-
 	update_gizmo();
 }
 
 String CollisionShape3D::get_configuration_warning() const {
-
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
 		return TTR("CollisionShape3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
 	}
@@ -137,7 +131,6 @@ String CollisionShape3D::get_configuration_warning() const {
 }
 
 void CollisionShape3D::_bind_methods() {
-
 	//not sure if this should do anything
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &CollisionShape3D::resource_changed);
 	ClassDB::bind_method(D_METHOD("set_shape", "shape"), &CollisionShape3D::set_shape);
@@ -154,7 +147,6 @@ void CollisionShape3D::_bind_methods() {
 }
 
 void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
-
 	if (!shape.is_null()) {
 		shape->unregister_owner(this);
 		shape->disconnect("changed", callable_mp(this, &CollisionShape3D::_shape_changed));
@@ -172,18 +164,17 @@ void CollisionShape3D::set_shape(const Ref<Shape3D> &p_shape) {
 		}
 	}
 
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_shape_changed();
+	}
 	update_configuration_warning();
 }
 
 Ref<Shape3D> CollisionShape3D::get_shape() const {
-
 	return shape;
 }
 
 void CollisionShape3D::set_disabled(bool p_disabled) {
-
 	disabled = p_disabled;
 	update_gizmo();
 	if (parent) {
@@ -192,12 +183,10 @@ void CollisionShape3D::set_disabled(bool p_disabled) {
 }
 
 bool CollisionShape3D::is_disabled() const {
-
 	return disabled;
 }
 
 CollisionShape3D::CollisionShape3D() {
-
 	//indicator = RenderingServer::get_singleton()->mesh_create();
 	disabled = false;
 	debug_shape = nullptr;
@@ -207,8 +196,9 @@ CollisionShape3D::CollisionShape3D() {
 }
 
 CollisionShape3D::~CollisionShape3D() {
-	if (!shape.is_null())
+	if (!shape.is_null()) {
 		shape->unregister_owner(this);
+	}
 	//RenderingServer::get_singleton()->free(indicator);
 }
 
@@ -221,8 +211,9 @@ void CollisionShape3D::_update_debug_shape() {
 	}
 
 	Ref<Shape3D> s = get_shape();
-	if (s.is_null())
+	if (s.is_null()) {
 		return;
+	}
 
 	Ref<Mesh> mesh = s->get_debug_mesh();
 	MeshInstance3D *mi = memnew(MeshInstance3D);

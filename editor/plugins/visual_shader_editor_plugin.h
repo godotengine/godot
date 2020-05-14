@@ -41,7 +41,6 @@
 #include "scene/resources/visual_shader.h"
 
 class VisualShaderNodePlugin : public Reference {
-
 	GDCLASS(VisualShaderNodePlugin, Reference);
 
 protected:
@@ -52,7 +51,6 @@ public:
 };
 
 class VisualShaderEditor : public VBoxContainer {
-
 	GDCLASS(VisualShaderEditor, VBoxContainer);
 
 	CustomPropertyEditor *property_editor;
@@ -157,7 +155,6 @@ class VisualShaderEditor : public VBoxContainer {
 		}
 	};
 	struct _OptionComparator {
-
 		_FORCE_INLINE_ bool operator()(const AddOption &a, const AddOption &b) const {
 			return a.category.count("/") > b.category.count("/") || (a.category + "/" + a.name).naturalnocasecmp_to(b.category + "/" + b.name) < 0;
 		}
@@ -290,7 +287,6 @@ public:
 };
 
 class VisualShaderEditorPlugin : public EditorPlugin {
-
 	GDCLASS(VisualShaderEditorPlugin, EditorPlugin);
 
 	VisualShaderEditor *visual_shader_editor;
@@ -309,7 +305,6 @@ public:
 };
 
 class VisualShaderNodePluginDefault : public VisualShaderNodePlugin {
-
 	GDCLASS(VisualShaderNodePluginDefault, VisualShaderNodePlugin);
 
 public:

@@ -26,12 +26,12 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	ivec3 grid_size;
 	uint pad2;
 }
+
 params;
 
 /* clang-format on */
 
 void main() {
-
 	uint triangle_idx = params.base_triangle + gl_VertexIndex / 3;
 	uint triangle_subidx = gl_VertexIndex % 3;
 
@@ -95,7 +95,6 @@ layout(location = 1) out vec4 normal;
 layout(location = 2) out vec4 unocclude;
 
 void main() {
-
 	vec3 vertex_pos = vertex_interp;
 
 	{

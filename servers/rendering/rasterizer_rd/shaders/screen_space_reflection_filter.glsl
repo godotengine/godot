@@ -22,7 +22,6 @@ layout(r8, set = 2, binding = 1) uniform restrict writeonly image2D dest_radius;
 layout(r32f, set = 3, binding = 0) uniform restrict readonly image2D source_depth;
 
 layout(push_constant, binding = 2, std430) uniform Params {
-
 	vec4 proj_info;
 
 	bool orthogonal;
@@ -34,6 +33,7 @@ layout(push_constant, binding = 2, std430) uniform Params {
 	bool vertical;
 	uint steps;
 }
+
 params;
 
 #define GAUSS_TABLE_SIZE 15
@@ -58,7 +58,6 @@ const float gauss_table[GAUSS_TABLE_SIZE + 1] = float[](
 );
 
 float gauss_weight(float p_val) {
-
 	float idxf;
 	float c = modf(max(0.0, p_val * float(GAUSS_TABLE_SIZE)), idxf);
 	int idx = int(idxf);
@@ -80,7 +79,6 @@ vec3 reconstructCSPosition(vec2 S, float z) {
 }
 
 void do_filter(inout vec4 accum, inout float accum_radius, inout float divisor, ivec2 texcoord, ivec2 increment, vec3 p_pos, vec3 normal, float p_limit_radius) {
-
 	for (int i = 1; i < params.steps; i++) {
 		float d = float(i * params.increment);
 		ivec2 tc = texcoord + increment * i;
@@ -104,7 +102,6 @@ void do_filter(inout vec4 accum, inout float accum_radius, inout float divisor, 
 		}
 
 		if (d < radius) {
-
 			float w = gauss_weight(d / radius);
 			accum += imageLoad(source_ssr, tc) * w;
 #ifndef VERTICAL_PASS
@@ -116,7 +113,6 @@ void do_filter(inout vec4 accum, inout float accum_radius, inout float divisor, 
 }
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 

@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  lightmapper_rd.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "lightmapper_rd.h"
 #include "core/math/geometry.h"
 #include "core/project_settings.h"
@@ -34,6 +64,7 @@ void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direct
 	l.size = p_angular_distance;
 	lights.push_back(l);
 }
+
 void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_OMNI;
@@ -50,8 +81,8 @@ void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, con
 	l.size = p_size;
 	lights.push_back(l);
 }
-void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) {
 
+void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
 	l.position[0] = p_position.x;
@@ -83,11 +114,9 @@ void LightmapperRD::add_probe(const Vector3 &p_position) {
 }
 
 void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Vector3i &p_ofs, const AABB &p_bounds, const Vector3 p_points[3], uint32_t p_triangle_index, LocalVector<TriangleSort> &triangles, uint32_t p_grid_size) {
-
 	int half_size = p_size / 2;
 
 	for (int i = 0; i < 8; i++) {
-
 		AABB aabb = p_bounds;
 		aabb.size *= 0.5;
 		Vector3i n = p_ofs;
@@ -127,11 +156,9 @@ void LightmapperRD::_plot_triangle_into_triangle_index_list(int p_size, const Ve
 }
 
 Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_size, Vector<Ref<Image>> &albedo_images, Vector<Ref<Image>> &emission_images, AABB &bounds, Size2i &atlas_size, int &atlas_slices, BakeStepFunc p_step_function, void *p_bake_userdata) {
-
 	Vector<Size2i> sizes;
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
-
 		MeshInstance &mi = mesh_instances.write[m_i];
 		Size2i s = Size2i(mi.data.albedo_on_uv2->get_width(), mi.data.albedo_on_uv2->get_height());
 		sizes.push_back(s);
@@ -159,7 +186,6 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 
 	//determine best texture array atlas size by bruteforce fitting
 	while (atlas_size.x <= p_max_texture_size && atlas_size.y <= p_max_texture_size) {
-
 		Vector<Vector2i> source_sizes = sizes;
 		Vector<int> source_indices;
 		source_indices.resize(source_sizes.size());
@@ -172,7 +198,6 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 		int slices = 0;
 
 		while (source_sizes.size() > 0) {
-
 			Vector<Vector3i> offsets = Geometry::partial_pack_rects(source_sizes, atlas_size);
 			Vector<int> new_indices;
 			Vector<Vector2i> new_sources;
@@ -236,7 +261,6 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 	//assign uv positions
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
-
 		MeshInstance &mi = mesh_instances.write[m_i];
 		mi.offset.x = best_atlas_offsets[m_i].x;
 		mi.offset.y = best_atlas_offsets[m_i].y;
@@ -249,7 +273,6 @@ Lightmapper::BakeError LightmapperRD::_blit_meshes_into_atlas(int p_max_texture_
 }
 
 void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, AABB &bounds, int grid_size, Vector<Probe> &probe_positions, GenerateProbes p_generate_probes, Vector<int> &slice_triangle_count, Vector<int> &slice_seam_count, RID &vertex_buffer, RID &triangle_buffer, RID &box_buffer, RID &lights_buffer, RID &triangle_cell_indices_buffer, RID &probe_positions_buffer, RID &grid_texture, RID &grid_texture_sdf, RID &seams_buffer, BakeStepFunc p_step_function, void *p_bake_userdata) {
-
 	HashMap<Vertex, uint32_t, VertexHash> vertex_map;
 
 	//fill triangles array and vertex array
@@ -269,7 +292,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	bounds = AABB();
 
 	for (int m_i = 0; m_i < mesh_instances.size(); m_i++) {
-
 		if (p_step_function) {
 			float p = float(m_i + 1) / mesh_instances.size() * 0.1;
 			p_step_function(0.3 + p, vformat(TTR("Plotting mesh into acceleration structure %d/%d"), m_i + 1, mesh_instances.size()), p_bake_userdata, false);
@@ -286,7 +308,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 		}
 
 		for (int i = 0; i < mi.data.points.size(); i += 3) {
-
 			Vector3 vtxs[3] = { mi.data.points[i + 0], mi.data.points[i + 1], mi.data.points[i + 2] };
 			Vector2 uvs[3] = { mi.data.uv2[i + 0] * uv_scale + uv_offset, mi.data.uv2[i + 1] * uv_scale + uv_offset, mi.data.uv2[i + 2] * uv_scale + uv_offset };
 			Vector3 normal[3] = { mi.data.normal[i + 0], mi.data.normal[i + 1], mi.data.normal[i + 2] };
@@ -295,7 +316,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 			Triangle t;
 			t.slice = mi.slice;
 			for (int k = 0; k < 3; k++) {
-
 				bounds.expand_to(vtxs[k]);
 
 				Vertex v;
@@ -397,7 +417,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 	//fill list of triangles in grid
 	LocalVector<TriangleSort> triangle_sort;
 	for (uint32_t i = 0; i < triangles.size(); i++) {
-
 		const Triangle &t = triangles[i];
 		Vector3 face[3] = {
 			Vector3(vertex_array[t.indices[0]].position[0], vertex_array[t.indices[0]].position[1], vertex_array[t.indices[0]].position[2]),
@@ -541,7 +560,6 @@ void LightmapperRD::_create_acceleration_structures(RenderingDevice *rd, Size2i 
 }
 
 void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int atlas_slices, int grid_size, AABB bounds, float p_bias, Vector<int> slice_triangle_count, RID position_tex, RID unocclude_tex, RID normal_tex, RID raster_depth_buffer, RID rasterize_shader, RID raster_base_uniform) {
-
 	Vector<RID> framebuffers;
 
 	for (int i = 0; i < atlas_slices; i++) {
@@ -564,7 +582,6 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 	RID raster_pipeline = rd->render_pipeline_create(rasterize_shader, rd->framebuffer_get_format(framebuffers[0]), RD::INVALID_FORMAT_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(3), 0);
 	RID raster_pipeline_wire;
 	{
-
 		RD::PipelineRasterizationState rw;
 		rw.wireframe = true;
 		raster_pipeline_wire = rd->render_pipeline_create(rasterize_shader, rd->framebuffer_get_format(framebuffers[0]), RD::INVALID_FORMAT_ID, RD::RENDER_PRIMITIVE_TRIANGLES, rw, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(3), 0);
@@ -577,7 +594,6 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 	clear_colors.push_back(Color(0, 0, 0, 0));
 
 	for (int i = 0; i < atlas_slices; i++) {
-
 		RasterPushConstant raster_push_constant;
 		raster_push_constant.atlas_size[0] = atlas_size.x;
 		raster_push_constant.atlas_size[1] = atlas_size.y;
@@ -614,7 +630,6 @@ void LightmapperRD::_raster_geometry(RenderingDevice *rd, Size2i atlas_size, int
 }
 
 LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_denoiser, int p_bounces, float p_bias, int p_max_texture_size, bool p_bake_sh, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function, void *p_bake_userdata) {
-
 	if (p_step_function) {
 		p_step_function(0.0, TTR("Begin Bake"), p_bake_userdata, true);
 	}
@@ -810,7 +825,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	Vector<RD::Uniform> base_uniforms;
 	{
 		{
-
 			RD::Uniform u;
 			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 			u.binding = 1;
@@ -945,7 +959,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	compute_shader.instance();
 	err = compute_shader->parse_versions_from_text(lm_compute_shader_glsl, p_bake_sh ? "\n#define USE_SH_LIGHTMAPS\n" : "");
 	if (err != OK) {
-
 		FREE_TEXTURES
 		FREE_BUFFERS
 		FREE_RASTER_RESOURCES
@@ -1032,11 +1045,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	/* UNOCCLUDE */
 	{
-
 		Vector<RD::Uniform> uniforms;
 		{
 			{
-
 				RD::Uniform u;
 				u.type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
@@ -1074,11 +1085,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	/* PRIMARY (direct) LIGHT PASS */
 	{
-
 		Vector<RD::Uniform> uniforms;
 		{
 			{
-
 				RD::Uniform u;
 				u.type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
@@ -1156,11 +1165,9 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	}
 
 	if (p_bounces > 0) {
-
 		Vector<RD::Uniform> uniforms;
 		{
 			{
-
 				RD::Uniform u;
 				u.type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
@@ -1256,7 +1263,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 				for (int i = 0; i < x_regions; i++) {
 					for (int j = 0; j < y_regions; j++) {
-
 						int x = i * max_region_size;
 						int y = j * max_region_size;
 						int w = MIN((i + 1) * max_region_size, atlas_size.width) - x;
@@ -1268,7 +1274,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 						group_size = Vector3i((w - 1) / 8 + 1, (h - 1) / 8 + 1, 1);
 
 						for (int k = 0; k < ray_iterations; k++) {
-
 							RD::ComputeListID compute_list = rd->compute_list_begin();
 							rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_secondary_pipeline);
 							rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
@@ -1302,7 +1307,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	RID light_probe_buffer;
 
 	if (probe_positions.size()) {
-
 		light_probe_buffer = rd->storage_buffer_create(sizeof(float) * 4 * 9 * probe_positions.size());
 
 		if (p_step_function) {
@@ -1311,9 +1315,7 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		Vector<RD::Uniform> uniforms;
 		{
-
 			{
-
 				RD::Uniform u;
 				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
 				u.binding = 0;
@@ -1366,7 +1368,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		int ray_iterations = (push_constant.ray_count - 1) / max_rays + 1;
 
 		for (int i = 0; i < ray_iterations; i++) {
-
 			RD::ComputeListID compute_list = rd->compute_list_begin();
 			rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_light_probes_pipeline);
 			rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
@@ -1456,13 +1457,11 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 	/* DILATE LIGHTMAP */
 	{
-
 		SWAP(light_accum_tex, light_accum_tex2);
 
 		Vector<RD::Uniform> uniforms;
 		{
 			{
-
 				RD::Uniform u;
 				u.type = RD::UNIFORM_TYPE_IMAGE;
 				u.binding = 0;
@@ -1537,7 +1536,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 	rd->free(blendseams_triangle_raster_shader);
 
 	{
-
 		//pre copy
 		for (int i = 0; i < atlas_slices * (p_bake_sh ? 4 : 1); i++) {
 			rd->texture_copy(light_accum_tex, light_accum_tex2, Vector3(), Vector3(), Vector3(atlas_size.width, atlas_size.height, 1), 0, 0, i, i, true);
@@ -1555,7 +1553,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Vector<RD::Uniform> uniforms;
 		{
 			{
-
 				RD::Uniform u;
 				u.type = RD::UNIFORM_TYPE_TEXTURE;
 				u.binding = 0;
@@ -1585,10 +1582,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		Vector<Color> clear_colors;
 		clear_colors.push_back(Color(0, 0, 0, 1));
 		for (int i = 0; i < atlas_slices; i++) {
-
 			int subslices = (p_bake_sh ? 4 : 1);
 			for (int k = 0; k < subslices; k++) {
-
 				RasterSeamsPushConstant seams_push_constant;
 				seams_push_constant.slice = uint32_t(i * subslices + k);
 				seams_push_constant.debug = debug;
@@ -1638,7 +1633,6 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 				rd->draw_list_bind_render_pipeline(draw_list, blendseams_line_raster_pipeline);
 
 				for (int j = 1; j < uv_offset_count; j++) {
-
 					seams_push_constant.base_index = seam_offset;
 					seams_push_constant.uv_offset[0] = uv_offsets[j].x / float(atlas_size.width);
 					seams_push_constant.uv_offset[1] = uv_offsets[j].y / float(atlas_size.height);
@@ -1708,19 +1702,22 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 int LightmapperRD::get_bake_texture_count() const {
 	return bake_textures.size();
 }
+
 Ref<Image> LightmapperRD::get_bake_texture(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, bake_textures.size(), Ref<Image>());
 	return bake_textures[p_index];
 }
+
 int LightmapperRD::get_bake_mesh_count() const {
 	return mesh_instances.size();
 }
+
 Variant LightmapperRD::get_bake_mesh_userdata(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, mesh_instances.size(), Variant());
 	return mesh_instances[p_index].data.userdata;
 }
-Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
 
+Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
 	ERR_FAIL_COND_V(bake_textures.size() == 0, Rect2());
 	Rect2 uv_ofs;
 	Vector2 atlas_size = Vector2(bake_textures[0]->get_width(), bake_textures[0]->get_height());
@@ -1728,6 +1725,7 @@ Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
 	uv_ofs.size = Vector2(mesh_instances[p_index].data.albedo_on_uv2->get_width(), mesh_instances[p_index].data.albedo_on_uv2->get_height()) / atlas_size;
 	return uv_ofs;
 }
+
 int LightmapperRD::get_bake_mesh_texture_slice(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, mesh_instances.size(), Variant());
 	return mesh_instances[p_index].slice;

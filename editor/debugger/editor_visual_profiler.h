@@ -42,12 +42,10 @@
 #include "scene/gui/tree.h"
 
 class EditorVisualProfiler : public VBoxContainer {
-
 	GDCLASS(EditorVisualProfiler, VBoxContainer);
 
 public:
 	struct Metric {
-
 		bool valid;
 
 		uint64_t frame_number;

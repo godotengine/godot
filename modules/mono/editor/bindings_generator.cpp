@@ -105,7 +105,6 @@
 const char *BindingsGenerator::TypeInterface::DEFAULT_VARARG_C_IN("\t%0 %1_in = %1;\n");
 
 static String fix_doc_description(const String &p_bbcode) {
-
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
 
 	return p_bbcode.dedent()
@@ -115,7 +114,6 @@ static String fix_doc_description(const String &p_bbcode) {
 }
 
 static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
-
 	String ret;
 	Vector<String> parts = p_identifier.split("_", true);
 
@@ -148,7 +146,6 @@ static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_u
 }
 
 static String snake_to_camel_case(const String &p_identifier, bool p_input_is_upper = false) {
-
 	String ret;
 	Vector<String> parts = p_identifier.split("_", true);
 
@@ -183,7 +180,6 @@ static String snake_to_camel_case(const String &p_identifier, bool p_input_is_up
 }
 
 String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
-
 	// Based on the version in EditorHelp
 
 	if (p_bbcode.empty())
@@ -638,7 +634,6 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 }
 
 int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
-
 	CRASH_COND(p_ienum.constants.empty());
 
 	const ConstantInterface &front_iconstant = p_ienum.constants.front()->get();
@@ -672,7 +667,6 @@ int BindingsGenerator::_determine_enum_prefix(const EnumInterface &p_ienum) {
 }
 
 void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumInterface &p_ienum, int p_prefix_length) {
-
 	if (p_prefix_length > 0) {
 		for (List<ConstantInterface>::Element *E = p_ienum.constants.front(); E; E = E->next()) {
 			int curr_prefix_length = p_prefix_length;
@@ -708,7 +702,6 @@ void BindingsGenerator::_apply_prefix_to_enum_constants(BindingsGenerator::EnumI
 }
 
 void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
-
 	for (const List<MethodInterface>::Element *E = p_itype.methods.front(); E; E = E->next()) {
 		const MethodInterface &imethod = E->get();
 
@@ -773,7 +766,6 @@ void BindingsGenerator::_generate_method_icalls(const TypeInterface &p_itype) {
 }
 
 void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
-
 	// Constants (in partial GD class)
 
 	p_output.append("\n#pragma warning disable CS1591 // Disable warning: "
@@ -882,7 +874,6 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 }
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
-
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -997,7 +988,6 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 }
 
 Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
-
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -1099,7 +1089,6 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 }
 
 Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
-
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
 	String output_dir = path::abspath(path::realpath(p_output_dir));
@@ -1147,7 +1136,6 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 // - Csc warning e.g.:
 // ObjectType/LineEdit.cs(140,38): warning CS0108: 'LineEdit.FocusMode' hides inherited member 'Control.FocusMode'. Use the new keyword if hiding was intended.
 Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const String &p_output_file) {
-
 	CRASH_COND(!itype.is_object_type);
 
 	bool is_derived_type = itype.base_name != StringName();
@@ -1223,7 +1211,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	output.append(INDENT1 "{");
 
 	if (class_doc) {
-
 		// Add constants
 
 		for (const List<ConstantInterface>::Element *E = itype.constants.front(); E; E = E->next()) {
@@ -1403,7 +1390,6 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 }
 
 Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output) {
-
 	const MethodInterface *setter = p_itype.find_method_by_name(p_iprop.setter);
 
 	// Search it in base types too
@@ -1546,7 +1532,6 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 }
 
 Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output) {
-
 	const TypeInterface *return_type = _get_type_or_placeholder(p_imethod.return_type);
 
 	String method_bind_field = "__method_bind_" + itos(p_method_bind_count);
@@ -1856,7 +1841,6 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 }
 
 Error BindingsGenerator::generate_glue(const String &p_output_dir) {
-
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
 	bool dir_exists = DirAccess::exists(p_output_dir);
@@ -1961,7 +1945,6 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	bool tools_sequence = false;
 	for (const List<InternalCall>::Element *E = core_custom_icalls.front(); E; E = E->next()) {
-
 		if (tools_sequence) {
 			if (!E->get().editor_only) {
 				tools_sequence = false;
@@ -2028,7 +2011,6 @@ uint32_t BindingsGenerator::get_version() {
 }
 
 Error BindingsGenerator::_save_file(const String &p_path, const StringBuilder &p_content) {
-
 	FileAccessRef file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	ERR_FAIL_COND_V_MSG(!file, ERR_FILE_CANT_WRITE, "Cannot open file: '" + p_path + "'.");
@@ -2040,7 +2022,6 @@ Error BindingsGenerator::_save_file(const String &p_path, const StringBuilder &p
 }
 
 Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::MethodInterface &p_imethod, StringBuilder &p_output) {
-
 	if (p_imethod.is_virtual)
 		return OK; // Ignore
 
@@ -2230,7 +2211,6 @@ Error BindingsGenerator::_generate_glue_method(const BindingsGenerator::TypeInte
 }
 
 const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(const TypeReference &p_typeref) {
-
 	const Map<StringName, TypeInterface>::Element *builtin_type_match = builtin_types.find(p_typeref.cname);
 
 	if (builtin_type_match)
@@ -2257,7 +2237,6 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_null(con
 }
 
 const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placeholder(const TypeReference &p_typeref) {
-
 	const TypeInterface *found = _get_type_or_null(p_typeref);
 
 	if (found)
@@ -2277,7 +2256,6 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 }
 
 StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
-
 	switch (p_meta) {
 		case GodotTypeInfo::METADATA_INT_IS_INT8:
 			return "sbyte";
@@ -2310,7 +2288,6 @@ StringName BindingsGenerator::_get_int_type_name_from_meta(GodotTypeInfo::Metada
 }
 
 StringName BindingsGenerator::_get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta) {
-
 	switch (p_meta) {
 		case GodotTypeInfo::METADATA_REAL_IS_FLOAT:
 			return "float";
@@ -2329,7 +2306,6 @@ StringName BindingsGenerator::_get_float_type_name_from_meta(GodotTypeInfo::Meta
 }
 
 bool BindingsGenerator::_populate_object_type_interfaces() {
-
 	obj_types.clear();
 
 	List<StringName> class_list;
@@ -2775,7 +2751,6 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 }
 
 bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, ArgumentInterface &r_iarg) {
-
 	r_iarg.default_argument = p_val;
 
 	switch (p_val.get_type()) {
@@ -2883,7 +2858,6 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 }
 
 void BindingsGenerator::_populate_builtin_type_interfaces() {
-
 	builtin_types.clear();
 
 	TypeInterface itype;
@@ -3259,7 +3233,6 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 }
 
 void BindingsGenerator::_populate_global_constants() {
-
 	int global_constants_count = GlobalConstants::get_global_constant_count();
 
 	if (global_constants_count > 0) {
@@ -3270,7 +3243,6 @@ void BindingsGenerator::_populate_global_constants() {
 		const DocData::ClassDoc &global_scope_doc = match->value();
 
 		for (int i = 0; i < global_constants_count; i++) {
-
 			String constant_name = GlobalConstants::get_global_constant_name(i);
 
 			const DocData::ConstantDoc *const_doc = nullptr;
@@ -3349,14 +3321,12 @@ void BindingsGenerator::_populate_global_constants() {
 }
 
 void BindingsGenerator::_initialize_blacklisted_methods() {
-
 	blacklisted_methods["Object"].push_back("to_string"); // there is already ToString
 	blacklisted_methods["Object"].push_back("_to_string"); // override ToString instead
 	blacklisted_methods["Object"].push_back("_init"); // never called in C# (TODO: implement it)
 }
 
 void BindingsGenerator::_log(const char *p_format, ...) {
-
 	if (log_print_enabled) {
 		va_list list;
 
@@ -3367,7 +3337,6 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 }
 
 void BindingsGenerator::_initialize() {
-
 	initialized = false;
 
 	EditorHelp::generate_doc();
@@ -3395,7 +3364,6 @@ void BindingsGenerator::_initialize() {
 }
 
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
-
 	const int NUM_OPTIONS = 2;
 	String generate_all_glue_option = "--generate-mono-glue";
 	String generate_cs_glue_option = "--generate-mono-cs-glue";

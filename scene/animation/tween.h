@@ -34,7 +34,6 @@
 #include "scene/main/node.h"
 
 class Tween : public Node {
-
 	GDCLASS(Tween, Node);
 
 public:

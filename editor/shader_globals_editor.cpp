@@ -225,7 +225,6 @@ protected:
 					pinfo.hint_string = "Cubemap";
 				} break;
 				default: {
-
 				} break;
 			}
 
@@ -367,7 +366,6 @@ static Variant create_var(RS::GlobalVariableType p_type) {
 }
 
 void ShaderGlobalsEditor::_variable_added() {
-
 	String var = variable_name->get_text().strip_edges();
 	if (var == "" || !var.is_valid_identifier()) {
 		EditorNode::get_singleton()->show_warning(TTR("Please specify a valid variable identifier name."));
@@ -406,7 +404,6 @@ void ShaderGlobalsEditor::_variable_added() {
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-
 	print_line("deleted " + p_variable);
 	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
@@ -443,7 +440,6 @@ void ShaderGlobalsEditor::_notification(int p_what) {
 }
 
 ShaderGlobalsEditor::ShaderGlobalsEditor() {
-
 	HBoxContainer *add_menu_hb = memnew(HBoxContainer);
 	add_child(add_menu_hb);
 
@@ -476,6 +472,7 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	interface = memnew(ShaderGlobalsEditorInterface);
 	interface->connect("var_changed", Callable(this, "_changed"));
 }
+
 ShaderGlobalsEditor::~ShaderGlobalsEditor() {
 	inspector->edit(nullptr);
 	memdelete(interface);

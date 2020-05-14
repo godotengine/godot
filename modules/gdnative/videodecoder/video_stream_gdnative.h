@@ -86,8 +86,9 @@ public:
 	}
 
 	VideoDecoderGDNative *get_decoder(const String &extension) {
-		if (extensions.size() == 0 || !extensions.has(extension))
+		if (extensions.size() == 0 || !extensions.has(extension)) {
 			return nullptr;
+		}
 		return decoders[extensions[extension]];
 	}
 
@@ -105,7 +106,6 @@ public:
 };
 
 class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackGDNative, VideoStreamPlayback);
 
 	Ref<ImageTexture> texture;
@@ -175,7 +175,6 @@ public:
 };
 
 class VideoStreamGDNative : public VideoStream {
-
 	GDCLASS(VideoStreamGDNative, VideoStream);
 
 	String file;

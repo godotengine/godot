@@ -104,7 +104,6 @@ void HashingContext::_create_ctx(HashType p_type) {
 }
 
 void HashingContext::_delete_ctx() {
-
 	switch (type) {
 		case HASH_MD5:
 			memdelete((CryptoCore::MD5Context *)ctx);
@@ -129,6 +128,7 @@ void HashingContext::_bind_methods() {
 }
 
 HashingContext::~HashingContext() {
-	if (ctx != nullptr)
+	if (ctx != nullptr) {
 		_delete_ctx();
+	}
 }

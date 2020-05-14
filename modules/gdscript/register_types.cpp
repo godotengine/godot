@@ -54,12 +54,10 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 #endif // !GDSCRIPT_NO_LSP
 
 class EditorExportGDScript : public EditorExportPlugin {
-
 	GDCLASS(EditorExportGDScript, EditorExportPlugin);
 
 public:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features) {
-
 		int script_mode = EditorExportPreset::MODE_SCRIPT_COMPILED;
 		String script_key;
 
@@ -70,21 +68,21 @@ public:
 			script_key = preset->get_script_encryption_key().to_lower();
 		}
 
-		if (!p_path.ends_with(".gd") || script_mode == EditorExportPreset::MODE_SCRIPT_TEXT)
+		if (!p_path.ends_with(".gd") || script_mode == EditorExportPreset::MODE_SCRIPT_TEXT) {
 			return;
+		}
 
 		Vector<uint8_t> file = FileAccess::get_file_as_array(p_path);
-		if (file.empty())
+		if (file.empty()) {
 			return;
+		}
 
 		String txt;
 		txt.parse_utf8((const char *)file.ptr(), file.size());
 		file = GDScriptTokenizerBuffer::parse_code_string(txt);
 
 		if (!file.empty()) {
-
 			if (script_mode == EditorExportPreset::MODE_SCRIPT_ENCRYPTED) {
-
 				String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("script.gde");
 				FileAccess *fa = FileAccess::open(tmp_path, FileAccess::WRITE);
 
@@ -94,19 +92,21 @@ public:
 					int v = 0;
 					if (i * 2 < script_key.length()) {
 						CharType ct = script_key[i * 2];
-						if (ct >= '0' && ct <= '9')
+						if (ct >= '0' && ct <= '9') {
 							ct = ct - '0';
-						else if (ct >= 'a' && ct <= 'f')
+						} else if (ct >= 'a' && ct <= 'f') {
 							ct = 10 + ct - 'a';
+						}
 						v |= ct << 4;
 					}
 
 					if (i * 2 + 1 < script_key.length()) {
 						CharType ct = script_key[i * 2 + 1];
-						if (ct >= '0' && ct <= '9')
+						if (ct >= '0' && ct <= '9') {
 							ct = ct - '0';
-						else if (ct >= 'a' && ct <= 'f')
+						} else if (ct >= 'a' && ct <= 'f') {
 							ct = 10 + ct - 'a';
+						}
 						v |= ct;
 					}
 					key.write[i] = v;
@@ -127,7 +127,6 @@ public:
 				DirAccess::remove_file_or_error(tmp_path);
 
 			} else {
-
 				add_file(p_path.get_basename() + ".gdc", file, true);
 			}
 		}
@@ -135,7 +134,6 @@ public:
 };
 
 static void _editor_init() {
-
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
@@ -151,7 +149,6 @@ static void _editor_init() {
 #endif // TOOLS_ENABLED
 
 void register_gdscript_types() {
-
 	ClassDB::register_class<GDScript>();
 	ClassDB::register_virtual_class<GDScriptFunctionState>();
 
@@ -171,11 +168,11 @@ void register_gdscript_types() {
 }
 
 void unregister_gdscript_types() {
-
 	ScriptServer::unregister_language(script_language_gd);
 
-	if (script_language_gd)
+	if (script_language_gd) {
 		memdelete(script_language_gd);
+	}
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_gd);
 	resource_loader_gd.unref();

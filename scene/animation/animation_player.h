@@ -85,7 +85,6 @@ private:
 	};
 
 	struct TrackNodeCache {
-
 		NodePath path;
 		uint32_t id = 0;
 		RES resource;
@@ -108,7 +107,6 @@ private:
 		bool animation_playing = false;
 
 		struct PropertyAnim {
-
 			TrackNodeCache *owner = nullptr;
 			SpecialProperty special = SP_NONE; //small optimization
 			Vector<StringName> subpath;
@@ -123,7 +121,6 @@ private:
 		Map<StringName, PropertyAnim> property_anim;
 
 		struct BezierAnim {
-
 			Vector<StringName> bezier_property;
 			TrackNodeCache *owner = nullptr;
 			float bezier_accum = 0.0;
@@ -139,16 +136,15 @@ private:
 	};
 
 	struct TrackNodeCacheKey {
-
 		ObjectID id;
 		int bone_idx;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
-
-			if (id == p_right.id)
+			if (id == p_right.id) {
 				return bone_idx < p_right.bone_idx;
-			else
+			} else {
 				return id < p_right.id;
+			}
 		}
 	};
 
@@ -175,7 +171,6 @@ private:
 
 	Map<StringName, AnimationData> animation_set;
 	struct BlendKey {
-
 		StringName from;
 		StringName to;
 		bool operator<(const BlendKey &bk) const { return from == bk.from ? String(to) < String(bk.to) : String(from) < String(bk.from); }
@@ -184,13 +179,11 @@ private:
 	Map<BlendKey, float> blend_times;
 
 	struct PlaybackData {
-
 		AnimationData *from;
 		float pos;
 		float speed_scale;
 
 		PlaybackData() {
-
 			pos = 0;
 			speed_scale = 1.0;
 			from = nullptr;
@@ -198,21 +191,18 @@ private:
 	};
 
 	struct Blend {
-
 		PlaybackData data;
 
 		float blend_time;
 		float blend_left;
 
 		Blend() {
-
 			blend_left = 0;
 			blend_time = 0;
 		}
 	};
 
 	struct Playback {
-
 		List<Blend> blend;
 		PlaybackData current;
 		StringName assigned;
@@ -246,12 +236,10 @@ private:
 
 	// bind helpers
 	Vector<String> _get_animation_list() const {
-
 		List<StringName> animations;
 		get_animation_list(&animations);
 		Vector<String> ret;
 		while (animations.size()) {
-
 			ret.push_back(animations.front()->get());
 			animations.pop_front();
 		}

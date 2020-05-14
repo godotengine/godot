@@ -59,14 +59,11 @@
 namespace TestGUI {
 
 class TestMainLoop : public SceneTree {
-
 public:
 	virtual void request_quit() {
-
 		quit();
 	}
 	virtual void init() {
-
 		SceneTree::init();
 
 		Panel *frame = memnew(Panel);
@@ -266,9 +263,9 @@ public:
 };
 
 MainLoop *test() {
-
 	return memnew(TestMainLoop);
 }
+
 } // namespace TestGUI
 
 #endif

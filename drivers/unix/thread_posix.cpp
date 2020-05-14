@@ -54,17 +54,14 @@ pthread_key_t ThreadPosix::thread_id_key = _create_thread_id_key();
 Thread::ID ThreadPosix::next_thread_id = 0;
 
 Thread::ID ThreadPosix::get_id() const {
-
 	return id;
 }
 
 Thread *ThreadPosix::create_thread_posix() {
-
 	return memnew(ThreadPosix);
 }
 
 void *ThreadPosix::thread_callback(void *userdata) {
-
 	ThreadPosix *t = reinterpret_cast<ThreadPosix *>(userdata);
 	t->id = atomic_increment(&next_thread_id);
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(t->id)));
@@ -79,7 +76,6 @@ void *ThreadPosix::thread_callback(void *userdata) {
 }
 
 Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
-
 	ThreadPosix *tr = memnew(ThreadPosix);
 	tr->callback = p_callback;
 	tr->user = p_user;
@@ -91,19 +87,20 @@ Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_
 
 	return tr;
 }
-Thread::ID ThreadPosix::get_thread_id_func_posix() {
 
+Thread::ID ThreadPosix::get_thread_id_func_posix() {
 	void *value = pthread_getspecific(thread_id_key);
 
-	if (value)
+	if (value) {
 		return *static_cast<ID *>(value);
+	}
 
 	ID new_id = atomic_increment(&next_thread_id);
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(new_id)));
 	return new_id;
 }
-void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 
+void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 	ThreadPosix *tp = static_cast<ThreadPosix *>(p_thread);
 	ERR_FAIL_COND(!tp);
 	ERR_FAIL_COND(tp->pthread == 0);
@@ -113,7 +110,6 @@ void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 }
 
 Error ThreadPosix::set_name_func_posix(const String &p_name) {
-
 #ifdef PTHREAD_NO_RENAME
 	return ERR_UNAVAILABLE;
 
@@ -142,7 +138,6 @@ Error ThreadPosix::set_name_func_posix(const String &p_name) {
 };
 
 void ThreadPosix::make_default() {
-
 	create_func = create_func_posix;
 	get_thread_id_func = get_thread_id_func_posix;
 	wait_to_finish_func = wait_to_finish_func_posix;
@@ -150,7 +145,6 @@ void ThreadPosix::make_default() {
 }
 
 ThreadPosix::ThreadPosix() {
-
 	pthread = 0;
 }
 

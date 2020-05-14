@@ -149,6 +149,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	Variant meta;
 	bool checkable;
 }
+
 @end
 
 @implementation GlobalMenuItem
@@ -921,7 +922,6 @@ static void _mouseDownEvent(DisplayServer::WindowID window_id, NSEvent *event, i
 }
 
 static bool isNumpadKey(unsigned int key) {
-
 	static const unsigned int table[] = {
 		0x41, /* kVK_ANSI_KeypadDecimal */
 		0x43, /* kVK_ANSI_KeypadMultiply */
@@ -954,7 +954,6 @@ static bool isNumpadKey(unsigned int key) {
 // Translates a OS X keycode to a Godot keycode
 //
 static int translateKey(unsigned int key) {
-
 	// Keyboard symbol translation table
 	static const unsigned int table[128] = {
 		/* 00 */ KEY_A,
@@ -1424,6 +1423,7 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 
 @interface GodotWindow : NSWindow {
 }
+
 @end
 
 @implementation GodotWindow
@@ -3011,7 +3011,6 @@ DisplayServerOSX::LatinKeyboardVariant DisplayServerOSX::get_latin_keyboard_vari
 	static LatinKeyboardVariant layout = LATIN_KEYBOARD_QWERTY;
 
 	if (keyboard_layout_dirty) {
-
 		layout = LATIN_KEYBOARD_QWERTY;
 
 		CGKeyCode keys[] = { kVK_ANSI_Q, kVK_ANSI_W, kVK_ANSI_E, kVK_ANSI_R, kVK_ANSI_T, kVK_ANSI_Y };
@@ -3553,7 +3552,6 @@ DisplayServerOSX::DisplayServerOSX(const String &p_rendering_driver, WindowMode 
 #endif
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-
 		context_vulkan = memnew(VulkanContextOSX);
 		if (context_vulkan->initialize() != OK) {
 			memdelete(context_vulkan);
@@ -3613,7 +3611,6 @@ DisplayServerOSX::~DisplayServerOSX() {
 	//destroy drivers
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-
 		if (rendering_device_vulkan) {
 			rendering_device_vulkan->finalize();
 			memdelete(rendering_device_vulkan);

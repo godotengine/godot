@@ -24,7 +24,6 @@ layout(set = 3, binding = 1) uniform sampler2D source_roughness;
 #endif
 
 layout(push_constant, binding = 2, std430) uniform Params {
-
 	vec4 proj_info;
 
 	ivec2 screen_size;
@@ -43,6 +42,7 @@ layout(push_constant, binding = 2, std430) uniform Params {
 
 	mat4 projection;
 }
+
 params;
 
 vec2 view_to_screen(vec3 view_pos, out float w) {
@@ -64,7 +64,6 @@ vec3 reconstructCSPosition(vec2 S, float z) {
 }
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
@@ -156,7 +155,6 @@ void main() {
 	float steps_taken = 0.0;
 
 	for (int i = 0; i < params.num_steps; i++) {
-
 		pos += line_advance;
 		z += z_advance;
 		w += w_advance;
@@ -187,7 +185,6 @@ void main() {
 	}
 
 	if (found) {
-
 		float margin_blend = 1.0;
 
 		vec2 margin = vec2((params.screen_size.x + params.screen_size.y) * 0.5 * 0.05); // make a uniform margin
@@ -220,7 +217,6 @@ void main() {
 		float roughness = texelFetch(source_roughness, ssC << 1, 0).r;
 
 		if (roughness > 0.001) {
-
 			float cone_angle = min(roughness, 0.999) * M_PI * 0.5;
 			float cone_len = length(final_pos - line_begin);
 			float op_len = 2.0 * tan(cone_angle) * cone_len; // opposite side of iso triangle

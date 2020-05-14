@@ -44,6 +44,7 @@ RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = nullptr;
 void RenderingDevice::shader_set_compile_function(ShaderCompileFunction p_function) {
 	compile_function = p_function;
 }
+
 void RenderingDevice::shader_set_cache_function(ShaderCacheFunction p_function) {
 	cache_function = p_function;
 }
@@ -62,7 +63,6 @@ Vector<uint8_t> RenderingDevice::shader_compile_from_source(ShaderStage p_stage,
 }
 
 RID RenderingDevice::_texture_create(const Ref<RDTextureFormat> &p_format, const Ref<RDTextureView> &p_view, const TypedArray<PackedByteArray> &p_data) {
-
 	ERR_FAIL_COND_V(p_format.is_null(), RID());
 	ERR_FAIL_COND_V(p_view.is_null(), RID());
 	Vector<Vector<uint8_t>> data;
@@ -87,7 +87,6 @@ RID RenderingDevice::_texture_create_shared_from_slice(const Ref<RDTextureView> 
 }
 
 RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create(const TypedArray<RDAttachmentFormat> &p_attachments) {
-
 	Vector<AttachmentFormat> attachments;
 	attachments.resize(p_attachments.size());
 
@@ -100,7 +99,6 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_framebuffer_format_create
 }
 
 RID RenderingDevice::_framebuffer_create(const Array &p_textures, FramebufferFormatID p_format_check) {
-
 	Vector<RID> textures = Variant(p_textures);
 	return framebuffer_create(textures, p_format_check);
 }
@@ -112,7 +110,6 @@ RID RenderingDevice::_sampler_create(const Ref<RDSamplerState> &p_state) {
 }
 
 RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const TypedArray<RDVertexAttribute> &p_vertex_formats) {
-
 	Vector<VertexAttribute> descriptions;
 	descriptions.resize(p_vertex_formats.size());
 
@@ -125,7 +122,6 @@ RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const Typ
 }
 
 RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers) {
-
 	Vector<RID> buffers = Variant(p_src_buffers);
 
 	return vertex_array_create(p_vertex_count, p_vertex_format, buffers);
@@ -168,7 +164,6 @@ RID RenderingDevice::shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_
 }
 
 RID RenderingDevice::_uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set) {
-
 	Vector<Uniform> uniforms;
 	uniforms.resize(p_uniforms.size());
 	for (int i = 0; i < p_uniforms.size(); i++) {
@@ -180,12 +175,10 @@ RID RenderingDevice::_uniform_set_create(const Array &p_uniforms, RID p_shader, 
 }
 
 Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, bool p_sync_with_draw) {
-
 	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr(), p_sync_with_draw);
 }
 
 RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags) {
-
 	PipelineRasterizationState rasterization_state;
 	if (p_rasterization_state.is_valid()) {
 		rasterization_state = p_rasterization_state->base;
@@ -220,7 +213,6 @@ RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p
 }
 
 Vector<int64_t> RenderingDevice::_draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region) {
-
 	Vector<DrawListID> splits;
 	splits.resize(p_splits);
 	draw_list_begin_split(p_framebuffer, p_splits, splits.ptrw(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region);
@@ -245,7 +237,6 @@ void RenderingDevice::_compute_list_set_push_constant(ComputeListID p_list, cons
 }
 
 void RenderingDevice::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(TEXTURE_SLICE_2D));

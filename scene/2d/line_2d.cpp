@@ -52,9 +52,9 @@ Line2D::Line2D() {
 
 #ifdef TOOLS_ENABLED
 Rect2 Line2D::_edit_get_rect() const {
-
-	if (_points.size() == 0)
+	if (_points.size() == 0) {
 		return Rect2(0, 0, 0, 0);
+	}
 	Vector2 d = Vector2(_width, _width);
 	Rect2 aabb = Rect2(_points[0] - d, 2 * d);
 	for (int i = 1; i < _points.size(); i++) {
@@ -69,13 +69,13 @@ bool Line2D::_edit_use_rect() const {
 }
 
 bool Line2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-
 	const real_t d = _width / 2 + p_tolerance;
 	const Vector2 *points = _points.ptr();
 	for (int i = 0; i < _points.size() - 1; i++) {
 		Vector2 p = Geometry::get_closest_point_to_segment_2d(p_point, &points[i]);
-		if (p.distance_to(p_point) <= d)
+		if (p.distance_to(p_point) <= d) {
 			return true;
+		}
 	}
 
 	return false;
@@ -88,8 +88,9 @@ void Line2D::set_points(const Vector<Vector2> &p_points) {
 }
 
 void Line2D::set_width(float p_width) {
-	if (p_width < 0.0)
+	if (p_width < 0.0) {
 		p_width = 0.0;
+	}
 	_width = p_width;
 	update();
 }
@@ -168,7 +169,6 @@ Color Line2D::get_default_color() const {
 }
 
 void Line2D::set_gradient(const Ref<Gradient> &p_gradient) {
-
 	// Cleanup previous connection if any
 	if (_gradient.is_valid()) {
 		_gradient->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &Line2D::_gradient_changed));
@@ -242,8 +242,9 @@ void Line2D::_notification(int p_what) {
 }
 
 void Line2D::set_sharp_limit(float p_limit) {
-	if (p_limit < 0.f)
+	if (p_limit < 0.f) {
 		p_limit = 0.f;
+	}
 	_sharp_limit = p_limit;
 	update();
 }
@@ -253,8 +254,9 @@ float Line2D::get_sharp_limit() const {
 }
 
 void Line2D::set_round_precision(int p_precision) {
-	if (p_precision < 1)
+	if (p_precision < 1) {
 		p_precision = 1;
+	}
 	_round_precision = p_precision;
 	update();
 }
@@ -273,8 +275,9 @@ bool Line2D::get_antialiased() const {
 }
 
 void Line2D::_draw() {
-	if (_points.size() <= 1 || _width == 0.f)
+	if (_points.size() <= 1 || _width == 0.f) {
 		return;
+	}
 
 	// TODO Is this really needed?
 	// Copy points for faster access
@@ -350,7 +353,6 @@ void Line2D::_curve_changed() {
 
 // static
 void Line2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_points", "points"), &Line2D::set_points);
 	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
 

@@ -41,7 +41,6 @@
 #include "lightmap_probe.h"
 
 void BakedLightmapData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
-
 	User user;
 	user.path = p_path;
 	user.uv_scale = p_uv_scale;
@@ -51,29 +50,25 @@ void BakedLightmapData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale
 }
 
 int BakedLightmapData::get_user_count() const {
-
 	return users.size();
 }
-NodePath BakedLightmapData::get_user_path(int p_user) const {
 
+NodePath BakedLightmapData::get_user_path(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), NodePath());
 	return users[p_user].path;
 }
 
 int32_t BakedLightmapData::get_user_sub_instance(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
 	return users[p_user].sub_instance;
 }
 
 Rect2 BakedLightmapData::get_user_lightmap_uv_scale(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), Rect2());
 	return users[p_user].uv_scale;
 }
 
 int BakedLightmapData::get_user_lightmap_slice_index(int p_user) const {
-
 	ERR_FAIL_INDEX_V(p_user, users.size(), -1);
 	return users[p_user].slice_index;
 }
@@ -83,7 +78,6 @@ void BakedLightmapData::clear_users() {
 }
 
 void BakedLightmapData::_set_user_data(const Array &p_data) {
-
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
 
 	for (int i = 0; i < p_data.size(); i += 4) {
@@ -92,7 +86,6 @@ void BakedLightmapData::_set_user_data(const Array &p_data) {
 }
 
 Array BakedLightmapData::_get_user_data() const {
-
 	Array ret;
 	for (int i = 0; i < users.size(); i++) {
 		ret.push_back(users[i].path);
@@ -150,9 +143,11 @@ void BakedLightmapData::set_capture_data(const AABB &p_bounds, bool p_interior, 
 PackedVector3Array BakedLightmapData::get_capture_points() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_points(lightmap);
 }
+
 PackedColorArray BakedLightmapData::get_capture_sh() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_sh(lightmap);
 }
+
 PackedInt32Array BakedLightmapData::get_capture_tetrahedra() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_tetrahedra(lightmap);
 }
@@ -189,8 +184,8 @@ Dictionary BakedLightmapData::_get_probe_data() const {
 	d["interior"] = is_interior();
 	return d;
 }
-void BakedLightmapData::_bind_methods() {
 
+void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_user_data", "data"), &BakedLightmapData::_set_user_data);
 	ClassDB::bind_method(D_METHOD("_get_user_data"), &BakedLightmapData::_get_user_data);
 
@@ -215,28 +210,23 @@ void BakedLightmapData::_bind_methods() {
 }
 
 BakedLightmapData::BakedLightmapData() {
-
 	lightmap = RS::get_singleton()->lightmap_create();
 }
 
 BakedLightmapData::~BakedLightmapData() {
-
 	RS::get_singleton()->free(lightmap);
 }
 
 ///////////////////////////
 
 void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &meshes, Vector<LightsFound> &lights, Vector<Vector3> &probes) {
-
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
 	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_BAKED && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
-
 			bool all_have_uv2_and_normal = true;
 			bool surfaces_found = false;
 			for (int i = 0; i < mesh->get_surface_count(); i++) {
-
 				if (mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 					continue;
 				}
@@ -284,10 +274,10 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 		if (bmeshes.size() && (bmeshes.size() & 1) == 0) {
 			Transform xf = get_global_transform().affine_inverse() * s->get_global_transform();
 			for (int i = 0; i < bmeshes.size(); i += 2) {
-
 				Ref<Mesh> mesh = bmeshes[i];
-				if (!mesh.is_valid())
+				if (!mesh.is_valid()) {
 					continue;
+				}
 
 				MeshesFound mf;
 
@@ -306,7 +296,6 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 	Light3D *light = Object::cast_to<Light3D>(p_at_node);
 
 	if (light && light->get_bake_mode() != Light3D::BAKE_DISABLED) {
-
 		LightsFound lf;
 		lf.xform = get_global_transform().affine_inverse() * light->get_global_transform();
 		lf.light = light;
@@ -321,17 +310,16 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 	}
 
 	for (int i = 0; i < p_at_node->get_child_count(); i++) {
-
 		Node *child = p_at_node->get_child(i);
-		if (!child->get_owner())
+		if (!child->get_owner()) {
 			continue; //maybe a helper
+		}
 
 		_find_meshes_and_lights(child, meshes, lights, probes);
 	}
 }
 
 int BakedLightmap::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const LocalVector<BSPSimplex> &p_simplices, const Plane &p_plane, uint32_t p_simplex) const {
-
 	int over = 0;
 	int under = 0;
 	int coplanar = 0;
@@ -360,7 +348,6 @@ int BakedLightmap::_bsp_get_simplex_side(const Vector<Vector3> &p_points, const 
 //#define DEBUG_BSP
 
 int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const LocalVector<Plane> &p_planes, LocalVector<int32_t> &planes_tested, const LocalVector<BSPSimplex> &p_simplices, const LocalVector<int32_t> &p_simplex_indices, LocalVector<BSPNode> &bsp_nodes) {
-
 	//if we reach here, it means there is more than one simplex
 	int32_t node_index = (int32_t)bsp_nodes.size();
 	bsp_nodes.push_back(BSPNode());
@@ -427,7 +414,6 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 			//score *= Math::sqrt(float(over_count + under_count) / p_simplex_indices.size()); //also multiply score
 
 			if (score > best_plane_score) {
-
 				best_plane = plane;
 				best_plane_score = score;
 			}
@@ -439,7 +425,6 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 
 	//split again, but add to list
 	for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
-
 		uint32_t index = p_simplex_indices[i];
 		int side = _bsp_get_simplex_side(p_points, p_simplices, best_plane, index);
 
@@ -478,7 +463,6 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 		for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
 			AABB bounds;
 			for (uint32_t j = 0; j < 4; j++) {
-
 				Vector3 p = p_points[p_simplices[p_simplex_indices[i]].vertices[j]];
 				if (j == 0) {
 					bounds.position = p;
@@ -549,7 +533,6 @@ int32_t BakedLightmap::_compute_bsp_tree(const Vector<Vector3> &p_points, const 
 }
 
 bool BakedLightmap::_lightmap_bake_step_function(float p_completion, const String &p_text, void *ud, bool p_refresh) {
-
 	BakeStepUD *bsud = (BakeStepUD *)ud;
 	bool ret = false;
 	if (bsud->func) {
@@ -559,7 +542,6 @@ bool BakedLightmap::_lightmap_bake_step_function(float p_completion, const Strin
 }
 
 void BakedLightmap::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cell_size, const Vector3 *p_triangle) {
-
 	for (int i = 0; i < 8; i++) {
 		Vector3i pos = p_cell->offset;
 		uint32_t half_size = p_cell->size / 2;
@@ -577,8 +559,9 @@ void BakedLightmap::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_
 		subcell.position = Vector3(pos) * p_cell_size;
 		subcell.size = Vector3(half_size, half_size, half_size) * p_cell_size;
 
-		if (!Geometry::triangle_box_overlap(subcell.position + subcell.size * 0.5, subcell.size * 0.5, p_triangle))
+		if (!Geometry::triangle_box_overlap(subcell.position + subcell.size * 0.5, subcell.size * 0.5, p_triangle)) {
 			continue;
+		}
 
 		if (p_cell->children[i] == nullptr) {
 			GenProbesOctree *child = memnew(GenProbesOctree);
@@ -593,10 +576,9 @@ void BakedLightmap::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_
 		}
 	}
 }
+
 void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds) {
-
 	for (int i = 0; i < 8; i++) {
-
 		Vector3i pos = p_cell->offset;
 		if (i & 1) {
 			pos.x += p_cell->size;
@@ -616,7 +598,6 @@ void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell
 			const Vector3 *pp = probe_positions.ptr();
 			bool exists = false;
 			for (int j = 0; j < ppcount; j++) {
-
 				if (pp[j].distance_to(real_pos) < CMP_EPSILON) {
 					exists = true;
 					break;
@@ -635,14 +616,13 @@ void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell
 		}
 	}
 }
-BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
 
+BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
 	if (p_image_data_path == "" && (get_light_data().is_null() || !get_light_data()->get_path().is_resource_file())) {
 		return BAKE_ERROR_NO_SAVE_PATH;
 	}
 
 	if (p_image_data_path == "") {
-
 		if (get_light_data().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}
@@ -681,7 +661,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 
 		//get the base material textures, help compute altlas size and bounds
 		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
-
 			if (p_bake_step) {
 				float p = (float)(m_i) / meshes_found.size();
 				p_bake_step(p * 0.1, vformat(TTR("Preparing geometry %d/%d"), m_i, meshes_found.size()), p_bake_userdata, false);
@@ -718,7 +697,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 			}
 
 			{
-
 				if (albedo->get_format() != Image::FORMAT_RGBA8) {
 					albedo->convert(Image::FORMAT_RGBA8);
 				}
@@ -779,7 +757,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 				const int *ir = nullptr;
 
 				if (index.size()) {
-
 					facecount = index.size() / 3;
 					ir = index.ptr();
 				} else {
@@ -787,7 +764,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 				}
 
 				for (int j = 0; j < facecount; j++) {
-
 					uint32_t vidx[3];
 
 					if (ir) {
@@ -893,7 +869,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		}
 		//skip first level, since probes are always added at bounds endpoints anyway (code above this)
 		for (int i = 0; i < 8; i++) {
-
 			if (octree.children[i]) {
 				_gen_new_positions_from_octree(octree.children[i], subdiv_cell_size, probes_found, new_probe_positions, positions_used, bounds);
 			}
@@ -910,7 +885,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 	}
 
 	{
-
 		for (int i = 0; i < mesh_data.size(); i++) {
 			lightmapper->add_mesh(mesh_data[i]);
 		}
@@ -995,7 +969,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 
 	Ref<TextureLayered> texture;
 	{
-
 		Vector<Ref<Image>> images;
 		for (int i = 0; i < lightmapper->get_bake_texture_count(); i++) {
 			images.push_back(lightmapper->get_bake_texture(i));
@@ -1016,7 +989,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 
 		config.instance();
 		if (FileAccess::exists(base_path + ".import")) {
-
 			config->load(base_path + ".import");
 		}
 
@@ -1095,7 +1067,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 		PackedInt32Array tetrahedrons;
 
 		for (int i = 0; i < solved_simplices.size(); i++) {
-
 			//Prepare a special representation of the simplex, which uses a BSP Tree
 			BSPSimplex bsp_simplex;
 			for (int j = 0; j < 4; j++) {
@@ -1117,7 +1088,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 				Plane p(a, b, c);
 				int plane_index = -1;
 				for (uint32_t k = 0; k < bsp_planes.size(); k++) {
-
 					if (bsp_planes[k].is_equal_approx_any_side(p)) {
 						plane_index = k;
 						break;
@@ -1218,14 +1188,12 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_d
 
 void BakedLightmap::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POST_ENTER_TREE) {
-
 		if (light_data.is_valid()) {
 			_assign_lightmaps();
 		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-
 		if (light_data.is_valid()) {
 			_clear_lightmaps();
 		}
@@ -1233,11 +1201,9 @@ void BakedLightmap::_notification(int p_what) {
 }
 
 void BakedLightmap::_assign_lightmaps() {
-
 	ERR_FAIL_COND(!light_data.is_valid());
 
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-
 		Node *node = get_node(light_data->get_user_path(i));
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
@@ -1272,7 +1238,6 @@ void BakedLightmap::_clear_lightmaps() {
 }
 
 void BakedLightmap::set_light_data(const Ref<BakedLightmapData> &p_data) {
-
 	if (light_data.is_valid()) {
 		if (is_inside_tree()) {
 			_clear_lightmaps();
@@ -1292,7 +1257,6 @@ void BakedLightmap::set_light_data(const Ref<BakedLightmapData> &p_data) {
 }
 
 Ref<BakedLightmapData> BakedLightmap::get_light_data() const {
-
 	return light_data;
 }
 
@@ -1307,17 +1271,16 @@ BakedLightmap::BakeQuality BakedLightmap::get_bake_quality() const {
 AABB BakedLightmap::get_aabb() const {
 	return AABB();
 }
+
 Vector<Face3> BakedLightmap::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
 
 void BakedLightmap::set_use_denoiser(bool p_enable) {
-
 	use_denoiser = p_enable;
 }
 
 bool BakedLightmap::is_using_denoiser() const {
-
 	return use_denoiser;
 }
 
@@ -1332,6 +1295,7 @@ bool BakedLightmap::is_directional() const {
 void BakedLightmap::set_interior(bool p_enable) {
 	interior = p_enable;
 }
+
 bool BakedLightmap::is_interior() const {
 	return interior;
 }
@@ -1356,6 +1320,7 @@ Ref<Sky> BakedLightmap::get_environment_custom_sky() const {
 void BakedLightmap::set_environment_custom_color(const Color &p_color) {
 	environment_custom_color = p_color;
 }
+
 Color BakedLightmap::get_environment_custom_color() const {
 	return environment_custom_color;
 }
@@ -1363,6 +1328,7 @@ Color BakedLightmap::get_environment_custom_color() const {
 void BakedLightmap::set_environment_custom_energy(float p_energy) {
 	environment_custom_energy = p_energy;
 }
+
 float BakedLightmap::get_environment_custom_energy() const {
 	return environment_custom_energy;
 }
@@ -1415,7 +1381,6 @@ void BakedLightmap::_validate_property(PropertyInfo &property) const {
 }
 
 void BakedLightmap::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_light_data", "data"), &BakedLightmap::set_light_data);
 	ClassDB::bind_method(D_METHOD("get_light_data"), &BakedLightmap::get_light_data);
 
@@ -1501,7 +1466,6 @@ void BakedLightmap::_bind_methods() {
 }
 
 BakedLightmap::BakedLightmap() {
-
 	environment_mode = ENVIRONMENT_MODE_DISABLED;
 	environment_custom_color = Color(0.2, 0.7, 1.0);
 	environment_custom_energy = 1.0;

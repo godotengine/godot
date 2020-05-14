@@ -38,7 +38,6 @@
 #include "core/self_list.h"
 
 class RasterizerScene {
-
 public:
 	/* SHADOW ATLAS API */
 
@@ -227,7 +226,6 @@ public:
 
 		InstanceBase() :
 				dependency_item(this) {
-
 			base_type = RS::INSTANCE_NONE;
 			cast_shadows = RS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -302,7 +300,6 @@ public:
 };
 
 class RasterizerStorage {
-
 	Color default_clear_color;
 
 public:
@@ -763,7 +760,6 @@ public:
 	};
 
 	struct Light {
-
 		bool enabled;
 		Color color;
 		Transform2D xform;
@@ -842,7 +838,6 @@ public:
 	struct Item;
 
 	struct TextureBinding {
-
 		TextureBindingID binding_id;
 
 		_FORCE_INLINE_ void create(RS::CanvasItemTextureFilter p_item_filter, RS::CanvasItemTextureRepeat p_item_repeat, RID p_texture, RID p_normalmap, RID p_specular, RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat, RID p_multimesh) {
@@ -860,8 +855,9 @@ public:
 
 		_FORCE_INLINE_ TextureBinding() { binding_id = 0; }
 		_FORCE_INLINE_ ~TextureBinding() {
-			if (binding_id)
+			if (binding_id) {
 				singleton->free_texture_binding(binding_id);
+			}
 		}
 	};
 
@@ -871,7 +867,6 @@ public:
 
 	//also easier to wrap to avoid mistakes
 	struct Polygon {
-
 		PolygonID polygon_id;
 		Rect2 rect_cache;
 
@@ -890,15 +885,15 @@ public:
 
 		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
 		_FORCE_INLINE_ ~Polygon() {
-			if (polygon_id)
+			if (polygon_id) {
 				singleton->free_polygon(polygon_id);
+			}
 		}
 	};
 
 	//item
 
 	struct Item {
-
 		//commands are allocated in blocks of 4k to improve performance
 		//and cache coherence.
 		//blocks always grow but never shrink.
@@ -912,7 +907,6 @@ public:
 		};
 
 		struct Command {
-
 			enum Type {
 
 				TYPE_RECT,
@@ -932,7 +926,6 @@ public:
 		};
 
 		struct CommandRect : public Command {
-
 			Rect2 rect;
 			Color modulate;
 			Rect2 source;
@@ -948,7 +941,6 @@ public:
 		};
 
 		struct CommandNinePatch : public Command {
-
 			Rect2 rect;
 			Rect2 source;
 			float margin[4];
@@ -965,7 +957,6 @@ public:
 		};
 
 		struct CommandPolygon : public Command {
-
 			RS::PrimitiveType primitive;
 			Polygon polygon;
 			Color specular_shininess;
@@ -976,7 +967,6 @@ public:
 		};
 
 		struct CommandPrimitive : public Command {
-
 			uint32_t point_count;
 			Vector2 points[4];
 			Vector2 uvs[4];
@@ -989,7 +979,6 @@ public:
 		};
 
 		struct CommandMesh : public Command {
-
 			RID mesh;
 			Transform2D transform;
 			Color modulate;
@@ -999,7 +988,6 @@ public:
 		};
 
 		struct CommandMultiMesh : public Command {
-
 			RID multimesh;
 			Color specular_shininess;
 			TextureBinding texture_binding;
@@ -1007,7 +995,6 @@ public:
 		};
 
 		struct CommandParticles : public Command {
-
 			RID particles;
 			Color specular_shininess;
 			TextureBinding texture_binding;
@@ -1015,13 +1002,11 @@ public:
 		};
 
 		struct CommandTransform : public Command {
-
 			Transform2D xform;
 			CommandTransform() { type = TYPE_TRANSFORM; }
 		};
 
 		struct CommandClipIgnore : public Command {
-
 			bool ignore;
 			CommandClipIgnore() {
 				type = TYPE_CLIP_IGNORE;
@@ -1071,13 +1056,13 @@ public:
 		Rect2 global_rect_cache;
 
 		const Rect2 &get_rect() const {
-			if (custom_rect || (!rect_dirty && !update_when_visible))
+			if (custom_rect || (!rect_dirty && !update_when_visible)) {
 				return rect;
+			}
 
 			//must update rect
 
 			if (commands == nullptr) {
-
 				rect = Rect2();
 				rect_dirty = false;
 				return rect;
@@ -1090,29 +1075,24 @@ public:
 			const Item::Command *c = commands;
 
 			while (c) {
-
 				Rect2 r;
 
 				switch (c->type) {
 					case Item::Command::TYPE_RECT: {
-
 						const Item::CommandRect *crect = static_cast<const Item::CommandRect *>(c);
 						r = crect->rect;
 
 					} break;
 					case Item::Command::TYPE_NINEPATCH: {
-
 						const Item::CommandNinePatch *style = static_cast<const Item::CommandNinePatch *>(c);
 						r = style->rect;
 					} break;
 
 					case Item::Command::TYPE_POLYGON: {
-
 						const Item::CommandPolygon *polygon = static_cast<const Item::CommandPolygon *>(c);
 						r = polygon->polygon.rect_cache;
 					} break;
 					case Item::Command::TYPE_PRIMITIVE: {
-
 						const Item::CommandPrimitive *primitive = static_cast<const Item::CommandPrimitive *>(c);
 						for (uint32_t j = 0; j < primitive->point_count; j++) {
 							if (j == 0) {
@@ -1123,7 +1103,6 @@ public:
 						}
 					} break;
 					case Item::Command::TYPE_MESH: {
-
 						const Item::CommandMesh *mesh = static_cast<const Item::CommandMesh *>(c);
 						AABB aabb = RasterizerStorage::base_singleton->mesh_get_aabb(mesh->mesh, RID());
 
@@ -1131,7 +1110,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_MULTIMESH: {
-
 						const Item::CommandMultiMesh *multimesh = static_cast<const Item::CommandMultiMesh *>(c);
 						AABB aabb = RasterizerStorage::base_singleton->multimesh_get_aabb(multimesh->multimesh);
 
@@ -1139,7 +1117,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_PARTICLES: {
-
 						const Item::CommandParticles *particles_cmd = static_cast<const Item::CommandParticles *>(c);
 						if (particles_cmd->particles.is_valid()) {
 							AABB aabb = RasterizerStorage::base_singleton->particles_get_aabb(particles_cmd->particles);
@@ -1148,7 +1125,6 @@ public:
 
 					} break;
 					case Item::Command::TYPE_TRANSFORM: {
-
 						const Item::CommandTransform *transform = static_cast<const Item::CommandTransform *>(c);
 						xf = transform->xform;
 						found_xform = true;
@@ -1231,7 +1207,6 @@ public:
 		}
 
 		struct CustomData {
-
 			virtual ~CustomData() {}
 		};
 
@@ -1293,8 +1268,9 @@ public:
 			for (int i = 0; i < blocks.size(); i++) {
 				memfree(blocks[i].memory);
 			}
-			if (copy_back_buffer)
+			if (copy_back_buffer) {
 				memdelete(copy_back_buffer);
+			}
 			if (custom_data) {
 				memdelete(custom_data);
 			}
@@ -1305,7 +1281,6 @@ public:
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
 
 	struct LightOccluderInstance {
-
 		bool enabled;
 		RID canvas;
 		RID polygon;

@@ -35,7 +35,6 @@
 #include "servers/rendering/rendering_device.h"
 
 class RenderPipelineVertexFormatCacheRD {
-
 	SpinLock spin_lock;
 
 	RID shader;

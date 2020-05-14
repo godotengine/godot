@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_editor_plugin.cpp                                            */
+/*  texture_layered_editor_plugin.cpp                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -48,9 +48,7 @@ void TextureLayeredEditor::_texture_rect_draw() {
 }
 
 void TextureLayeredEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_READY) {
-
 		//get_scene()->connect("node_removed",this,"_node_removed");
 	}
 	if (p_what == NOTIFICATION_RESIZED) {
@@ -58,7 +56,6 @@ void TextureLayeredEditor::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		Ref<Texture2D> checkerboard = get_theme_icon("Checkerboard", "EditorIcons");
 		Size2 size = get_size();
 
@@ -67,14 +64,13 @@ void TextureLayeredEditor::_notification(int p_what) {
 }
 
 void TextureLayeredEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-
-	if (!is_visible())
+	if (!is_visible()) {
 		return;
+	}
 	update();
 }
 
 void TextureLayeredEditor::_update_material() {
-
 	materials[0]->set_shader_param("layer", layer->get_value());
 	materials[2]->set_shader_param("layer", layer->get_value());
 	materials[texture->get_layered_type()]->set_shader_param("tex", texture->get_rid());
@@ -151,7 +147,6 @@ void TextureLayeredEditor::_make_shaders() {
 }
 
 void TextureLayeredEditor::_texture_rect_update_area() {
-
 	Size2 size = get_size();
 	int tex_width = texture->get_width() * size.height / texture->get_height();
 	int tex_height = size.height;
@@ -162,10 +157,12 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 	}
 
 	// Prevent the texture from being unpreviewable after the rescale, so that we can still see something
-	if (tex_height <= 0)
+	if (tex_height <= 0) {
 		tex_height = 1;
-	if (tex_width <= 0)
+	}
+	if (tex_width <= 0) {
 		tex_width = 1;
+	}
 
 	int ofs_x = (size.width - tex_width) / 2;
 	int ofs_y = (size.height - tex_height) / 2;
@@ -175,14 +172,13 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 }
 
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
-
-	if (!texture.is_null())
+	if (!texture.is_null()) {
 		texture->remove_change_receptor(this);
+	}
 
 	texture = p_texture;
 
 	if (!texture.is_null()) {
-
 		if (shaders[0].is_null()) {
 			_make_shaders();
 		}
@@ -213,13 +209,11 @@ void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
 }
 
 void TextureLayeredEditor::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TextureLayeredEditor::_gui_input);
 	ClassDB::bind_method(D_METHOD("_layer_changed"), &TextureLayeredEditor::_layer_changed);
 }
 
 TextureLayeredEditor::TextureLayeredEditor() {
-
 	set_texture_repeat(TextureRepeat::TEXTURE_REPEAT_ENABLED);
 	set_custom_minimum_size(Size2(1, 150));
 	texture_rect = memnew(Control);
@@ -259,14 +253,13 @@ TextureLayeredEditor::~TextureLayeredEditor() {
 		texture->remove_change_receptor(this);
 	}
 }
+
 //
 bool EditorInspectorPluginLayeredTexture::can_handle(Object *p_object) {
-
 	return Object::cast_to<TextureLayered>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginLayeredTexture::parse_begin(Object *p_object) {
-
 	TextureLayered *texture = Object::cast_to<TextureLayered>(p_object);
 	if (!texture) {
 		return;
@@ -279,7 +272,6 @@ void EditorInspectorPluginLayeredTexture::parse_begin(Object *p_object) {
 }
 
 TextureLayeredEditorPlugin::TextureLayeredEditorPlugin(EditorNode *p_node) {
-
 	Ref<EditorInspectorPluginLayeredTexture> plugin;
 	plugin.instance();
 	add_inspector_plugin(plugin);

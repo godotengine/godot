@@ -62,7 +62,6 @@ public:
 	/* CAMERA API */
 
 	struct Camera {
-
 		enum Type {
 			PERSPECTIVE,
 			ORTHOGONAL,
@@ -81,7 +80,6 @@ public:
 		Transform transform;
 
 		Camera() {
-
 			visible_layers = 0xFFFFFFFF;
 			fov = 75;
 			type = PERSPECTIVE;
@@ -110,7 +108,6 @@ public:
 	struct Instance;
 
 	struct Scenario {
-
 		RS::ScenarioDebugMode debug;
 		RID self;
 
@@ -144,12 +141,10 @@ public:
 	/* INSTANCING API */
 
 	struct InstanceBaseData {
-
 		virtual ~InstanceBaseData() {}
 	};
 
 	struct Instance : RasterizerScene::InstanceBase {
-
 		RID self;
 		//scenario stuff
 		OctreeElementID octree_id;
@@ -198,7 +193,6 @@ public:
 		Instance() :
 				scenario_item(this),
 				update_item(this) {
-
 			octree_id = 0;
 			scenario = nullptr;
 
@@ -223,11 +217,12 @@ public:
 		}
 
 		~Instance() {
-
-			if (base_data)
+			if (base_data) {
 				memdelete(base_data);
-			if (custom_aabb)
+			}
+			if (custom_aabb) {
 				memdelete(custom_aabb);
+			}
 		}
 	};
 
@@ -235,7 +230,6 @@ public:
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
-
 		List<Instance *> lighting;
 		bool lighting_dirty;
 		bool can_cast_shadows;
@@ -253,7 +247,6 @@ public:
 		List<Instance *> lightmap_captures;
 
 		InstanceGeometryData() {
-
 			lighting_dirty = false;
 			reflection_dirty = true;
 			can_cast_shadows = true;
@@ -264,7 +257,6 @@ public:
 	};
 
 	struct InstanceReflectionProbeData : public InstanceBaseData {
-
 		Instance *owner;
 
 		struct PairInfo {
@@ -281,14 +273,12 @@ public:
 
 		InstanceReflectionProbeData() :
 				update_list(this) {
-
 			reflection_dirty = true;
 			render_step = -1;
 		}
 	};
 
 	struct InstanceDecalData : public InstanceBaseData {
-
 		Instance *owner;
 		RID instance;
 
@@ -305,7 +295,6 @@ public:
 	SelfList<InstanceReflectionProbeData>::List reflection_probe_render_list;
 
 	struct InstanceLightData : public InstanceBaseData {
-
 		struct PairInfo {
 			List<Instance *>::Element *L; //light iterator in geometry
 			Instance *geometry;
@@ -322,7 +311,6 @@ public:
 		Instance *baked_light;
 
 		InstanceLightData() {
-
 			shadow_dirty = true;
 			D = nullptr;
 			last_version = 0;
@@ -331,7 +319,6 @@ public:
 	};
 
 	struct InstanceGIProbeData : public InstanceBaseData {
-
 		Instance *owner;
 
 		struct PairInfo {
@@ -345,7 +332,6 @@ public:
 		Set<Instance *> lights;
 
 		struct LightCache {
-
 			RS::LightType type;
 			Transform transform;
 			Color color;
@@ -378,7 +364,6 @@ public:
 	SelfList<InstanceGIProbeData>::List gi_probe_update_list;
 
 	struct InstanceLightmapData : public InstanceBaseData {
-
 		struct PairInfo {
 			List<Instance *>::Element *L; //iterator in geometry
 			Instance *geometry;

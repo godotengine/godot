@@ -89,7 +89,6 @@ class Window;
 class SubViewport;
 
 class EditorNode : public Node {
-
 	GDCLASS(EditorNode, Node);
 
 public:
@@ -548,8 +547,9 @@ private:
 
 	static void _dependency_error_report(void *ud, const String &p_path, const String &p_dep, const String &p_type) {
 		EditorNode *en = (EditorNode *)ud;
-		if (!en->dependency_errors.has(p_path))
+		if (!en->dependency_errors.has(p_path)) {
 			en->dependency_errors[p_path] = Set<String>();
+		}
 		en->dependency_errors[p_path].insert(p_dep + "::" + p_type);
 	}
 
@@ -802,10 +802,11 @@ public:
 	static void progress_end_task_bg(const String &p_task);
 
 	void save_scene_to_path(String p_file, bool p_with_preview = true) {
-		if (p_with_preview)
+		if (p_with_preview) {
 			_save_scene_with_preview(p_file);
-		else
+		} else {
 			_save_scene(p_file);
+		}
 	}
 
 	bool is_scene_in_use(const String &p_path);
@@ -868,7 +869,6 @@ public:
 };
 
 struct EditorProgress {
-
 	String task;
 	bool step(const String &p_state, int p_step = -1, bool p_force_refresh = true) { return EditorNode::progress_task_step(task, p_state, p_step, p_force_refresh); }
 	EditorProgress(const String &p_task, const String &p_label, int p_amount, bool p_can_cancel = false) {
@@ -909,7 +909,6 @@ public:
 };
 
 struct EditorProgressBG {
-
 	String task;
 	void step(int p_step = -1) { EditorNode::progress_task_step_bg(task, p_step); }
 	EditorProgressBG(const String &p_task, const String &p_label, int p_amount) {

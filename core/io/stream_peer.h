@@ -93,7 +93,6 @@ public:
 };
 
 class StreamPeerBuffer : public StreamPeer {
-
 	GDCLASS(StreamPeerBuffer, StreamPeer);
 
 	Vector<uint8_t> data;

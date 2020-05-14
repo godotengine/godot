@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class GridContainer : public Container {
-
 	GDCLASS(GridContainer, Container);
 
 	int columns;

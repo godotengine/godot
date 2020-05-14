@@ -42,7 +42,6 @@ class AudioStream;
 class AudioStreamSample;
 
 class AudioDriver {
-
 	static AudioDriver *singleton;
 	uint64_t _last_mix_time;
 	uint64_t _last_mix_frames;
@@ -125,7 +124,6 @@ public:
 };
 
 class AudioDriverManager {
-
 	enum {
 
 		MAX_DRIVERS = 10
@@ -146,7 +144,6 @@ public:
 class AudioBusLayout;
 
 class AudioServer : public Object {
-
 	GDCLASS(AudioServer, Object);
 
 public:
@@ -184,7 +181,6 @@ private:
 	float global_rate_scale;
 
 	struct Bus {
-
 		StringName name;
 		bool solo;
 		bool mute;
@@ -237,7 +233,6 @@ private:
 	void _mix_step();
 
 	struct CallbackItem {
-
 		AudioCallback callback;
 		void *userdata;
 
@@ -370,13 +365,11 @@ public:
 VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
 
 class AudioBusLayout : public Resource {
-
 	GDCLASS(AudioBusLayout, Resource);
 
 	friend class AudioServer;
 
 	struct Bus {
-
 		StringName name;
 		bool solo;
 		bool mute;

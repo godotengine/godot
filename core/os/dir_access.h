@@ -61,7 +61,6 @@ protected:
 
 	template <class T>
 	static DirAccess *_create_builtin() {
-
 		return memnew(T);
 	}
 
@@ -114,7 +113,6 @@ public:
 
 	template <class T>
 	static void make_default(AccessType p_access) {
-
 		create_func[p_access] = _create_builtin<T>;
 	}
 
@@ -125,9 +123,7 @@ public:
 };
 
 struct DirAccessRef {
-
 	_FORCE_INLINE_ DirAccess *operator->() {
-
 		return f;
 	}
 
@@ -137,8 +133,9 @@ struct DirAccessRef {
 
 	DirAccessRef(DirAccess *fa) { f = fa; }
 	~DirAccessRef() {
-		if (f)
+		if (f) {
 			memdelete(f);
+		}
 	}
 };
 

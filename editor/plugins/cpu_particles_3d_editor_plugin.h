@@ -35,7 +35,6 @@
 #include "scene/3d/cpu_particles_3d.h"
 
 class CPUParticles3DEditor : public GPUParticles3DEditorBase {
-
 	GDCLASS(CPUParticles3DEditor, GPUParticles3DEditorBase);
 
 	enum Menu {
@@ -65,7 +64,6 @@ public:
 };
 
 class CPUParticles3DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(CPUParticles3DEditorPlugin, EditorPlugin);
 
 	CPUParticles3DEditor *particles_editor;

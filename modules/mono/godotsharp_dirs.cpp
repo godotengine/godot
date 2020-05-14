@@ -86,7 +86,6 @@ String _get_mono_user_dir() {
 }
 
 class _GodotSharpDirs {
-
 public:
 	String res_data_dir;
 	String res_metadata_dir;

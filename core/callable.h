@@ -45,7 +45,6 @@ class CallableCustom;
 // but can be optimized or customized.
 
 class Callable {
-
 	//needs to be max 16 bytes in 64 bits
 	StringName method;
 	union {

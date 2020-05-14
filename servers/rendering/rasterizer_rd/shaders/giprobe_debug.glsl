@@ -16,6 +16,7 @@ struct CellData {
 layout(set = 0, binding = 1, std140) buffer CellDataBuffer {
 	CellData data[];
 }
+
 cell_data;
 
 layout(set = 0, binding = 2) uniform texture3D color_tex;
@@ -28,7 +29,6 @@ layout(set = 0, binding = 5) uniform texture3D aniso_neg_tex;
 #endif
 
 layout(push_constant, binding = 0, std430) uniform Params {
-
 	mat4 projection;
 	uint cell_offset;
 	float dynamic_range;
@@ -37,12 +37,12 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	ivec3 bounds;
 	uint pad;
 }
+
 params;
 
 layout(location = 0) out vec4 color_interp;
 
 void main() {
-
 	const vec3 cube_triangles[36] = vec3[](
 			vec3(-1.0f, -1.0f, -1.0f),
 			vec3(-1.0f, -1.0f, 1.0f),
@@ -184,7 +184,6 @@ layout(location = 0) in vec4 color_interp;
 layout(location = 0) out vec4 frag_color;
 
 void main() {
-
 	frag_color = color_interp;
 
 #ifdef MODE_DEBUG_LIGHT_FULL
