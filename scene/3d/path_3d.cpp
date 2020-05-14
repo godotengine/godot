@@ -250,16 +250,24 @@ String PathFollow3D::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node3D::get_configuration_warning();
+
 	if (!Object::cast_to<Path3D>(get_parent())) {
-		return TTR("PathFollow3D only works when set as a child of a Path3D node.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("PathFollow3D only works when set as a child of a Path3D node.");
 	} else {
 		Path3D *path = Object::cast_to<Path3D>(get_parent());
 		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-			return TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource.");
+			if (!warning.empty()) {
+				warning += "\n\n";
+			}
+			warning += TTR("PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path3D's Curve resource.");
 		}
 	}
 
-	return String();
+	return warning;
 }
 
 void PathFollow3D::_bind_methods() {

@@ -222,7 +222,7 @@ String GPUParticles2D::get_configuration_warning() const {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles2D\" option for this purpose.");
 	}
 
-	String warnings;
+	String warnings = Node2D::get_configuration_warning();
 
 	if (process_material.is_null()) {
 		if (warnings != String()) {

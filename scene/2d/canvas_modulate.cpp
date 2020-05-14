@@ -78,14 +78,19 @@ String CanvasModulate::get_configuration_warning() const {
 		return String();
 	}
 
+	String warning = Node2D::get_configuration_warning();
+
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);
 
 	if (nodes.size() > 1) {
-		return TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Only one visible CanvasModulate is allowed per scene (or set of instanced scenes). The first created one will work, while the rest will be ignored.");
 	}
 
-	return String();
+	return warning;
 }
 
 CanvasModulate::CanvasModulate() {

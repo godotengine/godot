@@ -261,11 +261,16 @@ void ShaderGlobalsOverride::_notification(int p_what) {
 }
 
 String ShaderGlobalsOverride::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!active) {
-		return TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("ShaderGlobalsOverride is not active because another node of the same type is in the scene.");
 	}
 
-	return String();
+	return warning;
 }
 
 void ShaderGlobalsOverride::_bind_methods() {

@@ -232,7 +232,7 @@ String GPUParticles3D::get_configuration_warning() const {
 		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles3D node instead. You can use the \"Convert to CPUParticles3D\" option for this purpose.");
 	}
 
-	String warnings;
+	String warnings = GeometryInstance3D::get_configuration_warning();
 
 	bool meshes_found = false;
 	bool anim_material_found = false;
