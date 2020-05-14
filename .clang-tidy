@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-use-default-member-init'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-use-default-member-init,modernize-use-nullptr'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false

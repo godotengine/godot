@@ -75,7 +75,7 @@ public:
 		return method == StringName() && object == 0;
 	}
 	_FORCE_INLINE_ bool is_custom() const {
-		return method == StringName() && custom != 0;
+		return method == StringName() && custom != nullptr;
 	}
 	_FORCE_INLINE_ bool is_standard() const {
 		return method != StringName();
