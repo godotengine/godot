@@ -1526,7 +1526,7 @@ void RasterizerCanvasGLES2::render_batches(Item::Command *const *p_commands, Ite
 										offset += to_draw * 2;
 									}
 								} else {
-									_draw_generic(GL_LINES, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
+									_draw_generic(GL_LINE_STRIP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
 								}
 
 #ifdef GLES_OVER_GL
