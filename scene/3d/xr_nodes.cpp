@@ -269,11 +269,11 @@ void XRController3D::set_controller_id(int p_controller_id) {
 	update_configuration_warning();
 };
 
-int XRController3D::get_controller_id(void) const {
+int XRController3D::get_controller_id() const {
 	return controller_id;
 };
 
-String XRController3D::get_controller_name(void) const {
+String XRController3D::get_controller_name() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());
@@ -465,7 +465,7 @@ void XRAnchor3D::set_anchor_id(int p_anchor_id) {
 	update_configuration_warning();
 };
 
-int XRAnchor3D::get_anchor_id(void) const {
+int XRAnchor3D::get_anchor_id() const {
 	return anchor_id;
 };
 
@@ -473,7 +473,7 @@ Vector3 XRAnchor3D::get_size() const {
 	return size;
 };
 
-String XRAnchor3D::get_anchor_name(void) const {
+String XRAnchor3D::get_anchor_name() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());

@@ -389,7 +389,7 @@ public:
 		return B;
 	}
 
-	virtual void calcAnchorPos(void); // overridable
+	virtual void calcAnchorPos(); // overridable
 
 	void set_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param, real_t p_value);
 	real_t get_param(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisParam p_param) const;
