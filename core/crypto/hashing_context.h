@@ -44,7 +44,7 @@ public:
 	};
 
 private:
-	void *ctx;
+	void *ctx = nullptr;
 	HashType type;
 
 protected:
@@ -57,7 +57,7 @@ public:
 	Error update(PackedByteArray p_chunk);
 	PackedByteArray finish();
 
-	HashingContext();
+	HashingContext() {}
 	~HashingContext();
 };
 

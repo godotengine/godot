@@ -305,7 +305,7 @@ protected:
 	float params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
 
-	int precision;
+	int precision = 1;
 
 	virtual RID _configure_joint(PhysicsBody3D *body_a, PhysicsBody3D *body_b);
 	static void _bind_methods();

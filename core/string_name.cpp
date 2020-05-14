@@ -388,12 +388,6 @@ StringName StringName::search(const String &p_name) {
 	return StringName(); //does not exist
 }
 
-StringName::StringName() {
-
-	_data = nullptr;
-}
-
 StringName::~StringName() {
-
 	unref();
 }

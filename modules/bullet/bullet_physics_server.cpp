@@ -79,9 +79,7 @@ void BulletPhysicsServer3D::_bind_methods() {
 }
 
 BulletPhysicsServer3D::BulletPhysicsServer3D() :
-		PhysicsServer3D(),
-		active(true),
-		active_spaces_count(0) {}
+		PhysicsServer3D() {}
 
 BulletPhysicsServer3D::~BulletPhysicsServer3D() {}
 

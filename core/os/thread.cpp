@@ -66,9 +66,3 @@ Error Thread::set_name(const String &p_name) {
 
 	return ERR_UNAVAILABLE;
 };
-
-Thread::Thread() {
-}
-
-Thread::~Thread() {
-}

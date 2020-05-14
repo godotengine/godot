@@ -48,7 +48,8 @@ public:
 	void set_instance(Object *p_obj);
 	void set_function(const StringName &p_func);
 	bool is_valid() const;
-	FuncRef();
+
+	FuncRef() {}
 };
 
 #endif // FUNC_REF_H

@@ -288,6 +288,3 @@ void PHashTranslation::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("generate", "from"), &PHashTranslation::generate);
 }
-
-PHashTranslation::PHashTranslation() {
-}

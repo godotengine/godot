@@ -61,10 +61,10 @@ private:
 
 	struct Entry {
 
-		unsigned int pos;
-		unsigned int len;
-		unsigned int lock;
-		unsigned int check;
+		unsigned int pos = 0;
+		unsigned int len = 0;
+		unsigned int lock = 0;
+		unsigned int check = 0;
 
 		inline void clear() {
 			pos = 0;
@@ -72,7 +72,7 @@ private:
 			lock = 0;
 			check = 0;
 		}
-		Entry() { clear(); }
+		Entry() {}
 	};
 
 	typedef int EntryArrayPos;

@@ -34,6 +34,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/project_settings.h"
+
 #include <stdint.h>
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];

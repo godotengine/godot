@@ -326,17 +326,13 @@ public:
 };
 
 struct CSharpScriptBinding {
-	bool inited;
+	bool inited = false;
 	StringName type_name;
-	GDMonoClass *wrapper_class;
+	GDMonoClass *wrapper_class = nullptr;
 	MonoGCHandleData gchandle;
-	Object *owner;
+	Object *owner = nullptr;
 
-	CSharpScriptBinding() :
-			inited(false),
-			wrapper_class(nullptr),
-			owner(nullptr) {
-	}
+	CSharpScriptBinding() {}
 };
 
 class ManagedCallableMiddleman : public Object {

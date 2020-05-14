@@ -123,7 +123,7 @@ private:
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
 
-	Type type;
+	Type type = NIL;
 
 	struct ObjData {
 
@@ -469,10 +469,9 @@ public:
 	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
+
 	Variant(const Variant &p_variant);
-	_FORCE_INLINE_ Variant() {
-		type = NIL;
-	}
+	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
 		if (type != Variant::NIL)
 			clear();

@@ -36,7 +36,6 @@
 #include "core/os/thread_safe.h"
 
 class Input : public Object {
-
 	GDCLASS(Input, Object);
 	_THREAD_SAFE_CLASS_
 
@@ -100,7 +99,7 @@ public:
 	typedef void (*EventDispatchFunc)(const Ref<InputEvent> &p_event);
 
 private:
-	int mouse_button_mask;
+	int mouse_button_mask = 0;
 
 	Set<int> keys_pressed;
 	Set<int> joy_buttons_pressed;
@@ -111,7 +110,7 @@ private:
 	Vector3 magnetometer;
 	Vector3 gyroscope;
 	Vector2 mouse_pos;
-	int64_t mouse_window;
+	int64_t mouse_window = 0;
 
 	struct Action {
 		uint64_t physics_frame;
@@ -122,10 +121,11 @@ private:
 
 	Map<StringName, Action> action_state;
 
-	bool emulate_touch_from_mouse;
-	bool emulate_mouse_from_touch;
+	bool emulate_touch_from_mouse = false;
+	bool emulate_mouse_from_touch = false;
+	bool use_accumulated_input = false;
 
-	int mouse_from_touch_index;
+	int mouse_from_touch_index = -1;
 
 	struct SpeedTrack {
 
@@ -144,35 +144,21 @@ private:
 	struct Joypad {
 		StringName name;
 		StringName uid;
-		bool connected;
-		bool last_buttons[JOY_BUTTON_MAX];
-		float last_axis[JOY_AXIS_MAX];
-		float filter;
-		int last_hat;
-		int mapping;
-		int hat_current;
-
-		Joypad() {
-			for (int i = 0; i < JOY_AXIS_MAX; i++) {
-				last_axis[i] = 0.0f;
-			}
-			for (int i = 0; i < JOY_BUTTON_MAX; i++) {
-				last_buttons[i] = false;
-			}
-			connected = false;
-			last_hat = HAT_MASK_CENTER;
-			filter = 0.01f;
-			mapping = -1;
-			hat_current = 0;
-		}
+		bool connected = false;
+		bool last_buttons[JOY_BUTTON_MAX] = { false };
+		float last_axis[JOY_AXIS_MAX] = { 0.0f };
+		float filter = 0.01f;
+		int last_hat = HAT_MASK_CENTER;
+		int mapping = -1;
+		int hat_current = 0;
 	};
 
 	SpeedTrack mouse_speed_track;
 	Map<int, SpeedTrack> touch_speed_track;
 	Map<int, Joypad> joy_names;
-	int fallback_mapping;
+	int fallback_mapping = -1;
 
-	CursorShape default_shape;
+	CursorShape default_shape = CURSOR_ARROW;
 
 	enum JoyType {
 		TYPE_BUTTON,
@@ -243,7 +229,7 @@ private:
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
 	List<Ref<InputEvent>> accumulated_events;
-	bool use_accumulated_input;
+
 	friend class DisplayServer;
 
 	static void (*set_mouse_mode_func)(MouseMode);
@@ -253,7 +239,7 @@ private:
 	static CursorShape (*get_current_cursor_shape_func)();
 	static void (*set_custom_mouse_cursor_func)(const RES &, CursorShape, const Vector2 &);
 
-	EventDispatchFunc event_dispatch_function;
+	EventDispatchFunc event_dispatch_function = nullptr;
 
 protected:
 	struct VibrationInfo {

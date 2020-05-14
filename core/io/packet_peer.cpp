@@ -35,11 +35,6 @@
 
 /* helpers / binders */
 
-PacketPeer::PacketPeer() :
-		last_get_error(OK),
-		encode_buffer_max_size(8 * 1024 * 1024) {
-}
-
 void PacketPeer::set_encode_buffer_max_size(int p_max_size) {
 
 	ERR_FAIL_COND_MSG(p_max_size < 1024, "Max encode buffer must be at least 1024 bytes");

@@ -51,12 +51,12 @@ public:
 
 	private:
 		friend class Set<T, C, A>;
-		int color;
-		Element *right;
-		Element *left;
-		Element *parent;
-		Element *_next;
-		Element *_prev;
+		int color = RED;
+		Element *right = nullptr;
+		Element *left = nullptr;
+		Element *parent = nullptr;
+		Element *_next = nullptr;
+		Element *_prev = nullptr;
 		T value;
 		//_Data *data;
 
@@ -80,22 +80,15 @@ public:
 		const T &get() const {
 			return value;
 		};
-		Element() {
-			color = RED;
-			right = nullptr;
-			left = nullptr;
-			parent = nullptr;
-			_next = nullptr;
-			_prev = nullptr;
-		};
+		Element() {}
 	};
 
 private:
 	struct _Data {
 
-		Element *_root;
+		Element *_root = nullptr;
 		Element *_nil;
-		int size_cache;
+		int size_cache = 0;
 
 		_FORCE_INLINE_ _Data() {
 #ifdef GLOBALNIL_DISABLED
@@ -105,8 +98,6 @@ private:
 #else
 			_nil = (Element *)&_GlobalNilClass::_nil;
 #endif
-			_root = nullptr;
-			size_cache = 0;
 		}
 
 		void _create_root() {
@@ -625,11 +616,9 @@ public:
 		_copy_from(p_set);
 	}
 
-	_FORCE_INLINE_ Set() {
-	}
+	_FORCE_INLINE_ Set() {}
 
 	~Set() {
-
 		clear();
 	}
 };

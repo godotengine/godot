@@ -66,6 +66,3 @@ void NetworkedMultiplayerPeer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_succeeded"));
 	ADD_SIGNAL(MethodInfo("connection_failed"));
 }
-
-NetworkedMultiplayerPeer::NetworkedMultiplayerPeer() {
-}

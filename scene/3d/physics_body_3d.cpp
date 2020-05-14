@@ -2579,24 +2579,7 @@ bool PhysicalBone3D::get_axis_lock(PhysicsServer3D::BodyAxis p_axis) const {
 }
 
 PhysicalBone3D::PhysicalBone3D() :
-		PhysicsBody3D(PhysicsServer3D::BODY_MODE_STATIC),
-#ifdef TOOLS_ENABLED
-		gizmo_move_joint(false),
-#endif
-		joint_data(nullptr),
-		parent_skeleton(nullptr),
-		simulate_physics(false),
-		_internal_simulate_physics(false),
-		bone_id(-1),
-		bone_name(""),
-		bounce(0),
-		mass(1),
-		friction(1),
-		gravity_scale(1),
-		linear_damp(-1),
-		angular_damp(-1),
-		can_sleep(true) {
-
+		PhysicsBody3D(PhysicsServer3D::BODY_MODE_STATIC) {
 	reset_physics_simulation_state();
 }
 

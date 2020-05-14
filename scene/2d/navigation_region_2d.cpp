@@ -367,13 +367,6 @@ void NavigationPolygon::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 }
 
-NavigationPolygon::NavigationPolygon() :
-		rect_cache_dirty(true) {
-}
-
-NavigationPolygon::~NavigationPolygon() {
-}
-
 void NavigationRegion2D::set_enabled(bool p_enabled) {
 
 	if (enabled == p_enabled)
@@ -569,12 +562,8 @@ void NavigationRegion2D::_bind_methods() {
 }
 
 NavigationRegion2D::NavigationRegion2D() {
-
-	enabled = true;
 	set_notify_transform(true);
 	region = NavigationServer2D::get_singleton()->region_create();
-
-	navigation = nullptr;
 }
 
 NavigationRegion2D::~NavigationRegion2D() {

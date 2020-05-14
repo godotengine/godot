@@ -100,24 +100,11 @@ tryagain:
 }
 
 CommandQueueMT::CommandQueueMT(bool p_sync) {
-
-	read_ptr = 0;
-	write_ptr = 0;
-	dealloc_ptr = 0;
-	command_mem = (uint8_t *)memalloc(COMMAND_MEM_SIZE);
-
-	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
-
-		sync_sems[i].in_use = false;
-	}
 	if (p_sync)
 		sync = memnew(Semaphore);
-	else
-		sync = nullptr;
 }
 
 CommandQueueMT::~CommandQueueMT() {
-
 	if (sync)
 		memdelete(sync);
 	memfree(command_mem);

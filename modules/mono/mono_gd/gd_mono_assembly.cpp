@@ -490,18 +490,7 @@ GDMonoAssembly *GDMonoAssembly::load_from(const String &p_name, const String &p_
 	return loaded_asm;
 }
 
-GDMonoAssembly::GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly) :
-		name(p_name),
-		image(p_image),
-		assembly(p_assembly),
-#ifdef GD_MONO_HOT_RELOAD
-		modified_time(0),
-#endif
-		gdobject_class_cache_updated(false) {
-}
-
 GDMonoAssembly::~GDMonoAssembly() {
-
 	if (image)
 		unload();
 }

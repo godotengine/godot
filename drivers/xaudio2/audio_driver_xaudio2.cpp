@@ -196,15 +196,9 @@ void AudioDriverXAudio2::finish() {
 	thread = nullptr;
 }
 
-AudioDriverXAudio2::AudioDriverXAudio2() :
-		thread(nullptr),
-		current_buffer(0) {
-	wave_format = { 0 };
+AudioDriverXAudio2::AudioDriverXAudio2() {
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
 		xaudio_buffer[i] = { 0 };
 		samples_out[i] = 0;
 	}
-}
-
-AudioDriverXAudio2::~AudioDriverXAudio2() {
 }

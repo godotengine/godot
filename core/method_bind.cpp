@@ -104,14 +104,6 @@ void MethodBind::_generate_argument_types(int p_count) {
 MethodBind::MethodBind() {
 	static int last_id = 0;
 	method_id = last_id++;
-	hint_flags = METHOD_FLAGS_DEFAULT;
-	argument_count = 0;
-	default_argument_count = 0;
-#ifdef DEBUG_METHODS_ENABLED
-	argument_types = nullptr;
-#endif
-	_const = false;
-	_returns = false;
 }
 
 MethodBind::~MethodBind() {

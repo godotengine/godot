@@ -83,7 +83,7 @@ extern template class MutexLock<MutexImpl<std::mutex>>;
 
 class FakeMutex {
 
-	FakeMutex(){};
+	FakeMutex() {}
 };
 
 template <class MutexT>

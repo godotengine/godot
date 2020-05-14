@@ -187,16 +187,6 @@ NodePath::operator String() const {
 	return ret;
 }
 
-NodePath::NodePath(const NodePath &p_path) {
-
-	data = nullptr;
-
-	if (p_path.data && p_path.data->refcount.ref()) {
-
-		data = p_path.data;
-	}
-}
-
 Vector<StringName> NodePath::get_names() const {
 
 	if (data)
@@ -285,35 +275,8 @@ NodePath NodePath::get_as_property_path() const {
 	}
 }
 
-NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
-
-	data = nullptr;
-
-	if (p_path.size() == 0)
-		return;
-
-	data = memnew(Data);
-	data->refcount.init();
-	data->absolute = p_absolute;
-	data->path = p_path;
-	data->has_slashes = true;
-	data->hash_cache_valid = false;
-}
-
-NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
-
-	data = nullptr;
-
-	if (p_path.size() == 0 && p_subpath.size() == 0)
-		return;
-
-	data = memnew(Data);
-	data->refcount.init();
-	data->absolute = p_absolute;
-	data->path = p_path;
-	data->subpath = p_subpath;
-	data->has_slashes = true;
-	data->hash_cache_valid = false;
+bool NodePath::is_empty() const {
+	return !data;
 }
 
 void NodePath::simplify() {
@@ -347,10 +310,38 @@ NodePath NodePath::simplified() const {
 	return np;
 }
 
+NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
+	if (p_path.size() == 0)
+		return;
+
+	data = memnew(Data);
+	data->refcount.init();
+	data->absolute = p_absolute;
+	data->path = p_path;
+	data->has_slashes = true;
+	data->hash_cache_valid = false;
+}
+
+NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p_subpath, bool p_absolute) {
+	if (p_path.size() == 0 && p_subpath.size() == 0)
+		return;
+
+	data = memnew(Data);
+	data->refcount.init();
+	data->absolute = p_absolute;
+	data->path = p_path;
+	data->subpath = p_subpath;
+	data->has_slashes = true;
+	data->hash_cache_valid = false;
+}
+
+NodePath::NodePath(const NodePath &p_path) {
+	if (p_path.data && p_path.data->refcount.ref()) {
+		data = p_path.data;
+	}
+}
+
 NodePath::NodePath(const String &p_path) {
-
-	data = nullptr;
-
 	if (p_path.length() == 0)
 		return;
 
@@ -437,16 +428,6 @@ NodePath::NodePath(const String &p_path) {
 	}
 }
 
-bool NodePath::is_empty() const {
-
-	return !data;
-}
-NodePath::NodePath() {
-
-	data = nullptr;
-}
-
 NodePath::~NodePath() {
-
 	unref();
 }

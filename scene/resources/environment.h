@@ -90,7 +90,7 @@ public:
 private:
 	RID environment;
 
-	BGMode bg_mode;
+	BGMode bg_mode = BG_CLEAR_COLOR;
 	Ref<Sky> bg_sky;
 	float bg_sky_custom_fov;
 	Vector3 sky_rotation;
@@ -105,7 +105,7 @@ private:
 	AmbientSource ambient_source;
 	ReflectionSource reflection_source;
 
-	ToneMapper tone_mapper;
+	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure;
 	float tonemap_white;
 	bool tonemap_auto_exposure;
@@ -132,7 +132,7 @@ private:
 	float ssao_bias;
 	float ssao_direct_light_affect;
 	float ssao_ao_channel_affect;
-	SSAOBlur ssao_blur;
+	SSAOBlur ssao_blur = SSAO_BLUR_3x3;
 	float ssao_edge_sharpness;
 
 	bool glow_enabled;
@@ -141,7 +141,7 @@ private:
 	float glow_strength;
 	float glow_mix;
 	float glow_bloom;
-	GlowBlendMode glow_blend_mode;
+	GlowBlendMode glow_blend_mode = GLOW_BLEND_MODE_ADDITIVE;
 	float glow_hdr_bleed_threshold;
 	float glow_hdr_bleed_scale;
 	float glow_hdr_luminance_cap;

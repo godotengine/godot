@@ -41,7 +41,7 @@
 #include "core/os/keyboard.h"
 
 class KeyMappingX11 {
-	KeyMappingX11(){};
+	KeyMappingX11() {}
 
 public:
 	static unsigned int get_keycode(KeySym p_keysym);

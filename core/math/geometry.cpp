@@ -104,25 +104,19 @@ struct _FaceClassify {
 
 	struct _Link {
 
-		int face;
-		int edge;
+		int face = -1;
+		int edge = -1;
 		void clear() {
 			face = -1;
 			edge = -1;
 		}
-		_Link() {
-			face = -1;
-			edge = -1;
-		}
+		_Link() {}
 	};
-	bool valid;
-	int group;
+	bool valid = false;
+	int group = -1;
 	_Link links[3];
 	Face3 face;
-	_FaceClassify() {
-		group = -1;
-		valid = false;
-	};
+	_FaceClassify() {}
 };
 
 static bool _connect_faces(_FaceClassify *p_faces, int len, int p_group) {

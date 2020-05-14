@@ -38,11 +38,11 @@ class SpringArm3D : public Node3D {
 
 	Ref<Shape3D> shape;
 	Set<RID> excluded_objects;
-	float spring_length;
-	float current_spring_length;
-	bool keep_child_basis;
-	uint32_t mask;
-	float margin;
+	float spring_length = 1;
+	float current_spring_length = 0;
+	bool keep_child_basis = false;
+	uint32_t mask = 1;
+	float margin = 0.01;
 
 protected:
 	void _notification(int p_what);
@@ -62,7 +62,7 @@ public:
 	void set_margin(float p_margin);
 	float get_margin();
 
-	SpringArm3D();
+	SpringArm3D() {}
 
 private:
 	void process_spring();

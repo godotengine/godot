@@ -49,7 +49,7 @@ class AudioEffectRecordInstance : public AudioEffectInstance {
 
 	bool is_recording;
 	Thread *io_thread;
-	bool thread_active;
+	bool thread_active = false;
 
 	Vector<AudioFrame> ring_buffer;
 	Vector<float> recording_data;
@@ -71,8 +71,7 @@ public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	virtual bool process_silence() const;
 
-	AudioEffectRecordInstance() :
-			thread_active(false) {}
+	AudioEffectRecordInstance() {}
 	~AudioEffectRecordInstance();
 };
 

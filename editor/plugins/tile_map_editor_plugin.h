@@ -33,7 +33,6 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
-
 #include "scene/2d/tile_map.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
@@ -127,34 +126,26 @@ class TileMapEditor : public VBoxContainer {
 	List<Point2i> bucket_queue;
 
 	struct CellOp {
-		int idx;
-		bool xf;
-		bool yf;
-		bool tr;
+		int idx = TileMap::INVALID_CELL;
+		bool xf = false;
+		bool yf = false;
+		bool tr = false;
 		Vector2 ac;
 
-		CellOp() :
-				idx(TileMap::INVALID_CELL),
-				xf(false),
-				yf(false),
-				tr(false) {}
+		CellOp() {}
 	};
 
 	Map<Point2i, CellOp> paint_undo;
 
 	struct TileData {
 		Point2i pos;
-		int cell;
-		bool flip_h;
-		bool flip_v;
-		bool transpose;
+		int cell = TileMap::INVALID_CELL;
+		bool flip_h = false;
+		bool flip_v = false;
+		bool transpose = false;
 		Point2i autotile_coord;
 
-		TileData() :
-				cell(TileMap::INVALID_CELL),
-				flip_h(false),
-				flip_v(false),
-				transpose(false) {}
+		TileData() {}
 	};
 
 	List<TileData> copydata;

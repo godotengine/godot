@@ -197,7 +197,7 @@ public:
 	void set_object_id(ObjectID p_id);
 	ObjectID get_object_id() const;
 
-	EncodedObjectAsID();
+	EncodedObjectAsID() {}
 };
 
 Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len = nullptr, bool p_allow_objects = false);

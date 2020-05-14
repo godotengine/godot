@@ -81,4 +81,4 @@ String iOS::get_rate_url(int p_app_id) const {
 	return ret;
 };
 
-iOS::iOS(){};
+iOS::iOS() {}

@@ -54,9 +54,9 @@ public:
 		friend class List<T, A>;
 
 		T value;
-		Element *next_ptr;
-		Element *prev_ptr;
-		_Data *data;
+		Element *next_ptr = nullptr;
+		Element *prev_ptr = nullptr;
+		_Data *data = nullptr;
 
 	public:
 		/**
@@ -139,11 +139,7 @@ public:
 			data->erase(this);
 		}
 
-		_FORCE_INLINE_ Element() {
-			next_ptr = 0;
-			prev_ptr = 0;
-			data = nullptr;
-		};
+		_FORCE_INLINE_ Element() {}
 	};
 
 private:
@@ -178,7 +174,7 @@ private:
 		}
 	};
 
-	_Data *_data;
+	_Data *_data = nullptr;
 
 public:
 	/**
@@ -687,7 +683,6 @@ public:
 	 */
 	List(const List &p_list) {
 
-		_data = nullptr;
 		const Element *it = p_list.front();
 		while (it) {
 
@@ -696,9 +691,8 @@ public:
 		}
 	}
 
-	List() {
-		_data = nullptr;
-	};
+	List() {}
+
 	~List() {
 		clear();
 		if (_data) {

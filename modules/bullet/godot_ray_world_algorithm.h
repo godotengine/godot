@@ -45,7 +45,7 @@ class GodotRayWorldAlgorithm : public btActivatingCollisionAlgorithm {
 
 	const btDiscreteDynamicsWorld *m_world;
 	btPersistentManifold *m_manifoldPtr;
-	bool m_ownManifold;
+	bool m_ownManifold = false;
 	bool m_isSwapped;
 
 public:

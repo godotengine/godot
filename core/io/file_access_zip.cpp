@@ -241,9 +241,7 @@ ZipArchive *ZipArchive::get_singleton() {
 }
 
 ZipArchive::ZipArchive() {
-
 	instance = this;
-	//fa_create_func = FileAccess::get_create_func();
 }
 
 ZipArchive::~ZipArchive() {
@@ -369,14 +367,12 @@ bool FileAccessZip::file_exists(const String &p_name) {
 	return false;
 }
 
-FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) :
-		zfile(nullptr) {
+FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) {
 	_open(p_path, FileAccess::READ);
 }
 
 FileAccessZip::~FileAccessZip() {
-
 	close();
 }
 
-#endif
+#endif // MINIZIP_ENABLED

@@ -69,7 +69,7 @@ public:
 	bool has_cached(const String &p_path);
 	bool exists(const String &p_path, const String &p_type_hint = "");
 
-	_ResourceLoader();
+	_ResourceLoader() { singleton = this; }
 };
 
 VARIANT_ENUM_CAST(_ResourceLoader::ThreadLoadStatus);
@@ -98,7 +98,7 @@ public:
 	Error save(const String &p_path, const RES &p_resource, SaverFlags p_flags);
 	Vector<String> get_recognized_extensions(const RES &p_resource);
 
-	_ResourceSaver();
+	_ResourceSaver() { singleton = this; }
 };
 
 VARIANT_ENUM_CAST(_ResourceSaver::SaverFlags);
@@ -245,7 +245,7 @@ public:
 
 	static _OS *get_singleton() { return singleton; }
 
-	_OS();
+	_OS() { singleton = this; }
 };
 
 VARIANT_ENUM_CAST(_OS::VideoDriver);
@@ -327,7 +327,7 @@ public:
 
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
-	_Geometry();
+	_Geometry() { singleton = this; }
 };
 
 VARIANT_ENUM_CAST(_Geometry::PolyBooleanOperation);
@@ -335,10 +335,10 @@ VARIANT_ENUM_CAST(_Geometry::PolyJoinType);
 VARIANT_ENUM_CAST(_Geometry::PolyEndType);
 
 class _File : public Reference {
-
 	GDCLASS(_File, Reference);
-	FileAccess *f;
-	bool eswap;
+
+	FileAccess *f = nullptr;
+	bool eswap = false;
 
 protected:
 	static void _bind_methods();
@@ -429,7 +429,7 @@ public:
 
 	uint64_t get_modified_time(const String &p_file) const;
 
-	_File();
+	_File() {}
 	virtual ~_File();
 };
 
@@ -538,10 +538,10 @@ class _Thread : public Reference {
 protected:
 	Variant ret;
 	Variant userdata;
-	volatile bool active;
-	Object *target_instance;
+	volatile bool active = false;
+	Object *target_instance = nullptr;
 	StringName target_method;
-	Thread *thread;
+	Thread *thread = nullptr;
 	static void _bind_methods();
 	static void _start_func(void *ud);
 
@@ -559,7 +559,7 @@ public:
 	bool is_active() const;
 	Variant wait_to_finish();
 
-	_Thread();
+	_Thread() {}
 	~_Thread();
 };
 
@@ -600,8 +600,8 @@ public:
 
 	bool is_class_enabled(StringName p_class) const;
 
-	_ClassDB();
-	~_ClassDB();
+	_ClassDB() {}
+	~_ClassDB() {}
 };
 
 class _Engine : public Object {
@@ -649,7 +649,7 @@ public:
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
 
-	_Engine();
+	_Engine() { singleton = this; }
 };
 
 class _JSON;
@@ -661,7 +661,7 @@ class JSONParseResult : public Reference {
 
 	Error error;
 	String error_string;
-	int error_line;
+	int error_line = -1;
 
 	Variant result;
 
@@ -681,8 +681,7 @@ public:
 	void set_result(const Variant &p_result);
 	Variant get_result() const;
 
-	JSONParseResult() :
-			error_line(-1) {}
+	JSONParseResult() {}
 };
 
 class _JSON : public Object {
@@ -698,7 +697,7 @@ public:
 	String print(const Variant &p_value, const String &p_indent = "", bool p_sort_keys = false);
 	Ref<JSONParseResult> parse(const String &p_json);
 
-	_JSON();
+	_JSON() { singleton = this; }
 };
 
 #endif // CORE_BIND_H

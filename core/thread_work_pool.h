@@ -33,8 +33,10 @@
 
 #include "core/os/memory.h"
 #include "core/os/semaphore.h"
+
 #include <atomic>
 #include <thread>
+
 class ThreadWorkPool {
 
 	std::atomic<uint32_t> index;

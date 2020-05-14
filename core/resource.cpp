@@ -429,17 +429,7 @@ void Resource::_bind_methods() {
 }
 
 Resource::Resource() :
-		remapped_list(this) {
-
-#ifdef TOOLS_ENABLED
-	last_modified_time = 0;
-	import_last_modified_time = 0;
-#endif
-
-	subindex = 0;
-	local_to_scene = false;
-	local_scene = nullptr;
-}
+		remapped_list(this) {}
 
 Resource::~Resource() {
 

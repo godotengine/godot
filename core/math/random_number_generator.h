@@ -65,7 +65,7 @@ public:
 			return ret % (to - from + 1) + from;
 	}
 
-	RandomNumberGenerator();
+	RandomNumberGenerator() {}
 };
 
 #endif // RANDOM_NUMBER_GENERATOR_H

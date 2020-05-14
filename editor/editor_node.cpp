@@ -42,7 +42,6 @@
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "core/path_remap.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/translation.h"

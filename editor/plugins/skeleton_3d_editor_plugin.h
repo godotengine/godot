@@ -46,10 +46,9 @@ class Skeleton3DEditor : public Node {
 	};
 
 	struct BoneInfo {
-		PhysicalBone3D *physical_bone;
+		PhysicalBone3D *physical_bone = nullptr;
 		Transform relative_rest; // Relative to skeleton node
-		BoneInfo() :
-				physical_bone(nullptr) {}
+		BoneInfo() {}
 	};
 
 	Skeleton3D *skeleton;
