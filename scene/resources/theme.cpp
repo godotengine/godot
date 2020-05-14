@@ -69,7 +69,7 @@ Vector<String> Theme::_get_stylebox_list(const String &p_type) const {
 	return ilret;
 }
 
-Vector<String> Theme::_get_stylebox_types(void) const {
+Vector<String> Theme::_get_stylebox_types() const {
 
 	Vector<String> ilret;
 	List<StringName> il;
