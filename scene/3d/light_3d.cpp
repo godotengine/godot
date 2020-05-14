@@ -448,7 +448,7 @@ String OmniLight3D::get_configuration_warning() const {
 	String warning = Light3D::get_configuration_warning();
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Projector texture only works with shadows active.");
@@ -482,15 +482,14 @@ String SpotLight3D::get_configuration_warning() const {
 	String warning = Light3D::get_configuration_warning();
 
 	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
-
 		warning += TTR("A SpotLight3D with an angle wider than 90 degrees cannot cast shadows.");
 	}
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Projector texture only works with shadows active.");

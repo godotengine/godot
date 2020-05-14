@@ -251,7 +251,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (can_rename) { //should be can edit..
 
 		String warning = p_node->get_configuration_warning();
-		if (warning != String()) {
+		if (!warning.empty()) {
 			item->add_button(0, get_theme_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->get_configuration_warning());
 		}
 

@@ -514,10 +514,15 @@ Vector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 }
 
 String GIProbe::get_configuration_warning() const {
+	String warning = VisualInstance3D::get_configuration_warning();
+
 	if (RenderingServer::get_singleton()->is_low_end()) {
-		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
 	}
-	return String();
+	return warning;
 }
 
 void GIProbe::_bind_methods() {
