@@ -78,7 +78,7 @@ Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String>
 		if (r_assembly_dependencies.has(ref_name))
 			continue;
 
-		GDMonoAssembly *ref_assembly = NULL;
+		GDMonoAssembly *ref_assembly = nullptr;
 
 		{
 			MonoAssemblyName *ref_aname = mono_assembly_name_new("A"); // We can't allocate an empty MonoAssemblyName, hence "A"

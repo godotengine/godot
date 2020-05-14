@@ -544,7 +544,7 @@ public:
 
 	void clear();
 
-	TreeItem *create_item(TreeItem *p_parent = 0, int p_idx = -1);
+	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_idx = -1);
 	TreeItem *get_root();
 	TreeItem *get_last_item();
 

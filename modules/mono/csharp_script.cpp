@@ -295,7 +295,7 @@ void CSharpLanguage::get_reserved_words(List<String> *p_words) const {
 		"when",
 		"where",
 		"yield",
-		0
+		nullptr
 	};
 
 	const char **w = _reserved_words;
