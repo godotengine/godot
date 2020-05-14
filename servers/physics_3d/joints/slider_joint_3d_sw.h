@@ -230,12 +230,12 @@ public:
 	bool getSolveAngLimit() { return m_solveAngLim; }
 	real_t getAngDepth() { return m_angDepth; }
 	// shared code used by ODE solver
-	void calculateTransforms(void);
-	void testLinLimits(void);
-	void testAngLimits(void);
+	void calculateTransforms();
+	void testLinLimits();
+	void testAngLimits();
 	// access for PE Solver
-	Vector3 getAncorInA(void);
-	Vector3 getAncorInB(void);
+	Vector3 getAncorInA();
+	Vector3 getAncorInB();
 
 	void set_param(PhysicsServer3D::SliderJointParam p_param, real_t p_value);
 	real_t get_param(PhysicsServer3D::SliderJointParam p_param) const;

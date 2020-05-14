@@ -411,7 +411,7 @@ real_t Generic6DOFJoint3DSW::getAngle(int axis_index) const {
 	return m_calculatedAxisAngleDiff[axis_index];
 }
 
-void Generic6DOFJoint3DSW::calcAnchorPos(void) {
+void Generic6DOFJoint3DSW::calcAnchorPos() {
 	real_t imA = A->get_inv_mass();
 	real_t imB = B->get_inv_mass();
 	real_t weight;
@@ -688,5 +688,5 @@ bool Generic6DOFJoint3DSW::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOF
 			break; // Can't happen, but silences warning
 	}
 
-	return 0;
+	return false;
 }

@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-use-default-member-init'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-redundant-void-arg,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-nullptr'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
@@ -32,8 +32,10 @@ CheckOptions:
     value:           llvm
   - key:             modernize-replace-auto-ptr.IncludeStyle
     value:           llvm
+  - key:             modernize-use-bool-literals.IgnoreMacros
+    value:           '0'
   - key:             modernize-use-default-member-init.IgnoreMacros
-    value:           '1'
+    value:           '0'
   - key:             modernize-use-default-member-init.UseAssignment
     value:           '1'
   - key:             modernize-use-nullptr.NullMacros

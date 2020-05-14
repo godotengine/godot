@@ -2732,7 +2732,7 @@ void RasterizerStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
 	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
 	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
 	for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
-		multimesh->data_cache_dirty_regions[i] = 0;
+		multimesh->data_cache_dirty_regions[i] = false;
 	}
 	multimesh->data_cache_used_dirty_regions = 0;
 }
@@ -4896,7 +4896,7 @@ void RasterizerStorageRD::_update_decal_atlas() {
 		Vector<DecalAtlas::SortItem> itemsv;
 		itemsv.resize(decal_atlas.textures.size());
 		int base_size = 8;
-		const RID *K = NULL;
+		const RID *K = nullptr;
 
 		int idx = 0;
 		while ((K = decal_atlas.textures.next(K))) {
@@ -5050,7 +5050,7 @@ void RasterizerStorageRD::_update_decal_atlas() {
 
 				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, cc);
 
-				const RID *K = NULL;
+				const RID *K = nullptr;
 				while ((K = decal_atlas.textures.next(K))) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(*K);
 					Texture *src_tex = texture_owner.getornull(*K);
@@ -5459,7 +5459,7 @@ Vector<StringName> RasterizerStorageRD::global_variable_get_list() const {
 		ERR_FAIL_V_MSG(Vector<StringName>(), "This function should never be used outside the editor, it can severely damage performance.");
 	}
 
-	const StringName *K = NULL;
+	const StringName *K = nullptr;
 	Vector<StringName> names;
 	while ((K = global_variables.variables.next(K))) {
 		names.push_back(*K);
