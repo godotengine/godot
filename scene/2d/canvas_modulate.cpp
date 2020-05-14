@@ -68,6 +68,7 @@ void CanvasModulate::set_color(const Color &p_color) {
 		RS::get_singleton()->canvas_set_modulate(get_canvas(), color);
 	}
 }
+
 Color CanvasModulate::get_color() const {
 	return color;
 }

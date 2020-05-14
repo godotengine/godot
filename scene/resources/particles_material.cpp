@@ -637,6 +637,7 @@ void ParticlesMaterial::set_flatness(float p_flatness) {
 	flatness = p_flatness;
 	RenderingServer::get_singleton()->material_set_param(_get_material(), shader_names->flatness, p_flatness);
 }
+
 float ParticlesMaterial::get_flatness() const {
 	return flatness;
 }
@@ -687,6 +688,7 @@ void ParticlesMaterial::set_param(Parameter p_param, float p_value) {
 			break; // Can't happen, but silences warning
 	}
 }
+
 float ParticlesMaterial::get_param(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
@@ -739,6 +741,7 @@ void ParticlesMaterial::set_param_randomness(Parameter p_param, float p_value) {
 			break; // Can't happen, but silences warning
 	}
 }
+
 float ParticlesMaterial::get_param_randomness(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
@@ -811,6 +814,7 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture2D
 
 	_queue_shader_change();
 }
+
 Ref<Texture2D> ParticlesMaterial::get_param_texture(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, Ref<Texture2D>());
 
@@ -896,12 +900,15 @@ ParticlesMaterial::EmissionShape ParticlesMaterial::get_emission_shape() const {
 float ParticlesMaterial::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
 }
+
 Vector3 ParticlesMaterial::get_emission_box_extents() const {
 	return emission_box_extents;
 }
+
 Ref<Texture2D> ParticlesMaterial::get_emission_point_texture() const {
 	return emission_point_texture;
 }
+
 Ref<Texture2D> ParticlesMaterial::get_emission_normal_texture() const {
 	return emission_normal_texture;
 }

@@ -76,9 +76,11 @@ String ResourceImporterLayeredTexture::get_visible_name() const {
 
 	ERR_FAIL_V("");
 }
+
 void ResourceImporterLayeredTexture::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
+
 String ResourceImporterLayeredTexture::get_save_extension() const {
 	switch (mode) {
 		case MODE_CUBEMAP: {
@@ -126,6 +128,7 @@ bool ResourceImporterLayeredTexture::get_option_visibility(const String &p_optio
 int ResourceImporterLayeredTexture::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
 	return "";
 }

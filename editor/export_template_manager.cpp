@@ -382,6 +382,7 @@ void ExportTemplateManager::_http_download_mirror_completed(int p_status, int p_
 		return;
 	}
 }
+
 void ExportTemplateManager::_http_download_templates_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
 	switch (p_status) {
 		case HTTPRequest::RESULT_CANT_RESOLVE: {

@@ -40,6 +40,7 @@ void SVGRasterizer::rasterize(NSVGimage *p_image, float p_tx, float p_ty, float 
 SVGRasterizer::SVGRasterizer() {
 	rasterizer = nsvgCreateRasterizer();
 }
+
 SVGRasterizer::~SVGRasterizer() {
 	nsvgDeleteRasterizer(rasterizer);
 }

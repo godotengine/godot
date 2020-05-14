@@ -102,6 +102,7 @@ void PhysicsBody2D::set_collision_mask_bit(int p_bit, bool p_value) {
 		mask &= ~(1 << p_bit);
 	set_collision_mask(mask);
 }
+
 bool PhysicsBody2D::get_collision_mask_bit(int p_bit) const {
 	return get_collision_mask() & (1 << p_bit);
 }
@@ -168,6 +169,7 @@ void StaticBody2D::set_constant_angular_velocity(real_t p_vel) {
 Vector2 StaticBody2D::get_constant_linear_velocity() const {
 	return constant_linear_velocity;
 }
+
 real_t StaticBody2D::get_constant_angular_velocity() const {
 	return constant_angular_velocity;
 }
@@ -468,6 +470,7 @@ void RigidBody2D::set_mass(real_t p_mass) {
 	_change_notify("weight");
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_MASS, mass);
 }
+
 real_t RigidBody2D::get_mass() const {
 	return mass;
 }
@@ -512,6 +515,7 @@ void RigidBody2D::set_gravity_scale(real_t p_gravity_scale) {
 	gravity_scale = p_gravity_scale;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
+
 real_t RigidBody2D::get_gravity_scale() const {
 	return gravity_scale;
 }
@@ -521,6 +525,7 @@ void RigidBody2D::set_linear_damp(real_t p_linear_damp) {
 	linear_damp = p_linear_damp;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
+
 real_t RigidBody2D::get_linear_damp() const {
 	return linear_damp;
 }
@@ -530,6 +535,7 @@ void RigidBody2D::set_angular_damp(real_t p_angular_damp) {
 	angular_damp = p_angular_damp;
 	PhysicsServer2D::get_singleton()->body_set_param(get_rid(), PhysicsServer2D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
+
 real_t RigidBody2D::get_angular_damp() const {
 	return angular_damp;
 }
@@ -567,6 +573,7 @@ void RigidBody2D::set_angular_velocity(real_t p_velocity) {
 	else
 		PhysicsServer2D::get_singleton()->body_set_state(get_rid(), PhysicsServer2D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 }
+
 real_t RigidBody2D::get_angular_velocity() const {
 	return angular_velocity;
 }
@@ -578,6 +585,7 @@ void RigidBody2D::set_use_custom_integrator(bool p_enable) {
 	custom_integrator = p_enable;
 	PhysicsServer2D::get_singleton()->body_set_omit_force_integration(get_rid(), p_enable);
 }
+
 bool RigidBody2D::is_using_custom_integrator() {
 	return custom_integrator;
 }
@@ -1105,9 +1113,11 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 bool KinematicBody2D::is_on_floor() const {
 	return on_floor;
 }
+
 bool KinematicBody2D::is_on_wall() const {
 	return on_wall;
 }
+
 bool KinematicBody2D::is_on_ceiling() const {
 	return on_ceiling;
 }
@@ -1217,6 +1227,7 @@ void KinematicBody2D::_notification(int p_what) {
 		set_notify_local_transform(true);
 	}
 }
+
 void KinematicBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody2D::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "up_direction", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
@@ -1254,6 +1265,7 @@ KinematicBody2D::KinematicBody2D() :
 	on_wall = false;
 	sync_to_physics = false;
 }
+
 KinematicBody2D::~KinematicBody2D() {
 	if (motion_cache.is_valid()) {
 		motion_cache->owner = nullptr;
@@ -1271,15 +1283,19 @@ KinematicBody2D::~KinematicBody2D() {
 Vector2 KinematicCollision2D::get_position() const {
 	return collision.collision;
 }
+
 Vector2 KinematicCollision2D::get_normal() const {
 	return collision.normal;
 }
+
 Vector2 KinematicCollision2D::get_travel() const {
 	return collision.travel;
 }
+
 Vector2 KinematicCollision2D::get_remainder() const {
 	return collision.remainder;
 }
+
 Object *KinematicCollision2D::get_local_shape() const {
 	if (!owner)
 		return nullptr;
@@ -1294,9 +1310,11 @@ Object *KinematicCollision2D::get_collider() const {
 
 	return nullptr;
 }
+
 ObjectID KinematicCollision2D::get_collider_id() const {
 	return collision.collider;
 }
+
 Object *KinematicCollision2D::get_collider_shape() const {
 	Object *collider = get_collider();
 	if (collider) {
@@ -1309,12 +1327,15 @@ Object *KinematicCollision2D::get_collider_shape() const {
 
 	return nullptr;
 }
+
 int KinematicCollision2D::get_collider_shape_index() const {
 	return collision.collider_shape;
 }
+
 Vector2 KinematicCollision2D::get_collider_velocity() const {
 	return collision.collider_vel;
 }
+
 Variant KinematicCollision2D::get_collider_metadata() const {
 	return Variant();
 }

@@ -134,6 +134,7 @@ float AudioEffectCompressor::get_threshold() const {
 void AudioEffectCompressor::set_ratio(float p_ratio) {
 	ratio = p_ratio;
 }
+
 float AudioEffectCompressor::get_ratio() const {
 	return ratio;
 }
@@ -141,6 +142,7 @@ float AudioEffectCompressor::get_ratio() const {
 void AudioEffectCompressor::set_gain(float p_gain) {
 	gain = p_gain;
 }
+
 float AudioEffectCompressor::get_gain() const {
 	return gain;
 }
@@ -148,6 +150,7 @@ float AudioEffectCompressor::get_gain() const {
 void AudioEffectCompressor::set_attack_us(float p_attack_us) {
 	attack_us = p_attack_us;
 }
+
 float AudioEffectCompressor::get_attack_us() const {
 	return attack_us;
 }
@@ -155,6 +158,7 @@ float AudioEffectCompressor::get_attack_us() const {
 void AudioEffectCompressor::set_release_ms(float p_release_ms) {
 	release_ms = p_release_ms;
 }
+
 float AudioEffectCompressor::get_release_ms() const {
 	return release_ms;
 }
@@ -162,6 +166,7 @@ float AudioEffectCompressor::get_release_ms() const {
 void AudioEffectCompressor::set_mix(float p_mix) {
 	mix = p_mix;
 }
+
 float AudioEffectCompressor::get_mix() const {
 	return mix;
 }

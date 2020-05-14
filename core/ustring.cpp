@@ -247,6 +247,7 @@ String String::operator+(CharType p_chr)  const {
 	res+=p_chr;
 	return res;
 }
+
 */
 String &String::operator+=(const String &p_str) {
 	if (empty()) {
@@ -607,6 +608,7 @@ String String::get_with_code_lines() const {
 	}
 	return ret;
 }
+
 int String::get_slice_count(String p_splitter) const {
 	if (empty())
 		return 0;
@@ -959,6 +961,7 @@ String String::chr(CharType p_char) {
 	CharType c[2] = { p_char, 0 };
 	return String(c);
 }
+
 String String::num(double p_num, int p_decimals) {
 #ifndef NO_USE_STDLIB
 
@@ -1522,6 +1525,7 @@ String::String(CharType p_char) {
 	shared=nullptr;
 	copy_from(p_char);
 }
+
 */
 
 String::String(const char *p_str) {
@@ -2073,6 +2077,7 @@ String operator+(const char *p_chr, const String &p_str) {
 	tmp += p_str;
 	return tmp;
 }
+
 String operator+(CharType p_chr, const String &p_str) {
 	return (String::chr(p_chr) + p_str);
 }
@@ -2217,6 +2222,7 @@ String String::insert(int p_at_pos, const String &p_string) const {
 
 	return pre + p_string + post;
 }
+
 String String::substr(int p_from, int p_chars) const {
 	if (p_chars == -1)
 		p_chars = length() - p_from;
@@ -2467,6 +2473,7 @@ int String::rfind(const String &p_str, int p_from) const {
 
 	return -1;
 }
+
 int String::rfindn(const String &p_str, int p_from) const {
 	// establish a limit
 	int limit = length() - p_str.length();
@@ -2540,6 +2547,7 @@ bool String::begins_with(const String &p_string) const {
 	// only if i == l the p_string matches the beginning
 	return i == l;
 }
+
 bool String::begins_with(const char *p_string) const {
 	int l = length();
 	if (l == 0 || !p_string)
@@ -2846,6 +2854,7 @@ String String::replace_first(const String &p_key, const String &p_with) const {
 
 	return *this;
 }
+
 String String::replacen(const String &p_key, const String &p_with) const {
 	String new_string;
 	int search_from = 0;
@@ -3110,6 +3119,7 @@ String String::humanize_size(uint64_t p_size) {
 
 	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
 }
+
 bool String::is_abs_path() const {
 	if (length() > 1)
 		return (operator[](0) == '/' || operator[](0) == '\\' || find(":/") != -1 || find(":\\") != -1);
@@ -3742,6 +3752,7 @@ String String::percent_encode() const {
 
 	return encoded;
 }
+
 String String::percent_decode() const {
 	CharString pe;
 
@@ -3824,6 +3835,7 @@ String String::rpad(int min_length, const String &character) const {
 
 	return s;
 }
+
 // Left-pad with a character.
 String String::lpad(int min_length, const String &character) const {
 	String s = *this;

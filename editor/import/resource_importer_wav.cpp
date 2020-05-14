@@ -45,9 +45,11 @@ String ResourceImporterWAV::get_importer_name() const {
 String ResourceImporterWAV::get_visible_name() const {
 	return "Microsoft WAV";
 }
+
 void ResourceImporterWAV::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("wav");
 }
+
 String ResourceImporterWAV::get_save_extension() const {
 	return "sample";
 }
@@ -67,6 +69,7 @@ bool ResourceImporterWAV::get_option_visibility(const String &p_option, const Ma
 int ResourceImporterWAV::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterWAV::get_preset_name(int p_idx) const {
 	return String();
 }

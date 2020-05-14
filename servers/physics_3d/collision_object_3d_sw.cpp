@@ -61,6 +61,7 @@ void CollisionObject3DSW::set_shape(int p_index, Shape3DSW *p_shape) {
 	//_update_shapes();
 	//_shapes_changed();
 }
+
 void CollisionObject3DSW::set_shape_transform(int p_index, const Transform &p_transform) {
 	ERR_FAIL_INDEX(p_index, shapes.size());
 

@@ -36,6 +36,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(set = 1, binding = 0, std430) restrict buffer LightProbeData {
 	vec4 data[];
 }
+
 light_probes;
 
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
@@ -93,6 +94,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	mat3x4 env_transform;
 }
+
 params;
 
 //check it, but also return distance and barycentric coords (for uv lookup)

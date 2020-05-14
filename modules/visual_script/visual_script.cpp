@@ -178,6 +178,7 @@ void VisualScript::add_function(const StringName &p_name) {
 bool VisualScript::has_function(const StringName &p_name) const {
 	return functions.has(p_name);
 }
+
 void VisualScript::remove_function(const StringName &p_name) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!functions.has(p_name));
@@ -581,10 +582,12 @@ void VisualScript::set_variable_default_value(const StringName &p_name, const Va
 	_update_placeholders();
 #endif
 }
+
 Variant VisualScript::get_variable_default_value(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!variables.has(p_name), Variant());
 	return variables[p_name].default_value;
 }
+
 void VisualScript::set_variable_info(const StringName &p_name, const PropertyInfo &p_info) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!variables.has(p_name));
@@ -595,6 +598,7 @@ void VisualScript::set_variable_info(const StringName &p_name, const PropertyInf
 	_update_placeholders();
 #endif
 }
+
 PropertyInfo VisualScript::get_variable_info(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!variables.has(p_name), PropertyInfo());
 	return variables[p_name].info;
@@ -702,6 +706,7 @@ void VisualScript::add_custom_signal(const StringName &p_name) {
 bool VisualScript::has_custom_signal(const StringName &p_name) const {
 	return custom_signals.has(p_name);
 }
+
 void VisualScript::custom_signal_add_argument(const StringName &p_func, Variant::Type p_type, const String &p_name, int p_index) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
@@ -713,28 +718,33 @@ void VisualScript::custom_signal_add_argument(const StringName &p_func, Variant:
 	else
 		custom_signals[p_func].insert(0, arg);
 }
+
 void VisualScript::custom_signal_set_argument_type(const StringName &p_func, int p_argidx, Variant::Type p_type) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
 	custom_signals[p_func].write[p_argidx].type = p_type;
 }
+
 Variant::Type VisualScript::custom_signal_get_argument_type(const StringName &p_func, int p_argidx) const {
 	ERR_FAIL_COND_V(!custom_signals.has(p_func), Variant::NIL);
 	ERR_FAIL_INDEX_V(p_argidx, custom_signals[p_func].size(), Variant::NIL);
 	return custom_signals[p_func][p_argidx].type;
 }
+
 void VisualScript::custom_signal_set_argument_name(const StringName &p_func, int p_argidx, const String &p_name) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
 	ERR_FAIL_INDEX(p_argidx, custom_signals[p_func].size());
 	custom_signals[p_func].write[p_argidx].name = p_name;
 }
+
 String VisualScript::custom_signal_get_argument_name(const StringName &p_func, int p_argidx) const {
 	ERR_FAIL_COND_V(!custom_signals.has(p_func), String());
 	ERR_FAIL_INDEX_V(p_argidx, custom_signals[p_func].size(), String());
 	return custom_signals[p_func][p_argidx].name;
 }
+
 void VisualScript::custom_signal_remove_argument(const StringName &p_func, int p_argidx) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
@@ -746,6 +756,7 @@ int VisualScript::custom_signal_get_argument_count(const StringName &p_func) con
 	ERR_FAIL_COND_V(!custom_signals.has(p_func), 0);
 	return custom_signals[p_func].size();
 }
+
 void VisualScript::custom_signal_swap_argument(const StringName &p_func, int p_argidx, int p_with_argidx) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_func));
@@ -754,6 +765,7 @@ void VisualScript::custom_signal_swap_argument(const StringName &p_func, int p_a
 
 	SWAP(custom_signals[p_func].write[p_argidx], custom_signals[p_func].write[p_with_argidx]);
 }
+
 void VisualScript::remove_custom_signal(const StringName &p_name) {
 	ERR_FAIL_COND(instances.size());
 	ERR_FAIL_COND(!custom_signals.has(p_name));
@@ -934,6 +946,7 @@ bool VisualScript::get_property_default_value(const StringName &p_property, Vari
 	r_value = variables[p_property].default_value;
 	return true;
 }
+
 void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	for (Map<StringName, Function>::Element *E = functions.front(); E; E = E->next()) {
 		MethodInfo mi;
@@ -957,6 +970,7 @@ void VisualScript::get_script_method_list(List<MethodInfo> *p_list) const {
 bool VisualScript::has_method(const StringName &p_method) const {
 	return functions.has(p_method);
 }
+
 MethodInfo VisualScript::get_method_info(const StringName &p_method) const {
 	const Map<StringName, Function>::Element *E = functions.find(p_method);
 	if (!E)
@@ -1392,6 +1406,7 @@ bool VisualScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	r_ret = E->get();
 	return true;
 }
+
 void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	for (const Map<StringName, VisualScript::Variable>::Element *E = script->variables.front(); E; E = E->next()) {
 		if (!E->get()._export)
@@ -1402,6 +1417,7 @@ void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 		p_properties->push_back(p);
 	}
 }
+
 Variant::Type VisualScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
 	const Map<StringName, VisualScript::Variable>::Element *E = script->variables.find(p_name);
 	if (!E) {
@@ -1444,6 +1460,7 @@ void VisualScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 		p_list->push_back(mi);
 	}
 }
+
 bool VisualScriptInstance::has_method(const StringName &p_method) const {
 	if (p_method == script->get_default_func())
 		return false;
@@ -2369,25 +2386,32 @@ String VisualScriptLanguage::get_name() const {
 /* LANGUAGE FUNCTIONS */
 void VisualScriptLanguage::init() {
 }
+
 String VisualScriptLanguage::get_type() const {
 	return "VisualScript";
 }
+
 String VisualScriptLanguage::get_extension() const {
 	return "vs";
 }
+
 Error VisualScriptLanguage::execute_file(const String &p_path) {
 	return OK;
 }
+
 void VisualScriptLanguage::finish() {
 }
 
 /* EDITOR FUNCTIONS */
 void VisualScriptLanguage::get_reserved_words(List<String> *p_words) const {
 }
+
 void VisualScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 }
+
 void VisualScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
+
 Ref<Script> VisualScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 	Ref<VisualScript> script;
 	script.instance();
@@ -2407,24 +2431,30 @@ void VisualScriptLanguage::make_template(const String &p_class_name, const Strin
 bool VisualScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	return false;
 }
+
 Script *VisualScriptLanguage::create_script() const {
 	return memnew(VisualScript);
 }
+
 bool VisualScriptLanguage::has_named_classes() const {
 	return false;
 }
+
 bool VisualScriptLanguage::supports_builtin_mode() const {
 	return true;
 }
+
 int VisualScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	return -1;
 }
+
 String VisualScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 	return String();
 }
 
 void VisualScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {
 }
+
 void VisualScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {
 }
 
@@ -2466,6 +2496,7 @@ int VisualScriptLanguage::debug_get_stack_level_count() const {
 
 	return _debug_call_stack_pos;
 }
+
 int VisualScriptLanguage::debug_get_stack_level_line(int p_level) const {
 	if (_debug_parse_err_node >= 0)
 		return _debug_parse_err_node;
@@ -2476,6 +2507,7 @@ int VisualScriptLanguage::debug_get_stack_level_line(int p_level) const {
 
 	return *(_call_stack[l].current_id);
 }
+
 String VisualScriptLanguage::debug_get_stack_level_function(int p_level) const {
 	if (_debug_parse_err_node >= 0)
 		return "";
@@ -2484,6 +2516,7 @@ String VisualScriptLanguage::debug_get_stack_level_function(int p_level) const {
 	int l = _debug_call_stack_pos - p_level - 1;
 	return *_call_stack[l].function;
 }
+
 String VisualScriptLanguage::debug_get_stack_level_source(int p_level) const {
 	if (_debug_parse_err_node >= 0)
 		return _debug_parse_err_file;
@@ -2492,6 +2525,7 @@ String VisualScriptLanguage::debug_get_stack_level_source(int p_level) const {
 	int l = _debug_call_stack_pos - p_level - 1;
 	return _call_stack[l].instance->get_script_ptr()->get_path();
 }
+
 void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	if (_debug_parse_err_node >= 0)
 		return;
@@ -2565,6 +2599,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level, List<String
     }
 */
 }
+
 void VisualScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	if (_debug_parse_err_node >= 0)
 		return;
@@ -2590,26 +2625,32 @@ void VisualScriptLanguage::debug_get_stack_level_members(int p_level, List<Strin
 void VisualScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	//no globals are really reachable in gdscript
 }
+
 String VisualScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
 	return "";
 }
 
 void VisualScriptLanguage::reload_all_scripts() {
 }
+
 void VisualScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
 }
+
 /* LOADER FUNCTIONS */
 
 void VisualScriptLanguage::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("vs");
 }
+
 void VisualScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const {
 }
+
 void VisualScriptLanguage::get_public_constants(List<Pair<String, Variant>> *p_constants) const {
 }
 
 void VisualScriptLanguage::profiling_start() {
 }
+
 void VisualScriptLanguage::profiling_stop() {
 }
 

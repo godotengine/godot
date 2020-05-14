@@ -414,6 +414,7 @@ bool RasterizerSceneHighEndRD::ShaderData::is_animated() const {
 bool RasterizerSceneHighEndRD::ShaderData::casts_shadows() const {
 	return false;
 }
+
 Variant RasterizerSceneHighEndRD::ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];

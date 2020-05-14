@@ -57,6 +57,7 @@ NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
 	[numberFormatter release];
 	return formattedString;
 }
+
 @end
 
 InAppStore *InAppStore::instance = NULL;

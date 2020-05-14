@@ -87,6 +87,7 @@ Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_
 
 	return tr;
 }
+
 Thread::ID ThreadPosix::get_thread_id_func_posix() {
 	void *value = pthread_getspecific(thread_id_key);
 
@@ -97,6 +98,7 @@ Thread::ID ThreadPosix::get_thread_id_func_posix() {
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(new_id)));
 	return new_id;
 }
+
 void ThreadPosix::wait_to_finish_func_posix(Thread *p_thread) {
 	ThreadPosix *tp = static_cast<ThreadPosix *>(p_thread);
 	ERR_FAIL_COND(!tp);

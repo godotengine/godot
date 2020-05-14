@@ -93,12 +93,15 @@ void AudioEffectReverb::set_predelay_msec(float p_msec) {
 void AudioEffectReverb::set_predelay_feedback(float p_feedback) {
 	predelay_fb = CLAMP(p_feedback, 0, 0.98);
 }
+
 void AudioEffectReverb::set_room_size(float p_size) {
 	room_size = p_size;
 }
+
 void AudioEffectReverb::set_damping(float p_damping) {
 	damping = p_damping;
 }
+
 void AudioEffectReverb::set_spread(float p_spread) {
 	spread = p_spread;
 }
@@ -106,9 +109,11 @@ void AudioEffectReverb::set_spread(float p_spread) {
 void AudioEffectReverb::set_dry(float p_dry) {
 	dry = p_dry;
 }
+
 void AudioEffectReverb::set_wet(float p_wet) {
 	wet = p_wet;
 }
+
 void AudioEffectReverb::set_hpf(float p_hpf) {
 	hpf = p_hpf;
 }
@@ -116,24 +121,31 @@ void AudioEffectReverb::set_hpf(float p_hpf) {
 float AudioEffectReverb::get_predelay_msec() const {
 	return predelay;
 }
+
 float AudioEffectReverb::get_predelay_feedback() const {
 	return predelay_fb;
 }
+
 float AudioEffectReverb::get_room_size() const {
 	return room_size;
 }
+
 float AudioEffectReverb::get_damping() const {
 	return damping;
 }
+
 float AudioEffectReverb::get_spread() const {
 	return spread;
 }
+
 float AudioEffectReverb::get_dry() const {
 	return dry;
 }
+
 float AudioEffectReverb::get_wet() const {
 	return wet;
 }
+
 float AudioEffectReverb::get_hpf() const {
 	return hpf;
 }

@@ -6,6 +6,7 @@ layout(push_constant, binding = 0, std430) uniform DrawCall {
 	uint pad; //16 bits minimum size
 	vec2 bake_uv2_offset; //used for bake to uv2, ignored otherwise
 }
+
 draw_call;
 
 /* Set 0 Scene data that never changes, ever */
@@ -117,6 +118,7 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	float fog_height_curve;
 #endif
 }
+
 scene_data;
 
 #define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
@@ -146,6 +148,7 @@ struct InstanceData {
 layout(set = 0, binding = 4, std430) restrict readonly buffer Instances {
 	InstanceData data[];
 }
+
 instances;
 
 struct LightData { //this structure needs to be as packed as possible
@@ -172,6 +175,7 @@ struct LightData { //this structure needs to be as packed as possible
 layout(set = 0, binding = 5, std430) restrict readonly buffer Lights {
 	LightData data[];
 }
+
 lights;
 
 struct ReflectionData {
@@ -188,6 +192,7 @@ struct ReflectionData {
 layout(set = 0, binding = 6, std140) uniform ReflectionProbeData {
 	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
 }
+
 reflections;
 
 struct DirectionalLightData {
@@ -226,6 +231,7 @@ struct DirectionalLightData {
 layout(set = 0, binding = 7, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
+
 directional_lights;
 
 struct GIProbeData {
@@ -247,6 +253,7 @@ struct GIProbeData {
 layout(set = 0, binding = 8, std140) uniform GIProbes {
 	GIProbeData data[MAX_GI_PROBES];
 }
+
 gi_probes;
 
 layout(set = 0, binding = 9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TEXTURES];
@@ -261,6 +268,7 @@ struct Lightmap {
 layout(set = 0, binding = 10, std140) restrict readonly buffer Lightmaps {
 	Lightmap data[];
 }
+
 lightmaps;
 
 layout(set = 0, binding = 11) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
@@ -272,6 +280,7 @@ struct LightmapCapture {
 layout(set = 0, binding = 12, std140) restrict readonly buffer LightmapCaptures {
 	LightmapCapture data[];
 }
+
 lightmap_captures;
 
 #define CLUSTER_COUNTER_SHIFT 20
@@ -302,6 +311,7 @@ struct DecalData {
 layout(set = 0, binding = 15, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
+
 decals;
 
 layout(set = 0, binding = 16) uniform utexture3D cluster_texture;
@@ -309,6 +319,7 @@ layout(set = 0, binding = 16) uniform utexture3D cluster_texture;
 layout(set = 0, binding = 17, std430) restrict readonly buffer ClusterData {
 	uint indices[];
 }
+
 cluster_data;
 
 layout(set = 0, binding = 18) uniform texture2D directional_shadow_atlas;
@@ -316,6 +327,7 @@ layout(set = 0, binding = 18) uniform texture2D directional_shadow_atlas;
 layout(set = 0, binding = 19, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
+
 global_variables;
 
 // decal atlas
@@ -351,6 +363,7 @@ layout(set = 3, binding = 4) uniform texture2D ao_buffer;
 layout(set = 4, binding = 0, std430) restrict readonly buffer Transforms {
 	vec4 data[];
 }
+
 transforms;
 
 /* Set 5 User Material */

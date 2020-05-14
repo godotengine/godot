@@ -249,6 +249,7 @@ bool TreeItem::is_range_exponential(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
 	return cells[p_column].expr;
 }
+
 void TreeItem::set_range_config(int p_column, double p_min, double p_max, double p_step, bool p_exp) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].min = p_min;
@@ -481,21 +482,25 @@ int TreeItem::get_button_count(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
 	return cells[p_column].buttons.size();
 }
+
 Ref<Texture2D> TreeItem::get_button(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), Ref<Texture2D>());
 	return cells[p_column].buttons[p_idx].texture;
 }
+
 String TreeItem::get_button_tooltip(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), String());
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), String());
 	return cells[p_column].buttons[p_idx].tooltip;
 }
+
 int TreeItem::get_button_id(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), -1);
 	return cells[p_column].buttons[p_idx].id;
 }
+
 void TreeItem::erase_button(int p_column, int p_idx) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
@@ -560,12 +565,14 @@ void TreeItem::set_custom_color(int p_column, const Color &p_color) {
 	cells.write[p_column].color = p_color;
 	_changed_notify(p_column);
 }
+
 Color TreeItem::get_custom_color(int p_column) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Color());
 	if (!cells[p_column].custom_color)
 		return Color();
 	return cells[p_column].color;
 }
+
 void TreeItem::clear_custom_color(int p_column) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].custom_color = false;
@@ -1435,6 +1442,7 @@ int Tree::_count_selected_items(TreeItem *p_from) const {
 
 	return count;
 }
+
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
 	TreeItem::Cell &selected_cell = p_selected->cells.write[p_col];
 
@@ -2891,6 +2899,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 TreeItem *Tree::get_root() {
 	return root;
 }
+
 TreeItem *Tree::get_last_item() {
 	TreeItem *last = root;
 
@@ -3009,6 +3018,7 @@ void Tree::set_column_min_width(int p_column, int p_min_width) {
 	columns.write[p_column].min_width = p_min_width;
 	update();
 }
+
 void Tree::set_column_expand(int p_column, bool p_expand) {
 	ERR_FAIL_INDEX(p_column, columns.size());
 
@@ -3457,6 +3467,7 @@ int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
 
 	return -100;
 }
+
 TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
 	if (root) {
 		Point2 pos = p_pos;

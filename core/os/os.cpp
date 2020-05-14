@@ -82,15 +82,18 @@ String OS::get_iso_date_time(bool local) const {
 uint64_t OS::get_splash_tick_msec() const {
 	return _msec_splash;
 }
+
 uint64_t OS::get_unix_time() const {
 	return 0;
 };
 uint64_t OS::get_system_time_secs() const {
 	return 0;
 }
+
 uint64_t OS::get_system_time_msecs() const {
 	return 0;
 }
+
 void OS::debug_break(){
 
 	// something
@@ -224,6 +227,7 @@ bool OS::is_no_window_mode_enabled() const {
 int OS::get_exit_code() const {
 	return _exit_code;
 }
+
 void OS::set_exit_code(int p_code) {
 	_exit_code = p_code;
 }

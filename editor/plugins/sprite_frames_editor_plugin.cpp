@@ -98,6 +98,7 @@ void SpriteFramesEditor::_sheet_preview_draw() {
 	split_sheet_dialog->get_ok()->set_disabled(false);
 	split_sheet_dialog->get_ok()->set_text(vformat(TTR("Add %d Frame(s)"), frames_selected.size()));
 }
+
 void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 

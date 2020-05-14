@@ -672,6 +672,7 @@ void Input::set_mouse_position(const Point2 &p_posf) {
 Point2 Input::get_mouse_position() const {
 	return mouse_pos;
 }
+
 Point2 Input::get_last_mouse_speed() const {
 	return mouse_speed_track.speed;
 }
@@ -812,6 +813,7 @@ void Input::accumulate_input_event(const Ref<InputEvent> &p_event) {
 
 	accumulated_events.push_back(p_event);
 }
+
 void Input::flush_accumulated_events() {
 	while (accumulated_events.front()) {
 		parse_input_event(accumulated_events.front()->get());

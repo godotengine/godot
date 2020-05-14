@@ -47,6 +47,7 @@
 Vector3 PhysicsBody3D::get_linear_velocity() const {
 	return Vector3();
 }
+
 Vector3 PhysicsBody3D::get_angular_velocity() const {
 	return Vector3();
 }
@@ -195,6 +196,7 @@ void StaticBody3D::set_constant_angular_velocity(const Vector3 &p_vel) {
 Vector3 StaticBody3D::get_constant_linear_velocity() const {
 	return constant_linear_velocity;
 }
+
 Vector3 StaticBody3D::get_constant_angular_velocity() const {
 	return constant_angular_velocity;
 }
@@ -486,6 +488,7 @@ void RigidBody3D::set_mass(real_t p_mass) {
 	_change_notify("weight");
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_MASS, mass);
 }
+
 real_t RigidBody3D::get_mass() const {
 	return mass;
 }
@@ -493,6 +496,7 @@ real_t RigidBody3D::get_mass() const {
 void RigidBody3D::set_weight(real_t p_weight) {
 	set_mass(p_weight / real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8)));
 }
+
 real_t RigidBody3D::get_weight() const {
 	return mass * real_t(GLOBAL_DEF("physics/3d/default_gravity", 9.8));
 }
@@ -520,6 +524,7 @@ void RigidBody3D::set_gravity_scale(real_t p_gravity_scale) {
 	gravity_scale = p_gravity_scale;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_GRAVITY_SCALE, gravity_scale);
 }
+
 real_t RigidBody3D::get_gravity_scale() const {
 	return gravity_scale;
 }
@@ -529,6 +534,7 @@ void RigidBody3D::set_linear_damp(real_t p_linear_damp) {
 	linear_damp = p_linear_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_LINEAR_DAMP, linear_damp);
 }
+
 real_t RigidBody3D::get_linear_damp() const {
 	return linear_damp;
 }
@@ -538,6 +544,7 @@ void RigidBody3D::set_angular_damp(real_t p_angular_damp) {
 	angular_damp = p_angular_damp;
 	PhysicsServer3D::get_singleton()->body_set_param(get_rid(), PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP, angular_damp);
 }
+
 real_t RigidBody3D::get_angular_damp() const {
 	return angular_damp;
 }
@@ -574,6 +581,7 @@ void RigidBody3D::set_angular_velocity(const Vector3 &p_velocity) {
 	else
 		PhysicsServer3D::get_singleton()->body_set_state(get_rid(), PhysicsServer3D::BODY_STATE_ANGULAR_VELOCITY, angular_velocity);
 }
+
 Vector3 RigidBody3D::get_angular_velocity() const {
 	return angular_velocity;
 }
@@ -585,6 +593,7 @@ void RigidBody3D::set_use_custom_integrator(bool p_enable) {
 	custom_integrator = p_enable;
 	PhysicsServer3D::get_singleton()->body_set_omit_force_integration(get_rid(), p_enable);
 }
+
 bool RigidBody3D::is_using_custom_integrator() {
 	return custom_integrator;
 }
@@ -1058,6 +1067,7 @@ bool KinematicBody3D::is_on_floor() const {
 bool KinematicBody3D::is_on_wall() const {
 	return on_wall;
 }
+
 bool KinematicBody3D::is_on_ceiling() const {
 	return on_ceiling;
 }
@@ -1128,6 +1138,7 @@ void KinematicBody3D::set_safe_margin(float p_margin) {
 float KinematicBody3D::get_safe_margin() const {
 	return margin;
 }
+
 int KinematicBody3D::get_slide_count() const {
 	return colliders.size();
 }
@@ -1216,6 +1227,7 @@ KinematicBody3D::KinematicBody3D() :
 
 	PhysicsServer3D::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
 }
+
 KinematicBody3D::~KinematicBody3D() {
 	if (motion_cache.is_valid()) {
 		motion_cache->owner = nullptr;
@@ -1227,20 +1239,25 @@ KinematicBody3D::~KinematicBody3D() {
 		}
 	}
 }
+
 ///////////////////////////////////////
 
 Vector3 KinematicCollision3D::get_position() const {
 	return collision.collision;
 }
+
 Vector3 KinematicCollision3D::get_normal() const {
 	return collision.normal;
 }
+
 Vector3 KinematicCollision3D::get_travel() const {
 	return collision.travel;
 }
+
 Vector3 KinematicCollision3D::get_remainder() const {
 	return collision.remainder;
 }
+
 Object *KinematicCollision3D::get_local_shape() const {
 	if (!owner)
 		return nullptr;
@@ -1255,9 +1272,11 @@ Object *KinematicCollision3D::get_collider() const {
 
 	return nullptr;
 }
+
 ObjectID KinematicCollision3D::get_collider_id() const {
 	return collision.collider;
 }
+
 Object *KinematicCollision3D::get_collider_shape() const {
 	Object *collider = get_collider();
 	if (collider) {
@@ -1270,12 +1289,15 @@ Object *KinematicCollision3D::get_collider_shape() const {
 
 	return nullptr;
 }
+
 int KinematicCollision3D::get_collider_shape_index() const {
 	return collision.collider_shape;
 }
+
 Vector3 KinematicCollision3D::get_collider_velocity() const {
 	return collision.collider_vel;
 }
+
 Variant KinematicCollision3D::get_collider_metadata() const {
 	return Variant();
 }

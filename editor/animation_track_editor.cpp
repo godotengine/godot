@@ -1684,6 +1684,7 @@ void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
 	update_values();
 	update();
 }
+
 bool AnimationTimelineEdit::is_using_fps() const {
 	return use_fps;
 }
@@ -2066,6 +2067,7 @@ int AnimationTrackEdit::get_key_height() const {
 
 	return type_icon->get_height();
 }
+
 Rect2 AnimationTrackEdit::get_key_rect(int p_index, float p_pixels_sec) {
 	if (!animation.is_valid())
 		return Rect2();
@@ -2262,6 +2264,7 @@ void AnimationTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationTrackEdit::_zoom_changed));
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEdit::_zoom_changed));
 }
+
 void AnimationTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
 }
@@ -2761,6 +2764,7 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 
 	return true;
 }
+
 void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Dictionary d = p_data;
 	if (!d.has("type")) {
@@ -2844,6 +2848,7 @@ void AnimationTrackEdit::cancel_drop() {
 		update();
 	}
 }
+
 void AnimationTrackEdit::set_in_group(bool p_enable) {
 	in_group = p_enable;
 	update();
@@ -3135,6 +3140,7 @@ void AnimationTrackEditor::update_keying() {
 bool AnimationTrackEditor::has_keying() const {
 	return keying;
 }
+
 Dictionary AnimationTrackEditor::get_state() const {
 	Dictionary state;
 	state["fps_mode"] = timeline->is_using_fps();
@@ -3143,6 +3149,7 @@ Dictionary AnimationTrackEditor::get_state() const {
 	state["v_scroll"] = scroll->get_v_scrollbar()->get_value();
 	return state;
 }
+
 void AnimationTrackEditor::set_state(const Dictionary &p_state) {
 	if (p_state.has("fps_mode")) {
 		bool fps_mode = p_state["fps_mode"];
@@ -4076,6 +4083,7 @@ void AnimationTrackEditor::_update_step_spinbox() {
 
 	step->set_block_signals(false);
 }
+
 void AnimationTrackEditor::_animation_update() {
 	timeline->update();
 	timeline->update_values();
@@ -4752,6 +4760,7 @@ void AnimationTrackEditor::_move_selection_commit() {
 
 	_update_key_edit();
 }
+
 void AnimationTrackEditor::_move_selection_cancel() {
 	moving_selection = false;
 	for (int i = 0; i < track_edits.size(); i++) {
@@ -4762,6 +4771,7 @@ void AnimationTrackEditor::_move_selection_cancel() {
 bool AnimationTrackEditor::is_moving_selection() const {
 	return moving_selection;
 }
+
 float AnimationTrackEditor::get_moving_selection_offset() const {
 	return moving_selection_offset;
 }
@@ -4953,6 +4963,7 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 		_update_key_edit();
 	}
 }
+
 void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 	last_menu_track_opt = p_option;
 	switch (p_option) {

@@ -165,6 +165,7 @@ String CollisionPolygon3D::get_configuration_warning() const {
 bool CollisionPolygon3D::_is_editable_3d_polygon() const {
 	return true;
 }
+
 void CollisionPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &CollisionPolygon3D::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &CollisionPolygon3D::get_depth);

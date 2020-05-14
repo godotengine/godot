@@ -1566,6 +1566,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 const int *GDScriptFunction::get_code() const {
 	return _code_ptr;
 }
+
 int GDScriptFunction::get_code_size() const {
 	return _code_size;
 }
@@ -1583,6 +1584,7 @@ StringName GDScriptFunction::get_global_name(int p_idx) const {
 int GDScriptFunction::get_default_argument_count() const {
 	return _default_arg_count;
 }
+
 int GDScriptFunction::get_default_argument_addr(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), -1);
 	return default_arguments[p_idx];

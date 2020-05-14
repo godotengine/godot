@@ -62,12 +62,14 @@ bool NodePath::is_absolute() const {
 
 	return data->absolute;
 }
+
 int NodePath::get_name_count() const {
 	if (!data)
 		return 0;
 
 	return data->path.size();
 }
+
 StringName NodePath::get_name(int p_idx) const {
 	ERR_FAIL_COND_V(!data, StringName());
 	ERR_FAIL_INDEX_V(p_idx, data->path.size(), StringName());
@@ -80,6 +82,7 @@ int NodePath::get_subname_count() const {
 
 	return data->subpath.size();
 }
+
 StringName NodePath::get_subname(int p_idx) const {
 	ERR_FAIL_COND_V(!data, StringName());
 	ERR_FAIL_INDEX_V(p_idx, data->subpath.size(), StringName());
@@ -133,6 +136,7 @@ bool NodePath::operator==(const NodePath &p_path) const {
 
 	return true;
 }
+
 bool NodePath::operator!=(const NodePath &p_path) const {
 	return (!(*this == p_path));
 }

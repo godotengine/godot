@@ -270,6 +270,7 @@ void CollisionPolygon2D::set_one_way_collision_margin(float p_margin) {
 float CollisionPolygon2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
+
 void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon2D::set_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon"), &CollisionPolygon2D::get_polygon);

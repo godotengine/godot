@@ -113,6 +113,7 @@ Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const Str
 Error FileAccessEncrypted::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
+
 void FileAccessEncrypted::close() {
 	if (!file)
 		return;
@@ -189,9 +190,11 @@ void FileAccessEncrypted::seek(size_t p_position) {
 void FileAccessEncrypted::seek_end(int64_t p_position) {
 	seek(data.size() + p_position);
 }
+
 size_t FileAccessEncrypted::get_position() const {
 	return pos;
 }
+
 size_t FileAccessEncrypted::get_len() const {
 	return data.size();
 }
@@ -211,6 +214,7 @@ uint8_t FileAccessEncrypted::get_8() const {
 	pos++;
 	return b;
 }
+
 int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
 	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 

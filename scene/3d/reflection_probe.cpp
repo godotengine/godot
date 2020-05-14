@@ -70,6 +70,7 @@ void ReflectionProbe::set_max_distance(float p_distance) {
 	max_distance = p_distance;
 	RS::get_singleton()->reflection_probe_set_max_distance(probe, p_distance);
 }
+
 float ReflectionProbe::get_max_distance() const {
 	return max_distance;
 }
@@ -93,6 +94,7 @@ void ReflectionProbe::set_extents(const Vector3 &p_extents) {
 	_change_notify("extents");
 	update_gizmo();
 }
+
 Vector3 ReflectionProbe::get_extents() const {
 	return extents;
 }
@@ -111,6 +113,7 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_extents) {
 	_change_notify("origin_offset");
 	update_gizmo();
 }
+
 Vector3 ReflectionProbe::get_origin_offset() const {
 	return origin_offset;
 }
@@ -119,6 +122,7 @@ void ReflectionProbe::set_enable_box_projection(bool p_enable) {
 	box_projection = p_enable;
 	RS::get_singleton()->reflection_probe_set_enable_box_projection(probe, p_enable);
 }
+
 bool ReflectionProbe::is_box_projection_enabled() const {
 	return box_projection;
 }
@@ -137,6 +141,7 @@ void ReflectionProbe::set_enable_shadows(bool p_enable) {
 	enable_shadows = p_enable;
 	RS::get_singleton()->reflection_probe_set_enable_shadows(probe, p_enable);
 }
+
 bool ReflectionProbe::are_shadows_enabled() const {
 	return enable_shadows;
 }
@@ -145,6 +150,7 @@ void ReflectionProbe::set_cull_mask(uint32_t p_layers) {
 	cull_mask = p_layers;
 	RS::get_singleton()->reflection_probe_set_cull_mask(probe, p_layers);
 }
+
 uint32_t ReflectionProbe::get_cull_mask() const {
 	return cull_mask;
 }
@@ -164,6 +170,7 @@ AABB ReflectionProbe::get_aabb() const {
 	aabb.size = origin_offset + extents;
 	return aabb;
 }
+
 Vector<Face3> ReflectionProbe::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }

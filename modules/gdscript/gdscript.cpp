@@ -321,9 +321,11 @@ bool GDScript::instance_has(const Object *p_this) const {
 bool GDScript::has_source_code() const {
 	return source != "";
 }
+
 String GDScript::get_source_code() const {
 	return source;
 }
+
 void GDScript::set_source_code(const String &p_code) {
 	if (source == p_code)
 		return;
@@ -708,6 +710,7 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == GDScriptLanguage::get_singleton()->strings._script_source) {
 		set_source_code(p_value);
@@ -884,6 +887,7 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 #endif
 	return false;
 }
+
 void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	for (const Map<StringName, Vector<StringName>>::Element *E = _signals.front(); E; E = E->next()) {
 		MethodInfo mi;
@@ -1242,6 +1246,7 @@ bool GDScriptInstance::has_method(const StringName &p_method) const {
 
 	return false;
 }
+
 Variant GDScriptInstance::call(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *sptr = script.ptr();
 	while (sptr) {
@@ -1493,13 +1498,16 @@ void GDScriptLanguage::init() {
 String GDScriptLanguage::get_type() const {
 	return "GDScript";
 }
+
 String GDScriptLanguage::get_extension() const {
 	return "gd";
 }
+
 Error GDScriptLanguage::execute_file(const String &p_path) {
 	// ??
 	return OK;
 }
+
 void GDScriptLanguage::finish() {
 }
 
@@ -2275,6 +2283,7 @@ void ResourceFormatSaverGDScript::get_recognized_extensions(const RES &p_resourc
 		p_extensions->push_back("gd");
 	}
 }
+
 bool ResourceFormatSaverGDScript::recognize(const RES &p_resource) const {
 	return Object::cast_to<GDScript>(*p_resource) != nullptr;
 }

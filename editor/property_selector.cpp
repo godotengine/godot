@@ -413,6 +413,7 @@ void PropertySelector::select_method_from_script(const Ref<Script> &p_script, co
 	search_box->grab_focus();
 	_update_search();
 }
+
 void PropertySelector::select_method_from_basic_type(Variant::Type p_type, const String &p_current) {
 	ERR_FAIL_COND(p_type == Variant::NIL);
 	base_type = "";

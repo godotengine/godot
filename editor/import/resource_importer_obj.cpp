@@ -435,6 +435,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, in
 
 	return scene;
 }
+
 Ref<Animation> EditorOBJImporter::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 	return Ref<Animation>();
 }
@@ -445,20 +446,25 @@ void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 
 EditorOBJImporter::EditorOBJImporter() {
 }
+
 ////////////////////////////////////////////////////
 
 String ResourceImporterOBJ::get_importer_name() const {
 	return "wavefront_obj";
 }
+
 String ResourceImporterOBJ::get_visible_name() const {
 	return "OBJ As Mesh";
 }
+
 void ResourceImporterOBJ::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("obj");
 }
+
 String ResourceImporterOBJ::get_save_extension() const {
 	return "mesh";
 }
+
 String ResourceImporterOBJ::get_resource_type() const {
 	return "Mesh";
 }
@@ -466,6 +472,7 @@ String ResourceImporterOBJ::get_resource_type() const {
 int ResourceImporterOBJ::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterOBJ::get_preset_name(int p_idx) const {
 	return "";
 }
@@ -476,6 +483,7 @@ void ResourceImporterOBJ::get_import_options(List<ImportOption> *r_options, int 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::VECTOR3, "offset_mesh"), Vector3(0, 0, 0)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimize_mesh"), true));
 }
+
 bool ResourceImporterOBJ::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 	return true;
 }

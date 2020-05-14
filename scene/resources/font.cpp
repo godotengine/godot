@@ -316,6 +316,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 void BitmapFont::set_height(float p_height) {
 	height = p_height;
 }
+
 float BitmapFont::get_height() const {
 	return height;
 }
@@ -323,9 +324,11 @@ float BitmapFont::get_height() const {
 void BitmapFont::set_ascent(float p_ascent) {
 	ascent = p_ascent;
 }
+
 float BitmapFont::get_ascent() const {
 	return ascent;
 }
+
 float BitmapFont::get_descent() const {
 	return height - ascent;
 }

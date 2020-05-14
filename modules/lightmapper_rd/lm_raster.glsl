@@ -26,6 +26,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	ivec3 grid_size;
 	uint pad2;
 }
+
 params;
 
 /* clang-format on */

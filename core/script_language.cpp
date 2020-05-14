@@ -215,16 +215,20 @@ void ScriptServer::add_global_class(const StringName &p_class, const StringName 
 	g.base = p_base;
 	global_classes[p_class] = g;
 }
+
 void ScriptServer::remove_global_class(const StringName &p_class) {
 	global_classes.erase(p_class);
 }
+
 bool ScriptServer::is_global_class(const StringName &p_class) {
 	return global_classes.has(p_class);
 }
+
 StringName ScriptServer::get_global_class_language(const StringName &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), StringName());
 	return global_classes[p_class].language;
 }
+
 String ScriptServer::get_global_class_path(const String &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
 	return global_classes[p_class].path;
@@ -234,6 +238,7 @@ StringName ScriptServer::get_global_class_base(const String &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
 	return global_classes[p_class].base;
 }
+
 StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
 	String base = global_classes[p_class].base;
@@ -242,6 +247,7 @@ StringName ScriptServer::get_global_class_native_base(const String &p_class) {
 	}
 	return base;
 }
+
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	const StringName *K = nullptr;
 	List<StringName> classes;
@@ -253,6 +259,7 @@ void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 		r_global_classes->push_back(E->get());
 	}
 }
+
 void ScriptServer::save_global_classes() {
 	List<StringName> gc;
 	get_global_class_list(&gc);
@@ -366,6 +373,7 @@ bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_v
 	}
 	return false;
 }
+
 bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	if (values.has(p_name)) {
 		r_ret = values[p_name];
@@ -431,6 +439,7 @@ void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const 
 		script->get_script_method_list(p_list);
 	}
 }
+
 bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 	if (script->is_placeholder_fallback_enabled())
 		return false;

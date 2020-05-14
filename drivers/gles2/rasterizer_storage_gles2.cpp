@@ -2617,6 +2617,7 @@ Vector<Vector<uint8_t>> RasterizerStorageGLES2::mesh_surface_get_blend_shapes(RI
 
 	return mesh->surfaces[p_surface]->blend_shape_data;
 }
+
 Vector<AABB> RasterizerStorageGLES2::mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh, Vector<AABB>());
@@ -2782,6 +2783,7 @@ AABB RasterizerStorageGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 
 	return aabb;
 }
+
 void RasterizerStorageGLES2::mesh_clear(RID p_mesh) {
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
@@ -3560,6 +3562,7 @@ Transform RasterizerStorageGLES2::skeleton_bone_get_transform(RID p_skeleton, in
 
 	return ret;
 }
+
 void RasterizerStorageGLES2::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 	ERR_FAIL_COND(!skeleton);
@@ -3987,6 +3990,7 @@ void RasterizerStorageGLES2::reflection_probe_set_max_distance(RID p_probe, floa
 	reflection_probe->max_distance = p_distance;
 	reflection_probe->instance_change_notify(true, false);
 }
+
 void RasterizerStorageGLES2::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
@@ -3994,6 +3998,7 @@ void RasterizerStorageGLES2::reflection_probe_set_extents(RID p_probe, const Vec
 	reflection_probe->extents = p_extents;
 	reflection_probe->instance_change_notify(true, false);
 }
+
 void RasterizerStorageGLES2::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
@@ -4009,6 +4014,7 @@ void RasterizerStorageGLES2::reflection_probe_set_as_interior(RID p_probe, bool 
 	reflection_probe->interior = p_enable;
 	reflection_probe->instance_change_notify(true, false);
 }
+
 void RasterizerStorageGLES2::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
@@ -4023,6 +4029,7 @@ void RasterizerStorageGLES2::reflection_probe_set_enable_shadows(RID p_probe, bo
 	reflection_probe->enable_shadows = p_enable;
 	reflection_probe->instance_change_notify(true, false);
 }
+
 void RasterizerStorageGLES2::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
@@ -4048,6 +4055,7 @@ AABB RasterizerStorageGLES2::reflection_probe_get_aabb(RID p_probe) const {
 
 	return aabb;
 }
+
 RS::ReflectionProbeUpdateMode RasterizerStorageGLES2::reflection_probe_get_update_mode(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, RS::REFLECTION_PROBE_UPDATE_ALWAYS);
@@ -4068,6 +4076,7 @@ Vector3 RasterizerStorageGLES2::reflection_probe_get_extents(RID p_probe) const 
 
 	return reflection_probe->extents;
 }
+
 Vector3 RasterizerStorageGLES2::reflection_probe_get_origin_offset(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
@@ -4160,6 +4169,7 @@ void RasterizerStorageGLES2::gi_probe_set_compress(RID p_probe, bool p_enable) {
 bool RasterizerStorageGLES2::gi_probe_is_compressed(RID p_probe) const {
 	return false;
 }
+
 float RasterizerStorageGLES2::gi_probe_get_energy(RID p_probe) const {
 	return 0;
 }
@@ -4204,11 +4214,13 @@ void RasterizerStorageGLES2::lightmap_capture_set_bounds(RID p_capture, const AA
 	capture->bounds = p_bounds;
 	capture->instance_change_notify(true, false);
 }
+
 AABB RasterizerStorageGLES2::lightmap_capture_get_bounds(RID p_capture) const {
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, AABB());
 	return capture->bounds;
 }
+
 void RasterizerStorageGLES2::lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) {
 	LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND(!capture);
@@ -4223,6 +4235,7 @@ void RasterizerStorageGLES2::lightmap_capture_set_octree(RID p_capture, const Ve
 	}
 	capture->instance_change_notify(true, false);
 }
+
 Vector<uint8_t> RasterizerStorageGLES2::lightmap_capture_get_octree(RID p_capture) const {
 	const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
 	ERR_FAIL_COND_V(!capture, Vector<uint8_t>());

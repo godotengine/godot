@@ -70,6 +70,7 @@ String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, 
 
 	return "";
 }
+
 Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
@@ -102,6 +103,7 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int 
 
 	return Variant();
 }
+
 void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
@@ -200,6 +202,7 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			s->set_outer_radius(d);
 	}
 }
+
 void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx, const Variant &p_restore, bool p_cancel) {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_spatial_node());
 
@@ -303,6 +306,7 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 		ur->commit_action();
 	}
 }
+
 bool CSGShape3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<CSGSphere3D>(p_spatial) || Object::cast_to<CSGBox3D>(p_spatial) || Object::cast_to<CSGCylinder3D>(p_spatial) || Object::cast_to<CSGTorus3D>(p_spatial) || Object::cast_to<CSGMesh3D>(p_spatial) || Object::cast_to<CSGPolygon3D>(p_spatial);
 }

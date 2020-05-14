@@ -664,9 +664,11 @@ void Voxelizer::end_bake() {
 int Voxelizer::get_gi_probe_octree_depth() const {
 	return cell_subdiv;
 }
+
 Vector3i Voxelizer::get_giprobe_octree_size() const {
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
+
 int Voxelizer::get_giprobe_cell_count() const {
 	return bake_cells.size();
 }
@@ -690,6 +692,7 @@ Vector<uint8_t> Voxelizer::get_giprobe_octree_cells() const {
 
 	return data;
 }
+
 Vector<uint8_t> Voxelizer::get_giprobe_data_cells() const {
 	Vector<uint8_t> data;
 	data.resize((4 * 4) * bake_cells.size()); //8 uint32t values
@@ -989,6 +992,7 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 Transform Voxelizer::get_to_cell_space_xform() const {
 	return to_cell_space;
 }
+
 Voxelizer::Voxelizer() {
 	sorted = false;
 	color_scan_cell_width = 4;

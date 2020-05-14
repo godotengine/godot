@@ -495,6 +495,7 @@ void SoftBody3D::set_collision_mask(uint32_t p_mask) {
 uint32_t SoftBody3D::get_collision_mask() const {
 	return collision_mask;
 }
+
 void SoftBody3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
 	PhysicsServer3D::get_singleton()->soft_body_set_collision_layer(physics_rid, p_layer);

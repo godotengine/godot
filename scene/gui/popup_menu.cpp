@@ -757,6 +757,7 @@ void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 	control->update();
 	child_controls_changed();
 }
+
 void PopupMenu::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].icon = p_icon;
@@ -764,6 +765,7 @@ void PopupMenu::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	control->update();
 	child_controls_changed();
 }
+
 void PopupMenu::set_item_checked(int p_idx, bool p_checked) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -772,6 +774,7 @@ void PopupMenu::set_item_checked(int p_idx, bool p_checked) {
 	control->update();
 	child_controls_changed();
 }
+
 void PopupMenu::set_item_id(int p_idx, int p_id) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 	items.write[p_idx].id = p_id;

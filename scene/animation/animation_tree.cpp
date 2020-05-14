@@ -289,6 +289,7 @@ float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Strin
 int AnimationNode::get_input_count() const {
 	return inputs.size();
 }
+
 String AnimationNode::get_input_name(int p_input) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), String());
 	return inputs[p_input].name;
@@ -368,6 +369,7 @@ Array AnimationNode::_get_filters() const {
 
 	return paths;
 }
+
 void AnimationNode::_set_filters(const Array &p_filters) {
 	filter.clear();
 	for (int i = 0; i < p_filters.size(); i++) {
@@ -1260,6 +1262,7 @@ NodePath AnimationTree::get_animation_player() const {
 bool AnimationTree::is_state_invalid() const {
 	return !state.valid;
 }
+
 String AnimationTree::get_invalid_state_reason() const {
 	return state.invalid_reasons;
 }
@@ -1420,6 +1423,7 @@ bool AnimationTree::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (properties_dirty) {
 		const_cast<AnimationTree *>(this)->_update_properties();

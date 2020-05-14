@@ -2283,6 +2283,7 @@ Error Image::decompress() {
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
 	return compress_from_channels(p_mode, detect_used_channels(p_source), p_lossy_quality);
 }
+
 Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality) {
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
@@ -3359,6 +3360,7 @@ void Image::convert_rg_to_ra_rgba8() {
 		w[i + 2] = 0;
 	}
 }
+
 void Image::convert_ra_rgba8_to_rg() {
 	ERR_FAIL_COND(format != FORMAT_RGBA8);
 	ERR_FAIL_COND(!data.size());

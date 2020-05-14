@@ -219,6 +219,7 @@ Ref<AudioStream> AudioStreamPlayer::get_stream() const {
 void AudioStreamPlayer::set_volume_db(float p_volume) {
 	volume_db = p_volume;
 }
+
 float AudioStreamPlayer::get_volume_db() const {
 	return volume_db;
 }
@@ -227,6 +228,7 @@ void AudioStreamPlayer::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
 }
+
 float AudioStreamPlayer::get_pitch_scale() const {
 	return pitch_scale;
 }
@@ -276,6 +278,7 @@ void AudioStreamPlayer::set_bus(const StringName &p_bus) {
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
 }
+
 StringName AudioStreamPlayer::get_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
@@ -288,6 +291,7 @@ StringName AudioStreamPlayer::get_bus() const {
 void AudioStreamPlayer::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
 }
+
 bool AudioStreamPlayer::is_autoplay_enabled() {
 	return autoplay;
 }
@@ -306,6 +310,7 @@ void AudioStreamPlayer::_set_playing(bool p_enable) {
 	else
 		stop();
 }
+
 bool AudioStreamPlayer::_is_active() const {
 	return active;
 }

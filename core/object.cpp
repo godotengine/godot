@@ -160,11 +160,13 @@ MethodInfo::MethodInfo(const String &p_name) :
 		name(p_name),
 		flags(METHOD_FLAG_NORMAL) {
 }
+
 MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1) :
 		name(p_name),
 		flags(METHOD_FLAG_NORMAL) {
 	arguments.push_back(p_param1);
 }
+
 MethodInfo::MethodInfo(const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
 		name(p_name),
 		flags(METHOD_FLAG_NORMAL) {
@@ -209,12 +211,14 @@ MethodInfo::MethodInfo(Variant::Type ret, const String &p_name) :
 		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 }
+
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1) :
 		name(p_name),
 		flags(METHOD_FLAG_NORMAL) {
 	return_val.type = ret;
 	arguments.push_back(p_param1);
 }
+
 MethodInfo::MethodInfo(Variant::Type ret, const String &p_name, const PropertyInfo &p_param1, const PropertyInfo &p_param2) :
 		name(p_name),
 		flags(METHOD_FLAG_NORMAL) {
@@ -320,6 +324,7 @@ bool Object::Connection::operator<(const Connection &p_conn) const {
 		return signal < p_conn.signal;
 	}
 }
+
 Object::Connection::Connection(const Variant &p_variant) {
 	Dictionary d = p_variant;
 	if (d.has("signal"))
@@ -349,6 +354,7 @@ void Object::_postinitialize() {
 
 void Object::get_valid_parents_static(List<String> *p_parents) {
 }
+
 void Object::_get_valid_parents_static(List<String> *p_parents) {
 }
 
@@ -739,6 +745,7 @@ Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
 		*r_valid = false;
 	return Variant();
 }
+
 void Object::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid) {
 	if (r_valid)
 		*r_valid = false;
@@ -997,6 +1004,7 @@ Vector<String> Object::_get_meta_list_bind() const {
 
 	return _metaret;
 }
+
 void Object::get_meta_list(List<String> *p_list) const {
 	List<Variant> keys;
 	metadata.get_key_list(&keys);
@@ -1318,6 +1326,7 @@ void Object::get_signals_connected_to_this(List<Connection> *p_connections) cons
 Error Object::connect_compat(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, const Vector<Variant> &p_binds, uint32_t p_flags) {
 	return connect(p_signal, Callable(p_to_object, p_to_method), p_binds, p_flags);
 }
+
 Error Object::connect(const StringName &p_signal, const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
 	ERR_FAIL_COND_V(p_callable.is_null(), ERR_INVALID_PARAMETER);
 

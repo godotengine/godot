@@ -268,6 +268,7 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	filters->connect("item_activated", callable_mp(this, &EditorPropertyRootMotion::_confirmed));
 	//filters->connect("item_edited", this, "_filter_edited");
 }
+
 //////////////////////////
 
 bool EditorInspectorRootMotionPlugin::can_handle(Object *p_object) {

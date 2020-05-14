@@ -1459,9 +1459,11 @@ VkDevice VulkanContext::get_device() {
 VkPhysicalDevice VulkanContext::get_physical_device() {
 	return gpu;
 }
+
 int VulkanContext::get_swapchain_image_count() const {
 	return swapchainImageCount;
 }
+
 uint32_t VulkanContext::get_graphics_queue() const {
 	return graphics_queue_family_index;
 }

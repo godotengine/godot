@@ -42,6 +42,7 @@ CharType VariantParser::StreamFile::get_char() {
 bool VariantParser::StreamFile::is_utf8() const {
 	return true;
 }
+
 bool VariantParser::StreamFile::is_eof() const {
 	return f->eof_reached();
 }
@@ -62,6 +63,7 @@ CharType VariantParser::StreamString::get_char() {
 bool VariantParser::StreamString::is_utf8() const {
 	return false;
 }
+
 bool VariantParser::StreamString::is_eof() const {
 	return pos > s.length();
 }

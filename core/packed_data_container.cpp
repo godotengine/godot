@@ -329,6 +329,7 @@ Variant PackedDataContainer::_iter_init(const Array &p_iter) {
 Variant PackedDataContainer::_iter_next(const Array &p_iter) {
 	return _iter_next_ofs(p_iter, 0);
 }
+
 Variant PackedDataContainer::_iter_get(const Variant &p_iter) {
 	return _iter_get_ofs(p_iter, 0);
 }
@@ -354,6 +355,7 @@ Variant PackedDataContainerRef::_iter_init(const Array &p_iter) {
 Variant PackedDataContainerRef::_iter_next(const Array &p_iter) {
 	return from->_iter_next_ofs(p_iter, offset);
 }
+
 Variant PackedDataContainerRef::_iter_get(const Variant &p_iter) {
 	return from->_iter_get_ofs(p_iter, offset);
 }

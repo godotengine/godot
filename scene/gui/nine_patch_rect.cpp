@@ -50,6 +50,7 @@ void NinePatchRect::_notification(int p_what) {
 Size2 NinePatchRect::get_minimum_size() const {
 	return Size2(margin[MARGIN_LEFT] + margin[MARGIN_RIGHT], margin[MARGIN_TOP] + margin[MARGIN_BOTTOM]);
 }
+
 void NinePatchRect::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &NinePatchRect::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &NinePatchRect::get_texture);

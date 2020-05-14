@@ -134,6 +134,7 @@ extern thread_local int current_invoke_count;
 _FORCE_INLINE_ int get_runtime_invoke_count() {
 	return current_invoke_count;
 }
+
 _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 	return current_invoke_count;
 }

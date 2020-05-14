@@ -190,6 +190,7 @@ void EditorExportPreset::set_patch(int p_index, const String &p_path) {
 	patches.write[p_index] = p_path;
 	EditorExport::singleton->save_presets();
 }
+
 String EditorExportPreset::get_patch(int p_index) {
 	ERR_FAIL_INDEX_V(p_index, patches.size(), String());
 	return patches[p_index];
@@ -1082,6 +1083,7 @@ void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags
 		r_flags.push_back("--debug-navigation");
 	}
 }
+
 EditorExportPlatform::EditorExportPlatform() {
 }
 
@@ -1375,6 +1377,7 @@ String EditorExportPlatformPC::get_name() const {
 String EditorExportPlatformPC::get_os_name() const {
 	return os_name;
 }
+
 Ref<Texture2D> EditorExportPlatformPC::get_logo() const {
 	return logo;
 }
@@ -1534,9 +1537,11 @@ void EditorExportPlatformPC::set_release_64(const String &p_file) {
 void EditorExportPlatformPC::set_release_32(const String &p_file) {
 	release_file_32 = p_file;
 }
+
 void EditorExportPlatformPC::set_debug_64(const String &p_file) {
 	debug_file_64 = p_file;
 }
+
 void EditorExportPlatformPC::set_debug_32(const String &p_file) {
 	debug_file_32 = p_file;
 }

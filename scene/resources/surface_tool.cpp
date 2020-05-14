@@ -155,6 +155,7 @@ void SurfaceTool::add_vertex(const Vector3 &p_vertex) {
 
 	format |= Mesh::ARRAY_FORMAT_VERTEX;
 }
+
 void SurfaceTool::add_color(Color p_color) {
 	ERR_FAIL_COND(!begun);
 
@@ -163,6 +164,7 @@ void SurfaceTool::add_color(Color p_color) {
 	format |= Mesh::ARRAY_FORMAT_COLOR;
 	last_color = p_color;
 }
+
 void SurfaceTool::add_normal(const Vector3 &p_normal) {
 	ERR_FAIL_COND(!begun);
 
@@ -745,9 +747,11 @@ int SurfaceTool::mikktGetNumFaces(const SMikkTSpaceContext *pContext) {
 		return triangle_data.vertices.size() / 3;
 	}
 }
+
 int SurfaceTool::mikktGetNumVerticesOfFace(const SMikkTSpaceContext *pContext, const int iFace) {
 	return 3; //always 3
 }
+
 void SurfaceTool::mikktGetPosition(const SMikkTSpaceContext *pContext, float fvPosOut[], const int iFace, const int iVert) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
 	Vector3 v;
@@ -781,6 +785,7 @@ void SurfaceTool::mikktGetNormal(const SMikkTSpaceContext *pContext, float fvNor
 	fvNormOut[1] = v.y;
 	fvNormOut[2] = v.z;
 }
+
 void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext *pContext, float fvTexcOut[], const int iFace, const int iVert) {
 	TangentGenerationContextUserData &triangle_data = *reinterpret_cast<TangentGenerationContextUserData *>(pContext->m_pUserData);
 	Vector2 v;

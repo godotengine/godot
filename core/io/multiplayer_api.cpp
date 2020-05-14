@@ -179,6 +179,7 @@ void _profile_node_data(const String &p_what, ObjectID p_id) {
 		EngineDebugger::profiler_add_frame_data("multiplayer", values);
 	}
 }
+
 void _profile_bandwidth_data(const String &p_inout, int p_size) {
 	if (EngineDebugger::is_profiling("multiplayer")) {
 		Array values;
@@ -668,6 +669,7 @@ Error MultiplayerAPI::_encode_and_compress_variant(const Variant &p_variant, uin
 
 	return OK;
 }
+
 Error MultiplayerAPI::_decode_and_decompress_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int *r_len) {
 	const uint8_t *buf = p_buffer;
 	int len = p_len;

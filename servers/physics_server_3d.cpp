@@ -150,6 +150,7 @@ RID PhysicsShapeQueryParameters3D::get_shape_rid() const {
 void PhysicsShapeQueryParameters3D::set_transform(const Transform &p_transform) {
 	transform = p_transform;
 }
+
 Transform PhysicsShapeQueryParameters3D::get_transform() const {
 	return transform;
 }
@@ -165,6 +166,7 @@ float PhysicsShapeQueryParameters3D::get_margin() const {
 void PhysicsShapeQueryParameters3D::set_collision_mask(int p_collision_mask) {
 	collision_mask = p_collision_mask;
 }
+
 int PhysicsShapeQueryParameters3D::get_collision_mask() const {
 	return collision_mask;
 }
@@ -298,6 +300,7 @@ Array PhysicsDirectSpaceState3D::_cast_motion(const Ref<PhysicsShapeQueryParamet
 	ret[1] = closest_unsafe;
 	return ret;
 }
+
 Array PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query, int p_max_results) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Array());
 
@@ -313,6 +316,7 @@ Array PhysicsDirectSpaceState3D::_collide_shape(const Ref<PhysicsShapeQueryParam
 		r[i] = ret[i];
 	return r;
 }
+
 Dictionary PhysicsDirectSpaceState3D::_get_rest_info(const Ref<PhysicsShapeQueryParameters3D> &p_shape_query) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Dictionary());
 
@@ -347,15 +351,19 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 int PhysicsShapeQueryResult3D::get_result_count() const {
 	return result.size();
 }
+
 RID PhysicsShapeQueryResult3D::get_result_rid(int p_idx) const {
 	return result[p_idx].rid;
 }
+
 ObjectID PhysicsShapeQueryResult3D::get_result_object_id(int p_idx) const {
 	return result[p_idx].collider_id;
 }
+
 Object *PhysicsShapeQueryResult3D::get_result_object(int p_idx) const {
 	return result[p_idx].collider;
 }
+
 int PhysicsShapeQueryResult3D::get_result_object_shape(int p_idx) const {
 	return result[p_idx].shape;
 }

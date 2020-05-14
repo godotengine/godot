@@ -256,6 +256,7 @@ Vector3 &Vector3::operator-=(const Vector3 &p_v) {
 	z -= p_v.z;
 	return *this;
 }
+
 Vector3 Vector3::operator-(const Vector3 &p_v) const {
 	return Vector3(x - p_v.x, y - p_v.y, z - p_v.z);
 }
@@ -266,6 +267,7 @@ Vector3 &Vector3::operator*=(const Vector3 &p_v) {
 	z *= p_v.z;
 	return *this;
 }
+
 Vector3 Vector3::operator*(const Vector3 &p_v) const {
 	return Vector3(x * p_v.x, y * p_v.y, z * p_v.z);
 }

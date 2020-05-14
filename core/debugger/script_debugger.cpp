@@ -62,11 +62,13 @@ void ScriptDebugger::remove_breakpoint(int p_line, const StringName &p_source) {
 	if (breakpoints[p_line].size() == 0)
 		breakpoints.erase(p_line);
 }
+
 bool ScriptDebugger::is_breakpoint(int p_line, const StringName &p_source) const {
 	if (!breakpoints.has(p_line))
 		return false;
 	return breakpoints[p_line].has(p_source);
 }
+
 bool ScriptDebugger::is_breakpoint_line(int p_line) const {
 	return breakpoints.has(p_line);
 }

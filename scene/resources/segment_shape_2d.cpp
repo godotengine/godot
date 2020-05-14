@@ -51,6 +51,7 @@ void SegmentShape2D::set_a(const Vector2 &p_a) {
 	a = p_a;
 	_update_shape();
 }
+
 Vector2 SegmentShape2D::get_a() const {
 	return a;
 }
@@ -59,6 +60,7 @@ void SegmentShape2D::set_b(const Vector2 &p_b) {
 	b = p_b;
 	_update_shape();
 }
+
 Vector2 SegmentShape2D::get_b() const {
 	return b;
 }
@@ -148,6 +150,7 @@ void RayShape2D::set_length(real_t p_length) {
 	length = p_length;
 	_update_shape();
 }
+
 real_t RayShape2D::get_length() const {
 	return length;
 }

@@ -64,6 +64,7 @@ void LightmapperRD::add_directional_light(bool p_static, const Vector3 &p_direct
 	l.size = p_angular_distance;
 	lights.push_back(l);
 }
+
 void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_OMNI;
@@ -80,6 +81,7 @@ void LightmapperRD::add_omni_light(bool p_static, const Vector3 &p_position, con
 	l.size = p_size;
 	lights.push_back(l);
 }
+
 void LightmapperRD::add_spot_light(bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size) {
 	Light l;
 	l.type = LIGHT_TYPE_SPOT;
@@ -1700,17 +1702,21 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 int LightmapperRD::get_bake_texture_count() const {
 	return bake_textures.size();
 }
+
 Ref<Image> LightmapperRD::get_bake_texture(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, bake_textures.size(), Ref<Image>());
 	return bake_textures[p_index];
 }
+
 int LightmapperRD::get_bake_mesh_count() const {
 	return mesh_instances.size();
 }
+
 Variant LightmapperRD::get_bake_mesh_userdata(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, mesh_instances.size(), Variant());
 	return mesh_instances[p_index].data.userdata;
 }
+
 Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
 	ERR_FAIL_COND_V(bake_textures.size() == 0, Rect2());
 	Rect2 uv_ofs;
@@ -1719,6 +1725,7 @@ Rect2 LightmapperRD::get_bake_mesh_uv_scale(int p_index) const {
 	uv_ofs.size = Vector2(mesh_instances[p_index].data.albedo_on_uv2->get_width(), mesh_instances[p_index].data.albedo_on_uv2->get_height()) / atlas_size;
 	return uv_ofs;
 }
+
 int LightmapperRD::get_bake_mesh_texture_slice(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, mesh_instances.size(), Variant());
 	return mesh_instances[p_index].slice;

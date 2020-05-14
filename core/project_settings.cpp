@@ -114,6 +114,7 @@ void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_v
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	props[p_name].initial = p_value;
 }
+
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
 	props[p_name].restart_if_changed = p_restart;
@@ -181,6 +182,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	return true;
 }
+
 bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 

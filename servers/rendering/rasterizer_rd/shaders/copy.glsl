@@ -37,6 +37,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float camera_z_near;
 	uint pad2[2];
 }
+
 params;
 
 #ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA

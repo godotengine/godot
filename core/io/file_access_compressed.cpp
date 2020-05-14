@@ -132,6 +132,7 @@ Error FileAccessCompressed::_open(const String &p_path, int p_mode_flags) {
 
 	return OK;
 }
+
 void FileAccessCompressed::close() {
 	if (!f)
 		return;
@@ -221,6 +222,7 @@ void FileAccessCompressed::seek_end(int64_t p_position) {
 		seek(read_total + p_position);
 	}
 }
+
 size_t FileAccessCompressed::get_position() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	if (writing) {
@@ -229,6 +231,7 @@ size_t FileAccessCompressed::get_position() const {
 		return read_block * block_size + read_pos;
 	}
 }
+
 size_t FileAccessCompressed::get_len() const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	if (writing) {
@@ -277,6 +280,7 @@ uint8_t FileAccessCompressed::get_8() const {
 
 	return ret;
 }
+
 int FileAccessCompressed::get_buffer(uint8_t *p_dst, int p_length) const {
 	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");

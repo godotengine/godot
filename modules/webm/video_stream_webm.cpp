@@ -147,6 +147,7 @@ void VideoStreamPlaybackWebm::stop() {
 	time = 0.0;
 	playing = false;
 }
+
 void VideoStreamPlaybackWebm::play() {
 	stop();
 
@@ -163,6 +164,7 @@ bool VideoStreamPlaybackWebm::is_playing() const {
 void VideoStreamPlaybackWebm::set_paused(bool p_paused) {
 	paused = p_paused;
 }
+
 bool VideoStreamPlaybackWebm::is_paused() const {
 	return paused;
 }
@@ -170,6 +172,7 @@ bool VideoStreamPlaybackWebm::is_paused() const {
 void VideoStreamPlaybackWebm::set_loop(bool p_enable) {
 	//Empty
 }
+
 bool VideoStreamPlaybackWebm::has_loop() const {
 	return false;
 }
@@ -183,6 +186,7 @@ float VideoStreamPlaybackWebm::get_length() const {
 float VideoStreamPlaybackWebm::get_playback_position() const {
 	return video_pos;
 }
+
 void VideoStreamPlaybackWebm::seek(float p_time) {
 	//Not implemented
 }
@@ -319,11 +323,13 @@ void VideoStreamPlaybackWebm::set_mix_callback(VideoStreamPlayback::AudioMixCall
 	mix_callback = p_callback;
 	mix_udata = p_userdata;
 }
+
 int VideoStreamPlaybackWebm::get_channels() const {
 	if (audio)
 		return webm->getChannels();
 	return 0;
 }
+
 int VideoStreamPlaybackWebm::get_mix_rate() const {
 	if (audio)
 		return webm->getSampleRate();
@@ -386,6 +392,7 @@ Ref<VideoStreamPlayback> VideoStreamWebm::instance_playback() {
 void VideoStreamWebm::set_file(const String &p_file) {
 	file = p_file;
 }
+
 String VideoStreamWebm::get_file() {
 	return file;
 }

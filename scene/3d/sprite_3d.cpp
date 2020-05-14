@@ -95,6 +95,7 @@ void SpriteBase3D::set_offset(const Point2 &p_offset) {
 	offset = p_offset;
 	_queue_update();
 }
+
 Point2 SpriteBase3D::get_offset() const {
 	return offset;
 }
@@ -103,6 +104,7 @@ void SpriteBase3D::set_flip_h(bool p_flip) {
 	hflip = p_flip;
 	_queue_update();
 }
+
 bool SpriteBase3D::is_flipped_h() const {
 	return hflip;
 }
@@ -111,6 +113,7 @@ void SpriteBase3D::set_flip_v(bool p_flip) {
 	vflip = p_flip;
 	_queue_update();
 }
+
 bool SpriteBase3D::is_flipped_v() const {
 	return vflip;
 }
@@ -129,6 +132,7 @@ void SpriteBase3D::set_pixel_size(float p_amount) {
 	pixel_size = p_amount;
 	_queue_update();
 }
+
 float SpriteBase3D::get_pixel_size() const {
 	return pixel_size;
 }
@@ -137,6 +141,7 @@ void SpriteBase3D::set_opacity(float p_amount) {
 	opacity = p_amount;
 	_queue_update();
 }
+
 float SpriteBase3D::get_opacity() const {
 	return opacity;
 }
@@ -146,6 +151,7 @@ void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 	axis = p_axis;
 	_queue_update();
 }
+
 Vector3::Axis SpriteBase3D::get_axis() const {
 	return axis;
 }
@@ -170,6 +176,7 @@ void SpriteBase3D::_queue_update() {
 AABB SpriteBase3D::get_aabb() const {
 	return aabb;
 }
+
 Vector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
@@ -562,6 +569,7 @@ void Sprite3D::set_vframes(int p_amount) {
 	_queue_update();
 	_change_notify();
 }
+
 int Sprite3D::get_vframes() const {
 	return vframes;
 }
@@ -572,6 +580,7 @@ void Sprite3D::set_hframes(int p_amount) {
 	_queue_update();
 	_change_notify();
 }
+
 int Sprite3D::get_hframes() const {
 	return hframes;
 }
@@ -931,6 +940,7 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
+
 int AnimatedSprite3D::get_frame() const {
 	return frame;
 }
@@ -1016,6 +1026,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_animation) {
 	_change_notify();
 	_queue_update();
 }
+
 StringName AnimatedSprite3D::get_animation() const {
 	return animation;
 }

@@ -470,6 +470,7 @@ bool ScrollContainer::is_v_scroll_enabled() const {
 int ScrollContainer::get_v_scroll() const {
 	return v_scroll->get_value();
 }
+
 void ScrollContainer::set_v_scroll(int p_pos) {
 	v_scroll->set_value(p_pos);
 	_cancel_drag();
@@ -478,6 +479,7 @@ void ScrollContainer::set_v_scroll(int p_pos) {
 int ScrollContainer::get_h_scroll() const {
 	return h_scroll->get_value();
 }
+
 void ScrollContainer::set_h_scroll(int p_pos) {
 	h_scroll->set_value(p_pos);
 	_cancel_drag();

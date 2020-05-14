@@ -45,6 +45,7 @@ String DirAccess::_get_root_path() const {
 			return "";
 	}
 }
+
 String DirAccess::_get_root_string() const {
 	switch (_access_type) {
 		case ACCESS_RESOURCES:

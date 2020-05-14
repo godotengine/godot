@@ -1374,6 +1374,7 @@ Variant::operator signed int() const {
 		}
 	}
 }
+
 Variant::operator unsigned int() const {
 	switch (type) {
 		case NIL:
@@ -1517,6 +1518,7 @@ Variant::operator signed short() const {
 		}
 	}
 }
+
 Variant::operator unsigned short() const {
 	switch (type) {
 		case NIL:
@@ -1534,6 +1536,7 @@ Variant::operator unsigned short() const {
 		}
 	}
 }
+
 Variant::operator signed char() const {
 	switch (type) {
 		case NIL:
@@ -1551,6 +1554,7 @@ Variant::operator signed char() const {
 		}
 	}
 }
+
 Variant::operator unsigned char() const {
 	switch (type) {
 		case NIL:
@@ -1590,6 +1594,7 @@ Variant::operator float() const {
 		}
 	}
 }
+
 Variant::operator double() const {
 	switch (type) {
 		case NIL:
@@ -1935,6 +1940,7 @@ Variant::operator Plane() const {
 	else
 		return Plane();
 }
+
 Variant::operator ::AABB() const {
 	if (type == AABB)
 		return *_data._aabb;
@@ -2077,6 +2083,7 @@ Variant::operator Node *() const {
 	else
 		return nullptr;
 }
+
 Variant::operator Control *() const {
 	if (type == OBJECT)
 		return Object::cast_to<Control>(_get_obj().obj);
@@ -2169,12 +2176,14 @@ Variant::operator Vector<uint8_t>() const {
 	else
 		return _convert_array_from_variant<Vector<uint8_t>>(*this);
 }
+
 Variant::operator Vector<int32_t>() const {
 	if (type == PACKED_INT32_ARRAY)
 		return static_cast<PackedArrayRef<int32_t> *>(_data.packed_array)->array;
 	else
 		return _convert_array_from_variant<Vector<int>>(*this);
 }
+
 Variant::operator Vector<int64_t>() const {
 	if (type == PACKED_INT64_ARRAY)
 		return static_cast<PackedArrayRef<int64_t> *>(_data.packed_array)->array;
@@ -2202,12 +2211,14 @@ Variant::operator Vector<String>() const {
 	else
 		return _convert_array_from_variant<Vector<String>>(*this);
 }
+
 Variant::operator Vector<Vector3>() const {
 	if (type == PACKED_VECTOR3_ARRAY)
 		return static_cast<PackedArrayRef<Vector3> *>(_data.packed_array)->array;
 	else
 		return _convert_array_from_variant<Vector<Vector3>>(*this);
 }
+
 Variant::operator Vector<Vector2>() const {
 	if (type == PACKED_VECTOR2_ARRAY)
 		return static_cast<PackedArrayRef<Vector2> *>(_data.packed_array)->array;
@@ -2280,6 +2291,7 @@ Variant::operator Vector<Variant>() const {
 
 	return variants;
 }
+
 Variant::operator Vector<StringName>() const {
 	Vector<String> from = operator Vector<String>();
 	Vector<StringName> to;
@@ -2294,6 +2306,7 @@ Variant::operator Vector<StringName>() const {
 Variant::operator Margin() const {
 	return (Margin) operator int();
 }
+
 Variant::operator Orientation() const {
 	return (Orientation) operator int();
 }
@@ -2326,6 +2339,7 @@ Variant::Variant(signed int p_int) {
 	type = INT;
 	_data._int = p_int;
 }
+
 Variant::Variant(unsigned int p_int) {
 	type = INT;
 	_data._int = p_int;
@@ -2337,6 +2351,7 @@ Variant::Variant(signed long p_int) {
 	type = INT;
 	_data._int = p_int;
 }
+
 Variant::Variant(unsigned long p_int) {
 	type = INT;
 	_data._int = p_int;
@@ -2357,22 +2372,27 @@ Variant::Variant(signed short p_short) {
 	type = INT;
 	_data._int = p_short;
 }
+
 Variant::Variant(unsigned short p_short) {
 	type = INT;
 	_data._int = p_short;
 }
+
 Variant::Variant(signed char p_char) {
 	type = INT;
 	_data._int = p_char;
 }
+
 Variant::Variant(unsigned char p_char) {
 	type = INT;
 	_data._int = p_char;
 }
+
 Variant::Variant(float p_float) {
 	type = FLOAT;
 	_data._float = p_float;
 }
+
 Variant::Variant(double p_double) {
 	type = FLOAT;
 	_data._float = p_double;
@@ -2387,6 +2407,7 @@ Variant::Variant(const StringName &p_string) {
 	type = STRING_NAME;
 	memnew_placement(_data._mem, StringName(p_string));
 }
+
 Variant::Variant(const String &p_string) {
 	type = STRING;
 	memnew_placement(_data._mem, String(p_string));
@@ -2401,10 +2422,12 @@ Variant::Variant(const CharType *p_wstring) {
 	type = STRING;
 	memnew_placement(_data._mem, String(p_wstring));
 }
+
 Variant::Variant(const Vector3 &p_vector3) {
 	type = VECTOR3;
 	memnew_placement(_data._mem, Vector3(p_vector3));
 }
+
 Variant::Variant(const Vector3i &p_vector3i) {
 	type = VECTOR3I;
 	memnew_placement(_data._mem, Vector3i(p_vector3i));
@@ -2434,6 +2457,7 @@ Variant::Variant(const Plane &p_plane) {
 	type = PLANE;
 	memnew_placement(_data._mem, Plane(p_plane));
 }
+
 Variant::Variant(const ::AABB &p_aabb) {
 	type = AABB;
 	_data._aabb = memnew(::AABB(p_aabb));
@@ -2448,6 +2472,7 @@ Variant::Variant(const Quat &p_quat) {
 	type = QUAT;
 	memnew_placement(_data._mem, Quat(p_quat));
 }
+
 Variant::Variant(const Transform &p_transform) {
 	type = TRANSFORM;
 	_data._transform = memnew(Transform(p_transform));
@@ -2457,6 +2482,7 @@ Variant::Variant(const Transform2D &p_transform) {
 	type = TRANSFORM2D;
 	_data._transform2d = memnew(Transform2D(p_transform));
 }
+
 Variant::Variant(const Color &p_color) {
 	type = COLOR;
 	memnew_placement(_data._mem, Color(p_color));
@@ -2499,6 +2525,7 @@ Variant::Variant(const Callable &p_callable) {
 	type = CALLABLE;
 	memnew_placement(_data._mem, Callable(p_callable));
 }
+
 Variant::Variant(const Signal &p_callable) {
 	type = SIGNAL;
 	memnew_placement(_data._mem, Signal(p_callable));
@@ -2543,6 +2570,7 @@ Variant::Variant(const Vector<uint8_t> &p_byte_array) {
 
 	_data.packed_array = PackedArrayRef<uint8_t>::create(p_byte_array);
 }
+
 Variant::Variant(const Vector<int32_t> &p_int32_array) {
 	type = PACKED_INT32_ARRAY;
 	_data.packed_array = PackedArrayRef<int32_t>::create(p_int32_array);
@@ -2567,6 +2595,7 @@ Variant::Variant(const Vector<String> &p_string_array) {
 	type = PACKED_STRING_ARRAY;
 	_data.packed_array = PackedArrayRef<String>::create(p_string_array);
 }
+
 Variant::Variant(const Vector<Vector3> &p_vector3_array) {
 	type = PACKED_VECTOR3_ARRAY;
 	_data.packed_array = PackedArrayRef<Vector3>::create(p_vector3_array);
@@ -2576,6 +2605,7 @@ Variant::Variant(const Vector<Vector2> &p_vector2_array) {
 	type = PACKED_VECTOR2_ARRAY;
 	_data.packed_array = PackedArrayRef<Vector2>::create(p_vector2_array);
 }
+
 Variant::Variant(const Vector<Color> &p_color_array) {
 	type = PACKED_COLOR_ARRAY;
 	_data.packed_array = PackedArrayRef<Color>::create(p_color_array);
@@ -3275,12 +3305,14 @@ Vector<Variant> varray(const Variant &p_arg1) {
 	v.push_back(p_arg1);
 	return v;
 }
+
 Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2) {
 	Vector<Variant> v;
 	v.push_back(p_arg1);
 	v.push_back(p_arg2);
 	return v;
 }
+
 Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3) {
 	Vector<Variant> v;
 	v.push_back(p_arg1);
@@ -3288,6 +3320,7 @@ Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Varia
 	v.push_back(p_arg3);
 	return v;
 }
+
 Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4) {
 	Vector<Variant> v;
 	v.push_back(p_arg1);

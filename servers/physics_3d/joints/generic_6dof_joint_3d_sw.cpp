@@ -623,6 +623,7 @@ void Generic6DOFJoint3DSW::set_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOF
 			break; // Can't happen, but silences warning
 	}
 }
+
 bool Generic6DOFJoint3DSW::get_flag(Vector3::Axis p_axis, PhysicsServer3D::G6DOFJointAxisFlag p_flag) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	switch (p_flag) {

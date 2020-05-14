@@ -188,6 +188,7 @@ String FileAccessWindows::get_path_absolute() const {
 bool FileAccessWindows::is_open() const {
 	return (f != nullptr);
 }
+
 void FileAccessWindows::seek(size_t p_position) {
 	ERR_FAIL_COND(!f);
 	last_error = OK;
@@ -195,12 +196,14 @@ void FileAccessWindows::seek(size_t p_position) {
 		check_errors();
 	prev_op = 0;
 }
+
 void FileAccessWindows::seek_end(int64_t p_position) {
 	ERR_FAIL_COND(!f);
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
 	prev_op = 0;
 }
+
 size_t FileAccessWindows::get_position() const {
 	size_t aux_position = 0;
 	aux_position = ftell(f);
@@ -209,6 +212,7 @@ size_t FileAccessWindows::get_position() const {
 	};
 	return aux_position;
 }
+
 size_t FileAccessWindows::get_len() const {
 	ERR_FAIL_COND_V(!f, 0);
 

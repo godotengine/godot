@@ -384,6 +384,7 @@ static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) 
 
 	return false;
 }
+
 void ImportDock::_reimport_attempt() {
 	bool need_restart = false;
 	bool used_in_resources = false;
@@ -484,6 +485,7 @@ void ImportDock::_property_toggled(const StringName &p_prop, bool p_checked) {
 		params->checked.erase(p_prop);
 	}
 }
+
 void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_reimport"), &ImportDock::_reimport);
 }

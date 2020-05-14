@@ -226,6 +226,7 @@ float DynamicFontAtSize::get_height() const {
 float DynamicFontAtSize::get_ascent() const {
 	return ascent;
 }
+
 float DynamicFontAtSize::get_descent() const {
 	return descent;
 }
@@ -348,6 +349,7 @@ unsigned long DynamicFontAtSize::_ft_stream_io(FT_Stream stream, unsigned long o
 
 	return f->get_buffer(buffer, count);
 }
+
 void DynamicFontAtSize::_ft_stream_close(FT_Stream stream) {
 	FileAccess *f = (FileAccess *)stream->descriptor.pointer;
 	f->close();
@@ -859,11 +861,13 @@ void DynamicFont::add_fallback(const Ref<DynamicFontData> &p_data) {
 int DynamicFont::get_fallback_count() const {
 	return fallbacks.size();
 }
+
 Ref<DynamicFontData> DynamicFont::get_fallback(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, fallbacks.size(), Ref<DynamicFontData>());
 
 	return fallbacks[p_idx];
 }
+
 void DynamicFont::remove_fallback(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, fallbacks.size());
 	fallbacks.remove(p_idx);
@@ -913,6 +917,7 @@ bool DynamicFont::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void DynamicFont::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < fallbacks.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "fallback/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "DynamicFontData"));

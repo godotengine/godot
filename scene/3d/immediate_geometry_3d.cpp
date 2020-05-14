@@ -80,6 +80,7 @@ void ImmediateGeometry3D::clear() {
 AABB ImmediateGeometry3D::get_aabb() const {
 	return aabb;
 }
+
 Vector<Face3> ImmediateGeometry3D::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }

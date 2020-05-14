@@ -254,6 +254,7 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 		_update_queries();
 	*/
 }
+
 PhysicsServer3D::BodyMode Body3DSW::get_mode() const {
 	return mode;
 }
@@ -331,6 +332,7 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 		} break;
 	}
 }
+
 Variant Body3DSW::get_state(PhysicsServer3D::BodyState p_state) const {
 	switch (p_state) {
 		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
@@ -635,6 +637,7 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 
 
 }
+
 */
 
 void Body3DSW::wakeup_neighbours() {

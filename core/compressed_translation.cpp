@@ -269,6 +269,7 @@ void PHashTranslation::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "strings"));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "load_from", PROPERTY_HINT_RESOURCE_TYPE, "Translation", PROPERTY_USAGE_EDITOR));
 }
+
 void PHashTranslation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generate", "from"), &PHashTranslation::generate);
 }

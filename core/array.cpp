@@ -83,9 +83,11 @@ const Variant &Array::operator[](int p_idx) const {
 int Array::size() const {
 	return _p->array.size();
 }
+
 bool Array::empty() const {
 	return _p->array.empty();
 }
+
 void Array::clear() {
 	_p->array.clear();
 }
@@ -151,6 +153,7 @@ void Array::_assign(const Array &p_array) {
 void Array::operator=(const Array &p_array) {
 	_assign(p_array);
 }
+
 void Array::push_back(const Variant &p_value) {
 	ERR_FAIL_COND(!_p->typed.validate(p_value, "push_back"));
 	_p->array.push_back(p_value);
@@ -509,6 +512,7 @@ Array::Array() {
 	_p = memnew(ArrayPrivate);
 	_p->refcount.init();
 }
+
 Array::~Array() {
 	_unref();
 }

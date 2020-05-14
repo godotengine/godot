@@ -190,6 +190,7 @@ void TranslationLoaderPO::get_recognized_extensions(List<String> *p_extensions) 
 	p_extensions->push_back("po");
 	//p_extensions->push_back("mo"); //mo in the future...
 }
+
 bool TranslationLoaderPO::handles_type(const String &p_type) const {
 	return (p_type == "Translation");
 }

@@ -83,6 +83,7 @@ void BackgroundProgress::_task_step(const String &p_task, int p_step) {
 	else
 		t.progress->set_value(p_step);
 }
+
 void BackgroundProgress::_end_task(const String &p_task) {
 	_THREAD_SAFE_METHOD_
 
@@ -103,6 +104,7 @@ void BackgroundProgress::_bind_methods() {
 void BackgroundProgress::add_task(const String &p_task, const String &p_label, int p_steps) {
 	MessageQueue::get_singleton()->push_call(this, "_add_task", p_task, p_label, p_steps);
 }
+
 void BackgroundProgress::task_step(const String &p_task, int p_step) {
 	//this code is weird, but it prevents deadlock.
 	bool no_updates = true;

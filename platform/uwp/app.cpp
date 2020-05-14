@@ -396,6 +396,7 @@ void App::key_event(Windows::UI::Core::CoreWindow ^ sender, bool p_pressed, Wind
 
 	os->queue_key_event(ke);
 }
+
 void App::OnKeyDown(CoreWindow ^ sender, KeyEventArgs ^ args) {
 	key_event(sender, true, args);
 }

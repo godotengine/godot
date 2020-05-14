@@ -31,6 +31,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	ivec2 axis; /** (1, 0) or (0, 1) */
 	ivec2 screen_size;
 }
+
 params;
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */

@@ -287,6 +287,7 @@ void InspectorDock::_edit_forward() {
 	if (EditorNode::get_singleton()->get_editor_history()->next())
 		editor->edit_current();
 }
+
 void InspectorDock::_edit_back() {
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
 	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1)

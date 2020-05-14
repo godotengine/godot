@@ -105,6 +105,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float depth_scale;
 	uint pad[3];
 }
+
 params;
 
 layout(set = 0, binding = 0) uniform sampler2D source_image;

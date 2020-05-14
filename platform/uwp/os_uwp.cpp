@@ -444,9 +444,11 @@ void OS_UWP::set_window_title(const String &p_title) {
 void OS_UWP::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 	video_mode = p_video_mode;
 }
+
 OS::VideoMode OS_UWP::get_video_mode(int p_screen) const {
 	return video_mode;
 }
+
 void OS_UWP::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
@@ -469,6 +471,7 @@ OS::Date OS_UWP::get_date(bool utc) const {
 	date.dst = false;
 	return date;
 }
+
 OS::Time OS_UWP::get_time(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
@@ -529,6 +532,7 @@ void OS_UWP::delay_usec(uint32_t p_usec) const {
 	// no Sleep()
 	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
 }
+
 uint64_t OS_UWP::get_ticks_usec() const {
 	uint64_t ticks;
 	uint64_t time;
