@@ -91,8 +91,9 @@ Thread *ThreadPosix::create_func_posix(ThreadCreateCallback p_callback, void *p_
 Thread::ID ThreadPosix::get_thread_id_func_posix() {
 	void *value = pthread_getspecific(thread_id_key);
 
-	if (value)
+	if (value) {
 		return *static_cast<ID *>(value);
+	}
 
 	ID new_id = atomic_increment(&next_thread_id);
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(new_id)));

@@ -132,8 +132,9 @@ bool StringName::operator!=(const StringName &p_name) const {
 }
 
 void StringName::operator=(const StringName &p_name) {
-	if (this == &p_name)
+	if (this == &p_name) {
 		return;
+	}
 
 	unref();
 
@@ -157,8 +158,9 @@ StringName::StringName(const char *p_name) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (!p_name || p_name[0] == 0)
+	if (!p_name || p_name[0] == 0) {
 		return; //empty, ignore
+	}
 
 	MutexLock lock(mutex);
 
@@ -170,8 +172,9 @@ StringName::StringName(const char *p_name) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_name)
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
+		}
 		_data = _data->next;
 	}
 
@@ -190,8 +193,9 @@ StringName::StringName(const char *p_name) {
 	_data->cname = nullptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
-	if (_table[idx])
+	if (_table[idx]) {
 		_table[idx]->prev = _data;
+	}
 	_table[idx] = _data;
 }
 
@@ -212,8 +216,9 @@ StringName::StringName(const StaticCString &p_static_string) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_static_string.ptr)
+		if (_data->hash == hash && _data->get_name() == p_static_string.ptr) {
 			break;
+		}
 		_data = _data->next;
 	}
 
@@ -232,8 +237,9 @@ StringName::StringName(const StaticCString &p_static_string) {
 	_data->cname = p_static_string.ptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
-	if (_table[idx])
+	if (_table[idx]) {
 		_table[idx]->prev = _data;
+	}
 	_table[idx] = _data;
 }
 
@@ -242,8 +248,9 @@ StringName::StringName(const String &p_name) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (p_name == String())
+	if (p_name == String()) {
 		return;
+	}
 
 	MutexLock lock(mutex);
 
@@ -253,8 +260,9 @@ StringName::StringName(const String &p_name) {
 	_data = _table[idx];
 
 	while (_data) {
-		if (_data->hash == hash && _data->get_name() == p_name)
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
+		}
 		_data = _data->next;
 	}
 
@@ -273,8 +281,9 @@ StringName::StringName(const String &p_name) {
 	_data->cname = nullptr;
 	_data->next = _table[idx];
 	_data->prev = nullptr;
-	if (_table[idx])
+	if (_table[idx]) {
 		_table[idx]->prev = _data;
+	}
 	_table[idx] = _data;
 }
 
@@ -282,8 +291,9 @@ StringName StringName::search(const char *p_name) {
 	ERR_FAIL_COND_V(!configured, StringName());
 
 	ERR_FAIL_COND_V(!p_name, StringName());
-	if (!p_name[0])
+	if (!p_name[0]) {
 		return StringName();
+	}
 
 	MutexLock lock(mutex);
 
@@ -294,8 +304,9 @@ StringName StringName::search(const char *p_name) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_name)
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
+		}
 		_data = _data->next;
 	}
 
@@ -310,8 +321,9 @@ StringName StringName::search(const CharType *p_name) {
 	ERR_FAIL_COND_V(!configured, StringName());
 
 	ERR_FAIL_COND_V(!p_name, StringName());
-	if (!p_name[0])
+	if (!p_name[0]) {
 		return StringName();
+	}
 
 	MutexLock lock(mutex);
 
@@ -323,8 +335,9 @@ StringName StringName::search(const CharType *p_name) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && _data->get_name() == p_name)
+		if (_data->hash == hash && _data->get_name() == p_name) {
 			break;
+		}
 		_data = _data->next;
 	}
 
@@ -348,8 +361,9 @@ StringName StringName::search(const String &p_name) {
 
 	while (_data) {
 		// compare hash first
-		if (_data->hash == hash && p_name == _data->get_name())
+		if (_data->hash == hash && p_name == _data->get_name()) {
 			break;
+		}
 		_data = _data->next;
 	}
 

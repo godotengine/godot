@@ -145,8 +145,9 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				gd::NavigationPoly *least_cost_poly = &navigation_polys[least_cost_id];
 
 				const gd::Edge &edge = least_cost_poly->poly->edges[i];
-				if (!edge.other_polygon)
+				if (!edge.other_polygon) {
 					continue;
+				}
 
 #ifdef USE_ENTRY_POINT
 				Vector3 edge_line[2] = {
@@ -343,15 +344,17 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					}
 				}
 
-				if (p->prev_navigation_poly_id != -1)
+				if (p->prev_navigation_poly_id != -1) {
 					p = &navigation_polys[p->prev_navigation_poly_id];
-				else
+				} else {
 					// The end
 					p = nullptr;
+				}
 			}
 
-			if (path[path.size() - 1] != begin_point)
+			if (path[path.size() - 1] != begin_point) {
 				path.push_back(begin_point);
+			}
 
 			path.invert();
 
@@ -711,8 +714,9 @@ void NavMap::sync() {
 	if (agents_dirty) {
 		std::vector<RVO::Agent *> raw_agents;
 		raw_agents.reserve(agents.size());
-		for (size_t i(0); i < agents.size(); i++)
+		for (size_t i(0); i < agents.size(); i++) {
 			raw_agents.push_back(agents[i]->get_agent());
+		}
 		rvo.buildAgentTree(raw_agents);
 	}
 
@@ -746,12 +750,14 @@ void NavMap::dispatch_callbacks() {
 void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const {
 	Vector3 from = path[path.size() - 1];
 
-	if (from.distance_to(p_to_point) < CMP_EPSILON)
+	if (from.distance_to(p_to_point) < CMP_EPSILON) {
 		return;
+	}
 	Plane cut_plane;
 	cut_plane.normal = (from - p_to_point).cross(up);
-	if (cut_plane.normal == Vector3())
+	if (cut_plane.normal == Vector3()) {
 		return;
+	}
 	cut_plane.normal.normalize();
 	cut_plane.d = cut_plane.normal.dot(from);
 

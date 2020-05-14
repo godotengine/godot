@@ -40,8 +40,9 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
 	//add to it that it's probably found on first call to _set anyway.
 
-	if (!get_instance().is_valid())
+	if (!get_instance().is_valid()) {
 		return false;
+	}
 
 	Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
@@ -52,8 +53,9 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_name.operator String().begins_with("material/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
-		if (idx >= materials.size() || idx < 0)
+		if (idx >= materials.size() || idx < 0) {
 			return false;
+		}
 
 		set_surface_material(idx, p_value);
 		return true;
@@ -63,8 +65,9 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
-	if (!get_instance().is_valid())
+	if (!get_instance().is_valid()) {
 		return false;
+	}
 
 	const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
@@ -74,8 +77,9 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name.operator String().begins_with("material/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
-		if (idx >= materials.size() || idx < 0)
+		if (idx >= materials.size() || idx < 0) {
 			return false;
+		}
 		r_ret = materials[idx];
 		return true;
 	}
@@ -102,8 +106,9 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
-	if (mesh == p_mesh)
+	if (mesh == p_mesh) {
 		return;
+	}
 
 	if (mesh.is_valid()) {
 		mesh->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &MeshInstance3D::_mesh_changed));
@@ -165,8 +170,9 @@ void MeshInstance3D::_resolve_skeleton_path() {
 void MeshInstance3D::set_skin(const Ref<Skin> &p_skin) {
 	skin_internal = p_skin;
 	skin = p_skin;
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 	_resolve_skeleton_path();
 }
 
@@ -176,8 +182,9 @@ Ref<Skin> MeshInstance3D::get_skin() const {
 
 void MeshInstance3D::set_skeleton_path(const NodePath &p_skeleton) {
 	skeleton_path = p_skeleton;
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 	_resolve_skeleton_path();
 }
 
@@ -186,29 +193,34 @@ NodePath MeshInstance3D::get_skeleton_path() {
 }
 
 AABB MeshInstance3D::get_aabb() const {
-	if (!mesh.is_null())
+	if (!mesh.is_null()) {
 		return mesh->get_aabb();
+	}
 
 	return AABB();
 }
 
 Vector<Face3> MeshInstance3D::get_faces(uint32_t p_usage_flags) const {
-	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING)))
+	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING))) {
 		return Vector<Face3>();
+	}
 
-	if (mesh.is_null())
+	if (mesh.is_null()) {
 		return Vector<Face3>();
+	}
 
 	return mesh->get_faces();
 }
 
 Node *MeshInstance3D::create_trimesh_collision_node() {
-	if (mesh.is_null())
+	if (mesh.is_null()) {
 		return nullptr;
+	}
 
 	Ref<Shape3D> shape = mesh->create_trimesh_shape();
-	if (shape.is_null())
+	if (shape.is_null()) {
 		return nullptr;
+	}
 
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -231,12 +243,14 @@ void MeshInstance3D::create_trimesh_collision() {
 }
 
 Node *MeshInstance3D::create_convex_collision_node() {
-	if (mesh.is_null())
+	if (mesh.is_null()) {
 		return nullptr;
+	}
 
 	Ref<Shape3D> shape = mesh->create_convex_shape();
-	if (shape.is_null())
+	if (shape.is_null()) {
 		return nullptr;
+	}
 
 	StaticBody3D *static_body = memnew(StaticBody3D);
 	CollisionShape3D *cshape = memnew(CollisionShape3D);
@@ -273,10 +287,11 @@ void MeshInstance3D::set_surface_material(int p_surface, const Ref<Material> &p_
 
 	materials.write[p_surface] = p_material;
 
-	if (materials[p_surface].is_valid())
+	if (materials[p_surface].is_valid()) {
 		RS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, materials[p_surface]->get_rid());
-	else
+	} else {
 		RS::get_singleton()->instance_set_surface_material(get_instance(), p_surface, RID());
+	}
 }
 
 Ref<Material> MeshInstance3D::get_surface_material(int p_surface) const {
@@ -313,18 +328,21 @@ void MeshInstance3D::create_debug_tangents() {
 	Vector<Color> colors;
 
 	Ref<Mesh> mesh = get_mesh();
-	if (!mesh.is_valid())
+	if (!mesh.is_valid()) {
 		return;
+	}
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 		Array arrays = mesh->surface_get_arrays(i);
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
-		if (norms.size() == 0)
+		if (norms.size() == 0) {
 			continue;
+		}
 		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
-		if (tangents.size() == 0)
+		if (tangents.size() == 0) {
 			continue;
+		}
 
 		for (int j = 0; j < verts.size(); j++) {
 			Vector3 v = verts[j];
@@ -373,10 +391,11 @@ void MeshInstance3D::create_debug_tangents() {
 		add_child(mi);
 #ifdef TOOLS_ENABLED
 
-		if (this == get_tree()->get_edited_scene_root())
+		if (this == get_tree()->get_edited_scene_root()) {
 			mi->set_owner(this);
-		else
+		} else {
 			mi->set_owner(get_owner());
+		}
 #endif
 	}
 }

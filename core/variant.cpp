@@ -182,10 +182,12 @@ String Variant::get_type_name(Variant::Type p_type) {
 }
 
 bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
-	if (p_type_from == p_type_to)
+	if (p_type_from == p_type_to) {
 		return true;
-	if (p_type_to == NIL && p_type_from != NIL) //nil can convert to anything
+	}
+	if (p_type_to == NIL && p_type_from != NIL) { //nil can convert to anything
 		return true;
+	}
 
 	if (p_type_from == NIL) {
 		return (p_type_to == OBJECT);
@@ -465,16 +467,18 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 	if (valid_types) {
 		int i = 0;
 		while (valid_types[i] != NIL) {
-			if (p_type_from == valid_types[i])
+			if (p_type_from == valid_types[i]) {
 				return true;
+			}
 			i++;
 		}
 
 	} else if (invalid_types) {
 		int i = 0;
 		while (invalid_types[i] != NIL) {
-			if (p_type_from == invalid_types[i])
+			if (p_type_from == invalid_types[i]) {
 				return false;
+			}
 			i++;
 		}
 
@@ -485,10 +489,12 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 }
 
 bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type_to) {
-	if (p_type_from == p_type_to)
+	if (p_type_from == p_type_to) {
 		return true;
-	if (p_type_to == NIL && p_type_from != NIL) //nil can convert to anything
+	}
+	if (p_type_to == NIL && p_type_from != NIL) { //nil can convert to anything
 		return true;
+	}
 
 	if (p_type_from == NIL) {
 		return (p_type_to == OBJECT);
@@ -768,8 +774,9 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 	if (valid_types) {
 		int i = 0;
 		while (valid_types[i] != NIL) {
-			if (p_type_from == valid_types[i])
+			if (p_type_from == valid_types[i]) {
 				return true;
+			}
 			i++;
 		}
 	}
@@ -778,8 +785,9 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 }
 
 bool Variant::operator==(const Variant &p_variant) const {
-	if (type != p_variant.type) //evaluation of operator== needs to be more strict
+	if (type != p_variant.type) { //evaluation of operator== needs to be more strict
 		return false;
+	}
 	bool v;
 	Variant r;
 	evaluate(OP_EQUAL, *this, p_variant, r, v);
@@ -787,8 +795,9 @@ bool Variant::operator==(const Variant &p_variant) const {
 }
 
 bool Variant::operator!=(const Variant &p_variant) const {
-	if (type != p_variant.type) //evaluation of operator== needs to be more strict
+	if (type != p_variant.type) { //evaluation of operator== needs to be more strict
 		return true;
+	}
 	bool v;
 	Variant r;
 	evaluate(OP_NOT_EQUAL, *this, p_variant, r, v);
@@ -796,8 +805,9 @@ bool Variant::operator!=(const Variant &p_variant) const {
 }
 
 bool Variant::operator<(const Variant &p_variant) const {
-	if (type != p_variant.type) //if types differ, then order by type first
+	if (type != p_variant.type) { //if types differ, then order by type first
 		return type < p_variant.type;
+	}
 	bool v;
 	Variant r;
 	evaluate(OP_LESS, *this, p_variant, r, v);
@@ -1678,14 +1688,16 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			String mtx("(");
 			for (int i = 0; i < 3; i++) {
-				if (i != 0)
+				if (i != 0) {
 					mtx += ", ";
+				}
 
 				mtx += "(";
 
 				for (int j = 0; j < 3; j++) {
-					if (j != 0)
+					if (j != 0) {
 						mtx += ", ";
+					}
 
 					mtx += Variant(mat3.elements[i][j]).operator String();
 				}
@@ -1729,8 +1741,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			pairs.sort();
 
 			for (int i = 0; i < pairs.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str += pairs[i].key + ":" + pairs[i].value;
 			}
 			str += "}";
@@ -1741,8 +1754,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			Vector<Vector2> vec = operator Vector<Vector2>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str = str + Variant(vec[i]);
 			}
 			str += "]";
@@ -1752,8 +1766,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			Vector<Vector3> vec = operator Vector<Vector3>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str = str + Variant(vec[i]);
 			}
 			str += "]";
@@ -1763,8 +1778,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			Vector<String> vec = operator Vector<String>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str = str + vec[i];
 			}
 			str += "]";
@@ -1774,8 +1790,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			Vector<int32_t> vec = operator Vector<int32_t>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str = str + itos(vec[i]);
 			}
 			str += "]";
@@ -1785,8 +1802,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			Vector<int64_t> vec = operator Vector<int64_t>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str = str + itos(vec[i]);
 			}
 			str += "]";
@@ -1796,8 +1814,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			Vector<float> vec = operator Vector<float>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str = str + rtos(vec[i]);
 			}
 			str += "]";
@@ -1807,8 +1826,9 @@ String Variant::stringify(List<const void *> &stack) const {
 			Vector<double> vec = operator Vector<double>();
 			String str("[");
 			for (int i = 0; i < vec.size(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					str += ", ";
+				}
 				str = str + rtos(vec[i]);
 			}
 			str += "]";
@@ -1823,8 +1843,9 @@ String Variant::stringify(List<const void *> &stack) const {
 
 			String str("[");
 			for (int i = 0; i < arr.size(); i++) {
-				if (i)
+				if (i) {
 					str += ", ";
+				}
 
 				str += arr[i].stringify(stack);
 			}
@@ -1840,8 +1861,9 @@ String Variant::stringify(List<const void *> &stack) const {
 				};
 
 				return _get_obj().obj->to_string();
-			} else
+			} else {
 				return "[Object:null]";
+			}
 
 		} break;
 		case CALLABLE: {
@@ -1865,121 +1887,131 @@ String Variant::stringify(List<const void *> &stack) const {
 }
 
 Variant::operator Vector2() const {
-	if (type == VECTOR2)
+	if (type == VECTOR2) {
 		return *reinterpret_cast<const Vector2 *>(_data._mem);
-	else if (type == VECTOR2I)
+	} else if (type == VECTOR2I) {
 		return *reinterpret_cast<const Vector2i *>(_data._mem);
-	else if (type == VECTOR3)
+	} else if (type == VECTOR3) {
 		return Vector2(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y);
-	else if (type == VECTOR3I)
+	} else if (type == VECTOR3I) {
 		return Vector2(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y);
-	else
+	} else {
 		return Vector2();
+	}
 }
 
 Variant::operator Vector2i() const {
-	if (type == VECTOR2I)
+	if (type == VECTOR2I) {
 		return *reinterpret_cast<const Vector2i *>(_data._mem);
-	else if (type == VECTOR2)
+	} else if (type == VECTOR2) {
 		return *reinterpret_cast<const Vector2 *>(_data._mem);
-	else if (type == VECTOR3)
+	} else if (type == VECTOR3) {
 		return Vector2(reinterpret_cast<const Vector3 *>(_data._mem)->x, reinterpret_cast<const Vector3 *>(_data._mem)->y);
-	else if (type == VECTOR3I)
+	} else if (type == VECTOR3I) {
 		return Vector2(reinterpret_cast<const Vector3i *>(_data._mem)->x, reinterpret_cast<const Vector3i *>(_data._mem)->y);
-	else
+	} else {
 		return Vector2i();
+	}
 }
 
 Variant::operator Rect2() const {
-	if (type == RECT2)
+	if (type == RECT2) {
 		return *reinterpret_cast<const Rect2 *>(_data._mem);
-	else if (type == RECT2I)
+	} else if (type == RECT2I) {
 		return *reinterpret_cast<const Rect2i *>(_data._mem);
-	else
+	} else {
 		return Rect2();
+	}
 }
 
 Variant::operator Rect2i() const {
-	if (type == RECT2I)
+	if (type == RECT2I) {
 		return *reinterpret_cast<const Rect2i *>(_data._mem);
-	else if (type == RECT2)
+	} else if (type == RECT2) {
 		return *reinterpret_cast<const Rect2 *>(_data._mem);
-	else
+	} else {
 		return Rect2i();
+	}
 }
 
 Variant::operator Vector3() const {
-	if (type == VECTOR3)
+	if (type == VECTOR3) {
 		return *reinterpret_cast<const Vector3 *>(_data._mem);
-	else if (type == VECTOR3I)
+	} else if (type == VECTOR3I) {
 		return *reinterpret_cast<const Vector3i *>(_data._mem);
-	else if (type == VECTOR2)
+	} else if (type == VECTOR2) {
 		return Vector3(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0);
-	else if (type == VECTOR2I)
+	} else if (type == VECTOR2I) {
 		return Vector3(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0);
-	else
+	} else {
 		return Vector3();
+	}
 }
 
 Variant::operator Vector3i() const {
-	if (type == VECTOR3I)
+	if (type == VECTOR3I) {
 		return *reinterpret_cast<const Vector3i *>(_data._mem);
-	else if (type == VECTOR3)
+	} else if (type == VECTOR3) {
 		return *reinterpret_cast<const Vector3 *>(_data._mem);
-	else if (type == VECTOR2)
+	} else if (type == VECTOR2) {
 		return Vector3i(reinterpret_cast<const Vector2 *>(_data._mem)->x, reinterpret_cast<const Vector2 *>(_data._mem)->y, 0.0);
-	else if (type == VECTOR2I)
+	} else if (type == VECTOR2I) {
 		return Vector3i(reinterpret_cast<const Vector2i *>(_data._mem)->x, reinterpret_cast<const Vector2i *>(_data._mem)->y, 0.0);
-	else
+	} else {
 		return Vector3i();
+	}
 }
 
 Variant::operator Plane() const {
-	if (type == PLANE)
+	if (type == PLANE) {
 		return *reinterpret_cast<const Plane *>(_data._mem);
-	else
+	} else {
 		return Plane();
+	}
 }
 
 Variant::operator ::AABB() const {
-	if (type == AABB)
+	if (type == AABB) {
 		return *_data._aabb;
-	else
+	} else {
 		return ::AABB();
+	}
 }
 
 Variant::operator Basis() const {
-	if (type == BASIS)
+	if (type == BASIS) {
 		return *_data._basis;
-	else if (type == QUAT)
+	} else if (type == QUAT) {
 		return *reinterpret_cast<const Quat *>(_data._mem);
-	else if (type == VECTOR3) {
+	} else if (type == VECTOR3) {
 		return Basis(*reinterpret_cast<const Vector3 *>(_data._mem));
-	} else if (type == TRANSFORM) // unexposed in Variant::can_convert?
+	} else if (type == TRANSFORM) { // unexposed in Variant::can_convert?
 		return _data._transform->basis;
-	else
+	} else {
 		return Basis();
+	}
 }
 
 Variant::operator Quat() const {
-	if (type == QUAT)
+	if (type == QUAT) {
 		return *reinterpret_cast<const Quat *>(_data._mem);
-	else if (type == BASIS)
+	} else if (type == BASIS) {
 		return *_data._basis;
-	else if (type == TRANSFORM)
+	} else if (type == TRANSFORM) {
 		return _data._transform->basis;
-	else
+	} else {
 		return Quat();
+	}
 }
 
 Variant::operator Transform() const {
-	if (type == TRANSFORM)
+	if (type == TRANSFORM) {
 		return *_data._transform;
-	else if (type == BASIS)
+	} else if (type == BASIS) {
 		return Transform(*_data._basis, Vector3());
-	else if (type == QUAT)
+	} else if (type == QUAT) {
 		return Transform(Basis(*reinterpret_cast<const Quat *>(_data._mem)), Vector3());
-	else if (type == TRANSFORM2D) {
+	} else if (type == TRANSFORM2D) {
 		const Transform2D &t = *_data._transform2d;
 		Transform m;
 		m.basis.elements[0][0] = t.elements[0][0];
@@ -1989,8 +2021,9 @@ Variant::operator Transform() const {
 		m.origin[0] = t.elements[2][0];
 		m.origin[1] = t.elements[2][1];
 		return m;
-	} else
+	} else {
 		return Transform();
+	}
 }
 
 Variant::operator Transform2D() const {
@@ -2006,34 +2039,37 @@ Variant::operator Transform2D() const {
 		m.elements[2][0] = t.origin[0];
 		m.elements[2][1] = t.origin[1];
 		return m;
-	} else
+	} else {
 		return Transform2D();
+	}
 }
 
 Variant::operator Color() const {
-	if (type == COLOR)
+	if (type == COLOR) {
 		return *reinterpret_cast<const Color *>(_data._mem);
-	else if (type == STRING)
+	} else if (type == STRING) {
 		return Color::html(operator String());
-	else if (type == INT)
+	} else if (type == INT) {
 		return Color::hex(operator int());
-	else
+	} else {
 		return Color();
+	}
 }
 
 Variant::operator NodePath() const {
-	if (type == NODE_PATH)
+	if (type == NODE_PATH) {
 		return *reinterpret_cast<const NodePath *>(_data._mem);
-	else if (type == STRING)
+	} else if (type == STRING) {
 		return NodePath(operator String());
-	else
+	} else {
 		return NodePath();
+	}
 }
 
 Variant::operator RID() const {
-	if (type == _RID)
+	if (type == _RID) {
 		return *reinterpret_cast<const RID *>(_data._mem);
-	else if (type == OBJECT && _get_obj().obj == nullptr) {
+	} else if (type == OBJECT && _get_obj().obj == nullptr) {
 		return RID();
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
@@ -2053,10 +2089,11 @@ Variant::operator RID() const {
 }
 
 Variant::operator Object *() const {
-	if (type == OBJECT)
+	if (type == OBJECT) {
 		return _get_obj().obj;
-	else
+	} else {
 		return nullptr;
+	}
 }
 
 Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const {
@@ -2071,45 +2108,51 @@ Object *Variant::get_validated_object_with_check(bool &r_previously_freed) const
 }
 
 Object *Variant::get_validated_object() const {
-	if (type == OBJECT)
+	if (type == OBJECT) {
 		return ObjectDB::get_instance(_get_obj().id);
-	else
+	} else {
 		return nullptr;
+	}
 }
 
 Variant::operator Node *() const {
-	if (type == OBJECT)
+	if (type == OBJECT) {
 		return Object::cast_to<Node>(_get_obj().obj);
-	else
+	} else {
 		return nullptr;
+	}
 }
 
 Variant::operator Control *() const {
-	if (type == OBJECT)
+	if (type == OBJECT) {
 		return Object::cast_to<Control>(_get_obj().obj);
-	else
+	} else {
 		return nullptr;
+	}
 }
 
 Variant::operator Dictionary() const {
-	if (type == DICTIONARY)
+	if (type == DICTIONARY) {
 		return *reinterpret_cast<const Dictionary *>(_data._mem);
-	else
+	} else {
 		return Dictionary();
+	}
 }
 
 Variant::operator Callable() const {
-	if (type == CALLABLE)
+	if (type == CALLABLE) {
 		return *reinterpret_cast<const Callable *>(_data._mem);
-	else
+	} else {
 		return Callable();
+	}
 }
 
 Variant::operator Signal() const {
-	if (type == SIGNAL)
+	if (type == SIGNAL) {
 		return *reinterpret_cast<const Signal *>(_data._mem);
-	else
+	} else {
 		return Signal();
+	}
 }
 
 template <class DA, class SA>
@@ -2164,73 +2207,83 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 }
 
 Variant::operator Array() const {
-	if (type == ARRAY)
+	if (type == ARRAY) {
 		return *reinterpret_cast<const Array *>(_data._mem);
-	else
+	} else {
 		return _convert_array_from_variant<Array>(*this);
+	}
 }
 
 Variant::operator Vector<uint8_t>() const {
-	if (type == PACKED_BYTE_ARRAY)
+	if (type == PACKED_BYTE_ARRAY) {
 		return static_cast<PackedArrayRef<uint8_t> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<uint8_t>>(*this);
+	}
 }
 
 Variant::operator Vector<int32_t>() const {
-	if (type == PACKED_INT32_ARRAY)
+	if (type == PACKED_INT32_ARRAY) {
 		return static_cast<PackedArrayRef<int32_t> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<int>>(*this);
+	}
 }
 
 Variant::operator Vector<int64_t>() const {
-	if (type == PACKED_INT64_ARRAY)
+	if (type == PACKED_INT64_ARRAY) {
 		return static_cast<PackedArrayRef<int64_t> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<int64_t>>(*this);
+	}
 }
 
 Variant::operator Vector<float>() const {
-	if (type == PACKED_FLOAT32_ARRAY)
+	if (type == PACKED_FLOAT32_ARRAY) {
 		return static_cast<PackedArrayRef<float> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<float>>(*this);
+	}
 }
 
 Variant::operator Vector<double>() const {
-	if (type == PACKED_FLOAT64_ARRAY)
+	if (type == PACKED_FLOAT64_ARRAY) {
 		return static_cast<PackedArrayRef<double> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<double>>(*this);
+	}
 }
 
 Variant::operator Vector<String>() const {
-	if (type == PACKED_STRING_ARRAY)
+	if (type == PACKED_STRING_ARRAY) {
 		return static_cast<PackedArrayRef<String> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<String>>(*this);
+	}
 }
 
 Variant::operator Vector<Vector3>() const {
-	if (type == PACKED_VECTOR3_ARRAY)
+	if (type == PACKED_VECTOR3_ARRAY) {
 		return static_cast<PackedArrayRef<Vector3> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<Vector3>>(*this);
+	}
 }
 
 Variant::operator Vector<Vector2>() const {
-	if (type == PACKED_VECTOR2_ARRAY)
+	if (type == PACKED_VECTOR2_ARRAY) {
 		return static_cast<PackedArrayRef<Vector2> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<Vector2>>(*this);
+	}
 }
 
 Variant::operator Vector<Color>() const {
-	if (type == PACKED_COLOR_ARRAY)
+	if (type == PACKED_COLOR_ARRAY) {
 		return static_cast<PackedArrayRef<Color> *>(_data.packed_array)->array;
-	else
+	} else {
 		return _convert_array_from_variant<Vector<Color>>(*this);
+	}
 }
 
 /* helpers */
@@ -2239,8 +2292,9 @@ Variant::operator Vector<RID>() const {
 	Array va = operator Array();
 	Vector<RID> rids;
 	rids.resize(va.size());
-	for (int i = 0; i < rids.size(); i++)
+	for (int i = 0; i < rids.size(); i++) {
 		rids.write[i] = va[i];
+	}
 	return rids;
 }
 
@@ -2248,14 +2302,16 @@ Variant::operator Vector<Plane>() const {
 	Array va = operator Array();
 	Vector<Plane> planes;
 	int va_size = va.size();
-	if (va_size == 0)
+	if (va_size == 0) {
 		return planes;
+	}
 
 	planes.resize(va_size);
 	Plane *w = planes.ptrw();
 
-	for (int i = 0; i < va_size; i++)
+	for (int i = 0; i < va_size; i++) {
 		w[i] = va[i];
+	}
 
 	return planes;
 }
@@ -2264,15 +2320,17 @@ Variant::operator Vector<Face3>() const {
 	Vector<Vector3> va = operator Vector<Vector3>();
 	Vector<Face3> faces;
 	int va_size = va.size();
-	if (va_size == 0)
+	if (va_size == 0) {
 		return faces;
+	}
 
 	faces.resize(va_size / 3);
 	Face3 *w = faces.ptrw();
 	const Vector3 *r = va.ptr();
 
-	for (int i = 0; i < va_size; i++)
+	for (int i = 0; i < va_size; i++) {
 		w[i / 3].vertex[i % 3] = r[i];
+	}
 
 	return faces;
 }
@@ -2281,13 +2339,15 @@ Variant::operator Vector<Variant>() const {
 	Array va = operator Array();
 	Vector<Variant> variants;
 	int va_size = va.size();
-	if (va_size == 0)
+	if (va_size == 0) {
 		return variants;
+	}
 
 	variants.resize(va_size);
 	Variant *w = variants.ptrw();
-	for (int i = 0; i < va_size; i++)
+	for (int i = 0; i < va_size; i++) {
 		w[i] = va[i];
+	}
 
 	return variants;
 }
@@ -2621,8 +2681,9 @@ Variant::Variant(const Vector<Face3> &p_face_array) {
 		Vector3 *w = vertices.ptrw();
 
 		for (int i = 0; i < face_count; i++) {
-			for (int j = 0; j < 3; j++)
+			for (int j = 0; j < 3; j++) {
 				w[i * 3 + j] = r[i].vertex[j];
+			}
 		}
 	}
 
@@ -2647,14 +2708,16 @@ Variant::Variant(const Vector<StringName> &p_array) {
 	Vector<String> v;
 	int len = p_array.size();
 	v.resize(len);
-	for (int i = 0; i < len; i++)
+	for (int i = 0; i < len; i++) {
 		v.set(i, p_array[i]);
+	}
 	*this = v;
 }
 
 void Variant::operator=(const Variant &p_variant) {
-	if (unlikely(this == &p_variant))
+	if (unlikely(this == &p_variant)) {
 		return;
+	}
 
 	if (unlikely(type != p_variant.type)) {
 		reference(p_variant);
@@ -3132,8 +3195,9 @@ uint32_t Variant::hash() const {
 	return true
 
 bool Variant::hash_compare(const Variant &p_variant) const {
-	if (type != p_variant.type)
+	if (type != p_variant.type) {
 		return false;
+	}
 
 	switch (type) {
 		case FLOAT: {
@@ -3171,8 +3235,9 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			Transform2D *r = p_variant._data._transform2d;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector2(l->elements[i], r->elements[i])))
+				if (!(hash_compare_vector2(l->elements[i], r->elements[i]))) {
 					return false;
+				}
 			}
 
 			return true;
@@ -3220,8 +3285,9 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Basis *r = p_variant._data._basis;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->elements[i], r->elements[i])))
+				if (!(hash_compare_vector3(l->elements[i], r->elements[i]))) {
 					return false;
+				}
 			}
 
 			return true;
@@ -3232,8 +3298,9 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Transform *r = p_variant._data._transform;
 
 			for (int i = 0; i < 3; i++) {
-				if (!(hash_compare_vector3(l->basis.elements[i], r->basis.elements[i])))
+				if (!(hash_compare_vector3(l->basis.elements[i], r->basis.elements[i]))) {
 					return false;
+				}
 			}
 
 			return hash_compare_vector3(l->origin, r->origin);
@@ -3250,12 +3317,14 @@ bool Variant::hash_compare(const Variant &p_variant) const {
 			const Array &l = *(reinterpret_cast<const Array *>(_data._mem));
 			const Array &r = *(reinterpret_cast<const Array *>(p_variant._data._mem));
 
-			if (l.size() != r.size())
+			if (l.size() != r.size()) {
 				return false;
+			}
 
 			for (int i = 0; i < l.size(); ++i) {
-				if (!l[i].hash_compare(r[i]))
+				if (!l[i].hash_compare(r[i])) {
 					return false;
+				}
 			}
 
 			return true;
@@ -3362,8 +3431,9 @@ Variant Variant::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 	int argc = 0;
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 

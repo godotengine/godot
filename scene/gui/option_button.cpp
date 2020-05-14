@@ -52,8 +52,9 @@ Size2 OptionButton::get_minimum_size() const {
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (!has_theme_icon("arrow"))
+			if (!has_theme_icon("arrow")) {
 				return;
+			}
 
 			RID ci = get_canvas_item();
 			Ref<Texture2D> arrow = Control::get_theme_icon("arrow");
@@ -109,28 +110,32 @@ void OptionButton::pressed() {
 
 void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_label, int p_id) {
 	popup->add_icon_radio_check_item(p_icon, p_label, p_id);
-	if (popup->get_item_count() == 1)
+	if (popup->get_item_count() == 1) {
 		select(0);
+	}
 }
 
 void OptionButton::add_item(const String &p_label, int p_id) {
 	popup->add_radio_check_item(p_label, p_id);
-	if (popup->get_item_count() == 1)
+	if (popup->get_item_count() == 1) {
 		select(0);
+	}
 }
 
 void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	popup->set_item_text(p_idx, p_text);
 
-	if (current == p_idx)
+	if (current == p_idx) {
 		set_text(p_text);
+	}
 }
 
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	popup->set_item_icon(p_idx, p_icon);
 
-	if (current == p_idx)
+	if (current == p_idx) {
 		set_icon(p_icon);
+	}
 }
 
 void OptionButton::set_item_id(int p_idx, int p_id) {
@@ -184,10 +189,12 @@ void OptionButton::clear() {
 }
 
 void OptionButton::_select(int p_which, bool p_emit) {
-	if (p_which < 0)
+	if (p_which < 0) {
 		return;
-	if (p_which == current)
+	}
+	if (p_which == current) {
 		return;
+	}
 
 	ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
@@ -199,13 +206,15 @@ void OptionButton::_select(int p_which, bool p_emit) {
 	set_text(popup->get_item_text(current));
 	set_icon(popup->get_item_icon(current));
 
-	if (is_inside_tree() && p_emit)
+	if (is_inside_tree() && p_emit) {
 		emit_signal("item_selected", current);
+	}
 }
 
 void OptionButton::_select_int(int p_which) {
-	if (p_which < 0 || p_which >= popup->get_item_count())
+	if (p_which < 0 || p_which >= popup->get_item_count()) {
 		return;
+	}
 	_select(p_which, false);
 }
 
@@ -219,15 +228,17 @@ int OptionButton::get_selected() const {
 
 int OptionButton::get_selected_id() const {
 	int idx = get_selected();
-	if (idx < 0)
+	if (idx < 0) {
 		return 0;
+	}
 	return get_item_id(current);
 }
 
 Variant OptionButton::get_selected_metadata() const {
 	int idx = get_selected();
-	if (idx < 0)
+	if (idx < 0) {
 		return Variant();
+	}
 	return get_item_metadata(current);
 }
 

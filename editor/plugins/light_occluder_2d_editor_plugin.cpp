@@ -49,26 +49,29 @@ void LightOccluder2DEditor::_set_node(Node *p_polygon) {
 
 bool LightOccluder2DEditor::_is_line() const {
 	Ref<OccluderPolygon2D> occluder = node->get_occluder_polygon();
-	if (occluder.is_valid())
+	if (occluder.is_valid()) {
 		return !occluder->is_closed();
-	else
+	} else {
 		return false;
+	}
 }
 
 int LightOccluder2DEditor::_get_polygon_count() const {
 	Ref<OccluderPolygon2D> occluder = node->get_occluder_polygon();
-	if (occluder.is_valid())
+	if (occluder.is_valid()) {
 		return occluder->get_polygon().size();
-	else
+	} else {
 		return 0;
+	}
 }
 
 Variant LightOccluder2DEditor::_get_polygon(int p_idx) const {
 	Ref<OccluderPolygon2D> occluder = node->get_occluder_polygon();
-	if (occluder.is_valid())
+	if (occluder.is_valid()) {
 		return occluder->get_polygon();
-	else
+	} else {
 		return Variant(Vector<Vector2>());
+	}
 }
 
 void LightOccluder2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
@@ -87,8 +90,9 @@ bool LightOccluder2DEditor::_has_resource() const {
 }
 
 void LightOccluder2DEditor::_create_resource() {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Create Occluder Polygon"));
 	undo_redo->add_do_method(node, "set_occluder_polygon", Ref<OccluderPolygon2D>(memnew(OccluderPolygon2D)));

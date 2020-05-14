@@ -149,14 +149,16 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 
 bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files) {
 	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
-	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0)
+	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0) {
 		return false;
+	}
 
 	zlib_filefunc_def io;
 
 	FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
-	if (!fa)
+	if (!fa) {
 		return false;
+	}
 	io.opaque = fa;
 	io.zopen_file = godot_open;
 	io.zread_file = godot_read;
@@ -252,8 +254,9 @@ Error FileAccessZip::_open(const String &p_path, int p_mode_flags) {
 }
 
 void FileAccessZip::close() {
-	if (!zfile)
+	if (!zfile) {
 		return;
+	}
 
 	ZipArchive *arch = ZipArchive::get_singleton();
 	ERR_FAIL_COND(!arch);
@@ -300,12 +303,14 @@ uint8_t FileAccessZip::get_8() const {
 int FileAccessZip::get_buffer(uint8_t *p_dst, int p_length) const {
 	ERR_FAIL_COND_V(!zfile, -1);
 	at_eof = unzeof(zfile);
-	if (at_eof)
+	if (at_eof) {
 		return 0;
+	}
 	int read = unzReadCurrentFile(zfile, p_dst, p_length);
 	ERR_FAIL_COND_V(read < 0, read);
-	if (read < p_length)
+	if (read < p_length) {
 		at_eof = true;
+	}
 	return read;
 }
 

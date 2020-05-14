@@ -854,8 +854,9 @@ void Translation::add_message(const StringName &p_src_text, const StringName &p_
 
 StringName Translation::get_message(const StringName &p_src_text) const {
 	const Map<StringName, StringName>::Element *E = translation_map.find(p_src_text);
-	if (!E)
+	if (!E) {
 		return StringName();
+	}
 
 	return E->get();
 }
@@ -895,8 +896,9 @@ bool TranslationServer::is_locale_valid(const String &p_locale) {
 	const char **ptr = locale_list;
 
 	while (*ptr) {
-		if (*ptr == p_locale)
+		if (*ptr == p_locale) {
 			return true;
+		}
 		ptr++;
 	}
 
@@ -965,8 +967,9 @@ String TranslationServer::get_locale() const {
 }
 
 String TranslationServer::get_locale_name(const String &p_locale) const {
-	if (!locale_name_map.has(p_locale))
+	if (!locale_name_map.has(p_locale)) {
 		return String();
+	}
 	return locale_name_map[p_locale];
 }
 
@@ -1024,8 +1027,9 @@ void TranslationServer::clear() {
 StringName TranslationServer::translate(const StringName &p_message) const {
 	// Match given message against the translation catalog for the project locale.
 
-	if (!enabled)
+	if (!enabled) {
 		return p_message;
+	}
 
 	ERR_FAIL_COND_V_MSG(locale.length() < 2, p_message, "Could not translate message as configured locale '" + locale + "' is invalid.");
 
@@ -1125,8 +1129,9 @@ bool TranslationServer::_load_translations(const String &p_from) {
 
 			for (int i = 0; i < tcount; i++) {
 				Ref<Translation> tr = ResourceLoader::load(r[i]);
-				if (tr.is_valid())
+				if (tr.is_valid()) {
 					add_translation(tr);
+				}
 			}
 		}
 		return true;
@@ -1138,18 +1143,20 @@ bool TranslationServer::_load_translations(const String &p_from) {
 void TranslationServer::setup() {
 	String test = GLOBAL_DEF("locale/test", "");
 	test = test.strip_edges();
-	if (test != "")
+	if (test != "") {
 		set_locale(test);
-	else
+	} else {
 		set_locale(OS::get_singleton()->get_locale());
+	}
 	fallback = GLOBAL_DEF("locale/fallback", "en");
 #ifdef TOOLS_ENABLED
 	{
 		String options = "";
 		int idx = 0;
 		while (locale_list[idx]) {
-			if (idx > 0)
+			if (idx > 0) {
 				options += ",";
+			}
 			options += locale_list[idx];
 			idx++;
 		}

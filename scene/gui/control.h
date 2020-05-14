@@ -132,8 +132,9 @@ public:
 private:
 	struct CComparator {
 		bool operator()(const Control *p_a, const Control *p_b) const {
-			if (p_a->get_canvas_layer() == p_b->get_canvas_layer())
+			if (p_a->get_canvas_layer() == p_b->get_canvas_layer()) {
 				return p_b->is_greater_than(p_a);
+			}
 
 			return p_a->get_canvas_layer() < p_b->get_canvas_layer();
 		}

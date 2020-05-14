@@ -232,14 +232,16 @@ public:
 	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 
 	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_weight) {
-		if (is_equal_approx(p_from, p_to))
+		if (is_equal_approx(p_from, p_to)) {
 			return p_from;
+		}
 		double x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0, 1.0);
 		return x * x * (3.0 - 2.0 * x);
 	}
 	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_weight) {
-		if (is_equal_approx(p_from, p_to))
+		if (is_equal_approx(p_from, p_to)) {
 			return p_from;
+		}
 		float x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0f, 1.0f);
 		return x * x * (3.0f - 2.0f * x);
 	}
@@ -471,10 +473,11 @@ public:
 		if (p_step != 0) {
 			float a = Math::stepify(p_target - p_offset, p_step + p_separation) + p_offset;
 			float b = a;
-			if (p_target >= 0)
+			if (p_target >= 0) {
 				b -= p_separation;
-			else
+			} else {
 				b += p_step;
+			}
 			return (Math::abs(p_target - a) < Math::abs(p_target - b)) ? a : b;
 		}
 		return p_target;

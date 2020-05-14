@@ -252,36 +252,45 @@ bool InputEventKey::is_echo() const {
 
 uint32_t InputEventKey::get_keycode_with_modifiers() const {
 	uint32_t sc = keycode;
-	if (get_control())
+	if (get_control()) {
 		sc |= KEY_MASK_CTRL;
-	if (get_alt())
+	}
+	if (get_alt()) {
 		sc |= KEY_MASK_ALT;
-	if (get_shift())
+	}
+	if (get_shift()) {
 		sc |= KEY_MASK_SHIFT;
-	if (get_metakey())
+	}
+	if (get_metakey()) {
 		sc |= KEY_MASK_META;
+	}
 
 	return sc;
 }
 
 uint32_t InputEventKey::get_physical_keycode_with_modifiers() const {
 	uint32_t sc = physical_keycode;
-	if (get_control())
+	if (get_control()) {
 		sc |= KEY_MASK_CTRL;
-	if (get_alt())
+	}
+	if (get_alt()) {
 		sc |= KEY_MASK_ALT;
-	if (get_shift())
+	}
+	if (get_shift()) {
 		sc |= KEY_MASK_SHIFT;
-	if (get_metakey())
+	}
+	if (get_metakey()) {
 		sc |= KEY_MASK_META;
+	}
 
 	return sc;
 }
 
 String InputEventKey::as_text() const {
 	String kc = keycode_get_string(keycode);
-	if (kc == String())
+	if (kc == String()) {
 		return kc;
+	}
 
 	if (get_metakey()) {
 		kc = find_keycode_name(KEY_META) + ("+" + kc);
@@ -300,8 +309,9 @@ String InputEventKey::as_text() const {
 
 bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_null())
+	if (key.is_null()) {
 		return false;
+	}
 
 	bool match = false;
 	if (get_keycode() == 0) {
@@ -316,18 +326,21 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 		match = get_keycode() == key->get_keycode() && (!key->is_pressed() || (code & event_code) == code);
 	}
 	if (match) {
-		if (p_pressed != nullptr)
+		if (p_pressed != nullptr) {
 			*p_pressed = key->is_pressed();
-		if (p_strength != nullptr)
+		}
+		if (p_strength != nullptr) {
 			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		}
 	}
 	return match;
 }
 
 bool InputEventKey::shortcut_match(const Ref<InputEvent> &p_event) const {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_null())
+	if (key.is_null()) {
 		return false;
+	}
 
 	uint32_t code = get_keycode_with_modifiers();
 	uint32_t event_code = key->get_keycode_with_modifiers();
@@ -459,15 +472,18 @@ Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, co
 
 bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_null())
+	if (mb.is_null()) {
 		return false;
+	}
 
 	bool match = mb->button_index == button_index;
 	if (match) {
-		if (p_pressed != nullptr)
+		if (p_pressed != nullptr) {
 			*p_pressed = mb->is_pressed();
-		if (p_strength != nullptr)
+		}
+		if (p_strength != nullptr) {
 			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		}
 	}
 
 	return match;
@@ -616,8 +632,9 @@ String InputEventMouseMotion::as_text() const {
 
 bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> motion = p_event;
-	if (motion.is_null())
+	if (motion.is_null()) {
 		return false;
+	}
 
 	if (get_window_id() != motion->get_window_id()) {
 		return false;
@@ -698,15 +715,17 @@ bool InputEventJoypadMotion::is_pressed() const {
 
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 	Ref<InputEventJoypadMotion> jm = p_event;
-	if (jm.is_null())
+	if (jm.is_null()) {
 		return false;
+	}
 
 	bool match = (axis == jm->axis); // Matches even if not in the same direction, but returns a "not pressed" event.
 	if (match) {
 		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
 		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
-		if (p_pressed != nullptr)
+		if (p_pressed != nullptr) {
 			*p_pressed = pressed;
+		}
 		if (p_strength != nullptr) {
 			if (pressed) {
 				if (p_deadzone == 1.0f) {
@@ -765,15 +784,18 @@ float InputEventJoypadButton::get_pressure() const {
 
 bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 	Ref<InputEventJoypadButton> jb = p_event;
-	if (jb.is_null())
+	if (jb.is_null()) {
 		return false;
+	}
 
 	bool match = button_index == jb->button_index;
 	if (match) {
-		if (p_pressed != nullptr)
+		if (p_pressed != nullptr) {
 			*p_pressed = jb->is_pressed();
-		if (p_strength != nullptr)
+		}
+		if (p_strength != nullptr) {
 			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		}
 	}
 
 	return match;
@@ -781,8 +803,9 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 
 bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event) const {
 	Ref<InputEventJoypadButton> button = p_event;
-	if (button.is_null())
+	if (button.is_null()) {
 		return false;
+	}
 
 	return button_index == button->button_index;
 }
@@ -963,8 +986,9 @@ float InputEventAction::get_strength() const {
 }
 
 bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
-	if (p_event.is_null())
+	if (p_event.is_null()) {
 		return false;
+	}
 
 	return p_event->is_action(action);
 }
@@ -975,15 +999,18 @@ bool InputEventAction::is_action(const StringName &p_action) const {
 
 bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
 	Ref<InputEventAction> act = p_event;
-	if (act.is_null())
+	if (act.is_null()) {
 		return false;
+	}
 
 	bool match = action == act->action;
 	if (match) {
-		if (p_pressed != nullptr)
+		if (p_pressed != nullptr) {
 			*p_pressed = act->pressed;
-		if (p_strength != nullptr)
+		}
+		if (p_strength != nullptr) {
 			*p_strength = (p_pressed != nullptr && *p_pressed) ? 1.0f : 0.0f;
+		}
 	}
 	return match;
 }

@@ -53,8 +53,9 @@ Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_proto
 		port = 443;
 	} else {
 		ssl = false;
-		if (host.begins_with("ws://"))
+		if (host.begins_with("ws://")) {
 			host = host.substr(5, host.length() - 5);
+		}
 	}
 
 	// Path

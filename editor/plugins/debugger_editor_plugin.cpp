@@ -164,8 +164,9 @@ void DebuggerEditorPlugin::_menu_option(int p_option) {
 }
 
 void DebuggerEditorPlugin::_notification(int p_what) {
-	if (p_what == NOTIFICATION_READY)
+	if (p_what == NOTIFICATION_READY) {
 		_update_debug_options();
+	}
 }
 
 void DebuggerEditorPlugin::_update_debug_options() {
@@ -177,18 +178,24 @@ void DebuggerEditorPlugin::_update_debug_options() {
 	bool check_reload_scripts = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", false);
 	int instances = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_instances", 1);
 
-	if (check_deploy_remote)
+	if (check_deploy_remote) {
 		_menu_option(RUN_DEPLOY_REMOTE_DEBUG);
-	if (check_file_server)
+	}
+	if (check_file_server) {
 		_menu_option(RUN_FILE_SERVER);
-	if (check_debug_collisions)
+	}
+	if (check_debug_collisions) {
 		_menu_option(RUN_DEBUG_COLLISONS);
-	if (check_debug_navigation)
+	}
+	if (check_debug_navigation) {
 		_menu_option(RUN_DEBUG_NAVIGATION);
-	if (check_live_debug)
+	}
+	if (check_live_debug) {
 		_menu_option(RUN_LIVE_DEBUG);
-	if (check_reload_scripts)
+	}
+	if (check_reload_scripts) {
 		_menu_option(RUN_RELOAD_SCRIPTS);
+	}
 
 	int len = instances_menu->get_item_count();
 	for (int idx = 0; idx < len; idx++) {

@@ -52,8 +52,9 @@ void RenderingServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Can
 	RasterizerCanvas::Item *list_end = nullptr;
 
 	for (int i = 0; i < z_range; i++) {
-		if (!z_list[i])
+		if (!z_list[i]) {
 			continue;
+		}
 		if (!list) {
 			list = z_list[i];
 			list_end = z_last_list[i];
@@ -82,8 +83,9 @@ void _collect_ysort_children(RenderingServerCanvas::Item *p_canvas_item, Transfo
 
 			r_index++;
 
-			if (child_items[i]->sort_y)
+			if (child_items[i]->sort_y) {
 				_collect_ysort_children(child_items[i], p_transform * child_items[i]->xform, child_items[i]->use_parent_material ? p_material_owner : child_items[i], r_items, r_index);
+			}
 		}
 	}
 }
@@ -98,8 +100,9 @@ void _mark_ysort_dirty(RenderingServerCanvas::Item *ysort_owner, RID_PtrOwner<Re
 void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner) {
 	Item *ci = p_canvas_item;
 
-	if (!ci->visible)
+	if (!ci->visible) {
 		return;
+	}
 
 	if (ci->children_order_dirty) {
 		ci->child_items.sort_custom<ItemIndexSort>();
@@ -111,17 +114,18 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.position += p_clip_rect.position;
 
-	if (ci->use_parent_material && p_material_owner)
+	if (ci->use_parent_material && p_material_owner) {
 		ci->material_owner = p_material_owner;
-	else {
+	} else {
 		p_material_owner = ci;
 		ci->material_owner = nullptr;
 	}
 
 	Color modulate(ci->modulate.r * p_modulate.r, ci->modulate.g * p_modulate.g, ci->modulate.b * p_modulate.b, ci->modulate.a * p_modulate.a);
 
-	if (modulate.a < 0.007)
+	if (modulate.a < 0.007) {
 		return;
+	}
 
 	int child_item_count = ci->child_items.size();
 	Item **child_items = ci->child_items.ptrw();
@@ -154,14 +158,16 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 		sorter.sort(child_items, child_item_count);
 	}
 
-	if (ci->z_relative)
+	if (ci->z_relative) {
 		p_z = CLAMP(p_z + ci->z_index, RS::CANVAS_ITEM_Z_MIN, RS::CANVAS_ITEM_Z_MAX);
-	else
+	} else {
 		p_z = ci->z_index;
+	}
 
 	for (int i = 0; i < child_item_count; i++) {
-		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
+		if (!child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
 			continue;
+		}
 		if (ci->sort_y) {
 			_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
@@ -202,8 +208,9 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 	}
 
 	for (int i = 0; i < child_item_count; i++) {
-		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y))
+		if (child_items[i]->behind || (ci->sort_y && child_items[i]->sort_y)) {
 			continue;
+		}
 		if (ci->sort_y) {
 			_cull_canvas_item(child_items[i], xform * child_items[i]->ysort_xform, p_clip_rect, modulate, p_z, z_list, z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner);
 		} else {
@@ -213,8 +220,9 @@ void RenderingServerCanvas::_cull_canvas_item(Item *p_canvas_item, const Transfo
 }
 
 void RenderingServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Item *p_canvas_item, RasterizerCanvas::Light *p_masked_lights) {
-	if (!p_masked_lights)
+	if (!p_masked_lights) {
 		return;
+	}
 
 	RasterizerCanvas::Item *ci = p_canvas_item;
 
@@ -960,8 +968,9 @@ void RenderingServerCanvas::canvas_light_attach_to_canvas(RID p_light, RID p_can
 		canvas->lights.erase(clight);
 	}
 
-	if (!canvas_owner.owns(p_canvas))
+	if (!canvas_owner.owns(p_canvas)) {
 		p_canvas = RID();
+	}
 
 	clight->canvas = p_canvas;
 
@@ -1085,8 +1094,9 @@ void RenderingServerCanvas::canvas_light_set_shadow_buffer_size(RID p_light, int
 	ERR_FAIL_COND(!clight);
 
 	int new_size = next_power_of_2(p_size);
-	if (new_size == clight->shadow_buffer_size)
+	if (new_size == clight->shadow_buffer_size) {
 		return;
+	}
 
 	clight->shadow_buffer_size = next_power_of_2(p_size);
 	clight->version++;
@@ -1129,8 +1139,9 @@ void RenderingServerCanvas::canvas_light_occluder_attach_to_canvas(RID p_occlude
 		canvas->occluders.erase(occluder);
 	}
 
-	if (!canvas_owner.owns(p_canvas))
+	if (!canvas_owner.owns(p_canvas)) {
 		p_canvas = RID();
+	}
 
 	occluder->canvas = p_canvas;
 
@@ -1234,10 +1245,11 @@ void RenderingServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occ
 	{
 		const Vector2 *r = p_shape.ptr();
 		for (int i = 0; i < lc; i++) {
-			if (i == 0)
+			if (i == 0) {
 				occluder_poly->aabb.position = r[i];
-			else
+			} else {
 				occluder_poly->aabb.expand_to(r[i]);
+			}
 		}
 	}
 
@@ -1327,8 +1339,9 @@ bool RenderingServerCanvas::free(RID p_rid) {
 
 		if (canvas_light->canvas.is_valid()) {
 			Canvas *canvas = canvas_owner.getornull(canvas_light->canvas);
-			if (canvas)
+			if (canvas) {
 				canvas->lights.erase(canvas_light);
+			}
 		}
 
 		RSG::canvas_render->free(canvas_light->light_internal);

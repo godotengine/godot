@@ -240,8 +240,9 @@ static Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer) {
 	{
 		uint8_t *w = gpudata.ptrw();
 		uint8_t *dst = w;
-		for (int i = 0; i < gpudata.size(); i++)
+		for (int i = 0; i < gpudata.size(); i++) {
 			dst[i] = 0x00;
+		}
 
 		int ofs = 0;
 		tr.start_transcoding(ptr, size);

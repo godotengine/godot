@@ -128,6 +128,7 @@ void HashingContext::_bind_methods() {
 }
 
 HashingContext::~HashingContext() {
-	if (ctx != nullptr)
+	if (ctx != nullptr) {
 		_delete_ctx();
+	}
 }

@@ -140,10 +140,11 @@ private:
 		int bone_idx;
 
 		inline bool operator<(const TrackNodeCacheKey &p_right) const {
-			if (id == p_right.id)
+			if (id == p_right.id) {
 				return bone_idx < p_right.bone_idx;
-			else
+			} else {
 				return id < p_right.id;
+			}
 		}
 	};
 

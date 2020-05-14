@@ -76,8 +76,9 @@ public:
 
 	void erase(const T &p_val) {
 		U idx = find(p_val);
-		if (idx >= 0)
+		if (idx >= 0) {
 			remove(idx);
+		}
 	}
 
 	void invert() {
@@ -167,8 +168,9 @@ public:
 	template <class C>
 	void sort_custom() {
 		U len = count;
-		if (len == 0)
+		if (len == 0) {
 			return;
+		}
 
 		SortArray<T, C> sorter;
 		sorter.sort(data, len);

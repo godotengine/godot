@@ -57,8 +57,9 @@ void process_array_thread(void *ud) {
 	T &data = *(T *)ud;
 	while (true) {
 		uint32_t index = atomic_increment(&data.index);
-		if (index >= data.elements)
+		if (index >= data.elements) {
 			break;
+		}
 		data.process(index);
 	}
 }

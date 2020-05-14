@@ -260,8 +260,9 @@ public:                                                                         
 		return String(#m_class);                                                                                                        \
 	}                                                                                                                                   \
 	virtual const StringName *_get_class_namev() const {                                                                                \
-		if (!_class_name)                                                                                                               \
+		if (!_class_name) {                                                                                                             \
 			_class_name = get_class_static();                                                                                           \
+		}                                                                                                                               \
 		return &_class_name;                                                                                                            \
 	}                                                                                                                                   \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                \
@@ -281,8 +282,9 @@ public:                                                                         
 	static String get_category_static() {                                                                                               \
 		String category = m_inherits::get_category_static();                                                                            \
 		if (_get_category != m_inherits::_get_category) {                                                                               \
-			if (category != "")                                                                                                         \
+			if (category != "") {                                                                                                       \
 				category += "/";                                                                                                        \
+			}                                                                                                                           \
 			category += _get_category();                                                                                                \
 		}                                                                                                                               \
 		return category;                                                                                                                \
@@ -309,12 +311,14 @@ protected:                                                                      
 public:                                                                                                                                 \
 	static void initialize_class() {                                                                                                    \
 		static bool initialized = false;                                                                                                \
-		if (initialized)                                                                                                                \
+		if (initialized) {                                                                                                              \
 			return;                                                                                                                     \
+		}                                                                                                                               \
 		m_inherits::initialize_class();                                                                                                 \
 		ClassDB::_add_class<m_class>();                                                                                                 \
-		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods())                                                            \
+		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                          \
 			_bind_methods();                                                                                                            \
+		}                                                                                                                               \
 		initialized = true;                                                                                                             \
 	}                                                                                                                                   \
                                                                                                                                         \
@@ -327,8 +331,9 @@ protected:                                                                      
 	}                                                                                                                                   \
 	virtual bool _getv(const StringName &p_name, Variant &r_ret) const {                                                                \
 		if (m_class::_get_get() != m_inherits::_get_get()) {                                                                            \
-			if (_get(p_name, r_ret))                                                                                                    \
+			if (_get(p_name, r_ret)) {                                                                                                  \
 				return true;                                                                                                            \
+			}                                                                                                                           \
 		}                                                                                                                               \
 		return m_inherits::_getv(p_name, r_ret);                                                                                        \
 	}                                                                                                                                   \
@@ -336,8 +341,9 @@ protected:                                                                      
 		return (bool (Object::*)(const StringName &, const Variant &)) & m_class::_set;                                                 \
 	}                                                                                                                                   \
 	virtual bool _setv(const StringName &p_name, const Variant &p_property) {                                                           \
-		if (m_inherits::_setv(p_name, p_property))                                                                                      \
+		if (m_inherits::_setv(p_name, p_property)) {                                                                                    \
 			return true;                                                                                                                \
+		}                                                                                                                               \
 		if (m_class::_get_set() != m_inherits::_get_set()) {                                                                            \
 			return _set(p_name, p_property);                                                                                            \
 		}                                                                                                                               \
@@ -351,13 +357,15 @@ protected:                                                                      
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                        \
 		}                                                                                                                               \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));       \
-		if (!_is_gpl_reversed())                                                                                                        \
+		if (!_is_gpl_reversed()) {                                                                                                      \
 			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                   \
+		}                                                                                                                               \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                \
 			_get_property_list(p_list);                                                                                                 \
 		}                                                                                                                               \
-		if (_is_gpl_reversed())                                                                                                         \
+		if (_is_gpl_reversed()) {                                                                                                       \
 			ClassDB::get_property_list(#m_class, p_list, true, this);                                                                   \
+		}                                                                                                                               \
 		if (p_reversed) {                                                                                                               \
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                        \
 		}                                                                                                                               \
@@ -366,13 +374,15 @@ protected:                                                                      
 		return (void (Object::*)(int)) & m_class::_notification;                                                                        \
 	}                                                                                                                                   \
 	virtual void _notificationv(int p_notification, bool p_reversed) {                                                                  \
-		if (!p_reversed)                                                                                                                \
+		if (!p_reversed) {                                                                                                              \
 			m_inherits::_notificationv(p_notification, p_reversed);                                                                     \
+		}                                                                                                                               \
 		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                                          \
 			_notification(p_notification);                                                                                              \
 		}                                                                                                                               \
-		if (p_reversed)                                                                                                                 \
+		if (p_reversed) {                                                                                                               \
 			m_inherits::_notificationv(p_notification, p_reversed);                                                                     \
+		}                                                                                                                               \
 	}                                                                                                                                   \
                                                                                                                                         \
 private:
@@ -526,8 +536,9 @@ protected:
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 	virtual const StringName *_get_class_namev() const {
-		if (!_class_name)
+		if (!_class_name) {
 			_class_name = get_class_static();
+		}
 		return &_class_name;
 	}
 
@@ -550,8 +561,9 @@ public:
 #ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ void _change_notify(const char *p_property = "") {
 		_edited = true;
-		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next())
+		for (Set<Object *>::Element *E = change_receptors.front(); E; E = E->next()) {
 			((Object *)(E->get()))->_changed_callback(this, p_property);
+		}
 	}
 #else
 	_FORCE_INLINE_ void _change_notify(const char *p_what = "") {}
@@ -574,12 +586,14 @@ public:
 #ifndef NO_SAFE_CAST
 		return dynamic_cast<T *>(p_object);
 #else
-		if (!p_object)
+		if (!p_object) {
 			return nullptr;
-		if (p_object->is_class_ptr(T::get_class_ptr_static()))
+		}
+		if (p_object->is_class_ptr(T::get_class_ptr_static())) {
 			return static_cast<T *>(p_object);
-		else
+		} else {
 			return nullptr;
+		}
 #endif
 	}
 
@@ -588,12 +602,14 @@ public:
 #ifndef NO_SAFE_CAST
 		return dynamic_cast<const T *>(p_object);
 #else
-		if (!p_object)
+		if (!p_object) {
 			return nullptr;
-		if (p_object->is_class_ptr(T::get_class_ptr_static()))
+		}
+		if (p_object->is_class_ptr(T::get_class_ptr_static())) {
 			return static_cast<const T *>(p_object);
-		else
+		} else {
 			return nullptr;
+		}
 #endif
 	}
 

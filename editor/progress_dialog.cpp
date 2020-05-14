@@ -78,10 +78,11 @@ void BackgroundProgress::_task_step(const String &p_task, int p_step) {
 	ERR_FAIL_COND(!tasks.has(p_task));
 
 	Task &t = tasks[p_task];
-	if (p_step < 0)
+	if (p_step < 0) {
 		t.progress->set_value(t.progress->get_value() + 1);
-	else
+	} else {
 		t.progress->set_value(p_step);
+	}
 }
 
 void BackgroundProgress::_end_task(const String &p_task) {
@@ -113,8 +114,9 @@ void BackgroundProgress::task_step(const String &p_task, int p_step) {
 		no_updates = updates.empty();
 	}
 
-	if (no_updates)
+	if (no_updates) {
 		MessageQueue::get_singleton()->push_call(this, "_update");
+	}
 
 	{
 		_THREAD_SAFE_METHOD_
@@ -187,15 +189,17 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
-		if (tus - last_progress_tick < 200000) //200ms
+		if (tus - last_progress_tick < 200000) { //200ms
 			return cancelled;
+		}
 	}
 
 	Task &t = tasks[p_task];
-	if (p_step < 0)
+	if (p_step < 0) {
 		t.progress->set_value(t.progress->get_value() + 1);
-	else
+	} else {
 		t.progress->set_value(p_step);
+	}
 
 	t.state->set_text(p_state);
 	last_progress_tick = OS::get_singleton()->get_ticks_usec();
@@ -214,10 +218,11 @@ void ProgressDialog::end_task(const String &p_task) {
 	memdelete(t.vb);
 	tasks.erase(p_task);
 
-	if (tasks.empty())
+	if (tasks.empty()) {
 		hide();
-	else
+	} else {
 		_popup();
+	}
 }
 
 void ProgressDialog::_cancel_pressed() {

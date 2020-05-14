@@ -275,8 +275,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				for (int i = 1; i < ds.size(); i++) {
 					String d = ds[i];
 					int dpos = d.find("device");
-					if (dpos == -1)
+					if (dpos == -1) {
 						continue;
+					}
 					d = d.substr(0, dpos).strip_edges();
 					ldevices.push_back(d);
 				}
@@ -359,8 +360,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 							}
 
 							d.name = vendor + " " + device;
-							if (device == String())
+							if (device == String()) {
 								continue;
+							}
 						}
 
 						ndevices.push_back(d);
@@ -376,8 +378,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			uint64_t time = OS::get_singleton()->get_ticks_usec();
 			while (OS::get_singleton()->get_ticks_usec() - time < wait) {
 				OS::get_singleton()->delay_usec(1000 * sleep);
-				if (ea->quit_request)
+				if (ea->quit_request) {
 					break;
+				}
 			}
 		}
 
@@ -425,8 +428,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				first = false;
 			}
 		}
-		if (name == "")
+		if (name == "") {
 			name = "noname";
+		}
 
 		pname = pname.replace("$genname", name);
 
@@ -677,8 +681,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		const char **aperms = android_perms;
 		while (*aperms) {
 			bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
-			if (enabled)
+			if (enabled) {
 				perms.push_back("android.permission." + String(*aperms));
+			}
 			aperms++;
 		}
 
@@ -692,8 +697,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		if (p_give_internet) {
-			if (perms.find("android.permission.INTERNET") == -1)
+			if (perms.find("android.permission.INTERNET") == -1) {
 				perms.push_back("android.permission.INTERNET");
+			}
 		}
 
 		while (ofs < (uint32_t)p_manifest.size()) {
@@ -779,8 +785,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						if (tname == "manifest" && attrname == "versionName") {
 							if (attr_value == 0xFFFFFFFF) {
 								WARN_PRINT("Version name in a resource, should be plain text");
-							} else
+							} else {
 								string_table.write[attr_value] = version_name;
+							}
 						}
 
 						if (tname == "instrumentation" && attrname == "targetPackage") {
@@ -1120,18 +1127,21 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		//pad
-		while (ret.size() % 4)
+		while (ret.size() % 4) {
 			ret.push_back(0);
+		}
 
 		uint32_t new_stable_end = ret.size();
 
 		uint32_t extra = (p_manifest.size() - string_table_ends);
 		ret.resize(new_stable_end + extra);
-		for (uint32_t i = 0; i < extra; i++)
+		for (uint32_t i = 0; i < extra; i++) {
 			ret.write[new_stable_end + i] = p_manifest[string_table_ends + i];
+		}
 
-		while (ret.size() % 4)
+		while (ret.size() % 4) {
 			ret.push_back(0);
+		}
 		encode_uint32(ret.size(), &ret.write[4]); //update new file size
 
 		encode_uint32(new_stable_end - 8, &ret.write[12]); //update new string table size
@@ -1147,10 +1157,11 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 		if (p_utf8) {
 			uint8_t byte = p_bytes[offset];
-			if (byte & 0x80)
+			if (byte & 0x80) {
 				offset += 2;
-			else
+			} else {
 				offset += 1;
+			}
 			byte = p_bytes[offset];
 			offset++;
 			if (byte & 0x80) {
@@ -1184,8 +1195,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 			String str;
 			for (uint32_t i = 0; i < len; i++) {
 				CharType c = decode_uint16(&p_bytes[offset + i * 2]);
-				if (c == 0)
+				if (c == 0) {
 					break;
+				}
 				str += String::chr(c);
 			}
 			return str;
@@ -1257,8 +1269,9 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 		}
 
 		//pad
-		while (ret.size() % 4)
+		while (ret.size() % 4) {
 			ret.push_back(0);
+		}
 
 		//change flags to not use utf8
 		encode_uint32(string_flags & ~0x100, &ret.write[28]);
@@ -1457,8 +1470,9 @@ public:
 		const bool use_remote = (p_debug_flags & DEBUG_FLAG_REMOTE_DEBUG) || (p_debug_flags & DEBUG_FLAG_DUMB_CLIENT);
 		const bool use_reverse = devices[p_device].api_level >= 21;
 
-		if (use_reverse)
+		if (use_reverse) {
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
+		}
 
 		String tmp_export_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport.apk");
 
@@ -1779,10 +1793,11 @@ public:
 			}
 
 		} else {
-			if (p_debug)
+			if (p_debug) {
 				src_apk = p_preset->get("custom_template/debug");
-			else
+			} else {
 				src_apk = p_preset->get("custom_template/release");
+			}
 
 			src_apk = src_apk.strip_edges();
 			if (src_apk == "") {
@@ -2031,14 +2046,17 @@ public:
 			cl.push_back("--xr_mode_regular");
 		}
 
-		if (use_32_fb)
+		if (use_32_fb) {
 			cl.push_back("--use_depth_32");
+		}
 
-		if (immersive)
+		if (immersive) {
 			cl.push_back("--use_immersive");
+		}
 
-		if (debug_opengl)
+		if (debug_opengl) {
 			cl.push_back("--debug_opengl");
+		}
 
 		if (cl.size()) {
 			//add comandline
@@ -2050,8 +2068,9 @@ public:
 				CharString txt = cl[i].utf8();
 				int base = clf.size();
 				int length = txt.length();
-				if (!length)
+				if (!length) {
 					continue;
+				}
 				clf.resize(base + 4 + length);
 				encode_uint32(length, &clf.write[base]);
 				copymem(&clf.write[base + 4], txt.ptr(), length);

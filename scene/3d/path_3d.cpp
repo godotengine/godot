@@ -37,8 +37,9 @@ void Path3D::_notification(int p_what) {
 }
 
 void Path3D::_curve_changed() {
-	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint())
+	if (is_inside_tree() && Engine::get_singleton()->is_editor_hint()) {
 		update_gizmo();
+	}
 	if (is_inside_tree()) {
 		emit_signal("curve_changed");
 	}
@@ -88,12 +89,14 @@ Path3D::Path3D() {
 //////////////
 
 void PathFollow3D::_update_transform() {
-	if (!path)
+	if (!path) {
 		return;
+	}
 
 	Ref<Curve3D> c = path->get_curve();
-	if (!c.is_valid())
+	if (!c.is_valid()) {
 		return;
+	}
 
 	if (delta_offset == 0) {
 		return;
@@ -120,10 +123,11 @@ void PathFollow3D::_update_transform() {
 	if (rotation_mode == ROTATION_ORIENTED) {
 		Vector3 forward = c->interpolate_baked(o_next, cubic) - pos;
 
-		if (forward.length_squared() < CMP_EPSILON2)
+		if (forward.length_squared() < CMP_EPSILON2) {
 			forward = Vector3(0, 0, 1);
-		else
+		} else {
 			forward.normalize();
+		}
 
 		Vector3 up = c->interpolate_baked_up_vector(offset, true);
 
@@ -131,10 +135,11 @@ void PathFollow3D::_update_transform() {
 			Vector3 up1 = c->interpolate_baked_up_vector(o_next, true);
 			Vector3 axis = up.cross(up1);
 
-			if (axis.length_squared() < CMP_EPSILON2)
+			if (axis.length_squared() < CMP_EPSILON2) {
 				axis = forward;
-			else
+			} else {
 				axis.normalize();
+			}
 
 			up.rotate(axis, up.angle_to(up1) * 0.5f);
 		}
@@ -234,16 +239,18 @@ bool PathFollow3D::get_cubic_interpolation() const {
 void PathFollow3D::_validate_property(PropertyInfo &property) const {
 	if (property.name == "offset") {
 		float max = 10000;
-		if (path && path->get_curve().is_valid())
+		if (path && path->get_curve().is_valid()) {
 			max = path->get_curve()->get_baked_length();
+		}
 
 		property.hint_string = "0," + rtos(max) + ",0.01,or_lesser,or_greater";
 	}
 }
 
 String PathFollow3D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	if (!Object::cast_to<Path3D>(get_parent())) {
 		return TTR("PathFollow3D only works when set as a child of a Path3D node.");
@@ -320,8 +327,9 @@ void PathFollow3D::set_offset(float p_offset) {
 
 void PathFollow3D::set_h_offset(float p_h_offset) {
 	h_offset = p_h_offset;
-	if (path)
+	if (path) {
 		_update_transform();
+	}
 }
 
 float PathFollow3D::get_h_offset() const {
@@ -330,8 +338,9 @@ float PathFollow3D::get_h_offset() const {
 
 void PathFollow3D::set_v_offset(float p_v_offset) {
 	v_offset = p_v_offset;
-	if (path)
+	if (path) {
 		_update_transform();
+	}
 }
 
 float PathFollow3D::get_v_offset() const {
@@ -343,15 +352,17 @@ float PathFollow3D::get_offset() const {
 }
 
 void PathFollow3D::set_unit_offset(float p_unit_offset) {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
+	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		set_offset(p_unit_offset * path->get_curve()->get_baked_length());
+	}
 }
 
 float PathFollow3D::get_unit_offset() const {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length())
+	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
 		return get_offset() / path->get_curve()->get_baked_length();
-	else
+	} else {
 		return 0;
+	}
 }
 
 void PathFollow3D::set_rotation_mode(RotationMode p_rotation_mode) {

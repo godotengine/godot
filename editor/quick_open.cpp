@@ -35,14 +35,16 @@
 void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
 	add_directories = p_add_dirs;
 	popup_centered_ratio(0.6);
-	if (p_dontclear)
+	if (p_dontclear) {
 		search_box->select_all();
-	else
+	} else {
 		search_box->clear();
-	if (p_enable_multi)
+	}
+	if (p_enable_multi) {
 		search_options->set_select_mode(Tree::SELECT_MULTI);
-	else
+	} else {
 		search_options->set_select_mode(Tree::SELECT_SINGLE);
+	}
 	search_box->grab_focus();
 	base_type = p_base;
 	_update_search();
@@ -50,8 +52,9 @@ void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi
 
 String EditorQuickOpen::get_selected() const {
 	TreeItem *ti = search_options->get_selected();
-	if (!ti)
+	if (!ti) {
 		return String();
+	}
 
 	return "res://" + ti->get_text(0);
 }
@@ -85,8 +88,9 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
-				if (!root->get_children())
+				if (!root->get_children()) {
 					break;
+				}
 
 				TreeItem *current = search_options->get_selected();
 
@@ -130,8 +134,9 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 
 	if (add_directories) {
 		String path = efsd->get_path();
-		if (!path.ends_with("/"))
+		if (!path.ends_with("/")) {
 			path += "/";
+		}
 		if (path != "res://") {
 			path = path.substr(6, path.length());
 			if (search_text.is_subsequence_ofi(path)) {
@@ -180,13 +185,15 @@ Vector<Pair<String, Ref<Texture2D>>> EditorQuickOpen::_sort_fs(Vector<Pair<Strin
 	String search_text = search_box->get_text();
 	Vector<Pair<String, Ref<Texture2D>>> sorted_list;
 
-	if (search_text == String() || list.size() == 0)
+	if (search_text == String() || list.size() == 0) {
 		return list;
+	}
 
 	Vector<float> scores;
 	scores.resize(list.size());
-	for (int i = 0; i < list.size(); i++)
+	for (int i = 0; i < list.size(); i++) {
 		scores.write[i] = _path_cmp(search_text, list[i].first);
+	}
 
 	while (list.size() > 0) {
 		float best_score = 0.0f;
@@ -235,8 +242,9 @@ void EditorQuickOpen::_update_search() {
 
 void EditorQuickOpen::_confirmed() {
 	TreeItem *ti = search_options->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 	emit_signal("quick_open");
 	hide();
 }

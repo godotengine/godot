@@ -66,12 +66,14 @@ void GPUParticles2D::set_one_shot(bool p_enable) {
 
 	if (is_emitting()) {
 		set_process_internal(true);
-		if (!one_shot)
+		if (!one_shot) {
 			RenderingServer::get_singleton()->particles_restart(particles);
+		}
 	}
 
-	if (!one_shot)
+	if (!one_shot) {
 		set_process_internal(false);
+	}
 }
 
 void GPUParticles2D::set_pre_process_time(float p_time) {
@@ -131,8 +133,9 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 		pm->set_gravity(Vector3(0, 98, 0));
 	}
 	RID material_rid;
-	if (process_material.is_valid())
+	if (process_material.is_valid()) {
 		material_rid = process_material->get_rid();
+	}
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warning();
@@ -222,8 +225,9 @@ String GPUParticles2D::get_configuration_warning() const {
 	String warnings;
 
 	if (process_material.is_null()) {
-		if (warnings != String())
+		if (warnings != String()) {
 			warnings += "\n";
+		}
 		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
 	} else {
 		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
@@ -233,8 +237,9 @@ String GPUParticles2D::get_configuration_warning() const {
 			if (process &&
 					(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
 							process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
-				if (warnings != String())
+				if (warnings != String()) {
 					warnings += "\n";
+				}
 				warnings += "- " + TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
 			}
 		}
@@ -282,11 +287,13 @@ void GPUParticles2D::restart() {
 void GPUParticles2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_DRAW) {
 		RID texture_rid;
-		if (texture.is_valid())
+		if (texture.is_valid()) {
 			texture_rid = texture->get_rid();
+		}
 		RID normal_rid;
-		if (normal_map.is_valid())
+		if (normal_map.is_valid()) {
 			normal_rid = normal_map->get_rid();
+		}
 
 		RS::get_singleton()->canvas_item_add_particles(get_canvas_item(), particles, texture_rid, normal_rid);
 

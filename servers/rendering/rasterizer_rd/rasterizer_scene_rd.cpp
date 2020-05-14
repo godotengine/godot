@@ -1676,8 +1676,9 @@ void RasterizerSceneRD::shadow_atlas_set_size(RID p_atlas, int p_size) {
 	ERR_FAIL_COND(p_size < 0);
 	p_size = next_power_of_2(p_size);
 
-	if (p_size == shadow_atlas->size)
+	if (p_size == shadow_atlas->size) {
 		return;
+	}
 
 	// erasing atlas
 	if (shadow_atlas->depth.is_valid()) {
@@ -1728,8 +1729,9 @@ void RasterizerSceneRD::shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p
 
 	//obtain the number that will be x*x
 
-	if (shadow_atlas->quadrants[p_quadrant].subdivision == subdiv)
+	if (shadow_atlas->quadrants[p_quadrant].subdivision == subdiv) {
 		return;
+	}
 
 	//erase all data from quadrant
 	for (int i = 0; i < shadow_atlas->quadrants[p_quadrant].shadows.size(); i++) {
@@ -1801,8 +1803,9 @@ bool RasterizerSceneRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int
 
 			if (sli->last_scene_pass != scene_pass) {
 				//was just allocated, don't kill it so soon, wait a bit..
-				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec)
+				if (p_tick - sarr[j].alloc_tick < shadow_atlas_realloc_tolerance_msec) {
 					continue;
+				}
 
 				if (found_used_idx == -1 || sli->last_scene_pass < min_pass) {
 					found_used_idx = j;
@@ -1811,8 +1814,9 @@ bool RasterizerSceneRD::_shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int
 			}
 		}
 
-		if (found_free_idx == -1 && found_used_idx == -1)
+		if (found_free_idx == -1 && found_used_idx == -1) {
 			continue; //nothing found
+		}
 
 		if (found_free_idx == -1 && found_used_idx != -1) {
 			found_free_idx = found_used_idx;
@@ -1850,13 +1854,15 @@ bool RasterizerSceneRD::shadow_atlas_update_light(RID p_atlas, RID p_light_intan
 	for (int i = 0; i < 4; i++) {
 		int q = shadow_atlas->size_order[i];
 		int sd = shadow_atlas->quadrants[q].subdivision;
-		if (sd == 0)
+		if (sd == 0) {
 			continue; //unused
+		}
 
 		int max_fit = quad_size / sd;
 
-		if (best_size != -1 && max_fit > best_size)
+		if (best_size != -1 && max_fit > best_size) {
 			break; //too large
+		}
 
 		valid_quadrants[valid_quadrant_count++] = q;
 		best_subdiv = sd;

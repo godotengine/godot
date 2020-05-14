@@ -55,10 +55,11 @@ void Camera3DEditor::edit(Node *p_camera) {
 		preview->set_pressed(false);
 		Node3DEditor::get_singleton()->set_custom_camera(nullptr);
 	} else {
-		if (preview->is_pressed())
+		if (preview->is_pressed()) {
 			Node3DEditor::get_singleton()->set_custom_camera(p_camera);
-		else
+		} else {
 			Node3DEditor::get_singleton()->set_custom_camera(nullptr);
+		}
 	}
 }
 

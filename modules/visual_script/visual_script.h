@@ -424,8 +424,9 @@ public:
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
 		Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		E->get() = p_value;
 		return true;
@@ -433,8 +434,9 @@ public:
 
 	bool get_variable(const StringName &p_variable, Variant *r_variable) const {
 		const Map<StringName, Variant>::Element *E = variables.find(p_variable);
-		if (!E)
+		if (!E) {
 			return false;
+		}
 
 		*r_variable = E->get();
 		return true;
@@ -527,11 +529,13 @@ public:
 	bool debug_break_parse(const String &p_file, int p_node, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(VisualScriptInstance *p_instance, const StringName *p_function, Variant *p_stack, Variant **p_work_mem, int *current_id) {
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
+		}
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
@@ -549,11 +553,13 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
+		}
 
 		if (_debug_call_stack_pos == 0) {
 			_debug_error = "Stack Underflow (Engine Bug)";

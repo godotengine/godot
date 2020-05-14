@@ -190,8 +190,9 @@ struct FileAccessRef {
 
 	FileAccessRef(FileAccess *fa) { f = fa; }
 	~FileAccessRef() {
-		if (f)
+		if (f) {
 			memdelete(f);
+		}
 	}
 };
 

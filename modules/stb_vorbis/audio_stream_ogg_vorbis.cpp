@@ -102,8 +102,9 @@ float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
 }
 
 void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	if (p_time >= vorbis_stream->get_length()) {
 		p_time = 0;

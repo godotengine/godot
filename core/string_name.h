@@ -96,10 +96,11 @@ public:
 		return _data == p_name._data;
 	}
 	_FORCE_INLINE_ uint32_t hash() const {
-		if (_data)
+		if (_data) {
 			return _data->hash;
-		else
+		} else {
 			return 0;
+		}
 	}
 	_FORCE_INLINE_ const void *data_unique_pointer() const {
 		return (void *)_data;
@@ -108,10 +109,11 @@ public:
 
 	_FORCE_INLINE_ operator String() const {
 		if (_data) {
-			if (_data->cname)
+			if (_data->cname) {
 				return String(_data->cname);
-			else
+			} else {
 				return _data->name;
+			}
 		}
 
 		return String();
@@ -127,15 +129,17 @@ public:
 			const char *r_cname = r._data ? r._data->cname : "";
 
 			if (l_cname) {
-				if (r_cname)
+				if (r_cname) {
 					return is_str_less(l_cname, r_cname);
-				else
+				} else {
 					return is_str_less(l_cname, r._data->name.ptr());
+				}
 			} else {
-				if (r_cname)
+				if (r_cname) {
 					return is_str_less(l._data->name.ptr(), r_cname);
-				else
+				} else {
 					return is_str_less(l._data->name.ptr(), r._data->name.ptr());
+				}
 			}
 		}
 	};

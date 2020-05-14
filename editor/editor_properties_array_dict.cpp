@@ -501,15 +501,17 @@ void EditorPropertyArray::_edit_pressed() {
 }
 
 void EditorPropertyArray::_page_changed(double p_page) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	page_idx = p_page;
 	update_property();
 }
 
 void EditorPropertyArray::_length_changed(double p_page) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	Variant array = object->get_array();
 	int previous_size = array.call("size");
@@ -1051,8 +1053,9 @@ void EditorPropertyDictionary::_edit_pressed() {
 }
 
 void EditorPropertyDictionary::_page_changed(double p_page) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	page_idx = p_page;
 	update_property();
 }

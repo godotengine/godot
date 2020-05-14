@@ -39,8 +39,9 @@ AABB VisualInstance3D::get_transformed_aabb() const {
 }
 
 void VisualInstance3D::_update_visibility() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	_change_notify("visible");
 	RS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree());

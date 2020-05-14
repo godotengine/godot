@@ -60,8 +60,9 @@ void VisibilityNotifier3D::_exit_camera(Camera3D *p_camera) {
 }
 
 void VisibilityNotifier3D::set_aabb(const AABB &p_aabb) {
-	if (aabb == p_aabb)
+	if (aabb == p_aabb) {
 		return;
+	}
 	aabb = p_aabb;
 
 	if (is_inside_world()) {
@@ -157,8 +158,9 @@ void VisibilityEnabler3D::_find_nodes(Node *p_node) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		if (c->get_filename() != String())
+		if (c->get_filename() != String()) {
 			continue; //skip, instance
+		}
 
 		_find_nodes(c);
 	}
@@ -166,24 +168,28 @@ void VisibilityEnabler3D::_find_nodes(Node *p_node) {
 
 void VisibilityEnabler3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (Engine::get_singleton()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
+		}
 
 		Node *from = this;
 		//find where current scene starts
-		while (from->get_parent() && from->get_filename() == String())
+		while (from->get_parent() && from->get_filename() == String()) {
 			from = from->get_parent();
+		}
 
 		_find_nodes(from);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (Engine::get_singleton()->is_editor_hint())
+		if (Engine::get_singleton()->is_editor_hint()) {
 			return;
+		}
 
 		for (Map<Node *, Variant>::Element *E = nodes.front(); E; E = E->next()) {
-			if (!visible)
+			if (!visible) {
 				_change_node_state(E->key(), true);
+			}
 			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &VisibilityEnabler3D::_node_removed));
 		}
 
@@ -196,9 +202,9 @@ void VisibilityEnabler3D::_change_node_state(Node *p_node, bool p_enabled) {
 
 	if (enabler[ENABLER_FREEZE_BODIES]) {
 		RigidBody3D *rb = Object::cast_to<RigidBody3D>(p_node);
-		if (rb)
-
+		if (rb) {
 			rb->set_sleeping(!p_enabled);
+		}
 	}
 
 	if (enabler[ENABLER_PAUSE_ANIMATIONS]) {
@@ -211,8 +217,9 @@ void VisibilityEnabler3D::_change_node_state(Node *p_node, bool p_enabled) {
 }
 
 void VisibilityEnabler3D::_node_removed(Node *p_node) {
-	if (!visible)
+	if (!visible) {
 		_change_node_state(p_node, true);
+	}
 	nodes.erase(p_node);
 }
 
@@ -239,8 +246,9 @@ bool VisibilityEnabler3D::is_enabler_enabled(Enabler p_enabler) const {
 }
 
 VisibilityEnabler3D::VisibilityEnabler3D() {
-	for (int i = 0; i < ENABLER_MAX; i++)
+	for (int i = 0; i < ENABLER_MAX; i++) {
 		enabler[i] = true;
+	}
 
 	visible = false;
 }

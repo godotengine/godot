@@ -466,8 +466,9 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
-									if (c == '-')
+									if (c == '-') {
 										is_float = true;
+									}
 									exp_sign = true;
 
 								} else {
@@ -476,8 +477,9 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 							} break;
 						}
 
-						if (reading == READING_DONE)
+						if (reading == READING_DONE) {
 							break;
+						}
 						num += String::chr(c);
 						c = GET_CHAR();
 					}
@@ -486,10 +488,11 @@ Error VisualScriptExpression::_get_token(Token &r_token) {
 
 					r_token.type = TK_CONSTANT;
 
-					if (is_float)
+					if (is_float) {
 						r_token.value = num.to_double();
-					else
+					} else {
 						r_token.value = num.to_int();
+					}
 					return OK;
 
 				} else if ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_') {
@@ -618,8 +621,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 		Token tk;
 		_get_token(tk);
-		if (error_set)
+		if (error_set) {
 			return nullptr;
+		}
 
 		switch (tk.type) {
 			case TK_CURLY_BRACKET_OPEN: {
@@ -635,8 +639,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *expr2 = _parse_expression();
-					if (!expr2)
+					if (!expr2) {
 						return nullptr;
+					}
 					dn->dict.push_back(expr2);
 
 					_get_token(tk);
@@ -646,8 +651,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					}
 
 					expr2 = _parse_expression();
-					if (!expr2)
+					if (!expr2) {
 						return nullptr;
+					}
 
 					dn->dict.push_back(expr2);
 
@@ -678,8 +684,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *expr2 = _parse_expression();
-					if (!expr2)
+					if (!expr2) {
 						return nullptr;
+					}
 					an->array.push_back(expr2);
 
 					cofs = str_ofs;
@@ -698,8 +705,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 			case TK_PARENTHESIS_OPEN: {
 				//a suexpression
 				ENode *e = _parse_expression();
-				if (error_set)
+				if (error_set) {
 					return nullptr;
+				}
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_CLOSE) {
 					_set_error("Expected ')'");
@@ -759,8 +767,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *expr2 = _parse_expression();
-					if (!expr2)
+					if (!expr2) {
 						return nullptr;
+					}
 
 					constructor->arguments.push_back(expr2);
 
@@ -799,8 +808,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					str_ofs = cofs; //revert
 					//parse an expression
 					ENode *expr2 = _parse_expression();
-					if (!expr2)
+					if (!expr2) {
 						return nullptr;
+					}
 
 					bifunc->arguments.push_back(expr2);
 
@@ -849,8 +859,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 		while (true) {
 			int cofs2 = str_ofs;
 			_get_token(tk);
-			if (error_set)
+			if (error_set) {
 				return nullptr;
+			}
 
 			bool done = false;
 
@@ -862,8 +873,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 					index->base = expr;
 
 					ENode *what = _parse_expression();
-					if (!what)
+					if (!what) {
 						return nullptr;
+					}
 
 					index->index = what;
 
@@ -902,8 +914,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 							str_ofs = cofs3; //revert
 							//parse an expression
 							ENode *expr2 = _parse_expression();
-							if (!expr2)
+							if (!expr2) {
 								return nullptr;
+							}
 
 							func_call->arguments.push_back(expr2);
 
@@ -936,8 +949,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 				} break;
 			}
 
-			if (done)
+			if (done) {
 				break;
+			}
 		}
 
 		//push expression
@@ -952,8 +966,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 
 		int cofs = str_ofs;
 		_get_token(tk);
-		if (error_set)
+		if (error_set) {
 			return nullptr;
+		}
 
 		Variant::Operator op = Variant::OP_MAX;
 
@@ -1216,8 +1231,9 @@ VisualScriptExpression::ENode *VisualScriptExpression::_parse_expression() {
 }
 
 bool VisualScriptExpression::_compile_expression() {
-	if (!expression_dirty)
+	if (!expression_dirty) {
 		return error_set;
+	}
 
 	if (nodes) {
 		memdelete(nodes);
@@ -1270,15 +1286,17 @@ public:
 
 				Variant a;
 				bool ret = _execute(p_inputs, op->nodes[0], a, r_error_str, ce);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 
 				Variant b;
 
 				if (op->nodes[1]) {
 					ret = _execute(p_inputs, op->nodes[1], b, r_error_str, ce);
-					if (ret)
+					if (ret) {
 						return true;
+					}
 				}
 
 				bool valid = true;
@@ -1294,14 +1312,16 @@ public:
 
 				Variant base;
 				bool ret = _execute(p_inputs, index->base, base, r_error_str, ce);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 
 				Variant idx;
 
 				ret = _execute(p_inputs, index->index, idx, r_error_str, ce);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 
 				bool valid;
 				r_ret = base.get(idx, &valid);
@@ -1316,8 +1336,9 @@ public:
 
 				Variant base;
 				bool ret = _execute(p_inputs, index->base, base, r_error_str, ce);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 
 				bool valid;
 				r_ret = base.get_named(index->name, &valid);
@@ -1335,8 +1356,9 @@ public:
 				for (int i = 0; i < array->array.size(); i++) {
 					Variant value;
 					bool ret = _execute(p_inputs, array->array[i], value, r_error_str, ce);
-					if (ret)
+					if (ret) {
 						return true;
+					}
 					arr[i] = value;
 				}
 
@@ -1350,13 +1372,15 @@ public:
 				for (int i = 0; i < dictionary->dict.size(); i += 2) {
 					Variant key;
 					bool ret = _execute(p_inputs, dictionary->dict[i + 0], key, r_error_str, ce);
-					if (ret)
+					if (ret) {
 						return true;
+					}
 
 					Variant value;
 					ret = _execute(p_inputs, dictionary->dict[i + 1], value, r_error_str, ce);
-					if (ret)
+					if (ret) {
 						return true;
+					}
 
 					d[key] = value;
 				}
@@ -1374,8 +1398,9 @@ public:
 				for (int i = 0; i < constructor->arguments.size(); i++) {
 					Variant value;
 					bool ret = _execute(p_inputs, constructor->arguments[i], value, r_error_str, ce);
-					if (ret)
+					if (ret) {
 						return true;
+					}
 					arr.write[i] = value;
 					argp.write[i] = &arr[i];
 				}
@@ -1399,8 +1424,9 @@ public:
 				for (int i = 0; i < bifunc->arguments.size(); i++) {
 					Variant value;
 					bool ret = _execute(p_inputs, bifunc->arguments[i], value, r_error_str, ce);
-					if (ret)
+					if (ret) {
 						return true;
+					}
 					arr.write[i] = value;
 					argp.write[i] = &arr[i];
 				}
@@ -1418,8 +1444,9 @@ public:
 
 				Variant base;
 				bool ret = _execute(p_inputs, call->base, base, r_error_str, ce);
-				if (ret)
+				if (ret) {
 					return true;
+				}
 
 				Vector<Variant> arr;
 				Vector<const Variant *> argp;
@@ -1429,8 +1456,9 @@ public:
 				for (int i = 0; i < call->arguments.size(); i++) {
 					Variant value;
 					bool ret2 = _execute(p_inputs, call->arguments[i], value, r_error_str, ce);
-					if (ret2)
+					if (ret2) {
 						return true;
+					}
 					arr.write[i] = value;
 					argp.write[i] = &arr[i];
 				}

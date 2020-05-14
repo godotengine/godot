@@ -173,10 +173,11 @@ void Sprite2DEditor::_update_mesh_data() {
 	Ref<Image> image = texture->get_data();
 	ERR_FAIL_COND(image.is_null());
 	Rect2 rect;
-	if (node->is_region())
+	if (node->is_region()) {
 		rect = node->get_region_rect();
-	else
+	} else {
 		rect.size = Size2(image->get_width(), image->get_height());
+	}
 
 	Ref<BitMap> bm;
 	bm.instance();
@@ -218,13 +219,16 @@ void Sprite2DEditor::_update_mesh_data() {
 				vtx -= rect.position; //offset by rect position
 
 				//flip if flipped
-				if (node->is_flipped_h())
+				if (node->is_flipped_h()) {
 					vtx.x = rect.size.x - vtx.x - 1.0;
-				if (node->is_flipped_v())
+				}
+				if (node->is_flipped_v()) {
 					vtx.y = rect.size.y - vtx.y - 1.0;
+				}
 
-				if (node->is_centered())
+				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
+				}
 
 				computed_vertices.push_back(vtx);
 			}
@@ -265,13 +269,16 @@ void Sprite2DEditor::_update_mesh_data() {
 				vtx -= rect.position; //offset by rect position
 
 				//flip if flipped
-				if (node->is_flipped_h())
+				if (node->is_flipped_h()) {
 					vtx.x = rect.size.x - vtx.x - 1.0;
-				if (node->is_flipped_v())
+				}
+				if (node->is_flipped_v()) {
 					vtx.y = rect.size.y - vtx.y - 1.0;
+				}
 
-				if (node->is_centered())
+				if (node->is_centered()) {
 					vtx -= rect.size / 2.0;
+				}
 
 				col.write[i] = vtx;
 			}
@@ -341,8 +348,9 @@ void Sprite2DEditor::_convert_to_polygon_2d_node() {
 	Polygon2D *polygon_2d_instance = memnew(Polygon2D);
 
 	int total_point_count = 0;
-	for (int i = 0; i < computed_outline_lines.size(); i++)
+	for (int i = 0; i < computed_outline_lines.size(); i++) {
 		total_point_count += computed_outline_lines[i].size();
+	}
 
 	PackedVector2Array polygon;
 	polygon.resize(total_point_count);

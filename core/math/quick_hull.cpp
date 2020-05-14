@@ -75,8 +75,9 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		real_t max = 0, min = 0;
 
 		for (int i = 0; i < p_points.size(); i++) {
-			if (!valid_points[i])
+			if (!valid_points[i]) {
 				continue;
+			}
 			real_t d = p_points[i][longest_axis];
 			if (i == 0 || d < min) {
 				simplex[0] = i;
@@ -97,8 +98,9 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		Vector3 rel12 = p_points[simplex[0]] - p_points[simplex[1]];
 
 		for (int i = 0; i < p_points.size(); i++) {
-			if (!valid_points[i])
+			if (!valid_points[i]) {
 				continue;
+			}
 
 			Vector3 n = rel12.cross(p_points[simplex[0]] - p_points[i]).cross(rel12).normalized();
 			real_t d = Math::abs(n.dot(p_points[simplex[0]]) - n.dot(p_points[i]));
@@ -117,8 +119,9 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		Plane p(p_points[simplex[0]], p_points[simplex[1]], p_points[simplex[2]]);
 
 		for (int i = 0; i < p_points.size(); i++) {
-			if (!valid_points[i])
+			if (!valid_points[i]) {
 				continue;
+			}
 
 			real_t d = Math::abs(p.distance_to(p_points[i]));
 
@@ -173,16 +176,21 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 	/* COMPUTE AVAILABLE VERTICES */
 
 	for (int i = 0; i < p_points.size(); i++) {
-		if (i == simplex[0])
+		if (i == simplex[0]) {
 			continue;
-		if (i == simplex[1])
+		}
+		if (i == simplex[1]) {
 			continue;
-		if (i == simplex[2])
+		}
+		if (i == simplex[2]) {
 			continue;
-		if (i == simplex[3])
+		}
+		if (i == simplex[3]) {
 			continue;
-		if (!valid_points[i])
+		}
+		if (!valid_points[i]) {
 			continue;
+		}
 
 		for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
 			if (E->get().plane.distance_to(p_points[i]) > over_tolerance) {
@@ -288,8 +296,9 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			Face &lf = F->get()->get();
 
 			for (int i = 0; i < lf.points_over.size(); i++) {
-				if (lf.points_over[i] == f.points_over[next]) //do not add current one
+				if (lf.points_over[i] == f.points_over[next]) { //do not add current one
 					continue;
+				}
 
 				Vector3 p = p_points[lf.points_over[i]];
 				for (List<List<Face>::Element *>::Element *E = new_faces.front(); E; E = E->next()) {
@@ -397,10 +406,11 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 							Map<Edge, RetFaceConnect>::Element *F2 = ret_edges.find(e2);
 							ERR_CONTINUE(!F2);
 							//change faceconnect, point to this face instead
-							if (F2->get().left == O)
+							if (F2->get().left == O) {
 								F2->get().left = E;
-							else if (F2->get().right == O)
+							} else if (F2->get().right == O) {
 								F2->get().right = E;
+							}
 						}
 
 						break;
@@ -409,11 +419,13 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 				// remove all edge connections to this face
 				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
-					if (G->get().left == O)
+					if (G->get().left == O) {
 						G->get().left = nullptr;
+					}
 
-					if (G->get().right == O)
+					if (G->get().right == O) {
 						G->get().right = nullptr;
+					}
 				}
 
 				ret_edges.erase(F); //remove the edge

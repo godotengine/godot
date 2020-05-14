@@ -70,8 +70,9 @@ bool AnimatedSprite2D::_edit_use_rect() const {
 		return false;
 	}
 	Ref<Texture2D> t;
-	if (animation)
+	if (animation) {
 		t = frames->get_frame(animation, frame);
+	}
 	return t.is_valid();
 }
 #endif
@@ -86,18 +87,22 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 	}
 
 	Ref<Texture2D> t;
-	if (animation)
+	if (animation) {
 		t = frames->get_frame(animation, frame);
-	if (t.is_null())
+	}
+	if (t.is_null()) {
 		return Rect2();
+	}
 	Size2 s = t->get_size();
 
 	Point2 ofs = offset;
-	if (centered)
+	if (centered) {
 		ofs -= Size2(s) / 2;
+	}
 
-	if (s == Size2(0, 0))
+	if (s == Size2(0, 0)) {
 		s = Size2(1, 1);
+	}
 
 	return Rect2(ofs, s);
 }
@@ -106,10 +111,11 @@ void SpriteFrames::add_frame(const StringName &p_anim, const Ref<Texture2D> &p_f
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 
-	if (p_at_pos >= 0 && p_at_pos < E->get().frames.size())
+	if (p_at_pos >= 0 && p_at_pos < E->get().frames.size()) {
 		E->get().frames.insert(p_at_pos, p_frame);
-	else
+	} else {
 		E->get().frames.push_back(p_frame);
+	}
 
 	emit_changed();
 }
@@ -226,8 +232,9 @@ void SpriteFrames::_set_frames(const Array &p_frames) {
 	ERR_FAIL_COND(!E);
 
 	E->get().frames.resize(p_frames.size());
-	for (int i = 0; i < E->get().frames.size(); i++)
+	for (int i = 0; i < E->get().frames.size(); i++) {
 		E->get().frames.write[i] = p_frames[i];
+	}
 }
 
 Array SpriteFrames::_get_frames() const {
@@ -313,8 +320,9 @@ SpriteFrames::SpriteFrames() {
 }
 
 void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
-	if (!frames.is_valid())
+	if (!frames.is_valid()) {
 		return;
+	}
 	if (property.name == "animation") {
 		property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
@@ -355,16 +363,20 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &property) const {
 void AnimatedSprite2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (frames.is_null())
+			if (frames.is_null()) {
 				return;
-			if (!frames->has_animation(animation))
+			}
+			if (!frames->has_animation(animation)) {
 				return;
-			if (frame < 0)
+			}
+			if (frame < 0) {
 				return;
+			}
 
 			float speed = frames->get_animation_speed(animation) * speed_scale;
-			if (speed == 0)
+			if (speed == 0) {
 				return; //do nothing
+			}
 
 			float remaining = get_process_delta_time();
 
@@ -375,17 +387,19 @@ void AnimatedSprite2D::_notification(int p_what) {
 					int fc = frames->get_frame_count(animation);
 					if ((!backwards && frame >= fc - 1) || (backwards && frame <= 0)) {
 						if (frames->get_animation_loop(animation)) {
-							if (backwards)
+							if (backwards) {
 								frame = fc - 1;
-							else
+							} else {
 								frame = 0;
+							}
 
 							emit_signal(SceneStringNames::get_singleton()->animation_finished);
 						} else {
-							if (backwards)
+							if (backwards) {
 								frame = 0;
-							else
+							} else {
 								frame = fc - 1;
+							}
 
 							if (!is_over) {
 								is_over = true;
@@ -393,10 +407,11 @@ void AnimatedSprite2D::_notification(int p_what) {
 							}
 						}
 					} else {
-						if (backwards)
+						if (backwards) {
 							frame--;
-						else
+						} else {
 							frame++;
+						}
 					}
 
 					update();
@@ -411,16 +426,20 @@ void AnimatedSprite2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (frames.is_null())
+			if (frames.is_null()) {
 				return;
-			if (frame < 0)
+			}
+			if (frame < 0) {
 				return;
-			if (!frames->has_animation(animation))
+			}
+			if (!frames->has_animation(animation)) {
 				return;
+			}
 
 			Ref<Texture2D> texture = frames->get_frame(animation, frame);
-			if (texture.is_null())
+			if (texture.is_null()) {
 				return;
+			}
 
 			Ref<Texture2D> normal = frames->get_normal_frame(animation, frame);
 			Ref<Texture2D> specular = frames->get_specular_frame(animation, frame);
@@ -430,18 +449,21 @@ void AnimatedSprite2D::_notification(int p_what) {
 			Size2i s;
 			s = texture->get_size();
 			Point2 ofs = offset;
-			if (centered)
+			if (centered) {
 				ofs -= s / 2;
+			}
 
 			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs = ofs.floor();
 			}
 			Rect2 dst_rect(ofs, s);
 
-			if (hflip)
+			if (hflip) {
 				dst_rect.size.x = -dst_rect.size.x;
-			if (vflip)
+			}
+			if (vflip) {
 				dst_rect.size.y = -dst_rect.size.y;
+			}
 
 			texture->draw_rect_region(ci, dst_rect, Rect2(Vector2(), texture->get_size()), Color(1, 1, 1), false, normal, specular, Color(specular_color.r, specular_color.g, specular_color.b, shininess));
 
@@ -450,11 +472,13 @@ void AnimatedSprite2D::_notification(int p_what) {
 }
 
 void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
-	if (frames.is_valid())
+	if (frames.is_valid()) {
 		frames->disconnect("changed", callable_mp(this, &AnimatedSprite2D::_res_changed));
+	}
 	frames = p_frames;
-	if (frames.is_valid())
+	if (frames.is_valid()) {
 		frames->connect("changed", callable_mp(this, &AnimatedSprite2D::_res_changed));
+	}
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -479,15 +503,18 @@ void AnimatedSprite2D::set_frame(int p_frame) {
 
 	if (frames->has_animation(animation)) {
 		int limit = frames->get_frame_count(animation);
-		if (p_frame >= limit)
+		if (p_frame >= limit) {
 			p_frame = limit - 1;
+		}
 	}
 
-	if (p_frame < 0)
+	if (p_frame < 0) {
 		p_frame = 0;
+	}
 
-	if (frame == p_frame)
+	if (frame == p_frame) {
 		return;
+	}
 
 	frame = p_frame;
 	_reset_timeout();
@@ -561,8 +588,9 @@ void AnimatedSprite2D::_res_changed() {
 }
 
 void AnimatedSprite2D::_set_playing(bool p_playing) {
-	if (playing == p_playing)
+	if (playing == p_playing) {
 		return;
+	}
 	playing = p_playing;
 	_reset_timeout();
 	set_process_internal(playing);
@@ -577,8 +605,9 @@ void AnimatedSprite2D::play(const StringName &p_animation, const bool p_backward
 
 	if (p_animation) {
 		set_animation(p_animation);
-		if (backwards && get_frame() == 0)
+		if (backwards && get_frame() == 0) {
 			set_frame(frames->get_frame_count(p_animation) - 1);
+		}
 	}
 
 	_set_playing(true);
@@ -603,8 +632,9 @@ float AnimatedSprite2D::_get_frame_duration() {
 }
 
 void AnimatedSprite2D::_reset_timeout() {
-	if (!playing)
+	if (!playing) {
 		return;
+	}
 
 	timeout = _get_frame_duration();
 	is_over = false;
@@ -614,8 +644,9 @@ void AnimatedSprite2D::set_animation(const StringName &p_animation) {
 	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
 	ERR_FAIL_COND_MSG(frames->get_animation_names().find(p_animation) == -1, vformat("There is no animation with name '%s'.", p_animation));
 
-	if (animation == p_animation)
+	if (animation == p_animation) {
 		return;
+	}
 
 	animation = p_animation;
 	_reset_timeout();

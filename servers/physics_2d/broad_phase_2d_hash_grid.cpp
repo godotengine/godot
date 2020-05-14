@@ -93,12 +93,15 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 	if (sz.width * sz.height > large_object_min_surface) {
 		//large object, do not use grid, must check against all elements
 		for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
-			if (E->key() == p_elem->self)
+			if (E->key() == p_elem->self) {
 				continue; // do not pair against itself
-			if (E->get().owner == p_elem->owner)
+			}
+			if (E->get().owner == p_elem->owner) {
 				continue;
-			if (E->get()._static && p_static)
+			}
+			if (E->get()._static && p_static) {
 				continue;
+			}
 
 			_pair_attempt(p_elem, &E->get());
 		}
@@ -149,15 +152,17 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 
 			if (entered) {
 				for (Map<Element *, RC>::Element *E = pb->object_set.front(); E; E = E->next()) {
-					if (E->key()->owner == p_elem->owner)
+					if (E->key()->owner == p_elem->owner) {
 						continue;
+					}
 					_pair_attempt(p_elem, E->key());
 				}
 
 				if (!p_static) {
 					for (Map<Element *, RC>::Element *E = pb->static_object_set.front(); E; E = E->next()) {
-						if (E->key()->owner == p_elem->owner)
+						if (E->key()->owner == p_elem->owner) {
 							continue;
+						}
 						_pair_attempt(p_elem, E->key());
 					}
 				}
@@ -168,12 +173,15 @@ void BroadPhase2DHashGrid::_enter_grid(Element *p_elem, const Rect2 &p_rect, boo
 	//pair separatedly with large elements
 
 	for (Map<Element *, RC>::Element *E = large_elements.front(); E; E = E->next()) {
-		if (E->key() == p_elem)
+		if (E->key() == p_elem) {
 			continue; // do not pair against itself
-		if (E->key()->owner == p_elem->owner)
+		}
+		if (E->key()->owner == p_elem->owner) {
 			continue;
-		if (E->key()->_static && p_static)
+		}
+		if (E->key()->_static && p_static) {
 			continue;
+		}
 
 		_pair_attempt(E->key(), p_elem);
 	}
@@ -234,15 +242,17 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 
 			if (exited) {
 				for (Map<Element *, RC>::Element *E = pb->object_set.front(); E; E = E->next()) {
-					if (E->key()->owner == p_elem->owner)
+					if (E->key()->owner == p_elem->owner) {
 						continue;
+					}
 					_unpair_attempt(p_elem, E->key());
 				}
 
 				if (!p_static) {
 					for (Map<Element *, RC>::Element *E = pb->static_object_set.front(); E; E = E->next()) {
-						if (E->key()->owner == p_elem->owner)
+						if (E->key()->owner == p_elem->owner) {
 							continue;
+						}
 						_unpair_attempt(p_elem, E->key());
 					}
 				}
@@ -272,12 +282,15 @@ void BroadPhase2DHashGrid::_exit_grid(Element *p_elem, const Rect2 &p_rect, bool
 	}
 
 	for (Map<Element *, RC>::Element *E = large_elements.front(); E; E = E->next()) {
-		if (E->key() == p_elem)
+		if (E->key() == p_elem) {
 			continue; // do not pair against itself
-		if (E->key()->owner == p_elem->owner)
+		}
+		if (E->key()->owner == p_elem->owner) {
 			continue;
-		if (E->key()->_static && p_static)
+		}
+		if (E->key()->_static && p_static) {
 			continue;
+		}
 
 		//unpair from large elements
 		_unpair_attempt(p_elem, E->key());
@@ -304,8 +317,9 @@ void BroadPhase2DHashGrid::move(ID p_id, const Rect2 &p_aabb) {
 
 	Element &e = E->get();
 
-	if (p_aabb == e.aabb)
+	if (p_aabb == e.aabb) {
 		return;
+	}
 
 	if (p_aabb != Rect2()) {
 		_enter_grid(&e, p_aabb, e._static);
@@ -328,11 +342,13 @@ void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
 
 	Element &e = E->get();
 
-	if (e._static == p_static)
+	if (e._static == p_static) {
 		return;
+	}
 
-	if (e.aabb != Rect2())
+	if (e.aabb != Rect2()) {
 		_exit_grid(&e, e.aabb, e._static);
+	}
 
 	e._static = p_static;
 
@@ -348,8 +364,9 @@ void BroadPhase2DHashGrid::remove(ID p_id) {
 
 	Element &e = E->get();
 
-	if (e.aabb != Rect2())
+	if (e.aabb != Rect2()) {
 		_exit_grid(&e, e.aabb, e._static);
+	}
 
 	element_map.erase(p_id);
 }
@@ -389,22 +406,27 @@ void BroadPhase2DHashGrid::_cull(const Point2i p_cell, const Rect2 &p_aabb, cons
 		pb = pb->next;
 	}
 
-	if (!pb)
+	if (!pb) {
 		return;
+	}
 
 	for (Map<Element *, RC>::Element *E = pb->object_set.front(); E; E = E->next()) {
-		if (index >= p_max_results)
+		if (index >= p_max_results) {
 			break;
-		if (E->key()->pass == pass)
+		}
+		if (E->key()->pass == pass) {
 			continue;
+		}
 
 		E->key()->pass = pass;
 
-		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
+		if (use_aabb && !p_aabb.intersects(E->key()->aabb)) {
 			continue;
+		}
 
-		if (use_segment && !E->key()->aabb.intersects_segment(p_from, p_to))
+		if (use_segment && !E->key()->aabb.intersects_segment(p_from, p_to)) {
 			continue;
+		}
 
 		p_results[index] = E->key()->owner;
 		p_result_indices[index] = E->key()->subindex;
@@ -412,17 +434,20 @@ void BroadPhase2DHashGrid::_cull(const Point2i p_cell, const Rect2 &p_aabb, cons
 	}
 
 	for (Map<Element *, RC>::Element *E = pb->static_object_set.front(); E; E = E->next()) {
-		if (index >= p_max_results)
+		if (index >= p_max_results) {
 			break;
-		if (E->key()->pass == pass)
+		}
+		if (E->key()->pass == pass) {
 			continue;
+		}
 
 		if (use_aabb && !p_aabb.intersects(E->key()->aabb)) {
 			continue;
 		}
 
-		if (use_segment && !E->key()->aabb.intersects_segment(p_from, p_to))
+		if (use_segment && !E->key()->aabb.intersects_segment(p_from, p_to)) {
 			continue;
+		}
 
 		E->key()->pass = pass;
 		p_results[index] = E->key()->owner;
@@ -435,14 +460,17 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2 &p_from, const Vector2 &p_t
 	pass++;
 
 	Vector2 dir = (p_to - p_from);
-	if (dir == Vector2())
+	if (dir == Vector2()) {
 		return 0;
+	}
 	//avoid divisions by zero
 	dir.normalize();
-	if (dir.x == 0.0)
+	if (dir.x == 0.0) {
 		dir.x = 0.000001;
-	if (dir.y == 0.0)
+	}
+	if (dir.y == 0.0) {
 		dir.y = 0.000001;
+	}
 	Vector2 delta = dir.abs();
 
 	delta.x = cell_size / delta.x;
@@ -455,15 +483,17 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2 &p_from, const Vector2 &p_t
 
 	Vector2 max;
 
-	if (dir.x < 0)
+	if (dir.x < 0) {
 		max.x = (Math::floor((double)pos.x) * cell_size - p_from.x) / dir.x;
-	else
+	} else {
 		max.x = (Math::floor((double)pos.x + 1) * cell_size - p_from.x) / dir.x;
+	}
 
-	if (dir.y < 0)
+	if (dir.y < 0) {
 		max.y = (Math::floor((double)pos.y) * cell_size - p_from.y) / dir.y;
-	else
+	} else {
 		max.y = (Math::floor((double)pos.y + 1) * cell_size - p_from.y) / dir.y;
+	}
 
 	int cullcount = 0;
 	_cull<false, true>(pos, Rect2(), p_from, p_to, p_results, p_max_results, p_result_indices, cullcount);
@@ -481,30 +511,35 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2 &p_from, const Vector2 &p_t
 		}
 
 		if (step.x > 0) {
-			if (pos.x >= end.x)
+			if (pos.x >= end.x) {
 				reached_x = true;
+			}
 		} else if (pos.x <= end.x) {
 			reached_x = true;
 		}
 
 		if (step.y > 0) {
-			if (pos.y >= end.y)
+			if (pos.y >= end.y) {
 				reached_y = true;
+			}
 		} else if (pos.y <= end.y) {
 			reached_y = true;
 		}
 
 		_cull<false, true>(pos, Rect2(), p_from, p_to, p_results, p_max_results, p_result_indices, cullcount);
 
-		if (reached_x && reached_y)
+		if (reached_x && reached_y) {
 			break;
+		}
 	}
 
 	for (Map<Element *, RC>::Element *E = large_elements.front(); E; E = E->next()) {
-		if (cullcount >= p_max_results)
+		if (cullcount >= p_max_results) {
 			break;
-		if (E->key()->pass == pass)
+		}
+		if (E->key()->pass == pass) {
 			continue;
+		}
 
 		E->key()->pass = pass;
 
@@ -513,8 +548,9 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2 &p_from, const Vector2 &p_t
 			continue;
 		*/
 
-		if (!E->key()->aabb.intersects_segment(p_from, p_to))
+		if (!E->key()->aabb.intersects_segment(p_from, p_to)) {
 			continue;
+		}
 
 		p_results[cullcount] = E->key()->owner;
 		p_result_indices[cullcount] = E->key()->subindex;
@@ -538,15 +574,18 @@ int BroadPhase2DHashGrid::cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p
 	}
 
 	for (Map<Element *, RC>::Element *E = large_elements.front(); E; E = E->next()) {
-		if (cullcount >= p_max_results)
+		if (cullcount >= p_max_results) {
 			break;
-		if (E->key()->pass == pass)
+		}
+		if (E->key()->pass == pass) {
 			continue;
+		}
 
 		E->key()->pass = pass;
 
-		if (!p_aabb.intersects(E->key()->aabb))
+		if (!p_aabb.intersects(E->key()->aabb)) {
 			continue;
+		}
 
 		/*
 		if (!E->key()->aabb.intersects_segment(p_from,p_to))
@@ -589,8 +628,9 @@ BroadPhase2DHashGrid::BroadPhase2DHashGrid() {
 	large_object_min_surface = GLOBAL_DEF("physics/2d/large_object_surface_threshold_in_cells", 512);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/large_object_surface_threshold_in_cells", PropertyInfo(Variant::INT, "physics/2d/large_object_surface_threshold_in_cells", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"));
 
-	for (uint32_t i = 0; i < hash_table_size; i++)
+	for (uint32_t i = 0; i < hash_table_size; i++) {
 		hash_table[i] = nullptr;
+	}
 	pass = 1;
 
 	current = 0;

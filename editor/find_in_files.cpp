@@ -64,8 +64,9 @@ static bool find_next(const String &line, String pattern, int from, bool match_c
 	while (true) {
 		int begin = match_case ? line.find(pattern, end) : line.findn(pattern, end);
 
-		if (begin == -1)
+		if (begin == -1) {
 			return false;
+		}
 
 		end = begin + pattern.length();
 		out_begin = begin;
@@ -156,8 +157,9 @@ void FindInFiles::_process() {
 	while (is_processing()) {
 		_iterate();
 		float elapsed = (os.get_ticks_msec() - time_before);
-		if (elapsed > 1000.0 / 120.0)
+		if (elapsed > 1000.0 / 120.0) {
 			break;
+		}
 	}
 }
 
@@ -227,19 +229,22 @@ void FindInFiles::_scan_dir(String path, PackedStringArray &out_folders) {
 	for (int i = 0; i < 1000; ++i) {
 		String file = dir->get_next();
 
-		if (file == "")
+		if (file == "") {
 			break;
+		}
 
 		// Ignore special dirs (such as .git and .import)
-		if (file == "." || file == ".." || file.begins_with("."))
+		if (file == "." || file == ".." || file.begins_with(".")) {
 			continue;
-		if (dir->current_is_hidden())
+		}
+		if (dir->current_is_hidden()) {
 			continue;
+		}
 
-		if (dir->current_is_dir())
+		if (dir->current_is_dir()) {
 			out_folders.push_back(file);
 
-		else {
+		} else {
 			String file_ext = file.get_extension();
 			if (_extension_filter.has(file_ext)) {
 				_files_to_scan.push_back(path.plus_file(file));
@@ -399,8 +404,9 @@ void FindInFilesDialog::set_replace_text(String text) {
 }
 
 void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
-	if (_mode == p_mode)
+	if (_mode == p_mode) {
 		return;
+	}
 
 	_mode = p_mode;
 
@@ -528,8 +534,9 @@ void FindInFilesDialog::_on_replace_text_entered(String text) {
 
 void FindInFilesDialog::_on_folder_selected(String path) {
 	int i = path.find("://");
-	if (i != -1)
+	if (i != -1) {
 		path = path.right(i + 3);
+	}
 	_folder_line_edit->set_text(path);
 }
 
@@ -739,12 +746,14 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 
 void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	TreeItem *item = Object::cast_to<TreeItem>(item_obj);
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	Result r = E->value();
 
 	Rect2 match_rect = rect;
@@ -791,8 +800,9 @@ void FindInFilesPanel::_on_result_selected() {
 	TreeItem *item = _results_display->get_selected();
 	Map<TreeItem *, Result>::Element *E = _result_items.find(item);
 
-	if (E == nullptr)
+	if (E == nullptr) {
 		return;
+	}
 	Result r = E->value();
 
 	TreeItem *file_item = item->get_parent();
@@ -816,8 +826,9 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 
 		Vector<Result> locations;
 		for (TreeItem *item = file_item->get_children(); item; item = item->get_next()) {
-			if (!item->is_checked(0))
+			if (!item->is_checked(0)) {
 				continue;
+			}
 
 			Map<TreeItem *, Result>::Element *F = _result_items.find(item);
 			ERR_FAIL_COND(F == nullptr);

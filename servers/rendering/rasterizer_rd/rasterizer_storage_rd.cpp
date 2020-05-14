@@ -1006,16 +1006,17 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
 
 	ShaderType new_type;
-	if (mode_string == "canvas_item")
+	if (mode_string == "canvas_item") {
 		new_type = SHADER_TYPE_2D;
-	else if (mode_string == "particles")
+	} else if (mode_string == "particles") {
 		new_type = SHADER_TYPE_PARTICLES;
-	else if (mode_string == "spatial")
+	} else if (mode_string == "spatial") {
 		new_type = SHADER_TYPE_3D;
-	else if (mode_string == "sky")
+	} else if (mode_string == "sky") {
 		new_type = SHADER_TYPE_SKY;
-	else
+	} else {
 		new_type = SHADER_TYPE_MAX;
+	}
 
 	if (new_type != shader->type) {
 		if (shader->data) {
@@ -1341,10 +1342,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			const int *r = iv.ptr();
 
 			for (int i = 0; i < 2; i++) {
-				if (i < s)
+				if (i < s) {
 					gui[i] = r[i];
-				else
+				} else {
 					gui[i] = 0;
+				}
 			}
 
 		} break;
@@ -1356,10 +1358,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			const int *r = iv.ptr();
 
 			for (int i = 0; i < 3; i++) {
-				if (i < s)
+				if (i < s) {
 					gui[i] = r[i];
-				else
+				} else {
 					gui[i] = 0;
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_IVEC4: {
@@ -1370,10 +1373,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			const int *r = iv.ptr();
 
 			for (int i = 0; i < 4; i++) {
-				if (i < s)
+				if (i < s) {
 					gui[i] = r[i];
-				else
+				} else {
 					gui[i] = 0;
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_UINT: {
@@ -1390,10 +1394,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			const int *r = iv.ptr();
 
 			for (int i = 0; i < 2; i++) {
-				if (i < s)
+				if (i < s) {
 					gui[i] = r[i];
-				else
+				} else {
 					gui[i] = 0;
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_UVEC3: {
@@ -1404,10 +1409,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			const int *r = iv.ptr();
 
 			for (int i = 0; i < 3; i++) {
-				if (i < s)
+				if (i < s) {
 					gui[i] = r[i];
-				else
+				} else {
 					gui[i] = 0;
+				}
 			}
 
 		} break;
@@ -1419,10 +1425,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			const int *r = iv.ptr();
 
 			for (int i = 0; i < 4; i++) {
-				if (i < s)
+				if (i < s) {
 					gui[i] = r[i];
-				else
+				} else {
 					gui[i] = 0;
+				}
 			}
 		} break;
 		case ShaderLanguage::TYPE_FLOAT: {
@@ -1735,8 +1742,9 @@ void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringNa
 	bool uses_global_buffer = false;
 
 	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_uniforms.front(); E; E = E->next()) {
-		if (E->get().order < 0)
+		if (E->get().order < 0) {
 			continue; // texture, does not go here
+		}
 
 		if (E->get().scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
 			continue; //instance uniforms don't appear in the bufferr
@@ -2280,8 +2288,9 @@ AABB RasterizerStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 
 			if (skeleton->use_2d) {
 				for (int j = 0; j < bs; j++) {
-					if (skbones[0].size == Vector3())
+					if (skbones[0].size == Vector3()) {
 						continue; //bone is unused
+					}
 
 					const float *dataptr = baseptr + j * 8;
 
@@ -2306,8 +2315,9 @@ AABB RasterizerStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 				}
 			} else {
 				for (int j = 0; j < bs; j++) {
-					if (skbones[0].size == Vector3())
+					if (skbones[0].size == Vector3()) {
 						continue; //bone is unused
+					}
 
 					const float *dataptr = baseptr + j * 12;
 
@@ -3109,8 +3119,9 @@ void RasterizerStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_
 	ERR_FAIL_COND(!skeleton);
 	ERR_FAIL_COND(p_bones < 0);
 
-	if (skeleton->size == p_bones && skeleton->use_2d == p_2d_skeleton)
+	if (skeleton->size == p_bones && skeleton->use_2d == p_2d_skeleton) {
 		return;
+	}
 
 	skeleton->size = p_bones;
 	skeleton->use_2d = p_2d_skeleton;

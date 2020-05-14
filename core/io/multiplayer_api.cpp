@@ -53,8 +53,9 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 			// Do nothing also. Remote cannot produce a local call.
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC: {
-			if (is_master)
+			if (is_master) {
 				r_skip_rpc = true; // I am the master, so skip remote call.
+			}
 			[[fallthrough]];
 		}
 		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
@@ -63,8 +64,9 @@ _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_mas
 			return true;
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTER: {
-			if (is_master)
+			if (is_master) {
 				r_skip_rpc = true; // I am the master, so skip remote call.
+			}
 			return is_master;
 		} break;
 		case MultiplayerAPI::RPC_MODE_PUPPET: {
@@ -97,13 +99,15 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, i
 }
 
 void MultiplayerAPI::poll() {
-	if (!network_peer.is_valid() || network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED)
+	if (!network_peer.is_valid() || network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED) {
 		return;
+	}
 
 	network_peer->poll();
 
-	if (!network_peer.is_valid()) // It's possible that polling might have resulted in a disconnection, so check here.
+	if (!network_peer.is_valid()) { // It's possible that polling might have resulted in a disconnection, so check here.
 		return;
+	}
 
 	while (network_peer->get_available_packet_count()) {
 		int sender = network_peer->get_packet_peer();
@@ -139,8 +143,9 @@ void MultiplayerAPI::set_root_node(Node *p_node) {
 }
 
 void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer) {
-	if (p_peer == network_peer)
+	if (p_peer == network_peer) {
 		return; // Nothing to do
+	}
 
 	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED,
 			"Supplied NetworkedMultiplayerPeer must be connecting or connected.");
@@ -325,8 +330,9 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uin
 
 		node = root_node->get_node(np);
 
-		if (!node)
+		if (!node) {
 			ERR_PRINT("Failed to get path from RPC: " + String(np) + ".");
+		}
 	} else {
 		// Use cached path.
 		int id = p_node_target;
@@ -341,8 +347,9 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, uin
 		// Do proper caching later.
 
 		node = root_node->get_node(ni->path);
-		if (!node)
+		if (!node) {
 			ERR_PRINT("Failed to get cached path from RPC: " + String(ni->path) + ".");
+		}
 	}
 	return node;
 }
@@ -529,11 +536,13 @@ bool MultiplayerAPI::_send_confirm_path(Node *p_node, NodePath p_path, PathSentC
 	List<int> peers_to_add; // If one is missing, take note to add it.
 
 	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-		if (p_target < 0 && E->get() == -p_target)
+		if (p_target < 0 && E->get() == -p_target) {
 			continue; // Continue, excluded.
+		}
 
-		if (p_target > 0 && E->get() != p_target)
+		if (p_target > 0 && E->get() != p_target) {
 			continue; // Continue, not for this peer.
+		}
 
 		Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
 
@@ -658,8 +667,9 @@ Error MultiplayerAPI::_encode_and_compress_variant(const Variant &p_variant, uin
 		default:
 			// Any other case is not yet compressed.
 			Error err = encode_variant(p_variant, r_buffer, r_len, allow_object_decoding);
-			if (err != OK)
+			if (err != OK) {
 				return err;
+			}
 			if (r_buffer) {
 				// The first byte is not used by the marshaling, so store the type
 				// so we know how to decompress and decode this variant.
@@ -684,48 +694,55 @@ Error MultiplayerAPI::_decode_and_decompress_variant(Variant &r_variant, const u
 		case Variant::BOOL: {
 			bool val = (buf[0] & VARIANT_META_BOOL_MASK) > 0;
 			r_variant = val;
-			if (r_len)
+			if (r_len) {
 				*r_len = 1;
+			}
 		} break;
 		case Variant::INT: {
 			buf += 1;
 			len -= 1;
-			if (r_len)
+			if (r_len) {
 				*r_len = 1;
+			}
 			if (encode_mode == ENCODE_8) {
 				// 8 bits.
 				ERR_FAIL_COND_V(len < 1, ERR_INVALID_DATA);
 				int8_t val = buf[0];
 				r_variant = val;
-				if (r_len)
+				if (r_len) {
 					(*r_len) += 1;
+				}
 			} else if (encode_mode == ENCODE_16) {
 				// 16 bits.
 				ERR_FAIL_COND_V(len < 2, ERR_INVALID_DATA);
 				int16_t val = decode_uint16(buf);
 				r_variant = val;
-				if (r_len)
+				if (r_len) {
 					(*r_len) += 2;
+				}
 			} else if (encode_mode == ENCODE_32) {
 				// 32 bits.
 				ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 				int32_t val = decode_uint32(buf);
 				r_variant = val;
-				if (r_len)
+				if (r_len) {
 					(*r_len) += 4;
+				}
 			} else {
 				// 64 bits.
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
 				int64_t val = decode_uint64(buf);
 				r_variant = val;
-				if (r_len)
+				if (r_len) {
 					(*r_len) += 8;
+				}
 			}
 		} break;
 		default:
 			Error err = decode_variant(r_variant, p_buffer, p_len, r_len, allow_object_decoding);
-			if (err != OK)
+			if (err != OK) {
 				return err;
+			}
 	}
 
 	return OK;
@@ -925,11 +942,13 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		encode_cstring(pname.get_data(), &(packet_cache.write[ofs]));
 
 		for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
-			if (p_to < 0 && E->get() == -p_to)
+			if (p_to < 0 && E->get() == -p_to) {
 				continue; // Continue, excluded.
+			}
 
-			if (p_to > 0 && E->get() != p_to)
+			if (p_to > 0 && E->get() != p_to) {
 				continue; // Continue, not for this peer.
+			}
 
 			Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
 			ERR_CONTINUE(!F); // Should never happen.
