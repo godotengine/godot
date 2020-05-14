@@ -178,8 +178,9 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 
 		if (in_region == -1 && !in_keyword && is_char && !prev_is_char) {
 			int to = j;
-			while (to < str.length() && _is_text_char(str[to]))
+			while (to < str.length() && _is_text_char(str[to])) {
 				to++;
+			}
 
 			String word = str.substr(j, to - j);
 			Color col = Color();

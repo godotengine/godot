@@ -217,10 +217,12 @@ public:
 		}
 
 		~Instance() {
-			if (base_data)
+			if (base_data) {
 				memdelete(base_data);
-			if (custom_aabb)
+			}
+			if (custom_aabb) {
 				memdelete(custom_aabb);
+			}
 		}
 	};
 

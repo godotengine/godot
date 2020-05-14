@@ -70,10 +70,11 @@ private:
 		int body_shape;
 		int area_shape;
 		bool operator<(const ShapePair &p_sp) const {
-			if (body_shape == p_sp.body_shape)
+			if (body_shape == p_sp.body_shape) {
 				return area_shape < p_sp.area_shape;
-			else
+			} else {
 				return body_shape < p_sp.body_shape;
+			}
 		}
 
 		ShapePair() {}
@@ -100,10 +101,11 @@ private:
 		int area_shape;
 		int self_shape;
 		bool operator<(const AreaShapePair &p_sp) const {
-			if (area_shape == p_sp.area_shape)
+			if (area_shape == p_sp.area_shape) {
 				return self_shape < p_sp.self_shape;
-			else
+			} else {
 				return area_shape < p_sp.area_shape;
+			}
 		}
 
 		AreaShapePair() {}

@@ -33,8 +33,9 @@
 #include "space_3d_sw.h"
 
 void Body3DSW::_update_inertia() {
-	if (get_space() && !inertia_update_list.in_list())
+	if (get_space() && !inertia_update_list.in_list()) {
 		get_space()->body_add_to_inertia_update_list(&inertia_update_list);
+	}
 }
 
 void Body3DSW::_update_transform_dependant() {
@@ -105,10 +106,11 @@ void Body3DSW::update_inertias() {
 			principal_inertia_axes_local = inertia_tensor.diagonalize().transposed();
 			_inv_inertia = inertia_tensor.get_main_diagonal().inverse();
 
-			if (mass)
+			if (mass) {
 				_inv_mass = 1.0 / mass;
-			else
+			} else {
 				_inv_mass = 0;
+			}
 
 		} break;
 
@@ -130,18 +132,22 @@ void Body3DSW::update_inertias() {
 }
 
 void Body3DSW::set_active(bool p_active) {
-	if (active == p_active)
+	if (active == p_active) {
 		return;
+	}
 
 	active = p_active;
 	if (!p_active) {
-		if (get_space())
+		if (get_space()) {
 			get_space()->body_remove_from_active_list(&active_list);
+		}
 	} else {
-		if (mode == PhysicsServer3D::BODY_MODE_STATIC)
+		if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
 			return; //static bodies can't become active
-		if (get_space())
+		}
+		if (get_space()) {
 			get_space()->body_add_to_active_list(&active_list);
+		}
 
 		//still_time=0;
 	}
@@ -284,8 +290,9 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 				Transform t = p_variant;
 				t.orthonormalize();
 				new_transform = get_transform(); //used as old to compute motion
-				if (new_transform == t)
+				if (new_transform == t) {
 					break;
+				}
 				_set_transform(t);
 				_set_inv_transform(get_transform().inverse());
 			}
@@ -311,8 +318,9 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 		} break;
 		case PhysicsServer3D::BODY_STATE_SLEEPING: {
 			//?
-			if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC)
+			if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 				break;
+			}
 			bool do_sleep = p_variant;
 			if (do_sleep) {
 				linear_velocity = Vector3();
@@ -326,8 +334,9 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 		} break;
 		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
 			can_sleep = p_variant;
-			if (mode == PhysicsServer3D::BODY_MODE_RIGID && !active && !can_sleep)
+			if (mode == PhysicsServer3D::BODY_MODE_RIGID && !active && !can_sleep) {
 				set_active(true);
+			}
 
 		} break;
 	}
@@ -357,20 +366,24 @@ Variant Body3DSW::get_state(PhysicsServer3D::BodyState p_state) const {
 
 void Body3DSW::set_space(Space3DSW *p_space) {
 	if (get_space()) {
-		if (inertia_update_list.in_list())
+		if (inertia_update_list.in_list()) {
 			get_space()->body_remove_from_inertia_update_list(&inertia_update_list);
-		if (active_list.in_list())
+		}
+		if (active_list.in_list()) {
 			get_space()->body_remove_from_active_list(&active_list);
-		if (direct_state_query_list.in_list())
+		}
+		if (direct_state_query_list.in_list()) {
 			get_space()->body_remove_from_state_query_list(&direct_state_query_list);
+		}
 	}
 
 	_set_space(p_space);
 
 	if (get_space()) {
 		_update_inertia();
-		if (active)
+		if (active) {
 			get_space()->body_add_to_active_list(&active_list);
+		}
 		/*
 		_update_queries();
 		if (is_active()) {
@@ -412,8 +425,9 @@ bool Body3DSW::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 }
 
 void Body3DSW::integrate_forces(real_t p_step) {
-	if (mode == PhysicsServer3D::BODY_MODE_STATIC)
+	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
 		return;
+	}
 
 	Area3DSW *def_area = get_space()->get_default_area();
 	// AreaSW *damp_area = def_area;
@@ -458,15 +472,17 @@ void Body3DSW::integrate_forces(real_t p_step) {
 	gravity *= gravity_scale;
 
 	// If less than 0, override dampenings with that of the Body
-	if (angular_damp >= 0)
+	if (angular_damp >= 0) {
 		area_angular_damp = angular_damp;
+	}
 	/*
 	else
 		area_angular_damp=damp_area->get_angular_damp();
 	*/
 
-	if (linear_damp >= 0)
+	if (linear_damp >= 0) {
 		area_linear_damp = linear_damp;
+	}
 	/*
 	else
 		area_linear_damp=damp_area->get_linear_damp();
@@ -501,13 +517,15 @@ void Body3DSW::integrate_forces(real_t p_step) {
 
 			real_t damp = 1.0 - p_step * area_linear_damp;
 
-			if (damp < 0) // reached zero in the given time
+			if (damp < 0) { // reached zero in the given time
 				damp = 0;
+			}
 
 			real_t angular_damp = 1.0 - p_step * area_angular_damp;
 
-			if (angular_damp < 0) // reached zero in the given time
+			if (angular_damp < 0) { // reached zero in the given time
 				angular_damp = 0;
+			}
 
 			linear_velocity *= damp;
 			angular_velocity *= angular_damp;
@@ -540,11 +558,13 @@ void Body3DSW::integrate_forces(real_t p_step) {
 }
 
 void Body3DSW::integrate_velocities(real_t p_step) {
-	if (mode == PhysicsServer3D::BODY_MODE_STATIC)
+	if (mode == PhysicsServer3D::BODY_MODE_STATIC) {
 		return;
+	}
 
-	if (fi_callback)
+	if (fi_callback) {
 		get_space()->body_add_to_state_query_list(&direct_state_query_list);
+	}
 
 	//apply axis lock linear
 	for (int i = 0; i < 3; i++) {
@@ -565,8 +585,9 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		_set_transform(new_transform, false);
 		_set_inv_transform(new_transform.affine_inverse());
-		if (contacts.size() == 0 && linear_velocity == Vector3() && angular_velocity == Vector3())
+		if (contacts.size() == 0 && linear_velocity == Vector3() && angular_velocity == Vector3()) {
 			set_active(false); //stopped moving, deactivate
+		}
 
 		return;
 	}
@@ -647,14 +668,17 @@ void Body3DSW::wakeup_neighbours() {
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
-			if (i == E->get())
+			if (i == E->get()) {
 				continue;
+			}
 			Body3DSW *b = n[i];
-			if (b->mode != PhysicsServer3D::BODY_MODE_RIGID)
+			if (b->mode != PhysicsServer3D::BODY_MODE_RIGID) {
 				continue;
+			}
 
-			if (!b->is_active())
+			if (!b->is_active()) {
 				b->set_active(true);
+			}
 		}
 	}
 }
@@ -680,12 +704,13 @@ void Body3DSW::call_queries() {
 }
 
 bool Body3DSW::sleep_test(real_t p_step) {
-	if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC)
+	if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 		return true; //
-	else if (mode == PhysicsServer3D::BODY_MODE_CHARACTER)
+	} else if (mode == PhysicsServer3D::BODY_MODE_CHARACTER) {
 		return !active; // characters don't sleep unless asked to sleep
-	else if (!can_sleep)
+	} else if (!can_sleep) {
 		return false;
+	}
 
 	if (Math::abs(angular_velocity.length()) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
 		still_time += p_step;
@@ -753,8 +778,9 @@ Body3DSW::Body3DSW() :
 }
 
 Body3DSW::~Body3DSW() {
-	if (fi_callback)
+	if (fi_callback) {
 		memdelete(fi_callback);
+	}
 }
 
 PhysicsDirectBodyState3DSW *PhysicsDirectBodyState3DSW::singleton = nullptr;

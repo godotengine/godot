@@ -65,12 +65,14 @@ void FuncRef::set_function(const StringName &p_func) {
 }
 
 bool FuncRef::is_valid() const {
-	if (id.is_null())
+	if (id.is_null()) {
 		return false;
+	}
 
 	Object *obj = ObjectDB::get_instance(id);
-	if (!obj)
+	if (!obj) {
 		return false;
+	}
 
 	return obj->has_method(function);
 }

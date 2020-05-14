@@ -57,47 +57,59 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	const Vector3 *vr = varray.ptr();
 
 	const Vector3 *nr = nullptr;
-	if (arrays[Mesh::ARRAY_NORMAL].get_type() != Variant::NIL)
+	if (arrays[Mesh::ARRAY_NORMAL].get_type() != Variant::NIL) {
 		nr = arrays[Mesh::ARRAY_NORMAL].operator Vector<Vector3>().ptr();
+	}
 
 	const real_t *ta = nullptr;
-	if (arrays[Mesh::ARRAY_TANGENT].get_type() != Variant::NIL)
+	if (arrays[Mesh::ARRAY_TANGENT].get_type() != Variant::NIL) {
 		ta = arrays[Mesh::ARRAY_TANGENT].operator Vector<real_t>().ptr();
+	}
 
 	const Vector2 *uv = nullptr;
-	if (arrays[Mesh::ARRAY_TEX_UV].get_type() != Variant::NIL)
+	if (arrays[Mesh::ARRAY_TEX_UV].get_type() != Variant::NIL) {
 		uv = arrays[Mesh::ARRAY_TEX_UV].operator Vector<Vector2>().ptr();
+	}
 	const Vector2 *uv2 = nullptr;
-	if (arrays[Mesh::ARRAY_TEX_UV2].get_type() != Variant::NIL)
+	if (arrays[Mesh::ARRAY_TEX_UV2].get_type() != Variant::NIL) {
 		uv2 = arrays[Mesh::ARRAY_TEX_UV2].operator Vector<Vector2>().ptr();
+	}
 
 	const Color *col = nullptr;
-	if (arrays[Mesh::ARRAY_COLOR].get_type() != Variant::NIL)
+	if (arrays[Mesh::ARRAY_COLOR].get_type() != Variant::NIL) {
 		col = arrays[Mesh::ARRAY_COLOR].operator Vector<Color>().ptr();
+	}
 
 	const int *bo = nullptr;
-	if (arrays[Mesh::ARRAY_BONES].get_type() != Variant::NIL)
+	if (arrays[Mesh::ARRAY_BONES].get_type() != Variant::NIL) {
 		bo = arrays[Mesh::ARRAY_BONES].operator Vector<int>().ptr();
+	}
 
 	const real_t *we = nullptr;
-	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL)
+	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL) {
 		we = arrays[Mesh::ARRAY_WEIGHTS].operator Vector<real_t>().ptr();
+	}
 
 	vertices.resize(vcount);
 
 	for (int i = 0; i < vcount; i++) {
 		Vertex v;
 		v.vertex = vr[i];
-		if (nr)
+		if (nr) {
 			v.normal = nr[i];
-		if (ta)
+		}
+		if (ta) {
 			v.tangent = Plane(ta[i * 4 + 0], ta[i * 4 + 1], ta[i * 4 + 2], ta[i * 4 + 3]);
-		if (uv)
+		}
+		if (uv) {
 			v.uv = uv[i];
-		if (uv2)
+		}
+		if (uv2) {
 			v.uv2 = uv2[i];
-		if (col)
+		}
+		if (col) {
 			v.color = col[i];
+		}
 
 		if (we) {
 			v.weights.push_back(we[i * 4 + 0]);
@@ -124,8 +136,9 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 		//make code simpler
 		indices.resize(vcount);
 		int *iw = indices.ptrw();
-		for (int i = 0; i < vcount; i++)
+		for (int i = 0; i < vcount; i++) {
 			iw[i] = i;
+		}
 	}
 
 	int icount = indices.size();
@@ -238,20 +251,24 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 			const Vertex &vtx = vertices[i];
 
 			vr[i] = vtx.vertex;
-			if (nr)
+			if (nr) {
 				nr[i] = vtx.normal;
+			}
 			if (ta) {
 				ta[i * 4 + 0] = vtx.tangent.normal.x;
 				ta[i * 4 + 1] = vtx.tangent.normal.y;
 				ta[i * 4 + 2] = vtx.tangent.normal.z;
 				ta[i * 4 + 3] = vtx.tangent.d;
 			}
-			if (uv)
+			if (uv) {
 				uv[i] = vtx.uv;
-			if (uv2)
+			}
+			if (uv2) {
 				uv2[i] = vtx.uv2;
-			if (col)
+			}
+			if (col) {
 				col[i] = vtx.color;
+			}
 
 			if (we) {
 				we[i * 4 + 0] = vtx.weights[0];
@@ -280,20 +297,27 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 
 	arr[Mesh::ARRAY_VERTEX] = v;
 	arr[Mesh::ARRAY_INDEX] = in;
-	if (n.size())
+	if (n.size()) {
 		arr[Mesh::ARRAY_NORMAL] = n;
-	if (c.size())
+	}
+	if (c.size()) {
 		arr[Mesh::ARRAY_COLOR] = c;
-	if (u.size())
+	}
+	if (u.size()) {
 		arr[Mesh::ARRAY_TEX_UV] = u;
-	if (u2.size())
+	}
+	if (u2.size()) {
 		arr[Mesh::ARRAY_TEX_UV2] = u2;
-	if (t.size())
+	}
+	if (t.size()) {
 		arr[Mesh::ARRAY_TANGENT] = t;
-	if (b.size())
+	}
+	if (b.size()) {
 		arr[Mesh::ARRAY_BONES] = b;
-	if (w.size())
+	}
+	if (w.size()) {
 		arr[Mesh::ARRAY_WEIGHTS] = w;
+	}
 
 	Ref<ArrayMesh> ncmesh = p_mesh;
 	int sc = ncmesh->get_surface_count();

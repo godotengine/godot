@@ -99,8 +99,9 @@ private:
 	}
 	inline int aligned(int p_size) const {
 		int rem = p_size % align;
-		if (rem)
+		if (rem) {
 			p_size += align - rem;
+		}
 
 		return p_size;
 	}

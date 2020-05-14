@@ -61,8 +61,9 @@ void AnimationNodeStateMachineEditor::edit(const Ref<AnimationNode> &p_node) {
 
 void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
-	if (playback.is_null())
+	if (playback.is_null()) {
 		return;
+	}
 
 	Ref<InputEventKey> k = p_event;
 	if (tool_select->is_pressed() && k.is_valid() && k->is_pressed() && k->get_keycode() == KEY_DELETE && !k->is_echo()) {
@@ -101,8 +102,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
 			String name = String(E->get()).replace_first("AnimationNode", "");
-			if (name == "Animation")
+			if (name == "Animation") {
 				continue; // nope
+			}
 			int idx = menu->get_item_count();
 			menu->add_item(vformat("Add %s", name), idx);
 			menu->set_item_metadata(idx, E->get());
@@ -317,8 +319,9 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			float best_d_y = 1e20;
 
 			for (List<StringName>::Element *E = nodes.front(); E; E = E->next()) {
-				if (E->get() == selected_node)
+				if (E->get() == selected_node) {
 					continue;
+				}
 				Vector2 npos = state_machine->get_node_position(E->get());
 
 				float d_x = ABS(npos.x - cpos.x);
@@ -520,8 +523,9 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 }
 
 void AnimationNodeStateMachineEditor::_clip_src_line_to_rect(Vector2 &r_from, Vector2 &r_to, const Rect2 &p_rect) {
-	if (r_to == r_from)
+	if (r_to == r_from) {
 		return;
+	}
 
 	//this could be optimized...
 	Vector2 n = (r_to - r_from).normalized();
@@ -531,8 +535,9 @@ void AnimationNodeStateMachineEditor::_clip_src_line_to_rect(Vector2 &r_from, Ve
 }
 
 void AnimationNodeStateMachineEditor::_clip_dst_line_to_rect(Vector2 &r_from, Vector2 &r_to, const Rect2 &p_rect) {
-	if (r_to == r_from)
+	if (r_to == r_from) {
 		return;
+	}
 
 	//this could be optimized...
 	Vector2 n = (r_to - r_from).normalized();
@@ -811,8 +816,9 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 	Ref<AnimationNodeStateMachinePlayback> playback = AnimationTreeEditor::get_singleton()->get_tree()->get(AnimationTreeEditor::get_singleton()->get_base_path() + "playback");
 
-	if (!playback.is_valid() || !playback->is_playing())
+	if (!playback.is_valid() || !playback->is_playing()) {
 		return;
+	}
 
 	int idx = -1;
 	for (int i = 0; i < node_rects.size(); i++) {
@@ -822,8 +828,9 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 		}
 	}
 
-	if (idx == -1)
+	if (idx == -1) {
 		return;
+	}
 
 	const NodeRect &nr = node_rects[idx];
 
@@ -855,8 +862,9 @@ void AnimationNodeStateMachineEditor::_state_machine_pos_draw() {
 }
 
 void AnimationNodeStateMachineEditor::_update_graph() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	updating = true;
 
@@ -1071,15 +1079,17 @@ void AnimationNodeStateMachineEditor::_name_edited(const String &p_text) {
 }
 
 void AnimationNodeStateMachineEditor::_name_edited_focus_out() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	_name_edited(name_edit->get_text());
 }
 
 void AnimationNodeStateMachineEditor::_scroll_changed(double) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	state_machine->set_graph_offset(Vector2(h_scroll->get_value(), v_scroll->get_value()));
 	state_machine_draw->update();

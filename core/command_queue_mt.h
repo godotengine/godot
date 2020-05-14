@@ -413,14 +413,16 @@ class CommandQueueMT {
 	}
 
 	bool flush_one(bool p_lock = true) {
-		if (p_lock)
+		if (p_lock) {
 			lock();
+		}
 	tryagain:
 
 		// tried to read an empty queue
 		if (read_ptr == write_ptr) {
-			if (p_lock)
+			if (p_lock) {
 				unlock();
+			}
 			return false;
 		}
 
@@ -439,18 +441,21 @@ class CommandQueueMT {
 
 		read_ptr += size;
 
-		if (p_lock)
+		if (p_lock) {
 			unlock();
+		}
 		cmd->call();
-		if (p_lock)
+		if (p_lock) {
 			lock();
+		}
 
 		cmd->post();
 		cmd->~CommandBase();
 		*(uint32_t *)&command_mem[size_ptr] &= ~1;
 
-		if (p_lock)
+		if (p_lock) {
 			unlock();
+		}
 		return true;
 	}
 
@@ -482,8 +487,8 @@ public:
 	void flush_all() {
 		//ERR_FAIL_COND(sync);
 		lock();
-		while (flush_one(false))
-			;
+		while (flush_one(false)) {
+		}
 		unlock();
 	}
 

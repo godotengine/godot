@@ -37,8 +37,9 @@ void BoneAttachment3D::_validate_property(PropertyInfo &property) const {
 		if (parent) {
 			String names;
 			for (int i = 0; i < parent->get_bone_count(); i++) {
-				if (i > 0)
+				if (i > 0) {
 					names += ",";
+				}
 				names += parent->get_bone_name(i);
 			}
 
@@ -77,13 +78,15 @@ void BoneAttachment3D::_check_unbind() {
 }
 
 void BoneAttachment3D::set_bone_name(const String &p_name) {
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_check_unbind();
+	}
 
 	bone_name = p_name;
 
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		_check_bind();
+	}
 }
 
 String BoneAttachment3D::get_bone_name() const {

@@ -208,8 +208,9 @@ T EditorSceneImporterAssimp::_interpolate_track(const Vector<float> &p_times, co
 	//could use binary search, worth it?
 	int idx = -1;
 	for (int i = 0; i < p_times.size(); i++) {
-		if (p_times[i] > p_time)
+		if (p_times[i] > p_time) {
 			break;
+		}
 		idx++;
 	}
 

@@ -212,8 +212,9 @@ Error ImageLoaderTinyEXR::load_image(Ref<Image> p_image, FileAccess *f, bool p_f
 				for (int x = 0; x < tw; x++) {
 					Color color(*r_channel++, *g_channel++, *b_channel++);
 
-					if (p_force_linear)
+					if (p_force_linear) {
 						color = color.to_linear();
+					}
 
 					*row_w++ = Math::make_half_float(color.r);
 					*row_w++ = Math::make_half_float(color.g);

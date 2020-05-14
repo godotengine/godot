@@ -35,13 +35,15 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 	clear_polygons();
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue;
+		}
 		Array arr = p_mesh->surface_get_arrays(i);
 		Vector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
 		Vector<int> iarr = arr[Mesh::ARRAY_INDEX];
-		if (varr.size() == 0 || iarr.size() == 0)
+		if (varr.size() == 0 || iarr.size() == 0) {
 			continue;
+		}
 
 		int from = vertices.size();
 		vertices.append_array(varr);
@@ -89,10 +91,11 @@ uint32_t NavigationMesh::get_collision_mask() const {
 
 void NavigationMesh::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -294,8 +297,9 @@ void NavigationMesh::clear_polygons() {
 }
 
 Ref<Mesh> NavigationMesh::get_debug_mesh() {
-	if (debug_mesh.is_valid())
+	if (debug_mesh.is_valid()) {
 		return debug_mesh;
+	}
 
 	Vector<Vector3> vertices = get_vertices();
 	const Vector3 *vr = vertices.ptr();
@@ -329,8 +333,9 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 				_EdgeKey ek;
 				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
 				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				if (ek.from < ek.to)
+				if (ek.from < ek.to) {
 					SWAP(ek.from, ek.to);
+				}
 
 				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
 

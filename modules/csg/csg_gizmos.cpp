@@ -126,8 +126,9 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		s->set_radius(d);
 	}
@@ -144,8 +145,9 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		switch (p_idx) {
 			case 0:
@@ -172,13 +174,15 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
-		if (p_idx == 0)
+		if (p_idx == 0) {
 			s->set_radius(d);
-		else if (p_idx == 1)
+		} else if (p_idx == 1) {
 			s->set_height(d * 2.0);
+		}
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
@@ -193,13 +197,15 @@ void CSGShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Ca
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
-		if (p_idx == 0)
+		if (p_idx == 0) {
 			s->set_inner_radius(d);
-		else if (p_idx == 1)
+		} else if (p_idx == 1) {
 			s->set_outer_radius(d);
+		}
 	}
 }
 
@@ -261,10 +267,11 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
 		if (p_cancel) {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				s->set_radius(p_restore);
-			else
+			} else {
 				s->set_height(p_restore);
+			}
 			return;
 		}
 
@@ -285,10 +292,11 @@ void CSGShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int p_idx,
 	if (Object::cast_to<CSGTorus3D>(cs)) {
 		CSGTorus3D *s = Object::cast_to<CSGTorus3D>(cs);
 		if (p_cancel) {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				s->set_inner_radius(p_restore);
-			else
+			} else {
 				s->set_outer_radius(p_restore);
+			}
 			return;
 		}
 

@@ -37,10 +37,12 @@ void Bone2D::_notification(int p_what) {
 		skeleton = nullptr;
 		while (parent) {
 			skeleton = Object::cast_to<Skeleton2D>(parent);
-			if (skeleton)
+			if (skeleton) {
 				break;
-			if (!Object::cast_to<Bone2D>(parent))
+			}
+			if (!Object::cast_to<Bone2D>(parent)) {
 				break; //skeletons must be chained to Bone2Ds.
+			}
 
 			parent = parent->get_parent();
 		}
@@ -94,8 +96,9 @@ void Bone2D::_bind_methods() {
 
 void Bone2D::set_rest(const Transform2D &p_rest) {
 	rest = p_rest;
-	if (skeleton)
+	if (skeleton) {
 		skeleton->_make_bone_setup_dirty();
+	}
 
 	update_configuration_warning();
 }
@@ -168,8 +171,9 @@ Bone2D::Bone2D() {
 //////////////////////////////////////
 
 void Skeleton2D::_make_bone_setup_dirty() {
-	if (bone_setup_dirty)
+	if (bone_setup_dirty) {
 		return;
+	}
 	bone_setup_dirty = true;
 	if (is_inside_tree()) {
 		call_deferred("_update_bone_setup");
@@ -177,8 +181,9 @@ void Skeleton2D::_make_bone_setup_dirty() {
 }
 
 void Skeleton2D::_update_bone_setup() {
-	if (!bone_setup_dirty)
+	if (!bone_setup_dirty) {
 		return;
+	}
 
 	bone_setup_dirty = false;
 	RS::get_singleton()->skeleton_allocate(skeleton, bones.size(), true);
@@ -202,8 +207,9 @@ void Skeleton2D::_update_bone_setup() {
 }
 
 void Skeleton2D::_make_transform_dirty() {
-	if (transform_dirty)
+	if (transform_dirty) {
 		return;
+	}
 	transform_dirty = true;
 	if (is_inside_tree()) {
 		call_deferred("_update_transform");
@@ -215,8 +221,9 @@ void Skeleton2D::_update_transform() {
 		_update_bone_setup();
 		return; //above will update transform anyway
 	}
-	if (!transform_dirty)
+	if (!transform_dirty) {
 		return;
+	}
 
 	transform_dirty = false;
 
@@ -254,10 +261,12 @@ Bone2D *Skeleton2D::get_bone(int p_idx) {
 
 void Skeleton2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
-		if (bone_setup_dirty)
+		if (bone_setup_dirty) {
 			_update_bone_setup();
-		if (transform_dirty)
+		}
+		if (transform_dirty) {
 			_update_transform();
+		}
 
 		request_ready();
 	}

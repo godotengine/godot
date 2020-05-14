@@ -59,8 +59,9 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 void AnimationPlayerEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PROCESS: {
-			if (!player)
+			if (!player) {
 				return;
+			}
 
 			updating = true;
 
@@ -139,8 +140,9 @@ void AnimationPlayerEditor::_notification(int p_what) {
 }
 
 void AnimationPlayerEditor::_autoplay_pressed() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	if (animation->get_item_count() == 0) {
 		return;
 	}
@@ -173,8 +175,9 @@ void AnimationPlayerEditor::_play_pressed() {
 	}
 
 	if (current != "") {
-		if (current == player->get_assigned_animation())
+		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
+		}
 		player->play(current);
 	}
 
@@ -210,8 +213,9 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 	}
 
 	if (current != "") {
-		if (current == player->get_assigned_animation())
+		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
+		}
 		player->play(current, -1, -1, true);
 	}
 
@@ -227,8 +231,9 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 
 	if (current != "") {
 		float time = player->get_current_animation_position();
-		if (current == player->get_assigned_animation())
+		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
+		}
 
 		player->play(current, -1, -1, true);
 		player->seek(time);
@@ -249,8 +254,9 @@ void AnimationPlayerEditor::_stop_pressed() {
 }
 
 void AnimationPlayerEditor::_animation_selected(int p_which) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 	// when selecting an animation, the idea is that the only interesting behavior
 	// ui-wise is that it should play/blend the next one if currently playing
 	String current;
@@ -291,8 +297,9 @@ void AnimationPlayerEditor::_animation_new() {
 	String base = TTR("New Anim");
 	while (true) {
 		String attempt = base;
-		if (count > 1)
+		if (count > 1) {
 			attempt += " (" + itos(count) + ")";
+		}
 		if (player->has_animation(attempt)) {
 			count++;
 			continue;
@@ -308,8 +315,9 @@ void AnimationPlayerEditor::_animation_new() {
 }
 
 void AnimationPlayerEditor::_animation_rename() {
-	if (animation->get_item_count() == 0)
+	if (animation->get_item_count() == 0) {
 		return;
+	}
 	int selected = animation->get_selected();
 	String selected_name = animation->get_item_text(selected);
 
@@ -338,8 +346,9 @@ void AnimationPlayerEditor::_animation_load() {
 
 void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource> &p_resource, const String &p_path) {
 	int flg = 0;
-	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
+	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources")) {
 		flg |= ResourceSaver::FLAG_COMPRESS;
+	}
 
 	String path = ProjectSettings::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
@@ -397,8 +406,9 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource> &p_resource) 
 }
 
 void AnimationPlayerEditor::_animation_remove() {
-	if (animation->get_item_count() == 0)
+	if (animation->get_item_count() == 0) {
 		return;
+	}
 
 	String current = animation->get_item_text(animation->get_selected());
 
@@ -516,8 +526,9 @@ void AnimationPlayerEditor::_animation_name_edited() {
 }
 
 void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
-	if (animation->get_item_count() == 0)
+	if (animation->get_item_count() == 0) {
 		return;
+	}
 
 	String current = animation->get_item_text(animation->get_selected());
 
@@ -530,13 +541,15 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 }
 
 void AnimationPlayerEditor::_animation_blend() {
-	if (updating_blends)
+	if (updating_blends) {
 		return;
+	}
 
 	blend_editor.tree->clear();
 
-	if (animation->get_item_count() == 0)
+	if (animation->get_item_count() == 0) {
 		return;
+	}
 
 	String current = animation->get_item_text(animation->get_selected());
 
@@ -584,17 +597,20 @@ void AnimationPlayerEditor::_animation_blend() {
 }
 
 void AnimationPlayerEditor::_blend_edited() {
-	if (updating_blends)
+	if (updating_blends) {
 		return;
+	}
 
-	if (animation->get_item_count() == 0)
+	if (animation->get_item_count() == 0) {
 		return;
+	}
 
 	String current = animation->get_item_text(animation->get_selected());
 
 	TreeItem *selected = blend_editor.tree->get_edited();
-	if (!selected)
+	if (!selected) {
 		return;
+	}
 
 	updating_blends = true;
 	String to = selected->get_text(0);
@@ -611,8 +627,9 @@ void AnimationPlayerEditor::_blend_edited() {
 }
 
 void AnimationPlayerEditor::ensure_visibility() {
-	if (player && pin->is_pressed())
+	if (player && pin->is_pressed()) {
 		return; // another player is pinned, don't reset
+	}
 
 	_animation_edit();
 }
@@ -701,8 +718,9 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 				p_file = p_file.substr(p_file.find_last("\\") + 1, p_file.length());
 			}
 
-			if (p_file.find(".") != -1)
+			if (p_file.find(".") != -1) {
 				p_file = p_file.substr(0, p_file.find("."));
+			}
 
 			undo_redo->create_action(TTR("Load Animation"));
 			undo_redo->add_do_method(player, "add_animation", p_file, res);
@@ -765,8 +783,9 @@ void AnimationPlayerEditor::_update_animation() {
 void AnimationPlayerEditor::_update_player() {
 	updating = true;
 	List<StringName> animlist;
-	if (player)
+	if (player) {
 		player->get_animation_list(&animlist);
+	}
 
 	animation->clear();
 
@@ -801,13 +820,15 @@ void AnimationPlayerEditor::_update_player() {
 
 	int active_idx = -1;
 	for (List<StringName>::Element *E = animlist.front(); E; E = E->next()) {
-		if (player->get_autoplay() == E->get())
+		if (player->get_autoplay() == E->get()) {
 			animation->add_icon_item(autoplay_icon, E->get());
-		else
+		} else {
 			animation->add_item(E->get());
+		}
 
-		if (player->get_assigned_animation() == E->get())
+		if (player->get_assigned_animation() == E->get()) {
 			active_idx = animation->get_item_count() - 1;
+		}
 	}
 
 	updating = false;
@@ -838,36 +859,41 @@ void AnimationPlayerEditor::_update_player() {
 }
 
 void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
-	if (player && pin->is_pressed())
+	if (player && pin->is_pressed()) {
 		return; // Ignore, pinned.
+	}
 	player = p_player;
 
 	if (player) {
 		_update_player();
 
 		if (onion.enabled) {
-			if (animation->get_item_count() > 0)
+			if (animation->get_item_count() > 0) {
 				_start_onion_skinning();
-			else
+			} else {
 				_stop_onion_skinning();
+			}
 		}
 
 		track_editor->show_select_node_warning(false);
 	} else {
-		if (onion.enabled)
+		if (onion.enabled) {
 			_stop_onion_skinning();
+		}
 
 		track_editor->show_select_node_warning(true);
 	}
 }
 
 void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
-	if (!onion.can_overlay)
+	if (!onion.can_overlay) {
 		return;
+	}
 
 	// Can happen on viewport resize, at least.
-	if (!_are_onion_layers_valid())
+	if (!_are_onion_layers_valid()) {
 		return;
+	}
 
 	RID ci = p_overlay->get_canvas_item();
 	Rect2 src_rect = p_overlay->get_global_rect();
@@ -910,13 +936,15 @@ void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_o
 }
 
 void AnimationPlayerEditor::_animation_duplicate() {
-	if (!animation->get_item_count())
+	if (!animation->get_item_count()) {
 		return;
+	}
 
 	String current = animation->get_item_text(animation->get_selected());
 	Ref<Animation> anim = player->get_animation(current);
-	if (!anim.is_valid())
+	if (!anim.is_valid()) {
 		return;
+	}
 
 	Ref<Animation> new_anim = memnew(Animation);
 	List<PropertyInfo> plist;
@@ -989,14 +1017,16 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	if (player == p_pl && is_visible_in_tree()) {
 		_update_player();
-		if (blend_editor.dialog->is_visible())
+		if (blend_editor.dialog->is_visible()) {
 			_animation_blend(); // Update.
+		}
 	}
 }
 
 void AnimationPlayerEditor::_list_changed() {
-	if (is_visible_in_tree())
+	if (is_visible_in_tree()) {
 		_update_player();
+	}
 }
 
 void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) {
@@ -1006,17 +1036,21 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
 	timeline_position = p_pos;
 
-	if (!is_visible_in_tree())
+	if (!is_visible_in_tree()) {
 		return;
+	}
 
-	if (!player)
+	if (!player) {
 		return;
+	}
 
-	if (player->is_playing())
+	if (player->is_playing()) {
 		return;
+	}
 
-	if (!player->has_animation(player->get_assigned_animation()))
+	if (!player->has_animation(player->get_assigned_animation())) {
 		return;
+	}
 
 	updating = true;
 	frame->set_value(Math::stepify(p_pos, _get_editor_step()));
@@ -1130,10 +1164,11 @@ void AnimationPlayerEditor::_onion_skinning_menu(int p_option) {
 		case ONION_SKINNING_ENABLE: {
 			onion.enabled = !onion.enabled;
 
-			if (onion.enabled)
+			if (onion.enabled) {
 				_start_onion_skinning();
-			else
+			} else {
 				_stop_onion_skinning();
+			}
 
 		} break;
 		case ONION_SKINNING_PAST: {
@@ -1175,19 +1210,21 @@ void AnimationPlayerEditor::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	if (is_visible_in_tree() && k.is_valid() && k->is_pressed() && !k->is_echo() && !k->get_alt() && !k->get_control() && !k->get_metakey()) {
 		switch (k->get_keycode()) {
 			case KEY_A: {
-				if (!k->get_shift())
+				if (!k->get_shift()) {
 					_play_bw_from_pressed();
-				else
+				} else {
 					_play_bw_pressed();
+				}
 			} break;
 			case KEY_S: {
 				_stop_pressed();
 			} break;
 			case KEY_D: {
-				if (!k->get_shift())
+				if (!k->get_shift()) {
 					_play_from_pressed();
-				else
+				} else {
 					_play_pressed();
+				}
 			} break;
 		}
 	}
@@ -1247,8 +1284,9 @@ void AnimationPlayerEditor::_free_onion_layers() {
 void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	// This would be called per viewport and we want to act once only.
 	int64_t frame = get_tree()->get_frame();
-	if (frame == onion.last_frame)
+	if (frame == onion.last_frame) {
 		return;
+	}
 
 	if (!onion.enabled || !is_processing() || !is_visible() || !get_player()) {
 		_stop_onion_skinning();
@@ -1261,8 +1299,9 @@ void AnimationPlayerEditor::_prepare_onion_layers_1() {
 	onion.can_overlay = false;
 	plugin->update_overlays();
 
-	if (player->is_playing())
+	if (player->is_playing()) {
 		return;
+	}
 
 	// And go to next step afterwards.
 	call_deferred("_prepare_onion_layers_2");
@@ -1274,11 +1313,13 @@ void AnimationPlayerEditor::_prepare_onion_layers_1_deferred() {
 
 void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
-	if (!anim.is_valid())
+	if (!anim.is_valid()) {
 		return;
+	}
 
-	if (!_are_onion_layers_valid())
+	if (!_are_onion_layers_valid()) {
 		_allocate_onion_layers();
+	}
 
 	// Hide superfluous elements that would make the overlay unnecessary cluttered.
 	Dictionary canvas_edit_state;
@@ -1351,8 +1392,9 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	for (int step_off = step_off_a; step_off <= step_off_b; step_off++) {
 		if (step_off == 0) {
 			// Skip present step and switch to the color of future.
-			if (!onion.force_white_modulate)
+			if (!onion.force_white_modulate) {
 				onion.capture.material->set_shader_param("dir_color", EDITOR_GET("editors/animation/onion_layers_future_color"));
+			}
 			continue;
 		}
 
@@ -1702,8 +1744,9 @@ void AnimationPlayerEditorPlugin::_notification(int p_what) {
 
 void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 	anim_editor->set_undo_redo(&get_undo_redo());
-	if (!p_object)
+	if (!p_object) {
 		return;
+	}
 	anim_editor->edit(Object::cast_to<AnimationPlayer>(p_object));
 }
 

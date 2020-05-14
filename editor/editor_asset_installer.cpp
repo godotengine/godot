@@ -55,12 +55,14 @@ void EditorAssetInstaller::_update_subitems(TreeItem *p_item, bool p_check, bool
 }
 
 void EditorAssetInstaller::_item_edited() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	TreeItem *item = tree->get_edited();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	String path = item->get_metadata(0);
 
@@ -145,8 +147,9 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			depth--;
 		}
 
-		if (skip || path == String())
+		if (skip || path == String()) {
 			continue;
+		}
 
 		bool isdir = false;
 
@@ -285,11 +288,13 @@ void EditorAssetInstaller::ok_pressed() {
 			}
 			msg += failed_files[i];
 		}
-		if (EditorNode::get_singleton() != nullptr)
+		if (EditorNode::get_singleton() != nullptr) {
 			EditorNode::get_singleton()->show_warning(msg);
+		}
 	} else {
-		if (EditorNode::get_singleton() != nullptr)
+		if (EditorNode::get_singleton() != nullptr) {
 			EditorNode::get_singleton()->show_warning(TTR("Package installed successfully!"), TTR("Success!"));
+		}
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }

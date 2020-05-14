@@ -108,10 +108,11 @@ void NavigationAgent3D::_notification(int p_what) {
 				Node *p = get_parent();
 				while (p != nullptr) {
 					nav = Object::cast_to<Navigation3D>(p);
-					if (nav != nullptr)
+					if (nav != nullptr) {
 						p = nullptr;
-					else
+					} else {
 						p = p->get_parent();
+					}
 				}
 
 				set_navigation(nav);
@@ -154,8 +155,9 @@ NavigationAgent3D::~NavigationAgent3D() {
 }
 
 void NavigationAgent3D::set_navigation(Navigation3D *p_nav) {
-	if (navigation == p_nav)
+	if (navigation == p_nav) {
 		return; // Pointless
+	}
 
 	navigation = p_nav;
 	NavigationServer3D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
@@ -293,12 +295,15 @@ String NavigationAgent3D::get_configuration_warning() const {
 }
 
 void NavigationAgent3D::update_navigation() {
-	if (agent_parent == nullptr)
+	if (agent_parent == nullptr) {
 		return;
-	if (navigation == nullptr)
+	}
+	if (navigation == nullptr) {
 		return;
-	if (update_frame_id == Engine::get_singleton()->get_physics_frames())
+	}
+	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
 		return;
+	}
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 
@@ -333,8 +338,9 @@ void NavigationAgent3D::update_navigation() {
 		emit_signal("path_changed");
 	}
 
-	if (navigation_path.size() == 0)
+	if (navigation_path.size() == 0) {
 		return;
+	}
 
 	// Check if we can advance the navigation path
 	if (navigation_finished == false) {

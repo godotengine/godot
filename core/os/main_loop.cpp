@@ -59,23 +59,27 @@ void MainLoop::set_init_script(const Ref<Script> &p_init_script) {
 }
 
 void MainLoop::init() {
-	if (init_script.is_valid())
+	if (init_script.is_valid()) {
 		set_script(init_script);
+	}
 
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("_initialize");
+	}
 }
 
 bool MainLoop::iteration(float p_time) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		return get_script_instance()->call("_iteration", p_time);
+	}
 
 	return false;
 }
 
 bool MainLoop::idle(float p_time) {
-	if (get_script_instance())
+	if (get_script_instance()) {
 		return get_script_instance()->call("_idle", p_time);
+	}
 
 	return false;
 }

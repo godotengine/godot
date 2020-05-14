@@ -81,8 +81,9 @@ public:
 void VehicleWheel3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
-		if (!cb)
+		if (!cb) {
 			return;
+		}
 		body = cb;
 		local_xform = get_transform();
 		cb->wheels.push_back(this);
@@ -93,8 +94,9 @@ void VehicleWheel3D::_notification(int p_what) {
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		VehicleBody3D *cb = Object::cast_to<VehicleBody3D>(get_parent());
-		if (!cb)
+		if (!cb) {
 			return;
+		}
 		cb->wheels.erase(this);
 		body = nullptr;
 	}
@@ -434,8 +436,9 @@ real_t VehicleBody3D::_ray_cast(int p_idx, PhysicsDirectBodyState3D *s) {
 		wheel.m_raycastInfo.m_contactNormalWS = rr.normal;
 
 		wheel.m_raycastInfo.m_isInContact = true;
-		if (rr.collider)
+		if (rr.collider) {
 			wheel.m_raycastInfo.m_groundObject = Object::cast_to<PhysicsBody3D>(rr.collider);
+		}
 
 		real_t hitDistance = param * raylen;
 		wheel.m_raycastInfo.m_suspensionLength = hitDistance - wheel.m_wheelRadius;
@@ -541,15 +544,17 @@ void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const
 
 	Vector3 rel_pos1 = pos1 - s->get_transform().origin;
 	Vector3 rel_pos2;
-	if (body2)
+	if (body2) {
 		rel_pos2 = pos2 - body2->get_global_transform().origin;
+	}
 	//this jacobian entry could be re-used for all iterations
 
 	Vector3 vel1 = s->get_linear_velocity() + (s->get_angular_velocity()).cross(rel_pos1); // * mPos);
 	Vector3 vel2;
 
-	if (body2)
+	if (body2) {
 		vel2 = body2->get_linear_velocity() + body2->get_angular_velocity().cross(rel_pos2);
+	}
 
 	Vector3 vel = vel1 - vel2;
 
@@ -644,8 +649,9 @@ real_t VehicleBody3D::_calc_rolling_friction(btVehicleWheelContactPoint &contact
 
 	Vector3 rel_pos1 = contactPosWorld - contactPoint.m_s->get_transform().origin;
 	Vector3 rel_pos2;
-	if (contactPoint.m_body1)
+	if (contactPoint.m_body1) {
 		rel_pos2 = contactPosWorld - contactPoint.m_body1->get_global_transform().origin;
+	}
 
 	real_t maxImpulse = contactPoint.m_maxImpulse;
 
@@ -670,8 +676,9 @@ static const real_t sideFrictionStiffness2 = real_t(1.0);
 void VehicleBody3D::_update_friction(PhysicsDirectBodyState3D *s) {
 	//calculate the impulse, so that the wheels don't move sidewards
 	int numWheel = wheels.size();
-	if (!numWheel)
+	if (!numWheel) {
 		return;
+	}
 
 	m_forwardWS.resize(numWheel);
 	m_axle.resize(numWheel);
@@ -885,8 +892,9 @@ void VehicleBody3D::set_engine_force(float p_engine_force) {
 	engine_force = p_engine_force;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
-		if (wheelInfo.engine_traction)
+		if (wheelInfo.engine_traction) {
 			wheelInfo.m_engineForce = p_engine_force;
+		}
 	}
 }
 
@@ -910,8 +918,9 @@ void VehicleBody3D::set_steering(float p_steering) {
 	m_steeringValue = p_steering;
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheelInfo = *wheels[i];
-		if (wheelInfo.steers)
+		if (wheelInfo.steers) {
 			wheelInfo.m_steering = p_steering;
+		}
 	}
 }
 

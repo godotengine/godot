@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-redundant-void-arg,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-nullptr'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,modernize-redundant-void-arg,modernize-use-bool-literals,modernize-use-default-member-init,modernize-use-nullptr,readability-braces-around-statements'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
@@ -13,8 +13,6 @@ CheckOptions:
   - key:             cppcoreguidelines-explicit-virtual-functions.IgnoreDestructors
     value:           '1'
   - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
-    value:           '1'
-  - key:             google-readability-braces-around-statements.ShortStatementLines
     value:           '1'
   - key:             google-readability-function-size.StatementThreshold
     value:           '800'
@@ -40,5 +38,7 @@ CheckOptions:
     value:           '1'
   - key:             modernize-use-nullptr.NullMacros
     value:           'NULL'
+  - key:             readability-braces-around-statements.ShortStatementLines
+    value:           '0'
 ...
 

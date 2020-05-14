@@ -228,8 +228,9 @@ Array DebuggerMarshalls::ScriptStackVariable::serialize(int max_size) {
 
 	int len = 0;
 	Error err = encode_variant(var, nullptr, len, true);
-	if (err != OK)
+	if (err != OK) {
 		ERR_PRINT("Failed to encode variant.");
+	}
 
 	if (len > max_size) {
 		arr.push_back(Variant());

@@ -59,22 +59,25 @@ private:
 	// internal helpers
 
 	_FORCE_INLINE_ uint32_t *_get_refcount() const {
-		if (!_ptr)
+		if (!_ptr) {
 			return nullptr;
+		}
 
 		return reinterpret_cast<uint32_t *>(_ptr) - 2;
 	}
 
 	_FORCE_INLINE_ uint32_t *_get_size() const {
-		if (!_ptr)
+		if (!_ptr) {
 			return nullptr;
+		}
 
 		return reinterpret_cast<uint32_t *>(_ptr) - 1;
 	}
 
 	_FORCE_INLINE_ T *_get_data() const {
-		if (!_ptr)
+		if (!_ptr) {
 			return nullptr;
+		}
 		return reinterpret_cast<T *>(_ptr);
 	}
 
@@ -122,10 +125,11 @@ public:
 
 	_FORCE_INLINE_ int size() const {
 		uint32_t *size = (uint32_t *)_get_size();
-		if (size)
+		if (size) {
 			return *size;
-		else
+		} else {
 			return 0;
+		}
 	}
 
 	_FORCE_INLINE_ void clear() { resize(0); }
@@ -165,8 +169,9 @@ public:
 	Error insert(int p_pos, const T &p_val) {
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
 		resize(size() + 1);
-		for (int i = (size() - 1); i > p_pos; i--)
+		for (int i = (size() - 1); i > p_pos; i--) {
 			set(i, get(i - 1));
+		}
 		set(p_pos, p_val);
 
 		return OK;
@@ -181,13 +186,15 @@ public:
 
 template <class T>
 void CowData<T>::_unref(void *p_data) {
-	if (!p_data)
+	if (!p_data) {
 		return;
+	}
 
 	uint32_t *refc = _get_refcount();
 
-	if (atomic_decrement(refc) > 0)
+	if (atomic_decrement(refc) > 0) {
 		return; // still in use
+	}
 	// clean up
 
 	if (!__has_trivial_destructor(T)) {
@@ -206,8 +213,9 @@ void CowData<T>::_unref(void *p_data) {
 
 template <class T>
 void CowData<T>::_copy_on_write() {
-	if (!_ptr)
+	if (!_ptr) {
 		return;
+	}
 
 	uint32_t *refc = _get_refcount();
 
@@ -243,8 +251,9 @@ Error CowData<T>::resize(int p_size) {
 
 	int current_size = size();
 
-	if (p_size == current_size)
+	if (p_size == current_size) {
 		return OK;
+	}
 
 	if (p_size == 0) {
 		// wants to clean up
@@ -337,14 +346,16 @@ void CowData<T>::_ref(const CowData *p_from) {
 
 template <class T>
 void CowData<T>::_ref(const CowData &p_from) {
-	if (_ptr == p_from._ptr)
+	if (_ptr == p_from._ptr) {
 		return; // self assign, do nothing.
+	}
 
 	_unref(_ptr);
 	_ptr = nullptr;
 
-	if (!p_from._ptr)
+	if (!p_from._ptr) {
 		return; //nothing to do
+	}
 
 	if (atomic_conditional_increment(p_from._get_refcount()) > 0) { // could reference
 		_ptr = p_from._ptr;

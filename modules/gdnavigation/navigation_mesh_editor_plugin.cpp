@@ -69,8 +69,9 @@ void NavigationMeshEditor::_bake_pressed() {
 }
 
 void NavigationMeshEditor::_clear_pressed() {
-	if (node)
+	if (node) {
 		NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+	}
 
 	button_bake->set_pressed(false);
 	bake_info->set_text("");

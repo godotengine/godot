@@ -146,8 +146,9 @@ void EditorPluginSettings::update_plugins() {
 }
 
 void EditorPluginSettings::_plugin_activity_changed() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	TreeItem *ti = plugin_list->get_edited();
 	ERR_FAIL_COND(!ti);
@@ -172,8 +173,9 @@ void EditorPluginSettings::_create_clicked() {
 
 void EditorPluginSettings::_cell_button_pressed(Object *p_item, int p_column, int p_id) {
 	TreeItem *item = Object::cast_to<TreeItem>(p_item);
-	if (!item)
+	if (!item) {
 		return;
+	}
 	if (p_id == BUTTON_PLUGIN_EDIT) {
 		if (p_column == 4) {
 			String dir = item->get_metadata(0);

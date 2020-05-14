@@ -35,47 +35,50 @@
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 	String n = p_name;
 	int slash = n.find("/");
-	if (slash == -1)
+	if (slash == -1) {
 		return false;
+	}
 	int id = String::to_int(n.c_str(), slash);
 
-	if (!tile_map.has(id))
+	if (!tile_map.has(id)) {
 		create_tile(id);
+	}
 	String what = n.substr(slash + 1, n.length());
 
-	if (what == "name")
+	if (what == "name") {
 		tile_set_name(id, p_value);
-	else if (what == "texture")
+	} else if (what == "texture") {
 		tile_set_texture(id, p_value);
-	else if (what == "normal_map")
+	} else if (what == "normal_map") {
 		tile_set_normal_map(id, p_value);
-	else if (what == "tex_offset")
+	} else if (what == "tex_offset") {
 		tile_set_texture_offset(id, p_value);
-	else if (what == "material")
+	} else if (what == "material") {
 		tile_set_material(id, p_value);
-	else if (what == "modulate")
+	} else if (what == "modulate") {
 		tile_set_modulate(id, p_value);
-	else if (what == "region")
+	} else if (what == "region") {
 		tile_set_region(id, p_value);
-	else if (what == "tile_mode")
+	} else if (what == "tile_mode") {
 		tile_set_tile_mode(id, (TileMode)((int)p_value));
-	else if (what == "is_autotile") {
+	} else if (what == "is_autotile") {
 		// backward compatibility for Godot 3.0.x
 		// autotile used to be a bool, it's now an enum
 		bool is_autotile = p_value;
-		if (is_autotile)
+		if (is_autotile) {
 			tile_set_tile_mode(id, AUTO_TILE);
+		}
 	} else if (what.left(9) == "autotile/") {
 		what = what.right(9);
-		if (what == "bitmask_mode")
+		if (what == "bitmask_mode") {
 			autotile_set_bitmask_mode(id, (BitmaskMode)((int)p_value));
-		else if (what == "icon_coordinate")
+		} else if (what == "icon_coordinate") {
 			autotile_set_icon_coordinate(id, p_value);
-		else if (what == "tile_size")
+		} else if (what == "tile_size") {
 			autotile_set_size(id, p_value);
-		else if (what == "spacing")
+		} else if (what == "spacing") {
 			autotile_set_spacing(id, p_value);
-		else if (what == "bitmask_flags") {
+		} else if (what == "bitmask_flags") {
 			tile_map[id].autotile_data.flags.clear();
 			if (p_value.is_array()) {
 				Array p = p_value;
@@ -146,7 +149,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				p.pop_front();
 			}
 		}
-	} else if (what == "shape")
+	} else if (what == "shape") {
 		if (tile_get_shape_count(id) > 0) {
 			for (int i = 0; i < tile_get_shape_count(id); i++) {
 				tile_set_shape(id, i, p_value);
@@ -154,7 +157,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			tile_set_shape(id, 0, p_value);
 		}
-	else if (what == "shape_offset")
+	} else if (what == "shape_offset") {
 		if (tile_get_shape_count(id) > 0) {
 			for (int i = 0; i < tile_get_shape_count(id); i++) {
 				tile_set_shape_offset(id, i, p_value);
@@ -162,7 +165,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			tile_set_shape_offset(id, 0, p_value);
 		}
-	else if (what == "shape_transform")
+	} else if (what == "shape_transform") {
 		if (tile_get_shape_count(id) > 0) {
 			for (int i = 0; i < tile_get_shape_count(id); i++) {
 				tile_set_shape_transform(id, i, p_value);
@@ -170,7 +173,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			tile_set_shape_transform(id, 0, p_value);
 		}
-	else if (what == "shape_one_way")
+	} else if (what == "shape_one_way") {
 		if (tile_get_shape_count(id) > 0) {
 			for (int i = 0; i < tile_get_shape_count(id); i++) {
 				tile_set_shape_one_way(id, i, p_value);
@@ -178,7 +181,7 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			tile_set_shape_one_way(id, 0, p_value);
 		}
-	else if (what == "shape_one_way_margin")
+	} else if (what == "shape_one_way_margin") {
 		if (tile_get_shape_count(id) > 0) {
 			for (int i = 0; i < tile_get_shape_count(id); i++) {
 				tile_set_shape_one_way_margin(id, i, p_value);
@@ -186,20 +189,21 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			tile_set_shape_one_way_margin(id, 0, p_value);
 		}
-	else if (what == "shapes")
+	} else if (what == "shapes") {
 		_tile_set_shapes(id, p_value);
-	else if (what == "occluder")
+	} else if (what == "occluder") {
 		tile_set_light_occluder(id, p_value);
-	else if (what == "occluder_offset")
+	} else if (what == "occluder_offset") {
 		tile_set_occluder_offset(id, p_value);
-	else if (what == "navigation")
+	} else if (what == "navigation") {
 		tile_set_navigation_polygon(id, p_value);
-	else if (what == "navigation_offset")
+	} else if (what == "navigation_offset") {
 		tile_set_navigation_polygon_offset(id, p_value);
-	else if (what == "z_index")
+	} else if (what == "z_index") {
 		tile_set_z_index(id, p_value);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -207,41 +211,42 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 	String n = p_name;
 	int slash = n.find("/");
-	if (slash == -1)
+	if (slash == -1) {
 		return false;
+	}
 	int id = String::to_int(n.c_str(), slash);
 
 	ERR_FAIL_COND_V(!tile_map.has(id), false);
 
 	String what = n.substr(slash + 1, n.length());
 
-	if (what == "name")
+	if (what == "name") {
 		r_ret = tile_get_name(id);
-	else if (what == "texture")
+	} else if (what == "texture") {
 		r_ret = tile_get_texture(id);
-	else if (what == "normal_map")
+	} else if (what == "normal_map") {
 		r_ret = tile_get_normal_map(id);
-	else if (what == "tex_offset")
+	} else if (what == "tex_offset") {
 		r_ret = tile_get_texture_offset(id);
-	else if (what == "material")
+	} else if (what == "material") {
 		r_ret = tile_get_material(id);
-	else if (what == "modulate")
+	} else if (what == "modulate") {
 		r_ret = tile_get_modulate(id);
-	else if (what == "region")
+	} else if (what == "region") {
 		r_ret = tile_get_region(id);
-	else if (what == "tile_mode")
+	} else if (what == "tile_mode") {
 		r_ret = tile_get_tile_mode(id);
-	else if (what.left(9) == "autotile/") {
+	} else if (what.left(9) == "autotile/") {
 		what = what.right(9);
-		if (what == "bitmask_mode")
+		if (what == "bitmask_mode") {
 			r_ret = autotile_get_bitmask_mode(id);
-		else if (what == "icon_coordinate")
+		} else if (what == "icon_coordinate") {
 			r_ret = autotile_get_icon_coordinate(id);
-		else if (what == "tile_size")
+		} else if (what == "tile_size") {
 			r_ret = autotile_get_size(id);
-		else if (what == "spacing")
+		} else if (what == "spacing") {
 			r_ret = autotile_get_spacing(id);
-		else if (what == "bitmask_flags") {
+		} else if (what == "bitmask_flags") {
 			Array p;
 			for (Map<Vector2, uint32_t>::Element *E = tile_map[id].autotile_data.flags.front(); E; E = E->next()) {
 				p.push_back(E->key());
@@ -289,30 +294,31 @@ bool TileSet::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 			r_ret = p;
 		}
-	} else if (what == "shape")
+	} else if (what == "shape") {
 		r_ret = tile_get_shape(id, 0);
-	else if (what == "shape_offset")
+	} else if (what == "shape_offset") {
 		r_ret = tile_get_shape_offset(id, 0);
-	else if (what == "shape_transform")
+	} else if (what == "shape_transform") {
 		r_ret = tile_get_shape_transform(id, 0);
-	else if (what == "shape_one_way")
+	} else if (what == "shape_one_way") {
 		r_ret = tile_get_shape_one_way(id, 0);
-	else if (what == "shape_one_way_margin")
+	} else if (what == "shape_one_way_margin") {
 		r_ret = tile_get_shape_one_way_margin(id, 0);
-	else if (what == "shapes")
+	} else if (what == "shapes") {
 		r_ret = _tile_get_shapes(id);
-	else if (what == "occluder")
+	} else if (what == "occluder") {
 		r_ret = tile_get_light_occluder(id);
-	else if (what == "occluder_offset")
+	} else if (what == "occluder_offset") {
 		r_ret = tile_get_occluder_offset(id);
-	else if (what == "navigation")
+	} else if (what == "navigation") {
 		r_ret = tile_get_navigation_polygon(id);
-	else if (what == "navigation_offset")
+	} else if (what == "navigation_offset") {
 		r_ret = tile_get_navigation_polygon_offset(id);
-	else if (what == "z_index")
+	} else if (what == "z_index") {
 		r_ret = tile_get_z_index(id);
-	else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -547,8 +553,9 @@ const Map<Vector2, int> &TileSet::autotile_get_z_index_map(int p_id) const {
 void TileSet::autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag) {
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	if (p_flag == 0) {
-		if (tile_map[p_id].autotile_data.flags.has(p_coord))
+		if (tile_map[p_id].autotile_data.flags.has(p_coord)) {
 			tile_map[p_id].autotile_data.flags.erase(p_coord);
+		}
 	} else {
 		tile_map[p_id].autotile_data.flags[p_coord] = p_flag;
 	}
@@ -577,8 +584,9 @@ const Map<Vector2, uint32_t> &TileSet::autotile_get_bitmask_map(int p_id) {
 			}
 		}
 		return dummy_atlas;
-	} else
+	} else {
 		return tile_map[p_id].autotile_data.flags;
+	}
 }
 
 Vector2 TileSet::autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node, const Vector2 &p_tile_location) {
@@ -709,8 +717,9 @@ void TileSet::tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_sha
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	ERR_FAIL_COND(p_shape_id < 0);
 
-	if (p_shape_id >= tile_map[p_id].shapes_data.size())
+	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
+	}
 	tile_map[p_id].shapes_data.write[p_shape_id].shape = p_shape;
 	_decompose_convex_shape(p_shape);
 	emit_changed();
@@ -720,8 +729,9 @@ Ref<Shape2D> TileSet::tile_get_shape(int p_id, int p_shape_id) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Ref<Shape2D>());
 	ERR_FAIL_COND_V(p_shape_id < 0, Ref<Shape2D>());
 
-	if (p_shape_id < tile_map[p_id].shapes_data.size())
+	if (p_shape_id < tile_map[p_id].shapes_data.size()) {
 		return tile_map[p_id].shapes_data[p_shape_id].shape;
+	}
 
 	return Ref<Shape2D>();
 }
@@ -730,8 +740,9 @@ void TileSet::tile_set_shape_transform(int p_id, int p_shape_id, const Transform
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	ERR_FAIL_COND(p_shape_id < 0);
 
-	if (p_shape_id >= tile_map[p_id].shapes_data.size())
+	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
+	}
 	tile_map[p_id].shapes_data.write[p_shape_id].shape_transform = p_offset;
 	emit_changed();
 }
@@ -740,8 +751,9 @@ Transform2D TileSet::tile_get_shape_transform(int p_id, int p_shape_id) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), Transform2D());
 	ERR_FAIL_COND_V(p_shape_id < 0, Transform2D());
 
-	if (p_shape_id < tile_map[p_id].shapes_data.size())
+	if (p_shape_id < tile_map[p_id].shapes_data.size()) {
 		return tile_map[p_id].shapes_data[p_shape_id].shape_transform;
+	}
 
 	return Transform2D();
 }
@@ -760,8 +772,9 @@ void TileSet::tile_set_shape_one_way(int p_id, int p_shape_id, const bool p_one_
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	ERR_FAIL_COND(p_shape_id < 0);
 
-	if (p_shape_id >= tile_map[p_id].shapes_data.size())
+	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
+	}
 	tile_map[p_id].shapes_data.write[p_shape_id].one_way_collision = p_one_way;
 	emit_changed();
 }
@@ -770,8 +783,9 @@ bool TileSet::tile_get_shape_one_way(int p_id, int p_shape_id) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), false);
 	ERR_FAIL_COND_V(p_shape_id < 0, false);
 
-	if (p_shape_id < tile_map[p_id].shapes_data.size())
+	if (p_shape_id < tile_map[p_id].shapes_data.size()) {
 		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision;
+	}
 
 	return false;
 }
@@ -780,8 +794,9 @@ void TileSet::tile_set_shape_one_way_margin(int p_id, int p_shape_id, float p_ma
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	ERR_FAIL_COND(p_shape_id < 0);
 
-	if (p_shape_id >= tile_map[p_id].shapes_data.size())
+	if (p_shape_id >= tile_map[p_id].shapes_data.size()) {
 		tile_map[p_id].shapes_data.resize(p_shape_id + 1);
+	}
 	tile_map[p_id].shapes_data.write[p_shape_id].one_way_collision_margin = p_margin;
 	emit_changed();
 }
@@ -790,8 +805,9 @@ float TileSet::tile_get_shape_one_way_margin(int p_id, int p_shape_id) const {
 	ERR_FAIL_COND_V(!tile_map.has(p_id), 0);
 	ERR_FAIL_COND_V(p_shape_id < 0, 0);
 
-	if (p_shape_id < tile_map[p_id].shapes_data.size())
+	if (p_shape_id < tile_map[p_id].shapes_data.size()) {
 		return tile_map[p_id].shapes_data[p_shape_id].one_way_collision_margin;
+	}
 
 	return 0;
 }
@@ -926,8 +942,9 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 
 		if (p_shapes[i].get_type() == Variant::OBJECT) {
 			Ref<Shape2D> shape = p_shapes[i];
-			if (shape.is_null())
+			if (shape.is_null()) {
 				continue;
+			}
 
 			s.shape = shape;
 			s.shape_transform = default_transform;
@@ -939,30 +956,35 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 			if (d.has("shape") && d["shape"].get_type() == Variant::OBJECT) {
 				s.shape = d["shape"];
 				_decompose_convex_shape(s.shape);
-			} else
+			} else {
 				continue;
+			}
 
-			if (d.has("shape_transform") && d["shape_transform"].get_type() == Variant::TRANSFORM2D)
+			if (d.has("shape_transform") && d["shape_transform"].get_type() == Variant::TRANSFORM2D) {
 				s.shape_transform = d["shape_transform"];
-			else if (d.has("shape_offset") && d["shape_offset"].get_type() == Variant::VECTOR2)
+			} else if (d.has("shape_offset") && d["shape_offset"].get_type() == Variant::VECTOR2) {
 				s.shape_transform = Transform2D(0, (Vector2)d["shape_offset"]);
-			else
+			} else {
 				s.shape_transform = default_transform;
+			}
 
-			if (d.has("one_way") && d["one_way"].get_type() == Variant::BOOL)
+			if (d.has("one_way") && d["one_way"].get_type() == Variant::BOOL) {
 				s.one_way_collision = d["one_way"];
-			else
+			} else {
 				s.one_way_collision = default_one_way;
+			}
 
-			if (d.has("one_way_margin") && d["one_way_margin"].is_num())
+			if (d.has("one_way_margin") && d["one_way_margin"].is_num()) {
 				s.one_way_collision_margin = d["one_way_margin"];
-			else
+			} else {
 				s.one_way_collision_margin = 1.0;
+			}
 
-			if (d.has("autotile_coord") && d["autotile_coord"].get_type() == Variant::VECTOR2)
+			if (d.has("autotile_coord") && d["autotile_coord"].get_type() == Variant::VECTOR2) {
 				s.autotile_coord = d["autotile_coord"];
-			else
+			} else {
 				s.autotile_coord = default_autotile_coord;
+			}
 
 		} else {
 			ERR_CONTINUE_MSG(true, "Expected an array of objects or dictionaries for tile_set_shapes.");
@@ -1004,11 +1026,13 @@ Array TileSet::_get_tiles_ids() const {
 }
 
 void TileSet::_decompose_convex_shape(Ref<Shape2D> p_shape) {
-	if (Engine::get_singleton()->is_editor_hint())
+	if (Engine::get_singleton()->is_editor_hint()) {
 		return;
+	}
 	Ref<ConvexPolygonShape2D> convex = p_shape;
-	if (!convex.is_valid())
+	if (!convex.is_valid()) {
 		return;
+	}
 	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(convex->get_points());
 	if (decomp.size() > 1) {
 		Array sub_shapes;
@@ -1055,16 +1079,18 @@ void TileSet::remove_tile(int p_id) {
 }
 
 int TileSet::get_last_unused_tile_id() const {
-	if (tile_map.size())
+	if (tile_map.size()) {
 		return tile_map.back()->key() + 1;
-	else
+	} else {
 		return 0;
+	}
 }
 
 int TileSet::find_tile_by_name(const String &p_name) const {
 	for (Map<int, TileData>::Element *E = tile_map.front(); E; E = E->next()) {
-		if (p_name == E->get().name)
+		if (p_name == E->get().name) {
 			return E->key();
+		}
 	}
 	return -1;
 }

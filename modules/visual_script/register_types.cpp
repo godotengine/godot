@@ -134,6 +134,7 @@ void unregister_visual_script_types() {
 		memdelete(vs_editor_singleton);
 	}
 #endif
-	if (visual_script_language)
+	if (visual_script_language) {
 		memdelete(visual_script_language);
+	}
 }

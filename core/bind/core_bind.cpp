@@ -230,18 +230,20 @@ int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p
 	OS::ProcessID pid = -2;
 	int exitcode = 0;
 	List<String> args;
-	for (int i = 0; i < p_arguments.size(); i++)
+	for (int i = 0; i < p_arguments.size(); i++) {
 		args.push_back(p_arguments[i]);
+	}
 	String pipe;
 	Error err = OS::get_singleton()->execute(p_path, args, p_blocking, &pid, &pipe, &exitcode, p_read_stderr);
 	p_output.clear();
 	p_output.push_back(pipe);
-	if (err != OK)
+	if (err != OK) {
 		return -1;
-	else if (p_blocking)
+	} else if (p_blocking) {
 		return exitcode;
-	else
+	} else {
 		return pid;
+	}
 }
 
 Error _OS::kill(int p_pid) {
@@ -564,8 +566,9 @@ void _OS::print_all_textures_by_size() {
 		ResourceCache::get_cached_resources(&rsrc);
 
 		for (List<Ref<Resource>>::Element *E = rsrc.front(); E; E = E->next()) {
-			if (!E->get()->is_class("ImageTexture"))
+			if (!E->get()->is_class("ImageTexture")) {
 				continue;
+			}
 
 			Size2 size = E->get()->call("get_size");
 			int fmt = E->get()->call("get_format");
@@ -603,11 +606,13 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 		bool found = false;
 
 		for (int i = 0; i < p_types.size(); i++) {
-			if (r->is_class(p_types[i]))
+			if (r->is_class(p_types[i])) {
 				found = true;
+			}
 		}
-		if (!found)
+		if (!found) {
 			continue;
+		}
 
 		if (!type_count.has(r->get_class())) {
 			type_count[r->get_class()] = 0;
@@ -889,18 +894,20 @@ Vector3 _Geometry::get_closest_point_to_segment_uncapped(const Vector3 &p_point,
 
 Variant _Geometry::ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
 	Vector3 res;
-	if (Geometry::ray_intersects_triangle(p_from, p_dir, p_v0, p_v1, p_v2, &res))
+	if (Geometry::ray_intersects_triangle(p_from, p_dir, p_v0, p_v1, p_v2, &res)) {
 		return res;
-	else
+	} else {
 		return Variant();
+	}
 }
 
 Variant _Geometry::segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {
 	Vector3 res;
-	if (Geometry::segment_intersects_triangle(p_from, p_to, p_v0, p_v1, p_v2, &res))
+	if (Geometry::segment_intersects_triangle(p_from, p_to, p_v0, p_v1, p_v2, &res)) {
 		return res;
-	else
+	} else {
 		return Variant();
+	}
 }
 
 bool _Geometry::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
@@ -910,8 +917,9 @@ bool _Geometry::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, con
 Vector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius) {
 	Vector<Vector3> r;
 	Vector3 res, norm;
-	if (!Geometry::segment_intersects_sphere(p_from, p_to, p_sphere_pos, p_sphere_radius, &res, &norm))
+	if (!Geometry::segment_intersects_sphere(p_from, p_to, p_sphere_pos, p_sphere_radius, &res, &norm)) {
 		return r;
+	}
 
 	r.resize(2);
 	r.set(0, res);
@@ -922,8 +930,9 @@ Vector<Vector3> _Geometry::segment_intersects_sphere(const Vector3 &p_from, cons
 Vector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, float p_height, float p_radius) {
 	Vector<Vector3> r;
 	Vector3 res, norm;
-	if (!Geometry::segment_intersects_cylinder(p_from, p_to, p_height, p_radius, &res, &norm))
+	if (!Geometry::segment_intersects_cylinder(p_from, p_to, p_height, p_radius, &res, &norm)) {
 		return r;
+	}
 
 	r.resize(2);
 	r.set(0, res);
@@ -934,8 +943,9 @@ Vector<Vector3> _Geometry::segment_intersects_cylinder(const Vector3 &p_from, co
 Vector<Vector3> _Geometry::segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Vector<Plane> &p_planes) {
 	Vector<Vector3> r;
 	Vector3 res, norm;
-	if (!Geometry::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm))
+	if (!Geometry::segment_intersects_convex(p_from, p_to, p_planes.ptr(), p_planes.size(), &res, &norm)) {
 		return r;
+	}
 
 	r.resize(2);
 	r.set(0, res);
@@ -1151,8 +1161,9 @@ void _Geometry::_bind_methods() {
 
 Error _File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
 	Error err = open(p_path, p_mode_flags);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 	err = fae->open_and_parse(f, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
@@ -1167,8 +1178,9 @@ Error _File::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const 
 
 Error _File::open_encrypted_pass(const String &p_path, ModeFlags p_mode_flags, const String &p_pass) {
 	Error err = open(p_path, p_mode_flags);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
 	err = fae->open_and_parse_password(f, p_pass, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
@@ -1202,14 +1214,16 @@ Error _File::open(const String &p_path, ModeFlags p_mode_flags) {
 	close();
 	Error err;
 	f = FileAccess::open(p_path, p_mode_flags, &err);
-	if (f)
+	if (f) {
 		f->set_endian_swap(eswap);
+	}
 	return err;
 }
 
 void _File::close() {
-	if (f)
+	if (f) {
 		memdelete(f);
+	}
 	f = nullptr;
 }
 
@@ -1292,8 +1306,9 @@ Vector<uint8_t> _File::get_buffer(int p_length) const {
 	ERR_FAIL_COND_V_MSG(!f, data, "File must be opened before use.");
 
 	ERR_FAIL_COND_V_MSG(p_length < 0, data, "Length of buffer cannot be smaller than 0.");
-	if (p_length == 0)
+	if (p_length == 0) {
 		return data;
+	}
 
 	Error err = data.resize(p_length);
 	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
@@ -1302,8 +1317,9 @@ Vector<uint8_t> _File::get_buffer(int p_length) const {
 	int len = f->get_buffer(&w[0], p_length);
 	ERR_FAIL_COND_V(len < 0, Vector<uint8_t>());
 
-	if (len < p_length)
+	if (len < p_length) {
 		data.resize(p_length);
+	}
 
 	return data;
 }
@@ -1352,8 +1368,9 @@ Vector<String> _File::get_csv_line(const String &p_delim) const {
 
 void _File::set_endian_swap(bool p_swap) {
 	eswap = p_swap;
-	if (f)
+	if (f) {
 		f->set_endian_swap(p_swap);
+	}
 }
 
 bool _File::get_endian_swap() {
@@ -1361,8 +1378,9 @@ bool _File::get_endian_swap() {
 }
 
 Error _File::get_error() const {
-	if (!f)
+	if (!f) {
 		return ERR_UNCONFIGURED;
+	}
 	return f->get_error();
 }
 
@@ -1440,8 +1458,9 @@ void _File::store_buffer(const Vector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	int len = p_buffer.size();
-	if (len == 0)
+	if (len == 0) {
 		return;
+	}
 
 	const uint8_t *r = p_buffer.ptr();
 
@@ -1554,8 +1573,9 @@ void _File::_bind_methods() {
 }
 
 _File::~_File() {
-	if (f)
+	if (f) {
 		memdelete(f);
+	}
 }
 
 ////// _Directory //////
@@ -1564,10 +1584,12 @@ Error _Directory::open(const String &p_path) {
 	Error err;
 	DirAccess *alt = DirAccess::open(p_path, &err);
 
-	if (!alt)
+	if (!alt) {
 		return err;
-	if (d)
+	}
+	if (d) {
 		memdelete(d);
+	}
 	d = alt;
 
 	return OK;
@@ -1733,8 +1755,9 @@ _Directory::_Directory() {
 }
 
 _Directory::~_Directory() {
-	if (d)
+	if (d) {
 		memdelete(d);
+	}
 }
 
 ////// _Marshalls //////
@@ -1943,8 +1966,9 @@ Error _Thread::start(Object *p_instance, const StringName &p_method, const Varia
 }
 
 String _Thread::get_id() const {
-	if (!thread)
+	if (!thread) {
 		return String();
+	}
 
 	return itos(thread->get_id());
 }
@@ -1962,8 +1986,9 @@ Variant _Thread::wait_to_finish() {
 	target_method = StringName();
 	target_instance = nullptr;
 	userdata = Variant();
-	if (thread)
+	if (thread) {
 		memdelete(thread);
+	}
 	thread = nullptr;
 
 	return r;
@@ -2032,8 +2057,9 @@ bool _ClassDB::can_instance(const StringName &p_class) const {
 
 Variant _ClassDB::instance(const StringName &p_class) const {
 	Object *obj = ClassDB::instance(p_class);
-	if (!obj)
+	if (!obj) {
 		return Variant();
+	}
 
 	Reference *r = Object::cast_to<Reference>(obj);
 	if (r) {

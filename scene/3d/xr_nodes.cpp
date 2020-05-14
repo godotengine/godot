@@ -55,8 +55,9 @@ void XRCamera3D::_notification(int p_what) {
 };
 
 String XRCamera3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
@@ -364,8 +365,9 @@ XRPositionalTracker::TrackerHand XRController3D::get_hand() const {
 };
 
 String XRController3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	// must be child node of XROrigin!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
@@ -490,8 +492,9 @@ bool XRAnchor3D::get_is_active() const {
 };
 
 String XRAnchor3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
@@ -531,11 +534,13 @@ XRAnchor3D::~XRAnchor3D(){
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 String XROrigin3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
-	if (tracked_camera == nullptr)
+	if (tracked_camera == nullptr) {
 		return TTR("XROrigin3D requires an XRCamera3D child node.");
+	}
 
 	return String();
 };

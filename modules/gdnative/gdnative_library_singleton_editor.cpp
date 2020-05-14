@@ -135,19 +135,22 @@ void GDNativeLibrarySingletonEditor::_update_libraries() {
 	}
 
 	// The singletons list changed, we must update the settings
-	if (updated_disabled.size() != singletons_disabled.size())
+	if (updated_disabled.size() != singletons_disabled.size()) {
 		ProjectSettings::get_singleton()->set("gdnative/singletons_disabled", updated_disabled);
+	}
 
 	updating = false;
 }
 
 void GDNativeLibrarySingletonEditor::_item_edited() {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	TreeItem *item = libraries->get_edited();
-	if (!item)
+	if (!item) {
 		return;
+	}
 
 	bool enabled = item->get_range(1);
 	String path = item->get_metadata(0);
@@ -165,8 +168,9 @@ void GDNativeLibrarySingletonEditor::_item_edited() {
 	if (enabled) {
 		disabled_paths.erase(path);
 	} else {
-		if (disabled_paths.find(path) == -1)
+		if (disabled_paths.find(path) == -1) {
 			disabled_paths.push_back(path);
+		}
 	}
 
 	undo_redo->create_action(enabled ? TTR("Enabled GDNative Singleton") : TTR("Disabled GDNative Singleton"));

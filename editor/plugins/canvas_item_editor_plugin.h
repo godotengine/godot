@@ -319,10 +319,11 @@ private:
 		ObjectID from;
 		ObjectID to;
 		_FORCE_INLINE_ bool operator<(const BoneKey &p_key) const {
-			if (from == p_key.from)
+			if (from == p_key.from) {
 				return to < p_key.to;
-			else
+			} else {
 				return from < p_key.from;
+			}
 		}
 	};
 

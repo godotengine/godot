@@ -65,16 +65,21 @@ void RenderingServerRaster::_draw_margins() {
 /* FREE */
 
 void RenderingServerRaster::free(RID p_rid) {
-	if (RSG::storage->free(p_rid))
+	if (RSG::storage->free(p_rid)) {
 		return;
-	if (RSG::canvas->free(p_rid))
+	}
+	if (RSG::canvas->free(p_rid)) {
 		return;
-	if (RSG::viewport->free(p_rid))
+	}
+	if (RSG::viewport->free(p_rid)) {
 		return;
-	if (RSG::scene->free(p_rid))
+	}
+	if (RSG::scene->free(p_rid)) {
 		return;
-	if (RSG::scene_render->free(p_rid))
+	}
+	if (RSG::scene_render->free(p_rid)) {
 		return;
+	}
 }
 
 /* EVENT QUEUING */

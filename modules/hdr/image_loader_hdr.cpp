@@ -41,8 +41,9 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	while (true) {
 		String line = f->get_line();
 		ERR_FAIL_COND_V(f->eof_reached(), ERR_FILE_UNRECOGNIZED);
-		if (line == "") // empty line indicates end of header
+		if (line == "") { // empty line indicates end of header
 			break;
+		}
 		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
 			ERR_FAIL_COND_V_MSG(line != "FORMAT=32-bit_rle_rgbe", ERR_FILE_UNRECOGNIZED, "Only 32-bit_rle_rgbe is supported for HDR files.");
 		} else if (!line.begins_with("#")) { // not comment
@@ -107,12 +108,14 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 							// Run
 							int value = f->get_8();
 							count -= 128;
-							for (int z = 0; z < count; ++z)
+							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = uint8_t(value);
+							}
 						} else {
 							// Dump
-							for (int z = 0; z < count; ++z)
+							for (int z = 0; z < count; ++z) {
 								ptr[(j * width + i++) * 4 + k] = f->get_8();
+							}
 						}
 					}
 				}

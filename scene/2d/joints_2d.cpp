@@ -36,8 +36,9 @@
 
 void Joint2D::_update_joint(bool p_only_free) {
 	if (joint.is_valid()) {
-		if (ba.is_valid() && bb.is_valid() && exclude_from_collision)
+		if (ba.is_valid() && bb.is_valid() && exclude_from_collision) {
 			PhysicsServer2D::get_singleton()->joint_disable_collisions_between_bodies(joint, false);
+		}
 
 		PhysicsServer2D::get_singleton()->free(joint);
 		joint = RID();
@@ -45,25 +46,29 @@ void Joint2D::_update_joint(bool p_only_free) {
 		bb = RID();
 	}
 
-	if (p_only_free || !is_inside_tree())
+	if (p_only_free || !is_inside_tree()) {
 		return;
+	}
 
 	Node *node_a = has_node(get_node_a()) ? get_node(get_node_a()) : (Node *)nullptr;
 	Node *node_b = has_node(get_node_b()) ? get_node(get_node_b()) : (Node *)nullptr;
 
-	if (!node_a || !node_b)
+	if (!node_a || !node_b) {
 		return;
+	}
 
 	PhysicsBody2D *body_a = Object::cast_to<PhysicsBody2D>(node_a);
 	PhysicsBody2D *body_b = Object::cast_to<PhysicsBody2D>(node_b);
 
-	if (!body_a || !body_b)
+	if (!body_a || !body_b) {
 		return;
+	}
 
 	joint = _configure_joint(body_a, body_b);
 
-	if (!joint.is_valid())
+	if (!joint.is_valid()) {
 		return;
+	}
 
 	PhysicsServer2D::get_singleton()->get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
 
@@ -74,8 +79,9 @@ void Joint2D::_update_joint(bool p_only_free) {
 }
 
 void Joint2D::set_node_a(const NodePath &p_node_a) {
-	if (a == p_node_a)
+	if (a == p_node_a) {
 		return;
+	}
 
 	a = p_node_a;
 	_update_joint();
@@ -86,8 +92,9 @@ NodePath Joint2D::get_node_a() const {
 }
 
 void Joint2D::set_node_b(const NodePath &p_node_b) {
-	if (b == p_node_b)
+	if (b == p_node_b) {
 		return;
+	}
 	b = p_node_b;
 	_update_joint();
 }
@@ -111,8 +118,9 @@ void Joint2D::_notification(int p_what) {
 
 void Joint2D::set_bias(real_t p_bias) {
 	bias = p_bias;
-	if (joint.is_valid())
+	if (joint.is_valid()) {
 		PhysicsServer2D::get_singleton()->get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
+	}
 }
 
 real_t Joint2D::get_bias() const {
@@ -120,8 +128,9 @@ real_t Joint2D::get_bias() const {
 }
 
 void Joint2D::set_exclude_nodes_from_collision(bool p_enable) {
-	if (exclude_from_collision == p_enable)
+	if (exclude_from_collision == p_enable) {
 		return;
+	}
 
 	_update_joint(true);
 	exclude_from_collision = p_enable;
@@ -163,8 +172,9 @@ Joint2D::Joint2D() {
 void PinJoint2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
@@ -185,8 +195,9 @@ RID PinJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *body_b) {
 void PinJoint2D::set_softness(real_t p_softness) {
 	softness = p_softness;
 	update();
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer2D::get_singleton()->pin_joint_set_param(get_joint(), PhysicsServer2D::PIN_JOINT_SOFTNESS, p_softness);
+	}
 }
 
 real_t PinJoint2D::get_softness() const {
@@ -211,8 +222,9 @@ PinJoint2D::PinJoint2D() {
 void GrooveJoint2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
@@ -275,8 +287,9 @@ GrooveJoint2D::GrooveJoint2D() {
 void DampedSpringJoint2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_tree())
+			if (!is_inside_tree()) {
 				break;
+			}
 
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
 				break;
@@ -295,8 +308,9 @@ RID DampedSpringJoint2D::_configure_joint(PhysicsBody2D *body_a, PhysicsBody2D *
 	Vector2 anchor_B = gt.xform(Vector2(0, length));
 
 	RID dsj = PhysicsServer2D::get_singleton()->damped_spring_joint_create(anchor_A, anchor_B, body_a->get_rid(), body_b->get_rid());
-	if (rest_length)
+	if (rest_length) {
 		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_REST_LENGTH, rest_length);
+	}
 	PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_STIFFNESS, stiffness);
 	PhysicsServer2D::get_singleton()->damped_string_joint_set_param(dsj, PhysicsServer2D::DAMPED_STRING_DAMPING, damping);
 
@@ -315,8 +329,9 @@ real_t DampedSpringJoint2D::get_length() const {
 void DampedSpringJoint2D::set_rest_length(real_t p_rest_length) {
 	rest_length = p_rest_length;
 	update();
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_REST_LENGTH, p_rest_length ? p_rest_length : length);
+	}
 }
 
 real_t DampedSpringJoint2D::get_rest_length() const {
@@ -326,8 +341,9 @@ real_t DampedSpringJoint2D::get_rest_length() const {
 void DampedSpringJoint2D::set_stiffness(real_t p_stiffness) {
 	stiffness = p_stiffness;
 	update();
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_STIFFNESS, p_stiffness);
+	}
 }
 
 real_t DampedSpringJoint2D::get_stiffness() const {
@@ -337,8 +353,9 @@ real_t DampedSpringJoint2D::get_stiffness() const {
 void DampedSpringJoint2D::set_damping(real_t p_damping) {
 	damping = p_damping;
 	update();
-	if (get_joint().is_valid())
+	if (get_joint().is_valid()) {
 		PhysicsServer2D::get_singleton()->damped_string_joint_set_param(get_joint(), PhysicsServer2D::DAMPED_STRING_DAMPING, p_damping);
+	}
 }
 
 real_t DampedSpringJoint2D::get_damping() const {

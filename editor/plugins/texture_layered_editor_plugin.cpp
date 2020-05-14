@@ -64,8 +64,9 @@ void TextureLayeredEditor::_notification(int p_what) {
 }
 
 void TextureLayeredEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-	if (!is_visible())
+	if (!is_visible()) {
 		return;
+	}
 	update();
 }
 
@@ -156,10 +157,12 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 	}
 
 	// Prevent the texture from being unpreviewable after the rescale, so that we can still see something
-	if (tex_height <= 0)
+	if (tex_height <= 0) {
 		tex_height = 1;
-	if (tex_width <= 0)
+	}
+	if (tex_width <= 0) {
 		tex_width = 1;
+	}
 
 	int ofs_x = (size.width - tex_width) / 2;
 	int ofs_y = (size.height - tex_height) / 2;
@@ -169,8 +172,9 @@ void TextureLayeredEditor::_texture_rect_update_area() {
 }
 
 void TextureLayeredEditor::edit(Ref<TextureLayered> p_texture) {
-	if (!texture.is_null())
+	if (!texture.is_null()) {
 		texture->remove_change_receptor(this);
+	}
 
 	texture = p_texture;
 

@@ -224,8 +224,9 @@ void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 		return;
 	}
 
-	if (shader_file == p_shader)
+	if (shader_file == p_shader) {
 		return;
+	}
 
 	shader_file = p_shader;
 
@@ -304,8 +305,9 @@ void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 
 	} else {
 		button->hide();
-		if (shader_editor->is_visible_in_tree())
+		if (shader_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 	}
 }
 

@@ -58,8 +58,9 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
-				if (!root->get_children())
+				if (!root->get_children()) {
 					break;
+				}
 
 				TreeItem *current = search_options->get_selected();
 
@@ -150,11 +151,13 @@ void VisualScriptPropertySelector::_update_search() {
 				}
 			}
 			for (List<PropertyInfo>::Element *F = props.front(); F; F = F->next()) {
-				if (!(F->get().usage & PROPERTY_USAGE_EDITOR) && !(F->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE))
+				if (!(F->get().usage & PROPERTY_USAGE_EDITOR) && !(F->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 					continue;
+				}
 
-				if (type_filter.size() && type_filter.find(F->get().type) == -1)
+				if (type_filter.size() && type_filter.find(F->get().type) == -1) {
 					continue;
+				}
 
 				// capitalize() also converts underscore to space, we'll match again both possible styles
 				String get_text_raw = String(vformat(TTR("Get %s"), F->get().name));
@@ -206,14 +209,17 @@ void VisualScriptPropertySelector::_update_search() {
 		}
 		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
 			String name = M->get().name.get_slice(":", 0);
-			if (name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL))
+			if (name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
+			}
 
-			if (virtuals_only && !(M->get().flags & METHOD_FLAG_VIRTUAL))
+			if (virtuals_only && !(M->get().flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
+			}
 
-			if (!virtuals_only && (M->get().flags & METHOD_FLAG_VIRTUAL))
+			if (!virtuals_only && (M->get().flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
+			}
 
 			MethodInfo mi = M->get();
 			String desc_arguments;
@@ -353,8 +359,9 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 
 		bool in_modifier = p_modifiers.empty();
 		for (Set<String>::Element *F = p_modifiers.front(); F && in_modifier; F = F->next()) {
-			if (E->get().findn(F->get()) != -1)
+			if (E->get().findn(F->get()) != -1) {
 				in_modifier = true;
+			}
 		}
 		if (!in_modifier) {
 			continue;
@@ -406,8 +413,9 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 
 void VisualScriptPropertySelector::_confirmed() {
 	TreeItem *ti = search_options->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 	emit_signal("selected", ti->get_metadata(0), ti->get_metadata(1), ti->get_metadata(2));
 	set_visible(false);
 }
@@ -416,8 +424,9 @@ void VisualScriptPropertySelector::_item_selected() {
 	help_bit->set_text("");
 
 	TreeItem *item = search_options->get_selected();
-	if (!item)
+	if (!item) {
 		return;
+	}
 	String name = item->get_metadata(0);
 
 	String class_type;
@@ -502,8 +511,9 @@ void VisualScriptPropertySelector::_item_selected() {
 
 	memdelete(names);
 
-	if (text == String())
+	if (text == String()) {
 		return;
+	}
 
 	help_bit->set_text(text);
 }
@@ -527,10 +537,11 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	virtuals_only = p_virtuals_only;
 
 	show_window(.5f);
-	if (clear_text)
+	if (clear_text) {
 		search_box->set_text("");
-	else
+	} else {
 		search_box->select_all();
+	}
 	search_box->grab_focus();
 	connecting = p_connecting;
 
@@ -551,10 +562,11 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	virtuals_only = p_virtuals_only;
 
 	show_window(.5f);
-	if (clear_text)
+	if (clear_text) {
 		search_box->set_text("");
-	else
+	} else {
 		search_box->select_all();
+	}
 	search_box->grab_focus();
 	seq_connect = p_seq_connect;
 	connecting = p_connecting;
@@ -575,10 +587,11 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	virtuals_only = false;
 
 	show_window(.5f);
-	if (clear_text)
+	if (clear_text) {
 		search_box->set_text("");
-	else
+	} else {
 		search_box->select_all();
+	}
 	search_box->grab_focus();
 	seq_connect = false;
 	connecting = p_connecting;
@@ -597,10 +610,11 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	virtuals_only = false;
 
 	show_window(.5f);
-	if (clear_text)
+	if (clear_text) {
 		search_box->set_text("");
-	else
+	} else {
 		search_box->select_all();
+	}
 	search_box->grab_focus();
 	seq_connect = false;
 	connecting = p_connecting;
@@ -618,10 +632,11 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	virtuals_only = false;
 
 	show_window(.5f);
-	if (clear_text)
+	if (clear_text) {
 		search_box->set_text("");
-	else
+	} else {
 		search_box->select_all();
+	}
 	search_box->grab_focus();
 	seq_connect = true;
 	connecting = p_connecting;
@@ -639,10 +654,11 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	virtuals_only = false;
 
 	show_window(.5f);
-	if (clear_text)
+	if (clear_text) {
 		search_box->set_text("");
-	else
+	} else {
 		search_box->select_all();
+	}
 	search_box->grab_focus();
 	seq_connect = false;
 	connecting = p_connecting;
@@ -659,10 +675,11 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	instance = nullptr;
 	virtuals_only = false;
 	show_window(.5f);
-	if (clear_text)
+	if (clear_text) {
 		search_box->set_text("");
-	else
+	} else {
 		search_box->select_all();
+	}
 	search_box->grab_focus();
 	connecting = p_connecting;
 

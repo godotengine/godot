@@ -163,8 +163,9 @@ Ref<Texture2D> Light3D::get_projector() const {
 }
 
 void Light3D::_update_visibility() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	bool editor_ok = true;
 
@@ -356,8 +357,9 @@ Light3D::Light3D() {
 Light3D::~Light3D() {
 	RS::get_singleton()->instance_set_base(get_instance(), RID());
 
-	if (light.is_valid())
+	if (light.is_valid()) {
 		RenderingServer::get_singleton()->free(light);
+	}
 }
 
 /////////////////////////////////////////

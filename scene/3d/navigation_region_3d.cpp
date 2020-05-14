@@ -36,12 +36,14 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationRegion3D::set_enabled(bool p_enabled) {
-	if (enabled == p_enabled)
+	if (enabled == p_enabled) {
 		return;
+	}
 	enabled = p_enabled;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (!enabled) {
 		NavigationServer3D::get_singleton()->region_set_map(region, RID());
@@ -117,8 +119,9 @@ void NavigationRegion3D::_notification(int p_what) {
 }
 
 void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh) {
-	if (p_navmesh == navmesh)
+	if (p_navmesh == navmesh) {
 		return;
+	}
 
 	if (navmesh.is_valid()) {
 		navmesh->remove_change_receptor(this);
@@ -182,16 +185,18 @@ void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 }
 
 String NavigationRegion3D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	if (!navmesh.is_valid()) {
 		return TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
 	const Node3D *c = this;
 	while (c) {
-		if (Object::cast_to<Navigation3D>(c))
+		if (Object::cast_to<Navigation3D>(c)) {
 			return String();
+		}
 
 		c = Object::cast_to<Node3D>(c->get_parent());
 	}
@@ -227,7 +232,8 @@ NavigationRegion3D::NavigationRegion3D() {
 }
 
 NavigationRegion3D::~NavigationRegion3D() {
-	if (navmesh.is_valid())
+	if (navmesh.is_valid()) {
 		navmesh->remove_change_receptor(this);
+	}
 	NavigationServer3D::get_singleton()->free(region);
 }

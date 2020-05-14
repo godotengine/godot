@@ -46,14 +46,16 @@ static void _regex_free(void *ptr, void *user) {
 int RegExMatch::_find(const Variant &p_name) const {
 	if (p_name.is_num()) {
 		int i = (int)p_name;
-		if (i >= data.size())
+		if (i >= data.size()) {
 			return -1;
+		}
 		return i;
 
 	} else if (p_name.get_type() == Variant::STRING) {
 		const Map<String, int>::Element *found = names.find((String)p_name);
-		if (found)
+		if (found) {
 			return found->value();
+		}
 	}
 
 	return -1;
@@ -64,8 +66,9 @@ String RegExMatch::get_subject() const {
 }
 
 int RegExMatch::get_group_count() const {
-	if (data.size() == 0)
+	if (data.size() == 0) {
 		return 0;
+	}
 	return data.size() - 1;
 }
 
@@ -103,13 +106,15 @@ Array RegExMatch::get_strings() const {
 String RegExMatch::get_string(const Variant &p_name) const {
 	int id = _find(p_name);
 
-	if (id < 0)
+	if (id < 0) {
 		return String();
+	}
 
 	int start = data[id].start;
 
-	if (start == -1)
+	if (start == -1) {
 		return String();
+	}
 
 	int length = data[id].end - start;
 
@@ -119,8 +124,9 @@ String RegExMatch::get_string(const Variant &p_name) const {
 int RegExMatch::get_start(const Variant &p_name) const {
 	int id = _find(p_name);
 
-	if (id < 0)
+	if (id < 0) {
 		return -1;
+	}
 
 	return data[id].start;
 }
@@ -128,8 +134,9 @@ int RegExMatch::get_start(const Variant &p_name) const {
 int RegExMatch::get_end(const Variant &p_name) const {
 	int id = _find(p_name);
 
-	if (id < 0)
+	if (id < 0) {
 		return -1;
+	}
 
 	return data[id].end;
 }
@@ -223,8 +230,9 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 	Ref<RegExMatch> result = memnew(RegExMatch);
 
 	int length = p_subject.length();
-	if (p_end >= 0 && p_end < length)
+	if (p_end >= 0 && p_end < length) {
 		length = p_end;
+	}
 
 	if (sizeof(CharType) == 2) {
 		pcre2_code_16 *c = (pcre2_code_16 *)code;
@@ -297,11 +305,13 @@ Ref<RegExMatch> RegEx::search(const String &p_subject, int p_offset, int p_end) 
 
 	for (uint32_t i = 0; i < count; i++) {
 		CharType id = table[i * entry_size];
-		if (result->data[id].start == -1)
+		if (result->data[id].start == -1) {
 			continue;
+		}
 		String name = &table[i * entry_size + 1];
-		if (result->names.has(name))
+		if (result->names.has(name)) {
 			continue;
+		}
 
 		result->names.insert(name, id);
 	}
@@ -314,8 +324,9 @@ Array RegEx::search_all(const String &p_subject, int p_offset, int p_end) const 
 	Array result;
 	Ref<RegExMatch> match = search(p_subject, p_offset, p_end);
 	while (match.is_valid()) {
-		if (last_end == match->get_end(0))
+		if (last_end == match->get_end(0)) {
 			break;
+		}
 		result.push_back(match);
 		last_end = match->get_end(0);
 		match = search(p_subject, match->get_end(0), p_end);
@@ -337,12 +348,14 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 	output.resize(olength + safety_zone);
 
 	uint32_t flags = PCRE2_SUBSTITUTE_OVERFLOW_LENGTH;
-	if (p_all)
+	if (p_all) {
 		flags |= PCRE2_SUBSTITUTE_GLOBAL;
+	}
 
 	PCRE2_SIZE length = p_subject.length();
-	if (p_end >= 0 && (uint32_t)p_end < length)
+	if (p_end >= 0 && (uint32_t)p_end < length) {
 		length = p_end;
+	}
 
 	if (sizeof(CharType) == 2) {
 		pcre2_code_16 *c = (pcre2_code_16 *)code;
@@ -365,8 +378,9 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 		pcre2_match_data_free_16(match);
 		pcre2_match_context_free_16(mctx);
 
-		if (res < 0)
+		if (res < 0) {
 			return String();
+		}
 
 	} else {
 		pcre2_code_32 *c = (pcre2_code_32 *)code;
@@ -389,8 +403,9 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 		pcre2_match_data_free_32(match);
 		pcre2_match_context_free_32(mctx);
 
-		if (res < 0)
+		if (res < 0) {
 			return String();
+		}
 	}
 
 	return String(output.ptr(), olength);
@@ -460,13 +475,15 @@ RegEx::RegEx(const String &p_pattern) {
 
 RegEx::~RegEx() {
 	if (sizeof(CharType) == 2) {
-		if (code)
+		if (code) {
 			pcre2_code_free_16((pcre2_code_16 *)code);
+		}
 		pcre2_general_context_free_16((pcre2_general_context_16 *)general_ctx);
 
 	} else {
-		if (code)
+		if (code) {
 			pcre2_code_free_32((pcre2_code_32 *)code);
+		}
 		pcre2_general_context_free_32((pcre2_general_context_32 *)general_ctx);
 	}
 }

@@ -105,8 +105,9 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 		ring_buffer_pos++;
 
-		if ((++feedback_buffer_pos) >= feedback_delay_frames)
+		if ((++feedback_buffer_pos) >= feedback_delay_frames) {
 			feedback_buffer_pos = 0;
+		}
 	}
 }
 

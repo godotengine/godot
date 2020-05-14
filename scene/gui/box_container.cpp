@@ -54,10 +54,12 @@ void BoxContainer::_resort() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible_in_tree()) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2i size = c->get_combined_minimum_size();
 		_MinSizeCache msc;
@@ -82,8 +84,9 @@ void BoxContainer::_resort() {
 		children_count++;
 	}
 
-	if (children_count == 0)
+	if (children_count == 0) {
 		return;
+	}
 
 	int stretch_max = (vertical ? new_size.height : new_size.width) - (children_count - 1) * sep;
 	int stretch_diff = stretch_max - stretch_min;
@@ -104,10 +107,12 @@ void BoxContainer::_resort() {
 
 		for (int i = 0; i < get_child_count(); i++) {
 			Control *c = Object::cast_to<Control>(get_child(i));
-			if (!c || !c->is_visible_in_tree())
+			if (!c || !c->is_visible_in_tree()) {
 				continue;
-			if (c->is_set_as_toplevel())
+			}
+			if (c->is_set_as_toplevel()) {
 				continue;
+			}
 
 			ERR_FAIL_COND(!min_size_cache.has(c));
 			_MinSizeCache &msc = min_size_cache[c];
@@ -131,8 +136,9 @@ void BoxContainer::_resort() {
 			}
 		}
 
-		if (refit_successful) //uf refit went well, break
+		if (refit_successful) { //uf refit went well, break
 			break;
+		}
 	}
 
 	/** Final pass, draw and stretch elements **/
@@ -156,17 +162,20 @@ void BoxContainer::_resort() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || !c->is_visible_in_tree())
+		if (!c || !c->is_visible_in_tree()) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		_MinSizeCache &msc = min_size_cache[c];
 
-		if (first)
+		if (first) {
 			first = false;
-		else
+		} else {
 			ofs += sep;
+		}
 
 		int from = ofs;
 		int to = ofs + msc.final_size;
@@ -205,10 +214,12 @@ Size2 BoxContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		if (!c->is_visible()) {
 			continue;
@@ -263,14 +274,16 @@ void BoxContainer::add_spacer(bool p_begin) {
 	Control *c = memnew(Control);
 	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
-	if (vertical)
+	if (vertical) {
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
-	else
+	} else {
 		c->set_h_size_flags(SIZE_EXPAND_FILL);
+	}
 
 	add_child(c);
-	if (p_begin)
+	if (p_begin) {
 		move_child(c, 0);
+	}
 }
 
 BoxContainer::BoxContainer(bool p_vertical) {
@@ -298,8 +311,9 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	mc->add_theme_constant_override("margin_left", 0);
 	mc->add_child(p_control);
 	add_child(mc);
-	if (p_expand)
+	if (p_expand) {
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
+	}
 
 	return mc;
 }

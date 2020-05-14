@@ -371,8 +371,9 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 			for (int i = 0; i < meshes.size(); i += 2) {
 				Transform mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];
-				if (!mesh.is_valid())
+				if (!mesh.is_valid()) {
 					continue;
+				}
 
 				AABB aabb = mesh->get_aabb();
 
@@ -407,8 +408,9 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 	axis_cell_size[longest_axis] = 1 << cell_subdiv;
 
 	for (int i = 0; i < 3; i++) {
-		if (i == longest_axis)
+		if (i == longest_axis) {
 			continue;
+		}
 
 		axis_cell_size[i] = axis_cell_size[longest_axis];
 		float axis_size = bounds.size[longest_axis];
@@ -474,8 +476,9 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	} else {
 		Ref<GIProbeData> probe_data = get_probe_data();
 
-		if (probe_data.is_null())
+		if (probe_data.is_null()) {
 			probe_data.instance();
+		}
 
 		if (bake_step_function) {
 			bake_step_function(pmc++, RTR("Generating Distance Field"));

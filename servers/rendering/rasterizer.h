@@ -855,8 +855,9 @@ public:
 
 		_FORCE_INLINE_ TextureBinding() { binding_id = 0; }
 		_FORCE_INLINE_ ~TextureBinding() {
-			if (binding_id)
+			if (binding_id) {
 				singleton->free_texture_binding(binding_id);
+			}
 		}
 	};
 
@@ -884,8 +885,9 @@ public:
 
 		_FORCE_INLINE_ Polygon() { polygon_id = 0; }
 		_FORCE_INLINE_ ~Polygon() {
-			if (polygon_id)
+			if (polygon_id) {
 				singleton->free_polygon(polygon_id);
+			}
 		}
 	};
 
@@ -1054,8 +1056,9 @@ public:
 		Rect2 global_rect_cache;
 
 		const Rect2 &get_rect() const {
-			if (custom_rect || (!rect_dirty && !update_when_visible))
+			if (custom_rect || (!rect_dirty && !update_when_visible)) {
 				return rect;
+			}
 
 			//must update rect
 
@@ -1265,8 +1268,9 @@ public:
 			for (int i = 0; i < blocks.size(); i++) {
 				memfree(blocks[i].memory);
 			}
-			if (copy_back_buffer)
+			if (copy_back_buffer) {
 				memdelete(copy_back_buffer);
+			}
 			if (custom_data) {
 				memdelete(custom_data);
 			}

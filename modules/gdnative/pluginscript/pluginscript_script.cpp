@@ -154,10 +154,12 @@ Ref<Script> PluginScript::get_base_script() const {
 }
 
 StringName PluginScript::get_instance_base_type() const {
-	if (_native_parent)
+	if (_native_parent) {
 		return _native_parent;
-	if (_ref_base_parent.is_valid())
+	}
+	if (_ref_base_parent.is_valid()) {
 		return _ref_base_parent->get_instance_base_type();
+	}
 	return StringName();
 }
 
@@ -226,8 +228,9 @@ String PluginScript::get_source_code() const {
 }
 
 void PluginScript::set_source_code(const String &p_code) {
-	if (_source == p_code)
+	if (_source == p_code) {
 		return;
+	}
 	_source = p_code;
 }
 
@@ -241,11 +244,13 @@ Error PluginScript::reload(bool p_keep_state) {
 	_valid = false;
 	String basedir = _path;
 
-	if (basedir == "")
+	if (basedir == "") {
 		basedir = get_path();
+	}
 
-	if (basedir != "")
+	if (basedir != "") {
 		basedir = basedir.get_base_dir();
+	}
 
 	if (_data) {
 		_desc->finish(_data);
@@ -471,11 +476,11 @@ void PluginScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 
 int PluginScript::get_member_line(const StringName &p_member) const {
 #ifdef TOOLS_ENABLED
-	if (_member_lines.has(p_member))
+	if (_member_lines.has(p_member)) {
 		return _member_lines[p_member];
-	else
+	}
 #endif
-		return -1;
+	return -1;
 }
 
 Vector<ScriptNetData> PluginScript::get_rpc_methods() const {
@@ -494,15 +499,17 @@ uint16_t PluginScript::get_rpc_method_id(const StringName &p_method) const {
 
 StringName PluginScript::get_rpc_method(const uint16_t p_rpc_method_id) const {
 	ASSERT_SCRIPT_VALID_V(StringName());
-	if (p_rpc_method_id >= _rpc_methods.size())
+	if (p_rpc_method_id >= _rpc_methods.size()) {
 		return StringName();
+	}
 	return _rpc_methods[p_rpc_method_id].name;
 }
 
 MultiplayerAPI::RPCMode PluginScript::get_rpc_mode_by_id(const uint16_t p_rpc_method_id) const {
 	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	if (p_rpc_method_id >= _rpc_methods.size())
+	if (p_rpc_method_id >= _rpc_methods.size()) {
 		return MultiplayerAPI::RPC_MODE_DISABLED;
+	}
 	return _rpc_methods[p_rpc_method_id].mode;
 }
 
@@ -527,15 +534,17 @@ uint16_t PluginScript::get_rset_property_id(const StringName &p_property) const 
 
 StringName PluginScript::get_rset_property(const uint16_t p_rset_property_id) const {
 	ASSERT_SCRIPT_VALID_V(StringName());
-	if (p_rset_property_id >= _rpc_variables.size())
+	if (p_rset_property_id >= _rpc_variables.size()) {
 		return StringName();
+	}
 	return _rpc_variables[p_rset_property_id].name;
 }
 
 MultiplayerAPI::RPCMode PluginScript::get_rset_mode_by_id(const uint16_t p_rset_property_id) const {
 	ASSERT_SCRIPT_VALID_V(MultiplayerAPI::RPC_MODE_DISABLED);
-	if (p_rset_property_id >= _rpc_variables.size())
+	if (p_rset_property_id >= _rpc_variables.size()) {
 		return MultiplayerAPI::RPC_MODE_DISABLED;
+	}
 	return _rpc_variables[p_rset_property_id].mode;
 }
 

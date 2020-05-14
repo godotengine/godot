@@ -177,8 +177,9 @@ static String unescape_cmdline(const String &p_str) {
 
 static String get_full_version_string() {
 	String hash = String(VERSION_HASH);
-	if (hash.length() != 0)
+	if (hash.length() != 0) {
 		hash = "." + hash.left(9);
+	}
 	return String(VERSION_FULL_BUILD) + hash;
 }
 
@@ -458,8 +459,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	bool use_vsync = false;
 
 	packed_data = PackedData::get_singleton();
-	if (!packed_data)
+	if (!packed_data) {
 		packed_data = memnew(PackedData);
+	}
 
 #ifdef MINIZIP_ENABLED
 
@@ -696,12 +698,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--render-thread") { // render thread mode
 
 			if (I->next()) {
-				if (I->next()->get() == "safe")
+				if (I->next()->get() == "safe") {
 					rtm = OS::RENDER_THREAD_SAFE;
-				else if (I->next()->get() == "unsafe")
+				} else if (I->next()->get() == "unsafe") {
 					rtm = OS::RENDER_THREAD_UNSAFE;
-				else if (I->next()->get() == "separate")
+				} else if (I->next()->get() == "separate") {
 					rtm = OS::RENDER_SEPARATE_THREAD;
+				}
 
 				N = I->next()->next();
 			} else {
@@ -754,9 +757,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			String path;
 			String file = I->get();
 			int sep = MAX(file.find_last("/"), file.find_last("\\"));
-			if (sep == -1)
+			if (sep == -1) {
 				path = ".";
-			else {
+			} else {
 				path = file.substr(0, sep);
 			}
 			if (OS::get_singleton()->set_cwd(path) == OK) {
@@ -976,8 +979,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		_print_error_enabled = false;
 	};
 
-	if (quiet_stdout)
+	if (quiet_stdout) {
 		_print_line_enabled = false;
+	}
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
@@ -1116,20 +1120,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	{
 		String orientation = GLOBAL_DEF("display/window/handheld/orientation", "landscape");
 
-		if (orientation == "portrait")
+		if (orientation == "portrait") {
 			window_orientation = DisplayServer::SCREEN_PORTRAIT;
-		else if (orientation == "reverse_landscape")
+		} else if (orientation == "reverse_landscape") {
 			window_orientation = DisplayServer::SCREEN_REVERSE_LANDSCAPE;
-		else if (orientation == "reverse_portrait")
+		} else if (orientation == "reverse_portrait") {
 			window_orientation = DisplayServer::SCREEN_REVERSE_PORTRAIT;
-		else if (orientation == "sensor_landscape")
+		} else if (orientation == "sensor_landscape") {
 			window_orientation = DisplayServer::SCREEN_SENSOR_LANDSCAPE;
-		else if (orientation == "sensor_portrait")
+		} else if (orientation == "sensor_portrait") {
 			window_orientation = DisplayServer::SCREEN_SENSOR_PORTRAIT;
-		else if (orientation == "sensor")
+		} else if (orientation == "sensor") {
 			window_orientation = DisplayServer::SCREEN_SENSOR;
-		else
+		} else {
 			window_orientation = DisplayServer::SCREEN_LANDSCAPE;
+		}
 	}
 
 	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/physics_fps", 60));
@@ -1160,8 +1165,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	message_queue = memnew(MessageQueue);
 
-	if (p_second_phase)
+	if (p_second_phase) {
 		return setup2();
+	}
 
 	return OK;
 
@@ -1174,33 +1180,42 @@ error:
 	args.clear();
 	main_args.clear();
 
-	if (show_help)
+	if (show_help) {
 		print_help(execpath);
+	}
 
 	EngineDebugger::deinitialize();
 
-	if (performance)
+	if (performance) {
 		memdelete(performance);
-	if (input_map)
+	}
+	if (input_map) {
 		memdelete(input_map);
-	if (translation_server)
+	}
+	if (translation_server) {
 		memdelete(translation_server);
-	if (globals)
+	}
+	if (globals) {
 		memdelete(globals);
-	if (engine)
+	}
+	if (engine) {
 		memdelete(engine);
-	if (packed_data)
+	}
+	if (packed_data) {
 		memdelete(packed_data);
-	if (file_access_network_client)
+	}
+	if (file_access_network_client) {
 		memdelete(file_access_network_client);
+	}
 
 	unregister_core_driver_types();
 	unregister_core_types();
 
 	OS::get_singleton()->_cmdline.clear();
 
-	if (message_queue)
+	if (message_queue) {
 		memdelete(message_queue);
+	}
 	OS::get_singleton()->finalize_core();
 	locale = String();
 
@@ -1333,8 +1348,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		if (boot_logo_path != String()) {
 			boot_logo.instance();
 			Error load_err = ImageLoader::load_image(boot_logo_path, boot_logo);
-			if (load_err)
+			if (load_err) {
 				ERR_PRINT("Non-existing or invalid boot splash at '" + boot_logo_path + "'. Loading default splash.");
+			}
 		}
 
 		Color boot_bg_color = GLOBAL_DEF("application/boot_splash/bg_color", boot_splash_bg_color);
@@ -1536,8 +1552,9 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 			} else if (args[i] == "--doctool") {
 				doc_tool = args[i + 1];
-				for (int j = i + 2; j < args.size(); j++)
+				for (int j = i + 2; j < args.size(); j++) {
 					removal_docs.push_back(args[j]);
+				}
 			} else if (args[i] == "--export") {
 				editor = true; //needs editor
 				_export_preset = args[i + 1];
@@ -1653,8 +1670,9 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		main_loop = test_main(test, args);
 
-		if (!main_loop)
+		if (!main_loop) {
 			return false;
+		}
 #endif
 
 	} else if (script != "") {
@@ -1673,8 +1691,9 @@ bool Main::start() {
 			Object *obj = ClassDB::instance(instance_type);
 			MainLoop *script_loop = Object::cast_to<MainLoop>(obj);
 			if (!script_loop) {
-				if (obj)
+				if (obj) {
 					memdelete(obj);
+				}
 				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
@@ -1688,8 +1707,9 @@ bool Main::start() {
 		main_loop_type = GLOBAL_DEF("application/run/main_loop_type", "");
 	}
 
-	if (!main_loop && main_loop_type == "")
+	if (!main_loop && main_loop_type == "") {
 		main_loop_type = "SceneTree";
+	}
 
 	if (!main_loop) {
 		if (!ClassDB::class_exists(main_loop_type)) {
@@ -1736,8 +1756,9 @@ bool Main::start() {
 				//first pass, add the constants so they exist before any script is loaded
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
+					if (!s.begins_with("autoload/")) {
 						continue;
+					}
 					String name = s.get_slicec('/', 1);
 					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
@@ -1756,8 +1777,9 @@ bool Main::start() {
 				List<Node *> to_add;
 				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 					String s = E->get().name;
-					if (!s.begins_with("autoload/"))
+					if (!s.begins_with("autoload/")) {
 						continue;
+					}
 					String name = s.get_slicec('/', 1);
 					String path = ProjectSettings::get_singleton()->get(s);
 					bool global_var = false;
@@ -1831,20 +1853,22 @@ bool Main::start() {
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/size/width", 0), GLOBAL_DEF("display/window/size/height", 0));
 
 			Window::ContentScaleMode cs_sm = Window::CONTENT_SCALE_MODE_DISABLED;
-			if (stretch_mode == "objects")
+			if (stretch_mode == "objects") {
 				cs_sm = Window::CONTENT_SCALE_MODE_OBJECTS;
-			else if (stretch_mode == "pixels")
+			} else if (stretch_mode == "pixels") {
 				cs_sm = Window::CONTENT_SCALE_MODE_PIXELS;
+			}
 
 			Window::ContentScaleAspect cs_aspect = Window::CONTENT_SCALE_ASPECT_IGNORE;
-			if (stretch_aspect == "keep")
+			if (stretch_aspect == "keep") {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_KEEP;
-			else if (stretch_aspect == "keep_width")
+			} else if (stretch_aspect == "keep_width") {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_KEEP_WIDTH;
-			else if (stretch_aspect == "keep_height")
+			} else if (stretch_aspect == "keep_height") {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_KEEP_HEIGHT;
-			else if (stretch_aspect == "expand")
+			} else if (stretch_aspect == "expand") {
 				cs_aspect = Window::CONTENT_SCALE_ASPECT_EXPAND;
+			}
 
 			sml->get_root()->set_content_scale_mode(cs_sm);
 			sml->get_root()->set_content_scale_aspect(cs_aspect);
@@ -1938,8 +1962,9 @@ bool Main::start() {
 
 				if (game_path != GLOBAL_GET("application/run/main_scene") || !editor_node->has_scenes_in_session()) {
 					Error serr = editor_node->load_scene(local_game_path);
-					if (serr != OK)
+					if (serr != OK) {
 						ERR_PRINT("Failed to load scene");
+					}
 				}
 				DisplayServer::get_singleton()->set_context(DisplayServer::CONTEXT_EDITOR);
 			}
@@ -1957,8 +1982,9 @@ bool Main::start() {
 			if (game_path != "") {
 				Node *scene = nullptr;
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
-				if (scenedata.is_valid())
+				if (scenedata.is_valid()) {
 					scene = scenedata->instance();
+				}
 
 				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
 				sml->add_current_scene(scene);
@@ -2155,8 +2181,9 @@ bool Main::iteration() {
 
 	AudioServer::get_singleton()->update();
 
-	if (EngineDebugger::is_active())
+	if (EngineDebugger::is_active()) {
 		EngineDebugger::get_singleton()->iteration(frame_time, idle_process_ticks, physics_process_ticks, frame_slice);
+	}
 
 	frames++;
 	Engine::get_singleton()->_idle_frames++;
@@ -2182,15 +2209,17 @@ bool Main::iteration() {
 
 	iterating--;
 
-	if (fixed_fps != -1)
+	if (fixed_fps != -1) {
 		return exit;
+	}
 
-	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !DisplayServer::get_singleton()->can_any_window_draw())
+	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !DisplayServer::get_singleton()->can_any_window_draw()) {
 		OS::get_singleton()->delay_usec(OS::get_singleton()->get_low_processor_usage_mode_sleep_usec()); //apply some delay to force idle time
-	else {
+	} else {
 		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
-		if (frame_delay)
+		if (frame_delay) {
 			OS::get_singleton()->delay_usec(Engine::get_singleton()->get_frame_delay() * 1000);
+		}
 	}
 
 	int target_fps = Engine::get_singleton()->get_target_fps();
@@ -2198,8 +2227,9 @@ bool Main::iteration() {
 		uint64_t time_step = 1000000L / target_fps;
 		target_ticks += time_step;
 		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
-		if (current_ticks < target_ticks)
+		if (current_ticks < target_ticks) {
 			OS::get_singleton()->delay_usec(target_ticks - current_ticks);
+		}
 		current_ticks = OS::get_singleton()->get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - time_step), current_ticks + time_step);
 	}
@@ -2294,20 +2324,27 @@ void Main::cleanup() {
 		memdelete(input);
 	}
 
-	if (packed_data)
+	if (packed_data) {
 		memdelete(packed_data);
-	if (file_access_network_client)
+	}
+	if (file_access_network_client) {
 		memdelete(file_access_network_client);
-	if (performance)
+	}
+	if (performance) {
 		memdelete(performance);
-	if (input_map)
+	}
+	if (input_map) {
 		memdelete(input_map);
-	if (translation_server)
+	}
+	if (translation_server) {
 		memdelete(translation_server);
-	if (globals)
+	}
+	if (globals) {
 		memdelete(globals);
-	if (engine)
+	}
+	if (engine) {
 		memdelete(engine);
+	}
 
 	if (OS::get_singleton()->is_restart_on_exit_set()) {
 		//attempt to restart with arguments

@@ -32,13 +32,15 @@
 #include "scene/3d/path_3d.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
-	if (use_collision == p_enable)
+	if (use_collision == p_enable) {
 		return;
+	}
 
 	use_collision = p_enable;
 
-	if (!is_inside_tree() || !is_root_shape())
+	if (!is_inside_tree() || !is_root_shape()) {
 		return;
+	}
 
 	if (use_collision) {
 		root_collision_shape.instance();
@@ -86,10 +88,11 @@ uint32_t CSGShape3D::get_collision_mask() const {
 
 void CSGShape3D::set_collision_mask_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_mask();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_mask(mask);
 }
 
@@ -99,10 +102,11 @@ bool CSGShape3D::get_collision_mask_bit(int p_bit) const {
 
 void CSGShape3D::set_collision_layer_bit(int p_bit, bool p_value) {
 	uint32_t mask = get_collision_layer();
-	if (p_value)
+	if (p_value) {
 		mask |= 1 << p_bit;
-	else
+	} else {
 		mask &= ~(1 << p_bit);
+	}
 	set_collision_layer(mask);
 }
 
@@ -123,8 +127,9 @@ float CSGShape3D::get_snap() const {
 }
 
 void CSGShape3D::_make_dirty() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (dirty) {
 		return;
@@ -151,14 +156,17 @@ CSGBrush *CSGShape3D::_get_brush() {
 
 		for (int i = 0; i < get_child_count(); i++) {
 			CSGShape3D *child = Object::cast_to<CSGShape3D>(get_child(i));
-			if (!child)
+			if (!child) {
 				continue;
-			if (!child->is_visible_in_tree())
+			}
+			if (!child->is_visible_in_tree()) {
 				continue;
+			}
 
 			CSGBrush *n2 = child->_get_brush();
-			if (!n2)
+			if (!n2) {
 				continue;
+			}
 			if (!n) {
 				n = memnew(CSGBrush);
 
@@ -192,10 +200,11 @@ CSGBrush *CSGShape3D::_get_brush() {
 			AABB aabb;
 			for (int i = 0; i < n->faces.size(); i++) {
 				for (int j = 0; j < 3; j++) {
-					if (i == 0 && j == 0)
+					if (i == 0 && j == 0) {
 						aabb.position = n->faces[i].vertices[j];
-					else
+					} else {
 						aabb.expand_to(n->faces[i].vertices[j]);
+					}
 				}
 			}
 			node_aabb = aabb;
@@ -266,8 +275,9 @@ void CSGShape3D::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const
 }
 
 void CSGShape3D::_update_shape() {
-	if (parent)
+	if (parent) {
 		return;
+	}
 
 	set_base(RID());
 	root_mesh.unref(); //byebye root mesh
@@ -422,8 +432,9 @@ void CSGShape3D::_update_shape() {
 			have_tangents = genTangSpaceDefault(&msc);
 		}
 
-		if (surfaces[i].last_added == 0)
+		if (surfaces[i].last_added == 0) {
 			continue;
+		}
 
 		// and convert to surface array
 		Array array;
@@ -512,8 +523,9 @@ void CSGShape3D::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (parent)
+		if (parent) {
 			parent->_make_dirty();
+		}
 		parent = nullptr;
 
 		if (use_collision && is_root_shape() && root_collision_instance.is_valid()) {
@@ -666,8 +678,9 @@ void CSGPrimitive3D::_bind_methods() {
 }
 
 void CSGPrimitive3D::set_invert_faces(bool p_invert) {
-	if (invert_faces == p_invert)
+	if (invert_faces == p_invert) {
 		return;
+	}
 
 	invert_faces = p_invert;
 
@@ -685,8 +698,9 @@ CSGPrimitive3D::CSGPrimitive3D() {
 /////////////////////
 
 CSGBrush *CSGMesh3D::_build_brush() {
-	if (!mesh.is_valid())
+	if (!mesh.is_valid()) {
 		return nullptr;
+	}
 
 	Vector<Vector3> vertices;
 	Vector<bool> smooth;
@@ -707,8 +721,9 @@ CSGBrush *CSGMesh3D::_build_brush() {
 		}
 
 		Vector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
-		if (avertices.size() == 0)
+		if (avertices.size() == 0) {
 			continue;
+		}
 
 		const Vector3 *vr = avertices.ptr();
 
@@ -822,8 +837,9 @@ CSGBrush *CSGMesh3D::_build_brush() {
 		}
 	}
 
-	if (vertices.size() == 0)
+	if (vertices.size() == 0) {
 		return nullptr;
+	}
 
 	return _create_brush_from_arrays(vertices, uvs, smooth, materials);
 }
@@ -834,8 +850,9 @@ void CSGMesh3D::_mesh_changed() {
 }
 
 void CSGMesh3D::set_material(const Ref<Material> &p_material) {
-	if (material == p_material)
+	if (material == p_material) {
 		return;
+	}
 	material = p_material;
 	_make_dirty();
 }
@@ -856,8 +873,9 @@ void CSGMesh3D::_bind_methods() {
 }
 
 void CSGMesh3D::set_mesh(const Ref<Mesh> &p_mesh) {
-	if (mesh == p_mesh)
+	if (mesh == p_mesh) {
 		return;
+	}
 	if (mesh.is_valid()) {
 		mesh->disconnect("changed", callable_mp(this, &CSGMesh3D::_mesh_changed));
 	}
@@ -1119,10 +1137,11 @@ CSGBrush *CSGBox3D::_build_brush() {
 					v[2] = v[1] * (1 - 2 * (j & 1));
 
 					for (int k = 0; k < 3; k++) {
-						if (i < 3)
+						if (i < 3) {
 							face_points[j][(i + k) % 3] = v[k];
-						else
+						} else {
 							face_points[3 - j][(i + k) % 3] = -v[k];
+						}
 					}
 				}
 
@@ -1480,8 +1499,9 @@ CSGBrush *CSGTorus3D::_build_brush() {
 	float min_radius = inner_radius;
 	float max_radius = outer_radius;
 
-	if (min_radius == max_radius)
+	if (min_radius == max_radius) {
 		return nullptr; //sorry, can't
+	}
 
 	if (min_radius > max_radius) {
 		SWAP(min_radius, max_radius);
@@ -1698,8 +1718,9 @@ CSGTorus3D::CSGTorus3D() {
 CSGBrush *CSGPolygon3D::_build_brush() {
 	// set our bounding box
 
-	if (polygon.size() < 3)
+	if (polygon.size() < 3) {
 		return nullptr;
+	}
 
 	Vector<Point2> final_polygon = polygon;
 
@@ -1709,8 +1730,9 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 
 	Vector<int> triangles = Geometry::triangulate_polygon(final_polygon);
 
-	if (triangles.size() < 3)
+	if (triangles.size() < 3) {
 		return nullptr;
+	}
 
 	Path3D *path = nullptr;
 	Ref<Curve3D> curve;
@@ -1724,28 +1746,35 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			final_polygon_min = p;
 			final_polygon_max = final_polygon_min;
 		} else {
-			if (p.x < final_polygon_min.x)
+			if (p.x < final_polygon_min.x) {
 				final_polygon_min.x = p.x;
-			if (p.y < final_polygon_min.y)
+			}
+			if (p.y < final_polygon_min.y) {
 				final_polygon_min.y = p.y;
+			}
 
-			if (p.x > final_polygon_max.x)
+			if (p.x > final_polygon_max.x) {
 				final_polygon_max.x = p.x;
-			if (p.y > final_polygon_max.y)
+			}
+			if (p.y > final_polygon_max.y) {
 				final_polygon_max.y = p.y;
+			}
 		}
 	}
 	Vector2 final_polygon_size = final_polygon_max - final_polygon_min;
 
 	if (mode == MODE_PATH) {
-		if (!has_node(path_node))
+		if (!has_node(path_node)) {
 			return nullptr;
+		}
 		Node *n = get_node(path_node);
-		if (!n)
+		if (!n) {
 			return nullptr;
+		}
 		path = Object::cast_to<Path3D>(n);
-		if (!path)
+		if (!path) {
 			return nullptr;
+		}
 
 		if (path != path_cache) {
 			if (path_cache) {
@@ -1761,10 +1790,12 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			path_cache = nullptr;
 		}
 		curve = path->get_curve();
-		if (curve.is_null())
+		if (curve.is_null()) {
 			return nullptr;
-		if (curve->get_baked_length() <= 0)
+		}
+		if (curve->get_baked_length() <= 0) {
 			return nullptr;
+		}
 	}
 	CSGBrush *brush = memnew(CSGBrush);
 

@@ -150,11 +150,13 @@ MainLoop *test() {
 	int passed = 0;
 
 	while (true) {
-		if (!test_funcs[count])
+		if (!test_funcs[count]) {
 			break;
+		}
 		bool pass = test_funcs[count]();
-		if (pass)
+		if (pass) {
 			passed++;
+		}
 		OS::get_singleton()->print("\t%s\n", pass ? "PASS" : "FAILED");
 
 		count++;

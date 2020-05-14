@@ -504,8 +504,9 @@ void EditorFeatureProfileManager::_fill_classes_from(TreeItem *p_parent, const S
 }
 
 void EditorFeatureProfileManager::_class_list_item_selected() {
-	if (updating_features)
+	if (updating_features) {
 		return;
+	}
 
 	property_list->clear();
 
@@ -549,8 +550,9 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 
 	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 		String name = E->get().name;
-		if (!(E->get().usage & PROPERTY_USAGE_EDITOR))
+		if (!(E->get().usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
+		}
 		TreeItem *property = property_list->create_item(properties);
 		property->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 		property->set_editable(0, true);
@@ -566,8 +568,9 @@ void EditorFeatureProfileManager::_class_list_item_selected() {
 }
 
 void EditorFeatureProfileManager::_class_list_item_edited() {
-	if (updating_features)
+	if (updating_features) {
 		return;
+	}
 
 	TreeItem *item = class_list->get_edited();
 	if (!item) {
@@ -590,8 +593,9 @@ void EditorFeatureProfileManager::_class_list_item_edited() {
 }
 
 void EditorFeatureProfileManager::_property_item_edited() {
-	if (updating_features)
+	if (updating_features) {
 		return;
+	}
 
 	TreeItem *class_item = class_list->get_selected();
 	if (!class_item) {

@@ -400,8 +400,9 @@ int VisualShader::get_valid_node_id(Type p_type) const {
 
 int VisualShader::find_node_id(Type p_type, const Ref<VisualShaderNode> &p_node) const {
 	for (const Map<int, Node>::Element *E = graph[p_type].nodes.front(); E; E = E->next()) {
-		if (E->get().node == p_node)
+		if (E->get().node == p_node) {
 			return E->key();
+		}
 	}
 
 	return NODE_ID_INVALID;
@@ -471,20 +472,25 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, false);
 	const Graph *g = &graph[p_type];
 
-	if (!g->nodes.has(p_from_node))
+	if (!g->nodes.has(p_from_node)) {
 		return false;
+	}
 
-	if (p_from_node == p_to_node)
+	if (p_from_node == p_to_node) {
 		return false;
+	}
 
-	if (p_from_port < 0 || p_from_port >= g->nodes[p_from_node].node->get_output_port_count())
+	if (p_from_port < 0 || p_from_port >= g->nodes[p_from_node].node->get_output_port_count()) {
 		return false;
+	}
 
-	if (!g->nodes.has(p_to_node))
+	if (!g->nodes.has(p_to_node)) {
 		return false;
+	}
 
-	if (p_to_port < 0 || p_to_port >= g->nodes[p_to_node].node->get_input_port_count())
+	if (p_to_port < 0 || p_to_port >= g->nodes[p_to_node].node->get_input_port_count()) {
 		return false;
+	}
 
 	VisualShaderNode::PortType from_port_type = g->nodes[p_from_node].node->get_output_port_type(p_from_port);
 	VisualShaderNode::PortType to_port_type = g->nodes[p_to_node].node->get_input_port_type(p_to_port);
@@ -499,8 +505,9 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 		}
 	}
 
-	if (is_nodes_connected_relatively(g, p_from_node, p_to_node))
+	if (is_nodes_connected_relatively(g, p_from_node, p_to_node)) {
 		return false;
+	}
 
 	return true;
 }
@@ -1090,8 +1097,9 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 			}
 
 			Error err = _write_node(type, global_code, global_code_per_node, global_code_per_func, code, def_tex_params, input_connections, output_connections, from_node, processed, for_preview, r_classes);
-			if (err)
+			if (err) {
 				return err;
+			}
 		}
 	}
 
@@ -1280,8 +1288,9 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 }
 
 void VisualShader::_update_shader() const {
-	if (!dirty)
+	if (!dirty) {
 		return;
+	}
 
 	dirty = false;
 
@@ -2207,8 +2216,9 @@ Vector2 VisualShaderNodeGroupBase::get_size() const {
 }
 
 void VisualShaderNodeGroupBase::set_inputs(const String &p_inputs) {
-	if (inputs == p_inputs)
+	if (inputs == p_inputs) {
 		return;
+	}
 
 	clear_input_ports();
 
@@ -2238,8 +2248,9 @@ String VisualShaderNodeGroupBase::get_inputs() const {
 }
 
 void VisualShaderNodeGroupBase::set_outputs(const String &p_outputs) {
-	if (outputs == p_outputs)
+	if (outputs == p_outputs) {
 		return;
+	}
 
 	clear_output_ports();
 
@@ -2433,8 +2444,9 @@ void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 	ERR_FAIL_COND(!has_input_port(p_id));
 	ERR_FAIL_COND(p_type < 0 || p_type >= PORT_TYPE_MAX);
 
-	if (input_ports[p_id].type == p_type)
+	if (input_ports[p_id].type == p_type) {
 		return;
+	}
 
 	Vector<String> inputs_strings = inputs.split(";", false);
 	int count = 0;
@@ -2467,8 +2479,9 @@ void VisualShaderNodeGroupBase::set_input_port_name(int p_id, const String &p_na
 	ERR_FAIL_COND(!has_input_port(p_id));
 	ERR_FAIL_COND(!is_valid_port_name(p_name));
 
-	if (input_ports[p_id].name == p_name)
+	if (input_ports[p_id].name == p_name) {
 		return;
+	}
 
 	Vector<String> inputs_strings = inputs.split(";", false);
 	int count = 0;
@@ -2501,8 +2514,9 @@ void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 	ERR_FAIL_COND(!has_output_port(p_id));
 	ERR_FAIL_COND(p_type < 0 || p_type >= PORT_TYPE_MAX);
 
-	if (output_ports[p_id].type == p_type)
+	if (output_ports[p_id].type == p_type) {
 		return;
+	}
 
 	Vector<String> output_strings = outputs.split(";", false);
 	int count = 0;
@@ -2535,8 +2549,9 @@ void VisualShaderNodeGroupBase::set_output_port_name(int p_id, const String &p_n
 	ERR_FAIL_COND(!has_output_port(p_id));
 	ERR_FAIL_COND(!is_valid_port_name(p_name));
 
-	if (output_ports[p_id].name == p_name)
+	if (output_ports[p_id].name == p_name) {
 		return;
+	}
 
 	Vector<String> output_strings = outputs.split(";", false);
 	int count = 0;

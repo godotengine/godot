@@ -314,16 +314,21 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 	f->store_32(p_image->get_height());
 
 	uint32_t flags = 0;
-	if (p_streamable)
+	if (p_streamable) {
 		flags |= StreamTexture2D::FORMAT_BIT_STREAM;
-	if (p_mipmaps)
+	}
+	if (p_mipmaps) {
 		flags |= StreamTexture2D::FORMAT_BIT_HAS_MIPMAPS; //mipmaps bit
-	if (p_detect_3d)
+	}
+	if (p_detect_3d) {
 		flags |= StreamTexture2D::FORMAT_BIT_DETECT_3D;
-	if (p_detect_roughness)
+	}
+	if (p_detect_roughness) {
 		flags |= StreamTexture2D::FORMAT_BIT_DETECT_ROUGNESS;
-	if (p_detect_normal)
+	}
+	if (p_detect_normal) {
 		flags |= StreamTexture2D::FORMAT_BIT_DETECT_NORMAL;
+	}
 
 	f->store_32(flags);
 	f->store_32(p_limit_mipmap);
@@ -407,8 +412,9 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	Ref<Image> image;
 	image.instance();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, hdr_as_srgb, scale);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	Array formats_imported;
 

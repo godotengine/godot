@@ -73,8 +73,9 @@ int GradientEdit::_get_point_from_pos(int x) {
 }
 
 void GradientEdit::_show_color_picker() {
-	if (grabbed == -1)
+	if (grabbed == -1) {
 		return;
+	}
 	picker->set_pick_color(points[grabbed].color);
 	Size2 minsize = popup->get_contents_minimum_size();
 	bool show_above = false;
@@ -178,8 +179,9 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 		int pos = -1;
 		for (int i = 0; i < points.size(); i++) {
-			if (points[i].offset < newPoint.offset)
+			if (points[i].offset < newPoint.offset) {
 				pos = i;
+			}
 		}
 
 		if (pos == -1) {
@@ -248,17 +250,19 @@ void GradientEdit::_gui_input(const Ref<InputEvent> &p_event) {
 					if (temp_ofs < smallest_ofs) {
 						smallest_ofs = temp_ofs;
 						nearest_point = i;
-						if (found)
+						if (found) {
 							break;
+						}
 						found = true;
 					}
 				}
 			}
 			if (found) {
-				if (points[nearest_point].offset < newofs)
+				if (points[nearest_point].offset < newofs) {
 					newofs = points[nearest_point].offset + 0.00001;
-				else
+				} else {
 					newofs = points[nearest_point].offset - 0.00001;
+				}
 				newofs = CLAMP(newofs, 0, 1);
 			}
 		}
@@ -300,8 +304,9 @@ void GradientEdit::_notification(int p_what) {
 		int w = get_size().x;
 		int h = get_size().y;
 
-		if (w == 0 || h == 0)
+		if (w == 0 || h == 0) {
 			return; //Safety check. We have division by 'h'. And in any case there is nothing to draw with such size
+		}
 
 		int total_w = get_size().width - get_size().height - SPACING;
 
@@ -311,19 +316,21 @@ void GradientEdit::_notification(int p_what) {
 		//Draw color ramp
 		Gradient::Point prev;
 		prev.offset = 0;
-		if (points.size() == 0)
+		if (points.size() == 0) {
 			prev.color = Color(0, 0, 0); //Draw black rectangle if we have no points
-		else
+		} else {
 			prev.color = points[0].color; //Extend color of first point to the beginning.
+		}
 
 		for (int i = -1; i < points.size(); i++) {
 			Gradient::Point next;
 			//If there is no next point
 			if (i + 1 == points.size()) {
-				if (points.size() == 0)
+				if (points.size() == 0) {
 					next.color = Color(0, 0, 0); //Draw black rectangle if we have no points
-				else
+				} else {
 					next.color = points[i].color; //Extend color of last point to the end.
+				}
 				next.offset = 1;
 			} else {
 				next = points[i + 1];
@@ -424,8 +431,9 @@ Size2 GradientEdit::get_minimum_size() const {
 }
 
 void GradientEdit::_color_changed(const Color &p_color) {
-	if (grabbed == -1)
+	if (grabbed == -1) {
 		return;
+	}
 	points.write[grabbed].color = p_color;
 	update();
 	emit_signal("ramp_changed");
@@ -447,21 +455,24 @@ void GradientEdit::set_ramp(const Vector<float> &p_offsets, const Vector<Color> 
 
 Vector<float> GradientEdit::get_offsets() const {
 	Vector<float> ret;
-	for (int i = 0; i < points.size(); i++)
+	for (int i = 0; i < points.size(); i++) {
 		ret.push_back(points[i].offset);
+	}
 	return ret;
 }
 
 Vector<Color> GradientEdit::get_colors() const {
 	Vector<Color> ret;
-	for (int i = 0; i < points.size(); i++)
+	for (int i = 0; i < points.size(); i++) {
 		ret.push_back(points[i].color);
+	}
 	return ret;
 }
 
 void GradientEdit::set_points(Vector<Gradient::Point> &p_points) {
-	if (points.size() != p_points.size())
+	if (points.size() != p_points.size()) {
 		grabbed = -1;
+	}
 	points.clear();
 	points = p_points;
 }

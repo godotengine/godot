@@ -109,8 +109,9 @@ void SceneTree::node_removed(Node *p_node) {
 		current_scene = nullptr;
 	}
 	emit_signal(node_removed_name, p_node);
-	if (call_lock > 0)
+	if (call_lock > 0) {
 		call_skip.insert(p_node);
+	}
 }
 
 void SceneTree::node_renamed(Node *p_node) {
@@ -135,14 +136,16 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	ERR_FAIL_COND(!E);
 
 	E->get().nodes.erase(p_node);
-	if (E->get().nodes.empty())
+	if (E->get().nodes.empty()) {
 		group_map.erase(E);
+	}
 }
 
 void SceneTree::make_group_changed(const StringName &p_group) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (E)
+	if (E) {
 		E->get().changed = true;
+	}
 }
 
 void SceneTree::flush_transform_notifications() {
@@ -163,8 +166,9 @@ void SceneTree::_flush_ugc() {
 		Map<UGCall, Vector<Variant>>::Element *E = unique_group_calls.front();
 
 		Variant v[VARIANT_ARG_MAX];
-		for (int i = 0; i < E->get().size(); i++)
+		for (int i = 0; i < E->get().size(); i++) {
 			v[i] = E->get()[i];
+		}
 
 		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4]);
 
@@ -175,10 +179,12 @@ void SceneTree::_flush_ugc() {
 }
 
 void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
-	if (!g.changed)
+	if (!g.changed) {
 		return;
-	if (g.nodes.empty())
+	}
+	if (g.nodes.empty()) {
 		return;
+	}
 
 	Node **nodes = g.nodes.ptrw();
 	int node_count = g.nodes.size();
@@ -195,11 +201,13 @@ void SceneTree::_update_group_order(Group &g, bool p_use_priority) {
 
 void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, VARIANT_ARG_DECLARE) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	Group &g = E->get();
-	if (g.nodes.empty())
+	if (g.nodes.empty()) {
 		return;
+	}
 
 	if (p_call_flags & GROUP_CALL_UNIQUE && !(p_call_flags & GROUP_CALL_REALTIME)) {
 		ERR_FAIL_COND(ugc_locked);
@@ -208,15 +216,17 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 		ug.call = p_function;
 		ug.group = p_group;
 
-		if (unique_group_calls.has(ug))
+		if (unique_group_calls.has(ug)) {
 			return;
+		}
 
 		VARIANT_ARGPTRS;
 
 		Vector<Variant> args;
 		for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-			if (argptr[i]->get_type() == Variant::NIL)
+			if (argptr[i]->get_type() == Variant::NIL) {
 				break;
+			}
 			args.push_back(*argptr[i]);
 		}
 
@@ -234,45 +244,54 @@ void SceneTree::call_group_flags(uint32_t p_call_flags, const StringName &p_grou
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i]))
+			if (call_lock && call_skip.has(nodes[i])) {
 				continue;
+			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				if (p_call_flags & GROUP_CALL_MULTILEVEL)
+				if (p_call_flags & GROUP_CALL_MULTILEVEL) {
 					nodes[i]->call_multilevel(p_function, VARIANT_ARG_PASS);
-				else
+				} else {
 					nodes[i]->call(p_function, VARIANT_ARG_PASS);
-			} else
+				}
+			} else {
 				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
+			}
 		}
 
 	} else {
 		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i]))
+			if (call_lock && call_skip.has(nodes[i])) {
 				continue;
+			}
 
 			if (p_call_flags & GROUP_CALL_REALTIME) {
-				if (p_call_flags & GROUP_CALL_MULTILEVEL)
+				if (p_call_flags & GROUP_CALL_MULTILEVEL) {
 					nodes[i]->call_multilevel(p_function, VARIANT_ARG_PASS);
-				else
+				} else {
 					nodes[i]->call(p_function, VARIANT_ARG_PASS);
-			} else
+				}
+			} else {
 				MessageQueue::get_singleton()->push_call(nodes[i], p_function, VARIANT_ARG_PASS);
+			}
 		}
 	}
 
 	call_lock--;
-	if (call_lock == 0)
+	if (call_lock == 0) {
 		call_skip.clear();
+	}
 }
 
 void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	Group &g = E->get();
-	if (g.nodes.empty())
+	if (g.nodes.empty()) {
 		return;
+	}
 
 	_update_group_order(g);
 
@@ -284,39 +303,46 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i]))
+			if (call_lock && call_skip.has(nodes[i])) {
 				continue;
+			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME)
+			if (p_call_flags & GROUP_CALL_REALTIME) {
 				nodes[i]->notification(p_notification);
-			else
+			} else {
 				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
+			}
 		}
 
 	} else {
 		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i]))
+			if (call_lock && call_skip.has(nodes[i])) {
 				continue;
+			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME)
+			if (p_call_flags & GROUP_CALL_REALTIME) {
 				nodes[i]->notification(p_notification);
-			else
+			} else {
 				MessageQueue::get_singleton()->push_notification(nodes[i], p_notification);
+			}
 		}
 	}
 
 	call_lock--;
-	if (call_lock == 0)
+	if (call_lock == 0) {
 		call_skip.clear();
+	}
 }
 
 void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	Group &g = E->get();
-	if (g.nodes.empty())
+	if (g.nodes.empty()) {
 		return;
+	}
 
 	_update_group_order(g);
 
@@ -328,30 +354,35 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 
 	if (p_call_flags & GROUP_CALL_REVERSE) {
 		for (int i = node_count - 1; i >= 0; i--) {
-			if (call_lock && call_skip.has(nodes[i]))
+			if (call_lock && call_skip.has(nodes[i])) {
 				continue;
+			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME)
+			if (p_call_flags & GROUP_CALL_REALTIME) {
 				nodes[i]->set(p_name, p_value);
-			else
+			} else {
 				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
+			}
 		}
 
 	} else {
 		for (int i = 0; i < node_count; i++) {
-			if (call_lock && call_skip.has(nodes[i]))
+			if (call_lock && call_skip.has(nodes[i])) {
 				continue;
+			}
 
-			if (p_call_flags & GROUP_CALL_REALTIME)
+			if (p_call_flags & GROUP_CALL_REALTIME) {
 				nodes[i]->set(p_name, p_value);
-			else
+			} else {
 				MessageQueue::get_singleton()->push_set(nodes[i], p_name, p_value);
+			}
 		}
 	}
 
 	call_lock--;
-	if (call_lock == 0)
+	if (call_lock == 0) {
 		call_skip.clear();
+	}
 }
 
 void SceneTree::call_group(const StringName &p_group, const StringName &p_function, VARIANT_ARG_DECLARE) {
@@ -631,8 +662,9 @@ Color SceneTree::get_debug_navigation_disabled_color() const {
 }
 
 Ref<Material> SceneTree::get_debug_navigation_material() {
-	if (navigation_material.is_valid())
+	if (navigation_material.is_valid()) {
 		return navigation_material;
+	}
 
 	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -647,8 +679,9 @@ Ref<Material> SceneTree::get_debug_navigation_material() {
 }
 
 Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
-	if (navigation_disabled_material.is_valid())
+	if (navigation_disabled_material.is_valid()) {
 		return navigation_disabled_material;
+	}
 
 	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -663,8 +696,9 @@ Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
 }
 
 Ref<Material> SceneTree::get_debug_collision_material() {
-	if (collision_material.is_valid())
+	if (collision_material.is_valid()) {
 		return collision_material;
+	}
 
 	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
@@ -679,8 +713,9 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 }
 
 Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
-	if (debug_contact_mesh.is_valid())
+	if (debug_contact_mesh.is_valid()) {
 		return debug_contact_mesh;
+	}
 
 	debug_contact_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
 
@@ -714,12 +749,14 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 	/* clang-format on */
 
 	Vector<int> indices;
-	for (int i = 0; i < 8 * 3; i++)
+	for (int i = 0; i < 8 * 3; i++) {
 		indices.push_back(diamond_faces[i]);
+	}
 
 	Vector<Vector3> vertices;
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++) {
 		vertices.push_back(diamond[i] * 0.1);
+	}
 
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);
@@ -733,14 +770,16 @@ Ref<ArrayMesh> SceneTree::get_debug_contact_mesh() {
 }
 
 void SceneTree::set_pause(bool p_enabled) {
-	if (p_enabled == pause)
+	if (p_enabled == pause) {
 		return;
+	}
 	pause = p_enabled;
 	NavigationServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
-	if (get_root())
+	if (get_root()) {
 		get_root()->propagate_notification(p_enabled ? Node::NOTIFICATION_PAUSED : Node::NOTIFICATION_UNPAUSED);
+	}
 }
 
 bool SceneTree::is_paused() const {
@@ -749,11 +788,13 @@ bool SceneTree::is_paused() const {
 
 void SceneTree::_notify_group_pause(const StringName &p_group, int p_notification) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	Group &g = E->get();
-	if (g.nodes.empty())
+	if (g.nodes.empty()) {
 		return;
+	}
 
 	_update_group_order(g, p_notification == Node::NOTIFICATION_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PROCESS || p_notification == Node::NOTIFICATION_PHYSICS_PROCESS || p_notification == Node::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 
@@ -768,21 +809,25 @@ void SceneTree::_notify_group_pause(const StringName &p_group, int p_notificatio
 
 	for (int i = 0; i < node_count; i++) {
 		Node *n = nodes[i];
-		if (call_lock && call_skip.has(n))
+		if (call_lock && call_skip.has(n)) {
 			continue;
+		}
 
-		if (!n->can_process())
+		if (!n->can_process()) {
 			continue;
-		if (!n->can_process_notification(p_notification))
+		}
+		if (!n->can_process_notification(p_notification)) {
 			continue;
+		}
 
 		n->notification(p_notification);
 		//ERR_FAIL_COND(node_count != g.nodes.size());
 	}
 
 	call_lock--;
-	if (call_lock == 0)
+	if (call_lock == 0) {
 		call_skip.clear();
+	}
 }
 
 /*
@@ -799,11 +844,13 @@ void SceneMainLoop::_update_listener_2d() {
 
 void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
+	if (!E) {
 		return;
+	}
 	Group &g = E->get();
-	if (g.nodes.empty())
+	if (g.nodes.empty()) {
 		return;
+	}
 
 	_update_group_order(g);
 
@@ -820,23 +867,27 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 	call_lock++;
 
 	for (int i = node_count - 1; i >= 0; i--) {
-		if (p_viewport->is_input_handled())
+		if (p_viewport->is_input_handled()) {
 			break;
+		}
 
 		Node *n = nodes[i];
-		if (call_lock && call_skip.has(n))
+		if (call_lock && call_skip.has(n)) {
 			continue;
+		}
 
-		if (!n->can_process())
+		if (!n->can_process()) {
 			continue;
+		}
 
 		n->call_multilevel(p_method, (const Variant **)v, 1);
 		//ERR_FAIL_COND(node_count != g.nodes.size());
 	}
 
 	call_lock--;
-	if (call_lock == 0)
+	if (call_lock == 0) {
 		call_skip.clear();
+	}
 }
 
 Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -890,13 +941,15 @@ int64_t SceneTree::get_event_count() const {
 Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 	Array ret;
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
+	if (!E) {
 		return ret;
+	}
 
 	_update_group_order(E->get()); //update order just in case
 	int nc = E->get().nodes.size();
-	if (nc == 0)
+	if (nc == 0) {
 		return ret;
+	}
 
 	ret.resize(nc);
 
@@ -914,13 +967,15 @@ bool SceneTree::has_group(const StringName &p_identifier) const {
 
 void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
-	if (!E)
+	if (!E) {
 		return;
+	}
 
 	_update_group_order(E->get()); //update order just in case
 	int nc = E->get().nodes.size();
-	if (nc == 0)
+	if (nc == 0) {
 		return;
+	}
 	Node **ptr = E->get().nodes.ptrw();
 	for (int i = 0; i < nc; i++) {
 		p_list->push_back(ptr[i]);
@@ -995,8 +1050,9 @@ void SceneTree::_change_scene(Node *p_to) {
 
 Error SceneTree::change_scene(const String &p_path) {
 	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
-	if (new_scene.is_null())
+	if (new_scene.is_null()) {
 		return ERR_CANT_OPEN;
+	}
 
 	return change_scene_to(new_scene);
 }
@@ -1276,8 +1332,9 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 }
 
 SceneTree::SceneTree() {
-	if (singleton == nullptr)
+	if (singleton == nullptr) {
 		singleton = this;
+	}
 	_quit = false;
 	accept_quit = true;
 	quit_on_go_back = true;
@@ -1314,8 +1371,9 @@ SceneTree::SceneTree() {
 
 	root = memnew(Window);
 	root->set_name("root");
-	if (!root->get_world_3d().is_valid())
+	if (!root->get_world_3d().is_valid()) {
 		root->set_world_3d(Ref<World3D>(memnew(World3D)));
+	}
 
 	// Initialize network state
 	multiplayer_poll = true;
@@ -1340,8 +1398,9 @@ SceneTree::SceneTree() {
 		ResourceLoader::get_recognized_extensions_for_type("Environment", &exts);
 		String ext_hint;
 		for (List<String>::Element *E = exts.front(); E; E = E->next()) {
-			if (ext_hint != String())
+			if (ext_hint != String()) {
 				ext_hint += ",";
+			}
 			ext_hint += "*." + E->get();
 		}
 		//get path
@@ -1383,6 +1442,7 @@ SceneTree::~SceneTree() {
 		memdelete(root);
 	}
 
-	if (singleton == this)
+	if (singleton == this) {
 		singleton = nullptr;
+	}
 }

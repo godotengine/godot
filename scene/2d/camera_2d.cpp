@@ -36,16 +36,18 @@
 #include "servers/rendering_server.h"
 
 void Camera2D::_update_scroll() {
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		update(); //will just be drawn
 		return;
 	}
 
-	if (!viewport)
+	if (!viewport) {
 		return;
+	}
 
 	if (current) {
 		ERR_FAIL_COND(custom_viewport && !ObjectDB::get_instance(custom_viewport_id));
@@ -86,8 +88,9 @@ Vector2 Camera2D::get_zoom() const {
 };
 
 Transform2D Camera2D::get_camera_transform() {
-	if (!get_tree())
+	if (!get_tree()) {
 		return Transform2D();
+	}
 
 	ERR_FAIL_COND_V(custom_viewport && !ObjectDB::get_instance(custom_viewport_id), Transform2D());
 
@@ -133,17 +136,21 @@ Transform2D Camera2D::get_camera_transform() {
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom);
 
 		if (limit_smoothing_enabled) {
-			if (screen_rect.position.x < limit[MARGIN_LEFT])
+			if (screen_rect.position.x < limit[MARGIN_LEFT]) {
 				camera_pos.x -= screen_rect.position.x - limit[MARGIN_LEFT];
+			}
 
-			if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+			if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT]) {
 				camera_pos.x -= screen_rect.position.x + screen_rect.size.x - limit[MARGIN_RIGHT];
+			}
 
-			if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+			if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM]) {
 				camera_pos.y -= screen_rect.position.y + screen_rect.size.y - limit[MARGIN_BOTTOM];
+			}
 
-			if (screen_rect.position.y < limit[MARGIN_TOP])
+			if (screen_rect.position.y < limit[MARGIN_TOP]) {
 				camera_pos.y -= screen_rect.position.y - limit[MARGIN_TOP];
+			}
 		}
 
 		if (smoothing_enabled && !Engine::get_singleton()->is_editor_hint()) {
@@ -168,20 +175,25 @@ Transform2D Camera2D::get_camera_transform() {
 	}
 
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom);
-	if (screen_rect.position.x < limit[MARGIN_LEFT])
+	if (screen_rect.position.x < limit[MARGIN_LEFT]) {
 		screen_rect.position.x = limit[MARGIN_LEFT];
+	}
 
-	if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+	if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT]) {
 		screen_rect.position.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
+	}
 
-	if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+	if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM]) {
 		screen_rect.position.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
+	}
 
-	if (screen_rect.position.y < limit[MARGIN_TOP])
+	if (screen_rect.position.y < limit[MARGIN_TOP]) {
 		screen_rect.position.y = limit[MARGIN_TOP];
+	}
 
-	if (offset != Vector2())
+	if (offset != Vector2()) {
 		screen_rect.position += offset;
+	}
 
 	camera_screen_center = screen_rect.position + screen_rect.size * 0.5;
 
@@ -211,8 +223,9 @@ void Camera2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (!is_processing_internal() && !is_physics_processing_internal())
+			if (!is_processing_internal() && !is_physics_processing_internal()) {
 				_update_scroll();
+			}
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -248,8 +261,9 @@ void Camera2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint())
+			if (!is_inside_tree() || !Engine::get_singleton()->is_editor_hint()) {
 				break;
+			}
 
 			if (screen_drawing_enabled) {
 				Color area_axis_color(0.5, 0.42, 0.87, 0.63);
@@ -355,8 +369,9 @@ bool Camera2D::is_rotating() const {
 }
 
 void Camera2D::set_process_mode(Camera2DProcessMode p_mode) {
-	if (process_mode == p_mode)
+	if (process_mode == p_mode) {
 		return;
+	}
 
 	process_mode = p_mode;
 	_update_process_mode();
@@ -375,8 +390,9 @@ void Camera2D::_make_current(Object *p_which) {
 }
 
 void Camera2D::_set_current(bool p_current) {
-	if (p_current)
+	if (p_current) {
 		make_current();
+	}
 
 	current = p_current;
 	update();
@@ -472,10 +488,11 @@ void Camera2D::align() {
 
 void Camera2D::set_follow_smoothing(float p_speed) {
 	smoothing = p_speed;
-	if (smoothing > 0 && !(is_inside_tree() && Engine::get_singleton()->is_editor_hint()))
+	if (smoothing > 0 && !(is_inside_tree() && Engine::get_singleton()->is_editor_hint())) {
 		set_process_internal(true);
-	else
+	} else {
 		set_process_internal(false);
+	}
 }
 
 float Camera2D::get_follow_smoothing() const {
@@ -554,10 +571,11 @@ void Camera2D::set_custom_viewport(Node *p_viewport) {
 	}
 
 	if (is_inside_tree()) {
-		if (custom_viewport)
+		if (custom_viewport) {
 			viewport = custom_viewport;
-		else
+		} else {
 			viewport = get_viewport();
+		}
 
 		RID vp = viewport->get_viewport_rid();
 		group_name = "__cameras_" + itos(vp.get_id());

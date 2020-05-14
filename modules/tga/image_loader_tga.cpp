@@ -38,8 +38,9 @@ Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t 
 
 	Vector<uint8_t> pixels;
 	error = pixels.resize(p_pixel_size);
-	if (error != OK)
+	if (error != OK) {
 		return error;
+	}
 
 	uint8_t *pixels_w = pixels.ptrw();
 
@@ -232,8 +233,9 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 	bool has_color_map = (tga_header.image_type == TGA_TYPE_RLE_INDEXED || tga_header.image_type == TGA_TYPE_INDEXED);
 	bool is_monochrome = (tga_header.image_type == TGA_TYPE_RLE_MONOCHROME || tga_header.image_type == TGA_TYPE_MONOCHROME);
 
-	if (tga_header.image_type == TGA_TYPE_NO_DATA)
+	if (tga_header.image_type == TGA_TYPE_NO_DATA) {
 		err = FAILED;
+	}
 
 	if (has_color_map) {
 		if (tga_header.color_map_length > 256 || (tga_header.color_map_depth != 24) || tga_header.color_map_type != 1) {
@@ -245,8 +247,9 @@ Error ImageLoaderTGA::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		}
 	}
 
-	if (tga_header.image_width <= 0 || tga_header.image_height <= 0)
+	if (tga_header.image_width <= 0 || tga_header.image_height <= 0) {
 		err = FAILED;
+	}
 
 	if (!(tga_header.pixel_depth == 8 || tga_header.pixel_depth == 24 || tga_header.pixel_depth == 32)) {
 		err = FAILED;
