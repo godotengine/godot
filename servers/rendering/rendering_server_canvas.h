@@ -82,8 +82,9 @@ public:
 
 	struct ItemPtrSort {
 		_FORCE_INLINE_ bool operator()(const Item *p_left, const Item *p_right) const {
-			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y))
+			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y)) {
 				return p_left->ysort_pos.x < p_right->ysort_pos.x;
+			}
 
 			return p_left->ysort_pos.y < p_right->ysort_pos.y;
 		}
@@ -128,15 +129,17 @@ public:
 
 		int find_item(Item *p_item) {
 			for (int i = 0; i < child_items.size(); i++) {
-				if (child_items[i].item == p_item)
+				if (child_items[i].item == p_item) {
 					return i;
+				}
 			}
 			return -1;
 		}
 		void erase_item(Item *p_item) {
 			int idx = find_item(p_item);
-			if (idx >= 0)
+			if (idx >= 0) {
 				child_items.remove(idx);
+			}
 		}
 
 		Canvas() {

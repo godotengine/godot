@@ -108,14 +108,17 @@ bool test_6() {
 
 	OS::get_singleton()->print("\tComparing to \"Test Compare\"\n");
 
-	if (!(s == "Test Compare"))
+	if (!(s == "Test Compare")) {
 		return false;
+	}
 
-	if (!(s == L"Test Compare"))
+	if (!(s == L"Test Compare")) {
 		return false;
+	}
 
-	if (!(s == String("Test Compare")))
+	if (!(s == String("Test Compare"))) {
 		return false;
+	}
 
 	return true;
 }
@@ -127,14 +130,17 @@ bool test_7() {
 
 	OS::get_singleton()->print("\tComparing to \"Test Compare\"\n");
 
-	if (!(s != "Peanut"))
+	if (!(s != "Peanut")) {
 		return false;
+	}
 
-	if (!(s != L"Coconut"))
+	if (!(s != L"Coconut")) {
 		return false;
+	}
 
-	if (!(s != String("Butter")))
+	if (!(s != String("Butter"))) {
 		return false;
+	}
 
 	return true;
 }
@@ -146,14 +152,17 @@ bool test_8() {
 
 	OS::get_singleton()->print("\tComparing to \"Bees\"\n");
 
-	if (!(s < "Elephant"))
+	if (!(s < "Elephant")) {
 		return false;
+	}
 
-	if (s < L"Amber")
+	if (s < L"Amber") {
 		return false;
+	}
 
-	if (s < String("Beatrix"))
+	if (s < String("Beatrix")) {
 		return false;
+	}
 
 	return true;
 }
@@ -179,14 +188,17 @@ bool test_9() {
 bool test_10() {
 	OS::get_singleton()->print("\n\nTest 10: Misc funcs (size/length/empty/etc)\n");
 
-	if (!String("").empty())
+	if (!String("").empty()) {
 		return false;
+	}
 
-	if (String("Mellon").size() != 7)
+	if (String("Mellon").size() != 7) {
 		return false;
+	}
 
-	if (String("Oranges").length() != 7)
+	if (String("Oranges").length() != 7) {
 		return false;
+	}
 
 	return true;
 }
@@ -199,11 +211,13 @@ bool test_11() {
 	a[0] = 'S';
 	a[6] = 'C';
 
-	if (a != "Sugar Cane")
+	if (a != "Sugar Cane") {
 		return false;
+	}
 
-	if (a[1] != 'u')
+	if (a[1] != 'u') {
 		return false;
+	}
 
 	return true;
 }
@@ -213,11 +227,13 @@ bool test_12() {
 
 	String a = "MoMoNgA";
 
-	if (a.to_upper() != "MOMONGA")
+	if (a.to_upper() != "MOMONGA") {
 		return false;
+	}
 
-	if (a.nocasecmp_to("momonga") != 0)
+	if (a.nocasecmp_to("momonga") != 0) {
 		return false;
+	}
 
 	return true;
 }
@@ -265,11 +281,13 @@ bool test_16() {
 	OS::get_singleton()->print("\t\"tty\" is at %i pos.\n", s.find("tty"));
 	OS::get_singleton()->print("\t\"Revenge of the Monster Truck\" is at %i pos.\n", s.find("Revenge of the Monster Truck"));
 
-	if (s.find("tty") != 3)
+	if (s.find("tty") != 3) {
 		return false;
+	}
 
-	if (s.find("Revenge of the Monster Truck") != -1)
+	if (s.find("Revenge of the Monster Truck") != -1) {
 		return false;
+	}
 
 	return true;
 }
@@ -282,11 +300,13 @@ bool test_17() {
 	OS::get_singleton()->print("\t\"WHA\" is at %i pos.\n", s.findn("WHA"));
 	OS::get_singleton()->print("\t\"Revenge of the Monster SawFish\" is at %i pos.\n", s.findn("Revenge of the Monster Truck"));
 
-	if (s.findn("WHA") != 7)
+	if (s.findn("WHA") != 7) {
 		return false;
+	}
 
-	if (s.findn("Revenge of the Monster SawFish") != -1)
+	if (s.findn("Revenge of the Monster SawFish") != -1) {
 		return false;
+	}
 
 	return true;
 }
@@ -299,11 +319,13 @@ bool test_18() {
 	OS::get_singleton()->print("\t\"WHA\" is at %i pos.\n", s.findn("WHA"));
 	OS::get_singleton()->print("\t\"Revenge of the Monster SawFish\" is at %i pos.\n", s.findn("Revenge of the Monster Truck"));
 
-	if (s.findn("WHA") != 7)
+	if (s.findn("WHA") != 7) {
 		return false;
+	}
 
-	if (s.findn("Revenge of the Monster SawFish") != -1)
+	if (s.findn("Revenge of the Monster SawFish") != -1) {
 		return false;
+	}
 
 	return true;
 }
@@ -350,8 +372,9 @@ bool test_22() {
 	for (int i = 0; i < 4; i++) {
 		OS::get_singleton()->print("\tString: \"%s\" as Int is %i\n", nums[i], String(nums[i]).to_int());
 
-		if (String(nums[i]).to_int() != num[i])
+		if (String(nums[i]).to_int() != num[i]) {
 			return false;
+		}
 	}
 
 	return true;
@@ -366,8 +389,9 @@ bool test_23() {
 	for (int i = 0; i < 4; i++) {
 		OS::get_singleton()->print("\tString: \"%s\" as Float is %f\n", nums[i], String(nums[i]).to_double());
 
-		if (ABS(String(nums[i]).to_double() - num[i]) > 0.00001)
+		if (ABS(String(nums[i]).to_double() - num[i]) > 0.00001) {
 			return false;
+		}
 	}
 
 	return true;
@@ -385,8 +409,9 @@ bool test_24() {
 	for (int i = 0; i < s.get_slice_count(","); i++) {
 		OS::get_singleton()->print("\t\t%i- %ls\n", i + 1, s.get_slice(",", i).c_str());
 
-		if (s.get_slice(",", i) != slices[i])
+		if (s.get_slice(",", i) != slices[i]) {
 			return false;
+		}
 	}
 
 	return true;
@@ -942,26 +967,30 @@ bool test_31() {
 	String a = "";
 	success = a[0] == 0;
 	OS::get_singleton()->print("Is 0 String[0]:, %s\n", success ? "OK" : "FAIL");
-	if (!success)
+	if (!success) {
 		state = false;
+	}
 
 	String b = "Godot";
 	success = b[b.size()] == 0;
 	OS::get_singleton()->print("Is 0 String[size()]:, %s\n", success ? "OK" : "FAIL");
-	if (!success)
+	if (!success) {
 		state = false;
+	}
 
 	const String c = "";
 	success = c[0] == 0;
 	OS::get_singleton()->print("Is 0 const String[0]:, %s\n", success ? "OK" : "FAIL");
-	if (!success)
+	if (!success) {
 		state = false;
+	}
 
 	const String d = "Godot";
 	success = d[d.size()] == 0;
 	OS::get_singleton()->print("Is 0 const String[size()]:, %s\n", success ? "OK" : "FAIL");
-	if (!success)
+	if (!success) {
 		state = false;
+	}
 
 	return state;
 };
@@ -1150,11 +1179,13 @@ MainLoop *test() {
 	int passed = 0;
 
 	while (true) {
-		if (!test_funcs[count])
+		if (!test_funcs[count]) {
 			break;
+		}
 		bool pass = test_funcs[count]();
-		if (pass)
+		if (pass) {
 			passed++;
+		}
 		OS::get_singleton()->print("\t%s\n", pass ? "PASS" : "FAILED");
 
 		count++;

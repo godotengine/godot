@@ -52,20 +52,23 @@ enum PVRFLags {
 };
 
 RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_CANT_OPEN;
+	}
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
-	if (!f)
+	if (!f) {
 		return RES();
+	}
 
 	FileAccessRef faref(f);
 
 	ERR_FAIL_COND_V(err, RES());
 
-	if (r_error)
+	if (r_error) {
 		*r_error = ERR_FILE_CORRUPT;
+	}
 
 	uint32_t hsize = f->get_32();
 
@@ -160,8 +163,9 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	Ref<ImageTexture> texture = memnew(ImageTexture);
 	texture->create_from_image(image);
 
-	if (r_error)
+	if (r_error) {
 		*r_error = OK;
+	}
 
 	return texture;
 }
@@ -175,8 +179,9 @@ bool ResourceFormatPVR::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatPVR::get_resource_type(const String &p_path) const {
-	if (p_path.get_extension().to_lower() == "pvr")
+	if (p_path.get_extension().to_lower() == "pvr") {
 		return "Texture2D";
+	}
 	return "";
 }
 
@@ -189,8 +194,9 @@ static void _compress_pvrtc4(Image *p_img) {
 		img->resize_to_po2(true);
 	}
 	img->convert(Image::FORMAT_RGBA8);
-	if (!img->has_mipmaps() && make_mipmaps)
+	if (!img->has_mipmaps() && make_mipmaps) {
 		img->generate_mipmaps();
+	}
 
 	bool use_alpha = img->detect_alpha();
 
@@ -253,8 +259,9 @@ struct PVRTCBlock {
 };
 
 _FORCE_INLINE_ bool is_po2(uint32_t p_input) {
-	if (p_input == 0)
+	if (p_input == 0) {
 		return false;
+	}
 	uint32_t minus1 = p_input - 1;
 	return ((p_input | minus1) == (p_input ^ minus1)) ? true : false;
 }
@@ -269,8 +276,9 @@ static void unpack_5554(const PVRTCBlock *p_block, int p_ab_colors[2][4]) {
 			p_ab_colors[i][0] = (raw_bits[i] >> 10) & 0x1F;
 			p_ab_colors[i][1] = (raw_bits[i] >> 5) & 0x1F;
 			p_ab_colors[i][2] = raw_bits[i] & 0x1F;
-			if (i == 0)
+			if (i == 0) {
 				p_ab_colors[0][2] |= p_ab_colors[0][2] >> 4;
+			}
 			p_ab_colors[i][3] = 0xF;
 		} else {
 			p_ab_colors[i][0] = (raw_bits[i] >> (8 - 1)) & 0x1E;
@@ -281,10 +289,11 @@ static void unpack_5554(const PVRTCBlock *p_block, int p_ab_colors[2][4]) {
 
 			p_ab_colors[i][2] = (raw_bits[i] & 0xF) << 1;
 
-			if (i == 0)
+			if (i == 0) {
 				p_ab_colors[0][2] |= p_ab_colors[0][2] >> 3;
-			else
+			} else {
 				p_ab_colors[0][2] |= p_ab_colors[0][2] >> 4;
+			}
 
 			p_ab_colors[i][3] = (raw_bits[i] >> 11) & 0xE;
 		}
@@ -312,10 +321,11 @@ static void unpack_modulations(const PVRTCBlock *p_block, const int p_2bit, int 
 			for (int x = 0; x < BLK_X_2BPP; x++) {
 				p_modulation_modes[y + p_y][x + p_x] = block_mod_mode;
 
-				if (modulation_bits & 1)
+				if (modulation_bits & 1) {
 					p_modulation[y + p_y][x + p_x] = 0x3;
-				else
+				} else {
 					p_modulation[y + p_y][x + p_x] = 0x0;
+				}
 
 				modulation_bits >>= 1;
 			}
@@ -350,10 +360,11 @@ static void interpolate_colors(const int p_colorp[4], const int p_colorq[4], con
 
 	v = (y & 0x3) | ((~y & 0x2) << 1);
 
-	if (p_2bit)
+	if (p_2bit) {
 		u = (x & 0x7) | ((~x & 0x4) << 1);
-	else
+	} else {
 		u = (x & 0x3) | ((~x & 0x2) << 1);
+	}
 
 	v = v - BLK_Y_SIZE / 2;
 
@@ -409,19 +420,20 @@ static void get_modulation_value(int x, int y, const int p_2bit, const int p_mod
 
 	y = (y & 0x3) | ((~y & 0x2) << 1);
 
-	if (p_2bit)
+	if (p_2bit) {
 		x = (x & 0x7) | ((~x & 0x4) << 1);
-	else
+	} else {
 		x = (x & 0x3) | ((~x & 0x2) << 1);
+	}
 
 	*p_dopt = 0;
 
 	if (p_modulation_modes[y][x] == 0) {
 		mod_val = rep_vals0[p_modulation[y][x]];
 	} else if (p_2bit) {
-		if (((x ^ y) & 1) == 0)
+		if (((x ^ y) & 1) == 0) {
 			mod_val = rep_vals0[p_modulation[y][x]];
-		else if (p_modulation_modes[y][x] == 1) {
+		} else if (p_modulation_modes[y][x] == 1) {
 			mod_val = (rep_vals0[p_modulation[y - 1][x]] +
 							  rep_vals0[p_modulation[y + 1][x]] +
 							  rep_vals0[p_modulation[y][x - 1]] +
@@ -472,8 +484,9 @@ static uint32_t twiddle_uv(uint32_t p_height, uint32_t p_width, uint32_t p_y, ui
 		max_value = p_y;
 	}
 
-	if (disable_twiddling)
+	if (disable_twiddling) {
 		return (p_y * p_width + p_x);
+	}
 
 	scr_bit_pos = 1;
 	dst_bit_pos = 1;
@@ -533,10 +546,11 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 	int r_result[4];
 
-	if (p_2bit)
+	if (p_2bit) {
 		x_block_size = BLK_X_2BPP;
-	else
+	} else {
 		x_block_size = BLK_X_4BPP;
+	}
 
 	block_width = MAX(2, p_width / x_block_size);
 	block_height = MAX(2, p_height / BLK_Y_SIZE);
@@ -607,8 +621,9 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 				r_result[i] >>= 3;
 			}
 
-			if (DoPT)
+			if (DoPT) {
 				r_result[3] = 0;
+			}
 
 			u_pos = (x + y * p_width) << 2;
 			p_dst[u_pos + 0] = (uint8_t)r_result[0];
@@ -635,6 +650,7 @@ static void _pvrtc_decompress(Image *p_img) {
 
 	bool make_mipmaps = p_img->has_mipmaps();
 	p_img->create(p_img->get_width(), p_img->get_height(), false, Image::FORMAT_RGBA8, newdata);
-	if (make_mipmaps)
+	if (make_mipmaps) {
 		p_img->generate_mipmaps();
+	}
 }

@@ -47,8 +47,9 @@ ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
 
 void Script::_notification(int p_what) {
 	if (p_what == NOTIFICATION_POSTINITIALIZE) {
-		if (EngineDebugger::is_active())
+		if (EngineDebugger::is_active()) {
 			EngineDebugger::get_script_debugger()->set_break_language(get_language());
+		}
 	}
 }
 
@@ -161,8 +162,9 @@ void ScriptServer::init_languages() {
 
 			for (int i = 0; i < script_classes.size(); i++) {
 				Dictionary c = script_classes[i];
-				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base"))
+				if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
 					continue;
+				}
 				add_global_class(c["class"], c["base"], c["language"], c["path"]);
 			}
 		}
@@ -285,8 +287,9 @@ void ScriptInstance::get_property_state(List<Pair<StringName, Variant>> &state) 
 		if (E->get().usage & PROPERTY_USAGE_STORAGE) {
 			Pair<StringName, Variant> p;
 			p.first = E->get().name;
-			if (get(p.first, p.second))
+			if (get(p.first, p.second)) {
 				state.push_back(p);
+			}
 		}
 	}
 }
@@ -295,8 +298,9 @@ Variant ScriptInstance::call(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 	int argc = 0;
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 
@@ -315,13 +319,15 @@ void ScriptInstance::call_multilevel_reversed(const StringName &p_method, const 
 }
 
 void ScriptInstance::property_set_fallback(const StringName &, const Variant &, bool *r_valid) {
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 }
 
 Variant ScriptInstance::property_get_fallback(const StringName &, bool *r_valid) {
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 	return Variant();
 }
 
@@ -329,8 +335,9 @@ void ScriptInstance::call_multilevel(const StringName &p_method, VARIANT_ARG_DEC
 	VARIANT_ARGPTRS;
 	int argc = 0;
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 
@@ -349,8 +356,9 @@ void ScriptLanguage::frame() {
 }
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
-	if (script->is_placeholder_fallback_enabled())
+	if (script->is_placeholder_fallback_enabled()) {
 		return false;
+	}
 
 	if (values.has(p_name)) {
 		Variant defval;
@@ -414,26 +422,30 @@ void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properti
 
 Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_name, bool *r_is_valid) const {
 	if (values.has(p_name)) {
-		if (r_is_valid)
+		if (r_is_valid) {
 			*r_is_valid = true;
+		}
 		return values[p_name].get_type();
 	}
 
 	if (constants.has(p_name)) {
-		if (r_is_valid)
+		if (r_is_valid) {
 			*r_is_valid = true;
+		}
 		return constants[p_name].get_type();
 	}
 
-	if (r_is_valid)
+	if (r_is_valid) {
 		*r_is_valid = false;
+	}
 
 	return Variant::NIL;
 }
 
 void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
-	if (script->is_placeholder_fallback_enabled())
+	if (script->is_placeholder_fallback_enabled()) {
 		return;
+	}
 
 	if (script.is_valid()) {
 		script->get_script_method_list(p_list);
@@ -441,8 +453,9 @@ void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const 
 }
 
 bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
-	if (script->is_placeholder_fallback_enabled())
+	if (script->is_placeholder_fallback_enabled()) {
 		return false;
+	}
 
 	if (script.is_valid()) {
 		return script->has_method(p_method);
@@ -457,8 +470,9 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		new_values.insert(n);
 
 		if (!values.has(n) || values[n].get_type() != E->get().type) {
-			if (p_values.has(n))
+			if (p_values.has(n)) {
 				values[n] = p_values[n];
+			}
 		}
 	}
 
@@ -466,8 +480,9 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	List<StringName> to_remove;
 
 	for (Map<StringName, Variant>::Element *E = values.front(); E; E = E->next()) {
-		if (!new_values.has(E->key()))
+		if (!new_values.has(E->key())) {
 			to_remove.push_back(E->key());
+		}
 
 		Variant defval;
 		if (script->get_property_default_value(E->key(), defval)) {
@@ -514,8 +529,9 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 		}
 	}
 
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false; // Cannot change the value in either case
+	}
 }
 
 Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_name, bool *r_valid) {
@@ -523,21 +539,24 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 		const Map<StringName, Variant>::Element *E = values.find(p_name);
 
 		if (E) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return E->value();
 		}
 
 		E = constants.find(p_name);
 		if (E) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return E->value();
 		}
 	}
 
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 
 	return Variant();
 }

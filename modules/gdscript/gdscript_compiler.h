@@ -110,8 +110,9 @@ class GDScriptCompiler {
 		}
 
 		int get_constant_pos(const Variant &p_constant) {
-			if (constant_map.has(p_constant))
+			if (constant_map.has(p_constant)) {
 				return constant_map[p_constant];
+			}
 			int pos = constant_map.size();
 			constant_map[p_constant] = pos;
 			return pos;
@@ -119,12 +120,14 @@ class GDScriptCompiler {
 
 		Vector<int> opcodes;
 		void alloc_stack(int p_level) {
-			if (p_level >= stack_max)
+			if (p_level >= stack_max) {
 				stack_max = p_level + 1;
+			}
 		}
 		void alloc_call(int p_params) {
-			if (p_params >= call_max)
+			if (p_params >= call_max) {
 				call_max = p_params;
+			}
 		}
 
 		int current_line;

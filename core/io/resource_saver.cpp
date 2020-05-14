@@ -86,28 +86,32 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 	Error err = ERR_FILE_UNRECOGNIZED;
 
 	for (int i = 0; i < saver_count; i++) {
-		if (!saver[i]->recognize(p_resource))
+		if (!saver[i]->recognize(p_resource)) {
 			continue;
+		}
 
 		List<String> extensions;
 		bool recognized = false;
 		saver[i]->get_recognized_extensions(p_resource, &extensions);
 
 		for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
-			if (E->get().nocasecmp_to(extension) == 0)
+			if (E->get().nocasecmp_to(extension) == 0) {
 				recognized = true;
+			}
 		}
 
-		if (!recognized)
+		if (!recognized) {
 			continue;
+		}
 
 		String old_path = p_resource->get_path();
 
 		String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 		RES rwcopy = p_resource;
-		if (p_flags & FLAG_CHANGE_PATH)
+		if (p_flags & FLAG_CHANGE_PATH) {
 			rwcopy->set_path(local_path);
+		}
 
 		err = saver[i]->save(p_path, p_resource, p_flags);
 
@@ -122,11 +126,13 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 			}
 #endif
 
-			if (p_flags & FLAG_CHANGE_PATH)
+			if (p_flags & FLAG_CHANGE_PATH) {
 				rwcopy->set_path(old_path);
+			}
 
-			if (save_callback && p_path.begins_with("res://"))
+			if (save_callback && p_path.begins_with("res://")) {
 				save_callback(p_resource, p_path);
+			}
 
 			return OK;
 		}
@@ -166,8 +172,9 @@ void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_form
 	// Find saver
 	int i = 0;
 	for (; i < saver_count; ++i) {
-		if (saver[i] == p_format_saver)
+		if (saver[i] == p_format_saver) {
 			break;
+		}
 	}
 
 	ERR_FAIL_COND(i >= saver_count); // Not found
@@ -190,8 +197,9 @@ Ref<ResourceFormatSaver> ResourceSaver::_find_custom_resource_format_saver(Strin
 }
 
 bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
-	if (_find_custom_resource_format_saver(script_path).is_valid())
+	if (_find_custom_resource_format_saver(script_path).is_valid()) {
 		return false;
+	}
 
 	Ref<Resource> res = ResourceLoader::load(script_path);
 	ERR_FAIL_COND_V(res.is_null(), false);
@@ -215,8 +223,9 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 
 void ResourceSaver::remove_custom_resource_format_saver(String script_path) {
 	Ref<ResourceFormatSaver> custom_saver = _find_custom_resource_format_saver(script_path);
-	if (custom_saver.is_valid())
+	if (custom_saver.is_valid()) {
 		remove_resource_format_saver(custom_saver);
+	}
 }
 
 void ResourceSaver::add_custom_savers() {

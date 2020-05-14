@@ -46,8 +46,9 @@ bool Listener3D::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			clear_current();
 		}
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -59,8 +60,9 @@ bool Listener3D::_get(const StringName &p_name, Variant &r_ret) const {
 		} else {
 			r_ret = is_current();
 		}
-	} else
+	} else {
 		return false;
+	}
 
 	return true;
 }
@@ -79,8 +81,9 @@ void Listener3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
 			bool first_listener = get_viewport()->_listener_add(this);
-			if (!get_tree()->is_node_being_edited(this) && (current || first_listener))
+			if (!get_tree()->is_node_being_edited(this) && (current || first_listener)) {
 				make_current();
+			}
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			_request_listener_update();
@@ -109,16 +112,18 @@ Transform Listener3D::get_listener_transform() const {
 void Listener3D::make_current() {
 	current = true;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	get_viewport()->_listener_set(this);
 }
 
 void Listener3D::clear_current() {
 	current = false;
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (get_viewport()->get_listener() == this) {
 		get_viewport()->_listener_set(nullptr);
@@ -129,8 +134,9 @@ void Listener3D::clear_current() {
 bool Listener3D::is_current() const {
 	if (is_inside_tree() && !get_tree()->is_node_being_edited(this)) {
 		return get_viewport()->get_listener() == this;
-	} else
+	} else {
 		return current;
+	}
 
 	return false;
 }

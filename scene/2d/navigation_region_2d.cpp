@@ -47,8 +47,9 @@ Rect2 NavigationPolygon::_edit_get_rect() const {
 		for (int i = 0; i < outlines.size(); i++) {
 			const Vector<Vector2> &outline = outlines[i];
 			const int outline_size = outline.size();
-			if (outline_size < 3)
+			if (outline_size < 3) {
 				continue;
+			}
 			const Vector2 *p = outline.ptr();
 			for (int j = 0; j < outline_size; j++) {
 				if (first) {
@@ -69,10 +70,12 @@ bool NavigationPolygon::_edit_is_selected_on_click(const Point2 &p_point, double
 	for (int i = 0; i < outlines.size(); i++) {
 		const Vector<Vector2> &outline = outlines[i];
 		const int outline_size = outline.size();
-		if (outline_size < 3)
+		if (outline_size < 3) {
 			continue;
-		if (Geometry::is_point_in_polygon(p_point, Variant(outline)))
+		}
+		if (Geometry::is_point_in_polygon(p_point, Variant(outline))) {
 			return true;
+		}
 	}
 	return false;
 }
@@ -231,8 +234,9 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	for (int i = 0; i < outlines.size(); i++) {
 		Vector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
-		if (olsize < 3)
+		if (olsize < 3) {
 			continue;
+		}
 		const Vector2 *r = ol.ptr();
 		for (int j = 0; j < olsize; j++) {
 			outside_point.x = MAX(r[j].x, outside_point.x);
@@ -245,20 +249,23 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	for (int i = 0; i < outlines.size(); i++) {
 		Vector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
-		if (olsize < 3)
+		if (olsize < 3) {
 			continue;
+		}
 		const Vector2 *r = ol.ptr();
 
 		int interscount = 0;
 		//test if this is an outer outline
 		for (int k = 0; k < outlines.size(); k++) {
-			if (i == k)
+			if (i == k) {
 				continue; //no self intersect
+			}
 
 			Vector<Vector2> ol2 = outlines[k];
 			int olsize2 = ol2.size();
-			if (olsize2 < 3)
+			if (olsize2 < 3) {
 				continue;
+			}
 			const Vector2 *r2 = ol2.ptr();
 
 			for (int l = 0; l < olsize2; l++) {
@@ -276,9 +283,9 @@ void NavigationPolygon::make_polygons_from_outlines() {
 			tp[j] = r[j];
 		}
 
-		if (outer)
+		if (outer) {
 			tp.SetOrientation(TRIANGULATOR_CCW);
-		else {
+		} else {
 			tp.SetOrientation(TRIANGULATOR_CW);
 			tp.SetHole(true);
 		}
@@ -346,12 +353,14 @@ void NavigationPolygon::_bind_methods() {
 }
 
 void NavigationRegion2D::set_enabled(bool p_enabled) {
-	if (enabled == p_enabled)
+	if (enabled == p_enabled) {
 		return;
+	}
 	enabled = p_enabled;
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return;
+	}
 
 	if (!enabled) {
 		NavigationServer2D::get_singleton()->region_set_map(region, RID());
@@ -361,8 +370,9 @@ void NavigationRegion2D::set_enabled(bool p_enabled) {
 		}
 	}
 
-	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
+	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) {
 		update();
+	}
 }
 
 bool NavigationRegion2D::is_enabled() const {
@@ -411,8 +421,9 @@ void NavigationRegion2D::_notification(int p_what) {
 			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 				Vector<Vector2> verts = navpoly->get_vertices();
 				int vsize = verts.size();
-				if (vsize < 3)
+				if (vsize < 3) {
 					return;
+				}
 
 				Color color;
 				if (enabled) {
@@ -478,13 +489,15 @@ Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
 }
 
 void NavigationRegion2D::_navpoly_changed() {
-	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()))
+	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		update();
+	}
 }
 
 String NavigationRegion2D::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	if (!navpoly.is_valid()) {
 		return TTR("A NavigationPolygon resource must be set or created for this node to work. Please set a property or draw a polygon.");

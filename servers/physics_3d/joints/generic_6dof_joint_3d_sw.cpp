@@ -83,8 +83,9 @@ int G6DOFRotationalLimitMotor3DSW::testLimitValue(real_t test_value) {
 real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 		real_t timeStep, Vector3 &axis, real_t jacDiagABInv,
 		Body3DSW *body0, Body3DSW *body1) {
-	if (!needApplyTorques())
+	if (!needApplyTorques()) {
 		return 0.0f;
+	}
 
 	real_t target_velocity = m_targetVelocity;
 	real_t maxMotorForce = m_maxMotorForce;
@@ -138,8 +139,9 @@ real_t G6DOFRotationalLimitMotor3DSW::solveAngularLimits(
 	Vector3 motorImp = clippedMotorImpulse * axis;
 
 	body0->apply_torque_impulse(motorImp);
-	if (body1)
+	if (body1) {
 		body1->apply_torque_impulse(-motorImp);
+	}
 
 	return clippedMotorImpulse;
 }
@@ -325,10 +327,11 @@ bool Generic6DOFJoint3DSW::setup(real_t p_timestep) {
 	//linear part
 	for (i = 0; i < 3; i++) {
 		if (m_linearLimits.enable_limit[i] && m_linearLimits.isLimited(i)) {
-			if (m_useLinearReferenceFrameA)
+			if (m_useLinearReferenceFrameA) {
 				normalWorld = m_calculatedTransformA.basis.get_axis(i);
-			else
+			} else {
 				normalWorld = m_calculatedTransformB.basis.get_axis(i);
+			}
 
 			buildLinearJacobian(
 					m_jacLinear[i], normalWorld,
@@ -367,10 +370,11 @@ void Generic6DOFJoint3DSW::solve(real_t p_timestep) {
 		if (m_linearLimits.enable_limit[i] && m_linearLimits.isLimited(i)) {
 			jacDiagABInv = real_t(1.) / m_jacLinear[i].getDiagonal();
 
-			if (m_useLinearReferenceFrameA)
+			if (m_useLinearReferenceFrameA) {
 				linear_axis = m_calculatedTransformA.basis.get_axis(i);
-			else
+			} else {
 				linear_axis = m_calculatedTransformB.basis.get_axis(i);
+			}
 
 			m_linearLimits.solveLinearAxis(
 					m_timeStep,

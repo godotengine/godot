@@ -64,8 +64,9 @@ void CollisionPolygon3DEditor::_notification(int p_what) {
 void CollisionPolygon3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;
-		if (imgeom->get_parent() == p_node)
+		if (imgeom->get_parent() == p_node) {
 			p_node->remove_child(imgeom);
+		}
 		hide();
 		set_process(false);
 	}
@@ -102,8 +103,9 @@ void CollisionPolygon3DEditor::_wip_close() {
 }
 
 bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-	if (!node)
+	if (!node) {
 		return false;
+	}
 
 	Transform gt = node->get_global_transform();
 	Transform gi = gt.affine_inverse();
@@ -120,8 +122,9 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 		Vector3 spoint;
 
-		if (!p.intersects_ray(ray_from, ray_dir, &spoint))
+		if (!p.intersects_ray(ray_from, ray_dir, &spoint)) {
 			return false;
+		}
 
 		spoint = gi.xform(spoint);
 
@@ -194,8 +197,9 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 								};
 
 								Vector2 cp = Geometry::get_closest_point_to_segment_2d(gpoint, points);
-								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2)
+								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2) {
 									continue; //not valid to reuse point
+								}
 
 								real_t d = cp.distance_to(gpoint);
 								if (d < closest_dist && d < grab_threshold) {
@@ -304,8 +308,9 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 
 			Vector3 spoint;
 
-			if (!p.intersects_ray(ray_from, ray_dir, &spoint))
+			if (!p.intersects_ray(ray_from, ray_dir, &spoint)) {
 				return false;
+			}
 
 			spoint = gi.xform(spoint);
 
@@ -330,22 +335,25 @@ bool CollisionPolygon3DEditor::forward_spatial_gui_input(Camera3D *p_camera, con
 }
 
 float CollisionPolygon3DEditor::_get_depth() {
-	if (bool(node->call("_has_editable_3d_polygon_no_depth")))
+	if (bool(node->call("_has_editable_3d_polygon_no_depth"))) {
 		return 0;
+	}
 
 	return float(node->call("get_depth"));
 }
 
 void CollisionPolygon3DEditor::_polygon_draw() {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	Vector<Vector2> poly;
 
-	if (wip_active)
+	if (wip_active) {
 		poly = wip;
-	else
+	} else {
 		poly = node->call("get_polygon");
+	}
 
 	float depth = _get_depth() * 0.5;
 
@@ -358,15 +366,17 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 	for (int i = 0; i < poly.size(); i++) {
 		Vector2 p, p2;
 		p = i == edited_point ? edited_point_pos : poly[i];
-		if ((wip_active && i == poly.size() - 1) || (((i + 1) % poly.size()) == edited_point))
+		if ((wip_active && i == poly.size() - 1) || (((i + 1) % poly.size()) == edited_point)) {
 			p2 = edited_point_pos;
-		else
+		} else {
 			p2 = poly[(i + 1) % poly.size()];
+		}
 
-		if (i == 0)
+		if (i == 0) {
 			rect.position = p;
-		else
+		} else {
 			rect.expand_to(p);
+		}
 
 		Vector3 point = Vector3(p.x, p.y, depth);
 		Vector3 next_point = Vector3(p2.x, p2.y, depth);
@@ -431,8 +441,9 @@ void CollisionPolygon3DEditor::_polygon_draw() {
 
 	m->clear_surfaces();
 
-	if (poly.size() == 0)
+	if (poly.size() == 0) {
 		return;
+	}
 
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
@@ -471,8 +482,9 @@ void CollisionPolygon3DEditor::edit(Node *p_collision_polygon) {
 	} else {
 		node = nullptr;
 
-		if (imgeom->get_parent())
+		if (imgeom->get_parent()) {
 			imgeom->get_parent()->remove_child(imgeom);
+		}
 
 		set_process(false);
 	}

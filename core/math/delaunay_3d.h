@@ -81,12 +81,15 @@ class Delaunay3D {
 
 		_FORCE_INLINE_ Triangle() {}
 		_FORCE_INLINE_ Triangle(uint32_t p_a, uint32_t p_b, uint32_t p_c) {
-			if (p_a > p_b)
+			if (p_a > p_b) {
 				SWAP(p_a, p_b);
-			if (p_b > p_c)
+			}
+			if (p_b > p_c) {
 				SWAP(p_b, p_c);
-			if (p_a > p_b)
+			}
+			if (p_a > p_b) {
 				SWAP(p_a, p_b);
+			}
 
 			triangle[0] = p_a;
 			triangle[1] = p_b;

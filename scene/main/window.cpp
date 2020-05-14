@@ -53,8 +53,9 @@ String Window::get_title() const {
 
 void Window::set_current_screen(int p_screen) {
 	current_screen = p_screen;
-	if (window_id == DisplayServer::INVALID_WINDOW_ID)
+	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
 		return;
+	}
 	DisplayServer::get_singleton()->window_set_current_screen(p_screen, window_id);
 }
 
@@ -862,8 +863,9 @@ void Window::child_controls_changed() {
 }
 
 void Window::_window_input(const Ref<InputEvent> &p_ev) {
-	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev)))
+	if (Engine::get_singleton()->is_editor_hint() && (Object::cast_to<InputEventJoypadButton>(p_ev.ptr()) || Object::cast_to<InputEventJoypadMotion>(*p_ev))) {
 		return; //avoid joy input on editor
+	}
 
 	if (EngineDebugger::is_active()) {
 		//quit from game window using F8
@@ -1096,8 +1098,9 @@ void Window::remove_child_notify(Node *p_child) {
 }
 
 void Window::set_theme(const Ref<Theme> &p_theme) {
-	if (theme == p_theme)
+	if (theme == p_theme) {
 		return;
+	}
 
 	theme = p_theme;
 

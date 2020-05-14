@@ -134,8 +134,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 								}
 							}
 
-							if (on_border)
+							if (on_border) {
 								break;
+							}
 						}
 
 						if (on_border) {
@@ -145,8 +146,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 								Vector2 normal;
 								for (int x = i - 2; x <= i + 2; x++) {
 									for (int y = j - 2; y <= j + 2; y++) {
-										if (x == i && y == j)
+										if (x == i && y == j) {
 											continue;
+										}
 
 										if (x < 0 || y < 0 || x >= s.width || y >= s.height || r[(y * s.width + x) * 4 + 3] <= 128) {
 											normal += Vector2(x - i, y - j).normalized();

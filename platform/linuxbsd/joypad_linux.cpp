@@ -219,8 +219,9 @@ void JoypadLinux::close_joypad(int p_id) {
 			close_joypad(i);
 		};
 		return;
-	} else if (p_id < 0)
+	} else if (p_id < 0) {
 		return;
+	}
 
 	Joypad &joy = joypads[p_id];
 
@@ -434,8 +435,9 @@ void JoypadLinux::process_joypads() {
 		return;
 	}
 	for (int i = 0; i < JOYPADS_MAX; i++) {
-		if (joypads[i].fd == -1)
+		if (joypads[i].fd == -1) {
 			continue;
+		}
 
 		input_event events[32];
 		Joypad *joy = &joypads[i];
@@ -449,8 +451,9 @@ void JoypadLinux::process_joypads() {
 
 				// ev may be tainted and out of MAX_KEY range, which will cause
 				// joy->key_map[ev.code] to crash
-				if (ev.code >= MAX_KEY)
+				if (ev.code >= MAX_KEY) {
 					return;
+				}
 
 				switch (ev.type) {
 					case EV_KEY:
@@ -462,31 +465,36 @@ void JoypadLinux::process_joypads() {
 						switch (ev.code) {
 							case ABS_HAT0X:
 								if (ev.value != 0) {
-									if (ev.value < 0)
+									if (ev.value < 0) {
 										joy->dpad |= Input::HAT_MASK_LEFT;
-									else
+									} else {
 										joy->dpad |= Input::HAT_MASK_RIGHT;
-								} else
+									}
+								} else {
 									joy->dpad &= ~(Input::HAT_MASK_LEFT | Input::HAT_MASK_RIGHT);
+								}
 
 								input->joy_hat(i, joy->dpad);
 								break;
 
 							case ABS_HAT0Y:
 								if (ev.value != 0) {
-									if (ev.value < 0)
+									if (ev.value < 0) {
 										joy->dpad |= Input::HAT_MASK_UP;
-									else
+									} else {
 										joy->dpad |= Input::HAT_MASK_DOWN;
-								} else
+									}
+								} else {
 									joy->dpad &= ~(Input::HAT_MASK_UP | Input::HAT_MASK_DOWN);
+								}
 
 								input->joy_hat(i, joy->dpad);
 								break;
 
 							default:
-								if (ev.code >= MAX_ABS)
+								if (ev.code >= MAX_ABS) {
 									return;
+								}
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
 									Input::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;

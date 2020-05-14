@@ -374,8 +374,9 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	title->set_text(p_title);
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
-	if (!p_preview.is_valid())
+	if (!p_preview.is_valid()) {
 		icon->set_texture(get_theme_icon("FileBrokenBigThumb", "EditorIcons"));
+	}
 	host = p_download_url;
 	sha256 = p_sha256_hash;
 	_make_request();
@@ -597,8 +598,9 @@ void EditorAssetLibrary::_install_asset() {
 	for (int i = 0; i < downloads_hb->get_child_count(); i++) {
 		EditorAssetLibraryItemDownload *d = Object::cast_to<EditorAssetLibraryItemDownload>(downloads_hb->get_child(i));
 		if (d && d->get_asset_id() == description->get_asset_id()) {
-			if (EditorNode::get_singleton() != nullptr)
+			if (EditorNode::get_singleton() != nullptr) {
 				EditorNode::get_singleton()->show_warning(TTR("Download for this asset is already in progress!"));
+			}
 			return;
 		}
 	}
@@ -643,8 +645,9 @@ void EditorAssetLibrary::_select_author(int p_id) {
 
 void EditorAssetLibrary::_select_category(int p_id) {
 	for (int i = 0; i < categories->get_item_count(); i++) {
-		if (i == 0)
+		if (i == 0) {
 			continue;
+		}
 		int id = categories->get_item_metadata(i);
 		if (id == p_id) {
 			categories->select(i);
@@ -914,16 +917,19 @@ void EditorAssetLibrary::_search_text_entered(const String &p_text) {
 HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
-	if (p_page_count < 2)
+	if (p_page_count < 2) {
 		return hbc;
+	}
 
 	//do the mario
 	int from = p_page - 5;
-	if (from < 0)
+	if (from < 0) {
 		from = 0;
+	}
 	int to = from + 10;
-	if (to > p_page_count)
+	if (to > p_page_count) {
 		to = p_page_count;
+	}
 
 	hbc->add_spacer();
 	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
@@ -1072,8 +1078,9 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				Array clist = d["categories"];
 				for (int i = 0; i < clist.size(); i++) {
 					Dictionary cat = clist[i];
-					if (!cat.has("name") || !cat.has("id"))
+					if (!cat.has("name") || !cat.has("id")) {
 						continue;
+					}
 					String name = cat["name"];
 					int id = cat["id"];
 					categories->add_item(name);
@@ -1297,8 +1304,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search->connect("pressed", callable_mp(this, &EditorAssetLibrary::_search), make_binds(0));
 	search_hb->add_child(search);
 
-	if (!p_templates_only)
+	if (!p_templates_only) {
 		search_hb->add_child(memnew(VSeparator));
+	}
 
 	Button *open_asset = memnew(Button);
 	open_asset->set_text(TTR("Import..."));

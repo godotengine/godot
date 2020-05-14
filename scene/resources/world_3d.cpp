@@ -71,8 +71,9 @@ struct SpatialIndexer {
 	void _notifier_update(VisibilityNotifier3D *p_notifier, const AABB &p_rect) {
 		Map<VisibilityNotifier3D *, NotifierData>::Element *E = notifiers.find(p_notifier);
 		ERR_FAIL_COND(!E);
-		if (E->get().aabb == p_rect)
+		if (E->get().aabb == p_rect) {
 			return;
+		}
 
 		E->get().aabb = p_rect;
 		octree.move(E->get().id, E->get().aabb);
@@ -133,12 +134,14 @@ struct SpatialIndexer {
 	}
 
 	void _update(uint64_t p_frame) {
-		if (p_frame == last_frame)
+		if (p_frame == last_frame) {
 			return;
+		}
 		last_frame = p_frame;
 
-		if (!changed)
+		if (!changed) {
 			return;
+		}
 
 		for (Map<Camera3D *, CameraData>::Element *E = cameras.front(); E; E = E->next()) {
 			pass++;
@@ -167,8 +170,9 @@ struct SpatialIndexer {
 			}
 
 			for (Map<VisibilityNotifier3D *, uint64_t>::Element *F = E->get().notifiers.front(); F; F = F->next()) {
-				if (F->get() != pass)
+				if (F->get() != pass) {
 					removed.push_back(F->key());
+				}
 			}
 
 			while (!added.empty()) {
@@ -249,10 +253,11 @@ void World3D::set_environment(const Ref<Environment> &p_environment) {
 	}
 
 	environment = p_environment;
-	if (environment.is_valid())
+	if (environment.is_valid()) {
 		RS::get_singleton()->scenario_set_environment(scenario, environment->get_rid());
-	else
+	} else {
 		RS::get_singleton()->scenario_set_environment(scenario, RID());
+	}
 
 	emit_changed();
 }
@@ -267,10 +272,11 @@ void World3D::set_fallback_environment(const Ref<Environment> &p_environment) {
 	}
 
 	fallback_environment = p_environment;
-	if (fallback_environment.is_valid())
+	if (fallback_environment.is_valid()) {
 		RS::get_singleton()->scenario_set_fallback_environment(scenario, p_environment->get_rid());
-	else
+	} else {
 		RS::get_singleton()->scenario_set_fallback_environment(scenario, RID());
+	}
 
 	emit_changed();
 }
@@ -281,10 +287,11 @@ Ref<Environment> World3D::get_fallback_environment() const {
 
 void World3D::set_camera_effects(const Ref<CameraEffects> &p_camera_effects) {
 	camera_effects = p_camera_effects;
-	if (camera_effects.is_valid())
+	if (camera_effects.is_valid()) {
 		RS::get_singleton()->scenario_set_camera_effects(scenario, camera_effects->get_rid());
-	else
+	} else {
 		RS::get_singleton()->scenario_set_camera_effects(scenario, RID());
+	}
 }
 
 Ref<CameraEffects> World3D::get_camera_effects() const {

@@ -81,8 +81,9 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		}
 
 		//low pass filter
-		if (v.cutoff == 0)
+		if (v.cutoff == 0) {
 			continue;
+		}
 		float auxlp = expf(-2.0 * Math_PI * v.cutoff / mix_rate);
 		float c1 = 1.0 - auxlp;
 		float c2 = auxlp;

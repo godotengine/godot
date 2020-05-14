@@ -109,35 +109,47 @@ public:
 };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {
-	if (position.x >= (p_aabb.position.x + p_aabb.size.x))
+	if (position.x >= (p_aabb.position.x + p_aabb.size.x)) {
 		return false;
-	if ((position.x + size.x) <= p_aabb.position.x)
+	}
+	if ((position.x + size.x) <= p_aabb.position.x) {
 		return false;
-	if (position.y >= (p_aabb.position.y + p_aabb.size.y))
+	}
+	if (position.y >= (p_aabb.position.y + p_aabb.size.y)) {
 		return false;
-	if ((position.y + size.y) <= p_aabb.position.y)
+	}
+	if ((position.y + size.y) <= p_aabb.position.y) {
 		return false;
-	if (position.z >= (p_aabb.position.z + p_aabb.size.z))
+	}
+	if (position.z >= (p_aabb.position.z + p_aabb.size.z)) {
 		return false;
-	if ((position.z + size.z) <= p_aabb.position.z)
+	}
+	if ((position.z + size.z) <= p_aabb.position.z) {
 		return false;
+	}
 
 	return true;
 }
 
 inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
-	if (position.x > (p_aabb.position.x + p_aabb.size.x))
+	if (position.x > (p_aabb.position.x + p_aabb.size.x)) {
 		return false;
-	if ((position.x + size.x) < p_aabb.position.x)
+	}
+	if ((position.x + size.x) < p_aabb.position.x) {
 		return false;
-	if (position.y > (p_aabb.position.y + p_aabb.size.y))
+	}
+	if (position.y > (p_aabb.position.y + p_aabb.size.y)) {
 		return false;
-	if ((position.y + size.y) < p_aabb.position.y)
+	}
+	if ((position.y + size.y) < p_aabb.position.y) {
 		return false;
-	if (position.z > (p_aabb.position.z + p_aabb.size.z))
+	}
+	if (position.z > (p_aabb.position.z + p_aabb.size.z)) {
 		return false;
-	if ((position.z + size.z) < p_aabb.position.z)
+	}
+	if ((position.z + size.z) < p_aabb.position.z) {
 		return false;
+	}
 
 	return true;
 }
@@ -202,8 +214,9 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 				(p.normal.y > 0) ? -half_extents.y : half_extents.y,
 				(p.normal.z > 0) ? -half_extents.z : half_extents.z);
 		point += ofs;
-		if (p.is_point_over(point))
+		if (p.is_point_over(point)) {
 			return false;
+		}
 	}
 
 	// Make sure all points in the shape aren't fully separated from the AABB on
@@ -243,26 +256,33 @@ bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
 				(p.normal.y < 0) ? -half_extents.y : half_extents.y,
 				(p.normal.z < 0) ? -half_extents.z : half_extents.z);
 		point += ofs;
-		if (p.is_point_over(point))
+		if (p.is_point_over(point)) {
 			return false;
+		}
 	}
 
 	return true;
 }
 
 bool AABB::has_point(const Vector3 &p_point) const {
-	if (p_point.x < position.x)
+	if (p_point.x < position.x) {
 		return false;
-	if (p_point.y < position.y)
+	}
+	if (p_point.y < position.y) {
 		return false;
-	if (p_point.z < position.z)
+	}
+	if (p_point.z < position.z) {
 		return false;
-	if (p_point.x > position.x + size.x)
+	}
+	if (p_point.x > position.x + size.x) {
 		return false;
-	if (p_point.y > position.y + size.y)
+	}
+	if (p_point.y > position.y + size.y) {
 		return false;
-	if (p_point.z > position.z + size.z)
+	}
+	if (p_point.z > position.z + size.z) {
 		return false;
+	}
 
 	return true;
 }
@@ -271,19 +291,25 @@ inline void AABB::expand_to(const Vector3 &p_vector) {
 	Vector3 begin = position;
 	Vector3 end = position + size;
 
-	if (p_vector.x < begin.x)
+	if (p_vector.x < begin.x) {
 		begin.x = p_vector.x;
-	if (p_vector.y < begin.y)
+	}
+	if (p_vector.y < begin.y) {
 		begin.y = p_vector.y;
-	if (p_vector.z < begin.z)
+	}
+	if (p_vector.z < begin.z) {
 		begin.z = p_vector.z;
+	}
 
-	if (p_vector.x > end.x)
+	if (p_vector.x > end.x) {
 		end.x = p_vector.x;
-	if (p_vector.y > end.y)
+	}
+	if (p_vector.y > end.y) {
 		end.y = p_vector.y;
-	if (p_vector.z > end.z)
+	}
+	if (p_vector.z > end.z) {
 		end.z = p_vector.z;
+	}
 
 	position = begin;
 	size = end - begin;
@@ -348,12 +374,15 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 		tymin = (upbound.y - p_from.y) * divy;
 		tymax = (position.y - p_from.y) * divy;
 	}
-	if ((tmin > tymax) || (tymin > tmax))
+	if ((tmin > tymax) || (tymin > tmax)) {
 		return false;
-	if (tymin > tmin)
+	}
+	if (tymin > tmin) {
 		tmin = tymin;
-	if (tymax < tmax)
+	}
+	if (tymax < tmax) {
 		tmax = tymax;
+	}
 	if (p_dir.z >= 0) {
 		tzmin = (position.z - p_from.z) * divz;
 		tzmax = (upbound.z - p_from.z) * divz;
@@ -361,12 +390,15 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 		tzmin = (upbound.z - p_from.z) * divz;
 		tzmax = (position.z - p_from.z) * divz;
 	}
-	if ((tmin > tzmax) || (tzmin > tmax))
+	if ((tmin > tzmax) || (tzmin > tmax)) {
 		return false;
-	if (tzmin > tmin)
+	}
+	if (tzmin > tmin) {
 		tmin = tzmin;
-	if (tzmax < tmax)
+	}
+	if (tzmax < tmax) {
 		tmax = tzmax;
+	}
 	return ((tmin < t1) && (tmax > t0));
 }
 

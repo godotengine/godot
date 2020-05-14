@@ -151,8 +151,9 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				Vector2 uv;
 				Vector3 lnormal;
 				get_uv_and_normal(intersection, p_vtx, p_uv, p_normal, uv, lnormal);
-				if (lnormal == Vector3()) //just in case normal as nor provided
+				if (lnormal == Vector3()) { //just in case normal as nor provided
 					lnormal = normal;
+				}
 
 				int uv_x = CLAMP(int(Math::fposmod(uv.x, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
 				int uv_y = CLAMP(int(Math::fposmod(uv.y, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
@@ -182,8 +183,9 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 			Vector3 lnormal;
 			Vector2 uv;
 			get_uv_and_normal(inters, p_vtx, p_uv, p_normal, uv, normal);
-			if (lnormal == Vector3()) //just in case normal as nor provided
+			if (lnormal == Vector3()) { //just in case normal as nor provided
 				lnormal = normal;
+			}
 
 			int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
 			int uv_y = CLAMP(Math::fposmod(uv.y, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
@@ -256,8 +258,9 @@ void Voxelizer::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, co
 				nz += half;
 			}
 			//make sure to not plot beyond limits
-			if (nx < 0 || nx >= axis_cell_size[0] || ny < 0 || ny >= axis_cell_size[1] || nz < 0 || nz >= axis_cell_size[2])
+			if (nx < 0 || nx >= axis_cell_size[0] || ny < 0 || ny >= axis_cell_size[1] || nz < 0 || nz >= axis_cell_size[2]) {
 				continue;
+			}
 
 			{
 				AABB test_aabb = aabb;
@@ -377,8 +380,9 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 
 void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
+		}
 
 		Ref<Material> src_material;
 
@@ -435,8 +439,9 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 				}
 
 				//test against original bounds
-				if (!Geometry::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
+				if (!Geometry::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
+				}
 				//plot
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
@@ -466,8 +471,9 @@ void Voxelizer::plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, const Vec
 				}
 
 				//test against original bounds
-				if (!Geometry::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs))
+				if (!Geometry::triangle_box_overlap(original_bounds.position + original_bounds.size * 0.5, original_bounds.size * 0.5, vtxs)) {
 					continue;
+				}
 				//plot face
 				_plot_face(0, 0, 0, 0, 0, vtxs, normal, uvs, material, po2_bounds);
 			}
@@ -597,8 +603,9 @@ void Voxelizer::_fixup_plot(int p_idx, int p_level) {
 		for (int i = 0; i < 8; i++) {
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY)
+			if (child == CHILD_EMPTY) {
 				continue;
+			}
 
 			_fixup_plot(child, p_level + 1);
 			alpha_average += bake_cells[child].alpha;
@@ -625,8 +632,9 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds) {
 	leaf_voxel_count = 0;
 
 	for (int i = 0; i < 3; i++) {
-		if (i == longest_axis)
+		if (i == longest_axis) {
 			continue;
+		}
 
 		axis_cell_size[i] = axis_cell_size[longest_axis];
 		float axis_size = po2_bounds.size[longest_axis];
@@ -798,8 +806,9 @@ static void edt(float *f, int stride, int n) {
 
 	k = 0;
 	for (int q = 0; q <= n - 1; q++) {
-		while (z[k + 1] < q)
+		while (z[k + 1] < q) {
 			k++;
+		}
 		d[q] = square(q - v[k]) + f[v[k] * stride];
 	}
 
@@ -898,18 +907,22 @@ void Voxelizer::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Ref<Mult
 		for (int i = 0; i < 8; i++) {
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells)
+			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells) {
 				continue;
+			}
 
 			AABB aabb = p_aabb;
 			aabb.size *= 0.5;
 
-			if (i & 1)
+			if (i & 1) {
 				aabb.position.x += aabb.size.x;
-			if (i & 2)
+			}
+			if (i & 2) {
 				aabb.position.y += aabb.size.y;
-			if (i & 4)
+			}
+			if (i & 4) {
 				aabb.position.z += aabb.size.z;
+			}
 
 			_debug_mesh(bake_cells[p_idx].children[i], p_level + 1, aabb, p_multimesh, idx);
 		}
@@ -948,10 +961,11 @@ Ref<MultiMesh> Voxelizer::create_debug_multimesh() {
 				v[2] = v[1] * (1 - 2 * (j & 1));
 
 				for (int k = 0; k < 3; k++) {
-					if (i < 3)
+					if (i < 3) {
 						face_points[j][(i + k) % 3] = v[k];
-					else
+					} else {
 						face_points[3 - j][(i + k) % 3] = -v[k];
+					}
 				}
 			}
 

@@ -33,8 +33,9 @@
 #include <string.h>
 
 StringBuilder &StringBuilder::append(const String &p_string) {
-	if (p_string == String())
+	if (p_string == String()) {
 		return *this;
+	}
 
 	strings.push_back(p_string);
 	appended_strings.push_back(-1);
@@ -56,8 +57,9 @@ StringBuilder &StringBuilder::append(const char *p_cstring) {
 }
 
 String StringBuilder::as_string() const {
-	if (string_length == 0)
+	if (string_length == 0) {
 		return "";
+	}
 
 	CharType *buffer = memnew_arr(CharType, string_length);
 

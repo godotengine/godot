@@ -50,8 +50,9 @@ void Array::_ref(const Array &p_from) const {
 
 	ERR_FAIL_COND(!_fp); // should NOT happen.
 
-	if (_fp == _p)
+	if (_fp == _p) {
 		return; // whatever it is, nothing to do here move along
+	}
 
 	bool success = _fp->refcount.ref();
 
@@ -63,8 +64,9 @@ void Array::_ref(const Array &p_from) const {
 }
 
 void Array::_unref() const {
-	if (!_p)
+	if (!_p) {
 		return;
+	}
 
 	if (_p->refcount.unref()) {
 		memdelete(_p);
@@ -189,8 +191,9 @@ int Array::find(const Variant &p_value, int p_from) const {
 }
 
 int Array::rfind(const Variant &p_value, int p_from) const {
-	if (_p->array.size() == 0)
+	if (_p->array.size() == 0) {
 		return -1;
+	}
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "rfind"), -1);
 
 	if (p_from < 0) {
@@ -218,8 +221,9 @@ int Array::find_last(const Variant &p_value) const {
 
 int Array::count(const Variant &p_value) const {
 	ERR_FAIL_COND_V(!_p->typed.validate(p_value, "count"), 0);
-	if (_p->array.size() == 0)
+	if (_p->array.size() == 0) {
 		return 0;
+	}
 
 	int amount = 0;
 	for (int i = 0; i < _p->array.size(); i++) {
@@ -278,14 +282,17 @@ Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // l
 
 	ERR_FAIL_COND_V_MSG(p_step == 0, new_arr, "Array slice step size cannot be zero.");
 
-	if (empty()) // Don't try to slice empty arrays.
+	if (empty()) { // Don't try to slice empty arrays.
 		return new_arr;
+	}
 	if (p_step > 0) {
-		if (p_begin >= size() || p_end < -size())
+		if (p_begin >= size() || p_end < -size()) {
 			return new_arr;
+		}
 	} else { // p_step < 0
-		if (p_begin < -size() || p_end >= size())
+		if (p_begin < -size() || p_end >= size()) {
 			return new_arr;
+		}
 	}
 
 	int begin = _clamp_slice_index(p_begin);
@@ -316,8 +323,9 @@ struct _ArrayVariantSort {
 		bool valid = false;
 		Variant res;
 		Variant::evaluate(Variant::OP_LESS, p_l, p_r, res, valid);
-		if (!valid)
+		if (!valid) {
 			res = false;
+		}
 		return res;
 	}
 };
@@ -335,8 +343,9 @@ struct _ArrayVariantSortCustom {
 		const Variant *args[2] = { &p_l, &p_r };
 		Callable::CallError err;
 		bool res = obj->call(func, args, 2, err);
-		if (err.error != Callable::CallError::CALL_OK)
+		if (err.error != Callable::CallError::CALL_OK) {
 			res = false;
+		}
 		return res;
 	}
 };
@@ -352,8 +361,9 @@ Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 
 void Array::shuffle() {
 	const int n = _p->array.size();
-	if (n < 2)
+	if (n < 2) {
 		return;
+	}
 	Variant *data = _p->array.ptrw();
 	for (int i = n - 1; i >= 1; i--) {
 		const int j = Math::rand() % (i + 1);

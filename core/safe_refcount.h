@@ -43,8 +43,9 @@
 
 template <class T>
 static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
-	if (*pw == 0)
+	if (*pw == 0) {
 		return 0;
+	}
 
 	(*pw)++;
 
@@ -81,8 +82,9 @@ static _ALWAYS_INLINE_ T atomic_add(volatile T *pw, volatile V val) {
 
 template <class T, class V>
 static _ALWAYS_INLINE_ T atomic_exchange_if_greater(volatile T *pw, volatile V val) {
-	if (val > *pw)
+	if (val > *pw) {
 		*pw = val;
+	}
 
 	return *pw;
 }
@@ -98,10 +100,12 @@ template <class T>
 static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
 	while (true) {
 		T tmp = static_cast<T const volatile &>(*pw);
-		if (tmp == 0)
+		if (tmp == 0) {
 			return 0; // if zero, can't add to it anymore
-		if (__sync_val_compare_and_swap(pw, tmp, tmp + 1) == tmp)
+		}
+		if (__sync_val_compare_and_swap(pw, tmp, tmp + 1) == tmp) {
 			return tmp + 1;
+		}
 	}
 }
 
@@ -129,10 +133,12 @@ template <class T, class V>
 static _ALWAYS_INLINE_ T atomic_exchange_if_greater(volatile T *pw, volatile V val) {
 	while (true) {
 		T tmp = static_cast<T const volatile &>(*pw);
-		if (tmp >= val)
+		if (tmp >= val) {
 			return tmp; // already greater, or equal
-		if (__sync_val_compare_and_swap(pw, tmp, val) == tmp)
+		}
+		if (__sync_val_compare_and_swap(pw, tmp, val) == tmp) {
 			return val;
+		}
 	}
 }
 

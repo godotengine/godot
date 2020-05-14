@@ -113,8 +113,9 @@ String WorldEnvironment::get_configuration_warning() const {
 		return TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
 	}
 
-	if (!is_inside_tree())
+	if (!is_inside_tree()) {
 		return String();
+	}
 
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_world_environment_" + itos(get_viewport()->find_world_3d()->get_scenario().get_id()), &nodes);

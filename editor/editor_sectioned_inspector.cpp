@@ -40,8 +40,9 @@ class SectionedInspectorFilter : public Object {
 	bool allow_sub;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-		if (!edited)
+		if (!edited) {
 			return false;
+		}
 
 		String name = p_name;
 		if (section != "") {
@@ -54,8 +55,9 @@ class SectionedInspectorFilter : public Object {
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-		if (!edited)
+		if (!edited) {
 			return false;
+		}
 
 		String name = p_name;
 		if (section != "") {
@@ -68,8 +70,9 @@ class SectionedInspectorFilter : public Object {
 		return valid;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-		if (!edited)
+		if (!edited) {
 			return;
+		}
 
 		List<PropertyInfo> pinfo;
 		edited->get_property_list(&pinfo);
@@ -77,8 +80,9 @@ class SectionedInspectorFilter : public Object {
 			PropertyInfo pi = E->get();
 			int sp = pi.name.find("/");
 
-			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) //skip resource stuff
+			if (pi.name == "resource_path" || pi.name == "resource_name" || pi.name == "resource_local_to_scene" || pi.name.begins_with("script/") || pi.name.begins_with("_global_script")) { //skip resource stuff
 				continue;
+			}
 
 			if (sp == -1) {
 				pi.name = "global/" + pi.name;
@@ -86,8 +90,9 @@ class SectionedInspectorFilter : public Object {
 
 			if (pi.name.begins_with(section + "/")) {
 				pi.name = pi.name.replace_first(section + "/", "");
-				if (!allow_sub && pi.name.find("/") != -1)
+				if (!allow_sub && pi.name.find("/") != -1) {
 					continue;
+				}
 				p_list->push_back(pi);
 			}
 		}
@@ -129,8 +134,9 @@ void SectionedInspector::_bind_methods() {
 }
 
 void SectionedInspector::_section_selected() {
-	if (!sections->get_selected())
+	if (!sections->get_selected()) {
 		return;
+	}
 
 	selected_category = sections->get_selected()->get_metadata(0);
 	filter->set_section(selected_category, sections->get_selected()->get_children() == nullptr);
@@ -144,19 +150,21 @@ void SectionedInspector::set_current_section(const String &p_section) {
 }
 
 String SectionedInspector::get_current_section() const {
-	if (sections->get_selected())
+	if (sections->get_selected()) {
 		return sections->get_selected()->get_metadata(0);
-	else
+	} else {
 		return "";
+	}
 }
 
 String SectionedInspector::get_full_item_path(const String &p_item) {
 	String base = get_current_section();
 
-	if (base != "")
+	if (base != "") {
 		return base + "/" + p_item;
-	else
+	} else {
 		return p_item;
+	}
 }
 
 void SectionedInspector::edit(Object *p_object) {
@@ -183,8 +191,9 @@ void SectionedInspector::edit(Object *p_object) {
 
 		TreeItem *first_item = sections->get_root();
 		if (first_item) {
-			while (first_item->get_children())
+			while (first_item->get_children()) {
 				first_item = first_item->get_children();
+			}
 
 			first_item->select(0);
 			selected_category = first_item->get_metadata(0);
@@ -199,8 +208,9 @@ void SectionedInspector::update_category_list() {
 
 	Object *o = ObjectDB::get_instance(obj);
 
-	if (!o)
+	if (!o) {
 		return;
+	}
 
 	List<PropertyInfo> pinfo;
 	o->get_property_list(&pinfo);
@@ -211,26 +221,31 @@ void SectionedInspector::update_category_list() {
 	section_map[""] = root;
 
 	String filter;
-	if (search_box)
+	if (search_box) {
 		filter = search_box->get_text();
+	}
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 		PropertyInfo pi = E->get();
 
-		if (pi.usage & PROPERTY_USAGE_CATEGORY)
+		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
-		else if (!(pi.usage & PROPERTY_USAGE_EDITOR))
+		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR)) {
 			continue;
+		}
 
-		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
+		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script")) {
 			continue;
+		}
 
-		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize()))
+		if (!filter.empty() && !filter.is_subsequence_ofi(pi.name) && !filter.is_subsequence_ofi(pi.name.replace("/", " ").capitalize())) {
 			continue;
+		}
 
 		int sp = pi.name.find("/");
-		if (sp == -1)
+		if (sp == -1) {
 			pi.name = "global/" + pi.name;
+		}
 
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;

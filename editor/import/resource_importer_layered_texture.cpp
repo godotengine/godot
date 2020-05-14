@@ -239,8 +239,9 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	Ref<Image> image;
 	image.instance();
 	Error err = ImageLoader::load_image(p_source_file, image, nullptr, false, 1.0);
-	if (err != OK)
+	if (err != OK) {
 		return err;
+	}
 
 	if (compress_mode == COMPRESS_BASIS_UNIVERSAL && image->get_format() >= Image::FORMAT_RF) {
 		//basis universal does not support float formats, fall back

@@ -86,8 +86,9 @@ public:
 	}
 
 	VideoDecoderGDNative *get_decoder(const String &extension) {
-		if (extensions.size() == 0 || !extensions.has(extension))
+		if (extensions.size() == 0 || !extensions.has(extension)) {
 			return nullptr;
+		}
 		return decoders[extensions[extension]];
 	}
 

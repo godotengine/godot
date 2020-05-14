@@ -40,13 +40,15 @@
 #include "scene/main/window.h"
 
 void GridMapEditor::_node_removed(Node *p_node) {
-	if (p_node == node)
+	if (p_node == node) {
 		node = nullptr;
+	}
 }
 
 void GridMapEditor::_configure() {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	update_grid();
 }
@@ -213,8 +215,9 @@ void GridMapEditor::_menu_option(int p_option) {
 
 		case MENU_OPTION_SELECTION_DUPLICATE:
 		case MENU_OPTION_SELECTION_CUT: {
-			if (!(selection.active && input_action == INPUT_NONE))
+			if (!(selection.active && input_action == INPUT_NONE)) {
 				break;
+			}
 
 			_set_clipboard_data();
 
@@ -231,15 +234,17 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_paste_indicator();
 		} break;
 		case MENU_OPTION_SELECTION_CLEAR: {
-			if (!selection.active)
+			if (!selection.active) {
 				break;
+			}
 
 			_delete_selection();
 
 		} break;
 		case MENU_OPTION_SELECTION_FILL: {
-			if (!selection.active)
+			if (!selection.active) {
 				return;
+			}
 
 			_fill_selection();
 
@@ -303,17 +308,21 @@ void GridMapEditor::_update_selection_transform() {
 }
 
 void GridMapEditor::_validate_selection() {
-	if (!selection.active)
+	if (!selection.active) {
 		return;
+	}
 	selection.begin = selection.click;
 	selection.end = selection.current;
 
-	if (selection.begin.x > selection.end.x)
+	if (selection.begin.x > selection.end.x) {
 		SWAP(selection.begin.x, selection.end.x);
-	if (selection.begin.y > selection.end.y)
+	}
+	if (selection.begin.y > selection.end.y) {
 		SWAP(selection.begin.y, selection.end.y);
-	if (selection.begin.z > selection.end.z)
+	}
+	if (selection.begin.z > selection.end.z) {
 		SWAP(selection.begin.z, selection.end.z);
+	}
 
 	_update_selection_transform();
 }
@@ -336,16 +345,20 @@ void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const 
 }
 
 bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click) {
-	if (!spatial_editor)
+	if (!spatial_editor) {
 		return false;
+	}
 
-	if (selected_palette < 0 && input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE)
+	if (selected_palette < 0 && input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE) {
 		return false;
+	}
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
-	if (mesh_library.is_null())
+	if (mesh_library.is_null()) {
 		return false;
-	if (input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE && !mesh_library->has_item(selected_palette))
+	}
+	if (input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE && !mesh_library->has_item(selected_palette)) {
 		return false;
+	}
 
 	Camera3D *camera = p_camera;
 	Vector3 from = camera->project_ray_origin(p_point);
@@ -360,27 +373,30 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 	p.d = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 
 	Vector3 inters;
-	if (!p.intersects_segment(from, from + normal * settings_pick_distance->get_value(), &inters))
+	if (!p.intersects_segment(from, from + normal * settings_pick_distance->get_value(), &inters)) {
 		return false;
+	}
 
 	// Make sure the intersection is inside the frustum planes, to avoid
 	// Painting on invisible regions.
 	for (int i = 0; i < planes.size(); i++) {
 		Plane fp = local_xform.xform(planes[i]);
-		if (fp.is_point_over(inters))
+		if (fp.is_point_over(inters)) {
 			return false;
+		}
 	}
 
 	int cell[3];
 	float cell_size[3] = { node->get_cell_size().x, node->get_cell_size().y, node->get_cell_size().z };
 
 	for (int i = 0; i < 3; i++) {
-		if (i == edit_axis)
+		if (i == edit_axis) {
 			cell[i] = edit_floor[i];
-		else {
+		} else {
 			cell[i] = inters[i] / node->get_cell_size()[i];
-			if (inters[i] < 0)
+			if (inters[i] < 0) {
 				cell[i] -= 1; // Compensate negative.
+			}
 			grid_ofs[i] = cell[i] * cell_size[i];
 		}
 	}
@@ -404,8 +420,9 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 
 	} else if (input_action == INPUT_SELECT) {
 		selection.current = Vector3(cell[0], cell[1], cell[2]);
-		if (p_click)
+		if (p_click) {
 			selection.click = selection.current;
+		}
 		selection.active = true;
 		_validate_selection();
 
@@ -446,8 +463,9 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 }
 
 void GridMapEditor::_delete_selection() {
-	if (!selection.active)
+	if (!selection.active) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("GridMap Delete Selection"));
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
@@ -464,8 +482,9 @@ void GridMapEditor::_delete_selection() {
 }
 
 void GridMapEditor::_fill_selection() {
-	if (!selection.active)
+	if (!selection.active) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("GridMap Fill Selection"));
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
@@ -498,8 +517,9 @@ void GridMapEditor::_set_clipboard_data() {
 		for (int j = selection.begin.y; j <= selection.end.y; j++) {
 			for (int k = selection.begin.z; k <= selection.end.z; k++) {
 				int itm = node->get_cell_item(i, j, k);
-				if (itm == GridMap::INVALID_CELL_ITEM)
+				if (itm == GridMap::INVALID_CELL_ITEM) {
 					continue;
+				}
 
 				Ref<Mesh> mesh = meshLibrary->get_item_mesh(itm);
 
@@ -593,13 +613,15 @@ bool GridMapEditor::forward_spatial_input_event(Camera3D *p_camera, const Ref<In
 
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == BUTTON_WHEEL_UP && (mb->get_command() || mb->get_shift())) {
-			if (mb->is_pressed())
+			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() + mb->get_factor());
+			}
 
 			return true; // Eaten.
 		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
-			if (mb->is_pressed())
+			if (mb->is_pressed()) {
 				floor->set_value(floor->get_value() - mb->get_factor());
+			}
 			return true;
 		}
 
@@ -859,8 +881,9 @@ void GridMapEditor::update_palette() {
 			name = "#" + itos(id);
 		}
 
-		if (filter != "" && !filter.is_subsequence_ofi(name))
+		if (filter != "" && !filter.is_subsequence_ofi(name)) {
 			continue;
+		}
 
 		mesh_library_palette->add_item("");
 		if (!preview.is_null()) {
@@ -881,8 +904,9 @@ void GridMapEditor::update_palette() {
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
-	if (!p_gridmap && node)
+	if (!p_gridmap && node) {
 		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
+	}
 
 	node = p_gridmap;
 
@@ -921,10 +945,11 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 void GridMapEditor::_update_clip() {
 	node->set_meta("_editor_clip_", clip_mode);
-	if (clip_mode == CLIP_DISABLED)
+	if (clip_mode == CLIP_DISABLED) {
 		node->set_clip(false);
-	else
+	} else {
 		node->set_clip(true, clip_mode == CLIP_ABOVE, edit_floor[edit_axis], edit_axis);
+	}
 }
 
 void GridMapEditor::update_grid() {
@@ -1045,8 +1070,9 @@ void GridMapEditor::_notification(int p_what) {
 				grid_xform = xf;
 			}
 			Ref<MeshLibrary> cgmt = node->get_mesh_library();
-			if (cgmt.operator->() != last_mesh_library)
+			if (cgmt.operator->() != last_mesh_library) {
 				update_palette();
+			}
 
 			if (lock_view) {
 				EditorNode *editor = Object::cast_to<EditorNode>(get_tree()->get_root()->get_child(0));
@@ -1057,8 +1083,9 @@ void GridMapEditor::_notification(int p_what) {
 				p = node->get_transform().xform(p); // plane to snap
 
 				Node3DEditorPlugin *sep = Object::cast_to<Node3DEditorPlugin>(editor->get_editor_plugin_screen());
-				if (sep)
+				if (sep) {
 					sep->snap_cursor_to_plane(p);
+				}
 			}
 		} break;
 
@@ -1074,8 +1101,9 @@ void GridMapEditor::_update_cursor_instance() {
 		return;
 	}
 
-	if (cursor_instance.is_valid())
+	if (cursor_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(cursor_instance);
+	}
 	cursor_instance = RID();
 
 	if (selected_palette >= 0) {
@@ -1096,8 +1124,9 @@ void GridMapEditor::_item_selected_cbk(int idx) {
 }
 
 void GridMapEditor::_floor_changed(float p_value) {
-	if (updating)
+	if (updating) {
 		return;
+	}
 
 	edit_floor[edit_axis] = p_value;
 	node->set_meta("_editor_floor_", Vector3(edit_floor[0], edit_floor[1], edit_floor[2]));
@@ -1284,10 +1313,11 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 				v[2] = v[1] * (1 - 2 * (j & 1));
 
 				for (int k = 0; k < 3; k++) {
-					if (i < 3)
+					if (i < 3) {
 						face_points[j][(i + k) % 3] = v[k];
-					else
+					} else {
 						face_points[3 - j][(i + k) % 3] = -v[k];
+					}
 				}
 			}
 
@@ -1395,25 +1425,32 @@ GridMapEditor::~GridMapEditor() {
 	_clear_clipboard_data();
 
 	for (int i = 0; i < 3; i++) {
-		if (grid[i].is_valid())
+		if (grid[i].is_valid()) {
 			RenderingServer::get_singleton()->free(grid[i]);
-		if (grid_instance[i].is_valid())
+		}
+		if (grid_instance[i].is_valid()) {
 			RenderingServer::get_singleton()->free(grid_instance[i]);
-		if (cursor_instance.is_valid())
+		}
+		if (cursor_instance.is_valid()) {
 			RenderingServer::get_singleton()->free(cursor_instance);
-		if (selection_level_instance[i].is_valid())
+		}
+		if (selection_level_instance[i].is_valid()) {
 			RenderingServer::get_singleton()->free(selection_level_instance[i]);
-		if (selection_level_mesh[i].is_valid())
+		}
+		if (selection_level_mesh[i].is_valid()) {
 			RenderingServer::get_singleton()->free(selection_level_mesh[i]);
+		}
 	}
 
 	RenderingServer::get_singleton()->free(selection_mesh);
-	if (selection_instance.is_valid())
+	if (selection_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(selection_instance);
+	}
 
 	RenderingServer::get_singleton()->free(paste_mesh);
-	if (paste_instance.is_valid())
+	if (paste_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(paste_instance);
+	}
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {

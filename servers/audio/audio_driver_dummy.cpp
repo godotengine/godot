@@ -86,20 +86,23 @@ AudioDriver::SpeakerMode AudioDriverDummy::get_speaker_mode() const {
 };
 
 void AudioDriverDummy::lock() {
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.lock();
 };
 
 void AudioDriverDummy::unlock() {
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 	mutex.unlock();
 };
 
 void AudioDriverDummy::finish() {
-	if (!thread)
+	if (!thread) {
 		return;
+	}
 
 	exit_thread = true;
 	Thread::wait_to_finish(thread);

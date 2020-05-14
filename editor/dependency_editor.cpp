@@ -68,8 +68,9 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 
 	for (int i = 0; i < efsd->get_file_count(); i++) {
 		String file = efsd->get_file(i);
-		if (!candidates.has(file))
+		if (!candidates.has(file)) {
 			continue;
+		}
 
 		String path = efsd->get_file_path(i);
 
@@ -113,8 +114,9 @@ void DependencyEditor::_fix_and_find(EditorFileSystemDirectory *efsd, Map<String
 }
 
 void DependencyEditor::_fix_all() {
-	if (!EditorFileSystem::get_singleton()->get_filesystem())
+	if (!EditorFileSystem::get_singleton()->get_filesystem()) {
 		return;
+	}
 
 	Map<String, Map<String, String>> candidates;
 
@@ -278,8 +280,9 @@ void DependencyEditorOwners::_file_option(int p_option) {
 	switch (p_option) {
 		case FILE_OPEN: {
 			int idx = owners->get_current();
-			if (idx < 0 || idx >= owners->get_item_count())
+			if (idx < 0 || idx >= owners->get_item_count()) {
 				break;
+			}
 			_select_file(idx);
 		} break;
 	}
@@ -289,8 +292,9 @@ void DependencyEditorOwners::_bind_methods() {
 }
 
 void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
-	if (!efsd)
+	if (!efsd) {
 		return;
+	}
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_fill_owners(efsd->get_subdir(i));
@@ -305,8 +309,9 @@ void DependencyEditorOwners::_fill_owners(EditorFileSystemDirectory *efsd) {
 				break;
 			}
 		}
-		if (!found)
+		if (!found) {
 			continue;
+		}
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(efsd->get_file_type(i));
 
@@ -341,8 +346,9 @@ DependencyEditorOwners::DependencyEditorOwners(EditorNode *p_editor) {
 ///////////////////////
 
 void DependencyRemoveDialog::_find_files_in_removed_folder(EditorFileSystemDirectory *efsd, const String &p_folder) {
-	if (!efsd)
+	if (!efsd) {
 		return;
+	}
 
 	for (int i = 0; i < efsd->get_subdir_count(); ++i) {
 		_find_files_in_removed_folder(efsd->get_subdir(i), p_folder);
@@ -355,8 +361,9 @@ void DependencyRemoveDialog::_find_files_in_removed_folder(EditorFileSystemDirec
 }
 
 void DependencyRemoveDialog::_find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed) {
-	if (!efsd)
+	if (!efsd) {
 		return;
+	}
 
 	for (int i = 0; i < efsd->get_subdir_count(); i++) {
 		_find_all_removed_dependencies(efsd->get_subdir(i), p_removed);
@@ -366,8 +373,9 @@ void DependencyRemoveDialog::_find_all_removed_dependencies(EditorFileSystemDire
 		const String path = efsd->get_file_path(i);
 
 		//It doesn't matter if a file we are about to delete will have some of its dependencies removed too
-		if (all_remove_files.has(path))
+		if (all_remove_files.has(path)) {
 			continue;
+		}
 
 		Vector<String> all_deps = efsd->get_file_deps(i);
 		for (int j = 0; j < all_deps.size(); ++j) {
@@ -500,8 +508,9 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	if (dirs_to_delete.size() == 0) {
 		// If we only deleted files we should only need to tell the file system about the files we touched.
-		for (int i = 0; i < files_to_delete.size(); ++i)
+		for (int i = 0; i < files_to_delete.size(); ++i) {
 			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);
+		}
 	} else {
 		for (int i = 0; i < dirs_to_delete.size(); ++i) {
 			String path = OS::get_singleton()->get_resource_dir() + dirs_to_delete[i].replace_first("res://", "/");
@@ -523,11 +532,13 @@ void DependencyRemoveDialog::ok_pressed() {
 
 	for (int i = 0; i < previous_favorites.size(); ++i) {
 		if (previous_favorites[i].ends_with("/")) {
-			if (dirs_to_delete.find(previous_favorites[i]) < 0)
+			if (dirs_to_delete.find(previous_favorites[i]) < 0) {
 				new_favorites.push_back(previous_favorites[i]);
+			}
 		} else {
-			if (files_to_delete.find(previous_favorites[i]) < 0)
+			if (files_to_delete.find(previous_favorites[i]) < 0) {
 				new_favorites.push_back(previous_favorites[i]);
+			}
 		}
 	}
 
@@ -569,8 +580,9 @@ void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Ve
 		String dep;
 		String type = "Object";
 		dep = report[i].get_slice("::", 0);
-		if (report[i].get_slice_count("::") > 0)
+		if (report[i].get_slice_count("::") > 0) {
 			type = report[i].get_slice("::", 1);
+		}
 
 		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
 
@@ -625,16 +637,18 @@ void OrphanResourcesDialog::ok_pressed() {
 	paths.clear();
 
 	_find_to_delete(files->get_root(), paths);
-	if (paths.empty())
+	if (paths.empty()) {
 		return;
+	}
 
 	delete_confirm->set_text(vformat(TTR("Permanently delete %d item(s)? (No undo!)"), paths.size()));
 	delete_confirm->popup_centered();
 }
 
 bool OrphanResourcesDialog::_fill_owners(EditorFileSystemDirectory *efsd, HashMap<String, int> &refs, TreeItem *p_parent) {
-	if (!efsd)
+	if (!efsd) {
 		return false;
+	}
 
 	bool has_children = false;
 

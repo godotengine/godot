@@ -52,8 +52,9 @@ Array RemoteDebuggerPeerTCP::get_message() {
 
 Error RemoteDebuggerPeerTCP::put_message(const Array &p_arr) {
 	MutexLock lock(mutex);
-	if (out_queue.size() >= max_queued_messages)
+	if (out_queue.size() >= max_queued_messages) {
 		return ERR_OUT_OF_MEMORY;
+	}
 
 	out_queue.push_back(p_arr);
 	return OK;
@@ -99,8 +100,9 @@ void RemoteDebuggerPeerTCP::_write_out() {
 	while (tcp_client->poll(NetSocket::POLL_TYPE_OUT) == OK) {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
-			if (out_queue.size() == 0)
+			if (out_queue.size() == 0) {
 				break; // Nothing left to send
+			}
 			mutex.lock();
 			Variant var = out_queue[0];
 			out_queue.pop_front();
@@ -155,10 +157,11 @@ void RemoteDebuggerPeerTCP::_read_in() {
 
 Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_port) {
 	IP_Address ip;
-	if (p_host.is_valid_ip_address())
+	if (p_host.is_valid_ip_address()) {
 		ip = p_host;
-	else
+	} else {
 		ip = IP::get_singleton()->resolve_hostname(p_host);
+	}
 
 	int port = p_port;
 
@@ -194,8 +197,9 @@ void RemoteDebuggerPeerTCP::_thread_func(void *p_ud) {
 	RemoteDebuggerPeerTCP *peer = (RemoteDebuggerPeerTCP *)p_ud;
 	while (peer->running && peer->is_peer_connected()) {
 		peer->_poll();
-		if (!peer->is_peer_connected())
+		if (!peer->is_peer_connected()) {
 			break;
+		}
 		peer->tcp_client->poll(NetSocket::POLL_TYPE_IN_OUT, 1);
 	}
 }

@@ -576,15 +576,17 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		}
 
 		_FORCE_INLINE_ Element *add_element() {
-			if (element_count + alpha_element_count >= max_elements)
+			if (element_count + alpha_element_count >= max_elements) {
 				return nullptr;
+			}
 			elements[element_count] = &base_elements[element_count];
 			return elements[element_count++];
 		}
 
 		_FORCE_INLINE_ Element *add_alpha_element() {
-			if (element_count + alpha_element_count >= max_elements)
+			if (element_count + alpha_element_count >= max_elements) {
 				return nullptr;
+			}
 			int idx = max_elements - alpha_element_count - 1;
 			elements[idx] = &base_elements[idx];
 			alpha_element_count++;
@@ -596,8 +598,9 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 			alpha_element_count = 0;
 			elements = memnew_arr(Element *, max_elements);
 			base_elements = memnew_arr(Element, max_elements);
-			for (int i = 0; i < max_elements; i++)
+			for (int i = 0; i < max_elements; i++) {
 				elements[i] = &base_elements[i]; // assign elements
+			}
 		}
 
 		RenderList() {

@@ -43,13 +43,15 @@ void Material::set_next_pass(const Ref<Material> &p_pass) {
 		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 
-	if (next_pass == p_pass)
+	if (next_pass == p_pass) {
 		return;
+	}
 
 	next_pass = p_pass;
 	RID next_pass_rid;
-	if (next_pass.is_valid())
+	if (next_pass.is_valid()) {
 		next_pass_rid = next_pass->get_rid();
+	}
 	RS::get_singleton()->material_set_next_pass(material, next_pass_rid);
 }
 
@@ -252,10 +254,11 @@ bool ShaderMaterial::_can_do_next_pass() const {
 }
 
 Shader::Mode ShaderMaterial::get_shader_mode() const {
-	if (shader.is_valid())
+	if (shader.is_valid()) {
 		return shader->get_mode();
-	else
+	} else {
 		return Shader::MODE_SPATIAL;
+	}
 }
 
 ShaderMaterial::ShaderMaterial() {
@@ -365,8 +368,9 @@ void BaseMaterial3D::_update_shader() {
 	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
-	if (mk == current_key)
+	if (mk == current_key) {
 		return; //no update required in the end
+	}
 
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
@@ -1372,8 +1376,9 @@ float BaseMaterial3D::get_refraction() const {
 }
 
 void BaseMaterial3D::set_detail_uv(DetailUV p_detail_uv) {
-	if (detail_uv == p_detail_uv)
+	if (detail_uv == p_detail_uv) {
 		return;
+	}
 
 	detail_uv = p_detail_uv;
 	_queue_shader_change();
@@ -1384,8 +1389,9 @@ BaseMaterial3D::DetailUV BaseMaterial3D::get_detail_uv() const {
 }
 
 void BaseMaterial3D::set_blend_mode(BlendMode p_mode) {
-	if (blend_mode == p_mode)
+	if (blend_mode == p_mode) {
 		return;
+	}
 
 	blend_mode = p_mode;
 	_queue_shader_change();
@@ -1433,8 +1439,9 @@ BaseMaterial3D::ShadingMode BaseMaterial3D::get_shading_mode() const {
 }
 
 void BaseMaterial3D::set_depth_draw_mode(DepthDrawMode p_mode) {
-	if (depth_draw_mode == p_mode)
+	if (depth_draw_mode == p_mode) {
 		return;
+	}
 
 	depth_draw_mode = p_mode;
 	_queue_shader_change();
@@ -1445,8 +1452,9 @@ BaseMaterial3D::DepthDrawMode BaseMaterial3D::get_depth_draw_mode() const {
 }
 
 void BaseMaterial3D::set_cull_mode(CullMode p_mode) {
-	if (cull_mode == p_mode)
+	if (cull_mode == p_mode) {
 		return;
+	}
 
 	cull_mode = p_mode;
 	_queue_shader_change();
@@ -1457,8 +1465,9 @@ BaseMaterial3D::CullMode BaseMaterial3D::get_cull_mode() const {
 }
 
 void BaseMaterial3D::set_diffuse_mode(DiffuseMode p_mode) {
-	if (diffuse_mode == p_mode)
+	if (diffuse_mode == p_mode) {
 		return;
+	}
 
 	diffuse_mode = p_mode;
 	_queue_shader_change();
@@ -1469,8 +1478,9 @@ BaseMaterial3D::DiffuseMode BaseMaterial3D::get_diffuse_mode() const {
 }
 
 void BaseMaterial3D::set_specular_mode(SpecularMode p_mode) {
-	if (specular_mode == p_mode)
+	if (specular_mode == p_mode) {
 		return;
+	}
 
 	specular_mode = p_mode;
 	_queue_shader_change();
@@ -1483,8 +1493,9 @@ BaseMaterial3D::SpecularMode BaseMaterial3D::get_specular_mode() const {
 void BaseMaterial3D::set_flag(Flags p_flag, bool p_enabled) {
 	ERR_FAIL_INDEX(p_flag, FLAG_MAX);
 
-	if (flags[p_flag] == p_enabled)
+	if (flags[p_flag] == p_enabled) {
 		return;
+	}
 
 	flags[p_flag] = p_enabled;
 	if (p_flag == FLAG_USE_SHADOW_TO_OPACITY || p_flag == FLAG_USE_TEXTURE_REPEAT || p_flag == FLAG_SUBSURFACE_MODE_SKIN) {
@@ -1500,8 +1511,9 @@ bool BaseMaterial3D::get_flag(Flags p_flag) const {
 
 void BaseMaterial3D::set_feature(Feature p_feature, bool p_enabled) {
 	ERR_FAIL_INDEX(p_feature, FEATURE_MAX);
-	if (features[p_feature] == p_enabled)
+	if (features[p_feature] == p_enabled) {
 		return;
+	}
 
 	features[p_feature] = p_enabled;
 	_change_notify();
@@ -1530,8 +1542,9 @@ Ref<Texture2D> BaseMaterial3D::get_texture(TextureParam p_param) const {
 Ref<Texture2D> BaseMaterial3D::get_texture_by_name(StringName p_name) const {
 	for (int i = 0; i < (int)BaseMaterial3D::TEXTURE_MAX; i++) {
 		TextureParam param = TextureParam(i);
-		if (p_name == shader_names->texture_names[param])
+		if (p_name == shader_names->texture_names[param]) {
 			return textures[param];
+		}
 	}
 	return Ref<Texture2D>();
 }
@@ -1895,20 +1908,27 @@ BaseMaterial3D::TextureChannel BaseMaterial3D::get_refraction_texture_channel() 
 
 RID BaseMaterial3D::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y) {
 	int version = 0;
-	if (p_shaded)
+	if (p_shaded) {
 		version = 1;
-	if (p_transparent)
+	}
+	if (p_transparent) {
 		version |= 2;
-	if (p_cut_alpha)
+	}
+	if (p_cut_alpha) {
 		version |= 4;
-	if (p_opaque_prepass)
+	}
+	if (p_opaque_prepass) {
 		version |= 8;
-	if (p_double_sided)
+	}
+	if (p_double_sided) {
 		version |= 16;
-	if (p_billboard)
+	}
+	if (p_billboard) {
 		version |= 32;
-	if (p_billboard_y)
+	}
+	if (p_billboard_y) {
 		version |= 64;
+	}
 
 	if (materials_for_2d[version].is_valid()) {
 		return materials_for_2d[version]->get_rid();
@@ -1986,8 +2006,9 @@ float BaseMaterial3D::get_distance_fade_min_distance() const {
 }
 
 void BaseMaterial3D::set_emission_operator(EmissionOperator p_op) {
-	if (emission_op == p_op)
+	if (emission_op == p_op) {
 		return;
+	}
 	emission_op = p_op;
 	_queue_shader_change();
 }

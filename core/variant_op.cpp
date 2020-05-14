@@ -916,10 +916,12 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 				int asize = array_a.size();
 				int bsize = array_b.size();
 				sum.resize(asize + bsize);
-				for (int i = 0; i < asize; i++)
+				for (int i = 0; i < asize; i++) {
 					sum[i] = array_a[i];
-				for (int i = 0; i < bsize; i++)
+				}
+				for (int i = 0; i < bsize; i++) {
 					sum[i + asize] = array_b[i];
+				}
 				_RETURN(sum);
 			}
 
@@ -1946,13 +1948,15 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 		case OBJECT: {
 #ifdef DEBUG_ENABLED
 			if (!_get_obj().obj) {
-				if (r_valid)
+				if (r_valid) {
 					*r_valid = false;
+				}
 				return "Instance base is null.";
 			} else {
 				if (EngineDebugger::is_active() && !_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
-					if (r_valid)
+					if (r_valid) {
 						*r_valid = false;
+					}
 					return "Attempted use of stray pointer object.";
 				}
 			}
@@ -2043,16 +2047,19 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			return;
 		} break;
 		case STRING: {
-			if (p_index.type != Variant::INT && p_index.type != Variant::FLOAT)
+			if (p_index.type != Variant::INT && p_index.type != Variant::FLOAT) {
 				return;
+			}
 
 			int idx = p_index;
 			String *str = reinterpret_cast<String *>(_data._mem);
 			int len = str->length();
-			if (idx < 0)
+			if (idx < 0) {
 				idx += len;
-			if (idx < 0 || idx >= len)
+			}
+			if (idx < 0 || idx >= len) {
 				return;
+			}
 
 			String chr;
 			if (p_value.type == Variant::INT || p_value.type == Variant::FLOAT) {
@@ -2069,15 +2076,17 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case VECTOR2: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
 
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 2;
+				}
 				if (idx >= 0 && idx < 2) {
 					Vector2 *v = reinterpret_cast<Vector2 *>(_data._mem);
 					valid = true;
@@ -2102,15 +2111,17 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case VECTOR2I: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
 
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 2;
+				}
 				if (idx >= 0 && idx < 2) {
 					Vector2i *v = reinterpret_cast<Vector2i *>(_data._mem);
 					valid = true;
@@ -2135,8 +2146,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case RECT2: {
-			if (p_value.type != Variant::VECTOR2)
+			if (p_value.type != Variant::VECTOR2) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::STRING) {
 				//scalar name
@@ -2159,8 +2171,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			}
 		} break;
 		case RECT2I: {
-			if (p_value.type != Variant::VECTOR2I)
+			if (p_value.type != Variant::VECTOR2I) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::STRING) {
 				//scalar name
@@ -2183,14 +2196,16 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			}
 		} break;
 		case TRANSFORM2D: {
-			if (p_value.type != Variant::VECTOR2)
+			if (p_value.type != Variant::VECTOR2) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				int index = p_index;
 
-				if (index < 0)
+				if (index < 0) {
 					index += 3;
+				}
 				if (index >= 0 && index < 3) {
 					Transform2D *v = _data._transform2d;
 
@@ -2219,14 +2234,16 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case VECTOR3: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 3;
+				}
 				if (idx >= 0 && idx < 3) {
 					Vector3 *v = reinterpret_cast<Vector3 *>(_data._mem);
 					valid = true;
@@ -2254,14 +2271,16 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case VECTOR3I: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 3;
+				}
 				if (idx >= 0 && idx < 3) {
 					Vector3i *v = reinterpret_cast<Vector3i *>(_data._mem);
 					valid = true;
@@ -2294,29 +2313,33 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 				Plane *v = reinterpret_cast<Plane *>(_data._mem);
 				if (*str == "x") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 						return;
+					}
 
 					valid = true;
 					v->normal.x = p_value;
 					return;
 				} else if (*str == "y") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 						return;
+					}
 
 					valid = true;
 					v->normal.y = p_value;
 					return;
 				} else if (*str == "z") {
-					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+					if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 						return;
+					}
 
 					valid = true;
 					v->normal.z = p_value;
 					return;
 				} else if (*str == "normal") {
-					if (p_value.type != Variant::VECTOR3)
+					if (p_value.type != Variant::VECTOR3) {
 						return;
+					}
 
 					valid = true;
 					v->normal = p_value;
@@ -2330,8 +2353,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case QUAT: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::STRING) {
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
@@ -2357,8 +2381,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case AABB: {
-			if (p_value.type != Variant::VECTOR3)
+			if (p_value.type != Variant::VECTOR3) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::STRING) {
 				//scalar name
@@ -2381,14 +2406,16 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 			}
 		} break;
 		case BASIS: {
-			if (p_value.type != Variant::VECTOR3)
+			if (p_value.type != Variant::VECTOR3) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				int index = p_index;
 
-				if (index < 0)
+				if (index < 0) {
 					index += 3;
+				}
 				if (index >= 0 && index < 3) {
 					Basis *v = _data._basis;
 
@@ -2418,20 +2445,23 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		} break;
 		case TRANSFORM: {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
-				if (p_value.type != Variant::VECTOR3)
+				if (p_value.type != Variant::VECTOR3) {
 					return;
+				}
 
 				int index = p_index;
 
-				if (index < 0)
+				if (index < 0) {
 					index += 4;
+				}
 				if (index >= 0 && index < 4) {
 					Transform *v = _data._transform;
 					valid = true;
-					if (index == 3)
+					if (index == 3) {
 						v->origin = p_value;
-					else
+					} else {
 						v->basis.set_axis(index, p_value);
+					}
 					return;
 				}
 			} else if (p_index.get_type() == Variant::STRING) {
@@ -2439,15 +2469,17 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
 
 				if (*str == "basis") {
-					if (p_value.type != Variant::BASIS)
+					if (p_value.type != Variant::BASIS) {
 						return;
+					}
 					valid = true;
 					v->basis = p_value;
 					return;
 				}
 				if (*str == "origin") {
-					if (p_value.type != Variant::VECTOR3)
+					if (p_value.type != Variant::VECTOR3) {
 						return;
+					}
 					valid = true;
 					v->origin = p_value;
 					return;
@@ -2456,8 +2488,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 		} break;
 		case COLOR: {
-			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT)
+			if (p_value.type != Variant::INT && p_value.type != Variant::FLOAT) {
 				return;
+			}
 
 			if (p_index.get_type() == Variant::STRING) {
 				const String *str = reinterpret_cast<const String *>(p_index._data._mem);
@@ -2509,8 +2542,9 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 				}
 			} else if (p_index.get_type() == Variant::INT) {
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 4;
+				}
 				if (idx >= 0 && idx < 4) {
 					Color *v = reinterpret_cast<Color *>(_data._mem);
 					(*v)[idx] = p_value;
@@ -2594,8 +2628,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 
 				int idx = p_index;
 				const String *str = reinterpret_cast<const String *>(_data._mem);
-				if (idx < 0)
+				if (idx < 0) {
 					idx += str->length();
+				}
 				if (idx >= 0 && idx < str->length()) {
 					valid = true;
 					return str->substr(idx, 1);
@@ -2607,8 +2642,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 2;
+				}
 				if (idx >= 0 && idx < 2) {
 					const Vector2 *v = reinterpret_cast<const Vector2 *>(_data._mem);
 					valid = true;
@@ -2633,8 +2669,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				// scalar index
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 2;
+				}
 				if (idx >= 0 && idx < 2) {
 					const Vector2i *v = reinterpret_cast<const Vector2i *>(_data._mem);
 					valid = true;
@@ -2695,8 +2732,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 3;
+				}
 				if (idx >= 0 && idx < 3) {
 					const Vector3 *v = reinterpret_cast<const Vector3 *>(_data._mem);
 					valid = true;
@@ -2723,8 +2761,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				//scalar index
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 3;
+				}
 				if (idx >= 0 && idx < 3) {
 					const Vector3i *v = reinterpret_cast<const Vector3i *>(_data._mem);
 					valid = true;
@@ -2751,8 +2790,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				int index = p_index;
 
-				if (index < 0)
+				if (index < 0) {
 					index += 3;
+				}
 				if (index >= 0 && index < 3) {
 					const Transform2D *v = _data._transform2d;
 
@@ -2841,8 +2881,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case BASIS: {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				int index = p_index;
-				if (index < 0)
+				if (index < 0) {
 					index += 3;
+				}
 				if (index >= 0 && index < 3) {
 					const Basis *v = _data._basis;
 
@@ -2869,8 +2910,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 		case TRANSFORM: {
 			if (p_index.get_type() == Variant::INT || p_index.get_type() == Variant::FLOAT) {
 				int index = p_index;
-				if (index < 0)
+				if (index < 0) {
 					index += 4;
+				}
 				if (index >= 0 && index < 4) {
 					const Transform *v = _data._transform;
 					valid = true;
@@ -2931,8 +2973,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 				}
 			} else if (p_index.get_type() == Variant::INT) {
 				int idx = p_index;
-				if (idx < 0)
+				if (idx < 0) {
 					idx += 4;
+				}
 				if (idx >= 0 && idx < 4) {
 					const Color *v = reinterpret_cast<const Color *>(_data._mem);
 					valid = true;
@@ -2992,8 +3035,9 @@ Variant Variant::get(const Variant &p_index, bool *r_valid) const {
 }
 
 bool Variant::in(const Variant &p_index, bool *r_valid) const {
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = true;
+	}
 
 	switch (type) {
 		case STRING: {
@@ -3029,8 +3073,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 
 				return valid;
 			} else {
-				if (r_valid)
+				if (r_valid) {
 					*r_valid = false;
+				}
 			}
 			return false;
 		} break;
@@ -3044,8 +3089,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 			int l = arr->size();
 			if (l) {
 				for (int i = 0; i < l; i++) {
-					if (evaluate(OP_EQUAL, (*arr)[i], p_index))
+					if (evaluate(OP_EQUAL, (*arr)[i], p_index)) {
 						return true;
+					}
 				}
 			}
 
@@ -3060,8 +3106,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const uint8_t *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3077,8 +3124,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const int32_t *r = arr->ptr();
 					for (int32_t i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3093,8 +3141,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const int64_t *r = arr->ptr();
 					for (int64_t i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3109,8 +3158,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const float *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3126,8 +3176,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const double *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3144,8 +3195,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const String *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3162,8 +3214,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const Vector2 *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3180,8 +3233,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const Vector3 *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3198,8 +3252,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 				if (l) {
 					const Color *r = arr->ptr();
 					for (int i = 0; i < l; i++) {
-						if (r[i] == index)
+						if (r[i] == index) {
 							return true;
+						}
 					}
 				}
 
@@ -3210,8 +3265,9 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 		}
 	}
 
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 	return false;
 }
 
@@ -3439,15 +3495,17 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 
 		case STRING: {
 			const String *str = reinterpret_cast<const String *>(_data._mem);
-			if (str->empty())
+			if (str->empty()) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
-			if (dic->empty())
+			if (dic->empty()) {
 				return false;
+			}
 
 			const Variant *next = dic->next(nullptr);
 			r_iter = *next;
@@ -3456,76 +3514,86 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 		} break;
 		case ARRAY: {
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
-			if (arr->empty())
+			if (arr->empty()) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 		} break;
 		case PACKED_BYTE_ARRAY: {
 			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 
 		} break;
 		case PACKED_INT32_ARRAY: {
 			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 
 		} break;
 		case PACKED_INT64_ARRAY: {
 			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 
 		} break;
 		case PACKED_FLOAT32_ARRAY: {
 			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 
 		} break;
 		case PACKED_FLOAT64_ARRAY: {
 			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 
 		} break;
 		case PACKED_STRING_ARRAY: {
 			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 		} break;
 		case PACKED_VECTOR2_ARRAY: {
 			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 		} break;
 		case PACKED_VECTOR3_ARRAY: {
 			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 		} break;
 		case PACKED_COLOR_ARRAY: {
 			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
-			if (arr->size() == 0)
+			if (arr->size() == 0) {
 				return false;
+			}
 			r_iter = 0;
 			return true;
 
@@ -3544,16 +3612,18 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 		case INT: {
 			int64_t idx = r_iter;
 			idx++;
-			if (idx >= _data._int)
+			if (idx >= _data._int) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
 		case FLOAT: {
 			int64_t idx = r_iter;
 			idx++;
-			if (idx >= _data._float)
+			if (idx >= _data._float) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
@@ -3563,8 +3633,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			double idx = r_iter;
 			idx++;
 
-			if (idx >= to)
+			if (idx >= to) {
 				return false;
+			}
 
 			r_iter = idx;
 			return true;
@@ -3575,8 +3646,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			int64_t idx = r_iter;
 			idx++;
 
-			if (idx >= to)
+			if (idx >= to) {
 				return false;
+			}
 
 			r_iter = idx;
 			return true;
@@ -3588,11 +3660,13 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			double idx = r_iter;
 			idx += step;
 
-			if (step < 0 && idx <= to)
+			if (step < 0 && idx <= to) {
 				return false;
+			}
 
-			if (step > 0 && idx >= to)
+			if (step > 0 && idx >= to) {
 				return false;
+			}
 
 			r_iter = idx;
 			return true;
@@ -3604,11 +3678,13 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			int64_t idx = r_iter;
 			idx += step;
 
-			if (step < 0 && idx <= to)
+			if (step < 0 && idx <= to) {
 				return false;
+			}
 
-			if (step > 0 && idx >= to)
+			if (step > 0 && idx >= to) {
 				return false;
+			}
 
 			r_iter = idx;
 			return true;
@@ -3649,16 +3725,18 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const String *str = reinterpret_cast<const String *>(_data._mem);
 			int idx = r_iter;
 			idx++;
-			if (idx >= str->length())
+			if (idx >= str->length()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
 		case DICTIONARY: {
 			const Dictionary *dic = reinterpret_cast<const Dictionary *>(_data._mem);
 			const Variant *next = dic->next(&r_iter);
-			if (!next)
+			if (!next) {
 				return false;
+			}
 
 			r_iter = *next;
 			return true;
@@ -3668,8 +3746,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Array *arr = reinterpret_cast<const Array *>(_data._mem);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
@@ -3677,8 +3756,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<uint8_t> *arr = &PackedArrayRef<uint8_t>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 
@@ -3687,8 +3767,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<int32_t> *arr = &PackedArrayRef<int32_t>::get_array(_data.packed_array);
 			int32_t idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 
@@ -3697,8 +3778,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<int64_t> *arr = &PackedArrayRef<int64_t>::get_array(_data.packed_array);
 			int64_t idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 
@@ -3707,8 +3789,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<float> *arr = &PackedArrayRef<float>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 
@@ -3717,8 +3800,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<double> *arr = &PackedArrayRef<double>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 
@@ -3727,8 +3811,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<String> *arr = &PackedArrayRef<String>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
@@ -3736,8 +3821,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<Vector2> *arr = &PackedArrayRef<Vector2>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
@@ -3745,8 +3831,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<Vector3> *arr = &PackedArrayRef<Vector3>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
@@ -3754,8 +3841,9 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			const Vector<Color> *arr = &PackedArrayRef<Color>::get_array(_data.packed_array);
 			int idx = r_iter;
 			idx++;
-			if (idx >= arr->size())
+			if (idx >= arr->size()) {
 				return false;
+			}
 			r_iter = idx;
 			return true;
 		} break;
@@ -4129,16 +4217,18 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 				CharType chr = ' ';
 
 				if (i < split) {
-					if (i < sa.length())
+					if (i < sa.length()) {
 						chr = sa[i];
-					else if (i < sb.length())
+					} else if (i < sb.length()) {
 						chr = sb[i];
+					}
 
 				} else {
-					if (i < sb.length())
+					if (i < sb.length()) {
 						chr = sb[i];
-					else if (i < sa.length())
+					} else if (i < sa.length()) {
 						chr = sa[i];
+					}
 				}
 
 				dst[i] = chr;

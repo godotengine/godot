@@ -51,16 +51,18 @@ void EditorFileSystemDirectory::sort_files() {
 
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	for (int i = 0; i < files.size(); i++) {
-		if (files[i]->file == p_file)
+		if (files[i]->file == p_file) {
 			return i;
+		}
 	}
 	return -1;
 }
 
 int EditorFileSystemDirectory::find_dir_index(const String &p_dir) const {
 	for (int i = 0; i < subdirs.size(); i++) {
-		if (subdirs[i]->name == p_dir)
+		if (subdirs[i]->name == p_dir) {
 			return i;
+		}
 	}
 
 	return -1;
@@ -209,8 +211,9 @@ void EditorFileSystem::_scan_filesystem() {
 				first = false;
 				continue;
 			}
-			if (l == String())
+			if (l == String()) {
 				continue;
+			}
 
 			if (l.begins_with("::")) {
 				Vector<String> split = l.split("::");
@@ -317,8 +320,9 @@ void EditorFileSystem::_thread_func(void *_userdata) {
 }
 
 bool EditorFileSystem::_test_for_reimport(const String &p_path, bool p_only_imported_files) {
-	if (!reimport_on_missing_imported_files && p_only_imported_files)
+	if (!reimport_on_missing_imported_files && p_only_imported_files) {
 		return false;
+	}
 
 	if (!FileAccess::exists(p_path + ".import")) {
 		return true;
@@ -476,8 +480,9 @@ bool EditorFileSystem::_update_scan_actions() {
 			case ItemAction::ACTION_DIR_ADD: {
 				int idx = 0;
 				for (int i = 0; i < ia.dir->subdirs.size(); i++) {
-					if (ia.new_dir->name < ia.dir->subdirs[i]->name)
+					if (ia.new_dir->name < ia.dir->subdirs[i]->name) {
 						break;
+					}
 					idx++;
 				}
 				if (idx == ia.dir->subdirs.size()) {
@@ -497,8 +502,9 @@ bool EditorFileSystem::_update_scan_actions() {
 			case ItemAction::ACTION_FILE_ADD: {
 				int idx = 0;
 				for (int i = 0; i < ia.dir->files.size(); i++) {
-					if (ia.new_file->file < ia.dir->files[i]->file)
+					if (ia.new_file->file < ia.dir->files[i]->file) {
 						break;
+					}
 					idx++;
 				}
 				if (idx == ia.dir->files.size()) {
@@ -567,11 +573,13 @@ bool EditorFileSystem::_update_scan_actions() {
 }
 
 void EditorFileSystem::scan() {
-	if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/)
+	if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/) {
 		return;
+	}
 
-	if (scanning || scanning_changes || thread)
+	if (scanning || scanning_changes || thread) {
 		return;
+	}
 
 	_update_extensions();
 
@@ -580,8 +588,9 @@ void EditorFileSystem::scan() {
 		scanning = true;
 		scan_total = 0;
 		_scan_filesystem();
-		if (filesystem)
+		if (filesystem) {
 			memdelete(filesystem);
+		}
 		//file_type_cache.clear();
 		filesystem = new_filesystem;
 		new_filesystem = nullptr;
@@ -629,20 +638,25 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 	da->list_dir_begin();
 	while (true) {
 		String f = da->get_next();
-		if (f == "")
+		if (f == "") {
 			break;
+		}
 
-		if (da->current_is_hidden())
+		if (da->current_is_hidden()) {
 			continue;
+		}
 
 		if (da->current_is_dir()) {
-			if (f.begins_with(".")) // Ignore special and . / ..
+			if (f.begins_with(".")) { // Ignore special and . / ..
 				continue;
+			}
 
-			if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) // skip if another project inside this
+			if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) { // skip if another project inside this
 				continue;
-			if (FileAccess::exists(cd.plus_file(f).plus_file(".gdignore"))) // skip if another project inside this
+			}
+			if (FileAccess::exists(cd.plus_file(f).plus_file(".gdignore"))) { // skip if another project inside this
 				continue;
+			}
 
 			dirs.push_back(f);
 
@@ -675,8 +689,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 
 				int idx2 = 0;
 				for (int i = 0; i < p_dir->subdirs.size(); i++) {
-					if (efd->name < p_dir->subdirs[i]->name)
+					if (efd->name < p_dir->subdirs[i]->name) {
 						break;
+					}
 					idx2++;
 				}
 				if (idx2 == p_dir->subdirs.size()) {
@@ -812,22 +827,27 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		da->list_dir_begin();
 		while (true) {
 			String f = da->get_next();
-			if (f == "")
+			if (f == "") {
 				break;
+			}
 
-			if (da->current_is_hidden())
+			if (da->current_is_hidden()) {
 				continue;
+			}
 
 			if (da->current_is_dir()) {
-				if (f.begins_with(".")) // Ignore special and . / ..
+				if (f.begins_with(".")) { // Ignore special and . / ..
 					continue;
+				}
 
 				int idx = p_dir->find_dir_index(f);
 				if (idx == -1) {
-					if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) // skip if another project inside this
+					if (FileAccess::exists(cd.plus_file(f).plus_file("project.godot"))) { // skip if another project inside this
 						continue;
-					if (FileAccess::exists(cd.plus_file(f).plus_file(".gdignore"))) // skip if another project inside this
+					}
+					if (FileAccess::exists(cd.plus_file(f).plus_file(".gdignore"))) { // skip if another project inside this
 						continue;
+					}
 
 					EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 
@@ -850,8 +870,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 
 			} else {
 				String ext = f.get_extension().to_lower();
-				if (!valid_extensions.has(ext))
+				if (!valid_extensions.has(ext)) {
 					continue; //invalid
+				}
 
 				int idx = p_dir->find_file_index(f);
 
@@ -1019,8 +1040,9 @@ void EditorFileSystem::scan_changes() {
 			sp.low = 0;
 			scan_total = 0;
 			_scan_fs_changes(filesystem, sp);
-			if (_update_scan_actions())
+			if (_update_scan_actions()) {
 				emit_signal("filesystem_changed");
+			}
 		}
 		scanning_changes = false;
 		scanning_changes_done = true;
@@ -1057,10 +1079,12 @@ void EditorFileSystem::_notification(int p_what) {
 				set_process(false);
 			}
 
-			if (filesystem)
+			if (filesystem) {
 				memdelete(filesystem);
-			if (new_filesystem)
+			}
+			if (new_filesystem) {
 				memdelete(new_filesystem);
+			}
 			filesystem = nullptr;
 			new_filesystem = nullptr;
 
@@ -1076,8 +1100,9 @@ void EditorFileSystem::_notification(int p_what) {
 						Thread::wait_to_finish(thread_sources);
 						memdelete(thread_sources);
 						thread_sources = nullptr;
-						if (_update_scan_actions())
+						if (_update_scan_actions()) {
 							emit_signal("filesystem_changed");
+						}
 						emit_signal("sources_changed", sources_changed.size() > 0);
 						_queue_update_script_classes();
 						first_scan = false;
@@ -1085,8 +1110,9 @@ void EditorFileSystem::_notification(int p_what) {
 				} else if (!scanning) {
 					set_process(false);
 
-					if (filesystem)
+					if (filesystem) {
 						memdelete(filesystem);
+					}
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
 					Thread::wait_to_finish(thread);
@@ -1121,8 +1147,9 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem() {
 }
 
 void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, FileAccess *p_file) {
-	if (!p_dir)
+	if (!p_dir) {
 		return; //none
+	}
 	p_file->store_line("::" + p_dir->get_path() + "::" + String::num(p_dir->modified_time));
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
@@ -1132,8 +1159,9 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
 		s += "::";
 		for (int j = 0; j < p_dir->files[i]->deps.size(); j++) {
-			if (j > 0)
+			if (j > 0) {
 				s += "<>";
+			}
 			s += p_dir->files[i]->deps[j];
 		}
 
@@ -1148,28 +1176,32 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const {
 	//todo make faster
 
-	if (!filesystem || scanning)
+	if (!filesystem || scanning) {
 		return false;
+	}
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_file);
 
-	if (!f.begins_with("res://"))
+	if (!f.begins_with("res://")) {
 		return false;
+	}
 	f = f.substr(6, f.length());
 	f = f.replace("\\", "/");
 
 	Vector<String> path = f.split("/");
 
-	if (path.size() == 0)
+	if (path.size() == 0) {
 		return false;
+	}
 	String file = path[path.size() - 1];
 	path.resize(path.size() - 1);
 
 	EditorFileSystemDirectory *fs = filesystem;
 
 	for (int i = 0; i < path.size(); i++) {
-		if (path[i].begins_with("."))
+		if (path[i].begins_with(".")) {
 			return false;
+		}
 
 		int idx = -1;
 		for (int j = 0; j < fs->get_subdir_count(); j++) {
@@ -1188,15 +1220,17 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 			int idx2 = 0;
 			for (int j = 0; j < fs->get_subdir_count(); j++) {
-				if (efsd->name < fs->get_subdir(j)->get_name())
+				if (efsd->name < fs->get_subdir(j)->get_name()) {
 					break;
+				}
 				idx2++;
 			}
 
-			if (idx2 == fs->get_subdir_count())
+			if (idx2 == fs->get_subdir_count()) {
 				fs->subdirs.push_back(efsd);
-			else
+			} else {
 				fs->subdirs.insert(idx2, efsd);
+			}
 			fs = efsd;
 		} else {
 			fs = fs->get_subdir(idx);
@@ -1229,8 +1263,9 @@ String EditorFileSystem::get_file_type(const String &p_file) const {
 }
 
 EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int *r_index) const {
-	if (!filesystem || scanning)
+	if (!filesystem || scanning) {
 		return nullptr;
+	}
 
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
@@ -1238,33 +1273,39 @@ EditorFileSystemDirectory *EditorFileSystem::find_file(const String &p_file, int
 		return nullptr;
 	}
 
-	if (r_index)
+	if (r_index) {
 		*r_index = cpos;
+	}
 
 	return fs;
 }
 
 EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p_path) {
-	if (!filesystem || scanning)
+	if (!filesystem || scanning) {
 		return nullptr;
+	}
 
 	String f = ProjectSettings::get_singleton()->localize_path(p_path);
 
-	if (!f.begins_with("res://"))
+	if (!f.begins_with("res://")) {
 		return nullptr;
+	}
 
 	f = f.substr(6, f.length());
 	f = f.replace("\\", "/");
-	if (f == String())
+	if (f == String()) {
 		return filesystem;
+	}
 
-	if (f.ends_with("/"))
+	if (f.ends_with("/")) {
 		f = f.substr(0, f.length() - 1);
+	}
 
 	Vector<String> path = f.split("/");
 
-	if (path.size() == 0)
+	if (path.size() == 0) {
 		return nullptr;
+	}
 
 	EditorFileSystemDirectory *fs = filesystem;
 
@@ -1351,8 +1392,9 @@ void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
 }
 
 void EditorFileSystem::update_script_classes() {
-	if (!update_script_classes_queued)
+	if (!update_script_classes_queued) {
 		return;
+	}
 
 	update_script_classes_queued = false;
 	ScriptServer::global_classes_clear();
@@ -1386,8 +1428,9 @@ void EditorFileSystem::update_file(const String &p_file) {
 	int cpos = -1;
 
 	if (!_find_file(p_file, &fs, cpos)) {
-		if (!fs)
+		if (!fs) {
 			return;
+		}
 	}
 
 	if (!FileAccess::exists(p_file)) {
@@ -1412,8 +1455,9 @@ void EditorFileSystem::update_file(const String &p_file) {
 		int idx = 0;
 
 		for (int i = 0; i < fs->files.size(); i++) {
-			if (p_file < fs->files[i]->file)
+			if (p_file < fs->files[i]->file) {
 				break;
+			}
 			idx++;
 		}
 

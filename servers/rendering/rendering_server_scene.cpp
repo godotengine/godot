@@ -328,13 +328,16 @@ void RenderingServerScene::scenario_set_reflection_atlas_size(RID p_scenario, in
 /* INSTANCING API */
 
 void RenderingServerScene::_instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies) {
-	if (p_update_aabb)
+	if (p_update_aabb) {
 		p_instance->update_aabb = true;
-	if (p_update_dependencies)
+	}
+	if (p_update_dependencies) {
 		p_instance->update_dependencies = true;
+	}
 
-	if (p_instance->update_item.in_list())
+	if (p_instance->update_item.in_list()) {
 		return;
+	}
 
 	_instance_update_list.add(&p_instance->update_item);
 }
@@ -597,8 +600,9 @@ void RenderingServerScene::instance_set_transform(RID p_instance, const Transfor
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->transform == p_transform)
+	if (instance->transform == p_transform) {
 		return; //must be checked to avoid worst evil
+	}
 
 #ifdef DEBUG_ENABLED
 
@@ -656,8 +660,9 @@ void RenderingServerScene::instance_set_visible(RID p_instance, bool p_visible) 
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->visible == p_visible)
+	if (instance->visible == p_visible) {
 		return;
+	}
 
 	instance->visible = p_visible;
 
@@ -708,8 +713,9 @@ void RenderingServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb)
 
 	if (p_aabb != AABB()) {
 		// Set custom AABB
-		if (instance->custom_aabb == nullptr)
+		if (instance->custom_aabb == nullptr) {
 			instance->custom_aabb = memnew(AABB);
+		}
 		*instance->custom_aabb = p_aabb;
 
 	} else {
@@ -720,16 +726,18 @@ void RenderingServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb)
 		}
 	}
 
-	if (instance->scenario)
+	if (instance->scenario) {
 		_instance_queue_update(instance, true, false);
+	}
 }
 
 void RenderingServerScene::instance_attach_skeleton(RID p_instance, RID p_skeleton) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->skeleton == p_skeleton)
+	if (instance->skeleton == p_skeleton) {
 		return;
+	}
 
 	instance->skeleton = p_skeleton;
 
@@ -765,8 +773,9 @@ Vector<ObjectID> RenderingServerScene::instances_cull_aabb(const AABB &p_aabb, R
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
 		ERR_CONTINUE(!instance);
-		if (instance->object_id.is_null())
+		if (instance->object_id.is_null()) {
 			continue;
+		}
 
 		instances.push_back(instance->object_id);
 	}
@@ -787,8 +796,9 @@ Vector<ObjectID> RenderingServerScene::instances_cull_ray(const Vector3 &p_from,
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
 		ERR_CONTINUE(!instance);
-		if (instance->object_id.is_null())
+		if (instance->object_id.is_null()) {
 			continue;
+		}
 
 		instances.push_back(instance->object_id);
 	}
@@ -810,8 +820,9 @@ Vector<ObjectID> RenderingServerScene::instances_cull_convex(const Vector<Plane>
 	for (int i = 0; i < culled; i++) {
 		Instance *instance = cull[i];
 		ERR_CONTINUE(!instance);
-		if (instance->object_id.is_null())
+		if (instance->object_id.is_null()) {
 			continue;
+		}
 
 		instances.push_back(instance->object_id);
 	}
@@ -1079,32 +1090,36 @@ void RenderingServerScene::_update_instance_aabb(Instance *p_instance) {
 			// do nothing
 		} break;
 		case RenderingServer::INSTANCE_MESH: {
-			if (p_instance->custom_aabb)
+			if (p_instance->custom_aabb) {
 				new_aabb = *p_instance->custom_aabb;
-			else
+			} else {
 				new_aabb = RSG::storage->mesh_get_aabb(p_instance->base, p_instance->skeleton);
+			}
 
 		} break;
 
 		case RenderingServer::INSTANCE_MULTIMESH: {
-			if (p_instance->custom_aabb)
+			if (p_instance->custom_aabb) {
 				new_aabb = *p_instance->custom_aabb;
-			else
+			} else {
 				new_aabb = RSG::storage->multimesh_get_aabb(p_instance->base);
+			}
 
 		} break;
 		case RenderingServer::INSTANCE_IMMEDIATE: {
-			if (p_instance->custom_aabb)
+			if (p_instance->custom_aabb) {
 				new_aabb = *p_instance->custom_aabb;
-			else
+			} else {
 				new_aabb = RSG::storage->immediate_get_aabb(p_instance->base);
+			}
 
 		} break;
 		case RenderingServer::INSTANCE_PARTICLES: {
-			if (p_instance->custom_aabb)
+			if (p_instance->custom_aabb) {
 				new_aabb = *p_instance->custom_aabb;
-			else
+			} else {
 				new_aabb = RSG::storage->particles_get_aabb(p_instance->base);
+			}
 
 		} break;
 		case RenderingServer::INSTANCE_LIGHT: {
@@ -1132,8 +1147,9 @@ void RenderingServerScene::_update_instance_aabb(Instance *p_instance) {
 	}
 
 	// <Zylann> This is why I didn't re-use Instance::aabb to implement custom AABBs
-	if (p_instance->extra_margin)
+	if (p_instance->extra_margin) {
 		new_aabb.grow_by(p_instance->extra_margin);
+	}
 
 	p_instance->aabb = new_aabb;
 }
@@ -1364,20 +1380,26 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 					real_t d_y = y_vec.dot(endpoints[j]);
 					real_t d_z = z_vec.dot(endpoints[j]);
 
-					if (j == 0 || d_x < x_min)
+					if (j == 0 || d_x < x_min) {
 						x_min = d_x;
-					if (j == 0 || d_x > x_max)
+					}
+					if (j == 0 || d_x > x_max) {
 						x_max = d_x;
+					}
 
-					if (j == 0 || d_y < y_min)
+					if (j == 0 || d_y < y_min) {
 						y_min = d_y;
-					if (j == 0 || d_y > y_max)
+					}
+					if (j == 0 || d_y > y_max) {
 						y_max = d_y;
+					}
 
-					if (j == 0 || d_z < z_min)
+					if (j == 0 || d_z < z_min) {
 						z_min = d_z;
-					if (j == 0 || d_z > z_max)
+					}
+					if (j == 0 || d_z > z_max) {
 						z_max = d_z;
+					}
 				}
 
 				real_t radius = 0;
@@ -1396,8 +1418,9 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 					for (int j = 0; j < 8; j++) {
 						real_t d = center.distance_to(endpoints[j]);
-						if (d > radius)
+						if (d > radius) {
 							radius = d;
+						}
 					}
 
 					radius *= texture_size / (texture_size - 2.0); //add a texel by each side
@@ -1524,8 +1547,9 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 						real_t d_z = z_vec.dot(endpoints_square[j]);
 
-						if (j == 0 || d_z > z_max_square)
+						if (j == 0 || d_z > z_max_square) {
 							z_max_square = d_z;
+						}
 					}
 
 					if (cull_max > z_max_square) {
@@ -1538,8 +1562,9 @@ bool RenderingServerScene::_light_instance_update_shadow(Instance *p_instance, c
 
 					for (int j = 0; j < 8; j++) {
 						real_t d = center_square.distance_to(endpoints_square[j]);
-						if (d > radius_square)
+						if (d > radius_square) {
 							radius_square = d;
+						}
 					}
 
 					radius_square *= texture_size / (texture_size - 2.0); //add a texel by each side
@@ -2073,8 +2098,9 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 				break;
 			}
 
-			if (!E->get()->visible)
+			if (!E->get()->visible) {
 				continue;
+			}
 
 			InstanceLightData *light = static_cast<InstanceLightData *>(E->get()->base_data);
 
@@ -2107,8 +2133,9 @@ void RenderingServerScene::_prepare_scene(const Transform p_cam_transform, const
 		for (int i = 0; i < light_cull_count; i++) {
 			Instance *ins = light_cull_result[i];
 
-			if (!p_shadow_atlas.is_valid() || !RSG::storage->light_has_shadow(ins->base))
+			if (!p_shadow_atlas.is_valid() || !RSG::storage->light_has_shadow(ins->base)) {
 				continue;
+			}
 
 			InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
@@ -2205,12 +2232,13 @@ void RenderingServerScene::_render_scene(RID p_render_buffers, const Transform p
 	/* ENVIRONMENT */
 
 	RID environment;
-	if (p_force_environment.is_valid()) //camera has more environment priority
+	if (p_force_environment.is_valid()) { //camera has more environment priority
 		environment = p_force_environment;
-	else if (scenario->environment.is_valid())
+	} else if (scenario->environment.is_valid()) {
 		environment = scenario->environment;
-	else
+	} else {
 		environment = scenario->fallback_environment;
+	}
 
 	RID camera_effects;
 	if (p_force_camera_effects.is_valid()) {
@@ -2230,10 +2258,11 @@ void RenderingServerScene::render_empty_scene(RID p_render_buffers, RID p_scenar
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
 	RID environment;
-	if (scenario->environment.is_valid())
+	if (scenario->environment.is_valid()) {
 		environment = scenario->environment;
-	else
+	} else {
 		environment = scenario->fallback_environment;
+	}
 	RENDER_TIMESTAMP("Render Empty Scene ");
 	RSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0, environment, RID(), p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
@@ -2321,8 +2350,9 @@ void RenderingServerScene::render_probes() {
 
 		switch (RSG::storage->reflection_probe_get_update_mode(base)) {
 			case RS::REFLECTION_PROBE_UPDATE_ONCE: {
-				if (busy) //already rendering something
+				if (busy) { //already rendering something
 					break;
+				}
 
 				bool done = _render_reflection_probe_step(ref_probe->self()->owner, ref_probe->self()->render_step);
 				if (done) {
@@ -2707,8 +2737,9 @@ void RenderingServerScene::_update_dirty_instance(Instance *p_instance) {
 
 					for (int i = 0; i < dp; i++) {
 						RID mesh = RSG::storage->particles_get_draw_pass_mesh(p_instance->base, i);
-						if (!mesh.is_valid())
+						if (!mesh.is_valid()) {
 							continue;
+						}
 
 						int sc = RSG::storage->mesh_get_surface_count(mesh);
 						for (int j = 0; j < sc; j++) {

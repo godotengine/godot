@@ -68,12 +68,14 @@ public:
 			script_key = preset->get_script_encryption_key().to_lower();
 		}
 
-		if (!p_path.ends_with(".gd") || script_mode == EditorExportPreset::MODE_SCRIPT_TEXT)
+		if (!p_path.ends_with(".gd") || script_mode == EditorExportPreset::MODE_SCRIPT_TEXT) {
 			return;
+		}
 
 		Vector<uint8_t> file = FileAccess::get_file_as_array(p_path);
-		if (file.empty())
+		if (file.empty()) {
 			return;
+		}
 
 		String txt;
 		txt.parse_utf8((const char *)file.ptr(), file.size());
@@ -90,19 +92,21 @@ public:
 					int v = 0;
 					if (i * 2 < script_key.length()) {
 						CharType ct = script_key[i * 2];
-						if (ct >= '0' && ct <= '9')
+						if (ct >= '0' && ct <= '9') {
 							ct = ct - '0';
-						else if (ct >= 'a' && ct <= 'f')
+						} else if (ct >= 'a' && ct <= 'f') {
 							ct = 10 + ct - 'a';
+						}
 						v |= ct << 4;
 					}
 
 					if (i * 2 + 1 < script_key.length()) {
 						CharType ct = script_key[i * 2 + 1];
-						if (ct >= '0' && ct <= '9')
+						if (ct >= '0' && ct <= '9') {
 							ct = ct - '0';
-						else if (ct >= 'a' && ct <= 'f')
+						} else if (ct >= 'a' && ct <= 'f') {
 							ct = 10 + ct - 'a';
+						}
 						v |= ct;
 					}
 					key.write[i] = v;
@@ -166,8 +170,9 @@ void register_gdscript_types() {
 void unregister_gdscript_types() {
 	ScriptServer::unregister_language(script_language_gd);
 
-	if (script_language_gd)
+	if (script_language_gd) {
 		memdelete(script_language_gd);
+	}
 
 	ResourceLoader::remove_resource_format_loader(resource_loader_gd);
 	resource_loader_gd.unref();

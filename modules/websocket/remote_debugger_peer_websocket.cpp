@@ -88,8 +88,9 @@ Array RemoteDebuggerPeerWebSocket::get_message() {
 }
 
 Error RemoteDebuggerPeerWebSocket::put_message(const Array &p_arr) {
-	if (out_queue.size() >= max_queued_messages)
+	if (out_queue.size() >= max_queued_messages) {
 		return ERR_OUT_OF_MEMORY;
+	}
 	out_queue.push_back(p_arr);
 	return OK;
 }

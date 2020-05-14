@@ -37,8 +37,9 @@ float AudioStreamPreview::get_length() const {
 }
 
 float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
-	if (length == 0)
+	if (length == 0) {
 		return 0;
+	}
 
 	int max = preview.size() / 2;
 	int time_from = p_time / length * max;
@@ -63,8 +64,9 @@ float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
 }
 
 float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
-	if (length == 0)
+	if (length == 0) {
 		return 0;
+	}
 
 	int max = preview.size() / 2;
 	int time_from = p_time / length * max;
@@ -194,8 +196,9 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->preview->preview = maxmin;
 	preview->preview->length = len_s;
 
-	if (preview->playback.is_valid())
+	if (preview->playback.is_valid()) {
 		preview->thread = Thread::create(_preview_thread, preview);
+	}
 
 	return preview->preview;
 }

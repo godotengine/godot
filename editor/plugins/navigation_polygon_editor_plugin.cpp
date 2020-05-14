@@ -49,18 +49,20 @@ void NavigationPolygonEditor::_set_node(Node *p_polygon) {
 
 int NavigationPolygonEditor::_get_polygon_count() const {
 	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
-	if (navpoly.is_valid())
+	if (navpoly.is_valid()) {
 		return navpoly->get_outline_count();
-	else
+	} else {
 		return 0;
+	}
 }
 
 Variant NavigationPolygonEditor::_get_polygon(int p_idx) const {
 	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();
-	if (navpoly.is_valid())
+	if (navpoly.is_valid()) {
 		return navpoly->get_outline(p_idx);
-	else
+	} else {
 		return Variant(Vector<Vector2>());
+	}
 }
 
 void NavigationPolygonEditor::_set_polygon(int p_idx, const Variant &p_polygon) const {
@@ -98,8 +100,9 @@ bool NavigationPolygonEditor::_has_resource() const {
 }
 
 void NavigationPolygonEditor::_create_resource() {
-	if (!node)
+	if (!node) {
 		return;
+	}
 
 	undo_redo->create_action(TTR("Create Navigation Polygon"));
 	undo_redo->add_do_method(node, "set_navigation_polygon", Ref<NavigationPolygon>(memnew(NavigationPolygon)));

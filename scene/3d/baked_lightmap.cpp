@@ -275,8 +275,9 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 			Transform xf = get_global_transform().affine_inverse() * s->get_global_transform();
 			for (int i = 0; i < bmeshes.size(); i += 2) {
 				Ref<Mesh> mesh = bmeshes[i];
-				if (!mesh.is_valid())
+				if (!mesh.is_valid()) {
 					continue;
+				}
 
 				MeshesFound mf;
 
@@ -310,8 +311,9 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound>
 
 	for (int i = 0; i < p_at_node->get_child_count(); i++) {
 		Node *child = p_at_node->get_child(i);
-		if (!child->get_owner())
+		if (!child->get_owner()) {
 			continue; //maybe a helper
+		}
 
 		_find_meshes_and_lights(child, meshes, lights, probes);
 	}
@@ -557,8 +559,9 @@ void BakedLightmap::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_
 		subcell.position = Vector3(pos) * p_cell_size;
 		subcell.size = Vector3(half_size, half_size, half_size) * p_cell_size;
 
-		if (!Geometry::triangle_box_overlap(subcell.position + subcell.size * 0.5, subcell.size * 0.5, p_triangle))
+		if (!Geometry::triangle_box_overlap(subcell.position + subcell.size * 0.5, subcell.size * 0.5, p_triangle)) {
 			continue;
+		}
 
 		if (p_cell->children[i] == nullptr) {
 			GenProbesOctree *child = memnew(GenProbesOctree);

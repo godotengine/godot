@@ -74,8 +74,9 @@ Color CanvasModulate::get_color() const {
 }
 
 String CanvasModulate::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree()) {
 		return String();
+	}
 
 	List<Node *> nodes;
 	get_tree()->get_nodes_in_group("_canvas_modulate_" + itos(get_canvas().get_id()), &nodes);

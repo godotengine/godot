@@ -75,24 +75,29 @@ PropertyInfo::operator Dictionary() const {
 PropertyInfo PropertyInfo::from_dict(const Dictionary &p_dict) {
 	PropertyInfo pi;
 
-	if (p_dict.has("type"))
+	if (p_dict.has("type")) {
 		pi.type = Variant::Type(int(p_dict["type"]));
+	}
 
-	if (p_dict.has("name"))
+	if (p_dict.has("name")) {
 		pi.name = p_dict["name"];
+	}
 
-	if (p_dict.has("class_name"))
+	if (p_dict.has("class_name")) {
 		pi.class_name = p_dict["class_name"];
+	}
 
-	if (p_dict.has("hint"))
+	if (p_dict.has("hint")) {
 		pi.hint = PropertyHint(int(p_dict["hint"]));
+	}
 
-	if (p_dict.has("hint_string"))
-
+	if (p_dict.has("hint_string")) {
 		pi.hint_string = p_dict["hint_string"];
+	}
 
-	if (p_dict.has("usage"))
+	if (p_dict.has("usage")) {
 		pi.usage = p_dict["usage"];
+	}
 
 	return pi;
 }
@@ -111,8 +116,9 @@ MethodInfo::operator Dictionary() const {
 	d["name"] = name;
 	d["args"] = convert_property_list(&arguments);
 	Array da;
-	for (int i = 0; i < default_arguments.size(); i++)
+	for (int i = 0; i < default_arguments.size(); i++) {
 		da.push_back(default_arguments[i]);
+	}
 	d["default_args"] = da;
 	d["flags"] = flags;
 	d["id"] = id;
@@ -124,8 +130,9 @@ MethodInfo::operator Dictionary() const {
 MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	MethodInfo mi;
 
-	if (p_dict.has("name"))
+	if (p_dict.has("name")) {
 		mi.name = p_dict["name"];
+	}
 	Array args;
 	if (p_dict.has("args")) {
 		args = p_dict["args"];
@@ -147,8 +154,9 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 		mi.return_val = PropertyInfo::from_dict(p_dict["return"]);
 	}
 
-	if (p_dict.has("flags"))
+	if (p_dict.has("flags")) {
 		mi.flags = p_dict["flags"];
+	}
 
 	return mi;
 }
@@ -327,14 +335,18 @@ bool Object::Connection::operator<(const Connection &p_conn) const {
 
 Object::Connection::Connection(const Variant &p_variant) {
 	Dictionary d = p_variant;
-	if (d.has("signal"))
+	if (d.has("signal")) {
 		signal = d["signal"];
-	if (d.has("callable"))
+	}
+	if (d.has("callable")) {
 		callable = d["callable"];
-	if (d.has("flags"))
+	}
+	if (d.has("flags")) {
 		flags = d["flags"];
-	if (d.has("binds"))
+	}
+	if (d.has("binds")) {
 		binds = d["binds"];
+	}
 }
 
 bool Object::_predelete() {
@@ -366,8 +378,9 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 
 	if (script_instance) {
 		if (script_instance->set(p_name, p_value)) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return;
 		}
 	}
@@ -385,23 +398,26 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 
 	if (p_name == CoreStringNames::get_singleton()->_script) {
 		set_script(p_value);
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = true;
+		}
 		return;
 
 	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
 		//set_meta(p_name,p_value);
 		metadata = p_value.duplicate();
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = true;
+		}
 		return;
 	}
 
 	//something inside the object... :|
 	bool success = _setv(p_name, p_value);
 	if (success) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = true;
+		}
 		return;
 	}
 
@@ -409,8 +425,9 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		bool valid;
 		setvar(p_name, p_value, &valid);
 		if (valid) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return;
 		}
 	}
@@ -420,15 +437,17 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		bool valid;
 		script_instance->property_set_fallback(p_name, p_value, &valid);
 		if (valid) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return;
 		}
 	}
 #endif
 
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 }
 
 Variant Object::get(const StringName &p_name, bool *r_valid) const {
@@ -436,8 +455,9 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 
 	if (script_instance) {
 		if (script_instance->get(p_name, ret)) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return ret;
 		}
 	}
@@ -445,30 +465,34 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 	//try built-in setgetter
 	{
 		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return ret;
 		}
 	}
 
 	if (p_name == CoreStringNames::get_singleton()->_script) {
 		ret = get_script();
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = true;
+		}
 		return ret;
 
 	} else if (p_name == CoreStringNames::get_singleton()->_meta) {
 		ret = metadata;
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = true;
+		}
 		return ret;
 
 	} else {
 		//something inside the object... :|
 		bool success = _getv(p_name, ret);
 		if (success) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = true;
+			}
 			return ret;
 		}
 
@@ -477,8 +501,9 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			bool valid;
 			ret = getvar(p_name, &valid);
 			if (valid) {
-				if (r_valid)
+				if (r_valid) {
 					*r_valid = true;
+				}
 				return ret;
 			}
 		}
@@ -488,23 +513,26 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			bool valid;
 			ret = script_instance->property_get_fallback(p_name, &valid);
 			if (valid) {
-				if (r_valid)
+				if (r_valid) {
 					*r_valid = true;
+				}
 				return ret;
 			}
 		}
 #endif
 
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return Variant();
 	}
 }
 
 void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_value, bool *r_valid) {
 	if (p_names.empty()) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return;
 	}
 	if (p_names.size() == 1) {
@@ -513,8 +541,9 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 	}
 
 	bool valid = false;
-	if (!r_valid)
+	if (!r_valid) {
 		r_valid = &valid;
+	}
 
 	List<Variant> value_stack;
 
@@ -554,8 +583,9 @@ void Object::set_indexed(const Vector<StringName> &p_names, const Variant &p_val
 
 Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) const {
 	if (p_names.empty()) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return Variant();
 	}
 	bool valid = false;
@@ -564,11 +594,13 @@ Variant Object::get_indexed(const Vector<StringName> &p_names, bool *r_valid) co
 	for (int i = 1; i < p_names.size(); i++) {
 		current_value = current_value.get_named(p_names[i], &valid);
 
-		if (!valid)
+		if (!valid) {
 			break;
+		}
 	}
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = valid;
+	}
 
 	return current_value;
 }
@@ -741,14 +773,16 @@ bool Object::has_method(const StringName &p_method) const {
 }
 
 Variant Object::getvar(const Variant &p_key, bool *r_valid) const {
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 	return Variant();
 }
 
 void Object::setvar(const Variant &p_key, const Variant &p_value, bool *r_valid) {
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 }
 
 Variant Object::callv(const StringName &p_method, const Array &p_args) {
@@ -774,8 +808,9 @@ Variant Object::call(const StringName &p_name, VARIANT_ARG_DECLARE) {
 
 	int argc = 0;
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 
@@ -790,8 +825,9 @@ void Object::call_multilevel(const StringName &p_name, VARIANT_ARG_DECLARE) {
 
 	int argc = 0;
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 
@@ -871,8 +907,9 @@ String Object::to_string() {
 	if (script_instance) {
 		bool valid;
 		String ret = script_instance->to_string(&valid);
-		if (valid)
+		if (valid) {
 			return ret;
+		}
 	}
 	return "[" + get_class() + ":" + itos(get_instance_id()) + "]";
 }
@@ -907,8 +944,9 @@ void Object::set_script_and_instance(const Variant &p_script, ScriptInstance *p_
 }
 
 void Object::set_script(const Variant &p_script) {
-	if (script == p_script)
+	if (script == p_script) {
 		return;
+	}
 
 	if (script_instance) {
 		memdelete(script_instance);
@@ -933,18 +971,21 @@ void Object::set_script(const Variant &p_script) {
 }
 
 void Object::set_script_instance(ScriptInstance *p_instance) {
-	if (script_instance == p_instance)
+	if (script_instance == p_instance) {
 		return;
+	}
 
-	if (script_instance)
+	if (script_instance) {
 		memdelete(script_instance);
+	}
 
 	script_instance = p_instance;
 
-	if (p_instance)
+	if (p_instance) {
 		script = p_instance->get_script();
-	else
+	} else {
 		script = Variant();
+	}
 }
 
 Variant Object::get_script() const {
@@ -1023,8 +1064,9 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 }
 
 bool Object::_has_user_signal(const StringName &p_name) const {
-	if (!signal_map.has(p_name))
+	if (!signal_map.has(p_name)) {
 		return false;
+	}
 	return signal_map[p_name].user.name.length() > 0;
 }
 
@@ -1061,8 +1103,9 @@ Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::C
 }
 
 Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount) {
-	if (_block_signals)
+	if (_block_signals) {
 		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
+	}
 
 	SignalData *s = signal_map.getptr(p_name);
 	if (!s) {
@@ -1128,8 +1171,9 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 
 			if (ce.error != Callable::CallError::CALL_OK) {
 #ifdef DEBUG_ENABLED
-				if (c.flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (script.is_null() || !Ref<Script>(script)->is_tool()))
+				if (c.flags & CONNECT_PERSIST && Engine::get_singleton()->is_editor_hint() && (script.is_null() || !Ref<Script>(script)->is_tool())) {
 					continue;
+				}
 #endif
 				if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
 					//most likely object is not initialized yet, do not throw error.
@@ -1171,8 +1215,9 @@ Error Object::emit_signal(const StringName &p_name, VARIANT_ARG_DECLARE) {
 	int argc = 0;
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
-		if (argptr[i]->get_type() == Variant::NIL)
+		if (argptr[i]->get_type() == Variant::NIL) {
 			break;
+		}
 		argc++;
 	}
 
@@ -1191,10 +1236,12 @@ void Object::_add_user_signal(const String &p_name, const Array &p_args) {
 		Dictionary d = p_args[i];
 		PropertyInfo param;
 
-		if (d.has("name"))
+		if (d.has("name")) {
 			param.name = d["name"];
-		if (d.has("type"))
+		}
+		if (d.has("type")) {
 			param.type = (Variant::Type)(int)d["type"];
+		}
 
 		mi.arguments.push_back(param);
 	}
@@ -1293,11 +1340,13 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 
 void Object::get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const {
 	const SignalData *s = signal_map.getptr(p_signal);
-	if (!s)
+	if (!s) {
 		return; //nothing
+	}
 
-	for (int i = 0; i < s->slot_map.size(); i++)
+	for (int i = 0; i < s->slot_map.size(); i++) {
 		p_connections->push_back(s->slot_map.getv(i).conn);
+	}
 }
 
 int Object::get_persistent_signal_connection_count() const {
@@ -1395,11 +1444,13 @@ bool Object::is_connected(const StringName &p_signal, const Callable &p_callable
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
-		if (signal_is_valid)
+		if (signal_is_valid) {
 			return false;
+		}
 
-		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal))
+		if (!script.is_null() && Ref<Script>(script)->has_script_signal(p_signal)) {
 			return false;
+		}
 
 		ERR_FAIL_V_MSG(false, "Nonexistent signal: " + p_signal + ".");
 	}
@@ -1466,16 +1517,18 @@ Variant Object::_get_indexed_bind(const NodePath &p_name) const {
 
 void Object::initialize_class() {
 	static bool initialized = false;
-	if (initialized)
+	if (initialized) {
 		return;
+	}
 	ClassDB::_add_class<Object>();
 	_bind_methods();
 	initialized = true;
 }
 
 StringName Object::tr(const StringName &p_message) const {
-	if (!_can_translate || !TranslationServer::get_singleton())
+	if (!_can_translate || !TranslationServer::get_singleton()) {
 		return p_message;
+	}
 
 	return TranslationServer::get_singleton()->translate(p_message);
 }
@@ -1484,15 +1537,18 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	switch (p_var.get_type()) {
 		case Variant::OBJECT: {
 			RES r = p_var;
-			if (!r.is_valid())
+			if (!r.is_valid()) {
 				return;
+			}
 
-			if (!r->get_path().begins_with("res://") || r->get_path().find("::") == -1)
+			if (!r->get_path().begins_with("res://") || r->get_path().find("::") == -1) {
 				return; //not an internal resource
+			}
 
 			Object *object = p_var;
-			if (!object)
+			if (!object) {
 				return;
+			}
 
 			r->set_path("");
 			r->clear_internal_resource_paths();
@@ -1522,10 +1578,11 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 #ifdef TOOLS_ENABLED
 void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded) {
 	set_edited(true);
-	if (p_unfolded)
+	if (p_unfolded) {
 		editor_section_folding.insert(p_section);
-	else
+	} else {
 		editor_section_folding.erase(p_section);
+	}
 }
 
 bool Object::editor_is_section_unfolded(const String &p_section) {
@@ -1669,13 +1726,15 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 	get_property_list(&plist);
 
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		if (!(E->get().usage & PROPERTY_USAGE_INTERNATIONALIZED))
+		if (!(E->get().usage & PROPERTY_USAGE_INTERNATIONALIZED)) {
 			continue;
+		}
 
 		String text = get(E->get().name);
 
-		if (text == "")
+		if (text == "") {
 			continue;
+		}
 
 		p_strings->push_back(text);
 	}
@@ -1685,24 +1744,27 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 	bool valid;
 	Variant::Type t = ClassDB::get_property_type(get_class_name(), p_property, &valid);
 	if (valid) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = true;
+		}
 		return t;
 	}
 
 	if (get_script_instance()) {
 		return get_script_instance()->get_property_type(p_property, r_valid);
 	}
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = false;
+	}
 
 	return Variant::NIL;
 }
 
 Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
 	if (p_path.size() == 0) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 
 		return Variant::NIL;
 	}
@@ -1710,8 +1772,9 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 	bool valid = false;
 	Variant::Type t = get_static_property_type(p_path[0], &valid);
 	if (!valid) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 
 		return Variant::NIL;
 	}
@@ -1722,22 +1785,25 @@ Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> 
 	for (int i = 1; i < p_path.size(); i++) {
 		if (check.get_type() == Variant::OBJECT || check.get_type() == Variant::DICTIONARY || check.get_type() == Variant::ARRAY) {
 			// We cannot be sure about the type of properties this types can have
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = false;
+			}
 			return Variant::NIL;
 		}
 
 		check = check.get_named(p_path[i], &valid);
 
 		if (!valid) {
-			if (r_valid)
+			if (r_valid) {
 				*r_valid = false;
+			}
 			return Variant::NIL;
 		}
 	}
 
-	if (r_valid)
+	if (r_valid) {
 		*r_valid = true;
+	}
 
 	return check.get_type();
 }
@@ -1812,8 +1878,9 @@ Object::Object() {
 }
 
 Object::~Object() {
-	if (script_instance)
+	if (script_instance) {
 		memdelete(script_instance);
+	}
 	script_instance = nullptr;
 
 	const StringName *S = nullptr;
@@ -1978,10 +2045,12 @@ void ObjectDB::cleanup() {
 				Object *obj = object_slots[slot].object;
 
 				String node_name;
-				if (obj->is_class("Node"))
+				if (obj->is_class("Node")) {
 					node_name = " - Node name: " + String(obj->call("get_name"));
-				if (obj->is_class("Resource"))
+				}
+				if (obj->is_class("Resource")) {
 					node_name = " - Resource name: " + String(obj->call("get_name")) + " Path: " + String(obj->call("get_path"));
+				}
 
 				uint64_t id = uint64_t(slot) | (uint64_t(object_slots[slot].validator) << OBJECTDB_VALIDATOR_BITS) | (object_slots[slot].is_reference ? OBJECTDB_REFERENCE_BIT : 0);
 				print_line("Leaked instance: " + String(obj->get_class()) + ":" + itos(id) + node_name);

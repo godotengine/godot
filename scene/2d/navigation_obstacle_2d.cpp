@@ -51,10 +51,11 @@ void NavigationObstacle2D::_notification(int p_what) {
 				Node *p = get_parent();
 				while (p != nullptr) {
 					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != nullptr)
+					if (nav != nullptr) {
 						p = nullptr;
-					else
+					} else {
 						p = p->get_parent();
+					}
 				}
 
 				set_navigation(nav);
@@ -86,8 +87,9 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 }
 
 void NavigationObstacle2D::set_navigation(Navigation2D *p_nav) {
-	if (navigation == p_nav)
+	if (navigation == p_nav) {
 		return; // Pointless
+	}
 
 	navigation = p_nav;
 	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
@@ -138,8 +140,9 @@ void NavigationObstacle2D::update_agent_shape() {
 		radius *= MAX(s.x, s.y);
 	}
 
-	if (radius == 0.0)
+	if (radius == 0.0) {
 		radius = 1.0; // Never a 0 radius
+	}
 
 	// Initialize the Agent as an object
 	NavigationServer2D::get_singleton()->agent_set_neighbor_dist(agent, 0.0);

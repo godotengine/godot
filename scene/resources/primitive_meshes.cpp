@@ -48,10 +48,11 @@ void PrimitiveMesh::_update() const {
 	{
 		const Vector3 *r = points.ptr();
 		for (int i = 0; i < pc; i++) {
-			if (i == 0)
+			if (i == 0) {
 				aabb.position = r[i];
-			else
+			} else {
 				aabb.expand_to(r[i]);
+			}
 		}
 	}
 
@@ -96,8 +97,9 @@ void PrimitiveMesh::_update() const {
 }
 
 void PrimitiveMesh::_request_update() {
-	if (pending_request)
+	if (pending_request) {
 		return;
+	}
 	_update();
 }
 

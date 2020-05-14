@@ -71,21 +71,25 @@
 bool EditorNode3DGizmo::is_editable() const {
 	ERR_FAIL_COND_V(!spatial_node, false);
 	Node *edited_root = spatial_node->get_tree()->get_edited_scene_root();
-	if (spatial_node == edited_root)
+	if (spatial_node == edited_root) {
 		return true;
-	if (spatial_node->get_owner() == edited_root)
+	}
+	if (spatial_node->get_owner() == edited_root) {
 		return true;
+	}
 
-	if (edited_root->is_editable_instance(spatial_node->get_owner()))
+	if (edited_root->is_editable_instance(spatial_node->get_owner())) {
 		return true;
+	}
 
 	return false;
 }
 
 void EditorNode3DGizmo::clear() {
 	for (int i = 0; i < instances.size(); i++) {
-		if (instances[i].instance.is_valid())
+		if (instances[i].instance.is_valid()) {
 			RS::get_singleton()->free(instances[i].instance);
+		}
 	}
 
 	billboard_handle = false;
@@ -164,8 +168,9 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 	if (skin_reference.is_valid()) {
 		RS::get_singleton()->instance_attach_skeleton(instance, skin_reference->get_skeleton());
 	}
-	if (extra_margin)
+	if (extra_margin) {
 		RS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
+	}
 	RS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
 	int layer = p_hidden ? 0 : 1 << Node3DEditorViewport::GIZMO_EDIT_LAYER;
 	RS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
@@ -209,10 +214,11 @@ void EditorNode3DGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mate
 	{
 		Color *w = color.ptrw();
 		for (int i = 0; i < p_lines.size(); i++) {
-			if (is_selected())
+			if (is_selected()) {
 				w[i] = Color(1, 1, 1, 0.8) * p_modulate;
-			else
+			} else {
 				w[i] = Color(1, 1, 1, 0.2) * p_modulate;
+			}
 		}
 	}
 
@@ -320,8 +326,9 @@ void EditorNode3DGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
 void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<Material> &p_material, bool p_billboard, bool p_secondary) {
 	billboard_handle = p_billboard;
 
-	if (!is_selected() || !is_editable())
+	if (!is_selected() || !is_editable()) {
 		return;
+	}
 
 	ERR_FAIL_COND(!spatial_node);
 
@@ -338,11 +345,13 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 		Color *w = colors.ptrw();
 		for (int i = 0; i < p_handles.size(); i++) {
 			Color col(1, 1, 1, 1);
-			if (is_handle_highlighted(i))
+			if (is_handle_highlighted(i)) {
 				col = Color(0, 0, 1, 0.9);
+			}
 
-			if (Node3DEditor::get_singleton()->get_over_gizmo_handle() != i)
+			if (Node3DEditor::get_singleton()->get_over_gizmo_handle() != i) {
 				col.a = 0.8;
+			}
 
 			w[i] = col;
 		}
@@ -410,8 +419,9 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 	ERR_FAIL_COND_V(!spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden())
+	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
 		return false;
+	}
 
 	if (selectable_icon_size > 0.0f) {
 		Vector3 origin = spatial_node->get_global_transform().get_origin();
@@ -448,12 +458,14 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 					break;
 				}
 			}
-			if (any_out)
+			if (any_out) {
 				break;
+			}
 		}
 
-		if (!any_out)
+		if (!any_out) {
 			return true;
+		}
 	}
 
 	if (collision_mesh.is_valid()) {
@@ -483,8 +495,9 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 	ERR_FAIL_COND_V(!spatial_node, false);
 	ERR_FAIL_COND_V(!valid, false);
 
-	if (hidden && !gizmo_plugin->is_selectable_when_hidden())
+	if (hidden && !gizmo_plugin->is_selectable_when_hidden()) {
 		return false;
+	}
 
 	if (r_gizmo_handle && !hidden) {
 		Transform t = spatial_node->get_global_transform();
@@ -618,8 +631,9 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 					tcp = a;
 				}
 
-				if (camp.distance_to(tcp) < p_camera->get_znear())
+				if (camp.distance_to(tcp) < p_camera->get_znear()) {
 					continue;
+				}
 				cp = tcp;
 				cpd = pd;
 			}
@@ -681,8 +695,9 @@ void EditorNode3DGizmo::free() {
 	ERR_FAIL_COND(!valid);
 
 	for (int i = 0; i < instances.size(); i++) {
-		if (instances[i].instance.is_valid())
+		if (instances[i].instance.is_valid()) {
 			RS::get_singleton()->free(instances[i].instance);
+		}
 		instances.write[i].instance = RID();
 	}
 
@@ -743,8 +758,9 @@ EditorNode3DGizmo::EditorNode3DGizmo() {
 }
 
 EditorNode3DGizmo::~EditorNode3DGizmo() {
-	if (gizmo_plugin != nullptr)
+	if (gizmo_plugin != nullptr) {
 		gizmo_plugin->unregister_gizmo(this);
+	}
 	clear();
 }
 
@@ -783,18 +799,21 @@ int Light3DGizmoPlugin::get_priority() const {
 }
 
 String Light3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_idx) const {
-	if (p_idx == 0)
+	if (p_idx == 0) {
 		return "Radius";
-	else
+	} else {
 		return "Aperture";
+	}
 }
 
 Variant Light3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo, int p_idx) const {
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_spatial_node());
-	if (p_idx == 0)
+	if (p_idx == 0) {
 		return light->get_param(Light3D::PARAM_RANGE);
-	if (p_idx == 1)
+	}
+	if (p_idx == 1) {
 		return light->get_param(Light3D::PARAM_SPOT_ANGLE);
+	}
 
 	return Variant();
 }
@@ -845,8 +864,9 @@ void Light3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 				d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 			}
 
-			if (d <= 0) // Equal is here for negative zero.
+			if (d <= 0) { // Equal is here for negative zero.
 				d = 0;
+			}
 
 			light->set_param(Light3D::PARAM_RANGE, d);
 		} else if (Object::cast_to<OmniLight3D>(light)) {
@@ -1429,8 +1449,9 @@ void MeshInstance3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Ref<Mesh> m = mesh->get_mesh();
 
-	if (!m.is_valid())
+	if (!m.is_valid()) {
 		return; //none
+	}
 
 	Ref<TriangleMesh> tm = m->generate_triangle_mesh();
 	if (tm.is_valid()) {
@@ -1591,8 +1612,9 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 			for (int j = 0; j < 3; j++) {
 				float dp = Math::abs(grests[parent].basis[j].normalized().dot(d));
-				if (j == 0 || dp > closest_d)
+				if (j == 0 || dp > closest_d) {
 					closest = j;
+				}
 			}
 
 			//find closest other
@@ -1610,8 +1632,9 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				surface_tool->add_color(rootcolor);
 				surface_tool->add_vertex(v0 + grests[parent].basis[j].normalized() * dist * 0.05);
 
-				if (j == closest)
+				if (j == closest) {
 					continue;
+				}
 
 				Vector3 axis;
 				if (first == Vector3()) {
@@ -1622,8 +1645,9 @@ void Skeleton3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				}
 
 				for (int k = 0; k < 2; k++) {
-					if (k == 1)
+					if (k == 1) {
 						axis = -axis;
+					}
 					Vector3 point = v0 + d * dist * 0.2;
 					point += axis * dist * 0.1;
 
@@ -1747,20 +1771,24 @@ void PhysicalBone3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	PhysicalBone3D *physical_bone = Object::cast_to<PhysicalBone3D>(p_gizmo->get_spatial_node());
 
-	if (!physical_bone)
+	if (!physical_bone) {
 		return;
+	}
 
 	Skeleton3D *sk(physical_bone->find_skeleton_parent());
-	if (!sk)
+	if (!sk) {
 		return;
+	}
 
 	PhysicalBone3D *pb(sk->get_physical_bone(physical_bone->get_bone_id()));
-	if (!pb)
+	if (!pb) {
 		return;
+	}
 
 	PhysicalBone3D *pbp(sk->get_physical_bone_parent(physical_bone->get_bone_id()));
-	if (!pbp)
+	if (!pbp) {
 		return;
+	}
 
 	Vector<Vector3> points;
 
@@ -2160,8 +2188,9 @@ void VisibilityNotifier3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 		//resize
 		aabb.position[p_idx] = (aabb.position[p_idx] + aabb.size[p_idx] * 0.5) - d;
 		aabb.size[p_idx] = d * 2;
@@ -2350,8 +2379,9 @@ void GPUParticles3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 		//resize
 		aabb.position[p_idx] = (aabb.position[p_idx] + aabb.size[p_idx] * 0.5) - d;
 		aabb.size[p_idx] = d * 2;
@@ -2499,8 +2529,9 @@ void ReflectionProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_id
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		extents[p_idx] = d;
 		probe->set_extents(extents);
@@ -2676,8 +2707,9 @@ void DecalGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camera3
 		d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
 
-	if (d < 0.001)
+	if (d < 0.001) {
 		d = 0.001;
+	}
 
 	extents[p_idx] = d;
 	decal->set_extents(extents);
@@ -2816,8 +2848,9 @@ void GIProbeGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_idx, Camer
 		d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
 
-	if (d < 0.001)
+	if (d < 0.001) {
 		d = 0.001;
+	}
 
 	extents[p_idx] = d;
 	probe->set_extents(extents);
@@ -3239,8 +3272,9 @@ String CollisionShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_g
 	const CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
-	if (s.is_null())
+	if (s.is_null()) {
 		return "";
+	}
 
 	if (Object::cast_to<SphereShape3D>(*s)) {
 		return "Radius";
@@ -3269,8 +3303,9 @@ Variant CollisionShape3DGizmoPlugin::get_handle_value(EditorNode3DGizmo *p_gizmo
 	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
-	if (s.is_null())
+	if (s.is_null()) {
 		return Variant();
+	}
 
 	if (Object::cast_to<SphereShape3D>(*s)) {
 		Ref<SphereShape3D> ss = s;
@@ -3304,8 +3339,9 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
-	if (s.is_null())
+	if (s.is_null()) {
 		return;
+	}
 
 	Transform gt = cs->get_global_transform();
 	Transform gi = gt.affine_inverse();
@@ -3324,8 +3360,9 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		ss->set_radius(d);
 	}
@@ -3339,8 +3376,9 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		rs->set_length(d);
 	}
@@ -3356,8 +3394,9 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
 		Vector3 he = bs->get_extents();
 		he[p_idx] = d;
@@ -3371,20 +3410,23 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 		Vector3 ra, rb;
 		Geometry::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
 		float d = axis.dot(ra);
-		if (p_idx == 1)
+		if (p_idx == 1) {
 			d -= cs2->get_radius();
+		}
 
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
-		if (p_idx == 0)
+		if (p_idx == 0) {
 			cs2->set_radius(d);
-		else if (p_idx == 1)
+		} else if (p_idx == 1) {
 			cs2->set_height(d * 2.0);
+		}
 	}
 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
@@ -3398,13 +3440,15 @@ void CollisionShape3DGizmoPlugin::set_handle(EditorNode3DGizmo *p_gizmo, int p_i
 			d = Math::stepify(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
 
-		if (d < 0.001)
+		if (d < 0.001) {
 			d = 0.001;
+		}
 
-		if (p_idx == 0)
+		if (p_idx == 0) {
 			cs2->set_radius(d);
-		else if (p_idx == 1)
+		} else if (p_idx == 1) {
 			cs2->set_height(d * 2.0);
+		}
 	}
 }
 
@@ -3412,8 +3456,9 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 	CollisionShape3D *cs = Object::cast_to<CollisionShape3D>(p_gizmo->get_spatial_node());
 
 	Ref<Shape3D> s = cs->get_shape();
-	if (s.is_null())
+	if (s.is_null()) {
 		return;
+	}
 
 	if (Object::cast_to<SphereShape3D>(*s)) {
 		Ref<SphereShape3D> ss = s;
@@ -3446,10 +3491,11 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 	if (Object::cast_to<CapsuleShape3D>(*s)) {
 		Ref<CapsuleShape3D> ss = s;
 		if (p_cancel) {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				ss->set_radius(p_restore);
-			else
+			} else {
 				ss->set_height(p_restore);
+			}
 			return;
 		}
 
@@ -3470,10 +3516,11 @@ void CollisionShape3DGizmoPlugin::commit_handle(EditorNode3DGizmo *p_gizmo, int 
 	if (Object::cast_to<CylinderShape3D>(*s)) {
 		Ref<CylinderShape3D> ss = s;
 		if (p_cancel) {
-			if (p_idx == 0)
+			if (p_idx == 0) {
 				ss->set_radius(p_restore);
-			else
+			} else {
 				ss->set_height(p_restore);
+			}
 			return;
 		}
 
@@ -3516,8 +3563,9 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Ref<Shape3D> s = cs->get_shape();
-	if (s.is_null())
+	if (s.is_null()) {
 		return;
+	}
 
 	const Ref<Material> material =
 			get_material(!cs->is_disabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
@@ -3877,8 +3925,9 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 	Ref<NavigationMesh> navmeshie = navmesh->get_navigation_mesh();
-	if (navmeshie.is_null())
+	if (navmeshie.is_null()) {
 		return;
+	}
 
 	Vector<Vector3> vertices = navmeshie->get_vertices();
 	const Vector3 *vr = vertices.ptr();
@@ -3896,8 +3945,9 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	}
 
-	if (faces.empty())
+	if (faces.empty()) {
 		return;
+	}
 
 	Map<_EdgeKey, bool> edge_map;
 	Vector<Vector3> tmeshfaces;
@@ -3915,8 +3965,9 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 				_EdgeKey ek;
 				ek.from = f.vertex[j].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
 				ek.to = f.vertex[(j + 1) % 3].snapped(Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON));
-				if (ek.from < ek.to)
+				if (ek.from < ek.to) {
 					SWAP(ek.from, ek.to);
+				}
 
 				Map<_EdgeKey, bool>::Element *F = edge_map.find(ek);
 
@@ -3941,8 +3992,9 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<TriangleMesh> tmesh = memnew(TriangleMesh);
 	tmesh->create(tmeshfaces);
 
-	if (lines.size())
+	if (lines.size()) {
 		p_gizmo->add_lines(lines, navmesh->is_enabled() ? edge_material : edge_material_disabled);
+	}
 	p_gizmo->add_collision_triangles(tmesh);
 	Ref<ArrayMesh> m = memnew(ArrayMesh);
 	Array a;
@@ -4446,7 +4498,7 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform &p_offset, const
 		r_points.push_back(p_offset.translated(Vector3(-cs * 2, 0, 0)).origin);
 	}
 
-	if (r_body_a_points)
+	if (r_body_a_points) {
 		JointGizmosDrawer::draw_circle(
 				Vector3::AXIS_X,
 				BODY_A_RADIUS,
@@ -4455,8 +4507,9 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform &p_offset, const
 				p_angular_limit_lower,
 				p_angular_limit_upper,
 				*r_body_a_points);
+	}
 
-	if (r_body_b_points)
+	if (r_body_b_points) {
 		JointGizmosDrawer::draw_circle(
 				Vector3::AXIS_X,
 				BODY_B_RADIUS,
@@ -4466,24 +4519,27 @@ void Joint3DGizmoPlugin::CreateSliderJointGizmo(const Transform &p_offset, const
 				p_angular_limit_upper,
 				*r_body_b_points,
 				true);
+	}
 }
 
 void Joint3DGizmoPlugin::CreateConeTwistJointGizmo(const Transform &p_offset, const Transform &p_trs_joint, const Transform &p_trs_body_a, const Transform &p_trs_body_b, real_t p_swing, real_t p_twist, Vector<Vector3> *r_body_a_points, Vector<Vector3> *r_body_b_points) {
-	if (r_body_a_points)
+	if (r_body_a_points) {
 		JointGizmosDrawer::draw_cone(
 				p_offset,
 				JointGizmosDrawer::look_body(p_trs_joint, p_trs_body_a),
 				p_swing,
 				p_twist,
 				*r_body_a_points);
+	}
 
-	if (r_body_b_points)
+	if (r_body_b_points) {
 		JointGizmosDrawer::draw_cone(
 				p_offset,
 				JointGizmosDrawer::look_body(p_trs_joint, p_trs_body_b),
 				p_swing,
 				p_twist,
 				*r_body_b_points);
+	}
 }
 
 void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
@@ -4603,7 +4659,7 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 			ul = -1;
 		}
 
-		if (r_body_a_points)
+		if (r_body_a_points) {
 			JointGizmosDrawer::draw_circle(
 					static_cast<Vector3::Axis>(ax),
 					BODY_A_RADIUS,
@@ -4613,8 +4669,9 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 					ul,
 					*r_body_a_points,
 					true);
+		}
 
-		if (r_body_b_points)
+		if (r_body_b_points) {
 			JointGizmosDrawer::draw_circle(
 					static_cast<Vector3::Axis>(ax),
 					BODY_B_RADIUS,
@@ -4623,6 +4680,7 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 					ll,
 					ul,
 					*r_body_b_points);
+		}
 	}
 
 #undef ADD_VTX

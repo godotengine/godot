@@ -69,8 +69,9 @@ public:
 	NodePath get_parent() const;
 
 	_FORCE_INLINE_ uint32_t hash() const {
-		if (!data)
+		if (!data) {
 			return 0;
+		}
 		if (!data->hash_cache_valid) {
 			_update_hash_cache();
 		}

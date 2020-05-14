@@ -40,18 +40,23 @@ Size2 MarginContainer::get_minimum_size() const {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
-		if (c->is_set_as_toplevel())
+		}
+		if (c->is_set_as_toplevel()) {
 			continue;
-		if (!c->is_visible())
+		}
+		if (!c->is_visible()) {
 			continue;
+		}
 
 		Size2 s = c->get_combined_minimum_size();
-		if (s.width > max.width)
+		if (s.width > max.width) {
 			max.width = s.width;
-		if (s.height > max.height)
+		}
+		if (s.height > max.height) {
 			max.height = s.height;
+		}
 	}
 
 	max.width += (margin_left + margin_right);
@@ -72,10 +77,12 @@ void MarginContainer::_notification(int p_what) {
 
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
-				if (!c)
+				if (!c) {
 					continue;
-				if (c->is_set_as_toplevel())
+				}
+				if (c->is_set_as_toplevel()) {
 					continue;
+				}
 
 				int w = s.width - margin_left - margin_right;
 				int h = s.height - margin_top - margin_bottom;
