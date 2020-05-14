@@ -152,14 +152,16 @@ struct Rect2 {
 		return new_rect;
 	};
 	inline bool has_point(const Point2 &p_point) const {
-		if (p_point.x < position.x)
+
+		Rect2 abs_rect = abs();
+		if (p_point.x < abs_rect.position.x)
 			return false;
-		if (p_point.y < position.y)
+		if (p_point.y < abs_rect.position.y)
 			return false;
 
-		if (p_point.x >= (position.x + size.x))
+		if (p_point.x >= (abs_rect.position.x + abs_rect.size.x))
 			return false;
-		if (p_point.y >= (position.y + size.y))
+		if (p_point.y >= (abs_rect.position.y + abs_rect.size.y))
 			return false;
 
 		return true;
