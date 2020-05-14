@@ -66,7 +66,7 @@ protected:
 		int offset;
 	} cache;
 
-	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const = 0;
+	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = nullptr) const = 0;
 
 	void set_cache_size(int p_size);
 	int get_cache_size();

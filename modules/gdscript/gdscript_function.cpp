@@ -1289,7 +1289,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						gdfs->state.instance = p_instance;
 						p_instance->pending_func_states.add(&gdfs->instances_list);
 					} else {
-						gdfs->state.instance = NULL;
+						gdfs->state.instance = nullptr;
 					}
 				}
 #ifdef DEBUG_ENABLED
