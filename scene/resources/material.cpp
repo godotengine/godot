@@ -2690,7 +2690,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 	depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
 	cull_mode = CULL_BACK;
 	for (int i = 0; i < FLAG_MAX; i++) {
-		flags[i] = 0;
+		flags[i] = false;
 	}
 	flags[FLAG_USE_TEXTURE_REPEAT] = true;
 

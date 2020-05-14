@@ -307,7 +307,7 @@ void EditorVisualProfiler::_update_plot() {
 
 	Ref<Image> img;
 	img.instance();
-	img->create(w, h, 0, Image::FORMAT_RGBA8, graph_image);
+	img->create(w, h, false, Image::FORMAT_RGBA8, graph_image);
 
 	if (reset_texture) {
 

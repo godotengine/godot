@@ -2732,7 +2732,7 @@ void RasterizerStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
 	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
 	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
 	for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
-		multimesh->data_cache_dirty_regions[i] = 0;
+		multimesh->data_cache_dirty_regions[i] = false;
 	}
 	multimesh->data_cache_used_dirty_regions = 0;
 }
