@@ -35,6 +35,37 @@
 
 namespace TestOAHashMap {
 
+struct CountedItem {
+	static int count;
+
+	int id = -1;
+	bool destroyed = false;
+
+	CountedItem() {
+		count++;
+	}
+
+	CountedItem(int p_id) :
+			id(p_id) {
+		count++;
+	}
+
+	CountedItem(const CountedItem &p_other) :
+			id(p_other.id) {
+		count++;
+	}
+
+	CountedItem &operator=(const CountedItem &p_other) = default;
+
+	~CountedItem() {
+		CRASH_COND(destroyed);
+		count--;
+		destroyed = true;
+	}
+};
+
+int CountedItem::count;
+
 MainLoop *test() {
 	OS::get_singleton()->print("\n\n\nHello from test\n");
 
@@ -150,6 +181,33 @@ MainLoop *test() {
 		map.remove(9);
 		map.remove(13);
 		map.set(5, 1);
+	}
+
+	// test memory management of items, should not crash or leak items
+	{
+		// Exercise different patterns of removal
+		for (int i = 0; i < 4; ++i) {
+			{
+				OAHashMap<String, CountedItem> map;
+				int id = 0;
+				for (int j = 0; j < 100; ++j) {
+					map.insert(itos(j), CountedItem(id));
+				}
+				if (i <= 1) {
+					for (int j = 0; j < 100; ++j) {
+						map.remove(itos(j));
+					}
+				}
+				if (i % 2 == 0) {
+					map.clear();
+				}
+			}
+
+			if (CountedItem::count != 0) {
+				OS::get_singleton()->print("%d != 0 (not performing the other test sub-cases, breaking...)\n", CountedItem::count);
+				break;
+			}
+		}
 	}
 
 	return nullptr;
