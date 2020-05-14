@@ -627,107 +627,120 @@ bool SceneRewinder::rewinder_variant_evaluation(const Variant &v_1, const Varian
 	}
 
 	// Custom evaluation methods
-	if (v_1.get_type() == Variant::FLOAT) {
-		const real_t a(v_1);
-		const real_t b(v_2);
-		return ABS(a - b) <= comparison_float_tolerance;
-	} else if (v_1.get_type() == Variant::VECTOR2) {
-		return vec2_evaluation(v_1, v_2);
-	} else if (v_1.get_type() == Variant::RECT2) {
-		const Rect2 a(v_1);
-		const Rect2 b(v_2);
-		if (vec2_evaluation(a.position, b.position)) {
-			if (vec2_evaluation(a.size, b.size)) {
-				return true;
-			}
+	switch (v_1.get_type()) {
+		case Variant::FLOAT: {
+			const real_t a(v_1);
+			const real_t b(v_2);
+			return ABS(a - b) <= comparison_float_tolerance;
 		}
-		return false;
-	} else if (v_1.get_type() == Variant::TRANSFORM2D) {
-		const Transform2D a(v_1);
-		const Transform2D b(v_2);
-		if (vec2_evaluation(a.elements[0], b.elements[0])) {
-			if (vec2_evaluation(a.elements[1], b.elements[1])) {
-				if (vec2_evaluation(a.elements[2], b.elements[2])) {
+		case Variant::VECTOR2: {
+			return vec2_evaluation(v_1, v_2);
+		}
+		case Variant::RECT2: {
+			const Rect2 a(v_1);
+			const Rect2 b(v_2);
+			if (vec2_evaluation(a.position, b.position)) {
+				if (vec2_evaluation(a.size, b.size)) {
 					return true;
 				}
 			}
+			return false;
 		}
-		return false;
-	} else if (v_1.get_type() == Variant::VECTOR3) {
-		return vec3_evaluation(v_1, v_2);
-	} else if (v_1.get_type() == Variant::QUAT) {
-		const Quat a = v_1;
-		const Quat b = v_2;
-		const Quat r(a - b); // Element wise subtraction.
-		return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (comparison_float_tolerance * comparison_float_tolerance);
-	} else if (v_1.get_type() == Variant::PLANE) {
-		const Plane a(v_1);
-		const Plane b(v_2);
-		if (ABS(a.d - b.d) <= comparison_float_tolerance) {
-			if (vec3_evaluation(a.normal, b.normal)) {
-				return true;
-			}
-		}
-		return false;
-	} else if (v_1.get_type() == Variant::AABB) {
-		const AABB a(v_1);
-		const AABB b(v_2);
-		if (vec3_evaluation(a.position, b.position)) {
-			if (vec3_evaluation(a.size, b.size)) {
-				return true;
-			}
-		}
-		return false;
-	} else if (v_1.get_type() == Variant::BASIS) {
-		const Basis a = v_1;
-		const Basis b = v_2;
-		if (vec3_evaluation(a.elements[0], b.elements[0])) {
-			if (vec3_evaluation(a.elements[1], b.elements[1])) {
-				if (vec3_evaluation(a.elements[2], b.elements[2])) {
-					return true;
-				}
-			}
-		}
-		return false;
-	} else if (v_1.get_type() == Variant::TRANSFORM) {
-		const Transform a = v_1;
-		const Transform b = v_2;
-		if (vec3_evaluation(a.origin, b.origin)) {
-			if (vec3_evaluation(a.basis.elements[0], b.basis.elements[0])) {
-				if (vec3_evaluation(a.basis.elements[1], b.basis.elements[1])) {
-					if (vec3_evaluation(a.basis.elements[2], b.basis.elements[2])) {
+		case Variant::TRANSFORM2D: {
+			const Transform2D a(v_1);
+			const Transform2D b(v_2);
+			if (vec2_evaluation(a.elements[0], b.elements[0])) {
+				if (vec2_evaluation(a.elements[1], b.elements[1])) {
+					if (vec2_evaluation(a.elements[2], b.elements[2])) {
 						return true;
 					}
 				}
 			}
+			return false;
 		}
-		return false;
-	} else if (v_1.get_type() == Variant::DICTIONARY) {
-		const Dictionary a = v_1;
-		const Dictionary b = v_2;
+		case Variant::VECTOR3: {
+			return vec3_evaluation(v_1, v_2);
+		}
+		case Variant::QUAT: {
+			const Quat a = v_1;
+			const Quat b = v_2;
+			const Quat r(a - b); // Element wise subtraction.
+			return (r.x * r.x + r.y * r.y + r.z * r.z + r.w * r.w) <= (comparison_float_tolerance * comparison_float_tolerance);
+		}
+		case Variant::PLANE: {
+			const Plane a(v_1);
+			const Plane b(v_2);
+			if (ABS(a.d - b.d) <= comparison_float_tolerance) {
+				if (vec3_evaluation(a.normal, b.normal)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		case Variant::AABB: {
+			const AABB a(v_1);
+			const AABB b(v_2);
+			if (vec3_evaluation(a.position, b.position)) {
+				if (vec3_evaluation(a.size, b.size)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		case Variant::BASIS: {
+			const Basis a = v_1;
+			const Basis b = v_2;
+			if (vec3_evaluation(a.elements[0], b.elements[0])) {
+				if (vec3_evaluation(a.elements[1], b.elements[1])) {
+					if (vec3_evaluation(a.elements[2], b.elements[2])) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+		case Variant::TRANSFORM: {
+			const Transform a = v_1;
+			const Transform b = v_2;
+			if (vec3_evaluation(a.origin, b.origin)) {
+				if (vec3_evaluation(a.basis.elements[0], b.basis.elements[0])) {
+					if (vec3_evaluation(a.basis.elements[1], b.basis.elements[1])) {
+						if (vec3_evaluation(a.basis.elements[2], b.basis.elements[2])) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+		case Variant::DICTIONARY: {
+			const Dictionary a = v_1;
+			const Dictionary b = v_2;
 
-		List<Variant> l;
-		a.get_key_list(&l);
-
-		for (List<Variant>::Element *key = l.front(); key; key = key->next()) {
-			if (b.has(key->get()) == false) {
+			if (a.size() != b.size()) {
 				return false;
 			}
 
-			Variant x;
-			Variant y;
-			a.get(key->get(), x);
-			b.get(key->get(), y);
-			if (rewinder_variant_evaluation(x, y) == false) {
-				return false;
-			}
-		}
+			List<Variant> l;
+			a.get_key_list(&l);
 
-		return true;
+			for (const List<Variant>::Element *key = l.front(); key; key = key->next()) {
+				if (b.has(key->get()) == false) {
+					return false;
+				}
+
+				if (rewinder_variant_evaluation(
+							a.get(key->get(), Variant()),
+							b.get(key->get(), Variant())) == false) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+		default:
+			return v_1 == v_2;
 	}
-
-	// Default evaluation methods
-	return v_1 == v_2;
 }
 
 bool SceneRewinder::is_client() const {
