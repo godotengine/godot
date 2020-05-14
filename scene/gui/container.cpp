@@ -168,7 +168,7 @@ String Container::get_configuration_warning() const {
 	String warning = Control::get_configuration_warning();
 
 	if (get_class() == "Container" && get_script().is_null()) {
-		if (warning != String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead.");

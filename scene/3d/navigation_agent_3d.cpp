@@ -287,11 +287,16 @@ void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
 }
 
 String NavigationAgent3D::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		return TTR("The NavigationAgent3D can be used only under a spatial node.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationAgent3D can be used only under a spatial node.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationAgent3D::update_navigation() {

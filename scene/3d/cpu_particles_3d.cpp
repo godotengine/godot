@@ -189,7 +189,7 @@ bool CPUParticles3D::get_fractional_delta() const {
 }
 
 String CPUParticles3D::get_configuration_warning() const {
-	String warnings;
+	String warnings = GeometryInstance3D::get_configuration_warning();
 
 	bool mesh_found = false;
 	bool anim_material_found = false;

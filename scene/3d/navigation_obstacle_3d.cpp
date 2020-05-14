@@ -113,11 +113,16 @@ Node *NavigationObstacle3D::get_navigation_node() const {
 }
 
 String NavigationObstacle3D::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Node3D>(get_parent())) {
-		return TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationObstacle3D::update_agent_shape() {
