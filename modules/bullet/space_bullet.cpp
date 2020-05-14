@@ -205,7 +205,7 @@ bool BulletPhysicsDirectSpaceState::cast_motion(const RID &p_shape, const Transf
 /// Returns the list of contacts pairs in this order: Local contact, other body contact
 bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &p_shape_xform, float p_margin, Vector3 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	if (p_result_max <= 0)
-		return 0;
+		return false;
 
 	ShapeBullet *shape = space->get_physics_server()->get_shape_owner()->getornull(p_shape);
 
@@ -213,7 +213,7 @@ bool BulletPhysicsDirectSpaceState::collide_shape(RID p_shape, const Transform &
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
 		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
-		return 0;
+		return false;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 
@@ -245,7 +245,7 @@ bool BulletPhysicsDirectSpaceState::rest_info(RID p_shape, const Transform &p_sh
 	if (!btShape->isConvex()) {
 		bulletdelete(btShape);
 		ERR_PRINT("The shape is not a convex shape, then is not supported: shape type: " + itos(shape->get_type()));
-		return 0;
+		return false;
 	}
 	btConvexShape *btConvex = static_cast<btConvexShape *>(btShape);
 

@@ -1405,8 +1405,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 			Vector3 points[4];
 			for (int j = 0; j < 4; j++) {
 
-				static const bool orderx[4] = { 0, 1, 1, 0 };
-				static const bool ordery[4] = { 0, 0, 1, 1 };
+				static const bool orderx[4] = { false, true, true, false };
+				static const bool ordery[4] = { false, false, true, true };
 
 				Vector3 sp;
 				if (orderx[j]) {
