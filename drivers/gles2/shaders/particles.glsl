@@ -257,4 +257,5 @@ FRAGMENT_SHADER_CODE
 
 	}
 }
+
 /* clang-format on */

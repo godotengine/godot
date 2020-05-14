@@ -146,6 +146,7 @@ RID PhysicsShapeQueryParameters2D::get_shape_rid() const {
 void PhysicsShapeQueryParameters2D::set_transform(const Transform2D &p_transform) {
 	transform = p_transform;
 }
+
 Transform2D PhysicsShapeQueryParameters2D::get_transform() const {
 	return transform;
 }
@@ -153,6 +154,7 @@ Transform2D PhysicsShapeQueryParameters2D::get_transform() const {
 void PhysicsShapeQueryParameters2D::set_motion(const Vector2 &p_motion) {
 	motion = p_motion;
 }
+
 Vector2 PhysicsShapeQueryParameters2D::get_motion() const {
 	return motion;
 }
@@ -160,6 +162,7 @@ Vector2 PhysicsShapeQueryParameters2D::get_motion() const {
 void PhysicsShapeQueryParameters2D::set_margin(float p_margin) {
 	margin = p_margin;
 }
+
 float PhysicsShapeQueryParameters2D::get_margin() const {
 	return margin;
 }
@@ -167,6 +170,7 @@ float PhysicsShapeQueryParameters2D::get_margin() const {
 void PhysicsShapeQueryParameters2D::set_collision_mask(int p_collision_mask) {
 	collision_mask = p_collision_mask;
 }
+
 int PhysicsShapeQueryParameters2D::get_collision_mask() const {
 	return collision_mask;
 }
@@ -359,6 +363,7 @@ Array PhysicsDirectSpaceState2D::_collide_shape(const Ref<PhysicsShapeQueryParam
 		r[i] = ret[i];
 	return r;
 }
+
 Dictionary PhysicsDirectSpaceState2D::_get_rest_info(const Ref<PhysicsShapeQueryParameters2D> &p_shape_query) {
 	ERR_FAIL_COND_V(!p_shape_query.is_valid(), Dictionary());
 
@@ -396,15 +401,19 @@ void PhysicsDirectSpaceState2D::_bind_methods() {
 int PhysicsShapeQueryResult2D::get_result_count() const {
 	return result.size();
 }
+
 RID PhysicsShapeQueryResult2D::get_result_rid(int p_idx) const {
 	return result[p_idx].rid;
 }
+
 ObjectID PhysicsShapeQueryResult2D::get_result_object_id(int p_idx) const {
 	return result[p_idx].collider_id;
 }
+
 Object *PhysicsShapeQueryResult2D::get_result_object(int p_idx) const {
 	return result[p_idx].collider;
 }
+
 int PhysicsShapeQueryResult2D::get_result_object_shape(int p_idx) const {
 	return result[p_idx].shape;
 }
@@ -425,6 +434,7 @@ void PhysicsShapeQueryResult2D::_bind_methods() {
 Vector2 PhysicsTestMotionResult2D::get_motion() const {
 	return result.motion;
 }
+
 Vector2 PhysicsTestMotionResult2D::get_motion_remainder() const {
 	return result.remainder;
 }
@@ -432,15 +442,19 @@ Vector2 PhysicsTestMotionResult2D::get_motion_remainder() const {
 Vector2 PhysicsTestMotionResult2D::get_collision_point() const {
 	return result.collision_point;
 }
+
 Vector2 PhysicsTestMotionResult2D::get_collision_normal() const {
 	return result.collision_normal;
 }
+
 Vector2 PhysicsTestMotionResult2D::get_collider_velocity() const {
 	return result.collider_velocity;
 }
+
 ObjectID PhysicsTestMotionResult2D::get_collider_id() const {
 	return result.collider_id;
 }
+
 RID PhysicsTestMotionResult2D::get_collider_rid() const {
 	return result.collider;
 }

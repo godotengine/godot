@@ -409,4 +409,5 @@ namespace TestPhysics3D {
 MainLoop *test() {
 	return memnew(TestPhysics3DMainLoop);
 }
+
 } // namespace TestPhysics3D

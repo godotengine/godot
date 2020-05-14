@@ -127,6 +127,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 
 	return false;
 }
+
 String DisplayServerX11::get_name() const {
 	return "X11";
 }
@@ -400,6 +401,7 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 
 	XFlush(x11_display);
 }
+
 DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
 	return mouse_mode;
 }
@@ -547,6 +549,7 @@ int DisplayServerX11::get_screen_count() const {
 	XFree(xsi);
 	return count;
 }
+
 Point2i DisplayServerX11::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -644,6 +647,7 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	//could not get dpi
 	return 96;
 }
+
 bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -760,6 +764,7 @@ void DisplayServerX11::window_set_input_event_callback(const Callable &p_callabl
 	WindowData &wd = windows[p_window];
 	wd.input_event_callback = p_callable;
 }
+
 void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -795,6 +800,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	}
 	return 0;
 }
+
 void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -926,6 +932,7 @@ void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_windo
 		XFlush(x11_display);
 	}
 }
+
 Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -967,6 +974,7 @@ void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_windo
 		XFlush(x11_display);
 	}
 }
+
 Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1037,6 +1045,7 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 		usleep(10000);
 	}
 }
+
 Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1044,6 +1053,7 @@ Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 	return wd.size;
 }
+
 Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1533,6 +1543,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		}
 	}
 }
+
 bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1627,6 +1638,7 @@ bool DisplayServerX11::window_can_draw(WindowID p_window) const {
 	//this seems to be all that is provided by X11
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
 }
+
 bool DisplayServerX11::can_any_window_draw() const {
 	_THREAD_SAFE_METHOD_
 
@@ -1657,6 +1669,7 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 		XUnsetICFocus(wd.xic);
 	}
 }
+
 void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -1699,9 +1712,11 @@ void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
 
 	current_cursor = p_shape;
 }
+
 DisplayServerX11::CursorShape DisplayServerX11::cursor_get_shape() const {
 	return current_cursor;
 }
+
 void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
 
@@ -2277,6 +2292,7 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 		wd.event_callback.call((const Variant **)&eventp, 1, ret, ce);
 	}
 }
+
 void DisplayServerX11::process_events() {
 	_THREAD_SAFE_METHOD_
 
@@ -2958,6 +2974,7 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 		XFree(classHint);
 	}
 }
+
 void DisplayServerX11::set_context(Context p_context) {
 	_THREAD_SAFE_METHOD_
 
@@ -2967,6 +2984,7 @@ void DisplayServerX11::set_context(Context p_context) {
 		_update_context(E->get());
 	}
 }
+
 void DisplayServerX11::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
@@ -3712,6 +3730,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	r_error = OK;
 }
+
 DisplayServerX11::~DisplayServerX11() {
 	//destroy all windows
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {

@@ -851,6 +851,7 @@ void Translation::set_locale(const String &p_locale) {
 void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text) {
 	translation_map[p_src_text] = p_xlated_text;
 }
+
 StringName Translation::get_message(const StringName &p_src_text) const {
 	const Map<StringName, StringName>::Element *E = translation_map.find(p_src_text);
 	if (!E)
@@ -1011,6 +1012,7 @@ Vector<String> TranslationServer::get_all_locale_names() {
 void TranslationServer::add_translation(const Ref<Translation> &p_translation) {
 	translations.insert(p_translation);
 }
+
 void TranslationServer::remove_translation(const Ref<Translation> &p_translation) {
 	translations.erase(p_translation);
 }

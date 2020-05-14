@@ -53,6 +53,7 @@ uint32_t EditorSceneImporter::get_import_flags() const {
 
 	ERR_FAIL_V(0);
 }
+
 void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
 	if (get_script_instance()) {
 		Array arr = get_script_instance()->call("_get_extensions");
@@ -64,6 +65,7 @@ void EditorSceneImporter::get_extensions(List<String> *r_extensions) const {
 
 	ERR_FAIL();
 }
+
 Node *EditorSceneImporter::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	if (get_script_instance()) {
 		return get_script_instance()->call("_import_scene", p_path, p_flags, p_bake_fps);
@@ -202,6 +204,7 @@ bool ResourceImporterScene::get_option_visibility(const String &p_option, const 
 int ResourceImporterScene::get_preset_count() const {
 	return PRESET_MAX;
 }
+
 String ResourceImporterScene::get_preset_name(int p_idx) const {
 	switch (p_idx) {
 		case PRESET_SINGLE_SCENE:
@@ -1520,14 +1523,17 @@ ResourceImporterScene *ResourceImporterScene::singleton = nullptr;
 ResourceImporterScene::ResourceImporterScene() {
 	singleton = this;
 }
+
 ///////////////////////////////////////
 
 uint32_t EditorSceneImporterESCN::get_import_flags() const {
 	return IMPORT_SCENE;
 }
+
 void EditorSceneImporterESCN::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("escn");
 }
+
 Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
@@ -1538,6 +1544,7 @@ Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_fla
 
 	return scene;
 }
+
 Ref<Animation> EditorSceneImporterESCN::import_animation(const String &p_path, uint32_t p_flags, int p_bake_fps) {
 	ERR_FAIL_V(Ref<Animation>());
 }

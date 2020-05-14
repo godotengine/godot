@@ -136,6 +136,7 @@ void UndoRedo::add_undo_method(Object *p_object, const StringName &p_method, VAR
 	}
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }
+
 void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, const Variant &p_value) {
 	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
@@ -150,6 +151,7 @@ void UndoRedo::add_do_property(Object *p_object, const StringName &p_property, c
 	do_op.args[0] = p_value;
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
+
 void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property, const Variant &p_value) {
 	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
@@ -169,6 +171,7 @@ void UndoRedo::add_undo_property(Object *p_object, const StringName &p_property,
 	undo_op.args[0] = p_value;
 	actions.write[current_action + 1].undo_ops.push_back(undo_op);
 }
+
 void UndoRedo::add_do_reference(Object *p_object) {
 	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);
@@ -181,6 +184,7 @@ void UndoRedo::add_do_reference(Object *p_object) {
 	do_op.type = Operation::TYPE_REFERENCE;
 	actions.write[current_action + 1].do_ops.push_back(do_op);
 }
+
 void UndoRedo::add_undo_reference(Object *p_object) {
 	ERR_FAIL_COND(p_object == nullptr);
 	ERR_FAIL_COND(action_level <= 0);

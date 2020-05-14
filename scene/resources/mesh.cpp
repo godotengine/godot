@@ -133,6 +133,7 @@ void Mesh::generate_debug_mesh_lines(Vector<Vector3> &r_lines) {
 
 	r_lines = debug_lines;
 }
+
 void Mesh::generate_debug_mesh_indices(Vector<Vector3> &r_points) {
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	if (tm.is_null())
@@ -1107,10 +1108,12 @@ Array ArrayMesh::surface_get_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	return RenderingServer::get_singleton()->mesh_surface_get_arrays(mesh, p_surface);
 }
+
 Array ArrayMesh::surface_get_blend_shape_arrays(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Array());
 	return RenderingServer::get_singleton()->mesh_surface_get_blend_shape_arrays(mesh, p_surface);
 }
+
 Dictionary ArrayMesh::surface_get_lods(int p_surface) const {
 	ERR_FAIL_INDEX_V(p_surface, surfaces.size(), Dictionary());
 	return RenderingServer::get_singleton()->mesh_surface_get_lods(mesh, p_surface);
@@ -1140,10 +1143,12 @@ void ArrayMesh::add_blend_shape(const StringName &p_name) {
 int ArrayMesh::get_blend_shape_count() const {
 	return blend_shapes.size();
 }
+
 StringName ArrayMesh::get_blend_shape_name(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, blend_shapes.size(), StringName());
 	return blend_shapes[p_index];
 }
+
 void ArrayMesh::clear_blend_shapes() {
 	ERR_FAIL_COND_MSG(surfaces.size(), "Can't set shape key count if surfaces are already created.");
 
@@ -1235,6 +1240,7 @@ RID ArrayMesh::get_rid() const {
 	_create_if_empty();
 	return mesh;
 }
+
 AABB ArrayMesh::get_aabb() const {
 	return aabb;
 }

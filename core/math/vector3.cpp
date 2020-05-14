@@ -46,6 +46,7 @@ void Vector3::set_axis(int p_axis, real_t p_value) {
 	ERR_FAIL_INDEX(p_axis, 3);
 	coord[p_axis] = p_value;
 }
+
 real_t Vector3::get_axis(int p_axis) const {
 	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	return operator[](p_axis);
@@ -54,6 +55,7 @@ real_t Vector3::get_axis(int p_axis) const {
 int Vector3::min_axis() const {
 	return x < y ? (x < z ? 0 : 2) : (y < z ? 1 : 2);
 }
+
 int Vector3::max_axis() const {
 	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
 }
@@ -63,6 +65,7 @@ void Vector3::snap(Vector3 p_val) {
 	y = Math::stepify(y, p_val.y);
 	z = Math::stepify(z, p_val.z);
 }
+
 Vector3 Vector3::snapped(Vector3 p_val) const {
 	Vector3 v = *this;
 	v.snap(p_val);

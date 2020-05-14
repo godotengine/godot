@@ -1380,12 +1380,15 @@ ConcavePolygonShape3DSW::ConcavePolygonShape3DSW() {
 Vector<real_t> HeightMapShape3DSW::get_heights() const {
 	return heights;
 }
+
 int HeightMapShape3DSW::get_width() const {
 	return width;
 }
+
 int HeightMapShape3DSW::get_depth() const {
 	return depth;
 }
+
 real_t HeightMapShape3DSW::get_cell_size() const {
 	return cell_size;
 }

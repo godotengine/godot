@@ -309,6 +309,7 @@ OS::Date OS_Windows::get_date(bool utc) const {
 	date.dst = false;
 	return date;
 }
+
 OS::Time OS_Windows::get_time(bool utc) const {
 	SYSTEMTIME systemtime;
 	if (utc)
@@ -399,6 +400,7 @@ void OS_Windows::delay_usec(uint32_t p_usec) const {
 	else
 		Sleep(p_usec / 1000);
 }
+
 uint64_t OS_Windows::get_ticks_usec() const {
 	uint64_t ticks;
 	uint64_t time;

@@ -687,6 +687,7 @@ Error ResourceLoaderText::load() {
 int ResourceLoaderText::get_stage() const {
 	return resource_current;
 }
+
 int ResourceLoaderText::get_stage_count() const {
 	return resources_total; //+ext_resources;
 }
@@ -1287,6 +1288,7 @@ void ResourceFormatLoaderText::get_recognized_extensions(List<String> *p_extensi
 bool ResourceFormatLoaderText::handles_type(const String &p_type) const {
 	return true;
 }
+
 String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 	String ext = p_path.get_extension().to_lower();
 	if (ext == "tscn")
@@ -1788,6 +1790,7 @@ Error ResourceFormatSaverText::save(const String &p_path, const RES &p_resource,
 bool ResourceFormatSaverText::recognize(const RES &p_resource) const {
 	return true; // all recognized!
 }
+
 void ResourceFormatSaverText::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 	if (p_resource->get_class() == "PackedScene")
 		p_extensions->push_back("tscn"); //text scene

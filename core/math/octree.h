@@ -1218,6 +1218,7 @@ void Octree<T, use_pairs, AL>::set_pair_callback(PairCallback p_callback, void *
 	pair_callback = p_callback;
 	pair_callback_userdata = p_userdata;
 }
+
 template <class T, bool use_pairs, class AL>
 void Octree<T, use_pairs, AL>::set_unpair_callback(UnpairCallback p_callback, void *p_userdata) {
 	unpair_callback = p_callback;

@@ -1166,6 +1166,7 @@ void AnimationNodeStateMachineEditor::_end_selected() {
 		state_machine_draw->update();
 	}
 }
+
 void AnimationNodeStateMachineEditor::_update_mode() {
 	if (tool_select->is_pressed()) {
 		tool_erase_hb->show();

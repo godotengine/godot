@@ -99,6 +99,7 @@ float AudioEffectPhaser::get_range_min_hz() const {
 void AudioEffectPhaser::set_range_max_hz(float p_hz) {
 	range_max = p_hz;
 }
+
 float AudioEffectPhaser::get_range_max_hz() const {
 	return range_max;
 }
@@ -106,6 +107,7 @@ float AudioEffectPhaser::get_range_max_hz() const {
 void AudioEffectPhaser::set_rate_hz(float p_hz) {
 	rate = p_hz;
 }
+
 float AudioEffectPhaser::get_rate_hz() const {
 	return rate;
 }
@@ -113,6 +115,7 @@ float AudioEffectPhaser::get_rate_hz() const {
 void AudioEffectPhaser::set_feedback(float p_fbk) {
 	feedback = p_fbk;
 }
+
 float AudioEffectPhaser::get_feedback() const {
 	return feedback;
 }

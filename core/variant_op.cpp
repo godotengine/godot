@@ -115,6 +115,7 @@
 		TYPE(PREFIX, OP, PACKED_VECTOR3_ARRAY), \
 		TYPE(PREFIX, OP, PACKED_COLOR_ARRAY),   \
 }
+
 /* clang-format on */
 
 #define CASES(PREFIX) static const void *switch_table_##PREFIX[25][Variant::VARIANT_MAX] = { \
@@ -3536,6 +3537,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 	valid = false;
 	return false;
 }
+
 bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 	valid = true;
 	switch (type) {

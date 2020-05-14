@@ -44,6 +44,7 @@ void BroadPhaseOctree::set_static(ID p_id, bool p_static) {
 	CollisionObject3DSW *it = octree.get(p_id);
 	octree.set_pairable(p_id, !p_static, 1 << it->get_type(), p_static ? 0 : 0xFFFFF); //pair everything, don't care 1?
 }
+
 void BroadPhaseOctree::remove(ID p_id) {
 	octree.erase(p_id);
 }
@@ -53,9 +54,11 @@ CollisionObject3DSW *BroadPhaseOctree::get_object(ID p_id) const {
 	ERR_FAIL_COND_V(!it, nullptr);
 	return it;
 }
+
 bool BroadPhaseOctree::is_static(ID p_id) const {
 	return !octree.is_pairable(p_id);
 }
+
 int BroadPhaseOctree::get_subindex(ID p_id) const {
 	return octree.get_subindex(p_id);
 }
@@ -92,6 +95,7 @@ void BroadPhaseOctree::set_pair_callback(PairCallback p_pair_callback, void *p_u
 	pair_callback = p_pair_callback;
 	pair_userdata = p_userdata;
 }
+
 void BroadPhaseOctree::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 	unpair_callback = p_unpair_callback;
 	unpair_userdata = p_userdata;

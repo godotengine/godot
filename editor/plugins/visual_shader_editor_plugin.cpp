@@ -3221,6 +3221,7 @@ bool EditorInspectorShaderModePlugin::parse_property(Object *p_object, Variant::
 void EditorInspectorShaderModePlugin::parse_end() {
 	//do none
 }
+
 //////////////////////////////////
 
 void VisualShaderNodePortPreview::_shader_changed() {

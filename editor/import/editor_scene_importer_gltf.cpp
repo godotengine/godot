@@ -46,6 +46,7 @@
 uint32_t EditorSceneImporterGLTF::get_import_flags() const {
 	return IMPORT_SCENE | IMPORT_ANIMATION;
 }
+
 void EditorSceneImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
 	r_extensions->push_back("glb");
@@ -874,6 +875,7 @@ Vector<Quat> EditorSceneImporterGLTF::_decode_accessor_as_quat(GLTFState &state,
 	}
 	return ret;
 }
+
 Vector<Transform2D> EditorSceneImporterGLTF::_decode_accessor_as_xform2d(GLTFState &state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
 	const Vector<double> attribs = _decode_accessor(state, p_accessor, p_for_vertex);
 	Vector<Transform2D> ret;

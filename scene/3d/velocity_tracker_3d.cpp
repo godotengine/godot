@@ -38,6 +38,7 @@ void VelocityTracker3D::set_track_physics_step(bool p_track_physics_step) {
 bool VelocityTracker3D::is_tracking_physics_step() const {
 	return physics_step;
 }
+
 void VelocityTracker3D::update_position(const Vector3 &p_position) {
 	PositionHistory ph;
 	ph.position = p_position;
@@ -56,6 +57,7 @@ void VelocityTracker3D::update_position(const Vector3 &p_position) {
 
 	position_history.write[0] = ph;
 }
+
 Vector3 VelocityTracker3D::get_tracked_linear_velocity() const {
 	Vector3 linear_velocity;
 

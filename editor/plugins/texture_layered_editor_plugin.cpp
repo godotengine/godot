@@ -249,6 +249,7 @@ TextureLayeredEditor::~TextureLayeredEditor() {
 		texture->remove_change_receptor(this);
 	}
 }
+
 //
 bool EditorInspectorPluginLayeredTexture::can_handle(Object *p_object) {
 	return Object::cast_to<TextureLayered>(p_object) != nullptr;

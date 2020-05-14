@@ -1474,6 +1474,7 @@ void EditorHelp::search_again(bool p_search_previous) {
 int EditorHelp::get_scroll() const {
 	return class_desc->get_v_scroll()->get_value();
 }
+
 void EditorHelp::set_scroll(int p_scroll) {
 	class_desc->get_v_scroll()->set_value(p_scroll);
 }

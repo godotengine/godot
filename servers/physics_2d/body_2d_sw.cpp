@@ -235,6 +235,7 @@ void Body2DSW::set_mode(PhysicsServer2D::BodyMode p_mode) {
 		_update_queries();
 	*/
 }
+
 PhysicsServer2D::BodyMode Body2DSW::get_mode() const {
 	return mode;
 }
@@ -314,6 +315,7 @@ void Body2DSW::set_state(PhysicsServer2D::BodyState p_state, const Variant &p_va
 		} break;
 	}
 }
+
 Variant Body2DSW::get_state(PhysicsServer2D::BodyState p_state) const {
 	switch (p_state) {
 		case PhysicsServer2D::BODY_STATE_TRANSFORM: {

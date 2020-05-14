@@ -71,6 +71,7 @@ int Material::get_render_priority() const {
 RID Material::get_rid() const {
 	return material;
 }
+
 void Material::_validate_property(PropertyInfo &property) const {
 	if (!_can_do_next_pass() && property.name == "next_pass") {
 		property.usage = 0;
@@ -1179,6 +1180,7 @@ bool BaseMaterial3D::_is_shader_dirty() const {
 
 	return element.in_list();
 }
+
 void BaseMaterial3D::set_albedo(const Color &p_albedo) {
 	albedo = p_albedo;
 
@@ -1220,6 +1222,7 @@ void BaseMaterial3D::set_emission(const Color &p_emission) {
 	emission = p_emission;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->emission, p_emission);
 }
+
 Color BaseMaterial3D::get_emission() const {
 	return emission;
 }
@@ -1228,6 +1231,7 @@ void BaseMaterial3D::set_emission_energy(float p_emission_energy) {
 	emission_energy = p_emission_energy;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->emission_energy, p_emission_energy);
 }
+
 float BaseMaterial3D::get_emission_energy() const {
 	return emission_energy;
 }
@@ -1236,6 +1240,7 @@ void BaseMaterial3D::set_normal_scale(float p_normal_scale) {
 	normal_scale = p_normal_scale;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->normal_scale, p_normal_scale);
 }
+
 float BaseMaterial3D::get_normal_scale() const {
 	return normal_scale;
 }
@@ -1244,6 +1249,7 @@ void BaseMaterial3D::set_rim(float p_rim) {
 	rim = p_rim;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->rim, p_rim);
 }
+
 float BaseMaterial3D::get_rim() const {
 	return rim;
 }
@@ -1252,6 +1258,7 @@ void BaseMaterial3D::set_rim_tint(float p_rim_tint) {
 	rim_tint = p_rim_tint;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->rim_tint, p_rim_tint);
 }
+
 float BaseMaterial3D::get_rim_tint() const {
 	return rim_tint;
 }
@@ -1260,6 +1267,7 @@ void BaseMaterial3D::set_ao_light_affect(float p_ao_light_affect) {
 	ao_light_affect = p_ao_light_affect;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->ao_light_affect, p_ao_light_affect);
 }
+
 float BaseMaterial3D::get_ao_light_affect() const {
 	return ao_light_affect;
 }
@@ -1286,6 +1294,7 @@ void BaseMaterial3D::set_anisotropy(float p_anisotropy) {
 	anisotropy = p_anisotropy;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->anisotropy, p_anisotropy);
 }
+
 float BaseMaterial3D::get_anisotropy() const {
 	return anisotropy;
 }
@@ -1321,6 +1330,7 @@ void BaseMaterial3D::set_transmittance_depth(float p_depth) {
 	transmittance_depth = p_depth;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_depth, p_depth);
 }
+
 float BaseMaterial3D::get_transmittance_depth() const {
 	return transmittance_depth;
 }
@@ -1329,6 +1339,7 @@ void BaseMaterial3D::set_transmittance_curve(float p_curve) {
 	transmittance_curve = p_curve;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_curve, p_curve);
 }
+
 float BaseMaterial3D::get_transmittance_curve() const {
 	return transmittance_curve;
 }
@@ -1337,6 +1348,7 @@ void BaseMaterial3D::set_transmittance_boost(float p_boost) {
 	transmittance_boost = p_boost;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->transmittance_boost, p_boost);
 }
+
 float BaseMaterial3D::get_transmittance_boost() const {
 	return transmittance_boost;
 }
@@ -1366,6 +1378,7 @@ void BaseMaterial3D::set_detail_uv(DetailUV p_detail_uv) {
 	detail_uv = p_detail_uv;
 	_queue_shader_change();
 }
+
 BaseMaterial3D::DetailUV BaseMaterial3D::get_detail_uv() const {
 	return detail_uv;
 }
@@ -1377,6 +1390,7 @@ void BaseMaterial3D::set_blend_mode(BlendMode p_mode) {
 	blend_mode = p_mode;
 	_queue_shader_change();
 }
+
 BaseMaterial3D::BlendMode BaseMaterial3D::get_blend_mode() const {
 	return blend_mode;
 }
@@ -1385,6 +1399,7 @@ void BaseMaterial3D::set_detail_blend_mode(BlendMode p_mode) {
 	detail_blend_mode = p_mode;
 	_queue_shader_change();
 }
+
 BaseMaterial3D::BlendMode BaseMaterial3D::get_detail_blend_mode() const {
 	return detail_blend_mode;
 }
@@ -1424,6 +1439,7 @@ void BaseMaterial3D::set_depth_draw_mode(DepthDrawMode p_mode) {
 	depth_draw_mode = p_mode;
 	_queue_shader_change();
 }
+
 BaseMaterial3D::DepthDrawMode BaseMaterial3D::get_depth_draw_mode() const {
 	return depth_draw_mode;
 }
@@ -1435,6 +1451,7 @@ void BaseMaterial3D::set_cull_mode(CullMode p_mode) {
 	cull_mode = p_mode;
 	_queue_shader_change();
 }
+
 BaseMaterial3D::CullMode BaseMaterial3D::get_cull_mode() const {
 	return cull_mode;
 }
@@ -1446,6 +1463,7 @@ void BaseMaterial3D::set_diffuse_mode(DiffuseMode p_mode) {
 	diffuse_mode = p_mode;
 	_queue_shader_change();
 }
+
 BaseMaterial3D::DiffuseMode BaseMaterial3D::get_diffuse_mode() const {
 	return diffuse_mode;
 }
@@ -1457,6 +1475,7 @@ void BaseMaterial3D::set_specular_mode(SpecularMode p_mode) {
 	specular_mode = p_mode;
 	_queue_shader_change();
 }
+
 BaseMaterial3D::SpecularMode BaseMaterial3D::get_specular_mode() const {
 	return specular_mode;
 }
@@ -1670,6 +1689,7 @@ void BaseMaterial3D::set_uv1_offset(const Vector3 &p_offset) {
 	uv1_offset = p_offset;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->uv1_offset, p_offset);
 }
+
 Vector3 BaseMaterial3D::get_uv1_offset() const {
 	return uv1_offset;
 }
@@ -1728,6 +1748,7 @@ void BaseMaterial3D::set_particles_anim_h_frames(int p_frames) {
 int BaseMaterial3D::get_particles_anim_h_frames() const {
 	return particles_anim_h_frames;
 }
+
 void BaseMaterial3D::set_particles_anim_v_frames(int p_frames) {
 	particles_anim_v_frames = p_frames;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
@@ -1760,6 +1781,7 @@ void BaseMaterial3D::set_heightmap_deep_parallax_min_layers(int p_layer) {
 	deep_parallax_min_layers = p_layer;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_min_layers, p_layer);
 }
+
 int BaseMaterial3D::get_heightmap_deep_parallax_min_layers() const {
 	return deep_parallax_min_layers;
 }
@@ -1768,6 +1790,7 @@ void BaseMaterial3D::set_heightmap_deep_parallax_max_layers(int p_layer) {
 	deep_parallax_max_layers = p_layer;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->heightmap_max_layers, p_layer);
 }
+
 int BaseMaterial3D::get_heightmap_deep_parallax_max_layers() const {
 	return deep_parallax_max_layers;
 }
@@ -1929,6 +1952,7 @@ void BaseMaterial3D::set_proximity_fade_distance(float p_distance) {
 	proximity_fade_distance = p_distance;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->proximity_fade_distance, p_distance);
 }
+
 float BaseMaterial3D::get_proximity_fade_distance() const {
 	return proximity_fade_distance;
 }
@@ -1938,6 +1962,7 @@ void BaseMaterial3D::set_distance_fade(DistanceFadeMode p_mode) {
 	_queue_shader_change();
 	_change_notify();
 }
+
 BaseMaterial3D::DistanceFadeMode BaseMaterial3D::get_distance_fade() const {
 	return distance_fade;
 }
@@ -1946,6 +1971,7 @@ void BaseMaterial3D::set_distance_fade_max_distance(float p_distance) {
 	distance_fade_max_distance = p_distance;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->distance_fade_max, distance_fade_max_distance);
 }
+
 float BaseMaterial3D::get_distance_fade_max_distance() const {
 	return distance_fade_max_distance;
 }

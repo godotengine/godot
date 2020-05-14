@@ -623,6 +623,7 @@ Ref<Image> BitMap::convert_to_image() const {
 
 	return image;
 }
+
 void BitMap::blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap) {
 	int x = p_pos.x;
 	int y = p_pos.y;

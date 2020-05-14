@@ -38,6 +38,7 @@ void Area2D::set_space_override_mode(SpaceOverride p_mode) {
 	space_override = p_mode;
 	PhysicsServer2D::get_singleton()->area_set_space_override_mode(get_rid(), PhysicsServer2D::AreaSpaceOverrideMode(p_mode));
 }
+
 Area2D::SpaceOverride Area2D::get_space_override_mode() const {
 	return space_override;
 }
@@ -46,6 +47,7 @@ void Area2D::set_gravity_is_point(bool p_enabled) {
 	gravity_is_point = p_enabled;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
 }
+
 bool Area2D::is_gravity_a_point() const {
 	return gravity_is_point;
 }
@@ -63,6 +65,7 @@ void Area2D::set_gravity_vector(const Vector2 &p_vec) {
 	gravity_vec = p_vec;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, p_vec);
 }
+
 Vector2 Area2D::get_gravity_vector() const {
 	return gravity_vec;
 }
@@ -71,6 +74,7 @@ void Area2D::set_gravity(real_t p_gravity) {
 	gravity = p_gravity;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_GRAVITY, p_gravity);
 }
+
 real_t Area2D::get_gravity() const {
 	return gravity;
 }
@@ -79,6 +83,7 @@ void Area2D::set_linear_damp(real_t p_linear_damp) {
 	linear_damp = p_linear_damp;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_LINEAR_DAMP, p_linear_damp);
 }
+
 real_t Area2D::get_linear_damp() const {
 	return linear_damp;
 }
@@ -96,6 +101,7 @@ void Area2D::set_priority(real_t p_priority) {
 	priority = p_priority;
 	PhysicsServer2D::get_singleton()->area_set_param(get_rid(), PhysicsServer2D::AREA_PARAM_PRIORITY, p_priority);
 }
+
 real_t Area2D::get_priority() const {
 	return priority;
 }

@@ -141,6 +141,7 @@ Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_
 	status = STATUS_CONNECTED;
 	return OK;
 }
+
 Error StreamPeerMbedTLS::put_data(const uint8_t *p_data, int p_bytes) {
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_UNCONFIGURED);
 
@@ -267,6 +268,7 @@ int StreamPeerMbedTLS::get_available_bytes() const {
 
 	return mbedtls_ssl_get_bytes_avail(&(ssl_ctx->ssl));
 }
+
 StreamPeerMbedTLS::StreamPeerMbedTLS() {
 	ssl_ctx.instance();
 	status = STATUS_DISCONNECTED;

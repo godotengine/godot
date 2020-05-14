@@ -260,6 +260,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 
 	thread_load_mutex->unlock();
 }
+
 Error ResourceLoader::load_threaded_request(const String &p_path, const String &p_type_hint, bool p_use_sub_threads, const String &p_source_resource) {
 	String local_path;
 	if (p_path.is_rel_path())
@@ -412,6 +413,7 @@ ResourceLoader::ThreadLoadStatus ResourceLoader::load_threaded_get_status(const 
 
 	return status;
 }
+
 RES ResourceLoader::load_threaded_get(const String &p_path, Error *r_error) {
 	String local_path;
 	if (p_path.is_rel_path())

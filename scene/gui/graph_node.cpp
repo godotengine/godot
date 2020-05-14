@@ -92,6 +92,7 @@ bool GraphNode::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return true;
 }
+
 void GraphNode::_get_property_list(List<PropertyInfo> *p_list) const {
 	int idx = 0;
 	for (int i = 0; i < get_child_count(); i++) {
@@ -305,11 +306,13 @@ void GraphNode::clear_slot(int p_idx) {
 	update();
 	connpos_dirty = true;
 }
+
 void GraphNode::clear_all_slots() {
 	slot_info.clear();
 	update();
 	connpos_dirty = true;
 }
+
 bool GraphNode::is_slot_enabled_left(int p_idx) const {
 	if (!slot_info.has(p_idx))
 		return false;
@@ -428,6 +431,7 @@ void GraphNode::set_show_close_button(bool p_enable) {
 	show_close = p_enable;
 	update();
 }
+
 bool GraphNode::is_close_button_visible() const {
 	return show_close;
 }
@@ -487,6 +491,7 @@ int GraphNode::get_connection_input_count() {
 
 	return conn_input_cache.size();
 }
+
 int GraphNode::get_connection_output_count() {
 	if (connpos_dirty)
 		_connpos_update();

@@ -482,6 +482,7 @@ void CreateDialog::set_preferred_search_result_type(const String &p_preferred_ty
 String CreateDialog::get_preferred_search_result_type() {
 	return preferred_search_result_type;
 }
+
 String CreateDialog::get_selected_type() {
 	TreeItem *selected = search_options->get_selected();
 	if (selected)
@@ -644,6 +645,7 @@ bool CreateDialog::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	return false;
 }
+
 void CreateDialog::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 

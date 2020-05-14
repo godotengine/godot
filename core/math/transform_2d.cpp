@@ -123,15 +123,18 @@ void Transform2D::scale(const Size2 &p_scale) {
 	scale_basis(p_scale);
 	elements[2] *= p_scale;
 }
+
 void Transform2D::scale_basis(const Size2 &p_scale) {
 	elements[0][0] *= p_scale.x;
 	elements[0][1] *= p_scale.y;
 	elements[1][0] *= p_scale.x;
 	elements[1][1] *= p_scale.y;
 }
+
 void Transform2D::translate(real_t p_tx, real_t p_ty) {
 	translate(Vector2(p_tx, p_ty));
 }
+
 void Transform2D::translate(const Vector2 &p_translation) {
 	elements[2] += basis_xform(p_translation);
 }

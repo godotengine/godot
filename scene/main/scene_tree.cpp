@@ -530,6 +530,7 @@ void SceneTree::_main_window_close() {
 		_quit = true;
 	}
 }
+
 void SceneTree::_main_window_go_back() {
 	if (quit_on_go_back) {
 		_quit = true;
@@ -660,6 +661,7 @@ Ref<Material> SceneTree::get_debug_navigation_disabled_material() {
 
 	return navigation_disabled_material;
 }
+
 Ref<Material> SceneTree::get_debug_collision_material() {
 	if (collision_material.is_valid())
 		return collision_material;
@@ -792,6 +794,7 @@ void SceneMainLoop::_update_listener_2d() {
 	}
 
 }
+
 */
 
 void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p_method, const Ref<InputEvent> &p_input, Viewport *p_viewport) {
@@ -835,6 +838,7 @@ void SceneTree::_call_input_pause(const StringName &p_group, const StringName &p
 	if (call_lock == 0)
 		call_skip.clear();
 }
+
 Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
@@ -878,6 +882,7 @@ Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable:
 int64_t SceneTree::get_frame() const {
 	return current_frame;
 }
+
 int64_t SceneTree::get_event_count() const {
 	return current_event;
 }
@@ -906,6 +911,7 @@ Array SceneTree::_get_nodes_in_group(const StringName &p_group) {
 bool SceneTree::has_group(const StringName &p_identifier) const {
 	return group_map.has(p_identifier);
 }
+
 void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
 	Map<StringName, Group>::Element *E = group_map.find(p_group);
 	if (!E)

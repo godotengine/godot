@@ -387,6 +387,7 @@ void GDScriptTokenizerText::_make_token(Token p_type) {
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
+
 void GDScriptTokenizerText::_make_identifier(const StringName &p_identifier) {
 	TokenData &tk = tk_rb[tk_rb_pos];
 
@@ -408,6 +409,7 @@ void GDScriptTokenizerText::_make_built_in_func(GDScriptFunctions::Function p_fu
 
 	tk_rb_pos = (tk_rb_pos + 1) % TK_RB_SIZE;
 }
+
 void GDScriptTokenizerText::_make_constant(const Variant &p_constant) {
 	TokenData &tk = tk_rb[tk_rb_pos];
 
@@ -1445,6 +1447,7 @@ int GDScriptTokenizerBuffer::get_token_line(int p_offset) const {
 	uint32_t l = lines.getv(pos);
 	return l & TOKEN_LINE_MASK;
 }
+
 int GDScriptTokenizerBuffer::get_token_column(int p_offset) const {
 	int offset = token + p_offset;
 	int pos = lines.find_nearest(offset);
@@ -1456,11 +1459,13 @@ int GDScriptTokenizerBuffer::get_token_column(int p_offset) const {
 	uint32_t l = lines.getv(pos);
 	return l >> TOKEN_LINE_BITS;
 }
+
 int GDScriptTokenizerBuffer::get_token_line_indent(int p_offset) const {
 	int offset = token + p_offset;
 	ERR_FAIL_INDEX_V(offset, tokens.size(), 0);
 	return tokens[offset] >> TOKEN_BITS;
 }
+
 const Variant &GDScriptTokenizerBuffer::get_token_constant(int p_offset) const {
 	int offset = token + p_offset;
 	ERR_FAIL_INDEX_V(offset, tokens.size(), nil);
@@ -1468,6 +1473,7 @@ const Variant &GDScriptTokenizerBuffer::get_token_constant(int p_offset) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(constant, (uint32_t)constants.size(), nil);
 	return constants[constant];
 }
+
 String GDScriptTokenizerBuffer::get_token_error(int p_offset) const {
 	ERR_FAIL_V(String());
 }
@@ -1476,6 +1482,7 @@ void GDScriptTokenizerBuffer::advance(int p_amount) {
 	ERR_FAIL_INDEX(p_amount + token, tokens.size());
 	token += p_amount;
 }
+
 GDScriptTokenizerBuffer::GDScriptTokenizerBuffer() {
 	token = 0;
 }

@@ -84,6 +84,7 @@ float AudioEffectEQ::get_band_gain_db(int p_band) const {
 
 	return gain[p_band];
 }
+
 int AudioEffectEQ::get_band_count() const {
 	return gain.size();
 }

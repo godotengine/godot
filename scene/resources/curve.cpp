@@ -529,6 +529,7 @@ void Curve::_bind_methods() {
 int Curve2D::get_point_count() const {
 	return points.size();
 }
+
 void Curve2D::add_point(const Vector2 &p_pos, const Vector2 &p_in, const Vector2 &p_out, int p_atpos) {
 	Point n;
 	n.pos = p_pos;
@@ -550,6 +551,7 @@ void Curve2D::set_point_position(int p_index, const Vector2 &p_pos) {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
+
 Vector2 Curve2D::get_point_position(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
 	return points[p_index].pos;
@@ -562,6 +564,7 @@ void Curve2D::set_point_in(int p_index, const Vector2 &p_in) {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
+
 Vector2 Curve2D::get_point_in(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
 	return points[p_index].in;
@@ -727,6 +730,7 @@ float Curve2D::get_baked_length() const {
 
 	return baked_max_ofs;
 }
+
 Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 	if (baked_cache_dirty)
 		_bake();
@@ -876,6 +880,7 @@ Dictionary Curve2D::_get_data() const {
 
 	return dc;
 }
+
 void Curve2D::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("points"));
 
@@ -979,6 +984,7 @@ Curve2D::Curve2D() {
 int Curve3D::get_point_count() const {
 	return points.size();
 }
+
 void Curve3D::add_point(const Vector3 &p_pos, const Vector3 &p_in, const Vector3 &p_out, int p_atpos) {
 	Point n;
 	n.pos = p_pos;
@@ -992,6 +998,7 @@ void Curve3D::add_point(const Vector3 &p_pos, const Vector3 &p_in, const Vector3
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
+
 void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
 	ERR_FAIL_INDEX(p_index, points.size());
 
@@ -999,6 +1006,7 @@ void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
+
 Vector3 Curve3D::get_point_position(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
 	return points[p_index].pos;
@@ -1011,6 +1019,7 @@ void Curve3D::set_point_tilt(int p_index, float p_tilt) {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
+
 float Curve3D::get_point_tilt(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, points.size(), 0);
 	return points[p_index].tilt;
@@ -1023,6 +1032,7 @@ void Curve3D::set_point_in(int p_index, const Vector3 &p_in) {
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
+
 Vector3 Curve3D::get_point_in(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
 	return points[p_index].in;
@@ -1246,6 +1256,7 @@ float Curve3D::get_baked_length() const {
 
 	return baked_max_ofs;
 }
+
 Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 	if (baked_cache_dirty)
 		_bake();
@@ -1501,6 +1512,7 @@ Dictionary Curve3D::_get_data() const {
 
 	return dc;
 }
+
 void Curve3D::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("points"));
 	ERR_FAIL_COND(!p_data.has("tilts"));

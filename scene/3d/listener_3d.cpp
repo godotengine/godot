@@ -51,6 +51,7 @@ bool Listener3D::_set(const StringName &p_name, const Variant &p_value) {
 
 	return true;
 }
+
 bool Listener3D::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "current") {
 		if (is_inside_tree() && get_tree()->is_node_being_edited(this)) {

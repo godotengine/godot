@@ -575,6 +575,7 @@ void ProjectSettingsEditor::_edit_item(Ref<InputEvent> p_exiting_event) {
 
 	_add_item(ie_type, p_exiting_event);
 }
+
 void ProjectSettingsEditor::_action_activated() {
 	TreeItem *ti = input_editor->get_selected();
 
@@ -1259,6 +1260,7 @@ void ProjectSettingsEditor::_translation_res_add(const String &p_path) {
 void ProjectSettingsEditor::_translation_res_option_file_open() {
 	translation_res_option_file_open->popup_centered_ratio();
 }
+
 void ProjectSettingsEditor::_translation_res_option_add(const String &p_path) {
 	ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting("locale/translation_remaps"));
 

@@ -150,6 +150,7 @@ void AudioDriverXAudio2::lock() {
 		return;
 	mutex.lock();
 }
+
 void AudioDriverXAudio2::unlock() {
 	if (!thread)
 		return;

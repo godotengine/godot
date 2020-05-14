@@ -189,6 +189,7 @@ void AudioEffectChorus::set_voice_delay_ms(int p_voice, float p_delay_ms) {
 
 	voice[p_voice].delay = p_delay_ms;
 }
+
 float AudioEffectChorus::get_voice_delay_ms(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 	return voice[p_voice].delay;
@@ -199,6 +200,7 @@ void AudioEffectChorus::set_voice_rate_hz(int p_voice, float p_rate_hz) {
 
 	voice[p_voice].rate = p_rate_hz;
 }
+
 float AudioEffectChorus::get_voice_rate_hz(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
@@ -210,6 +212,7 @@ void AudioEffectChorus::set_voice_depth_ms(int p_voice, float p_depth_ms) {
 
 	voice[p_voice].depth = p_depth_ms;
 }
+
 float AudioEffectChorus::get_voice_depth_ms(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
@@ -221,6 +224,7 @@ void AudioEffectChorus::set_voice_level_db(int p_voice, float p_level_db) {
 
 	voice[p_voice].level = p_level_db;
 }
+
 float AudioEffectChorus::get_voice_level_db(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
@@ -232,6 +236,7 @@ void AudioEffectChorus::set_voice_cutoff_hz(int p_voice, float p_cutoff_hz) {
 
 	voice[p_voice].cutoff = p_cutoff_hz;
 }
+
 float AudioEffectChorus::get_voice_cutoff_hz(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
@@ -243,6 +248,7 @@ void AudioEffectChorus::set_voice_pan(int p_voice, float p_pan) {
 
 	voice[p_voice].pan = p_pan;
 }
+
 float AudioEffectChorus::get_voice_pan(int p_voice) const {
 	ERR_FAIL_INDEX_V(p_voice, MAX_VOICES, 0);
 
@@ -252,6 +258,7 @@ float AudioEffectChorus::get_voice_pan(int p_voice) const {
 void AudioEffectChorus::set_wet(float amount) {
 	wet = amount;
 }
+
 float AudioEffectChorus::get_wet() const {
 	return wet;
 }
@@ -259,6 +266,7 @@ float AudioEffectChorus::get_wet() const {
 void AudioEffectChorus::set_dry(float amount) {
 	dry = amount;
 }
+
 float AudioEffectChorus::get_dry() const {
 	return dry;
 }

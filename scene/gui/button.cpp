@@ -230,6 +230,7 @@ void Button::set_text(const String &p_text) {
 	_change_notify("text");
 	minimum_size_changed();
 }
+
 String Button::get_text() const {
 	return text;
 }

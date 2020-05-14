@@ -42,6 +42,7 @@ layout(push_constant, binding = 2, std430) uniform Params {
 
 	mat4 projection;
 }
+
 params;
 
 vec2 view_to_screen(vec3 view_pos, out float w) {

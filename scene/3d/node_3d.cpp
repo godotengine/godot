@@ -89,6 +89,7 @@ void Node3D::_update_local_transform() const {
 
 	data.dirty &= ~DIRTY_LOCAL;
 }
+
 void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	if (!is_inside_tree()) {
 		return;
@@ -246,6 +247,7 @@ Transform Node3D::get_transform() const {
 
 	return data.local_transform;
 }
+
 Transform Node3D::get_global_transform() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Transform());
 
@@ -560,6 +562,7 @@ void Node3D::rotate_y(float p_angle) {
 	t.basis.rotate(Vector3(0, 1, 0), p_angle);
 	set_transform(t);
 }
+
 void Node3D::rotate_z(float p_angle) {
 	Transform t = get_transform();
 	t.basis.rotate(Vector3(0, 0, 1), p_angle);

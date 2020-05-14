@@ -17,6 +17,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool force_luminance;
 	uint pad[3];
 }
+
 params;
 
 void main() {

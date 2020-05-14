@@ -532,6 +532,7 @@ bool EditorProperty::use_keying_next() const {
 
 	return false;
 }
+
 void EditorProperty::set_checkable(bool p_checkable) {
 	checkable = p_checkable;
 	update();
@@ -737,9 +738,11 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 void EditorProperty::set_label_reference(Control *p_control) {
 	label_reference = p_control;
 }
+
 void EditorProperty::set_bottom_editor(Control *p_control) {
 	bottom_editor = p_control;
 }
+
 Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 	if (property == StringName())
 		return Variant();
@@ -898,6 +901,7 @@ EditorProperty::EditorProperty() {
 	label_reference = nullptr;
 	bottom_editor = nullptr;
 }
+
 ////////////////////////////////////////////////
 ////////////////////////////////////////////////
 
@@ -930,6 +934,7 @@ bool EditorInspectorPlugin::can_handle(Object *p_object) {
 	}
 	return false;
 }
+
 void EditorInspectorPlugin::parse_begin(Object *p_object) {
 	if (get_script_instance()) {
 		get_script_instance()->call("parse_begin", p_object);
@@ -956,6 +961,7 @@ bool EditorInspectorPlugin::parse_property(Object *p_object, Variant::Type p_typ
 	}
 	return false;
 }
+
 void EditorInspectorPlugin::parse_end() {
 	if (get_script_instance()) {
 		get_script_instance()->call("parse_end");
@@ -1826,6 +1832,7 @@ void EditorInspector::update_tree() {
 
 	//see if this property exists and should be kept
 }
+
 void EditorInspector::update_property(const String &p_prop) {
 	if (!editor_property_map.has(p_prop))
 		return;
@@ -1884,6 +1891,7 @@ void EditorInspector::set_keying(bool p_active) {
 	keying = p_active;
 	update_tree();
 }
+
 void EditorInspector::set_read_only(bool p_read_only) {
 	read_only = p_read_only;
 	update_tree();
@@ -1892,6 +1900,7 @@ void EditorInspector::set_read_only(bool p_read_only) {
 bool EditorInspector::is_capitalize_paths_enabled() const {
 	return capitalize_paths;
 }
+
 void EditorInspector::set_enable_capitalize_paths(bool p_capitalize) {
 	capitalize_paths = p_capitalize;
 	update_tree();
@@ -1910,14 +1919,17 @@ void EditorInspector::set_use_doc_hints(bool p_enable) {
 	use_doc_hints = p_enable;
 	update_tree();
 }
+
 void EditorInspector::set_hide_script(bool p_hide) {
 	hide_script = p_hide;
 	update_tree();
 }
+
 void EditorInspector::set_use_filter(bool p_use) {
 	use_filter = p_use;
 	update_tree();
 }
+
 void EditorInspector::register_text_enter(Node *p_line_edit) {
 	search_box = Object::cast_to<LineEdit>(p_line_edit);
 	if (search_box)

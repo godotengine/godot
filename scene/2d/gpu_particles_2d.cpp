@@ -53,6 +53,7 @@ void GPUParticles2D::set_amount(int p_amount) {
 	amount = p_amount;
 	RS::get_singleton()->particles_set_amount(particles, amount);
 }
+
 void GPUParticles2D::set_lifetime(float p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
@@ -72,18 +73,22 @@ void GPUParticles2D::set_one_shot(bool p_enable) {
 	if (!one_shot)
 		set_process_internal(false);
 }
+
 void GPUParticles2D::set_pre_process_time(float p_time) {
 	pre_process_time = p_time;
 	RS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
+
 void GPUParticles2D::set_explosiveness_ratio(float p_ratio) {
 	explosiveness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_explosiveness_ratio(particles, explosiveness_ratio);
 }
+
 void GPUParticles2D::set_randomness_ratio(float p_ratio) {
 	randomness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
+
 void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 	visibility_rect = p_visibility_rect;
 	AABB aabb;
@@ -97,6 +102,7 @@ void GPUParticles2D::set_visibility_rect(const Rect2 &p_visibility_rect) {
 	_change_notify("visibility_rect");
 	update();
 }
+
 void GPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
 	RS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
@@ -140,9 +146,11 @@ void GPUParticles2D::set_speed_scale(float p_scale) {
 bool GPUParticles2D::is_emitting() const {
 	return RS::get_singleton()->particles_get_emitting(particles);
 }
+
 int GPUParticles2D::get_amount() const {
 	return amount;
 }
+
 float GPUParticles2D::get_lifetime() const {
 	return lifetime;
 }
@@ -150,21 +158,27 @@ float GPUParticles2D::get_lifetime() const {
 bool GPUParticles2D::get_one_shot() const {
 	return one_shot;
 }
+
 float GPUParticles2D::get_pre_process_time() const {
 	return pre_process_time;
 }
+
 float GPUParticles2D::get_explosiveness_ratio() const {
 	return explosiveness_ratio;
 }
+
 float GPUParticles2D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
+
 Rect2 GPUParticles2D::get_visibility_rect() const {
 	return visibility_rect;
 }
+
 bool GPUParticles2D::get_use_local_coordinates() const {
 	return local_coords;
 }
+
 Ref<Material> GPUParticles2D::get_process_material() const {
 	return process_material;
 }

@@ -67,6 +67,7 @@ int WebSocketMultiplayerPeer::_gen_unique_id() const {
 
 	return hash;
 }
+
 void WebSocketMultiplayerPeer::_clear() {
 	_peer_map.clear();
 	if (_current_packet.data != nullptr)

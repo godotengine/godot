@@ -278,6 +278,7 @@ int PhysicsServer3DSW::area_get_shape_count(RID p_area) const {
 
 	return area->get_shape_count();
 }
+
 RID PhysicsServer3DSW::area_get_shape(RID p_area, int p_shape_idx) const {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, RID());
@@ -287,6 +288,7 @@ RID PhysicsServer3DSW::area_get_shape(RID p_area, int p_shape_idx) const {
 
 	return shape->get_self();
 }
+
 Transform PhysicsServer3DSW::area_get_shape_transform(RID p_area, int p_shape_idx) const {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, Transform());
@@ -326,6 +328,7 @@ void PhysicsServer3DSW::area_attach_object_instance_id(RID p_area, ObjectID p_id
 	ERR_FAIL_COND(!area);
 	area->set_instance_id(p_id);
 }
+
 ObjectID PhysicsServer3DSW::area_get_object_instance_id(RID p_area) const {
 	if (space_owner.owns(p_area)) {
 		Space3DSW *space = space_owner.getornull(p_area);
@@ -494,6 +497,7 @@ void PhysicsServer3DSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape)
 
 	body->set_shape(p_shape_idx, shape);
 }
+
 void PhysicsServer3DSW::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
@@ -507,6 +511,7 @@ int PhysicsServer3DSW::body_get_shape_count(RID p_body) const {
 
 	return body->get_shape_count();
 }
+
 RID PhysicsServer3DSW::body_get_shape(RID p_body, int p_shape_idx) const {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, RID());
@@ -909,6 +914,7 @@ void PhysicsServer3DSW::pin_joint_set_param(RID p_joint, PinJointParam p_param, 
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_param(p_param, p_value);
 }
+
 real_t PhysicsServer3DSW::pin_joint_get_param(RID p_joint, PinJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
@@ -924,6 +930,7 @@ void PhysicsServer3DSW::pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) {
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_pos_a(p_A);
 }
+
 Vector3 PhysicsServer3DSW::pin_joint_get_local_a(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
@@ -939,6 +946,7 @@ void PhysicsServer3DSW::pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) {
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_pos_b(p_B);
 }
+
 Vector3 PhysicsServer3DSW::pin_joint_get_local_b(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
@@ -994,6 +1002,7 @@ void PhysicsServer3DSW::hinge_joint_set_param(RID p_joint, HingeJointParam p_par
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	hinge_joint->set_param(p_param, p_value);
 }
+
 real_t PhysicsServer3DSW::hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
@@ -1009,6 +1018,7 @@ void PhysicsServer3DSW::hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag,
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	hinge_joint->set_flag(p_flag, p_value);
 }
+
 bool PhysicsServer3DSW::hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, false);
@@ -1089,6 +1099,7 @@ void PhysicsServer3DSW::slider_joint_set_param(RID p_joint, SliderJointParam p_p
 	SliderJoint3DSW *slider_joint = static_cast<SliderJoint3DSW *>(joint);
 	slider_joint->set_param(p_param, p_value);
 }
+
 real_t PhysicsServer3DSW::slider_joint_get_param(RID p_joint, SliderJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
@@ -1124,6 +1135,7 @@ void PhysicsServer3DSW::cone_twist_joint_set_param(RID p_joint, ConeTwistJointPa
 	ConeTwistJoint3DSW *cone_twist_joint = static_cast<ConeTwistJoint3DSW *>(joint);
 	cone_twist_joint->set_param(p_param, p_value);
 }
+
 real_t PhysicsServer3DSW::cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
@@ -1159,6 +1171,7 @@ void PhysicsServer3DSW::generic_6dof_joint_set_param(RID p_joint, Vector3::Axis 
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	generic_6dof_joint->set_param(p_axis, p_param, p_value);
 }
+
 real_t PhysicsServer3DSW::generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
@@ -1174,6 +1187,7 @@ void PhysicsServer3DSW::generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	generic_6dof_joint->set_flag(p_axis, p_flag, p_enable);
 }
+
 bool PhysicsServer3DSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, false);

@@ -491,6 +491,7 @@ void *PoolAllocator::get(ID p_mem) {
 
 	return ptr;
 }
+
 void PoolAllocator::unlock(ID p_mem) {
 	if (!needs_locking)
 		return;

@@ -72,6 +72,7 @@ void BackBufferCopy::set_copy_mode(CopyMode p_mode) {
 	copy_mode = p_mode;
 	_update_copy_mode();
 }
+
 BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const {
 	return copy_mode;
 }
@@ -96,5 +97,6 @@ BackBufferCopy::BackBufferCopy() {
 	copy_mode = COPY_MODE_RECT;
 	_update_copy_mode();
 }
+
 BackBufferCopy::~BackBufferCopy() {
 }

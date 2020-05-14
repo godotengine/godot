@@ -51,6 +51,7 @@ bool Geometry::is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2>
 	}
 	return false;
 }
+
 */
 
 void Geometry::MeshData::optimize_vertices() {

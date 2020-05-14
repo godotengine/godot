@@ -645,6 +645,7 @@ Ref<AudioStream> AudioStreamPlayer3D::get_stream() const {
 void AudioStreamPlayer3D::set_unit_db(float p_volume) {
 	unit_db = p_volume;
 }
+
 float AudioStreamPlayer3D::get_unit_db() const {
 	return unit_db;
 }
@@ -652,6 +653,7 @@ float AudioStreamPlayer3D::get_unit_db() const {
 void AudioStreamPlayer3D::set_unit_size(float p_volume) {
 	unit_size = p_volume;
 }
+
 float AudioStreamPlayer3D::get_unit_size() const {
 	return unit_size;
 }
@@ -659,6 +661,7 @@ float AudioStreamPlayer3D::get_unit_size() const {
 void AudioStreamPlayer3D::set_max_db(float p_boost) {
 	max_db = p_boost;
 }
+
 float AudioStreamPlayer3D::get_max_db() const {
 	return max_db;
 }
@@ -667,6 +670,7 @@ void AudioStreamPlayer3D::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
 }
+
 float AudioStreamPlayer3D::get_pitch_scale() const {
 	return pitch_scale;
 }
@@ -721,6 +725,7 @@ void AudioStreamPlayer3D::set_bus(const StringName &p_bus) {
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
 }
+
 StringName AudioStreamPlayer3D::get_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
@@ -733,6 +738,7 @@ StringName AudioStreamPlayer3D::get_bus() const {
 void AudioStreamPlayer3D::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
 }
+
 bool AudioStreamPlayer3D::is_autoplay_enabled() {
 	return autoplay;
 }
@@ -743,6 +749,7 @@ void AudioStreamPlayer3D::_set_playing(bool p_enable) {
 	else
 		stop();
 }
+
 bool AudioStreamPlayer3D::_is_active() const {
 	return active;
 }
@@ -813,6 +820,7 @@ float AudioStreamPlayer3D::get_emission_angle_filter_attenuation_db() const {
 void AudioStreamPlayer3D::set_attenuation_filter_cutoff_hz(float p_hz) {
 	attenuation_filter_cutoff_hz = p_hz;
 }
+
 float AudioStreamPlayer3D::get_attenuation_filter_cutoff_hz() const {
 	return attenuation_filter_cutoff_hz;
 }
@@ -820,6 +828,7 @@ float AudioStreamPlayer3D::get_attenuation_filter_cutoff_hz() const {
 void AudioStreamPlayer3D::set_attenuation_filter_db(float p_db) {
 	attenuation_filter_db = p_db;
 }
+
 float AudioStreamPlayer3D::get_attenuation_filter_db() const {
 	return attenuation_filter_db;
 }
@@ -1014,5 +1023,6 @@ AudioStreamPlayer3D::AudioStreamPlayer3D() {
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer3D::_bus_layout_changed));
 	set_disable_scale(true);
 }
+
 AudioStreamPlayer3D::~AudioStreamPlayer3D() {
 }

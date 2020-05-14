@@ -154,6 +154,7 @@ void ResourceFormatSaverCrypto::get_recognized_extensions(const RES &p_resource,
 		p_extensions->push_back("key");
 	}
 }
+
 bool ResourceFormatSaverCrypto::recognize(const RES &p_resource) const {
 	return Object::cast_to<X509Certificate>(*p_resource) || Object::cast_to<CryptoKey>(*p_resource);
 }

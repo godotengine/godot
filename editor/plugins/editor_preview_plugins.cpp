@@ -183,6 +183,7 @@ EditorImagePreviewPlugin::EditorImagePreviewPlugin() {
 bool EditorImagePreviewPlugin::generate_small_preview_automatically() const {
 	return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////
 bool EditorBitmapPreviewPlugin::handles(const String &p_type) const {
@@ -572,6 +573,7 @@ Ref<Texture2D> EditorScriptPreviewPlugin::generate(const RES &p_from, const Size
 
 EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
 }
+
 ///////////////////////////////////////////////////////////////////
 
 bool EditorAudioStreamPreviewPlugin::handles(const String &p_type) const {
@@ -665,6 +667,7 @@ void EditorMeshPreviewPlugin::_preview_done(const Variant &p_udata) {
 void EditorMeshPreviewPlugin::_bind_methods() {
 	ClassDB::bind_method("_preview_done", &EditorMeshPreviewPlugin::_preview_done);
 }
+
 bool EditorMeshPreviewPlugin::handles(const String &p_type) const {
 	return ClassDB::is_parent_class(p_type, "Mesh"); //any Mesh
 }

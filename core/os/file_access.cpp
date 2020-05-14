@@ -170,6 +170,7 @@ uint16_t FileAccess::get_16() const {
 
 	return res;
 }
+
 uint32_t FileAccess::get_32() const {
 	uint32_t res;
 	uint16_t a, b;
@@ -187,6 +188,7 @@ uint32_t FileAccess::get_32() const {
 
 	return res;
 }
+
 uint64_t FileAccess::get_64() const {
 	uint64_t res;
 	uint32_t a, b;
@@ -394,6 +396,7 @@ void FileAccess::store_16(uint16_t p_dest) {
 	store_8(a);
 	store_8(b);
 }
+
 void FileAccess::store_32(uint32_t p_dest) {
 	uint16_t a, b;
 
@@ -407,6 +410,7 @@ void FileAccess::store_32(uint32_t p_dest) {
 	store_16(a);
 	store_16(b);
 }
+
 void FileAccess::store_64(uint64_t p_dest) {
 	uint32_t a, b;
 

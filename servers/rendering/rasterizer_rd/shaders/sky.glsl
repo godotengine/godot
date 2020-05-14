@@ -14,6 +14,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 position_multiplier;
 	float time;
 }
+
 params;
 
 void main() {
@@ -40,6 +41,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 position_multiplier;
 	float time; //TODO consider adding vec2 screen res, and float radiance size
 }
+
 params;
 
 #define SAMPLER_NEAREST_CLAMP 0
@@ -60,6 +62,7 @@ layout(set = 0, binding = 0) uniform sampler material_samplers[12];
 layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
+
 global_variables;
 
 #ifdef USE_MATERIAL_UNIFORMS
@@ -108,6 +111,7 @@ struct DirectionalLightData {
 layout(set = 3, binding = 0, std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 }
+
 directional_lights;
 
 /* clang-format off */

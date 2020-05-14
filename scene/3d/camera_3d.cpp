@@ -166,6 +166,7 @@ void Camera3D::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_f
 	update_gizmo();
 	force_change = false;
 }
+
 void Camera3D::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	if (!force_change && size == p_size && p_z_near == near && p_z_far == far && mode == PROJECTION_ORTHOGONAL)
 		return;
@@ -632,6 +633,7 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 		return Vector3();
 	}
 }
+
 Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
 	size = 1;
@@ -665,9 +667,11 @@ Camera3D::~Camera3D() {
 void ClippedCamera3D::set_margin(float p_margin) {
 	margin = p_margin;
 }
+
 float ClippedCamera3D::get_margin() const {
 	return margin;
 }
+
 void ClippedCamera3D::set_process_mode(ProcessMode p_mode) {
 	if (process_mode == p_mode) {
 		return;
@@ -676,6 +680,7 @@ void ClippedCamera3D::set_process_mode(ProcessMode p_mode) {
 	set_process_internal(process_mode == CLIP_PROCESS_IDLE);
 	set_physics_process_internal(process_mode == CLIP_PROCESS_PHYSICS);
 }
+
 ClippedCamera3D::ProcessMode ClippedCamera3D::get_process_mode() const {
 	return process_mode;
 }
@@ -855,6 +860,7 @@ void ClippedCamera3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLIP_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(CLIP_PROCESS_IDLE);
 }
+
 ClippedCamera3D::ClippedCamera3D() {
 	margin = 0;
 	clip_offset = 0;
@@ -867,6 +873,7 @@ ClippedCamera3D::ClippedCamera3D() {
 	clip_to_areas = false;
 	clip_to_bodies = true;
 }
+
 ClippedCamera3D::~ClippedCamera3D() {
 	PhysicsServer3D::get_singleton()->free(pyramid_shape);
 }

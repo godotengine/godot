@@ -180,6 +180,7 @@ bool CanvasItemMaterial::_is_shader_dirty() const {
 
 	return element.in_list();
 }
+
 void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
 	blend_mode = p_blend_mode;
 	_queue_shader_change();
@@ -216,6 +217,7 @@ void CanvasItemMaterial::set_particles_anim_h_frames(int p_frames) {
 int CanvasItemMaterial::get_particles_anim_h_frames() const {
 	return particles_anim_h_frames;
 }
+
 void CanvasItemMaterial::set_particles_anim_v_frames(int p_frames) {
 	particles_anim_v_frames = p_frames;
 	RS::get_singleton()->material_set_param(_get_material(), shader_names->particles_anim_v_frames, p_frames);
@@ -645,6 +647,7 @@ void CanvasItem::set_modulate(const Color &p_modulate) {
 	modulate = p_modulate;
 	RenderingServer::get_singleton()->canvas_item_set_modulate(canvas_item, modulate);
 }
+
 Color CanvasItem::get_modulate() const {
 	return modulate;
 }
@@ -681,6 +684,7 @@ void CanvasItem::set_self_modulate(const Color &p_self_modulate) {
 	self_modulate = p_self_modulate;
 	RenderingServer::get_singleton()->canvas_item_set_self_modulate(canvas_item, self_modulate);
 }
+
 Color CanvasItem::get_self_modulate() const {
 	return self_modulate;
 }
@@ -815,6 +819,7 @@ void CanvasItem::draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 
 	ERR_FAIL_COND(p_texture.is_null());
 	p_texture->draw_rect(canvas_item, p_rect, p_tile, p_modulate, p_transpose, p_normal_map, p_specular_map, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
 }
+
 void CanvasItem::draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, bool p_clip_uv, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 	ERR_FAIL_COND(p_texture.is_null());
@@ -828,6 +833,7 @@ void CanvasItem::draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p
 
 	p_style_box->draw(canvas_item, p_rect);
 }
+
 void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture, float p_width, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
@@ -837,6 +843,7 @@ void CanvasItem::draw_primitive(const Vector<Point2> &p_points, const Vector<Col
 
 	RenderingServer::get_singleton()->canvas_item_add_primitive(canvas_item, p_points, p_colors, p_uvs, rid, p_width, rid_normal, rid_specular, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
 }
+
 void CanvasItem::draw_set_transform(const Point2 &p_offset, float p_rot, const Size2 &p_scale) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
@@ -881,6 +888,7 @@ void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_text
 
 	RenderingServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid, normal_map_rid, specular_map_rid, p_specular_color_shininess, RS::CanvasItemTextureFilter(p_texture_filter), RS::CanvasItemTextureRepeat(p_texture_repeat));
 }
+
 void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map, const Color &p_specular_color_shininess, TextureFilter p_texture_filter, TextureRepeat p_texture_repeat) {
 	ERR_FAIL_COND(p_multimesh.is_null());
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();

@@ -37,6 +37,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float exposure_adjust;
 	float pad[3];
 }
+
 params;
 
 void main() {

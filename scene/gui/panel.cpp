@@ -44,6 +44,7 @@ void Panel::set_mode(Mode p_mode) {
 	mode = p_mode;
 	update();
 }
+
 Panel::Mode Panel::get_mode() const {
 	return mode;
 }

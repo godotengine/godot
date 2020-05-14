@@ -72,6 +72,7 @@ void EditorAssetLibraryItem::_asset_clicked() {
 void EditorAssetLibraryItem::_category_clicked() {
 	emit_signal("category_selected", category_id);
 }
+
 void EditorAssetLibraryItem::_author_clicked() {
 	emit_signal("author_selected", author_id);
 }
@@ -297,6 +298,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	get_ok()->set_text(TTR("Download"));
 	get_cancel()->set_text(TTR("Close"));
 }
+
 ///////////////////////////////////////////////////////////////////////////////////
 
 void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
@@ -437,6 +439,7 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 		} break;
 	}
 }
+
 void EditorAssetLibraryItemDownload::_close() {
 	// Clean up downloaded file.
 	DirAccess::remove_file_or_error(download->get_download_file());
@@ -650,6 +653,7 @@ void EditorAssetLibrary::_select_category(int p_id) {
 		}
 	}
 }
+
 void EditorAssetLibrary::_select_asset(int p_id) {
 	_api_request("asset/" + itos(p_id), REQUESTING_ASSET);
 }

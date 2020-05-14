@@ -2684,6 +2684,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 int RichTextLabel::get_visible_characters() const {
 	return visible_characters;
 }
+
 int RichTextLabel::get_total_character_count() const {
 	int tc = 0;
 	for (int i = 0; i < current_frame->lines.size(); i++)

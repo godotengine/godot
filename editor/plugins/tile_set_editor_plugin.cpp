@@ -2358,6 +2358,7 @@ void TileSetEditor::_zoom_in() {
 		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
 	}
 }
+
 void TileSetEditor::_zoom_out() {
 	float scale = workspace->get_scale().x;
 	if (scale > min_scale) {
@@ -2367,6 +2368,7 @@ void TileSetEditor::_zoom_out() {
 		workspace_overlay->set_custom_minimum_size(workspace->get_rect().size * scale);
 	}
 }
+
 void TileSetEditor::_zoom_reset() {
 	workspace->set_scale(Vector2(1, 1));
 	workspace_container->set_custom_minimum_size(workspace->get_rect().size);

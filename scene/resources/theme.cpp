@@ -310,9 +310,11 @@ void Theme::set_project_default(const Ref<Theme> &p_project_default) {
 void Theme::set_default_icon(const Ref<Texture2D> &p_icon) {
 	default_icon = p_icon;
 }
+
 void Theme::set_default_style(const Ref<StyleBox> &p_style) {
 	default_style = p_style;
 }
+
 void Theme::set_default_font(const Ref<Font> &p_font) {
 	default_font = p_font;
 }
@@ -337,6 +339,7 @@ void Theme::set_icon(const StringName &p_name, const StringName &p_type, const R
 		emit_changed();
 	}
 }
+
 Ref<Texture2D> Theme::get_icon(const StringName &p_name, const StringName &p_type) const {
 	if (icon_map.has(p_type) && icon_map[p_type].has(p_name) && icon_map[p_type][p_name].is_valid()) {
 		return icon_map[p_type][p_name];
@@ -509,6 +512,7 @@ void Theme::set_font(const StringName &p_name, const StringName &p_type, const R
 		emit_changed();
 	}
 }
+
 Ref<Font> Theme::get_font(const StringName &p_name, const StringName &p_type) const {
 	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid())
 		return font_map[p_type][p_name];

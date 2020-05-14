@@ -270,14 +270,17 @@ void TextureButton::set_pressed_texture(const Ref<Texture2D> &p_pressed) {
 	pressed = p_pressed;
 	update();
 }
+
 void TextureButton::set_hover_texture(const Ref<Texture2D> &p_hover) {
 	hover = p_hover;
 	update();
 }
+
 void TextureButton::set_disabled_texture(const Ref<Texture2D> &p_disabled) {
 	disabled = p_disabled;
 	update();
 }
+
 void TextureButton::set_click_mask(const Ref<BitMap> &p_click_mask) {
 	click_mask = p_click_mask;
 	update();
@@ -286,15 +289,19 @@ void TextureButton::set_click_mask(const Ref<BitMap> &p_click_mask) {
 Ref<Texture2D> TextureButton::get_normal_texture() const {
 	return normal;
 }
+
 Ref<Texture2D> TextureButton::get_pressed_texture() const {
 	return pressed;
 }
+
 Ref<Texture2D> TextureButton::get_hover_texture() const {
 	return hover;
 }
+
 Ref<Texture2D> TextureButton::get_disabled_texture() const {
 	return disabled;
 }
+
 Ref<BitMap> TextureButton::get_click_mask() const {
 	return click_mask;
 }

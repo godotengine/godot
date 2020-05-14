@@ -86,6 +86,7 @@ float AudioEffectLimiter::get_threshold_db() const {
 void AudioEffectLimiter::set_ceiling_db(float p_ceiling) {
 	ceiling = p_ceiling;
 }
+
 float AudioEffectLimiter::get_ceiling_db() const {
 	return ceiling;
 }
@@ -93,6 +94,7 @@ float AudioEffectLimiter::get_ceiling_db() const {
 void AudioEffectLimiter::set_soft_clip_db(float p_soft_clip) {
 	soft_clip = p_soft_clip;
 }
+
 float AudioEffectLimiter::get_soft_clip_db() const {
 	return soft_clip;
 }
@@ -100,6 +102,7 @@ float AudioEffectLimiter::get_soft_clip_db() const {
 void AudioEffectLimiter::set_soft_clip_ratio(float p_soft_clip) {
 	soft_clip_ratio = p_soft_clip;
 }
+
 float AudioEffectLimiter::get_soft_clip_ratio() const {
 	return soft_clip_ratio;
 }

@@ -506,6 +506,7 @@ void EditorFileDialog::_push_history() {
 		dir_next->set_disabled(true);
 	}
 }
+
 void EditorFileDialog::_item_dc_selected(int p_item) {
 	int current = p_item;
 	if (current < 0 || current >= item_list->get_item_count())
@@ -877,6 +878,7 @@ void EditorFileDialog::clear_filters() {
 	update_filters();
 	invalidate();
 }
+
 void EditorFileDialog::add_filter(const String &p_filter) {
 	filters.push_back(p_filter);
 	update_filters();
@@ -886,12 +888,15 @@ void EditorFileDialog::add_filter(const String &p_filter) {
 String EditorFileDialog::get_current_dir() const {
 	return dir_access->get_current_dir();
 }
+
 String EditorFileDialog::get_current_file() const {
 	return file->get_text();
 }
+
 String EditorFileDialog::get_current_path() const {
 	return dir_access->get_current_dir().plus_file(file->get_text());
 }
+
 void EditorFileDialog::set_current_dir(const String &p_dir) {
 	if (p_dir.is_rel_path())
 		dir_access->change_dir(OS::get_singleton()->get_resource_dir());
@@ -899,6 +904,7 @@ void EditorFileDialog::set_current_dir(const String &p_dir) {
 	update_dir();
 	invalidate();
 }
+
 void EditorFileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
@@ -912,6 +918,7 @@ void EditorFileDialog::set_current_file(const String &p_file) {
 	if (is_visible())
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 }
+
 void EditorFileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size())
 		return;
@@ -1110,6 +1117,7 @@ void EditorFileDialog::_favorite_move_up() {
 		update_file_list();
 	}
 }
+
 void EditorFileDialog::_favorite_move_down() {
 	int current = favorites->get_current();
 
@@ -1237,6 +1245,7 @@ void EditorFileDialog::_go_back() {
 	dir_prev->set_disabled(local_history_pos == 0);
 	dir_next->set_disabled(local_history_pos == local_history.size() - 1);
 }
+
 void EditorFileDialog::_go_forward() {
 	if (local_history_pos == local_history.size() - 1) {
 		return;

@@ -100,6 +100,7 @@ void ResourcePreloader::remove_resource(const StringName &p_name) {
 	ERR_FAIL_COND(!resources.has(p_name));
 	resources.erase(p_name);
 }
+
 void ResourcePreloader::rename_resource(const StringName &p_from_name, const StringName &p_to_name) {
 	ERR_FAIL_COND(!resources.has(p_from_name));
 
@@ -112,6 +113,7 @@ void ResourcePreloader::rename_resource(const StringName &p_from_name, const Str
 bool ResourcePreloader::has_resource(const StringName &p_name) const {
 	return resources.has(p_name);
 }
+
 RES ResourcePreloader::get_resource(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!resources.has(p_name), RES());
 	return resources[p_name];

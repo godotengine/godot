@@ -1130,36 +1130,43 @@ void RasterizerSceneRD::environment_set_background(RID p_env, RS::EnvironmentBG 
 	ERR_FAIL_COND(!env);
 	env->background = p_bg;
 }
+
 void RasterizerSceneRD::environment_set_sky(RID p_env, RID p_sky) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 	env->sky = p_sky;
 }
+
 void RasterizerSceneRD::environment_set_sky_custom_fov(RID p_env, float p_scale) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 	env->sky_custom_fov = p_scale;
 }
+
 void RasterizerSceneRD::environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 	env->sky_orientation = p_orientation;
 }
+
 void RasterizerSceneRD::environment_set_bg_color(RID p_env, const Color &p_color) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 	env->bg_color = p_color;
 }
+
 void RasterizerSceneRD::environment_set_bg_energy(RID p_env, float p_energy) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 	env->bg_energy = p_energy;
 }
+
 void RasterizerSceneRD::environment_set_canvas_max_layer(RID p_env, int p_max_layer) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
 	env->canvas_max_layer = p_max_layer;
 }
+
 void RasterizerSceneRD::environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient, float p_energy, float p_sky_contribution, RS::EnvironmentReflectionSource p_reflection_source, const Color &p_ao_color) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -1176,56 +1183,67 @@ RS::EnvironmentBG RasterizerSceneRD::environment_get_background(RID p_env) const
 	ERR_FAIL_COND_V(!env, RS::ENV_BG_MAX);
 	return env->background;
 }
+
 RID RasterizerSceneRD::environment_get_sky(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, RID());
 	return env->sky;
 }
+
 float RasterizerSceneRD::environment_get_sky_custom_fov(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->sky_custom_fov;
 }
+
 Basis RasterizerSceneRD::environment_get_sky_orientation(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, Basis());
 	return env->sky_orientation;
 }
+
 Color RasterizerSceneRD::environment_get_bg_color(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, Color());
 	return env->bg_color;
 }
+
 float RasterizerSceneRD::environment_get_bg_energy(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->bg_energy;
 }
+
 int RasterizerSceneRD::environment_get_canvas_max_layer(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->canvas_max_layer;
 }
+
 Color RasterizerSceneRD::environment_get_ambient_light_color(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, Color());
 	return env->ambient_light;
 }
+
 RS::EnvironmentAmbientSource RasterizerSceneRD::environment_get_ambient_source(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, RS::ENV_AMBIENT_SOURCE_BG);
 	return env->ambient_source;
 }
+
 float RasterizerSceneRD::environment_get_ambient_light_energy(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->ambient_light_energy;
 }
+
 float RasterizerSceneRD::environment_get_ambient_sky_contribution(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, 0);
 	return env->ambient_sky_contribution;
 }
+
 RS::EnvironmentReflectionSource RasterizerSceneRD::environment_get_reflection_source(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, RS::ENV_REFLECTION_SOURCE_DISABLED);
@@ -1321,6 +1339,7 @@ float RasterizerSceneRD::environment_get_ssao_ao_affect(RID p_env) const {
 	ERR_FAIL_COND_V(!env, false);
 	return env->ssao_ao_channel_affect;
 }
+
 float RasterizerSceneRD::environment_get_ssao_light_affect(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, false);

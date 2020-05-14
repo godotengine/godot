@@ -293,6 +293,7 @@ void World2D::_register_viewport(Viewport *p_viewport, const Rect2 &p_rect) {
 void World2D::_update_viewport(Viewport *p_viewport, const Rect2 &p_rect) {
 	indexer->_update_viewport(p_viewport, p_rect);
 }
+
 void World2D::_remove_viewport(Viewport *p_viewport) {
 	indexer->_remove_viewport(p_viewport);
 }
@@ -300,9 +301,11 @@ void World2D::_remove_viewport(Viewport *p_viewport) {
 void World2D::_register_notifier(VisibilityNotifier2D *p_notifier, const Rect2 &p_rect) {
 	indexer->_notifier_add(p_notifier, p_rect);
 }
+
 void World2D::_update_notifier(VisibilityNotifier2D *p_notifier, const Rect2 &p_rect) {
 	indexer->_notifier_update(p_notifier, p_rect);
 }
+
 void World2D::_remove_notifier(VisibilityNotifier2D *p_notifier) {
 	indexer->_notifier_remove(p_notifier);
 }

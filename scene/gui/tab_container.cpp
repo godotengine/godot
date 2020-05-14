@@ -796,6 +796,7 @@ void TabContainer::set_tab_icon(int p_tab, const Ref<Texture2D> &p_icon) {
 	child->set_meta("_tab_icon", p_icon);
 	update();
 }
+
 Ref<Texture2D> TabContainer::get_tab_icon(int p_tab) const {
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND_V(!child, Ref<Texture2D>());
@@ -912,6 +913,7 @@ void TabContainer::set_drag_to_rearrange_enabled(bool p_enabled) {
 bool TabContainer::get_drag_to_rearrange_enabled() const {
 	return drag_to_rearrange_enabled;
 }
+
 void TabContainer::set_tabs_rearrange_group(int p_group_id) {
 	tabs_rearrange_group = p_group_id;
 }

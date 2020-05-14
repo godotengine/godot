@@ -386,6 +386,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B,
 	rd->best_object = rd->object;
 	rd->best_shape = rd->shape;
 }
+
 bool PhysicsDirectSpaceState3DSW::rest_info(RID p_shape, const Transform &p_shape_xform, real_t p_margin, ShapeRestInfo *r_info, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas) {
 	Shape3DSW *shape = static_cast<PhysicsServer3DSW *>(PhysicsServer3D::get_singleton())->shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
@@ -990,9 +991,11 @@ void Space3DSW::_broadphase_unpair(CollisionObject3DSW *A, int p_subindex_A, Col
 const SelfList<Body3DSW>::List &Space3DSW::get_active_body_list() const {
 	return active_list;
 }
+
 void Space3DSW::body_add_to_active_list(SelfList<Body3DSW> *p_body) {
 	active_list.add(p_body);
 }
+
 void Space3DSW::body_remove_from_active_list(SelfList<Body3DSW> *p_body) {
 	active_list.remove(p_body);
 }
@@ -1026,6 +1029,7 @@ const Set<CollisionObject3DSW *> &Space3DSW::get_objects() const {
 void Space3DSW::body_add_to_state_query_list(SelfList<Body3DSW> *p_body) {
 	state_query_list.add(p_body);
 }
+
 void Space3DSW::body_remove_from_state_query_list(SelfList<Body3DSW> *p_body) {
 	state_query_list.remove(p_body);
 }
@@ -1033,6 +1037,7 @@ void Space3DSW::body_remove_from_state_query_list(SelfList<Body3DSW> *p_body) {
 void Space3DSW::area_add_to_monitor_query_list(SelfList<Area3DSW> *p_area) {
 	monitor_query_list.add(p_area);
 }
+
 void Space3DSW::area_remove_from_monitor_query_list(SelfList<Area3DSW> *p_area) {
 	monitor_query_list.remove(p_area);
 }

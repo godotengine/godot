@@ -105,6 +105,7 @@ void Resource::set_name(const String &p_name) {
 	name = p_name;
 	_change_notify("resource_name");
 }
+
 String Resource::get_name() const {
 	return name;
 }
@@ -444,6 +445,7 @@ bool ResourceCache::has(const String &p_path) {
 
 	return b;
 }
+
 Resource *ResourceCache::get(const String &p_path) {
 	lock->read_lock();
 

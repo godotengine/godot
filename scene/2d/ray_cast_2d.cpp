@@ -69,6 +69,7 @@ bool RayCast2D::get_collision_mask_bit(int p_bit) const {
 bool RayCast2D::is_colliding() const {
 	return collided;
 }
+
 Object *RayCast2D::get_collider() const {
 	if (against.is_null())
 		return nullptr;
@@ -79,9 +80,11 @@ Object *RayCast2D::get_collider() const {
 int RayCast2D::get_collider_shape() const {
 	return against_shape;
 }
+
 Vector2 RayCast2D::get_collision_point() const {
 	return collision_point;
 }
+
 Vector2 RayCast2D::get_collision_normal() const {
 	return collision_normal;
 }

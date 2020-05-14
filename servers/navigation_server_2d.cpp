@@ -83,21 +83,27 @@ NavigationServer2D *NavigationServer2D::singleton = nullptr;
 static RID rid_to_rid(const RID d) {
 	return d;
 }
+
 static bool bool_to_bool(const bool d) {
 	return d;
 }
+
 static int int_to_int(const int d) {
 	return d;
 }
+
 static real_t real_to_real(const real_t d) {
 	return d;
 }
+
 static Vector3 v2_to_v3(const Vector2 d) {
 	return Vector3(d.x, 0.0, d.y);
 }
+
 static Vector2 v3_to_v2(const Vector3 &d) {
 	return Vector2(d.x, d.z);
 }
+
 static Vector<Vector2> vector_v3_to_v2(const Vector<Vector3> &d) {
 	Vector<Vector2> nd;
 	nd.resize(d.size());
@@ -106,21 +112,26 @@ static Vector<Vector2> vector_v3_to_v2(const Vector<Vector3> &d) {
 	}
 	return nd;
 }
+
 static Transform trf2_to_trf3(const Transform2D &d) {
 	Vector3 o(v2_to_v3(d.get_origin()));
 	Basis b;
 	b.rotate(Vector3(0, 1, 0), d.get_rotation());
 	return Transform(b, o);
 }
+
 static Object *obj_to_obj(Object *d) {
 	return d;
 }
+
 static StringName sn_to_sn(StringName &d) {
 	return d;
 }
+
 static Variant var_to_var(Variant &d) {
 	return d;
 }
+
 static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
 	if (d.is_valid()) {
 		return d->get_mesh();

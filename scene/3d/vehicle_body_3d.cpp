@@ -153,6 +153,7 @@ void VehicleWheel3D::set_suspension_rest_length(float p_length) {
 	m_suspensionRestLength = p_length;
 	update_gizmo();
 }
+
 float VehicleWheel3D::get_suspension_rest_length() const {
 	return m_suspensionRestLength;
 }
@@ -160,6 +161,7 @@ float VehicleWheel3D::get_suspension_rest_length() const {
 void VehicleWheel3D::set_suspension_travel(float p_length) {
 	m_maxSuspensionTravelCm = p_length / 0.01;
 }
+
 float VehicleWheel3D::get_suspension_travel() const {
 	return m_maxSuspensionTravelCm * 0.01;
 }
@@ -167,6 +169,7 @@ float VehicleWheel3D::get_suspension_travel() const {
 void VehicleWheel3D::set_suspension_stiffness(float p_value) {
 	m_suspensionStiffness = p_value;
 }
+
 float VehicleWheel3D::get_suspension_stiffness() const {
 	return m_suspensionStiffness;
 }
@@ -174,6 +177,7 @@ float VehicleWheel3D::get_suspension_stiffness() const {
 void VehicleWheel3D::set_suspension_max_force(float p_value) {
 	m_maxSuspensionForce = p_value;
 }
+
 float VehicleWheel3D::get_suspension_max_force() const {
 	return m_maxSuspensionForce;
 }
@@ -181,6 +185,7 @@ float VehicleWheel3D::get_suspension_max_force() const {
 void VehicleWheel3D::set_damping_compression(float p_value) {
 	m_wheelsDampingCompression = p_value;
 }
+
 float VehicleWheel3D::get_damping_compression() const {
 	return m_wheelsDampingCompression;
 }
@@ -188,6 +193,7 @@ float VehicleWheel3D::get_damping_compression() const {
 void VehicleWheel3D::set_damping_relaxation(float p_value) {
 	m_wheelsDampingRelaxation = p_value;
 }
+
 float VehicleWheel3D::get_damping_relaxation() const {
 	return m_wheelsDampingRelaxation;
 }
@@ -195,6 +201,7 @@ float VehicleWheel3D::get_damping_relaxation() const {
 void VehicleWheel3D::set_friction_slip(float p_value) {
 	m_frictionSlip = p_value;
 }
+
 float VehicleWheel3D::get_friction_slip() const {
 	return m_frictionSlip;
 }
@@ -292,6 +299,7 @@ float VehicleWheel3D::get_engine_force() const {
 void VehicleWheel3D::set_brake(float p_brake) {
 	m_brake = p_brake;
 }
+
 float VehicleWheel3D::get_brake() const {
 	return m_brake;
 }
@@ -299,6 +307,7 @@ float VehicleWheel3D::get_brake() const {
 void VehicleWheel3D::set_steering(float p_steering) {
 	m_steering = p_steering;
 }
+
 float VehicleWheel3D::get_steering() const {
 	return m_steering;
 }
@@ -892,6 +901,7 @@ void VehicleBody3D::set_brake(float p_brake) {
 		wheelInfo.m_brake = p_brake;
 	}
 }
+
 float VehicleBody3D::get_brake() const {
 	return brake;
 }
@@ -904,6 +914,7 @@ void VehicleBody3D::set_steering(float p_steering) {
 			wheelInfo.m_steering = p_steering;
 	}
 }
+
 float VehicleBody3D::get_steering() const {
 	return m_steeringValue;
 }

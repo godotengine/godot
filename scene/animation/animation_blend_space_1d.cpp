@@ -33,6 +33,7 @@
 void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
 }
+
 Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName &p_parameter) const {
 	return 0;
 }

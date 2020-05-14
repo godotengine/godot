@@ -97,6 +97,7 @@ void ScriptEditorDebugger::debug_next() {
 	_put_msg("next", Array());
 	_clear_execution();
 }
+
 void ScriptEditorDebugger::debug_step() {
 	ERR_FAIL_COND(!breaked);
 
@@ -1243,6 +1244,7 @@ void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, co
 		_put_msg("scene:live_instance_node", msg);
 	}
 }
+
 void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
 	if (live_debug) {
 		Array msg;
@@ -1250,6 +1252,7 @@ void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
 		_put_msg("scene:live_remove_node", msg);
 	}
 }
+
 void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id) {
 	if (live_debug) {
 		Array msg;
@@ -1258,6 +1261,7 @@ void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at,
 		_put_msg("scene:live_remove_and_keep_node", msg);
 	}
 }
+
 void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 	if (live_debug) {
 		Array msg;
@@ -1267,6 +1271,7 @@ void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath
 		_put_msg("scene:live_restore_node", msg);
 	}
 }
+
 void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name) {
 	if (live_debug) {
 		Array msg;
@@ -1275,6 +1280,7 @@ void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const
 		_put_msg("scene:live_duplicate_node", msg);
 	}
 }
+
 void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 	if (live_debug) {
 		Array msg;

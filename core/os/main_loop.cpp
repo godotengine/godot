@@ -65,12 +65,14 @@ void MainLoop::init() {
 	if (get_script_instance())
 		get_script_instance()->call("_initialize");
 }
+
 bool MainLoop::iteration(float p_time) {
 	if (get_script_instance())
 		return get_script_instance()->call("_iteration", p_time);
 
 	return false;
 }
+
 bool MainLoop::idle(float p_time) {
 	if (get_script_instance())
 		return get_script_instance()->call("_idle", p_time);

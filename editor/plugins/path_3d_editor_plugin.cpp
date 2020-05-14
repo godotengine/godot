@@ -55,6 +55,7 @@ String Path3DGizmo::get_handle_name(int p_idx) const {
 
 	return n;
 }
+
 Variant Path3DGizmo::get_handle_value(int p_idx) {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
@@ -80,6 +81,7 @@ Variant Path3DGizmo::get_handle_value(int p_idx) {
 
 	return ofs;
 }
+
 void Path3DGizmo::set_handle(int p_idx, Camera3D *p_camera, const Point2 &p_point) {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())

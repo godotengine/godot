@@ -80,6 +80,7 @@ void Timer::set_wait_time(float p_time) {
 	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
 	wait_time = p_time;
 }
+
 float Timer::get_wait_time() const {
 	return wait_time;
 }
@@ -87,6 +88,7 @@ float Timer::get_wait_time() const {
 void Timer::set_one_shot(bool p_one_shot) {
 	one_shot = p_one_shot;
 }
+
 bool Timer::is_one_shot() const {
 	return one_shot;
 }
@@ -94,6 +96,7 @@ bool Timer::is_one_shot() const {
 void Timer::set_autostart(bool p_start) {
 	autostart = p_start;
 }
+
 bool Timer::has_autostart() const {
 	return autostart;
 }

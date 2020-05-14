@@ -1545,6 +1545,7 @@ void RasterizerCanvasRD::light_set_texture(RID p_rid, RID p_texture) {
 
 	cl->texture = p_texture;
 }
+
 void RasterizerCanvasRD::light_set_use_shadow(RID p_rid, bool p_enable, int p_resolution) {
 	CanvasLight *cl = canvas_light_owner.getornull(p_rid);
 	ERR_FAIL_COND(!cl);
@@ -1758,6 +1759,7 @@ void RasterizerCanvasRD::occluder_polygon_set_shape_as_lines(RID p_occluder, con
 		}
 	}
 }
+
 void RasterizerCanvasRD::occluder_polygon_set_cull_mode(RID p_occluder, RS::CanvasOccluderPolygonCullMode p_mode) {
 	OccluderPolygon *oc = occluder_polygon_owner.getornull(p_occluder);
 	ERR_FAIL_COND(!oc);
@@ -1955,6 +1957,7 @@ void RasterizerCanvasRD::ShaderData::set_default_texture_param(const StringName 
 		default_texture_params[p_name] = p_texture;
 	}
 }
+
 void RasterizerCanvasRD::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
 	Map<int, StringName> order;
 
@@ -2002,9 +2005,11 @@ bool RasterizerCanvasRD::ShaderData::is_param_texture(const StringName &p_param)
 bool RasterizerCanvasRD::ShaderData::is_animated() const {
 	return false;
 }
+
 bool RasterizerCanvasRD::ShaderData::casts_shadows() const {
 	return false;
 }
+
 Variant RasterizerCanvasRD::ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
@@ -2033,6 +2038,7 @@ RasterizerStorageRD::ShaderData *RasterizerCanvasRD::_create_shader_func() {
 	ShaderData *shader_data = memnew(ShaderData);
 	return shader_data;
 }
+
 void RasterizerCanvasRD::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	RasterizerCanvasRD *canvas_singleton = (RasterizerCanvasRD *)RasterizerCanvas::singleton;
 
@@ -2134,6 +2140,7 @@ void RasterizerCanvasRD::MaterialData::update_parameters(const Map<StringName, V
 
 	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), 1);
 }
+
 RasterizerCanvasRD::MaterialData::~MaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
 		RD::get_singleton()->free(uniform_set);

@@ -219,6 +219,7 @@ float Node2D::get_rotation_degrees() const {
 float Node2D::get_skew_degrees() const {
 	return Math::rad2deg(get_skew());
 }
+
 Size2 Node2D::get_scale() const {
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();

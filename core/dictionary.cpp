@@ -79,6 +79,7 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 const Variant &Dictionary::operator[](const Variant &p_key) const {
 	return _p->variant_map[p_key];
 }
+
 const Variant *Dictionary::getptr(const Variant &p_key) const {
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator>::ConstElement E = ((const OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> *)&_p->variant_map)->find(p_key);
 
@@ -115,6 +116,7 @@ Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
 int Dictionary::size() const {
 	return _p->variant_map.size();
 }
+
 bool Dictionary::empty() const {
 	return !_p->variant_map.size();
 }
@@ -170,6 +172,7 @@ void Dictionary::_unref() const {
 	}
 	_p = nullptr;
 }
+
 uint32_t Dictionary::hash() const {
 	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
 
@@ -254,6 +257,7 @@ Dictionary::Dictionary() {
 	_p = memnew(DictionaryPrivate);
 	_p->refcount.init();
 }
+
 Dictionary::~Dictionary() {
 	_unref();
 }

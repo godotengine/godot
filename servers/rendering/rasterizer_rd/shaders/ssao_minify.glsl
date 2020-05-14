@@ -16,6 +16,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool orthogonal;
 	uint pad;
 }
+
 params;
 
 #ifdef MINIFY_START

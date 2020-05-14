@@ -409,6 +409,7 @@ void EditorAudioBus::_solo_toggled() {
 
 	updating_bus = false;
 }
+
 void EditorAudioBus::_mute_toggled() {
 	updating_bus = true;
 
@@ -422,6 +423,7 @@ void EditorAudioBus::_mute_toggled() {
 
 	updating_bus = false;
 }
+
 void EditorAudioBus::_bypass_toggled() {
 	updating_bus = true;
 

@@ -44,6 +44,7 @@
 int OS_Server::get_video_driver_count() const {
 	return 1;
 }
+
 const char *OS_Server::get_video_driver_name(int p_driver) const {
 	return "Dummy";
 }

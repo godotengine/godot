@@ -113,6 +113,7 @@ float AudioEffectFilter::get_cutoff() const {
 void AudioEffectFilter::set_resonance(float p_amount) {
 	resonance = p_amount;
 }
+
 float AudioEffectFilter::get_resonance() const {
 	return resonance;
 }
@@ -120,6 +121,7 @@ float AudioEffectFilter::get_resonance() const {
 void AudioEffectFilter::set_gain(float p_amount) {
 	gain = p_amount;
 }
+
 float AudioEffectFilter::get_gain() const {
 	return gain;
 }

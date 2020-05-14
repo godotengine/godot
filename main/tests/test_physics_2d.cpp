@@ -402,4 +402,5 @@ namespace TestPhysics2D {
 MainLoop *test() {
 	return memnew(TestPhysics2DMainLoop);
 }
+
 } // namespace TestPhysics2D

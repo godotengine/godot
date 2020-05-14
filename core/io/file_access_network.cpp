@@ -300,6 +300,7 @@ void FileAccessNetwork::close() {
 	opened = false;
 	nc->unlock_mutex();
 }
+
 bool FileAccessNetwork::is_open() const {
 	return opened;
 }
@@ -318,10 +319,12 @@ void FileAccessNetwork::seek(size_t p_position) {
 void FileAccessNetwork::seek_end(int64_t p_position) {
 	seek(total_size + p_position);
 }
+
 size_t FileAccessNetwork::get_position() const {
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return pos;
 }
+
 size_t FileAccessNetwork::get_len() const {
 	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return total_size;

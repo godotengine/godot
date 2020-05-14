@@ -42,6 +42,7 @@ String ResourceImporterCSVTranslation::get_importer_name() const {
 String ResourceImporterCSVTranslation::get_visible_name() const {
 	return "CSV Translation";
 }
+
 void ResourceImporterCSVTranslation::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("csv");
 }
@@ -61,6 +62,7 @@ bool ResourceImporterCSVTranslation::get_option_visibility(const String &p_optio
 int ResourceImporterCSVTranslation::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterCSVTranslation::get_preset_name(int p_idx) const {
 	return "";
 }

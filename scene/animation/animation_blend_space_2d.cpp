@@ -37,6 +37,7 @@ void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) c
 	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", 0));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", 0));
 }
+
 Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName &p_parameter) const {
 	if (p_parameter == closest) {
 		return -1;
@@ -91,6 +92,7 @@ void AnimationNodeBlendSpace2D::set_blend_point_position(int p_point, const Vect
 	blend_points[p_point].position = p_position;
 	_queue_auto_triangles();
 }
+
 void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 	ERR_FAIL_COND(p_node.is_null());
@@ -103,14 +105,17 @@ void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<Anim
 
 	emit_signal("tree_changed");
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_blend_point_position(int p_point) const {
 	ERR_FAIL_INDEX_V(p_point, blend_points_used, Vector2());
 	return blend_points[p_point].position;
 }
+
 Ref<AnimationRootNode> AnimationNodeBlendSpace2D::get_blend_point_node(int p_point) const {
 	ERR_FAIL_INDEX_V(p_point, blend_points_used, Ref<AnimationRootNode>());
 	return blend_points[p_point].node;
 }
+
 void AnimationNodeBlendSpace2D::remove_blend_point(int p_point) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 
@@ -205,6 +210,7 @@ void AnimationNodeBlendSpace2D::add_triangle(int p_x, int p_y, int p_z, int p_at
 		triangles.insert(p_at_index, t);
 	}
 }
+
 int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
 	_update_triangles();
 
@@ -212,6 +218,7 @@ int AnimationNodeBlendSpace2D::get_triangle_point(int p_triangle, int p_point) {
 	ERR_FAIL_INDEX_V(p_triangle, triangles.size(), -1);
 	return triangles[p_triangle].points[p_point];
 }
+
 void AnimationNodeBlendSpace2D::remove_triangle(int p_triangle) {
 	ERR_FAIL_INDEX(p_triangle, triangles.size());
 
@@ -231,6 +238,7 @@ void AnimationNodeBlendSpace2D::set_min_space(const Vector2 &p_min) {
 		min_space.y = max_space.y - 1;
 	}
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_min_space() const {
 	return min_space;
 }
@@ -244,6 +252,7 @@ void AnimationNodeBlendSpace2D::set_max_space(const Vector2 &p_max) {
 		max_space.y = min_space.y + 1;
 	}
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_max_space() const {
 	return max_space;
 }
@@ -251,6 +260,7 @@ Vector2 AnimationNodeBlendSpace2D::get_max_space() const {
 void AnimationNodeBlendSpace2D::set_snap(const Vector2 &p_snap) {
 	snap = p_snap;
 }
+
 Vector2 AnimationNodeBlendSpace2D::get_snap() const {
 	return snap;
 }
@@ -258,6 +268,7 @@ Vector2 AnimationNodeBlendSpace2D::get_snap() const {
 void AnimationNodeBlendSpace2D::set_x_label(const String &p_label) {
 	x_label = p_label;
 }
+
 String AnimationNodeBlendSpace2D::get_x_label() const {
 	return x_label;
 }
@@ -265,6 +276,7 @@ String AnimationNodeBlendSpace2D::get_x_label() const {
 void AnimationNodeBlendSpace2D::set_y_label(const String &p_label) {
 	y_label = p_label;
 }
+
 String AnimationNodeBlendSpace2D::get_y_label() const {
 	return y_label;
 }

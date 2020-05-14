@@ -291,6 +291,7 @@ Error PacketPeerUDP::_poll() {
 
 	return OK;
 }
+
 bool PacketPeerUDP::is_listening() const {
 	return _sock.is_valid() && _sock->is_open();
 }

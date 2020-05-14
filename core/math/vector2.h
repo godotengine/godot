@@ -157,13 +157,16 @@ _FORCE_INLINE_ Vector2 operator*(real_t p_scalar, const Vector2 &p_vec) {
 _FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
 	return Vector2(x + p_v.x, y + p_v.y);
 }
+
 _FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
 	x += p_v.x;
 	y += p_v.y;
 }
+
 _FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
 	return Vector2(x - p_v.x, y - p_v.y);
 }
+
 _FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
 	x -= p_v.x;
 	y -= p_v.y;
@@ -201,6 +204,7 @@ _FORCE_INLINE_ Vector2 Vector2::operator-() const {
 _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
 	return x == p_vec2.x && y == p_vec2.y;
 }
+
 _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
 }

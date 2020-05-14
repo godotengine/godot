@@ -197,6 +197,7 @@ void *RenderingServerScene::_instance_pair(void *p_self, OctreeElementID, Instan
 
 	return nullptr;
 }
+
 void RenderingServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance *p_A, int, OctreeElementID, Instance *p_B, int, void *udata) {
 	//RenderingServerScene *self = (RenderingServerScene*)p_self;
 	Instance *A = p_A;
@@ -499,6 +500,7 @@ void RenderingServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 	_instance_queue_update(instance, true, true);
 }
+
 void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -583,12 +585,14 @@ void RenderingServerScene::instance_set_scenario(RID p_instance, RID p_scenario)
 		_instance_queue_update(instance, true, true);
 	}
 }
+
 void RenderingServerScene::instance_set_layer_mask(RID p_instance, uint32_t p_mask) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
 	instance->layer_mask = p_mask;
 }
+
 void RenderingServerScene::instance_set_transform(RID p_instance, const Transform &p_transform) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -612,12 +616,14 @@ void RenderingServerScene::instance_set_transform(RID p_instance, const Transfor
 	instance->transform = p_transform;
 	_instance_queue_update(instance, true);
 }
+
 void RenderingServerScene::instance_attach_object_instance_id(RID p_instance, ObjectID p_id) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
 	instance->object_id = p_id;
 }
+
 void RenderingServerScene::instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -690,6 +696,7 @@ void RenderingServerScene::instance_set_visible(RID p_instance, bool p_visible) 
 		}
 	}
 }
+
 inline bool is_geometry_instance(RenderingServer::InstanceType p_type) {
 	return p_type == RS::INSTANCE_MESH || p_type == RS::INSTANCE_MULTIMESH || p_type == RS::INSTANCE_PARTICLES || p_type == RS::INSTANCE_IMMEDIATE;
 }
@@ -766,6 +773,7 @@ Vector<ObjectID> RenderingServerScene::instances_cull_aabb(const AABB &p_aabb, R
 
 	return instances;
 }
+
 Vector<ObjectID> RenderingServerScene::instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario) const {
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
@@ -787,6 +795,7 @@ Vector<ObjectID> RenderingServerScene::instances_cull_ray(const Vector3 &p_from,
 
 	return instances;
 }
+
 Vector<ObjectID> RenderingServerScene::instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario) const {
 	Vector<ObjectID> instances;
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
@@ -846,6 +855,7 @@ void RenderingServerScene::instance_geometry_set_flag(RID p_instance, RS::Instan
 		}
 	}
 }
+
 void RenderingServerScene::instance_geometry_set_cast_shadows_setting(RID p_instance, RS::ShadowCastingSetting p_shadow_casting_setting) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -853,6 +863,7 @@ void RenderingServerScene::instance_geometry_set_cast_shadows_setting(RID p_inst
 	instance->cast_shadows = p_shadow_casting_setting;
 	_instance_queue_update(instance, false, true);
 }
+
 void RenderingServerScene::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -863,6 +874,7 @@ void RenderingServerScene::instance_geometry_set_material_override(RID p_instanc
 
 void RenderingServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
 }
+
 void RenderingServerScene::instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) {
 }
 

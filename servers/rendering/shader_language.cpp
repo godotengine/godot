@@ -3093,6 +3093,7 @@ bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringNam
 	}
 	ERR_FAIL_V(false); //bug? function not found
 }
+
 bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin) {
 	for (int i = 0; shader->functions.size(); i++) {
 		if (shader->functions[i].name == p_name) {

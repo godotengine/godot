@@ -16,6 +16,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float curve;
 	uint pad;
 }
+
 params;
 
 #define HALF_PI 1.5707963267948966

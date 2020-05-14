@@ -1105,6 +1105,7 @@ Array GraphEdit::_get_connection_list() const {
 void GraphEdit::_zoom_minus() {
 	set_zoom(zoom / ZOOM_SCALE);
 }
+
 void GraphEdit::_zoom_reset() {
 	set_zoom(1);
 }
@@ -1155,6 +1156,7 @@ void GraphEdit::set_snap(int p_snap) {
 	snap_amount->set_value(p_snap);
 	update();
 }
+
 void GraphEdit::_snap_toggled() {
 	update();
 }
