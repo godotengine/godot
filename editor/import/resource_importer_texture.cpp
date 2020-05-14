@@ -140,9 +140,11 @@ String ResourceImporterTexture::get_importer_name() const {
 String ResourceImporterTexture::get_visible_name() const {
 	return "Texture2D";
 }
+
 void ResourceImporterTexture::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
+
 String ResourceImporterTexture::get_save_extension() const {
 	return "stex";
 }
@@ -181,6 +183,7 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_option, cons
 int ResourceImporterTexture::get_preset_count() const {
 	return 4;
 }
+
 String ResourceImporterTexture::get_preset_name(int p_idx) const {
 	static const char *preset_names[] = {
 		"2D, Detect 3D",

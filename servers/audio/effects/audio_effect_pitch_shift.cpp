@@ -225,6 +225,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 }
 
 
+
 void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 /*
 	FFT routine, (C)1996 S.M.Bernsee. Sign = -1 is FFT, 1 is iFFT (inverse)
@@ -279,6 +280,7 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 		}
 	}
 }
+
 
 /* Godot code again */
 /* clang-format on */

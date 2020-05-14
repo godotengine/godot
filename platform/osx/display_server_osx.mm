@@ -149,6 +149,7 @@ static NSCursor *_cursorFromSelector(SEL selector, SEL fallback = nil) {
 	Variant meta;
 	bool checkable;
 }
+
 @end
 
 @implementation GlobalMenuItem
@@ -1422,6 +1423,7 @@ inline void sendPanEvent(DisplayServer::WindowID window_id, double dx, double dy
 
 @interface GodotWindow : NSWindow {
 }
+
 @end
 
 @implementation GodotWindow

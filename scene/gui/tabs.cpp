@@ -435,6 +435,7 @@ void Tabs::set_tab_disabled(int p_tab, bool p_disabled) {
 	tabs.write[p_tab].disabled = p_disabled;
 	update();
 }
+
 bool Tabs::get_tab_disabled(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), false);
 	return tabs[p_tab].disabled;
@@ -447,6 +448,7 @@ void Tabs::set_tab_right_button(int p_tab, const Ref<Texture2D> &p_right_button)
 	update();
 	minimum_size_changed();
 }
+
 Ref<Texture2D> Tabs::get_tab_right_button(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Ref<Texture2D>());
 	return tabs[p_tab].right_button;
@@ -866,6 +868,7 @@ void Tabs::set_drag_to_rearrange_enabled(bool p_enabled) {
 bool Tabs::get_drag_to_rearrange_enabled() const {
 	return drag_to_rearrange_enabled;
 }
+
 void Tabs::set_tabs_rearrange_group(int p_group_id) {
 	tabs_rearrange_group = p_group_id;
 }

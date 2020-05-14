@@ -60,6 +60,7 @@ void CollisionPolygon3DEditor::_notification(int p_what) {
 		} break;
 	}
 }
+
 void CollisionPolygon3DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
 		node = nullptr;

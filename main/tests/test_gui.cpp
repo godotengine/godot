@@ -265,6 +265,7 @@ public:
 MainLoop *test() {
 	return memnew(TestMainLoop);
 }
+
 } // namespace TestGUI
 
 #endif

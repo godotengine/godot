@@ -1276,6 +1276,7 @@ void Node::remove_child(Node *p_child) {
 int Node::get_child_count() const {
 	return data.children.size();
 }
+
 Node *Node::get_child(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
 
@@ -1516,6 +1517,7 @@ void Node::set_owner(Node *p_owner) {
 
 	_set_owner_nocheck(p_owner);
 }
+
 Node *Node::get_owner() const {
 	return data.owner;
 }
@@ -1685,6 +1687,7 @@ int Node::get_persistent_group_count() const {
 
 	return count;
 }
+
 void Node::_print_tree_pretty(const String &prefix, const bool last) {
 	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	print_line(prefix + new_prefix + String(get_name()));
@@ -1814,6 +1817,7 @@ void Node::remove_and_skip() {
 void Node::set_filename(const String &p_filename) {
 	data.filename = p_filename;
 }
+
 String Node::get_filename() const {
 	return data.filename;
 }
@@ -1821,6 +1825,7 @@ String Node::get_filename() const {
 void Node::set_editor_description(const String &p_editor_description) {
 	set_meta("_editor_description_", p_editor_description);
 }
+
 String Node::get_editor_description() const {
 	if (has_meta("_editor_description_")) {
 		return get_meta("_editor_description_");

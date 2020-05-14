@@ -12,6 +12,7 @@ layout(push_constant, binding = 0, std430) uniform Constants {
 	vec2 direction;
 	vec2 pad;
 }
+
 constants;
 
 layout(location = 0) out highp float depth;

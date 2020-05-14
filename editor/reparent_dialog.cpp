@@ -47,6 +47,7 @@ void ReparentDialog::_notification(int p_what) {
 void ReparentDialog::_cancel() {
 	hide();
 }
+
 void ReparentDialog::_reparent() {
 	if (tree->get_selected()) {
 		emit_signal("reparent", tree->get_selected()->get_path(), keep_transform->is_pressed());

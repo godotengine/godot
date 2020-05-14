@@ -732,6 +732,7 @@ int Animation::_insert_pos(float p_time, T& p_keys) {
 	}
 
 }
+
 */
 template <class T, class V>
 int Animation::_insert(float p_time, T &p_keys, const V &p_value) {
@@ -1421,9 +1422,11 @@ Animation::TransformKey Animation::_interpolate(const Animation::TransformKey &p
 Vector3 Animation::_interpolate(const Vector3 &p_a, const Vector3 &p_b, float p_c) const {
 	return p_a.lerp(p_b, p_c);
 }
+
 Quat Animation::_interpolate(const Quat &p_a, const Quat &p_b, float p_c) const {
 	return p_a.slerp(p_b, p_c);
 }
+
 Variant Animation::_interpolate(const Variant &p_a, const Variant &p_b, float p_c) const {
 	Variant dst;
 	Variant::interpolate(p_a, p_b, p_c, dst);
@@ -1443,12 +1446,15 @@ Animation::TransformKey Animation::_cubic_interpolate(const Animation::Transform
 
 	return tk;
 }
+
 Vector3 Animation::_cubic_interpolate(const Vector3 &p_pre_a, const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_post_b, float p_c) const {
 	return p_a.cubic_interpolate(p_b, p_pre_a, p_post_b, p_c);
 }
+
 Quat Animation::_cubic_interpolate(const Quat &p_pre_a, const Quat &p_a, const Quat &p_b, const Quat &p_post_b, float p_c) const {
 	return p_a.cubic_slerp(p_b, p_pre_a, p_post_b, p_c);
 }
+
 Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a, const Variant &p_b, const Variant &p_post_b, float p_c) const {
 	Variant::Type type_a = p_a.get_type();
 	Variant::Type type_b = p_b.get_type();
@@ -1533,6 +1539,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 		}
 	}
 }
+
 float Animation::_cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const {
 	return _interpolate(p_a, p_b, p_c);
 }
@@ -2008,6 +2015,7 @@ void Animation::method_track_get_key_indices(int p_track, float p_time, float p_
 
 	_method_track_get_key_indices_in_range(mt, from_time, to_time, p_indices);
 }
+
 Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), Vector<Variant>());
 	Track *t = tracks[p_track];
@@ -2021,6 +2029,7 @@ Vector<Variant> Animation::method_track_get_params(int p_track, int p_key_idx) c
 
 	return mk.params;
 }
+
 StringName Animation::method_track_get_name(int p_track, int p_key_idx) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), StringName());
 	Track *t = tracks[p_track];
@@ -2087,6 +2096,7 @@ void Animation::bezier_track_set_key_in_handle(int p_track, int p_index, const V
 	}
 	emit_changed();
 }
+
 void Animation::bezier_track_set_key_out_handle(int p_track, int p_index, const Vector2 &p_handle) {
 	ERR_FAIL_INDEX(p_track, tracks.size());
 	Track *t = tracks[p_track];
@@ -2102,6 +2112,7 @@ void Animation::bezier_track_set_key_out_handle(int p_track, int p_index, const 
 	}
 	emit_changed();
 }
+
 float Animation::bezier_track_get_key_value(int p_track, int p_index) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
 	Track *t = tracks[p_track];
@@ -2113,6 +2124,7 @@ float Animation::bezier_track_get_key_value(int p_track, int p_index) const {
 
 	return bt->values[p_index].value.value;
 }
+
 Vector2 Animation::bezier_track_get_key_in_handle(int p_track, int p_index) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), Vector2());
 	Track *t = tracks[p_track];
@@ -2124,6 +2136,7 @@ Vector2 Animation::bezier_track_get_key_in_handle(int p_track, int p_index) cons
 
 	return bt->values[p_index].value.in_handle;
 }
+
 Vector2 Animation::bezier_track_get_key_out_handle(int p_track, int p_index) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), Vector2());
 	Track *t = tracks[p_track];
@@ -2296,6 +2309,7 @@ RES Animation::audio_track_get_key_stream(int p_track, int p_key) const {
 
 	return at->values[p_key].value.stream;
 }
+
 float Animation::audio_track_get_key_start_offset(int p_track, int p_key) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
 	const Track *t = tracks[p_track];
@@ -2307,6 +2321,7 @@ float Animation::audio_track_get_key_start_offset(int p_track, int p_key) const 
 
 	return at->values[p_key].value.start_offset;
 }
+
 float Animation::audio_track_get_key_end_offset(int p_track, int p_key) const {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0);
 	const Track *t = tracks[p_track];
@@ -2372,6 +2387,7 @@ void Animation::set_length(float p_length) {
 	length = p_length;
 	emit_changed();
 }
+
 float Animation::get_length() const {
 	return length;
 }
@@ -2380,6 +2396,7 @@ void Animation::set_loop(bool p_enabled) {
 	loop = p_enabled;
 	emit_changed();
 }
+
 bool Animation::has_loop() const {
 	return loop;
 }

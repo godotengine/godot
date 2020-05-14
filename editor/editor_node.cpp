@@ -3250,9 +3250,11 @@ ImportDock *EditorNode::get_import_dock() {
 FileSystemDock *EditorNode::get_filesystem_dock() {
 	return filesystem_dock;
 }
+
 SceneTreeDock *EditorNode::get_scene_tree_dock() {
 	return scene_tree_dock;
 }
+
 InspectorDock *EditorNode::get_inspector_dock() {
 	return inspector_dock;
 }

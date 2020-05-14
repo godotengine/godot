@@ -279,13 +279,16 @@ void NavigationMesh::add_polygon(const Vector<int> &p_polygon) {
 	polygons.push_back(polygon);
 	_change_notify();
 }
+
 int NavigationMesh::get_polygon_count() const {
 	return polygons.size();
 }
+
 Vector<int> NavigationMesh::get_polygon(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
 	return polygons[p_idx].indices;
 }
+
 void NavigationMesh::clear_polygons() {
 	polygons.clear();
 }

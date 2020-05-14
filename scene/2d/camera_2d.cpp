@@ -517,6 +517,7 @@ void Camera2D::set_h_offset(float p_offset) {
 	h_offset_changed = true;
 	_update_scroll();
 }
+
 float Camera2D::get_h_offset() const {
 	return h_ofs;
 }

@@ -549,41 +549,49 @@ void EditorDebuggerNode::set_live_debugging(bool p_enabled) {
 		dbg->set_live_debugging(p_enabled);
 	});
 }
+
 void EditorDebuggerNode::update_live_edit_root() {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->update_live_edit_root();
 	});
 }
+
 void EditorDebuggerNode::live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_create_node(p_parent, p_type, p_name);
 	});
 }
+
 void EditorDebuggerNode::live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_instance_node(p_parent, p_path, p_name);
 	});
 }
+
 void EditorDebuggerNode::live_debug_remove_node(const NodePath &p_at) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_remove_node(p_at);
 	});
 }
+
 void EditorDebuggerNode::live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_remove_and_keep_node(p_at, p_keep_id);
 	});
 }
+
 void EditorDebuggerNode::live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_restore_node(p_id, p_at, p_at_pos);
 	});
 }
+
 void EditorDebuggerNode::live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_duplicate_node(p_at, p_new_name);
 	});
 }
+
 void EditorDebuggerNode::live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->live_debug_reparent_node(p_at, p_new_place, p_new_name, p_at_pos);

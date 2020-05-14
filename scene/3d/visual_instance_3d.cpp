@@ -235,6 +235,7 @@ bool GeometryInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void GeometryInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> pinfo;
 	RS::get_singleton()->instance_geometry_get_shader_parameter_list(get_instance(), &pinfo);
@@ -290,6 +291,7 @@ void GeometryInstance3D::set_shader_instance_uniform(const StringName &p_uniform
 Variant GeometryInstance3D::get_shader_instance_uniform(const StringName &p_uniform) const {
 	return RS::get_singleton()->instance_geometry_get_shader_parameter(get_instance(), p_uniform);
 }
+
 void GeometryInstance3D::set_custom_aabb(AABB aabb) {
 	RS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
 }

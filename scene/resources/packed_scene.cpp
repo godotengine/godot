@@ -1331,11 +1331,13 @@ int SceneState::get_node_property_count(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), -1);
 	return nodes[p_idx].properties.size();
 }
+
 StringName SceneState::get_node_property_name(int p_idx, int p_prop) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), StringName());
 	ERR_FAIL_INDEX_V(p_prop, nodes[p_idx].properties.size(), StringName());
 	return names[nodes[p_idx].properties[p_prop].name];
 }
+
 Variant SceneState::get_node_property_value(int p_idx, int p_prop) const {
 	ERR_FAIL_INDEX_V(p_idx, nodes.size(), Variant());
 	ERR_FAIL_INDEX_V(p_prop, nodes[p_idx].properties.size(), Variant());
@@ -1357,6 +1359,7 @@ NodePath SceneState::get_node_owner_path(int p_idx) const {
 int SceneState::get_connection_count() const {
 	return connections.size();
 }
+
 NodePath SceneState::get_connection_source(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, connections.size(), NodePath());
 	if (connections[p_idx].from & FLAG_ID_IS_PATH) {
@@ -1370,6 +1373,7 @@ StringName SceneState::get_connection_signal(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, connections.size(), StringName());
 	return names[connections[p_idx].signal];
 }
+
 NodePath SceneState::get_connection_target(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, connections.size(), NodePath());
 	if (connections[p_idx].to & FLAG_ID_IS_PATH) {
@@ -1378,6 +1382,7 @@ NodePath SceneState::get_connection_target(int p_idx) const {
 		return get_node_path(connections[p_idx].to & FLAG_MASK);
 	}
 }
+
 StringName SceneState::get_connection_method(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, connections.size(), StringName());
 	return names[connections[p_idx].method];
@@ -1438,6 +1443,7 @@ bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p
 Vector<NodePath> SceneState::get_editable_instances() const {
 	return editable_instances;
 }
+
 //add
 
 int SceneState::add_name(const StringName &p_name) {
@@ -1463,6 +1469,7 @@ int SceneState::add_node_path(const NodePath &p_path) {
 	node_paths.push_back(p_path);
 	return (node_paths.size() - 1) | FLAG_ID_IS_PATH;
 }
+
 int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int p_instance, int p_index) {
 	NodeData nd;
 	nd.parent = p_parent;
@@ -1476,6 +1483,7 @@ int SceneState::add_node(int p_parent, int p_owner, int p_type, int p_name, int 
 
 	return nodes.size() - 1;
 }
+
 void SceneState::add_node_property(int p_node, int p_name, int p_value) {
 	ERR_FAIL_INDEX(p_node, nodes.size());
 	ERR_FAIL_INDEX(p_name, names.size());
@@ -1486,15 +1494,18 @@ void SceneState::add_node_property(int p_node, int p_name, int p_value) {
 	prop.value = p_value;
 	nodes.write[p_node].properties.push_back(prop);
 }
+
 void SceneState::add_node_group(int p_node, int p_group) {
 	ERR_FAIL_INDEX(p_node, nodes.size());
 	ERR_FAIL_INDEX(p_group, names.size());
 	nodes.write[p_node].groups.push_back(p_group);
 }
+
 void SceneState::set_base_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, variants.size());
 	base_scene_idx = p_idx;
 }
+
 void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method, int p_flags, const Vector<int> &p_binds) {
 	ERR_FAIL_INDEX(p_signal, names.size());
 	ERR_FAIL_INDEX(p_method, names.size());
@@ -1511,6 +1522,7 @@ void SceneState::add_connection(int p_from, int p_to, int p_signal, int p_method
 	c.binds = p_binds;
 	connections.push_back(c);
 }
+
 void SceneState::add_editable_instance(const NodePath &p_path) {
 	editable_instances.push_back(p_path);
 }

@@ -77,6 +77,7 @@ void Bone2D::_notification(int p_what) {
 		parent_bone = nullptr;
 	}
 }
+
 void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rest", "rest"), &Bone2D::set_rest);
 	ClassDB::bind_method(D_METHOD("get_rest"), &Bone2D::get_rest);
@@ -128,6 +129,7 @@ int Bone2D::get_index_in_skeleton() const {
 	skeleton->_update_bone_setup();
 	return skeleton_index;
 }
+
 String Bone2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 	if (!skeleton) {
@@ -268,6 +270,7 @@ void Skeleton2D::_notification(int p_what) {
 RID Skeleton2D::get_skeleton() const {
 	return skeleton;
 }
+
 void Skeleton2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_bone_setup"), &Skeleton2D::_update_bone_setup);
 	ClassDB::bind_method(D_METHOD("_update_transform"), &Skeleton2D::_update_transform);

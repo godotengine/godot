@@ -443,6 +443,7 @@ void CSGShape3D::_update_shape() {
 
 	set_base(root_mesh->get_rid());
 }
+
 AABB CSGShape3D::get_aabb() const {
 	return node_aabb;
 }
@@ -564,6 +565,7 @@ Array CSGShape3D::get_meshes() const {
 
 	return Array();
 }
+
 void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape3D::_update_shape);
 	ClassDB::bind_method(D_METHOD("is_root_shape"), &CSGShape3D::is_root_shape);
@@ -627,6 +629,7 @@ CSGShape3D::~CSGShape3D() {
 		brush = nullptr;
 	}
 }
+
 //////////////////////////////////
 
 CSGBrush *CSGCombiner3D::_build_brush() {
@@ -2335,6 +2338,7 @@ void CSGPolygon3D::set_path_interval(float p_interval) {
 	_make_dirty();
 	update_gizmo();
 }
+
 float CSGPolygon3D::get_path_interval() const {
 	return path_interval;
 }

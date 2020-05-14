@@ -55,6 +55,7 @@ void ProjectExportDialog::_theme_changed() {
 	if (panel)
 		panel->add_theme_style_override("panel", patches->get_theme_stylebox("bg", "Tree"));
 }
+
 void ProjectExportDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {

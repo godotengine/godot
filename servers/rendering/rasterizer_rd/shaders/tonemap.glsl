@@ -52,6 +52,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool use_fxaa;
 	uint pad;
 }
+
 params;
 
 layout(location = 0) out vec4 frag_color;

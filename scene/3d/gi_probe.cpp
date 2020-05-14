@@ -101,15 +101,19 @@ void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb,
 AABB GIProbeData::get_bounds() const {
 	return bounds;
 }
+
 Vector3 GIProbeData::get_octree_size() const {
 	return octree_size;
 }
+
 Vector<uint8_t> GIProbeData::get_octree_cells() const {
 	return RS::get_singleton()->gi_probe_get_octree_cells(probe);
 }
+
 Vector<uint8_t> GIProbeData::get_data_cells() const {
 	return RS::get_singleton()->gi_probe_get_data_cells(probe);
 }
+
 Vector<uint8_t> GIProbeData::get_distance_field() const {
 	return RS::get_singleton()->gi_probe_get_distance_field(probe);
 }
@@ -117,6 +121,7 @@ Vector<uint8_t> GIProbeData::get_distance_field() const {
 Vector<int> GIProbeData::get_level_counts() const {
 	return RS::get_singleton()->gi_probe_get_level_counts(probe);
 }
+
 Transform GIProbeData::get_to_cell_xform() const {
 	return to_cell_xform;
 }
@@ -417,6 +422,7 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
+
 void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 

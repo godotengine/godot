@@ -2699,6 +2699,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 
 	return OK;
 }
+
 Error RenderingDeviceVulkan::texture_resolve_multisample(RID p_from_texture, RID p_to_texture, bool p_sync_with_draw) {
 	_THREAD_SAFE_METHOD_
 
@@ -5323,12 +5324,14 @@ int RenderingDeviceVulkan::screen_get_width(DisplayServer::WindowID p_screen) co
 	ERR_FAIL_COND_V_MSG(local_device.is_valid(), -1, "Local devices have no screen");
 	return context->window_get_width(p_screen);
 }
+
 int RenderingDeviceVulkan::screen_get_height(DisplayServer::WindowID p_screen) const {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V_MSG(local_device.is_valid(), -1, "Local devices have no screen");
 
 	return context->window_get_height(p_screen);
 }
+
 RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::screen_get_framebuffer_format() const {
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_COND_V_MSG(local_device.is_valid(), INVALID_ID, "Local devices have no screen");
@@ -5978,6 +5981,7 @@ void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p
 	dl->validation.vertex_array_size = vertex_array->vertex_count;
 	vkCmdBindVertexBuffers(dl->command_buffer, 0, vertex_array->buffers.size(), vertex_array->buffers.ptr(), vertex_array->offsets.ptr());
 }
+
 void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_index_array) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -6164,6 +6168,7 @@ void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Re
 
 	vkCmdSetScissor(dl->command_buffer, 0, 1, &scissor);
 }
+
 void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -6302,6 +6307,7 @@ void RenderingDeviceVulkan::compute_list_bind_compute_pipeline(ComputeListID p_l
 	cl->validation.pipeline_push_constant_size = pipeline->push_constant_size;
 #endif
 }
+
 void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
@@ -6424,6 +6430,7 @@ void RenderingDeviceVulkan::compute_list_set_push_constant(ComputeListID p_list,
 	cl->validation.pipeline_push_constant_suppplied = true;
 #endif
 }
+
 void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
@@ -6646,6 +6653,7 @@ void RenderingDeviceVulkan::_free_internal(RID p_id) {
 		ERR_PRINT("Attempted to free invalid ID: " + itos(p_id.get_id()));
 	}
 }
+
 void RenderingDeviceVulkan::free(RID p_id) {
 	_THREAD_SAFE_METHOD_
 
@@ -7163,10 +7171,12 @@ uint64_t RenderingDeviceVulkan::get_captured_timestamp_gpu_time(uint32_t p_index
 
 	return l;
 }
+
 uint64_t RenderingDeviceVulkan::get_captured_timestamp_cpu_time(uint32_t p_index) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
 	return frames[frame].timestamp_cpu_result_values[p_index];
 }
+
 String RenderingDeviceVulkan::get_captured_timestamp_name(uint32_t p_index) const {
 	ERR_FAIL_UNSIGNED_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
 	return frames[frame].timestamp_result_names[p_index];

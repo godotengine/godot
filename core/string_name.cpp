@@ -334,6 +334,7 @@ StringName StringName::search(const CharType *p_name) {
 
 	return StringName(); //does not exist
 }
+
 StringName StringName::search(const String &p_name) {
 	ERR_FAIL_COND_V(p_name == "", StringName());
 

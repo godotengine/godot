@@ -553,6 +553,7 @@ void EditorPlugin::forward_spatial_force_draw_over_viewport(Control *p_overlay) 
 		get_script_instance()->call("forward_spatial_force_draw_over_viewport", p_overlay);
 	}
 }
+
 String EditorPlugin::get_name() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_plugin_name")) {
 		return get_script_instance()->call("get_plugin_name");
@@ -560,6 +561,7 @@ String EditorPlugin::get_name() const {
 
 	return String();
 }
+
 const Ref<Texture2D> EditorPlugin::get_icon() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_plugin_icon")) {
 		return get_script_instance()->call("get_plugin_icon");
@@ -567,6 +569,7 @@ const Ref<Texture2D> EditorPlugin::get_icon() const {
 
 	return Ref<Texture2D>();
 }
+
 bool EditorPlugin::has_main_screen() const {
 	if (get_script_instance() && get_script_instance()->has_method("has_main_screen")) {
 		return get_script_instance()->call("has_main_screen");
@@ -574,6 +577,7 @@ bool EditorPlugin::has_main_screen() const {
 
 	return false;
 }
+
 void EditorPlugin::make_visible(bool p_visible) {
 	if (get_script_instance() && get_script_instance()->has_method("make_visible")) {
 		get_script_instance()->call("make_visible", p_visible);
@@ -597,6 +601,7 @@ bool EditorPlugin::handles(Object *p_object) const {
 
 	return false;
 }
+
 Dictionary EditorPlugin::get_state() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_state")) {
 		return get_script_instance()->call("get_state");
@@ -638,6 +643,7 @@ void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 			p_breakpoints->push_back(arr[i]);
 	}
 }
+
 bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 	return false;
 }

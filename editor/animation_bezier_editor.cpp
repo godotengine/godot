@@ -509,6 +509,7 @@ void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationBezierTrackEdit::_zoom_changed));
 }
+
 void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
 	connect_compat("clear_selection", editor, "_clear_selection", varray(false));
@@ -541,6 +542,7 @@ void AnimationBezierTrackEdit::update_play_position() {
 void AnimationBezierTrackEdit::set_root(Node *p_root) {
 	root = p_root;
 }
+
 void AnimationBezierTrackEdit::_zoom_changed() {
 	update();
 }

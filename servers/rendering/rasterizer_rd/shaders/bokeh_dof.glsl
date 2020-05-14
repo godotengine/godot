@@ -51,6 +51,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float jitter_seed;
 	uint pad[2];
 }
+
 params;
 
 //used to work around downsampling filter

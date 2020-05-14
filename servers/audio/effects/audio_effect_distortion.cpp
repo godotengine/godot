@@ -112,6 +112,7 @@ AudioEffectDistortion::Mode AudioEffectDistortion::get_mode() const {
 void AudioEffectDistortion::set_pre_gain(float p_pre_gain) {
 	pre_gain = p_pre_gain;
 }
+
 float AudioEffectDistortion::get_pre_gain() const {
 	return pre_gain;
 }
@@ -119,6 +120,7 @@ float AudioEffectDistortion::get_pre_gain() const {
 void AudioEffectDistortion::set_keep_hf_hz(float p_keep_hf_hz) {
 	keep_hf_hz = p_keep_hf_hz;
 }
+
 float AudioEffectDistortion::get_keep_hf_hz() const {
 	return keep_hf_hz;
 }
@@ -126,6 +128,7 @@ float AudioEffectDistortion::get_keep_hf_hz() const {
 void AudioEffectDistortion::set_drive(float p_drive) {
 	drive = p_drive;
 }
+
 float AudioEffectDistortion::get_drive() const {
 	return drive;
 }
@@ -133,6 +136,7 @@ float AudioEffectDistortion::get_drive() const {
 void AudioEffectDistortion::set_post_gain(float p_post_gain) {
 	post_gain = p_post_gain;
 }
+
 float AudioEffectDistortion::get_post_gain() const {
 	return post_gain;
 }

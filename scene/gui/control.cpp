@@ -326,6 +326,7 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return true;
 }
+
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 	Ref<Theme> theme = Theme::get_default();
 	/* Using the default theme since the properties below are meant for editor only
@@ -593,6 +594,7 @@ bool Control::clips_input() const {
 	}
 	return false;
 }
+
 bool Control::has_point(const Point2 &p_point) const {
 	if (get_script_instance()) {
 		Variant v = p_point;
@@ -658,6 +660,7 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 
 	return Variant();
 }
+
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
@@ -1017,6 +1020,7 @@ bool Control::has_theme_shader(const StringName &p_name, const StringName &p_typ
 
 	return has_shaders(data.theme_owner, data.theme_owner_window, p_name, type);
 }
+
 bool Control::has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_shader, p_name, p_type)) {
 		return true;
@@ -1064,6 +1068,7 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_type)
 
 	return has_fonts(data.theme_owner, data.theme_owner_window, p_name, type);
 }
+
 bool Control::has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_font, p_name, p_type)) {
 		return true;
@@ -1087,6 +1092,7 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_type
 
 	return has_colors(data.theme_owner, data.theme_owner_window, p_name, type);
 }
+
 bool Control::has_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_color, p_name, p_type)) {
 		return true;
@@ -1540,6 +1546,7 @@ float Control::get_margin(Margin p_margin) const {
 Size2 Control::get_begin() const {
 	return Size2(data.margin[0], data.margin[1]);
 }
+
 Size2 Control::get_end() const {
 	return Size2(data.margin[2], data.margin[3]);
 }
@@ -1706,6 +1713,7 @@ void Control::add_theme_shader_override(const StringName &p_name, const Ref<Shad
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
+
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 	if (data.style_override.has(p_name)) {
 		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
@@ -1739,10 +1747,12 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 	}
 	notification(NOTIFICATION_THEME_CHANGED);
 }
+
 void Control::add_theme_color_override(const StringName &p_name, const Color &p_color) {
 	data.color_override[p_name] = p_color;
 	notification(NOTIFICATION_THEME_CHANGED);
 }
+
 void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
 	data.constant_override[p_name] = p_constant;
 	notification(NOTIFICATION_THEME_CHANGED);
@@ -1926,6 +1936,7 @@ Control *Control::find_prev_valid_focus() const {
 Control::FocusMode Control::get_focus_mode() const {
 	return data.focus_mode;
 }
+
 bool Control::has_focus() const {
 	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
 }
@@ -2051,6 +2062,7 @@ void Control::set_tooltip(const String &p_tooltip) {
 String Control::get_tooltip(const Point2 &p_pos) const {
 	return data.tooltip;
 }
+
 Control *Control::make_custom_tooltip(const String &p_text) const {
 	if (get_script_instance()) {
 		return const_cast<Control *>(this)->call("_make_custom_tooltip", p_text);
@@ -2067,6 +2079,7 @@ void Control::set_default_cursor_shape(CursorShape p_shape) {
 Control::CursorShape Control::get_default_cursor_shape() const {
 	return data.default_cursor;
 }
+
 Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
 	return data.default_cursor;
 }
@@ -2247,6 +2260,7 @@ void Control::set_h_size_flags(int p_flags) {
 int Control::get_h_size_flags() const {
 	return data.h_size_flags;
 }
+
 void Control::set_v_size_flags(int p_flags) {
 	if (data.v_size_flags == p_flags)
 		return;
@@ -2387,6 +2401,7 @@ void Control::set_scale(const Vector2 &p_scale) {
 	update();
 	_notify_transform();
 }
+
 Vector2 Control::get_scale() const {
 	return data.scale;
 }
@@ -2495,6 +2510,7 @@ void Control::set_v_grow_direction(GrowDirection p_direction) {
 	data.v_grow = p_direction;
 	_size_changed();
 }
+
 Control::GrowDirection Control::get_v_grow_direction() const {
 	return data.v_grow;
 }
@@ -2772,6 +2788,7 @@ void Control::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }
+
 Control::Control() {
 	data.parent = nullptr;
 

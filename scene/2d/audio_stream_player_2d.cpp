@@ -288,6 +288,7 @@ Ref<AudioStream> AudioStreamPlayer2D::get_stream() const {
 void AudioStreamPlayer2D::set_volume_db(float p_volume) {
 	volume_db = p_volume;
 }
+
 float AudioStreamPlayer2D::get_volume_db() const {
 	return volume_db;
 }
@@ -296,6 +297,7 @@ void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
 	ERR_FAIL_COND(p_pitch_scale <= 0.0);
 	pitch_scale = p_pitch_scale;
 }
+
 float AudioStreamPlayer2D::get_pitch_scale() const {
 	return pitch_scale;
 }
@@ -350,6 +352,7 @@ void AudioStreamPlayer2D::set_bus(const StringName &p_bus) {
 	bus = p_bus;
 	AudioServer::get_singleton()->unlock();
 }
+
 StringName AudioStreamPlayer2D::get_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == bus) {
@@ -362,6 +365,7 @@ StringName AudioStreamPlayer2D::get_bus() const {
 void AudioStreamPlayer2D::set_autoplay(bool p_enable) {
 	autoplay = p_enable;
 }
+
 bool AudioStreamPlayer2D::is_autoplay_enabled() {
 	return autoplay;
 }
@@ -372,6 +376,7 @@ void AudioStreamPlayer2D::_set_playing(bool p_enable) {
 	else
 		stop();
 }
+
 bool AudioStreamPlayer2D::_is_active() const {
 	return active;
 }
@@ -406,6 +411,7 @@ float AudioStreamPlayer2D::get_max_distance() const {
 void AudioStreamPlayer2D::set_attenuation(float p_curve) {
 	attenuation = p_curve;
 }
+
 float AudioStreamPlayer2D::get_attenuation() const {
 	return attenuation;
 }

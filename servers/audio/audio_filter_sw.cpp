@@ -33,9 +33,11 @@
 void AudioFilterSW::set_mode(Mode p_mode) {
 	mode = p_mode;
 }
+
 void AudioFilterSW::set_cutoff(float p_cutoff) {
 	cutoff = p_cutoff;
 }
+
 void AudioFilterSW::set_resonance(float p_resonance) {
 	resonance = p_resonance;
 }

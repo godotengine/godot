@@ -2115,9 +2115,11 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 String GDScriptCompiler::get_error() const {
 	return error;
 }
+
 int GDScriptCompiler::get_error_line() const {
 	return err_line;
 }
+
 int GDScriptCompiler::get_error_column() const {
 	return err_column;
 }

@@ -123,6 +123,7 @@ uint8_t FileAccessJAndroid::get_8() const {
 	get_buffer(&byte, 1);
 	return byte;
 }
+
 int FileAccessJAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	if (p_length == 0)

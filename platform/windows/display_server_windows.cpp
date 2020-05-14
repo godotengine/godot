@@ -110,6 +110,7 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		cursor_set_shape(c);
 	}
 }
+
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
 	_THREAD_SAFE_METHOD_
 
@@ -120,6 +121,7 @@ void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
 
 	mouse_mode = p_mode;
 }
+
 DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 	return mouse_mode;
 }
@@ -143,12 +145,14 @@ void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
 		SetCursorPos(p.x, p.y);
 	}
 }
+
 Point2i DisplayServerWindows::mouse_get_position() const {
 	POINT p;
 	GetCursorPos(&p);
 	return Point2i(p.x, p.y);
 	//return Point2(old_x, old_y);
 }
+
 int DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
 }
@@ -192,6 +196,7 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 
 	CloseClipboard();
 }
+
 String DisplayServerWindows::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
@@ -276,6 +281,7 @@ static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 	data->count++;
 	return TRUE;
 }
+
 Point2i DisplayServerWindows::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -416,6 +422,7 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
 }
+
 bool DisplayServerWindows::screen_is_touchscreen(int p_screen) const {
 #ifndef _MSC_VER
 #warning touchscreen not working
@@ -425,12 +432,14 @@ bool DisplayServerWindows::screen_is_touchscreen(int p_screen) const {
 
 void DisplayServerWindows::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
 }
+
 DisplayServer::ScreenOrientation DisplayServerWindows::screen_get_orientation(int p_screen) const {
 	return SCREEN_LANDSCAPE;
 }
 
 void DisplayServerWindows::screen_set_keep_on(bool p_enable) {
 }
+
 bool DisplayServerWindows::screen_is_kept_on() const {
 	return false;
 }
@@ -489,6 +498,7 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 
 	return window_id;
 }
+
 void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -546,12 +556,14 @@ void DisplayServerWindows::window_set_window_event_callback(const Callable &p_ca
 	ERR_FAIL_COND(!windows.has(p_window));
 	windows[p_window].event_callback = p_callable;
 }
+
 void DisplayServerWindows::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	windows[p_window].input_event_callback = p_callable;
 }
+
 void DisplayServerWindows::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -582,6 +594,7 @@ int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcScreen, (LPARAM)&data);
 	return data.screen;
 }
+
 void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -617,6 +630,7 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 	return Point2(r.left, r.top);
 #endif
 }
+
 void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
 	POINT mouse_pos;
 	if (GetCursorPos(&mouse_pos) && ScreenToClient(windows[p_window].hWnd, &mouse_pos)) {
@@ -628,6 +642,7 @@ void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
 		}
 	}
 }
+
 void DisplayServerWindows::window_set_position(const Point2i &p_position, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -716,6 +731,7 @@ void DisplayServerWindows::window_set_max_size(const Size2i p_size, WindowID p_w
 	}
 	wd.max_size = p_size;
 }
+
 Size2i DisplayServerWindows::window_get_max_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -736,6 +752,7 @@ void DisplayServerWindows::window_set_min_size(const Size2i p_size, WindowID p_w
 	}
 	wd.min_size = p_size;
 }
+
 Size2i DisplayServerWindows::window_get_min_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -788,6 +805,7 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 		ClipCursor(&crect);
 	}
 }
+
 Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -804,6 +822,7 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	}
 	return Size2();
 }
+
 Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -938,6 +957,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 	}
 }
+
 DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1038,6 +1058,7 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	info.uCount = 2;
 	FlashWindowEx(&info);
 }
+
 void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -1081,6 +1102,7 @@ void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p
 		ImmAssociateContext(wd.hWnd, (HIMC)0);
 	}
 }
+
 void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -1109,6 +1131,7 @@ void DisplayServerWindows::console_set_visible(bool p_enabled) {
 	ShowWindow(GetConsoleWindow(), p_enabled ? SW_SHOW : SW_HIDE);
 	console_visible = p_enabled;
 }
+
 bool DisplayServerWindows::is_console_visible() const {
 	return console_visible;
 }
@@ -1154,6 +1177,7 @@ void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
 
 	cursor_shape = p_shape;
 }
+
 DisplayServer::CursorShape DisplayServerWindows::cursor_get_shape() const {
 	return cursor_shape;
 }
@@ -1444,8 +1468,10 @@ void DisplayServerWindows::force_process_and_drop_events() {
 
 void DisplayServerWindows::release_rendering_thread() {
 }
+
 void DisplayServerWindows::make_rendering_thread() {
 }
+
 void DisplayServerWindows::swap_buffers() {
 }
 
@@ -1542,6 +1568,7 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	memdelete(f);
 	memdelete(icon_dir);
 }
+
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	_THREAD_SAFE_METHOD_
 
@@ -1595,6 +1622,7 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 
 void DisplayServerWindows::vsync_set_use_via_compositor(bool p_enable) {
 }
+
 bool DisplayServerWindows::vsync_is_using_via_compositor() const {
 	return false;
 }

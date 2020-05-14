@@ -1107,9 +1107,11 @@ void Space2DSW::_broadphase_unpair(CollisionObject2DSW *A, int p_subindex_A, Col
 const SelfList<Body2DSW>::List &Space2DSW::get_active_body_list() const {
 	return active_list;
 }
+
 void Space2DSW::body_add_to_active_list(SelfList<Body2DSW> *p_body) {
 	active_list.add(p_body);
 }
+
 void Space2DSW::body_remove_from_active_list(SelfList<Body2DSW> *p_body) {
 	active_list.remove(p_body);
 }
@@ -1143,6 +1145,7 @@ const Set<CollisionObject2DSW *> &Space2DSW::get_objects() const {
 void Space2DSW::body_add_to_state_query_list(SelfList<Body2DSW> *p_body) {
 	state_query_list.add(p_body);
 }
+
 void Space2DSW::body_remove_from_state_query_list(SelfList<Body2DSW> *p_body) {
 	state_query_list.remove(p_body);
 }
@@ -1150,6 +1153,7 @@ void Space2DSW::body_remove_from_state_query_list(SelfList<Body2DSW> *p_body) {
 void Space2DSW::area_add_to_monitor_query_list(SelfList<Area2DSW> *p_area) {
 	monitor_query_list.add(p_area);
 }
+
 void Space2DSW::area_remove_from_monitor_query_list(SelfList<Area2DSW> *p_area) {
 	monitor_query_list.remove(p_area);
 }

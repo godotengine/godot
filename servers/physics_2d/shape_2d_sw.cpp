@@ -882,6 +882,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant &p_data) {
 
 	configure(aabb);
 }
+
 Variant ConcavePolygonShape2DSW::get_data() const {
 	Vector<Vector2> rsegments;
 	int len = segments.size();

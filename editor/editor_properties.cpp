@@ -82,6 +82,7 @@ void EditorPropertyText::update_property() {
 void EditorPropertyText::set_string_name(bool p_enabled) {
 	string_name = p_enabled;
 }
+
 void EditorPropertyText::set_placeholder(const String &p_string) {
 	text->set_placeholder(p_string);
 }
@@ -209,12 +210,14 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	add_focusable(options);
 	options->connect("item_selected", callable_mp(this, &EditorPropertyTextEnum::_option_selected));
 }
+
 ///////////////////// PATH /////////////////////////
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
 	emit_changed(get_edited_property(), p_path);
 	update_property();
 }
+
 void EditorPropertyPath::_path_pressed() {
 	if (!dialog) {
 		dialog = memnew(EditorFileDialog);
@@ -1158,6 +1161,7 @@ void EditorPropertyRect2::update_property() {
 	spin[3]->set_value(val.size.y);
 	setting = false;
 }
+
 void EditorPropertyRect2::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1168,6 +1172,7 @@ void EditorPropertyRect2::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyRect2::_bind_methods() {
 }
 
@@ -1239,6 +1244,7 @@ void EditorPropertyVector3::update_property() {
 	spin[2]->set_value(val.z);
 	setting = false;
 }
+
 void EditorPropertyVector3::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1249,6 +1255,7 @@ void EditorPropertyVector3::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyVector3::_bind_methods() {
 }
 
@@ -1403,6 +1410,7 @@ void EditorPropertyRect2i::update_property() {
 	spin[3]->set_value(val.size.y);
 	setting = false;
 }
+
 void EditorPropertyRect2i::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1413,6 +1421,7 @@ void EditorPropertyRect2i::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyRect2i::_bind_methods() {
 }
 
@@ -1484,6 +1493,7 @@ void EditorPropertyVector3i::update_property() {
 	spin[2]->set_value(val.z);
 	setting = false;
 }
+
 void EditorPropertyVector3i::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1494,6 +1504,7 @@ void EditorPropertyVector3i::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyVector3i::_bind_methods() {
 }
 
@@ -1566,6 +1577,7 @@ void EditorPropertyPlane::update_property() {
 	spin[3]->set_value(val.d);
 	setting = false;
 }
+
 void EditorPropertyPlane::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1576,6 +1588,7 @@ void EditorPropertyPlane::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyPlane::_bind_methods() {
 }
 
@@ -1649,6 +1662,7 @@ void EditorPropertyQuat::update_property() {
 	spin[3]->set_value(val.w);
 	setting = false;
 }
+
 void EditorPropertyQuat::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1659,6 +1673,7 @@ void EditorPropertyQuat::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyQuat::_bind_methods() {
 }
 
@@ -1735,6 +1750,7 @@ void EditorPropertyAABB::update_property() {
 
 	setting = false;
 }
+
 void EditorPropertyAABB::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1745,6 +1761,7 @@ void EditorPropertyAABB::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyAABB::_bind_methods() {
 }
 
@@ -1808,6 +1825,7 @@ void EditorPropertyTransform2D::update_property() {
 
 	setting = false;
 }
+
 void EditorPropertyTransform2D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1818,6 +1836,7 @@ void EditorPropertyTransform2D::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyTransform2D::_bind_methods() {
 }
 
@@ -1886,6 +1905,7 @@ void EditorPropertyBasis::update_property() {
 
 	setting = false;
 }
+
 void EditorPropertyBasis::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1896,6 +1916,7 @@ void EditorPropertyBasis::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyBasis::_bind_methods() {
 }
 
@@ -1970,6 +1991,7 @@ void EditorPropertyTransform::update_property() {
 
 	setting = false;
 }
+
 void EditorPropertyTransform::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		Color base = get_theme_color("accent_color", "Editor");
@@ -1980,6 +2002,7 @@ void EditorPropertyTransform::_notification(int p_what) {
 		}
 	}
 }
+
 void EditorPropertyTransform::_bind_methods() {
 }
 
@@ -2913,6 +2936,7 @@ bool EditorPropertyResource::_is_drop_valid(const Dictionary &p_drag_data) const
 bool EditorPropertyResource::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
 	return _is_drop_valid(p_data);
 }
+
 void EditorPropertyResource::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	ERR_FAIL_COND(!_is_drop_valid(p_data));
 

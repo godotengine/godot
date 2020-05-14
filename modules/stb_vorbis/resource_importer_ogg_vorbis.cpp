@@ -41,6 +41,7 @@ String ResourceImporterOGGVorbis::get_importer_name() const {
 String ResourceImporterOGGVorbis::get_visible_name() const {
 	return "OGGVorbis";
 }
+
 void ResourceImporterOGGVorbis::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("ogg");
 }
@@ -60,6 +61,7 @@ bool ResourceImporterOGGVorbis::get_option_visibility(const String &p_option, co
 int ResourceImporterOGGVorbis::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterOGGVorbis::get_preset_name(int p_idx) const {
 	return String();
 }

@@ -129,6 +129,7 @@ bool VisualScriptExpression::_get(const StringName &p_name, Variant &r_ret) cons
 
 	return false;
 }
+
 void VisualScriptExpression::_get_property_list(List<PropertyInfo> *p_list) const {
 	String argt = "Any";
 	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
@@ -149,6 +150,7 @@ void VisualScriptExpression::_get_property_list(List<PropertyInfo> *p_list) cons
 int VisualScriptExpression::get_output_sequence_port_count() const {
 	return sequenced ? 1 : 0;
 }
+
 bool VisualScriptExpression::has_input_sequence_port() const {
 	return sequenced;
 }
@@ -160,6 +162,7 @@ String VisualScriptExpression::get_output_sequence_port_text(int p_port) const {
 int VisualScriptExpression::get_input_value_port_count() const {
 	return inputs.size();
 }
+
 int VisualScriptExpression::get_output_value_port_count() const {
 	return 1;
 }
@@ -167,6 +170,7 @@ int VisualScriptExpression::get_output_value_port_count() const {
 PropertyInfo VisualScriptExpression::get_input_value_port_info(int p_idx) const {
 	return PropertyInfo(inputs[p_idx].type, inputs[p_idx].name);
 }
+
 PropertyInfo VisualScriptExpression::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(output_type, "result");
 }
@@ -174,6 +178,7 @@ PropertyInfo VisualScriptExpression::get_output_value_port_info(int p_idx) const
 String VisualScriptExpression::get_caption() const {
 	return "Expression";
 }
+
 String VisualScriptExpression::get_text() const {
 	return expression;
 }

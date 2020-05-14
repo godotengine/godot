@@ -153,6 +153,7 @@ float AudioEffectDelay::get_dry() {
 void AudioEffectDelay::set_tap1_active(bool p_active) {
 	tap_1_active = p_active;
 }
+
 bool AudioEffectDelay::is_tap1_active() const {
 	return tap_1_active;
 }
@@ -160,6 +161,7 @@ bool AudioEffectDelay::is_tap1_active() const {
 void AudioEffectDelay::set_tap1_delay_ms(float p_delay_ms) {
 	tap_1_delay_ms = p_delay_ms;
 }
+
 float AudioEffectDelay::get_tap1_delay_ms() const {
 	return tap_1_delay_ms;
 }
@@ -167,6 +169,7 @@ float AudioEffectDelay::get_tap1_delay_ms() const {
 void AudioEffectDelay::set_tap1_level_db(float p_level_db) {
 	tap_1_level = p_level_db;
 }
+
 float AudioEffectDelay::get_tap1_level_db() const {
 	return tap_1_level;
 }
@@ -174,6 +177,7 @@ float AudioEffectDelay::get_tap1_level_db() const {
 void AudioEffectDelay::set_tap1_pan(float p_pan) {
 	tap_1_pan = p_pan;
 }
+
 float AudioEffectDelay::get_tap1_pan() const {
 	return tap_1_pan;
 }
@@ -181,6 +185,7 @@ float AudioEffectDelay::get_tap1_pan() const {
 void AudioEffectDelay::set_tap2_active(bool p_active) {
 	tap_2_active = p_active;
 }
+
 bool AudioEffectDelay::is_tap2_active() const {
 	return tap_2_active;
 }
@@ -188,6 +193,7 @@ bool AudioEffectDelay::is_tap2_active() const {
 void AudioEffectDelay::set_tap2_delay_ms(float p_delay_ms) {
 	tap_2_delay_ms = p_delay_ms;
 }
+
 float AudioEffectDelay::get_tap2_delay_ms() const {
 	return tap_2_delay_ms;
 }
@@ -195,6 +201,7 @@ float AudioEffectDelay::get_tap2_delay_ms() const {
 void AudioEffectDelay::set_tap2_level_db(float p_level_db) {
 	tap_2_level = p_level_db;
 }
+
 float AudioEffectDelay::get_tap2_level_db() const {
 	return tap_2_level;
 }
@@ -202,6 +209,7 @@ float AudioEffectDelay::get_tap2_level_db() const {
 void AudioEffectDelay::set_tap2_pan(float p_pan) {
 	tap_2_pan = p_pan;
 }
+
 float AudioEffectDelay::get_tap2_pan() const {
 	return tap_2_pan;
 }
@@ -209,6 +217,7 @@ float AudioEffectDelay::get_tap2_pan() const {
 void AudioEffectDelay::set_feedback_active(bool p_active) {
 	feedback_active = p_active;
 }
+
 bool AudioEffectDelay::is_feedback_active() const {
 	return feedback_active;
 }
@@ -216,6 +225,7 @@ bool AudioEffectDelay::is_feedback_active() const {
 void AudioEffectDelay::set_feedback_delay_ms(float p_delay_ms) {
 	feedback_delay_ms = p_delay_ms;
 }
+
 float AudioEffectDelay::get_feedback_delay_ms() const {
 	return feedback_delay_ms;
 }
@@ -223,6 +233,7 @@ float AudioEffectDelay::get_feedback_delay_ms() const {
 void AudioEffectDelay::set_feedback_level_db(float p_level_db) {
 	feedback_level = p_level_db;
 }
+
 float AudioEffectDelay::get_feedback_level_db() const {
 	return feedback_level;
 }
@@ -230,6 +241,7 @@ float AudioEffectDelay::get_feedback_level_db() const {
 void AudioEffectDelay::set_feedback_lowpass(float p_lowpass) {
 	feedback_lowpass = p_lowpass;
 }
+
 float AudioEffectDelay::get_feedback_lowpass() const {
 	return feedback_lowpass;
 }

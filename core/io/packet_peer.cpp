@@ -117,6 +117,7 @@ Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
 Error PacketPeer::_put_packet(const Vector<uint8_t> &p_buffer) {
 	return put_packet_buffer(p_buffer);
 }
+
 Vector<uint8_t> PacketPeer::_get_packet() {
 	Vector<uint8_t> raw;
 	last_get_error = get_packet_buffer(raw);

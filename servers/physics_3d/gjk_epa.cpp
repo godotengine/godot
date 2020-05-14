@@ -847,6 +847,7 @@ bool Distance(	const Shape3DSW*	shape0,
 	}
 }
 
+
 //
 bool Penetration(	const Shape3DSW*	shape0,
 									 const Transform&		wtrs0,
@@ -889,6 +890,7 @@ bool Penetration(	const Shape3DSW*	shape0,
 	}
 	return(false);
 }
+
 
 
 /* Symbols cleanup		*/

@@ -224,12 +224,15 @@ void FileAccessPack::seek(size_t p_position) {
 	f->seek(pf.offset + p_position);
 	pos = p_position;
 }
+
 void FileAccessPack::seek_end(int64_t p_position) {
 	seek(pf.size + p_position);
 }
+
 size_t FileAccessPack::get_position() const {
 	return pos;
 }
+
 size_t FileAccessPack::get_len() const {
 	return pf.size;
 }
@@ -343,12 +346,15 @@ String DirAccessPack::get_next() {
 		return String();
 	}
 }
+
 bool DirAccessPack::current_is_dir() const {
 	return cdir;
 }
+
 bool DirAccessPack::current_is_hidden() const {
 	return false;
 }
+
 void DirAccessPack::list_dir_end() {
 	list_dirs.clear();
 	list_files.clear();
@@ -357,6 +363,7 @@ void DirAccessPack::list_dir_end() {
 int DirAccessPack::get_drive_count() {
 	return 0;
 }
+
 String DirAccessPack::get_drive(int p_drive) {
 	return "";
 }
@@ -440,6 +447,7 @@ Error DirAccessPack::make_dir(String p_dir) {
 Error DirAccessPack::rename(String p_from, String p_to) {
 	return ERR_UNAVAILABLE;
 }
+
 Error DirAccessPack::remove(String p_name) {
 	return ERR_UNAVAILABLE;
 }

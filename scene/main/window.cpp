@@ -46,6 +46,7 @@ void Window::set_title(const String &p_title) {
 		DisplayServer::get_singleton()->window_set_title(p_title, window_id);
 	}
 }
+
 String Window::get_title() const {
 	return title;
 }
@@ -56,6 +57,7 @@ void Window::set_current_screen(int p_screen) {
 		return;
 	DisplayServer::get_singleton()->window_set_current_screen(p_screen, window_id);
 }
+
 int Window::get_current_screen() const {
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		current_screen = DisplayServer::get_singleton()->window_get_current_screen(window_id);
@@ -73,6 +75,7 @@ void Window::set_position(const Point2i &p_position) {
 		DisplayServer::get_singleton()->window_set_position(p_position, window_id);
 	}
 }
+
 Point2i Window::get_position() const {
 	return position;
 }
@@ -81,6 +84,7 @@ void Window::set_size(const Size2i &p_size) {
 	size = p_size;
 	_update_window_size();
 }
+
 Size2i Window::get_size() const {
 	return size;
 }
@@ -172,6 +176,7 @@ void Window::request_attention() {
 		DisplayServer::get_singleton()->window_request_attention(window_id);
 	}
 }
+
 void Window::move_to_foreground() {
 	if (embedder) {
 		embedder->_sub_window_grab_focus(this);
@@ -197,6 +202,7 @@ void Window::set_ime_active(bool p_active) {
 		DisplayServer::get_singleton()->window_set_ime_active(p_active, window_id);
 	}
 }
+
 void Window::set_ime_position(const Point2i &p_pos) {
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_ime_position(p_pos, window_id);
@@ -241,6 +247,7 @@ void Window::_make_window() {
 
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
 }
+
 void Window::_update_from_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 	mode = (Mode)DisplayServer::get_singleton()->window_get_mode(window_id);
@@ -338,6 +345,7 @@ void Window::_event_callback(DisplayServer::WindowEvent p_event) {
 void Window::show() {
 	set_visible(true);
 }
+
 void Window::hide() {
 	set_visible(false);
 }
@@ -459,6 +467,7 @@ void Window::set_transient(bool p_transient) {
 		_clear_transient();
 	}
 }
+
 bool Window::is_transient() const {
 	return transient;
 }
@@ -519,6 +528,7 @@ void Window::_update_window_size() {
 	//update the viewport
 	_update_viewport_size();
 }
+
 void Window::_update_viewport_size() {
 	//update the viewport part
 
@@ -774,6 +784,7 @@ void Window::set_content_scale_mode(ContentScaleMode p_mode) {
 	content_scale_mode = p_mode;
 	_update_viewport_size();
 }
+
 Window::ContentScaleMode Window::get_content_scale_mode() const {
 	return content_scale_mode;
 }
@@ -782,6 +793,7 @@ void Window::set_content_scale_aspect(ContentScaleAspect p_aspect) {
 	content_scale_aspect = p_aspect;
 	_update_viewport_size();
 }
+
 Window::ContentScaleAspect Window::get_content_scale_aspect() const {
 	return content_scale_aspect;
 }
@@ -793,6 +805,7 @@ void Window::set_use_font_oversampling(bool p_oversampling) {
 	use_font_oversampling = p_oversampling;
 	_update_viewport_size();
 }
+
 bool Window::is_using_font_oversampling() const {
 	return use_font_oversampling;
 }
@@ -828,6 +841,7 @@ Size2 Window::_get_contents_minimum_size() const {
 
 	return max;
 }
+
 void Window::_update_child_controls() {
 	if (!updating_child_controls) {
 		return;
@@ -837,6 +851,7 @@ void Window::_update_child_controls() {
 
 	updating_child_controls = false;
 }
+
 void Window::child_controls_changed() {
 	if (!is_inside_tree() || !visible || updating_child_controls) {
 		return;
@@ -870,9 +885,11 @@ void Window::_window_input(const Ref<InputEvent> &p_ev) {
 		unhandled_input(p_ev);
 	}
 }
+
 void Window::_window_input_text(const String &p_text) {
 	input_text(p_text);
 }
+
 void Window::_window_drop_files(const Vector<String> &p_files) {
 	emit_signal("files_dropped", p_files, current_screen);
 }
@@ -1102,6 +1119,7 @@ void Window::set_theme(const Ref<Theme> &p_theme) {
 		}
 	}
 }
+
 Ref<Theme> Window::get_theme() const {
 	return theme;
 }
@@ -1110,22 +1128,27 @@ Ref<Texture2D> Window::get_theme_icon(const StringName &p_name, const StringName
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_icons(theme_owner, theme_owner_window, p_name, type);
 }
+
 Ref<Shader> Window::get_theme_shader(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_shaders(theme_owner, theme_owner_window, p_name, type);
 }
+
 Ref<StyleBox> Window::get_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_styleboxs(theme_owner, theme_owner_window, p_name, type);
 }
+
 Ref<Font> Window::get_theme_font(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_fonts(theme_owner, theme_owner_window, p_name, type);
 }
+
 Color Window::get_theme_color(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_colors(theme_owner, theme_owner_window, p_name, type);
 }
+
 int Window::get_theme_constant(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::get_constants(theme_owner, theme_owner_window, p_name, type);
@@ -1135,22 +1158,27 @@ bool Window::has_theme_icon(const StringName &p_name, const StringName &p_type) 
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_icons(theme_owner, theme_owner_window, p_name, type);
 }
+
 bool Window::has_theme_shader(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_shaders(theme_owner, theme_owner_window, p_name, type);
 }
+
 bool Window::has_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_styleboxs(theme_owner, theme_owner_window, p_name, type);
 }
+
 bool Window::has_theme_font(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_fonts(theme_owner, theme_owner_window, p_name, type);
 }
+
 bool Window::has_theme_color(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_colors(theme_owner, theme_owner_window, p_name, type);
 }
+
 bool Window::has_theme_constant(const StringName &p_name, const StringName &p_type) const {
 	StringName type = p_type ? p_type : get_class_name();
 	return Control::has_constants(theme_owner, theme_owner_window, p_name, type);
@@ -1354,5 +1382,6 @@ Window::Window() {
 	content_scale_aspect = CONTENT_SCALE_ASPECT_IGNORE;
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 }
+
 Window::~Window() {
 }

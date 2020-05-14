@@ -169,4 +169,5 @@ MainLoop *test() {
 
 	return nullptr;
 }
+
 } // namespace TestOrderedHashMap

@@ -238,6 +238,7 @@ void preregister_glslang_types() {
 
 void register_glslang_types() {
 }
+
 void unregister_glslang_types() {
 	glslang::FinalizeProcess();
 }

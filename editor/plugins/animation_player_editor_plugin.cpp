@@ -237,6 +237,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	//unstop
 	stop->set_pressed(false);
 }
+
 void AnimationPlayerEditor::_stop_pressed() {
 	if (!player) {
 		return;
@@ -305,6 +306,7 @@ void AnimationPlayerEditor::_animation_new() {
 	name->select_all();
 	name->grab_focus();
 }
+
 void AnimationPlayerEditor::_animation_rename() {
 	if (animation->get_item_count() == 0)
 		return;
@@ -318,6 +320,7 @@ void AnimationPlayerEditor::_animation_rename() {
 	name->select_all();
 	name->grab_focus();
 }
+
 void AnimationPlayerEditor::_animation_load() {
 	ERR_FAIL_COND(!player);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -626,6 +629,7 @@ Dictionary AnimationPlayerEditor::get_state() const {
 
 	return d;
 }
+
 void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 	if (!p_state.has("visible") || !p_state["visible"]) {
 		return;

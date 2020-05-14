@@ -206,6 +206,7 @@ void CollisionObject2D::shape_owner_set_transform(uint32_t p_owner, const Transf
 		}
 	}
 }
+
 Transform2D CollisionObject2D::shape_owner_get_transform(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), Transform2D());
 
@@ -235,17 +236,20 @@ void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2
 
 	total_subshapes++;
 }
+
 int CollisionObject2D::shape_owner_get_shape_count(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), 0);
 
 	return shapes[p_owner].shapes.size();
 }
+
 Ref<Shape2D> CollisionObject2D::shape_owner_get_shape(uint32_t p_owner, int p_shape) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), Ref<Shape2D>());
 	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), Ref<Shape2D>());
 
 	return shapes[p_owner].shapes[p_shape].shape;
 }
+
 int CollisionObject2D::shape_owner_get_shape_index(uint32_t p_owner, int p_shape) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), -1);
 	ERR_FAIL_INDEX_V(p_shape, shapes[p_owner].shapes.size(), -1);

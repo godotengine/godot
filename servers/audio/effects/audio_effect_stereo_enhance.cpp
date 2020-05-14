@@ -113,6 +113,7 @@ float AudioEffectStereoEnhance::get_pan_pullout() const {
 void AudioEffectStereoEnhance::set_time_pullout(float p_amount) {
 	time_pullout = p_amount;
 }
+
 float AudioEffectStereoEnhance::get_time_pullout() const {
 	return time_pullout;
 }
@@ -120,6 +121,7 @@ float AudioEffectStereoEnhance::get_time_pullout() const {
 void AudioEffectStereoEnhance::set_surround(float p_amount) {
 	surround = p_amount;
 }
+
 float AudioEffectStereoEnhance::get_surround() const {
 	return surround;
 }

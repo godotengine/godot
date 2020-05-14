@@ -44,9 +44,11 @@ String ResourceImporterBitMap::get_importer_name() const {
 String ResourceImporterBitMap::get_visible_name() const {
 	return "BitMap";
 }
+
 void ResourceImporterBitMap::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
+
 String ResourceImporterBitMap::get_save_extension() const {
 	return "res";
 }
@@ -62,6 +64,7 @@ bool ResourceImporterBitMap::get_option_visibility(const String &p_option, const
 int ResourceImporterBitMap::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterBitMap::get_preset_name(int p_idx) const {
 	return String();
 }

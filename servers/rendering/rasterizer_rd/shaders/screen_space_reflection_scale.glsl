@@ -26,6 +26,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool filtered;
 	uint pad[2];
 }
+
 params;
 
 void main() {

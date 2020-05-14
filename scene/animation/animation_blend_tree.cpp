@@ -46,6 +46,7 @@ Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullpt
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", 0));
 }
+
 void AnimationNodeAnimation::_validate_property(PropertyInfo &property) const {
 	if (property.name == "animation" && get_editable_animation_list) {
 		Vector<String> names = get_editable_animation_list();
@@ -160,6 +161,7 @@ void AnimationNodeOneShot::set_fadeout_time(float p_time) {
 float AnimationNodeOneShot::get_fadein_time() const {
 	return fade_in;
 }
+
 float AnimationNodeOneShot::get_fadeout_time() const {
 	return fade_out;
 }
@@ -167,9 +169,11 @@ float AnimationNodeOneShot::get_fadeout_time() const {
 void AnimationNodeOneShot::set_autorestart(bool p_active) {
 	autorestart = p_active;
 }
+
 void AnimationNodeOneShot::set_autorestart_delay(float p_time) {
 	autorestart_delay = p_time;
 }
+
 void AnimationNodeOneShot::set_autorestart_random_delay(float p_time) {
 	autorestart_random_delay = p_time;
 }
@@ -177,9 +181,11 @@ void AnimationNodeOneShot::set_autorestart_random_delay(float p_time) {
 bool AnimationNodeOneShot::has_autorestart() const {
 	return autorestart;
 }
+
 float AnimationNodeOneShot::get_autorestart_delay() const {
 	return autorestart_delay;
 }
+
 float AnimationNodeOneShot::get_autorestart_random_delay() const {
 	return autorestart_random_delay;
 }
@@ -187,6 +193,7 @@ float AnimationNodeOneShot::get_autorestart_random_delay() const {
 void AnimationNodeOneShot::set_mix_mode(MixMode p_mix) {
 	mix = p_mix;
 }
+
 AnimationNodeOneShot::MixMode AnimationNodeOneShot::get_mix_mode() const {
 	return mix;
 }
@@ -285,6 +292,7 @@ float AnimationNodeOneShot::process(float p_time, bool p_seek) {
 
 	return MAX(main_rem, remaining);
 }
+
 void AnimationNodeOneShot::set_use_sync(bool p_sync) {
 	sync = p_sync;
 }
@@ -356,6 +364,7 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
 }
+
 Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_parameter) const {
 	return 0;
 }
@@ -363,6 +372,7 @@ Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_param
 String AnimationNodeAdd2::get_caption() const {
 	return "Add2";
 }
+
 void AnimationNodeAdd2::set_use_sync(bool p_sync) {
 	sync = p_sync;
 }
@@ -402,6 +412,7 @@ AnimationNodeAdd2::AnimationNodeAdd2() {
 void AnimationNodeAdd3::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
 }
+
 Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_parameter) const {
 	return 0;
 }
@@ -409,6 +420,7 @@ Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_param
 String AnimationNodeAdd3::get_caption() const {
 	return "Add3";
 }
+
 void AnimationNodeAdd3::set_use_sync(bool p_sync) {
 	sync = p_sync;
 }
@@ -444,11 +456,13 @@ AnimationNodeAdd3::AnimationNodeAdd3() {
 	add_input("+add");
 	sync = false;
 }
+
 /////////////////////////////////////////////
 
 void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
 }
+
 Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_parameter) const {
 	return 0; //for blend amount
 }
@@ -477,12 +491,14 @@ bool AnimationNodeBlend2::is_using_sync() const {
 bool AnimationNodeBlend2::has_filter() const {
 	return true;
 }
+
 void AnimationNodeBlend2::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeBlend2::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeBlend2::is_using_sync);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
 }
+
 AnimationNodeBlend2::AnimationNodeBlend2() {
 	blend_amount = "blend_amount";
 	add_input("in");
@@ -495,6 +511,7 @@ AnimationNodeBlend2::AnimationNodeBlend2() {
 void AnimationNodeBlend3::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
 }
+
 Variant AnimationNodeBlend3::get_parameter_default_value(const StringName &p_parameter) const {
 	return 0; //for blend amount
 }
@@ -526,6 +543,7 @@ void AnimationNodeBlend3::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
 }
+
 AnimationNodeBlend3::AnimationNodeBlend3() {
 	blend_amount = "blend_amount";
 	add_input("-blend");
@@ -539,6 +557,7 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "0,32,0.01,or_greater"));
 }
+
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {
 	return 1.0; //initial timescale
 }
@@ -558,6 +577,7 @@ float AnimationNodeTimeScale::process(float p_time, bool p_seek) {
 
 void AnimationNodeTimeScale::_bind_methods() {
 }
+
 AnimationNodeTimeScale::AnimationNodeTimeScale() {
 	scale = "scale";
 	add_input("in");
@@ -568,6 +588,7 @@ AnimationNodeTimeScale::AnimationNodeTimeScale() {
 void AnimationNodeTimeSeek::get_parameter_list(List<PropertyInfo> *r_list) const {
 	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater"));
 }
+
 Variant AnimationNodeTimeSeek::get_parameter_default_value(const StringName &p_parameter) const {
 	return 1.0; //initial timescale
 }
@@ -615,6 +636,7 @@ void AnimationNodeTransition::get_parameter_list(List<PropertyInfo> *r_list) con
 	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", 0));
 	r_list->push_back(PropertyInfo(Variant::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", 0));
 }
+
 Variant AnimationNodeTransition::get_parameter_default_value(const StringName &p_parameter) const {
 	if (p_parameter == time || p_parameter == prev_xfading) {
 		return 0.0;
@@ -878,10 +900,12 @@ void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
 bool AnimationNodeBlendTree::has_node(const StringName &p_name) const {
 	return nodes.has(p_name);
 }
+
 Vector<StringName> AnimationNodeBlendTree::get_node_connection_array(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!nodes.has(p_name), Vector<StringName>());
 	return nodes[p_name].connections;
 }
+
 void AnimationNodeBlendTree::remove_node(const StringName &p_name) {
 	ERR_FAIL_COND(!nodes.has(p_name));
 	ERR_FAIL_COND(p_name == SceneStringNames::get_singleton()->output); //can't delete output
@@ -1110,6 +1134,7 @@ bool AnimationNodeBlendTree::_get(const StringName &p_name, Variant &r_ret) cons
 
 	return false;
 }
+
 void AnimationNodeBlendTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<StringName> names;
 	for (Map<StringName, Node>::Element *E = nodes.front(); E; E = E->next()) {

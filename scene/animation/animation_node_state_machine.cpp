@@ -150,24 +150,31 @@ void AnimationNodeStateMachinePlayback::start(const StringName &p_state) {
 	start_request = p_state;
 	stop_request = false;
 }
+
 void AnimationNodeStateMachinePlayback::stop() {
 	stop_request = true;
 }
+
 bool AnimationNodeStateMachinePlayback::is_playing() const {
 	return playing;
 }
+
 StringName AnimationNodeStateMachinePlayback::get_current_node() const {
 	return current;
 }
+
 StringName AnimationNodeStateMachinePlayback::get_blend_from_node() const {
 	return fading_from;
 }
+
 Vector<StringName> AnimationNodeStateMachinePlayback::get_travel_path() const {
 	return path;
 }
+
 float AnimationNodeStateMachinePlayback::get_current_play_pos() const {
 	return pos_current;
 }
+
 float AnimationNodeStateMachinePlayback::get_current_length() const {
 	return len_current;
 }
@@ -605,6 +612,7 @@ void AnimationNodeStateMachine::get_child_nodes(List<ChildNode> *r_child_nodes) 
 bool AnimationNodeStateMachine::has_node(const StringName &p_name) const {
 	return states.has(p_name);
 }
+
 void AnimationNodeStateMachine::remove_node(const StringName &p_name) {
 	ERR_FAIL_COND(!states.has(p_name));
 
@@ -728,10 +736,12 @@ Ref<AnimationNodeStateMachineTransition> AnimationNodeStateMachine::get_transiti
 	ERR_FAIL_INDEX_V(p_transition, transitions.size(), Ref<AnimationNodeStateMachineTransition>());
 	return transitions[p_transition].transition;
 }
+
 StringName AnimationNodeStateMachine::get_transition_from(int p_transition) const {
 	ERR_FAIL_INDEX_V(p_transition, transitions.size(), StringName());
 	return transitions[p_transition].from;
 }
+
 StringName AnimationNodeStateMachine::get_transition_to(int p_transition) const {
 	ERR_FAIL_INDEX_V(p_transition, transitions.size(), StringName());
 	return transitions[p_transition].to;
@@ -740,6 +750,7 @@ StringName AnimationNodeStateMachine::get_transition_to(int p_transition) const 
 int AnimationNodeStateMachine::get_transition_count() const {
 	return transitions.size();
 }
+
 void AnimationNodeStateMachine::remove_transition(const StringName &p_from, const StringName &p_to) {
 	for (int i = 0; i < transitions.size(); i++) {
 		if (transitions[i].from == p_from && transitions[i].to == p_to) {
@@ -893,6 +904,7 @@ bool AnimationNodeStateMachine::_get(const StringName &p_name, Variant &r_ret) c
 
 	return false;
 }
+
 void AnimationNodeStateMachine::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<StringName> names;
 	for (Map<StringName, State>::Element *E = states.front(); E; E = E->next()) {

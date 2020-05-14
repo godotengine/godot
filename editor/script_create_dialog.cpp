@@ -67,6 +67,7 @@ void ScriptCreateDialog::_theme_changed() {
 	parent_search_button->set_icon(gc->get_theme_icon("ClassList", "EditorIcons"));
 	status_panel->add_theme_style_override("panel", gc->get_theme_stylebox("bg", "Tree"));
 }
+
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

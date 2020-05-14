@@ -78,6 +78,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 		values[p_section][p_key] = p_value;
 	}
 }
+
 Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 	if (!values.has(p_section) || !values[p_section].has(p_key)) {
 		ERR_FAIL_COND_V_MSG(p_default.get_type() == Variant::NIL, Variant(),
@@ -91,6 +92,7 @@ Variant ConfigFile::get_value(const String &p_section, const String &p_key, Vari
 bool ConfigFile::has_section(const String &p_section) const {
 	return values.has(p_section);
 }
+
 bool ConfigFile::has_section_key(const String &p_section, const String &p_key) const {
 	if (!values.has(p_section))
 		return false;
@@ -102,6 +104,7 @@ void ConfigFile::get_sections(List<String> *r_sections) const {
 		r_sections->push_back(E.key());
 	}
 }
+
 void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
 	ERR_FAIL_COND_MSG(!values.has(p_section), vformat("Cannot get keys from nonexistent section \"%s\".", p_section));
 

@@ -127,6 +127,7 @@ void AcceptDialog::_cancel_pressed() {
 String AcceptDialog::get_text() const {
 	return label->get_text();
 }
+
 void AcceptDialog::set_text(String p_text) {
 	label->set_text(p_text);
 	child_controls_changed();
@@ -138,6 +139,7 @@ void AcceptDialog::set_text(String p_text) {
 void AcceptDialog::set_hide_on_ok(bool p_hide) {
 	hide_on_ok = p_hide;
 }
+
 bool AcceptDialog::get_hide_on_ok() const {
 	return hide_on_ok;
 }
@@ -145,6 +147,7 @@ bool AcceptDialog::get_hide_on_ok() const {
 void AcceptDialog::set_autowrap(bool p_autowrap) {
 	label->set_autowrap(p_autowrap);
 }
+
 bool AcceptDialog::has_autowrap() {
 	return label->has_autowrap();
 }

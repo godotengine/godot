@@ -47,11 +47,13 @@ void BroadPhase2DBasic::move(ID p_id, const Rect2 &p_aabb) {
 	ERR_FAIL_COND(!E);
 	E->get().aabb = p_aabb;
 }
+
 void BroadPhase2DBasic::set_static(ID p_id, bool p_static) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	E->get()._static = p_static;
 }
+
 void BroadPhase2DBasic::remove(ID p_id) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -63,11 +65,13 @@ CollisionObject2DSW *BroadPhase2DBasic::get_object(ID p_id) const {
 	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
+
 bool BroadPhase2DBasic::is_static(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, false);
 	return E->get()._static;
 }
+
 int BroadPhase2DBasic::get_subindex(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, -1);
@@ -90,6 +94,7 @@ int BroadPhase2DBasic::cull_segment(const Vector2 &p_from, const Vector2 &p_to, 
 
 	return rc;
 }
+
 int BroadPhase2DBasic::cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices) {
 	int rc = 0;
 
@@ -111,6 +116,7 @@ void BroadPhase2DBasic::set_pair_callback(PairCallback p_pair_callback, void *p_
 	pair_userdata = p_userdata;
 	pair_callback = p_pair_callback;
 }
+
 void BroadPhase2DBasic::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 	unpair_userdata = p_userdata;
 	unpair_callback = p_unpair_callback;

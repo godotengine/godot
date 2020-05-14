@@ -143,6 +143,7 @@ bool VisualScriptFunction::_get(const StringName &p_name, Variant &r_ret) const 
 
 	return false;
 }
+
 void VisualScriptFunction::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "argument_count", PROPERTY_HINT_RANGE, "0,256"));
 	String argt = "Any";
@@ -175,6 +176,7 @@ bool VisualScriptFunction::has_input_sequence_port() const {
 int VisualScriptFunction::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptFunction::get_output_value_port_count() const {
 	return arguments.size();
 }
@@ -186,6 +188,7 @@ String VisualScriptFunction::get_output_sequence_port_text(int p_port) const {
 PropertyInfo VisualScriptFunction::get_input_value_port_info(int p_idx) const {
 	ERR_FAIL_V(PropertyInfo());
 }
+
 PropertyInfo VisualScriptFunction::get_output_value_port_info(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, arguments.size(), PropertyInfo());
 	PropertyInfo out;
@@ -217,26 +220,31 @@ void VisualScriptFunction::add_argument(Variant::Type p_type, const String &p_na
 
 	ports_changed_notify();
 }
+
 void VisualScriptFunction::set_argument_type(int p_argidx, Variant::Type p_type) {
 	ERR_FAIL_INDEX(p_argidx, arguments.size());
 
 	arguments.write[p_argidx].type = p_type;
 	ports_changed_notify();
 }
+
 Variant::Type VisualScriptFunction::get_argument_type(int p_argidx) const {
 	ERR_FAIL_INDEX_V(p_argidx, arguments.size(), Variant::NIL);
 	return arguments[p_argidx].type;
 }
+
 void VisualScriptFunction::set_argument_name(int p_argidx, const String &p_name) {
 	ERR_FAIL_INDEX(p_argidx, arguments.size());
 
 	arguments.write[p_argidx].name = p_name;
 	ports_changed_notify();
 }
+
 String VisualScriptFunction::get_argument_name(int p_argidx) const {
 	ERR_FAIL_INDEX_V(p_argidx, arguments.size(), String());
 	return arguments[p_argidx].name;
 }
+
 void VisualScriptFunction::remove_argument(int p_argidx) {
 	ERR_FAIL_INDEX(p_argidx, arguments.size());
 
@@ -335,6 +343,7 @@ int VisualScriptLists::get_output_sequence_port_count() const {
 		return 1;
 	return 0;
 }
+
 bool VisualScriptLists::has_input_sequence_port() const {
 	return sequenced;
 }
@@ -346,6 +355,7 @@ String VisualScriptLists::get_output_sequence_port_text(int p_port) const {
 int VisualScriptLists::get_input_value_port_count() const {
 	return inputports.size();
 }
+
 int VisualScriptLists::get_output_value_port_count() const {
 	return outputports.size();
 }
@@ -358,6 +368,7 @@ PropertyInfo VisualScriptLists::get_input_value_port_info(int p_idx) const {
 	pi.type = inputports[p_idx].type;
 	return pi;
 }
+
 PropertyInfo VisualScriptLists::get_output_value_port_info(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, outputports.size(), PropertyInfo());
 
@@ -370,9 +381,11 @@ PropertyInfo VisualScriptLists::get_output_value_port_info(int p_idx) const {
 bool VisualScriptLists::is_input_port_editable() const {
 	return ((flags & INPUT_EDITABLE) == INPUT_EDITABLE);
 }
+
 bool VisualScriptLists::is_input_port_name_editable() const {
 	return ((flags & INPUT_NAME_EDITABLE) == INPUT_NAME_EDITABLE);
 }
+
 bool VisualScriptLists::is_input_port_type_editable() const {
 	return ((flags & INPUT_TYPE_EDITABLE) == INPUT_TYPE_EDITABLE);
 }
@@ -380,9 +393,11 @@ bool VisualScriptLists::is_input_port_type_editable() const {
 bool VisualScriptLists::is_output_port_editable() const {
 	return ((flags & OUTPUT_EDITABLE) == OUTPUT_EDITABLE);
 }
+
 bool VisualScriptLists::is_output_port_name_editable() const {
 	return ((flags & INPUT_NAME_EDITABLE) == INPUT_NAME_EDITABLE);
 }
+
 bool VisualScriptLists::is_output_port_type_editable() const {
 	return ((flags & INPUT_TYPE_EDITABLE) == INPUT_TYPE_EDITABLE);
 }
@@ -467,6 +482,7 @@ bool VisualScriptLists::_set(const StringName &p_name, const Variant &p_value) {
 
 	return false;
 }
+
 bool VisualScriptLists::_get(const StringName &p_name, Variant &r_ret) const {
 	if (p_name == "input_count" && is_input_port_editable()) {
 		r_ret = inputports.size();
@@ -511,6 +527,7 @@ bool VisualScriptLists::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void VisualScriptLists::_get_property_list(List<PropertyInfo> *p_list) const {
 	if (is_input_port_editable()) {
 		p_list->push_back(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_RANGE, "0,256"));
@@ -556,6 +573,7 @@ void VisualScriptLists::add_input_data_port(Variant::Type p_type, const String &
 	ports_changed_notify();
 	_change_notify();
 }
+
 void VisualScriptLists::set_input_data_port_type(int p_idx, Variant::Type p_type) {
 	if (!is_input_port_type_editable())
 		return;
@@ -566,6 +584,7 @@ void VisualScriptLists::set_input_data_port_type(int p_idx, Variant::Type p_type
 	ports_changed_notify();
 	_change_notify();
 }
+
 void VisualScriptLists::set_input_data_port_name(int p_idx, const String &p_name) {
 	if (!is_input_port_name_editable())
 		return;
@@ -576,6 +595,7 @@ void VisualScriptLists::set_input_data_port_name(int p_idx, const String &p_name
 	ports_changed_notify();
 	_change_notify();
 }
+
 void VisualScriptLists::remove_input_data_port(int p_argidx) {
 	if (!is_input_port_editable())
 		return;
@@ -604,6 +624,7 @@ void VisualScriptLists::add_output_data_port(Variant::Type p_type, const String 
 	ports_changed_notify();
 	_change_notify();
 }
+
 void VisualScriptLists::set_output_data_port_type(int p_idx, Variant::Type p_type) {
 	if (!is_output_port_type_editable())
 		return;
@@ -614,6 +635,7 @@ void VisualScriptLists::set_output_data_port_type(int p_idx, Variant::Type p_typ
 	ports_changed_notify();
 	_change_notify();
 }
+
 void VisualScriptLists::set_output_data_port_name(int p_idx, const String &p_name) {
 	if (!is_output_port_name_editable())
 		return;
@@ -624,6 +646,7 @@ void VisualScriptLists::set_output_data_port_name(int p_idx, const String &p_nam
 	ports_changed_notify();
 	_change_notify();
 }
+
 void VisualScriptLists::remove_output_data_port(int p_argidx) {
 	if (!is_output_port_editable())
 		return;
@@ -643,6 +666,7 @@ void VisualScriptLists::set_sequenced(bool p_enable) {
 	sequenced = p_enable;
 	ports_changed_notify();
 }
+
 bool VisualScriptLists::is_sequenced() const {
 	return sequenced;
 }
@@ -674,6 +698,7 @@ int VisualScriptComposeArray::get_output_sequence_port_count() const {
 		return 1;
 	return 0;
 }
+
 bool VisualScriptComposeArray::has_input_sequence_port() const {
 	return sequenced;
 }
@@ -685,6 +710,7 @@ String VisualScriptComposeArray::get_output_sequence_port_text(int p_port) const
 int VisualScriptComposeArray::get_input_value_port_count() const {
 	return inputports.size();
 }
+
 int VisualScriptComposeArray::get_output_value_port_count() const {
 	return 1;
 }
@@ -697,6 +723,7 @@ PropertyInfo VisualScriptComposeArray::get_input_value_port_info(int p_idx) cons
 	pi.type = inputports[p_idx].type;
 	return pi;
 }
+
 PropertyInfo VisualScriptComposeArray::get_output_value_port_info(int p_idx) const {
 	PropertyInfo pi;
 	pi.name = "out";
@@ -707,6 +734,7 @@ PropertyInfo VisualScriptComposeArray::get_output_value_port_info(int p_idx) con
 String VisualScriptComposeArray::get_caption() const {
 	return "Compose Array";
 }
+
 String VisualScriptComposeArray::get_text() const {
 	return "";
 }
@@ -757,6 +785,7 @@ bool VisualScriptOperator::has_input_sequence_port() const {
 int VisualScriptOperator::get_input_value_port_count() const {
 	return (op == Variant::OP_BIT_NEGATE || op == Variant::OP_NOT || op == Variant::OP_NEGATE || op == Variant::OP_POSITIVE) ? 1 : 2;
 }
+
 int VisualScriptOperator::get_output_value_port_count() const {
 	return 1;
 }
@@ -807,6 +836,7 @@ PropertyInfo VisualScriptOperator::get_input_value_port_info(int p_idx) const {
 		pinfo.type = typed;
 	return pinfo;
 }
+
 PropertyInfo VisualScriptOperator::get_output_value_port_info(int p_idx) const {
 	static const Variant::Type port_types[Variant::OP_MAX] = {
 		//comparison
@@ -1030,6 +1060,7 @@ bool VisualScriptSelect::has_input_sequence_port() const {
 int VisualScriptSelect::get_input_value_port_count() const {
 	return 3;
 }
+
 int VisualScriptSelect::get_output_value_port_count() const {
 	return 1;
 }
@@ -1047,6 +1078,7 @@ PropertyInfo VisualScriptSelect::get_input_value_port_info(int p_idx) const {
 		return PropertyInfo(typed, "b");
 	}
 }
+
 PropertyInfo VisualScriptSelect::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(typed, "out");
 }
@@ -1122,6 +1154,7 @@ bool VisualScriptVariableGet::has_input_sequence_port() const {
 int VisualScriptVariableGet::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptVariableGet::get_output_value_port_count() const {
 	return 1;
 }
@@ -1149,6 +1182,7 @@ PropertyInfo VisualScriptVariableGet::get_output_value_port_info(int p_idx) cons
 String VisualScriptVariableGet::get_caption() const {
 	return "Get " + variable;
 }
+
 void VisualScriptVariableGet::set_variable(StringName p_variable) {
 	if (variable == p_variable)
 		return;
@@ -1209,6 +1243,7 @@ VisualScriptNodeInstance *VisualScriptVariableGet::instance(VisualScriptInstance
 	instance->variable = variable;
 	return instance;
 }
+
 VisualScriptVariableGet::VisualScriptVariableGet() {
 }
 
@@ -1227,6 +1262,7 @@ bool VisualScriptVariableSet::has_input_sequence_port() const {
 int VisualScriptVariableSet::get_input_value_port_count() const {
 	return 1;
 }
+
 int VisualScriptVariableSet::get_output_value_port_count() const {
 	return 0;
 }
@@ -1317,6 +1353,7 @@ VisualScriptNodeInstance *VisualScriptVariableSet::instance(VisualScriptInstance
 	instance->variable = variable;
 	return instance;
 }
+
 VisualScriptVariableSet::VisualScriptVariableSet() {
 }
 
@@ -1335,6 +1372,7 @@ bool VisualScriptConstant::has_input_sequence_port() const {
 int VisualScriptConstant::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptConstant::get_output_value_port_count() const {
 	return 1;
 }
@@ -1380,6 +1418,7 @@ void VisualScriptConstant::set_constant_value(Variant p_value) {
 	value = p_value;
 	ports_changed_notify();
 }
+
 Variant VisualScriptConstant::get_constant_value() const {
 	return value;
 }
@@ -1444,6 +1483,7 @@ bool VisualScriptPreload::has_input_sequence_port() const {
 int VisualScriptPreload::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptPreload::get_output_value_port_count() const {
 	return 1;
 }
@@ -1534,6 +1574,7 @@ bool VisualScriptIndexGet::has_input_sequence_port() const {
 int VisualScriptIndexGet::get_input_value_port_count() const {
 	return 2;
 }
+
 int VisualScriptIndexGet::get_output_value_port_count() const {
 	return 1;
 }
@@ -1578,6 +1619,7 @@ VisualScriptNodeInstance *VisualScriptIndexGet::instance(VisualScriptInstance *p
 	VisualScriptNodeInstanceIndexGet *instance = memnew(VisualScriptNodeInstanceIndexGet);
 	return instance;
 }
+
 VisualScriptIndexGet::VisualScriptIndexGet() {
 }
 
@@ -1596,6 +1638,7 @@ bool VisualScriptIndexSet::has_input_sequence_port() const {
 int VisualScriptIndexSet::get_input_value_port_count() const {
 	return 3;
 }
+
 int VisualScriptIndexSet::get_output_value_port_count() const {
 	return 0;
 }
@@ -1644,6 +1687,7 @@ VisualScriptNodeInstance *VisualScriptIndexSet::instance(VisualScriptInstance *p
 	VisualScriptNodeInstanceIndexSet *instance = memnew(VisualScriptNodeInstanceIndexSet);
 	return instance;
 }
+
 VisualScriptIndexSet::VisualScriptIndexSet() {
 }
 
@@ -1662,6 +1706,7 @@ bool VisualScriptGlobalConstant::has_input_sequence_port() const {
 int VisualScriptGlobalConstant::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptGlobalConstant::get_output_value_port_count() const {
 	return 1;
 }
@@ -1743,6 +1788,7 @@ bool VisualScriptClassConstant::has_input_sequence_port() const {
 int VisualScriptClassConstant::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptClassConstant::get_output_value_port_count() const {
 	return 1;
 }
@@ -1871,6 +1917,7 @@ bool VisualScriptBasicTypeConstant::has_input_sequence_port() const {
 int VisualScriptBasicTypeConstant::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptBasicTypeConstant::get_output_value_port_count() const {
 	return 1;
 }
@@ -2035,6 +2082,7 @@ bool VisualScriptMathConstant::has_input_sequence_port() const {
 int VisualScriptMathConstant::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptMathConstant::get_output_value_port_count() const {
 	return 1;
 }
@@ -2125,6 +2173,7 @@ bool VisualScriptEngineSingleton::has_input_sequence_port() const {
 int VisualScriptEngineSingleton::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptEngineSingleton::get_output_value_port_count() const {
 	return 1;
 }
@@ -2232,6 +2281,7 @@ bool VisualScriptSceneNode::has_input_sequence_port() const {
 int VisualScriptSceneNode::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptSceneNode::get_output_value_port_count() const {
 	return 1;
 }
@@ -2411,6 +2461,7 @@ bool VisualScriptSceneTree::has_input_sequence_port() const {
 int VisualScriptSceneTree::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptSceneTree::get_output_value_port_count() const {
 	return 1;
 }
@@ -2497,6 +2548,7 @@ bool VisualScriptResourcePath::has_input_sequence_port() const {
 int VisualScriptResourcePath::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptResourcePath::get_output_value_port_count() const {
 	return 1;
 }
@@ -2571,6 +2623,7 @@ bool VisualScriptSelf::has_input_sequence_port() const {
 int VisualScriptSelf::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptSelf::get_output_value_port_count() const {
 	return 1;
 }
@@ -2660,6 +2713,7 @@ int VisualScriptCustomNode::get_input_value_port_count() const {
 	}
 	return 0;
 }
+
 int VisualScriptCustomNode::get_output_value_port_count() const {
 	if (get_script_instance() && get_script_instance()->has_method("_get_output_value_port_count")) {
 		return get_script_instance()->call("_get_output_value_port_count");
@@ -2869,6 +2923,7 @@ int VisualScriptSubCall::get_input_value_port_count() const {
 
 	return 0;
 }
+
 int VisualScriptSubCall::get_output_value_port_count() const {
 	return 1;
 }
@@ -2973,6 +3028,7 @@ bool VisualScriptComment::has_input_sequence_port() const {
 int VisualScriptComment::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptComment::get_output_value_port_count() const {
 	return 0;
 }
@@ -3014,6 +3070,7 @@ void VisualScriptComment::set_description(const String &p_description) {
 	description = p_description;
 	ports_changed_notify();
 }
+
 String VisualScriptComment::get_description() const {
 	return description;
 }
@@ -3024,6 +3081,7 @@ void VisualScriptComment::set_size(const Size2 &p_size) {
 	size = p_size;
 	ports_changed_notify();
 }
+
 Size2 VisualScriptComment::get_size() const {
 	return size;
 }
@@ -3084,6 +3142,7 @@ bool VisualScriptConstructor::has_input_sequence_port() const {
 int VisualScriptConstructor::get_input_value_port_count() const {
 	return constructor.arguments.size();
 }
+
 int VisualScriptConstructor::get_output_value_port_count() const {
 	return 1;
 }
@@ -3199,6 +3258,7 @@ bool VisualScriptLocalVar::has_input_sequence_port() const {
 int VisualScriptLocalVar::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptLocalVar::get_output_value_port_count() const {
 	return 1;
 }
@@ -3210,6 +3270,7 @@ String VisualScriptLocalVar::get_output_sequence_port_text(int p_port) const {
 PropertyInfo VisualScriptLocalVar::get_input_value_port_info(int p_idx) const {
 	return PropertyInfo();
 }
+
 PropertyInfo VisualScriptLocalVar::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(type, name);
 }
@@ -3299,6 +3360,7 @@ bool VisualScriptLocalVarSet::has_input_sequence_port() const {
 int VisualScriptLocalVarSet::get_input_value_port_count() const {
 	return 1;
 }
+
 int VisualScriptLocalVarSet::get_output_value_port_count() const {
 	return 1;
 }
@@ -3310,6 +3372,7 @@ String VisualScriptLocalVarSet::get_output_sequence_port_text(int p_port) const 
 PropertyInfo VisualScriptLocalVarSet::get_input_value_port_info(int p_idx) const {
 	return PropertyInfo(type, "set");
 }
+
 PropertyInfo VisualScriptLocalVarSet::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(type, "get");
 }
@@ -3404,6 +3467,7 @@ bool VisualScriptInputAction::has_input_sequence_port() const {
 int VisualScriptInputAction::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptInputAction::get_output_value_port_count() const {
 	return 1;
 }
@@ -3415,6 +3479,7 @@ String VisualScriptInputAction::get_output_sequence_port_text(int p_port) const 
 PropertyInfo VisualScriptInputAction::get_input_value_port_info(int p_idx) const {
 	return PropertyInfo();
 }
+
 PropertyInfo VisualScriptInputAction::get_output_value_port_info(int p_idx) const {
 	String mstr;
 	switch (mode) {
@@ -3462,6 +3527,7 @@ void VisualScriptInputAction::set_action_mode(Mode p_mode) {
 	mode = p_mode;
 	ports_changed_notify();
 }
+
 VisualScriptInputAction::Mode VisualScriptInputAction::get_action_mode() const {
 	return mode;
 }
@@ -3569,6 +3635,7 @@ bool VisualScriptDeconstruct::has_input_sequence_port() const {
 int VisualScriptDeconstruct::get_input_value_port_count() const {
 	return 1;
 }
+
 int VisualScriptDeconstruct::get_output_value_port_count() const {
 	return elements.size();
 }

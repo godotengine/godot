@@ -96,6 +96,7 @@ static void smbFft(float *fftBuffer, long fftFrameSize, long sign)
 		}
 	}
 }
+
 void AudioEffectSpectrumAnalyzerInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	uint64_t time = OS::get_singleton()->get_ticks_usec();
 

@@ -78,6 +78,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float proj_scale;
 	uint pad;
 }
+
 params;
 
 vec3 reconstructCSPosition(vec2 S, float z) {

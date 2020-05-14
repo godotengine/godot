@@ -71,6 +71,7 @@ bool RayCast3D::get_collision_mask_bit(int p_bit) const {
 bool RayCast3D::is_colliding() const {
 	return collided;
 }
+
 Object *RayCast3D::get_collider() const {
 	if (against.is_null())
 		return nullptr;
@@ -81,9 +82,11 @@ Object *RayCast3D::get_collider() const {
 int RayCast3D::get_collider_shape() const {
 	return against_shape;
 }
+
 Vector3 RayCast3D::get_collision_point() const {
 	return collision_point;
 }
+
 Vector3 RayCast3D::get_collision_normal() const {
 	return collision_normal;
 }

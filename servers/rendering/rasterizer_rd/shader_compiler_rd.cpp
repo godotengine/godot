@@ -202,6 +202,7 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 
 	ERR_FAIL_V(0);
 }
+
 static String _interpstr(SL::DataInterpolation p_interp) {
 	switch (p_interp) {
 		case SL::INTERPOLATION_FLAT:

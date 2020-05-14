@@ -227,6 +227,7 @@ void ContextGL_X11::set_use_vsync(bool p_use) {
 		return;
 	use_vsync = p_use;
 }
+
 bool ContextGL_X11::is_using_vsync() const {
 	return use_vsync;
 }

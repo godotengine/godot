@@ -1002,6 +1002,7 @@ void VisualScriptEditor::_update_node_size(int p_id) {
 	if (Object::cast_to<Control>(node))
 		Object::cast_to<Control>(node)->set_size(Vector2(1, 1)); //shrink if text is smaller
 }
+
 void VisualScriptEditor::_port_name_focus_out(const Node *p_name_box, int p_id, int p_port, bool is_input) {
 	StringName func = _get_function_of_node(p_id);
 

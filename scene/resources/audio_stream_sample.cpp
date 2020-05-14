@@ -70,6 +70,7 @@ int AudioStreamPlaybackSample::get_loop_count() const {
 float AudioStreamPlaybackSample::get_playback_position() const {
 	return float(offset >> MIX_FRAC_BITS) / base->mix_rate;
 }
+
 void AudioStreamPlaybackSample::seek(float p_time) {
 	if (base->format == AudioStreamSample::FORMAT_IMA_ADPCM)
 		return; //no seeking in ima-adpcm
@@ -404,6 +405,7 @@ AudioStreamSample::Format AudioStreamSample::get_format() const {
 void AudioStreamSample::set_loop_mode(LoopMode p_loop_mode) {
 	loop_mode = p_loop_mode;
 }
+
 AudioStreamSample::LoopMode AudioStreamSample::get_loop_mode() const {
 	return loop_mode;
 }
@@ -411,6 +413,7 @@ AudioStreamSample::LoopMode AudioStreamSample::get_loop_mode() const {
 void AudioStreamSample::set_loop_begin(int p_frame) {
 	loop_begin = p_frame;
 }
+
 int AudioStreamSample::get_loop_begin() const {
 	return loop_begin;
 }
@@ -418,6 +421,7 @@ int AudioStreamSample::get_loop_begin() const {
 void AudioStreamSample::set_loop_end(int p_frame) {
 	loop_end = p_frame;
 }
+
 int AudioStreamSample::get_loop_end() const {
 	return loop_end;
 }
@@ -426,12 +430,15 @@ void AudioStreamSample::set_mix_rate(int p_hz) {
 	ERR_FAIL_COND(p_hz == 0);
 	mix_rate = p_hz;
 }
+
 int AudioStreamSample::get_mix_rate() const {
 	return mix_rate;
 }
+
 void AudioStreamSample::set_stereo(bool p_enable) {
 	stereo = p_enable;
 }
+
 bool AudioStreamSample::is_stereo() const {
 	return stereo;
 }
@@ -478,6 +485,7 @@ void AudioStreamSample::set_data(const Vector<uint8_t> &p_data) {
 
 	AudioServer::get_singleton()->unlock();
 }
+
 Vector<uint8_t> AudioStreamSample::get_data() const {
 	Vector<uint8_t> pv;
 

@@ -38,6 +38,7 @@
 AABB GPUParticles3D::get_aabb() const {
 	return AABB();
 }
+
 Vector<Face3> GPUParticles3D::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
@@ -57,6 +58,7 @@ void GPUParticles3D::set_amount(int p_amount) {
 	amount = p_amount;
 	RS::get_singleton()->particles_set_amount(particles, amount);
 }
+
 void GPUParticles3D::set_lifetime(float p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
@@ -81,24 +83,29 @@ void GPUParticles3D::set_pre_process_time(float p_time) {
 	pre_process_time = p_time;
 	RS::get_singleton()->particles_set_pre_process_time(particles, pre_process_time);
 }
+
 void GPUParticles3D::set_explosiveness_ratio(float p_ratio) {
 	explosiveness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_explosiveness_ratio(particles, explosiveness_ratio);
 }
+
 void GPUParticles3D::set_randomness_ratio(float p_ratio) {
 	randomness_ratio = p_ratio;
 	RS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
+
 void GPUParticles3D::set_visibility_aabb(const AABB &p_aabb) {
 	visibility_aabb = p_aabb;
 	RS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
 	update_gizmo();
 	_change_notify("visibility_aabb");
 }
+
 void GPUParticles3D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
 	RS::get_singleton()->particles_set_use_local_coordinates(particles, local_coords);
 }
+
 void GPUParticles3D::set_process_material(const Ref<Material> &p_material) {
 	process_material = p_material;
 	RID material_rid;
@@ -117,12 +124,15 @@ void GPUParticles3D::set_speed_scale(float p_scale) {
 bool GPUParticles3D::is_emitting() const {
 	return RS::get_singleton()->particles_get_emitting(particles);
 }
+
 int GPUParticles3D::get_amount() const {
 	return amount;
 }
+
 float GPUParticles3D::get_lifetime() const {
 	return lifetime;
 }
+
 bool GPUParticles3D::get_one_shot() const {
 	return one_shot;
 }
@@ -130,18 +140,23 @@ bool GPUParticles3D::get_one_shot() const {
 float GPUParticles3D::get_pre_process_time() const {
 	return pre_process_time;
 }
+
 float GPUParticles3D::get_explosiveness_ratio() const {
 	return explosiveness_ratio;
 }
+
 float GPUParticles3D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
+
 AABB GPUParticles3D::get_visibility_aabb() const {
 	return visibility_aabb;
 }
+
 bool GPUParticles3D::get_use_local_coordinates() const {
 	return local_coords;
 }
+
 Ref<Material> GPUParticles3D::get_process_material() const {
 	return process_material;
 }
@@ -165,6 +180,7 @@ void GPUParticles3D::set_draw_passes(int p_count) {
 	RS::get_singleton()->particles_set_draw_passes(particles, p_count);
 	_change_notify();
 }
+
 int GPUParticles3D::get_draw_passes() const {
 	return draw_passes.size();
 }

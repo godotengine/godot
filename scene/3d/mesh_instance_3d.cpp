@@ -133,6 +133,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	_change_notify();
 }
+
 Ref<Mesh> MeshInstance3D::get_mesh() const {
 	return mesh;
 }

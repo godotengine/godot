@@ -145,6 +145,7 @@ void Transform::scale_basis(const Vector3 &p_scale) {
 void Transform::translate(real_t p_tx, real_t p_ty, real_t p_tz) {
 	translate(Vector3(p_tx, p_ty, p_tz));
 }
+
 void Transform::translate(const Vector3 &p_translation) {
 	for (int i = 0; i < 3; i++) {
 		origin[i] += basis[i].dot(p_translation);
@@ -174,6 +175,7 @@ bool Transform::is_equal_approx(const Transform &p_transform) const {
 bool Transform::operator==(const Transform &p_transform) const {
 	return (basis == p_transform.basis && origin == p_transform.origin);
 }
+
 bool Transform::operator!=(const Transform &p_transform) const {
 	return (basis != p_transform.basis || origin != p_transform.origin);
 }

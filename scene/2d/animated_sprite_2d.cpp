@@ -128,6 +128,7 @@ void SpriteFrames::remove_frame(const StringName &p_anim, int p_idx) {
 	E->get().frames.remove(p_idx);
 	emit_changed();
 }
+
 void SpriteFrames::clear(const StringName &p_anim) {
 	Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
@@ -152,6 +153,7 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
 	return animations.has(p_anim);
 }
+
 void SpriteFrames::remove_animation(const StringName &p_anim) {
 	animations.erase(p_anim);
 }
@@ -199,6 +201,7 @@ void SpriteFrames::set_animation_speed(const StringName &p_anim, float p_fps) {
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->get().speed = p_fps;
 }
+
 float SpriteFrames::get_animation_speed(const StringName &p_anim) const {
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, 0, "Animation '" + String(p_anim) + "' doesn't exist.");
@@ -210,6 +213,7 @@ void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->get().loop = p_loop;
 }
+
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
 	const Map<StringName, Anim>::Element *E = animations.find(p_anim);
 	ERR_FAIL_COND_V_MSG(!E, false, "Animation '" + String(p_anim) + "' doesn't exist.");
@@ -225,6 +229,7 @@ void SpriteFrames::_set_frames(const Array &p_frames) {
 	for (int i = 0; i < E->get().frames.size(); i++)
 		E->get().frames.write[i] = p_frames[i];
 }
+
 Array SpriteFrames::_get_frames() const {
 	return Array();
 }
@@ -246,6 +251,7 @@ Array SpriteFrames::_get_animations() const {
 
 	return anims;
 }
+
 void SpriteFrames::_set_animations(const Array &p_animations) {
 	animations.clear();
 	for (int i = 0; i < p_animations.size(); i++) {
@@ -489,6 +495,7 @@ void AnimatedSprite2D::set_frame(int p_frame) {
 	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
+
 int AnimatedSprite2D::get_frame() const {
 	return frame;
 }
@@ -523,6 +530,7 @@ void AnimatedSprite2D::set_offset(const Point2 &p_offset) {
 	item_rect_changed();
 	_change_notify("offset");
 }
+
 Point2 AnimatedSprite2D::get_offset() const {
 	return offset;
 }
@@ -531,6 +539,7 @@ void AnimatedSprite2D::set_flip_h(bool p_flip) {
 	hflip = p_flip;
 	update();
 }
+
 bool AnimatedSprite2D::is_flipped_h() const {
 	return hflip;
 }
@@ -539,6 +548,7 @@ void AnimatedSprite2D::set_flip_v(bool p_flip) {
 	vflip = p_flip;
 	update();
 }
+
 bool AnimatedSprite2D::is_flipped_v() const {
 	return vflip;
 }
@@ -613,6 +623,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_animation) {
 	_change_notify();
 	update();
 }
+
 StringName AnimatedSprite2D::get_animation() const {
 	return animation;
 }

@@ -203,6 +203,7 @@ void LightClusterBuilder::setup(uint32_t p_width, uint32_t p_height, uint32_t p_
 RID LightClusterBuilder::get_cluster_texture() const {
 	return cluster_texture;
 }
+
 RID LightClusterBuilder::get_cluster_indices_buffer() const {
 	return items_buffer;
 }
@@ -226,6 +227,7 @@ LightClusterBuilder::LightClusterBuilder() {
 	items_buffer = RD::get_singleton()->storage_buffer_create(sizeof(uint32_t) * 1024);
 	item_max = 1024;
 }
+
 LightClusterBuilder::~LightClusterBuilder() {
 	if (cluster_data.size()) {
 		RD::get_singleton()->free(cluster_texture);

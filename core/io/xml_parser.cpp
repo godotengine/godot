@@ -390,6 +390,7 @@ Error XMLParser::read() {
 XMLParser::NodeType XMLParser::get_node_type() {
 	return node_type;
 }
+
 String XMLParser::get_node_data() const {
 	ERR_FAIL_COND_V(node_type != NODE_TEXT, "");
 	return node_name;
@@ -399,17 +400,21 @@ String XMLParser::get_node_name() const {
 	ERR_FAIL_COND_V(node_type == NODE_TEXT, "");
 	return node_name;
 }
+
 int XMLParser::get_attribute_count() const {
 	return attributes.size();
 }
+
 String XMLParser::get_attribute_name(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, attributes.size(), "");
 	return attributes[p_idx].name;
 }
+
 String XMLParser::get_attribute_value(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, attributes.size(), "");
 	return attributes[p_idx].value;
 }
+
 bool XMLParser::has_attribute(const String &p_name) const {
 	for (int i = 0; i < attributes.size(); i++) {
 		if (attributes[i].name == p_name)
@@ -418,6 +423,7 @@ bool XMLParser::has_attribute(const String &p_name) const {
 
 	return false;
 }
+
 String XMLParser::get_attribute_value(const String &p_name) const {
 	int idx = -1;
 	for (int i = 0; i < attributes.size(); i++) {
@@ -445,6 +451,7 @@ String XMLParser::get_attribute_value_safe(const String &p_name) const {
 		return "";
 	return attributes[idx].value;
 }
+
 bool XMLParser::is_empty() const {
 	return node_empty;
 }
@@ -526,6 +533,7 @@ XMLParser::XMLParser() {
 	special_characters.push_back("\"quot;");
 	special_characters.push_back("'apos;");
 }
+
 XMLParser::~XMLParser() {
 	if (data)
 		memdelete_arr(data);
