@@ -63,7 +63,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	int buffer_data();
 	int queue_page(ogg_page *page);
-	void video_write(void);
+	void video_write();
 	float get_time() const;
 
 	bool theora_eos;

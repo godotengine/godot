@@ -54,7 +54,7 @@ class Theme : public Resource {
 
 	Vector<String> _get_icon_list(const String &p_type) const;
 	Vector<String> _get_stylebox_list(const String &p_type) const;
-	Vector<String> _get_stylebox_types(void) const;
+	Vector<String> _get_stylebox_types() const;
 	Vector<String> _get_font_list(const String &p_type) const;
 	Vector<String> _get_color_list(const String &p_type) const;
 	Vector<String> _get_constant_list(const String &p_type) const;
