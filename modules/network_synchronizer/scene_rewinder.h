@@ -183,6 +183,7 @@ private:
 	RewinderType rewinder_type;
 	Rewinder *rewinder;
 	bool recover_in_progress;
+	bool reset_in_progress;
 	bool rewinding_in_progress;
 
 	uint32_t node_counter;
@@ -228,6 +229,7 @@ public:
 	void unregister_process(Node *p_node, StringName p_function);
 
 	bool is_recovered() const;
+	bool is_resetted() const;
 	bool is_rewinding() const;
 
 	/// This function works only on server.

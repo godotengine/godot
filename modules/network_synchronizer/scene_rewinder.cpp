@@ -151,6 +151,7 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unregister_process", "node", "function"), &SceneRewinder::unregister_process);
 
 	ClassDB::bind_method(D_METHOD("is_recovered"), &SceneRewinder::is_recovered);
+	ClassDB::bind_method(D_METHOD("is_resetted"), &SceneRewinder::is_resetted);
 	ClassDB::bind_method(D_METHOD("is_rewinding"), &SceneRewinder::is_rewinding);
 
 	ClassDB::bind_method(D_METHOD("force_state_notify"), &SceneRewinder::force_state_notify);
@@ -208,6 +209,7 @@ SceneRewinder::SceneRewinder() :
 		rewinder_type(REWINDER_TYPE_NULL),
 		rewinder(nullptr),
 		recover_in_progress(false),
+		reset_in_progress(false),
 		rewinding_in_progress(false),
 		node_counter(1),
 		generate_id(false),
@@ -481,6 +483,10 @@ void SceneRewinder::unregister_process(Node *p_node, StringName p_function) {
 
 bool SceneRewinder::is_recovered() const {
 	return recover_in_progress;
+}
+
+bool SceneRewinder::is_resetted() const {
+	return reset_in_progress;
 }
 
 bool SceneRewinder::is_rewinding() const {
@@ -1522,10 +1528,9 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				}
 			}
 
-			scene_rewinder->rewinding_in_progress = true;
-
 			// Apply the server snapshot so to go back in time till that moment,
 			// so to be able to correctly reply the movements.
+			scene_rewinder->reset_in_progress = true;
 			for (
 					std::vector<NodeData *>::const_iterator it = nodes_to_recover.begin();
 					it != nodes_to_recover.end();
@@ -1563,9 +1568,11 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 									s_vars_ptr[i].var.name));
 				}
 			}
+			scene_rewinder->reset_in_progress = false;
 
 			// Rewind phase.
 
+			scene_rewinder->rewinding_in_progress = true;
 			const int remaining_inputs =
 					controller->notify_input_checked(checkable_input_id);
 			if (client_snaps) {
@@ -1616,6 +1623,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			scene_rewinder->rewinding_in_progress = false;
 		} else {
 			// Apply found differences without rewind.
+			scene_rewinder->reset_in_progress = true;
 			for (
 					std::vector<PostponedRecover>::const_iterator it = postponed_recover.begin();
 					it != postponed_recover.end();
@@ -1649,6 +1657,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					client_snaps->back().node_vars[rew_node_data->instance_id] = rew_node_data->vars;
 				}
 			}
+			scene_rewinder->reset_in_progress = false;
 
 			controller->notify_input_checked(checkable_input_id);
 		}
@@ -1944,12 +1953,21 @@ bool ClientRewinder::compare_vars(
 	const VarData *s_vars = p_server_vars.ptr();
 	const VarData *c_vars = p_client_vars.ptr();
 
+#ifdef DEBUG_ENABLED
+	bool diff = false;
+#endif
+
 	for (int s_var_index = 0; s_var_index < p_server_vars.size(); s_var_index += 1) {
 
 		const int c_var_index = p_client_vars.find(s_vars[s_var_index].var.name);
 		if (c_var_index == -1) {
 			// Variable not found, this is considered a difference.
+			NET_DEBUG_PRINT("Difference found on the var name `" + s_vars[s_var_index].var.name + "`, it was not found on client snapshot. Server value: `" + s_vars[s_var_index].var.value + "`.");
+#ifdef DEBUG_ENABLED
+			diff = true;
+#else
 			return true;
+#endif
 		} else {
 			// Variable found compare.
 			const bool different = !scene_rewinder->rewinder_variant_evaluation(s_vars[s_var_index].var.value, c_vars[c_var_index].var.value);
@@ -1959,7 +1977,11 @@ bool ClientRewinder::compare_vars(
 				if (index < 0 || p_rewinder_node_data->vars[index].skip_rewinding == false) {
 					// The vars are different.
 					NET_DEBUG_PRINT("Difference found on var name `" + s_vars[s_var_index].var.name + "` Server value: `" + s_vars[s_var_index].var.value + "` Client value: `" + c_vars[c_var_index].var.value + "`.");
+#ifdef DEBUG_ENABLED
+					diff = true;
+#else
 					return true;
+#endif
 				} else {
 					// The vars are different, but this variable don't what to
 					// trigger a rewind.
@@ -1969,6 +1991,10 @@ bool ClientRewinder::compare_vars(
 		}
 	}
 
+#ifdef DEBUG_ENABLED
+	return diff;
+#else
 	// The vars are not different.
 	return false;
+#endif
 }
