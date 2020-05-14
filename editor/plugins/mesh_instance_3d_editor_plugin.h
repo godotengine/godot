@@ -37,7 +37,6 @@
 #include "scene/gui/spin_box.h"
 
 class MeshInstance3DEditor : public Control {
-
 	GDCLASS(MeshInstance3DEditor, Control);
 
 	enum Menu {
@@ -84,7 +83,6 @@ public:
 };
 
 class MeshInstance3DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MeshInstance3DEditorPlugin, EditorPlugin);
 
 	MeshInstance3DEditor *mesh_editor;

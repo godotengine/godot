@@ -33,7 +33,6 @@
 /***** SCAN CODE CONVERSION ******/
 
 struct _XTranslatePair {
-
 	KeySym keysym;
 	unsigned int keycode;
 };
@@ -181,7 +180,6 @@ static _XTranslatePair _xkeysym_to_keycode[] = {
 };
 
 struct _TranslatePair {
-
 	unsigned int keysym;
 	unsigned int keycode;
 };
@@ -301,10 +299,8 @@ static _TranslatePair _scancode_to_keycode[] = {
 };
 
 unsigned int KeyMappingX11::get_scancode(unsigned int p_code) {
-
 	unsigned int keycode = KEY_UNKNOWN;
 	for (int i = 0; _scancode_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
-
 		if (_scancode_to_keycode[i].keycode == p_code) {
 			keycode = _scancode_to_keycode[i].keysym;
 			break;
@@ -315,7 +311,6 @@ unsigned int KeyMappingX11::get_scancode(unsigned int p_code) {
 }
 
 unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
-
 	// kinda bruteforce.. could optimize.
 
 	if (p_keysym < 0x100) // Latin 1, maps 1-1
@@ -323,7 +318,6 @@ unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
 
 	// look for special key
 	for (int idx = 0; _xkeysym_to_keycode[idx].keysym != 0; idx++) {
-
 		if (_xkeysym_to_keycode[idx].keysym == p_keysym)
 			return _xkeysym_to_keycode[idx].keycode;
 	}
@@ -332,7 +326,6 @@ unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
 }
 
 KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
-
 	// kinda bruteforce.. could optimize.
 
 	if (p_code < 0x100) // Latin 1, maps 1-1
@@ -340,7 +333,6 @@ KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 
 	// look for special key
 	for (int idx = 0; _xkeysym_to_keycode[idx].keysym != 0; idx++) {
-
 		if (_xkeysym_to_keycode[idx].keycode == p_code)
 			return _xkeysym_to_keycode[idx].keysym;
 	}
@@ -353,7 +345,6 @@ KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 // Tables taken from FOX toolkit
 
 struct _XTranslateUnicodePair {
-
 	KeySym keysym;
 	unsigned int unicode;
 };
@@ -1125,7 +1116,6 @@ static _XTranslateUnicodePair _xkeysym_to_unicode[_KEYSYM_MAX] = {
 };
 
 unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
-
 	/* Latin-1 */
 	if (p_keysym >= 0x20 && p_keysym <= 0x7e)
 		return p_keysym;
@@ -1155,7 +1145,6 @@ unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
 }
 
 struct _XTranslateUnicodePairReverse {
-
 	unsigned int unicode;
 	KeySym keysym;
 };
@@ -1919,7 +1908,6 @@ static _XTranslateUnicodePairReverse _unicode_to_xkeysym[_UNICODE_MAX] = {
 };
 
 KeySym KeyMappingX11::get_keysym_from_unicode(unsigned int p_unicode) {
-
 	/* Latin 1 */
 
 	if (p_unicode >= 0x20 && p_unicode <= 0x7e)

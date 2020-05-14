@@ -42,7 +42,6 @@
 #include "servers/rendering/rendering_device_binds.h"
 
 class ShaderFileEditor : public PanelContainer {
-
 	GDCLASS(ShaderFileEditor, PanelContainer);
 
 	Ref<RDShaderFile> shader_file;
@@ -71,7 +70,6 @@ public:
 };
 
 class ShaderFileEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ShaderFileEditorPlugin, EditorPlugin);
 
 	ShaderFileEditor *shader_editor;

@@ -35,7 +35,6 @@
 #include "scene/3d/visual_instance_3d.h"
 
 class GIProbeData : public Resource {
-
 	GDCLASS(GIProbeData, Resource);
 
 	RID probe;

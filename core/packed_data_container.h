@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 class PackedDataContainer : public Resource {
-
 	GDCLASS(PackedDataContainer, Resource);
 
 	enum {

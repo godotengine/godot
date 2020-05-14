@@ -40,7 +40,6 @@ uniform highp mat4 display_transform;
 #endif
 
 void main() {
-
 #if defined(USE_CUBEMAP) || defined(USE_PANORAMA)
 	cube_interp = cube_in;
 #elif defined(USE_ASYM_PANO)
@@ -115,7 +114,6 @@ uniform float custom_alpha;
 uniform highp mat4 sky_transform;
 
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
-
 	vec2 st = vec2(
 			atan(normal.x, normal.z),
 			acos(normal.y));
@@ -131,7 +129,6 @@ vec4 texturePanorama(sampler2D pano, vec3 normal) {
 #endif
 
 void main() {
-
 #ifdef USE_PANORAMA
 
 	vec3 cube_normal = normalize(cube_interp);

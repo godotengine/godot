@@ -40,7 +40,6 @@ void Callable::call_deferred(const Variant **p_arguments, int p_argcount) const 
 }
 
 void Callable::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, CallError &r_call_error) const {
-
 	if (is_null()) {
 		r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		r_call_error.argument = 0;
@@ -179,7 +178,6 @@ void Callable::operator=(const Callable &p_callable) {
 }
 
 Callable::operator String() const {
-
 	if (is_custom()) {
 		return custom->get_as_text();
 	} else {
@@ -192,7 +190,6 @@ Callable::operator String() const {
 			String class_name = base->get_class();
 			Ref<Script> script = base->get_script();
 			if (script.is_valid() && script->get_path().is_resource_file()) {
-
 				class_name += "(" + script->get_path().get_file() + ")";
 			}
 			return class_name + "::" + String(method);
@@ -294,7 +291,6 @@ Signal::operator String() const {
 		String class_name = base->get_class();
 		Ref<Script> script = base->get_script();
 		if (script.is_valid() && script->get_path().is_resource_file()) {
-
 			class_name += "(" + script->get_path().get_file() + ")";
 		}
 		return class_name + "::[signal]" + String(name);
@@ -312,7 +308,6 @@ Error Signal::emit(const Variant **p_arguments, int p_argcount) const {
 	return obj->emit_signal(name, p_arguments, p_argcount);
 }
 Error Signal::connect(const Callable &p_callable, const Vector<Variant> &p_binds, uint32_t p_flags) {
-
 	Object *object = get_object();
 	ERR_FAIL_COND_V(!object, ERR_UNCONFIGURED);
 
@@ -347,7 +342,6 @@ Array Signal::get_connections() const {
 }
 
 Signal::Signal(const Object *p_object, const StringName &p_name) {
-
 	ERR_FAIL_COND_MSG(p_object == nullptr, "Object argument to Signal constructor must be non-null");
 
 	object = p_object->get_instance_id();
@@ -355,7 +349,6 @@ Signal::Signal(const Object *p_object, const StringName &p_name) {
 }
 
 Signal::Signal(ObjectID p_object, const StringName &p_name) {
-
 	object = p_object;
 	name = p_name;
 }

@@ -31,7 +31,6 @@
 #include "triangulate.h"
 
 real_t Triangulate::get_area(const Vector<Vector2> &contour) {
-
 	int n = contour.size();
 	const Vector2 *c = &contour[0];
 

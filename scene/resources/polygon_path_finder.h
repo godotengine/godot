@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 class PolygonPathFinder : public Resource {
-
 	GDCLASS(PolygonPathFinder, Resource);
 
 	struct Point {
@@ -46,11 +45,9 @@ class PolygonPathFinder : public Resource {
 	};
 
 	struct Edge {
-
 		int points[2];
 
 		_FORCE_INLINE_ bool operator<(const Edge &p_edge) const {
-
 			if (points[0] == p_edge.points[0])
 				return points[1] < p_edge.points[1];
 			else
@@ -58,7 +55,6 @@ class PolygonPathFinder : public Resource {
 		}
 
 		Edge(int a = 0, int b = 0) {
-
 			if (a > b) {
 				SWAP(a, b);
 			}

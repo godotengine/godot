@@ -45,7 +45,6 @@ class Geometry {
 
 public:
 	static real_t get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2, Vector2 &c1, Vector2 &c2) {
-
 		Vector2 d1 = q1 - p1; // Direction vector of segment S1.
 		Vector2 d2 = q2 - p2; // Direction vector of segment S2.
 		Vector2 r = p1 - p2;
@@ -103,7 +102,6 @@ public:
 	}
 
 	static void get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2, Vector3 &c1, Vector3 &c2) {
-
 // Do the function 'd' as defined by pb. I think is is dot product of some sort.
 #define d_of(m, n, o, p) ((m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z))
 
@@ -226,7 +224,6 @@ public:
 	}
 
 	static inline bool segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = nullptr) {
-
 		Vector3 rel = p_to - p_from;
 		Vector3 e1 = p_v1 - p_v0;
 		Vector3 e2 = p_v2 - p_v0;
@@ -263,7 +260,6 @@ public:
 	}
 
 	static inline bool segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr) {
-
 		Vector3 sphere_pos = p_sphere_pos - p_from;
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
@@ -299,7 +295,6 @@ public:
 	}
 
 	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr) {
-
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
 		if (rel_l < CMP_EPSILON)
@@ -339,7 +334,6 @@ public:
 		int axis = -1;
 
 		for (int i = 0; i < 2; i++) {
-
 			real_t seg_from = from2D[i];
 			real_t seg_to = to2D[i];
 			real_t box_begin = -size[i];
@@ -347,7 +341,6 @@ public:
 			real_t cmin, cmax;
 
 			if (seg_from < seg_to) {
-
 				if (seg_from > box_end || seg_to < box_begin)
 					return false;
 				real_t length = seg_to - seg_from;
@@ -355,7 +348,6 @@ public:
 				cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
 
 			} else {
-
 				if (seg_to > box_end || seg_from < box_begin)
 					return false;
 				real_t length = seg_to - seg_from;
@@ -395,7 +387,6 @@ public:
 	}
 
 	static bool segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Plane *p_planes, int p_plane_count, Vector3 *p_res, Vector3 *p_norm) {
-
 		real_t min = -1e20, max = 1e20;
 
 		Vector3 rel = p_to - p_from;
@@ -409,7 +400,6 @@ public:
 		int min_index = -1;
 
 		for (int i = 0; i < p_plane_count; i++) {
-
 			const Plane &p = p_planes[i];
 
 			real_t den = p.normal.dot(dir);
@@ -424,7 +414,6 @@ public:
 				if (dist < max)
 					max = dist;
 			} else {
-
 				// Front facing plane.
 				if (dist > min) {
 					min = dist;
@@ -445,7 +434,6 @@ public:
 	}
 
 	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 *p_segment) {
-
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
@@ -463,7 +451,6 @@ public:
 	}
 
 	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 *p_segment) {
-
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
@@ -476,7 +463,6 @@ public:
 	}
 
 	static Vector2 get_closest_point_to_segment_2d(const Vector2 &p_point, const Vector2 *p_segment) {
-
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
@@ -507,7 +493,6 @@ public:
 	}
 
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 *p_segment) {
-
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
@@ -520,7 +505,6 @@ public:
 	}
 
 	static bool line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b, Vector2 &r_result) {
-
 		// See http://paulbourke.net/geometry/pointlineplane/
 
 		const real_t denom = p_dir_b.y * p_dir_a.x - p_dir_b.x * p_dir_a.y;
@@ -535,7 +519,6 @@ public:
 	}
 
 	static bool segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b, Vector2 *r_result) {
-
 		Vector2 B = p_to_a - p_from_a;
 		Vector2 C = p_from_b - p_from_a;
 		Vector2 D = p_to_b - p_from_a;
@@ -564,7 +547,6 @@ public:
 	}
 
 	static inline bool point_in_projected_triangle(const Vector3 &p_point, const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
-
 		Vector3 face_n = (p_v1 - p_v3).cross(p_v1 - p_v2);
 
 		Vector3 n1 = (p_point - p_v3).cross(p_point - p_v2);
@@ -586,7 +568,6 @@ public:
 	}
 
 	static inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle, const Vector3 &p_normal, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 &r_triangle_contact, Vector3 &r_sphere_contact) {
-
 		real_t d = p_normal.dot(p_sphere_pos) - p_normal.dot(p_triangle[0]);
 
 		if (d > p_sphere_radius || d < -p_sphere_radius) // Not touching the plane of the face, return.
@@ -608,7 +589,6 @@ public:
 		const Vector3 verts[4] = { p_triangle[0], p_triangle[1], p_triangle[2], p_triangle[0] }; // for() friendly
 
 		for (int i = 0; i < 3; i++) {
-
 			// Check edge cylinder.
 
 			Vector3 n1 = verts[i] - verts[i + 1];
@@ -633,7 +613,6 @@ public:
 			real_t sphere_at = n1.dot(n2);
 
 			if (sphere_at >= 0 && sphere_at < n1.dot(n1)) {
-
 				r_triangle_contact = p_sphere_pos - axis * (axis.dot(n2));
 				r_sphere_contact = p_sphere_pos - axis * p_sphere_radius;
 				// Point inside here.
@@ -643,7 +622,6 @@ public:
 			real_t r2 = p_sphere_radius * p_sphere_radius;
 
 			if (n2.length_squared() < r2) {
-
 				Vector3 n = (p_sphere_pos - verts[i + 1]).normalized();
 
 				r_triangle_contact = verts[i + 1];
@@ -666,12 +644,10 @@ public:
 	}
 
 	static inline bool is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-
 		return p_point.distance_squared_to(p_circle_pos) <= p_circle_radius * p_circle_radius;
 	}
 
 	static real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-
 		Vector2 line_vec = p_to - p_from;
 		Vector2 vec_to_line = p_from - p_circle_pos;
 
@@ -704,7 +680,6 @@ public:
 	}
 
 	static inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane &p_plane) {
-
 		enum LocationCache {
 			LOC_INSIDE = 1,
 			LOC_BOUNDARY = 0,
@@ -734,11 +709,9 @@ public:
 		}
 
 		if (outside_count == 0) {
-
 			return polygon; // No changes.
 
 		} else if (inside_count == 0) {
-
 			return Vector<Vector3>(); // Empty.
 		}
 
@@ -798,49 +771,40 @@ public:
 	};
 
 	static Vector<Vector<Point2>> merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> clip_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> intersect_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> exclude_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
 		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
 	}
 
 	static Vector<Vector<Point2>> intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
 	}
 
 	static Vector<Vector<Point2>> offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
-
 		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
 	}
 
 	static Vector<Vector<Point2>> offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-
 		ERR_FAIL_COND_V_MSG(p_end_type == END_POLYGON, Vector<Vector<Point2>>(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
 
 		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
 	}
 
 	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
-
 		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(p_points);
 		Vector<int> triangles;
 
@@ -853,7 +817,6 @@ public:
 	}
 
 	static Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon) {
-
 		Vector<int> triangles;
 		if (!Triangulate::triangulate(p_polygon, triangles))
 			return Vector<int>(); //fail
@@ -912,7 +875,6 @@ public:
 	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = nullptr);
 
 	struct MeshData {
-
 		struct Face {
 			Plane plane;
 			Vector<int> indices;
@@ -921,7 +883,6 @@ public:
 		Vector<Face> faces;
 
 		struct Edge {
-
 			int a, b;
 		};
 
@@ -933,7 +894,6 @@ public:
 	};
 
 	_FORCE_INLINE_ static int get_uv84_normal_bit(const Vector3 &p_vector) {
-
 		int lat = Math::fast_ftoi(Math::floor(Math::acos(p_vector.dot(Vector3(0, 1, 0))) * 4.0 / Math_PI + 0.5));
 
 		if (lat == 0) {
@@ -948,13 +908,11 @@ public:
 	}
 
 	_FORCE_INLINE_ static int get_uv84_normal_bit_neighbors(int p_idx) {
-
 		if (p_idx == 24) {
 			return 1 | 2 | 4 | 8;
 		} else if (p_idx == 25) {
 			return (1 << 23) | (1 << 22) | (1 << 21) | (1 << 20);
 		} else {
-
 			int ret = 0;
 			if ((p_idx % 8) == 0)
 				ret |= (1 << (p_idx + 7));
@@ -1143,7 +1101,6 @@ public:
 		return false;
 
 	_FORCE_INLINE_ static bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {
-
 		/*    use separating axis theorem to test overlap between triangle and box */
 		/*    need to test for overlap in these directions: */
 		/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */

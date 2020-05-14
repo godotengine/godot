@@ -43,7 +43,6 @@ struct ETC1Header {
 };
 
 RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
-
 	if (r_error)
 		*r_error = ERR_CANT_OPEN;
 
@@ -96,17 +95,14 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 }
 
 void ResourceFormatPKM::get_recognized_extensions(List<String> *p_extensions) const {
-
 	p_extensions->push_back("pkm");
 }
 
 bool ResourceFormatPKM::handles_type(const String &p_type) const {
-
 	return ClassDB::is_parent_class(p_type, "Texture2D");
 }
 
 String ResourceFormatPKM::get_resource_type(const String &p_path) const {
-
 	if (p_path.get_extension().to_lower() == "pkm")
 		return "ImageTexture";
 	return "";

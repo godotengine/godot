@@ -141,7 +141,6 @@ void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_d
 }
 
 void EditorDebuggerNode::_bind_methods() {
-
 	// LiveDebug.
 	ClassDB::bind_method("live_debug_create_node", &EditorDebuggerNode::live_debug_create_node);
 	ClassDB::bind_method("live_debug_instance_node", &EditorDebuggerNode::live_debug_instance_node);
@@ -243,7 +242,6 @@ void EditorDebuggerNode::_notification(int p_what) {
 	});
 
 	if (error_count != last_error_count || warning_count != last_warning_count) {
-
 		_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 			dbg->update_tabs();
 		});
@@ -547,7 +545,6 @@ void EditorDebuggerNode::_property_changeds(void *p_ud, Object *p_base, const St
 
 // LiveDebug
 void EditorDebuggerNode::set_live_debugging(bool p_enabled) {
-
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
 		dbg->set_live_debugging(p_enabled);
 	});

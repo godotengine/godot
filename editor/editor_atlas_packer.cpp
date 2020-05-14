@@ -31,14 +31,12 @@
 #include "editor_atlas_packer.h"
 
 void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices) {
-
 	int width = p_bitmap->get_size().width;
 	int height = p_bitmap->get_size().height;
 	int x[3];
 	int y[3];
 
 	for (int j = 0; j < 3; j++) {
-
 		x[j] = vertices[j].x;
 		y[j] = vertices[j].y;
 	}
@@ -71,7 +69,6 @@ void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices)
 			}
 
 			for (int xi = (xf < width ? int(xf) : width - 1); xi >= (xt > 0 ? xt : 0); xi--) {
-
 				p_bitmap->set_bit(Point2(xi, yi), true);
 			}
 		}
@@ -83,14 +80,12 @@ void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices)
 	}
 }
 void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_height, int p_atlas_max_size, int p_cell_resolution) {
-
 	int divide_by = MIN(64, p_cell_resolution);
 	Vector<PlottedBitmap> bitmaps;
 
 	int max_w = 0;
 
 	for (int i = 0; i < charts.size(); i++) {
-
 		const Chart &chart = charts[i];
 
 		//generate aabb
@@ -100,7 +95,6 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 		const Vector2 *vertices = chart.vertices.ptr();
 
 		for (int j = 0; j < vertex_count; j++) {
-
 			if (j == 0) {
 				aabb.position = vertices[j];
 			} else {
@@ -118,7 +112,6 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 		//plot triangles, using divisor
 
 		for (int j = 0; j < chart.faces.size(); j++) {
-
 			Vector2i v[3];
 			for (int k = 0; k < 3; k++) {
 				Vector2 vtx = chart.vertices[chart.faces[j].vertex[k]];
@@ -163,7 +156,6 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 				bool found_pixel = false;
 				for (int lx = x - 1; lx < x + 2 && !found_pixel; lx++) {
 					for (int ly = y - 1; ly < y + 2 && !found_pixel; ly++) {
-
 						int px = lx - 1;
 						if (px < 0 || px >= w)
 							continue;
@@ -177,7 +169,6 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 					}
 				}
 				if (found_pixel) {
-
 					if (transpose) {
 						if (x > top_heights[y]) {
 							top_heights.write[y] = x;
@@ -231,7 +222,6 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 		int *atlas_ptr = heights.ptrw();
 
 		for (int i = 0; i < bitmaps.size(); i++) {
-
 			int best_height = 0x7FFFFFFF;
 			int best_height_offset = -1;
 			int w = bitmaps[i].top_heights.size();
@@ -240,11 +230,9 @@ void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_h
 			const int *bottom_heights = bitmaps[i].bottom_heights.ptr();
 
 			for (int j = 0; j < atlas_w - w; j++) {
-
 				int height = 0;
 
 				for (int k = 0; k < w; k++) {
-
 					int pixmap_h = bottom_heights[k];
 					if (pixmap_h == -1) {
 						continue; //no pixel here, anything is fine

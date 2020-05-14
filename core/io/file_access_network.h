@@ -39,9 +39,7 @@
 class FileAccessNetwork;
 
 class FileAccessNetworkClient {
-
 	struct BlockRequest {
-
 		int id;
 		uint64_t offset;
 		int size;
@@ -84,7 +82,6 @@ public:
 };
 
 class FileAccessNetwork : public FileAccess {
-
 	Semaphore sem;
 	Semaphore page_sem;
 	Mutex buffer_mutex;

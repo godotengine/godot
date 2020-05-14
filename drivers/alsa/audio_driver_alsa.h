@@ -40,7 +40,6 @@
 #include <alsa/asoundlib.h>
 
 class AudioDriverALSA : public AudioDriver {
-
 	Thread *thread = nullptr;
 	Mutex mutex;
 

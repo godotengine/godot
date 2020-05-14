@@ -202,7 +202,6 @@ void SceneDebugger::_send_object_id(ObjectID p_id, int p_max_size) {
 }
 
 void SceneDebugger::_set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value) {
-
 	Object *obj = ObjectDB::get_instance(p_id);
 	if (!obj)
 		return;
@@ -243,7 +242,6 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	Map<Node *, Map<ObjectID, Node *>>::Element *F = remove_list.find(p_node);
 	if (F) {
 		for (Map<ObjectID, Node *>::Element *G = F->get().front(); G; G = G->next()) {
-
 			memdelete(G->get());
 		}
 		remove_list.erase(F);
@@ -403,7 +401,6 @@ void SceneDebuggerObject::deserialize(const Array &p_arr) {
 	Array props = p_arr[2];
 
 	for (int i = 0; i < props.size(); i++) {
-
 		CHECK_TYPE(props[i], ARRAY);
 		Array prop = props[i];
 
@@ -496,17 +493,14 @@ void LiveEditor::_send_tree() {
 }
 
 void LiveEditor::_node_path_func(const NodePath &p_path, int p_id) {
-
 	live_edit_node_path_cache[p_id] = p_path;
 }
 
 void LiveEditor::_res_path_func(const String &p_path, int p_id) {
-
 	live_edit_resource_cache[p_id] = p_path;
 }
 
 void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Variant &p_value) {
-
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
 		return;
@@ -524,7 +518,6 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
 		if (base && !base->is_a_parent_of(n))
@@ -539,7 +532,6 @@ void LiveEditor::_node_set_func(int p_id, const StringName &p_prop, const Varian
 }
 
 void LiveEditor::_node_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
-
 	RES r = ResourceLoader::load(p_value);
 	if (!r.is_valid())
 		return;
@@ -562,7 +554,6 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
 		if (base && !base->is_a_parent_of(n))
@@ -576,7 +567,6 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 	}
 }
 void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant &p_value) {
-
 	if (!live_edit_resource_cache.has(p_id))
 		return;
 
@@ -592,14 +582,12 @@ void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant
 	r->set(p_prop, p_value);
 }
 void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
-
 	RES r = ResourceLoader::load(p_value);
 	if (!r.is_valid())
 		return;
 	_res_set_func(p_id, p_prop, r);
 }
 void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
-
 	if (!live_edit_resource_cache.has(p_id))
 		return;
 
@@ -616,7 +604,6 @@ void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_AR
 }
 
 void LiveEditor::_root_func(const NodePath &p_scene_path, const String &p_scene_from) {
-
 	live_edit_root = p_scene_path;
 	live_edit_scene = p_scene_from;
 }
@@ -635,7 +622,6 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
 		if (base && !base->is_a_parent_of(n))
@@ -673,7 +659,6 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
 		if (base && !base->is_a_parent_of(n))
@@ -706,7 +691,6 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
-
 		Set<Node *>::Element *N = F->next();
 
 		Node *n = F->get();
@@ -737,7 +721,6 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
-
 		Set<Node *>::Element *N = F->next();
 
 		Node *n = F->get();
@@ -771,7 +754,6 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F;) {
-
 		Set<Node *>::Element *N = F->next();
 
 		Node *n = F->get();
@@ -817,7 +799,6 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
 		if (base && !base->is_a_parent_of(n))
@@ -850,7 +831,6 @@ void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new
 		return; //scene not editable
 
 	for (Set<Node *>::Element *F = E->get().front(); F; F = F->next()) {
-
 		Node *n = F->get();
 
 		if (base && !base->is_a_parent_of(n))

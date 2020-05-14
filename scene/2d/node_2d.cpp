@@ -37,7 +37,6 @@
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
-
 	Dictionary state;
 	state["position"] = get_position();
 	state["rotation"] = get_rotation();
@@ -48,7 +47,6 @@ Dictionary Node2D::_edit_get_state() const {
 }
 
 void Node2D::_edit_set_state(const Dictionary &p_state) {
-
 	pos = p_state["position"];
 	angle = p_state["rotation"];
 	_scale = p_state["scale"];
@@ -128,7 +126,6 @@ void Node2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 #endif
 
 void Node2D::_update_xform_values() {
-
 	pos = _mat.elements[2];
 	angle = _mat.get_rotation();
 	_scale = _mat.get_scale();
@@ -137,7 +134,6 @@ void Node2D::_update_xform_values() {
 }
 
 void Node2D::_update_transform() {
-
 	_mat.set_rotation_scale_and_skew(angle, _scale, skew);
 	_mat.elements[2] = pos;
 
@@ -150,7 +146,6 @@ void Node2D::_update_transform() {
 }
 
 void Node2D::set_position(const Point2 &p_pos) {
-
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
 	pos = p_pos;
@@ -159,7 +154,6 @@ void Node2D::set_position(const Point2 &p_pos) {
 }
 
 void Node2D::set_rotation(float p_radians) {
-
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
 	angle = p_radians;
@@ -169,7 +163,6 @@ void Node2D::set_rotation(float p_radians) {
 }
 
 void Node2D::set_skew(float p_radians) {
-
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
 	skew = p_radians;
@@ -179,17 +172,14 @@ void Node2D::set_skew(float p_radians) {
 }
 
 void Node2D::set_rotation_degrees(float p_degrees) {
-
 	set_rotation(Math::deg2rad(p_degrees));
 }
 
 void Node2D::set_skew_degrees(float p_degrees) {
-
 	set_skew(Math::deg2rad(p_degrees));
 }
 
 void Node2D::set_scale(const Size2 &p_scale) {
-
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
 	_scale = p_scale;
@@ -203,7 +193,6 @@ void Node2D::set_scale(const Size2 &p_scale) {
 }
 
 Point2 Node2D::get_position() const {
-
 	if (_xform_dirty)
 		((Node2D *)this)->_update_xform_values();
 	return pos;
@@ -224,12 +213,10 @@ float Node2D::get_skew() const {
 }
 
 float Node2D::get_rotation_degrees() const {
-
 	return Math::rad2deg(get_rotation());
 }
 
 float Node2D::get_skew_degrees() const {
-
 	return Math::rad2deg(get_skew());
 }
 Size2 Node2D::get_scale() const {
@@ -240,32 +227,26 @@ Size2 Node2D::get_scale() const {
 }
 
 Transform2D Node2D::get_transform() const {
-
 	return _mat;
 }
 
 void Node2D::rotate(float p_radians) {
-
 	set_rotation(get_rotation() + p_radians);
 }
 
 void Node2D::translate(const Vector2 &p_amount) {
-
 	set_position(get_position() + p_amount);
 }
 
 void Node2D::global_translate(const Vector2 &p_amount) {
-
 	set_global_position(get_global_position() + p_amount);
 }
 
 void Node2D::apply_scale(const Size2 &p_amount) {
-
 	set_scale(get_scale() * p_amount);
 }
 
 void Node2D::move_x(float p_delta, bool p_scaled) {
-
 	Transform2D t = get_transform();
 	Vector2 m = t[0];
 	if (!p_scaled)
@@ -274,7 +255,6 @@ void Node2D::move_x(float p_delta, bool p_scaled) {
 }
 
 void Node2D::move_y(float p_delta, bool p_scaled) {
-
 	Transform2D t = get_transform();
 	Vector2 m = t[1];
 	if (!p_scaled)
@@ -283,12 +263,10 @@ void Node2D::move_y(float p_delta, bool p_scaled) {
 }
 
 Point2 Node2D::get_global_position() const {
-
 	return get_global_transform().get_origin();
 }
 
 void Node2D::set_global_position(const Point2 &p_pos) {
-
 	Transform2D inv;
 	CanvasItem *pi = get_parent_item();
 	if (pi) {
@@ -300,12 +278,10 @@ void Node2D::set_global_position(const Point2 &p_pos) {
 }
 
 float Node2D::get_global_rotation() const {
-
 	return get_global_transform().get_rotation();
 }
 
 void Node2D::set_global_rotation(float p_radians) {
-
 	CanvasItem *pi = get_parent_item();
 	if (pi) {
 		const float parent_global_rot = pi->get_global_transform().get_rotation();
@@ -316,22 +292,18 @@ void Node2D::set_global_rotation(float p_radians) {
 }
 
 float Node2D::get_global_rotation_degrees() const {
-
 	return Math::rad2deg(get_global_rotation());
 }
 
 void Node2D::set_global_rotation_degrees(float p_degrees) {
-
 	set_global_rotation(Math::deg2rad(p_degrees));
 }
 
 Size2 Node2D::get_global_scale() const {
-
 	return get_global_transform().get_scale();
 }
 
 void Node2D::set_global_scale(const Size2 &p_scale) {
-
 	CanvasItem *pi = get_parent_item();
 	if (pi) {
 		const Size2 parent_global_scale = pi->get_global_transform().get_scale();
@@ -342,7 +314,6 @@ void Node2D::set_global_scale(const Size2 &p_scale) {
 }
 
 void Node2D::set_transform(const Transform2D &p_transform) {
-
 	_mat = p_transform;
 	_xform_dirty = true;
 
@@ -355,7 +326,6 @@ void Node2D::set_transform(const Transform2D &p_transform) {
 }
 
 void Node2D::set_global_transform(const Transform2D &p_transform) {
-
 	CanvasItem *pi = get_parent_item();
 	if (pi)
 		set_transform(pi->get_global_transform().affine_inverse() * p_transform);
@@ -364,7 +334,6 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 }
 
 void Node2D::set_z_index(int p_z) {
-
 	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN);
 	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
 	z_index = p_z;
@@ -373,7 +342,6 @@ void Node2D::set_z_index(int p_z) {
 }
 
 void Node2D::set_z_as_relative(bool p_enabled) {
-
 	if (z_relative == p_enabled)
 		return;
 	z_relative = p_enabled;
@@ -381,17 +349,14 @@ void Node2D::set_z_as_relative(bool p_enabled) {
 }
 
 bool Node2D::is_z_relative() const {
-
 	return z_relative;
 }
 
 int Node2D::get_z_index() const {
-
 	return z_index;
 }
 
 Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
-
 	if (p_parent == this)
 		return Transform2D();
 
@@ -405,27 +370,22 @@ Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const
 }
 
 void Node2D::look_at(const Vector2 &p_pos) {
-
 	rotate(get_angle_to(p_pos));
 }
 
 float Node2D::get_angle_to(const Vector2 &p_pos) const {
-
 	return (to_local(p_pos) * get_scale()).angle();
 }
 
 Point2 Node2D::to_local(Point2 p_global) const {
-
 	return get_global_transform().affine_inverse().xform(p_global);
 }
 
 Point2 Node2D::to_global(Point2 p_local) const {
-
 	return get_global_transform().xform(p_local);
 }
 
 void Node2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node2D::set_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Node2D::set_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Node2D::set_rotation_degrees);
@@ -494,7 +454,6 @@ void Node2D::_bind_methods() {
 }
 
 Node2D::Node2D() {
-
 	angle = 0;
 	_scale = Vector2(1, 1);
 	skew = 0;

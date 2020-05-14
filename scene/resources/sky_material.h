@@ -35,7 +35,6 @@
 #define SKY_MATERIAL_H
 
 class ProceduralSkyMaterial : public Material {
-
 	GDCLASS(ProceduralSkyMaterial, Material);
 
 private:

@@ -64,7 +64,6 @@ void EditorDebuggerTree::_bind_methods() {
 }
 
 void EditorDebuggerTree::_scene_tree_selected() {
-
 	if (updating_scene_tree) {
 		return;
 	}
@@ -80,9 +79,7 @@ void EditorDebuggerTree::_scene_tree_selected() {
 }
 
 void EditorDebuggerTree::_scene_tree_folded(Object *p_obj) {
-
 	if (updating_scene_tree) {
-
 		return;
 	}
 	TreeItem *item = Object::cast_to<TreeItem>(p_obj);
@@ -99,7 +96,6 @@ void EditorDebuggerTree::_scene_tree_folded(Object *p_obj) {
 }
 
 void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position) {
-
 	TreeItem *item = get_item_at_position(p_position);
 	if (!item)
 		return;
@@ -224,11 +220,8 @@ String EditorDebuggerTree::_get_path(TreeItem *p_item) {
 }
 
 void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
-
 	switch (p_option) {
-
 		case ITEM_MENU_SAVE_REMOTE_NODE: {
-
 			file_dialog->set_access(EditorFileDialog::ACCESS_RESOURCES);
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 
@@ -243,7 +236,6 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 			file_dialog->popup_centered_ratio();
 		} break;
 		case ITEM_MENU_COPY_NODE_PATH: {
-
 			String text = get_selected_path();
 			if (text.empty()) {
 				return;

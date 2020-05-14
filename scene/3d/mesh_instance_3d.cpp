@@ -37,7 +37,6 @@
 #include "skeleton_3d.h"
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
-
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
 	//add to it that it's probably found on first call to _set anyway.
 
@@ -64,7 +63,6 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
-
 	if (!get_instance().is_valid())
 		return false;
 
@@ -85,10 +83,8 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	List<String> ls;
 	for (const Map<StringName, BlendShapeTrack>::Element *E = blend_shape_tracks.front(); E; E = E->next()) {
-
 		ls.push_back(E->key());
 	}
 
@@ -106,7 +102,6 @@ void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
-
 	if (mesh == p_mesh)
 		return;
 
@@ -119,9 +114,7 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 	blend_shape_tracks.clear();
 	if (mesh.is_valid()) {
-
 		for (int i = 0; i < mesh->get_blend_shape_count(); i++) {
-
 			BlendShapeTrack mt;
 			mt.idx = i;
 			mt.value = 0;
@@ -133,7 +126,6 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 
 		set_base(mesh->get_rid());
 	} else {
-
 		set_base(RID());
 	}
 
@@ -142,12 +134,10 @@ void MeshInstance3D::set_mesh(const Ref<Mesh> &p_mesh) {
 	_change_notify();
 }
 Ref<Mesh> MeshInstance3D::get_mesh() const {
-
 	return mesh;
 }
 
 void MeshInstance3D::_resolve_skeleton_path() {
-
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
@@ -184,7 +174,6 @@ Ref<Skin> MeshInstance3D::get_skin() const {
 }
 
 void MeshInstance3D::set_skeleton_path(const NodePath &p_skeleton) {
-
 	skeleton_path = p_skeleton;
 	if (!is_inside_tree())
 		return;
@@ -196,7 +185,6 @@ NodePath MeshInstance3D::get_skeleton_path() {
 }
 
 AABB MeshInstance3D::get_aabb() const {
-
 	if (!mesh.is_null())
 		return mesh->get_aabb();
 
@@ -204,7 +192,6 @@ AABB MeshInstance3D::get_aabb() const {
 }
 
 Vector<Face3> MeshInstance3D::get_faces(uint32_t p_usage_flags) const {
-
 	if (!(p_usage_flags & (FACES_SOLID | FACES_ENCLOSING)))
 		return Vector<Face3>();
 
@@ -215,7 +202,6 @@ Vector<Face3> MeshInstance3D::get_faces(uint32_t p_usage_flags) const {
 }
 
 Node *MeshInstance3D::create_trimesh_collision_node() {
-
 	if (mesh.is_null())
 		return nullptr;
 
@@ -231,7 +217,6 @@ Node *MeshInstance3D::create_trimesh_collision_node() {
 }
 
 void MeshInstance3D::create_trimesh_collision() {
-
 	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_trimesh_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
@@ -245,7 +230,6 @@ void MeshInstance3D::create_trimesh_collision() {
 }
 
 Node *MeshInstance3D::create_convex_collision_node() {
-
 	if (mesh.is_null())
 		return nullptr;
 
@@ -261,7 +245,6 @@ Node *MeshInstance3D::create_convex_collision_node() {
 }
 
 void MeshInstance3D::create_convex_collision() {
-
 	StaticBody3D *static_body = Object::cast_to<StaticBody3D>(create_convex_collision_node());
 	ERR_FAIL_COND(!static_body);
 	static_body->set_name(String(get_name()) + "_col");
@@ -275,19 +258,16 @@ void MeshInstance3D::create_convex_collision() {
 }
 
 void MeshInstance3D::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_resolve_skeleton_path();
 	}
 }
 
 int MeshInstance3D::get_surface_material_count() const {
-
 	return materials.size();
 }
 
 void MeshInstance3D::set_surface_material(int p_surface, const Ref<Material> &p_material) {
-
 	ERR_FAIL_INDEX(p_surface, materials.size());
 
 	materials.write[p_surface] = p_material;
@@ -299,14 +279,12 @@ void MeshInstance3D::set_surface_material(int p_surface, const Ref<Material> &p_
 }
 
 Ref<Material> MeshInstance3D::get_surface_material(int p_surface) const {
-
 	ERR_FAIL_INDEX_V(p_surface, materials.size(), Ref<Material>());
 
 	return materials[p_surface];
 }
 
 Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
-
 	Ref<Material> material_override = get_material_override();
 	if (material_override.is_valid()) {
 		return material_override;
@@ -326,12 +304,10 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 }
 
 void MeshInstance3D::_mesh_changed() {
-
 	materials.resize(mesh->get_surface_count());
 }
 
 void MeshInstance3D::create_debug_tangents() {
-
 	Vector<Vector3> lines;
 	Vector<Color> colors;
 
@@ -373,7 +349,6 @@ void MeshInstance3D::create_debug_tangents() {
 	}
 
 	if (lines.size()) {
-
 		Ref<StandardMaterial3D> sm;
 		sm.instance();
 
@@ -406,7 +381,6 @@ void MeshInstance3D::create_debug_tangents() {
 }
 
 void MeshInstance3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance3D::set_skeleton_path);

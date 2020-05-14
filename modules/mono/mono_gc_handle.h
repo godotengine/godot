@@ -81,7 +81,6 @@ struct MonoGCHandleData {
 };
 
 class MonoGCHandleRef : public Reference {
-
 	GDCLASS(MonoGCHandleRef, Reference);
 
 	MonoGCHandleData data;

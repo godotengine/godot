@@ -35,7 +35,6 @@
 #include "servers/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent2D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent2D::get_target_desired_distance);
 
@@ -91,7 +90,6 @@ void NavigationAgent2D::_bind_methods() {
 void NavigationAgent2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			agent_parent = Object::cast_to<Node2D>(get_parent());
 
 			NavigationServer2D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
@@ -120,7 +118,6 @@ void NavigationAgent2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
-
 				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().get_origin());
 				if (!target_reached) {
 					if (distance_to_target() < target_desired_distance) {
@@ -279,7 +276,6 @@ String NavigationAgent2D::get_configuration_warning() const {
 }
 
 void NavigationAgent2D::update_navigation() {
-
 	if (agent_parent == nullptr)
 		return;
 	if (navigation == nullptr)

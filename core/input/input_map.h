@@ -35,7 +35,6 @@
 #include "core/object.h"
 
 class InputMap : public Object {
-
 	GDCLASS(InputMap, Object);
 
 public:

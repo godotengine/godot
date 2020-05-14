@@ -38,7 +38,6 @@
 static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
 
 void register_linuxbsd_exporter() {
-
 	Ref<EditorExportPlatformPC> platform;
 	platform.instance();
 
@@ -62,7 +61,6 @@ void register_linuxbsd_exporter() {
 }
 
 static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
-
 	// Patch the header of the "pck" section in the ELF file so that it corresponds to the embedded data
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ_WRITE);
@@ -139,7 +137,6 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 
 	bool found = false;
 	for (int i = 0; i < num_sections; ++i) {
-
 		int64_t section_header_pos = section_table_pos + i * section_header_size;
 		f->seek(section_header_pos);
 

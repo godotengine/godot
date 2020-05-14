@@ -81,7 +81,6 @@ public:
 	}
 
 	void invert() {
-
 		for (U i = 0; i < count / 2; i++) {
 			SWAP(data[i], data[count - i - 1]);
 		}
@@ -108,9 +107,7 @@ public:
 
 	_FORCE_INLINE_ U size() const { return count; }
 	void resize(U p_size) {
-
 		if (p_size < count) {
-
 			if (!__has_trivial_destructor(T) && !force_trivial) {
 				for (U i = p_size; i < count; i++) {
 					data[i].~T();
@@ -118,7 +115,6 @@ public:
 			}
 			count = p_size;
 		} else if (p_size > count) {
-
 			if (unlikely(p_size > capacity)) {
 				if (capacity == 0) {
 					capacity = 1;
@@ -160,7 +156,6 @@ public:
 	}
 
 	int64_t find(const T &p_val, U p_from = 0) const {
-
 		for (U i = 0; i < count; i++) {
 			if (data[i] == p_val) {
 				return int64_t(i);
@@ -171,7 +166,6 @@ public:
 
 	template <class C>
 	void sort_custom() {
-
 		U len = count;
 		if (len == 0)
 			return;
@@ -181,15 +175,12 @@ public:
 	}
 
 	void sort() {
-
 		sort_custom<_DefaultComparator<T>>();
 	}
 
 	void ordered_insert(T p_val) {
-
 		U i;
 		for (i = 0; i < count; i++) {
-
 			if (p_val < data[i]) {
 				break;
 			};
@@ -236,7 +227,6 @@ public:
 	}
 
 	_FORCE_INLINE_ ~LocalVector() {
-
 		if (data) {
 			reset();
 		}

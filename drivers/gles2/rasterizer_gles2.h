@@ -37,7 +37,6 @@
 #include "servers/rendering/rasterizer.h"
 
 class RasterizerGLES2 : public Rasterizer {
-
 	static Rasterizer *_create_current();
 
 	RasterizerStorageGLES2 *storage;

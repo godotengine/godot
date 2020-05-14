@@ -38,7 +38,6 @@
 #include "shape_3d.h"
 
 class MeshLibrary : public Resource {
-
 	GDCLASS(MeshLibrary, Resource);
 	RES_BASE_EXTENSION("meshlib");
 

@@ -31,12 +31,10 @@
 #include "shader_types.h"
 
 const Map<StringName, ShaderLanguage::FunctionInfo> &ShaderTypes::get_functions(RS::ShaderMode p_mode) {
-
 	return shader_modes[p_mode].functions;
 }
 
 const Vector<StringName> &ShaderTypes::get_modes(RS::ShaderMode p_mode) {
-
 	return shader_modes[p_mode].modes;
 }
 
@@ -47,7 +45,6 @@ const Set<String> &ShaderTypes::get_types() {
 ShaderTypes *ShaderTypes::singleton = nullptr;
 
 static ShaderLanguage::BuiltInInfo constt(ShaderLanguage::DataType p_type) {
-
 	return ShaderLanguage::BuiltInInfo(p_type, true);
 }
 

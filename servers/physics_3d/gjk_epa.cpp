@@ -915,11 +915,9 @@ bool Penetration(	const Shape3DSW*	shape0,
 /* clang-format on */
 
 bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
-
 	GjkEpa2::sResults res;
 
 	if (GjkEpa2::Distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
-
 		r_result_A = res.witnesses[0];
 		r_result_B = res.witnesses[1];
 		return true;
@@ -929,7 +927,6 @@ bool gjk_epa_calculate_distance(const Shape3DSW *p_shape_A, const Transform &p_t
 }
 
 bool gjk_epa_calculate_penetration(const Shape3DSW *p_shape_A, const Transform &p_transform_A, const Shape3DSW *p_shape_B, const Transform &p_transform_B, CollisionSolver3DSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap) {
-
 	GjkEpa2::sResults res;
 
 	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {

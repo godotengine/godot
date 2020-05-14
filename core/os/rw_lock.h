@@ -52,7 +52,6 @@ public:
 };
 
 class RWLockRead {
-
 	RWLock *lock;
 
 public:
@@ -68,7 +67,6 @@ public:
 };
 
 class RWLockWrite {
-
 	RWLock *lock;
 
 public:

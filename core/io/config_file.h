@@ -37,7 +37,6 @@
 #include "core/variant_parser.h"
 
 class ConfigFile : public Reference {
-
 	GDCLASS(ConfigFile, Reference);
 
 	OrderedHashMap<String, OrderedHashMap<String, Variant>> values;

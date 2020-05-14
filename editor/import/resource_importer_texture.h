@@ -60,7 +60,6 @@ protected:
 
 	Mutex mutex;
 	struct MakeInfo {
-
 		int flags;
 		String normal_path_for_roughness;
 		RS::TextureDetectRoughnessChannel channel_for_roughness;

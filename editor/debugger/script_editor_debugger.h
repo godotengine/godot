@@ -55,7 +55,6 @@ class EditorNetworkProfiler;
 class SceneDebuggerTree;
 
 class ScriptEditorDebugger : public MarginContainer {
-
 	GDCLASS(ScriptEditorDebugger, MarginContainer);
 
 	friend class EditorDebuggerNode;

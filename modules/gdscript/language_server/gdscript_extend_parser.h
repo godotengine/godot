@@ -50,7 +50,6 @@
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
 
 class ExtendGDScriptParser : public GDScriptParser {
-
 	String path;
 	Vector<String> lines;
 

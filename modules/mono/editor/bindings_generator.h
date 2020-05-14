@@ -41,7 +41,6 @@
 #include "core/ustring.h"
 
 class BindingsGenerator {
-
 	struct ConstantInterface {
 		String name;
 		String proxy_name;

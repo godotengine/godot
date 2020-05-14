@@ -18,7 +18,6 @@ layout(r32f, set = 3, binding = 0) uniform restrict writeonly image2D dest_depth
 layout(rgba8, set = 3, binding = 1) uniform restrict writeonly image2D dest_normal;
 
 layout(push_constant, binding = 1, std430) uniform Params {
-
 	ivec2 screen_size;
 	float camera_z_near;
 	float camera_z_far;
@@ -30,7 +29,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 params;
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_GlobalInvocationID.xy);
 
@@ -45,13 +43,11 @@ void main() {
 	vec3 normal;
 
 	if (params.filtered) {
-
 		color = vec4(0.0);
 		depth = 0.0;
 		normal = vec3(0.0);
 
 		for (int i = 0; i < 4; i++) {
-
 			ivec2 ofs = ssC << 1;
 			if (bool(i & 1)) {
 				ofs.x += 1;

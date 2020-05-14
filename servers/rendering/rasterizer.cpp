@@ -63,7 +63,6 @@ RasterizerScene::InstanceDependency::~InstanceDependency() {
 }
 
 Rasterizer *Rasterizer::create() {
-
 	return _create_func();
 }
 
@@ -72,6 +71,5 @@ RasterizerCanvas *RasterizerCanvas::singleton = nullptr;
 RasterizerStorage *RasterizerStorage::base_singleton = nullptr;
 
 RasterizerStorage::RasterizerStorage() {
-
 	base_singleton = this;
 }

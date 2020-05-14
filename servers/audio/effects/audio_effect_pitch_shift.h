@@ -34,7 +34,6 @@
 #include "servers/audio/audio_effect.h"
 
 class SMBPitchShift {
-
 	enum {
 		MAX_FRAME_LENGTH = 8192
 	};

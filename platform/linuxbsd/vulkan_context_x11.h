@@ -35,7 +35,6 @@
 #include <X11/Xlib.h>
 
 class VulkanContextX11 : public VulkanContext {
-
 	virtual const char *_get_platform_surface_extension() const;
 
 public:

@@ -38,7 +38,6 @@
 #include "scene/main/timer.h"
 
 class HTTPRequest : public Node {
-
 	GDCLASS(HTTPRequest, Node);
 
 public:

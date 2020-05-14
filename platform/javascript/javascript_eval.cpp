@@ -34,14 +34,12 @@
 #include "emscripten.h"
 
 extern "C" EMSCRIPTEN_KEEPALIVE uint8_t *resize_PackedByteArray_and_open_write(PackedByteArray *p_arr, VectorWriteProxy<uint8_t> *r_write, int p_len) {
-
 	p_arr->resize(p_len);
 	*r_write = p_arr->write;
 	return p_arr->ptrw();
 }
 
 Variant JavaScript::eval(const String &p_code, bool p_use_global_exec_context) {
-
 	union {
 		bool b;
 		double d;

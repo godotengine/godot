@@ -40,7 +40,6 @@
 #include "scene/gui/tree.h"
 
 class FileDialog : public ConfirmationDialog {
-
 	GDCLASS(FileDialog, ConfirmationDialog);
 
 public:

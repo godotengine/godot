@@ -99,7 +99,6 @@ public:
 			if (i >= datamax)
 				xm_sample = 0;
 			else {
-
 				xm_sample = CLAMP(in[i] * 32767.0, -32768, 32767);
 				/*
 				if (xm_sample==32767 || xm_sample==-32768)
@@ -121,9 +120,7 @@ public:
 			}
 			mask = 4;
 			while (mask) {
-
 				if (diff >= step) {
-
 					nibble |= mask;
 					diff -= step;
 					vpdiff += step;

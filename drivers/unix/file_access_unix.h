@@ -41,7 +41,6 @@
 typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
 
 class FileAccessUnix : public FileAccess {
-
 	FILE *f = nullptr;
 	int flags = 0;
 	void check_errors() const;

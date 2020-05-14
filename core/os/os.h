@@ -42,7 +42,6 @@
 #include <stdarg.h>
 
 class OS {
-
 	static OS *singleton;
 	String _execpath;
 	List<String> _cmdline;
@@ -185,7 +184,6 @@ public:
 	};
 
 	struct Date {
-
 		int year;
 		Month month;
 		int day;
@@ -194,7 +192,6 @@ public:
 	};
 
 	struct Time {
-
 		int hour;
 		int min;
 		int sec;

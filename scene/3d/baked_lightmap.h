@@ -52,7 +52,6 @@ class BakedLightmapData : public Resource {
 	AABB bounds;
 
 	struct User {
-
 		NodePath path;
 		int32_t sub_instance;
 		Rect2 uv_scale;

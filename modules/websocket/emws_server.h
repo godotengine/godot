@@ -38,7 +38,6 @@
 #include "websocket_server.h"
 
 class EMWSServer : public WebSocketServer {
-
 	GDCIIMPL(EMWSServer, WebSocketServer);
 
 public:

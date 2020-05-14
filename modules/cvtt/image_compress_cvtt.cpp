@@ -137,7 +137,6 @@ static void _digest_job_queue(void *p_job_queue) {
 }
 
 void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
-
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA)
 		return; //do not compress, already compressed
 
@@ -222,7 +221,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 	Vector<CVTTCompressionRowTask> tasks;
 
 	for (int i = 0; i <= mm_count; i++) {
-
 		int bw = w % 4 != 0 ? w + (4 - w % 4) : w;
 		int bh = h % 4 != 0 ? h + (4 - h % 4) : h;
 
@@ -280,7 +278,6 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChann
 }
 
 void image_decompress_cvtt(Image *p_image) {
-
 	Image::Format target_format;
 	bool is_signed = false;
 	bool is_hdr = false;
@@ -318,7 +315,6 @@ void image_decompress_cvtt(Image *p_image) {
 	int dst_ofs = 0;
 
 	for (int i = 0; i <= mm_count; i++) {
-
 		int src_ofs = p_image->get_mipmap_offset(i);
 
 		const uint8_t *in_bytes = &rb[src_ofs];

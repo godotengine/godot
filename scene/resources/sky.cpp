@@ -43,7 +43,6 @@ void Sky::set_radiance_size(RadianceSize p_size) {
 }
 
 Sky::RadianceSize Sky::get_radiance_size() const {
-
 	return radiance_size;
 }
 
@@ -69,12 +68,10 @@ Ref<Material> Sky::get_material() const {
 }
 
 RID Sky::get_rid() const {
-
 	return sky;
 }
 
 void Sky::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_radiance_size", "size"), &Sky::set_radiance_size);
 	ClassDB::bind_method(D_METHOD("get_radiance_size"), &Sky::get_radiance_size);
 
@@ -108,6 +105,5 @@ Sky::Sky() {
 }
 
 Sky::~Sky() {
-
 	RS::get_singleton()->free(sky);
 }

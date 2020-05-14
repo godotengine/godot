@@ -154,7 +154,6 @@ enum {
 };
 
 struct _WinTranslatePair {
-
 	unsigned int keysym;
 	unsigned int keycode;
 };

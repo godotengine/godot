@@ -23,7 +23,6 @@ params;
 layout(r32f, set = 1, binding = 0) uniform restrict writeonly image2D depth_buffer;
 
 void main() {
-
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 	if (any(greaterThan(pos, params.screen_size))) { //too large, do nothing
 		return;

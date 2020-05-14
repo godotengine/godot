@@ -36,7 +36,6 @@
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
 class TextureLayeredEditor : public Control {
-
 	GDCLASS(TextureLayeredEditor, Control);
 
 	SpinBox *layer;
@@ -83,7 +82,6 @@ public:
 };
 
 class TextureLayeredEditorPlugin : public EditorPlugin {
-
 	GDCLASS(TextureLayeredEditorPlugin, EditorPlugin);
 
 public:

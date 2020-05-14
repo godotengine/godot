@@ -33,7 +33,6 @@
 #include "core/os/keyboard.h"
 
 void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
-
 	add_directories = p_add_dirs;
 	popup_centered_ratio(0.6);
 	if (p_dontclear)
@@ -50,7 +49,6 @@ void EditorQuickOpen::popup_dialog(const StringName &p_base, bool p_enable_multi
 }
 
 String EditorQuickOpen::get_selected() const {
-
 	TreeItem *ti = search_options->get_selected();
 	if (!ti)
 		return String();
@@ -59,12 +57,10 @@ String EditorQuickOpen::get_selected() const {
 }
 
 Vector<String> EditorQuickOpen::get_selected_files() const {
-
 	Vector<String> files;
 
 	TreeItem *item = search_options->get_next_selected(search_options->get_root());
 	while (item) {
-
 		files.push_back("res://" + item->get_text(0));
 
 		item = search_options->get_next_selected(item);
@@ -74,21 +70,17 @@ Vector<String> EditorQuickOpen::get_selected_files() const {
 }
 
 void EditorQuickOpen::_text_changed(const String &p_newtext) {
-
 	_update_search();
 }
 
 void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
-
 	Ref<InputEventKey> k = p_ie;
 	if (k.is_valid()) {
-
 		switch (k->get_keycode()) {
 			case KEY_UP:
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-
 				search_options->call("_gui_input", k);
 				search_box->accept_event();
 
@@ -112,7 +104,6 @@ void EditorQuickOpen::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 float EditorQuickOpen::_path_cmp(String search, String path) const {
-
 	// Exact match.
 	if (search == path) {
 		return 1.2f;
@@ -129,10 +120,8 @@ float EditorQuickOpen::_path_cmp(String search, String path) const {
 }
 
 void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<String, Ref<Texture2D>>> &list) {
-
 	if (!add_directories) {
 		for (int i = 0; i < efsd->get_subdir_count(); i++) {
-
 			_parse_fs(efsd->get_subdir(i), list);
 		}
 	}
@@ -151,7 +140,6 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 				pair.second = search_options->get_theme_icon("folder", "FileDialog");
 
 				if (search_text != String() && list.size() > 0) {
-
 					float this_sim = _path_cmp(search_text, path);
 					float other_sim = _path_cmp(list[0].first, path);
 					int pos = 1;
@@ -170,7 +158,6 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 		}
 	}
 	for (int i = 0; i < efsd->get_file_count(); i++) {
-
 		String file = efsd->get_file_path(i);
 		file = file.substr(6, file.length());
 
@@ -184,14 +171,12 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector<Pair<Str
 
 	if (add_directories) {
 		for (int i = 0; i < efsd->get_subdir_count(); i++) {
-
 			_parse_fs(efsd->get_subdir(i), list);
 		}
 	}
 }
 
 Vector<Pair<String, Ref<Texture2D>>> EditorQuickOpen::_sort_fs(Vector<Pair<String, Ref<Texture2D>>> &list) {
-
 	String search_text = search_box->get_text();
 	Vector<Pair<String, Ref<Texture2D>>> sorted_list;
 
@@ -204,7 +189,6 @@ Vector<Pair<String, Ref<Texture2D>>> EditorQuickOpen::_sort_fs(Vector<Pair<Strin
 		scores.write[i] = _path_cmp(search_text, list[i].first);
 
 	while (list.size() > 0) {
-
 		float best_score = 0.0f;
 		int best_idx = 0;
 
@@ -225,7 +209,6 @@ Vector<Pair<String, Ref<Texture2D>>> EditorQuickOpen::_sort_fs(Vector<Pair<Strin
 }
 
 void EditorQuickOpen::_update_search() {
-
 	search_options->clear();
 	TreeItem *root = search_options->create_item();
 	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem();
@@ -251,7 +234,6 @@ void EditorQuickOpen::_update_search() {
 }
 
 void EditorQuickOpen::_confirmed() {
-
 	TreeItem *ti = search_options->get_selected();
 	if (!ti)
 		return;
@@ -260,12 +242,10 @@ void EditorQuickOpen::_confirmed() {
 }
 
 void EditorQuickOpen::_theme_changed() {
-
 	search_box->set_right_icon(search_options->get_theme_icon("Search", "EditorIcons"));
 }
 
 void EditorQuickOpen::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &EditorQuickOpen::_confirmed));
@@ -279,17 +259,14 @@ void EditorQuickOpen::_notification(int p_what) {
 }
 
 StringName EditorQuickOpen::get_base_type() const {
-
 	return base_type;
 }
 
 void EditorQuickOpen::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo("quick_open"));
 }
 
 EditorQuickOpen::EditorQuickOpen() {
-
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->connect("theme_changed", callable_mp(this, &EditorQuickOpen::_theme_changed));
 

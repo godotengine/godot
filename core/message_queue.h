@@ -35,7 +35,6 @@
 #include "core/os/thread_safe.h"
 
 class MessageQueue {
-
 	_THREAD_SAFE_CLASS_
 
 	enum {
@@ -53,7 +52,6 @@ class MessageQueue {
 	};
 
 	struct Message {
-
 		Callable callable;
 		int16_t type;
 		union {

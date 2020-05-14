@@ -36,7 +36,6 @@
 #include "editor_scale.h"
 
 void EditorHelpSearch::_update_icons() {
-
 	search_box->set_right_icon(results_tree->get_theme_icon("Search", "EditorIcons"));
 	search_box->set_clear_button_enabled(true);
 	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon("Search", "EditorIcons"));
@@ -48,7 +47,6 @@ void EditorHelpSearch::_update_icons() {
 }
 
 void EditorHelpSearch::_update_results() {
-
 	String term = search_box->get_text();
 
 	int search_flags = filter_combo->get_selected_id();
@@ -62,7 +60,6 @@ void EditorHelpSearch::_update_results() {
 }
 
 void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
-
 	// Redirect up and down navigational key events to the results list.
 	Ref<InputEventKey> key = p_event;
 	if (key.is_valid()) {
@@ -79,17 +76,14 @@ void EditorHelpSearch::_search_box_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorHelpSearch::_search_box_text_changed(const String &p_text) {
-
 	_update_results();
 }
 
 void EditorHelpSearch::_filter_combo_item_selected(int p_option) {
-
 	_update_results();
 }
 
 void EditorHelpSearch::_confirmed() {
-
 	TreeItem *item = results_tree->get_selected();
 	if (!item)
 		return;
@@ -103,7 +97,6 @@ void EditorHelpSearch::_confirmed() {
 }
 
 void EditorHelpSearch::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
@@ -113,17 +106,14 @@ void EditorHelpSearch::_notification(int p_what) {
 			}
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
 			_update_icons();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
 			connect("confirmed", callable_mp(this, &EditorHelpSearch::_confirmed));
 			_update_icons();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-
 			// Update background search.
 			if (search.is_valid()) {
 				if (search->work()) {
@@ -148,17 +138,14 @@ void EditorHelpSearch::_notification(int p_what) {
 }
 
 void EditorHelpSearch::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 }
 
 void EditorHelpSearch::popup_dialog() {
-
 	popup_dialog(search_box->get_text());
 }
 
 void EditorHelpSearch::popup_dialog(const String &p_term) {
-
 	// Restore valid window bounds or pop up at default size.
 	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "search_help", Rect2());
 	if (saved_size != Rect2())
@@ -182,7 +169,6 @@ void EditorHelpSearch::popup_dialog(const String &p_term) {
 }
 
 EditorHelpSearch::EditorHelpSearch() {
-
 	old_search = false;
 
 	set_hide_on_ok(false);
@@ -254,7 +240,6 @@ EditorHelpSearch::EditorHelpSearch() {
 }
 
 bool EditorHelpSearch::Runner::_is_class_disabled_by_feature_profile(const StringName &p_class) {
-
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	if (profile.is_null()) {
 		return false;
@@ -262,7 +247,6 @@ bool EditorHelpSearch::Runner::_is_class_disabled_by_feature_profile(const Strin
 
 	StringName class_name = p_class;
 	while (class_name != StringName()) {
-
 		if (!ClassDB::class_exists(class_name)) {
 			return false;
 		}
@@ -277,7 +261,6 @@ bool EditorHelpSearch::Runner::_is_class_disabled_by_feature_profile(const Strin
 }
 
 bool EditorHelpSearch::Runner::_slice() {
-
 	bool phase_done = false;
 	switch (phase) {
 		case PHASE_MATCH_CLASSES_INIT:
@@ -314,7 +297,6 @@ bool EditorHelpSearch::Runner::_slice() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes_init() {
-
 	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
 	matches.clear();
 	matched_item = nullptr;
@@ -323,10 +305,8 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_match_classes() {
-
 	DocData::ClassDoc &class_doc = iterator_doc->value();
 	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
-
 		matches[class_doc.name] = ClassMatch();
 		ClassMatch &match = matches[class_doc.name];
 
@@ -376,7 +356,6 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items_init() {
-
 	iterator_match = matches.front();
 
 	results_tree->clear();
@@ -387,7 +366,6 @@ bool EditorHelpSearch::Runner::_phase_class_items_init() {
 }
 
 bool EditorHelpSearch::Runner::_phase_class_items() {
-
 	ClassMatch &match = iterator_match->value();
 
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
@@ -403,14 +381,12 @@ bool EditorHelpSearch::Runner::_phase_class_items() {
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items_init() {
-
 	iterator_match = matches.front();
 
 	return true;
 }
 
 bool EditorHelpSearch::Runner::_phase_member_items() {
-
 	ClassMatch &match = iterator_match->value();
 
 	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
@@ -430,14 +406,12 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 }
 
 bool EditorHelpSearch::Runner::_phase_select_match() {
-
 	if (matched_item)
 		matched_item->select(0);
 	return true;
 }
 
 bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String &p_string) const {
-
 	if (search_flags & SEARCH_CASE_SENSITIVE)
 		return p_term.is_subsequence_of(p_string);
 	else
@@ -445,7 +419,6 @@ bool EditorHelpSearch::Runner::_match_string(const String &p_term, const String 
 }
 
 void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_text) {
-
 	if (!matched_item) {
 		if (search_flags & SEARCH_CASE_SENSITIVE) {
 			if (p_text.casecmp_to(term) == 0)
@@ -458,7 +431,6 @@ void EditorHelpSearch::Runner::_match_item(TreeItem *p_item, const String &p_tex
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_match) {
-
 	if (class_items.has(p_match.doc->name))
 		return class_items[p_match.doc->name];
 
@@ -479,7 +451,6 @@ TreeItem *EditorHelpSearch::Runner::_create_class_hierarchy(const ClassMatch &p_
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
-
 	Ref<Texture2D> icon = empty_icon;
 	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons"))
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
@@ -505,7 +476,6 @@ TreeItem *EditorHelpSearch::Runner::_create_class_item(TreeItem *p_parent, const
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
-
 	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
@@ -520,7 +490,6 @@ TreeItem *EditorHelpSearch::Runner::_create_method_item(TreeItem *p_parent, cons
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
-
 	String tooltip = p_doc->return_type + " " + p_class_doc->name + "." + p_doc->name + "(";
 	for (int i = 0; i < p_doc->arguments.size(); i++) {
 		const DocData::ArgumentDoc &arg = p_doc->arguments[i];
@@ -535,13 +504,11 @@ TreeItem *EditorHelpSearch::Runner::_create_signal_item(TreeItem *p_parent, cons
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc) {
-
 	String tooltip = p_class_doc->name + "." + p_doc->name;
 	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, TTRC("Constant"), "constant", tooltip);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
-
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->setter + "(value) setter";
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->getter + "() getter";
@@ -549,13 +516,11 @@ TreeItem *EditorHelpSearch::Runner::_create_property_item(TreeItem *p_parent, co
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
-
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
 }
 
 TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_type, const String &p_metatype, const String &p_tooltip) {
-
 	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
@@ -585,7 +550,6 @@ TreeItem *EditorHelpSearch::Runner::_create_member_item(TreeItem *p_parent, cons
 }
 
 bool EditorHelpSearch::Runner::work(uint64_t slot) {
-
 	// Return true when the search has been completed, otherwise false.
 	const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
 	while (!_slice())

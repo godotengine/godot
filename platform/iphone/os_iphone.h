@@ -50,7 +50,6 @@
 #endif
 
 class OSIPhone : public OS_Unix {
-
 private:
 	enum {
 		MAX_MOUSE_COUNT = 8,
@@ -99,7 +98,6 @@ private:
 	virtual void finalize();
 
 	struct MouseList {
-
 		bool pressed[MAX_MOUSE_COUNT];
 		MouseList() {
 			for (int i = 0; i < MAX_MOUSE_COUNT; i++)

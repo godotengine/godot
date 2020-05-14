@@ -42,7 +42,6 @@
 #include <stdio.h>
 
 class MIDIDriverALSAMidi : public MIDIDriver {
-
 	Thread *thread;
 	Mutex mutex;
 

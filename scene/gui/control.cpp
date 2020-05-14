@@ -49,7 +49,6 @@
 
 #ifdef TOOLS_ENABLED
 Dictionary Control::_edit_get_state() const {
-
 	Dictionary s;
 	s["rotation"] = get_rotation();
 	s["scale"] = get_scale();
@@ -70,7 +69,6 @@ Dictionary Control::_edit_get_state() const {
 }
 
 void Control::_edit_set_state(const Dictionary &p_state) {
-
 	Dictionary state = p_state;
 
 	set_rotation(state["rotation"]);
@@ -162,7 +160,6 @@ Size2 Control::_edit_get_minimum_size() const {
 #endif
 
 void Control::set_custom_minimum_size(const Size2 &p_custom) {
-
 	if (p_custom == data.custom_minimum_size)
 		return;
 	data.custom_minimum_size = p_custom;
@@ -170,12 +167,10 @@ void Control::set_custom_minimum_size(const Size2 &p_custom) {
 }
 
 Size2 Control::get_custom_minimum_size() const {
-
 	return data.custom_minimum_size;
 }
 
 void Control::_update_minimum_size_cache() {
-
 	Size2 minsize = get_minimum_size();
 	minsize.x = MAX(minsize.x, data.custom_minimum_size.x);
 	minsize.y = MAX(minsize.y, data.custom_minimum_size.y);
@@ -192,7 +187,6 @@ void Control::_update_minimum_size_cache() {
 }
 
 Size2 Control::get_combined_minimum_size() const {
-
 	if (!data.minimum_size_valid) {
 		const_cast<Control *>(this)->_update_minimum_size_cache();
 	}
@@ -200,7 +194,6 @@ Size2 Control::get_combined_minimum_size() const {
 }
 
 Transform2D Control::_get_internal_transform() const {
-
 	Transform2D rot_scale;
 	rot_scale.set_rotation_and_scale(data.rotation, data.scale);
 	Transform2D offset;
@@ -210,14 +203,12 @@ Transform2D Control::_get_internal_transform() const {
 }
 
 bool Control::_set(const StringName &p_name, const Variant &p_value) {
-
 	String name = p_name;
 	if (!name.begins_with("custom")) {
 		return false;
 	}
 
 	if (p_value.get_type() == Variant::NIL) {
-
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slicec('/', 1);
 			if (data.icon_override.has(dname)) {
@@ -283,7 +274,6 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void Control::_update_minimum_size() {
-
 	if (!is_inside_tree())
 		return;
 
@@ -302,7 +292,6 @@ void Control::_update_minimum_size() {
 }
 
 bool Control::_get(const StringName &p_name, Variant &r_ret) const {
-
 	String sname = p_name;
 
 	if (!sname.begins_with("custom")) {
@@ -338,7 +327,6 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	return true;
 }
 void Control::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	Ref<Theme> theme = Theme::get_default();
 	/* Using the default theme since the properties below are meant for editor only
 	if (data.theme.is_valid()) {
@@ -353,7 +341,6 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> names;
 		theme->get_icon_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.icon_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -365,7 +352,6 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> names;
 		theme->get_shader_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.shader_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -377,7 +363,6 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> names;
 		theme->get_stylebox_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.style_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -389,7 +374,6 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> names;
 		theme->get_font_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.font_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -401,7 +385,6 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> names;
 		theme->get_color_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.color_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -413,7 +396,6 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> names;
 		theme->get_constant_list(get_class_name(), &names);
 		for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
 			uint32_t hint = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_CHECKABLE;
 			if (data.constant_override.has(E->get()))
 				hint |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
@@ -424,19 +406,16 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Control *Control::get_parent_control() const {
-
 	return data.parent;
 }
 
 void Control::_resize(const Size2 &p_size) {
-
 	_size_changed();
 }
 
 //moved theme configuration here, so controls can set up even if still not inside active scene
 
 void Control::add_child_notify(Node *p_child) {
-
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && child_c->data.theme.is_null() && (data.theme_owner || data.theme_owner_window)) {
@@ -451,7 +430,6 @@ void Control::add_child_notify(Node *p_child) {
 }
 
 void Control::remove_child_notify(Node *p_child) {
-
 	Control *child_c = Object::cast_to<Control>(p_child);
 
 	if (child_c && (child_c->data.theme_owner || child_c->data.theme_owner_window) && child_c->data.theme.is_null()) {
@@ -466,7 +444,6 @@ void Control::remove_child_notify(Node *p_child) {
 }
 
 void Control::_update_canvas_item_transform() {
-
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
 
@@ -474,24 +451,19 @@ void Control::_update_canvas_item_transform() {
 }
 
 void Control::_notification(int p_notification) {
-
 	switch (p_notification) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 		} break;
 		case NOTIFICATION_POST_ENTER_TREE: {
 			data.minimum_size_valid = false;
 			_size_changed();
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			get_viewport()->_gui_remove_control(this);
 
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
-
 			data.parent = Object::cast_to<Control>(get_parent());
 
 			Node *parent = this; //meh
@@ -499,7 +471,6 @@ void Control::_notification(int p_notification) {
 			bool subwindow = false;
 
 			while (parent) {
-
 				parent = parent->get_parent();
 
 				if (!parent)
@@ -516,7 +487,6 @@ void Control::_notification(int p_notification) {
 				if (parent_control) {
 					break;
 				} else if (ci) {
-
 				} else {
 					break;
 				}
@@ -536,7 +506,6 @@ void Control::_notification(int p_notification) {
 			data.parent_canvas_item = get_parent_item();
 
 			if (data.parent_canvas_item) {
-
 				data.parent_canvas_item->connect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 			} else {
 				//connect viewport
@@ -544,9 +513,7 @@ void Control::_notification(int p_notification) {
 			}
 		} break;
 		case NOTIFICATION_EXIT_CANVAS: {
-
 			if (data.parent_canvas_item) {
-
 				data.parent_canvas_item->disconnect("item_rect_changed", callable_mp(this, &Control::_size_changed));
 				data.parent_canvas_item = nullptr;
 			} else if (!is_set_as_toplevel()) {
@@ -576,11 +543,9 @@ void Control::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_RESIZED: {
-
 			emit_signal(SceneStringNames::get_singleton()->resized);
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			_update_canvas_item_transform();
 			RenderingServer::get_singleton()->canvas_item_set_custom_rect(get_canvas_item(), !data.disable_visibility_clip, Rect2(Point2(), get_size()));
 			RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), data.clip_contents);
@@ -588,33 +553,26 @@ void Control::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
-
 			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
-
 			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
-
 			emit_signal(SceneStringNames::get_singleton()->focus_entered);
 			update();
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
-
 			emit_signal(SceneStringNames::get_singleton()->focus_exited);
 			update();
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			minimum_size_changed();
 			update();
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			if (!is_visible_in_tree()) {
-
 				if (get_viewport() != nullptr)
 					get_viewport()->_gui_hid_control(this);
 
@@ -630,14 +588,12 @@ void Control::_notification(int p_notification) {
 }
 
 bool Control::clips_input() const {
-
 	if (get_script_instance()) {
 		return get_script_instance()->call(SceneStringNames::get_singleton()->_clips_input);
 	}
 	return false;
 }
 bool Control::has_point(const Point2 &p_point) const {
-
 	if (get_script_instance()) {
 		Variant v = p_point;
 		const Variant *p = &v;
@@ -655,7 +611,6 @@ bool Control::has_point(const Point2 &p_point) const {
 }
 
 void Control::set_drag_forwarding(Control *p_target) {
-
 	if (p_target)
 		data.drag_owner = p_target->get_instance_id();
 	else
@@ -663,7 +618,6 @@ void Control::set_drag_forwarding(Control *p_target) {
 }
 
 Variant Control::get_drag_data(const Point2 &p_point) {
-
 	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
@@ -685,7 +639,6 @@ Variant Control::get_drag_data(const Point2 &p_point) {
 }
 
 bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-
 	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
@@ -706,7 +659,6 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 	return Variant();
 }
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
-
 	if (data.drag_owner.is_valid()) {
 		Object *obj = ObjectDB::get_instance(data.drag_owner);
 		if (obj) {
@@ -727,7 +679,6 @@ void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 void Control::force_drag(const Variant &p_data, Control *p_control) {
-
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(p_data.get_type() == Variant::NIL);
 
@@ -735,17 +686,14 @@ void Control::force_drag(const Variant &p_data, Control *p_control) {
 }
 
 void Control::set_drag_preview(Control *p_control) {
-
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!get_viewport()->gui_is_dragging());
 	get_viewport()->_gui_set_drag_preview(this, p_control);
 }
 
 Size2 Control::get_minimum_size() const {
-
 	ScriptInstance *si = const_cast<Control *>(this)->get_script_instance();
 	if (si) {
-
 		Callable::CallError ce;
 		Variant s = si->call(SceneStringNames::get_singleton()->_get_minimum_size, nullptr, 0, ce);
 		if (ce.error == Callable::CallError::CALL_OK)
@@ -756,13 +704,11 @@ Size2 Control::get_minimum_size() const {
 
 template <class T>
 bool Control::_find_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, T &r_ret, T (Theme::*get_func)(const StringName &, const StringName &) const, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type) {
-
 	// try with custom themes
 	Control *theme_owner = p_theme_owner;
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-
 		StringName class_name = p_type;
 
 		while (class_name != StringName()) {
@@ -792,7 +738,6 @@ bool Control::_find_theme_item(Control *p_theme_owner, Window *p_theme_owner_win
 				theme_owner = parent_w->theme_owner;
 				theme_owner_window = parent_w->theme_owner_window;
 			} else {
-
 				theme_owner = nullptr;
 				theme_owner_window = nullptr;
 			}
@@ -802,13 +747,11 @@ bool Control::_find_theme_item(Control *p_theme_owner, Window *p_theme_owner_win
 }
 
 bool Control::_has_theme_item(Control *p_theme_owner, Window *p_theme_owner_window, bool (Theme::*has_func)(const StringName &, const StringName &) const, const StringName &p_name, const StringName &p_type) {
-
 	// try with custom themes
 	Control *theme_owner = p_theme_owner;
 	Window *theme_owner_window = p_theme_owner_window;
 
 	while (theme_owner || theme_owner_window) {
-
 		StringName class_name = p_type;
 
 		while (class_name != StringName()) {
@@ -836,7 +779,6 @@ bool Control::_has_theme_item(Control *p_theme_owner, Window *p_theme_owner_wind
 				theme_owner = parent_w->theme_owner;
 				theme_owner_window = parent_w->theme_owner_window;
 			} else {
-
 				theme_owner = nullptr;
 				theme_owner_window = nullptr;
 			}
@@ -846,9 +788,7 @@ bool Control::_has_theme_item(Control *p_theme_owner, Window *p_theme_owner_wind
 }
 
 Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
-
 		const Ref<Texture2D> *tex = data.icon_override.getptr(p_name);
 		if (tex)
 			return *tex;
@@ -860,7 +800,6 @@ Ref<Texture2D> Control::get_theme_icon(const StringName &p_name, const StringNam
 }
 
 Ref<Texture2D> Control::get_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	Ref<Texture2D> icon;
 
 	if (_find_theme_item(p_theme_owner, p_theme_owner_window, icon, &Theme::get_icon, &Theme::has_icon, p_name, p_type)) {
@@ -877,9 +816,7 @@ Ref<Texture2D> Control::get_icons(Control *p_theme_owner, Window *p_theme_owner_
 }
 
 Ref<Shader> Control::get_theme_shader(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
-
 		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
 		if (sdr)
 			return *sdr;
@@ -891,7 +828,6 @@ Ref<Shader> Control::get_theme_shader(const StringName &p_name, const StringName
 }
 
 Ref<Shader> Control::get_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	Ref<Shader> shader;
 
 	if (_find_theme_item(p_theme_owner, p_theme_owner_window, shader, &Theme::get_shader, &Theme::has_shader, p_name, p_type)) {
@@ -908,7 +844,6 @@ Ref<Shader> Control::get_shaders(Control *p_theme_owner, Window *p_theme_owner_w
 }
 
 Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 		if (style)
@@ -921,7 +856,6 @@ Ref<StyleBox> Control::get_theme_stylebox(const StringName &p_name, const String
 }
 
 Ref<StyleBox> Control::get_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	Ref<StyleBox> stylebox;
 
 	if (_find_theme_item(p_theme_owner, p_theme_owner_window, stylebox, &Theme::get_stylebox, &Theme::has_stylebox, p_name, p_type)) {
@@ -938,7 +872,6 @@ Ref<StyleBox> Control::get_styleboxs(Control *p_theme_owner, Window *p_theme_own
 }
 
 Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
 		if (font)
@@ -951,7 +884,6 @@ Ref<Font> Control::get_theme_font(const StringName &p_name, const StringName &p_
 }
 
 Ref<Font> Control::get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	Ref<Font> font;
 
 	if (_find_theme_item(p_theme_owner, p_theme_owner_window, font, &Theme::get_font, &Theme::has_font, p_name, p_type)) {
@@ -968,7 +900,6 @@ Ref<Font> Control::get_fonts(Control *p_theme_owner, Window *p_theme_owner_windo
 }
 
 Color Control::get_theme_color(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		const Color *color = data.color_override.getptr(p_name);
 		if (color)
@@ -981,7 +912,6 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_typ
 }
 
 Color Control::get_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	Color color;
 
 	if (_find_theme_item(p_theme_owner, p_theme_owner_window, color, &Theme::get_color, &Theme::has_color, p_name, p_type)) {
@@ -997,7 +927,6 @@ Color Control::get_colors(Control *p_theme_owner, Window *p_theme_owner_window, 
 }
 
 int Control::get_theme_constant(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		const int *constant = data.constant_override.getptr(p_name);
 		if (constant)
@@ -1010,7 +939,6 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_ty
 }
 
 int Control::get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	int constant;
 
 	if (_find_theme_item(p_theme_owner, p_theme_owner_window, constant, &Theme::get_constant, &Theme::has_constant, p_name, p_type)) {
@@ -1026,43 +954,36 @@ int Control::get_constants(Control *p_theme_owner, Window *p_theme_owner_window,
 }
 
 bool Control::has_theme_icon_override(const StringName &p_name) const {
-
 	const Ref<Texture2D> *tex = data.icon_override.getptr(p_name);
 	return tex != nullptr;
 }
 
 bool Control::has_theme_shader_override(const StringName &p_name) const {
-
 	const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
 	return sdr != nullptr;
 }
 
 bool Control::has_theme_stylebox_override(const StringName &p_name) const {
-
 	const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 	return style != nullptr;
 }
 
 bool Control::has_theme_font_override(const StringName &p_name) const {
-
 	const Ref<Font> *font = data.font_override.getptr(p_name);
 	return font != nullptr;
 }
 
 bool Control::has_theme_color_override(const StringName &p_name) const {
-
 	const Color *color = data.color_override.getptr(p_name);
 	return color != nullptr;
 }
 
 bool Control::has_theme_constant_override(const StringName &p_name) const {
-
 	const int *constant = data.constant_override.getptr(p_name);
 	return constant != nullptr;
 }
 
 bool Control::has_theme_icon(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_theme_icon_override(p_name))
 			return true;
@@ -1074,7 +995,6 @@ bool Control::has_theme_icon(const StringName &p_name, const StringName &p_type)
 }
 
 bool Control::has_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_icon, p_name, p_type)) {
 		return true;
 	}
@@ -1088,7 +1008,6 @@ bool Control::has_icons(Control *p_theme_owner, Window *p_theme_owner_window, co
 }
 
 bool Control::has_theme_shader(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_theme_shader_override(p_name))
 			return true;
@@ -1099,7 +1018,6 @@ bool Control::has_theme_shader(const StringName &p_name, const StringName &p_typ
 	return has_shaders(data.theme_owner, data.theme_owner_window, p_name, type);
 }
 bool Control::has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_shader, p_name, p_type)) {
 		return true;
 	}
@@ -1113,7 +1031,6 @@ bool Control::has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, 
 }
 
 bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_theme_stylebox_override(p_name))
 			return true;
@@ -1125,7 +1042,6 @@ bool Control::has_theme_stylebox(const StringName &p_name, const StringName &p_t
 }
 
 bool Control::has_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_stylebox, p_name, p_type)) {
 		return true;
 	}
@@ -1139,7 +1055,6 @@ bool Control::has_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window
 }
 
 bool Control::has_theme_font(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_theme_font_override(p_name))
 			return true;
@@ -1150,7 +1065,6 @@ bool Control::has_theme_font(const StringName &p_name, const StringName &p_type)
 	return has_fonts(data.theme_owner, data.theme_owner_window, p_name, type);
 }
 bool Control::has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_font, p_name, p_type)) {
 		return true;
 	}
@@ -1164,7 +1078,6 @@ bool Control::has_fonts(Control *p_theme_owner, Window *p_theme_owner_window, co
 }
 
 bool Control::has_theme_color(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_theme_color_override(p_name))
 			return true;
@@ -1175,7 +1088,6 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_type
 	return has_colors(data.theme_owner, data.theme_owner_window, p_name, type);
 }
 bool Control::has_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_color, p_name, p_type)) {
 		return true;
 	}
@@ -1189,7 +1101,6 @@ bool Control::has_colors(Control *p_theme_owner, Window *p_theme_owner_window, c
 }
 
 bool Control::has_theme_constant(const StringName &p_name, const StringName &p_type) const {
-
 	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_theme_constant_override(p_name))
 			return true;
@@ -1201,7 +1112,6 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 }
 
 bool Control::has_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-
 	if (_has_theme_item(p_theme_owner, p_theme_owner_window, &Theme::has_constant, p_name, p_type)) {
 		return true;
 	}
@@ -1229,18 +1139,15 @@ Rect2 Control::get_parent_anchorable_rect() const {
 }
 
 Size2 Control::get_parent_area_size() const {
-
 	return get_parent_anchorable_rect().size;
 }
 
 void Control::_size_changed() {
-
 	Rect2 parent_rect = get_parent_anchorable_rect();
 
 	float margin_pos[4];
 
 	for (int i = 0; i < 4; i++) {
-
 		float area = parent_rect.size[i & 1];
 		margin_pos[i] = data.margin[i] + (data.anchor[i] * area);
 	}
@@ -1293,7 +1200,6 @@ void Control::_size_changed() {
 }
 
 void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bool p_push_opposite_anchor) {
-
 	ERR_FAIL_INDEX((int)p_margin, 4);
 
 	Rect2 parent_rect = get_parent_anchorable_rect();
@@ -1334,13 +1240,11 @@ void Control::_set_anchor(Margin p_margin, float p_anchor) {
 }
 
 void Control::set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos, bool p_push_opposite_anchor) {
-
 	set_anchor(p_margin, p_anchor, false, p_push_opposite_anchor);
 	set_margin(p_margin, p_pos);
 }
 
 void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margins) {
-
 	ERR_FAIL_INDEX((int)p_preset, 16);
 
 	//Left
@@ -1457,7 +1361,6 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margins) {
 }
 
 void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
-
 	ERR_FAIL_INDEX((int)p_preset, 16);
 	ERR_FAIL_INDEX((int)p_resize_mode, 4);
 
@@ -1594,14 +1497,12 @@ void Control::set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPreset
 }
 
 float Control::get_anchor(Margin p_margin) const {
-
 	ERR_FAIL_INDEX_V(int(p_margin), 4, 0.0);
 
 	return data.anchor[p_margin];
 }
 
 void Control::_change_notify_margins() {
-
 	// this avoids sending the whole object data again on a change
 	_change_notify("margin_left");
 	_change_notify("margin_top");
@@ -1612,7 +1513,6 @@ void Control::_change_notify_margins() {
 }
 
 void Control::set_margin(Margin p_margin, float p_value) {
-
 	ERR_FAIL_INDEX((int)p_margin, 4);
 
 	data.margin[p_margin] = p_value;
@@ -1620,37 +1520,31 @@ void Control::set_margin(Margin p_margin, float p_value) {
 }
 
 void Control::set_begin(const Size2 &p_point) {
-
 	data.margin[0] = p_point.x;
 	data.margin[1] = p_point.y;
 	_size_changed();
 }
 
 void Control::set_end(const Size2 &p_point) {
-
 	data.margin[2] = p_point.x;
 	data.margin[3] = p_point.y;
 	_size_changed();
 }
 
 float Control::get_margin(Margin p_margin) const {
-
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
 
 	return data.margin[p_margin];
 }
 
 Size2 Control::get_begin() const {
-
 	return Size2(data.margin[0], data.margin[1]);
 }
 Size2 Control::get_end() const {
-
 	return Size2(data.margin[2], data.margin[3]);
 }
 
 Point2 Control::get_global_position() const {
-
 	return get_global_transform().get_origin();
 }
 
@@ -1670,11 +1564,9 @@ void Control::_set_global_position(const Point2 &p_point) {
 }
 
 void Control::set_global_position(const Point2 &p_point, bool p_keep_margins) {
-
 	Transform2D inv;
 
 	if (data.parent_canvas_item) {
-
 		inv = data.parent_canvas_item->get_global_transform().affine_inverse();
 	}
 
@@ -1682,7 +1574,6 @@ void Control::set_global_position(const Point2 &p_point, bool p_keep_margins) {
 }
 
 void Control::_compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r_anchors)[4]) {
-
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
 	ERR_FAIL_COND(parent_rect_size.x == 0.0);
 	ERR_FAIL_COND(parent_rect_size.y == 0.0);
@@ -1694,7 +1585,6 @@ void Control::_compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r
 }
 
 void Control::_compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]) {
-
 	Size2 parent_rect_size = get_parent_anchorable_rect().size;
 	r_margins[0] = p_rect.position.x - (p_anchors[0] * parent_rect_size.x);
 	r_margins[1] = p_rect.position.y - (p_anchors[1] * parent_rect_size.y);
@@ -1724,7 +1614,6 @@ void Control::_set_size(const Size2 &p_size) {
 }
 
 void Control::set_size(const Size2 &p_size, bool p_keep_margins) {
-
 	Size2 new_size = p_size;
 	Size2 min = get_combined_minimum_size();
 	if (new_size.x < min.x)
@@ -1745,22 +1634,18 @@ void Control::set_size(const Size2 &p_size, bool p_keep_margins) {
 }
 
 Size2 Control::get_position() const {
-
 	return data.pos_cache;
 }
 
 Size2 Control::get_size() const {
-
 	return data.size_cache;
 }
 
 Rect2 Control::get_global_rect() const {
-
 	return Rect2(get_global_position(), get_size());
 }
 
 Rect2 Control::get_screen_rect() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
 
 	Rect2 r(get_global_position(), get_size());
@@ -1781,17 +1666,14 @@ Rect2 Control::get_window_rect() const {
 }
 
 Rect2 Control::get_rect() const {
-
 	return Rect2(get_position(), get_size());
 }
 
 Rect2 Control::get_anchorable_rect() const {
-
 	return Rect2(Point2(), get_size());
 }
 
 void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
-
 	if (data.icon_override.has(p_name)) {
 		data.icon_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
@@ -1809,7 +1691,6 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 }
 
 void Control::add_theme_shader_override(const StringName &p_name, const Ref<Shader> &p_shader) {
-
 	if (data.shader_override.has(p_name)) {
 		data.shader_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
@@ -1826,7 +1707,6 @@ void Control::add_theme_shader_override(const StringName &p_name, const Ref<Shad
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
-
 	if (data.style_override.has(p_name)) {
 		data.style_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
@@ -1844,7 +1724,6 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 }
 
 void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
-
 	if (data.font_override.has(p_name)) {
 		data.font_override[p_name]->disconnect("changed", callable_mp(this, &Control::_override_changed));
 	}
@@ -1861,18 +1740,15 @@ void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> 
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 void Control::add_theme_color_override(const StringName &p_name, const Color &p_color) {
-
 	data.color_override[p_name] = p_color;
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
-
 	data.constant_override[p_name] = p_constant;
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
-
 	ERR_FAIL_INDEX((int)p_focus_mode, 3);
 
 	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus())
@@ -1882,21 +1758,18 @@ void Control::set_focus_mode(FocusMode p_focus_mode) {
 }
 
 static Control *_next_control(Control *p_from) {
-
 	if (p_from->is_set_as_toplevel())
 		return nullptr; // can't go above
 
 	Control *parent = Object::cast_to<Control>(p_from->get_parent());
 
 	if (!parent) {
-
 		return nullptr;
 	}
 
 	int next = p_from->get_index();
 	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(parent->get_child(i));
 		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel())
 			continue;
@@ -1909,11 +1782,9 @@ static Control *_next_control(Control *p_from) {
 }
 
 Control *Control::find_next_valid_focus() const {
-
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
-
 		// If the focus property is manually overwritten, attempt to use it.
 
 		if (!data.focus_next.is_empty()) {
@@ -1934,7 +1805,6 @@ Control *Control::find_next_valid_focus() const {
 		Control *next_child = nullptr;
 
 		for (int i = 0; i < from->get_child_count(); i++) {
-
 			Control *c = Object::cast_to<Control>(from->get_child(i));
 			if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
 				continue;
@@ -1945,20 +1815,16 @@ Control *Control::find_next_valid_focus() const {
 		}
 
 		if (!next_child) {
-
 			next_child = _next_control(from);
 			if (!next_child) { //nothing else.. go up and find either window or subwindow
 				next_child = const_cast<Control *>(this);
 				while (next_child && !next_child->is_set_as_toplevel()) {
-
 					next_child = cast_to<Control>(next_child->get_parent());
 				}
 
 				if (!next_child) {
-
 					next_child = const_cast<Control *>(this);
 					while (next_child) {
-
 						if (next_child->data.RI)
 							break;
 						next_child = next_child->get_parent_control();
@@ -1981,10 +1847,8 @@ Control *Control::find_next_valid_focus() const {
 }
 
 static Control *_prev_control(Control *p_from) {
-
 	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
-
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
 		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel())
 			continue;
@@ -2004,7 +1868,6 @@ Control *Control::find_prev_valid_focus() const {
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
-
 		// If the focus property is manually overwritten, attempt to use it.
 
 		if (!data.focus_prev.is_empty()) {
@@ -2025,15 +1888,12 @@ Control *Control::find_prev_valid_focus() const {
 		Control *prev_child = nullptr;
 
 		if (from->is_set_as_toplevel() || !Object::cast_to<Control>(from->get_parent())) {
-
 			//find last of the children
 
 			prev_child = _prev_control(from);
 
 		} else {
-
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
-
 				Control *c = Object::cast_to<Control>(from->get_parent()->get_child(i));
 
 				if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
@@ -2045,10 +1905,8 @@ Control *Control::find_prev_valid_focus() const {
 			}
 
 			if (!prev_child) {
-
 				prev_child = Object::cast_to<Control>(from->get_parent());
 			} else {
-
 				prev_child = _prev_control(prev_child);
 			}
 		}
@@ -2066,16 +1924,13 @@ Control *Control::find_prev_valid_focus() const {
 }
 
 Control::FocusMode Control::get_focus_mode() const {
-
 	return data.focus_mode;
 }
 bool Control::has_focus() const {
-
 	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
 }
 
 void Control::grab_focus() {
-
 	ERR_FAIL_COND(!is_inside_tree());
 
 	if (data.focus_mode == FOCUS_NONE) {
@@ -2087,7 +1942,6 @@ void Control::grab_focus() {
 }
 
 void Control::release_focus() {
-
 	ERR_FAIL_COND(!is_inside_tree());
 
 	if (!has_focus())
@@ -2098,12 +1952,10 @@ void Control::release_focus() {
 }
 
 bool Control::is_toplevel_control() const {
-
 	return is_inside_tree() && (!data.parent_canvas_item && !data.RI && is_set_as_toplevel());
 }
 
 void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_owner_window, bool p_assign) {
-
 	Control *c = Object::cast_to<Control>(p_at);
 
 	if (c && c != p_owner && c->data.theme.is_valid()) // has a theme, this can't be propagated
@@ -2115,12 +1967,10 @@ void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_o
 		return;
 
 	for (int i = 0; i < p_at->get_child_count(); i++) {
-
 		CanvasItem *child = Object::cast_to<CanvasItem>(p_at->get_child(i));
 		if (child) {
 			_propagate_theme_changed(child, p_owner, p_owner_window, p_assign);
 		} else {
-
 			Window *window = Object::cast_to<Window>(p_at->get_child(i));
 			if (window) {
 				_propagate_theme_changed(window, p_owner, p_owner_window, p_assign);
@@ -2129,7 +1979,6 @@ void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_o
 	}
 
 	if (c) {
-
 		if (p_assign) {
 			c->data.theme_owner = p_owner;
 			c->data.theme_owner_window = p_owner_window;
@@ -2139,7 +1988,6 @@ void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_o
 	}
 
 	if (w) {
-
 		if (p_assign) {
 			w->theme_owner = p_owner;
 			w->theme_owner_window = p_owner_window;
@@ -2150,12 +1998,10 @@ void Control::_propagate_theme_changed(Node *p_at, Control *p_owner, Window *p_o
 }
 
 void Control::_theme_changed() {
-
 	_propagate_theme_changed(this, this, nullptr, false);
 }
 
 void Control::set_theme(const Ref<Theme> &p_theme) {
-
 	if (data.theme == p_theme)
 		return;
 
@@ -2165,12 +2011,10 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 
 	data.theme = p_theme;
 	if (!p_theme.is_null()) {
-
 		data.theme_owner = this;
 		data.theme_owner_window = nullptr;
 		_propagate_theme_changed(this, this, nullptr);
 	} else {
-
 		Control *parent_c = Object::cast_to<Control>(get_parent());
 
 		if (parent_c && (parent_c->data.theme_owner || parent_c->data.theme_owner_window)) {
@@ -2191,24 +2035,20 @@ void Control::set_theme(const Ref<Theme> &p_theme) {
 }
 
 void Control::accept_event() {
-
 	if (is_inside_tree())
 		get_viewport()->_gui_accept_event();
 }
 
 Ref<Theme> Control::get_theme() const {
-
 	return data.theme;
 }
 
 void Control::set_tooltip(const String &p_tooltip) {
-
 	data.tooltip = p_tooltip;
 	update_configuration_warning();
 }
 
 String Control::get_tooltip(const Point2 &p_pos) const {
-
 	return data.tooltip;
 }
 Control *Control::make_custom_tooltip(const String &p_text) const {
@@ -2219,75 +2059,62 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 }
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
-
 	ERR_FAIL_INDEX(int(p_shape), CURSOR_MAX);
 
 	data.default_cursor = p_shape;
 }
 
 Control::CursorShape Control::get_default_cursor_shape() const {
-
 	return data.default_cursor;
 }
 Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
-
 	return data.default_cursor;
 }
 
 Transform2D Control::get_transform() const {
-
 	Transform2D xform = _get_internal_transform();
 	xform[2] += get_position();
 	return xform;
 }
 
 String Control::_get_tooltip() const {
-
 	return data.tooltip;
 }
 
 void Control::set_focus_neighbour(Margin p_margin, const NodePath &p_neighbour) {
-
 	ERR_FAIL_INDEX((int)p_margin, 4);
 	data.focus_neighbour[p_margin] = p_neighbour;
 }
 
 NodePath Control::get_focus_neighbour(Margin p_margin) const {
-
 	ERR_FAIL_INDEX_V((int)p_margin, 4, NodePath());
 	return data.focus_neighbour[p_margin];
 }
 
 void Control::set_focus_next(const NodePath &p_next) {
-
 	data.focus_next = p_next;
 }
 
 NodePath Control::get_focus_next() const {
-
 	return data.focus_next;
 }
 
 void Control::set_focus_previous(const NodePath &p_prev) {
-
 	data.focus_prev = p_prev;
 }
 
 NodePath Control::get_focus_previous() const {
-
 	return data.focus_prev;
 }
 
 #define MAX_NEIGHBOUR_SEARCH_COUNT 512
 
 Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
-
 	ERR_FAIL_INDEX_V((int)p_margin, 4, nullptr);
 
 	if (p_count >= MAX_NEIGHBOUR_SEARCH_COUNT)
 		return nullptr;
 	if (!data.focus_neighbour[p_margin].is_empty()) {
-
 		Control *c = nullptr;
 		Node *n = get_node(data.focus_neighbour[p_margin]);
 		if (n) {
@@ -2332,7 +2159,6 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	float maxd = -1e7;
 
 	for (int i = 0; i < 4; i++) {
-
 		float d = vdir.dot(points[i]);
 		if (d > maxd)
 			maxd = d;
@@ -2341,7 +2167,6 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 	Node *base = this;
 
 	while (base) {
-
 		Control *c = Object::cast_to<Control>(base);
 		if (c) {
 			if (c->data.RI)
@@ -2359,14 +2184,12 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 }
 
 void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, float p_min, float &r_closest_dist, Control **r_closest) {
-
 	if (Object::cast_to<Viewport>(p_at))
 		return; //bye
 
 	Control *c = Object::cast_to<Control>(p_at);
 
 	if (c && c != this && c->get_focus_mode() == FOCUS_ALL && c->is_visible_in_tree()) {
-
 		Point2 points[4];
 
 		Transform2D xform = c->get_global_transform();
@@ -2379,21 +2202,17 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 		float min = 1e7;
 
 		for (int i = 0; i < 4; i++) {
-
 			float d = p_dir.dot(points[i]);
 			if (d < min)
 				min = d;
 		}
 
 		if (min > (p_min - CMP_EPSILON)) {
-
 			for (int i = 0; i < 4; i++) {
-
 				Vector2 la = p_points[i];
 				Vector2 lb = p_points[(i + 1) % 4];
 
 				for (int j = 0; j < 4; j++) {
-
 					Vector2 fa = points[j];
 					Vector2 fb = points[(j + 1) % 4];
 
@@ -2410,7 +2229,6 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 	}
 
 	for (int i = 0; i < p_at->get_child_count(); i++) {
-
 		Node *child = p_at->get_child(i);
 		Control *childc = Object::cast_to<Control>(child);
 		if (childc && childc->data.RI)
@@ -2420,7 +2238,6 @@ void Control::_window_find_focus_neighbour(const Vector2 &p_dir, Node *p_at, con
 }
 
 void Control::set_h_size_flags(int p_flags) {
-
 	if (data.h_size_flags == p_flags)
 		return;
 	data.h_size_flags = p_flags;
@@ -2431,7 +2248,6 @@ int Control::get_h_size_flags() const {
 	return data.h_size_flags;
 }
 void Control::set_v_size_flags(int p_flags) {
-
 	if (data.v_size_flags == p_flags)
 		return;
 	data.v_size_flags = p_flags;
@@ -2439,7 +2255,6 @@ void Control::set_v_size_flags(int p_flags) {
 }
 
 void Control::set_stretch_ratio(float p_ratio) {
-
 	if (data.expand == p_ratio)
 		return;
 
@@ -2448,19 +2263,16 @@ void Control::set_stretch_ratio(float p_ratio) {
 }
 
 float Control::get_stretch_ratio() const {
-
 	return data.expand;
 }
 
 void Control::grab_click_focus() {
-
 	ERR_FAIL_COND(!is_inside_tree());
 
 	get_viewport()->_gui_grab_click_focus(this);
 }
 
 void Control::minimum_size_changed() {
-
 	if (!is_inside_tree() || data.block_minimum_size_adjust)
 		return;
 
@@ -2496,19 +2308,16 @@ int Control::get_v_size_flags() const {
 }
 
 void Control::set_mouse_filter(MouseFilter p_filter) {
-
 	ERR_FAIL_INDEX(p_filter, 3);
 	data.mouse_filter = p_filter;
 	update_configuration_warning();
 }
 
 Control::MouseFilter Control::get_mouse_filter() const {
-
 	return data.mouse_filter;
 }
 
 Control *Control::get_focus_owner() const {
-
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 	return get_viewport()->_gui_get_focus_owner();
 }
@@ -2533,7 +2342,6 @@ bool Control::is_text_field() const {
 }
 
 void Control::set_rotation(float p_radians) {
-
 	data.rotation = p_radians;
 	update();
 	_notify_transform();
@@ -2541,7 +2349,6 @@ void Control::set_rotation(float p_radians) {
 }
 
 float Control::get_rotation() const {
-
 	return data.rotation;
 }
 
@@ -2554,14 +2361,12 @@ float Control::get_rotation_degrees() const {
 }
 
 void Control::_override_changed() {
-
 	notification(NOTIFICATION_THEME_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->theme_changed);
 	minimum_size_changed(); // overrides are likely to affect minimum size
 }
 
 void Control::set_pivot_offset(const Vector2 &p_pivot) {
-
 	data.pivot_offset = p_pivot;
 	update();
 	_notify_transform();
@@ -2569,12 +2374,10 @@ void Control::set_pivot_offset(const Vector2 &p_pivot) {
 }
 
 Vector2 Control::get_pivot_offset() const {
-
 	return data.pivot_offset;
 }
 
 void Control::set_scale(const Vector2 &p_scale) {
-
 	data.scale = p_scale;
 	// Avoid having 0 scale values, can lead to errors in physics and rendering.
 	if (data.scale.x == 0)
@@ -2585,17 +2388,14 @@ void Control::set_scale(const Vector2 &p_scale) {
 	_notify_transform();
 }
 Vector2 Control::get_scale() const {
-
 	return data.scale;
 }
 
 Control *Control::get_root_parent_control() const {
-
 	const CanvasItem *ci = this;
 	const Control *root = this;
 
 	while (ci) {
-
 		const Control *c = Object::cast_to<Control>(ci);
 		if (c) {
 			root = c;
@@ -2615,23 +2415,19 @@ void Control::set_block_minimum_size_adjust(bool p_block) {
 }
 
 bool Control::is_minimum_size_adjust_blocked() const {
-
 	return data.block_minimum_size_adjust;
 }
 
 void Control::set_disable_visibility_clip(bool p_ignore) {
-
 	data.disable_visibility_clip = p_ignore;
 	update();
 }
 
 bool Control::is_visibility_clip_disabled() const {
-
 	return data.disable_visibility_clip;
 }
 
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-
 #ifdef TOOLS_ENABLED
 	const String quote_style = EDITOR_DEF("text_editor/completion/use_single_quotes", 0) ? "'" : "\"";
 #else
@@ -2674,18 +2470,15 @@ String Control::get_configuration_warning() const {
 }
 
 void Control::set_clip_contents(bool p_clip) {
-
 	data.clip_contents = p_clip;
 	update();
 }
 
 bool Control::is_clipping_contents() {
-
 	return data.clip_contents;
 }
 
 void Control::set_h_grow_direction(GrowDirection p_direction) {
-
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.h_grow = p_direction;
@@ -2693,24 +2486,20 @@ void Control::set_h_grow_direction(GrowDirection p_direction) {
 }
 
 Control::GrowDirection Control::get_h_grow_direction() const {
-
 	return data.h_grow;
 }
 
 void Control::set_v_grow_direction(GrowDirection p_direction) {
-
 	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.v_grow = p_direction;
 	_size_changed();
 }
 Control::GrowDirection Control::get_v_grow_direction() const {
-
 	return data.v_grow;
 }
 
 void Control::_bind_methods() {
-
 	//ClassDB::bind_method(D_METHOD("_window_resize_event"),&Control::_window_resize_event);
 	ClassDB::bind_method(D_METHOD("_update_minimum_size"), &Control::_update_minimum_size);
 
@@ -2984,7 +2773,6 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::BOOL, "has_point", PropertyInfo(Variant::VECTOR2, "point")));
 }
 Control::Control() {
-
 	data.parent = nullptr;
 
 	data.mouse_filter = MOUSE_FILTER_STOP;

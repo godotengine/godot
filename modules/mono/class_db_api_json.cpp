@@ -45,14 +45,12 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	const StringName *k = nullptr;
 
 	while ((k = ClassDB::classes.next(k))) {
-
 		names.push_back(*k);
 	}
 	//must be alphabetically sorted for hash to compute
 	names.sort_custom<StringName::AlphCompare>();
 
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-
 		ClassDB::ClassInfo *t = ClassDB::classes.getptr(E->get());
 		ERR_FAIL_COND(!t);
 		if (t->api != p_api || !t->exposed)
@@ -70,7 +68,6 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			k = nullptr;
 
 			while ((k = t->method_map.next(k))) {
-
 				String name = k->operator String();
 
 				ERR_CONTINUE(name.empty());
@@ -135,7 +132,6 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			k = nullptr;
 
 			while ((k = t->constant_map.next(k))) {
-
 				snames.push_back(*k);
 			}
 
@@ -163,7 +159,6 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			k = nullptr;
 
 			while ((k = t->signal_map.next(k))) {
-
 				snames.push_back(*k);
 			}
 
@@ -199,7 +194,6 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 			k = nullptr;
 
 			while ((k = t->property_setget.next(k))) {
-
 				snames.push_back(*k);
 			}
 

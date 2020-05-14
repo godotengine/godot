@@ -139,7 +139,6 @@ void OS_OSX::initialize() {
 }
 
 void OS_OSX::finalize() {
-
 #ifdef COREMIDI_ENABLED
 	midi_driver.close();
 #endif
@@ -261,10 +260,8 @@ String OS_OSX::get_system_dir(SystemDir p_dir) const {
 
 	String ret;
 	if (found) {
-
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(id, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-
 			char *utfs = strdup([[paths firstObject] UTF8String]);
 			ret.parse_utf8(utfs);
 			free(utfs);

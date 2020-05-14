@@ -94,7 +94,6 @@ void NavigationMeshGenerator::_add_mesh(const Ref<Mesh> &p_mesh, const Transform
 		const Vector3 *vr = mesh_vertices.ptr();
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
-
 			Vector<int> mesh_indices = a[Mesh::ARRAY_INDEX];
 			const int *ir = mesh_indices.ptr();
 
@@ -139,9 +138,7 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 }
 
 void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform, Node *p_node, Vector<float> &p_verticies, Vector<int> &p_indices, int p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
-
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
-
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
 		if (mesh.is_valid()) {
@@ -151,7 +148,6 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 
 #ifdef MODULE_CSG_ENABLED
 	if (Object::cast_to<CSGShape3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
-
 		CSGShape3D *csg_shape = Object::cast_to<CSGShape3D>(p_node);
 		Array meshes = csg_shape->get_meshes();
 		if (!meshes.empty()) {
@@ -167,7 +163,6 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 		StaticBody3D *static_body = Object::cast_to<StaticBody3D>(p_node);
 
 		if (static_body->get_collision_layer() & p_collision_mask) {
-
 			for (int i = 0; i < p_node->get_child_count(); ++i) {
 				Node *child = p_node->get_child(i);
 				if (Object::cast_to<CollisionShape3D>(child)) {
@@ -278,7 +273,6 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 }
 
 void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh) {
-
 	Vector<Vector3> nav_vertices;
 
 	for (int i = 0; i < p_detail_mesh->nverts; i++) {
@@ -481,7 +475,6 @@ NavigationMeshGenerator::~NavigationMeshGenerator() {
 }
 
 void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-
 	ERR_FAIL_COND(!p_nav_mesh.is_valid());
 
 #ifdef TOOLS_ENABLED
@@ -514,7 +507,6 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 	}
 
 	if (vertices.size() > 0 && indices.size() > 0) {
-
 		rcHeightfield *hf = nullptr;
 		rcCompactHeightfield *chf = nullptr;
 		rcContourSet *cset = nullptr;

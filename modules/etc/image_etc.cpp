@@ -219,7 +219,6 @@ static void _compress_etc2(Image *p_img, float p_lossy_quality, Image::UsedChann
 }
 
 void _register_etc_compress_func() {
-
 	Image::_image_compress_etc1_func = _compress_etc1;
 	Image::_image_compress_etc2_func = _compress_etc2;
 }

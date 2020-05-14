@@ -37,7 +37,6 @@
 #include "os_linuxbsd.h"
 
 int main(int argc, char *argv[]) {
-
 	OS_LinuxBSD os;
 
 	setlocale(LC_CTYPE, "");

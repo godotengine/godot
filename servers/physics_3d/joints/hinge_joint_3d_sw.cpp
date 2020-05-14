@@ -50,7 +50,6 @@ subject to the following restrictions:
 #include "hinge_joint_3d_sw.h"
 
 static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
-
 	if (Math::abs(n.z) > Math_SQRT12) {
 		// choose p in y-z plane
 		real_t a = n[1] * n[1] + n[2] * n[2];
@@ -70,7 +69,6 @@ static void plane_space(const Vector3 &n, Vector3 &p, Vector3 &q) {
 
 HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &frameA, const Transform &frameB) :
 		Joint3DSW(_arr, 2) {
-
 	A = rbA;
 	B = rbB;
 
@@ -103,7 +101,6 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Transform &fr
 HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivotInA, const Vector3 &pivotInB,
 		const Vector3 &axisInA, const Vector3 &axisInB) :
 		Joint3DSW(_arr, 2) {
-
 	A = rbA;
 	B = rbB;
 
@@ -158,7 +155,6 @@ HingeJoint3DSW::HingeJoint3DSW(Body3DSW *rbA, Body3DSW *rbB, const Vector3 &pivo
 }
 
 bool HingeJoint3DSW::setup(real_t p_step) {
-
 	m_appliedImpulse = real_t(0.);
 
 	if (!m_angularOnly) {
@@ -254,7 +250,6 @@ bool HingeJoint3DSW::setup(real_t p_step) {
 }
 
 void HingeJoint3DSW::solve(real_t p_step) {
-
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
 
@@ -397,9 +392,7 @@ real_t HingeJoint3DSW::get_hinge_angle() {
 }
 
 void HingeJoint3DSW::set_param(PhysicsServer3D::HingeJointParam p_param, real_t p_value) {
-
 	switch (p_param) {
-
 		case PhysicsServer3D::HINGE_JOINT_BIAS:
 			tau = p_value;
 			break;
@@ -430,9 +423,7 @@ void HingeJoint3DSW::set_param(PhysicsServer3D::HingeJointParam p_param, real_t 
 }
 
 real_t HingeJoint3DSW::get_param(PhysicsServer3D::HingeJointParam p_param) const {
-
 	switch (p_param) {
-
 		case PhysicsServer3D::HINGE_JOINT_BIAS:
 			return tau;
 		case PhysicsServer3D::HINGE_JOINT_LIMIT_UPPER:
@@ -457,7 +448,6 @@ real_t HingeJoint3DSW::get_param(PhysicsServer3D::HingeJointParam p_param) const
 }
 
 void HingeJoint3DSW::set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_value) {
-
 	switch (p_flag) {
 		case PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT:
 			m_useLimit = p_value;
@@ -470,7 +460,6 @@ void HingeJoint3DSW::set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_val
 	}
 }
 bool HingeJoint3DSW::get_flag(PhysicsServer3D::HingeJointFlag p_flag) const {
-
 	switch (p_flag) {
 		case PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT:
 			return m_useLimit;

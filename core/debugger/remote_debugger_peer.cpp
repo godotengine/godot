@@ -154,7 +154,6 @@ void RemoteDebuggerPeerTCP::_read_in() {
 }
 
 Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_port) {
-
 	IP_Address ip;
 	if (p_host.is_valid_ip_address())
 		ip = p_host;
@@ -169,12 +168,10 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 	tcp_client->connect_to_host(ip, port);
 
 	for (int i = 0; i < tries; i++) {
-
 		if (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED) {
 			print_verbose("Remote Debugger: Connected!");
 			break;
 		} else {
-
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
 			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
@@ -182,7 +179,6 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 	};
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-
 		ERR_PRINT("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
 		return FAILED;
 	};

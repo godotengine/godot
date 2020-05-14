@@ -34,10 +34,8 @@
 #include "core/reference.h"
 
 class CryptoCore {
-
 public:
 	class MD5Context {
-
 	private:
 		void *ctx; // To include, or not to include...
 
@@ -51,7 +49,6 @@ public:
 	};
 
 	class SHA1Context {
-
 	private:
 		void *ctx; // To include, or not to include...
 
@@ -65,7 +62,6 @@ public:
 	};
 
 	class SHA256Context {
-
 	private:
 		void *ctx; // To include, or not to include...
 
@@ -79,7 +75,6 @@ public:
 	};
 
 	class AESContext {
-
 	private:
 		void *ctx; // To include, or not to include...
 

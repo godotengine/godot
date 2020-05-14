@@ -204,7 +204,6 @@ void DisplayServerX11::_update_real_mouse_position(const WindowData &wd) {
 
 	if (xquerypointer_result) {
 		if (win_x > 0 && win_y > 0 && win_x <= wd.size.width && win_y <= wd.size.height) {
-
 			last_mouse_pos.x = win_x;
 			last_mouse_pos.y = win_y;
 			last_mouse_pos_valid = true;
@@ -354,7 +353,6 @@ void DisplayServerX11::_flush_mouse_motion() {
 }
 
 void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_mode == mouse_mode)
@@ -367,7 +365,6 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	bool showCursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-
 		if (showCursor) {
 			XDefineCursor(x11_display, E->get().x11_window, cursors[current_cursor]); // show cursor
 		} else {
@@ -377,7 +374,6 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	mouse_mode = p_mode;
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
-
 		//flush pending motion events
 		_flush_mouse_motion();
 		WindowData &main_window = windows[MAIN_WINDOW_ID];
@@ -409,14 +405,11 @@ DisplayServerX11::MouseMode DisplayServerX11::mouse_get_mode() const {
 }
 
 void DisplayServerX11::mouse_warp_to_position(const Point2i &p_to) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
-
 		last_mouse_pos = p_to;
 	} else {
-
 		/*XWindowAttributes xwa;
 		XGetWindowAttributes(x11_display, x11_window, &xwa);
 		printf("%d %d\n", xwa.x, xwa.y); needed? */
@@ -451,7 +444,6 @@ int DisplayServerX11::mouse_get_button_state() const {
 }
 
 void DisplayServerX11::clipboard_set(const String &p_text) {
-
 	_THREAD_SAFE_METHOD_
 
 	internal_clipboard = p_text;
@@ -460,7 +452,6 @@ void DisplayServerX11::clipboard_set(const String &p_text) {
 }
 
 static String _clipboard_get_impl(Atom p_source, Window x11_window, ::Display *x11_display, String p_internal_clipboard, Atom target) {
-
 	String ret;
 
 	Atom type;
@@ -471,7 +462,6 @@ static String _clipboard_get_impl(Atom p_source, Window x11_window, ::Display *x
 	Window Sown = XGetSelectionOwner(x11_display, p_source);
 
 	if (Sown == x11_window) {
-
 		return p_internal_clipboard;
 	};
 
@@ -531,7 +521,6 @@ static String _clipboard_get(Atom p_source, Window x11_window, ::Display *x11_di
 }
 
 String DisplayServerX11::clipboard_get() const {
-
 	_THREAD_SAFE_METHOD_
 
 	String ret;
@@ -545,7 +534,6 @@ String DisplayServerX11::clipboard_get() const {
 }
 
 int DisplayServerX11::get_screen_count() const {
-
 	_THREAD_SAFE_METHOD_
 
 	// Using Xinerama Extension
@@ -560,7 +548,6 @@ int DisplayServerX11::get_screen_count() const {
 	return count;
 }
 Point2i DisplayServerX11::screen_get_position(int p_screen) const {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
@@ -615,7 +602,6 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 }
 
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
@@ -659,7 +645,6 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	return 96;
 }
 bool DisplayServerX11::screen_is_touchscreen(int p_screen) const {
-
 	_THREAD_SAFE_METHOD_
 
 #ifndef _MSC_VER
@@ -680,7 +665,6 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 }
 
 DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
-
 	_THREAD_SAFE_METHOD_
 
 	WindowID id = _create_window(p_mode, p_flags, p_rect);
@@ -694,7 +678,6 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, u
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_id));
@@ -725,7 +708,6 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 }
 
 void DisplayServerX11::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
-
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -733,19 +715,16 @@ void DisplayServerX11::window_attach_instance_id(ObjectID p_instance, WindowID p
 }
 
 ObjectID DisplayServerX11::window_get_attached_instance_id(WindowID p_window) const {
-
 	ERR_FAIL_COND_V(!windows.has(p_window), ObjectID());
 	const WindowData &wd = windows[p_window];
 	return wd.instance_id;
 }
 
 DisplayServerX11::WindowID DisplayServerX11::get_window_at_screen_position(const Point2i &p_position) const {
-
 	return INVALID_WINDOW_ID;
 }
 
 void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -759,7 +738,6 @@ void DisplayServerX11::window_set_title(const String &p_title, WindowID p_window
 }
 
 void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -768,7 +746,6 @@ void DisplayServerX11::window_set_rect_changed_callback(const Callable &p_callab
 }
 
 void DisplayServerX11::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -777,7 +754,6 @@ void DisplayServerX11::window_set_window_event_callback(const Callable &p_callab
 }
 
 void DisplayServerX11::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -785,7 +761,6 @@ void DisplayServerX11::window_set_input_event_callback(const Callable &p_callabl
 	wd.input_event_callback = p_callable;
 }
 void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -794,7 +769,6 @@ void DisplayServerX11::window_set_input_text_callback(const Callable &p_callable
 }
 
 void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -803,7 +777,6 @@ void DisplayServerX11::window_set_drop_files_callback(const Callable &p_callable
 }
 
 int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
@@ -823,7 +796,6 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 	return 0;
 }
 void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -847,7 +819,6 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 }
 
 void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(p_window == p_parent);
@@ -883,7 +854,6 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 }
 
 Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
@@ -893,7 +863,6 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 }
 
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -926,7 +895,6 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 }
 
 void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -959,7 +927,6 @@ void DisplayServerX11::window_set_max_size(const Size2i p_size, WindowID p_windo
 	}
 }
 Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -969,7 +936,6 @@ Size2i DisplayServerX11::window_get_max_size(WindowID p_window) const {
 }
 
 void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1002,7 +968,6 @@ void DisplayServerX11::window_set_min_size(const Size2i p_size, WindowID p_windo
 	}
 }
 Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -1012,7 +977,6 @@ Size2i DisplayServerX11::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1074,7 +1038,6 @@ void DisplayServerX11::window_set_size(const Size2i p_size, WindowID p_window) {
 	}
 }
 Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -1082,7 +1045,6 @@ Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -1113,7 +1075,6 @@ Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
 }
 
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
@@ -1163,7 +1124,6 @@ bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
 }
 
 void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
-
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1195,7 +1155,6 @@ void DisplayServerX11::_set_wm_maximized(WindowID p_window, bool p_enabled) {
 }
 
 void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
-
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -1280,7 +1239,6 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 }
 
 void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1341,7 +1299,6 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
-
 			_set_wm_maximized(p_window, false);
 		} break;
 	}
@@ -1386,7 +1343,6 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			wd.fullscreen = true;
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
-
 			_set_wm_maximized(p_window, true);
 
 		} break;
@@ -1394,7 +1350,6 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 }
 
 DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), WINDOW_MODE_WINDOWED);
@@ -1493,7 +1448,6 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 }
 
 void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1534,7 +1488,6 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-
 			Hints hints;
 			Atom property;
 			hints.flags = 2;
@@ -1548,7 +1501,6 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			wd.borderless = p_enabled;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID, "Can't make a window transient if the 'on top' flag is active.");
 			if (p_enabled && wd.fullscreen) {
 				_set_wm_maximized(p_window, true);
@@ -1582,7 +1534,6 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	}
 }
 bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
@@ -1590,15 +1541,12 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
-
 			return wd.resize_disabled;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-
 			bool borderless = wd.borderless;
 			Atom prop = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 			if (prop != None) {
-
 				Atom type;
 				int format;
 				unsigned long len;
@@ -1616,7 +1564,6 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 			return borderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-
 			return wd.on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
@@ -1630,7 +1577,6 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 }
 
 void DisplayServerX11::window_request_attention(WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1657,7 +1603,6 @@ void DisplayServerX11::window_request_attention(WindowID p_window) {
 }
 
 void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1679,12 +1624,10 @@ void DisplayServerX11::window_move_to_foreground(WindowID p_window) {
 }
 
 bool DisplayServerX11::window_can_draw(WindowID p_window) const {
-
 	//this seems to be all that is provided by X11
 	return window_get_mode(p_window) != WINDOW_MODE_MINIMIZED;
 }
 bool DisplayServerX11::can_any_window_draw() const {
-
 	_THREAD_SAFE_METHOD_
 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -1697,7 +1640,6 @@ bool DisplayServerX11::can_any_window_draw() const {
 }
 
 void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1716,7 +1658,6 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 	}
 }
 void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1736,7 +1677,6 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 }
 
 void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
@@ -1763,11 +1703,9 @@ DisplayServerX11::CursorShape DisplayServerX11::cursor_get_shape() const {
 	return current_cursor;
 }
 void DisplayServerX11::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-
 		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
@@ -1906,7 +1844,6 @@ DisplayServerX11::LatinKeyboardVariant DisplayServerX11::get_latin_keyboard_vari
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
-
 	Atom actual_type;
 	int actual_format;
 	unsigned long nitems;
@@ -1935,11 +1872,9 @@ DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, 
 }
 
 static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count) {
-
 	static const char *target_type = "text/uri-list";
 
 	for (int i = 0; i < p_count; i++) {
-
 		Atom atom = p_list[i];
 
 		if (atom != None && String(XGetAtomName(p_display, atom)) == target_type)
@@ -1949,7 +1884,6 @@ static Atom pick_target_from_list(Display *p_display, Atom *p_list, int p_count)
 }
 
 static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p_t3) {
-
 	static const char *target_type = "text/uri-list";
 	if (p_t1 != None && String(XGetAtomName(p_disp, p_t1)) == target_type)
 		return p_t1;
@@ -1964,7 +1898,6 @@ static Atom pick_target_from_atoms(Display *p_disp, Atom p_t1, Atom p_t2, Atom p
 }
 
 void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
-
 	state->set_shift((p_x11_state & ShiftMask));
 	state->set_control((p_x11_state & ControlMask));
 	state->set_alt((p_x11_state & Mod1Mask /*|| p_x11_state&Mod5Mask*/)); //altgr should not count as alt
@@ -1972,7 +1905,6 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 }
 
 unsigned int DisplayServerX11::_get_mouse_button_state(unsigned int p_x11_button, int p_x11_type) {
-
 	unsigned int mask = 1 << (p_x11_button - 1);
 
 	if (p_x11_type == ButtonPress) {
@@ -1985,7 +1917,6 @@ unsigned int DisplayServerX11::_get_mouse_button_state(unsigned int p_x11_button
 }
 
 void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, bool p_echo) {
-
 	WindowData wd = windows[p_window];
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
@@ -2029,7 +1960,6 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	}
 
 	if (xkeyevent->type == KeyPress && wd.xic) {
-
 		Status status;
 #ifdef X_HAVE_UTF8_STRING
 		int utf8len = 8;
@@ -2093,7 +2023,6 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 		memfree(utf8string);
 #else
 		do {
-
 			int mnbytes = XmbLookupString(xic, xkeyevent, xmbstring, xmblen - 1, &keysym_unicode, &status);
 			xmbstring[mnbytes] = '\0';
 
@@ -2161,7 +2090,6 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// difference in time is below a threshold.
 
 	if (xkeyevent->type != KeyPress) {
-
 		p_echo = false;
 
 		// make sure there are events pending,
@@ -2240,7 +2168,6 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
-
 	WARN_PRINT("Input method stopped");
 	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
 	ds->xim = nullptr;
@@ -2251,7 +2178,6 @@ void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 }
 
 void DisplayServerX11::_window_changed(XEvent *event) {
-
 	WindowID window_id = MAIN_WINDOW_ID;
 
 	// Assign the event to the relevant window
@@ -2316,7 +2242,6 @@ void DisplayServerX11::_dispatch_input_events(const Ref<InputEvent> &p_event) {
 }
 
 void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-
 	Variant ev = p_event;
 	Variant *evp = &ev;
 	Variant ret;
@@ -2353,7 +2278,6 @@ void DisplayServerX11::_send_window_event(const WindowData &wd, WindowEvent p_ev
 	}
 }
 void DisplayServerX11::process_events() {
-
 	_THREAD_SAFE_METHOD_
 
 	do_mouse_warp = false;
@@ -2384,9 +2308,7 @@ void DisplayServerX11::process_events() {
 		}
 
 		if (XGetEventData(x11_display, &event.xcookie)) {
-
 			if (event.xcookie.type == GenericEvent && event.xcookie.extension == xi.opcode) {
-
 				XIDeviceEvent *event_data = (XIDeviceEvent *)event.xcookie.data;
 				int index = event_data->detail;
 				Vector2 pos = Vector2(event_data->event_x, event_data->event_y);
@@ -2493,7 +2415,6 @@ void DisplayServerX11::process_events() {
 							//XIAllowTouchEvents(x11_display, event_data->deviceid, event_data->detail, x11_window, XIAcceptTouch);
 
 					case XI_TouchEnd: {
-
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
 						Ref<InputEventScreenTouch> st;
@@ -2522,14 +2443,12 @@ void DisplayServerX11::process_events() {
 					} break;
 
 					case XI_TouchUpdate: {
-
 						Map<int, Vector2>::Element *curr_pos_elem = xi.state.find(index);
 						if (!curr_pos_elem) { // Defensive
 							break;
 						}
 
 						if (curr_pos_elem->value() != pos) {
-
 							Ref<InputEventScreenDrag> sd;
 							sd.instance();
 							sd->set_window_id(window_id);
@@ -2581,7 +2500,6 @@ void DisplayServerX11::process_events() {
 					// Show and update the cursor if confined and the window regained focus.
 
 					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-
 						if (mouse_mode == MOUSE_MODE_CONFINED)
 							XUndefineCursor(x11_display, E->get().x11_window);
 						else if (mouse_mode == MOUSE_MODE_CAPTURED) // or re-hide it in captured mode
@@ -2612,7 +2530,6 @@ void DisplayServerX11::process_events() {
 
 				if (mouse_mode_grab) {
 					for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
-
 						//dear X11, I try, I really try, but you never work, you do whathever you want.
 						if (mouse_mode == MOUSE_MODE_CAPTURED) {
 							// Show the cursor if we're in captured mode so it doesn't look weird.
@@ -2629,7 +2546,6 @@ void DisplayServerX11::process_events() {
 
 				// Release every pointer to avoid sticky points
 				for (Map<int, Vector2>::Element *E = xi.state.front(); E; E = E->next()) {
-
 					Ref<InputEventScreenTouch> st;
 					st.instance();
 					st->set_index(E->key());
@@ -2649,7 +2565,6 @@ void DisplayServerX11::process_events() {
 				break;
 			case ButtonPress:
 			case ButtonRelease: {
-
 				/* exit in case of a mouse button press */
 				last_timestamp = event.xbutton.time;
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -2674,13 +2589,10 @@ void DisplayServerX11::process_events() {
 				mb->set_pressed((event.type == ButtonPress));
 
 				if (event.type == ButtonPress) {
-
 					uint64_t diff = OS::get_singleton()->get_ticks_usec() / 1000 - last_click_ms;
 
 					if (mb->get_button_index() == last_click_button_index) {
-
 						if (diff < 400 && Vector2(last_click_pos).distance_to(Vector2(event.xbutton.x, event.xbutton.y)) < 5) {
-
 							last_click_ms = 0;
 							last_click_pos = Point2i(-100, -100);
 							last_click_button_index = -1;
@@ -2701,7 +2613,6 @@ void DisplayServerX11::process_events() {
 
 			} break;
 			case MotionNotify: {
-
 				// The X11 API requires filtering one-by-one through the motion
 				// notify events, in order to figure out which event is the one
 				// generated by warping the mouse pointer.
@@ -2757,7 +2668,6 @@ void DisplayServerX11::process_events() {
 				}
 
 				if (!last_mouse_pos_valid) {
-
 					last_mouse_pos = pos;
 					last_mouse_pos_valid = true;
 				}
@@ -2820,7 +2730,6 @@ void DisplayServerX11::process_events() {
 			} break;
 			case KeyPress:
 			case KeyRelease: {
-
 				last_timestamp = event.xkey.time;
 
 				// key event is a little complex, so
@@ -2828,7 +2737,6 @@ void DisplayServerX11::process_events() {
 				_handle_key_event(window_id, (XKeyEvent *)&event);
 			} break;
 			case SelectionRequest: {
-
 				XSelectionRequestEvent *req;
 				XEvent e, respond;
 				e = event;
@@ -2851,7 +2759,6 @@ void DisplayServerX11::process_events() {
 							clip.length());
 					respond.xselection.property = req->property;
 				} else if (req->target == XInternAtom(x11_display, "TARGETS", 0)) {
-
 					Atom data[7];
 					data[0] = XInternAtom(x11_display, "TARGETS", 0);
 					data[1] = XInternAtom(x11_display, "UTF8_STRING", 0);
@@ -2892,7 +2799,6 @@ void DisplayServerX11::process_events() {
 			case SelectionNotify:
 
 				if (event.xselection.target == requested) {
-
 					Property p = _read_property(x11_display, windows[window_id].x11_window, XInternAtom(x11_display, "PRIMARY", 0));
 
 					Vector<String> files = String((char *)p.data).split("\n", false);
@@ -2931,7 +2837,6 @@ void DisplayServerX11::process_events() {
 				}
 
 				else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_enter) {
-
 					//File(s) have been dragged over the window, check for supported target (text/uri-list)
 					xdnd_version = (event.xclient.data.l[1] >> 24);
 					Window source = event.xclient.data.l[0];
@@ -2942,7 +2847,6 @@ void DisplayServerX11::process_events() {
 					} else
 						requested = pick_target_from_atoms(x11_display, event.xclient.data.l[2], event.xclient.data.l[3], event.xclient.data.l[4]);
 				} else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_position) {
-
 					//xdnd position event, reply with an XDND status message
 					//just depending on type of data for now
 					XClientMessageEvent m;
@@ -2961,7 +2865,6 @@ void DisplayServerX11::process_events() {
 					XSendEvent(x11_display, event.xclient.data.l[0], False, NoEventMask, (XEvent *)&m);
 					XFlush(x11_display);
 				} else if ((unsigned int)event.xclient.message_type == (unsigned int)xdnd_drop) {
-
 					if (requested != None) {
 						xdnd_source_window = event.xclient.data.l[0];
 						if (xdnd_version >= 1)
@@ -2992,7 +2895,6 @@ void DisplayServerX11::process_events() {
 	XFlush(x11_display);
 
 	if (do_mouse_warp) {
-
 		XWarpPointer(x11_display, None, windows[MAIN_WINDOW_ID].x11_window,
 				0, 0, 0, 0, (int)windows[MAIN_WINDOW_ID].size.width / 2, (int)windows[MAIN_WINDOW_ID].size.height / 2);
 
@@ -3024,7 +2926,6 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 	XClassHint *classHint = XAllocClassHint();
 
 	if (classHint) {
-
 		CharString name_str;
 		switch (context) {
 			case CONTEXT_EDITOR:
@@ -3058,7 +2959,6 @@ void DisplayServerX11::_update_context(WindowData &wd) {
 	}
 }
 void DisplayServerX11::set_context(Context p_context) {
-
 	_THREAD_SAFE_METHOD_
 
 	context = p_context;
@@ -3167,12 +3067,10 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 }
 
 DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-
 	return memnew(DisplayServerX11(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
 }
 
 DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
-
 	//Create window
 
 	long visualMask = VisualScreenMask;
@@ -3254,7 +3152,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		XChangeProperty(x11_display, wd.x11_window, xdnd_aware, XA_ATOM, 32, PropModeReplace, (unsigned char *)&xdnd_version, 1);
 
 		if (xim && xim_style) {
-
 			wd.xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, wd.x11_window, XNFocusWindow, wd.x11_window, (char *)nullptr);
 			if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
 				WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value");
@@ -3267,7 +3164,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 				WARN_PRINT("XCreateIC couldn't create wd.xic");
 			}
 		} else {
-
 			wd.xic = nullptr;
 			WARN_PRINT("XCreateIC couldn't create wd.xic");
 		}
@@ -3279,9 +3175,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		windows[id] = wd;
 
 		{
-
 			if (p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT) {
-
 				XSizeHints *xsh;
 				xsh = XAllocSizeHints();
 
@@ -3345,7 +3239,6 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 		}
 
 		if (id != MAIN_WINDOW_ID) {
-
 			XSizeHints my_hints = XSizeHints();
 
 			my_hints.flags = PPosition | PSize; /* I want to specify position and size */
@@ -3395,14 +3288,12 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, u
 
 	//set cursor
 	if (cursors[current_cursor] != None) {
-
 		XDefineCursor(x11_display, wd.x11_window, cursors[current_cursor]);
 	}
 	return id;
 }
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -3411,7 +3302,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	mouse_mode = MOUSE_MODE_VISIBLE;
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
-
 		cursors[i] = None;
 		img[i] = nullptr;
 	}
@@ -3446,7 +3336,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 	// Try to support IME if detectable auto-repeat is supported
 	if (xkb_dar == True) {
-
 #ifdef X_HAVE_UTF8_STRING
 		// Xutf8LookupString will be used later instead of XmbLookupString before
 		// the multibyte sequences can be converted to unicode string.
@@ -3523,10 +3412,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (xim_styles) {
 			xim_style = 0L;
 			for (int i = 0; i < xim_styles->count_styles; i++) {
-
 				if (xim_styles->supported_styles[i] ==
 						(XIMPreeditNothing | XIMStatusNothing)) {
-
 					xim_style = xim_styles->supported_styles[i];
 					break;
 				}
@@ -3561,7 +3448,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-
 		context_vulkan = memnew(VulkanContextX11);
 		if (context_vulkan->initialize() != OK) {
 			memdelete(context_vulkan);
@@ -3583,7 +3469,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 					getenv("PRIMUS_libGL") ||
 					getenv("PRIMUS_LOAD_GLOBAL") ||
 					getenv("BUMBLEBEE_SOCKET")) {
-
 				print_verbose("Optirun/primusrun detected. Skipping GPU detection");
 				use_prime = 0;
 			}
@@ -3595,7 +3480,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 				for (int i = 0; i < libraries.size(); ++i) {
 					if (FileAccess::exists(libraries[i] + "/libGL.so.1") ||
 							FileAccess::exists(libraries[i] + "/libGL.so")) {
-
 						print_verbose("Custom libGL override detected. Skipping GPU detection");
 						use_prime = 0;
 					}
@@ -3649,7 +3533,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 //create RenderingDevice if used
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-
 		//temporary
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
@@ -3695,7 +3578,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 
 	for (int i = 0; i < CURSOR_MAX; i++) {
-
 		static const char *cursor_file[] = {
 			"left_ptr",
 			"xterm",
@@ -3831,7 +3713,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	r_error = OK;
 }
 DisplayServerX11::~DisplayServerX11() {
-
 	//destroy all windows
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 #ifdef VULKAN_ENABLED
@@ -3850,7 +3731,6 @@ DisplayServerX11::~DisplayServerX11() {
 	//destroy drivers
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-
 		if (rendering_device_vulkan) {
 			rendering_device_vulkan->finalize();
 			memdelete(rendering_device_vulkan);
@@ -3881,7 +3761,6 @@ DisplayServerX11::~DisplayServerX11() {
 }
 
 void DisplayServerX11::register_x11_driver() {
-
 	register_create_function("x11", create_func, get_rendering_drivers_func);
 }
 

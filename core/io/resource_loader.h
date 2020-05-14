@@ -36,7 +36,6 @@
 #include "core/resource.h"
 
 class ResourceFormatLoader : public Reference {
-
 	GDCLASS(ResourceFormatLoader, Reference);
 
 protected:
@@ -67,7 +66,6 @@ typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(RES p_resource, const String &p_path);
 
 class ResourceLoader {
-
 	enum {
 		MAX_LOADERS = 64
 	};

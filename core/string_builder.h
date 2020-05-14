@@ -35,7 +35,6 @@
 #include "core/vector.h"
 
 class StringBuilder {
-
 	uint32_t string_length = 0;
 
 	Vector<String> strings;

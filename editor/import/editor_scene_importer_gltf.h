@@ -40,7 +40,6 @@ class BoneAttachment3D;
 class MeshInstance3D;
 
 class EditorSceneImporterGLTF : public EditorSceneImporter {
-
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
 
 	typedef int GLTFAccessorIndex;
@@ -92,7 +91,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	String _get_type_name(const GLTFType p_component);
 
 	struct GLTFNode {
-
 		//matrices need to be transformed to this
 		GLTFNodeIndex parent = -1;
 		int height = -1;
@@ -119,7 +117,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFBufferView {
-
 		GLTFBufferIndex buffer = -1;
 		int byte_offset = 0;
 		int byte_length = 0;
@@ -131,7 +128,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFAccessor {
-
 		GLTFBufferViewIndex buffer_view = 0;
 		int byte_offset = 0;
 		int component_type = 0;
@@ -214,7 +210,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFCamera {
-
 		bool perspective = true;
 		float fov_size = 64;
 		float zfar = 500;
@@ -241,7 +236,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		};
 
 		struct Track {
-
 			Channel<Vector3> translation_track;
 			Channel<Quat> rotation_track;
 			Channel<Vector3> scale_track;
@@ -254,7 +248,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFState {
-
 		Dictionary json;
 		int major_version;
 		int minor_version;

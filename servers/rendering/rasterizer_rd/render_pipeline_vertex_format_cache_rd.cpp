@@ -32,7 +32,6 @@
 #include "core/os/memory.h"
 
 RID RenderPipelineVertexFormatCacheRD::_generate_version(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id, bool p_wireframe) {
-
 	RD::PipelineMultisampleState multisample_state_version = multisample_state;
 	multisample_state_version.sample_count = RD::get_singleton()->framebuffer_format_get_texture_samples(p_framebuffer_format_id);
 
@@ -51,7 +50,6 @@ RID RenderPipelineVertexFormatCacheRD::_generate_version(RD::VertexFormatID p_ve
 }
 
 void RenderPipelineVertexFormatCacheRD::_clear() {
-
 	if (versions) {
 		for (uint32_t i = 0; i < version_count; i++) {
 			//shader may be gone, so this may not be valid

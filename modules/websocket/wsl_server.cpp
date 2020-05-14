@@ -169,7 +169,6 @@ Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp
 }
 
 void WSLServer::poll() {
-
 	List<int> remove_ids;
 	for (Map<int, Ref<WebSocketPeer>>::Element *E = _peer_map.front(); E; E = E->next()) {
 		Ref<WSLPeer> peer = (WSLPeer *)E->get().ptr();

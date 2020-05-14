@@ -39,7 +39,6 @@
 class KinematicCollision2D;
 
 class PhysicsBody2D : public CollisionObject2D {
-
 	GDCLASS(PhysicsBody2D, CollisionObject2D);
 
 	uint32_t collision_layer;
@@ -75,7 +74,6 @@ public:
 };
 
 class StaticBody2D : public PhysicsBody2D {
-
 	GDCLASS(StaticBody2D, PhysicsBody2D);
 
 	Vector2 constant_linear_velocity;
@@ -104,7 +102,6 @@ private:
 };
 
 class RigidBody2D : public PhysicsBody2D {
-
 	GDCLASS(RigidBody2D, PhysicsBody2D);
 
 public:
@@ -143,7 +140,6 @@ private:
 	CCDMode ccd_mode;
 
 	struct ShapePair {
-
 		int body_shape;
 		int local_shape;
 		bool tagged;
@@ -161,19 +157,16 @@ private:
 		}
 	};
 	struct RigidBody2D_RemoveAction {
-
 		ObjectID body_id;
 		ShapePair pair;
 	};
 	struct BodyState {
-
 		//int rc;
 		bool in_scene;
 		VSet<ShapePair> shapes;
 	};
 
 	struct ContactMonitor {
-
 		bool locked;
 		Map<ObjectID, BodyState> body_map;
 	};
@@ -271,7 +264,6 @@ VARIANT_ENUM_CAST(RigidBody2D::Mode);
 VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 class KinematicBody2D : public PhysicsBody2D {
-
 	GDCLASS(KinematicBody2D, PhysicsBody2D);
 
 public:
@@ -344,7 +336,6 @@ public:
 };
 
 class KinematicCollision2D : public Reference {
-
 	GDCLASS(KinematicCollision2D, Reference);
 
 	KinematicBody2D *owner;

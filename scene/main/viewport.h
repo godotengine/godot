@@ -51,7 +51,6 @@ class Viewport;
 class CollisionObject3D;
 
 class ViewportTexture : public Texture2D {
-
 	GDCLASS(ViewportTexture, Texture2D);
 
 	NodePath path;
@@ -85,7 +84,6 @@ public:
 };
 
 class Viewport : public Node {
-
 	GDCLASS(Viewport, Node);
 
 public:
@@ -236,7 +234,6 @@ private:
 	bool physics_has_last_mousepos;
 	Vector2 physics_last_mousepos;
 	struct {
-
 		bool alt;
 		bool control;
 		bool shift;
@@ -579,7 +576,6 @@ public:
 };
 
 class SubViewport : public Viewport {
-
 	GDCLASS(SubViewport, Viewport);
 
 public:

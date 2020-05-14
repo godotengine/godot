@@ -128,7 +128,6 @@ private:
 	int mouse_from_touch_index = -1;
 
 	struct SpeedTrack {
-
 		uint64_t last_tick;
 		Vector2 speed;
 		Vector2 accum;

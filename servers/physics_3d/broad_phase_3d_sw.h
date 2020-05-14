@@ -37,7 +37,6 @@
 class CollisionObject3DSW;
 
 class BroadPhase3DSW {
-
 public:
 	typedef BroadPhase3DSW *(*CreateFunction)();
 

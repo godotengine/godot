@@ -43,7 +43,6 @@
 */
 
 class ShaderRD {
-
 	//versions
 	CharString general_defines;
 	Vector<CharString> variant_defines;

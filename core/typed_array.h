@@ -124,23 +124,18 @@ MAKE_TYPED_ARRAY(Vector<Color>, Variant::PACKED_COLOR_ARRAY)
 
 template <class T>
 struct PtrToArg<TypedArray<T>> {
-
 	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
-
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 
 	_FORCE_INLINE_ static void encode(TypedArray<T> p_val, void *p_ptr) {
-
 		*(Array *)p_ptr = p_val;
 	}
 };
 
 template <class T>
 struct PtrToArg<const TypedArray<T> &> {
-
 	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
-
 		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
 	}
 };

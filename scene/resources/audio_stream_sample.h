@@ -36,7 +36,6 @@
 class AudioStreamSample;
 
 class AudioStreamPlaybackSample : public AudioStreamPlayback {
-
 	GDCLASS(AudioStreamPlaybackSample, AudioStreamPlayback);
 	enum {
 		MIX_FRAC_BITS = 13,
@@ -45,7 +44,6 @@ class AudioStreamPlaybackSample : public AudioStreamPlayback {
 	};
 
 	struct IMA_ADPCM_State {
-
 		int16_t step_index;
 		int32_t predictor;
 		/* values at loop point */
