@@ -107,7 +107,7 @@ private:
 		hash_table_power = MIN_HASH_TABLE_POWER;
 		elements = 0;
 		for (int i = 0; i < (1 << MIN_HASH_TABLE_POWER); i++)
-			hash_table[i] = 0;
+			hash_table[i] = nullptr;
 	}
 
 	void erase_hash_table() {
@@ -115,7 +115,7 @@ private:
 		ERR_FAIL_COND_MSG(elements, "Cannot erase hash table if there are still elements inside.");
 
 		memdelete_arr(hash_table);
-		hash_table = 0;
+		hash_table = nullptr;
 		hash_table_power = 0;
 		elements = 0;
 	}
@@ -155,7 +155,7 @@ private:
 
 		for (int i = 0; i < (1 << new_hash_table_power); i++) {
 
-			new_hash_table[i] = 0;
+			new_hash_table[i] = nullptr;
 		}
 
 		if (hash_table) {
@@ -541,7 +541,7 @@ public:
 			memdelete_arr(hash_table);
 		}
 
-		hash_table = 0;
+		hash_table = nullptr;
 		hash_table_power = 0;
 		elements = 0;
 	}

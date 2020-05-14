@@ -477,6 +477,6 @@ ShaderGlobalsEditor::ShaderGlobalsEditor() {
 	interface->connect("var_changed", Callable(this, "_changed"));
 }
 ShaderGlobalsEditor::~ShaderGlobalsEditor() {
-	inspector->edit(NULL);
+	inspector->edit(nullptr);
 	memdelete(interface);
 }
