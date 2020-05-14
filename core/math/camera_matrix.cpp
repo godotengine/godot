@@ -238,6 +238,7 @@ real_t CameraMatrix::get_z_far() const {
 
 	return new_plane.d;
 }
+
 real_t CameraMatrix::get_z_near() const {
 	const real_t *matrix = (const real_t *)this->matrix;
 	Plane new_plane = Plane(matrix[3] + matrix[2],

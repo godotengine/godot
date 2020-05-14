@@ -312,6 +312,7 @@ void AudioStreamPlaybackRandomPitch::stop() {
 		;
 	}
 }
+
 bool AudioStreamPlaybackRandomPitch::is_playing() const {
 	if (playing.is_valid()) {
 		return playing->is_playing();
@@ -335,6 +336,7 @@ float AudioStreamPlaybackRandomPitch::get_playback_position() const {
 
 	return 0;
 }
+
 void AudioStreamPlaybackRandomPitch::seek(float p_time) {
 	if (playing.is_valid()) {
 		playing->seek(p_time);

@@ -673,6 +673,7 @@ bool DisplayServerJavaScript::is_joy_known(int p_device) {
 	return Input::get_singleton()->is_joy_mapped(p_device);
 }
 
+
 String DisplayServerJavaScript::get_joy_guid(int p_device) const {
 
 	return Input::get_singleton()->get_joy_guid_remapped(p_device);
@@ -1076,6 +1077,7 @@ void DisplayServerJavaScript::window_set_current_screen(int p_screen, WindowID p
 Point2i DisplayServerJavaScript::window_get_position(WindowID p_window) const {
 	return Point2i(); // TODO Does this need implementation?
 }
+
 void DisplayServerJavaScript::window_set_position(const Point2i &p_position, WindowID p_window) {
 	// Not supported.
 }

@@ -153,6 +153,7 @@ Vector2 Transform2D::xform(const Vector2 &p_vec) const {
 				   tdoty(p_vec)) +
 		   elements[2];
 }
+
 Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {
 	Vector2 v = p_vec - elements[2];
 
@@ -160,6 +161,7 @@ Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {
 			elements[0].dot(v),
 			elements[1].dot(v));
 }
+
 Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 	Vector2 x = elements[0] * p_rect.size.x;
 	Vector2 y = elements[1] * p_rect.size.y;

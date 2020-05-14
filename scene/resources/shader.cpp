@@ -159,6 +159,7 @@ Shader::Shader() {
 Shader::~Shader() {
 	RenderingServer::get_singleton()->free(shader);
 }
+
 ////////////
 
 RES ResourceFormatLoaderShader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, bool p_no_cache) {
@@ -225,6 +226,7 @@ void ResourceFormatSaverShader::get_recognized_extensions(const RES &p_resource,
 		}
 	}
 }
+
 bool ResourceFormatSaverShader::recognize(const RES &p_resource) const {
 	return p_resource->get_class_name() == "Shader"; //only shader, not inherited
 }

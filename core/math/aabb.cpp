@@ -39,6 +39,7 @@ real_t AABB::get_area() const {
 bool AABB::operator==(const AABB &p_rval) const {
 	return ((position == p_rval.position) && (size == p_rval.size));
 }
+
 bool AABB::operator!=(const AABB &p_rval) const {
 	return ((position != p_rval.position) || (size != p_rval.size));
 }
@@ -238,6 +239,7 @@ Vector3 AABB::get_longest_axis() const {
 
 	return axis;
 }
+
 int AABB::get_longest_axis_index() const {
 	int axis = 0;
 	real_t max_size = size.x;
@@ -269,6 +271,7 @@ Vector3 AABB::get_shortest_axis() const {
 
 	return axis;
 }
+
 int AABB::get_shortest_axis_index() const {
 	int axis = 0;
 	real_t max_size = size.x;
@@ -290,11 +293,13 @@ AABB AABB::merge(const AABB &p_with) const {
 	aabb.merge_with(p_with);
 	return aabb;
 }
+
 AABB AABB::expand(const Vector3 &p_vector) const {
 	AABB aabb = *this;
 	aabb.expand_to(p_vector);
 	return aabb;
 }
+
 AABB AABB::grow(real_t p_by) const {
 	AABB aabb = *this;
 	aabb.grow_by(p_by);

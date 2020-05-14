@@ -4334,6 +4334,7 @@ void CanvasItemEditor::_button_toggle_grid_snap(bool p_status) {
 	grid_snap_active = p_status;
 	viewport->update();
 }
+
 void CanvasItemEditor::_button_override_camera(bool p_pressed) {
 	EditorDebuggerNode *debugger = EditorDebuggerNode::get_singleton();
 
@@ -5762,6 +5763,7 @@ void CanvasItemEditorPlugin::make_visible(bool p_visible) {
 Dictionary CanvasItemEditorPlugin::get_state() const {
 	return canvas_item_editor->get_state();
 }
+
 void CanvasItemEditorPlugin::set_state(const Dictionary &p_state) {
 	canvas_item_editor->set_state(p_state);
 }

@@ -379,6 +379,7 @@ void Polygon2D::set_color(const Color &p_color) {
 	color = p_color;
 	update();
 }
+
 Color Polygon2D::get_color() const {
 	return color;
 }
@@ -387,6 +388,7 @@ void Polygon2D::set_vertex_colors(const Vector<Color> &p_colors) {
 	vertex_colors = p_colors;
 	update();
 }
+
 Vector<Color> Polygon2D::get_vertex_colors() const {
 	return vertex_colors;
 }
@@ -404,6 +406,7 @@ void Polygon2D::set_texture(const Ref<Texture2D> &p_texture) {
 	}*/
 	update();
 }
+
 Ref<Texture2D> Polygon2D::get_texture() const {
 	return texture;
 }
@@ -448,6 +451,7 @@ void Polygon2D::set_texture_offset(const Vector2 &p_offset) {
 	tex_ofs = p_offset;
 	update();
 }
+
 Vector2 Polygon2D::get_texture_offset() const {
 	return tex_ofs;
 }
@@ -456,6 +460,7 @@ void Polygon2D::set_texture_rotation(float p_rot) {
 	tex_rot = p_rot;
 	update();
 }
+
 float Polygon2D::get_texture_rotation() const {
 	return tex_rot;
 }
@@ -463,6 +468,7 @@ float Polygon2D::get_texture_rotation() const {
 void Polygon2D::set_texture_rotation_degrees(float p_rot) {
 	set_texture_rotation(Math::deg2rad(p_rot));
 }
+
 float Polygon2D::get_texture_rotation_degrees() const {
 	return Math::rad2deg(get_texture_rotation());
 }
@@ -471,6 +477,7 @@ void Polygon2D::set_texture_scale(const Size2 &p_scale) {
 	tex_scale = p_scale;
 	update();
 }
+
 Size2 Polygon2D::get_texture_scale() const {
 	return tex_scale;
 }
@@ -479,6 +486,7 @@ void Polygon2D::set_invert(bool p_invert) {
 	invert = p_invert;
 	update();
 }
+
 bool Polygon2D::get_invert() const {
 	return invert;
 }
@@ -487,6 +495,7 @@ void Polygon2D::set_antialiased(bool p_antialiased) {
 	antialiased = p_antialiased;
 	update();
 }
+
 bool Polygon2D::get_antialiased() const {
 	return antialiased;
 }
@@ -495,6 +504,7 @@ void Polygon2D::set_invert_border(float p_invert_border) {
 	invert_border = p_invert_border;
 	update();
 }
+
 float Polygon2D::get_invert_border() const {
 	return invert_border;
 }
@@ -516,17 +526,21 @@ void Polygon2D::add_bone(const NodePath &p_path, const Vector<float> &p_weights)
 	bone.weights = p_weights;
 	bone_weights.push_back(bone);
 }
+
 int Polygon2D::get_bone_count() const {
 	return bone_weights.size();
 }
+
 NodePath Polygon2D::get_bone_path(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), NodePath());
 	return bone_weights[p_index].path;
 }
+
 Vector<float> Polygon2D::get_bone_weights(int p_index) const {
 	ERR_FAIL_INDEX_V(p_index, bone_weights.size(), Vector<float>());
 	return bone_weights[p_index].weights;
 }
+
 void Polygon2D::erase_bone(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, bone_weights.size());
 	bone_weights.remove(p_idx);
@@ -541,6 +555,7 @@ void Polygon2D::set_bone_weights(int p_index, const Vector<float> &p_weights) {
 	bone_weights.write[p_index].weights = p_weights;
 	update();
 }
+
 void Polygon2D::set_bone_path(int p_index, const NodePath &p_path) {
 	ERR_FAIL_INDEX(p_index, bone_weights.size());
 	bone_weights.write[p_index].path = p_path;
@@ -555,6 +570,7 @@ Array Polygon2D::_get_bones() const {
 	}
 	return bones;
 }
+
 void Polygon2D::_set_bones(const Array &p_bones) {
 	ERR_FAIL_COND(p_bones.size() & 1);
 	clear_bones();

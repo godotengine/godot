@@ -96,6 +96,7 @@ bool ItemListPlugin::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return true;
 }
+
 void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < get_item_count(); i++) {
 		String base = itos(i) + "/";

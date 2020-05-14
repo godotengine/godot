@@ -98,6 +98,7 @@ int joypad::get_hid_element_state(rec_element *p_element) const {
 	}
 	return value;
 }
+
 void joypad::add_hid_element(IOHIDElementRef p_element) {
 	const CFTypeID elementTypeID = p_element ? CFGetTypeID(p_element) : 0;
 

@@ -148,10 +148,12 @@ void NavigationPolygon::add_outline_at_index(const Vector<Vector2> &p_outline, i
 int NavigationPolygon::get_polygon_count() const {
 	return polygons.size();
 }
+
 Vector<int> NavigationPolygon::get_polygon(int p_idx) {
 	ERR_FAIL_INDEX_V(p_idx, polygons.size(), Vector<int>());
 	return polygons[p_idx].indices;
 }
+
 void NavigationPolygon::clear_polygons() {
 	polygons.clear();
 	{
@@ -216,6 +218,7 @@ void NavigationPolygon::clear_outlines() {
 	outlines.clear();
 	rect_cache_dirty = true;
 }
+
 void NavigationPolygon::make_polygons_from_outlines() {
 	{
 		MutexLock lock(navmesh_generation);

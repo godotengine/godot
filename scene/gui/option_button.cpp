@@ -112,6 +112,7 @@ void OptionButton::add_icon_item(const Ref<Texture2D> &p_icon, const String &p_l
 	if (popup->get_item_count() == 1)
 		select(0);
 }
+
 void OptionButton::add_item(const String &p_label, int p_id) {
 	popup->add_radio_check_item(p_label, p_id);
 	if (popup->get_item_count() == 1)
@@ -124,12 +125,14 @@ void OptionButton::set_item_text(int p_idx, const String &p_text) {
 	if (current == p_idx)
 		set_text(p_text);
 }
+
 void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	popup->set_item_icon(p_idx, p_icon);
 
 	if (current == p_idx)
 		set_icon(p_icon);
 }
+
 void OptionButton::set_item_id(int p_idx, int p_id) {
 	popup->set_item_id(p_idx, p_id);
 }
@@ -220,6 +223,7 @@ int OptionButton::get_selected_id() const {
 		return 0;
 	return get_item_id(current);
 }
+
 Variant OptionButton::get_selected_metadata() const {
 	int idx = get_selected();
 	if (idx < 0)
@@ -247,6 +251,7 @@ Array OptionButton::_get_items() const {
 
 	return items;
 }
+
 void OptionButton::_set_items(const Array &p_items) {
 	ERR_FAIL_COND(p_items.size() % 5);
 	clear();

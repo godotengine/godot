@@ -8474,6 +8474,7 @@ String GDScriptParser::get_error() const {
 int GDScriptParser::get_error_line() const {
 	return error_line;
 }
+
 int GDScriptParser::get_error_column() const {
 	return error_column;
 }

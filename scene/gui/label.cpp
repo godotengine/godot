@@ -47,6 +47,7 @@ void Label::set_autowrap(bool p_autowrap) {
 		minimum_size_changed();
 	}
 }
+
 bool Label::has_autowrap() const {
 	return autowrap;
 }
@@ -56,6 +57,7 @@ void Label::set_uppercase(bool p_uppercase) {
 	word_cache_dirty = true;
 	update();
 }
+
 bool Label::is_uppercase() const {
 	return uppercase;
 }

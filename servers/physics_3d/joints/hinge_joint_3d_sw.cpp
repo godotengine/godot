@@ -360,12 +360,14 @@ void HingeJoint3DSW::solve(real_t p_step) {
 		}
 	}
 }
+
 /*
 void	HingeJointSW::updateRHS(real_t	timeStep)
 {
 	(void)timeStep;
 
 }
+
 */
 
 static _FORCE_INLINE_ real_t atan2fast(real_t y, real_t x) {
@@ -459,6 +461,7 @@ void HingeJoint3DSW::set_flag(PhysicsServer3D::HingeJointFlag p_flag, bool p_val
 			break; // Can't happen, but silences warning
 	}
 }
+
 bool HingeJoint3DSW::get_flag(PhysicsServer3D::HingeJointFlag p_flag) const {
 	switch (p_flag) {
 		case PhysicsServer3D::HINGE_JOINT_FLAG_USE_LIMIT:

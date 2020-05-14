@@ -144,6 +144,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		NodeDock::singleton->show_groups();
 	}
 }
+
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
 		bool v = bool(p_node->call("is_visible"));
@@ -774,6 +775,7 @@ void SceneTreeEditor::set_display_foreign_nodes(bool p_display) {
 	display_foreign = p_display;
 	_update_tree();
 }
+
 bool SceneTreeEditor::get_display_foreign_nodes() const {
 	return display_foreign;
 }
@@ -961,6 +963,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 	return String(d["type"]) == "nodes";
 }
+
 void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	if (!can_drop_data_fw(p_point, p_data, p_from))
 		return;
@@ -1145,6 +1148,7 @@ void SceneTreeDialog::_notification(int p_what) {
 void SceneTreeDialog::_cancel() {
 	hide();
 }
+
 void SceneTreeDialog::_select() {
 	if (tree->get_selected()) {
 		emit_signal("selected", tree->get_selected()->get_path());

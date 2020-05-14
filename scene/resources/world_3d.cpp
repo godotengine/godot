@@ -204,6 +204,7 @@ void World3D::_update_camera(Camera3D *p_camera) {
 	indexer->_update_camera(p_camera);
 #endif
 }
+
 void World3D::_remove_camera(Camera3D *p_camera) {
 #ifndef _3D_DISABLED
 	indexer->_remove_camera(p_camera);

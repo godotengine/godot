@@ -59,6 +59,7 @@ void MethodBind::_set_returns(bool p_returns) {
 StringName MethodBind::get_name() const {
 	return name;
 }
+
 void MethodBind::set_name(const StringName &p_name) {
 	name = p_name;
 }
@@ -67,6 +68,7 @@ void MethodBind::set_name(const StringName &p_name) {
 void MethodBind::set_argument_names(const Vector<StringName> &p_names) {
 	arg_names = p_names;
 }
+
 Vector<StringName> MethodBind::get_argument_names() const {
 	return arg_names;
 }

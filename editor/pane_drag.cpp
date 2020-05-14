@@ -55,6 +55,7 @@ void PaneDrag::_notification(int p_what) {
 			break;
 	}
 }
+
 Size2 PaneDrag::get_minimum_size() const {
 	Ref<Texture2D> icon = get_theme_icon("PaneDrag", "EditorIcons");
 	if (!icon.is_null())

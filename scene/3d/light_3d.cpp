@@ -70,6 +70,7 @@ void Light3D::set_shadow(bool p_enable) {
 		update_configuration_warning();
 	}
 }
+
 bool Light3D::has_shadow() const {
 	return shadow;
 }
@@ -78,6 +79,7 @@ void Light3D::set_negative(bool p_enable) {
 	negative = p_enable;
 	RS::get_singleton()->light_set_negative(light, p_enable);
 }
+
 bool Light3D::is_negative() const {
 	return negative;
 }
@@ -86,6 +88,7 @@ void Light3D::set_cull_mask(uint32_t p_cull_mask) {
 	cull_mask = p_cull_mask;
 	RS::get_singleton()->light_set_cull_mask(light, p_cull_mask);
 }
+
 uint32_t Light3D::get_cull_mask() const {
 	return cull_mask;
 }
@@ -96,6 +99,7 @@ void Light3D::set_color(const Color &p_color) {
 	// The gizmo color depends on the light color, so update it.
 	update_gizmo();
 }
+
 Color Light3D::get_color() const {
 	return color;
 }
@@ -355,6 +359,7 @@ Light3D::~Light3D() {
 	if (light.is_valid())
 		RenderingServer::get_singleton()->free(light);
 }
+
 /////////////////////////////////////////
 
 void DirectionalLight3D::set_shadow_mode(ShadowMode p_mode) {

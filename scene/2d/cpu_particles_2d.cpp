@@ -62,6 +62,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 
 	particle_order.resize(p_amount);
 }
+
 void CPUParticles2D::set_lifetime(float p_lifetime) {
 	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
@@ -74,15 +75,19 @@ void CPUParticles2D::set_one_shot(bool p_one_shot) {
 void CPUParticles2D::set_pre_process_time(float p_time) {
 	pre_process_time = p_time;
 }
+
 void CPUParticles2D::set_explosiveness_ratio(float p_ratio) {
 	explosiveness_ratio = p_ratio;
 }
+
 void CPUParticles2D::set_randomness_ratio(float p_ratio) {
 	randomness_ratio = p_ratio;
 }
+
 void CPUParticles2D::set_lifetime_randomness(float p_random) {
 	lifetime_randomness = p_random;
 }
+
 void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	local_coords = p_enable;
 	set_notify_transform(!p_enable);
@@ -95,12 +100,15 @@ void CPUParticles2D::set_speed_scale(float p_scale) {
 bool CPUParticles2D::is_emitting() const {
 	return emitting;
 }
+
 int CPUParticles2D::get_amount() const {
 	return particles.size();
 }
+
 float CPUParticles2D::get_lifetime() const {
 	return lifetime;
 }
+
 bool CPUParticles2D::get_one_shot() const {
 	return one_shot;
 }
@@ -108,12 +116,15 @@ bool CPUParticles2D::get_one_shot() const {
 float CPUParticles2D::get_pre_process_time() const {
 	return pre_process_time;
 }
+
 float CPUParticles2D::get_explosiveness_ratio() const {
 	return explosiveness_ratio;
 }
+
 float CPUParticles2D::get_randomness_ratio() const {
 	return randomness_ratio;
 }
+
 float CPUParticles2D::get_lifetime_randomness() const {
 	return lifetime_randomness;
 }
@@ -294,6 +305,7 @@ void CPUParticles2D::set_param(Parameter p_param, float p_value) {
 
 	parameters[p_param] = p_value;
 }
+
 float CPUParticles2D::get_param(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
@@ -305,6 +317,7 @@ void CPUParticles2D::set_param_randomness(Parameter p_param, float p_value) {
 
 	randomness[p_param] = p_value;
 }
+
 float CPUParticles2D::get_param_randomness(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 
@@ -363,6 +376,7 @@ void CPUParticles2D::set_param_curve(Parameter p_param, const Ref<Curve> &p_curv
 		}
 	}
 }
+
 Ref<Curve> CPUParticles2D::get_param_curve(Parameter p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, Ref<Curve>());
 
@@ -424,12 +438,15 @@ void CPUParticles2D::set_emission_colors(const Vector<Color> &p_colors) {
 float CPUParticles2D::get_emission_sphere_radius() const {
 	return emission_sphere_radius;
 }
+
 Vector2 CPUParticles2D::get_emission_rect_extents() const {
 	return emission_rect_extents;
 }
+
 Vector<Vector2> CPUParticles2D::get_emission_points() const {
 	return emission_points;
 }
+
 Vector<Vector2> CPUParticles2D::get_emission_normals() const {
 	return emission_normals;
 }
@@ -441,6 +458,7 @@ Vector<Color> CPUParticles2D::get_emission_colors() const {
 CPUParticles2D::EmissionShape CPUParticles2D::get_emission_shape() const {
 	return emission_shape;
 }
+
 void CPUParticles2D::set_gravity(const Vector2 &p_gravity) {
 	gravity = p_gravity;
 }

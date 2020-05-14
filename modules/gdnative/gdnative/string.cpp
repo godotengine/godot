@@ -137,6 +137,7 @@ signed char GDAPI godot_string_nocasecmp_to(const godot_string *p_self, const go
 
 	return self->nocasecmp_to(*str);
 }
+
 signed char GDAPI godot_string_naturalnocasecmp_to(const godot_string *p_self, const godot_string *p_str) {
 	const String *self = (const String *)p_self;
 	const String *str = (const String *)p_str;

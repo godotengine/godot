@@ -48,6 +48,7 @@ StringName *ShaderGlobalsOverride::_remap(const StringName &p_name) const {
 
 	return r;
 }
+
 bool ShaderGlobalsOverride::_set(const StringName &p_name, const Variant &p_value) {
 	StringName *r = _remap(p_name);
 

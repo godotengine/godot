@@ -541,6 +541,7 @@ void FileDialog::clear_filters() {
 	update_filters();
 	invalidate();
 }
+
 void FileDialog::add_filter(const String &p_filter) {
 	filters.push_back(p_filter);
 	update_filters();
@@ -560,17 +561,21 @@ Vector<String> FileDialog::get_filters() const {
 String FileDialog::get_current_dir() const {
 	return dir->get_text();
 }
+
 String FileDialog::get_current_file() const {
 	return file->get_text();
 }
+
 String FileDialog::get_current_path() const {
 	return dir->get_text().plus_file(file->get_text());
 }
+
 void FileDialog::set_current_dir(const String &p_dir) {
 	dir_access->change_dir(p_dir);
 	update_dir();
 	invalidate();
 }
+
 void FileDialog::set_current_file(const String &p_file) {
 	file->set_text(p_file);
 	update_dir();
@@ -582,6 +587,7 @@ void FileDialog::set_current_file(const String &p_file) {
 			file->grab_focus();
 	}
 }
+
 void FileDialog::set_current_path(const String &p_path) {
 	if (!p_path.size())
 		return;

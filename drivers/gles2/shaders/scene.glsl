@@ -1065,6 +1065,7 @@ float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// float sin2 = (1.0 - cos2);
 	// return 1.0 / (cos_theta_m + sqrt(cos2 + alpha * alpha * sin2));
 }
+
 */
 
 // This approximates G_GGX_2cos(cos_theta_l, alpha) * G_GGX_2cos(cos_theta_v, alpha)
@@ -1087,6 +1088,7 @@ float G_GGX_anisotropic_2cos(float cos_theta_m, float alpha_x, float alpha_y, fl
 	float s_y = alpha_y * sin_phi;
 	return 1.0 / max(cos_theta_m + sqrt(cos2 + (s_x * s_x + s_y * s_y) * sin2), 0.001);
 }
+
 */
 
 // This approximates G_GGX_anisotropic_2cos(cos_theta_l, ...) * G_GGX_anisotropic_2cos(cos_theta_v, ...)

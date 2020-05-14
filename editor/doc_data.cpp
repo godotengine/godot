@@ -771,6 +771,7 @@ Error DocData::load_classes(const String &p_dir) {
 
 	return OK;
 }
+
 Error DocData::erase_classes(const String &p_dir) {
 	Error err;
 	DirAccessRef da = DirAccess::open(p_dir, &err);
@@ -798,6 +799,7 @@ Error DocData::erase_classes(const String &p_dir) {
 
 	return OK;
 }
+
 Error DocData::_load(Ref<XMLParser> parser) {
 	Error err = OK;
 

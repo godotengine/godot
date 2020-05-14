@@ -555,6 +555,7 @@ void RigidBodyBullet::set_mode(PhysicsServer3D::BodyMode p_mode) {
 	btBody->setAngularVelocity(btVector3(0, 0, 0));
 	btBody->setLinearVelocity(btVector3(0, 0, 0));
 }
+
 PhysicsServer3D::BodyMode RigidBodyBullet::get_mode() const {
 	return mode;
 }

@@ -255,6 +255,7 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 
 	return false;
 }
+
 void ClassDB::get_class_list(List<StringName> *p_classes) {
 	OBJTYPE_RLOCK;
 
@@ -505,6 +506,7 @@ Object *ClassDB::instance(const StringName &p_class) {
 #endif
 	return ti->creation_func();
 }
+
 bool ClassDB::can_instance(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
@@ -934,6 +936,7 @@ void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, 
 		check = check->inherits_ptr;
 	}
 }
+
 bool ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value, bool *r_valid) {
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;
@@ -978,6 +981,7 @@ bool ClassDB::set_property(Object *p_object, const StringName &p_property, const
 
 	return false;
 }
+
 bool ClassDB::get_property(Object *p_object, const StringName &p_property, Variant &r_value) {
 	ClassInfo *type = classes.getptr(p_object->get_class_name());
 	ClassInfo *check = type;

@@ -21,6 +21,7 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool use_direct_write;
 	float face_size;
 }
+
 params;
 
 #define M_PI 3.14159265359

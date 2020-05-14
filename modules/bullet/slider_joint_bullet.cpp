@@ -119,6 +119,7 @@ real_t SliderJointBullet::getLowerLinLimit() const {
 void SliderJointBullet::setLowerLinLimit(real_t lowerLimit) {
 	sliderConstraint->setLowerLinLimit(lowerLimit);
 }
+
 real_t SliderJointBullet::getUpperLinLimit() const {
 	return sliderConstraint->getUpperLinLimit();
 }

@@ -49,6 +49,7 @@ bool VisualScriptReturn::has_input_sequence_port() const {
 int VisualScriptReturn::get_input_value_port_count() const {
 	return with_value ? 1 : 0;
 }
+
 int VisualScriptReturn::get_output_value_port_count() const {
 	return 0;
 }
@@ -63,6 +64,7 @@ PropertyInfo VisualScriptReturn::get_input_value_port_info(int p_idx) const {
 	pinfo.type = type;
 	return pinfo;
 }
+
 PropertyInfo VisualScriptReturn::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo();
 }
@@ -170,6 +172,7 @@ bool VisualScriptCondition::has_input_sequence_port() const {
 int VisualScriptCondition::get_input_value_port_count() const {
 	return 1;
 }
+
 int VisualScriptCondition::get_output_value_port_count() const {
 	return 0;
 }
@@ -189,6 +192,7 @@ PropertyInfo VisualScriptCondition::get_input_value_port_info(int p_idx) const {
 	pinfo.type = Variant::BOOL;
 	return pinfo;
 }
+
 PropertyInfo VisualScriptCondition::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo();
 }
@@ -248,6 +252,7 @@ bool VisualScriptWhile::has_input_sequence_port() const {
 int VisualScriptWhile::get_input_value_port_count() const {
 	return 1;
 }
+
 int VisualScriptWhile::get_output_value_port_count() const {
 	return 0;
 }
@@ -265,6 +270,7 @@ PropertyInfo VisualScriptWhile::get_input_value_port_info(int p_idx) const {
 	pinfo.type = Variant::BOOL;
 	return pinfo;
 }
+
 PropertyInfo VisualScriptWhile::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo();
 }
@@ -305,6 +311,7 @@ VisualScriptNodeInstance *VisualScriptWhile::instance(VisualScriptInstance *p_in
 	instance->instance = p_instance;
 	return instance;
 }
+
 VisualScriptWhile::VisualScriptWhile() {
 }
 
@@ -323,6 +330,7 @@ bool VisualScriptIterator::has_input_sequence_port() const {
 int VisualScriptIterator::get_input_value_port_count() const {
 	return 1;
 }
+
 int VisualScriptIterator::get_output_value_port_count() const {
 	return 1;
 }
@@ -340,12 +348,14 @@ PropertyInfo VisualScriptIterator::get_input_value_port_info(int p_idx) const {
 	pinfo.type = Variant::NIL;
 	return pinfo;
 }
+
 PropertyInfo VisualScriptIterator::get_output_value_port_info(int p_idx) const {
 	PropertyInfo pinfo;
 	pinfo.name = "elem";
 	pinfo.type = Variant::NIL;
 	return pinfo;
 }
+
 String VisualScriptIterator::get_caption() const {
 	return "Iterator";
 }
@@ -441,6 +451,7 @@ bool VisualScriptSequence::has_input_sequence_port() const {
 int VisualScriptSequence::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptSequence::get_output_value_port_count() const {
 	return 1;
 }
@@ -452,9 +463,11 @@ String VisualScriptSequence::get_output_sequence_port_text(int p_port) const {
 PropertyInfo VisualScriptSequence::get_input_value_port_info(int p_idx) const {
 	return PropertyInfo();
 }
+
 PropertyInfo VisualScriptSequence::get_output_value_port_info(int p_idx) const {
 	return PropertyInfo(Variant::INT, "current");
 }
+
 String VisualScriptSequence::get_caption() const {
 	return "Sequence";
 }
@@ -518,6 +531,7 @@ VisualScriptNodeInstance *VisualScriptSequence::instance(VisualScriptInstance *p
 	instance->steps = steps;
 	return instance;
 }
+
 VisualScriptSequence::VisualScriptSequence() {
 	steps = 1;
 }
@@ -537,6 +551,7 @@ bool VisualScriptSwitch::has_input_sequence_port() const {
 int VisualScriptSwitch::get_input_value_port_count() const {
 	return case_values.size() + 1;
 }
+
 int VisualScriptSwitch::get_output_value_port_count() const {
 	return 0;
 }
@@ -636,6 +651,7 @@ bool VisualScriptSwitch::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void VisualScriptSwitch::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::INT, "case_count", PROPERTY_HINT_RANGE, "0,128"));
 
@@ -670,6 +686,7 @@ bool VisualScriptTypeCast::has_input_sequence_port() const {
 int VisualScriptTypeCast::get_input_value_port_count() const {
 	return 1;
 }
+
 int VisualScriptTypeCast::get_output_value_port_count() const {
 	return 1;
 }
@@ -718,6 +735,7 @@ void VisualScriptTypeCast::set_base_script(const String &p_path) {
 	_change_notify();
 	ports_changed_notify();
 }
+
 String VisualScriptTypeCast::get_base_script() const {
 	return script;
 }

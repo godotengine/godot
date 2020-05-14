@@ -149,6 +149,7 @@ void Light2D::set_color(const Color &p_color) {
 	color = p_color;
 	RS::get_singleton()->canvas_light_set_color(canvas_light, color);
 }
+
 Color Light2D::get_color() const {
 	return color;
 }
@@ -189,6 +190,7 @@ void Light2D::set_z_range_min(int p_min_z) {
 	z_min = p_min_z;
 	RS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
 }
+
 int Light2D::get_z_range_min() const {
 	return z_min;
 }
@@ -197,6 +199,7 @@ void Light2D::set_z_range_max(int p_max_z) {
 	z_max = p_max_z;
 	RS::get_singleton()->canvas_light_set_z_range(canvas_light, z_min, z_max);
 }
+
 int Light2D::get_z_range_max() const {
 	return z_max;
 }
@@ -205,6 +208,7 @@ void Light2D::set_layer_range_min(int p_min_layer) {
 	layer_min = p_min_layer;
 	RS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
 }
+
 int Light2D::get_layer_range_min() const {
 	return layer_min;
 }
@@ -213,6 +217,7 @@ void Light2D::set_layer_range_max(int p_max_layer) {
 	layer_max = p_max_layer;
 	RS::get_singleton()->canvas_light_set_layer_range(canvas_light, layer_min, layer_max);
 }
+
 int Light2D::get_layer_range_max() const {
 	return layer_max;
 }
@@ -248,6 +253,7 @@ void Light2D::set_shadow_enabled(bool p_enabled) {
 	shadow = p_enabled;
 	RS::get_singleton()->canvas_light_set_shadow_enabled(canvas_light, shadow);
 }
+
 bool Light2D::is_shadow_enabled() const {
 	return shadow;
 }

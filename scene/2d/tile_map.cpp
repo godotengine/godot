@@ -1014,6 +1014,7 @@ int TileMap::get_cell(int p_x, int p_y) const {
 
 	return E->get().id;
 }
+
 bool TileMap::is_cell_x_flipped(int p_x, int p_y) const {
 	PosKey pk(p_x, p_y);
 
@@ -1024,6 +1025,7 @@ bool TileMap::is_cell_x_flipped(int p_x, int p_y) const {
 
 	return E->get().flip_h;
 }
+
 bool TileMap::is_cell_y_flipped(int p_x, int p_y) const {
 	PosKey pk(p_x, p_y);
 
@@ -1034,6 +1036,7 @@ bool TileMap::is_cell_y_flipped(int p_x, int p_y) const {
 
 	return E->get().flip_v;
 }
+
 bool TileMap::is_cell_transposed(int p_x, int p_y) const {
 	PosKey pk(p_x, p_y);
 
@@ -1311,6 +1314,7 @@ void TileMap::set_collision_bounce(float p_bounce) {
 		}
 	}
 }
+
 float TileMap::get_collision_bounce() const {
 	return bounce;
 }

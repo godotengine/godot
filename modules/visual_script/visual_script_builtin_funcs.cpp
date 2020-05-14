@@ -223,6 +223,7 @@ int VisualScriptBuiltinFunc::get_func_argument_count(BuiltinFunc p_func) {
 int VisualScriptBuiltinFunc::get_input_value_port_count() const {
 	return get_func_argument_count(func);
 }
+
 int VisualScriptBuiltinFunc::get_output_value_port_count() const {
 	switch (func) {
 		case MATH_RANDOMIZE:
@@ -627,6 +628,7 @@ String VisualScriptBuiltinFunc::get_caption() const {
 
 	return "BuiltinFunc";
 }
+
 */
 
 String VisualScriptBuiltinFunc::get_caption() const {

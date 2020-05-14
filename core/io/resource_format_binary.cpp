@@ -607,6 +607,7 @@ void ResourceLoaderBinary::set_local_path(const String &p_local_path) {
 Ref<Resource> ResourceLoaderBinary::get_resource() {
 	return resource;
 }
+
 Error ResourceLoaderBinary::load() {
 	if (error != OK)
 		return error;
@@ -996,6 +997,7 @@ void ResourceFormatLoaderBinary::get_recognized_extensions_for_type(const String
 		p_extensions->push_back(ext);
 	}
 }
+
 void ResourceFormatLoaderBinary::get_recognized_extensions(List<String> *p_extensions) const {
 	List<String> extensions;
 	ClassDB::get_resource_base_extensions(&extensions);

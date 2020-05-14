@@ -86,15 +86,19 @@ RID PhysicsServer2DSW::line_shape_create() {
 RID PhysicsServer2DSW::ray_shape_create() {
 	return _shape_create(SHAPE_RAY);
 }
+
 RID PhysicsServer2DSW::segment_shape_create() {
 	return _shape_create(SHAPE_SEGMENT);
 }
+
 RID PhysicsServer2DSW::circle_shape_create() {
 	return _shape_create(SHAPE_CIRCLE);
 }
+
 RID PhysicsServer2DSW::rectangle_shape_create() {
 	return _shape_create(SHAPE_RECTANGLE);
 }
+
 RID PhysicsServer2DSW::capsule_shape_create() {
 	return _shape_create(SHAPE_CAPSULE);
 }
@@ -102,6 +106,7 @@ RID PhysicsServer2DSW::capsule_shape_create() {
 RID PhysicsServer2DSW::convex_polygon_shape_create() {
 	return _shape_create(SHAPE_CONVEX_POLYGON);
 }
+
 RID PhysicsServer2DSW::concave_polygon_shape_create() {
 	return _shape_create(SHAPE_CONCAVE_POLYGON);
 }
@@ -349,6 +354,7 @@ void PhysicsServer2DSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape)
 
 	area->set_shape(p_shape_idx, shape);
 }
+
 void PhysicsServer2DSW::area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D &p_transform) {
 	Area2DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
@@ -371,6 +377,7 @@ int PhysicsServer2DSW::area_get_shape_count(RID p_area) const {
 
 	return area->get_shape_count();
 }
+
 RID PhysicsServer2DSW::area_get_shape(RID p_area, int p_shape_idx) const {
 	Area2DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, RID());
@@ -380,6 +387,7 @@ RID PhysicsServer2DSW::area_get_shape(RID p_area, int p_shape_idx) const {
 
 	return shape->get_self();
 }
+
 Transform2D PhysicsServer2DSW::area_get_shape_transform(RID p_area, int p_shape_idx) const {
 	Area2DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, Transform2D());
@@ -411,6 +419,7 @@ void PhysicsServer2DSW::area_attach_object_instance_id(RID p_area, ObjectID p_id
 	ERR_FAIL_COND(!area);
 	area->set_instance_id(p_id);
 }
+
 ObjectID PhysicsServer2DSW::area_get_object_instance_id(RID p_area) const {
 	if (space_owner.owns(p_area)) {
 		Space2DSW *space = space_owner.getornull(p_area);
@@ -430,6 +439,7 @@ void PhysicsServer2DSW::area_attach_canvas_instance_id(RID p_area, ObjectID p_id
 	ERR_FAIL_COND(!area);
 	area->set_canvas_instance_id(p_id);
 }
+
 ObjectID PhysicsServer2DSW::area_get_canvas_instance_id(RID p_area) const {
 	if (space_owner.owns(p_area)) {
 		Space2DSW *space = space_owner.getornull(p_area);
@@ -586,6 +596,7 @@ void PhysicsServer2DSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape)
 
 	body->set_shape(p_shape_idx, shape);
 }
+
 void PhysicsServer2DSW::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D &p_transform) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
@@ -611,6 +622,7 @@ int PhysicsServer2DSW::body_get_shape_count(RID p_body) const {
 
 	return body->get_shape_count();
 }
+
 RID PhysicsServer2DSW::body_get_shape(RID p_body, int p_shape_idx) const {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, RID());
@@ -620,6 +632,7 @@ RID PhysicsServer2DSW::body_get_shape(RID p_body, int p_shape_idx) const {
 
 	return shape->get_self();
 }
+
 Transform2D PhysicsServer2DSW::body_get_shape_transform(RID p_body, int p_shape_idx) const {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, Transform2D());
@@ -650,6 +663,7 @@ void PhysicsServer2DSW::body_set_shape_disabled(RID p_body, int p_shape_idx, boo
 
 	body->set_shape_as_disabled(p_shape_idx, p_disabled);
 }
+
 void PhysicsServer2DSW::body_set_shape_as_one_way_collision(RID p_body, int p_shape_idx, bool p_enable, float p_margin) {
 	Body2DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);

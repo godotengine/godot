@@ -150,6 +150,7 @@ bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
 
 	return true;
 }
+
 void Skeleton3D::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < bones.size(); i++) {
 		String prep = "bones/" + itos(i) + "/";
@@ -407,6 +408,7 @@ void Skeleton3D::add_bone(const String &p_name) {
 	_make_dirty();
 	update_gizmo();
 }
+
 int Skeleton3D::find_bone(const String &p_name) const {
 	for (int i = 0; i < bones.size(); i++) {
 		if (bones[i].name == p_name)
@@ -415,6 +417,7 @@ int Skeleton3D::find_bone(const String &p_name) const {
 
 	return -1;
 }
+
 String Skeleton3D::get_bone_name(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), "");
 
@@ -485,6 +488,7 @@ void Skeleton3D::set_bone_rest(int p_bone, const Transform &p_rest) {
 	bones.write[p_bone].rest = p_rest;
 	_make_dirty();
 }
+
 Transform Skeleton3D::get_bone_rest(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
 
@@ -497,6 +501,7 @@ void Skeleton3D::set_bone_enabled(int p_bone, bool p_enabled) {
 	bones.write[p_bone].enabled = p_enabled;
 	_make_dirty();
 }
+
 bool Skeleton3D::is_bone_enabled(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), false);
 	return bones[p_bone].enabled;
@@ -515,6 +520,7 @@ void Skeleton3D::bind_child_node_to_bone(int p_bone, Node *p_node) {
 
 	bones.write[p_bone].nodes_bound.push_back(id);
 }
+
 void Skeleton3D::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_INDEX(p_bone, bones.size());
@@ -522,6 +528,7 @@ void Skeleton3D::unbind_child_node_from_bone(int p_bone, Node *p_node) {
 	ObjectID id = p_node->get_instance_id();
 	bones.write[p_bone].nodes_bound.erase(id);
 }
+
 void Skeleton3D::get_bound_child_nodes_to_bone(int p_bone, List<Node *> *p_bound) const {
 	ERR_FAIL_INDEX(p_bone, bones.size());
 
@@ -549,6 +556,7 @@ void Skeleton3D::set_bone_pose(int p_bone, const Transform &p_pose) {
 		_make_dirty();
 	}
 }
+
 Transform Skeleton3D::get_bone_pose(int p_bone) const {
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
 	return bones[p_bone].pose;

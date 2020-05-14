@@ -101,9 +101,11 @@ void DirAccessWindows::list_dir_end() {
 		p->h = INVALID_HANDLE_VALUE;
 	}
 }
+
 int DirAccessWindows::get_drive_count() {
 	return drive_count;
 }
+
 String DirAccessWindows::get_drive(int p_drive) {
 	if (p_drive < 0 || p_drive >= drive_count)
 		return "";
@@ -298,6 +300,7 @@ Error DirAccessWindows::remove(String p_path) {
 	else
 		return ::_wunlink(p_path.c_str()) == 0 ? OK : FAILED;
 }
+
 /*
 
 FileType DirAccessWindows::get_file_type(const String& p_file) const {
@@ -325,6 +328,7 @@ FileType DirAccessWindows::get_file_type(const String& p_file) const {
 
 	return (attr&FILE_ATTRIBUTE_DIRECTORY)?FILE_TYPE_
 }
+
 */
 size_t DirAccessWindows::get_space_left() {
 	uint64_t bytes = 0;

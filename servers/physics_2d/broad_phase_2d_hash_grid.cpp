@@ -321,6 +321,7 @@ void BroadPhase2DHashGrid::move(ID p_id, const Rect2 &p_aabb) {
 
 	e.aabb = p_aabb;
 }
+
 void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -340,6 +341,7 @@ void BroadPhase2DHashGrid::set_static(ID p_id, bool p_static) {
 		_check_motion(&e);
 	}
 }
+
 void BroadPhase2DHashGrid::remove(ID p_id) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -357,11 +359,13 @@ CollisionObject2DSW *BroadPhase2DHashGrid::get_object(ID p_id) const {
 	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
+
 bool BroadPhase2DHashGrid::is_static(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, false);
 	return E->get()._static;
 }
+
 int BroadPhase2DHashGrid::get_subindex(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, -1);
@@ -560,6 +564,7 @@ void BroadPhase2DHashGrid::set_pair_callback(PairCallback p_pair_callback, void 
 	pair_callback = p_pair_callback;
 	pair_userdata = p_userdata;
 }
+
 void BroadPhase2DHashGrid::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 	unpair_callback = p_unpair_callback;
 	unpair_userdata = p_userdata;

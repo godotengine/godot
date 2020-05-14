@@ -88,6 +88,7 @@ void AudioStreamPlaybackOGGVorbis::start(float p_from_pos) {
 void AudioStreamPlaybackOGGVorbis::stop() {
 	active = false;
 }
+
 bool AudioStreamPlaybackOGGVorbis::is_playing() const {
 	return active;
 }
@@ -99,6 +100,7 @@ int AudioStreamPlaybackOGGVorbis::get_loop_count() const {
 float AudioStreamPlaybackOGGVorbis::get_playback_position() const {
 	return float(frames_mixed) / vorbis_stream->sample_rate;
 }
+
 void AudioStreamPlaybackOGGVorbis::seek(float p_time) {
 	if (!active)
 		return;

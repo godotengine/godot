@@ -460,6 +460,7 @@ int RasterizerSceneGLES2::get_directional_light_shadow_size(RID p_light_intance)
 
 	return shadow_size;
 }
+
 //////////////////////////////////////////////////////
 
 RID RasterizerSceneGLES2::reflection_atlas_create() {
@@ -840,6 +841,7 @@ void RasterizerSceneGLES2::environment_set_fog_height(RID p_env, bool p_enable, 
 	env->fog_height_max = p_max_height;
 	env->fog_height_curve = p_height_curve;
 }
+
 bool RasterizerSceneGLES2::is_environment(RID p_env) {
 	return environment_owner.owns(p_env);
 }
@@ -917,6 +919,7 @@ RID RasterizerSceneGLES2::gi_probe_instance_create() {
 
 void RasterizerSceneGLES2::gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data) {
 }
+
 void RasterizerSceneGLES2::gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {
 }
 
@@ -965,6 +968,7 @@ void RasterizerSceneGLES2::_add_geometry(RasterizerStorageGLES2::Geometry *p_geo
 		_add_geometry_with_material(p_geometry, p_instance, p_owner, material, p_depth_pass, p_shadow_pass);
 	}
 }
+
 void RasterizerSceneGLES2::_add_geometry_with_material(RasterizerStorageGLES2::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES2::GeometryOwner *p_owner, RasterizerStorageGLES2::Material *p_material, bool p_depth_pass, bool p_shadow_pass) {
 	bool has_base_alpha = (p_material->shader->spatial.uses_alpha && !p_material->shader->spatial.uses_alpha_scissor) || p_material->shader->spatial.uses_screen_texture || p_material->shader->spatial.uses_depth_texture;
 	bool has_blend_alpha = p_material->shader->spatial.blend_mode != RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_MIX;

@@ -18,6 +18,7 @@ struct CellChildren {
 layout(set = 0, binding = 1, std430) buffer CellChildrenBuffer {
 	CellChildren data[];
 }
+
 cell_children;
 
 struct CellData {
@@ -30,6 +31,7 @@ struct CellData {
 layout(set = 0, binding = 2, std430) buffer CellDataBuffer {
 	CellData data[];
 }
+
 cell_data;
 
 #define LIGHT_TYPE_DIRECTIONAL 0
@@ -57,6 +59,7 @@ struct Light {
 layout(set = 0, binding = 3, std140) uniform Lights {
 	Light data[MAX_LIGHTS];
 }
+
 lights;
 
 #endif
@@ -74,11 +77,13 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint cell_count;
 	uint pad[2];
 }
+
 params;
 
 layout(set = 0, binding = 4, std140) uniform Outputs {
 	vec4 data[];
 }
+
 output;
 
 #ifdef MODE_COMPUTE_LIGHT

@@ -909,6 +909,7 @@ void ColorPickerButton::set_pick_color(const Color &p_color) {
 
 	update();
 }
+
 Color ColorPickerButton::get_pick_color() const {
 	return color;
 }

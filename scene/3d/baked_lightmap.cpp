@@ -52,6 +52,7 @@ void BakedLightmapData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale
 int BakedLightmapData::get_user_count() const {
 	return users.size();
 }
+
 NodePath BakedLightmapData::get_user_path(int p_user) const {
 	ERR_FAIL_INDEX_V(p_user, users.size(), NodePath());
 	return users[p_user].path;
@@ -142,9 +143,11 @@ void BakedLightmapData::set_capture_data(const AABB &p_bounds, bool p_interior, 
 PackedVector3Array BakedLightmapData::get_capture_points() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_points(lightmap);
 }
+
 PackedColorArray BakedLightmapData::get_capture_sh() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_sh(lightmap);
 }
+
 PackedInt32Array BakedLightmapData::get_capture_tetrahedra() const {
 	return RS::get_singleton()->lightmap_get_probe_capture_tetrahedra(lightmap);
 }
@@ -181,6 +184,7 @@ Dictionary BakedLightmapData::_get_probe_data() const {
 	d["interior"] = is_interior();
 	return d;
 }
+
 void BakedLightmapData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_user_data", "data"), &BakedLightmapData::_set_user_data);
 	ClassDB::bind_method(D_METHOD("_get_user_data"), &BakedLightmapData::_get_user_data);
@@ -569,6 +573,7 @@ void BakedLightmap::_plot_triangle_into_octree(GenProbesOctree *p_cell, float p_
 		}
 	}
 }
+
 void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool, Vector3iHash> &positions_used, const AABB &p_bounds) {
 	for (int i = 0; i < 8; i++) {
 		Vector3i pos = p_cell->offset;
@@ -608,6 +613,7 @@ void BakedLightmap::_gen_new_positions_from_octree(const GenProbesOctree *p_cell
 		}
 	}
 }
+
 BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
 	if (p_image_data_path == "" && (get_light_data().is_null() || !get_light_data()->get_path().is_resource_file())) {
 		return BAKE_ERROR_NO_SAVE_PATH;
@@ -1262,6 +1268,7 @@ BakedLightmap::BakeQuality BakedLightmap::get_bake_quality() const {
 AABB BakedLightmap::get_aabb() const {
 	return AABB();
 }
+
 Vector<Face3> BakedLightmap::get_faces(uint32_t p_usage_flags) const {
 	return Vector<Face3>();
 }
@@ -1285,6 +1292,7 @@ bool BakedLightmap::is_directional() const {
 void BakedLightmap::set_interior(bool p_enable) {
 	interior = p_enable;
 }
+
 bool BakedLightmap::is_interior() const {
 	return interior;
 }
@@ -1309,6 +1317,7 @@ Ref<Sky> BakedLightmap::get_environment_custom_sky() const {
 void BakedLightmap::set_environment_custom_color(const Color &p_color) {
 	environment_custom_color = p_color;
 }
+
 Color BakedLightmap::get_environment_custom_color() const {
 	return environment_custom_color;
 }
@@ -1316,6 +1325,7 @@ Color BakedLightmap::get_environment_custom_color() const {
 void BakedLightmap::set_environment_custom_energy(float p_energy) {
 	environment_custom_energy = p_energy;
 }
+
 float BakedLightmap::get_environment_custom_energy() const {
 	return environment_custom_energy;
 }

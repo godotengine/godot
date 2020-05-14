@@ -117,6 +117,7 @@ _FORCE_INLINE_ Vector3 Transform::xform(const Vector3 &p_vector) const {
 			basis[1].dot(p_vector) + origin.y,
 			basis[2].dot(p_vector) + origin.z);
 }
+
 _FORCE_INLINE_ Vector3 Transform::xform_inv(const Vector3 &p_vector) const {
 	Vector3 v = p_vector - origin;
 
@@ -138,6 +139,7 @@ _FORCE_INLINE_ Plane Transform::xform(const Plane &p_plane) const {
 
 	return Plane(normal, d);
 }
+
 _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 	Vector3 point = p_plane.normal * p_plane.d;
 	Vector3 point_dir = point + p_plane.normal;

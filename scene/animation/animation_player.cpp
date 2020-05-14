@@ -766,6 +766,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, float p_delta, f
 
 	_animation_process_animation(cd.from, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started);
 }
+
 void AnimationPlayer::_animation_process2(float p_delta, bool p_started) {
 	Playback &c = playback;
 
@@ -997,6 +998,7 @@ void AnimationPlayer::rename_animation(const StringName &p_name, const StringNam
 bool AnimationPlayer::has_animation(const StringName &p_name) const {
 	return animation_set.has(p_name);
 }
+
 Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!animation_set.has(p_name), Ref<Animation>());
 
@@ -1004,6 +1006,7 @@ Ref<Animation> AnimationPlayer::get_animation(const StringName &p_name) const {
 
 	return data.animation;
 }
+
 void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 	List<String> anims;
 
@@ -1199,9 +1202,11 @@ void AnimationPlayer::stop(bool p_reset) {
 void AnimationPlayer::set_speed_scale(float p_speed) {
 	speed_scale = p_speed;
 }
+
 float AnimationPlayer::get_speed_scale() const {
 	return speed_scale;
 }
+
 float AnimationPlayer::get_playing_speed() const {
 	if (!playing) {
 		return 0;

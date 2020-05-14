@@ -67,6 +67,7 @@ void LineShape2D::set_distance(real_t p_distance) {
 Vector2 LineShape2D::get_normal() const {
 	return normal;
 }
+
 real_t LineShape2D::get_distance() const {
 	return distance;
 }
@@ -79,6 +80,7 @@ void LineShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector2 l2[2] = { point, point + get_normal() * 30 };
 	RS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, 3);
 }
+
 Rect2 LineShape2D::get_rect() const {
 	Vector2 point = get_distance() * get_normal();
 

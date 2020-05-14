@@ -44,6 +44,7 @@ int AnimationTrackEditBool::get_key_height() const {
 	Ref<Texture2D> checked = get_theme_icon("checked", "CheckBox");
 	return checked->get_height();
 }
+
 Rect2 AnimationTrackEditBool::get_key_rect(int p_index, float p_pixels_sec) {
 	Ref<Texture2D> checked = get_theme_icon("checked", "CheckBox");
 	return Rect2(-checked->get_width() / 2, 0, checked->get_width(), get_size().height);
@@ -52,6 +53,7 @@ Rect2 AnimationTrackEditBool::get_key_rect(int p_index, float p_pixels_sec) {
 bool AnimationTrackEditBool::is_key_selectable_by_distance() const {
 	return false;
 }
+
 void AnimationTrackEditBool::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	bool checked = get_animation()->track_get_key_value(get_track(), p_index);
 	Ref<Texture2D> icon = get_theme_icon(checked ? "checked" : "unchecked", "CheckBox");
@@ -78,6 +80,7 @@ int AnimationTrackEditColor::get_key_height() const {
 	Ref<Font> font = get_theme_font("font", "Label");
 	return font->get_height() * 0.8;
 }
+
 Rect2 AnimationTrackEditColor::get_key_rect(int p_index, float p_pixels_sec) {
 	Ref<Font> font = get_theme_font("font", "Label");
 	int fh = font->get_height() * 0.8;
@@ -177,6 +180,7 @@ int AnimationTrackEditAudio::get_key_height() const {
 	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
+
 Rect2 AnimationTrackEditAudio::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
@@ -214,6 +218,7 @@ Rect2 AnimationTrackEditAudio::get_key_rect(int p_index, float p_pixels_sec) {
 bool AnimationTrackEditAudio::is_key_selectable_by_distance() const {
 	return false;
 }
+
 void AnimationTrackEditAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 
@@ -329,6 +334,7 @@ int AnimationTrackEditSpriteFrame::get_key_height() const {
 	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 2);
 }
+
 Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
@@ -402,6 +408,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 bool AnimationTrackEditSpriteFrame::is_key_selectable_by_distance() const {
 	return false;
 }
+
 void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 
@@ -525,6 +532,7 @@ int AnimationTrackEditSubAnim::get_key_height() const {
 	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
+
 Rect2 AnimationTrackEditSubAnim::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
@@ -558,6 +566,7 @@ Rect2 AnimationTrackEditSubAnim::get_key_rect(int p_index, float p_pixels_sec) {
 bool AnimationTrackEditSubAnim::is_key_selectable_by_distance() const {
 	return false;
 }
+
 void AnimationTrackEditSubAnim::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 
@@ -750,6 +759,7 @@ int AnimationTrackEditTypeAudio::get_key_height() const {
 	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
+
 Rect2 AnimationTrackEditTypeAudio::get_key_rect(int p_index, float p_pixels_sec) {
 	Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
 
@@ -783,6 +793,7 @@ Rect2 AnimationTrackEditTypeAudio::get_key_rect(int p_index, float p_pixels_sec)
 bool AnimationTrackEditTypeAudio::is_key_selectable_by_distance() const {
 	return false;
 }
+
 void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
 
@@ -928,6 +939,7 @@ bool AnimationTrackEditTypeAudio::can_drop_data(const Point2 &p_point, const Var
 
 	return AnimationTrackEdit::can_drop_data(p_point, p_data);
 }
+
 void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant &p_data) {
 	if (p_point.x > get_timeline()->get_name_limit() && p_point.x < get_size().width - get_timeline()->get_buttons_width()) {
 		Ref<AudioStream> stream;
@@ -1076,6 +1088,7 @@ int AnimationTrackEditTypeAnimation::get_key_height() const {
 	Ref<Font> font = get_theme_font("font", "Label");
 	return int(font->get_height() * 1.5);
 }
+
 Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_sec) {
 	Object *object = ObjectDB::get_instance(id);
 
@@ -1109,6 +1122,7 @@ Rect2 AnimationTrackEditTypeAnimation::get_key_rect(int p_index, float p_pixels_
 bool AnimationTrackEditTypeAnimation::is_key_selectable_by_distance() const {
 	return false;
 }
+
 void AnimationTrackEditTypeAnimation::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Object *object = ObjectDB::get_instance(id);
 

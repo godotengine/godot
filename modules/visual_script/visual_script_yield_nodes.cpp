@@ -50,6 +50,7 @@ bool VisualScriptYield::has_input_sequence_port() const {
 int VisualScriptYield::get_input_value_port_count() const {
 	return 0;
 }
+
 int VisualScriptYield::get_output_value_port_count() const {
 	return 0;
 }
@@ -288,6 +289,7 @@ int VisualScriptYieldSignal::get_input_value_port_count() const {
 	else
 		return 0;
 }
+
 int VisualScriptYieldSignal::get_output_value_port_count() const {
 	MethodInfo sr;
 
@@ -357,6 +359,7 @@ void VisualScriptYieldSignal::set_signal(const StringName &p_type) {
 	_change_notify();
 	ports_changed_notify();
 }
+
 StringName VisualScriptYieldSignal::get_signal() const {
 	return signal;
 }
@@ -543,6 +546,7 @@ VisualScriptNodeInstance *VisualScriptYieldSignal::instance(VisualScriptInstance
 	instance->output_args = get_output_value_port_count();
 	return instance;
 }
+
 VisualScriptYieldSignal::VisualScriptYieldSignal() {
 	call_mode = CALL_MODE_SELF;
 	base_type = "Object";

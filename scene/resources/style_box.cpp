@@ -44,6 +44,7 @@ void StyleBox::set_default_margin(Margin p_margin, float p_value) {
 	margin[p_margin] = p_value;
 	emit_changed();
 }
+
 float StyleBox::get_default_margin(Margin p_margin) const {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0.0);
 
@@ -151,6 +152,7 @@ void StyleBoxTexture::set_margin_size(Margin p_margin, float p_size) {
 	};
 	_change_notify(margin_prop[p_margin]);
 }
+
 float StyleBoxTexture::get_margin_size(Margin p_margin) const {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0.0);
 
@@ -341,6 +343,7 @@ StyleBoxTexture::StyleBoxTexture() {
 	axis_h = AXIS_STRETCH_MODE_STRETCH;
 	axis_v = AXIS_STRETCH_MODE_STRETCH;
 }
+
 StyleBoxTexture::~StyleBoxTexture() {
 }
 
@@ -359,6 +362,7 @@ void StyleBoxFlat::set_border_color(const Color &p_color) {
 	border_color = p_color;
 	emit_changed();
 }
+
 Color StyleBoxFlat::get_border_color() const {
 	return border_color;
 }
@@ -370,6 +374,7 @@ void StyleBoxFlat::set_border_width_all(int p_size) {
 	border_width[3] = p_size;
 	emit_changed();
 }
+
 int StyleBoxFlat::get_border_width_min() const {
 	return MIN(MIN(border_width[0], border_width[1]), MIN(border_width[2], border_width[3]));
 }
@@ -389,6 +394,7 @@ void StyleBoxFlat::set_border_blend(bool p_blend) {
 	blend_border = p_blend;
 	emit_changed();
 }
+
 bool StyleBoxFlat::get_border_blend() const {
 	return blend_border;
 }
@@ -400,6 +406,7 @@ void StyleBoxFlat::set_corner_radius_all(int radius) {
 
 	emit_changed();
 }
+
 void StyleBoxFlat::set_corner_radius_individual(const int radius_top_left, const int radius_top_right, const int radius_botton_right, const int radius_bottom_left) {
 	corner_radius[0] = radius_top_left;
 	corner_radius[1] = radius_top_right;
@@ -408,6 +415,7 @@ void StyleBoxFlat::set_corner_radius_individual(const int radius_top_left, const
 
 	emit_changed();
 }
+
 int StyleBoxFlat::get_corner_radius_min() const {
 	int smallest = corner_radius[0];
 	for (int i = 1; i < 4; i++) {
@@ -423,6 +431,7 @@ void StyleBoxFlat::set_corner_radius(const Corner p_corner, const int radius) {
 	corner_radius[p_corner] = radius;
 	emit_changed();
 }
+
 int StyleBoxFlat::get_corner_radius(const Corner p_corner) const {
 	ERR_FAIL_INDEX_V((int)p_corner, 4, 0);
 	return corner_radius[p_corner];
@@ -453,10 +462,12 @@ float StyleBoxFlat::get_expand_margin_size(Margin p_expand_margin) const {
 	ERR_FAIL_INDEX_V((int)p_expand_margin, 4, 0.0);
 	return expand_margin[p_expand_margin];
 }
+
 void StyleBoxFlat::set_draw_center(bool p_enabled) {
 	draw_center = p_enabled;
 	emit_changed();
 }
+
 bool StyleBoxFlat::is_draw_center_enabled() const {
 	return draw_center;
 }
@@ -465,6 +476,7 @@ void StyleBoxFlat::set_shadow_color(const Color &p_color) {
 	shadow_color = p_color;
 	emit_changed();
 }
+
 Color StyleBoxFlat::get_shadow_color() const {
 	return shadow_color;
 }
@@ -473,6 +485,7 @@ void StyleBoxFlat::set_shadow_size(const int &p_size) {
 	shadow_size = p_size;
 	emit_changed();
 }
+
 int StyleBoxFlat::get_shadow_size() const {
 	return shadow_size;
 }
@@ -481,6 +494,7 @@ void StyleBoxFlat::set_shadow_offset(const Point2 &p_offset) {
 	shadow_offset = p_offset;
 	emit_changed();
 }
+
 Point2 StyleBoxFlat::get_shadow_offset() const {
 	return shadow_offset;
 }
@@ -489,6 +503,7 @@ void StyleBoxFlat::set_anti_aliased(const bool &p_anti_aliased) {
 	anti_aliased = p_anti_aliased;
 	emit_changed();
 }
+
 bool StyleBoxFlat::is_anti_aliased() const {
 	return anti_aliased;
 }
@@ -497,6 +512,7 @@ void StyleBoxFlat::set_aa_size(const int &p_aa_size) {
 	aa_size = CLAMP(p_aa_size, 1, 5);
 	emit_changed();
 }
+
 int StyleBoxFlat::get_aa_size() const {
 	return aa_size;
 }
@@ -505,6 +521,7 @@ void StyleBoxFlat::set_corner_detail(const int &p_corner_detail) {
 	corner_detail = CLAMP(p_corner_detail, 1, 20);
 	emit_changed();
 }
+
 int StyleBoxFlat::get_corner_detail() const {
 	return corner_detail;
 }
@@ -805,6 +822,7 @@ float StyleBoxFlat::get_style_margin(Margin p_margin) const {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, 0.0);
 	return border_width[p_margin];
 }
+
 void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &StyleBoxFlat::set_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &StyleBoxFlat::get_bg_color);
@@ -921,6 +939,7 @@ StyleBoxFlat::StyleBoxFlat() {
 	corner_radius[2] = 0;
 	corner_radius[3] = 0;
 }
+
 StyleBoxFlat::~StyleBoxFlat() {
 }
 
@@ -928,6 +947,7 @@ void StyleBoxLine::set_color(const Color &p_color) {
 	color = p_color;
 	emit_changed();
 }
+
 Color StyleBoxLine::get_color() const {
 	return color;
 }
@@ -936,6 +956,7 @@ void StyleBoxLine::set_thickness(int p_thickness) {
 	thickness = p_thickness;
 	emit_changed();
 }
+
 int StyleBoxLine::get_thickness() const {
 	return thickness;
 }
@@ -944,6 +965,7 @@ void StyleBoxLine::set_vertical(bool p_vertical) {
 	vertical = p_vertical;
 	emit_changed();
 }
+
 bool StyleBoxLine::is_vertical() const {
 	return vertical;
 }
@@ -952,6 +974,7 @@ void StyleBoxLine::set_grow_end(float p_grow_end) {
 	grow_end = p_grow_end;
 	emit_changed();
 }
+
 float StyleBoxLine::get_grow_end() const {
 	return grow_end;
 }
@@ -960,6 +983,7 @@ void StyleBoxLine::set_grow_begin(float p_grow_begin) {
 	grow_begin = p_grow_begin;
 	emit_changed();
 }
+
 float StyleBoxLine::get_grow_begin() const {
 	return grow_begin;
 }
@@ -982,10 +1006,12 @@ void StyleBoxLine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "thickness", PROPERTY_HINT_RANGE, "0,10"), "set_thickness", "get_thickness");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
 }
+
 float StyleBoxLine::get_style_margin(Margin p_margin) const {
 	ERR_FAIL_INDEX_V((int)p_margin, 4, thickness);
 	return thickness;
 }
+
 Size2 StyleBoxLine::get_center_size() const {
 	return Size2();
 }
@@ -1014,4 +1040,5 @@ StyleBoxLine::StyleBoxLine() {
 	color = Color(0.0, 0.0, 0.0);
 	vertical = false;
 }
+
 StyleBoxLine::~StyleBoxLine() {}

@@ -224,6 +224,7 @@ void SceneDebugger::add_to_cache(const String &p_filename, Node *p_node) {
 		debugger->live_scene_edit_cache[p_filename].insert(p_node);
 	}
 }
+
 void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	LiveEditor *debugger = LiveEditor::get_singleton();
 	if (!debugger)
@@ -537,6 +538,7 @@ void LiveEditor::_node_set_res_func(int p_id, const StringName &p_prop, const St
 		return;
 	_node_set_func(p_id, p_prop, r);
 }
+
 void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
@@ -566,6 +568,7 @@ void LiveEditor::_node_call_func(int p_id, const StringName &p_method, VARIANT_A
 		n2->call(p_method, VARIANT_ARG_PASS);
 	}
 }
+
 void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant &p_value) {
 	if (!live_edit_resource_cache.has(p_id))
 		return;
@@ -581,12 +584,14 @@ void LiveEditor::_res_set_func(int p_id, const StringName &p_prop, const Variant
 
 	r->set(p_prop, p_value);
 }
+
 void LiveEditor::_res_set_res_func(int p_id, const StringName &p_prop, const String &p_value) {
 	RES r = ResourceLoader::load(p_value);
 	if (!r.is_valid())
 		return;
 	_res_set_func(p_id, p_prop, r);
 }
+
 void LiveEditor::_res_call_func(int p_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
 	if (!live_edit_resource_cache.has(p_id))
 		return;
@@ -640,6 +645,7 @@ void LiveEditor::_create_node_func(const NodePath &p_parent, const String &p_typ
 		n2->add_child(no);
 	}
 }
+
 void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_path, const String &p_name) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
@@ -677,6 +683,7 @@ void LiveEditor::_instance_node_func(const NodePath &p_parent, const String &p_p
 		n2->add_child(no);
 	}
 }
+
 void LiveEditor::_remove_node_func(const NodePath &p_at) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
@@ -707,6 +714,7 @@ void LiveEditor::_remove_node_func(const NodePath &p_at) {
 		F = N;
 	}
 }
+
 void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_keep_id) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
@@ -740,6 +748,7 @@ void LiveEditor::_remove_and_keep_node_func(const NodePath &p_at, ObjectID p_kee
 		F = N;
 	}
 }
+
 void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
@@ -785,6 +794,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 		F = N;
 	}
 }
+
 void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_name) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)
@@ -817,6 +827,7 @@ void LiveEditor::_duplicate_node_func(const NodePath &p_at, const String &p_new_
 		n2->get_parent()->add_child(dup);
 	}
 }
+
 void LiveEditor::_reparent_node_func(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 	SceneTree *scene_tree = SceneTree::get_singleton();
 	if (!scene_tree)

@@ -79,6 +79,7 @@ void EditorAtlasPacker::_plot_triangle(Ref<BitMap> p_bitmap, Vector2i *vertices)
 			xt += dx_low;
 	}
 }
+
 void EditorAtlasPacker::chart_pack(Vector<Chart> &charts, int &r_width, int &r_height, int p_atlas_max_size, int p_cell_resolution) {
 	int divide_by = MIN(64, p_cell_resolution);
 	Vector<PlottedBitmap> bitmaps;

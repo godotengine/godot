@@ -190,6 +190,7 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 	update();
 	shape_changed = true;
 }
+
 Ref<Texture2D> ItemList::get_item_tag_icon(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
 
@@ -231,6 +232,7 @@ Variant ItemList::get_item_metadata(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Variant());
 	return items[p_idx].metadata;
 }
+
 void ItemList::select(int p_idx, bool p_single) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -252,6 +254,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	}
 	update();
 }
+
 void ItemList::unselect(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -315,6 +318,7 @@ void ItemList::move_item(int p_from_idx, int p_to_idx) {
 int ItemList::get_item_count() const {
 	return items.size();
 }
+
 void ItemList::remove_item(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
@@ -339,6 +343,7 @@ void ItemList::set_fixed_column_width(int p_size) {
 	update();
 	shape_changed = true;
 }
+
 int ItemList::get_fixed_column_width() const {
 	return fixed_column_width;
 }
@@ -348,6 +353,7 @@ void ItemList::set_same_column_width(bool p_enable) {
 	update();
 	shape_changed = true;
 }
+
 bool ItemList::is_same_column_width() const {
 	return same_column_width;
 }
@@ -358,6 +364,7 @@ void ItemList::set_max_text_lines(int p_lines) {
 	update();
 	shape_changed = true;
 }
+
 int ItemList::get_max_text_lines() const {
 	return max_text_lines;
 }
@@ -368,6 +375,7 @@ void ItemList::set_max_columns(int p_amount) {
 	update();
 	shape_changed = true;
 }
+
 int ItemList::get_max_columns() const {
 	return max_columns;
 }
@@ -400,6 +408,7 @@ void ItemList::set_fixed_icon_size(const Size2 &p_size) {
 Size2 ItemList::get_fixed_icon_size() const {
 	return fixed_icon_size;
 }
+
 Size2 ItemList::Item::get_icon_size() const {
 	if (icon.is_null())
 		return Size2();

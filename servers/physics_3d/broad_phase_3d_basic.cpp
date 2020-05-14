@@ -51,11 +51,13 @@ void BroadPhase3DBasic::move(ID p_id, const AABB &p_aabb) {
 	ERR_FAIL_COND(!E);
 	E->get().aabb = p_aabb;
 }
+
 void BroadPhase3DBasic::set_static(ID p_id, bool p_static) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	E->get()._static = p_static;
 }
+
 void BroadPhase3DBasic::remove(ID p_id) {
 	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -83,11 +85,13 @@ CollisionObject3DSW *BroadPhase3DBasic::get_object(ID p_id) const {
 	ERR_FAIL_COND_V(!E, nullptr);
 	return E->get().owner;
 }
+
 bool BroadPhase3DBasic::is_static(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, false);
 	return E->get()._static;
 }
+
 int BroadPhase3DBasic::get_subindex(ID p_id) const {
 	const Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND_V(!E, -1);
@@ -127,6 +131,7 @@ int BroadPhase3DBasic::cull_segment(const Vector3 &p_from, const Vector3 &p_to, 
 
 	return rc;
 }
+
 int BroadPhase3DBasic::cull_aabb(const AABB &p_aabb, CollisionObject3DSW **p_results, int p_max_results, int *p_result_indices) {
 	int rc = 0;
 
@@ -148,6 +153,7 @@ void BroadPhase3DBasic::set_pair_callback(PairCallback p_pair_callback, void *p_
 	pair_userdata = p_userdata;
 	pair_callback = p_pair_callback;
 }
+
 void BroadPhase3DBasic::set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata) {
 	unpair_userdata = p_userdata;
 	unpair_callback = p_unpair_callback;

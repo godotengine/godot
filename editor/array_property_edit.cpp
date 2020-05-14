@@ -50,6 +50,7 @@ Variant ArrayPropertyEdit::get_array() const {
 void ArrayPropertyEdit::_notif_change() {
 	_change_notify();
 }
+
 void ArrayPropertyEdit::_notif_changev(const String &p_v) {
 	_change_notify(p_v.utf8().get_data());
 }

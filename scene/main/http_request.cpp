@@ -454,6 +454,7 @@ int HTTPRequest::get_max_redirects() const {
 int HTTPRequest::get_downloaded_bytes() const {
 	return downloaded;
 }
+
 int HTTPRequest::get_body_size() const {
 	return body_len;
 }

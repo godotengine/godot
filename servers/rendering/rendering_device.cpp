@@ -44,6 +44,7 @@ RenderingDevice::ShaderCacheFunction RenderingDevice::cache_function = nullptr;
 void RenderingDevice::shader_set_compile_function(ShaderCompileFunction p_function) {
 	compile_function = p_function;
 }
+
 void RenderingDevice::shader_set_cache_function(ShaderCacheFunction p_function) {
 	cache_function = p_function;
 }

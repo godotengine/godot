@@ -207,6 +207,7 @@ void MultiMesh::set_instance_count(int p_count) {
 	RenderingServer::get_singleton()->multimesh_allocate(multimesh, p_count, RS::MultimeshTransformFormat(transform_format), use_colors, use_custom_data);
 	instance_count = p_count;
 }
+
 int MultiMesh::get_instance_count() const {
 	return instance_count;
 }
@@ -217,6 +218,7 @@ void MultiMesh::set_visible_instance_count(int p_count) {
 	RenderingServer::get_singleton()->multimesh_set_visible_instances(multimesh, p_count);
 	visible_instance_count = p_count;
 }
+
 int MultiMesh::get_visible_instance_count() const {
 	return visible_instance_count;
 }
@@ -240,6 +242,7 @@ Transform2D MultiMesh::get_instance_transform_2d(int p_instance) const {
 void MultiMesh::set_instance_color(int p_instance, const Color &p_color) {
 	RenderingServer::get_singleton()->multimesh_instance_set_color(multimesh, p_instance, p_color);
 }
+
 Color MultiMesh::get_instance_color(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_color(multimesh, p_instance);
 }
@@ -247,6 +250,7 @@ Color MultiMesh::get_instance_color(int p_instance) const {
 void MultiMesh::set_instance_custom_data(int p_instance, const Color &p_custom_data) {
 	RenderingServer::get_singleton()->multimesh_instance_set_custom_data(multimesh, p_instance, p_custom_data);
 }
+
 Color MultiMesh::get_instance_custom_data(int p_instance) const {
 	return RenderingServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
 }
@@ -281,6 +285,7 @@ void MultiMesh::set_transform_format(TransformFormat p_transform_format) {
 	ERR_FAIL_COND(instance_count > 0);
 	transform_format = p_transform_format;
 }
+
 MultiMesh::TransformFormat MultiMesh::get_transform_format() const {
 	return transform_format;
 }

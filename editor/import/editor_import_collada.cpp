@@ -1607,9 +1607,11 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 uint32_t EditorSceneImporterCollada::get_import_flags() const {
 	return IMPORT_SCENE | IMPORT_ANIMATION;
 }
+
 void EditorSceneImporterCollada::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("dae");
 }
+
 Node *EditorSceneImporterCollada::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps, Error *r_err) {
 	ColladaImport state;
 	uint32_t flags = Collada::IMPORT_FLAG_SCENE;

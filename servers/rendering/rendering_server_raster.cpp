@@ -156,14 +156,18 @@ void RenderingServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	frame_profile_frame = RSG::storage->get_captured_timestamps_frame();
 }
+
 void RenderingServerRaster::sync() {
 }
+
 bool RenderingServerRaster::has_changed() const {
 	return changes > 0;
 }
+
 void RenderingServerRaster::init() {
 	RSG::rasterizer->initialize();
 }
+
 void RenderingServerRaster::finish() {
 	if (test_cube.is_valid()) {
 		free(test_cube);
@@ -204,6 +208,7 @@ void RenderingServerRaster::set_boot_image(const Ref<Image> &p_image, const Colo
 	redraw_request();
 	RSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
 }
+
 void RenderingServerRaster::set_default_clear_color(const Color &p_color) {
 	RSG::viewport->set_default_clear_color(p_color);
 }
@@ -238,6 +243,7 @@ bool RenderingServerRaster::is_low_end() const {
 	//return RSG::rasterizer->is_low_end();
 	return false;
 }
+
 RenderingServerRaster::RenderingServerRaster() {
 	RSG::canvas = memnew(RenderingServerCanvas);
 	RSG::viewport = memnew(RenderingServerViewport);

@@ -91,6 +91,7 @@ void Joint2D::set_node_b(const NodePath &p_node_b) {
 	b = p_node_b;
 	_update_joint();
 }
+
 NodePath Joint2D::get_node_b() const {
 	return b;
 }

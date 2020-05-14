@@ -127,6 +127,7 @@ void EditorFolding::_fill_folds(const Node *p_root, const Node *p_node, Array &p
 		_fill_folds(p_root, p_node->get_child(i), p_folds, resource_folds, nodes_folded, resources);
 	}
 }
+
 void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path) {
 	ERR_FAIL_NULL(p_scene);
 
@@ -150,6 +151,7 @@ void EditorFolding::save_scene_folding(const Node *p_scene, const String &p_path
 	file = EditorSettings::get_singleton()->get_project_settings_dir().plus_file(file);
 	config->save(file);
 }
+
 void EditorFolding::load_scene_folding(Node *p_scene, const String &p_path) {
 	Ref<ConfigFile> config;
 	config.instance();

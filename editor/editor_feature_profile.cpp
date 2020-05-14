@@ -100,6 +100,7 @@ void EditorFeatureProfile::set_disable_class_property(const StringName &p_class,
 		}
 	}
 }
+
 bool EditorFeatureProfile::is_class_property_disabled(const StringName &p_class, const StringName &p_property) const {
 	if (!disabled_properties.has(p_class)) {
 		return false;
@@ -120,6 +121,7 @@ void EditorFeatureProfile::set_disable_feature(Feature p_feature, bool p_disable
 	ERR_FAIL_INDEX(p_feature, FEATURE_MAX);
 	features_disabled[p_feature] = p_disable;
 }
+
 bool EditorFeatureProfile::is_feature_disabled(Feature p_feature) const {
 	ERR_FAIL_INDEX_V(p_feature, FEATURE_MAX, false);
 	return features_disabled[p_feature];

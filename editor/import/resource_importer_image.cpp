@@ -42,6 +42,7 @@ String ResourceImporterImage::get_importer_name() const {
 String ResourceImporterImage::get_visible_name() const {
 	return "Image";
 }
+
 void ResourceImporterImage::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
@@ -61,6 +62,7 @@ bool ResourceImporterImage::get_option_visibility(const String &p_option, const 
 int ResourceImporterImage::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterImage::get_preset_name(int p_idx) const {
 	return String();
 }

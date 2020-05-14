@@ -991,6 +991,7 @@ MainLoop *test(TestType p_type) {
 
 	return nullptr;
 }
+
 } // namespace TestGDScript
 
 #else
@@ -1001,6 +1002,7 @@ MainLoop *test(TestType p_type) {
 	ERR_PRINT("The GDScript module is disabled, therefore GDScript tests cannot be used.");
 	return nullptr;
 }
+
 } // namespace TestGDScript
 
 #endif

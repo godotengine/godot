@@ -589,12 +589,14 @@ void RenderingServerViewport::viewport_set_hide_scenario(RID p_viewport, bool p_
 
 	viewport->hide_scenario = p_hide;
 }
+
 void RenderingServerViewport::viewport_set_hide_canvas(RID p_viewport, bool p_hide) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
 	viewport->hide_canvas = p_hide;
 }
+
 void RenderingServerViewport::viewport_set_disable_environment(RID p_viewport, bool p_disable) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -608,12 +610,14 @@ void RenderingServerViewport::viewport_attach_camera(RID p_viewport, RID p_camer
 
 	viewport->camera = p_camera;
 }
+
 void RenderingServerViewport::viewport_set_scenario(RID p_viewport, RID p_scenario) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
 	viewport->scenario = p_scenario;
 }
+
 void RenderingServerViewport::viewport_attach_canvas(RID p_viewport, RID p_canvas) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -639,6 +643,7 @@ void RenderingServerViewport::viewport_remove_canvas(RID p_viewport, RID p_canva
 	viewport->canvas_map.erase(p_canvas);
 	canvas->viewports.erase(p_viewport);
 }
+
 void RenderingServerViewport::viewport_set_canvas_transform(RID p_viewport, RID p_canvas, const Transform2D &p_offset) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -646,6 +651,7 @@ void RenderingServerViewport::viewport_set_canvas_transform(RID p_viewport, RID 
 	ERR_FAIL_COND(!viewport->canvas_map.has(p_canvas));
 	viewport->canvas_map[p_canvas].transform = p_offset;
 }
+
 void RenderingServerViewport::viewport_set_transparent_background(RID p_viewport, bool p_enabled) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -660,6 +666,7 @@ void RenderingServerViewport::viewport_set_global_canvas_transform(RID p_viewpor
 
 	viewport->global_transform = p_transform;
 }
+
 void RenderingServerViewport::viewport_set_canvas_stacking(RID p_viewport, RID p_canvas, int p_layer, int p_sublayer) {
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);

@@ -296,6 +296,7 @@ void TextEdit::Text::insert(int p_at, const String &p_text) {
 	line.data = p_text;
 	text.insert(p_at, line);
 }
+
 void TextEdit::Text::remove(int p_at) {
 	text.remove(p_at);
 }
@@ -5166,27 +5167,33 @@ void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_t
 
 	update();
 }
+
 void TextEdit::swap_lines(int line1, int line2) {
 	String tmp = get_line(line1);
 	String tmp2 = get_line(line2);
 	set_line(line2, tmp);
 	set_line(line1, tmp2);
 }
+
 bool TextEdit::is_selection_active() const {
 	return selection.active;
 }
+
 int TextEdit::get_selection_from_line() const {
 	ERR_FAIL_COND_V(!selection.active, -1);
 	return selection.from_line;
 }
+
 int TextEdit::get_selection_from_column() const {
 	ERR_FAIL_COND_V(!selection.active, -1);
 	return selection.from_column;
 }
+
 int TextEdit::get_selection_to_line() const {
 	ERR_FAIL_COND_V(!selection.active, -1);
 	return selection.to_line;
 }
+
 int TextEdit::get_selection_to_column() const {
 	ERR_FAIL_COND_V(!selection.active, -1);
 	return selection.to_column;

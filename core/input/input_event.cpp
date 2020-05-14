@@ -131,6 +131,7 @@ void InputEventFromWindow::_bind_methods() {
 void InputEventFromWindow::set_window_id(int64_t p_id) {
 	window_id = p_id;
 }
+
 int64_t InputEventFromWindow::get_window_id() const {
 	return window_id;
 }
@@ -148,6 +149,7 @@ bool InputEventWithModifiers::get_shift() const {
 void InputEventWithModifiers::set_alt(bool p_enabled) {
 	alt = p_enabled;
 }
+
 bool InputEventWithModifiers::get_alt() const {
 	return alt;
 }
@@ -155,6 +157,7 @@ bool InputEventWithModifiers::get_alt() const {
 void InputEventWithModifiers::set_control(bool p_enabled) {
 	control = p_enabled;
 }
+
 bool InputEventWithModifiers::get_control() const {
 	return control;
 }
@@ -162,6 +165,7 @@ bool InputEventWithModifiers::get_control() const {
 void InputEventWithModifiers::set_metakey(bool p_enabled) {
 	meta = p_enabled;
 }
+
 bool InputEventWithModifiers::get_metakey() const {
 	return meta;
 }
@@ -169,6 +173,7 @@ bool InputEventWithModifiers::get_metakey() const {
 void InputEventWithModifiers::set_command(bool p_enabled) {
 	command = p_enabled;
 }
+
 bool InputEventWithModifiers::get_command() const {
 	return command;
 }
@@ -359,6 +364,7 @@ void InputEventKey::_bind_methods() {
 void InputEventMouse::set_button_mask(int p_mask) {
 	button_mask = p_mask;
 }
+
 int InputEventMouse::get_button_mask() const {
 	return button_mask;
 }
@@ -366,6 +372,7 @@ int InputEventMouse::get_button_mask() const {
 void InputEventMouse::set_position(const Vector2 &p_pos) {
 	pos = p_pos;
 }
+
 Vector2 InputEventMouse::get_position() const {
 	return pos;
 }
@@ -373,6 +380,7 @@ Vector2 InputEventMouse::get_position() const {
 void InputEventMouse::set_global_position(const Vector2 &p_global_pos) {
 	global_pos = p_global_pos;
 }
+
 Vector2 InputEventMouse::get_global_position() const {
 	return global_pos;
 }
@@ -405,6 +413,7 @@ float InputEventMouseButton::get_factor() const {
 void InputEventMouseButton::set_button_index(int p_index) {
 	button_index = p_index;
 }
+
 int InputEventMouseButton::get_button_index() const {
 	return button_index;
 }
@@ -412,6 +421,7 @@ int InputEventMouseButton::get_button_index() const {
 void InputEventMouseButton::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
+
 bool InputEventMouseButton::is_pressed() const {
 	return pressed;
 }
@@ -419,6 +429,7 @@ bool InputEventMouseButton::is_pressed() const {
 void InputEventMouseButton::set_doubleclick(bool p_doubleclick) {
 	doubleclick = p_doubleclick;
 }
+
 bool InputEventMouseButton::is_doubleclick() const {
 	return doubleclick;
 }
@@ -739,6 +750,7 @@ int InputEventJoypadButton::get_button_index() const {
 void InputEventJoypadButton::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
+
 bool InputEventJoypadButton::is_pressed() const {
 	return pressed;
 }
@@ -746,6 +758,7 @@ bool InputEventJoypadButton::is_pressed() const {
 void InputEventJoypadButton::set_pressure(float p_pressure) {
 	pressure = p_pressure;
 }
+
 float InputEventJoypadButton::get_pressure() const {
 	return pressure;
 }
@@ -798,6 +811,7 @@ void InputEventJoypadButton::_bind_methods() {
 void InputEventScreenTouch::set_index(int p_index) {
 	index = p_index;
 }
+
 int InputEventScreenTouch::get_index() const {
 	return index;
 }
@@ -805,6 +819,7 @@ int InputEventScreenTouch::get_index() const {
 void InputEventScreenTouch::set_position(const Vector2 &p_pos) {
 	pos = p_pos;
 }
+
 Vector2 InputEventScreenTouch::get_position() const {
 	return pos;
 }
@@ -812,6 +827,7 @@ Vector2 InputEventScreenTouch::get_position() const {
 void InputEventScreenTouch::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
+
 bool InputEventScreenTouch::is_pressed() const {
 	return pressed;
 }
@@ -860,6 +876,7 @@ int InputEventScreenDrag::get_index() const {
 void InputEventScreenDrag::set_position(const Vector2 &p_pos) {
 	pos = p_pos;
 }
+
 Vector2 InputEventScreenDrag::get_position() const {
 	return pos;
 }
@@ -867,6 +884,7 @@ Vector2 InputEventScreenDrag::get_position() const {
 void InputEventScreenDrag::set_relative(const Vector2 &p_relative) {
 	relative = p_relative;
 }
+
 Vector2 InputEventScreenDrag::get_relative() const {
 	return relative;
 }
@@ -874,6 +892,7 @@ Vector2 InputEventScreenDrag::get_relative() const {
 void InputEventScreenDrag::set_speed(const Vector2 &p_speed) {
 	speed = p_speed;
 }
+
 Vector2 InputEventScreenDrag::get_speed() const {
 	return speed;
 }
@@ -922,6 +941,7 @@ void InputEventScreenDrag::_bind_methods() {
 void InputEventAction::set_action(const StringName &p_action) {
 	action = p_action;
 }
+
 StringName InputEventAction::get_action() const {
 	return action;
 }
@@ -929,6 +949,7 @@ StringName InputEventAction::get_action() const {
 void InputEventAction::set_pressed(bool p_pressed) {
 	pressed = p_pressed;
 }
+
 bool InputEventAction::is_pressed() const {
 	return pressed;
 }

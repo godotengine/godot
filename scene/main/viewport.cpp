@@ -104,14 +104,17 @@ int ViewportTexture::get_width() const {
 	ERR_FAIL_COND_V_MSG(!vp, 0, "Viewport Texture must be set to use it.");
 	return vp->size.width;
 }
+
 int ViewportTexture::get_height() const {
 	ERR_FAIL_COND_V_MSG(!vp, 0, "Viewport Texture must be set to use it.");
 	return vp->size.height;
 }
+
 Size2 ViewportTexture::get_size() const {
 	ERR_FAIL_COND_V_MSG(!vp, Size2(), "Viewport Texture must be set to use it.");
 	return vp->size;
 }
+
 RID ViewportTexture::get_rid() const {
 	//ERR_FAIL_COND_V_MSG(!vp, RID(), "Viewport Texture must be set to use it.");
 	if (proxy.is_null()) {
@@ -124,6 +127,7 @@ RID ViewportTexture::get_rid() const {
 bool ViewportTexture::has_alpha() const {
 	return false;
 }
+
 Ref<Image> ViewportTexture::get_data() const {
 	ERR_FAIL_COND_V_MSG(!vp, Ref<Image>(), "Viewport Texture must be set to use it.");
 	return RS::get_singleton()->texture_2d_get(vp->texture_rid);
@@ -852,9 +856,11 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 Size2i Viewport::_get_size() const {
 	return size;
 }
+
 Size2i Viewport::_get_size_2d_override() const {
 	return size_2d_override;
 }
+
 bool Viewport::_is_size_allocated() const {
 	return size_allocated;
 }
@@ -1382,6 +1388,7 @@ void Viewport::set_shadow_atlas_quadrant_subdiv(int p_quadrant, ShadowAtlasQuadr
 
 	RS::get_singleton()->viewport_set_shadow_atlas_quadrant_subdivision(viewport, p_quadrant, subdiv[p_subdiv]);
 }
+
 Viewport::ShadowAtlasQuadrantSubdiv Viewport::get_shadow_atlas_quadrant_subdiv(int p_quadrant) const {
 	ERR_FAIL_INDEX_V(p_quadrant, 4, SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	return shadow_atlas_quadrant_subdiv[p_quadrant];
@@ -1604,6 +1611,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 
 	//_unblock();
 }
+
 Control *Viewport::_gui_find_control(const Point2 &p_global) {
 	//aca va subwindows
 	_gui_sort_roots();
@@ -2507,6 +2515,7 @@ void Viewport::input_text(const String &p_text) {
 		gui.key_focus->call("set_text", p_text);
 	}
 }
+
 Viewport::SubWindowResize Viewport::_sub_window_get_resize_margin(Window *p_subwindow, const Point2 &p_point) {
 	if (p_subwindow->get_flag(Window::FLAG_BORDERLESS)) {
 		return SUB_WINDOW_RESIZE_DISABLED;
@@ -2570,6 +2579,7 @@ Viewport::SubWindowResize Viewport::_sub_window_get_resize_margin(Window *p_subw
 
 	return SUB_WINDOW_RESIZE_DISABLED;
 }
+
 bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	if (gui.subwindow_drag != SUB_WINDOW_DRAG_DISABLED) {
 		ERR_FAIL_COND_V(gui.subwindow_focused == nullptr, false);
@@ -2950,6 +2960,7 @@ String Viewport::get_configuration_warning() const {
 void Viewport::gui_reset_canvas_sort_index() {
 	gui.canvas_sort_index = 0;
 }
+
 int Viewport::gui_get_canvas_sort_index() {
 	return gui.canvas_sort_index++;
 }
@@ -2977,6 +2988,7 @@ void Viewport::set_screen_space_aa(ScreenSpaceAA p_screen_space_aa) {
 Viewport::ScreenSpaceAA Viewport::get_screen_space_aa() const {
 	return screen_space_aa;
 }
+
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
 	debug_draw = p_debug_draw;
 	RS::get_singleton()->viewport_set_debug_draw(viewport, RS::ViewportDebugDraw(p_debug_draw));
@@ -3070,6 +3082,7 @@ void Viewport::set_default_canvas_item_texture_repeat(DefaultCanvasItemTextureRe
 	default_canvas_item_texture_repeat = p_repeat;
 	_propagate_update_default_repeat(this);
 }
+
 Viewport::DefaultCanvasItemTextureRepeat Viewport::get_default_canvas_item_texture_repeat() const {
 	return default_canvas_item_texture_repeat;
 }
@@ -3112,9 +3125,11 @@ Viewport *Viewport::get_parent_viewport() const {
 void Viewport::set_embed_subwindows_hint(bool p_embed) {
 	gui.embed_subwindows_hint = p_embed;
 }
+
 bool Viewport::get_embed_subwindows_hint() const {
 	return gui.embed_subwindows_hint;
 }
+
 bool Viewport::is_embedding_subwindows() const {
 	return gui.embed_subwindows_hint;
 }
@@ -3423,6 +3438,7 @@ bool SubViewport::is_using_xr() {
 void SubViewport::set_size(const Size2i &p_size) {
 	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
 }
+
 Size2i SubViewport::get_size() const {
 	return _get_size();
 }
@@ -3430,6 +3446,7 @@ Size2i SubViewport::get_size() const {
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
 	_set_size(_get_size(), p_size, Rect2i(), _stretch_transform(), true);
 }
+
 Size2i SubViewport::get_size_2d_override() const {
 	return _get_size_2d_override();
 }
@@ -3442,6 +3459,7 @@ void SubViewport::set_size_2d_override_stretch(bool p_enable) {
 	size_2d_override_stretch = p_enable;
 	_set_size(_get_size(), _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
 }
+
 bool SubViewport::is_size_2d_override_stretch_enabled() const {
 	return size_2d_override_stretch;
 }
@@ -3450,6 +3468,7 @@ void SubViewport::set_update_mode(UpdateMode p_mode) {
 	update_mode = p_mode;
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::ViewportUpdateMode(p_mode));
 }
+
 SubViewport::UpdateMode SubViewport::get_update_mode() const {
 	return update_mode;
 }
@@ -3458,6 +3477,7 @@ void SubViewport::set_clear_mode(ClearMode p_mode) {
 	clear_mode = p_mode;
 	RS::get_singleton()->viewport_set_clear_mode(get_viewport_rid(), RS::ViewportClearMode(p_mode));
 }
+
 SubViewport::ClearMode SubViewport::get_clear_mode() const {
 	return clear_mode;
 }

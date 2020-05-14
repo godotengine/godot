@@ -817,6 +817,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 		state.animation_player->add_animation(name, animation);
 	}
 }
+
 //
 // Mesh Generation from indices ? why do we need so much mesh code
 // [debt needs looked into]

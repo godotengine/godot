@@ -66,6 +66,7 @@ bool VisualShaderNode::is_port_separator(int p_index) const {
 Vector<VisualShader::DefaultTextureParam> VisualShaderNode::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
 	return Vector<VisualShader::DefaultTextureParam>();
 }
+
 String VisualShaderNode::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
 	return String();
 }
@@ -90,6 +91,7 @@ Array VisualShaderNode::get_default_input_values() const {
 	}
 	return ret;
 }
+
 void VisualShaderNode::set_default_input_values(const Array &p_values) {
 	if (p_values.size() % 2 == 0) {
 		for (int i = 0; i < p_values.size(); i += 2) {
@@ -389,6 +391,7 @@ Vector<int> VisualShader::get_node_list(Type p_type) const {
 
 	return ret;
 }
+
 int VisualShader::get_valid_node_id(Type p_type) const {
 	ERR_FAIL_INDEX_V(p_type, TYPE_MAX, NODE_ID_INVALID);
 	const Graph *g = &graph[p_type];
@@ -1724,9 +1727,11 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::preview_ports[] = {
 int VisualShaderNodeInput::get_input_port_count() const {
 	return 0;
 }
+
 VisualShaderNodeInput::PortType VisualShaderNodeInput::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
+
 String VisualShaderNodeInput::get_input_port_name(int p_port) const {
 	return "";
 }
@@ -1734,9 +1739,11 @@ String VisualShaderNodeInput::get_input_port_name(int p_port) const {
 int VisualShaderNodeInput::get_output_port_count() const {
 	return 1;
 }
+
 VisualShaderNodeInput::PortType VisualShaderNodeInput::get_output_port_type(int p_port) const {
 	return get_input_type_by_name(input_name);
 }
+
 String VisualShaderNodeInput::get_output_port_name(int p_port) const {
 	return "";
 }
@@ -1932,6 +1939,7 @@ void VisualShaderNodeInput::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "input_name", PROPERTY_HINT_ENUM, ""), "set_input_name", "get_input_name");
 	ADD_SIGNAL(MethodInfo("input_type_changed"));
 }
+
 VisualShaderNodeInput::VisualShaderNodeInput() {
 	input_name = "[None]";
 	// changed when set
@@ -2064,9 +2072,11 @@ Variant VisualShaderNodeOutput::get_input_port_default_value(int p_port) const {
 int VisualShaderNodeOutput::get_output_port_count() const {
 	return 0;
 }
+
 VisualShaderNodeOutput::PortType VisualShaderNodeOutput::get_output_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
+
 String VisualShaderNodeOutput::get_output_port_name(int p_port) const {
 	return String();
 }

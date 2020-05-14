@@ -45,6 +45,7 @@ String ResourceImporterTextureAtlas::get_importer_name() const {
 String ResourceImporterTextureAtlas::get_visible_name() const {
 	return "TextureAtlas";
 }
+
 void ResourceImporterTextureAtlas::get_recognized_extensions(List<String> *p_extensions) const {
 	ImageLoader::get_recognized_extensions(p_extensions);
 }
@@ -64,6 +65,7 @@ bool ResourceImporterTextureAtlas::get_option_visibility(const String &p_option,
 int ResourceImporterTextureAtlas::get_preset_count() const {
 	return 0;
 }
+
 String ResourceImporterTextureAtlas::get_preset_name(int p_idx) const {
 	return String();
 }

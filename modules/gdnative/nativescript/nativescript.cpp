@@ -817,6 +817,7 @@ bool NativeScriptInstance::set(const StringName &p_name, const Variant &p_value)
 	}
 	return false;
 }
+
 bool NativeScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	NativeScriptDesc *script_data = GET_SCRIPT_DESC();
 
@@ -1267,22 +1268,29 @@ void NativeScriptLanguage::init() {
 	EditorNode::add_init_callback(&_add_reload_node);
 #endif
 }
+
 String NativeScriptLanguage::get_type() const {
 	return "NativeScript";
 }
+
 String NativeScriptLanguage::get_extension() const {
 	return "gdns";
 }
+
 Error NativeScriptLanguage::execute_file(const String &p_path) {
 	return OK; // Qué?
 }
+
 void NativeScriptLanguage::finish() {
 	_unload_stuff();
 }
+
 void NativeScriptLanguage::get_reserved_words(List<String> *p_words) const {
 }
+
 void NativeScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 }
+
 void NativeScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 
@@ -1291,6 +1299,7 @@ Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const
 	s->set_class_name(p_class_name);
 	return Ref<NativeScript>(s);
 }
+
 bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	return true;
 }
@@ -1299,20 +1308,26 @@ Script *NativeScriptLanguage::create_script() const {
 	NativeScript *script = memnew(NativeScript);
 	return script;
 }
+
 bool NativeScriptLanguage::has_named_classes() const {
 	return true;
 }
+
 bool NativeScriptLanguage::supports_builtin_mode() const {
 	return true;
 }
+
 int NativeScriptLanguage::find_function(const String &p_function, const String &p_code) const {
 	return -1;
 }
+
 String NativeScriptLanguage::make_function(const String &p_class, const String &p_name, const PackedStringArray &p_args) const {
 	return "";
 }
+
 void NativeScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {
 }
+
 void NativeScriptLanguage::add_global_constant(const StringName &p_variable, const Variant &p_value) {
 }
 
@@ -1320,27 +1335,36 @@ void NativeScriptLanguage::add_global_constant(const StringName &p_variable, con
 String NativeScriptLanguage::debug_get_error() const {
 	return "";
 }
+
 int NativeScriptLanguage::debug_get_stack_level_count() const {
 	return -1;
 }
+
 int NativeScriptLanguage::debug_get_stack_level_line(int p_level) const {
 	return -1;
 }
+
 String NativeScriptLanguage::debug_get_stack_level_function(int p_level) const {
 	return "";
 }
+
 String NativeScriptLanguage::debug_get_stack_level_source(int p_level) const {
 	return "";
 }
+
 void NativeScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 }
+
 void NativeScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 }
+
 void NativeScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 }
+
 String NativeScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
 	return "";
 }
+
 // Debugging stuff end.
 
 void NativeScriptLanguage::reload_all_scripts() {
@@ -1348,6 +1372,7 @@ void NativeScriptLanguage::reload_all_scripts() {
 
 void NativeScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
 }
+
 void NativeScriptLanguage::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("gdns");
 }

@@ -190,6 +190,7 @@ Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
 bool MeshLibrary::has_item(int p_item) const {
 	return item_map.has(p_item);
 }
+
 void MeshLibrary::remove_item(int p_item) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map.erase(p_item);
@@ -282,5 +283,6 @@ void MeshLibrary::_bind_methods() {
 
 MeshLibrary::MeshLibrary() {
 }
+
 MeshLibrary::~MeshLibrary() {
 }

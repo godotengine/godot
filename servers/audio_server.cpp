@@ -676,6 +676,7 @@ void AudioServer::set_bus_name(int p_bus, const String &p_name) {
 
 	emit_signal("bus_layout_changed");
 }
+
 String AudioServer::get_bus_name(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), String());
 	return buses[p_bus]->name;
@@ -697,6 +698,7 @@ void AudioServer::set_bus_volume_db(int p_bus, float p_volume_db) {
 
 	buses[p_bus]->volume_db = p_volume_db;
 }
+
 float AudioServer::get_bus_volume_db(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	return buses[p_bus]->volume_db;
@@ -741,6 +743,7 @@ void AudioServer::set_bus_mute(int p_bus, bool p_enable) {
 
 	buses[p_bus]->mute = p_enable;
 }
+
 bool AudioServer::is_bus_mute(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
 
@@ -754,6 +757,7 @@ void AudioServer::set_bus_bypass_effects(int p_bus, bool p_enable) {
 
 	buses[p_bus]->bypass = p_enable;
 }
+
 bool AudioServer::is_bus_bypassing_effects(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
 
@@ -855,6 +859,7 @@ void AudioServer::set_bus_effect_enabled(int p_bus, int p_effect, bool p_enabled
 
 	buses.write[p_bus]->effects.write[p_effect].enabled = p_enabled;
 }
+
 bool AudioServer::is_bus_effect_enabled(int p_bus, int p_effect) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), false);
 	ERR_FAIL_INDEX_V(p_effect, buses[p_bus]->effects.size(), false);
@@ -867,6 +872,7 @@ float AudioServer::get_bus_peak_volume_left_db(int p_bus, int p_channel) const {
 
 	return buses[p_bus]->channels[p_channel].peak_volume.l;
 }
+
 float AudioServer::get_bus_peak_volume_right_db(int p_bus, int p_channel) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	ERR_FAIL_INDEX_V(p_channel, buses[p_bus]->channels.size(), 0);
@@ -884,6 +890,7 @@ bool AudioServer::is_bus_channel_active(int p_bus, int p_channel) const {
 void AudioServer::set_global_rate_scale(float p_scale) {
 	global_rate_scale = p_scale;
 }
+
 float AudioServer::get_global_rate_scale() const {
 	return global_rate_scale;
 }
@@ -1020,6 +1027,7 @@ void AudioServer::finish() {
 void AudioServer::lock() {
 	AudioDriver::get_singleton()->lock();
 }
+
 void AudioServer::unlock() {
 	AudioDriver::get_singleton()->unlock();
 }
@@ -1027,6 +1035,7 @@ void AudioServer::unlock() {
 AudioServer::SpeakerMode AudioServer::get_speaker_mode() const {
 	return (AudioServer::SpeakerMode)AudioDriver::get_singleton()->get_speaker_mode();
 }
+
 float AudioServer::get_mix_rate() const {
 	return AudioDriver::get_singleton()->get_mix_rate();
 }
@@ -1385,6 +1394,7 @@ bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (int i = 0; i < buses.size(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "bus/" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL));

@@ -44,6 +44,7 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 void Popup::_parent_focused() {
 	_close_pressed();
 }
+
 void Popup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -94,6 +95,7 @@ void Popup::_close_pressed() {
 void Popup::set_as_minsize() {
 	set_size(get_contents_minimum_size());
 }
+
 void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }

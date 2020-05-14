@@ -132,6 +132,7 @@ Vector3i &Vector3i::operator-=(const Vector3i &p_v) {
 	z -= p_v.z;
 	return *this;
 }
+
 Vector3i Vector3i::operator-(const Vector3i &p_v) const {
 	return Vector3i(x - p_v.x, y - p_v.y, z - p_v.z);
 }
@@ -142,6 +143,7 @@ Vector3i &Vector3i::operator*=(const Vector3i &p_v) {
 	z *= p_v.z;
 	return *this;
 }
+
 Vector3i Vector3i::operator*(const Vector3i &p_v) const {
 	return Vector3i(x * p_v.x, y * p_v.y, z * p_v.z);
 }

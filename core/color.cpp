@@ -213,6 +213,7 @@ void Color::invert() {
 	g = 1.0 - g;
 	b = 1.0 - b;
 }
+
 void Color::contrast() {
 	r = Math::fmod(r + 0.5, 1.0);
 	g = Math::fmod(g + 0.5, 1.0);

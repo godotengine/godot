@@ -45,6 +45,7 @@
 DWORD WINAPI _xinput_get_state(DWORD dwUserIndex, XINPUT_STATE *pState) {
 	return ERROR_DEVICE_NOT_CONNECTED;
 }
+
 DWORD WINAPI _xinput_set_state(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration) {
 	return ERROR_DEVICE_NOT_CONNECTED;
 }

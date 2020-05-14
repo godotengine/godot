@@ -169,6 +169,7 @@ void Area2DSW::add_body_to_query(Body2DSW *p_body, uint32_t p_body_shape, uint32
 	if (!monitor_query_list.in_list())
 		_queue_monitor_update();
 }
+
 void Area2DSW::remove_body_from_query(Body2DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].dec();
@@ -182,6 +183,7 @@ void Area2DSW::add_area_to_query(Area2DSW *p_area, uint32_t p_area_shape, uint32
 	if (!monitor_query_list.in_list())
 		_queue_monitor_update();
 }
+
 void Area2DSW::remove_area_from_query(Area2DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
 	BodyKey bk(p_area, p_area_shape, p_self_shape);
 	monitored_areas[bk].dec();

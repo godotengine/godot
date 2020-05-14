@@ -33,6 +33,7 @@ layout(push_constant, binding = 2, std430) uniform Params {
 	bool vertical;
 	uint steps;
 }
+
 params;
 
 #define GAUSS_TABLE_SIZE 15

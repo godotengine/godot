@@ -56,6 +56,7 @@ int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	}
 	return -1;
 }
+
 int EditorFileSystemDirectory::find_dir_index(const String &p_dir) const {
 	for (int i = 0; i < subdirs.size(); i++) {
 		if (subdirs[i]->name == p_dir)
@@ -1110,6 +1111,7 @@ void EditorFileSystem::_notification(int p_what) {
 bool EditorFileSystem::is_scanning() const {
 	return scanning || scanning_changes;
 }
+
 float EditorFileSystem::get_scanning_progress() const {
 	return scan_total;
 }

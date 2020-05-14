@@ -327,6 +327,7 @@ void Basis::rotate_local(const Vector3 &p_axis, real_t p_phi) {
 	// M -> (M.R.Minv).M = M.R.
 	*this = rotated_local(p_axis, p_phi);
 }
+
 Basis Basis::rotated_local(const Vector3 &p_axis, real_t p_phi) const {
 	return (*this) * Basis(p_axis, p_phi);
 }

@@ -177,10 +177,12 @@ void Reverb::set_room_size(float p_size) {
 	params.room_size = p_size;
 	update_parameters();
 }
+
 void Reverb::set_damp(float p_damp) {
 	params.damp = p_damp;
 	update_parameters();
 }
+
 void Reverb::set_wet(float p_wet) {
 	params.wet = p_wet;
 }
@@ -192,6 +194,7 @@ void Reverb::set_dry(float p_dry) {
 void Reverb::set_predelay(float p_predelay) {
 	params.predelay = p_predelay;
 }
+
 void Reverb::set_predelay_feedback(float p_predelay_fb) {
 	params.predelay_fb = p_predelay_fb;
 }

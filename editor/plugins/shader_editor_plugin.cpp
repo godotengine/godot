@@ -46,6 +46,7 @@
 Ref<Shader> ShaderTextEditor::get_edited_shader() const {
 	return shader;
 }
+
 void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 	if (shader == p_shader) {
 		return;

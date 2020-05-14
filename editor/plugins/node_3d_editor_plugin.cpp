@@ -395,9 +395,11 @@ int Node3DEditorViewport::get_selected_count() const {
 float Node3DEditorViewport::get_znear() const {
 	return CLAMP(spatial_editor->get_znear(), MIN_Z, MAX_Z);
 }
+
 float Node3DEditorViewport::get_zfar() const {
 	return CLAMP(spatial_editor->get_zfar(), MIN_Z, MAX_Z);
 }
+
 float Node3DEditorViewport::get_fov() const {
 	return CLAMP(spatial_editor->get_fov(), MIN_FOV, MAX_FOV);
 }
@@ -970,9 +972,11 @@ void Node3DEditorViewport::_surface_focus_enter() {
 void Node3DEditorViewport::_surface_focus_exit() {
 	view_menu->set_disable_shortcuts(true);
 }
+
 bool Node3DEditorViewport ::_is_node_locked(const Node *p_node) {
 	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
 }
+
 void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->get_shift());
 
@@ -3011,6 +3015,7 @@ void Node3DEditorViewport::_finish_gizmo_instances() {
 		RS::get_singleton()->free(scale_plane_gizmo_instance[i]);
 	}
 }
+
 void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
@@ -4408,6 +4413,7 @@ Dictionary Node3DEditor::get_state() const {
 
 	return d;
 }
+
 void Node3DEditor::set_state(const Dictionary &p_state) {
 	Dictionary d = p_state;
 
@@ -5511,6 +5517,7 @@ void Node3DEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 
 	snap_key_enabled = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 }
+
 void Node3DEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		tool_button[Node3DEditor::TOOL_MODE_SELECT]->set_icon(get_theme_icon("ToolSelect", "EditorIcons"));
@@ -6116,6 +6123,7 @@ void Node3DEditorPlugin::make_visible(bool p_visible) {
 		spatial_editor->set_process(false);
 	}
 }
+
 void Node3DEditorPlugin::edit(Object *p_object) {
 	spatial_editor->edit(Object::cast_to<Node3D>(p_object));
 }

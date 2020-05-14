@@ -467,6 +467,7 @@ uint64_t get_editor_api_hash() {
 uint32_t get_bindings_version() {
 	GD_UNREACHABLE();
 }
+
 uint32_t get_cs_glue_version() {
 	GD_UNREACHABLE();
 }

@@ -237,6 +237,7 @@ int GDScriptLanguage::debug_get_stack_level_count() const {
 
 	return _debug_call_stack_pos;
 }
+
 int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
 	if (_debug_parse_err_line >= 0)
 		return _debug_parse_err_line;
@@ -247,6 +248,7 @@ int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
 
 	return *(_call_stack[l].line);
 }
+
 String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
 	if (_debug_parse_err_line >= 0)
 		return "";
@@ -255,6 +257,7 @@ String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
 	int l = _debug_call_stack_pos - p_level - 1;
 	return _call_stack[l].function->get_name();
 }
+
 String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
 	if (_debug_parse_err_line >= 0)
 		return _debug_parse_err_file;
@@ -263,6 +266,7 @@ String GDScriptLanguage::debug_get_stack_level_source(int p_level) const {
 	int l = _debug_call_stack_pos - p_level - 1;
 	return _call_stack[l].function->get_source();
 }
+
 void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	if (_debug_parse_err_line >= 0)
 		return;
@@ -280,6 +284,7 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 		p_values->push_back(_call_stack[l].stack[E->get().second]);
 	}
 }
+
 void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems, int p_max_depth) {
 	if (_debug_parse_err_line >= 0)
 		return;

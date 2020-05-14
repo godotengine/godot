@@ -38,6 +38,7 @@ void Area3D::set_space_override_mode(SpaceOverride p_mode) {
 	space_override = p_mode;
 	PhysicsServer3D::get_singleton()->area_set_space_override_mode(get_rid(), PhysicsServer3D::AreaSpaceOverrideMode(p_mode));
 }
+
 Area3D::SpaceOverride Area3D::get_space_override_mode() const {
 	return space_override;
 }
@@ -46,6 +47,7 @@ void Area3D::set_gravity_is_point(bool p_enabled) {
 	gravity_is_point = p_enabled;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_IS_POINT, p_enabled);
 }
+
 bool Area3D::is_gravity_a_point() const {
 	return gravity_is_point;
 }
@@ -63,6 +65,7 @@ void Area3D::set_gravity_vector(const Vector3 &p_vec) {
 	gravity_vec = p_vec;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, p_vec);
 }
+
 Vector3 Area3D::get_gravity_vector() const {
 	return gravity_vec;
 }
@@ -71,13 +74,16 @@ void Area3D::set_gravity(real_t p_gravity) {
 	gravity = p_gravity;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_GRAVITY, p_gravity);
 }
+
 real_t Area3D::get_gravity() const {
 	return gravity;
 }
+
 void Area3D::set_linear_damp(real_t p_linear_damp) {
 	linear_damp = p_linear_damp;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, p_linear_damp);
 }
+
 real_t Area3D::get_linear_damp() const {
 	return linear_damp;
 }
@@ -95,6 +101,7 @@ void Area3D::set_priority(real_t p_priority) {
 	priority = p_priority;
 	PhysicsServer3D::get_singleton()->area_set_param(get_rid(), PhysicsServer3D::AREA_PARAM_PRIORITY, p_priority);
 }
+
 real_t Area3D::get_priority() const {
 	return priority;
 }
@@ -251,6 +258,7 @@ void Area3D::_clear_monitoring() {
 		}
 	}
 }
+
 void Area3D::_notification(int p_what) {
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_monitoring();
@@ -439,6 +447,7 @@ bool Area3D::overlaps_body(Node *p_body) const {
 		return false;
 	return E->get().in_tree;
 }
+
 void Area3D::set_collision_mask(uint32_t p_mask) {
 	collision_mask = p_mask;
 	PhysicsServer3D::get_singleton()->area_set_collision_mask(get_rid(), p_mask);
@@ -447,6 +456,7 @@ void Area3D::set_collision_mask(uint32_t p_mask) {
 uint32_t Area3D::get_collision_mask() const {
 	return collision_mask;
 }
+
 void Area3D::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
 	PhysicsServer3D::get_singleton()->area_set_collision_layer(get_rid(), p_layer);
@@ -493,6 +503,7 @@ bool Area3D::is_overriding_audio_bus() const {
 void Area3D::set_audio_bus(const StringName &p_audio_bus) {
 	audio_bus = p_audio_bus;
 }
+
 StringName Area3D::get_audio_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == audio_bus) {
@@ -505,6 +516,7 @@ StringName Area3D::get_audio_bus() const {
 void Area3D::set_use_reverb_bus(bool p_enable) {
 	use_reverb_bus = p_enable;
 }
+
 bool Area3D::is_using_reverb_bus() const {
 	return use_reverb_bus;
 }
@@ -512,6 +524,7 @@ bool Area3D::is_using_reverb_bus() const {
 void Area3D::set_reverb_bus(const StringName &p_audio_bus) {
 	reverb_bus = p_audio_bus;
 }
+
 StringName Area3D::get_reverb_bus() const {
 	for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {
 		if (AudioServer::get_singleton()->get_bus_name(i) == reverb_bus) {
@@ -524,6 +537,7 @@ StringName Area3D::get_reverb_bus() const {
 void Area3D::set_reverb_amount(float p_amount) {
 	reverb_amount = p_amount;
 }
+
 float Area3D::get_reverb_amount() const {
 	return reverb_amount;
 }
@@ -531,6 +545,7 @@ float Area3D::get_reverb_amount() const {
 void Area3D::set_reverb_uniformity(float p_uniformity) {
 	reverb_uniformity = p_uniformity;
 }
+
 float Area3D::get_reverb_uniformity() const {
 	return reverb_uniformity;
 }

@@ -206,6 +206,7 @@ void Sprite2D::set_offset(const Point2 &p_offset) {
 	item_rect_changed();
 	_change_notify("offset");
 }
+
 Point2 Sprite2D::get_offset() const {
 	return offset;
 }
@@ -214,6 +215,7 @@ void Sprite2D::set_flip_h(bool p_flip) {
 	hflip = p_flip;
 	update();
 }
+
 bool Sprite2D::is_flipped_h() const {
 	return hflip;
 }
@@ -222,6 +224,7 @@ void Sprite2D::set_flip_v(bool p_flip) {
 	vflip = p_flip;
 	update();
 }
+
 bool Sprite2D::is_flipped_v() const {
 	return vflip;
 }
@@ -298,6 +301,7 @@ void Sprite2D::set_vframes(int p_amount) {
 	item_rect_changed();
 	_change_notify();
 }
+
 int Sprite2D::get_vframes() const {
 	return vframes;
 }
@@ -309,6 +313,7 @@ void Sprite2D::set_hframes(int p_amount) {
 	item_rect_changed();
 	_change_notify();
 }
+
 int Sprite2D::get_hframes() const {
 	return hframes;
 }

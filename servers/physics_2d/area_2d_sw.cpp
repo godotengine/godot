@@ -38,6 +38,7 @@ Area2DSW::BodyKey::BodyKey(Body2DSW *p_body, uint32_t p_body_shape, uint32_t p_a
 	body_shape = p_body_shape;
 	area_shape = p_area_shape;
 }
+
 Area2DSW::BodyKey::BodyKey(Area2DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	rid = p_body->get_self();
 	instance_id = p_body->get_instance_id();
