@@ -533,6 +533,11 @@ int AudioDriverPulseAudio::get_mix_rate() const {
 	return mix_rate;
 }
 
+int AudioDriverPulseAudio::get_mix_buffer_size() const {
+
+	return buffer_frames;
+}
+
 AudioDriver::SpeakerMode AudioDriverPulseAudio::get_speaker_mode() const {
 
 	return get_speaker_mode_by_total_channels(channels);

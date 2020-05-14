@@ -83,6 +83,7 @@ public:
 
 	static const int DEFAULT_MIX_RATE = 44100;
 	static const int DEFAULT_OUTPUT_LATENCY = 15;
+	static constexpr int DEFAULT_MIX_BUFFER_SIZE = (DEFAULT_OUTPUT_LATENCY * DEFAULT_MIX_RATE) / 1000;
 
 	static AudioDriver *get_singleton();
 	void set_singleton();
@@ -92,6 +93,7 @@ public:
 	virtual Error init() = 0;
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
+	virtual int get_mix_buffer_size() const = 0;
 	virtual SpeakerMode get_speaker_mode() const = 0;
 	virtual Array get_device_list();
 	virtual String get_device();
@@ -106,7 +108,7 @@ public:
 	virtual String capture_get_device() { return "Default"; }
 	virtual Array capture_get_device_list(); // TODO: convert this and get_device_list to PackedStringArray
 
-	virtual float get_latency() { return 0; }
+	virtual float get_latency() = 0;
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;

@@ -52,11 +52,14 @@ public:
 	virtual void start();
 	void resume();
 	virtual int get_mix_rate() const;
+	virtual int get_mix_buffer_size() const;
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
 	void finish_async();
+
+	virtual float get_latency();
 
 	virtual Error capture_start();
 	virtual Error capture_stop();

@@ -62,10 +62,13 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
+	virtual int get_mix_buffer_size() const;
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+
+	virtual float get_latency();
 
 	AudioDriverMediaKit();
 	~AudioDriverMediaKit();
