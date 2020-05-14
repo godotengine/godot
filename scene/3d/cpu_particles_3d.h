@@ -122,7 +122,6 @@ private:
 		const Particle *particles;
 		Vector3 axis;
 		bool operator()(int p_a, int p_b) const {
-
 			return axis.dot(particles[p_a].transform.origin) < axis.dot(particles[p_b].transform.origin);
 		}
 	};

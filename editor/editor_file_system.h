@@ -40,7 +40,6 @@ class FileAccess;
 
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
-
 	GDCLASS(EditorFileSystemDirectory, Object);
 
 	String name;
@@ -104,13 +103,11 @@ public:
 };
 
 class EditorFileSystem : public Node {
-
 	GDCLASS(EditorFileSystem, Node);
 
 	_THREAD_SAFE_CLASS_
 
 	struct ItemAction {
-
 		enum Action {
 			ACTION_NONE,
 			ACTION_DIR_ADD,
@@ -163,7 +160,6 @@ class EditorFileSystem : public Node {
 
 	/* Used for reading the filesystem cache file */
 	struct FileCache {
-
 		String type;
 		uint64_t modification_time;
 		uint64_t import_modification_time;
@@ -178,7 +174,6 @@ class EditorFileSystem : public Node {
 	HashMap<String, FileCache> file_cache;
 
 	struct ScanProgress {
-
 		float low;
 		float hi;
 		mutable EditorProgressBG *progress;

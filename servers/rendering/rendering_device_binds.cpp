@@ -31,7 +31,6 @@
 #include "rendering_device_binds.h"
 
 Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
-
 	Vector<String> lines = p_text.split("\n");
 
 	bool reading_versions = false;
@@ -103,7 +102,6 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		if (reading_versions) {
 			String l = line.strip_edges();
 			if (l != "") {
-
 				int eqpos = l.find("=");
 				if (eqpos == -1) {
 					base_error = "Version syntax is version=\"<defines with C escaping>\".";
@@ -149,7 +147,6 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 						base_error = "#include used, but no include function provided.";
 					}
 				} else {
-
 					stage_code[stage] += line + "\n";
 				}
 			}
@@ -160,7 +157,6 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 	shader_file.instance();
 
 	if (base_error == "") {
-
 		if (stage_found[RD::SHADER_STAGE_COMPUTE] && stages_found > 1) {
 			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "When writing compute shaders, [compute] mustbe the only stage present.");
 		}
@@ -174,7 +170,6 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		/* STEP 2, Compile the versions, add to shader file */
 
 		for (Map<StringName, String>::Element *E = version_texts.front(); E; E = E->next()) {
-
 			Ref<RDShaderBytecode> bytecode;
 			bytecode.instance();
 

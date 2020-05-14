@@ -35,7 +35,6 @@
 #include "servers/rendering_server.h"
 
 struct DebuggerMarshalls {
-
 	// Memory usage
 	struct ResourceInfo {
 		String path;

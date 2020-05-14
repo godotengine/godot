@@ -35,9 +35,7 @@
 #include "core/ustring.h"
 
 struct Color {
-
 	union {
-
 		struct {
 			float r;
 			float g;
@@ -98,7 +96,6 @@ struct Color {
 	Color contrasted() const;
 
 	_FORCE_INLINE_ Color lerp(const Color &p_b, float p_t) const {
-
 		Color res = *this;
 
 		res.r += (p_t * (p_b.r - r));
@@ -110,7 +107,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color darkened(float p_amount) const {
-
 		Color res = *this;
 		res.r = res.r * (1.0f - p_amount);
 		res.g = res.g * (1.0f - p_amount);
@@ -119,7 +115,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color lightened(float p_amount) const {
-
 		Color res = *this;
 		res.r = res.r + (1.0f - res.r) * p_amount;
 		res.g = res.g + (1.0f - res.g) * p_amount;
@@ -128,7 +123,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ uint32_t to_rgbe9995() const {
-
 		const float pow2to9 = 512.0f;
 		const float B = 15.0f;
 		//const float Emax = 31.0f;
@@ -162,7 +156,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color blend(const Color &p_over) const {
-
 		Color res;
 		float sa = 1.0 - p_over.a;
 		res.a = a * sa + p_over.a;
@@ -177,7 +170,6 @@ struct Color {
 	}
 
 	_FORCE_INLINE_ Color to_linear() const {
-
 		return Color(
 				r < 0.04045 ? r * (1.0 / 12.92) : Math::pow((r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
 				g < 0.04045 ? g * (1.0 / 12.92) : Math::pow((g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
@@ -185,7 +177,6 @@ struct Color {
 				a);
 	}
 	_FORCE_INLINE_ Color to_srgb() const {
-
 		return Color(
 				r < 0.0031308 ? 12.92 * r : (1.0 + 0.055) * Math::pow(r, 1.0f / 2.4f) - 0.055,
 				g < 0.0031308 ? 12.92 * g : (1.0 + 0.055) * Math::pow(g, 1.0f / 2.4f) - 0.055,
@@ -228,7 +219,6 @@ struct Color {
 };
 
 bool Color::operator<(const Color &p_color) const {
-
 	if (r == p_color.r) {
 		if (g == p_color.g) {
 			if (b == p_color.b) {

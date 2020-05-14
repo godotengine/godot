@@ -9,7 +9,6 @@ out vec2 uv_interp;
 out vec2 pos_interp;
 
 void main() {
-
 	uv_interp = uv_in;
 	gl_Position = vertex_attrib;
 	pos_interp.xy = gl_Position.xy;
@@ -55,7 +54,6 @@ vec2 view_to_screen(vec3 view_pos, out float w) {
 #define M_PI 3.14159265359
 
 void main() {
-
 	vec4 diffuse = texture(source_diffuse, uv_interp);
 	vec4 normal_roughness = texture(source_normal_roughness, uv_interp);
 
@@ -142,7 +140,6 @@ void main() {
 	float steps_taken = 0.0;
 
 	for (int i = 0; i < num_steps; i++) {
-
 		pos += line_advance;
 		z += z_advance;
 		w += w_advance;
@@ -174,7 +171,6 @@ void main() {
 	}
 
 	if (found) {
-
 		float margin_blend = 1.0;
 
 		vec2 margin = vec2((viewport_size.x + viewport_size.y) * 0.5 * 0.05); //make a uniform margin
@@ -218,7 +214,6 @@ void main() {
 			final_color = vec4(0.0);
 
 			for (int i = 0; i < 7; i++) {
-
 				float op_len = 2.0 * tan(cone_angle) * cone_len; //opposite side of iso triangle
 				float radius;
 				{

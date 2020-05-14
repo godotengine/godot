@@ -35,7 +35,6 @@
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamPlayer : public Node {
-
 	GDCLASS(AudioStreamPlayer, Node);
 
 public:

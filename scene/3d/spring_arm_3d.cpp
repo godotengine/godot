@@ -54,7 +54,6 @@ void SpringArm3D::_notification(int p_what) {
 }
 
 void SpringArm3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_hit_length"), &SpringArm3D::get_hit_length);
 
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &SpringArm3D::set_length);
@@ -157,7 +156,6 @@ void SpringArm3D::process_spring() {
 	childs_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {
-
 		Node3D *child = Object::cast_to<Node3D>(get_child(i));
 		if (child) {
 			childs_transform.basis = child->get_global_transform().basis;

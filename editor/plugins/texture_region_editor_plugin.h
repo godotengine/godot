@@ -45,7 +45,6 @@
 */
 
 class TextureRegionEditor : public VBoxContainer {
-
 	GDCLASS(TextureRegionEditor, VBoxContainer);
 
 	enum SnapMode {

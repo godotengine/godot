@@ -36,7 +36,6 @@ const char *VulkanContextX11::_get_platform_surface_extension() const {
 }
 
 Error VulkanContextX11::window_create(DisplayServer::WindowID p_window_id, ::Window p_window, Display *p_display, int p_width, int p_height) {
-
 	VkXlibSurfaceCreateInfoKHR createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
 	createInfo.pNext = nullptr;

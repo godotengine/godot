@@ -118,7 +118,6 @@ private:
 	static const char *func_name[FUNC_MAX];
 
 	struct Input {
-
 		Variant::Type type = Variant::NIL;
 		String name;
 
@@ -180,7 +179,6 @@ private:
 
 	static const char *token_name[TK_MAX];
 	struct Token {
-
 		TokenType type;
 		Variant value;
 	};
@@ -198,7 +196,6 @@ private:
 	bool error_set = true;
 
 	struct ENode {
-
 		enum Type {
 			TYPE_INPUT,
 			TYPE_CONSTANT,
@@ -226,7 +223,6 @@ private:
 	};
 
 	struct ExpressionNode {
-
 		bool is_op;
 		union {
 			Variant::Operator op;
@@ -237,7 +233,6 @@ private:
 	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
-
 		int index;
 		InputNode() {
 			type = TYPE_INPUT;
@@ -245,7 +240,6 @@ private:
 	};
 
 	struct ConstantNode : public ENode {
-
 		Variant value;
 		ConstantNode() {
 			type = TYPE_CONSTANT;
@@ -253,7 +247,6 @@ private:
 	};
 
 	struct OperatorNode : public ENode {
-
 		Variant::Operator op;
 
 		ENode *nodes[2];
@@ -264,7 +257,6 @@ private:
 	};
 
 	struct SelfNode : public ENode {
-
 		SelfNode() {
 			type = TYPE_SELF;
 		}

@@ -50,7 +50,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PaymentsManager {
-
 	public static final int BILLING_RESPONSE_RESULT_OK = 0;
 	public static final int REQUEST_CODE_FOR_PURCHASE = 0x1001;
 	private static boolean auto_consume = true;
@@ -158,7 +157,6 @@ public class PaymentsManager {
 				Bundle bundle = mService.getPurchases(3, activity.getPackageName(), "inapp", continueToken);
 
 				if (bundle.getInt("RESPONSE_CODE") == 0) {
-
 					final ArrayList<String> myPurchases = bundle.getStringArrayList("INAPP_PURCHASE_DATA_LIST");
 					final ArrayList<String> mySignatures = bundle.getStringArrayList("INAPP_DATA_SIGNATURE_LIST");
 
@@ -168,7 +166,6 @@ public class PaymentsManager {
 					}
 
 					for (int i = 0; i < myPurchases.size(); i++) {
-
 						try {
 							String receipt = myPurchases.get(i);
 							JSONObject inappPurchaseData = new JSONObject(receipt);
@@ -229,11 +226,9 @@ public class PaymentsManager {
 	}
 
 	public void validatePurchase(String purchaseToken, final String sku) {
-
 		new ValidateTask(activity, godotPayment) {
 			@Override
 			protected void success() {
-
 				new ConsumeTask(mService, activity) {
 					@Override
 					protected void success(String ticket) {

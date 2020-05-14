@@ -47,12 +47,10 @@ public:
 
 	real_t get_area() const; /// get area
 	_FORCE_INLINE_ bool has_no_area() const {
-
 		return (size.x <= 0 || size.y <= 0 || size.z <= 0);
 	}
 
 	_FORCE_INLINE_ bool has_no_surface() const {
-
 		return (size.x <= 0 && size.y <= 0 && size.z <= 0);
 	}
 
@@ -111,7 +109,6 @@ public:
 };
 
 inline bool AABB::intersects(const AABB &p_aabb) const {
-
 	if (position.x >= (p_aabb.position.x + p_aabb.size.x))
 		return false;
 	if ((position.x + size.x) <= p_aabb.position.x)
@@ -129,7 +126,6 @@ inline bool AABB::intersects(const AABB &p_aabb) const {
 }
 
 inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
-
 	if (position.x > (p_aabb.position.x + p_aabb.size.x))
 		return false;
 	if ((position.x + size.x) < p_aabb.position.x)
@@ -147,7 +143,6 @@ inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
 }
 
 inline bool AABB::encloses(const AABB &p_aabb) const {
-
 	Vector3 src_min = position;
 	Vector3 src_max = position + size;
 	Vector3 dst_min = p_aabb.position;
@@ -163,7 +158,6 @@ inline bool AABB::encloses(const AABB &p_aabb) const {
 }
 
 Vector3 AABB::get_support(const Vector3 &p_normal) const {
-
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
 
@@ -175,7 +169,6 @@ Vector3 AABB::get_support(const Vector3 &p_normal) const {
 }
 
 Vector3 AABB::get_endpoint(int p_point) const {
-
 	switch (p_point) {
 		case 0:
 			return Vector3(position.x, position.y, position.z);
@@ -199,7 +192,6 @@ Vector3 AABB::get_endpoint(int p_point) const {
 }
 
 bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const {
-
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
 
@@ -220,7 +212,6 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 	int bad_point_counts_negative[3] = { 0 };
 
 	for (int k = 0; k < 3; k++) {
-
 		for (int i = 0; i < p_point_count; i++) {
 			if (p_points[i].coord[k] > ofs.coord[k] + half_extents.coord[k]) {
 				bad_point_counts_positive[k]++;
@@ -242,7 +233,6 @@ bool AABB::intersects_convex_shape(const Plane *p_planes, int p_plane_count, con
 }
 
 bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
-
 	Vector3 half_extents = size * 0.5;
 	Vector3 ofs = position + half_extents;
 
@@ -261,7 +251,6 @@ bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
 }
 
 bool AABB::has_point(const Vector3 &p_point) const {
-
 	if (p_point.x < position.x)
 		return false;
 	if (p_point.y < position.y)
@@ -279,7 +268,6 @@ bool AABB::has_point(const Vector3 &p_point) const {
 }
 
 inline void AABB::expand_to(const Vector3 &p_vector) {
-
 	Vector3 begin = position;
 	Vector3 end = position + size;
 
@@ -302,7 +290,6 @@ inline void AABB::expand_to(const Vector3 &p_vector) {
 }
 
 void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const {
-
 	Vector3 half_extents(size.x * 0.5, size.y * 0.5, size.z * 0.5);
 	Vector3 center(position.x + half_extents.x, position.y + half_extents.y, position.z + half_extents.z);
 
@@ -313,7 +300,6 @@ void AABB::project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r
 }
 
 inline real_t AABB::get_longest_axis_size() const {
-
 	real_t max_size = size.x;
 
 	if (size.y > max_size) {
@@ -328,7 +314,6 @@ inline real_t AABB::get_longest_axis_size() const {
 }
 
 inline real_t AABB::get_shortest_axis_size() const {
-
 	real_t max_size = size.x;
 
 	if (size.y < max_size) {
@@ -343,7 +328,6 @@ inline real_t AABB::get_shortest_axis_size() const {
 }
 
 bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
-
 	real_t divx = 1.0 / p_dir.x;
 	real_t divy = 1.0 / p_dir.y;
 	real_t divz = 1.0 / p_dir.z;
@@ -387,7 +371,6 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 }
 
 void AABB::grow_by(real_t p_amount) {
-
 	position.x -= p_amount;
 	position.y -= p_amount;
 	position.z -= p_amount;

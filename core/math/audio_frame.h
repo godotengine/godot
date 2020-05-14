@@ -48,7 +48,6 @@ static inline float undenormalise(volatile float f) {
 }
 
 struct AudioFrame {
-
 	//left and right samples
 	float l, r;
 
@@ -105,7 +104,6 @@ struct AudioFrame {
 	}
 
 	_FORCE_INLINE_ AudioFrame lerp(const AudioFrame &p_b, float p_t) const {
-
 		AudioFrame res = *this;
 
 		res.l += (p_t * (p_b.l - l));

@@ -46,13 +46,11 @@ Area3DSW::BodyKey::BodyKey(Area3DSW *p_body, uint32_t p_body_shape, uint32_t p_a
 }
 
 void Area3DSW::_shapes_changed() {
-
 	if (!moved_list.in_list() && get_space())
 		get_space()->area_add_to_moved_list(&moved_list);
 }
 
 void Area3DSW::set_transform(const Transform &p_transform) {
-
 	if (!moved_list.in_list() && get_space())
 		get_space()->area_add_to_moved_list(&moved_list);
 
@@ -61,7 +59,6 @@ void Area3DSW::set_transform(const Transform &p_transform) {
 }
 
 void Area3DSW::set_space(Space3DSW *p_space) {
-
 	if (get_space()) {
 		if (monitor_query_list.in_list())
 			get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
@@ -76,7 +73,6 @@ void Area3DSW::set_space(Space3DSW *p_space) {
 }
 
 void Area3DSW::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
-
 	if (p_id == monitor_callback_id) {
 		monitor_callback_method = p_method;
 		return;
@@ -97,7 +93,6 @@ void Area3DSW::set_monitor_callback(ObjectID p_id, const StringName &p_method) {
 }
 
 void Area3DSW::set_area_monitor_callback(ObjectID p_id, const StringName &p_method) {
-
 	if (p_id == area_monitor_callback_id) {
 		area_monitor_callback_method = p_method;
 		return;
@@ -127,7 +122,6 @@ void Area3DSW::set_space_override_mode(PhysicsServer3D::AreaSpaceOverrideMode p_
 }
 
 void Area3DSW::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &p_value) {
-
 	switch (p_param) {
 		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			gravity = p_value;
@@ -157,7 +151,6 @@ void Area3DSW::set_param(PhysicsServer3D::AreaParameter p_param, const Variant &
 }
 
 Variant Area3DSW::get_param(PhysicsServer3D::AreaParameter p_param) const {
-
 	switch (p_param) {
 		case PhysicsServer3D::AREA_PARAM_GRAVITY:
 			return gravity;
@@ -181,7 +174,6 @@ Variant Area3DSW::get_param(PhysicsServer3D::AreaParameter p_param) const {
 }
 
 void Area3DSW::_queue_monitor_update() {
-
 	ERR_FAIL_COND(!get_space());
 
 	if (!monitor_query_list.in_list())
@@ -189,7 +181,6 @@ void Area3DSW::_queue_monitor_update() {
 }
 
 void Area3DSW::set_monitorable(bool p_monitorable) {
-
 	if (monitorable == p_monitorable)
 		return;
 
@@ -198,9 +189,7 @@ void Area3DSW::set_monitorable(bool p_monitorable) {
 }
 
 void Area3DSW::call_queries() {
-
 	if (monitor_callback_id.is_valid() && !monitored_bodies.empty()) {
-
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++)
@@ -214,7 +203,6 @@ void Area3DSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_bodies.front(); E; E = E->next()) {
-
 			if (E->get().state == 0)
 				continue; //nothing happened
 
@@ -232,7 +220,6 @@ void Area3DSW::call_queries() {
 	monitored_bodies.clear();
 
 	if (area_monitor_callback_id.is_valid() && !monitored_areas.empty()) {
-
 		Variant res[5];
 		Variant *resptr[5];
 		for (int i = 0; i < 5; i++)
@@ -246,7 +233,6 @@ void Area3DSW::call_queries() {
 		}
 
 		for (Map<BodyKey, BodyState>::Element *E = monitored_areas.front(); E; E = E->next()) {
-
 			if (E->get().state == 0)
 				continue; //nothing happened
 
@@ -269,7 +255,6 @@ Area3DSW::Area3DSW() :
 		CollisionObject3DSW(TYPE_AREA),
 		monitor_query_list(this),
 		moved_list(this) {
-
 	_set_static(true); //areas are never active
 	space_override_mode = PhysicsServer3D::AREA_SPACE_OVERRIDE_DISABLED;
 	gravity = 9.80665;

@@ -75,7 +75,6 @@ public:
 };
 
 class Skeleton3DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(Skeleton3DEditorPlugin, EditorPlugin);
 
 	EditorNode *editor;

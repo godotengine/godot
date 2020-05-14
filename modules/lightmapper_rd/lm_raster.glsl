@@ -31,7 +31,6 @@ params;
 /* clang-format on */
 
 void main() {
-
 	uint triangle_idx = params.base_triangle + gl_VertexIndex / 3;
 	uint triangle_subidx = gl_VertexIndex % 3;
 
@@ -95,7 +94,6 @@ layout(location = 1) out vec4 normal;
 layout(location = 2) out vec4 unocclude;
 
 void main() {
-
 	vec3 vertex_pos = vertex_interp;
 
 	{

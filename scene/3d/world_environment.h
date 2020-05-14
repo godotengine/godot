@@ -34,7 +34,6 @@
 #include "scene/3d/node_3d.h"
 
 class WorldEnvironment : public Node {
-
 	GDCLASS(WorldEnvironment, Node);
 
 	Ref<Environment> environment;

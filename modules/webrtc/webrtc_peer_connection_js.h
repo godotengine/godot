@@ -36,7 +36,6 @@
 #include "webrtc_peer_connection.h"
 
 class WebRTCPeerConnectionJS : public WebRTCPeerConnection {
-
 private:
 	int _js_id;
 	ConnectionState _conn_state;

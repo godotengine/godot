@@ -147,7 +147,6 @@ Error AudioDriverALSA::init_device() {
 }
 
 Error AudioDriverALSA::init() {
-
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
@@ -161,11 +160,9 @@ Error AudioDriverALSA::init() {
 }
 
 void AudioDriverALSA::thread_func(void *p_udata) {
-
 	AudioDriverALSA *ad = (AudioDriverALSA *)p_udata;
 
 	while (!ad->exit_thread) {
-
 		ad->lock();
 		ad->start_counting_ticks();
 
@@ -237,22 +234,18 @@ void AudioDriverALSA::thread_func(void *p_udata) {
 }
 
 void AudioDriverALSA::start() {
-
 	active = true;
 }
 
 int AudioDriverALSA::get_mix_rate() const {
-
 	return mix_rate;
 }
 
 AudioDriver::SpeakerMode AudioDriverALSA::get_speaker_mode() const {
-
 	return speaker_mode;
 }
 
 Array AudioDriverALSA::get_device_list() {
-
 	Array list;
 
 	list.push_back("Default");
@@ -285,33 +278,28 @@ Array AudioDriverALSA::get_device_list() {
 }
 
 String AudioDriverALSA::get_device() {
-
 	return device_name;
 }
 
 void AudioDriverALSA::set_device(String device) {
-
 	lock();
 	new_device = device;
 	unlock();
 }
 
 void AudioDriverALSA::lock() {
-
 	if (!thread)
 		return;
 	mutex.lock();
 }
 
 void AudioDriverALSA::unlock() {
-
 	if (!thread)
 		return;
 	mutex.unlock();
 }
 
 void AudioDriverALSA::finish_device() {
-
 	if (pcm_handle) {
 		snd_pcm_close(pcm_handle);
 		pcm_handle = nullptr;
@@ -319,7 +307,6 @@ void AudioDriverALSA::finish_device() {
 }
 
 void AudioDriverALSA::finish() {
-
 	if (thread) {
 		exit_thread = true;
 		Thread::wait_to_finish(thread);

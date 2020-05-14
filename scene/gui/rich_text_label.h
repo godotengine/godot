@@ -35,7 +35,6 @@
 #include "scene/gui/scroll_bar.h"
 
 class RichTextLabel : public Control {
-
 	GDCLASS(RichTextLabel, Control);
 
 public:
@@ -84,7 +83,6 @@ private:
 	struct Item;
 
 	struct Line {
-
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
@@ -352,7 +350,6 @@ private:
 	};
 
 	struct Selection {
-
 		Item *click;
 		int click_char;
 

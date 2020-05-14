@@ -47,16 +47,13 @@ String EditorSpinSlider::get_text_value() const {
 }
 
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (read_only)
 		return;
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-
 		if (mb->get_button_index() == BUTTON_LEFT) {
 			if (mb->is_pressed()) {
-
 				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
 					//there is an updown, so use it.
 					if (mb->get_position().y < get_size().height / 2) {
@@ -66,7 +63,6 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					}
 					return;
 				} else {
-
 					grabbing_spinner_attempt = true;
 					grabbing_spinner_dist_cache = 0;
 					pre_grab_value = get_value();
@@ -74,11 +70,8 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
 				}
 			} else {
-
 				if (grabbing_spinner_attempt) {
-
 					if (grabbing_spinner) {
-
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
 						update();
@@ -91,7 +84,6 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-
 			if (grabber->is_visible())
 				call_deferred("update");
 		}
@@ -99,9 +91,7 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-
 		if (grabbing_spinner_attempt) {
-
 			double diff_x = mm->get_relative().x;
 			if (mm->get_shift() && grabbing_spinner) {
 				diff_x *= 0.1;
@@ -150,12 +140,10 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (grabbing_grabber) {
 		if (mb.is_valid()) {
-
 			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
 				set_value(get_value() + get_step());
 				mousewheel_over_grabber = true;
@@ -167,9 +155,7 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
-
 		if (mb->is_pressed()) {
-
 			grabbing_grabber = true;
 			if (!mousewheel_over_grabber) {
 				grabbing_ratio = get_as_ratio();
@@ -193,7 +179,6 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorSpinSlider::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_WM_FOCUS_OUT ||
 			p_what == NOTIFICATION_WM_FOCUS_IN ||
 			p_what == NOTIFICATION_EXIT_TREE) {
@@ -218,7 +203,6 @@ void EditorSpinSlider::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		updown_offset = -1;
 
 		Ref<StyleBox> sb = get_theme_stylebox("normal", "LineEdit");
@@ -324,12 +308,10 @@ void EditorSpinSlider::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_MOUSE_ENTER) {
-
 		mouse_over_spin = true;
 		update();
 	}
 	if (p_what == NOTIFICATION_MOUSE_EXIT) {
-
 		mouse_over_spin = false;
 		update();
 	}
@@ -342,7 +324,6 @@ void EditorSpinSlider::_notification(int p_what) {
 }
 
 Size2 EditorSpinSlider::get_minimum_size() const {
-
 	Ref<StyleBox> sb = get_theme_stylebox("normal", "LineEdit");
 	Ref<Font> font = get_theme_font("font", "LineEdit");
 
@@ -399,7 +380,6 @@ void EditorSpinSlider::_value_input_closed() {
 
 //focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
-
 	// discontinue because the focus_exit was caused by right-click context menu
 	if (value_input->get_menu()->is_visible())
 		return;
@@ -429,7 +409,6 @@ void EditorSpinSlider::_grabber_mouse_exited() {
 }
 
 void EditorSpinSlider::set_read_only(bool p_enable) {
-
 	read_only = p_enable;
 	update();
 }
@@ -439,7 +418,6 @@ bool EditorSpinSlider::is_read_only() const {
 }
 
 void EditorSpinSlider::set_flat(bool p_enable) {
-
 	flat = p_enable;
 	update();
 }
@@ -483,7 +461,6 @@ void EditorSpinSlider::_bind_methods() {
 }
 
 EditorSpinSlider::EditorSpinSlider() {
-
 	flat = false;
 	grabbing_spinner_attempt = false;
 	grabbing_spinner = false;

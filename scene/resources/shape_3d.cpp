@@ -36,11 +36,9 @@
 #include "servers/physics_server_3d.h"
 
 void Shape3D::add_vertices_to_array(Vector<Vector3> &array, const Transform &p_xform) {
-
 	Vector<Vector3> toadd = get_debug_mesh_lines();
 
 	if (toadd.size()) {
-
 		int base = array.size();
 		array.resize(base + toadd.size());
 		Vector3 *w = array.ptrw();
@@ -60,7 +58,6 @@ void Shape3D::set_margin(real_t p_margin) {
 }
 
 Ref<ArrayMesh> Shape3D::get_debug_mesh() {
-
 	if (debug_mesh_cache.is_valid())
 		return debug_mesh_cache;
 
@@ -73,7 +70,6 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 		Vector<Vector3> array;
 		array.resize(lines.size());
 		{
-
 			Vector3 *w = array.ptrw();
 			for (int i = 0; i < lines.size(); i++) {
 				w[i] = lines[i];
@@ -102,7 +98,6 @@ void Shape3D::_update_shape() {
 }
 
 void Shape3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_margin", "margin"), &Shape3D::set_margin);
 	ClassDB::bind_method(D_METHOD("get_margin"), &Shape3D::get_margin);
 

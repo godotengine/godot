@@ -38,7 +38,6 @@
 #include "core/simple_type.h"
 
 class CallableCustomMethodPointerBase : public CallableCustom {
-
 	uint32_t *comp_ptr;
 	uint32_t comp_size;
 	uint32_t h;
@@ -74,7 +73,6 @@ public:
 
 template <class T>
 struct VariantCasterAndValidate {
-
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype)) {
@@ -89,7 +87,6 @@ struct VariantCasterAndValidate {
 
 template <class T>
 struct VariantCasterAndValidate<T &> {
-
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype)) {
@@ -104,7 +101,6 @@ struct VariantCasterAndValidate<T &> {
 
 template <class T>
 struct VariantCasterAndValidate<const T &> {
-
 	static _FORCE_INLINE_ T cast(const Variant **p_args, uint32_t p_arg_idx, Callable::CallError &r_error) {
 		Variant::Type argtype = GetTypeInfo<T>::VARIANT_TYPE;
 		if (!Variant::can_convert_strict(p_args[p_arg_idx]->get_type(), argtype)) {
@@ -163,7 +159,6 @@ void call_with_variant_args(T *p_instance, void (T::*p_method)(P...), const Vari
 
 template <class T, class... P>
 class CallableCustomMethodPointer : public CallableCustomMethodPointerBase {
-
 	struct Data {
 		T *instance;
 		void (T::*method)(P...);
@@ -173,7 +168,6 @@ public:
 	virtual ObjectID get_object() const { return data.instance->get_instance_id(); }
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
-
 		call_with_variant_args(data.instance, data.method, p_arguments, p_argcount, r_call_error);
 	}
 
@@ -246,7 +240,6 @@ void call_with_variant_args_ret(T *p_instance, R (T::*p_method)(P...), const Var
 
 template <class T, class R, class... P>
 class CallableCustomMethodPointerRet : public CallableCustomMethodPointerBase {
-
 	struct Data {
 		T *instance;
 		R(T::*method)
@@ -257,7 +250,6 @@ public:
 	virtual ObjectID get_object() const { return data.instance->get_instance_id(); }
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
-
 		call_with_variant_args_ret(data.instance, data.method, p_arguments, p_argcount, r_return_value, r_call_error);
 	}
 

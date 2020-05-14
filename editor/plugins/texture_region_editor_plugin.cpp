@@ -152,7 +152,6 @@ void TextureRegionEditor::_region_draw() {
 	};
 	Color color = get_theme_color("mono_color", "Editor");
 	for (int i = 0; i < 4; i++) {
-
 		int prev = (i + 3) % 4;
 		int next = (i + 1) % 4;
 
@@ -259,9 +258,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
-
 		if (mb->get_button_index() == BUTTON_LEFT) {
-
 			if (mb->is_pressed()) {
 				if (node_ninepatch || obj_styleBox.is_valid()) {
 					edited_margin = -1;
@@ -421,7 +418,6 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			}
 
 		} else if (mb->get_button_index() == BUTTON_RIGHT && mb->is_pressed()) {
-
 			if (drag) {
 				drag = false;
 				if (edited_margin >= 0) {
@@ -448,15 +444,12 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	Ref<InputEventMouseMotion> mm = p_input;
 
 	if (mm.is_valid()) {
-
 		if (mm->get_button_mask() & BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
-
 			Vector2 dragged(mm->get_relative().x / draw_zoom, mm->get_relative().y / draw_zoom);
 			hscroll->set_value(hscroll->get_value() - dragged.x);
 			vscroll->set_value(vscroll->get_value() - dragged.y);
 
 		} else if (drag) {
-
 			if (edited_margin >= 0) {
 				float new_margin = 0;
 				if (edited_margin == 0)
@@ -788,7 +781,6 @@ bool TextureRegionEditor::is_stylebox() {
 }
 
 bool TextureRegionEditor::is_atlas_texture() {
-
 	return atlas_tex.is_valid();
 }
 
@@ -842,7 +834,6 @@ void TextureRegionEditor::edit(Object *p_obj) {
 }
 
 void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-
 	if (!is_visible())
 		return;
 	if (p_prop == StringName("atlas") || p_prop == StringName("texture"))
@@ -1063,7 +1054,6 @@ void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 }
 
 Dictionary TextureRegionEditorPlugin::get_state() const {
-
 	Dictionary state;
 	state["snap_offset"] = region_editor->snap_offset;
 	state["snap_step"] = region_editor->snap_step;
@@ -1073,7 +1063,6 @@ Dictionary TextureRegionEditorPlugin::get_state() const {
 }
 
 void TextureRegionEditorPlugin::set_state(const Dictionary &p_state) {
-
 	Dictionary state = p_state;
 	if (state.has("snap_step")) {
 		Vector2 s = state["snap_step"];

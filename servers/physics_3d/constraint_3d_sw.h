@@ -34,7 +34,6 @@
 #include "body_3d_sw.h"
 
 class Constraint3DSW {
-
 	Body3DSW **_body_ptr;
 	int _body_count;
 	uint64_t island_step;

@@ -65,7 +65,6 @@ void SoftBodyRenderingServerHandler::prepare(RID p_mesh, int p_surface) {
 }
 
 void SoftBodyRenderingServerHandler::clear() {
-
 	if (mesh.is_valid()) {
 		buffer.resize(0);
 	}
@@ -127,11 +126,9 @@ bool SoftBody3D::_set(const StringName &p_name, const Variant &p_value) {
 	String which = name.get_slicec('/', 0);
 
 	if ("pinned_points" == which) {
-
 		return _set_property_pinned_points_indices(p_value);
 
 	} else if ("attachments" == which) {
-
 		int idx = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
 
@@ -159,7 +156,6 @@ bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 
 	} else if ("attachments" == which) {
-
 		int idx = name.get_slicec('/', 1).to_int();
 		String what = name.get_slicec('/', 2);
 
@@ -170,7 +166,6 @@ bool SoftBody3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
-
 	const int pinned_points_indices_size = pinned_points.size();
 
 	p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, "pinned_points"));
@@ -183,7 +178,6 @@ void SoftBody3D::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 bool SoftBody3D::_set_property_pinned_points_indices(const Array &p_indices) {
-
 	const int p_indices_size = p_indices.size();
 
 	{ // Remove the pined points on physics server that will be removed by resize
@@ -262,9 +256,7 @@ void SoftBody3D::_changed_callback(Object *p_changed, const char *p_prop) {
 void SoftBody3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_WORLD: {
-
 			if (Engine::get_singleton()->is_editor_hint()) {
-
 				add_change_receptor(this);
 			}
 
@@ -278,7 +270,6 @@ void SoftBody3D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-
 			if (Engine::get_singleton()->is_editor_hint()) {
 				_reset_points_offsets();
 				return;
@@ -294,12 +285,10 @@ void SoftBody3D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-
 			_update_pickable();
 
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
-
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, RID());
 
 		} break;
@@ -317,7 +306,6 @@ void SoftBody3D::_notification(int p_what) {
 }
 
 void SoftBody3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_collision_mask", "collision_mask"), &SoftBody3D::set_collision_mask);
 	ClassDB::bind_method(D_METHOD("get_collision_mask"), &SoftBody3D::get_collision_mask);
 
@@ -386,7 +374,6 @@ void SoftBody3D::_bind_methods() {
 }
 
 String SoftBody3D::get_configuration_warning() const {
-
 	String warning = MeshInstance3D::get_configuration_warning();
 
 	if (get_mesh().is_null()) {
@@ -427,7 +414,6 @@ void SoftBody3D::_draw_soft_mesh() {
 		return;
 
 	if (!rendering_server_handler.is_ready()) {
-
 		rendering_server_handler.prepare(get_mesh()->get_rid(), 0);
 
 		/// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
@@ -446,9 +432,7 @@ void SoftBody3D::_draw_soft_mesh() {
 }
 
 void SoftBody3D::prepare_physics_server() {
-
 	if (Engine::get_singleton()->is_editor_hint()) {
-
 		if (get_mesh().is_valid())
 			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		else
@@ -458,12 +442,10 @@ void SoftBody3D::prepare_physics_server() {
 	}
 
 	if (get_mesh().is_valid()) {
-
 		become_mesh_owner();
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, get_mesh());
 		RS::get_singleton()->connect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
 	} else {
-
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, nullptr);
 		if (RS::get_singleton()->is_connected("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh))) {
 			RS::get_singleton()->disconnect("frame_pre_draw", callable_mp(this, &SoftBody3D::_draw_soft_mesh));
@@ -689,19 +671,16 @@ bool SoftBody3D::is_point_pinned(int p_point_index) const {
 }
 
 void SoftBody3D::set_ray_pickable(bool p_ray_pickable) {
-
 	ray_pickable = p_ray_pickable;
 	_update_pickable();
 }
 
 bool SoftBody3D::is_ray_pickable() const {
-
 	return ray_pickable;
 }
 
 SoftBody3D::SoftBody3D() :
 		physics_rid(PhysicsServer3D::get_singleton()->soft_body_create()) {
-
 	PhysicsServer3D::get_singleton()->body_attach_object_instance_id(physics_rid, get_instance_id());
 }
 
@@ -729,7 +708,6 @@ void SoftBody3D::_update_cache_pin_points_datas() {
 
 	PinnedPoint *w = pinned_points.ptrw();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
-
 		if (!w[i].spatial_attachment_path.is_empty()) {
 			w[i].spatial_attachment = Object::cast_to<Node3D>(get_node(w[i].spatial_attachment_path));
 		}
@@ -746,7 +724,6 @@ void SoftBody3D::_pin_point_on_physics_server(int p_point_index, bool pin) {
 void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path) {
 	SoftBody3D::PinnedPoint *pinned_point;
 	if (-1 == _get_pinned_point(p_point_index, pinned_point)) {
-
 		// Create new
 		PinnedPoint pp;
 		pp.point_index = p_point_index;
@@ -760,7 +737,6 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 		pinned_points.push_back(pp);
 
 	} else {
-
 		pinned_point->point_index = p_point_index;
 		pinned_point->spatial_attachment_path = p_spatial_attachment_path;
 
@@ -772,14 +748,12 @@ void SoftBody3D::_add_pinned_point(int p_point_index, const NodePath &p_spatial_
 }
 
 void SoftBody3D::_reset_points_offsets() {
-
 	if (!Engine::get_singleton()->is_editor_hint())
 		return;
 
 	const PinnedPoint *r = pinned_points.ptr();
 	PinnedPoint *w = pinned_points.ptrw();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
-
 		if (!r[i].spatial_attachment)
 			w[i].spatial_attachment = Object::cast_to<Node3D>(get_node(r[i].spatial_attachment_path));
 

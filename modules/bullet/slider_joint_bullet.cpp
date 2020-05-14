@@ -42,7 +42,6 @@
 
 SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB) :
 		JointBullet() {
-
 	Transform scaled_AFrame(frameInA.scaled(rbA->get_body_scale()));
 	scaled_AFrame.basis.rotref_posscale_decomposition(scaled_AFrame.basis);
 
@@ -50,7 +49,6 @@ SliderJointBullet::SliderJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB,
 	G_TO_B(scaled_AFrame, btFrameA);
 
 	if (rbB) {
-
 		Transform scaled_BFrame(frameInB.scaled(rbB->get_body_scale()));
 		scaled_BFrame.basis.rotref_posscale_decomposition(scaled_BFrame.basis);
 

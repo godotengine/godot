@@ -35,7 +35,6 @@
 
 template <bool C, typename T = void>
 struct EnableIf {
-
 	typedef T type;
 };
 
@@ -45,19 +44,16 @@ struct EnableIf<false, T> {
 
 template <typename, typename>
 struct TypesAreSame {
-
 	static bool const value = false;
 };
 
 template <typename A>
 struct TypesAreSame<A, A> {
-
 	static bool const value = true;
 };
 
 template <typename B, typename D>
 struct TypeInherits {
-
 	static D *get_d();
 
 	static char (&test(B *))[1];

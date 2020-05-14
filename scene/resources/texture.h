@@ -51,7 +51,6 @@ public:
 };
 
 class Texture2D : public Texture {
-
 	GDCLASS(Texture2D, Texture);
 	OBJ_SAVE_TYPE(Texture2D); // Saves derived classes with common type so they can be interchanged.
 
@@ -81,7 +80,6 @@ public:
 class BitMap;
 
 class ImageTexture : public Texture2D {
-
 	GDCLASS(ImageTexture, Texture2D);
 	RES_BASE_EXTENSION("tex");
 
@@ -133,7 +131,6 @@ public:
 };
 
 class StreamTexture2D : public Texture2D {
-
 	GDCLASS(StreamTexture2D, Texture2D);
 
 public:
@@ -220,7 +217,6 @@ public:
 };
 
 class AtlasTexture : public Texture2D {
-
 	GDCLASS(AtlasTexture, Texture2D);
 	RES_BASE_EXTENSION("atlastex");
 
@@ -264,7 +260,6 @@ public:
 class Mesh;
 
 class MeshTexture : public Texture2D {
-
 	GDCLASS(MeshTexture, Texture2D);
 	RES_BASE_EXTENSION("meshtex");
 
@@ -302,13 +297,11 @@ public:
 };
 
 class LargeTexture : public Texture2D {
-
 	GDCLASS(LargeTexture, Texture2D);
 	RES_BASE_EXTENSION("largetex");
 
 protected:
 	struct Piece {
-
 		Point2 offset;
 		Ref<Texture2D> texture;
 	};
@@ -373,7 +366,6 @@ public:
 VARIANT_ENUM_CAST(TextureLayered::LayeredType)
 
 class ImageTextureLayered : public TextureLayered {
-
 	GDCLASS(ImageTextureLayered, TextureLayered);
 
 	LayeredType layered_type;
@@ -413,7 +405,6 @@ public:
 };
 
 class Texture2DArray : public ImageTextureLayered {
-
 	GDCLASS(Texture2DArray, ImageTextureLayered)
 public:
 	Texture2DArray() :
@@ -421,7 +412,6 @@ public:
 };
 
 class Cubemap : public ImageTextureLayered {
-
 	GDCLASS(Cubemap, ImageTextureLayered);
 
 public:
@@ -430,7 +420,6 @@ public:
 };
 
 class CubemapArray : public ImageTextureLayered {
-
 	GDCLASS(CubemapArray, ImageTextureLayered);
 
 public:
@@ -439,7 +428,6 @@ public:
 };
 
 class StreamTextureLayered : public TextureLayered {
-
 	GDCLASS(StreamTextureLayered, TextureLayered);
 
 public:
@@ -498,7 +486,6 @@ public:
 };
 
 class StreamTexture2DArray : public StreamTextureLayered {
-
 	GDCLASS(StreamTexture2DArray, StreamTextureLayered)
 public:
 	StreamTexture2DArray() :
@@ -506,7 +493,6 @@ public:
 };
 
 class StreamCubemap : public StreamTextureLayered {
-
 	GDCLASS(StreamCubemap, StreamTextureLayered);
 
 public:
@@ -515,7 +501,6 @@ public:
 };
 
 class StreamCubemapArray : public StreamTextureLayered {
-
 	GDCLASS(StreamCubemapArray, StreamTextureLayered);
 
 public:
@@ -532,7 +517,6 @@ public:
 };
 
 class CurveTexture : public Texture2D {
-
 	GDCLASS(CurveTexture, Texture2D);
 	RES_BASE_EXTENSION("curvetex")
 
@@ -582,7 +566,6 @@ class GradientTexture : public Texture2D {
 
 public:
 	struct Point {
-
 		float offset;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
@@ -659,7 +642,6 @@ private:
 	RID proxy;
 
 	struct Frame {
-
 		Ref<Texture2D> texture;
 		float delay_sec;
 

@@ -37,7 +37,6 @@
 #include "scene/gui/spin_box.h"
 
 class MultiMeshEditor : public Control {
-
 	GDCLASS(MultiMeshEditor, Control);
 
 	friend class MultiMeshEditorPlugin;
@@ -83,7 +82,6 @@ public:
 };
 
 class MultiMeshEditorPlugin : public EditorPlugin {
-
 	GDCLASS(MultiMeshEditorPlugin, EditorPlugin);
 
 	MultiMeshEditor *multimesh_editor;

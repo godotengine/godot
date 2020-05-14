@@ -63,22 +63,18 @@ _ALWAYS_INLINE_ uint32_t _atomic_conditional_increment_impl(volatile uint32_t *p
 }
 
 _ALWAYS_INLINE_ uint32_t _atomic_decrement_impl(volatile uint32_t *pw) {
-
 	return InterlockedDecrement((LONG volatile *)pw);
 }
 
 _ALWAYS_INLINE_ uint32_t _atomic_increment_impl(volatile uint32_t *pw) {
-
 	return InterlockedIncrement((LONG volatile *)pw);
 }
 
 _ALWAYS_INLINE_ uint32_t _atomic_sub_impl(volatile uint32_t *pw, volatile uint32_t val) {
-
 	return InterlockedExchangeAdd((LONG volatile *)pw, -(int32_t)val) - val;
 }
 
 _ALWAYS_INLINE_ uint32_t _atomic_add_impl(volatile uint32_t *pw, volatile uint32_t val) {
-
 	return InterlockedAdd((LONG volatile *)pw, val);
 }
 
@@ -93,22 +89,18 @@ _ALWAYS_INLINE_ uint64_t _atomic_conditional_increment_impl(volatile uint64_t *p
 }
 
 _ALWAYS_INLINE_ uint64_t _atomic_decrement_impl(volatile uint64_t *pw) {
-
 	return InterlockedDecrement64((LONGLONG volatile *)pw);
 }
 
 _ALWAYS_INLINE_ uint64_t _atomic_increment_impl(volatile uint64_t *pw) {
-
 	return InterlockedIncrement64((LONGLONG volatile *)pw);
 }
 
 _ALWAYS_INLINE_ uint64_t _atomic_sub_impl(volatile uint64_t *pw, volatile uint64_t val) {
-
 	return InterlockedExchangeAdd64((LONGLONG volatile *)pw, -(int64_t)val) - val;
 }
 
 _ALWAYS_INLINE_ uint64_t _atomic_add_impl(volatile uint64_t *pw, volatile uint64_t val) {
-
 	return InterlockedAdd64((LONGLONG volatile *)pw, val);
 }
 

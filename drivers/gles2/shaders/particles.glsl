@@ -10,7 +10,6 @@ layout(location = 4) in highp vec4 xform_2;
 layout(location = 5) in highp vec4 xform_3;
 
 struct Attractor {
-
 	vec3 pos;
 	vec3 dir;
 	float radius;
@@ -64,7 +63,6 @@ VERTEX_SHADER_GLOBALS
 /* clang-format on */
 
 uint hash(uint x) {
-
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
 	x = ((x >> uint(16)) ^ x) * uint(0x45d9f3b);
 	x = (x >> uint(16)) ^ x;
@@ -72,7 +70,6 @@ uint hash(uint x) {
 }
 
 void main() {
-
 #ifdef PARTICLES_COPY
 
 	out_color = color;
@@ -183,10 +180,8 @@ VERTEX_SHADER_CODE
 #if !defined(DISABLE_FORCE)
 
 		if (false) {
-
 			vec3 force = vec3(0.0);
 			for (int i = 0; i < attractor_count; i++) {
-
 				vec3 rel_vec = xform[3].xyz - attractors[i].pos;
 				float dist = length(rel_vec);
 				if (attractors[i].radius < dist)
@@ -214,7 +209,6 @@ VERTEX_SHADER_CODE
 #if !defined(DISABLE_VELOCITY)
 
 		if (true) {
-
 			xform[3].xyz += out_velocity_active.xyz * local_delta;
 		}
 #endif

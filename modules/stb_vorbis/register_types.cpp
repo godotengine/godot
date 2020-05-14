@@ -38,7 +38,6 @@
 #endif
 
 void register_stb_vorbis_types() {
-
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
 		Ref<ResourceImporterOGGVorbis> ogg_import;

@@ -42,7 +42,6 @@
 #include "scene/gui/tree.h"
 
 class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeStateMachine> state_machine;

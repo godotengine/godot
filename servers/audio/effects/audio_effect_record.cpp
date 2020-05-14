@@ -101,7 +101,6 @@ void AudioEffectRecordInstance::_io_store_buffer() {
 }
 
 void AudioEffectRecordInstance::_thread_callback(void *_instance) {
-
 	AudioEffectRecordInstance *aeri = reinterpret_cast<AudioEffectRecordInstance *>(_instance);
 
 	aeri->_io_thread_process();
@@ -124,7 +123,6 @@ void AudioEffectRecordInstance::init() {
 }
 
 void AudioEffectRecordInstance::finish() {
-
 #ifdef NO_THREADS
 	AudioServer::get_singleton()->remove_update_callback(&AudioEffectRecordInstance::_update, this);
 #else
@@ -135,7 +133,6 @@ void AudioEffectRecordInstance::finish() {
 }
 
 AudioEffectRecordInstance::~AudioEffectRecordInstance() {
-
 	finish();
 }
 

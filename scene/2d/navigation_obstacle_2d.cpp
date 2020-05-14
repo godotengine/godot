@@ -36,7 +36,6 @@
 #include "servers/navigation_server_2d.h"
 
 void NavigationObstacle2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationObstacle2D::set_navigation_node);
 	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationObstacle2D::get_navigation_node);
 }
@@ -44,7 +43,6 @@ void NavigationObstacle2D::_bind_methods() {
 void NavigationObstacle2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			update_agent_shape();
 
 			// Search the navigation node and set it

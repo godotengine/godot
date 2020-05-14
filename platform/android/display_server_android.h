@@ -52,7 +52,6 @@ public:
 	};
 
 	struct JoypadEvent {
-
 		int device;
 		int type;
 		int index;

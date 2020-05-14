@@ -36,7 +36,6 @@
 #include "editor/debugger/editor_debugger_server.h"
 
 class EditorDebuggerServerWebSocket : public EditorDebuggerServer {
-
 	GDCLASS(EditorDebuggerServerWebSocket, EditorDebuggerServer);
 
 private:

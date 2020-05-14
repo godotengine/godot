@@ -41,12 +41,10 @@
 */
 
 class AStar : public Reference {
-
 	GDCLASS(AStar, Reference);
 	friend class AStar2D;
 
 	struct Point {
-
 		Point() {}
 
 		int id;

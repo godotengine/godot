@@ -40,7 +40,6 @@
 class CollisionObject2D;
 
 class TileMap : public Node2D {
-
 	GDCLASS(TileMap, Node2D);
 
 public:
@@ -82,7 +81,6 @@ private:
 	Navigation2D *navigation;
 
 	union PosKey {
-
 		struct {
 			int16_t x;
 			int16_t y;
@@ -112,7 +110,6 @@ private:
 	};
 
 	union Cell {
-
 		struct {
 			int32_t id : 24;
 			bool flip_h : 1;
@@ -130,7 +127,6 @@ private:
 	List<PosKey> dirty_bitmask;
 
 	struct Quadrant {
-
 		Vector2 pos;
 		List<RID> canvas_items;
 		RID body;

@@ -35,7 +35,6 @@
 #define PARTICLES_MATERIAL_H
 
 class ParticlesMaterial : public Material {
-
 	GDCLASS(ParticlesMaterial, Material);
 
 public:
@@ -74,7 +73,6 @@ public:
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t texture_mask : 16;
 			uint32_t texture_color : 1;
@@ -103,7 +101,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		for (int i = 0; i < PARAM_MAX; i++) {

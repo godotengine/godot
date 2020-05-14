@@ -43,7 +43,6 @@ class JavaObject;
 #endif
 
 class JavaClass : public Reference {
-
 	GDCLASS(JavaClass, Reference);
 
 #ifdef ANDROID_ENABLED
@@ -68,7 +67,6 @@ class JavaClass : public Reference {
 	Map<StringName, Variant> constant_map;
 
 	struct MethodInfo {
-
 		bool _static;
 		Vector<uint32_t> param_types;
 		Vector<StringName> param_sigs;
@@ -77,12 +75,10 @@ class JavaClass : public Reference {
 	};
 
 	_FORCE_INLINE_ static void _convert_to_variant_type(int p_sig, Variant::Type &r_type, float &likelihood) {
-
 		likelihood = 1.0;
 		r_type = Variant::NIL;
 
 		switch (p_sig) {
-
 			case ARG_TYPE_VOID:
 				r_type = Variant::NIL;
 				break;
@@ -190,7 +186,6 @@ public:
 };
 
 class JavaObject : public Reference {
-
 	GDCLASS(JavaObject, Reference);
 
 #ifdef ANDROID_ENABLED
@@ -210,7 +205,6 @@ public:
 };
 
 class JavaClassWrapper : public Object {
-
 	GDCLASS(JavaClassWrapper, Object);
 
 #ifdef ANDROID_ENABLED

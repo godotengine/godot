@@ -55,11 +55,9 @@ void AcceptDialog::_parent_focused() {
 }
 
 void AcceptDialog::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-
 				get_ok()->grab_focus();
 				_update_child_rects();
 				parent_visible = get_parent_visible_window();
@@ -98,12 +96,10 @@ void AcceptDialog::_notification(int p_what) {
 }
 
 void AcceptDialog::_text_entered(const String &p_text) {
-
 	_ok_pressed();
 }
 
 void AcceptDialog::_ok_pressed() {
-
 	if (hide_on_ok)
 		set_visible(false);
 	ok_pressed();
@@ -111,7 +107,6 @@ void AcceptDialog::_ok_pressed() {
 }
 
 void AcceptDialog::_cancel_pressed() {
-
 	Window *parent_window = parent_visible;
 	if (parent_visible) {
 		parent_visible->disconnect("focus_entered", callable_mp(this, &AcceptDialog::_parent_focused));
@@ -130,11 +125,9 @@ void AcceptDialog::_cancel_pressed() {
 }
 
 String AcceptDialog::get_text() const {
-
 	return label->get_text();
 }
 void AcceptDialog::set_text(String p_text) {
-
 	label->set_text(p_text);
 	child_controls_changed();
 	if (is_visible()) {
@@ -143,25 +136,20 @@ void AcceptDialog::set_text(String p_text) {
 }
 
 void AcceptDialog::set_hide_on_ok(bool p_hide) {
-
 	hide_on_ok = p_hide;
 }
 bool AcceptDialog::get_hide_on_ok() const {
-
 	return hide_on_ok;
 }
 
 void AcceptDialog::set_autowrap(bool p_autowrap) {
-
 	label->set_autowrap(p_autowrap);
 }
 bool AcceptDialog::has_autowrap() {
-
 	return label->has_autowrap();
 }
 
 void AcceptDialog::register_text_enter(Node *p_line_edit) {
-
 	ERR_FAIL_NULL(p_line_edit);
 	LineEdit *line_edit = Object::cast_to<LineEdit>(p_line_edit);
 	if (line_edit)
@@ -169,7 +157,6 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 }
 
 void AcceptDialog::_update_child_rects() {
-
 	Size2 label_size = label->get_minimum_size();
 	if (label->get_text().empty()) {
 		label_size.height = 0;
@@ -204,7 +191,6 @@ void AcceptDialog::_update_child_rects() {
 }
 
 Size2 AcceptDialog::_get_contents_minimum_size() const {
-
 	int margin = hbc->get_theme_constant("margin", "Dialogs");
 	Size2 minsize = label->get_combined_minimum_size();
 
@@ -233,20 +219,17 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 }
 
 void AcceptDialog::_custom_action(const String &p_action) {
-
 	emit_signal("custom_action", p_action);
 	custom_action(p_action);
 }
 
 Button *AcceptDialog::add_button(const String &p_text, bool p_right, const String &p_action) {
-
 	Button *button = memnew(Button);
 	button->set_text(p_text);
 	if (p_right) {
 		hbc->add_child(button);
 		hbc->add_spacer();
 	} else {
-
 		hbc->add_child(button);
 		hbc->move_child(button, 0);
 		hbc->add_spacer(true);
@@ -260,7 +243,6 @@ Button *AcceptDialog::add_button(const String &p_text, bool p_right, const Strin
 }
 
 Button *AcceptDialog::add_cancel(const String &p_cancel) {
-
 	String c = p_cancel;
 	if (p_cancel == "")
 		c = RTR("Cancel");
@@ -270,7 +252,6 @@ Button *AcceptDialog::add_cancel(const String &p_cancel) {
 }
 
 void AcceptDialog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_ok"), &AcceptDialog::get_ok);
 	ClassDB::bind_method(D_METHOD("get_label"), &AcceptDialog::get_label);
 	ClassDB::bind_method(D_METHOD("set_hide_on_ok", "enabled"), &AcceptDialog::set_hide_on_ok);
@@ -295,12 +276,10 @@ void AcceptDialog::_bind_methods() {
 
 bool AcceptDialog::swap_ok_cancel = false;
 void AcceptDialog::set_swap_ok_cancel(bool p_swap) {
-
 	swap_ok_cancel = p_swap;
 }
 
 AcceptDialog::AcceptDialog() {
-
 	parent_visible = nullptr;
 
 	set_wrap_controls(true);
@@ -344,17 +323,14 @@ AcceptDialog::~AcceptDialog() {
 // ConfirmationDialog
 
 void ConfirmationDialog::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_cancel"), &ConfirmationDialog::get_cancel);
 }
 
 Button *ConfirmationDialog::get_cancel() {
-
 	return cancel;
 }
 
 ConfirmationDialog::ConfirmationDialog() {
-
 	set_title(RTR("Please Confirm..."));
 #ifdef TOOLS_ENABLED
 	set_min_size(Size2(200, 70) * EDSCALE);

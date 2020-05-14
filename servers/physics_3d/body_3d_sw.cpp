@@ -33,13 +33,11 @@
 #include "space_3d_sw.h"
 
 void Body3DSW::_update_inertia() {
-
 	if (get_space() && !inertia_update_list.in_list())
 		get_space()->body_add_to_inertia_update_list(&inertia_update_list);
 }
 
 void Body3DSW::_update_transform_dependant() {
-
 	center_of_mass = get_transform().basis.xform(center_of_mass_local);
 	principal_inertia_axes = get_transform().basis * principal_inertia_axes_local;
 
@@ -52,18 +50,14 @@ void Body3DSW::_update_transform_dependant() {
 }
 
 void Body3DSW::update_inertias() {
-
 	//update shapes and motions
 
 	switch (mode) {
-
 		case PhysicsServer3D::BODY_MODE_RIGID: {
-
 			//update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
-
 				total_area += get_shape_area(i);
 			}
 
@@ -86,7 +80,6 @@ void Body3DSW::update_inertias() {
 			inertia_tensor.set_zero();
 
 			for (int i = 0; i < get_shape_count(); i++) {
-
 				if (is_shape_disabled(i)) {
 					continue;
 				}
@@ -121,12 +114,10 @@ void Body3DSW::update_inertias() {
 
 		case PhysicsServer3D::BODY_MODE_KINEMATIC:
 		case PhysicsServer3D::BODY_MODE_STATIC: {
-
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 0;
 		} break;
 		case PhysicsServer3D::BODY_MODE_CHARACTER: {
-
 			_inv_inertia_tensor.set_zero();
 			_inv_mass = 1.0 / mass;
 
@@ -139,7 +130,6 @@ void Body3DSW::update_inertias() {
 }
 
 void Body3DSW::set_active(bool p_active) {
-
 	if (active == p_active)
 		return;
 
@@ -169,14 +159,11 @@ void Body3DSW::set_active(bool p_active) {
 }
 
 void Body3DSW::set_param(PhysicsServer3D::BodyParameter p_param, real_t p_value) {
-
 	switch (p_param) {
 		case PhysicsServer3D::BODY_PARAM_BOUNCE: {
-
 			bounce = p_value;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_FRICTION: {
-
 			friction = p_value;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_MASS: {
@@ -189,11 +176,9 @@ void Body3DSW::set_param(PhysicsServer3D::BodyParameter p_param, real_t p_value)
 			gravity_scale = p_value;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
-
 			linear_damp = p_value;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP: {
-
 			angular_damp = p_value;
 		} break;
 		default: {
@@ -202,14 +187,11 @@ void Body3DSW::set_param(PhysicsServer3D::BodyParameter p_param, real_t p_value)
 }
 
 real_t Body3DSW::get_param(PhysicsServer3D::BodyParameter p_param) const {
-
 	switch (p_param) {
 		case PhysicsServer3D::BODY_PARAM_BOUNCE: {
-
 			return bounce;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_FRICTION: {
-
 			return friction;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_MASS: {
@@ -219,11 +201,9 @@ real_t Body3DSW::get_param(PhysicsServer3D::BodyParameter p_param) const {
 			return gravity_scale;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_LINEAR_DAMP: {
-
 			return linear_damp;
 		} break;
 		case PhysicsServer3D::BODY_PARAM_ANGULAR_DAMP: {
-
 			return angular_damp;
 		} break;
 
@@ -235,7 +215,6 @@ real_t Body3DSW::get_param(PhysicsServer3D::BodyParameter p_param) const {
 }
 
 void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
-
 	PhysicsServer3D::BodyMode prev = mode;
 	mode = p_mode;
 
@@ -243,7 +222,6 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 		//CLEAR UP EVERYTHING IN CASE IT NOT WORKS!
 		case PhysicsServer3D::BODY_MODE_STATIC:
 		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
-
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass = 0;
 			_set_static(p_mode == PhysicsServer3D::BODY_MODE_STATIC);
@@ -257,14 +235,12 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 
 		} break;
 		case PhysicsServer3D::BODY_MODE_RIGID: {
-
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
 			set_active(true);
 
 		} break;
 		case PhysicsServer3D::BODY_MODE_CHARACTER: {
-
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
 			_set_static(false);
 			set_active(true);
@@ -279,20 +255,16 @@ void Body3DSW::set_mode(PhysicsServer3D::BodyMode p_mode) {
 	*/
 }
 PhysicsServer3D::BodyMode Body3DSW::get_mode() const {
-
 	return mode;
 }
 
 void Body3DSW::_shapes_changed() {
-
 	_update_inertia();
 }
 
 void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_variant) {
-
 	switch (p_state) {
 		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
-
 			if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 				new_transform = p_variant;
 				//wakeup_neighbours();
@@ -320,7 +292,6 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 
 		} break;
 		case PhysicsServer3D::BODY_STATE_LINEAR_VELOCITY: {
-
 			/*
 			if (mode==PhysicsServer3D::BODY_MODE_STATIC)
 				break;
@@ -361,7 +332,6 @@ void Body3DSW::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_va
 	}
 }
 Variant Body3DSW::get_state(PhysicsServer3D::BodyState p_state) const {
-
 	switch (p_state) {
 		case PhysicsServer3D::BODY_STATE_TRANSFORM: {
 			return get_transform();
@@ -384,9 +354,7 @@ Variant Body3DSW::get_state(PhysicsServer3D::BodyState p_state) const {
 }
 
 void Body3DSW::set_space(Space3DSW *p_space) {
-
 	if (get_space()) {
-
 		if (inertia_update_list.in_list())
 			get_space()->body_remove_from_inertia_update_list(&inertia_update_list);
 		if (active_list.in_list())
@@ -398,7 +366,6 @@ void Body3DSW::set_space(Space3DSW *p_space) {
 	_set_space(p_space);
 
 	if (get_space()) {
-
 		_update_inertia();
 		if (active)
 			get_space()->body_add_to_active_list(&active_list);
@@ -415,7 +382,6 @@ void Body3DSW::set_space(Space3DSW *p_space) {
 }
 
 void Body3DSW::_compute_area_gravity_and_dampenings(const Area3DSW *p_area) {
-
 	if (p_area->is_gravity_point()) {
 		if (p_area->get_gravity_distance_scale() > 0) {
 			Vector3 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
@@ -444,7 +410,6 @@ bool Body3DSW::is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const {
 }
 
 void Body3DSW::integrate_forces(real_t p_step) {
-
 	if (mode == PhysicsServer3D::BODY_MODE_STATIC)
 		return;
 
@@ -509,7 +474,6 @@ void Body3DSW::integrate_forces(real_t p_step) {
 	bool do_motion = false;
 
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
-
 		//compute motion, angular and etc. velocities from prev transform
 		linear_velocity = (new_transform.origin - get_transform().origin) / p_step;
 
@@ -574,7 +538,6 @@ void Body3DSW::integrate_forces(real_t p_step) {
 }
 
 void Body3DSW::integrate_velocities(real_t p_step) {
-
 	if (mode == PhysicsServer3D::BODY_MODE_STATIC)
 		return;
 
@@ -598,7 +561,6 @@ void Body3DSW::integrate_velocities(real_t p_step) {
 	}
 
 	if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
-
 		_set_transform(new_transform, false);
 		_set_inv_transform(new_transform.affine_inverse());
 		if (contacts.size() == 0 && linear_velocity == Vector3() && angular_velocity == Vector3())
@@ -676,15 +638,12 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 */
 
 void Body3DSW::wakeup_neighbours() {
-
 	for (Map<Constraint3DSW *, int>::Element *E = constraint_map.front(); E; E = E->next()) {
-
 		const Constraint3DSW *c = E->key();
 		Body3DSW **n = c->get_body_ptr();
 		int bc = c->get_body_count();
 
 		for (int i = 0; i < bc; i++) {
-
 			if (i == E->get())
 				continue;
 			Body3DSW *b = n[i];
@@ -698,9 +657,7 @@ void Body3DSW::wakeup_neighbours() {
 }
 
 void Body3DSW::call_queries() {
-
 	if (fi_callback) {
-
 		PhysicsDirectBodyState3DSW *dbs = PhysicsDirectBodyState3DSW::singleton;
 		dbs->body = this;
 
@@ -708,7 +665,6 @@ void Body3DSW::call_queries() {
 
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
 		if (!obj) {
-
 			set_force_integration_callback(ObjectID(), StringName());
 		} else {
 			const Variant *vp[2] = { &v, &fi_callback->udata };
@@ -721,7 +677,6 @@ void Body3DSW::call_queries() {
 }
 
 bool Body3DSW::sleep_test(real_t p_step) {
-
 	if (mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC)
 		return true; //
 	else if (mode == PhysicsServer3D::BODY_MODE_CHARACTER)
@@ -730,27 +685,22 @@ bool Body3DSW::sleep_test(real_t p_step) {
 		return false;
 
 	if (Math::abs(angular_velocity.length()) < get_space()->get_body_angular_velocity_sleep_threshold() && Math::abs(linear_velocity.length_squared()) < get_space()->get_body_linear_velocity_sleep_threshold() * get_space()->get_body_linear_velocity_sleep_threshold()) {
-
 		still_time += p_step;
 
 		return still_time > get_space()->get_body_time_to_sleep();
 	} else {
-
 		still_time = 0; //maybe this should be set to 0 on set_active?
 		return false;
 	}
 }
 
 void Body3DSW::set_force_integration_callback(ObjectID p_id, const StringName &p_method, const Variant &p_udata) {
-
 	if (fi_callback) {
-
 		memdelete(fi_callback);
 		fi_callback = nullptr;
 	}
 
 	if (p_id.is_valid()) {
-
 		fi_callback = memnew(ForceIntegrationCallback);
 		fi_callback->id = p_id;
 		fi_callback->method = p_method;
@@ -768,7 +718,6 @@ Body3DSW::Body3DSW() :
 		active_list(this),
 		inertia_update_list(this),
 		direct_state_query_list(this) {
-
 	mode = PhysicsServer3D::BODY_MODE_RIGID;
 	active = true;
 
@@ -801,7 +750,6 @@ Body3DSW::Body3DSW() :
 }
 
 Body3DSW::~Body3DSW() {
-
 	if (fi_callback)
 		memdelete(fi_callback);
 }
@@ -809,6 +757,5 @@ Body3DSW::~Body3DSW() {
 PhysicsDirectBodyState3DSW *PhysicsDirectBodyState3DSW::singleton = nullptr;
 
 PhysicsDirectSpaceState3D *PhysicsDirectBodyState3DSW::get_space_state() {
-
 	return body->get_space()->get_direct_state();
 }

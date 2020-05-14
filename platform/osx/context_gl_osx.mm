@@ -33,42 +33,34 @@
 #if defined(OPENGL_ENABLED) || defined(GLES_ENABLED)
 
 void ContextGL_OSX::release_current() {
-
 	[NSOpenGLContext clearCurrentContext];
 }
 
 void ContextGL_OSX::make_current() {
-
 	[context makeCurrentContext];
 }
 
 void ContextGL_OSX::update() {
-
 	[context update];
 }
 
 void ContextGL_OSX::set_opacity(GLint p_opacity) {
-
 	[context setValues:&p_opacity forParameter:NSOpenGLCPSurfaceOpacity];
 }
 
 int ContextGL_OSX::get_window_width() {
-
 	return OS::get_singleton()->get_video_mode().width;
 }
 
 int ContextGL_OSX::get_window_height() {
-
 	return OS::get_singleton()->get_video_mode().height;
 }
 
 void ContextGL_OSX::swap_buffers() {
-
 	[context flushBuffer];
 }
 
 void ContextGL_OSX::set_use_vsync(bool p_use) {
-
 	CGLContextObj ctx = CGLGetCurrentContext();
 	if (ctx) {
 		GLint swapInterval = p_use ? 1 : 0;
@@ -78,12 +70,10 @@ void ContextGL_OSX::set_use_vsync(bool p_use) {
 }
 
 bool ContextGL_OSX::is_using_vsync() const {
-
 	return use_vsync;
 }
 
 Error ContextGL_OSX::initialize() {
-
 	framework = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.opengl"));
 	ERR_FAIL_COND_V(!framework, ERR_CANT_CREATE);
 
@@ -161,7 +151,6 @@ Error ContextGL_OSX::initialize() {
 }
 
 ContextGL_OSX::ContextGL_OSX(id p_view, bool p_opengl_3_context) {
-
 	opengl_3_context = p_opengl_3_context;
 	window_view = p_view;
 	use_vsync = false;

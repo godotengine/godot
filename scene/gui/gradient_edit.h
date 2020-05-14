@@ -37,7 +37,6 @@
 #include "scene/resources/gradient.h"
 
 class GradientEdit : public Control {
-
 	GDCLASS(GradientEdit, Control);
 
 	PopupPanel *popup;

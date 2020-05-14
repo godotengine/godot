@@ -42,7 +42,6 @@
 /// Ray shape around z axis
 ATTRIBUTE_ALIGNED16(class)
 btRayShape : public btConvexInternalShape {
-
 	btScalar m_length;
 	bool slipsOnSlope;
 	/// The default axis is the z

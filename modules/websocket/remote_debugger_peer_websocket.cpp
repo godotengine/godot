@@ -33,7 +33,6 @@
 #include "core/project_settings.h"
 
 Error RemoteDebuggerPeerWebSocket::connect_to_host(const String &p_uri) {
-
 	Vector<String> protocols;
 	protocols.push_back("binary"); // Compatibility for emscripten TCP-to-WebSocket.
 
@@ -41,7 +40,6 @@ Error RemoteDebuggerPeerWebSocket::connect_to_host(const String &p_uri) {
 	ws_client->poll();
 
 	if (ws_client->get_connection_status() == WebSocketClient::CONNECTION_DISCONNECTED) {
-
 		ERR_PRINT("Remote Debugger: Unable to connect. Status: " + String::num(ws_client->get_connection_status()) + ".");
 		return FAILED;
 	}

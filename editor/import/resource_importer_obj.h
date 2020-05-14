@@ -34,7 +34,6 @@
 #include "resource_importer_scene.h"
 
 class EditorOBJImporter : public EditorSceneImporter {
-
 	GDCLASS(EditorOBJImporter, EditorSceneImporter);
 
 public:

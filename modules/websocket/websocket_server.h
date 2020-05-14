@@ -37,7 +37,6 @@
 #include "websocket_peer.h"
 
 class WebSocketServer : public WebSocketMultiplayerPeer {
-
 	GDCLASS(WebSocketServer, WebSocketMultiplayerPeer);
 	GDCICLASS(WebSocketServer);
 

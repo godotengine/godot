@@ -34,7 +34,6 @@
 #include "servers/audio_server.h"
 
 class AudioDriverJavaScript : public AudioDriver {
-
 	float *internal_buffer;
 
 	int _driver_id;

@@ -35,7 +35,6 @@
 #include "webrtc_peer_connection.h"
 
 class WebRTCMultiplayer : public NetworkedMultiplayerPeer {
-
 	GDCLASS(WebRTCMultiplayer, NetworkedMultiplayerPeer);
 
 protected:
@@ -50,7 +49,6 @@ private:
 	};
 
 	class ConnectedPeer : public Reference {
-
 	public:
 		Ref<WebRTCPeerConnection> connection;
 		List<Ref<WebRTCDataChannel>> channels;

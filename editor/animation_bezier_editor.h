@@ -34,7 +34,6 @@
 #include "animation_track_editor.h"
 
 class AnimationBezierTrackEdit : public Control {
-
 	GDCLASS(AnimationBezierTrackEdit, Control);
 
 	enum HandleMode {
@@ -112,7 +111,6 @@ class AnimationBezierTrackEdit : public Control {
 	Vector2 menu_insert_key;
 
 	struct AnimMoveRestore {
-
 		int track;
 		float time;
 		Variant key;

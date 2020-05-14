@@ -149,7 +149,6 @@ public:
 			z = 0;
 			w = 0;
 		} else {
-
 			real_t s = Math::sqrt((1.0 + d) * 2.0);
 			real_t rs = 1.0 / s;
 
@@ -191,7 +190,6 @@ void Quat::operator*=(const real_t &s) {
 }
 
 void Quat::operator/=(const real_t &s) {
-
 	*this *= 1.0 / s;
 }
 

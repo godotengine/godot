@@ -37,7 +37,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 abstract public class HandlePurchaseTask {
-
 	private Activity context;
 
 	public HandlePurchaseTask(Activity context) {

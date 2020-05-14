@@ -63,22 +63,18 @@ void Skeleton3DEditor::create_physical_skeleton() {
 	bones_infos.resize(bc);
 
 	for (int bone_id = 0; bc > bone_id; ++bone_id) {
-
 		const int parent = skeleton->get_bone_parent(bone_id);
 
 		if (parent < 0) {
-
 			bones_infos.write[bone_id].relative_rest = skeleton->get_bone_rest(bone_id);
 
 		} else {
-
 			const int parent_parent = skeleton->get_bone_parent(parent);
 
 			bones_infos.write[bone_id].relative_rest = bones_infos[parent].relative_rest * skeleton->get_bone_rest(bone_id);
 
 			/// create physical bone on parent
 			if (!bones_infos[parent].physical_bone) {
-
 				bones_infos.write[parent].physical_bone = create_physical_bone(parent, bone_id, bones_infos);
 
 				ur->create_action(TTR("Create physical bones"));
@@ -93,7 +89,6 @@ void Skeleton3DEditor::create_physical_skeleton() {
 
 				/// Create joint between parent of parent
 				if (-1 != parent_parent) {
-
 					bones_infos[parent].physical_bone->set_joint_type(PhysicalBone3D::JOINT_TYPE_PIN);
 				}
 			}
@@ -102,7 +97,6 @@ void Skeleton3DEditor::create_physical_skeleton() {
 }
 
 PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos) {
-
 	const Transform child_rest = skeleton->get_bone_rest(bone_child_id);
 
 	const real_t half_height(child_rest.origin.length() * 0.5);
@@ -131,7 +125,6 @@ PhysicalBone3D *Skeleton3DEditor::create_physical_bone(int bone_id, int bone_chi
 }
 
 void Skeleton3DEditor::edit(Skeleton3D *p_node) {
-
 	skeleton = p_node;
 }
 
@@ -142,7 +135,6 @@ void Skeleton3DEditor::_notification(int p_what) {
 }
 
 void Skeleton3DEditor::_node_removed(Node *p_node) {
-
 	if (p_node == skeleton) {
 		skeleton = nullptr;
 		options->hide();
@@ -180,7 +172,6 @@ void Skeleton3DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		skeleton_editor->options->show();
 	} else {
-
 		skeleton_editor->options->hide();
 		skeleton_editor->edit(nullptr);
 	}

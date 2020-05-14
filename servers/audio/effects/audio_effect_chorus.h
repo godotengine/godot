@@ -73,7 +73,6 @@ public:
 
 private:
 	struct Voice {
-
 		float delay;
 		float rate;
 		float depth;
@@ -82,7 +81,6 @@ private:
 		float pan;
 
 		Voice() {
-
 			delay = 12.0;
 			rate = 1;
 			depth = 0;

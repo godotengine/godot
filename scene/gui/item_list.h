@@ -35,7 +35,6 @@
 #include "scene/gui/scroll_bar.h"
 
 class ItemList : public Control {
-
 	GDCLASS(ItemList, Control);
 
 public:
@@ -51,7 +50,6 @@ public:
 
 private:
 	struct Item {
-
 		Ref<Texture2D> icon;
 		bool icon_transposed;
 		Rect2i icon_region;

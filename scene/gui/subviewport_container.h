@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class SubViewportContainer : public Container {
-
 	GDCLASS(SubViewportContainer, Container);
 
 	bool stretch;

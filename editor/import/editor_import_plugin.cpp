@@ -87,7 +87,6 @@ int EditorImportPlugin::get_import_order() const {
 }
 
 void EditorImportPlugin::get_import_options(List<ResourceImporter::ImportOption> *r_options, int p_preset) const {
-
 	ERR_FAIL_COND(!(get_script_instance() && get_script_instance()->has_method("get_import_options")));
 	Array needed;
 	needed.push_back("name");
@@ -131,7 +130,6 @@ bool EditorImportPlugin::get_option_visibility(const String &p_option, const Map
 }
 
 Error EditorImportPlugin::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-
 	ERR_FAIL_COND_V(!(get_script_instance() && get_script_instance()->has_method("import")), ERR_UNAVAILABLE);
 	Dictionary options;
 	Array platform_variants, gen_files;
@@ -153,7 +151,6 @@ Error EditorImportPlugin::import(const String &p_source_file, const String &p_sa
 }
 
 void EditorImportPlugin::_bind_methods() {
-
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_importer_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::STRING, "get_visible_name"));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::INT, "get_preset_count"));

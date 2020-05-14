@@ -26,7 +26,6 @@ VERSION_DEFINES
 layout(location = 0) out vec3 uv_interp;
 
 void main() {
-
 #ifdef MODE_TRIANGLES
 
 	uint triangle_idx = params.base_index + gl_VertexIndex / 3;
@@ -103,7 +102,6 @@ layout(location = 0) out vec4 dst_color;
 layout(set = 1, binding = 0) uniform texture2DArray src_color_tex;
 
 void main() {
-
 	if (params.debug) {
 #ifdef MODE_TRIANGLES
 		dst_color = vec4(1, 0, 1, 1);

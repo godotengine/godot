@@ -35,7 +35,6 @@
 #include <AppKit/AppKit.h>
 
 class VulkanContextOSX : public VulkanContext {
-
 	virtual const char *_get_platform_surface_extension() const;
 
 public:

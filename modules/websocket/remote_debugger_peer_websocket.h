@@ -39,7 +39,6 @@
 #include "core/debugger/remote_debugger_peer.h"
 
 class RemoteDebuggerPeerWebSocket : public RemoteDebuggerPeer {
-
 	Ref<WebSocketClient> ws_client;
 	Ref<WebSocketPeer> ws_peer;
 	List<Array> in_queue;

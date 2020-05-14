@@ -17,7 +17,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 params;
 
 void main() {
-
 	vec2 base_arr[4] = vec2[](vec2(-1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0), vec2(1.0, -1.0));
 	uv_interp = base_arr[gl_VertexIndex];
 	gl_Position = vec4(uv_interp, 1.0, 1.0);
@@ -120,7 +119,6 @@ FRAGMENT_SHADER_GLOBALS
 layout(location = 0) out vec4 frag_color;
 
 void main() {
-
 	vec3 cube_normal;
 	cube_normal.z = -1.0;
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.proj.x)) / params.proj.y;

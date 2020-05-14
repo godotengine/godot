@@ -35,7 +35,6 @@
 #include "scene/gui/popup_menu.h"
 
 class OptionButton : public Button {
-
 	GDCLASS(OptionButton, Button);
 
 	PopupMenu *popup;

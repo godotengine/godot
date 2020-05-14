@@ -33,7 +33,6 @@
 #include "editor/editor_inspector.h"
 
 class EditorDebuggerRemoteObject : public Object {
-
 	GDCLASS(EditorDebuggerRemoteObject, Object);
 
 protected:
@@ -65,7 +64,6 @@ public:
 };
 
 class EditorDebuggerInspector : public EditorInspector {
-
 	GDCLASS(EditorDebuggerInspector, EditorInspector);
 
 private:

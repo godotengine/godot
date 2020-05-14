@@ -35,22 +35,18 @@
 AudioDriverJavaScript *AudioDriverJavaScript::singleton = nullptr;
 
 const char *AudioDriverJavaScript::get_name() const {
-
 	return "JavaScript";
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_js_mix() {
-
 	AudioDriverJavaScript::singleton->mix_to_js();
 }
 
 extern "C" EMSCRIPTEN_KEEPALIVE void audio_driver_process_capture(float sample) {
-
 	AudioDriverJavaScript::singleton->process_capture(sample);
 }
 
 void AudioDriverJavaScript::mix_to_js() {
-
 	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
 	int sample_count = memarr_len(internal_buffer) / channel_count;
 	int32_t *stream_buffer = reinterpret_cast<int32_t *>(internal_buffer);
@@ -61,13 +57,11 @@ void AudioDriverJavaScript::mix_to_js() {
 }
 
 void AudioDriverJavaScript::process_capture(float sample) {
-
 	int32_t sample32 = int32_t(sample * 32768.f) * (1U << 16);
 	input_buffer_write(sample32);
 }
 
 Error AudioDriverJavaScript::init() {
-
 	/* clang-format off */
 	_driver_id = EM_ASM_INT({
 		return Module.IDHandler.add({
@@ -115,7 +109,6 @@ Error AudioDriverJavaScript::init() {
 }
 
 void AudioDriverJavaScript::start() {
-
 	/* clang-format off */
 	EM_ASM({
 		const ref = Module.IDHandler.get($0);
@@ -164,7 +157,6 @@ void AudioDriverJavaScript::resume() {
 }
 
 int AudioDriverJavaScript::get_mix_rate() const {
-
 	/* clang-format off */
 	return EM_ASM_INT({
 		const ref = Module.IDHandler.get($0);
@@ -174,7 +166,6 @@ int AudioDriverJavaScript::get_mix_rate() const {
 }
 
 AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const {
-
 	/* clang-format off */
 	return get_speaker_mode_by_total_channels(EM_ASM_INT({
 		const ref = Module.IDHandler.get($0);
@@ -191,7 +182,6 @@ void AudioDriverJavaScript::unlock() {
 }
 
 void AudioDriverJavaScript::finish_async() {
-
 	// Close the context, add the operation to the async_finish list in module.
 	int id = _driver_id;
 	_driver_id = 0;
@@ -230,7 +220,6 @@ void AudioDriverJavaScript::finish() {
 }
 
 Error AudioDriverJavaScript::capture_start() {
-
 	input_buffer_init(buffer_length);
 
 	/* clang-format off */
@@ -260,7 +249,6 @@ Error AudioDriverJavaScript::capture_start() {
 }
 
 Error AudioDriverJavaScript::capture_stop() {
-
 	/* clang-format off */
 	EM_ASM({
 		var ref = Module.IDHandler.get($0);
@@ -286,7 +274,6 @@ Error AudioDriverJavaScript::capture_stop() {
 }
 
 AudioDriverJavaScript::AudioDriverJavaScript() {
-
 	_driver_id = 0;
 	internal_buffer = nullptr;
 	buffer_length = 0;

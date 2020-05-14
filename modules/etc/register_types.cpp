@@ -36,7 +36,6 @@
 static Ref<ResourceFormatPKM> resource_loader_pkm;
 
 void register_etc_types() {
-
 	resource_loader_pkm.instance();
 	ResourceLoader::add_resource_format_loader(resource_loader_pkm);
 
@@ -44,7 +43,6 @@ void register_etc_types() {
 }
 
 void unregister_etc_types() {
-
 	ResourceLoader::remove_resource_format_loader(resource_loader_pkm);
 	resource_loader_pkm.unref();
 }

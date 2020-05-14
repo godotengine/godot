@@ -36,7 +36,6 @@
 #include "core/variant.h"
 
 struct _GlobalConstant {
-
 #ifdef DEBUG_METHODS_ENABLED
 	StringName enum_name;
 #endif
@@ -638,33 +637,27 @@ void register_global_constants() {
 }
 
 void unregister_global_constants() {
-
 	_global_constants.clear();
 }
 
 int GlobalConstants::get_global_constant_count() {
-
 	return _global_constants.size();
 }
 
 #ifdef DEBUG_METHODS_ENABLED
 StringName GlobalConstants::get_global_constant_enum(int p_idx) {
-
 	return _global_constants[p_idx].enum_name;
 }
 #else
 StringName GlobalConstants::get_global_constant_enum(int p_idx) {
-
 	return StringName();
 }
 #endif
 
 const char *GlobalConstants::get_global_constant_name(int p_idx) {
-
 	return _global_constants[p_idx].name;
 }
 
 int GlobalConstants::get_global_constant_value(int p_idx) {
-
 	return _global_constants[p_idx].value;
 }

@@ -35,7 +35,6 @@
 #include "scene/resources/convex_polygon_shape_3d.h"
 
 void CollisionPolygon3D::_build_polygon() {
-
 	if (!parent)
 		return;
 
@@ -60,7 +59,6 @@ void CollisionPolygon3D::_build_polygon() {
 			Vector3 *w = cp.ptrw();
 			int idx = 0;
 			for (int j = 0; j < cs; j++) {
-
 				Vector2 d = decomp[i][j];
 				w[idx++] = Vector3(d.x, d.y, depth * 0.5);
 				w[idx++] = Vector3(d.x, d.y, -depth * 0.5);
@@ -74,7 +72,6 @@ void CollisionPolygon3D::_build_polygon() {
 }
 
 void CollisionPolygon3D::_update_in_shape_owner(bool p_xform_only) {
-
 	parent->shape_owner_set_transform(owner_id, get_transform());
 	if (p_xform_only)
 		return;
@@ -82,9 +79,7 @@ void CollisionPolygon3D::_update_in_shape_owner(bool p_xform_only) {
 }
 
 void CollisionPolygon3D::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_PARENTED: {
 			parent = Object::cast_to<CollisionObject3D>(get_parent());
 			if (parent) {
@@ -94,14 +89,12 @@ void CollisionPolygon3D::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
 			if (parent) {
 				_update_in_shape_owner();
 			}
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-
 			if (parent) {
 				_update_in_shape_owner(true);
 			}
@@ -118,7 +111,6 @@ void CollisionPolygon3D::_notification(int p_what) {
 }
 
 void CollisionPolygon3D::set_polygon(const Vector<Point2> &p_polygon) {
-
 	polygon = p_polygon;
 	if (parent) {
 		_build_polygon();
@@ -128,24 +120,20 @@ void CollisionPolygon3D::set_polygon(const Vector<Point2> &p_polygon) {
 }
 
 Vector<Point2> CollisionPolygon3D::get_polygon() const {
-
 	return polygon;
 }
 
 AABB CollisionPolygon3D::get_item_rect() const {
-
 	return aabb;
 }
 
 void CollisionPolygon3D::set_depth(float p_depth) {
-
 	depth = p_depth;
 	_build_polygon();
 	update_gizmo();
 }
 
 float CollisionPolygon3D::get_depth() const {
-
 	return depth;
 }
 
@@ -163,7 +151,6 @@ bool CollisionPolygon3D::is_disabled() const {
 }
 
 String CollisionPolygon3D::get_configuration_warning() const {
-
 	if (!Object::cast_to<CollisionObject3D>(get_parent())) {
 		return TTR("CollisionPolygon3D only serves to provide a collision shape to a CollisionObject3D derived node. Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, KinematicBody3D, etc. to give them a shape.");
 	}
@@ -179,7 +166,6 @@ bool CollisionPolygon3D::_is_editable_3d_polygon() const {
 	return true;
 }
 void CollisionPolygon3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &CollisionPolygon3D::set_depth);
 	ClassDB::bind_method(D_METHOD("get_depth"), &CollisionPolygon3D::get_depth);
 
@@ -197,7 +183,6 @@ void CollisionPolygon3D::_bind_methods() {
 }
 
 CollisionPolygon3D::CollisionPolygon3D() {
-
 	aabb = AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 	depth = 1.0;
 	set_notify_local_transform(true);
