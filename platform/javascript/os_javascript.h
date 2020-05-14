@@ -39,7 +39,6 @@
 #include <emscripten/html5.h>
 
 class OS_JavaScript : public OS_Unix {
-
 	MainLoop *main_loop = nullptr;
 	AudioDriverJavaScript audio_driver_javascript;
 

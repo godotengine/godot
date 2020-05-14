@@ -48,7 +48,6 @@ import java.util.List;
  * @author Cagdas Caglak <cagdascaglak@gmail.com>
  */
 public final class PermissionsUtil {
-
 	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;

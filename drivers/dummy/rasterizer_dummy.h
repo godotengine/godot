@@ -855,7 +855,6 @@ public:
 	}
 
 	bool free(RID p_rid) {
-
 		if (texture_owner.owns(p_rid)) {
 			// delete the texture
 			DummyTexture *texture = texture_owner.getornull(p_rid);

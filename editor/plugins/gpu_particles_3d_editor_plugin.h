@@ -37,7 +37,6 @@
 #include "scene/gui/spin_box.h"
 
 class GPUParticles3DEditorBase : public Control {
-
 	GDCLASS(GPUParticles3DEditorBase, Control);
 
 protected:
@@ -65,7 +64,6 @@ public:
 };
 
 class GPUParticles3DEditor : public GPUParticles3DEditorBase {
-
 	GDCLASS(GPUParticles3DEditor, GPUParticles3DEditorBase);
 
 	ConfirmationDialog *generate_aabb;
@@ -101,7 +99,6 @@ public:
 };
 
 class GPUParticles3DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GPUParticles3DEditorPlugin, EditorPlugin);
 
 	GPUParticles3DEditor *particles_editor;

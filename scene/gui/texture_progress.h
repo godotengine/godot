@@ -34,7 +34,6 @@
 #include "scene/gui/range.h"
 
 class TextureProgress : public Range {
-
 	GDCLASS(TextureProgress, Range);
 
 	Ref<Texture2D> under;

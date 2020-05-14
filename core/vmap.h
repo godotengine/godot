@@ -38,14 +38,12 @@ template <class T, class V>
 class VMap {
 public:
 	struct Pair {
-
 		T key;
 		V value;
 
 		_FORCE_INLINE_ Pair() {}
 
 		_FORCE_INLINE_ Pair(const T &p_key, const V &p_value) {
-
 			key = p_key;
 			value = p_value;
 		}
@@ -55,7 +53,6 @@ private:
 	CowData<Pair> _cowdata;
 
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
-
 		r_exact = false;
 		if (_cowdata.empty())
 			return 0;
@@ -89,7 +86,6 @@ private:
 	}
 
 	_FORCE_INLINE_ int _find_exact(const T &p_val) const {
-
 		if (_cowdata.empty())
 			return -1;
 
@@ -115,7 +111,6 @@ private:
 
 public:
 	int insert(const T &p_key, const V &p_val) {
-
 		bool exact;
 		int pos = _find(p_key, exact);
 		if (exact) {
@@ -127,12 +122,10 @@ public:
 	}
 
 	bool has(const T &p_val) const {
-
 		return _find_exact(p_val) != -1;
 	}
 
 	void erase(const T &p_val) {
-
 		int pos = _find_exact(p_val);
 		if (pos < 0)
 			return;
@@ -140,12 +133,10 @@ public:
 	}
 
 	int find(const T &p_val) const {
-
 		return _find_exact(p_val);
 	}
 
 	int find_nearest(const T &p_val) const {
-
 		bool exact;
 		return _find(p_val, exact);
 	}
@@ -154,37 +145,30 @@ public:
 	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
 
 	const Pair *get_array() const {
-
 		return _cowdata.ptr();
 	}
 
 	Pair *get_array() {
-
 		return _cowdata.ptrw();
 	}
 
 	const V &getv(int p_index) const {
-
 		return _cowdata.get(p_index).value;
 	}
 
 	V &getv(int p_index) {
-
 		return _cowdata.get_m(p_index).value;
 	}
 
 	const T &getk(int p_index) const {
-
 		return _cowdata.get(p_index).key;
 	}
 
 	T &getk(int p_index) {
-
 		return _cowdata.get_m(p_index).key;
 	}
 
 	inline const V &operator[](const T &p_key) const {
-
 		int pos = _find_exact(p_key);
 
 		CRASH_COND(pos < 0);
@@ -193,7 +177,6 @@ public:
 	}
 
 	inline V &operator[](const T &p_key) {
-
 		int pos = _find_exact(p_key);
 		if (pos < 0) {
 			pos = insert(p_key, V());

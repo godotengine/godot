@@ -41,7 +41,6 @@ static Lightmapper *create_lightmapper_rd() {
 #endif
 
 void register_lightmapper_rd_types() {
-
 	GLOBAL_DEF("rendering/gpu_lightmapper/quality/low_quality_ray_count", 16);
 	GLOBAL_DEF("rendering/gpu_lightmapper/quality/medium_quality_ray_count", 64);
 	GLOBAL_DEF("rendering/gpu_lightmapper/quality/high_quality_ray_count", 256);

@@ -307,7 +307,6 @@ void DisplayServer::set_context(Context p_context) {
 }
 
 void DisplayServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
 

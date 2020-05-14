@@ -35,7 +35,6 @@
 #include "scene/resources/shape_3d.h"
 
 class CollisionObject3D : public Node3D {
-
 	GDCLASS(CollisionObject3D, Node3D);
 
 	bool area;
@@ -43,7 +42,6 @@ class CollisionObject3D : public Node3D {
 	RID rid;
 
 	struct ShapeData {
-
 		Object *owner;
 		Transform xform;
 		struct ShapeBase {

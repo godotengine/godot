@@ -174,7 +174,6 @@ void _focus_out_video() {
 };
 
 void _unpause_video() {
-
 	[_instance.avPlayer play];
 	video_playing = true;
 };
@@ -207,14 +206,12 @@ static const int max_touches = 8;
 static UITouch *touches[max_touches];
 
 static void init_touches() {
-
 	for (int i = 0; i < max_touches; i++) {
 		touches[i] = NULL;
 	};
 };
 
 static int get_touch_id(UITouch *p_touch) {
-
 	int first = -1;
 	for (int i = 0; i < max_touches; i++) {
 		if (first == -1 && touches[i] == NULL) {
@@ -234,10 +231,8 @@ static int get_touch_id(UITouch *p_touch) {
 };
 
 static int remove_touch(UITouch *p_touch) {
-
 	int remaining = 0;
 	for (int i = 0; i < max_touches; i++) {
-
 		if (touches[i] == NULL)
 			continue;
 		if (touches[i] == p_touch)
@@ -249,9 +244,7 @@ static int remove_touch(UITouch *p_touch) {
 };
 
 static void clear_touches() {
-
 	for (int i = 0; i < max_touches; i++) {
-
 		touches[i] = NULL;
 	};
 };
@@ -396,7 +389,6 @@ static void clear_touches() {
 	active = TRUE;
 	printf("start animation!\n");
 	if (useCADisplayLink) {
-
 		// Approximate frame rate
 		// assumes device refreshes at 60 fps
 		int frameInterval = (int)floor(animationInterval * 60.0f);
@@ -446,7 +438,6 @@ static void clear_touches() {
 
 // Updates the OpenGL view when the timer fires
 - (void)drawView {
-
 	if (!active) {
 		printf("draw view not active!\n");
 		return;
@@ -489,9 +480,7 @@ static void clear_touches() {
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [[event allTouches] allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
-
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-
 			UITouch *touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseBegan)
 				continue;
@@ -504,12 +493,9 @@ static void clear_touches() {
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-
 	NSArray *tlist = [[event allTouches] allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
-
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-
 			UITouch *touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseMoved)
 				continue;
@@ -525,9 +511,7 @@ static void clear_touches() {
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray *tlist = [[event allTouches] allObjects];
 	for (unsigned int i = 0; i < [tlist count]; i++) {
-
 		if ([touches containsObject:[tlist objectAtIndex:i]]) {
-
 			UITouch *touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseEnded)
 				continue;
@@ -541,7 +525,6 @@ static void clear_touches() {
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-
 	OSIPhone::get_singleton()->touches_cancelled();
 	clear_touches();
 };
@@ -599,7 +582,6 @@ static void clear_touches() {
 	NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
 
 	switch (routeChangeReason) {
-
 		case AVAudioSessionRouteChangeReasonNewDeviceAvailable: {
 			NSLog(@"AVAudioSessionRouteChangeReasonNewDeviceAvailable");
 			NSLog(@"Headphone/Line plugged in");
@@ -609,7 +591,6 @@ static void clear_touches() {
 			NSLog(@"AVAudioSessionRouteChangeReasonOldDeviceUnavailable");
 			NSLog(@"Headphone/Line was pulled. Resuming video play....");
 			if (_is_video_playing()) {
-
 				dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5f * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 					[_instance.avPlayer play]; // NOTE: change this line according your current player implementation
 					NSLog(@"resumed play");
@@ -685,7 +666,6 @@ static void clear_touches() {
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-
 	if (object == _instance.avPlayerItem && [keyPath isEqualToString:@"status"]) {
 		if (_instance.avPlayerItem.status == AVPlayerStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
 			_stop_video();
@@ -695,7 +675,6 @@ static void clear_touches() {
 		if (_instance.avPlayer.status == AVPlayerStatusReadyToPlay &&
 				_instance.avPlayerItem.status == AVPlayerItemStatusReadyToPlay &&
 				CMTIME_COMPARE_INLINE(video_current_time, ==, kCMTimeZero)) {
-
 			//NSLog(@"time: %@", video_current_time);
 
 			[_instance.avPlayer seekToTime:video_current_time];

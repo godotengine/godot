@@ -35,9 +35,7 @@
 #include "core/ustring.h"
 
 class NodePath {
-
 	struct Data {
-
 		SafeRefCount refcount;
 		Vector<StringName> path;
 		Vector<StringName> subpath;

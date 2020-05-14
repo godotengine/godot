@@ -42,7 +42,6 @@
 #include "servers/rendering/shader_language.h"
 
 class ShaderTextEditor : public CodeTextEditor {
-
 	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
 	Ref<Shader> shader;
@@ -66,7 +65,6 @@ public:
 };
 
 class ShaderEditor : public PanelContainer {
-
 	GDCLASS(ShaderEditor, PanelContainer);
 
 	enum {
@@ -143,7 +141,6 @@ public:
 };
 
 class ShaderEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
 	bool _2d;

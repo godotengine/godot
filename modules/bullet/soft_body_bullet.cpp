@@ -105,14 +105,12 @@ void SoftBodyBullet::update_rendering_server(SoftBodyRenderingServerHandler *p_r
 }
 
 void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
-
 	if (p_mesh.is_null())
 		soft_mesh.unref();
 	else
 		soft_mesh = p_mesh;
 
 	if (soft_mesh.is_null()) {
-
 		destroy_soft_body();
 		return;
 	}
@@ -123,7 +121,6 @@ void SoftBodyBullet::set_soft_mesh(const Ref<Mesh> &p_mesh) {
 }
 
 void SoftBodyBullet::destroy_soft_body() {
-
 	if (!bt_soft_body)
 		return;
 
@@ -223,7 +220,6 @@ void SoftBodyBullet::reset_all_node_positions() {
 	const Vector3 *vs_vertices_read = vs_vertices.ptr();
 
 	for (int vertex_index = bt_soft_body->m_nodes.size() - 1; 0 <= vertex_index; --vertex_index) {
-
 		G_TO_B(vs_vertices_read[indices_table[vertex_index][0]], bt_soft_body->m_nodes[vertex_index].m_x);
 
 		bt_soft_body->m_nodes[vertex_index].m_q = bt_soft_body->m_nodes[vertex_index].m_x;
@@ -331,7 +327,6 @@ void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 			const Vector3 *p_vertices_read = p_vertices.ptr();
 
 			for (int vs_vertex_index = 0; vs_vertex_index < vs_vertices_size; ++vs_vertex_index) {
-
 				Map<Vector3, int>::Element *e = unique_vertices.find(p_vertices_read[vs_vertex_index]);
 				int vertex_id;
 				if (e) {
@@ -387,7 +382,6 @@ void SoftBodyBullet::set_trimesh_body_shape(Vector<int> p_indices, Vector<Vector
 }
 
 void SoftBodyBullet::setup_soft_body() {
-
 	if (!bt_soft_body)
 		return;
 

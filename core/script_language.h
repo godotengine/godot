@@ -112,7 +112,6 @@ class ScriptInstance;
 class PlaceHolderScriptInstance;
 
 class Script : public Resource {
-
 	GDCLASS(Script, Resource);
 	OBJ_SAVE_TYPE(Script);
 
@@ -268,7 +267,6 @@ struct ScriptCodeCompletionOption {
 };
 
 class ScriptCodeCompletionCache {
-
 	static ScriptCodeCompletionCache *singleton;
 
 public:
@@ -406,7 +404,6 @@ public:
 extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
-
 	Object *owner;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;

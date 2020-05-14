@@ -34,7 +34,6 @@
 #include "scene/resources/shape_3d.h"
 
 class WorldMarginShape3D : public Shape3D {
-
 	GDCLASS(WorldMarginShape3D, Shape3D);
 	Plane plane;
 

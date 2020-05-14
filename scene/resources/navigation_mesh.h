@@ -36,7 +36,6 @@
 class Mesh;
 
 class NavigationMesh : public Resource {
-
 	GDCLASS(NavigationMesh, Resource);
 
 	Vector<Vector3> vertices;
@@ -47,7 +46,6 @@ class NavigationMesh : public Resource {
 	Ref<ArrayMesh> debug_mesh;
 
 	struct _EdgeKey {
-
 		Vector3 from;
 		Vector3 to;
 

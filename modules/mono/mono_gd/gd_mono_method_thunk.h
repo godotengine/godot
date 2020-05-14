@@ -47,7 +47,6 @@
 
 template <class... ParamTypes>
 struct GDMonoMethodThunk {
-
 	typedef void(GD_MONO_STDCALL *M)(ParamTypes... p_args, MonoException **);
 
 	M mono_method_thunk = nullptr;
@@ -90,7 +89,6 @@ public:
 
 template <class R, class... ParamTypes>
 struct GDMonoMethodThunkR {
-
 	typedef R(GD_MONO_STDCALL *M)(ParamTypes... p_args, MonoException **);
 
 	M mono_method_thunk = nullptr;
@@ -243,7 +241,6 @@ struct VariadicInvokeMonoMethodR<1, R, P1> {
 
 template <class... ParamTypes>
 struct GDMonoMethodThunk {
-
 	GDMonoMethod *mono_method = nullptr;
 
 public:
@@ -282,7 +279,6 @@ public:
 
 template <class R, class... ParamTypes>
 struct GDMonoMethodThunkR {
-
 	GDMonoMethod *mono_method = nullptr;
 
 public:

@@ -34,7 +34,6 @@
 #include "scene/2d/node_2d.h"
 
 class Polygon2D : public Node2D {
-
 	GDCLASS(Polygon2D, Node2D);
 
 	Vector<Vector2> polygon;

@@ -54,7 +54,6 @@ subject to the following restrictions:
 */
 
 class HingeJoint3DSW : public Joint3DSW {
-
 	union {
 		struct {
 			Body3DSW *A;

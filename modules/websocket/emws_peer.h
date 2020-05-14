@@ -41,7 +41,6 @@
 #include "websocket_peer.h"
 
 class EMWSPeer : public WebSocketPeer {
-
 	GDCIIMPL(EMWSPeer, WebSocketPeer);
 
 private:

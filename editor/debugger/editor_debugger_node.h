@@ -42,7 +42,6 @@ class ScriptEditorDebugger;
 class TabContainer;
 
 class EditorDebuggerNode : public MarginContainer {
-
 	GDCLASS(EditorDebuggerNode, MarginContainer);
 
 public:

@@ -35,7 +35,6 @@
 #include "scene/resources/shape_3d.h"
 class CollisionObject3D;
 class CollisionShape3D : public Node3D {
-
 	GDCLASS(CollisionShape3D, Node3D);
 	OBJ_CATEGORY("3D Physics Nodes");
 

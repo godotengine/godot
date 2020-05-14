@@ -35,7 +35,6 @@
 #include "scene/main/window.h"
 
 class Camera2D : public Node2D {
-
 	GDCLASS(Camera2D, Node2D);
 
 public:

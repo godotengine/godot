@@ -36,7 +36,6 @@
 #include "scene/gui/tree.h"
 
 class EditorSubScene : public ConfirmationDialog {
-
 	GDCLASS(EditorSubScene, ConfirmationDialog);
 
 	List<Node *> selection;

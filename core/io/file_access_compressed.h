@@ -35,7 +35,6 @@
 #include "core/os/file_access.h"
 
 class FileAccessCompressed : public FileAccess {
-
 	Compression::Mode cmode = Compression::MODE_ZSTD;
 	bool writing = false;
 	uint32_t write_pos = 0;

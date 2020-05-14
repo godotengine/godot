@@ -32,24 +32,19 @@
 #include "parallax_layer.h"
 
 void ParallaxBackground::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			group_name = "__cameras_" + itos(get_viewport().get_id());
 			add_to_group(group_name);
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-
 			remove_from_group(group_name);
 		} break;
 	}
 }
 
 void ParallaxBackground::_camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset) {
-
 	screen_offset = p_screen_offset;
 
 	set_scroll_scale(p_transform.get_scale().dot(Vector2(0.5, 0.5)));
@@ -57,24 +52,20 @@ void ParallaxBackground::_camera_moved(const Transform2D &p_transform, const Poi
 }
 
 void ParallaxBackground::set_scroll_scale(float p_scale) {
-
 	scale = p_scale;
 }
 
 float ParallaxBackground::get_scroll_scale() const {
-
 	return scale;
 }
 
 void ParallaxBackground::set_scroll_offset(const Point2 &p_ofs) {
-
 	offset = p_ofs;
 
 	_update_scroll();
 }
 
 void ParallaxBackground::_update_scroll() {
-
 	if (!is_inside_tree())
 		return;
 
@@ -84,7 +75,6 @@ void ParallaxBackground::_update_scroll() {
 
 	ofs = -ofs;
 	if (limit_begin.x < limit_end.x) {
-
 		if (ofs.x < limit_begin.x)
 			ofs.x = limit_begin.x;
 		else if (ofs.x + vps.x > limit_end.x)
@@ -92,7 +82,6 @@ void ParallaxBackground::_update_scroll() {
 	}
 
 	if (limit_begin.y < limit_end.y) {
-
 		if (ofs.y < limit_begin.y)
 			ofs.y = limit_begin.y;
 		else if (ofs.y + vps.y > limit_end.y)
@@ -103,7 +92,6 @@ void ParallaxBackground::_update_scroll() {
 	final_offset = ofs;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		ParallaxLayer *l = Object::cast_to<ParallaxLayer>(get_child(i));
 		if (!l)
 			continue;
@@ -116,71 +104,58 @@ void ParallaxBackground::_update_scroll() {
 }
 
 Point2 ParallaxBackground::get_scroll_offset() const {
-
 	return offset;
 }
 
 void ParallaxBackground::set_scroll_base_offset(const Point2 &p_ofs) {
-
 	base_offset = p_ofs;
 	_update_scroll();
 }
 
 Point2 ParallaxBackground::get_scroll_base_offset() const {
-
 	return base_offset;
 }
 
 void ParallaxBackground::set_scroll_base_scale(const Point2 &p_ofs) {
-
 	base_scale = p_ofs;
 	_update_scroll();
 }
 
 Point2 ParallaxBackground::get_scroll_base_scale() const {
-
 	return base_scale;
 }
 
 void ParallaxBackground::set_limit_begin(const Point2 &p_ofs) {
-
 	limit_begin = p_ofs;
 	_update_scroll();
 }
 
 Point2 ParallaxBackground::get_limit_begin() const {
-
 	return limit_begin;
 }
 
 void ParallaxBackground::set_limit_end(const Point2 &p_ofs) {
-
 	limit_end = p_ofs;
 	_update_scroll();
 }
 
 Point2 ParallaxBackground::get_limit_end() const {
-
 	return limit_end;
 }
 
 void ParallaxBackground::set_ignore_camera_zoom(bool ignore) {
-
 	ignore_camera_zoom = ignore;
 }
 
 bool ParallaxBackground::is_ignore_camera_zoom() {
-
 	return ignore_camera_zoom;
 }
 
 Vector2 ParallaxBackground::get_final_offset() const {
-
 	return final_offset;
 }
 
 void ParallaxBackground::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_camera_moved"), &ParallaxBackground::_camera_moved);
 	ClassDB::bind_method(D_METHOD("set_scroll_offset", "ofs"), &ParallaxBackground::set_scroll_offset);
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &ParallaxBackground::get_scroll_offset);
@@ -205,7 +180,6 @@ void ParallaxBackground::_bind_methods() {
 }
 
 ParallaxBackground::ParallaxBackground() {
-
 	scale = 1.0;
 	set_layer(-100); //behind all by default
 

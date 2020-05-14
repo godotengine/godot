@@ -786,7 +786,6 @@ public:
 	};
 
 	struct PipelineDepthStencilState {
-
 		bool enable_depth_test;
 		bool enable_depth_write;
 		CompareOperator depth_compare_operator;
@@ -830,7 +829,6 @@ public:
 	};
 
 	struct PipelineColorBlendState {
-
 		bool enable_logic_op;
 		LogicOperation logic_op;
 		struct Attachment {
@@ -871,7 +869,6 @@ public:
 		static PipelineColorBlendState create_blend(int p_attachments = 1) {
 			PipelineColorBlendState bs;
 			for (int i = 0; i < p_attachments; i++) {
-
 				Attachment ba;
 				ba.enable_blend = true;
 				ba.src_color_blend_factor = BLEND_FACTOR_SRC_ALPHA;

@@ -34,7 +34,6 @@
 #include "scene/3d/node_3d.h"
 
 class RayCast3D : public Node3D {
-
 	GDCLASS(RayCast3D, Node3D);
 
 	bool enabled;

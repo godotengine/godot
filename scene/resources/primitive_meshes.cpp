@@ -35,7 +35,6 @@
   PrimitiveMesh
 */
 void PrimitiveMesh::_update() const {
-
 	Array arr;
 	arr.resize(RS::ARRAY_MAX);
 	_create_mesh_array(arr);
@@ -47,7 +46,6 @@ void PrimitiveMesh::_update() const {
 	int pc = points.size();
 	ERR_FAIL_COND(pc == 0);
 	{
-
 		const Vector3 *r = points.ptr();
 		for (int i = 0; i < pc; i++) {
 			if (i == 0)
@@ -63,7 +61,6 @@ void PrimitiveMesh::_update() const {
 		Vector<Vector3> normals = arr[RS::ARRAY_NORMAL];
 
 		if (normals.size() && indices.size()) {
-
 			{
 				int nc = normals.size();
 				Vector3 *w = normals.ptrw();
@@ -99,7 +96,6 @@ void PrimitiveMesh::_update() const {
 }
 
 void PrimitiveMesh::_request_update() {
-
 	if (pending_request)
 		return;
 	_update();
@@ -143,7 +139,6 @@ Dictionary PrimitiveMesh::surface_get_lods(int p_surface) const {
 	return Dictionary(); //not really supported
 }
 Array PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) const {
-
 	return Array(); //not really supported
 }
 
@@ -230,14 +225,12 @@ Array PrimitiveMesh::get_mesh_arrays() const {
 }
 
 void PrimitiveMesh::set_custom_aabb(const AABB &p_custom) {
-
 	custom_aabb = p_custom;
 	RS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
 	emit_changed();
 }
 
 AABB PrimitiveMesh::get_custom_aabb() const {
-
 	return custom_aabb;
 }
 
@@ -251,7 +244,6 @@ bool PrimitiveMesh::get_flip_faces() const {
 }
 
 PrimitiveMesh::PrimitiveMesh() {
-
 	flip_faces = false;
 	// defaults
 	mesh = RenderingServer::get_singleton()->mesh_create();
@@ -1382,7 +1374,6 @@ void QuadMesh::_create_mesh_array(Array &p_arr) const {
 	};
 
 	for (int i = 0; i < 6; i++) {
-
 		int j = indices[i];
 		faces.set(i, quad_faces[j]);
 		normals.set(i, Vector3(0, 0, 1));

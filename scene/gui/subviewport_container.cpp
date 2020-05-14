@@ -34,12 +34,10 @@
 #include "scene/main/viewport.h"
 
 Size2 SubViewportContainer::get_minimum_size() const {
-
 	if (stretch)
 		return Size2();
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c)
 			continue;
@@ -53,19 +51,16 @@ Size2 SubViewportContainer::get_minimum_size() const {
 }
 
 void SubViewportContainer::set_stretch(bool p_enable) {
-
 	stretch = p_enable;
 	queue_sort();
 	update();
 }
 
 bool SubViewportContainer::is_stretch_enabled() const {
-
 	return stretch;
 }
 
 void SubViewportContainer::set_stretch_shrink(int p_shrink) {
-
 	ERR_FAIL_COND(p_shrink < 1);
 	if (shrink == p_shrink)
 		return;
@@ -76,7 +71,6 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 		return;
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c)
 			continue;
@@ -88,19 +82,15 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 }
 
 int SubViewportContainer::get_stretch_shrink() const {
-
 	return shrink;
 }
 
 void SubViewportContainer::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_RESIZED) {
-
 		if (!stretch)
 			return;
 
 		for (int i = 0; i < get_child_count(); i++) {
-
 			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 			if (!c)
 				continue;
@@ -110,9 +100,7 @@ void SubViewportContainer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-
 		for (int i = 0; i < get_child_count(); i++) {
-
 			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 			if (!c)
 				continue;
@@ -127,9 +115,7 @@ void SubViewportContainer::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		for (int i = 0; i < get_child_count(); i++) {
-
 			SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 			if (!c)
 				continue;
@@ -143,7 +129,6 @@ void SubViewportContainer::_notification(int p_what) {
 }
 
 void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
-
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
 
@@ -158,7 +143,6 @@ void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c || c->is_input_disabled())
 			continue;
@@ -168,7 +152,6 @@ void SubViewportContainer::_input(const Ref<InputEvent> &p_event) {
 }
 
 void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
-
 	if (Engine::get_singleton()->is_editor_hint())
 		return;
 
@@ -183,7 +166,6 @@ void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
 
 	for (int i = 0; i < get_child_count(); i++) {
-
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c || c->is_input_disabled())
 			continue;
@@ -193,7 +175,6 @@ void SubViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 void SubViewportContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &SubViewportContainer::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_input", "event"), &SubViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &SubViewportContainer::set_stretch);
@@ -207,7 +188,6 @@ void SubViewportContainer::_bind_methods() {
 }
 
 SubViewportContainer::SubViewportContainer() {
-
 	stretch = false;
 	shrink = 1;
 	set_process_input(true);

@@ -83,7 +83,6 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, T
 		}
 
 	} else {
-
 		int i = get_index(p_pos.x);
 
 		if (i == 0 && p_pos.x < _points[0].pos.x) {
@@ -106,7 +105,6 @@ int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, T
 }
 
 int Curve::get_index(real_t offset) const {
-
 	// Lower-bound float binary search
 
 	int imin = 0;
@@ -136,7 +134,6 @@ int Curve::get_index(real_t offset) const {
 }
 
 void Curve::clean_dupes() {
-
 	bool dirty = false;
 
 	for (int i = 1; i < _points.size(); ++i) {
@@ -254,7 +251,6 @@ Curve::Point Curve::get_point(int p_index) const {
 }
 
 void Curve::update_auto_tangents(int i) {
-
 	Point &p = _points.write[i];
 
 	if (i > 0) {
@@ -324,7 +320,6 @@ real_t Curve::interpolate(real_t offset) const {
 }
 
 real_t Curve::interpolate_local_nocheck(int index, real_t local_offset) const {
-
 	const Point a = _points[index];
 	const Point b = _points[index + 1];
 
@@ -362,13 +357,11 @@ void Curve::mark_dirty() {
 }
 
 Array Curve::get_data() const {
-
 	Array output;
 	const unsigned int ELEMS = 5;
 	output.resize(_points.size() * ELEMS);
 
 	for (int j = 0; j < _points.size(); ++j) {
-
 		const Point p = _points[j];
 		int i = j * ELEMS;
 
@@ -406,7 +399,6 @@ void Curve::set_data(Array input) {
 	_points.resize(input.size() / ELEMS);
 
 	for (int j = 0; j < _points.size(); ++j) {
-
 		Point &p = _points.write[j];
 		int i = j * ELEMS;
 
@@ -486,7 +478,6 @@ real_t Curve::interpolate_baked(real_t offset) {
 
 void Curve::ensure_default_setup(float p_min, float p_max) {
 	if (_points.size() == 0 && _min_value == 0 && _max_value == 1) {
-
 		add_point(Vector2(0, 1));
 		add_point(Vector2(1, 1));
 		set_min_value(p_min);
@@ -495,7 +486,6 @@ void Curve::ensure_default_setup(float p_min, float p_max) {
 }
 
 void Curve::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve::get_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "left_tangent", "right_tangent", "left_mode", "right_mode"), &Curve::add_point, DEFVAL(0), DEFVAL(0), DEFVAL(TANGENT_FREE), DEFVAL(TANGENT_FREE));
 	ClassDB::bind_method(D_METHOD("remove_point", "index"), &Curve::remove_point);
@@ -537,11 +527,9 @@ void Curve::_bind_methods() {
 }
 
 int Curve2D::get_point_count() const {
-
 	return points.size();
 }
 void Curve2D::add_point(const Vector2 &p_pos, const Vector2 &p_in, const Vector2 &p_out, int p_atpos) {
-
 	Point n;
 	n.pos = p_pos;
 	n.in = p_in;
@@ -556,7 +544,6 @@ void Curve2D::add_point(const Vector2 &p_pos, const Vector2 &p_in, const Vector2
 }
 
 void Curve2D::set_point_position(int p_index, const Vector2 &p_pos) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 
 	points.write[p_index].pos = p_pos;
@@ -564,13 +551,11 @@ void Curve2D::set_point_position(int p_index, const Vector2 &p_pos) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Vector2 Curve2D::get_point_position(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
 	return points[p_index].pos;
 }
 
 void Curve2D::set_point_in(int p_index, const Vector2 &p_in) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 
 	points.write[p_index].in = p_in;
@@ -578,13 +563,11 @@ void Curve2D::set_point_in(int p_index, const Vector2 &p_in) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Vector2 Curve2D::get_point_in(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
 	return points[p_index].in;
 }
 
 void Curve2D::set_point_out(int p_index, const Vector2 &p_out) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 
 	points.write[p_index].out = p_out;
@@ -593,13 +576,11 @@ void Curve2D::set_point_out(int p_index, const Vector2 &p_out) {
 }
 
 Vector2 Curve2D::get_point_out(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
 	return points[p_index].out;
 }
 
 void Curve2D::remove_point(int p_index) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 	points.remove(p_index);
 	baked_cache_dirty = true;
@@ -615,7 +596,6 @@ void Curve2D::clear_points() {
 }
 
 Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
-
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector2());
 
@@ -633,7 +613,6 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 }
 
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
-
 	if (p_findex < 0)
 		p_findex = 0;
 	else if (p_findex >= points.size())
@@ -643,7 +622,6 @@ Vector2 Curve2D::interpolatef(real_t p_findex) const {
 }
 
 void Curve2D::_bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, float p_tol) const {
-
 	float mp = p_begin + (p_end - p_begin) * 0.5;
 	Vector2 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
 	Vector2 mid = _bezier_interp(mp, p_a, p_a + p_out, p_b + p_in, p_b);
@@ -654,7 +632,6 @@ void Curve2D::_bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float 
 	float dp = na.dot(nb);
 
 	if (dp < Math::cos(Math::deg2rad(p_tol))) {
-
 		r_bake[mp] = mid;
 	}
 
@@ -665,7 +642,6 @@ void Curve2D::_bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float 
 }
 
 void Curve2D::_bake() const {
-
 	if (!baked_cache_dirty)
 		return;
 
@@ -678,7 +654,6 @@ void Curve2D::_bake() const {
 	}
 
 	if (points.size() == 1) {
-
 		baked_point_cache.resize(1);
 		baked_point_cache.set(0, points[0].pos);
 		return;
@@ -690,12 +665,10 @@ void Curve2D::_bake() const {
 	pointlist.push_back(pos); //start always from origin
 
 	for (int i = 0; i < points.size() - 1; i++) {
-
 		float step = 0.1; // at least 10 substeps ought to be enough?
 		float p = 0;
 
 		while (p < 1.0) {
-
 			float np = p + step;
 			if (np > 1.0)
 				np = 1.0;
@@ -713,7 +686,6 @@ void Curve2D::_bake() const {
 				float mid = low + (hi - low) * 0.5;
 
 				for (int j = 0; j < iterations; j++) {
-
 					npp = _bezier_interp(mid, points[i].pos, points[i].pos + points[i].out, points[i + 1].pos + points[i + 1].in, points[i + 1].pos);
 					d = pos.distance_to(npp);
 
@@ -728,7 +700,6 @@ void Curve2D::_bake() const {
 				p = mid;
 				pointlist.push_back(pos);
 			} else {
-
 				p = np;
 			}
 		}
@@ -745,21 +716,18 @@ void Curve2D::_bake() const {
 	int idx = 0;
 
 	for (List<Vector2>::Element *E = pointlist.front(); E; E = E->next()) {
-
 		w[idx] = E->get();
 		idx++;
 	}
 }
 
 float Curve2D::get_baked_length() const {
-
 	if (baked_cache_dirty)
 		_bake();
 
 	return baked_max_ofs;
 }
 Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -791,7 +759,6 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 	}
 
 	if (p_cubic) {
-
 		Vector2 pre = idx > 0 ? r[idx - 1] : r[idx];
 		Vector2 post = (idx < (bpc - 2)) ? r[idx + 2] : r[idx + 1];
 		return r[idx].cubic_interpolate(r[idx + 1], pre, post, frac);
@@ -801,7 +768,6 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 }
 
 PackedVector2Array Curve2D::get_baked_points() const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -809,14 +775,12 @@ PackedVector2Array Curve2D::get_baked_points() const {
 }
 
 void Curve2D::set_bake_interval(float p_tolerance) {
-
 	bake_interval = p_tolerance;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 float Curve2D::get_bake_interval() const {
-
 	return bake_interval;
 }
 
@@ -896,7 +860,6 @@ float Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 }
 
 Dictionary Curve2D::_get_data() const {
-
 	Dictionary dc;
 
 	PackedVector2Array d;
@@ -904,7 +867,6 @@ Dictionary Curve2D::_get_data() const {
 	Vector2 *w = d.ptrw();
 
 	for (int i = 0; i < points.size(); i++) {
-
 		w[i * 3 + 0] = points[i].in;
 		w[i * 3 + 1] = points[i].out;
 		w[i * 3 + 2] = points[i].pos;
@@ -915,7 +877,6 @@ Dictionary Curve2D::_get_data() const {
 	return dc;
 }
 void Curve2D::_set_data(const Dictionary &p_data) {
-
 	ERR_FAIL_COND(!p_data.has("points"));
 
 	PackedVector2Array rp = p_data["points"];
@@ -925,7 +886,6 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 	const Vector2 *r = rp.ptr();
 
 	for (int i = 0; i < points.size(); i++) {
-
 		points.write[i].in = r[i * 3 + 0];
 		points.write[i].out = r[i * 3 + 1];
 		points.write[i].pos = r[i * 3 + 2];
@@ -935,7 +895,6 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 }
 
 PackedVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) const {
-
 	PackedVector2Array tess;
 
 	if (points.size() == 0) {
@@ -947,7 +906,6 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) cons
 
 	int pc = 1;
 	for (int i = 0; i < points.size() - 1; i++) {
-
 		_bake_segment2d(midpoints.write[i], 0, 1, points[i].pos, points[i].out, points[i + 1].pos, points[i + 1].in, 0, p_max_stages, p_tolerance);
 		pc++;
 		pc += midpoints[i].size();
@@ -959,9 +917,7 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) cons
 	int pidx = 0;
 
 	for (int i = 0; i < points.size() - 1; i++) {
-
 		for (Map<float, Vector2>::Element *E = midpoints[i].front(); E; E = E->next()) {
-
 			pidx++;
 			bpw[pidx] = E->get();
 		}
@@ -974,7 +930,6 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, float p_tolerance) cons
 }
 
 void Curve2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve2D::get_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve2D::add_point, DEFVAL(Vector2()), DEFVAL(Vector2()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve2D::set_point_position);
@@ -1022,11 +977,9 @@ Curve2D::Curve2D() {
 /***********************************************************************************/
 
 int Curve3D::get_point_count() const {
-
 	return points.size();
 }
 void Curve3D::add_point(const Vector3 &p_pos, const Vector3 &p_in, const Vector3 &p_out, int p_atpos) {
-
 	Point n;
 	n.pos = p_pos;
 	n.in = p_in;
@@ -1040,7 +993,6 @@ void Curve3D::add_point(const Vector3 &p_pos, const Vector3 &p_in, const Vector3
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 
 	points.write[p_index].pos = p_pos;
@@ -1048,13 +1000,11 @@ void Curve3D::set_point_position(int p_index, const Vector3 &p_pos) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Vector3 Curve3D::get_point_position(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
 	return points[p_index].pos;
 }
 
 void Curve3D::set_point_tilt(int p_index, float p_tilt) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 
 	points.write[p_index].tilt = p_tilt;
@@ -1062,13 +1012,11 @@ void Curve3D::set_point_tilt(int p_index, float p_tilt) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 float Curve3D::get_point_tilt(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, points.size(), 0);
 	return points[p_index].tilt;
 }
 
 void Curve3D::set_point_in(int p_index, const Vector3 &p_in) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 
 	points.write[p_index].in = p_in;
@@ -1076,13 +1024,11 @@ void Curve3D::set_point_in(int p_index, const Vector3 &p_in) {
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 Vector3 Curve3D::get_point_in(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
 	return points[p_index].in;
 }
 
 void Curve3D::set_point_out(int p_index, const Vector3 &p_out) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 
 	points.write[p_index].out = p_out;
@@ -1091,13 +1037,11 @@ void Curve3D::set_point_out(int p_index, const Vector3 &p_out) {
 }
 
 Vector3 Curve3D::get_point_out(int p_index) const {
-
 	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
 	return points[p_index].out;
 }
 
 void Curve3D::remove_point(int p_index) {
-
 	ERR_FAIL_INDEX(p_index, points.size());
 	points.remove(p_index);
 	baked_cache_dirty = true;
@@ -1105,7 +1049,6 @@ void Curve3D::remove_point(int p_index) {
 }
 
 void Curve3D::clear_points() {
-
 	if (!points.empty()) {
 		points.clear();
 		baked_cache_dirty = true;
@@ -1114,7 +1057,6 @@ void Curve3D::clear_points() {
 }
 
 Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
-
 	int pc = points.size();
 	ERR_FAIL_COND_V(pc == 0, Vector3());
 
@@ -1132,7 +1074,6 @@ Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
 }
 
 Vector3 Curve3D::interpolatef(real_t p_findex) const {
-
 	if (p_findex < 0)
 		p_findex = 0;
 	else if (p_findex >= points.size())
@@ -1142,7 +1083,6 @@ Vector3 Curve3D::interpolatef(real_t p_findex) const {
 }
 
 void Curve3D::_bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, float p_tol) const {
-
 	float mp = p_begin + (p_end - p_begin) * 0.5;
 	Vector3 beg = _bezier_interp(p_begin, p_a, p_a + p_out, p_b + p_in, p_b);
 	Vector3 mid = _bezier_interp(mp, p_a, p_a + p_out, p_b + p_in, p_b);
@@ -1153,7 +1093,6 @@ void Curve3D::_bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float 
 	float dp = na.dot(nb);
 
 	if (dp < Math::cos(Math::deg2rad(p_tol))) {
-
 		r_bake[mp] = mid;
 	}
 	if (p_depth < p_max_depth) {
@@ -1163,7 +1102,6 @@ void Curve3D::_bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float 
 }
 
 void Curve3D::_bake() const {
-
 	if (!baked_cache_dirty)
 		return;
 
@@ -1178,14 +1116,12 @@ void Curve3D::_bake() const {
 	}
 
 	if (points.size() == 1) {
-
 		baked_point_cache.resize(1);
 		baked_point_cache.set(0, points[0].pos);
 		baked_tilt_cache.resize(1);
 		baked_tilt_cache.set(0, points[0].tilt);
 
 		if (up_vector_enabled) {
-
 			baked_up_vector_cache.resize(1);
 			baked_up_vector_cache.set(0, Vector3(0, 1, 0));
 		} else
@@ -1199,12 +1135,10 @@ void Curve3D::_bake() const {
 	pointlist.push_back(Plane(pos, points[0].tilt));
 
 	for (int i = 0; i < points.size() - 1; i++) {
-
 		float step = 0.1; // at least 10 substeps ought to be enough?
 		float p = 0;
 
 		while (p < 1.0) {
-
 			float np = p + step;
 			if (np > 1.0)
 				np = 1.0;
@@ -1222,7 +1156,6 @@ void Curve3D::_bake() const {
 				float mid = low + (hi - low) * 0.5;
 
 				for (int j = 0; j < iterations; j++) {
-
 					npp = _bezier_interp(mid, points[i].pos, points[i].pos + points[i].out, points[i + 1].pos + points[i + 1].in, points[i + 1].pos);
 					d = pos.distance_to(npp);
 
@@ -1240,7 +1173,6 @@ void Curve3D::_bake() const {
 				post.d = Math::lerp(points[i].tilt, points[i + 1].tilt, mid);
 				pointlist.push_back(post);
 			} else {
-
 				p = np;
 			}
 		}
@@ -1272,7 +1204,6 @@ void Curve3D::_bake() const {
 	Vector3 prev_forward = Vector3(0, 0, 1);
 
 	for (List<Plane>::Element *E = pointlist.front(); E; E = E->next()) {
-
 		w[idx] = E->get().normal;
 		wt[idx] = E->get().d;
 
@@ -1310,14 +1241,12 @@ void Curve3D::_bake() const {
 }
 
 float Curve3D::get_baked_length() const {
-
 	if (baked_cache_dirty)
 		_bake();
 
 	return baked_max_ofs;
 }
 Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -1349,7 +1278,6 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 	}
 
 	if (p_cubic) {
-
 		Vector3 pre = idx > 0 ? r[idx - 1] : r[idx];
 		Vector3 post = (idx < (bpc - 2)) ? r[idx + 2] : r[idx + 1];
 		return r[idx].cubic_interpolate(r[idx + 1], pre, post, frac);
@@ -1359,7 +1287,6 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 }
 
 float Curve3D::interpolate_baked_tilt(float p_offset) const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -1394,7 +1321,6 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 }
 
 Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -1438,7 +1364,6 @@ Vector3 Curve3D::interpolate_baked_up_vector(float p_offset, bool p_apply_tilt) 
 }
 
 PackedVector3Array Curve3D::get_baked_points() const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -1446,7 +1371,6 @@ PackedVector3Array Curve3D::get_baked_points() const {
 }
 
 PackedFloat32Array Curve3D::get_baked_tilts() const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -1454,7 +1378,6 @@ PackedFloat32Array Curve3D::get_baked_tilts() const {
 }
 
 PackedVector3Array Curve3D::get_baked_up_vectors() const {
-
 	if (baked_cache_dirty)
 		_bake();
 
@@ -1537,31 +1460,26 @@ float Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 }
 
 void Curve3D::set_bake_interval(float p_tolerance) {
-
 	bake_interval = p_tolerance;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 float Curve3D::get_bake_interval() const {
-
 	return bake_interval;
 }
 
 void Curve3D::set_up_vector_enabled(bool p_enable) {
-
 	up_vector_enabled = p_enable;
 	baked_cache_dirty = true;
 	emit_signal(CoreStringNames::get_singleton()->changed);
 }
 
 bool Curve3D::is_up_vector_enabled() const {
-
 	return up_vector_enabled;
 }
 
 Dictionary Curve3D::_get_data() const {
-
 	Dictionary dc;
 
 	PackedVector3Array d;
@@ -1572,7 +1490,6 @@ Dictionary Curve3D::_get_data() const {
 	real_t *wt = t.ptrw();
 
 	for (int i = 0; i < points.size(); i++) {
-
 		w[i * 3 + 0] = points[i].in;
 		w[i * 3 + 1] = points[i].out;
 		w[i * 3 + 2] = points[i].pos;
@@ -1585,7 +1502,6 @@ Dictionary Curve3D::_get_data() const {
 	return dc;
 }
 void Curve3D::_set_data(const Dictionary &p_data) {
-
 	ERR_FAIL_COND(!p_data.has("points"));
 	ERR_FAIL_COND(!p_data.has("tilts"));
 
@@ -1598,7 +1514,6 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	const real_t *rt = rtl.ptr();
 
 	for (int i = 0; i < points.size(); i++) {
-
 		points.write[i].in = r[i * 3 + 0];
 		points.write[i].out = r[i * 3 + 1];
 		points.write[i].pos = r[i * 3 + 2];
@@ -1609,7 +1524,6 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 }
 
 PackedVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) const {
-
 	PackedVector3Array tess;
 
 	if (points.size() == 0) {
@@ -1621,7 +1535,6 @@ PackedVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) cons
 
 	int pc = 1;
 	for (int i = 0; i < points.size() - 1; i++) {
-
 		_bake_segment3d(midpoints.write[i], 0, 1, points[i].pos, points[i].out, points[i + 1].pos, points[i + 1].in, 0, p_max_stages, p_tolerance);
 		pc++;
 		pc += midpoints[i].size();
@@ -1633,9 +1546,7 @@ PackedVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) cons
 	int pidx = 0;
 
 	for (int i = 0; i < points.size() - 1; i++) {
-
 		for (Map<float, Vector3>::Element *E = midpoints[i].front(); E; E = E->next()) {
-
 			pidx++;
 			bpw[pidx] = E->get();
 		}
@@ -1648,7 +1559,6 @@ PackedVector3Array Curve3D::tessellate(int p_max_stages, float p_tolerance) cons
 }
 
 void Curve3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_point_count"), &Curve3D::get_point_count);
 	ClassDB::bind_method(D_METHOD("add_point", "position", "in", "out", "at_position"), &Curve3D::add_point, DEFVAL(Vector3()), DEFVAL(Vector3()), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("set_point_position", "idx", "position"), &Curve3D::set_point_position);

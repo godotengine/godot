@@ -37,7 +37,6 @@
 #include <jni.h>
 
 struct jvalret {
-
 	jobject obj;
 	jvalue val;
 	jvalret() { obj = nullptr; }

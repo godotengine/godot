@@ -34,7 +34,6 @@
 #include "core/os/file_access.h"
 
 class FileAccessMemory : public FileAccess {
-
 	uint8_t *data = nullptr;
 	int length;
 	mutable int pos;

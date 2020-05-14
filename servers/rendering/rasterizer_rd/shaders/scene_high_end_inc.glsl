@@ -28,7 +28,6 @@ layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
 layout(set = 0, binding = 3, std140) uniform SceneData {
-
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
 
@@ -176,7 +175,6 @@ layout(set = 0, binding = 5, std430) restrict readonly buffer Lights {
 lights;
 
 struct ReflectionData {
-
 	vec3 box_extents;
 	float index;
 	vec3 box_offset;

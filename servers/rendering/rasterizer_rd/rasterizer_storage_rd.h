@@ -64,7 +64,6 @@ public:
 	typedef ShaderData *(*ShaderDataRequestFunction)();
 
 	struct MaterialData {
-
 		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
 		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
@@ -111,7 +110,6 @@ public:
 private:
 	/* TEXTURE API */
 	struct Texture {
-
 		enum Type {
 			TYPE_2D,
 			TYPE_LAYERED,
@@ -190,7 +188,6 @@ private:
 
 	struct DecalAtlas {
 		struct Texture {
-
 			int panorama_to_dp_users;
 			int users;
 			Rect2 uv_rect;
@@ -274,7 +271,6 @@ private:
 	/* Mesh */
 
 	struct Mesh {
-
 		struct Surface {
 			RS::PrimitiveType primitive = RS::PRIMITIVE_POINTS;
 			uint32_t format = 0;
@@ -416,7 +412,6 @@ private:
 	/* LIGHT */
 
 	struct Light {
-
 		RS::LightType type;
 		float param[RS::LIGHT_PARAM_MAX];
 		Color color = Color(1, 1, 1, 1);
@@ -441,7 +436,6 @@ private:
 	/* REFLECTION PROBE */
 
 	struct ReflectionProbe {
-
 		RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
 		int resolution = 256;
 		float intensity = 1.0;
@@ -464,7 +458,6 @@ private:
 	/* DECAL */
 
 	struct Decal {
-
 		Vector3 extents = Vector3(1, 1, 1);
 		RID textures[RS::DECAL_TEXTURE_MAX];
 		float emission_energy = 1.0;
@@ -486,7 +479,6 @@ private:
 	/* GI PROBE */
 
 	struct GIProbe {
-
 		RID octree_buffer;
 		RID data_buffer;
 		RID sdf_texture;
@@ -530,7 +522,6 @@ private:
 	/* REFLECTION PROBE */
 
 	struct Lightmap {
-
 		RID light_texture;
 		bool uses_spherical_harmonics = false;
 		bool interior = false;
@@ -564,7 +555,6 @@ private:
 	/* RENDER TARGET */
 
 	struct RenderTarget {
-
 		Size2i size;
 		RID framebuffer;
 		RID color;
@@ -605,7 +595,6 @@ private:
 	/* GLOBAL SHADER VARIABLES */
 
 	struct GlobalVariables {
-
 		enum {
 			BUFFER_DIRTY_REGION_SIZE = 1024
 		};
@@ -1074,7 +1063,6 @@ public:
 	AABB light_get_aabb(RID p_light) const;
 
 	_FORCE_INLINE_ float light_get_param(RID p_light, RS::LightParam p_param) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
@@ -1082,7 +1070,6 @@ public:
 	}
 
 	_FORCE_INLINE_ RID light_get_projector(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, RID());
 
@@ -1090,7 +1077,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Color light_get_color(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
@@ -1098,7 +1084,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, Color());
 
@@ -1106,7 +1091,6 @@ public:
 	}
 
 	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, 0);
 
@@ -1114,7 +1098,6 @@ public:
 	}
 
 	_FORCE_INLINE_ bool light_has_shadow(RID p_light) const {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
@@ -1122,7 +1105,6 @@ public:
 	}
 
 	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, RS::LIGHT_DIRECTIONAL);
 
@@ -1130,7 +1112,6 @@ public:
 	}
 
 	_FORCE_INLINE_ float light_get_transmittance_bias(RID p_light) const {
-
 		const Light *light = light_owner.getornull(p_light);
 		ERR_FAIL_COND_V(!light, 0.0);
 

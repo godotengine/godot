@@ -36,7 +36,6 @@
 #include "core/object.h"
 
 class InAppStore : public Object {
-
 	GDCLASS(InAppStore, Object);
 
 	static InAppStore *instance;

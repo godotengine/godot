@@ -37,7 +37,6 @@
 #include "core/vector.h"
 
 class Engine {
-
 public:
 	struct Singleton {
 		StringName name;

@@ -399,7 +399,6 @@ MonoBoolean godot_icall_Utils_OS_UnixFileHasExecutableAccess(MonoString *p_file_
 }
 
 void register_editor_internal_calls() {
-
 	// GodotSharpDirs
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResDataDir", (void *)godot_icall_GodotSharpDirs_ResDataDir);
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResMetadataDir", (void *)godot_icall_GodotSharpDirs_ResMetadataDir);

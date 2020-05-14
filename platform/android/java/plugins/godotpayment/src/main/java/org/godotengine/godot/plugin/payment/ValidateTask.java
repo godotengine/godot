@@ -43,7 +43,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 abstract public class ValidateTask {
-
 	private Activity context;
 	private GodotPayment godotPayments;
 	private ProgressDialog dialog;

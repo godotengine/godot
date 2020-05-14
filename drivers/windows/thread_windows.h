@@ -39,7 +39,6 @@
 #include <windows.h>
 
 class ThreadWindows : public Thread {
-
 	ThreadCreateCallback callback;
 	void *user;
 	ID id;

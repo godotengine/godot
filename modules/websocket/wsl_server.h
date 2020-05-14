@@ -43,12 +43,10 @@
 #define WSL_SERVER_TIMEOUT 1000
 
 class WSLServer : public WebSocketServer {
-
 	GDCIIMPL(WSLServer, WebSocketServer);
 
 private:
 	class PendingPeer : public Reference {
-
 	private:
 		bool _parse_request(const Vector<String> p_protocols);
 

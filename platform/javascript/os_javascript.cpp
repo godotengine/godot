@@ -47,7 +47,6 @@
 #include <stdlib.h>
 
 bool OS_JavaScript::has_touchscreen_ui_hint() const {
-
 	/* clang-format off */
 	return EM_ASM_INT_V(
 		return 'ontouchstart' in window;
@@ -58,18 +57,15 @@ bool OS_JavaScript::has_touchscreen_ui_hint() const {
 // Audio
 
 int OS_JavaScript::get_audio_driver_count() const {
-
 	return 1;
 }
 
 const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
-
 	return "JavaScript";
 }
 
 // Lifecycle
 void OS_JavaScript::initialize() {
-
 	OS_Unix::initialize_core();
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix>>(FileAccess::ACCESS_RESOURCES);
 	DisplayServerJavaScript::register_javascript_driver();
@@ -93,22 +89,18 @@ void OS_JavaScript::resume_audio() {
 }
 
 void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
-
 	main_loop = p_main_loop;
 }
 
 MainLoop *OS_JavaScript::get_main_loop() const {
-
 	return main_loop;
 }
 
 void OS_JavaScript::main_loop_callback() {
-
 	get_singleton()->main_loop_iterate();
 }
 
 bool OS_JavaScript::main_loop_iterate() {
-
 	if (is_userfs_persistent() && sync_wait_time >= 0) {
 		int64_t current_time = get_ticks_msec();
 		int64_t elapsed_time = current_time - last_sync_check_time;
@@ -133,7 +125,6 @@ bool OS_JavaScript::main_loop_iterate() {
 }
 
 void OS_JavaScript::delete_main_loop() {
-
 	if (main_loop) {
 		memdelete(main_loop);
 	}
@@ -146,14 +137,12 @@ void OS_JavaScript::finalize_async() {
 }
 
 void OS_JavaScript::finalize() {
-
 	delete_main_loop();
 }
 
 // Miscellaneous
 
 Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
-
 	Array args;
 	for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
 		args.push_back(E->get());
@@ -175,17 +164,14 @@ Error OS_JavaScript::execute(const String &p_path, const List<String> &p_argumen
 }
 
 Error OS_JavaScript::kill(const ProcessID &p_pid) {
-
 	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "OS::kill() is not available on the HTML5 platform.");
 }
 
 int OS_JavaScript::get_process_id() const {
-
 	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the HTML5 platform.");
 }
 
 bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
-
 	if (p_feature == "HTML5" || p_feature == "web")
 		return true;
 
@@ -198,12 +184,10 @@ bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 }
 
 String OS_JavaScript::get_executable_path() const {
-
 	return OS::get_executable_path();
 }
 
 Error OS_JavaScript::shell_open(String p_uri) {
-
 	// Open URI in a new tab, browser will deal with it by protocol.
 	/* clang-format off */
 	EM_ASM_({
@@ -214,37 +198,30 @@ Error OS_JavaScript::shell_open(String p_uri) {
 }
 
 String OS_JavaScript::get_name() const {
-
 	return "HTML5";
 }
 
 bool OS_JavaScript::can_draw() const {
-
 	return true; // Always?
 }
 
 String OS_JavaScript::get_user_data_dir() const {
-
 	return "/userfs";
 };
 
 String OS_JavaScript::get_cache_path() const {
-
 	return "/home/web_user/.cache";
 }
 
 String OS_JavaScript::get_config_path() const {
-
 	return "/home/web_user/.config";
 }
 
 String OS_JavaScript::get_data_path() const {
-
 	return "/home/web_user/.local/share";
 }
 
 void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags) {
-
 	OS_JavaScript *os = get_singleton();
 	if (os->is_userfs_persistent() && p_file.begins_with("/userfs") && p_flags & FileAccess::WRITE) {
 		os->last_sync_check_time = OS::get_singleton()->get_ticks_msec();
@@ -254,17 +231,14 @@ void OS_JavaScript::file_access_close_callback(const String &p_file, int p_flags
 }
 
 void OS_JavaScript::set_idb_available(bool p_idb_available) {
-
 	idb_available = p_idb_available;
 }
 
 bool OS_JavaScript::is_userfs_persistent() const {
-
 	return idb_available;
 }
 
 OS_JavaScript *OS_JavaScript::get_singleton() {
-
 	return static_cast<OS_JavaScript *>(OS::get_singleton());
 }
 
@@ -272,7 +246,6 @@ void OS_JavaScript::initialize_joypads() {
 }
 
 OS_JavaScript::OS_JavaScript() {
-
 	AudioDriverManager::add_driver(&audio_driver_javascript);
 
 	Vector<Logger *> loggers;

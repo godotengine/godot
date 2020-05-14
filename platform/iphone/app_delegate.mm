@@ -426,7 +426,6 @@ OS::VideoMode _get_video_mode() {
 static int frame_count = 0;
 - (void)drawView:(UIView *)view;
 {
-
 	switch (frame_count) {
 		case 0: {
 			OS::get_singleton()->set_video_mode(_get_video_mode());
@@ -463,7 +462,6 @@ static int frame_count = 0;
 		}; break;
 
 		case 1: {
-
 			Main::setup2();
 			++frame_count;
 
@@ -490,7 +488,6 @@ static int frame_count = 0;
 					ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
 
 				} else if ([value isKindOfClass:[NSNumber class]]) {
-
 					NSNumber *n = (NSNumber *)value;
 					double dval = [n doubleValue];
 
@@ -502,7 +499,6 @@ static int frame_count = 0;
 		}; break;
 
 		case 2: {
-
 			Main::start();
 			++frame_count;
 

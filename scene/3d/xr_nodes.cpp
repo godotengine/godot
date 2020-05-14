@@ -443,7 +443,6 @@ void XRAnchor3D::_notification(int p_what) {
 };
 
 void XRAnchor3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_anchor_id", "anchor_id"), &XRAnchor3D::set_anchor_id);
 	ClassDB::bind_method(D_METHOD("get_anchor_id"), &XRAnchor3D::get_anchor_id);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_id", PROPERTY_HINT_RANGE, "0,32,1"), "set_anchor_id", "get_anchor_id");

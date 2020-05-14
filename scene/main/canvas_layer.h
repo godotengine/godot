@@ -36,7 +36,6 @@
 
 class Viewport;
 class CanvasLayer : public Node {
-
 	GDCLASS(CanvasLayer, Node);
 
 	bool locrotscale_dirty;

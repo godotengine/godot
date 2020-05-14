@@ -38,7 +38,6 @@ extern "C" {
 #endif
 
 void GDAPI godot_quat_new(godot_quat *r_dest, const godot_real p_x, const godot_real p_y, const godot_real p_z, const godot_real p_w) {
-
 	Quat *dest = (Quat *)r_dest;
 	*dest = Quat(p_x, p_y, p_z, p_w);
 }

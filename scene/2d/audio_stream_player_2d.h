@@ -36,7 +36,6 @@
 #include "servers/audio_server.h"
 
 class AudioStreamPlayer2D : public Node2D {
-
 	GDCLASS(AudioStreamPlayer2D, Node2D);
 
 private:
@@ -47,7 +46,6 @@ private:
 	};
 
 	struct Output {
-
 		AudioFrame vol;
 		int bus_index;
 		Viewport *viewport; //pointer only used for reference to previous mix

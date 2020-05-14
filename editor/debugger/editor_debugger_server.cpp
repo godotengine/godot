@@ -39,7 +39,6 @@
 #include "editor/editor_settings.h"
 
 class EditorDebuggerServerTCP : public EditorDebuggerServer {
-
 private:
 	Ref<TCP_Server> server;
 

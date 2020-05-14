@@ -153,7 +153,6 @@ public:
 
 protected:
 	static void _bind_methods() {
-
 		RD_BIND(Variant::INT, RDSamplerState, mag_filter);
 		RD_BIND(Variant::INT, RDSamplerState, min_filter);
 		RD_BIND(Variant::INT, RDSamplerState, mip_filter);
@@ -569,7 +568,6 @@ public:
 	RD_SETGET(bool, write_a)
 
 	void set_as_mix() {
-
 		base = RD::PipelineColorBlendState::Attachment();
 		base.enable_blend = true;
 		base.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
@@ -580,7 +578,6 @@ public:
 
 protected:
 	static void _bind_methods() {
-
 		ClassDB::bind_method(D_METHOD("set_as_mix"), &RDPipelineColorBlendStateAttachment::set_as_mix);
 
 		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, enable_blend);

@@ -36,7 +36,6 @@
 #include "scene/3d/camera_3d.h"
 
 class Camera3DEditor : public Control {
-
 	GDCLASS(Camera3DEditor, Control);
 
 	Panel *panel;
@@ -55,7 +54,6 @@ public:
 };
 
 class Camera3DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(Camera3DEditorPlugin, EditorPlugin);
 
 	//CameraEditor *camera_editor;

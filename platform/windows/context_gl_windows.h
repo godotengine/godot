@@ -44,7 +44,6 @@ typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 typedef int(APIENTRY *PFNWGLGETSWAPINTERVALEXTPROC)(void);
 
 class ContextGL_Windows {
-
 	HDC hDC;
 	HGLRC hRC;
 	unsigned int pixel_format;

@@ -5,7 +5,6 @@ layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
 void main() {
-
 	gl_Position = vertex_attrib;
 }
 
@@ -34,7 +33,6 @@ uniform highp float max_luminance;
 layout(location = 0) out highp float exposure;
 
 void main() {
-
 #ifdef EXPOSURE_BEGIN
 
 	ivec2 src_pos = ivec2(gl_FragCoord.xy) * source_render_size / target_size;

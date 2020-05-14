@@ -36,7 +36,6 @@ const char *VulkanContextIPhone::_get_platform_surface_extension() const {
 }
 
 int VulkanContextIPhone::window_create(void *p_window, int p_width, int p_height) {
-
 	VkIOSSurfaceCreateInfoMVK createInfo;
 	createInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
 	createInfo.pNext = NULL;

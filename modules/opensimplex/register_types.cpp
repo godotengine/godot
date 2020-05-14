@@ -33,7 +33,6 @@
 #include "open_simplex_noise.h"
 
 void register_opensimplex_types() {
-
 	ClassDB::register_class<OpenSimplexNoise>();
 	ClassDB::register_class<NoiseTexture>();
 }

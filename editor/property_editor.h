@@ -51,7 +51,6 @@ class CreateDialog;
 class PropertySelector;
 
 class EditorResourceConversionPlugin : public Reference {
-
 	GDCLASS(EditorResourceConversionPlugin, Reference);
 
 protected:
@@ -64,7 +63,6 @@ public:
 };
 
 class CustomPropertyEditor : public PopupPanel {
-
 	GDCLASS(CustomPropertyEditor, PopupPanel);
 
 	enum {

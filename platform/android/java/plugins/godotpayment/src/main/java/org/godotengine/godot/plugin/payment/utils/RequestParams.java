@@ -42,7 +42,6 @@ import org.apache.http.message.BasicNameValuePair;
  * @author Luis Linietsky <luis.linietsky@gmail.com>
  */
 public class RequestParams {
-
 	private HashMap<String, String> params;
 	private String url;
 

@@ -45,7 +45,6 @@
 //#define THEORA_USE_THREAD_STREAMING
 
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackTheora, VideoStreamPlayback);
 
 	enum {
@@ -161,7 +160,6 @@ public:
 };
 
 class VideoStreamTheora : public VideoStream {
-
 	GDCLASS(VideoStreamTheora, VideoStream);
 
 	String file;

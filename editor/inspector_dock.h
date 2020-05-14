@@ -47,7 +47,6 @@
 class EditorNode;
 
 class InspectorDock : public VBoxContainer {
-
 	GDCLASS(InspectorDock, VBoxContainer);
 
 	enum MenuOptions {

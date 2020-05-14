@@ -43,7 +43,6 @@
 OS *OS::singleton = nullptr;
 
 OS *OS::get_singleton() {
-
 	return singleton;
 }
 
@@ -84,7 +83,6 @@ uint64_t OS::get_splash_tick_msec() const {
 	return _msec_splash;
 }
 uint64_t OS::get_unix_time() const {
-
 	return 0;
 };
 uint64_t OS::get_system_time_secs() const {
@@ -116,12 +114,10 @@ void OS::add_logger(Logger *p_logger) {
 }
 
 void OS::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type) {
-
 	_logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
 }
 
 void OS::print(const char *p_format, ...) {
-
 	va_list argp;
 	va_start(argp, p_format);
 
@@ -140,54 +136,44 @@ void OS::printerr(const char *p_format, ...) {
 };
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
-
 	low_processor_usage_mode = p_enabled;
 }
 
 bool OS::is_in_low_processor_usage_mode() const {
-
 	return low_processor_usage_mode;
 }
 
 void OS::set_low_processor_usage_mode_sleep_usec(int p_usec) {
-
 	low_processor_usage_mode_sleep_usec = p_usec;
 }
 
 int OS::get_low_processor_usage_mode_sleep_usec() const {
-
 	return low_processor_usage_mode_sleep_usec;
 }
 
 String OS::get_executable_path() const {
-
 	return _execpath;
 }
 
 int OS::get_process_id() const {
-
 	return -1;
 };
 
 void OS::vibrate_handheld(int p_duration_ms) {
-
 	WARN_PRINT("vibrate_handheld() only works with Android and iOS");
 }
 
 bool OS::is_stdout_verbose() const {
-
 	return _verbose_stdout;
 }
 
 void OS::dump_memory_to_file(const char *p_file) {
-
 	//Memory::dump_static_mem_to_file(p_file);
 }
 
 static FileAccess *_OSPRF = nullptr;
 
 static void _OS_printres(Object *p_obj) {
-
 	Resource *res = Object::cast_to<Resource>(p_obj);
 	if (!res)
 		return;
@@ -200,10 +186,8 @@ static void _OS_printres(Object *p_obj) {
 }
 
 void OS::print_all_resources(String p_to_file) {
-
 	ERR_FAIL_COND(p_to_file != "" && _OSPRF);
 	if (p_to_file != "") {
-
 		Error err;
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
@@ -215,7 +199,6 @@ void OS::print_all_resources(String p_to_file) {
 	ObjectDB::debug_objects(_OS_printres);
 
 	if (p_to_file != "") {
-
 		if (_OSPRF)
 			memdelete(_OSPRF);
 		_OSPRF = nullptr;
@@ -223,42 +206,34 @@ void OS::print_all_resources(String p_to_file) {
 }
 
 void OS::print_resources_in_use(bool p_short) {
-
 	ResourceCache::dump(nullptr, p_short);
 }
 
 void OS::dump_resources_to_file(const char *p_file) {
-
 	ResourceCache::dump(p_file);
 }
 
 void OS::set_no_window_mode(bool p_enable) {
-
 	_no_window = p_enable;
 }
 
 bool OS::is_no_window_mode_enabled() const {
-
 	return _no_window;
 }
 
 int OS::get_exit_code() const {
-
 	return _exit_code;
 }
 void OS::set_exit_code(int p_code) {
-
 	_exit_code = p_code;
 }
 
 String OS::get_locale() const {
-
 	return "en";
 }
 
 // Helper function to ensure that a dir name/path will be valid on the OS
 String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separator) const {
-
 	Vector<String> invalid_chars = String(": * ? \" < > |").split(" ");
 	if (p_allow_dir_separator) {
 		// Dir separators are allowed, but disallow ".." to avoid going up the filesystem
@@ -278,50 +253,42 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_dir_separato
 
 // Get properly capitalized engine name for system paths
 String OS::get_godot_dir_name() const {
-
 	// Default to lowercase, so only override when different case is needed
 	return String(VERSION_SHORT_NAME).to_lower();
 }
 
 // OS equivalent of XDG_DATA_HOME
 String OS::get_data_path() const {
-
 	return ".";
 }
 
 // OS equivalent of XDG_CONFIG_HOME
 String OS::get_config_path() const {
-
 	return ".";
 }
 
 // OS equivalent of XDG_CACHE_HOME
 String OS::get_cache_path() const {
-
 	return ".";
 }
 
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
-
 	return ".";
 };
 
 // OS specific path for user://
 String OS::get_user_data_dir() const {
-
 	return ".";
 };
 
 // Absolute path to res://
 String OS::get_resource_dir() const {
-
 	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir) const {
-
 	return ".";
 }
 
@@ -332,22 +299,18 @@ Error OS::shell_open(String p_uri) {
 // implement these with the canvas?
 
 uint64_t OS::get_static_memory_usage() const {
-
 	return Memory::get_mem_usage();
 }
 
 uint64_t OS::get_static_memory_peak_usage() const {
-
 	return Memory::get_mem_max_usage();
 }
 
 Error OS::set_cwd(const String &p_cwd) {
-
 	return ERR_CANT_OPEN;
 }
 
 uint64_t OS::get_free_static_memory() const {
-
 	return Memory::get_mem_available();
 }
 
@@ -355,7 +318,6 @@ void OS::yield() {
 }
 
 void OS::ensure_user_data_dir() {
-
 	String dd = get_user_data_dir();
 	DirAccess *da = DirAccess::open(dd);
 	if (da) {
@@ -371,28 +333,23 @@ void OS::ensure_user_data_dir() {
 }
 
 String OS::get_model_name() const {
-
 	return "GenericDevice";
 }
 
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
-
 	_execpath = p_execpath;
 	_cmdline = p_args;
 };
 
 String OS::get_unique_id() const {
-
 	ERR_FAIL_V("");
 }
 
 int OS::get_processor_count() const {
-
 	return 1;
 }
 
 bool OS::can_use_threads() const {
-
 #ifdef NO_THREADS
 	return false;
 #else
@@ -401,12 +358,10 @@ bool OS::can_use_threads() const {
 }
 
 void OS::set_has_server_feature_callback(HasServerFeatureCallback p_callback) {
-
 	has_server_feature_callback = p_callback;
 }
 
 bool OS::has_feature(const String &p_feature) {
-
 	if (p_feature == get_name())
 		return true;
 #ifdef DEBUG_ENABLED
@@ -485,7 +440,6 @@ List<String> OS::get_restart_on_exit_arguments() const {
 }
 
 PackedStringArray OS::get_connected_midi_inputs() {
-
 	if (MIDIDriver::get_singleton())
 		return MIDIDriver::get_singleton()->get_connected_inputs();
 
@@ -494,13 +448,11 @@ PackedStringArray OS::get_connected_midi_inputs() {
 }
 
 void OS::open_midi_inputs() {
-
 	if (MIDIDriver::get_singleton())
 		MIDIDriver::get_singleton()->open();
 }
 
 void OS::close_midi_inputs() {
-
 	if (MIDIDriver::get_singleton())
 		MIDIDriver::get_singleton()->close();
 }

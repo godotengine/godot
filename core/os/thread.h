@@ -46,7 +46,6 @@ public:
 	};
 
 	struct Settings {
-
 		Priority priority;
 		Settings() { priority = PRIORITY_NORMAL; }
 	};

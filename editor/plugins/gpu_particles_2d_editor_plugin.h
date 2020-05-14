@@ -39,7 +39,6 @@
 #include "scene/gui/file_dialog.h"
 
 class GPUParticles2DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GPUParticles2DEditorPlugin, EditorPlugin);
 
 	enum {

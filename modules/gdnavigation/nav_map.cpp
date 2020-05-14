@@ -71,7 +71,6 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize) const {
-
 	const gd::Polygon *begin_poly = nullptr;
 	const gd::Polygon *end_poly = nullptr;
 	Vector3 begin_point;
@@ -85,7 +84,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 		// For each point cast a face and check the distance between the origin/destination
 		for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
-
 			Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 spoint = f.get_closest_point_to(p_origin);
 			float dpoint = spoint.distance_to(p_origin);
@@ -111,7 +109,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	}
 
 	if (begin_poly == end_poly) {
-
 		Vector<Vector3> path;
 		path.resize(2);
 		path.write[0] = begin_point;
@@ -142,7 +139,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	bool is_reachable = true;
 
 	while (found_route == false) {
-
 		{
 			// Takes the current least_cost_poly neighbors and compute the traveled_distance of each
 			for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
@@ -172,7 +168,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				if (it != navigation_polys.end()) {
 					// Oh this was visited already, can we win the cost?
 					if (it->traveled_distance > new_distance) {
-
 						it->prev_navigation_poly_id = least_cost_id;
 						it->back_navigation_edge = edge.other_edge;
 						it->traveled_distance = new_distance;
@@ -274,10 +269,8 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	}
 
 	if (found_route) {
-
 		Vector<Vector3> path;
 		if (p_optimize) {
-
 			// String pulling
 
 			gd::NavigationPoly *apex_poly = &navigation_polys[least_cost_id];
@@ -291,7 +284,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			path.push_back(end_point);
 
 			while (p) {
-
 				Vector3 left;
 				Vector3 right;
 
@@ -320,7 +312,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 						left_poly = p;
 						portal_left = left;
 					} else {
-
 						clip_path(navigation_polys, path, apex_poly, portal_right, right_poly);
 
 						apex_point = portal_right;
@@ -340,7 +331,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 						right_poly = p;
 						portal_right = right;
 					} else {
-
 						clip_path(navigation_polys, path, apex_poly, portal_left, left_poly);
 
 						apex_point = portal_left;
@@ -371,7 +361,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 			// Add mid points
 			int np_id = least_cost_id;
 			while (np_id != -1) {
-
 #ifdef USE_ENTRY_POINT
 				Vector3 point = navigation_polys[np_id].entry;
 #else
@@ -393,7 +382,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 }
 
 Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
-
 	bool use_collision = p_use_collision;
 	Vector3 closest_point;
 	real_t closest_point_d = 1e20;
@@ -404,7 +392,6 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 
 		// For each point cast a face and check the distance to the segment
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-
 			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			Vector3 inters;
 			if (f.intersects_segment(p_from, p_to, &inters)) {
@@ -414,7 +401,6 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 					use_collision = true;
 					closest_point_d = d;
 				} else if (closest_point_d > d) {
-
 					closest_point = inters;
 					closest_point_d = d;
 				}
@@ -422,9 +408,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 		}
 
 		if (use_collision == false) {
-
 			for (size_t point_id = 0; point_id < p.points.size(); point_id += 1) {
-
 				Vector3 a, b;
 
 				Geometry::get_closest_points_between_segments(
@@ -437,7 +421,6 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 
 				const real_t d = a.distance_to(b);
 				if (d < closest_point_d) {
-
 					closest_point_d = d;
 					closest_point = b;
 				}
@@ -460,7 +443,6 @@ Vector3 NavMap::get_closest_point(const Vector3 &p_point) const {
 
 		// For each point cast a face and check the distance to the point
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-
 			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			const Vector3 inters = f.get_closest_point_to(p_point);
 			const real_t d = inters.distance_to(p_point);
@@ -487,7 +469,6 @@ Vector3 NavMap::get_closest_point_normal(const Vector3 &p_point) const {
 
 		// For each point cast a face and check the distance to the point
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-
 			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			const Vector3 inters = f.get_closest_point_to(p_point);
 			const real_t d = inters.distance_to(p_point);
@@ -515,7 +496,6 @@ RID NavMap::get_closest_point_owner(const Vector3 &p_point) const {
 
 		// For each point cast a face and check the distance to the point
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
-
 			const Face3 f(p.points[point_id - 2].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 			const Vector3 inters = f.get_closest_point_to(p_point);
 			const real_t d = inters.distance_to(p_point);
@@ -579,7 +559,6 @@ void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
 }
 
 void NavMap::sync() {
-
 	if (regenerate_polygons) {
 		for (size_t r(0); r < regions.size(); r++) {
 			regions[r]->scratch_polygons();
@@ -777,7 +756,6 @@ void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys
 	cut_plane.d = cut_plane.normal.dot(from);
 
 	while (from_poly != p_to_poly) {
-
 		int back_nav_edge = from_poly->back_navigation_edge;
 		Vector3 a = from_poly->poly->points[back_nav_edge].pos;
 		Vector3 b = from_poly->poly->points[(back_nav_edge + 1) % from_poly->poly->points.size()].pos;
@@ -786,7 +764,6 @@ void NavMap::clip_path(const std::vector<gd::NavigationPoly> &p_navigation_polys
 		from_poly = &p_navigation_polys[from_poly->prev_navigation_poly_id];
 
 		if (a.distance_to(b) > CMP_EPSILON) {
-
 			Vector3 inters;
 			if (cut_plane.intersects_segment(a, b, &inters)) {
 				if (inters.distance_to(p_to_point) > CMP_EPSILON && inters.distance_to(path[path.size() - 1]) > CMP_EPSILON) {

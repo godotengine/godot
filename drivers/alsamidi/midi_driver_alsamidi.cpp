@@ -125,7 +125,6 @@ void MIDIDriverALSAMidi::thread_func(void *p_udata) {
 }
 
 Error MIDIDriverALSAMidi::open() {
-
 	void **hints;
 
 	if (snd_device_name_hint(-1, "rawmidi", &hints) < 0)
@@ -155,7 +154,6 @@ Error MIDIDriverALSAMidi::open() {
 }
 
 void MIDIDriverALSAMidi::close() {
-
 	if (thread) {
 		exit_thread = true;
 		Thread::wait_to_finish(thread);
@@ -172,17 +170,14 @@ void MIDIDriverALSAMidi::close() {
 }
 
 void MIDIDriverALSAMidi::lock() const {
-
 	mutex.lock();
 }
 
 void MIDIDriverALSAMidi::unlock() const {
-
 	mutex.unlock();
 }
 
 PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
-
 	PackedStringArray list;
 
 	lock();
@@ -201,14 +196,12 @@ PackedStringArray MIDIDriverALSAMidi::get_connected_inputs() {
 }
 
 MIDIDriverALSAMidi::MIDIDriverALSAMidi() {
-
 	thread = nullptr;
 
 	exit_thread = false;
 }
 
 MIDIDriverALSAMidi::~MIDIDriverALSAMidi() {
-
 	close();
 }
 

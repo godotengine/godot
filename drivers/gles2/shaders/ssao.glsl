@@ -5,7 +5,6 @@ layout(location = 0) in highp vec4 vertex_attrib;
 /* clang-format on */
 
 void main() {
-
 	gl_Position = vertex_attrib;
 	gl_Position.z = 1.0;
 }
@@ -207,7 +206,6 @@ float sampleAO(in ivec2 ssC, in vec3 C, in vec3 n_C, in float ssDiskRadius, in f
 }
 
 void main() {
-
 	// Pixel being shaded
 	ivec2 ssC = ivec2(gl_FragCoord.xy);
 

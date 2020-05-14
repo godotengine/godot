@@ -31,12 +31,10 @@
 #include "center_container.h"
 
 Size2 CenterContainer::get_minimum_size() const {
-
 	if (use_top_left)
 		return Size2();
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-
 		Control *c = Object::cast_to<Control>(get_child(i));
 		if (!c)
 			continue;
@@ -53,7 +51,6 @@ Size2 CenterContainer::get_minimum_size() const {
 }
 
 void CenterContainer::set_use_top_left(bool p_enable) {
-
 	if (use_top_left == p_enable) {
 		return;
 	}
@@ -65,17 +62,13 @@ void CenterContainer::set_use_top_left(bool p_enable) {
 }
 
 bool CenterContainer::is_using_top_left() const {
-
 	return use_top_left;
 }
 
 void CenterContainer::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_SORT_CHILDREN) {
-
 		Size2 size = get_size();
 		for (int i = 0; i < get_child_count(); i++) {
-
 			Control *c = Object::cast_to<Control>(get_child(i));
 			if (!c)
 				continue;
@@ -90,7 +83,6 @@ void CenterContainer::_notification(int p_what) {
 }
 
 void CenterContainer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_use_top_left", "enable"), &CenterContainer::set_use_top_left);
 	ClassDB::bind_method(D_METHOD("is_using_top_left"), &CenterContainer::is_using_top_left);
 
@@ -98,6 +90,5 @@ void CenterContainer::_bind_methods() {
 }
 
 CenterContainer::CenterContainer() {
-
 	use_top_left = false;
 }

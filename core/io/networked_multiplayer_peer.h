@@ -34,7 +34,6 @@
 #include "core/io/packet_peer.h"
 
 class NetworkedMultiplayerPeer : public PacketPeer {
-
 	GDCLASS(NetworkedMultiplayerPeer, PacketPeer);
 
 protected:

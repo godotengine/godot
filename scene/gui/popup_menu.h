@@ -35,7 +35,6 @@
 #include "scene/gui/shortcut.h"
 
 class PopupMenu : public Popup {
-
 	GDCLASS(PopupMenu, Popup);
 
 	struct Item {

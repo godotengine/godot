@@ -35,7 +35,6 @@
 #include "scene/2d/collision_polygon_2d.h"
 
 class CollisionPolygon2DEditor : public AbstractPolygon2DEditor {
-
 	GDCLASS(CollisionPolygon2DEditor, AbstractPolygon2DEditor);
 
 	CollisionPolygon2D *node;
@@ -49,7 +48,6 @@ public:
 };
 
 class CollisionPolygon2DEditorPlugin : public AbstractPolygon2DEditorPlugin {
-
 	GDCLASS(CollisionPolygon2DEditorPlugin, AbstractPolygon2DEditorPlugin);
 
 public:

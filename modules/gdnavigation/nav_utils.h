@@ -45,7 +45,6 @@ namespace gd {
 struct Polygon;
 
 union PointKey {
-
 	struct {
 		int64_t x : 21;
 		int64_t y : 22;
@@ -57,7 +56,6 @@ union PointKey {
 };
 
 struct EdgeKey {
-
 	PointKey a;
 	PointKey b;
 
@@ -109,7 +107,6 @@ struct Polygon {
 };
 
 struct Connection {
-
 	Polygon *A = nullptr;
 	int A_edge = -1;
 	Polygon *B = nullptr;

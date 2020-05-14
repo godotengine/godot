@@ -40,7 +40,6 @@ class VPXDecoder;
 class OpusVorbisDecoder;
 
 class VideoStreamPlaybackWebm : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback);
 
 	String file_name;
@@ -107,7 +106,6 @@ private:
 /**/
 
 class VideoStreamWebm : public VideoStream {
-
 	GDCLASS(VideoStreamWebm, VideoStream);
 
 	String file;

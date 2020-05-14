@@ -36,7 +36,6 @@
 #include "core/set.h"
 
 class ProjectSettings : public Object {
-
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 

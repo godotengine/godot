@@ -204,7 +204,6 @@ public:
 };
 
 class CSGSphere3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGSphere3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
@@ -237,7 +236,6 @@ public:
 };
 
 class CSGBox3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGBox3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
@@ -266,7 +264,6 @@ public:
 };
 
 class CSGCylinder3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGCylinder3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
@@ -303,7 +300,6 @@ public:
 };
 
 class CSGTorus3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGTorus3D, CSGPrimitive3D);
 	virtual CSGBrush *_build_brush();
 
@@ -340,7 +336,6 @@ public:
 };
 
 class CSGPolygon3D : public CSGPrimitive3D {
-
 	GDCLASS(CSGPolygon3D, CSGPrimitive3D);
 
 public:

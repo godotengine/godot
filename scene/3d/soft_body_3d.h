@@ -36,7 +36,6 @@
 class SoftBody3D;
 
 class SoftBodyRenderingServerHandler {
-
 	friend class SoftBody3D;
 
 	RID mesh;

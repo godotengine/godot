@@ -35,7 +35,6 @@
 #include "scene/main/node.h"
 
 class SceneState : public Reference {
-
 	GDCLASS(SceneState, Reference);
 
 	Vector<StringName> names;
@@ -54,7 +53,6 @@ class SceneState : public Reference {
 	};
 
 	struct NodeData {
-
 		int parent;
 		int owner;
 		int type;
@@ -63,7 +61,6 @@ class SceneState : public Reference {
 		int index;
 
 		struct Property {
-
 			int name;
 			int value;
 		};
@@ -81,7 +78,6 @@ class SceneState : public Reference {
 	Vector<NodeData> nodes;
 
 	struct ConnectionData {
-
 		int from;
 		int to;
 		int signal;
@@ -195,7 +191,6 @@ public:
 VARIANT_ENUM_CAST(SceneState::GenEditState)
 
 class PackedScene : public Resource {
-
 	GDCLASS(PackedScene, Resource);
 	RES_BASE_EXTENSION("scn");
 

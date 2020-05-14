@@ -35,7 +35,6 @@
 #include "scene/gui/popup_menu.h"
 
 class LineEdit : public Control {
-
 	GDCLASS(LineEdit, Control);
 
 public:
@@ -94,7 +93,6 @@ private:
 	Ref<Texture2D> right_icon;
 
 	struct Selection {
-
 		int begin;
 		int end;
 		int cursor_start;

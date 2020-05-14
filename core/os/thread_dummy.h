@@ -36,7 +36,6 @@
 #include "core/os/thread.h"
 
 class ThreadDummy : public Thread {
-
 	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings());
 
 public:
@@ -46,7 +45,6 @@ public:
 };
 
 class RWLockDummy : public RWLock {
-
 	static RWLock *create();
 
 public:

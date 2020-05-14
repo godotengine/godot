@@ -38,7 +38,6 @@
 
 #ifdef DEBUG_ENABLED
 static String format_error_message(DWORD id) {
-
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 			nullptr, id, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&messageBuffer, 0, nullptr);
@@ -83,7 +82,6 @@ void DisplayServerWindows::alert(const String &p_alert, const String &p_title) {
 }
 
 void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
-
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED) {
 		WindowData &wd = windows[MAIN_WINDOW_ID];
 
@@ -93,7 +91,6 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 		ClientToScreen(wd.hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
 		if (p_mode == MOUSE_MODE_CAPTURED) {
-
 			center = window_get_size() / 2;
 			POINT pos = { (int)center.x, (int)center.y };
 			ClientToScreen(wd.hWnd, &pos);
@@ -114,7 +111,6 @@ void DisplayServerWindows::_set_mouse_mode_impl(MouseMode p_mode) {
 	}
 }
 void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (mouse_mode == p_mode)
@@ -129,7 +125,6 @@ DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 }
 
 void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(last_focused_window)) {
@@ -137,11 +132,9 @@ void DisplayServerWindows::mouse_warp_to_position(const Point2i &p_to) {
 	}
 
 	if (mouse_mode == MOUSE_MODE_CAPTURED) {
-
 		old_x = p_to.x;
 		old_y = p_to.y;
 	} else {
-
 		POINT p;
 		p.x = p_to.x;
 		p.y = p_to.y;
@@ -161,7 +154,6 @@ int DisplayServerWindows::mouse_get_button_state() const {
 }
 
 void DisplayServerWindows::clipboard_set(const String &p_text) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(last_focused_window)) {
@@ -201,7 +193,6 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 	CloseClipboard();
 }
 String DisplayServerWindows::clipboard_get() const {
-
 	_THREAD_SAFE_METHOD_
 
 	if (!windows.has(last_focused_window)) {
@@ -214,26 +205,20 @@ String DisplayServerWindows::clipboard_get() const {
 	};
 
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-
 		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
 		if (mem != nullptr) {
-
 			LPWSTR ptr = (LPWSTR)GlobalLock(mem);
 			if (ptr != nullptr) {
-
 				ret = String((CharType *)ptr);
 				GlobalUnlock(mem);
 			};
 		};
 
 	} else if (IsClipboardFormatAvailable(CF_TEXT)) {
-
 		HGLOBAL mem = GetClipboardData(CF_UNICODETEXT);
 		if (mem != nullptr) {
-
 			LPTSTR ptr = (LPTSTR)GlobalLock(mem);
 			if (ptr != nullptr) {
-
 				ret.parse_utf8((const char *)ptr);
 				GlobalUnlock(mem);
 			};
@@ -252,7 +237,6 @@ typedef struct {
 } EnumScreenData;
 
 static BOOL CALLBACK _MonitorEnumProcScreen(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-
 	EnumScreenData *data = (EnumScreenData *)dwData;
 	if (data->monitor == hMonitor) {
 		data->screen = data->count;
@@ -263,7 +247,6 @@ static BOOL CALLBACK _MonitorEnumProcScreen(HMONITOR hMonitor, HDC hdcMonitor, L
 }
 
 static BOOL CALLBACK _MonitorEnumProcCount(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-
 	int *data = (int *)dwData;
 	(*data)++;
 	return TRUE;
@@ -284,7 +267,6 @@ typedef struct {
 } EnumPosData;
 
 static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-
 	EnumPosData *data = (EnumPosData *)dwData;
 	if (data->count == data->screen) {
 		data->pos.x = lprcMonitor->left;
@@ -295,7 +277,6 @@ static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 	return TRUE;
 }
 Point2i DisplayServerWindows::screen_get_position(int p_screen) const {
-
 	_THREAD_SAFE_METHOD_
 
 	EnumPosData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Point2() };
@@ -316,7 +297,6 @@ typedef struct {
 } EnumRectData;
 
 static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-
 	EnumSizeData *data = (EnumSizeData *)dwData;
 	if (data->count == data->screen) {
 		data->size.x = lprcMonitor->right - lprcMonitor->left;
@@ -328,7 +308,6 @@ static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPR
 }
 
 Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
-
 	_THREAD_SAFE_METHOD_
 
 	EnumSizeData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Size2() };
@@ -337,7 +316,6 @@ Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 }
 
 static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-
 	EnumRectData *data = (EnumRectData *)dwData;
 	if (data->count == data->screen) {
 		MONITORINFO minfo;
@@ -356,7 +334,6 @@ static BOOL CALLBACK _MonitorEnumProcUsableSize(HMONITOR hMonitor, HDC hdcMonito
 }
 
 Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
-
 	_THREAD_SAFE_METHOD_
 
 	EnumRectData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Rect2i() };
@@ -378,7 +355,6 @@ enum _MonitorDpiType {
 };
 
 static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Default) {
-
 	int dpiX = 96, dpiY = 96;
 
 	static HMODULE Shcore = nullptr;
@@ -401,7 +377,6 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 	if (hmon && (Shcore != (HMODULE)INVALID_HANDLE_VALUE)) {
 		hr = getDPIForMonitor(hmon, dpiType /*MDT_Effective_DPI*/, &x, &y);
 		if (SUCCEEDED(hr) && (x > 0) && (y > 0)) {
-
 			dpiX = (int)x;
 			dpiY = (int)y;
 		}
@@ -425,7 +400,6 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 }
 
 static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
-
 	EnumDpiData *data = (EnumDpiData *)dwData;
 	if (data->count == data->screen) {
 		data->dpi = QueryDpiForMonitor(hMonitor);
@@ -462,7 +436,6 @@ bool DisplayServerWindows::screen_is_kept_on() const {
 }
 
 Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
-
 	_THREAD_SAFE_METHOD_
 
 	Vector<DisplayServer::WindowID> ret;
@@ -473,7 +446,6 @@ Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
 }
 
 DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(const Point2i &p_position) const {
-
 	POINT p;
 	p.x = p_position.x;
 	p.y = p_position.y;
@@ -488,7 +460,6 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 }
 
 DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
-
 	_THREAD_SAFE_METHOD_
 
 	WindowID window_id = _create_window(p_mode, p_flags, p_rect);
@@ -519,7 +490,6 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	return window_id;
 }
 void DisplayServerWindows::delete_sub_window(WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -550,7 +520,6 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 }
 
 void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -558,7 +527,6 @@ void DisplayServerWindows::window_attach_instance_id(ObjectID p_instance, Window
 }
 
 ObjectID DisplayServerWindows::window_get_attached_instance_id(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), ObjectID());
@@ -566,7 +534,6 @@ ObjectID DisplayServerWindows::window_get_attached_instance_id(WindowID p_window
 }
 
 void DisplayServerWindows::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -574,21 +541,18 @@ void DisplayServerWindows::window_set_rect_changed_callback(const Callable &p_ca
 }
 
 void DisplayServerWindows::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	windows[p_window].event_callback = p_callable;
 }
 void DisplayServerWindows::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	windows[p_window].input_event_callback = p_callable;
 }
 void DisplayServerWindows::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -596,7 +560,6 @@ void DisplayServerWindows::window_set_input_text_callback(const Callable &p_call
 }
 
 void DisplayServerWindows::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -604,7 +567,6 @@ void DisplayServerWindows::window_set_drop_files_callback(const Callable &p_call
 }
 
 void DisplayServerWindows::window_set_title(const String &p_title, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -612,7 +574,6 @@ void DisplayServerWindows::window_set_title(const String &p_title, WindowID p_wi
 }
 
 int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), -1);
@@ -622,7 +583,6 @@ int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {
 	return data.screen;
 }
 void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -633,7 +593,6 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 }
 
 Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
@@ -659,7 +618,6 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 #endif
 }
 void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
-
 	POINT mouse_pos;
 	if (GetCursorPos(&mouse_pos) && ScreenToClient(windows[p_window].hWnd, &mouse_pos)) {
 		if (mouse_pos.x > 0 && mouse_pos.y > 0 && mouse_pos.x <= windows[p_window].width && mouse_pos.y <= windows[p_window].height) {
@@ -671,7 +629,6 @@ void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
 	}
 }
 void DisplayServerWindows::window_set_position(const Point2i &p_position, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -712,7 +669,6 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 }
 
 void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_parent) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(p_window == p_parent);
@@ -749,7 +705,6 @@ void DisplayServerWindows::window_set_transient(WindowID p_window, WindowID p_pa
 }
 
 void DisplayServerWindows::window_set_max_size(const Size2i p_size, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -762,7 +717,6 @@ void DisplayServerWindows::window_set_max_size(const Size2i p_size, WindowID p_w
 	wd.max_size = p_size;
 }
 Size2i DisplayServerWindows::window_get_max_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -771,7 +725,6 @@ Size2i DisplayServerWindows::window_get_max_size(WindowID p_window) const {
 }
 
 void DisplayServerWindows::window_set_min_size(const Size2i p_size, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -784,7 +737,6 @@ void DisplayServerWindows::window_set_min_size(const Size2i p_size, WindowID p_w
 	wd.min_size = p_size;
 }
 Size2i DisplayServerWindows::window_get_min_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -793,7 +745,6 @@ Size2i DisplayServerWindows::window_get_min_size(WindowID p_window) const {
 }
 
 void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -838,7 +789,6 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	}
 }
 Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -855,7 +805,6 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	return Size2();
 }
 Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -869,7 +818,6 @@ Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
 }
 
 void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscreen, bool p_borderless, bool p_resizable, bool p_maximized, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
-
 	r_style = 0;
 	r_style_ex = WS_EX_WINDOWEDGE;
 	if (p_main_window) {
@@ -882,7 +830,6 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 		//	r_style_ex |= WS_EX_TOOLWINDOW;
 		//}
 	} else {
-
 		if (p_resizable) {
 			if (p_maximized) {
 				r_style = WS_OVERLAPPEDWINDOW | WS_MAXIMIZE;
@@ -901,7 +848,6 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_fullscre
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint, bool p_maximized) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -925,14 +871,12 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 }
 
 void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN) {
-
 		RECT rect;
 
 		wd.fullscreen = false;
@@ -954,21 +898,18 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	}
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED) {
-
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 		wd.maximized = true;
 		wd.minimized = false;
 	}
 
 	if (p_mode == WINDOW_MODE_WINDOWED) {
-
 		ShowWindow(wd.hWnd, SW_RESTORE);
 		wd.maximized = false;
 		wd.minimized = false;
 	}
 
 	if (p_mode == WINDOW_MODE_MINIMIZED) {
-
 		ShowWindow(wd.hWnd, SW_MINIMIZE);
 		wd.maximized = false;
 		wd.minimized = true;
@@ -998,7 +939,6 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	}
 }
 DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), WINDOW_MODE_WINDOWED);
@@ -1016,7 +956,6 @@ DisplayServer::WindowMode DisplayServerWindows::window_get_mode(WindowID p_windo
 }
 
 bool DisplayServerWindows::window_is_maximize_allowed(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
@@ -1027,34 +966,28 @@ bool DisplayServerWindows::window_is_maximize_allowed(WindowID p_window) const {
 }
 
 void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
-
 			wd.resizable = !p_enabled;
 			_update_window_style(p_window);
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-
 			wd.borderless = p_enabled;
 			_update_window_style(p_window);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top");
 			wd.always_on_top = p_enabled;
 			_update_window_style(p_window);
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-
 			// FIXME: Implement.
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
-
 			wd.no_focus = p_enabled;
 			_update_window_style(p_window);
 		} break;
@@ -1064,30 +997,24 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 }
 
 bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
 	const WindowData &wd = windows[p_window];
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
-
 			return !wd.resizable;
 		} break;
 		case WINDOW_FLAG_BORDERLESS: {
-
 			return wd.borderless;
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-
 			return wd.always_on_top;
 		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
-
 			// FIXME: Implement.
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
-
 			return wd.no_focus;
 		} break;
 		case WINDOW_FLAG_MAX:
@@ -1098,7 +1025,6 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 }
 
 void DisplayServerWindows::window_request_attention(WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1113,7 +1039,6 @@ void DisplayServerWindows::window_request_attention(WindowID p_window) {
 	FlashWindowEx(&info);
 }
 void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1123,7 +1048,6 @@ void DisplayServerWindows::window_move_to_foreground(WindowID p_window) {
 }
 
 bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), false);
@@ -1132,7 +1056,6 @@ bool DisplayServerWindows::window_can_draw(WindowID p_window) const {
 }
 
 bool DisplayServerWindows::can_any_window_draw() const {
-
 	_THREAD_SAFE_METHOD_
 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
@@ -1145,7 +1068,6 @@ bool DisplayServerWindows::can_any_window_draw() const {
 }
 
 void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1160,7 +1082,6 @@ void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p
 	}
 }
 void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
@@ -1181,7 +1102,6 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 }
 
 void DisplayServerWindows::console_set_visible(bool p_enabled) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (console_visible == p_enabled)
@@ -1194,7 +1114,6 @@ bool DisplayServerWindows::is_console_visible() const {
 }
 
 void DisplayServerWindows::cursor_set_shape(CursorShape p_shape) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
@@ -1240,7 +1159,6 @@ DisplayServer::CursorShape DisplayServerWindows::cursor_get_shape() const {
 }
 
 void DisplayServerWindows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap) {
-
 	// Get the system display DC
 	HDC hDC = GetDC(nullptr);
 
@@ -1290,11 +1208,9 @@ void DisplayServerWindows::GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTra
 }
 
 void DisplayServerWindows::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-
 	_THREAD_SAFE_METHOD_
 
 	if (p_cursor.is_valid()) {
-
 		Map<CursorShape, Vector<Variant>>::Element *cursor_c = cursors_cache.find(p_shape);
 
 		if (cursor_c) {
@@ -1433,7 +1349,6 @@ void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
 DisplayServer::LatinKeyboardVariant DisplayServerWindows::get_latin_keyboard_variant() const {
-
 	_THREAD_SAFE_METHOD_
 
 	unsigned long azerty[] = {
@@ -1500,7 +1415,6 @@ DisplayServer::LatinKeyboardVariant DisplayServerWindows::get_latin_keyboard_var
 }
 
 void DisplayServerWindows::process_events() {
-
 	_THREAD_SAFE_METHOD_
 
 	MSG msg;
@@ -1510,7 +1424,6 @@ void DisplayServerWindows::process_events() {
 	}
 
 	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
-
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
@@ -1522,7 +1435,6 @@ void DisplayServerWindows::process_events() {
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
-
 	_THREAD_SAFE_METHOD_
 
 	drop_events = true;
@@ -1538,7 +1450,6 @@ void DisplayServerWindows::swap_buffers() {
 }
 
 void DisplayServerWindows::set_native_icon(const String &p_filename) {
-
 	_THREAD_SAFE_METHOD_
 
 	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);
@@ -1632,7 +1543,6 @@ void DisplayServerWindows::set_native_icon(const String &p_filename) {
 	memdelete(icon_dir);
 }
 void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
-
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!p_icon.is_valid());
@@ -1664,9 +1574,7 @@ void DisplayServerWindows::set_icon(const Ref<Image> &p_icon) {
 	const uint8_t *r = icon->get_data().ptr();
 
 	for (int i = 0; i < h; i++) {
-
 		for (int j = 0; j < w; j++) {
-
 			const uint8_t *rpx = &r[((h - i - 1) * w + j) * 4];
 			uint8_t *wpx = &wr[(i * w + j) * 4];
 			wpx[0] = rpx[2];
@@ -1703,7 +1611,6 @@ void DisplayServerWindows::set_context(Context p_context) {
 #define IsTouchEvent(dw) (IsPenEvent(dw) && ((dw)&0x80))
 
 void DisplayServerWindows::_touch_event(WindowID p_window, bool p_pressed, float p_x, float p_y, int idx) {
-
 	// Defensive
 	if (touch_state.has(idx) == p_pressed)
 		return;
@@ -1725,7 +1632,6 @@ void DisplayServerWindows::_touch_event(WindowID p_window, bool p_pressed, float
 }
 
 void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, int idx) {
-
 	Map<int, Vector2>::Element *curr = touch_state.find(idx);
 	// Defensive
 	if (!curr)
@@ -1747,7 +1653,6 @@ void DisplayServerWindows::_drag_event(WindowID p_window, float p_x, float p_y, 
 }
 
 void DisplayServerWindows::_send_window_event(const WindowData &wd, WindowEvent p_event) {
-
 	if (!wd.event_callback.is_null()) {
 		Variant event = int(p_event);
 		Variant *eventp = &event;
@@ -1762,7 +1667,6 @@ void DisplayServerWindows::_dispatch_input_events(const Ref<InputEvent> &p_event
 }
 
 void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-
 	Variant ev = p_event;
 	Variant *evp = &ev;
 	Variant ret;
@@ -1790,11 +1694,8 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 }
 
 LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-
 	if (drop_events) {
-
 		if (user_proc) {
-
 			return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
 		} else {
 			return DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -1813,7 +1714,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	switch (uMsg) // Check For Windows Messages
 	{
 		case WM_SETFOCUS: {
-
 			windows[window_id].window_has_focus = true;
 			last_focused_window = window_id;
 
@@ -1842,7 +1742,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			windows[window_id].minimized = HIWORD(wParam) != 0;
 
 			if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE) {
-
 				_send_window_event(windows[window_id], WINDOW_EVENT_FOCUS_IN);
 				windows[window_id].window_focused = true;
 				alt_mem = false;
@@ -1899,13 +1798,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_CLOSE: // Did We Receive A Close Message?
 		{
-
 			_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 
 			return 0; // Jump Back
 		}
 		case WM_MOUSELEAVE: {
-
 			old_invalid = true;
 			outside = true;
 
@@ -1959,7 +1856,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mm->set_relative(Vector2(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
 
 				} else if (raw->data.mouse.usFlags == MOUSE_MOVE_ABSOLUTE) {
-
 					int nScreenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
 					int nScreenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
 					int nScreenLeft = GetSystemMetrics(SM_XVIRTUALSCREEN);
@@ -2008,7 +1904,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (!OS::get_singleton()->is_wintab_disabled() && wintab_available && windows[window_id].wtctx) {
 				PACKET packet;
 				if (wintab_WTPacket(windows[window_id].wtctx, wParam, &packet)) {
-
 					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
 					windows[window_id].last_pressure = pressure;
 					windows[window_id].last_pressure_update = 0;
@@ -2166,7 +2061,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_global_position(Vector2(coords.x, coords.y));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
-
 				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 				old_x = c.x;
 				old_y = c.y;
@@ -2187,7 +2081,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
 
 			if (old_invalid) {
-
 				old_x = mm->get_position().x;
 				old_y = mm->get_position().y;
 				old_invalid = false;
@@ -2269,7 +2162,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_global_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED) {
-
 				Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
 				old_x = c.x;
 				old_y = c.y;
@@ -2290,7 +2182,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
 
 			if (old_invalid) {
-
 				old_x = mm->get_position().x;
 				old_y = mm->get_position().y;
 				old_invalid = false;
@@ -2325,7 +2216,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_XBUTTONDBLCLK:
 		case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: {
-
 			Ref<InputEventMouseButton> mb;
 			mb.instance();
 			mb->set_window_id(window_id);
@@ -2371,7 +2261,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					mb->set_doubleclick(true);
 				} break;
 				case WM_MOUSEWHEEL: {
-
 					mb->set_pressed(true);
 					int motion = (short)HIWORD(wParam);
 					if (!motion)
@@ -2384,7 +2273,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 				} break;
 				case WM_MOUSEHWHEEL: {
-
 					mb->set_pressed(true);
 					int motion = (short)HIWORD(wParam);
 					if (!motion)
@@ -2399,7 +2287,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					}
 				} break;
 				case WM_XBUTTONDOWN: {
-
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1)
 						mb->set_button_index(BUTTON_XBUTTON1);
@@ -2407,7 +2294,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						mb->set_button_index(BUTTON_XBUTTON2);
 				} break;
 				case WM_XBUTTONUP: {
-
 					mb->set_pressed(false);
 					if (HIWORD(wParam) == XBUTTON1)
 						mb->set_button_index(BUTTON_XBUTTON1);
@@ -2415,7 +2301,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						mb->set_button_index(BUTTON_XBUTTON2);
 				} break;
 				case WM_XBUTTONDBLCLK: {
-
 					mb->set_pressed(true);
 					if (HIWORD(wParam) == XBUTTON1)
 						mb->set_button_index(BUTTON_XBUTTON1);
@@ -2441,17 +2326,14 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_position(Vector2(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED && !use_raw_input) {
-
 				mb->set_position(Vector2(old_x, old_y));
 			}
 
 			if (uMsg != WM_MOUSEWHEEL && uMsg != WM_MOUSEHWHEEL) {
 				if (mb->is_pressed()) {
-
 					if (++pressrc > 0 && mouse_mode != MOUSE_MODE_CAPTURED)
 						SetCapture(hWnd);
 				} else {
-
 					if (--pressrc <= 0) {
 						if (mouse_mode != MOUSE_MODE_CAPTURED) {
 							ReleaseCapture();
@@ -2492,7 +2374,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				windows[window_id].last_pos = Point2(x, y);
 
 				if (!windows[window_id].rect_changed_callback.is_null()) {
-
 					Variant size = Rect2i(windows[window_id].last_pos.x, windows[window_id].last_pos.y, windows[window_id].width, windows[window_id].height);
 					Variant *sizep = &size;
 					Variant ret;
@@ -2524,7 +2405,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			if (!windows[window_id].rect_changed_callback.is_null()) {
-
 				Variant size = Rect2i(windows[window_id].last_pos.x, windows[window_id].last_pos.y, windows[window_id].width, windows[window_id].height);
 				Variant *sizep = &size;
 				Variant ret;
@@ -2588,7 +2468,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		case WM_KEYDOWN: {
-
 			if (wParam == VK_SHIFT)
 				shift_mem = uMsg == WM_KEYDOWN;
 			if (wParam == VK_CONTROL)
@@ -2612,7 +2491,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			[[fallthrough]];
 		}
 		case WM_CHAR: {
-
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
 			// Make sure we don't include modifiers for the modifier key itself.
@@ -2635,12 +2513,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_INPUTLANGCHANGEREQUEST: {
-
 			// FIXME: Do something?
 		} break;
 
 		case WM_TOUCH: {
-
 			BOOL bHandled = FALSE;
 			UINT cInputs = LOWORD(wParam);
 			PTOUCHINPUT pInputs = memnew_arr(TOUCHINPUT, cInputs);
@@ -2655,10 +2531,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						ScreenToClient(hWnd, &touch_pos);
 						//do something with each touch input entry
 						if (ti.dwFlags & TOUCHEVENTF_MOVE) {
-
 							_drag_event(window_id, touch_pos.x, touch_pos.y, ti.dwID);
 						} else if (ti.dwFlags & (TOUCHEVENTF_UP | TOUCHEVENTF_DOWN)) {
-
 							_touch_event(window_id, ti.dwFlags & TOUCHEVENTF_DOWN, touch_pos.x, touch_pos.y, ti.dwID);
 						};
 					}
@@ -2678,7 +2552,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 
 		case WM_DEVICECHANGE: {
-
 			joypad->probe_joypads();
 		} break;
 		case WM_SETCURSOR: {
@@ -2701,7 +2574,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		} break;
 		case WM_DROPFILES: {
-
 			HDROP hDropInfo = (HDROP)wParam;
 			const int buffsize = 4096;
 			wchar_t buf[buffsize];
@@ -2711,7 +2583,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			Vector<String> files;
 
 			for (int i = 0; i < fcount; i++) {
-
 				DragQueryFileW(hDropInfo, i, buf, buffsize);
 				String file = buf;
 				files.push_back(file);
@@ -2728,9 +2599,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 
 		default: {
-
 			if (user_proc) {
-
 				return CallWindowProcW(user_proc, hWnd, uMsg, wParam, lParam);
 			};
 		};
@@ -2740,7 +2609,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-
 	DisplayServerWindows *ds_win = static_cast<DisplayServerWindows *>(DisplayServer::get_singleton());
 	if (ds_win)
 		return ds_win->WndProc(hWnd, uMsg, wParam, lParam);
@@ -2749,12 +2617,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 }
 
 void DisplayServerWindows::_process_key_events() {
-
 	for (int i = 0; i < key_event_pos; i++) {
-
 		KeyEvent &ke = key_event_buffer[i];
 		switch (ke.uMsg) {
-
 			case WM_CHAR: {
 				if ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR)) {
 					Ref<InputEventKey> k;
@@ -2784,7 +2649,6 @@ void DisplayServerWindows::_process_key_events() {
 			} break;
 			case WM_KEYUP:
 			case WM_KEYDOWN: {
-
 				Ref<InputEventKey> k;
 				k.instance();
 
@@ -2828,7 +2692,6 @@ void DisplayServerWindows::_process_key_events() {
 }
 
 DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
-
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
@@ -2953,7 +2816,6 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 } SHC_PROCESS_DPI_AWARENESS;
 
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-
 	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {
@@ -3042,7 +2904,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-
 		context_vulkan = memnew(VulkanContextWindows);
 		if (context_vulkan->initialize() != OK) {
 			memdelete(context_vulkan);
@@ -3054,7 +2915,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #endif
 #if defined(OPENGL_ENABLED)
 	if (rendering_driver_index == VIDEO_DRIVER_GLES2) {
-
 		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
 
 		if (context_gles2->initialize() != OK) {
@@ -3093,7 +2953,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #if defined(VULKAN_ENABLED)
 
 	if (rendering_driver == "vulkan") {
-
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
 
@@ -3144,17 +3003,14 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 }
 
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-
 	return memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_flags, p_resolution, r_error));
 }
 
 void DisplayServerWindows::register_windows_driver() {
-
 	register_create_function("windows", create_func, get_rendering_drivers_func);
 }
 
 DisplayServerWindows::~DisplayServerWindows() {
-
 	delete joypad;
 	touch_state.clear();
 
@@ -3162,7 +3018,6 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-
 		if (rendering_device_vulkan) {
 			rendering_device_vulkan->finalize();
 			memdelete(rendering_device_vulkan);

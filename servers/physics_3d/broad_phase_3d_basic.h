@@ -35,9 +35,7 @@
 #include "core/map.h"
 
 class BroadPhase3DBasic : public BroadPhase3DSW {
-
 	struct Element {
-
 		CollisionObject3DSW *owner;
 		bool _static;
 		AABB aabb;
@@ -49,7 +47,6 @@ class BroadPhase3DBasic : public BroadPhase3DSW {
 	ID current;
 
 	struct PairKey {
-
 		union {
 			struct {
 				ID a;

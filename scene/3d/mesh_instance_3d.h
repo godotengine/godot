@@ -37,7 +37,6 @@
 #include "scene/resources/skin.h"
 
 class MeshInstance3D : public GeometryInstance3D {
-
 	GDCLASS(MeshInstance3D, GeometryInstance3D);
 
 protected:
@@ -48,7 +47,6 @@ protected:
 	NodePath skeleton_path;
 
 	struct BlendShapeTrack {
-
 		int idx;
 		float value;
 		BlendShapeTrack() {

@@ -41,7 +41,6 @@
 #include "scene/gui/tab_container.h"
 
 class ProjectSettingsEditor : public AcceptDialog {
-
 	GDCLASS(ProjectSettingsEditor, AcceptDialog);
 
 	enum InputType {

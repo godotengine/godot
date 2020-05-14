@@ -45,7 +45,6 @@
 class DependencyRemoveDialog;
 
 class EditorFileDialog : public ConfirmationDialog {
-
 	GDCLASS(EditorFileDialog, ConfirmationDialog);
 
 public:

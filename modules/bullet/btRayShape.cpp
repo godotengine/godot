@@ -50,7 +50,6 @@ btRayShape::~btRayShape() {
 }
 
 void btRayShape::setLength(btScalar p_length) {
-
 	m_length = p_length;
 	reload_cache();
 }
@@ -61,7 +60,6 @@ void btRayShape::setMargin(btScalar margin) {
 }
 
 void btRayShape::setSlipsOnSlope(bool p_slipsOnSlope) {
-
 	slipsOnSlope = p_slipsOnSlope;
 }
 
@@ -101,7 +99,6 @@ void btRayShape::getPreferredPenetrationDirection(int index, btVector3 &penetrat
 }
 
 void btRayShape::reload_cache() {
-
 	m_cacheScaledLength = m_length * m_localScaling[2];
 
 	m_cacheSupportPoint.setIdentity();

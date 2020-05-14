@@ -37,7 +37,6 @@
 struct OIDNDeviceImpl;
 
 class LightmapDenoiserOIDN : public LightmapDenoiser {
-
 	GDCLASS(LightmapDenoiserOIDN, LightmapDenoiser);
 
 protected:

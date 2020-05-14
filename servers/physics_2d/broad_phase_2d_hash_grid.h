@@ -35,9 +35,7 @@
 #include "core/map.h"
 
 class BroadPhase2DHashGrid : public BroadPhase2DSW {
-
 	struct PairData {
-
 		bool colliding;
 		int rc;
 		void *ud;
@@ -49,7 +47,6 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	};
 
 	struct Element {
-
 		ID self;
 		CollisionObject2DSW *owner;
 		bool _static;
@@ -60,7 +57,6 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	};
 
 	struct RC {
-
 		int ref;
 
 		_FORCE_INLINE_ int inc() {
@@ -85,7 +81,6 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	uint64_t pass;
 
 	struct PairKey {
-
 		union {
 			struct {
 				ID a;
@@ -126,7 +121,6 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	_FORCE_INLINE_ void _cull(const Point2i p_cell, const Rect2 &p_aabb, const Point2 &p_from, const Point2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices, int &index);
 
 	struct PosKey {
-
 		union {
 			struct {
 				int32_t x;
@@ -153,7 +147,6 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	};
 
 	struct PosBin {
-
 		PosKey key;
 		Map<Element *, RC> object_set;
 		Map<Element *, RC> static_object_set;

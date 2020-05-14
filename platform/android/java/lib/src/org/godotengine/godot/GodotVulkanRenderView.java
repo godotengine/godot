@@ -42,7 +42,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 
 public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderView {
-
 	private final Godot mActivity;
 	private final GodotInputHandler mInputHandler;
 	private final GestureDetector mGestureDetector;

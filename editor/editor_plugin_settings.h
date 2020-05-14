@@ -38,7 +38,6 @@
 #include "scene/gui/dialogs.h"
 
 class EditorPluginSettings : public VBoxContainer {
-
 	GDCLASS(EditorPluginSettings, VBoxContainer);
 
 	enum {

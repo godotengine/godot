@@ -35,7 +35,6 @@
 #include "constraint_2d_sw.h"
 
 class BodyPair2DSW : public Constraint2DSW {
-
 	enum {
 		MAX_CONTACTS = 2
 	};
@@ -54,7 +53,6 @@ class BodyPair2DSW : public Constraint2DSW {
 	Space2DSW *space;
 
 	struct Contact {
-
 		Vector2 position;
 		Vector2 normal;
 		Vector2 local_A, local_B;

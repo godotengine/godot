@@ -39,7 +39,6 @@
 #include "scene/main/resource_preloader.h"
 
 class ResourcePreloaderEditor : public PanelContainer {
-
 	GDCLASS(ResourcePreloaderEditor, PanelContainer);
 
 	enum {
@@ -87,7 +86,6 @@ public:
 };
 
 class ResourcePreloaderEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ResourcePreloaderEditorPlugin, EditorPlugin);
 
 	ResourcePreloaderEditor *preloader_editor;

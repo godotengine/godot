@@ -45,7 +45,6 @@
 #endif
 
 class NetSocketPosix : public NetSocket {
-
 private:
 	SOCKET_TYPE _sock; // NOLINT - the default value is defined in the .cpp
 	IP::Type _ip_type = IP::TYPE_NONE;

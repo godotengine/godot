@@ -45,7 +45,6 @@ layout(push_constant, binding = 0, std430) uniform Params {
 params;
 
 void main() {
-
 	vec3 pos = vec3(gl_GlobalInvocationID);
 	float closest_dist = 100000.0;
 

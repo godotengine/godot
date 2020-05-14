@@ -42,7 +42,6 @@
 #include "core/typedefs.h"
 
 class PhysicsDirectSpaceState2DSW : public PhysicsDirectSpaceState2D {
-
 	GDCLASS(PhysicsDirectSpaceState2DSW, PhysicsDirectSpaceState2D);
 
 	int _intersect_point_impl(const Vector2 &p_point, ShapeResult *r_results, int p_result_max, const Set<RID> &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_areas, bool p_pick_point, bool p_filter_by_canvas = false, ObjectID p_canvas_instance_id = ObjectID());
@@ -62,7 +61,6 @@ public:
 };
 
 class Space2DSW {
-
 public:
 	enum ElapsedTime {
 		ELAPSED_TIME_INTEGRATE_FORCES,

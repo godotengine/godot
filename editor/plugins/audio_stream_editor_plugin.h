@@ -38,7 +38,6 @@
 #include "scene/resources/texture.h"
 
 class AudioStreamEditor : public ColorRect {
-
 	GDCLASS(AudioStreamEditor, ColorRect);
 
 	Ref<AudioStream> stream;
@@ -73,7 +72,6 @@ public:
 };
 
 class AudioStreamEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AudioStreamEditorPlugin, EditorPlugin);
 
 	AudioStreamEditor *audio_editor;

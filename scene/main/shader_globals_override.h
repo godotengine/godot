@@ -34,7 +34,6 @@
 #include "scene/3d/node_3d.h"
 
 class ShaderGlobalsOverride : public Node {
-
 	GDCLASS(ShaderGlobalsOverride, Node);
 
 	struct Override {

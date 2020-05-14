@@ -36,7 +36,6 @@
 #include "servers/navigation_server_3d.h"
 
 void NavigationObstacle3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_navigation", "navigation"), &NavigationObstacle3D::set_navigation_node);
 	ClassDB::bind_method(D_METHOD("get_navigation"), &NavigationObstacle3D::get_navigation_node);
 }
@@ -44,7 +43,6 @@ void NavigationObstacle3D::_bind_methods() {
 void NavigationObstacle3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			update_agent_shape();
 
 			// Search the navigation node and set it
@@ -76,7 +74,6 @@ void NavigationObstacle3D::_notification(int p_what) {
 
 			PhysicsBody3D *rigid = Object::cast_to<PhysicsBody3D>(get_parent());
 			if (rigid) {
-
 				Vector3 v = rigid->get_linear_velocity();
 				NavigationServer3D::get_singleton()->agent_set_velocity(agent, v);
 				NavigationServer3D::get_singleton()->agent_set_target_velocity(agent, v);
@@ -115,7 +112,6 @@ Node *NavigationObstacle3D::get_navigation_node() const {
 
 String NavigationObstacle3D::get_configuration_warning() const {
 	if (!Object::cast_to<Node3D>(get_parent())) {
-
 		return TTR("The NavigationObstacle3D only serves to provide collision avoidance to a spatial object.");
 	}
 

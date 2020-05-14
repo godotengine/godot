@@ -36,7 +36,6 @@
 class VehicleBody3D;
 
 class VehicleWheel3D : public Node3D {
-
 	GDCLASS(VehicleWheel3D, Node3D);
 
 	friend class VehicleBody3D;
@@ -152,7 +151,6 @@ public:
 };
 
 class VehicleBody3D : public RigidBody3D {
-
 	GDCLASS(VehicleBody3D, RigidBody3D);
 
 	float engine_force;

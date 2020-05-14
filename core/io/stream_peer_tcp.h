@@ -37,7 +37,6 @@
 #include "core/io/stream_peer.h"
 
 class StreamPeerTCP : public StreamPeer {
-
 	GDCLASS(StreamPeerTCP, StreamPeer);
 	OBJ_CATEGORY("Networking");
 

@@ -26,7 +26,6 @@ layout(r32f, set = 0, binding = 0) uniform restrict readonly image2D source_imag
 layout(r32f, set = 1, binding = 0) uniform restrict writeonly image2D dest_image;
 
 void main() {
-
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
 	if (any(greaterThan(pos, params.source_size >> 1))) { //too large, do nothing

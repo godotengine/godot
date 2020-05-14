@@ -134,19 +134,16 @@ uint32_t Decal::get_cull_mask() const {
 }
 
 AABB Decal::get_aabb() const {
-
 	AABB aabb;
 	aabb.position = -extents;
 	aabb.size = extents * 2.0;
 	return aabb;
 }
 Vector<Face3> Decal::get_faces(uint32_t p_usage_flags) const {
-
 	return Vector<Face3>();
 }
 
 void Decal::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &Decal::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &Decal::get_extents);
 
@@ -212,7 +209,6 @@ void Decal::_bind_methods() {
 }
 
 Decal::Decal() {
-
 	extents = Vector3(1, 1, 1);
 	emission_energy = 1.0;
 	modulate = Color(1, 1, 1, 1);
@@ -230,6 +226,5 @@ Decal::Decal() {
 }
 
 Decal::~Decal() {
-
 	RS::get_singleton()->free(decal);
 }

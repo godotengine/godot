@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Tabs : public Control {
-
 	GDCLASS(Tabs, Control);
 
 public:
@@ -56,7 +55,6 @@ public:
 
 private:
 	struct Tab {
-
 		String text;
 		String xl_text;
 		Ref<Texture2D> icon;

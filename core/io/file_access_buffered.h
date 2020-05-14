@@ -36,7 +36,6 @@
 #include "core/ustring.h"
 
 class FileAccessBuffered : public FileAccess {
-
 public:
 	enum {
 		DEFAULT_CACHE_SIZE = 128 * 1024,
@@ -52,7 +51,6 @@ protected:
 	Error set_error(Error p_error) const;
 
 	mutable struct File {
-
 		bool open;
 		int size;
 		int offset;
@@ -61,7 +59,6 @@ protected:
 	} file;
 
 	mutable struct Cache {
-
 		Vector<uint8_t> buffer;
 		int offset;
 	} cache;

@@ -324,12 +324,10 @@ String OS_Haiku::get_executable_path() const {
 }
 
 bool OS_Haiku::_check_internal_feature_support(const String &p_feature) {
-
 	return p_feature == "pc";
 }
 
 String OS_Haiku::get_config_path() const {
-
 	if (has_environment("XDG_CONFIG_HOME")) {
 		return get_environment("XDG_CONFIG_HOME");
 	} else if (has_environment("HOME")) {
@@ -340,7 +338,6 @@ String OS_Haiku::get_config_path() const {
 }
 
 String OS_Haiku::get_data_path() const {
-
 	if (has_environment("XDG_DATA_HOME")) {
 		return get_environment("XDG_DATA_HOME");
 	} else if (has_environment("HOME")) {
@@ -351,7 +348,6 @@ String OS_Haiku::get_data_path() const {
 }
 
 String OS_Haiku::get_cache_path() const {
-
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
 	} else if (has_environment("HOME")) {

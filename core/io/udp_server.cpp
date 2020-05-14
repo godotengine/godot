@@ -31,7 +31,6 @@
 #include "udp_server.h"
 
 void UDPServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &UDPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &UDPServer::is_connection_available);
 	ClassDB::bind_method(D_METHOD("is_listening"), &UDPServer::is_listening);
@@ -40,7 +39,6 @@ void UDPServer::_bind_methods() {
 }
 
 Error UDPServer::listen(uint16_t p_port, const IP_Address &p_bind_address) {
-
 	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
@@ -76,7 +74,6 @@ bool UDPServer::is_listening() const {
 }
 
 bool UDPServer::is_connection_available() const {
-
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
 
 	if (!_sock->is_open())
@@ -87,7 +84,6 @@ bool UDPServer::is_connection_available() const {
 }
 
 Ref<PacketPeerUDP> UDPServer::take_connection() {
-
 	Ref<PacketPeerUDP> conn;
 	if (!is_connection_available()) {
 		return conn;
@@ -101,7 +97,6 @@ Ref<PacketPeerUDP> UDPServer::take_connection() {
 }
 
 void UDPServer::stop() {
-
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
@@ -114,6 +109,5 @@ UDPServer::UDPServer() :
 }
 
 UDPServer::~UDPServer() {
-
 	stop();
 }

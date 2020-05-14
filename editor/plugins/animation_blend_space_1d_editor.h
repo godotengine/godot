@@ -42,7 +42,6 @@
 #include "scene/gui/tree.h"
 
 class AnimationNodeBlendSpace1DEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeBlendSpace1DEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendSpace1D> blend_space;

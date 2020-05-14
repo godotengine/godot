@@ -33,7 +33,6 @@
 SceneStringNames *SceneStringNames::singleton = nullptr;
 
 SceneStringNames::SceneStringNames() {
-
 	_estimate_cost = StaticCString::create("_estimate_cost");
 	_compute_cost = StaticCString::create("_compute_cost");
 
@@ -189,7 +188,6 @@ SceneStringNames::SceneStringNames() {
 	_default = StaticCString::create("default");
 
 	for (int i = 0; i < MAX_MATERIALS; i++) {
-
 		mesh_materials[i] = "material/" + itos(i);
 	}
 

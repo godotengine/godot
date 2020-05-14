@@ -36,7 +36,6 @@
 namespace TestOAHashMap {
 
 MainLoop *test() {
-
 	OS::get_singleton()->print("\n\n\nHello from test\n");
 
 	// test element tracking.
@@ -122,7 +121,6 @@ MainLoop *test() {
 
 	// regression test / test for issue related to #31402
 	{
-
 		OS::get_singleton()->print("test for issue #31402 started...\n");
 
 		const int num_test_values = 12;

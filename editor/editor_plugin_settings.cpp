@@ -39,7 +39,6 @@
 #include "scene/gui/margin_container.h"
 
 void EditorPluginSettings::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_WM_FOCUS_IN) {
 		update_plugins();
 	} else if (p_what == Node::NOTIFICATION_READY) {
@@ -49,7 +48,6 @@ void EditorPluginSettings::_notification(int p_what) {
 }
 
 void EditorPluginSettings::update_plugins() {
-
 	plugin_list->clear();
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -70,12 +68,10 @@ void EditorPluginSettings::update_plugins() {
 	Vector<String> plugins;
 
 	while (d != String()) {
-
 		bool dir = da->current_is_dir();
 		String path = "res://addons/" + d + "/plugin.cfg";
 
 		if (dir && FileAccess::exists(path)) {
-
 			plugins.push_back(d);
 		}
 
@@ -88,7 +84,6 @@ void EditorPluginSettings::update_plugins() {
 	plugins.sort();
 
 	for (int i = 0; i < plugins.size(); i++) {
-
 		Ref<ConfigFile> cf;
 		cf.instance();
 		String path = "res://addons/" + plugins[i] + "/plugin.cfg";
@@ -151,7 +146,6 @@ void EditorPluginSettings::update_plugins() {
 }
 
 void EditorPluginSettings::_plugin_activity_changed() {
-
 	if (updating)
 		return;
 
@@ -193,7 +187,6 @@ void EditorPluginSettings::_bind_methods() {
 }
 
 EditorPluginSettings::EditorPluginSettings() {
-
 	plugin_config_dialog = memnew(PluginConfigDialog);
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);

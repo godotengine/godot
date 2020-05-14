@@ -44,7 +44,6 @@
 class ProgressBar;
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
-
 	GDCLASS(AnimationNodeBlendTreeEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeBlendTree> blend_tree;

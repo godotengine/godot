@@ -44,7 +44,6 @@
 #include "scene/gui/tool_button.h"
 
 class ColorPicker : public BoxContainer {
-
 	GDCLASS(ColorPicker, BoxContainer);
 
 private:
@@ -139,7 +138,6 @@ public:
 };
 
 class ColorPickerButton : public Button {
-
 	GDCLASS(ColorPickerButton, Button);
 
 	PopupPanel *popup;
