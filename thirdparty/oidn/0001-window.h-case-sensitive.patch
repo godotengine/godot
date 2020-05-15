@@ -1,0 +1,13 @@
+diff --git a/thirdparty/oidn/common/platform.h b/thirdparty/oidn/common/platform.h
+index 205ac8981d..9373b617b5 100644
+--- a/thirdparty/oidn/common/platform.h
++++ b/thirdparty/oidn/common/platform.h
+@@ -19,7 +19,7 @@
+ #if defined(_WIN32)
+   #define WIN32_LEAN_AND_MEAN
+   #define NOMINMAX
+-  #include <Windows.h>
++  #include <windows.h>
+ #elif defined(__APPLE__)
+   #include <sys/sysctl.h>
+ #endif
