@@ -1230,10 +1230,14 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 			}
 		}
 
+		mesh.blend_weights.resize(mesh.mesh->get_blend_shape_count());
+		for (int32_t weight_i = 0; weight_i < mesh.blend_weights.size(); weight_i++) {
+			mesh.blend_weights.write[weight_i] = 0.0f;
+		}
+
 		if (d.has("weights")) {
 			const Array &weights = d["weights"];
-			ERR_FAIL_COND_V(mesh.mesh->get_blend_shape_count() != weights.size(), ERR_PARSE_ERROR);
-			mesh.blend_weights.resize(weights.size());
+			ERR_FAIL_COND_V(mesh.blend_weights.size() != weights.size(), ERR_PARSE_ERROR);
 			for (int j = 0; j < weights.size(); j++) {
 				mesh.blend_weights.write[j] = weights[j];
 			}
