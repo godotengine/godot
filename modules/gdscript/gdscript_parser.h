@@ -231,6 +231,8 @@ public:
 		List<Node *> statements;
 		Map<StringName, LocalVarNode *> variables;
 		bool has_return = false;
+		bool can_break = false;
+		bool can_continue = false;
 
 		Node *if_condition = nullptr; //tiny hack to improve code completion on if () blocks
 
