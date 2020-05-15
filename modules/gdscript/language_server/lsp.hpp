@@ -486,7 +486,7 @@ struct TextDocumentSyncOptions {
 	 * If present save notifications are sent to the server. If omitted the notification should not be
 	 * sent.
 	 */
-	SaveOptions save;
+	bool save = false;
 
 	Dictionary to_json() {
 		Dictionary dict;
@@ -494,7 +494,7 @@ struct TextDocumentSyncOptions {
 		dict["willSave"] = willSave;
 		dict["openClose"] = openClose;
 		dict["change"] = change;
-		dict["save"] = save.to_json();
+		dict["save"] = save;
 		return dict;
 	}
 };
@@ -1642,7 +1642,7 @@ struct ServerCapabilities {
 
 	_FORCE_INLINE_ Dictionary to_json() {
 		Dictionary dict;
-		dict["textDocumentSync"] = (int)textDocumentSync.change;
+		dict["textDocumentSync"] = textDocumentSync.to_json();
 		dict["completionProvider"] = completionProvider.to_json();
 		signatureHelpProvider.triggerCharacters.push_back(",");
 		signatureHelpProvider.triggerCharacters.push_back("(");
