@@ -844,30 +844,6 @@
 		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
 			Maximum size (in kiB) for the [WebRTCDataChannel] input buffer.
 		</member>
-		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="" default="64">
-			Maximum size (in kiB) for the [WebSocketClient] input buffer.
-		</member>
-		<member name="network/limits/websocket_client/max_in_packets" type="int" setter="" getter="" default="1024">
-			Maximum number of concurrent input packets for [WebSocketClient].
-		</member>
-		<member name="network/limits/websocket_client/max_out_buffer_kb" type="int" setter="" getter="" default="64">
-			Maximum size (in kiB) for the [WebSocketClient] output buffer.
-		</member>
-		<member name="network/limits/websocket_client/max_out_packets" type="int" setter="" getter="" default="1024">
-			Maximum number of concurrent output packets for [WebSocketClient].
-		</member>
-		<member name="network/limits/websocket_server/max_in_buffer_kb" type="int" setter="" getter="" default="64">
-			Maximum size (in kiB) for the [WebSocketServer] input buffer.
-		</member>
-		<member name="network/limits/websocket_server/max_in_packets" type="int" setter="" getter="" default="1024">
-			Maximum number of concurrent input packets for [WebSocketServer].
-		</member>
-		<member name="network/limits/websocket_server/max_out_buffer_kb" type="int" setter="" getter="" default="64">
-			Maximum size (in kiB) for the [WebSocketServer] output buffer.
-		</member>
-		<member name="network/limits/websocket_server/max_out_packets" type="int" setter="" getter="" default="1024">
-			Maximum number of concurrent output packets for [WebSocketServer].
-		</member>
 		<member name="network/remote_fs/page_read_ahead" type="int" setter="" getter="" default="4">
 			Amount of read ahead used by remote filesystem. Higher values decrease the effects of latency at the cost of higher bandwidth usage.
 		</member>
