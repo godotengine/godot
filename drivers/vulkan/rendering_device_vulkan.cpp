@@ -4431,6 +4431,12 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 		write.pNext = nullptr;
 		write.dstSet = VK_NULL_HANDLE; //will assign afterwards when everything is valid
 		write.dstBinding = set_uniform.binding;
+		write.dstArrayElement = 0;
+		write.descriptorCount = 0;
+		write.descriptorType = VK_DESCRIPTOR_TYPE_MAX_ENUM; //Invalid value.
+		write.pImageInfo = nullptr;
+		write.pBufferInfo = nullptr;
+		write.pTexelBufferView = nullptr;
 		uint32_t type_size = 1;
 
 		switch (uniform.type) {
