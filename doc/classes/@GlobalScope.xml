@@ -1063,10 +1063,10 @@
 		<constant name="JOY_XBOX_RB" value="10" enum="JoyButtonList">
 			Xbox game controller right bumper button maps to SDL right shoulder button.
 		</constant>
-		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyAxisList">
+		<constant name="JOY_BUTTON_MAX" value="36" enum="JoyButtonList">
 			The maximum number of game controller buttons.
 		</constant>
-		<constant name="JOY_INVALID_BUTTON" value="-1" enum="JoyButtonList">
+		<constant name="JOY_INVALID_AXIS" value="-1" enum="JoyAxisList">
 			An invalid game controller axis.
 		</constant>
 		<constant name="JOY_AXIS_LEFT_X" value="0" enum="JoyAxisList">
