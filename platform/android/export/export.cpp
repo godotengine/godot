@@ -1777,6 +1777,20 @@ public:
 			err += etc_error;
 		}
 
+		// The GodotPaymentV3 module was converted to the GodotPayment plugin in Godot 3.2.2,
+		// this check helps users to notice the change to ensure that they change their settings.
+		String modules = ProjectSettings::get_singleton()->get("android/modules");
+		if (modules.find("org/godotengine/godot/GodotPaymentV3") != -1) {
+			String plugins = p_preset->get("custom_template/plugins");
+			if (plugins.split(",", false).find("GodotPayment") == -1) {
+				valid = false;
+				err += TTR("Invalid \"GodotPaymentV3\" module included in the \"android/modules\" project setting (changed in Godot 3.2.2).\n"
+						   "Replace it by the \"GodotPayment\" plugin, which should be listed in the \"custom_template/plugins\" preset option.\n"
+						   "Note that the singleton was also renamed from \"GodotPayments\" to \"GodotPayment\".");
+				err += "\n";
+			}
+		}
+
 		r_error = err;
 		return valid;
 	}

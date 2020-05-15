@@ -180,7 +180,8 @@
 	</methods>
 	<members>
 		<member name="android/modules" type="String" setter="" getter="" default="&quot;&quot;">
-			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]org/godotengine/org/GodotPaymentV3,org/godotengine/godot/MyCustomSingleton"[/code].
+			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]"org/godotengine/godot/MyCustomSingleton,com/example/foo/FrenchFriesFactory"[/code].
+			[b]Note:[/b] Since Godot 3.2.2, the [code]org/godotengine/godot/GodotPaymentV3[/code] module was deprecated and replaced by the [code]GodotPayment[/code] plugin which should be enabled in the Android export preset by adding [code]GodotPayment[/code] to the [code]custom_template/plugins[/code] option. The singleton to access in code was also renamed to [code]GodotPayment[/code].
 		</member>
 		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.14, 0.14, 0.14, 1 )">
 			Background color for the boot splash.

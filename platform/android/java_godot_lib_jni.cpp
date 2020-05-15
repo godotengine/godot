@@ -91,6 +91,13 @@ static void _initialize_java_modules() {
 
 			String m = mods[i];
 
+			// Deprecated in Godot 3.2.2, it's now a plugin to enable in export preset.
+			if (m == "org/godotengine/godot/GodotPaymentV3") {
+				WARN_PRINT("GodotPaymentV3 is deprecated and is replaced by the 'GodotPayment' plugin, which should be enabled in the Android export preset.");
+				print_line("Skipping Android module: " + m);
+				continue;
+			}
+
 			print_line("Loading Android module: " + m);
 			jstring strClassName = env->NewStringUTF(m.utf8().get_data());
 			jclass singletonClass = (jclass)env->CallObjectMethod(cls, findClass, strClassName);
