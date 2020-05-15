@@ -1993,7 +1993,7 @@ void Image::create(const char **p_xpm) {
 	HashMap<String, Color> colormap;
 	int colormap_size = 0;
 	uint32_t pixel_size = 0;
-	uint8_t *w;
+	uint8_t *data_write = nullptr;
 
 	while (status != DONE) {
 		const char *line_ptr = p_xpm[line];
@@ -2089,7 +2089,7 @@ void Image::create(const char **p_xpm) {
 				if (line == colormap_size) {
 					status = READING_PIXELS;
 					create(size_width, size_height, false, has_alpha ? FORMAT_RGBA8 : FORMAT_RGB8);
-					w = data.ptrw();
+					data_write = data.ptrw();
 					pixel_size = has_alpha ? 4 : 3;
 				}
 			} break;
@@ -2107,7 +2107,7 @@ void Image::create(const char **p_xpm) {
 					for (uint32_t i = 0; i < pixel_size; i++) {
 						pixel[i] = CLAMP((*colorptr)[i] * 255, 0, 255);
 					}
-					_put_pixelb(x, y, pixel_size, w, pixel);
+					_put_pixelb(x, y, pixel_size, data_write, pixel);
 				}
 
 				if (y == (size_height - 1)) {
