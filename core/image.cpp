@@ -37,8 +37,6 @@
 #include "core/os/copymem.h"
 #include "core/print_string.h"
 
-#include "thirdparty/misc/hq2x.h"
-
 #include <stdio.h>
 
 const char *Image::format_names[Image::FORMAT_MAX] = {
@@ -1442,47 +1440,6 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 			rup_ptr += right_step * 2;
 			rdown_ptr += right_step * 2;
 		}
-	}
-}
-
-void Image::expand_x2_hq2x() {
-	ERR_FAIL_COND(!_can_modify(format));
-
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
-		clear_mipmaps();
-	}
-
-	Format current = format;
-
-	if (current != FORMAT_RGBA8) {
-		convert(FORMAT_RGBA8);
-	}
-
-	Vector<uint8_t> dest;
-	dest.resize(width * 2 * height * 2 * 4);
-
-	{
-		const uint8_t *r = data.ptr();
-		uint8_t *w = dest.ptrw();
-
-		ERR_FAIL_COND(!r);
-
-		hq2x_resize((const uint32_t *)r, width, height, (uint32_t *)w);
-	}
-
-	width *= 2;
-	height *= 2;
-	data = dest;
-
-	if (current != FORMAT_RGBA8) {
-		convert(current);
-	}
-
-	// FIXME: This is likely meant to use "used_mipmaps" as defined above, but if we do,
-	// we end up with a regression: GH-22747
-	if (mipmaps) {
-		generate_mipmaps();
 	}
 }
 
@@ -3047,7 +3004,6 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("resize_to_po2", "square"), &Image::resize_to_po2, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("resize", "width", "height", "interpolation"), &Image::resize, DEFVAL(INTERPOLATE_BILINEAR));
 	ClassDB::bind_method(D_METHOD("shrink_x2"), &Image::shrink_x2);
-	ClassDB::bind_method(D_METHOD("expand_x2_hq2x"), &Image::expand_x2_hq2x);
 
 	ClassDB::bind_method(D_METHOD("crop", "width", "height"), &Image::crop);
 	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);

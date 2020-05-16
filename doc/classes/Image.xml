@@ -190,13 +190,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="expand_x2_hq2x">
-			<return type="void">
-			</return>
-			<description>
-				Stretches the image and enlarges it by a factor of 2. No interpolation is done.
-			</description>
-		</method>
 		<method name="fill">
 			<return type="void">
 			</return>
