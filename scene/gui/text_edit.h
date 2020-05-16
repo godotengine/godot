@@ -508,7 +508,7 @@ private:
 
 	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column);
 
-	Vector<int> _search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const;
+	Dictionary _search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const;
 
 	PopupMenu *menu;
 
@@ -559,11 +559,6 @@ public:
 		SEARCH_MATCH_CASE = 1,
 		SEARCH_WHOLE_WORDS = 2,
 		SEARCH_BACKWARDS = 4
-	};
-
-	enum SearchResult {
-		SEARCH_RESULT_COLUMN,
-		SEARCH_RESULT_LINE,
 	};
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
@@ -826,7 +821,6 @@ public:
 
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
-VARIANT_ENUM_CAST(TextEdit::SearchResult);
 
 class SyntaxHighlighter {
 protected:

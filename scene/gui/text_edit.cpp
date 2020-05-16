@@ -5447,17 +5447,16 @@ int TextEdit::_get_column_pos_of_word(const String &p_key, const String &p_searc
 	return col;
 }
 
-Vector<int> TextEdit::_search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
+Dictionary TextEdit::_search_bind(const String &p_key, uint32_t p_search_flags, int p_from_line, int p_from_column) const {
 	int col, line;
 	if (search(p_key, p_search_flags, p_from_line, p_from_column, line, col)) {
-		Vector<int> result;
-		result.resize(2);
-		result.set(SEARCH_RESULT_COLUMN, col);
-		result.set(SEARCH_RESULT_LINE, line);
+		Dictionary result;
+		result["line"] = line;
+		result["column"] = col;
 		return result;
 
 	} else {
-		return Vector<int>();
+		return Dictionary();
 	}
 }
 
@@ -6979,9 +6978,6 @@ void TextEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(SEARCH_MATCH_CASE);
 	BIND_ENUM_CONSTANT(SEARCH_WHOLE_WORDS);
 	BIND_ENUM_CONSTANT(SEARCH_BACKWARDS);
-
-	BIND_ENUM_CONSTANT(SEARCH_RESULT_COLUMN);
-	BIND_ENUM_CONSTANT(SEARCH_RESULT_LINE);
 
 	/*
 	ClassDB::bind_method(D_METHOD("delete_char"),&TextEdit::delete_char);
