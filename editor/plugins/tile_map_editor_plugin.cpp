@@ -324,8 +324,12 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
 		} else if (node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE && priority_atlastile) {
 			// BIND_CENTER is used to indicate that bitmask should not update for this tile cell.
+			// This is a hack, as the ATLAS_TILE has no bitmask, it is being used only to avoid the
+			// update, enforcing an autotile_coord to this cell inside TileMap::update_cell_bitmask.
 			node->get_tileset()->autotile_set_bitmask(p_value, Vector2(p_pos.x, p_pos.y), TileSet::BIND_CENTER);
 			node->update_cell_bitmask(p_pos.x, p_pos.y);
+			// Clearing the bitmask. As it is no longer necessary.
+			node->get_tileset()->autotile_set_bitmask(p_value, Vector2(p_pos.x, p_pos.y), 0);
 		}
 	} else {
 		node->update_bitmask_area(Point2(p_pos));
