@@ -42,6 +42,14 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_packed_byte_array) == sizeof(Vector<uint8_t>), "Vector<uint8_t> size mismatch");
+static_assert(sizeof(godot_packed_int_array) == sizeof(Vector<godot_int>), "Vector<godot_int> size mismatch");
+static_assert(sizeof(godot_packed_real_array) == sizeof(Vector<godot_real>), "Vector<godot_real> size mismatch");
+static_assert(sizeof(godot_packed_string_array) == sizeof(Vector<String>), "Vector<String> size mismatch");
+static_assert(sizeof(godot_packed_vector2_array) == sizeof(Vector<Vector2>), "Vector<Vector2> size mismatch");
+static_assert(sizeof(godot_packed_vector3_array) == sizeof(Vector<Vector3>), "Vector<Vector3> size mismatch");
+static_assert(sizeof(godot_packed_color_array) == sizeof(Vector<Color>), "Vector<Color> size mismatch");
+
 #define memnew_placement_custom(m_placement, m_class, m_constr) _post_initialize(new (m_placement, sizeof(m_class), "") m_constr)
 
 // byte

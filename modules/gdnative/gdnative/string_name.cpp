@@ -39,6 +39,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_string_name) == sizeof(StringName), "StringName size mismatch");
+
 void GDAPI godot_string_name_new(godot_string_name *r_dest, const godot_string *p_name) {
 	StringName *dest = (StringName *)r_dest;
 	const String *name = (const String *)p_name;

@@ -39,7 +39,7 @@ extern "C" {
 
 /////// PackedByteArray
 
-#define GODOT_PACKED_BYTE_ARRAY_SIZE sizeof(void *)
+#define GODOT_PACKED_BYTE_ARRAY_SIZE (2 * sizeof(void *))
 
 #ifndef GODOT_CORE_API_GODOT_PACKED_BYTE_ARRAY_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_PACKED_BYTE_ARRAY_TYPE_DEFINED
@@ -50,7 +50,7 @@ typedef struct {
 
 /////// PackedInt32Array
 
-#define GODOT_PACKED_INT_ARRAY_SIZE sizeof(void *)
+#define GODOT_PACKED_INT_ARRAY_SIZE (2 * sizeof(void *))
 
 #ifndef GODOT_CORE_API_GODOT_PACKED_INT_ARRAY_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_PACKED_INT_ARRAY_TYPE_DEFINED
@@ -61,7 +61,7 @@ typedef struct {
 
 /////// PackedFloat32Array
 
-#define GODOT_PACKED_REAL_ARRAY_SIZE sizeof(void *)
+#define GODOT_PACKED_REAL_ARRAY_SIZE (2 * sizeof(void *))
 
 #ifndef GODOT_CORE_API_GODOT_PACKED_REAL_ARRAY_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_PACKED_REAL_ARRAY_TYPE_DEFINED
@@ -72,7 +72,7 @@ typedef struct {
 
 /////// PackedStringArray
 
-#define GODOT_PACKED_STRING_ARRAY_SIZE sizeof(void *)
+#define GODOT_PACKED_STRING_ARRAY_SIZE (2 * sizeof(void *))
 
 #ifndef GODOT_CORE_API_GODOT_PACKED_STRING_ARRAY_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_PACKED_STRING_ARRAY_TYPE_DEFINED
@@ -83,7 +83,7 @@ typedef struct {
 
 /////// PackedVector2Array
 
-#define GODOT_PACKED_VECTOR2_ARRAY_SIZE sizeof(void *)
+#define GODOT_PACKED_VECTOR2_ARRAY_SIZE (2 * sizeof(void *))
 
 #ifndef GODOT_CORE_API_GODOT_PACKED_VECTOR2_ARRAY_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_PACKED_VECTOR2_ARRAY_TYPE_DEFINED
@@ -94,7 +94,7 @@ typedef struct {
 
 /////// PackedVector3Array
 
-#define GODOT_PACKED_VECTOR3_ARRAY_SIZE sizeof(void *)
+#define GODOT_PACKED_VECTOR3_ARRAY_SIZE (2 * sizeof(void *))
 
 #ifndef GODOT_CORE_API_GODOT_PACKED_VECTOR3_ARRAY_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_PACKED_VECTOR3_ARRAY_TYPE_DEFINED
@@ -105,7 +105,7 @@ typedef struct {
 
 /////// PackedColorArray
 
-#define GODOT_PACKED_COLOR_ARRAY_SIZE sizeof(void *)
+#define GODOT_PACKED_COLOR_ARRAY_SIZE (2 * sizeof(void *))
 
 #ifndef GODOT_CORE_API_GODOT_PACKED_COLOR_ARRAY_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_PACKED_COLOR_ARRAY_TYPE_DEFINED

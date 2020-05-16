@@ -37,6 +37,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_basis) == sizeof(Basis), "Basis size mismatch");
+
 void GDAPI godot_basis_new_with_rows(godot_basis *r_dest, const godot_vector3 *p_x_axis, const godot_vector3 *p_y_axis, const godot_vector3 *p_z_axis) {
 	const Vector3 *x_axis = (const Vector3 *)p_x_axis;
 	const Vector3 *y_axis = (const Vector3 *)p_y_axis;
