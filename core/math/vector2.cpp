@@ -35,7 +35,7 @@ real_t Vector2::angle() const {
 }
 
 real_t Vector2::length() const {
-	return Math::sqrt(x * x + y * y);
+	return Math::sqrt(length_squared());
 }
 
 real_t Vector2::length_squared() const {
@@ -43,9 +43,8 @@ real_t Vector2::length_squared() const {
 }
 
 void Vector2::normalize() {
-	real_t l = x * x + y * y;
+	real_t l = length();
 	if (l != 0) {
-		l = Math::sqrt(l);
 		x /= l;
 		y /= l;
 	}
