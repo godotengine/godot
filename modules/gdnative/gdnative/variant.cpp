@@ -37,6 +37,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_variant) == sizeof(Variant), "Variant size mismatch");
+
 // Workaround GCC ICE on armv7hl which was affected GCC 6.0 up to 8.0 (GH-16100).
 // It was fixed upstream in 8.1, and a fix was backported to 7.4.
 // This can be removed once no supported distro ships with versions older than 7.4.
