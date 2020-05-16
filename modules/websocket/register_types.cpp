@@ -42,7 +42,14 @@
 #endif
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/editor_debugger_server.h"
+#include "editor/editor_node.h"
 #include "editor_debugger_server_websocket.h"
+#endif
+
+#ifdef TOOLS_ENABLED
+static void _editor_init_callback() {
+	EditorDebuggerServer::register_protocol_handler("ws://", EditorDebuggerServerWebSocket::create);
+}
 #endif
 
 void register_websocket_types() {
@@ -62,7 +69,7 @@ void register_websocket_types() {
 	ClassDB::register_custom_instance_class<WebSocketPeer>();
 
 #ifdef TOOLS_ENABLED
-	EditorDebuggerServer::register_protocol_handler("ws://", EditorDebuggerServerWebSocket::create);
+	EditorNode::add_init_callback(&_editor_init_callback);
 #endif
 }
 
