@@ -386,7 +386,7 @@ Collection of single-file libraries used in Godot components.
   * License: Apache 2.0
 - `r128.h`
   * Upstream: https://github.com/fahickman/r128
-  * Version: 1.4.3 (2019)
+  * Version: git (423f693617faafd01de21e92818add4208eb8bd1, 2020)
   * License: Public Domain
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
