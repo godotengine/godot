@@ -52,7 +52,6 @@ thirdparty_misc_sources = [
     "r128.c",
     "smaz.c",
     # C++ sources
-    "hq2x.cpp",
     "pcg.cpp",
     "triangulator.cpp",
     "clipper.cpp",
