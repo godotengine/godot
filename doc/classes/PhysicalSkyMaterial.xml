@@ -31,6 +31,9 @@
 		<member name="mie_eccentricity" type="float" setter="set_mie_eccentricity" getter="get_mie_eccentricity" default="0.8">
 			Controls the direction of the mie scattering. A value of [code]1[/code] means that when light hits a particle it passing through straight forward. A value of [code]-1[/code] means that all light is scatter backwards.
 		</member>
+		<member name="night_sky" type="Texture2D" setter="set_night_sky" getter="get_night_sky">
+			[Texture2D] for the night sky. This is added to the sky, so if it is bright enough, it may be visible during the day.
+		</member>
 		<member name="rayleigh_coefficient" type="float" setter="set_rayleigh_coefficient" getter="get_rayleigh_coefficient" default="2.0">
 			Controls the strength of the rayleigh scattering. Rayleigh scattering results from light colliding with small particles. It is responsible for the blue color of the sky.
 		</member>
