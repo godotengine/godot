@@ -35,6 +35,7 @@
 #ifdef DEBUG_ENABLED
 
 #include "test_astar.h"
+#include "test_class_db.h"
 #include "test_gdscript.h"
 #include "test_gui.h"
 #include "test_math.h"
@@ -54,6 +55,7 @@ const char **tests_get_names() {
 		"physics_3d",
 		"render",
 		"oa_hash_map",
+		"class_db",
 		"gui",
 		"shaderlang",
 		"gd_tokenizer",
@@ -91,6 +93,10 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 	if (p_test == "oa_hash_map") {
 		return TestOAHashMap::test();
+	}
+
+	if (p_test == "class_db") {
+		return TestClassDB::test();
 	}
 
 #ifndef _3D_DISABLED
