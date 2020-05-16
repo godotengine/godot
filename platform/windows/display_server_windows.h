@@ -388,6 +388,7 @@ class DisplayServerWindows : public DisplayServer {
 	uint32_t last_button_state = 0;
 	bool use_raw_input = false;
 	bool drop_events = false;
+	bool in_dispatch_input_event = false;
 	bool console_visible = false;
 
 	WNDCLASSEXW wc;
