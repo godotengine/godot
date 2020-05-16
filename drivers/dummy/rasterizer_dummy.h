@@ -700,12 +700,13 @@ public:
 	RID render_target_create() { return RID(); }
 	void render_target_set_position(RID p_render_target, int p_x, int p_y) {}
 	void render_target_set_size(RID p_render_target, int p_width, int p_height) {}
-	RID render_target_get_texture(RID p_render_target) const { return RID(); }
+	RID render_target_get_texture(RID p_render_target, VS::ViewportTextureBuffer p_buffer) const { return RID(); }
 	void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id) {}
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value) {}
 	bool render_target_was_used(RID p_render_target) { return false; }
 	void render_target_clear_used(RID p_render_target) {}
 	void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) {}
+	void render_target_set_force_mrt(RID p_render_target, bool p_force_mrt) {}
 
 	/* CANVAS SHADOW */
 

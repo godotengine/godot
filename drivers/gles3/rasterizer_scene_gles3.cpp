@@ -34,8 +34,11 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "rasterizer_canvas_gles3.h"
+#include "rasterizer_storage_gles3.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/visual/visual_server_raster.h"
+
+#include <iostream>
 
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
@@ -4254,6 +4257,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	} else {
 
 		use_mrt = env && (state.used_sss || env->ssao_enabled || env->ssr_enabled || env->dof_blur_far_enabled || env->dof_blur_near_enabled); //only enable MRT rendering if any of these is enabled
+		use_mrt = use_mrt || storage->frame.current_rt->force_mrt; // or if it's force to be used.
+
 		//effects disabled and transparency also prevent using MRTs
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS];
@@ -4515,8 +4520,49 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	//state.scene_shader.set_conditional( SceneShaderGLES3::USE_FOG,false);
 
-	if (use_mrt) {
+	// resolve buffers to textures
+	if (storage->frame.current_rt->buffers.active && use_mrt) {
+		RID_Owner<RasterizerStorageGLES3::Texture> *texture_owner = &(storage->texture_owner);
+		RasterizerStorageGLES3::RenderTarget *rt = storage->frame.current_rt;
 
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->fbo);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->buffers.fbo);
+
+		GLenum gldb = GL_COLOR_ATTACHMENT0;
+		glDrawBuffers(1, &gldb);
+
+		// diffuse
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_owner->getornull(rt->buffers.diffuse_texture)->tex_id, 0);
+		glBlitFramebuffer(0, 0, rt->width, rt->height, 0, 0, rt->width, rt->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+		if (rt->buffers.effects_active) {
+
+			// specular
+			glReadBuffer(GL_COLOR_ATTACHMENT1);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_owner->getornull(rt->buffers.specular_texture)->tex_id, 0);
+			glBlitFramebuffer(0, 0, rt->width, rt->height, 0, 0, rt->width, rt->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+			// normal roughness
+			glReadBuffer(GL_COLOR_ATTACHMENT2);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_owner->getornull(rt->buffers.normal_rough_texture)->tex_id, 0);
+			glBlitFramebuffer(0, 0, rt->width, rt->height, 0, 0, rt->width, rt->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+			// subsurface
+			glReadBuffer(GL_COLOR_ATTACHMENT3);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_owner->getornull(rt->buffers.sss_texture)->tex_id, 0);
+			glBlitFramebuffer(0, 0, rt->width, rt->height, 0, 0, rt->width, rt->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		}
+		
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->buffers.fbo);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	}
+
+	if (use_mrt) {
 		_render_mrts(env, p_cam_projection);
 	} else {
 		// Here we have to do the blits/resolves that otherwise are done in the MRT rendering, in particular
@@ -4583,6 +4629,11 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	if (env && (env->dof_blur_far_enabled || env->dof_blur_near_enabled) && storage->frame.current_rt && storage->frame.current_rt->buffers.active)
 		_prepare_depth_texture();
 	_post_process(env, p_cam_projection);
+
+	// Force the depth texture to be updated
+	state.prepared_depth_texture = false;
+	_prepare_depth_texture();
+
 	// Needed only for debugging
 	/*	if (shadow_atlas && storage->frame.current_rt) {
 

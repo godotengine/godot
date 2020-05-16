@@ -638,7 +638,16 @@ public:
 
 	virtual void viewport_set_clear_mode(RID p_viewport, ViewportClearMode p_clear_mode) = 0;
 
-	virtual RID viewport_get_texture(RID p_viewport) const = 0;
+	enum ViewportTextureBuffer {
+		VIEWPORT_TEXTURE_BUFFER_COLOR,
+		VIEWPORT_TEXTURE_BUFFER_DEPTH,
+		VIEWPORT_TEXTURE_BUFFER_DIFFUSE,
+		VIEWPORT_TEXTURE_BUFFER_SPECULAR,
+		VIEWPORT_TEXTURE_BUFFER_NORMAL_ROUGH,
+		VIEWPORT_TEXTURE_BUFFER_SUBSURFACE
+	};
+
+	virtual RID viewport_get_texture(RID p_viewport, ViewportTextureBuffer p_buffer) const = 0;
 
 	virtual void viewport_set_hide_scenario(RID p_viewport, bool p_hide) = 0;
 	virtual void viewport_set_hide_canvas(RID p_viewport, bool p_hide) = 0;
@@ -670,7 +679,8 @@ public:
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
-
+	virtual void viewport_set_force_mrt(RID p_viewport, bool p_force_mrt) = 0;
+	
 	enum ViewportUsage {
 		VIEWPORT_USAGE_2D,
 		VIEWPORT_USAGE_2D_NO_SAMPLING,
@@ -1077,6 +1087,7 @@ VARIANT_ENUM_CAST(VisualServer::BlendShapeMode);
 VARIANT_ENUM_CAST(VisualServer::LightType);
 VARIANT_ENUM_CAST(VisualServer::LightParam);
 VARIANT_ENUM_CAST(VisualServer::ViewportUpdateMode);
+VARIANT_ENUM_CAST(VisualServer::ViewportTextureBuffer);
 VARIANT_ENUM_CAST(VisualServer::ViewportClearMode);
 VARIANT_ENUM_CAST(VisualServer::ViewportMSAA);
 VARIANT_ENUM_CAST(VisualServer::ViewportUsage);

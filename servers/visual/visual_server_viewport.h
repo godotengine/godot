@@ -166,9 +166,9 @@ public:
 	void viewport_set_update_mode(RID p_viewport, VS::ViewportUpdateMode p_mode);
 	void viewport_set_vflip(RID p_viewport, bool p_enable);
 
-	void viewport_set_clear_mode(RID p_viewport, VS::ViewportClearMode p_clear_mode);
+	RID viewport_get_texture(RID p_viewport, VS::ViewportTextureBuffer p_buffer) const;
 
-	RID viewport_get_texture(RID p_viewport) const;
+	void viewport_set_clear_mode(RID p_viewport, VS::ViewportClearMode p_clear_mode);
 
 	void viewport_set_hide_scenario(RID p_viewport, bool p_hide);
 	void viewport_set_hide_canvas(RID p_viewport, bool p_hide);
@@ -190,6 +190,7 @@ public:
 	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_msaa);
+	void viewport_set_force_mrt(RID p_viewport, bool p_force_mrt);
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
 	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
 

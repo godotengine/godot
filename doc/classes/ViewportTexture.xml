@@ -17,6 +17,9 @@
 		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene" default="NodePath(&quot;&quot;)">
 			The path to the [Viewport] node to display. This is relative to the scene root, not to the node which uses the texture.
 		</member>
+		<member name="buffer_mode" type="int" setter="set_buffer_mode" getter="get_buffer_mode">
+			The kind of buffer the [ViewportTexture] will represent. Some buffers won't be available depending on the graphics driver, and the accosiated viewport's settings (see [enum ViewportTextureBuffer]).
+		</member>
 	</members>
 	<constants>
 	</constants>

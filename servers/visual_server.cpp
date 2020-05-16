@@ -1874,7 +1874,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &VisualServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vflip", "viewport", "enabled"), &VisualServer::viewport_set_vflip);
 	ClassDB::bind_method(D_METHOD("viewport_set_clear_mode", "viewport", "clear_mode"), &VisualServer::viewport_set_clear_mode);
-	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport"), &VisualServer::viewport_get_texture);
+	ClassDB::bind_method(D_METHOD("viewport_get_texture", "viewport", "buffer"), &VisualServer::viewport_get_texture);
 	ClassDB::bind_method(D_METHOD("viewport_set_hide_scenario", "viewport", "hidden"), &VisualServer::viewport_set_hide_scenario);
 	ClassDB::bind_method(D_METHOD("viewport_set_hide_canvas", "viewport", "hidden"), &VisualServer::viewport_set_hide_canvas);
 	ClassDB::bind_method(D_METHOD("viewport_set_disable_environment", "viewport", "disabled"), &VisualServer::viewport_set_disable_environment);
@@ -1890,6 +1890,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size"), &VisualServer::viewport_set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &VisualServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &VisualServer::viewport_set_msaa);
+	ClassDB::bind_method(D_METHOD("viewport_set_force_mrt", "viewport", "force_mrt"), &VisualServer::viewport_set_force_mrt);
 	ClassDB::bind_method(D_METHOD("viewport_set_hdr", "viewport", "enabled"), &VisualServer::viewport_set_hdr);
 	ClassDB::bind_method(D_METHOD("viewport_set_usage", "viewport", "usage"), &VisualServer::viewport_set_usage);
 	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &VisualServer::viewport_get_render_info);
@@ -2164,6 +2165,13 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ONCE);
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_WHEN_VISIBLE);
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_ALWAYS);
+
+	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_COLOR);
+	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_DEPTH);
+	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_DIFFUSE);
+	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_SPECULAR);
+	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_NORMAL_ROUGH);
+	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_SUBSURFACE);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_CLEAR_ALWAYS);
 	BIND_ENUM_CONSTANT(VIEWPORT_CLEAR_NEVER);

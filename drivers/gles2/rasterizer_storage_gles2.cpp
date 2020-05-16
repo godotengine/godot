@@ -4704,6 +4704,8 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 		// depth
 
 		if (config.support_depth_texture) {
+			Texture *depth_texture = texture_owner.getornull(rt->depth_texture);
+			ERR_FAIL_COND(!depth_texture);
 
 			glGenTextures(1, &rt->depth);
 			glBindTexture(GL_TEXTURE_2D, rt->depth);
@@ -4715,6 +4717,19 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+
+			depth_texture->format = Image::FORMAT_RF;
+			depth_texture->gl_format_cache = GL_DEPTH_COMPONENT;
+			depth_texture->gl_type_cache = config.depth_type;
+			depth_texture->gl_internal_format_cache = config.depth_internalformat;
+			depth_texture->tex_id = rt->depth;
+			depth_texture->width = rt->width;
+			depth_texture->alloc_width = rt->width;
+			depth_texture->height = rt->height;
+			depth_texture->alloc_height = rt->height;
+			depth_texture->active = true;
+
+			texture_set_flags(rt->depth_texture, depth_texture->flags);
 		} else {
 
 			glGenRenderbuffers(1, &rt->depth);
@@ -5040,6 +5055,13 @@ void RasterizerStorageGLES2::_render_target_clear(RenderTarget *rt) {
 	if (rt->depth) {
 		if (config.support_depth_texture) {
 			glDeleteTextures(1, &rt->depth);
+
+			Texture *depth_tex = texture_owner.get(rt->depth_texture);
+			depth_tex->alloc_height = 0;
+			depth_tex->alloc_width = 0;
+			depth_tex->width = 0;
+			depth_tex->height = 0;
+			depth_tex->active = false;
 		} else {
 			glDeleteRenderbuffers(1, &rt->depth);
 		}
@@ -5119,6 +5141,30 @@ RID RasterizerStorageGLES2::render_target_create() {
 
 	rt->texture = texture_owner.make_rid(t);
 
+	Texture *dt = memnew(Texture);
+
+	dt->type = VS::TEXTURE_TYPE_2D;
+	dt->flags = 0;
+	dt->width = 0;
+	dt->height = 0;
+	dt->alloc_height = 0;
+	dt->alloc_width = 0;
+	dt->format = Image::FORMAT_R8;
+	dt->target = GL_TEXTURE_2D;
+	dt->gl_format_cache = 0;
+	dt->gl_internal_format_cache = 0;
+	dt->gl_type_cache = 0;
+	dt->data_size = 0;
+	dt->total_data_size = 0;
+	dt->ignore_mipmaps = false;
+	dt->compressed = false;
+	dt->mipmaps = 1;
+	dt->active = true;
+	dt->tex_id = 0;
+	dt->render_target = rt;
+
+	rt->depth_texture = texture_owner.make_rid(dt);
+
 	return render_target_owner.make_rid(rt);
 }
 
@@ -5147,15 +5193,23 @@ void RasterizerStorageGLES2::render_target_set_size(RID p_render_target, int p_w
 	_render_target_allocate(rt);
 }
 
-RID RasterizerStorageGLES2::render_target_get_texture(RID p_render_target) const {
+RID RasterizerStorageGLES2::render_target_get_texture(RID p_render_target, VS::ViewportTextureBuffer p_buffer) const {
 
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());
 
-	if (rt->external.fbo == 0) {
-		return rt->texture;
-	} else {
-		return rt->external.texture;
+	switch (p_buffer) {
+		case VS::VIEWPORT_TEXTURE_BUFFER_COLOR:
+			if (rt->external.fbo == 0) {
+				return rt->texture;
+			} else {
+				return rt->external.texture;
+			}
+		case VS::VIEWPORT_TEXTURE_BUFFER_DEPTH:
+			return rt->depth_texture;
+		default:
+			//printf("The buffer ", p_buffer, " is not available in GLES2.");
+			return RID();
 	}
 }
 
@@ -5350,6 +5404,10 @@ void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, VS::Vie
 	_render_target_allocate(rt);
 }
 
+void RasterizerStorageGLES2::render_target_set_force_mrt(RID p_render_target, bool p_force_mrt) {
+	// Only available in GLES3.
+}
+
 /* CANVAS SHADOW */
 
 RID RasterizerStorageGLES2::canvas_light_shadow_buffer_create(int p_width) {
@@ -5536,6 +5594,11 @@ bool RasterizerStorageGLES2::free(RID p_rid) {
 		Texture *t = texture_owner.get(rt->texture);
 		texture_owner.free(rt->texture);
 		memdelete(t);
+		if (config.support_depth_texture) {
+			Texture *dt = texture_owner.get(rt->depth_texture);
+			texture_owner.free(rt->depth_texture);
+			memdelete(dt);
+		}
 		render_target_owner.free(p_rid);
 		memdelete(rt);
 

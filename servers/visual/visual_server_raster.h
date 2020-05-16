@@ -463,7 +463,7 @@ public:
 	BIND2(viewport_set_update_mode, RID, ViewportUpdateMode)
 	BIND2(viewport_set_vflip, RID, bool)
 
-	BIND1RC(RID, viewport_get_texture, RID)
+	BIND2RC(RID, viewport_get_texture, RID, ViewportTextureBuffer)
 
 	BIND2(viewport_set_hide_scenario, RID, bool)
 	BIND2(viewport_set_hide_canvas, RID, bool)
@@ -484,6 +484,7 @@ public:
 	BIND2(viewport_set_shadow_atlas_size, RID, int)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
+	BIND2(viewport_set_force_mrt, RID, bool)
 	BIND2(viewport_set_hdr, RID, bool)
 	BIND2(viewport_set_usage, RID, ViewportUsage)
 

@@ -73,7 +73,7 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 	VS::get_singleton()->viewport_set_size(viewport, size, size);
 	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
 	VS::get_singleton()->viewport_set_active(viewport, true);
-	RID viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
+	RID viewport_texture = VS::get_singleton()->viewport_get_texture(viewport, VS::VIEWPORT_TEXTURE_BUFFER_COLOR);
 
 	RID camera = VS::get_singleton()->camera_create();
 	VS::get_singleton()->viewport_attach_camera(viewport, camera);

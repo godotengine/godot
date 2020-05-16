@@ -502,12 +502,11 @@ void VisualServerViewport::viewport_set_vflip(RID p_viewport, bool p_enable) {
 	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_VFLIP, p_enable);
 }
 
-RID VisualServerViewport::viewport_get_texture(RID p_viewport) const {
-
+RID VisualServerViewport::viewport_get_texture(RID p_viewport, VS::ViewportTextureBuffer p_buffer) const {
 	const Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND_V(!viewport, RID());
 
-	return VSG::storage->render_target_get_texture(viewport->render_target);
+	return VSG::storage->render_target_get_texture(viewport->render_target, p_buffer);
 }
 
 void VisualServerViewport::viewport_set_hide_scenario(RID p_viewport, bool p_hide) {
@@ -650,6 +649,14 @@ void VisualServerViewport::viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_
 	ERR_FAIL_COND(!viewport);
 
 	VSG::storage->render_target_set_msaa(viewport->render_target, p_msaa);
+}
+
+void VisualServerViewport::viewport_set_force_mrt(RID p_viewport, bool p_force_mrt) {
+	
+	Viewport *viewport = viewport_owner.getornull(p_viewport);
+	ERR_FAIL_COND(!viewport);
+
+	VSG::storage->render_target_set_force_mrt(viewport->render_target, p_force_mrt);
 }
 
 void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {

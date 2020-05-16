@@ -87,7 +87,7 @@
 			<return type="ViewportTexture">
 			</return>
 			<description>
-				Returns the viewport's texture.
+				Returns the viewport's color texture.
 				[b]Note:[/b] Due to the way OpenGL works, the resulting [ViewportTexture] is flipped vertically. You can use [method Image.flip_y] on the result of [method Texture.get_data] to flip it back, for example:
 				[codeblock]
 				var img = get_viewport().get_texture().get_data()
@@ -234,6 +234,9 @@
 		</member>
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
+		</member>
+		<member name="force_mrt" type="bool" setter="set_force_mrt" getter="is_force_mrt" default="false">
+			If [code]true[/code], the viewport will use multiple render targets even when effects like screen space reflections aren't enabled. This can be used to ensure that some buffers in a [ViewportTexture] stay available. It won't however work if the viewport were transparent, or if its usage is anything other than [enum Usage.3D].
 		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.

@@ -951,7 +951,7 @@ void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_o
 
 			if (onion.captures_valid[cidx]) {
 				VS::get_singleton()->canvas_item_add_texture_rect_region(
-						ci, dst_rect, VS::get_singleton()->viewport_get_texture(onion.captures[cidx]), src_rect, Color(1, 1, 1, alpha));
+						ci, dst_rect, VS::get_singleton()->viewport_get_texture(onion.captures[cidx], VS::VIEWPORT_TEXTURE_BUFFER_COLOR), src_rect, Color(1, 1, 1, alpha));
 			}
 
 			cidx++;
@@ -965,7 +965,7 @@ void AnimationPlayerEditor::forward_canvas_force_draw_over_viewport(Control *p_o
 
 			if (onion.captures_valid[cidx]) {
 				VS::get_singleton()->canvas_item_add_texture_rect_region(
-						ci, dst_rect, VS::get_singleton()->viewport_get_texture(onion.captures[cidx]), src_rect, Color(1, 1, 1, alpha));
+						ci, dst_rect, VS::get_singleton()->viewport_get_texture(onion.captures[cidx], VS::VIEWPORT_TEXTURE_BUFFER_COLOR), src_rect, Color(1, 1, 1, alpha));
 			}
 
 			cidx++;
@@ -1444,7 +1444,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	VS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
 	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/default_clear_color"));
 	onion.capture.material->set_shader_param("differences_only", onion.differences_only);
-	onion.capture.material->set_shader_param("present", onion.differences_only ? VS::get_singleton()->viewport_get_texture(present_rid) : RID());
+	onion.capture.material->set_shader_param("present", onion.differences_only ? VS::get_singleton()->viewport_get_texture(present_rid, VS::VIEWPORT_TEXTURE_BUFFER_COLOR) : RID());
 
 	int step_off_a = onion.past ? -onion.steps : 0;
 	int step_off_b = onion.future ? onion.steps : 0;

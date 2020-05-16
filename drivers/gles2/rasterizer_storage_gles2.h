@@ -1216,6 +1216,7 @@ public:
 		VS::ViewportMSAA msaa;
 
 		RID texture;
+		RID depth_texture;
 
 		bool used_dof_blur_near;
 		bool mip_maps_allocated;
@@ -1251,13 +1252,14 @@ public:
 	virtual RID render_target_create();
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y);
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height);
-	virtual RID render_target_get_texture(RID p_render_target) const;
+	virtual RID render_target_get_texture(RID p_render_target, VS::ViewportTextureBuffer p_buffer) const;
 	virtual void render_target_set_external_texture(RID p_render_target, unsigned int p_texture_id);
 
 	virtual void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	virtual bool render_target_was_used(RID p_render_target);
 	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
+	virtual void render_target_set_force_mrt(RID p_render_target, bool p_force_mrt);
 
 	/* CANVAS SHADOW */
 

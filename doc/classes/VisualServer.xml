@@ -4039,6 +4039,17 @@
 				If [code]true[/code], rendering of a viewport's environment is disabled.
 			</description>
 		</method>
+		<method name="viewport_set_force_mrt">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="force_mrt" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], then multiple render targets will be used by this [Viewport] no matter what. (See [Viewport.force_mrt]).
+			</description>
+		</method>
 		<method name="viewport_set_global_canvas_transform">
 			<return type="void">
 			</return>
@@ -4609,6 +4620,24 @@
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_MAX" value="8" enum="ViewportRenderInfo">
 			Represents the size of the [enum ViewportRenderInfo] enum.
+		</constant>
+		<constant name="VIEWPORT_TEXTURE_BUFFER_COLOR" value="0" enum="ViewportTextureBuffer">
+			The color buffer of the [Viewport].
+		</constant>
+		<constant name="VIEWPORT_TEXTURE_BUFFER_DEPTH" value="1" enum="ViewportTextureBuffer">
+			The depth buffer of the [Viewport]. It is currently not possible to read it's data.
+		</constant>
+		<constant name="VIEWPORT_TEXTURE_BUFFER_DIFFUSE" value="2" enum="ViewportTextureBuffer">
+			The diffuse buffer of the [Viewport]. More specifically, it contains emission, diffuse and ambient light combined in the RGB channels, and ambient contribution in the alpha channel for SSAO. [b]GLES3 only.[/b]
+		</constant>
+		<constant name="VIEWPORT_TEXTURE_BUFFER_SPECULAR" value="3" enum="ViewportTextureBuffer">
+			The specular buffer of the [Viewport]. The RGB channels contain the specular color, and the alpha channel contains the metalness. [b]GLES3 only.[/b]
+		</constant>
+		<constant name="VIEWPORT_TEXTURE_BUFFER_NORMAL_ROUGH" value="4" enum="ViewportTextureBuffer">
+			The normal and roughness buffer of the [Viewport]. The RGB channels contain the normals in view space, and the alpha channel contains the roughness. [b]GLES3 only.[/b]
+		</constant>
+		<constant name="VIEWPORT_TEXTURE_BUFFER_SUBSURFACE" value="5" enum="ViewportTextureBuffer">
+			The subsurface scattering buffer of the [Viewport]. It's used for subsurface scattering effects. [b]GLES3 only.[/b]
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
 			Debug draw is disabled. Default setting.

@@ -74,10 +74,10 @@ void ViewportTexture::setup_local_to_scene() {
 
 	vp->viewport_textures.insert(this);
 
-	VS::get_singleton()->texture_set_proxy(proxy, vp->texture_rid);
+	set_buffer_mode(buffer_mode);
 
 	vp->texture_flags = flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
+	VS::get_singleton()->texture_set_flags(buffer_rid, flags);
 }
 
 void ViewportTexture::set_viewport_path_in_scene(const NodePath &p_path) {
@@ -125,8 +125,9 @@ bool ViewportTexture::has_alpha() const {
 Ref<Image> ViewportTexture::get_data() const {
 
 	ERR_FAIL_COND_V_MSG(!vp, Ref<Image>(), "Viewport Texture must be set to use it.");
-	return VS::get_singleton()->texture_get_data(vp->texture_rid);
+	return VS::get_singleton()->texture_get_data(buffer_rid);
 }
+
 void ViewportTexture::set_flags(uint32_t p_flags) {
 	flags = p_flags;
 
@@ -134,7 +135,7 @@ void ViewportTexture::set_flags(uint32_t p_flags) {
 		return;
 
 	vp->texture_flags = flags;
-	VS::get_singleton()->texture_set_flags(vp->texture_rid, flags);
+	VS::get_singleton()->texture_set_flags(buffer_rid, flags);
 }
 
 uint32_t ViewportTexture::get_flags() const {
@@ -142,18 +143,65 @@ uint32_t ViewportTexture::get_flags() const {
 	return flags;
 }
 
+void ViewportTexture::set_buffer_mode(BufferMode p_buffer_mode) {
+	buffer_mode = p_buffer_mode;
+
+	if (!vp)
+		return;
+
+	switch (buffer_mode) {
+		case BUFFER_COLOR:
+			buffer_rid = vp->color_texture_rid;
+			break;
+		case BUFFER_DEPTH:
+			buffer_rid = vp->depth_texture_rid;
+			break;
+		case BUFFER_DIFFUSE:
+			buffer_rid = vp->diffuse_texture_rid;
+			break;
+		case BUFFER_SPECULAR:
+			buffer_rid = vp->specular_texture_rid;
+			break;
+		case BUFFER_NORMAL_ROUGH:
+			buffer_rid = vp->normal_rough_texture_rid;
+			break;
+		case BUFFER_SUBSURFACE:
+			buffer_rid = vp->subsurface_texture_rid;
+			break;
+	}
+
+	VS::get_singleton()->texture_set_proxy(proxy, buffer_rid);
+	set_flags(flags);
+}
+
+ViewportTexture::BufferMode ViewportTexture::get_buffer_mode() const {
+	return buffer_mode;
+}
+
 void ViewportTexture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_buffer_mode", "p_buffer_mode"), &ViewportTexture::set_buffer_mode);
+	ClassDB::bind_method(D_METHOD("get_buffer_mode"), &ViewportTexture::get_buffer_mode);
 
 	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene", "path"), &ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Viewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffer_mode", PROPERTY_HINT_ENUM, "Color,Depth,Diffuse,Specular,Normal Roughness, Subsurface"), "set_buffer_mode", "get_buffer_mode");
+
+	BIND_ENUM_CONSTANT(BUFFER_COLOR);
+	BIND_ENUM_CONSTANT(BUFFER_DEPTH);
+	BIND_ENUM_CONSTANT(BUFFER_DIFFUSE);
+	BIND_ENUM_CONSTANT(BUFFER_SPECULAR);
+	BIND_ENUM_CONSTANT(BUFFER_NORMAL_ROUGH);
+	BIND_ENUM_CONSTANT(BUFFER_SUBSURFACE);
 }
 
 ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
 	flags = 0;
+	buffer_mode = BUFFER_COLOR;
 	set_local_to_scene(true);
 	proxy = VS::get_singleton()->texture_create();
 }
@@ -3014,6 +3062,19 @@ Viewport::MSAA Viewport::get_msaa() const {
 	return msaa;
 }
 
+void Viewport::set_force_mrt(bool p_force_mrt) {
+
+	if (force_mrt == p_force_mrt)
+		return;
+	force_mrt = p_force_mrt;
+	VS::get_singleton()->viewport_set_force_mrt(viewport, p_force_mrt);
+}
+
+bool Viewport::is_force_mrt() const {
+
+	return force_mrt;
+}
+
 void Viewport::set_hdr(bool p_hdr) {
 
 	if (hdr == p_hdr)
@@ -3149,6 +3210,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
 
+	ClassDB::bind_method(D_METHOD("set_force_mrt", "mrt"), &Viewport::set_force_mrt);
+	ClassDB::bind_method(D_METHOD("is_force_mrt"), &Viewport::is_force_mrt);
+
 	ClassDB::bind_method(D_METHOD("set_hdr", "enable"), &Viewport::set_hdr);
 	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
 
@@ -3237,6 +3301,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_mrt"), "set_force_mrt", "is_force_mrt");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
@@ -3324,15 +3389,22 @@ Viewport::Viewport() {
 	world_2d = Ref<World2D>(memnew(World2D));
 
 	viewport = VisualServer::get_singleton()->viewport_create();
-	texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport);
+	color_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_COLOR));
+	depth_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_DEPTH));
+	diffuse_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_DIFFUSE));
+	specular_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_SPECULAR));
+	normal_rough_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_NORMAL_ROUGH));
+	subsurface_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_SUBSURFACE));
+	
 	texture_flags = 0;
 
 	render_direct_to_screen = false;
 
 	default_texture.instance();
 	default_texture->vp = const_cast<Viewport *>(this);
+	default_texture->buffer_rid = color_texture_rid;
 	viewport_textures.insert(default_texture.ptr());
-	VS::get_singleton()->texture_set_proxy(default_texture->proxy, texture_rid);
+	VS::get_singleton()->texture_set_proxy(default_texture->proxy, color_texture_rid);
 
 	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener = false;

@@ -79,7 +79,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ETC2_RGB8",
 	"ETC2_RGBA8",
 	"ETC2_RGB8A1",
-
 };
 
 SavePNGFunc Image::save_png_func = NULL;

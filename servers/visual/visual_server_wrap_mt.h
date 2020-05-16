@@ -390,7 +390,7 @@ public:
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 	FUNC2(viewport_set_vflip, RID, bool)
 
-	FUNC1RC(RID, viewport_get_texture, RID)
+	FUNC2RC(RID, viewport_get_texture, RID, ViewportTextureBuffer)
 
 	FUNC2(viewport_set_hide_scenario, RID, bool)
 	FUNC2(viewport_set_hide_canvas, RID, bool)
@@ -411,6 +411,7 @@ public:
 	FUNC2(viewport_set_shadow_atlas_size, RID, int)
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
+	FUNC2(viewport_set_force_mrt, RID, bool)
 	FUNC2(viewport_set_hdr, RID, bool)
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
