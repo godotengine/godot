@@ -20,7 +20,7 @@
 		var array2 = [3, "Four"]
 		print(array1 + array2) # ["One", 2, 3, "Four"]
 		[/codeblock]
-		Arrays are always passed by reference.
+		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array which can be modified independently of the original array, use [method duplicate].
 	</description>
 	<tutorials>
 	</tutorials>
