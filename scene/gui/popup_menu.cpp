@@ -1442,7 +1442,7 @@ PopupMenu::PopupMenu() {
 	during_grabbed_click = false;
 	invalidated_click = false;
 
-	allow_search = false;
+	allow_search = true;
 	search_time_msec = 0;
 	search_string = "";
 
