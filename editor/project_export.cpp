@@ -131,6 +131,12 @@ void ProjectExportDialog::_add_preset(int p_platform) {
 	_edit_preset(EditorExport::get_singleton()->get_export_preset_count() - 1);
 }
 
+void ProjectExportDialog::_force_update_current_preset_parameters() {
+	// Force the parameters section to refresh its UI.
+	parameters->edit(nullptr);
+	_update_current_preset();
+}
+
 void ProjectExportDialog::_update_current_preset() {
 
 	_edit_preset(presets->get_current());
@@ -1057,6 +1063,7 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("set_export_path", &ProjectExportDialog::set_export_path);
 	ClassDB::bind_method("get_export_path", &ProjectExportDialog::get_export_path);
 	ClassDB::bind_method("get_current_preset", &ProjectExportDialog::get_current_preset);
+	ClassDB::bind_method("_force_update_current_preset_parameters", &ProjectExportDialog::_force_update_current_preset_parameters);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "export_path"), "set_export_path", "get_export_path");
 }
@@ -1138,6 +1145,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	parameters->set_name(TTR("Options"));
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
 	parameters->connect("property_edited", this, "_update_parameters");
+	EditorExport::get_singleton()->connect("export_presets_updated", this, "_force_update_current_preset_parameters");
 
 	// Resources export parameters.
 
