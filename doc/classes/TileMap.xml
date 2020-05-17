@@ -158,18 +158,21 @@
 			</argument>
 			<argument index="6" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
+			<argument index="7" name="atlas_priority" type="bool" default="true">
+			</argument>
 			<description>
 				Sets the tile index for the cell given by a Vector2.
 				An index of [code]-1[/code] clears the cell.
 				Optionally, the tile can also be flipped, transposed, or given autotile coordinates. The autotile coordinate refers to the column and row of the subtile.
 				[b]Note:[/b] Data such as navigation polygons and collision shapes are not immediately updated for performance reasons.
+				[b]Note:[/b] [code]autotile_coord[/code] is also used to define the column and row of [constant TileSet.ATLAS_TILE], for this you must pass [code]false[/code] to [code]atlas_priority[/code] to disable priority.
 				If you need these to be immediately updated, you can call [method update_dirty_quadrants].
 				Overriding this method also overrides it internally, allowing custom logic to be implemented when tiles are placed/removed:
 				[codeblock]
-				func set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				func set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord, atlas_priority)
 				    # Write your custom logic here.
 				    # To call the default method:
-				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord)
+				    .set_cell(x, y, tile, flip_x, flip_y, transpose, autotile_coord, atlas_priority)
 				[/codeblock]
 			</description>
 		</method>

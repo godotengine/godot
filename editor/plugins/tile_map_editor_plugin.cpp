@@ -232,7 +232,7 @@ void TileMapEditor::set_selected_tiles(Vector<int> p_tiles) {
 	palette->ensure_current_is_visible();
 }
 
-Dictionary TileMapEditor::_create_cell_dictionary(int tile, bool flip_x, bool flip_y, bool transpose, Vector2 autotile_coord) {
+Dictionary TileMapEditor::_create_cell_dictionary(int tile, bool flip_x, bool flip_y, bool transpose, Vector2 autotile_coord, bool p_atlas_priority) {
 	Dictionary cell;
 
 	cell["id"] = tile;
@@ -240,13 +240,14 @@ Dictionary TileMapEditor::_create_cell_dictionary(int tile, bool flip_x, bool fl
 	cell["flip_y"] = flip_y;
 	cell["transpose"] = transpose;
 	cell["auto_coord"] = autotile_coord;
+	cell["atlas_priority"] = p_atlas_priority;
 
 	return cell;
 }
 
 void TileMapEditor::_create_set_cell_undo_redo(const Vector2 &p_vec, const CellOp &p_cell_old, const CellOp &p_cell_new) {
-	Dictionary cell_old = _create_cell_dictionary(p_cell_old.idx, p_cell_old.xf, p_cell_old.yf, p_cell_old.tr, p_cell_old.ac);
-	Dictionary cell_new = _create_cell_dictionary(p_cell_new.idx, p_cell_new.xf, p_cell_new.yf, p_cell_new.tr, p_cell_new.ac);
+	Dictionary cell_old = _create_cell_dictionary(p_cell_old.idx, p_cell_old.xf, p_cell_old.yf, p_cell_old.tr, p_cell_old.ac, false);
+	Dictionary cell_new = _create_cell_dictionary(p_cell_new.idx, p_cell_new.xf, p_cell_new.yf, p_cell_new.tr, p_cell_new.ac, false);
 
 	undo_redo->add_undo_method(node, "_set_celld", p_vec, cell_old);
 	undo_redo->add_do_method(node, "_set_celld", p_vec, cell_new);
@@ -269,7 +270,7 @@ void TileMapEditor::_finish_undo() {
 	undo_redo->commit_action();
 }
 
-void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord) {
+void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, bool p_atlas_priority) {
 	ERR_FAIL_COND(!node);
 
 	if (p_values.size() == 0) {
@@ -313,7 +314,7 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 		}
 	}
 
-	node->_set_celld(p_pos, _create_cell_dictionary(p_value, p_flip_h, p_flip_v, p_transpose, p_autotile_coord));
+	node->_set_celld(p_pos, _create_cell_dictionary(p_value, p_flip_h, p_flip_v, p_transpose, p_autotile_coord, p_atlas_priority));
 
 	if (tool == TOOL_PASTING) {
 		return;
@@ -323,9 +324,8 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 		if (current != -1) {
 			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
 		} else if (node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE && priority_atlastile) {
-			// BIND_CENTER is used to indicate that bitmask should not update for this tile cell.
-			node->get_tileset()->autotile_set_bitmask(p_value, Vector2(p_pos.x, p_pos.y), TileSet::BIND_CENTER);
-			node->update_cell_bitmask(p_pos.x, p_pos.y);
+			Vector2 coord = node->get_tileset()->atlastile_get_subtile_by_priority(p_value, this, p_pos);
+			node->set_cell_autotile_coord(p_pos.x, p_pos.y, coord);
 		}
 	} else {
 		node->update_bitmask_area(Point2(p_pos));
@@ -1070,7 +1070,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						ids.push_back(0);
 						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
 							ids.write[0] = E->get().cell;
-							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose, E->get().autotile_coord);
+							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose, E->get().autotile_coord, false);
 						}
 						_finish_undo();
 
