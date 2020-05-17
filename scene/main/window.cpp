@@ -992,7 +992,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
-	Rect2i parent_rect;
+	Rect2 parent_rect;
 
 	if (is_embedded()) {
 		parent_rect = get_parent_viewport()->get_visible_rect();
