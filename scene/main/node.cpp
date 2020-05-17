@@ -1234,17 +1234,13 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	_add_child_nocheck(p_child, p_child->data.name);
 }
 
-void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
-	ERR_FAIL_NULL(p_node);
-	ERR_FAIL_NULL(p_child);
+void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
+	ERR_FAIL_NULL(p_sibling);
+	ERR_FAIL_COND_MSG(p_sibling == this, "Can't add sibling '" + p_sibling->get_name() + "' to itself."); // adding to itself!
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_sibling() failed. Consider using call_deferred(\"add_sibling\", sibling) instead.");
 
-	add_child(p_child, p_legible_unique_name);
-
-	if (is_a_parent_of(p_node)) {
-		move_child(p_child, p_node->get_index() + 1);
-	} else {
-		WARN_PRINT("Cannot move under node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
-	}
+	get_parent()->add_child(p_sibling, p_legible_unique_name);
+	get_parent()->move_child(p_sibling, this->get_index() + 1);
 }
 
 void Node::_propagate_validate_owner() {
@@ -2710,7 +2706,7 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("node/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("node/name_casing", PropertyInfo(Variant::INT, "node/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
-	ClassDB::bind_method(D_METHOD("add_child_below_node", "preceding_node", "node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "legible_unique_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
