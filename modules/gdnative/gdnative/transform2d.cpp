@@ -37,6 +37,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_transform2d) == sizeof(Transform2D), "Transform2D size mismatch");
+
 void GDAPI godot_transform2d_new(godot_transform2d *r_dest, const godot_real p_rot, const godot_vector2 *p_pos) {
 	const Vector2 *pos = (const Vector2 *)p_pos;
 	Transform2D *dest = (Transform2D *)r_dest;

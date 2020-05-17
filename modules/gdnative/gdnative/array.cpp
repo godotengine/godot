@@ -42,6 +42,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_array) == sizeof(Array), "Array size mismatch");
+
 void GDAPI godot_array_new(godot_array *r_dest) {
 	Array *dest = (Array *)r_dest;
 	memnew_placement(dest, Array);
