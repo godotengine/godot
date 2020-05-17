@@ -35,6 +35,8 @@
 #include "scene/3d/light_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
+#include "scene/resources/material.h"
+#include "scene/resources/texture.h"
 
 class AnimationPlayer;
 class BoneAttachment3D;
@@ -379,6 +381,29 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	void _process_mesh_instances(GLTFState &state, Node3D *scene_root);
 
+public:
+	// http://www.itu.int/rec/R-REC-BT.601
+	// http://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.601-7-201103-I!!PDF-E.pdf
+	static constexpr float R_BRIGHTNESS_COEFF = 0.299f;
+	static constexpr float G_BRIGHTNESS_COEFF = 0.587f;
+	static constexpr float B_BRIGHTNESS_COEFF = 0.114f;
+
+private:
+	struct GLTFSpecGloss {
+		Ref<Image> diffuse_img = nullptr;
+		Color diffuse_factor = Color(1.0f, 1.0f, 1.0f);
+		float gloss_factor = 1.0f;
+		Color specular_factor = Color(1.0f, 1.0f, 1.0f);
+		Ref<Image> spec_gloss_img = nullptr;
+	};
+
+	// https://github.com/microsoft/glTF-SDK/blob/master/GLTFSDK/Source/PBRUtils.cpp#L9
+	// https://bghgary.github.io/glTF/convert-between-workflows-bjs/js/babylon.pbrUtilities.js
+	void _spec_gloss_to_rough_metal(GLTFSpecGloss &r_spec_gloss, Ref<StandardMaterial3D> p_material);
+	static void _spec_gloss_to_metal_base_color(const Color &p_specular_factor, const Color &p_diffuse, Color &r_base_color, float &r_metallic);
+	static float _solve_metallic(float p_dielectric_specular, float diffuse, float specular, float p_one_minus_specular_strength);
+	static float _get_perceived_brightness(const Color p_color);
+	static float _get_max_component(const Color &p_color);
 	void _assign_scene_names(GLTFState &state);
 
 	template <class T>

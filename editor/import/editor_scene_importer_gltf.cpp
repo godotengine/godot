@@ -1383,7 +1383,56 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			material->set_name(d["name"]);
 		}
 
-		if (d.has("pbrMetallicRoughness")) {
+		Dictionary extensions;
+		if (d.has("extensions")) {
+			extensions = d["extensions"];
+		}
+
+		if (extensions.has("KHR_materials_pbrSpecularGlossiness")) {
+			WARN_PRINT("Material uses a specular and glossiness workflow. Textures will be converted to roughness and metallic workflow, which may not be 100% accurate.");
+			Dictionary sgm = extensions["KHR_materials_pbrSpecularGlossiness"];
+
+			GLTFSpecGloss spec_gloss = {};
+			if (sgm.has("diffuseTexture")) {
+				const Dictionary &diffuse_texture_dict = sgm["diffuseTexture"];
+				if (diffuse_texture_dict.has("index")) {
+					Ref<Texture2D> diffuse_texture = _get_texture(state, diffuse_texture_dict["index"]);
+					spec_gloss.diffuse_img = diffuse_texture->get_data();
+					material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, diffuse_texture);
+				}
+			}
+			if (sgm.has("diffuseFactor")) {
+				const Array &arr = sgm["diffuseFactor"];
+				ERR_FAIL_COND_V(arr.size() != 4, ERR_PARSE_ERROR);
+				const Color c = Color(arr[0], arr[1], arr[2], arr[3]).to_srgb();
+				spec_gloss.diffuse_factor = c;
+				material->set_albedo(spec_gloss.diffuse_factor);
+			}
+
+			if (sgm.has("specularFactor")) {
+				const Array &arr = sgm["specularFactor"];
+				ERR_FAIL_COND_V(arr.size() != 3, ERR_PARSE_ERROR);
+				spec_gloss.specular_factor = Color(arr[0], arr[1], arr[2]);
+				Color base_color = Color(1.0f, 1.0f, 1.0f);
+				float metallic = 1.0f;
+				_spec_gloss_to_metal_base_color(spec_gloss.specular_factor, spec_gloss.diffuse_factor, base_color, metallic);
+				material->set_metallic(metallic);
+				material->set_albedo(base_color);
+			}
+
+			if (sgm.has("glossinessFactor")) {
+				spec_gloss.gloss_factor = sgm["glossinessFactor"];
+				material->set_roughness(1.0f - CLAMP(spec_gloss.gloss_factor, 0.0f, 1.0f));
+			}
+			if (sgm.has("specularGlossinessTexture")) {
+				const Dictionary &spec_gloss_texture = sgm["specularGlossinessTexture"];
+				if (spec_gloss_texture.has("index")) {
+					const Ref<Texture2D> orig_texture = _get_texture(state, spec_gloss_texture["index"]);
+					spec_gloss.spec_gloss_img = orig_texture->get_data();
+				}
+			}
+			_spec_gloss_to_rough_metal(spec_gloss, material);
+		} else if (d.has("pbrMetallicRoughness")) {
 			const Dictionary &mr = d["pbrMetallicRoughness"];
 			if (mr.has("baseColorFactor")) {
 				const Array &arr = mr["baseColorFactor"];
@@ -1497,6 +1546,94 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 	print_verbose("Total materials: " + itos(state.materials.size()));
 
 	return OK;
+}
+
+void EditorSceneImporterGLTF::_spec_gloss_to_rough_metal(GLTFSpecGloss &r_spec_gloss, Ref<StandardMaterial3D> p_material) {
+	if (r_spec_gloss.spec_gloss_img.is_null()) {
+		return;
+	}
+	if (r_spec_gloss.diffuse_img.is_null()) {
+		return;
+	}
+	Ref<Image> rm_img;
+	bool has_roughness = false;
+	bool has_metal = false;
+	p_material->set_roughness(1.0f);
+	p_material->set_metallic(1.0f);
+	rm_img.instance();
+	rm_img->create(r_spec_gloss.spec_gloss_img->get_width(), r_spec_gloss.spec_gloss_img->get_height(), false, Image::FORMAT_RGBA8);
+	r_spec_gloss.spec_gloss_img->decompress();
+	if (r_spec_gloss.diffuse_img.is_valid()) {
+		r_spec_gloss.diffuse_img->decompress();
+		r_spec_gloss.diffuse_img->resize(r_spec_gloss.spec_gloss_img->get_width(), r_spec_gloss.spec_gloss_img->get_height(), Image::INTERPOLATE_LANCZOS);
+		r_spec_gloss.spec_gloss_img->resize(r_spec_gloss.diffuse_img->get_width(), r_spec_gloss.diffuse_img->get_height(), Image::INTERPOLATE_LANCZOS);
+	}
+	for (int32_t y = 0; y < r_spec_gloss.spec_gloss_img->get_height(); y++) {
+		for (int32_t x = 0; x < r_spec_gloss.spec_gloss_img->get_width(); x++) {
+			const Color specular_pixel = r_spec_gloss.spec_gloss_img->get_pixel(x, y).to_linear();
+			Color specular = Color(specular_pixel.r, specular_pixel.g, specular_pixel.b);
+			specular *= r_spec_gloss.specular_factor;
+			Color diffuse = Color(1.0f, 1.0f, 1.0f);
+			diffuse *= r_spec_gloss.diffuse_img->get_pixel(x, y).to_linear();
+			float metallic = 0.0f;
+			Color base_color;
+			_spec_gloss_to_metal_base_color(specular, diffuse, base_color, metallic);
+			Color mr = Color(1.0f, 1.0f, 1.0f);
+			mr.g = specular_pixel.a;
+			mr.b = metallic;
+			if (!Math::is_equal_approx(mr.g, 1.0f)) {
+				has_roughness = true;
+			}
+			if (!Math::is_equal_approx(mr.b, 0.0f)) {
+				has_metal = true;
+			}
+			mr.g *= r_spec_gloss.gloss_factor;
+			mr.g = 1.0f - mr.g;
+			rm_img->set_pixel(x, y, mr);
+			if (r_spec_gloss.diffuse_img.is_valid()) {
+				r_spec_gloss.diffuse_img->set_pixel(x, y, base_color.to_srgb());
+			}
+		}
+	}
+	rm_img->generate_mipmaps();
+	r_spec_gloss.diffuse_img->generate_mipmaps();
+	Ref<ImageTexture> diffuse_image_texture;
+	diffuse_image_texture.instance();
+	diffuse_image_texture->create_from_image(r_spec_gloss.diffuse_img);
+	p_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, diffuse_image_texture);
+	Ref<ImageTexture> rm_image_texture;
+	rm_image_texture.instance();
+	rm_image_texture->create_from_image(rm_img);
+	if (has_roughness) {
+		p_material->set_texture(StandardMaterial3D::TEXTURE_ROUGHNESS, rm_image_texture);
+		p_material->set_roughness_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_GREEN);
+	}
+
+	if (has_metal) {
+		p_material->set_texture(StandardMaterial3D::TEXTURE_METALLIC, rm_image_texture);
+		p_material->set_metallic_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_BLUE);
+	}
+}
+
+void EditorSceneImporterGLTF::_spec_gloss_to_metal_base_color(const Color &p_specular_factor, const Color &p_diffuse, Color &r_base_color, float &r_metallic) {
+	const Color DIELECTRIC_SPECULAR = Color(0.04f, 0.04f, 0.04f);
+	Color specular = Color(p_specular_factor.r, p_specular_factor.g, p_specular_factor.b);
+	const float one_minus_specular_strength = 1.0f - _get_max_component(specular);
+	const float dielectric_specular_red = DIELECTRIC_SPECULAR.r;
+	float brightness_diffuse = _get_perceived_brightness(p_diffuse);
+	const float brightness_specular = _get_perceived_brightness(specular);
+	r_metallic = _solve_metallic(dielectric_specular_red, brightness_diffuse, brightness_specular, one_minus_specular_strength);
+	const float one_minus_metallic = 1.0f - r_metallic;
+	const Color base_color_from_diffuse = p_diffuse * (one_minus_specular_strength / (1.0f - dielectric_specular_red) / MAX(one_minus_metallic, CMP_EPSILON));
+	const Color base_color_from_specular = (specular - (DIELECTRIC_SPECULAR * (one_minus_metallic))) * (1.0f / MAX(r_metallic, CMP_EPSILON));
+	r_base_color.r = Math::lerp(base_color_from_diffuse.r, base_color_from_specular.r, r_metallic * r_metallic);
+	r_base_color.g = Math::lerp(base_color_from_diffuse.g, base_color_from_specular.g, r_metallic * r_metallic);
+	r_base_color.b = Math::lerp(base_color_from_diffuse.b, base_color_from_specular.b, r_metallic * r_metallic);
+	r_base_color.a = p_diffuse.a;
+	r_base_color.r = CLAMP(r_base_color.r, 0.0f, 1.0f);
+	r_base_color.g = CLAMP(r_base_color.g, 0.0f, 1.0f);
+	r_base_color.b = CLAMP(r_base_color.b, 0.0f, 1.0f);
+	r_base_color.a = CLAMP(r_base_color.a, 0.0f, 1.0f);
 }
 
 EditorSceneImporterGLTF::GLTFNodeIndex EditorSceneImporterGLTF::_find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subset) {
@@ -2989,6 +3126,37 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 	animation->set_length(length);
 
 	ap->add_animation(name, animation);
+}
+
+float EditorSceneImporterGLTF::_solve_metallic(float p_dielectric_specular, float diffuse, float specular, float p_one_minus_specular_strength) {
+	if (specular <= p_dielectric_specular) {
+		return 0.0f;
+	}
+
+	const float a = p_dielectric_specular;
+	const float b = diffuse * p_one_minus_specular_strength / (1.0f - p_dielectric_specular) + specular - 2.0f * p_dielectric_specular;
+	const float c = p_dielectric_specular - specular;
+	const float D = b * b - 4.0f * a * c;
+	return CLAMP((-b + Math::sqrt(D)) / (2.0f * a), 0.0f, 1.0f);
+}
+
+float EditorSceneImporterGLTF::_get_perceived_brightness(const Color p_color) {
+	const Color coeff = Color(R_BRIGHTNESS_COEFF, G_BRIGHTNESS_COEFF, B_BRIGHTNESS_COEFF);
+	const Color value = coeff * (p_color * p_color);
+
+	const float r = value.r;
+	const float g = value.g;
+	const float b = value.b;
+
+	return Math::sqrt(r + g + b);
+}
+
+float EditorSceneImporterGLTF::_get_max_component(const Color &p_color) {
+	const float r = p_color.r;
+	const float g = p_color.g;
+	const float b = p_color.b;
+
+	return MAX(MAX(r, g), b);
 }
 
 void EditorSceneImporterGLTF::_process_mesh_instances(GLTFState &state, Node3D *scene_root) {
