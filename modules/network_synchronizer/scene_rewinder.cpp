@@ -213,6 +213,7 @@ SceneRewinder::SceneRewinder() :
 		rewinding_in_progress(false),
 		node_counter(1),
 		generate_id(false),
+		main_controller_object_id(),
 		main_controller(nullptr) {
 
 	rpc_config("__reset", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -421,6 +422,7 @@ void SceneRewinder::_register_controller(NetworkedController *p_controller) {
 		if (p_controller->is_player_controller()) {
 			if (main_controller == nullptr) {
 				main_controller = p_controller;
+				main_controller_object_id = main_controller->get_instance_id();
 			}
 		}
 
@@ -450,6 +452,7 @@ void SceneRewinder::_unregister_controller(NetworkedController *p_controller) {
 
 	if (main_controller == p_controller) {
 		main_controller = nullptr;
+		main_controller_object_id = ObjectID();
 	}
 
 	for (
@@ -748,6 +751,11 @@ bool SceneRewinder::is_client() const {
 }
 
 void SceneRewinder::validate_nodes() {
+	if (ObjectDB::get_instance(main_controller_object_id) == nullptr) {
+		main_controller = nullptr;
+		main_controller_object_id = ObjectID();
+	}
+
 	std::vector<ObjectID> null_objects;
 
 	for (OAHashMap<ObjectID, NodeData>::Iterator it = data.iter(); it.valid; it = data.next_iter(it)) {
@@ -1948,7 +1956,8 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 
 	// Just make sure that the local player input ID was received.
 	if (player_controller_input_id == UINT64_MAX) {
-		NET_DEBUG_PRINT("Recovery aborted, the player controller ID was not part of the received snapshot, probably the server doesn't have important informations for this peer.");
+		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + scene_rewinder->main_controller->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. Snapshot:");
+		NET_DEBUG_PRINT(p_snapshot);
 		return false;
 	} else {
 		server_snapshot_id = snapshot_id;

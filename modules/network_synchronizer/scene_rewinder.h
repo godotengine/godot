@@ -190,6 +190,7 @@ private:
 	bool generate_id;
 	OAHashMap<ControllerID, IsleData> isle_data;
 	OAHashMap<ObjectID, NodeData> data;
+	ObjectID main_controller_object_id;
 	NetworkedController *main_controller;
 
 public:
