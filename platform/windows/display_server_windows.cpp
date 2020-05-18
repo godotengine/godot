@@ -2658,7 +2658,8 @@ void DisplayServerWindows::_process_key_events() {
 		KeyEvent &ke = key_event_buffer[i];
 		switch (ke.uMsg) {
 			case WM_CHAR: {
-				if ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR)) {
+				// extended keys should only be processed as WM_KEYDOWN message.
+				if (!KeyMappingWindows::is_extended_key(ke.wParam) && ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR))) {
 					Ref<InputEventKey> k;
 					k.instance();
 
