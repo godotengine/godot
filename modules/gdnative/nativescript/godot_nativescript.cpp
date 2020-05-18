@@ -159,7 +159,7 @@ void GDAPI godot_nativescript_register_property(void *p_gdnative_handle, const c
 	E->get().properties.insert(p_path, property);
 }
 
-void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_signal *p_signal) {
+void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_nativescript_signal *p_signal) {
 	String *s = (String *)p_gdnative_handle;
 
 	Map<StringName, NativeScriptDesc>::Element *E = NSL->library_classes[*s].find(p_name);
@@ -171,7 +171,7 @@ void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const cha
 	for (int i = 0; i < p_signal->num_args; i++) {
 		PropertyInfo info;
 
-		godot_signal_argument arg = p_signal->args[i];
+		godot_nativescript_signal_argument arg = p_signal->args[i];
 
 		info.hint = (PropertyHint)arg.hint;
 		info.hint_string = *(String *)&arg.hint_string;
@@ -184,7 +184,7 @@ void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const cha
 
 	for (int i = 0; i < p_signal->num_default_args; i++) {
 		Variant *v;
-		godot_signal_argument attrib = p_signal->args[i];
+		godot_nativescript_signal_argument attrib = p_signal->args[i];
 
 		v = (Variant *)&attrib.default_value;
 
