@@ -1,5 +1,4 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
@@ -7,9 +6,7 @@ VERSION_DEFINES
 
 #include "lm_common_inc.glsl"
 
-				/* clang-format on */
-
-				layout(location = 0) out vec3 vertex_interp;
+layout(location = 0) out vec3 vertex_interp;
 layout(location = 1) out vec3 normal_interp;
 layout(location = 2) out vec2 uv_interp;
 layout(location = 3) out vec3 barycentric;
@@ -26,10 +23,7 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	ivec3 grid_size;
 	uint pad2;
 }
-
 params;
-
-/* clang-format on */
 
 void main() {
 	uint triangle_idx = params.base_triangle + gl_VertexIndex / 3;
@@ -56,19 +50,15 @@ void main() {
 	face_normal = -normalize(cross((vertices.data[vertex_indices.x].position - vertices.data[vertex_indices.y].position), (vertices.data[vertex_indices.x].position - vertices.data[vertex_indices.z].position)));
 
 	gl_Position = vec4((uv_interp + params.uv_offset) * 2.0 - 1.0, 0.0001, 1.0);
-	;
 }
 
-/* clang-format off */
-
-[fragment]
+#[fragment]
 
 #version 450
 
 VERSION_DEFINES
 
 #include "lm_common_inc.glsl"
-
 
 layout(push_constant, binding = 0, std430) uniform Params {
 	vec2 atlas_size;
@@ -79,9 +69,8 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	float bias;
 	ivec3 grid_size;
 	uint pad2;
-} params;
-
-/* clang-format on */
+}
+params;
 
 layout(location = 0) in vec3 vertex_interp;
 layout(location = 1) in vec3 normal_interp;
@@ -100,7 +89,6 @@ void main() {
 	{
 		// smooth out vertex position by interpolating its projection in the 3 normal planes (normal plane is created by vertex pos and normal)
 		// because we don't want to interpolate inwards, normals found pointing inwards are pushed out.
-
 		vec3 pos_a = vertices.data[vertex_indices.x].position;
 		vec3 pos_b = vertices.data[vertex_indices.y].position;
 		vec3 pos_c = vertices.data[vertex_indices.z].position;

@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-/* clang-format on */
 
 #define FLAG_HORIZONTAL (1 << 0)
 #define FLAG_USE_BLUR_SECTION (1 << 1)
@@ -37,7 +35,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float camera_z_near;
 	uint pad2[2];
 }
-
 params;
 
 #ifdef MODE_CUBEMAP_ARRAY_TO_PANORAMA

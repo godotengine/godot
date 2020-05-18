@@ -36,14 +36,14 @@ def include_file_in_legacygl_header(filename, header_data, depth):
 
     while line:
 
-        if line.find("[vertex]") != -1:
+        if line.find("#[vertex]") != -1:
             header_data.reading = "vertex"
             line = fs.readline()
             header_data.line_offset += 1
             header_data.vertex_offset = header_data.line_offset
             continue
 
-        if line.find("[fragment]") != -1:
+        if line.find("#[fragment]") != -1:
             header_data.reading = "fragment"
             line = fs.readline()
             header_data.line_offset += 1
@@ -612,21 +612,21 @@ def include_file_in_rd_header(filename, header_data, depth):
 
     while line:
 
-        if line.find("[vertex]") != -1:
+        if line.find("#[vertex]") != -1:
             header_data.reading = "vertex"
             line = fs.readline()
             header_data.line_offset += 1
             header_data.vertex_offset = header_data.line_offset
             continue
 
-        if line.find("[fragment]") != -1:
+        if line.find("#[fragment]") != -1:
             header_data.reading = "fragment"
             line = fs.readline()
             header_data.line_offset += 1
             header_data.fragment_offset = header_data.line_offset
             continue
 
-        if line.find("[compute]") != -1:
+        if line.find("#[compute]") != -1:
             header_data.reading = "compute"
             line = fs.readline()
             header_data.line_offset += 1

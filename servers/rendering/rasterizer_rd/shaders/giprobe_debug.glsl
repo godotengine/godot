@@ -1,5 +1,4 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
@@ -11,12 +10,10 @@ struct CellData {
 	uint emission; //rgb normalized with e as multiplier
 	uint normal; //RGB normal encoded
 };
-/* clang-format on */
 
 layout(set = 0, binding = 1, std140) buffer CellDataBuffer {
 	CellData data[];
 }
-
 cell_data;
 
 layout(set = 0, binding = 2) uniform texture3D color_tex;
@@ -37,7 +34,6 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	ivec3 bounds;
 	uint pad;
 }
-
 params;
 
 layout(location = 0) out vec4 color_interp;
@@ -172,15 +168,13 @@ void main() {
 #endif
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) in vec4 color_interp;
-/* clang-format on */
 layout(location = 0) out vec4 frag_color;
 
 void main() {

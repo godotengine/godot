@@ -41,7 +41,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		"fragment",
 		"tesselation_control",
 		"tesselation_evaluation",
-		"compute"
+		"compute",
 	};
 	String stage_code[RD::SHADER_STAGE_MAX];
 	int stages_found = 0;
@@ -55,14 +55,11 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 
 		{
 			String ls = line.strip_edges();
-			if (ls.begins_with("#[")) { //workaround for clang format
-				ls = ls.replace_first("#[", "[");
-			}
-			if (ls.begins_with("[") && ls.ends_with("]")) {
-				String section = ls.substr(1, ls.length() - 2).strip_edges();
+			if (ls.begins_with("#[") && ls.ends_with("]")) {
+				String section = ls.substr(2, ls.length() - 3).strip_edges();
 				if (section == "versions") {
 					if (stages_found) {
-						base_error = "Invalid shader file, [version] must be the first section found.";
+						base_error = "Invalid shader file, #[versions] must be the first section found.";
 						break;
 					}
 					reading_versions = true;
@@ -102,22 +99,27 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 		if (reading_versions) {
 			String l = line.strip_edges();
 			if (l != "") {
-				int eqpos = l.find("=");
-				if (eqpos == -1) {
-					base_error = "Version syntax is version=\"<defines with C escaping>\".";
+				if (l.find("=") == -1) {
+					base_error = "Missing `=` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
 					break;
 				}
-				String version = l.get_slice("=", 0).strip_edges();
+				if (l.find(";") != -1) {
+					// We don't require a semicolon per se, but it's needed for clang-format to handle things properly.
+					base_error = "Missing `;` in '" + l + "'. Version syntax is `version = \"<defines with C escaping>\";`.";
+					break;
+				}
+				Vector<String> slices = l.get_slice(";", 0).split("=");
+				String version = slices[0].strip_edges();
 				if (!version.is_valid_identifier()) {
 					base_error = "Version names must be valid identifiers, found '" + version + "' instead.";
 					break;
 				}
-				String define = l.get_slice("=", 1).strip_edges();
+				String define = slices[1].strip_edges();
 				if (!define.begins_with("\"") || !define.ends_with("\"")) {
 					base_error = "Version text must be quoted using \"\", instead found '" + define + "'.";
 					break;
 				}
-				define = "\n" + define.substr(1, define.length() - 2).c_unescape() + "\n"; //add newline before and after jsut in case
+				define = "\n" + define.substr(1, define.length() - 2).c_unescape() + "\n"; // Add newline before and after just in case.
 
 				version_texts[version] = define + "\n" + p_defines;
 			}

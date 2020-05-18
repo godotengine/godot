@@ -1,15 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
-
-
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-
-/* clang-format on */
 
 #ifdef USE_25_SAMPLES
 const int kernel_size = 13;
@@ -105,7 +100,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float depth_scale;
 	uint pad[3];
 }
-
 params;
 
 layout(set = 0, binding = 0) uniform sampler2D source_image;

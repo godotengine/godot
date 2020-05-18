@@ -1,10 +1,9 @@
-/* clang-format off */
-[versions]
+#[versions]
 
-lines = "#define MODE_LINES"
-triangles = "#define MODE_TRIANGLES"
+lines = "#define MODE_LINES";
+triangles = "#define MODE_TRIANGLES";
 
-[vertex]
+#[vertex]
 
 #version 450
 
@@ -12,22 +11,20 @@ VERSION_DEFINES
 
 #include "lm_common_inc.glsl"
 
-				/* clang-format on */
-
-				layout(push_constant, binding = 0, std430) uniform Params {
-					uint base_index;
-					uint slice;
-					vec2 uv_offset;
-					bool debug;
-					float blend;
-					uint pad[2];
-				} params;
+layout(push_constant, binding = 0, std430) uniform Params {
+	uint base_index;
+	uint slice;
+	vec2 uv_offset;
+	bool debug;
+	float blend;
+	uint pad[2];
+}
+params;
 
 layout(location = 0) out vec3 uv_interp;
 
 void main() {
 #ifdef MODE_TRIANGLES
-
 	uint triangle_idx = params.base_index + gl_VertexIndex / 3;
 	uint triangle_subidx = gl_VertexIndex % 3;
 
@@ -42,7 +39,6 @@ void main() {
 
 	uv_interp = vec3(uv, float(params.slice));
 	gl_Position = vec4((uv + params.uv_offset) * 2.0 - 1.0, 0.0001, 1.0);
-
 #endif
 
 #ifdef MODE_LINES
@@ -71,12 +67,10 @@ void main() {
 
 	uv_interp = vec3(src_uv, float(params.slice));
 	gl_Position = vec4(dst_uv * 2.0 - 1.0, 0.0001, 1.0);
-	;
 #endif
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
@@ -84,16 +78,15 @@ VERSION_DEFINES
 
 #include "lm_common_inc.glsl"
 
-				/* clang-format on */
-
-				layout(push_constant, binding = 0, std430) uniform Params {
-					uint base_index;
-					uint slice;
-					vec2 uv_offset;
-					bool debug;
-					float blend;
-					uint pad[2];
-				} params;
+layout(push_constant, binding = 0, std430) uniform Params {
+	uint base_index;
+	uint slice;
+	vec2 uv_offset;
+	bool debug;
+	float blend;
+	uint pad[2];
+}
+params;
 
 layout(location = 0) in vec3 uv_interp;
 
