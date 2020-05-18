@@ -1,13 +1,12 @@
-/* clang-format off */
-[versions]
+#[versions]
 
-primary = "#define MODE_DIRECT_LIGHT"
-secondary = "#define MODE_BOUNCE_LIGHT"
-dilate = "#define MODE_DILATE"
-unocclude = "#define MODE_UNOCCLUDE"
-light_probes = "#define MODE_LIGHT_PROBES"
+primary = "#define MODE_DIRECT_LIGHT";
+secondary = "#define MODE_BOUNCE_LIGHT";
+dilate = "#define MODE_DILATE";
+unocclude = "#define MODE_UNOCCLUDE";
+light_probes = "#define MODE_LIGHT_PROBES";
 
-[compute]
+#[compute]
 
 #version 450
 
@@ -29,14 +28,11 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 #include "lm_common_inc.glsl"
 
-/* clang-format on */
-
 #ifdef MODE_LIGHT_PROBES
 
 layout(set = 1, binding = 0, std430) restrict buffer LightProbeData {
 	vec4 data[];
 }
-
 light_probes;
 
 layout(set = 1, binding = 1) uniform texture2DArray source_light;
@@ -94,7 +90,6 @@ layout(push_constant, binding = 0, std430) uniform Params {
 
 	mat3x4 env_transform;
 }
-
 params;
 
 //check it, but also return distance and barycentric coords (for uv lookup)
@@ -123,7 +118,6 @@ bool trace_ray(vec3 p_from, vec3 p_to
 		out float r_distance, out vec3 r_normal
 #endif
 ) {
-
 	/* world coords */
 
 	vec3 rel = p_to - p_from;
@@ -149,7 +143,6 @@ bool trace_ray(vec3 p_from, vec3 p_to
 	while (all(greaterThanEqual(icell, ivec3(0))) && all(lessThan(icell, ivec3(params.grid_size))) && iters < 1000) {
 		uvec2 cell_data = texelFetch(usampler3D(grid, linear_sampler), icell, 0).xy;
 		if (cell_data.x > 0) { //triangles here
-
 			bool hit = false;
 #if defined(MODE_UNOCCLUDE)
 			bool hit_backface = false;
@@ -211,7 +204,6 @@ bool trace_ray(vec3 p_from, vec3 p_to
 						r_triangle = tidx;
 						r_barycentric = barycentric;
 					}
-
 #endif
 				}
 			}

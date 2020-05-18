@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
-/* clang-format on */
 
 #define NO_CHILDREN 0xFFFFFFFF
 #define GREY_VEC vec3(0.33333, 0.33333, 0.33333)
@@ -18,7 +16,6 @@ struct CellChildren {
 layout(set = 0, binding = 1, std430) buffer CellChildrenBuffer {
 	CellChildren data[];
 }
-
 cell_children;
 
 struct CellData {
@@ -31,7 +28,6 @@ struct CellData {
 layout(set = 0, binding = 2, std430) buffer CellDataBuffer {
 	CellData data[];
 }
-
 cell_data;
 
 #define LIGHT_TYPE_DIRECTIONAL 0
@@ -59,7 +55,6 @@ struct Light {
 layout(set = 0, binding = 3, std140) uniform Lights {
 	Light data[MAX_LIGHTS];
 }
-
 lights;
 
 #endif
@@ -77,13 +72,11 @@ layout(push_constant, binding = 0, std430) uniform Params {
 	uint cell_count;
 	uint pad[2];
 }
-
 params;
 
 layout(set = 0, binding = 4, std140) uniform Outputs {
 	vec4 data[];
 }
-
 output;
 
 #ifdef MODE_COMPUTE_LIGHT
@@ -94,7 +87,6 @@ uint raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
 	ivec3 size = ivec3(max(max(params.limits.x, params.limits.y), params.limits.z));
 
 	while (distance > -distance_adv) { //use this to avoid precision errors
-
 		uint cell = 0;
 
 		ivec3 pos = ivec3(from);
@@ -120,8 +112,9 @@ uint raymarch(float distance, float distance_adv, vec3 from, vec3 direction) {
 				}
 
 				cell = cell_children.data[cell].children[child];
-				if (cell == NO_CHILDREN)
+				if (cell == NO_CHILDREN) {
 					break;
+				}
 
 				half_size >>= ivec3(1);
 			}
@@ -142,7 +135,6 @@ bool compute_light_vector(uint light, uint cell, vec3 pos, out float attenuation
 	if (lights.data[light].type == LIGHT_TYPE_DIRECTIONAL) {
 		light_pos = pos - lights.data[light].direction * length(vec3(params.limits));
 		attenuation = 1.0;
-
 	} else {
 		light_pos = lights.data[light].position;
 		float distance = length(pos - light_pos);

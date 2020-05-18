@@ -1,5 +1,4 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -8,7 +7,6 @@ VERSION_DEFINES
 #define BLOCK_SIZE 8
 
 layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
-/* clang-format on */
 
 shared float tmp_data[BLOCK_SIZE * BLOCK_SIZE];
 
@@ -37,7 +35,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float exposure_adjust;
 	float pad[3];
 }
-
 params;
 
 void main() {
@@ -68,7 +65,6 @@ void main() {
 		barrier();
 
 		size >>= 1;
-
 	} while (size >= 1);
 
 	if (t == 0) {

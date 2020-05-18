@@ -1,12 +1,10 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
@@ -14,7 +12,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 position_multiplier;
 	float time;
 }
-
 params;
 
 void main() {
@@ -23,8 +20,7 @@ void main() {
 	gl_Position = vec4(uv_interp, 1.0, 1.0);
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
@@ -33,7 +29,6 @@ VERSION_DEFINES
 #define M_PI 3.14159265359
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	mat3 orientation;
@@ -41,7 +36,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 position_multiplier;
 	float time; //TODO consider adding vec2 screen res, and float radiance size
 }
-
 params;
 
 #define SAMPLER_NEAREST_CLAMP 0
@@ -62,7 +56,6 @@ layout(set = 0, binding = 0) uniform sampler material_samplers[12];
 layout(set = 0, binding = 1, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
-
 global_variables;
 
 #ifdef USE_MATERIAL_UNIFORMS

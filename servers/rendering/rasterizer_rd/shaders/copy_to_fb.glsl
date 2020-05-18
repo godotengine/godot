@@ -1,12 +1,10 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	vec4 section;
@@ -17,7 +15,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool force_luminance;
 	uint pad[3];
 }
-
 params;
 
 void main() {
@@ -36,8 +33,7 @@ void main() {
 	}
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
@@ -52,11 +48,10 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool force_luminance;
 	bool alpha_to_zero;
 	uint pad[2];
-} params;
-
+}
+params;
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 
@@ -82,8 +77,9 @@ void main() {
 
 	vec2 st = vec2(atan(normal.x, normal.z), acos(normal.y));
 
-	if (st.x < 0.0)
+	if (st.x < 0.0) {
 		st.x += M_PI * 2.0;
+	}
 
 	uv = st / vec2(M_PI * 2.0, M_PI);
 
