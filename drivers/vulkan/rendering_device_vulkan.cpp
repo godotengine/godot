@@ -2991,16 +2991,21 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 	Vector<VkAttachmentReference> resolve_references;
 
 	for (int i = 0; i < p_format.size(); i++) {
-		VkAttachmentDescription description;
-
-		description.flags = 0;
 		ERR_FAIL_INDEX_V(p_format[i].format, DATA_FORMAT_MAX, VK_NULL_HANDLE);
-		description.format = vulkan_formats[p_format[i].format];
 		ERR_FAIL_INDEX_V(p_format[i].samples, TEXTURE_SAMPLES_MAX, VK_NULL_HANDLE);
+		ERR_FAIL_COND_V_MSG(!(p_format[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)),
+				VK_NULL_HANDLE, "Texture format for index (" + itos(i) + ") requires an attachment (depth, stencil or resolve) bit set.");
+
+		VkAttachmentDescription description;
+		description.flags = 0;
+		description.format = vulkan_formats[p_format[i].format];
 		description.samples = rasterization_sample_count[p_format[i].samples];
-		//anything below does not really matter, as vulkan just ignores it when creating a pipeline
-		ERR_FAIL_COND_V_MSG(!(p_format[i].usage_flags & (TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT)), VK_NULL_HANDLE,
-				"Texture format for index (" + itos(i) + ") requires an attachment (depth, stencil or resolve) bit set.");
+		description.loadOp = VK_ATTACHMENT_LOAD_OP_MAX_ENUM; // Invalid value.
+		description.storeOp = VK_ATTACHMENT_STORE_OP_MAX_ENUM; // Invalid value.
+		description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_MAX_ENUM; // Invalid value.
+		description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_MAX_ENUM; // Invalid value.
+		description.initialLayout = VK_IMAGE_LAYOUT_MAX_ENUM; // Invalid value.
+		description.finalLayout = VK_IMAGE_LAYOUT_MAX_ENUM; // Invalid value.
 
 		bool is_depth_stencil = p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		bool is_sampled = p_format[i].usage_flags & TEXTURE_USAGE_SAMPLING_BIT;
@@ -3113,6 +3118,15 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 				ERR_FAIL_V(VK_NULL_HANDLE); //should never reach here
 			}
 		}
+
+		// Ensure VkAttachmentDescription has been initialized properly.
+		ERR_CONTINUE_MSG(description.loadOp == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
+								 description.storeOp == VK_ATTACHMENT_STORE_OP_MAX_ENUM ||
+								 description.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_MAX_ENUM ||
+								 description.stencilStoreOp == VK_ATTACHMENT_STORE_OP_MAX_ENUM ||
+								 description.initialLayout == VK_IMAGE_LAYOUT_MAX_ENUM ||
+								 description.finalLayout == VK_IMAGE_LAYOUT_MAX_ENUM,
+				"Bug: VkAttachmentDescription not initialized properly.");
 
 		attachments.push_back(description);
 
@@ -5541,6 +5555,10 @@ void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, 
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 		Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
 		VkClearAttachment clear_at;
+		clear_at.aspectMask = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM; // Invalid value.
+		clear_at.colorAttachment = uint32_t(-1); // Invalid value.
+		clear_at.clearValue.depthStencil.stencil = uint32_t(-1); // Invalid value.
+
 		if (p_clear_color && texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 			ERR_FAIL_INDEX(color_index, p_clear_colors.size()); //a bug
 			Color clear_color = p_clear_colors[color_index];
@@ -5561,6 +5579,13 @@ void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, 
 		} else {
 			ERR_CONTINUE(true);
 		}
+
+		// Ensure VkClearAttachment has been initialized properly.
+		ERR_CONTINUE_MSG(clear_at.aspectMask == VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM ||
+								 clear_at.colorAttachment == uint32_t(-1) ||
+								 clear_at.clearValue.depthStencil.stencil == uint32_t(-1),
+				"Bug: VkClearAttachment not initialized properly.");
+
 		clear_attachments.push_back(clear_at);
 	}
 
