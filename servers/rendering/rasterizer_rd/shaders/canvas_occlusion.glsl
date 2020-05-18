@@ -1,10 +1,8 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
 layout(location = 0) in highp vec3 vertex;
-/* clang-format on */
 
 layout(push_constant, binding = 0, std430) uniform Constants {
 	mat4 projection;
@@ -12,7 +10,6 @@ layout(push_constant, binding = 0, std430) uniform Constants {
 	vec2 direction;
 	vec2 pad;
 }
-
 constants;
 
 layout(location = 0) out highp float depth;
@@ -24,13 +21,11 @@ void main() {
 	gl_Position = constants.projection * vtx;
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
 layout(location = 0) in highp float depth;
-/* clang-format on */
 layout(location = 0) out highp float distance_buf;
 
 void main() {

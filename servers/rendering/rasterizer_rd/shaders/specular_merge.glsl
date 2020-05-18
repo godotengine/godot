@@ -1,12 +1,10 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) out vec2 uv_interp;
-/* clang-format on */
 
 void main() {
 	vec2 base_arr[4] = vec2[](vec2(0.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0), vec2(1.0, 0.0));
@@ -15,15 +13,13 @@ void main() {
 	gl_Position = vec4(uv_interp * 2.0 - 1.0, 0.0, 1.0);
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D specular;
 

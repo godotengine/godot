@@ -1,14 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
-
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform sampler2D source_ssr;
 layout(set = 1, binding = 0) uniform sampler2D source_depth;
@@ -26,7 +22,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool filtered;
 	uint pad[2];
 }
-
 params;
 
 void main() {
@@ -72,7 +67,6 @@ void main() {
 		color /= 4.0;
 		depth /= 4.0;
 		normal = normalize(normal / 4.0) * 0.5 + 0.5;
-
 	} else {
 		color = texelFetch(source_ssr, ssC << 1, 0);
 		depth = texelFetch(source_depth, ssC << 1, 0).r;

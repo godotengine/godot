@@ -1,5 +1,4 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
@@ -7,7 +6,6 @@ VERSION_DEFINES
 
 #ifdef USE_ATTRIBUTES
 layout(location = 0) in vec2 vertex_attrib;
-/* clang-format on */
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
@@ -87,7 +85,6 @@ void main() {
 
 #if 0
 	if (draw_data.flags & FLAGS_INSTANCING_ENABLED) {
-
 		uint offset = draw_data.flags & FLAGS_INSTANCING_STRIDE_MASK;
 		offset *= gl_InstanceIndex;
 		mat4 instance_xform = mat4(
@@ -158,7 +155,6 @@ VERTEX_SHADER_CODE
 #if 0
 	if (bool(draw_data.flags & FLAGS_USE_SKELETON) && bone_weights != vec4(0.0)) { //must be a valid bone
 		//skeleton transform
-
 		ivec4 bone_indicesi = ivec4(bone_indices);
 
 		uvec2 tex_ofs = bone_indicesi.x * 2;
@@ -209,8 +205,7 @@ VERTEX_SHADER_CODE
 #endif
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
@@ -219,7 +214,6 @@ VERSION_DEFINES
 #include "canvas_uniforms_inc.glsl"
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 layout(location = 1) in vec4 color_interp;
 layout(location = 2) in vec2 vertex_interp;
 
@@ -342,7 +336,6 @@ void main() {
 	vec3 normal;
 
 #if defined(NORMAL_USED)
-
 	bool normal_used = true;
 #else
 	bool normal_used = false;

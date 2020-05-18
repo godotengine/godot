@@ -1,5 +1,4 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
@@ -10,7 +9,6 @@ VERSION_DEFINES
 /* INPUT ATTRIBS */
 
 layout(location = 0) in vec3 vertex_attrib;
-/* clang-format on */
 layout(location = 1) in vec3 normal_attrib;
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 layout(location = 2) in vec4 tangent_attrib;
@@ -62,8 +60,6 @@ VERTEX_SHADER_GLOBALS
 
 /* clang-format on */
 
-// FIXME: This triggers a Mesa bug that breaks rendering, so disabled for now.
-// See GH-13450 and https://bugs.freedesktop.org/show_bug.cgi?id=100316
 invariant gl_Position;
 
 layout(location = 7) flat out uint instance_index;
@@ -272,8 +268,7 @@ VERTEX_SHADER_CODE
 #endif
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
@@ -284,7 +279,6 @@ VERSION_DEFINES
 /* Varyings */
 
 layout(location = 0) in vec3 vertex_interp;
-/* clang-format on */
 layout(location = 1) in vec3 normal_interp;
 
 #if defined(COLOR_USED)

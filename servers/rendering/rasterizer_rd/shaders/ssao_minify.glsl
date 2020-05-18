@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-/* clang-format on */
 
 layout(push_constant, binding = 1, std430) uniform Params {
 	vec2 pixel_size;
@@ -16,7 +14,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool orthogonal;
 	uint pad;
 }
-
 params;
 
 #ifdef MINIFY_START

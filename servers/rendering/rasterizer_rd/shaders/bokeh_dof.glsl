@@ -1,5 +1,4 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -8,7 +7,6 @@ VERSION_DEFINES
 #define BLOCK_SIZE 8
 
 layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
-/* clang-format on */
 
 #ifdef MODE_GEN_BLUR_SIZE
 layout(rgba16f, set = 0, binding = 0) uniform restrict image2D color_image;
@@ -51,7 +49,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float jitter_seed;
 	uint pad[2];
 }
-
 params;
 
 //used to work around downsampling filter

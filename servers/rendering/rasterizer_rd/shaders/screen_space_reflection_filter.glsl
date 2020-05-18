@@ -1,15 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
-
-
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-
-/* clang-format on */
 
 layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D source_ssr;
 layout(r8, set = 0, binding = 1) uniform restrict readonly image2D source_radius;
@@ -33,7 +28,6 @@ layout(push_constant, binding = 2, std430) uniform Params {
 	bool vertical;
 	uint steps;
 }
-
 params;
 
 #define GAUSS_TABLE_SIZE 15
