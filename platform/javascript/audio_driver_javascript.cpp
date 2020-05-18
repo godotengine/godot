@@ -30,6 +30,8 @@
 
 #include "audio_driver_javascript.h"
 
+#include "core/project_settings.h"
+
 #include <emscripten.h>
 
 AudioDriverJavaScript *AudioDriverJavaScript::singleton = nullptr;
@@ -62,10 +64,15 @@ void AudioDriverJavaScript::process_capture(float sample) {
 }
 
 Error AudioDriverJavaScript::init() {
+	int mix_rate = GLOBAL_GET("audio/mix_rate");
+	int latency = GLOBAL_GET("audio/output_latency");
+
 	/* clang-format off */
 	_driver_id = EM_ASM_INT({
+		const MIX_RATE = $0;
+		const LATENCY = $1;
 		return Module.IDHandler.add({
-			'context': new (window.AudioContext || window.webkitAudioContext),
+			'context': new (window.AudioContext || window.webkitAudioContext)({ sampleRate: MIX_RATE, latencyHint: LATENCY}),
 			'input': null,
 			'stream': null,
 			'script': null
@@ -74,26 +81,19 @@ Error AudioDriverJavaScript::init() {
 	/* clang-format on */
 
 	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
+	buffer_length = closest_power_of_2((latency * mix_rate / 1000) * channel_count);
 	/* clang-format off */
 	buffer_length = EM_ASM_INT({
 		var ref = Module.IDHandler.get($0);
-		var ctx = ref['context'];
-		var CHANNEL_COUNT = $1;
+		const ctx = ref['context'];
+		const BUFFER_LENGTH = $1;
+		const CHANNEL_COUNT = $2;
 
-		var channelCount = ctx.destination.channelCount;
-		var script = null;
-		try {
-			// Try letting the browser recommend a buffer length.
-			script = ctx.createScriptProcessor(0, 2, channelCount);
-		} catch (e) {
-			// ...otherwise, default to 4096.
-			script = ctx.createScriptProcessor(4096, 2, channelCount);
-		}
+		var script = ctx.createScriptProcessor(BUFFER_LENGTH, 2, CHANNEL_COUNT);
 		script.connect(ctx.destination);
 		ref['script'] = script;
-
 		return script.bufferSize;
-	}, _driver_id, channel_count);
+	}, _driver_id, buffer_length, channel_count);
 	/* clang-format on */
 	if (!buffer_length) {
 		return FAILED;
@@ -152,6 +152,25 @@ void AudioDriverJavaScript::resume() {
 		const ref = Module.IDHandler.get($0);
 		if (ref && ref['context'] && ref['context'].resume)
 			ref['context'].resume();
+	}, _driver_id);
+	/* clang-format on */
+}
+
+float AudioDriverJavaScript::get_latency() {
+	/* clang-format off */
+	return EM_ASM_DOUBLE({
+		const ref = Module.IDHandler.get($0);
+		var latency = 0;
+		if (ref && ref['context']) {
+			const ctx = ref['context'];
+			if (ctx.baseLatency) {
+				latency += ctx.baseLatency;
+			}
+			if (ctx.outputLatency) {
+				latency += ctx.outputLatency;
+			}
+		}
+		return latency;
 	}, _driver_id);
 	/* clang-format on */
 }
