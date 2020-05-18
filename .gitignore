@@ -88,6 +88,9 @@ logs/
 *.sln
 *.vcxproj*
 
+# Custom SCons configuration override
+/custom.py
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
