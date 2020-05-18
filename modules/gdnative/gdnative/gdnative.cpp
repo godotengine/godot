@@ -165,7 +165,7 @@ void _gdnative_report_loading_error(const godot_object *p_library, const char *p
 	_err_print_error("gdnative_init", library->get_current_library_path().utf8().ptr(), 0, message.utf8().ptr());
 }
 
-godot_object GDAPI *godot_instance_from_id(godot_int p_instance_id) {
+godot_object GDAPI *godot_instance_from_id(uint64_t p_instance_id) {
 	return (godot_object *)ObjectDB::get_instance(ObjectID(p_instance_id));
 }
 
@@ -182,6 +182,11 @@ godot_object *godot_object_cast_to(const godot_object *p_object, void *p_class_t
 	Object *o = (Object *)p_object;
 
 	return o->is_class_ptr(p_class_tag) ? (godot_object *)o : nullptr;
+}
+
+uint64_t GDAPI godot_object_get_instance_id(const godot_object *p_object) {
+	const Object *o = (const Object *)p_object;
+	return (uint64_t)o->get_instance_id();
 }
 
 #ifdef __cplusplus

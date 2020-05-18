@@ -172,17 +172,17 @@ typedef struct {
 	godot_string hint_string;
 	godot_property_usage_flags usage;
 	godot_variant default_value;
-} godot_signal_argument;
+} godot_nativescript_signal_argument;
 
 typedef struct {
 	godot_string name;
 	int num_args;
-	godot_signal_argument *args;
+	godot_nativescript_signal_argument *args;
 	int num_default_args;
 	godot_variant *default_args;
-} godot_signal;
+} godot_nativescript_signal;
 
-void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_signal *p_signal);
+void GDAPI godot_nativescript_register_signal(void *p_gdnative_handle, const char *p_name, const godot_nativescript_signal *p_signal);
 
 void GDAPI *godot_nativescript_get_userdata(godot_object *p_instance);
 
