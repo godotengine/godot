@@ -334,9 +334,6 @@ OptionButton::OptionButton() {
 	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
-	//	popup->set_pass_on_modal_close_click(false);
-	//	popup->set_notify_transform(true);
-	popup->set_allow_search(true);
 	popup->connect("index_pressed", callable_mp(this, &OptionButton::_selected));
 	popup->connect("id_focused", callable_mp(this, &OptionButton::_focused));
 	popup->connect("popup_hide", callable_mp((BaseButton *)this, &BaseButton::set_pressed), varray(false));
