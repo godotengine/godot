@@ -1,5 +1,4 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -8,7 +7,6 @@ VERSION_DEFINES
 #define GROUP_SIZE 8
 
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
-/* clang-format on */
 
 layout(set = 0, binding = 0) uniform samplerCube source_cube;
 
@@ -21,7 +19,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	bool use_direct_write;
 	float face_size;
 }
-
 params;
 
 #define M_PI 3.14159265359

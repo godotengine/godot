@@ -1,12 +1,10 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
 VERSION_DEFINES
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
-/* clang-format on */
 
 #define TWO_PI 6.283185307179586476925286766559
 
@@ -49,7 +47,6 @@ const int ROTATIONS[] = int[](
 		29, 21, 19, 27, 31, 29, 21, 18, 17, 29,
 		31, 31, 23, 18, 25, 26, 25, 23, 19, 34,
 		19, 27, 21, 25, 39, 29, 17, 21, 27);
-/* clang-format on */
 
 //#define NUM_SPIRAL_TURNS (7)
 const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES - 1];
@@ -78,7 +75,6 @@ layout(push_constant, binding = 1, std430) uniform Params {
 	float proj_scale;
 	uint pad;
 }
-
 params;
 
 vec3 reconstructCSPosition(vec2 S, float z) {
