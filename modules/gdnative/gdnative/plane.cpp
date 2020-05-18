@@ -37,6 +37,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_plane) == sizeof(Plane), "Plane size mismatch");
+
 void GDAPI godot_plane_new_with_reals(godot_plane *r_dest, const godot_real p_a, const godot_real p_b, const godot_real p_c, const godot_real p_d) {
 
 	Plane *dest = (Plane *)r_dest;

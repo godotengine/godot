@@ -37,6 +37,8 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_aabb) == sizeof(AABB), "AABB size mismatch");
+
 void GDAPI godot_aabb_new(godot_aabb *r_dest, const godot_vector3 *p_pos, const godot_vector3 *p_size) {
 	const Vector3 *pos = (const Vector3 *)p_pos;
 	const Vector3 *size = (const Vector3 *)p_size;
