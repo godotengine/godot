@@ -76,6 +76,15 @@
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 			</description>
 		</method>
+		<method name="add_debugger_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="script" type="Script">
+			</argument>
+			<description>
+				Adds a [Script] as debugger plugin to the Debugger. The script must extend [EditorDebuggerPlugin].
+			</description>
+		</method>
 		<method name="add_export_plugin">
 			<return type="void">
 			</return>
@@ -422,6 +431,15 @@
 			</argument>
 			<description>
 				Removes a custom type added by [method add_custom_type].
+			</description>
+		</method>
+		<method name="remove_debugger_plugin">
+			<return type="void">
+			</return>
+			<argument index="0" name="script" type="Script">
+			</argument>
+			<description>
+				Removes the debugger plugin with given script fromm the Debugger.
 			</description>
 		</method>
 		<method name="remove_export_plugin">

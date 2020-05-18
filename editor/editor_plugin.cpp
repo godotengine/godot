@@ -811,6 +811,14 @@ ScriptCreateDialog *EditorPlugin::get_script_create_dialog() {
 	return EditorNode::get_singleton()->get_script_create_dialog();
 }
 
+void EditorPlugin::add_debugger_plugin(const Ref<Script> &p_script) {
+	EditorDebuggerNode::get_singleton()->add_debugger_plugin(p_script);
+}
+
+void EditorPlugin::remove_debugger_plugin(const Ref<Script> &p_script) {
+	EditorDebuggerNode::get_singleton()->remove_debugger_plugin(p_script);
+}
+
 void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
 	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::add_control_to_bottom_panel);
@@ -851,6 +859,8 @@ void EditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
+	ClassDB::bind_method(D_METHOD("add_debugger_plugin", "script"), &EditorPlugin::add_debugger_plugin);
+	ClassDB::bind_method(D_METHOD("remove_debugger_plugin", "script"), &EditorPlugin::remove_debugger_plugin);
 
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::BOOL, "forward_canvas_gui_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	ClassDB::add_virtual_method(get_class_static(), MethodInfo("forward_canvas_draw_over_viewport", PropertyInfo(Variant::OBJECT, "overlay", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
