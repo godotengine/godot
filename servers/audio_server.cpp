@@ -182,6 +182,9 @@ int AudioDriverManager::get_driver_count() {
 
 void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/enable_audio_input", false);
+	GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+
 	int failed_driver = -1;
 
 	// Check if there is a selected driver
