@@ -2064,9 +2064,21 @@ void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_prop
 			if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 				continue;
 			}
+
 			if (E->get().name == "__meta__") {
+				if (Object::cast_to<CanvasItem>(newnode)) {
+					Dictionary metadata = n->get(E->get().name);
+					if (metadata.has("_edit_group_") && metadata["_edit_group_"]) {
+						newnode->set_meta("_edit_group_", true);
+					}
+					if (metadata.has("_edit_lock_") && metadata["_edit_lock_"]) {
+						newnode->set_meta("_edit_lock_", true);
+					}
+				}
+
 				continue;
 			}
+
 			if (default_oldnode->get(E->get().name) != n->get(E->get().name)) {
 				newnode->set(E->get().name, n->get(E->get().name));
 			}
