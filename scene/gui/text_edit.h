@@ -236,6 +236,8 @@ private:
 		Color code_folding_color;
 		Color current_line_color;
 		Color line_length_guideline_color;
+		Color indent_guide_color;
+		Color indent_active_guide_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
 		Color search_result_color;
@@ -357,6 +359,8 @@ private:
 	bool setting_row;
 	bool draw_tabs;
 	bool draw_spaces;
+	bool draw_indent_guides;
+	bool highlight_active_indent_guide;
 	bool override_selected_font_color;
 	bool cursor_changed_dirty;
 	bool text_changed_dirty;
@@ -616,6 +620,8 @@ public:
 	void fold_line(int p_line);
 	void unfold_line(int p_line);
 	void toggle_fold_line(int p_line);
+	int get_line_parent_fold(int p_line);
+	int get_fold_last_line(int p_start_line);
 
 	String get_text();
 	String get_line(int line) const;
@@ -717,6 +723,10 @@ public:
 	bool is_drawing_tabs() const;
 	void set_draw_spaces(bool p_draw);
 	bool is_drawing_spaces() const;
+	void set_draw_indent_guides(bool p_draw);
+	bool is_drawing_indent_guides(bool p_draw);
+	void set_highlight_active_indent_guide(bool p_draw);
+	bool get_highlight_active_indent_guide();
 	void set_override_selected_font_color(bool p_override_selected_font_color);
 	bool is_overriding_selected_font_color() const;
 

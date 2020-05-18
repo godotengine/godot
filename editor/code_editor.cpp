@@ -885,6 +885,8 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_auto_indent(EditorSettings::get_singleton()->get("text_editor/indent/auto_indent"));
 	text_editor->set_draw_tabs(EditorSettings::get_singleton()->get("text_editor/indent/draw_tabs"));
 	text_editor->set_draw_spaces(EditorSettings::get_singleton()->get("text_editor/indent/draw_spaces"));
+	text_editor->set_draw_indent_guides(EditorSettings::get_singleton()->get("text_editor/indent/draw_indent_guides"));
+	text_editor->set_highlight_active_indent_guide(EditorSettings::get_singleton()->get("text_editor/indent/highlight_active_indent_guide"));
 	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/navigation/smooth_scrolling"));
 	text_editor->set_v_scroll_speed(EditorSettings::get_singleton()->get("text_editor/navigation/v_scroll_speed"));
 	text_editor->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/navigation/show_minimap"));

@@ -433,6 +433,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/indent/auto_indent", true);
 	_initial_set("text_editor/indent/convert_indent_on_save", true);
 	_initial_set("text_editor/indent/draw_tabs", true);
+	_initial_set("text_editor/indent/draw_indent_guides", true);
+	_initial_set("text_editor/indent/highlight_active_indent_guide", true);
 	_initial_set("text_editor/indent/draw_spaces", false);
 
 	// Navigation
@@ -678,6 +680,8 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/brace_mismatch_color", Color(1, 0.2, 0.2));
 	_initial_set("text_editor/highlighting/current_line_color", Color(0.3, 0.5, 0.8, 0.15));
 	_initial_set("text_editor/highlighting/line_length_guideline_color", Color(0.3, 0.5, 0.8, 0.1));
+	_initial_set("text_editor/highlighting/indent_guide_color", Color(0.8, 0.8, 0.8, 0.1));
+	_initial_set("text_editor/highlighting/indent_active_guide_color", Color(0.8, 0.8, 0.8, 0.25));
 	_initial_set("text_editor/highlighting/word_highlighted_color", Color(0.8, 0.9, 0.9, 0.15));
 	_initial_set("text_editor/highlighting/number_color", Color(0.92, 0.58, 0.2));
 	_initial_set("text_editor/highlighting/function_color", Color(0.4, 0.64, 0.81));

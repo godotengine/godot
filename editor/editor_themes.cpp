@@ -1179,6 +1179,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color brace_mismatch_color = error_color;
 	const Color current_line_color = alpha1;
 	const Color line_length_guideline_color = dark_theme ? base_color : background_color;
+	const Color indent_guide_color = mono_color * Color(1, 1, 1, 0.3);
+	const Color indent_active_guide_color = mono_color * Color(1, 1, 1, 0.6);
 	const Color word_highlighted_color = alpha1;
 	const Color number_color = basetype_color.lerp(mono_color, dark_theme ? 0.5 : 0.3);
 	const Color function_color = main_color;
@@ -1217,6 +1219,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		setting->set_initial_value("text_editor/highlighting/brace_mismatch_color", brace_mismatch_color, true);
 		setting->set_initial_value("text_editor/highlighting/current_line_color", current_line_color, true);
 		setting->set_initial_value("text_editor/highlighting/line_length_guideline_color", line_length_guideline_color, true);
+		setting->set_initial_value("text_editor/highlighting/indent_guide_color", indent_guide_color, true);
+		setting->set_initial_value("text_editor/highlighting/indent_active_guide_color", indent_active_guide_color, true);
 		setting->set_initial_value("text_editor/highlighting/word_highlighted_color", word_highlighted_color, true);
 		setting->set_initial_value("text_editor/highlighting/number_color", number_color, true);
 		setting->set_initial_value("text_editor/highlighting/function_color", function_color, true);

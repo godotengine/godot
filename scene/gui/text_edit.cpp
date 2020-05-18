@@ -1055,8 +1055,13 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
-			// draw main text
+			// Find which 'fold' the cursor line is a part of
+			int selected_line_parent_fold_start_line = get_line_parent_fold(cursor_get_line());
+			int selected_line_parent_fold_last_line = get_fold_last_line(selected_line_parent_fold_start_line);
+
+			// Draw main text.
 			int line = first_visible_line;
+
 			for (int i = 0; i < draw_amount; i++) {
 				line++;
 
@@ -1122,6 +1127,30 @@ void TextEdit::_notification(int p_what) {
 					int ofs_y = (i * get_row_height() + cache.line_spacing / 2) + ofs_readonly;
 					ofs_y -= cursor.wrap_ofs * get_row_height();
 					ofs_y -= get_v_scroll_offset() * get_row_height();
+
+					// Draw indent guides
+					if (draw_indent_guides && get_indent_level(line) != 0) {
+						// "Indent Count" is just the number of spaces in the indent (indent level) / the number of spaces per indent (indent size)
+						int indent_count = get_indent_level(line) / indent_size;
+
+						for (int indent_idx = 0; indent_idx < indent_count; indent_idx++) {
+							Color line_color = cache.indent_guide_color;
+
+							if (highlight_active_indent_guide &&
+									indent_idx == get_indent_level(cursor_get_line()) / indent_size - 1 &&
+									line >= selected_line_parent_fold_start_line &&
+									line <= selected_line_parent_fold_last_line) {
+								// Make the line more prominent for the selected code block
+								line_color = cache.indent_active_guide_color;
+							}
+
+							draw_line(
+									Point2(indent_idx * indent_size * cache.font->get_char_size(' ').width + xmargin_beg, ofs_y),
+									Point2(indent_idx * indent_size * cache.font->get_char_size(' ').width + xmargin_beg, ofs_y + get_row_height()),
+									line_color,
+									1);
+						}
+					}
 
 					// Check if line contains highlighted word.
 					int highlighted_text_col = -1;
@@ -1482,6 +1511,7 @@ void TextEdit::_notification(int p_what) {
 						} else if (draw_tabs && str[j] == '\t') {
 							int yofs = (get_row_height() - cache.tab_icon->get_height()) / 2;
 							cache.tab_icon->draw(ci, Point2(char_ofs + char_margin + ofs_x, ofs_y + yofs), in_selection && override_selected_font_color ? cache.font_color_selected : color);
+							//draw_line(Point2(char_ofs + char_margin + ofs_x, ofs_y + get_row_height()), Point2(char_ofs + char_margin + ofs_x, ofs_y), Color(1, 1, 1, 0.1), 1);
 						}
 
 						if (draw_spaces && str[j] == ' ') {
@@ -5010,6 +5040,8 @@ void TextEdit::_update_caches() {
 	cache.mark_color = get_theme_color("mark_color");
 	cache.current_line_color = get_theme_color("current_line_color");
 	cache.line_length_guideline_color = get_theme_color("line_length_guideline_color");
+	cache.indent_guide_color = get_theme_color("indent_guide_color");
+	cache.indent_active_guide_color = get_theme_color("indent_active_guide_color");
 	cache.bookmark_color = get_theme_color("bookmark_color");
 	cache.breakpoint_color = get_theme_color("breakpoint_color");
 	cache.executing_line_color = get_theme_color("executing_line_color");
@@ -5930,19 +5962,8 @@ void TextEdit::fold_line(int p_line) {
 	}
 
 	// Hide lines below this one.
-	int start_indent = get_indent_level(p_line);
-	int last_line = start_indent;
-	for (int i = p_line + 1; i < text.size(); i++) {
-		if (text[i].strip_edges().size() != 0) {
-			if (is_line_comment(i)) {
-				continue;
-			} else if (get_indent_level(i) > start_indent) {
-				last_line = i;
-			} else {
-				break;
-			}
-		}
-	}
+	int last_line = get_fold_last_line(p_line);
+
 	for (int i = p_line + 1; i <= last_line; i++) {
 		set_line_as_hidden(i, true);
 	}
@@ -6000,6 +6021,38 @@ void TextEdit::toggle_fold_line(int p_line) {
 	} else {
 		unfold_line(p_line);
 	}
+}
+
+// Returns the first line above p_line which would 'fold' p_line and hide it
+int TextEdit::get_line_parent_fold(int p_line) {
+	int indent_count = get_indent_level(p_line) / indent_size;
+
+	// Work backwards from the line to find the line that 1) can fold and b) is dedented compared to p_line
+	for (int line = p_line - 1; line >= 0; line--) {
+		if (can_fold(line) && get_indent_level(line) / indent_size < indent_count) {
+			return line;
+		}
+	}
+	return 0;
+}
+
+int TextEdit::get_fold_last_line(int p_start_line) {
+	int start_indent = get_indent_level(p_start_line);
+	int last_line = p_start_line;
+
+	for (int i = p_start_line + 1; i < text.size(); i++) {
+		if (text[i].strip_edges().size() != 0) {
+			if (is_line_comment(i)) {
+				continue;
+			} else if (get_indent_level(i) > start_indent) {
+				last_line = i;
+			} else {
+				break;
+			}
+		}
+	}
+
+	return last_line;
 }
 
 int TextEdit::get_line_count() const {
@@ -6205,6 +6258,24 @@ void TextEdit::set_draw_spaces(bool p_draw) {
 
 bool TextEdit::is_drawing_spaces() const {
 	return draw_spaces;
+}
+
+void TextEdit::set_draw_indent_guides(bool p_draw) {
+	draw_indent_guides = p_draw;
+	update();
+}
+
+bool TextEdit::is_drawing_indent_guides(bool p_draw) {
+	return draw_indent_guides;
+}
+
+void TextEdit::set_highlight_active_indent_guide(bool p_draw) {
+	highlight_active_indent_guide = p_draw;
+	update();
+}
+
+bool TextEdit::get_highlight_active_indent_guide() {
+	return highlight_active_indent_guide;
 }
 
 void TextEdit::set_override_selected_font_color(bool p_override_selected_font_color) {
@@ -7163,6 +7234,8 @@ TextEdit::TextEdit() {
 	setting_row = false;
 	draw_tabs = false;
 	draw_spaces = false;
+	draw_indent_guides = false;
+	highlight_active_indent_guide = false;
 	override_selected_font_color = false;
 	draw_caret = true;
 	max_chars = 0;
