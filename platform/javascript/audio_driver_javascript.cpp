@@ -70,8 +70,8 @@ void AudioDriverJavaScript::process_capture(float sample) {
 
 Error AudioDriverJavaScript::init() {
 
-	int mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
-	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	int mix_rate = GLOBAL_GET("audio/mix_rate");
+	int latency = GLOBAL_GET("audio/output_latency");
 
 	/* clang-format off */
 	EM_ASM({
