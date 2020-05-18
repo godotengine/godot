@@ -92,7 +92,7 @@ private:
 
 		PathMD5() {}
 
-		PathMD5(const Vector<uint8_t> p_buf) {
+		PathMD5(const Vector<uint8_t> &p_buf) {
 			a = *((uint64_t *)&p_buf[0]);
 			b = *((uint64_t *)&p_buf[8]);
 		}
