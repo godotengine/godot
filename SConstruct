@@ -272,14 +272,13 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
 
-    # Custom tools are loaded automatically by SCons from site_scons/site_tools,
-    # but we want to use a different folder, so we register it manually.
-    from SCons.Script.Main import _load_site_scons_dir
+    # Compilation DB requires SCons 3.1.1+.
+    from SCons import __version__ as scons_raw_version
 
-    _load_site_scons_dir(".", "misc/scons")
-
-    env.Tool("compilation_db")
-    env.Alias("compiledb", env.CompilationDatabase("compile_commands.json"))
+    scons_ver = env._get_major_minor_revision(scons_raw_version)
+    if scons_ver >= (3, 1, 1):
+        env.Tool("compilation_db", toolpath=["misc/scons"])
+        env.Alias("compiledb", env.CompilationDatabase("compile_commands.json"))
 
     if env["dev"]:
         env["verbose"] = True
