@@ -410,6 +410,15 @@ float PhysicalSkyMaterial::get_dither_strength() const {
 	return dither_strength;
 }
 
+void PhysicalSkyMaterial::set_night_sky(const Ref<Texture2D> &p_night_sky) {
+	night_sky = p_night_sky;
+	RS::get_singleton()->material_set_param(_get_material(), "night_sky", night_sky);
+}
+
+Ref<Texture2D> PhysicalSkyMaterial::get_night_sky() const {
+	return night_sky;
+}
+
 bool PhysicalSkyMaterial::_can_do_next_pass() const {
 	return false;
 }
@@ -453,6 +462,9 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_dither_strength", "strength"), &PhysicalSkyMaterial::set_dither_strength);
 	ClassDB::bind_method(D_METHOD("get_dither_strength"), &PhysicalSkyMaterial::get_dither_strength);
 
+	ClassDB::bind_method(D_METHOD("set_night_sky", "night_sky"), &PhysicalSkyMaterial::set_night_sky);
+	ClassDB::bind_method(D_METHOD("get_night_sky"), &PhysicalSkyMaterial::get_night_sky);
+
 	ADD_GROUP("Rayleigh", "rayleigh_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rayleigh_coefficient", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_rayleigh_coefficient", "get_rayleigh_coefficient");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "rayleigh_color"), "set_rayleigh_color", "get_rayleigh_color");
@@ -467,6 +479,7 @@ void PhysicalSkyMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ground_color"), "set_ground_color", "get_ground_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "exposure", PROPERTY_HINT_RANGE, "0,128,0.01"), "set_exposure", "get_exposure");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dither_strength", PROPERTY_HINT_RANGE, "0,10,0.01"), "set_dither_strength", "get_dither_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "night_sky", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_night_sky", "get_night_sky");
 }
 
 PhysicalSkyMaterial::PhysicalSkyMaterial() {
@@ -483,6 +496,8 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "uniform vec4 ground_color : hint_color = vec4(1.0);\n";
 	code += "uniform float exposure : hint_range(0, 128) = 0.1;\n";
 	code += "uniform float dither_strength : hint_range(0, 10) = 1.0;\n\n";
+
+	code += "uniform sampler2D night_sky : hint_black;";
 
 	code += "const float PI = 3.141592653589793238462643383279502884197169;\n";
 	code += "const vec3 UP = vec3( 0.0, 1.0, 0.0 );\n\n";
@@ -547,7 +562,7 @@ PhysicalSkyMaterial::PhysicalSkyMaterial() {
 	code += "\tfloat sunAngularDiameterCos2 = cos(LIGHT0_SIZE * sun_disk_scale*0.5);\n";
 	code += "\tfloat sundisk = smoothstep(sunAngularDiameterCos, sunAngularDiameterCos2, cos_theta);\n";
 	code += "\tvec3 L0 = (sun_energy * 1900.0 * extinction) * sundisk * LIGHT0_COLOR;\n";
-	code += "\t// Note: Add nightime here: L0 += night_sky * extinction\n\n";
+	code += "\tL0 += texture(night_sky, SKY_COORDS).xyz * extinction;\n\n";
 
 	code += "\tvec3 color = (Lin + L0) * 0.04;\n";
 	code += "\tCOLOR = pow(color, vec3(1.0 / (1.2 + (1.2 * sun_fade))));\n";
