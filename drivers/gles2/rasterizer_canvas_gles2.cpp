@@ -2333,7 +2333,7 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 			int light_count = -1;
 			while (light) {
 				light_count++;
-				uint64_t light_bit = 1 << light_count;
+				uint64_t light_bit = 1ULL << light_count;
 
 				// note that as a cost of batching, the light culling will be less effective
 				if (p_ci->light_mask & light->item_mask && r_ris.item_group_z >= light->z_min && r_ris.item_group_z <= light->z_max) {
