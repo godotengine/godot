@@ -44,6 +44,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "main/performance.h"
@@ -701,7 +702,28 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		performance_profiler->update_monitors(monitors);
 
 	} else {
-		WARN_PRINT("unknown message " + p_msg);
+		int colon_index = p_msg.find_char(':');
+		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
+
+		bool parsed = false;
+		const String cap = p_msg.substr(0, colon_index);
+		Map<StringName, Callable>::Element *element = captures.find(cap);
+		if (element) {
+			Callable &c = element->value();
+			ERR_FAIL_COND_MSG(c.is_null(), "Invalid callable registered: " + cap);
+			Variant cmd = p_msg.substr(colon_index + 1), data = p_data;
+			const Variant *args[2] = { &cmd, &data };
+			Variant retval;
+			Callable::CallError err;
+			c.call(args, 2, retval, err);
+			ERR_FAIL_COND_MSG(err.error != Callable::CallError::CALL_OK, "Error calling 'capture' to callable: " + Variant::get_callable_error_text(c, args, 2, err));
+			ERR_FAIL_COND_MSG(retval.get_type() != Variant::BOOL, "Error calling 'capture' to callable: " + String(c) + ". Return type is not bool.");
+			parsed = retval;
+		}
+
+		if (!parsed) {
+			WARN_PRINT("unknown message " + p_msg);
+		}
 	}
 }
 
@@ -847,6 +869,7 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	tabs->set_current_tab(0);
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
+	emit_signal("started");
 }
 
 void ScriptEditorDebugger::_update_buttons_state() {
@@ -1395,6 +1418,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_remote_object", "id"), &ScriptEditorDebugger::request_remote_object);
 	ClassDB::bind_method(D_METHOD("update_remote_object", "id", "property", "value"), &ScriptEditorDebugger::update_remote_object);
 
+	ADD_SIGNAL(MethodInfo("started"));
 	ADD_SIGNAL(MethodInfo("stopped"));
 	ADD_SIGNAL(MethodInfo("stop_requested"));
 	ADD_SIGNAL(MethodInfo("stack_frame_selected", PropertyInfo(Variant::INT, "frame")));
@@ -1406,6 +1430,43 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
+}
+
+void ScriptEditorDebugger::add_debugger_plugin(const Ref<Script> &p_script) {
+	if (!debugger_plugins.has(p_script)) {
+		EditorDebuggerPlugin *plugin = memnew(EditorDebuggerPlugin());
+		plugin->attach_debugger(this);
+		plugin->set_script(p_script);
+		tabs->add_child(plugin);
+		debugger_plugins.insert(p_script, plugin);
+	}
+}
+
+void ScriptEditorDebugger::remove_debugger_plugin(const Ref<Script> &p_script) {
+	if (debugger_plugins.has(p_script)) {
+		tabs->remove_child(debugger_plugins[p_script]);
+		debugger_plugins[p_script]->detach_debugger(false);
+		memdelete(debugger_plugins[p_script]);
+		debugger_plugins.erase(p_script);
+	}
+}
+
+void ScriptEditorDebugger::send_message(const String &p_message, const Array &p_args) {
+	_put_msg(p_message, p_args);
+}
+
+void ScriptEditorDebugger::register_message_capture(const StringName &p_name, const Callable &p_callable) {
+	ERR_FAIL_COND_MSG(has_capture(p_name), "Capture already registered: " + p_name);
+	captures.insert(p_name, p_callable);
+}
+
+void ScriptEditorDebugger::unregister_message_capture(const StringName &p_name) {
+	ERR_FAIL_COND_MSG(!has_capture(p_name), "Capture not registered: " + p_name);
+	captures.erase(p_name);
+}
+
+bool ScriptEditorDebugger::has_capture(const StringName &p_name) {
+	return captures.has(p_name);
 }
 
 ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {

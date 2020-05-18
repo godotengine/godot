@@ -86,6 +86,7 @@ static _Engine *_engine = nullptr;
 static _ClassDB *_classdb = nullptr;
 static _Marshalls *_marshalls = nullptr;
 static _JSON *_json = nullptr;
+static _EngineDebugger *_engine_debugger = nullptr;
 
 static IP *ip = nullptr;
 
@@ -227,6 +228,7 @@ void register_core_types() {
 	_classdb = memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
 	_json = memnew(_JSON);
+	_engine_debugger = memnew(_EngineDebugger);
 }
 
 void register_core_settings() {
@@ -256,6 +258,7 @@ void register_core_singletons() {
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
+	ClassDB::register_class<_EngineDebugger>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
@@ -271,6 +274,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("EngineDebugger", _EngineDebugger::get_singleton()));
 }
 
 void unregister_core_types() {
@@ -281,6 +285,7 @@ void unregister_core_types() {
 	memdelete(_classdb);
 	memdelete(_marshalls);
 	memdelete(_json);
+	memdelete(_engine_debugger);
 
 	memdelete(_geometry_2d);
 	memdelete(_geometry_3d);

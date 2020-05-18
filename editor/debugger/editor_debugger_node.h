@@ -103,6 +103,8 @@ private:
 	CameraOverride camera_override = OVERRIDE_NONE;
 	Map<Breakpoint, bool> breakpoints;
 
+	Set<Ref<Script>> debugger_plugins;
+
 	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
 
@@ -186,5 +188,8 @@ public:
 	Error start(const String &p_protocol = "tcp://");
 
 	void stop();
+
+	void add_debugger_plugin(const Ref<Script> &p_script);
+	void remove_debugger_plugin(const Ref<Script> &p_script);
 };
 #endif // EDITOR_DEBUGGER_NODE_H
