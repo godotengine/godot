@@ -116,7 +116,7 @@ Error AudioDriverCoreAudio::init() {
 			break;
 	}
 
-	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_GET("audio/mix_rate");
 
 	zeromem(&strdesc, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
@@ -131,7 +131,7 @@ Error AudioDriverCoreAudio::init() {
 	result = AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, kOutputBus, &strdesc, sizeof(strdesc));
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
-	int latency = GLOBAL_DEF_RST("audio/output_latency", DEFAULT_OUTPUT_LATENCY);
+	int latency = GLOBAL_GET("audio/output_latency");
 	// Sample rate is independent of channels (ref: https://stackoverflow.com/questions/11048825/audio-sample-frequency-rely-on-channels)
 	buffer_frames = closest_power_of_2(latency * mix_rate / 1000);
 
@@ -403,7 +403,7 @@ Error AudioDriverCoreAudio::capture_init() {
 			break;
 	}
 
-	mix_rate = GLOBAL_DEF_RST("audio/mix_rate", DEFAULT_MIX_RATE);
+	mix_rate = GLOBAL_GET("audio/mix_rate");
 
 	zeromem(&strdesc, sizeof(strdesc));
 	strdesc.mFormatID = kAudioFormatLinearPCM;
