@@ -79,7 +79,7 @@ private:
 
 		bool operator==(const PathMD5 &p_md5) const {
 			return a == p_md5.a && b == p_md5.b;
-		};
+		}
 
 		PathMD5() {}
 

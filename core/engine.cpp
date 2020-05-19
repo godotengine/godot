@@ -188,11 +188,11 @@ Object *Engine::get_singleton_object(const String &p_name) const {
 	const Map<StringName, Object *>::Element *E = singleton_ptrs.find(p_name);
 	ERR_FAIL_COND_V_MSG(!E, nullptr, "Failed to retrieve non-existent singleton '" + p_name + "'.");
 	return E->get();
-};
+}
 
 bool Engine::has_singleton(const String &p_name) const {
 	return singleton_ptrs.has(p_name);
-};
+}
 
 void Engine::get_singletons(List<Singleton> *p_singletons) {
 	for (List<Singleton>::Element *E = singletons.front(); E; E = E->next()) {

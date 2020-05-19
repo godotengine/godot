@@ -58,35 +58,35 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 			f.get_buffer(cache.buffer.ptrw(), p_size);
 
 			return p_size;
-		};
-	};
+		}
+	}
 
 	static FileAccess *create() {
 		return memnew(FileAccessBufferedFA<T>());
-	};
+	}
 
 protected:
 	virtual void _set_access_type(AccessType p_access) {
 		f._set_access_type(p_access);
 		FileAccessBuffered::_set_access_type(p_access);
-	};
+	}
 
 public:
 	void flush() {
 		f.flush();
-	};
+	}
 
 	void store_8(uint8_t p_dest) {
 		f.store_8(p_dest);
-	};
+	}
 
 	void store_buffer(const uint8_t *p_src, int p_length) {
 		f.store_buffer(p_src, p_length);
-	};
+	}
 
 	bool file_exists(const String &p_name) {
 		return f.file_exists(p_name);
-	};
+	}
 
 	Error _open(const String &p_path, int p_mode_flags) {
 		close();
@@ -106,7 +106,7 @@ public:
 		cache.offset = 0;
 
 		return set_error(OK);
-	};
+	}
 
 	void close() {
 		f.close();
@@ -119,7 +119,7 @@ public:
 		cache.buffer.resize(0);
 		cache.offset = 0;
 		set_error(OK);
-	};
+	}
 
 	virtual uint64_t _get_modified_time(const String &p_file) {
 		return f._get_modified_time(p_file);

@@ -156,7 +156,7 @@ struct Rect2 {
 		new_rect.size = new_rect.size - new_rect.position; //make relative again
 
 		return new_rect;
-	};
+	}
 	inline bool has_point(const Point2 &p_point) const {
 		if (p_point.x < position.x) {
 			return false;
@@ -323,7 +323,7 @@ struct Rect2i {
 		new_rect.size = new_rect.size - new_rect.position; //make relative again
 
 		return new_rect;
-	};
+	}
 	bool has_point(const Point2 &p_point) const {
 		if (p_point.x < position.x) {
 			return false;

@@ -85,7 +85,8 @@ uint64_t OS::get_splash_tick_msec() const {
 
 uint64_t OS::get_unix_time() const {
 	return 0;
-};
+}
+
 uint64_t OS::get_system_time_secs() const {
 	return 0;
 }
@@ -126,7 +127,7 @@ void OS::print(const char *p_format, ...) {
 	_logger->logv(p_format, argp, false);
 
 	va_end(argp);
-};
+}
 
 void OS::printerr(const char *p_format, ...) {
 	va_list argp;
@@ -135,7 +136,7 @@ void OS::printerr(const char *p_format, ...) {
 	_logger->logv(p_format, argp, true);
 
 	va_end(argp);
-};
+}
 
 void OS::set_low_processor_usage_mode(bool p_enabled) {
 	low_processor_usage_mode = p_enabled;
@@ -159,7 +160,7 @@ String OS::get_executable_path() const {
 
 int OS::get_process_id() const {
 	return -1;
-};
+}
 
 void OS::vibrate_handheld(int p_duration_ms) {
 	WARN_PRINT("vibrate_handheld() only works with Android and iOS");
@@ -281,12 +282,12 @@ String OS::get_cache_path() const {
 // Path to macOS .app bundle resources
 String OS::get_bundle_resource_dir() const {
 	return ".";
-};
+}
 
 // OS specific path for user://
 String OS::get_user_data_dir() const {
 	return ".";
-};
+}
 
 // Absolute path to res://
 String OS::get_resource_dir() const {
@@ -300,7 +301,7 @@ String OS::get_system_dir(SystemDir p_dir) const {
 
 Error OS::shell_open(String p_uri) {
 	return ERR_UNAVAILABLE;
-};
+}
 
 // implement these with the canvas?
 
@@ -345,7 +346,7 @@ String OS::get_model_name() const {
 void OS::set_cmdline(const char *p_execpath, const List<String> &p_args) {
 	_execpath = p_execpath;
 	_cmdline = p_args;
-};
+}
 
 String OS::get_unique_id() const {
 	ERR_FAIL_V("");

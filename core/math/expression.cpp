@@ -753,39 +753,39 @@ Error Expression::_get_token(Token &r_token) {
 			case 0: {
 				r_token.type = TK_EOF;
 				return OK;
-			};
+			}
 			case '{': {
 				r_token.type = TK_CURLY_BRACKET_OPEN;
 				return OK;
-			};
+			}
 			case '}': {
 				r_token.type = TK_CURLY_BRACKET_CLOSE;
 				return OK;
-			};
+			}
 			case '[': {
 				r_token.type = TK_BRACKET_OPEN;
 				return OK;
-			};
+			}
 			case ']': {
 				r_token.type = TK_BRACKET_CLOSE;
 				return OK;
-			};
+			}
 			case '(': {
 				r_token.type = TK_PARENTHESIS_OPEN;
 				return OK;
-			};
+			}
 			case ')': {
 				r_token.type = TK_PARENTHESIS_CLOSE;
 				return OK;
-			};
+			}
 			case ',': {
 				r_token.type = TK_COMMA;
 				return OK;
-			};
+			}
 			case ':': {
 				r_token.type = TK_COLON;
 				return OK;
-			};
+			}
 			case '$': {
 				r_token.type = TK_INPUT;
 				int index = 0;
@@ -803,7 +803,7 @@ Error Expression::_get_token(Token &r_token) {
 
 				r_token.value = index;
 				return OK;
-			};
+			}
 			case '=': {
 				cchar = GET_CHAR();
 				if (cchar == '=') {
@@ -814,7 +814,7 @@ Error Expression::_get_token(Token &r_token) {
 					return ERR_PARSE_ERROR;
 				}
 				return OK;
-			};
+			}
 			case '!': {
 				if (expression[str_ofs] == '=') {
 					r_token.type = TK_OP_NOT_EQUAL;
@@ -823,7 +823,7 @@ Error Expression::_get_token(Token &r_token) {
 					r_token.type = TK_OP_NOT;
 				}
 				return OK;
-			};
+			}
 			case '>': {
 				if (expression[str_ofs] == '=') {
 					r_token.type = TK_OP_GREATER_EQUAL;
@@ -835,7 +835,7 @@ Error Expression::_get_token(Token &r_token) {
 					r_token.type = TK_OP_GREATER;
 				}
 				return OK;
-			};
+			}
 			case '<': {
 				if (expression[str_ofs] == '=') {
 					r_token.type = TK_OP_LESS_EQUAL;
@@ -847,27 +847,27 @@ Error Expression::_get_token(Token &r_token) {
 					r_token.type = TK_OP_LESS;
 				}
 				return OK;
-			};
+			}
 			case '+': {
 				r_token.type = TK_OP_ADD;
 				return OK;
-			};
+			}
 			case '-': {
 				r_token.type = TK_OP_SUB;
 				return OK;
-			};
+			}
 			case '/': {
 				r_token.type = TK_OP_DIV;
 				return OK;
-			};
+			}
 			case '*': {
 				r_token.type = TK_OP_MUL;
 				return OK;
-			};
+			}
 			case '%': {
 				r_token.type = TK_OP_MOD;
 				return OK;
-			};
+			}
 			case '&': {
 				if (expression[str_ofs] == '&') {
 					r_token.type = TK_OP_AND;
@@ -876,7 +876,7 @@ Error Expression::_get_token(Token &r_token) {
 					r_token.type = TK_OP_BIT_AND;
 				}
 				return OK;
-			};
+			}
 			case '|': {
 				if (expression[str_ofs] == '|') {
 					r_token.type = TK_OP_OR;
@@ -885,17 +885,17 @@ Error Expression::_get_token(Token &r_token) {
 					r_token.type = TK_OP_BIT_OR;
 				}
 				return OK;
-			};
+			}
 			case '^': {
 				r_token.type = TK_OP_BIT_XOR;
 
 				return OK;
-			};
+			}
 			case '~': {
 				r_token.type = TK_OP_BIT_INVERT;
 
 				return OK;
-			};
+			}
 			case '"': {
 				String str;
 				while (true) {
@@ -1666,7 +1666,7 @@ Expression::ENode *Expression::_parse_expression() {
 				op = Variant::OP_BIT_NEGATE;
 				break;
 			default: {
-			};
+			}
 		}
 
 		if (op == Variant::OP_MAX) { //stop appending stuff

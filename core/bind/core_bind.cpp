@@ -117,7 +117,7 @@ PackedStringArray _ResourceLoader::get_dependencies(const String &p_path) {
 	}
 
 	return ret;
-};
+}
 
 bool _ResourceLoader::has_cached(const String &p_path) {
 	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -224,7 +224,7 @@ Error _OS::shell_open(String p_uri) {
 		WARN_PRINT("Attempting to open an URL with the \"user://\" protocol. Use `ProjectSettings.globalize_path()` to convert a Godot-specific path to a system path before opening it with `OS.shell_open()`.");
 	}
 	return OS::get_singleton()->shell_open(p_uri);
-};
+}
 
 int _OS::execute(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, Array p_output, bool p_read_stderr) {
 	OS::ProcessID pid = -2;
@@ -252,7 +252,7 @@ Error _OS::kill(int p_pid) {
 
 int _OS::get_process_id() const {
 	return OS::get_singleton()->get_process_id();
-};
+}
 
 bool _OS::has_environment(const String &p_var) const {
 	return OS::get_singleton()->has_environment(p_var);
@@ -286,7 +286,7 @@ String _OS::get_model_name() const {
 
 Error _OS::set_thread_name(const String &p_name) {
 	return Thread::set_name(p_name);
-};
+}
 
 bool _OS::has_feature(const String &p_feature) const {
 	return OS::get_singleton()->has_feature(p_feature);
@@ -620,7 +620,7 @@ void _OS::print_resources_by_type(const Vector<String> &p_types) {
 
 		type_count[r->get_class()]++;
 	}
-};
+}
 
 void _OS::print_all_resources(const String &p_to_file) {
 	OS::get_singleton()->print_all_resources(p_to_file);
@@ -636,7 +636,7 @@ void _OS::dump_resources_to_file(const String &p_file) {
 
 String _OS::get_user_data_dir() const {
 	return OS::get_singleton()->get_user_data_dir();
-};
+}
 
 bool _OS::is_debug_build() const {
 #ifdef DEBUG_ENABLED
@@ -840,8 +840,8 @@ Variant _Geometry::segment_intersects_segment_2d(const Vector2 &p_from_a, const 
 		return result;
 	} else {
 		return Variant();
-	};
-};
+	}
+}
 
 Variant _Geometry::line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b) {
 	Vector2 result;
@@ -1071,7 +1071,7 @@ Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
 	Vector<Size2i> rects;
 	for (int i = 0; i < p_rects.size(); i++) {
 		rects.push_back(p_rects[i]);
-	};
+	}
 
 	Vector<Point2i> result;
 	Size2i size;
@@ -1082,13 +1082,13 @@ Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
 	Vector<Point2> r_result;
 	for (int i = 0; i < result.size(); i++) {
 		r_result.push_back(result[i]);
-	};
+	}
 
 	ret["points"] = r_result;
 	ret["size"] = r_size;
 
 	return ret;
-};
+}
 
 int _Geometry::get_uv84_normal_bit(const Vector3 &p_vector) {
 	return Geometry::get_uv84_normal_bit(p_vector);
@@ -1436,13 +1436,13 @@ void _File::store_pascal_string(const String &p_string) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	f->store_pascal_string(p_string);
-};
+}
 
 String _File::get_pascal_string() {
 	ERR_FAIL_COND_V_MSG(!f, "", "File must be opened before use.");
 
 	return f->get_pascal_string();
-};
+}
 
 void _File::store_line(const String &p_string) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
@@ -1784,7 +1784,7 @@ String _Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) 
 	ERR_FAIL_COND_V(ret == "", ret);
 
 	return ret;
-};
+}
 
 Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects) {
 	int strlen = p_str.length();
@@ -1802,13 +1802,13 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 	ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to decode Variant.");
 
 	return v;
-};
+}
 
 String _Marshalls::raw_to_base64(const Vector<uint8_t> &p_arr) {
 	String ret = CryptoCore::b64_encode_str(p_arr.ptr(), p_arr.size());
 	ERR_FAIL_COND_V(ret == "", ret);
 	return ret;
-};
+}
 
 Vector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
 	int strlen = p_str.length();
@@ -1825,14 +1825,14 @@ Vector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
 	buf.resize(arr_len);
 
 	return buf;
-};
+}
 
 String _Marshalls::utf8_to_base64(const String &p_str) {
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
 	ERR_FAIL_COND_V(ret == "", ret);
 	return ret;
-};
+}
 
 String _Marshalls::base64_to_utf8(const String &p_str) {
 	int strlen = p_str.length();
@@ -1849,7 +1849,7 @@ String _Marshalls::base64_to_utf8(const String &p_str) {
 	String ret = String::utf8((char *)&w[0]);
 
 	return ret;
-};
+}
 
 void _Marshalls::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("variant_to_base64", "variant", "full_objects"), &_Marshalls::variant_to_base64, DEFVAL(false));
@@ -1860,7 +1860,7 @@ void _Marshalls::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("utf8_to_base64", "utf8_str"), &_Marshalls::utf8_to_base64);
 	ClassDB::bind_method(D_METHOD("base64_to_utf8", "base64_str"), &_Marshalls::base64_to_utf8);
-};
+}
 
 ////// _Semaphore //////
 

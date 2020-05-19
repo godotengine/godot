@@ -361,7 +361,7 @@ void XMLParser::_parse_current_node() {
 
 uint64_t XMLParser::get_node_offset() const {
 	return node_offset;
-};
+}
 
 Error XMLParser::seek(uint64_t p_pos) {
 	ERR_FAIL_COND_V(!data, ERR_FILE_EOF);
@@ -370,7 +370,7 @@ Error XMLParser::seek(uint64_t p_pos) {
 	P = data + p_pos;
 
 	return read();
-};
+}
 
 void XMLParser::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("read"), &XMLParser::read);
@@ -398,7 +398,7 @@ void XMLParser::_bind_methods() {
 	BIND_ENUM_CONSTANT(NODE_COMMENT);
 	BIND_ENUM_CONSTANT(NODE_CDATA);
 	BIND_ENUM_CONSTANT(NODE_UNKNOWN);
-};
+}
 
 Error XMLParser::read() {
 	// if not end reached, parse the node

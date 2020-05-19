@@ -341,7 +341,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 	if (uint32_t(_free + aligned(e->len)) < alloc_size) {
 		mt_unlock();
 		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
-	};
+	}
 
 	EntryIndicesPos entry_indices_pos;
 
@@ -358,7 +358,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		next_pos = pool_size; // - static_area_size;
 	} else {
 		next_pos = entry_array[entry_indices[entry_indices_pos + 1]].pos;
-	};
+	}
 
 	if ((next_pos - e->pos) > alloc_size) {
 		free_mem += aligned(e->len);
@@ -564,8 +564,8 @@ PoolAllocator::PoolAllocator(void *p_mem, int p_size, int p_align, bool p_needs_
 			mem8 += p_align - (ofs % p_align);
 			p_size -= dif;
 			p_mem = (void *)mem8;
-		};
-	};
+		}
+	}
 
 	create_pool(p_mem, p_size, p_max_entries);
 	needs_locking = p_needs_locking;

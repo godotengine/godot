@@ -116,18 +116,18 @@ void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_
 			left = -xmax + frustumshift;
 			right = xmax + frustumshift;
 			modeltranslation = p_intraocular_dist / 2.0;
-		}; break;
+		} break;
 		case 2: { // right eye
 			left = -xmax - frustumshift;
 			right = xmax - frustumshift;
 			modeltranslation = -p_intraocular_dist / 2.0;
-		}; break;
+		} break;
 		default: { // mono, should give the same result as set_perspective(p_fovy_degrees,p_aspect,p_z_near,p_z_far,p_flip_fov)
 			left = -xmax;
 			right = xmax;
 			modeltranslation = 0.0;
-		}; break;
-	};
+		} break;
+	}
 
 	set_frustum(left, right, -ymax, ymax, p_z_near, p_z_far);
 
@@ -157,14 +157,14 @@ void CameraMatrix::set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_
 	switch (p_eye) {
 		case 1: { // left eye
 			set_frustum(-f2 * p_z_near, f1 * p_z_near, -f3 * p_z_near, f3 * p_z_near, p_z_near, p_z_far);
-		}; break;
+		} break;
 		case 2: { // right eye
 			set_frustum(-f1 * p_z_near, f2 * p_z_near, -f3 * p_z_near, f3 * p_z_near, p_z_near, p_z_far);
-		}; break;
+		} break;
 		default: { // mono, does not apply here!
-		}; break;
-	};
-};
+		} break;
+	}
+}
 
 void CameraMatrix::set_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_znear, real_t p_zfar) {
 	set_identity();

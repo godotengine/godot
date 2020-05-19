@@ -1399,7 +1399,7 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 			h = MAX(minh, h >> 1);
 		}
 		mm++;
-	};
+	}
 
 	r_mipmaps = mm;
 	return size;
@@ -2031,7 +2031,7 @@ void Image::create(const char **p_xpm) {
 								case 5:
 									col_b |= v;
 									break;
-							};
+							}
 						}
 
 						// magenta mask
