@@ -256,6 +256,7 @@ class DisplayServerWindows : public DisplayServer {
 
 	_THREAD_SAFE_CLASS_
 
+public:
 	// WinTab API
 	static bool wintab_available;
 	static WTOpenPtr wintab_WTOpen;
@@ -265,9 +266,13 @@ class DisplayServerWindows : public DisplayServer {
 	static WTEnablePtr wintab_WTEnable;
 
 	// Windows Ink API
+	static bool winink_available;
 	static GetPointerTypePtr win8p_GetPointerType;
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
 
+	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
+
+private:
 	void GetMaskBitmaps(HBITMAP hSourceBitmap, COLORREF clrTransparent, OUT HBITMAP &hAndMaskBitmap, OUT HBITMAP &hXorMaskBitmap);
 
 	enum {
