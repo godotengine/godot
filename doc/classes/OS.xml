@@ -268,6 +268,24 @@
 				Returns the epoch time of the operating system in seconds.
 			</description>
 		</method>
+		<method name="get_tablet_driver_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the total number of available tablet drivers.
+				[b]Note:[/b] This method is implemented on Windows.
+			</description>
+		</method>
+		<method name="get_tablet_driver_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the tablet driver name for the given index.
+				[b]Note:[/b] This method is implemented on Windows.
+			</description>
+		</method>
 		<method name="get_ticks_msec" qualifiers="const">
 			<return type="int">
 			</return>
@@ -499,6 +517,9 @@
 		</member>
 		<member name="low_processor_usage_mode_sleep_usec" type="int" setter="set_low_processor_usage_mode_sleep_usec" getter="get_low_processor_usage_mode_sleep_usec" default="6900">
 			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU usage.
+		</member>
+		<member name="tablet_driver" type="String" setter="set_current_tablet_driver" getter="get_current_tablet_driver" default="&quot;wintab&quot;">
+			The current tablet drvier in use.
 		</member>
 	</members>
 	<constants>
