@@ -707,9 +707,12 @@ bool ServerController::fetch_next_input() {
 	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
 		// As initial packet, anything is good.
 		if (snapshots.empty() == false) {
+			// First input arrived.
 			node->set_inputs_buffer(snapshots.front().inputs_buffer);
 			current_input_buffer_id = snapshots.front().id;
 			snapshots.pop_front();
+			// Start traking the packets from this moment on
+			network_tracer.reset();
 		} else {
 			is_new_input = false;
 		}
@@ -1163,13 +1166,15 @@ void DollController::physics_process(real_t p_delta) {
 	}
 
 	const bool is_new_input = server_controller.fetch_next_input();
-	node->get_inputs_buffer_mut().begin_read();
-	node->call("controller_process", p_delta);
-	if (is_new_input) {
-		player_controller.store_input_buffer(server_controller.current_input_buffer_id);
-	}
+	if (server_controller.current_input_buffer_id != UINT64_MAX) {
+		node->get_inputs_buffer_mut().begin_read();
+		node->call("controller_process", p_delta);
+		if (is_new_input) {
+			player_controller.store_input_buffer(server_controller.current_input_buffer_id);
+		}
 
-	node->player_set_has_new_input(is_new_input);
+		node->player_set_has_new_input(is_new_input);
+	}
 
 	// Keeps the doll in sync with the server.
 	soft_reset_to_server_state();

@@ -36,7 +36,15 @@
 
 NetworkTracer::NetworkTracer(int p_packets_to_track) :
 		id(0) {
-	flags.resize(p_packets_to_track);
+	reset(p_packets_to_track);
+}
+
+void NetworkTracer::reset(int p_packets_to_track) {
+	id = 0;
+
+	if (p_packets_to_track >= 0) {
+		flags.resize(p_packets_to_track);
+	}
 
 	// Let's pretend that the connection is good.
 	for (size_t i = 0; i < flags.size(); i += 1) {

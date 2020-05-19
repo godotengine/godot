@@ -55,6 +55,8 @@ class NetworkTracer {
 public:
 	NetworkTracer(int p_packets_to_track);
 
+	void reset(int p_packets_to_track = -1);
+
 	void notify_packet_arrived();
 	void notify_missing_packet();
 
