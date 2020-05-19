@@ -299,7 +299,6 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					left = p->poly->points[prev].pos;
 					right = p->poly->points[prev_n].pos;
 
-					//if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5).dot(up) < 0){
 					if (p->poly->clockwise) {
 						SWAP(left, right);
 					}

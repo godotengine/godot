@@ -232,7 +232,3 @@ XRPositionalTracker::XRPositionalTracker() {
 	hand = TRACKER_HAND_UNKNOWN;
 	rumble = 0.0;
 };
-
-XRPositionalTracker::~XRPositionalTracker(){
-
-};

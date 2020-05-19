@@ -581,9 +581,8 @@ bool VideoStreamPlaybackTheora::is_paused() const {
 	return paused;
 };
 
-void VideoStreamPlaybackTheora::set_loop(bool p_enable){
-
-};
+void VideoStreamPlaybackTheora::set_loop(bool p_enable) {
+}
 
 bool VideoStreamPlaybackTheora::has_loop() const {
 	return false;
@@ -605,10 +604,8 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 	return get_time();
 };
 
-void VideoStreamPlaybackTheora::seek(float p_time){
-
-	// no
-};
+void VideoStreamPlaybackTheora::seek(float p_time) {
+}
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
 	mix_callback = p_callback;
