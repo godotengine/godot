@@ -288,7 +288,7 @@ public:
 	int get_process_info(ProcessInfo p_info);
 
 	PhysicsServer2DSW();
-	~PhysicsServer2DSW();
+	~PhysicsServer2DSW() {}
 };
 
 #endif

@@ -1344,7 +1344,3 @@ PhysicsServer2DSW::PhysicsServer2DSW() {
 	using_threads = int(ProjectSettings::get_singleton()->get("physics/2d/thread_model")) == 2;
 	flushing_queries = false;
 };
-
-PhysicsServer2DSW::~PhysicsServer2DSW(){
-
-};

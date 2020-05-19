@@ -1320,10 +1320,6 @@ void PhysicsServer3DSW::step(real_t p_step) {
 #endif
 }
 
-void PhysicsServer3DSW::sync(){
-
-};
-
 void PhysicsServer3DSW::flush_queries() {
 #ifndef _3D_DISABLED
 
@@ -1450,8 +1446,4 @@ PhysicsServer3DSW::PhysicsServer3DSW() {
 
 	active = true;
 	flushing_queries = false;
-};
-
-PhysicsServer3DSW::~PhysicsServer3DSW(){
-
 };
