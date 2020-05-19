@@ -1908,15 +1908,47 @@ void RayCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->clear();
 
-	Vector<Vector3> lines;
-
-	lines.push_back(Vector3());
-	lines.push_back(raycast->get_cast_to());
-
 	const Ref<StandardMaterial3D> material =
 			get_material(raycast->is_enabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 
-	p_gizmo->add_lines(lines, material);
+	const Vector3 ray = raycast->get_cast_to();
+	const float ray_length = ray.length();
+
+	const Quat arrow_direction(Vector3(0, 0, 1), ray.normalized());
+	// Scale arrow for small ray length
+	const Vector3 arrow_scale = Vector3(1, 1, 1) * (ray_length < 1.0 ? ray_length : 1.0);
+	const float arrow_length = ray_length < 1 ? 1 : ray_length;
+	// Fix arrow head size
+	const float arrow_head = arrow_length - 0.2;
+
+	const int arrow_points = 9;
+	Vector3 arrow[arrow_points] = {
+		Vector3(0, 0, 0),
+		Vector3(0, 0, arrow_length),
+		Vector3(0, 0.1, arrow_head),
+		Vector3(0, 0.01, arrow_head),
+		Vector3(0, 0.01, 0),
+		Vector3(0, -0.01, 0),
+		Vector3(0, -0.01, arrow_head),
+		Vector3(0, -0.1, arrow_head),
+		Vector3(0, 0, arrow_length),
+	};
+
+	Vector<Vector3> lines;
+
+	int arrow_sides = 2;
+	for (int i = 0; i < arrow_sides; i++) {
+		Basis ma(arrow_direction * Quat(Vector3(0, 0, 1), Math_PI * i / arrow_sides), arrow_scale);
+
+		for (int j = 0; j < arrow_points - 1; j++) {
+			Vector3 v1 = ma.xform(arrow[j]);
+			Vector3 v2 = ma.xform(arrow[(j + 1) % arrow_points]);
+
+			lines.push_back(v1);
+			lines.push_back(v2);
+		}
+	}
+	p_gizmo->add_lines(lines, material, false);
 	p_gizmo->add_collision_segments(lines);
 }
 
