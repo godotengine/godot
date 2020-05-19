@@ -3194,9 +3194,7 @@ Error CSharpScript::reload(bool p_keep_state) {
 			ERR_FAIL_NULL_V(namespace_, ERR_BUG);
 			ERR_FAIL_NULL_V(class_name, ERR_BUG);
 			GDMonoClass *klass = project_assembly->get_class(namespace_->operator String(), class_name->operator String());
-			if (klass) {
-				bool obj_type = CACHED_CLASS(GodotObject)->is_assignable_from(klass);
-				ERR_FAIL_COND_V(!obj_type, ERR_BUG);
+			if (klass && CACHED_CLASS(GodotObject)->is_assignable_from(klass)) {
 				script_class = klass;
 			}
 		} else {
