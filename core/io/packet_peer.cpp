@@ -147,7 +147,7 @@ void PacketPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_encode_buffer_max_size", "max_size"), &PacketPeer::set_encode_buffer_max_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "encode_buffer_max_size"), "set_encode_buffer_max_size", "get_encode_buffer_max_size");
-};
+}
 
 /***************/
 
@@ -267,7 +267,7 @@ void PacketPeerStream::set_stream_peer(const Ref<StreamPeer> &p_peer) {
 
 	if (p_peer.ptr() != peer.ptr()) {
 		ring_buffer.advance_read(ring_buffer.data_left()); // reset the ring buffer
-	};
+	}
 
 	peer = p_peer;
 }

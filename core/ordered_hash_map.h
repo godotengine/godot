@@ -106,27 +106,27 @@ public:
 		const K &key() const {
 			CRASH_COND(!list_element);
 			return *(list_element->get().first);
-		};
+		}
 
 		V &value() {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		const V &value() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		V &get() {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		const V &get() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 	};
 
 	class ConstElement {
@@ -172,17 +172,17 @@ public:
 		const K &key() const {
 			CRASH_COND(!list_element);
 			return *(list_element->get().first);
-		};
+		}
 
 		const V &value() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 
 		const V &get() const {
 			CRASH_COND(!list_element);
 			return list_element->get().second;
-		};
+		}
 	};
 
 	ConstElement find(const K &p_key) const {

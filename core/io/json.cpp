@@ -91,7 +91,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 			}
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "]";
 			return s;
-		};
+		}
 		case Variant::DICTIONARY: {
 			String s = "{";
 			s += end_statement;
@@ -115,7 +115,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 
 			s += end_statement + _make_indent(p_indent, p_cur_indent) + "}";
 			return s;
-		};
+		}
 		default:
 			return "\"" + String(p_var).json_escape() + "\"";
 	}
@@ -132,7 +132,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 				line++;
 				index++;
 				break;
-			};
+			}
 			case 0: {
 				r_token.type = TK_EOF;
 				return OK;
@@ -141,32 +141,32 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 				r_token.type = TK_CURLY_BRACKET_OPEN;
 				index++;
 				return OK;
-			};
+			}
 			case '}': {
 				r_token.type = TK_CURLY_BRACKET_CLOSE;
 				index++;
 				return OK;
-			};
+			}
 			case '[': {
 				r_token.type = TK_BRACKET_OPEN;
 				index++;
 				return OK;
-			};
+			}
 			case ']': {
 				r_token.type = TK_BRACKET_CLOSE;
 				index++;
 				return OK;
-			};
+			}
 			case ':': {
 				r_token.type = TK_COLON;
 				index++;
 				return OK;
-			};
+			}
 			case ',': {
 				r_token.type = TK_COMMA;
 				index++;
 				return OK;
-			};
+			}
 			case '"': {
 				index++;
 				String str;

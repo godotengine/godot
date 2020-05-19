@@ -51,7 +51,7 @@ ProjectSettings *ProjectSettings::get_singleton() {
 
 String ProjectSettings::get_resource_path() const {
 	return resource_path;
-};
+}
 
 String ProjectSettings::localize_path(const String &p_path) const {
 	if (resource_path == "") {
@@ -87,7 +87,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 		if (!cwd.begins_with(res_path)) {
 			return p_path;
-		};
+		}
 
 		return cwd.replace_first(res_path, "res://");
 	} else {
@@ -96,20 +96,20 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		int sep = path.find_last("/");
 		if (sep == -1) {
 			return "res://" + path;
-		};
+		}
 
 		String parent = path.substr(0, sep);
 
 		String plocal = localize_path(parent);
 		if (plocal == "") {
 			return "";
-		};
+		}
 		// Only strip the starting '/' from 'path' if its parent ('plocal') ends with '/'
 		if (plocal[plocal.length() - 1] == '/') {
 			sep += 1;
 		}
 		return plocal + path.substr(sep, path.size() - sep);
-	};
+	}
 }
 
 void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value) {
@@ -126,13 +126,13 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 	if (p_path.begins_with("res://")) {
 		if (resource_path != "") {
 			return p_path.replace("res:/", resource_path);
-		};
+		}
 		return p_path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
 		String data_dir = OS::get_singleton()->get_user_data_dir();
 		if (data_dir != "") {
 			return p_path.replace("user:/", data_dir);
-		};
+		}
 		return p_path.replace("user://", "");
 	}
 
@@ -759,7 +759,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
 
 	return save_custom(p_file);
-};
+}
 
 Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
 	ERR_FAIL_COND_V_MSG(p_path == "", ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");

@@ -54,7 +54,7 @@ struct _IP_ResolverPrivate {
 
 		QueueItem() {
 			clear();
-		};
+		}
 	};
 
 	QueueItem queue[IP::RESOLVER_MAX_QUERIES];

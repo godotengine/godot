@@ -74,19 +74,19 @@ public:
 		}
 		const K &key() const {
 			return _key;
-		};
+		}
 		V &value() {
 			return _value;
-		};
+		}
 		const V &value() const {
 			return _value;
-		};
+		}
 		V &get() {
 			return _value;
-		};
+		}
 		const V &get() const {
 			return _value;
-		};
+		}
 		Element() {}
 	};
 

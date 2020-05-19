@@ -174,28 +174,29 @@ _FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
 
 _FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
 	return Vector2(x * p_v1.x, y * p_v1.y);
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
 	return Vector2(x * rvalue, y * rvalue);
-};
+}
+
 _FORCE_INLINE_ void Vector2::operator*=(const real_t &rvalue) {
 	x *= rvalue;
 	y *= rvalue;
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
 	return Vector2(x / p_v1.x, y / p_v1.y);
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator/(const real_t &rvalue) const {
 	return Vector2(x / rvalue, y / rvalue);
-};
+}
 
 _FORCE_INLINE_ void Vector2::operator/=(const real_t &rvalue) {
 	x /= rvalue;
 	y /= rvalue;
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator-() const {
 	return Vector2(-x, -y);

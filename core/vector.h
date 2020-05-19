@@ -113,8 +113,8 @@ public:
 		for (i = 0; i < _cowdata.size(); i++) {
 			if (p_val < operator[](i)) {
 				break;
-			};
-		};
+			}
+		}
 		insert(i, p_val);
 	}
 

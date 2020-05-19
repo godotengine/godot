@@ -131,7 +131,7 @@ Error DirAccess::erase_contents_recursive() {
 Error DirAccess::make_dir_recursive(String p_dir) {
 	if (p_dir.length() < 1) {
 		return OK;
-	};
+	}
 
 	String full_dir;
 
@@ -185,7 +185,7 @@ String DirAccess::fix_path(String p_path) const {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 					if (resource_path != "") {
 						return p_path.replace_first("res:/", resource_path);
-					};
+					}
 					return p_path.replace_first("res://", "");
 				}
 			}
@@ -196,7 +196,7 @@ String DirAccess::fix_path(String p_path) const {
 				String data_dir = OS::get_singleton()->get_user_data_dir();
 				if (data_dir != "") {
 					return p_path.replace_first("user:/", data_dir);
-				};
+				}
 				return p_path.replace_first("user://", "");
 			}
 
@@ -249,7 +249,7 @@ DirAccess *DirAccess::create(AccessType p_access) {
 	}
 
 	return da;
-};
+}
 
 String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
 	DirAccess *d = DirAccess::create(p_access);

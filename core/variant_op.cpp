@@ -189,7 +189,7 @@ bool Variant::booleanize() const {
 			_RETURN(p_a._data.m_type m_op p_b._data._float);      \
                                                                   \
 		_RETURN_FAIL                                              \
-	};
+	}
 
 #define DEFAULT_OP_NUM_NULL(m_prefix, m_op_name, m_name, m_op, m_type) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                           \
@@ -201,7 +201,7 @@ bool Variant::booleanize() const {
 			_RETURN(!(p_b.type m_op NIL));                             \
                                                                        \
 		_RETURN_FAIL                                                   \
-	};
+	}
 
 #ifdef DEBUG_ENABLED
 #define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type) \
@@ -222,7 +222,7 @@ bool Variant::booleanize() const {
 		}                                                       \
                                                                 \
 		_RETURN_FAIL                                            \
-	};
+	}
 #else
 #define DEFAULT_OP_NUM_DIV(m_prefix, m_op_name, m_name, m_type) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
@@ -232,18 +232,18 @@ bool Variant::booleanize() const {
 			_RETURN(p_a._data.m_type / p_b._data._float);       \
                                                                 \
 		_RETURN_FAIL                                            \
-	};
+	}
 #endif
 
 #define DEFAULT_OP_NUM_NEG(m_prefix, m_op_name, m_name, m_type) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
 		_RETURN(-p_a._data.m_type);                             \
-	};
+	}
 
 #define DEFAULT_OP_NUM_POS(m_prefix, m_op_name, m_name, m_type) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                    \
 		_RETURN(p_a._data.m_type);                              \
-	};
+	}
 
 #define DEFAULT_OP_NUM_VEC(m_prefix, m_op_name, m_name, m_op, m_type)                          \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                   \
@@ -261,7 +261,7 @@ bool Variant::booleanize() const {
 			_RETURN(p_a._data.m_type m_op *reinterpret_cast<const Vector3 *>(p_b._data._mem)); \
                                                                                                \
 		_RETURN_FAIL                                                                           \
-	};
+	}
 
 #define DEFAULT_OP_STR_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                              \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
@@ -273,7 +273,7 @@ bool Variant::booleanize() const {
 			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const NodePath *>(p_a._data._mem));   \
                                                                                                                                    \
 		_RETURN_FAIL                                                                                                               \
-	};
+	}
 
 #define DEFAULT_OP_STR(m_prefix, m_op_name, m_name, m_op, m_type)                                                                  \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
@@ -285,7 +285,7 @@ bool Variant::booleanize() const {
 			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const NodePath *>(p_b._data._mem));   \
                                                                                                                                    \
 		_RETURN_FAIL                                                                                                               \
-	};
+	}
 
 #define DEFAULT_OP_STR_NULL(m_prefix, m_op_name, m_name, m_op, m_type)                                                             \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
@@ -299,7 +299,7 @@ bool Variant::booleanize() const {
 			_RETURN(!(p_b.type m_op NIL));                                                                                         \
                                                                                                                                    \
 		_RETURN_FAIL                                                                                                               \
-	};
+	}
 
 #define DEFAULT_OP_STR_NULL_NP(m_prefix, m_op_name, m_name, m_op, m_type)                                                        \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                     \
@@ -311,7 +311,7 @@ bool Variant::booleanize() const {
 			_RETURN(!(p_b.type m_op NIL));                                                                                       \
                                                                                                                                  \
 		_RETURN_FAIL                                                                                                             \
-	};
+	}
 
 #define DEFAULT_OP_STR_NULL_SN(m_prefix, m_op_name, m_name, m_op, m_type)                                                          \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                       \
@@ -323,7 +323,7 @@ bool Variant::booleanize() const {
 			_RETURN(!(p_b.type m_op NIL));                                                                                         \
                                                                                                                                    \
 		_RETURN_FAIL                                                                                                               \
-	};
+	}
 
 #define DEFAULT_OP_LOCALMEM_REV(m_prefix, m_op_name, m_name, m_op, m_type)                                                     \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
@@ -331,7 +331,7 @@ bool Variant::booleanize() const {
 			_RETURN(*reinterpret_cast<const m_type *>(p_b._data._mem) m_op *reinterpret_cast<const m_type *>(p_a._data._mem)); \
                                                                                                                                \
 		_RETURN_FAIL                                                                                                           \
-	};
+	}
 
 #define DEFAULT_OP_LOCALMEM(m_prefix, m_op_name, m_name, m_op, m_type)                                                         \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
@@ -339,7 +339,7 @@ bool Variant::booleanize() const {
 			_RETURN(*reinterpret_cast<const m_type *>(p_a._data._mem) m_op *reinterpret_cast<const m_type *>(p_b._data._mem)); \
                                                                                                                                \
 		_RETURN_FAIL                                                                                                           \
-	};
+	}
 
 #define DEFAULT_OP_LOCALMEM_NULL(m_prefix, m_op_name, m_name, m_op, m_type)                                                    \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                                                                                   \
@@ -349,7 +349,7 @@ bool Variant::booleanize() const {
 			_RETURN(!(p_b.type m_op NIL));                                                                                     \
                                                                                                                                \
 		_RETURN_FAIL                                                                                                           \
-	};
+	}
 
 #define DEFAULT_OP_LOCALMEM_NEG(m_prefix, m_op_name, m_name, m_type) \
 	CASE_TYPE(m_prefix, m_op_name, m_name) {                         \

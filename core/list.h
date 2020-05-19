@@ -63,70 +63,70 @@ public:
 		 */
 		_FORCE_INLINE_ const Element *next() const {
 			return next_ptr;
-		};
+		}
 		/**
 		 * Get NEXT Element iterator,
 		 */
 		_FORCE_INLINE_ Element *next() {
 			return next_ptr;
-		};
+		}
 
 		/**
 		 * Get PREV Element iterator, for constant lists.
 		 */
 		_FORCE_INLINE_ const Element *prev() const {
 			return prev_ptr;
-		};
+		}
 		/**
 		 * Get PREV Element iterator,
 		 */
 		_FORCE_INLINE_ Element *prev() {
 			return prev_ptr;
-		};
+		}
 
 		/**
 		 * * operator, for using as *iterator, when iterators are defined on stack.
 		 */
 		_FORCE_INLINE_ const T &operator*() const {
 			return value;
-		};
+		}
 		/**
 		 * operator->, for using as iterator->, when iterators are defined on stack, for constant lists.
 		 */
 		_FORCE_INLINE_ const T *operator->() const {
 			return &value;
-		};
+		}
 		/**
 		 * * operator, for using as *iterator, when iterators are defined on stack,
 		 */
 		_FORCE_INLINE_ T &operator*() {
 			return value;
-		};
+		}
 		/**
 		 * operator->, for using as iterator->, when iterators are defined on stack, for constant lists.
 		 */
 		_FORCE_INLINE_ T *operator->() {
 			return &value;
-		};
+		}
 
 		/**
 		 * get the value stored in this element.
 		 */
 		_FORCE_INLINE_ T &get() {
 			return value;
-		};
+		}
 		/**
 		 * get the value stored in this element, for constant lists
 		 */
 		_FORCE_INLINE_ const T &get() const {
 			return value;
-		};
+		}
 		/**
 		 * set the value stored in this element.
 		 */
 		_FORCE_INLINE_ void set(const T &p_value) {
 			value = (T &)p_value;
-		};
+		}
 
 		void erase() {
 			data->erase(this);
@@ -147,7 +147,7 @@ private:
 
 			if (first == p_I) {
 				first = p_I->next_ptr;
-			};
+			}
 
 			if (last == p_I) {
 				last = p_I->prev_ptr;
@@ -176,28 +176,28 @@ public:
 	*/
 	_FORCE_INLINE_ const Element *front() const {
 		return _data ? _data->first : nullptr;
-	};
+	}
 
 	/**
 	* return an iterator to the beginning of the list.
 	*/
 	_FORCE_INLINE_ Element *front() {
 		return _data ? _data->first : nullptr;
-	};
+	}
 
 	/**
  	* return a const iterator to the last member of the list.
 	*/
 	_FORCE_INLINE_ const Element *back() const {
 		return _data ? _data->last : nullptr;
-	};
+	}
 
 	/**
  	* return an iterator to the last member of the list.
 	*/
 	_FORCE_INLINE_ Element *back() {
 		return _data ? _data->last : nullptr;
-	};
+	}
 
 	/**
 	 * store a new element at the end of the list
@@ -230,7 +230,7 @@ public:
 		_data->size_cache++;
 
 		return n;
-	};
+	}
 
 	void pop_back() {
 		if (_data && _data->last) {
@@ -268,7 +268,7 @@ public:
 		_data->size_cache++;
 
 		return n;
-	};
+	}
 
 	void pop_front() {
 		if (_data && _data->first) {
@@ -339,10 +339,10 @@ public:
 				return it;
 			}
 			it = it->next();
-		};
+		}
 
 		return nullptr;
-	};
+	}
 
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
@@ -360,7 +360,7 @@ public:
 		}
 
 		return false;
-	};
+	}
 
 	/**
 	 * erase the first element in the list, that contains value
@@ -368,7 +368,7 @@ public:
 	bool erase(const T &value) {
 		Element *I = find(value);
 		return erase(I);
-	};
+	}
 
 	/**
 	 * return whether the list is empty
@@ -383,8 +383,8 @@ public:
 	void clear() {
 		while (front()) {
 			erase(front());
-		};
-	};
+		}
+	}
 
 	_FORCE_INLINE_ int size() const {
 		return _data ? _data->size_cache : 0;
@@ -464,7 +464,7 @@ public:
 
 		if (_data->first == p_I) {
 			_data->first = p_I->next_ptr;
-		};
+		}
 
 		if (_data->last == p_I) {
 			_data->last = p_I->prev_ptr;
@@ -501,7 +501,7 @@ public:
 
 		if (_data->first == p_I) {
 			_data->first = p_I->next_ptr;
-		};
+		}
 
 		if (_data->last == p_I) {
 			_data->last = p_I->prev_ptr;
@@ -536,7 +536,7 @@ public:
 			value->prev_ptr = _data->last;
 			_data->last = value;
 			return;
-		};
+		}
 
 		value->prev_ptr = where->prev_ptr;
 
@@ -544,10 +544,10 @@ public:
 			where->prev_ptr->next_ptr = value;
 		} else {
 			_data->first = value;
-		};
+		}
 
 		where->prev_ptr = value;
-	};
+	}
 
 	/**
 	 * simple insertion sort
@@ -672,7 +672,7 @@ public:
 			ERR_FAIL_COND(_data->size_cache);
 			memdelete_allocator<_Data, A>(_data);
 		}
-	};
+	}
 };
 
 #endif // LIST_H
