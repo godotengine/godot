@@ -263,6 +263,15 @@
 				Transforms [code]local_point[/code] from this node's local space to world space.
 			</description>
 		</method>
+		<method name="to_global_basis" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="local_direction" type="Vector3">
+			</argument>
+			<description>
+				Transforms [code]local_direction[/code] from this node's local space to world space.
+			</description>
+		</method>
 		<method name="to_local" qualifiers="const">
 			<return type="Vector3">
 			</return>
@@ -270,6 +279,15 @@
 			</argument>
 			<description>
 				Transforms [code]global_point[/code] from world space to this node's local space.
+			</description>
+		</method>
+		<method name="to_local_basis" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="global_direction" type="Vector3">
+			</argument>
+			<description>
+				Transforms [code]global_direction[/code] from world space to this node's local space.
 			</description>
 		</method>
 		<method name="translate">

@@ -95,6 +95,15 @@
 				Transforms the provided local position into a position in global coordinate space. The input is expected to be local relative to the [Node2D] it is called on. e.g. Applying this method to the positions of child nodes will correctly transform their positions into the global coordinate space, but applying it to a node's own position will give an incorrect result, as it will incorporate the node's own transformation into its global position.
 			</description>
 		</method>
+		<method name="to_global_basis" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="local_direction" type="Vector2">
+			</argument>
+			<description>
+				Transforms the provided local direction into a direction in global coordinate space.
+			</description>
+		</method>
 		<method name="to_local" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -102,6 +111,15 @@
 			</argument>
 			<description>
 				Transforms the provided global position into a position in local coordinate space. The output will be local relative to the [Node2D] it is called on. e.g. It is appropriate for determining the positions of child nodes, but it is not appropriate for determining its own position relative to its parent.
+			</description>
+		</method>
+		<method name="to_local_basis" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="global_direction" type="Vector2">
+			</argument>
+			<description>
+				Transforms the provided global direction into a direction in local coordinate space.
 			</description>
 		</method>
 		<method name="translate">

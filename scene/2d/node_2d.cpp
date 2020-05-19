@@ -408,6 +408,14 @@ Point2 Node2D::to_global(Point2 p_local) const {
 	return get_global_transform().xform(p_local);
 }
 
+Point2 Node2D::to_local_basis(Point2 p_global) const {
+	return get_global_transform().basis_xform_inv(p_global);
+}
+
+Point2 Node2D::to_global_basis(Point2 p_local) const {
+	return get_global_transform().basis_xform(p_local);
+}
+
 void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node2D::set_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Node2D::set_rotation);
@@ -447,6 +455,8 @@ void Node2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node2D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node2D::to_global);
+	ClassDB::bind_method(D_METHOD("to_local_basis", "global_direction"), &Node2D::to_local_basis);
+	ClassDB::bind_method(D_METHOD("to_global_basis", "local_direction"), &Node2D::to_global_basis);
 
 	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &Node2D::set_z_index);
 	ClassDB::bind_method(D_METHOD("get_z_index"), &Node2D::get_z_index);

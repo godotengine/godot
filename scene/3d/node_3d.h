@@ -179,6 +179,8 @@ public:
 
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;
+	Vector3 to_local_basis(Vector3 p_global) const;
+	Vector3 to_global_basis(Vector3 p_local) const;
 
 	void set_notify_transform(bool p_enable);
 	bool is_transform_notification_enabled() const;
