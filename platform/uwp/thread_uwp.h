@@ -44,16 +44,16 @@ class ThreadUWP : public Thread {
 	static ID get_thread_id_func_uwp();
 	static void wait_to_finish_func_uwp(Thread *p_thread);
 
-	ThreadUWP();
+	ThreadUWP() {}
 
 public:
 	virtual ID get_id() const;
 
 	static void make_default();
 
-	~ThreadUWP();
+	~ThreadUWP() {}
 };
 
-#endif
+#endif // UWP_ENABLED
 
-#endif
+#endif // THREAD_UWP_H

@@ -49,14 +49,14 @@ public:
 
 	void _notification(int p_what);
 
-	DispatchMode dispatch_mode;
+	DispatchMode dispatch_mode = MODE_PROXY;
 
 	Map<StringName, uint32_t> groups;
 	String group_name;
 
-	float cell_size;
-	Vector3 grid_radius;
-	uint32_t group_version;
+	float cell_size = 1.0;
+	Vector3 grid_radius = Vector3(1, 1, 1);
+	uint32_t group_version = 0;
 
 	void add_groups(int *p_cell, String p_base, int p_depth);
 	void _new_group(StringName p_name);
@@ -78,7 +78,7 @@ public:
 	void broadcast(String p_name, Variant p_params);
 
 	ProximityGroup3D();
-	~ProximityGroup3D();
+	~ProximityGroup3D() {}
 };
 
 VARIANT_ENUM_CAST(ProximityGroup3D::DispatchMode);

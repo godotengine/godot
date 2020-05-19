@@ -96,7 +96,7 @@ public:
 	Transform get_transform(bool p_adjust_by_reference_frame) const;
 
 	XRPositionalTracker();
-	~XRPositionalTracker();
+	~XRPositionalTracker() {}
 };
 
 VARIANT_ENUM_CAST(XRPositionalTracker::TrackerHand);

@@ -134,9 +134,9 @@ bool XRInterface::get_anchor_detection_is_enabled() const {
 	return false;
 };
 
-void XRInterface::set_anchor_detection_is_enabled(bool p_enable){
+void XRInterface::set_anchor_detection_is_enabled(bool p_enable) {
 	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.
-};
+}
 
 int XRInterface::get_camera_feed_id() {
 	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.

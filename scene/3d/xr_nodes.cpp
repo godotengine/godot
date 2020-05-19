@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "xr_nodes.h"
+
 #include "core/input/input.h"
 #include "servers/xr/xr_interface.h"
 #include "servers/xr_server.h"
@@ -166,14 +167,6 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm = xr_interface->get_projection_for_eye(XRInterface::EYE_MONO, viewport_size.aspect(), get_znear(), get_zfar());
 	return cm.get_projection_planes(get_camera_transform());
-};
-
-XRCamera3D::XRCamera3D(){
-	// nothing to do here yet for now..
-};
-
-XRCamera3D::~XRCamera3D(){
-	// nothing to do here yet for now..
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -382,16 +375,6 @@ String XRController3D::get_configuration_warning() const {
 	return String();
 };
 
-XRController3D::XRController3D() {
-	controller_id = 1;
-	is_active = true;
-	button_states = 0;
-};
-
-XRController3D::~XRController3D(){
-	// nothing to do here yet for now..
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void XRAnchor3D::_notification(int p_what) {
@@ -522,15 +505,6 @@ Ref<Mesh> XRAnchor3D::get_mesh() const {
 	return mesh;
 }
 
-XRAnchor3D::XRAnchor3D() {
-	anchor_id = 1;
-	is_active = true;
-};
-
-XRAnchor3D::~XRAnchor3D(){
-	// nothing to do here yet for now..
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 String XROrigin3D::get_configuration_warning() const {
@@ -614,12 +588,4 @@ void XROrigin3D::_notification(int p_what) {
 			interface->notification(p_what);
 		}
 	}
-};
-
-XROrigin3D::XROrigin3D() {
-	tracked_camera = nullptr;
-};
-
-XROrigin3D::~XROrigin3D(){
-	// nothing to do here yet for now..
 };
