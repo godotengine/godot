@@ -145,7 +145,7 @@ int FileAccessMemory::get_buffer(uint8_t *p_dst, int p_length) const {
 
 	if (read < p_length) {
 		WARN_PRINT("Reading less data than requested");
-	};
+	}
 
 	copymem(p_dst, &data[pos], read);
 	pos += p_length;

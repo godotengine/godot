@@ -65,7 +65,7 @@ bool FileAccess::exists(const String &p_name) {
 
 void FileAccess::_set_access_type(AccessType p_access) {
 	_access_type = p_access;
-};
+}
 
 FileAccess *FileAccess::create_for_path(const String &p_path) {
 	FileAccess *ret = nullptr;
@@ -83,7 +83,7 @@ FileAccess *FileAccess::create_for_path(const String &p_path) {
 
 Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
 	return _open(p_path, p_mode_flags);
-};
+}
 
 FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_error) {
 	//try packed data first
@@ -115,7 +115,7 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 
 FileAccess::CreateFunc FileAccess::get_create_func(AccessType p_access) {
 	return create_func[p_access];
-};
+}
 
 String FileAccess::fix_path(const String &p_path) const {
 	//helper used by file accesses that use a single filesystem
@@ -129,7 +129,7 @@ String FileAccess::fix_path(const String &p_path) const {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 					if (resource_path != "") {
 						return r_path.replace("res:/", resource_path);
-					};
+					}
 					return r_path.replace("res://", "");
 				}
 			}
@@ -140,7 +140,7 @@ String FileAccess::fix_path(const String &p_path) const {
 				String data_dir = OS::get_singleton()->get_user_data_dir();
 				if (data_dir != "") {
 					return r_path.replace("user:/", data_dir);
-				};
+				}
 				return r_path.replace("user://", "");
 			}
 
@@ -215,7 +215,7 @@ float FileAccess::get_float() const {
 	MarshallFloat m;
 	m.i = get_32();
 	return m.f;
-};
+}
 
 real_t FileAccess::get_real() const {
 	if (real_is_double) {
@@ -229,7 +229,7 @@ double FileAccess::get_double() const {
 	MarshallDouble m;
 	m.l = get_64();
 	return m.d;
-};
+}
 
 String FileAccess::get_token() const {
 	CharString token;
@@ -447,13 +447,13 @@ void FileAccess::store_float(float p_dest) {
 	MarshallFloat m;
 	m.f = p_dest;
 	store_32(m.i);
-};
+}
 
 void FileAccess::store_double(double p_dest) {
 	MarshallDouble m;
 	m.d = p_dest;
 	store_64(m.l);
-};
+}
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_file)) {
@@ -503,7 +503,7 @@ void FileAccess::store_pascal_string(const String &p_string) {
 	CharString cs = p_string.utf8();
 	store_32(cs.length());
 	store_buffer((uint8_t *)&cs[0], cs.length());
-};
+}
 
 String FileAccess::get_pascal_string() {
 	uint32_t sl = get_32();
@@ -516,7 +516,7 @@ String FileAccess::get_pascal_string() {
 	ret.parse_utf8(cs.ptr());
 
 	return ret;
-};
+}
 
 void FileAccess::store_line(const String &p_line) {
 	store_string(p_line);

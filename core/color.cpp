@@ -588,7 +588,7 @@ void Color::operator/=(const real_t &rvalue) {
 		b = b / rvalue;
 		a = a / rvalue;
 	}
-};
+}
 
 Color Color::operator-() const {
 	return Color(

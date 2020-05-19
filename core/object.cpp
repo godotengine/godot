@@ -1000,7 +1000,7 @@ void Object::set_meta(const String &p_name, const Variant &p_value) {
 	if (p_value.get_type() == Variant::NIL) {
 		metadata.erase(p_name);
 		return;
-	};
+	}
 
 	metadata[p_name] = p_value;
 }

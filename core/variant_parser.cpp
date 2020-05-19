@@ -110,7 +110,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 			case '\n': {
 				line++;
 				break;
-			};
+			}
 			case 0: {
 				r_token.type = TK_EOF;
 				return OK;
@@ -118,31 +118,31 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 			case '{': {
 				r_token.type = TK_CURLY_BRACKET_OPEN;
 				return OK;
-			};
+			}
 			case '}': {
 				r_token.type = TK_CURLY_BRACKET_CLOSE;
 				return OK;
-			};
+			}
 			case '[': {
 				r_token.type = TK_BRACKET_OPEN;
 				return OK;
-			};
+			}
 			case ']': {
 				r_token.type = TK_BRACKET_CLOSE;
 				return OK;
-			};
+			}
 			case '(': {
 				r_token.type = TK_PARENTHESIS_OPEN;
 				return OK;
-			};
+			}
 			case ')': {
 				r_token.type = TK_PARENTHESIS_CLOSE;
 				return OK;
-			};
+			}
 			case ':': {
 				r_token.type = TK_COLON;
 				return OK;
-			};
+			}
 			case ';': {
 				while (true) {
 					CharType ch = p_stream->get_char();
@@ -156,19 +156,19 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				}
 
 				break;
-			};
+			}
 			case ',': {
 				r_token.type = TK_COMMA;
 				return OK;
-			};
+			}
 			case '.': {
 				r_token.type = TK_PERIOD;
 				return OK;
-			};
+			}
 			case '=': {
 				r_token.type = TK_EQUAL;
 				return OK;
-			};
+			}
 			case '#': {
 				StringBuffer<> color_str;
 				color_str += '#';
@@ -189,7 +189,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				r_token.value = Color::html(color_str.as_string());
 				r_token.type = TK_COLOR;
 				return OK;
-			};
+			}
 			case '@': {
 				cchar = p_stream->get_char();
 				if (cchar != '"') {

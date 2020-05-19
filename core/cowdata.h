@@ -161,10 +161,10 @@ public:
 		int len = size();
 		for (int i = p_index; i < len - 1; i++) {
 			p[i] = p[i + 1];
-		};
+		}
 
 		resize(len - 1);
-	};
+	}
 
 	Error insert(int p_pos, const T &p_val) {
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
@@ -175,7 +175,7 @@ public:
 		set(p_pos, p_val);
 
 		return OK;
-	};
+	}
 
 	int find(const T &p_val, int p_from = 0) const;
 
