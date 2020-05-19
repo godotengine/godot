@@ -415,23 +415,30 @@ uint64_t OS_Windows::get_ticks_usec() const {
 	return time;
 }
 
+String OS_Windows::_quote_command_line_argument(const String &p_text) const {
+	for (int i = 0; i < p_text.size(); i++) {
+		CharType c = p_text[i];
+		if (c == ' ' || c == '&' || c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}' || c == '^' || c == '=' || c == ';' || c == '!' || c == '\'' || c == '+' || c == ',' || c == '`' || c == '~') {
+			return "\"" + p_text + "\"";
+		}
+	}
+	return p_text;
+}
+
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 	if (p_blocking && r_pipe) {
-		String argss;
-		argss = "\"\"" + p_path + "\"";
-
+		String argss = _quote_command_line_argument(p_path);
 		for (const List<String>::Element *E = p_arguments.front(); E; E = E->next()) {
-			argss += " \"" + E->get() + "\"";
+			argss += " " + _quote_command_line_argument(E->get());
 		}
-
-		argss += "\"";
 
 		if (read_stderr) {
 			argss += " 2>&1"; // Read stderr too
 		}
+		// Note: _wpopen is calling command as "cmd.exe /c argss", instead of executing it directly, add extra quotes around full command, to prevent it from stripping quotes in the command.
+		argss = _quote_command_line_argument(argss);
 
 		FILE *f = _wpopen(argss.c_str(), L"r");
-
 		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
 
 		char buf[65535];
@@ -446,19 +453,19 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		}
 
 		int rv = _pclose(f);
-		if (r_exitcode)
+		if (r_exitcode) {
 			*r_exitcode = rv;
+		}
 
 		return OK;
 	}
 
-	String cmdline = "\"" + p_path + "\"";
+	String cmdline = _quote_command_line_argument(p_path);
 	const List<String>::Element *I = p_arguments.front();
 	while (I) {
-		cmdline += " \"" + I->get() + "\"";
-
+		cmdline += " " + _quote_command_line_argument(I->get());
 		I = I->next();
-	};
+	}
 
 	ProcessInfo pi;
 	ZeroMemory(&pi.si, sizeof(pi.si));
@@ -466,17 +473,20 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	ZeroMemory(&pi.pi, sizeof(pi.pi));
 	LPSTARTUPINFOW si_w = (LPSTARTUPINFOW)&pi.si;
 
-	Vector<CharType> modstr; //windows wants to change this no idea why
+	Vector<CharType> modstr; // Windows wants to change this no idea why.
 	modstr.resize(cmdline.size());
-	for (int i = 0; i < cmdline.size(); i++)
+	for (int i = 0; i < cmdline.size(); i++) {
 		modstr.write[i] = cmdline[i];
+	}
+
 	int ret = CreateProcessW(nullptr, modstr.ptrw(), nullptr, nullptr, 0, NORMAL_PRIORITY_CLASS & CREATE_NO_WINDOW, nullptr, nullptr, si_w, &pi.pi);
 	ERR_FAIL_COND_V(ret == 0, ERR_CANT_FORK);
 
 	if (p_blocking) {
 		DWORD ret2 = WaitForSingleObject(pi.pi.hProcess, INFINITE);
-		if (r_exitcode)
+		if (r_exitcode) {
 			*r_exitcode = ret2;
+		}
 
 		CloseHandle(pi.pi.hProcess);
 		CloseHandle(pi.pi.hThread);
@@ -484,9 +494,9 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		ProcessID pid = pi.pi.dwProcessId;
 		if (r_child_id) {
 			*r_child_id = pid;
-		};
+		}
 		process_map->insert(pid, pi);
-	};
+	}
 	return OK;
 };
 
