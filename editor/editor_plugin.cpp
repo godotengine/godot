@@ -44,7 +44,6 @@
 #include "servers/rendering_server.h"
 
 Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_size) {
-
 	Vector<Ref<Mesh>> meshes;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
@@ -61,7 +60,6 @@ Array EditorInterface::_make_mesh_previews(const Array &p_meshes, int p_preview_
 }
 
 Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>> &p_meshes, Vector<Transform> *p_transforms, int p_preview_size) {
-
 	int size = p_preview_size;
 
 	RID scenario = RS::get_singleton()->scenario_create();
@@ -89,7 +87,6 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 	Vector<Ref<Texture2D>> textures;
 
 	for (int i = 0; i < p_meshes.size(); i++) {
-
 		Ref<Mesh> mesh = p_meshes[i];
 		if (!mesh.is_valid()) {
 			textures.push_back(Ref<Texture2D>());
@@ -156,17 +153,14 @@ void EditorInterface::set_main_screen_editor(const String &p_name) {
 }
 
 Control *EditorInterface::get_editor_viewport() {
-
 	return EditorNode::get_singleton()->get_viewport();
 }
 
 void EditorInterface::edit_resource(const Ref<Resource> &p_resource) {
-
 	EditorNode::get_singleton()->edit_resource(p_resource);
 }
 
 void EditorInterface::open_scene_from_path(const String &scene_path) {
-
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
@@ -175,7 +169,6 @@ void EditorInterface::open_scene_from_path(const String &scene_path) {
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
-
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
@@ -188,14 +181,14 @@ Node *EditorInterface::get_edited_scene_root() {
 }
 
 Array EditorInterface::get_open_scenes() const {
-
 	Array ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	int scns_amount = scenes.size();
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == nullptr)
+		if (scenes[idx_scn].root == nullptr) {
 			continue;
+		}
 		ret.push_back(scenes[idx_scn].root->get_filename());
 	}
 	return ret;
@@ -218,7 +211,6 @@ String EditorInterface::get_current_path() const {
 }
 
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property) {
-
 	EditorNode::get_singleton()->push_item(p_obj, p_for_property);
 }
 
@@ -243,7 +235,6 @@ EditorResourcePreview *EditorInterface::get_resource_previewer() {
 }
 
 Control *EditorInterface::get_base_control() {
-
 	return EditorNode::get_singleton()->get_gui_base();
 }
 
@@ -260,17 +251,18 @@ EditorInspector *EditorInterface::get_inspector() const {
 }
 
 Error EditorInterface::save_scene() {
-	if (!get_edited_scene_root())
+	if (!get_edited_scene_root()) {
 		return ERR_CANT_CREATE;
-	if (get_edited_scene_root()->get_filename() == String())
+	}
+	if (get_edited_scene_root()->get_filename() == String()) {
 		return ERR_CANT_CREATE;
+	}
 
 	save_scene_as(get_edited_scene_root()->get_filename());
 	return OK;
 }
 
 void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) {
-
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
 }
 
@@ -281,7 +273,6 @@ void EditorInterface::set_distraction_free_mode(bool p_enter) {
 EditorInterface *EditorInterface::singleton = nullptr;
 
 void EditorInterface::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("inspect_object", "object", "for_property"), &EditorInterface::inspect_object, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("get_selection"), &EditorInterface::get_selection);
 	ClassDB::bind_method(D_METHOD("get_editor_settings"), &EditorInterface::get_editor_settings);
@@ -319,12 +310,10 @@ EditorInterface::EditorInterface() {
 
 ///////////////////////////////////////////
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
-
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
 }
 
 void EditorPlugin::remove_custom_type(const String &p_type) {
-
 	EditorNode::get_editor_data().remove_custom_type(p_type);
 }
 
@@ -342,19 +331,16 @@ ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const 
 }
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
-
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DockSlot(p_slot), p_control);
 }
 
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
-
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_singleton()->remove_control_from_dock(p_control);
 }
 
 void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
-
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_singleton()->remove_bottom_panel_item(p_control);
 }
@@ -363,69 +349,56 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 	ERR_FAIL_NULL(p_control);
 
 	switch (p_location) {
-
 		case CONTAINER_TOOLBAR: {
-
 			EditorNode::get_menu_hb()->add_child(p_control);
 		} break;
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
-
 			Node3DEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
-
 			Node3DEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			Node3DEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
-
 			Node3DEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			Node3DEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
-
 			Node3DEditor::get_singleton()->get_shader_split()->add_child(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_MENU: {
-
 			CanvasItemEditor::get_singleton()->add_control_to_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT: {
-
 			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 0);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
-
 			CanvasItemEditor::get_singleton()->get_palette_split()->add_child(p_control);
 			CanvasItemEditor::get_singleton()->get_palette_split()->move_child(p_control, 1);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
-
 			CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(p_control);
 
 		} break;
 		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
-
 			EditorNode::get_singleton()->get_inspector_dock_addon_area()->add_child(p_control);
 
 		} break;
 		case CONTAINER_PROJECT_SETTING_TAB_LEFT: {
-
 			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
 			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 0);
 
 		} break;
 		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
-
 			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
 			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 1);
 
@@ -437,52 +410,42 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 	ERR_FAIL_NULL(p_control);
 
 	switch (p_location) {
-
 		case CONTAINER_TOOLBAR: {
-
 			EditorNode::get_menu_hb()->remove_child(p_control);
 		} break;
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
-
 			Node3DEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT:
 		case CONTAINER_SPATIAL_EDITOR_SIDE_RIGHT: {
-
 			Node3DEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
-
 			Node3DEditor::get_singleton()->get_shader_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_MENU: {
-
 			CanvasItemEditor::get_singleton()->remove_control_from_menu_panel(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT:
 		case CONTAINER_CANVAS_EDITOR_SIDE_RIGHT: {
-
 			CanvasItemEditor::get_singleton()->get_palette_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
-
 			CanvasItemEditor::get_singleton()->get_bottom_split()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_PROPERTY_EDITOR_BOTTOM: {
-
 			EditorNode::get_singleton()->get_inspector_dock_addon_area()->remove_child(p_control);
 
 		} break;
 		case CONTAINER_PROJECT_SETTING_TAB_LEFT:
 		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
-
 			ProjectSettingsEditor::get_singleton()->get_tabs()->remove_child(p_control);
 
 		} break;
@@ -521,9 +484,9 @@ void EditorPlugin::notify_scene_changed(const Node *scn_root) {
 }
 
 void EditorPlugin::notify_main_screen_changed(const String &screen_name) {
-
-	if (screen_name == last_main_screen_name)
+	if (screen_name == last_main_screen_name) {
 		return;
+	}
 
 	emit_signal("main_screen_changed", screen_name);
 	last_main_screen_name = screen_name;
@@ -538,7 +501,6 @@ void EditorPlugin::notify_resource_saved(const Ref<Resource> &p_resource) {
 }
 
 bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
-
 	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_gui_input")) {
 		return get_script_instance()->call("forward_canvas_gui_input", p_event);
 	}
@@ -546,14 +508,12 @@ bool EditorPlugin::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void EditorPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
-
 	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_draw_over_viewport")) {
 		get_script_instance()->call("forward_canvas_draw_over_viewport", p_overlay);
 	}
 }
 
 void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
-
 	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_force_draw_over_viewport")) {
 		get_script_instance()->call("forward_canvas_force_draw_over_viewport", p_overlay);
 	}
@@ -561,7 +521,6 @@ void EditorPlugin::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
 
 // Updates the overlays of the 2D viewport or, if in 3D mode, of every 3D viewport.
 int EditorPlugin::update_overlays() const {
-
 	if (Node3DEditor::get_singleton()->is_visible()) {
 		int count = 0;
 		for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
@@ -580,7 +539,6 @@ int EditorPlugin::update_overlays() const {
 }
 
 bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
-
 	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_gui_input")) {
 		return get_script_instance()->call("forward_spatial_gui_input", p_camera, p_event);
 	}
@@ -589,51 +547,48 @@ bool EditorPlugin::forward_spatial_gui_input(Camera3D *p_camera, const Ref<Input
 }
 
 void EditorPlugin::forward_spatial_draw_over_viewport(Control *p_overlay) {
-
 	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_draw_over_viewport")) {
 		get_script_instance()->call("forward_spatial_draw_over_viewport", p_overlay);
 	}
 }
 
 void EditorPlugin::forward_spatial_force_draw_over_viewport(Control *p_overlay) {
-
 	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_force_draw_over_viewport")) {
 		get_script_instance()->call("forward_spatial_force_draw_over_viewport", p_overlay);
 	}
 }
-String EditorPlugin::get_name() const {
 
+String EditorPlugin::get_name() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_plugin_name")) {
 		return get_script_instance()->call("get_plugin_name");
 	}
 
 	return String();
 }
-const Ref<Texture2D> EditorPlugin::get_icon() const {
 
+const Ref<Texture2D> EditorPlugin::get_icon() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_plugin_icon")) {
 		return get_script_instance()->call("get_plugin_icon");
 	}
 
 	return Ref<Texture2D>();
 }
-bool EditorPlugin::has_main_screen() const {
 
+bool EditorPlugin::has_main_screen() const {
 	if (get_script_instance() && get_script_instance()->has_method("has_main_screen")) {
 		return get_script_instance()->call("has_main_screen");
 	}
 
 	return false;
 }
-void EditorPlugin::make_visible(bool p_visible) {
 
+void EditorPlugin::make_visible(bool p_visible) {
 	if (get_script_instance() && get_script_instance()->has_method("make_visible")) {
 		get_script_instance()->call("make_visible", p_visible);
 	}
 }
 
 void EditorPlugin::edit(Object *p_object) {
-
 	if (get_script_instance() && get_script_instance()->has_method("edit")) {
 		if (p_object->is_class("Resource")) {
 			get_script_instance()->call("edit", Ref<Resource>(Object::cast_to<Resource>(p_object)));
@@ -644,15 +599,14 @@ void EditorPlugin::edit(Object *p_object) {
 }
 
 bool EditorPlugin::handles(Object *p_object) const {
-
 	if (get_script_instance() && get_script_instance()->has_method("handles")) {
 		return get_script_instance()->call("handles", p_object);
 	}
 
 	return false;
 }
-Dictionary EditorPlugin::get_state() const {
 
+Dictionary EditorPlugin::get_state() const {
 	if (get_script_instance() && get_script_instance()->has_method("get_state")) {
 		return get_script_instance()->call("get_state");
 	}
@@ -661,14 +615,12 @@ Dictionary EditorPlugin::get_state() const {
 }
 
 void EditorPlugin::set_state(const Dictionary &p_state) {
-
 	if (get_script_instance() && get_script_instance()->has_method("set_state")) {
 		get_script_instance()->call("set_state", p_state);
 	}
 }
 
 void EditorPlugin::clear() {
-
 	if (get_script_instance() && get_script_instance()->has_method("clear")) {
 		get_script_instance()->call("clear");
 	}
@@ -676,7 +628,6 @@ void EditorPlugin::clear() {
 
 // if editor references external resources/scenes, save them
 void EditorPlugin::save_external_data() {
-
 	if (get_script_instance() && get_script_instance()->has_method("save_external_data")) {
 		get_script_instance()->call("save_external_data");
 	}
@@ -684,22 +635,21 @@ void EditorPlugin::save_external_data() {
 
 // if changes are pending in editor, apply them
 void EditorPlugin::apply_changes() {
-
 	if (get_script_instance() && get_script_instance()->has_method("apply_changes")) {
 		get_script_instance()->call("apply_changes");
 	}
 }
 
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
-
 	if (get_script_instance() && get_script_instance()->has_method("get_breakpoints")) {
 		PackedStringArray arr = get_script_instance()->call("get_breakpoints");
-		for (int i = 0; i < arr.size(); i++)
+		for (int i = 0; i < arr.size(); i++) {
 			p_breakpoints->push_back(arr[i]);
+		}
 	}
 }
-bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 
+bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 	return false;
 }
 
@@ -777,21 +727,18 @@ void EditorPlugin::disable_plugin() {
 }
 
 void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
-
 	if (get_script_instance() && get_script_instance()->has_method("set_window_layout")) {
 		get_script_instance()->call("set_window_layout", p_layout);
 	}
 }
 
 void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
-
 	if (get_script_instance() && get_script_instance()->has_method("get_window_layout")) {
 		get_script_instance()->call("get_window_layout", p_layout);
 	}
 }
 
 bool EditorPlugin::build() {
-
 	if (get_script_instance() && get_script_instance()->has_method("build")) {
 		return get_script_instance()->call("build");
 	}
@@ -800,17 +747,14 @@ bool EditorPlugin::build() {
 }
 
 void EditorPlugin::queue_save_layout() const {
-
 	EditorNode::get_singleton()->save_layout();
 }
 
 void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
-
 	EditorNode::get_singleton()->make_bottom_panel_item_visible(p_item);
 }
 
 void EditorPlugin::hide_bottom_panel() {
-
 	EditorNode::get_singleton()->hide_bottom_panel();
 }
 
@@ -823,7 +767,6 @@ ScriptCreateDialog *EditorPlugin::get_script_create_dialog() {
 }
 
 void EditorPlugin::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
 	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::add_control_to_bottom_panel);
 	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::add_control_to_dock);
@@ -911,16 +854,6 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_UR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_RIGHT_BR);
 	BIND_ENUM_CONSTANT(DOCK_SLOT_MAX);
-}
-
-EditorPlugin::EditorPlugin() :
-		undo_redo(nullptr),
-		input_event_forwarding_always_enabled(false),
-		force_draw_over_forwarding_enabled(false),
-		last_main_screen_name("") {
-}
-
-EditorPlugin::~EditorPlugin() {
 }
 
 EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];

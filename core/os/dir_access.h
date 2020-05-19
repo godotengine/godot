@@ -47,7 +47,7 @@ public:
 	typedef DirAccess *(*CreateFunc)();
 
 private:
-	AccessType _access_type;
+	AccessType _access_type = ACCESS_FILESYSTEM;
 	static CreateFunc create_func[ACCESS_MAX]; ///< set this to instance a filesystem object
 
 	Error _copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flags);
@@ -61,7 +61,6 @@ protected:
 
 	template <class T>
 	static DirAccess *_create_builtin() {
-
 		return memnew(T);
 	}
 
@@ -110,42 +109,33 @@ public:
 	static String get_full_path(const String &p_path, AccessType p_access);
 	static DirAccess *create_for_path(const String &p_path);
 
-	/*
-	enum DirType {
-
-		FILE_TYPE_INVALID,
-		FILE_TYPE_FILE,
-		FILE_TYPE_DIR,
-	};
-
-	//virtual DirType get_file_type() const=0;
-*/
 	static DirAccess *create(AccessType p_access);
 
 	template <class T>
 	static void make_default(AccessType p_access) {
-
 		create_func[p_access] = _create_builtin<T>;
 	}
 
 	static DirAccess *open(const String &p_path, Error *r_error = nullptr);
 
-	DirAccess();
-	virtual ~DirAccess();
+	DirAccess() {}
+	virtual ~DirAccess() {}
 };
 
 struct DirAccessRef {
-
 	_FORCE_INLINE_ DirAccess *operator->() {
-
 		return f;
 	}
 
 	operator bool() const { return f != nullptr; }
+
 	DirAccess *f;
+
 	DirAccessRef(DirAccess *fa) { f = fa; }
 	~DirAccessRef() {
-		if (f) memdelete(f);
+		if (f) {
+			memdelete(f);
+		}
 	}
 };
 

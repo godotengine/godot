@@ -42,7 +42,6 @@
 class GraphEdit;
 
 class GraphEditFilter : public Control {
-
 	GDCLASS(GraphEditFilter, Control);
 
 	friend class GraphEdit;
@@ -54,7 +53,6 @@ public:
 };
 
 class GraphEdit : public Control {
-
 	GDCLASS(GraphEdit, Control);
 
 public:
@@ -99,7 +97,6 @@ private:
 	bool dragging;
 	bool just_selected;
 	Vector2 drag_accum;
-	Point2 drag_origin; // Workaround for GH-5907
 
 	float zoom;
 
@@ -142,7 +139,6 @@ private:
 	bool lines_on_bg;
 
 	struct ConnType {
-
 		union {
 			struct {
 				uint32_t type_a;

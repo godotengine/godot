@@ -40,6 +40,7 @@
 #include "shape_bullet.h"
 #include "soft_body_bullet.h"
 #include "space_bullet.h"
+
 /**
 	@author AndreaCatania
 */
@@ -49,8 +50,8 @@ class BulletPhysicsServer3D : public PhysicsServer3D {
 
 	friend class BulletPhysicsDirectSpaceState;
 
-	bool active;
-	char active_spaces_count;
+	bool active = true;
+	char active_spaces_count = 0;
 	Vector<SpaceBullet *> active_spaces;
 
 	mutable RID_PtrOwner<SpaceBullet> space_owner;

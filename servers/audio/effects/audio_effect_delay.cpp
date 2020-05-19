@@ -33,11 +33,9 @@
 #include "servers/audio_server.h"
 
 void AudioEffectDelayInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	int todo = p_frame_count;
 
 	while (todo) {
-
 		int to_mix = MIN(todo, 256); //can't mix too much
 
 		_process_chunk(p_src_frames, p_dst_frames, to_mix);
@@ -50,7 +48,6 @@ void AudioEffectDelayInstance::process(const AudioFrame *p_src_frames, AudioFram
 }
 
 void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
-
 	float main_level_f = base->dry;
 
 	float mix_rate = AudioServer::get_singleton()->get_mix_rate();
@@ -87,7 +84,6 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 	AudioFrame *fb_buf = feedback_buffer.ptrw();
 
 	for (int i = 0; i < p_frame_count; i++) {
-
 		rb_buf[ring_buffer_pos & ring_buffer_mask] = src[i];
 
 		AudioFrame main_val = src[i] * main_level_f;
@@ -109,8 +105,9 @@ void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames, Au
 
 		ring_buffer_pos++;
 
-		if ((++feedback_buffer_pos) >= feedback_delay_frames)
+		if ((++feedback_buffer_pos) >= feedback_delay_frames) {
 			feedback_buffer_pos = 0;
+		}
 	}
 }
 
@@ -147,125 +144,110 @@ Ref<AudioEffectInstance> AudioEffectDelay::instance() {
 }
 
 void AudioEffectDelay::set_dry(float p_dry) {
-
 	dry = p_dry;
 }
 
 float AudioEffectDelay::get_dry() {
-
 	return dry;
 }
 
 void AudioEffectDelay::set_tap1_active(bool p_active) {
-
 	tap_1_active = p_active;
 }
-bool AudioEffectDelay::is_tap1_active() const {
 
+bool AudioEffectDelay::is_tap1_active() const {
 	return tap_1_active;
 }
 
 void AudioEffectDelay::set_tap1_delay_ms(float p_delay_ms) {
-
 	tap_1_delay_ms = p_delay_ms;
 }
-float AudioEffectDelay::get_tap1_delay_ms() const {
 
+float AudioEffectDelay::get_tap1_delay_ms() const {
 	return tap_1_delay_ms;
 }
 
 void AudioEffectDelay::set_tap1_level_db(float p_level_db) {
-
 	tap_1_level = p_level_db;
 }
-float AudioEffectDelay::get_tap1_level_db() const {
 
+float AudioEffectDelay::get_tap1_level_db() const {
 	return tap_1_level;
 }
 
 void AudioEffectDelay::set_tap1_pan(float p_pan) {
-
 	tap_1_pan = p_pan;
 }
-float AudioEffectDelay::get_tap1_pan() const {
 
+float AudioEffectDelay::get_tap1_pan() const {
 	return tap_1_pan;
 }
 
 void AudioEffectDelay::set_tap2_active(bool p_active) {
-
 	tap_2_active = p_active;
 }
-bool AudioEffectDelay::is_tap2_active() const {
 
+bool AudioEffectDelay::is_tap2_active() const {
 	return tap_2_active;
 }
 
 void AudioEffectDelay::set_tap2_delay_ms(float p_delay_ms) {
-
 	tap_2_delay_ms = p_delay_ms;
 }
-float AudioEffectDelay::get_tap2_delay_ms() const {
 
+float AudioEffectDelay::get_tap2_delay_ms() const {
 	return tap_2_delay_ms;
 }
 
 void AudioEffectDelay::set_tap2_level_db(float p_level_db) {
-
 	tap_2_level = p_level_db;
 }
-float AudioEffectDelay::get_tap2_level_db() const {
 
+float AudioEffectDelay::get_tap2_level_db() const {
 	return tap_2_level;
 }
 
 void AudioEffectDelay::set_tap2_pan(float p_pan) {
-
 	tap_2_pan = p_pan;
 }
-float AudioEffectDelay::get_tap2_pan() const {
 
+float AudioEffectDelay::get_tap2_pan() const {
 	return tap_2_pan;
 }
 
 void AudioEffectDelay::set_feedback_active(bool p_active) {
-
 	feedback_active = p_active;
 }
-bool AudioEffectDelay::is_feedback_active() const {
 
+bool AudioEffectDelay::is_feedback_active() const {
 	return feedback_active;
 }
 
 void AudioEffectDelay::set_feedback_delay_ms(float p_delay_ms) {
-
 	feedback_delay_ms = p_delay_ms;
 }
-float AudioEffectDelay::get_feedback_delay_ms() const {
 
+float AudioEffectDelay::get_feedback_delay_ms() const {
 	return feedback_delay_ms;
 }
 
 void AudioEffectDelay::set_feedback_level_db(float p_level_db) {
-
 	feedback_level = p_level_db;
 }
-float AudioEffectDelay::get_feedback_level_db() const {
 
+float AudioEffectDelay::get_feedback_level_db() const {
 	return feedback_level;
 }
 
 void AudioEffectDelay::set_feedback_lowpass(float p_lowpass) {
-
 	feedback_lowpass = p_lowpass;
 }
-float AudioEffectDelay::get_feedback_lowpass() const {
 
+float AudioEffectDelay::get_feedback_lowpass() const {
 	return feedback_lowpass;
 }
 
 void AudioEffectDelay::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_dry", "amount"), &AudioEffectDelay::set_dry);
 	ClassDB::bind_method(D_METHOD("get_dry"), &AudioEffectDelay::get_dry);
 

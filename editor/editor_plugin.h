@@ -110,15 +110,14 @@ public:
 };
 
 class EditorPlugin : public Node {
-
 	GDCLASS(EditorPlugin, Node);
 	friend class EditorData;
-	UndoRedo *undo_redo;
+	UndoRedo *undo_redo = nullptr;
 
 	UndoRedo *_get_undo_redo() { return undo_redo; }
 
-	bool input_event_forwarding_always_enabled;
-	bool force_draw_over_forwarding_enabled;
+	bool input_event_forwarding_always_enabled = false;
+	bool force_draw_over_forwarding_enabled = false;
 
 	String last_main_screen_name;
 
@@ -242,8 +241,8 @@ public:
 	void enable_plugin();
 	void disable_plugin();
 
-	EditorPlugin();
-	virtual ~EditorPlugin();
+	EditorPlugin() {}
+	virtual ~EditorPlugin() {}
 };
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
@@ -252,7 +251,6 @@ VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
 
 class EditorPlugins {
-
 	enum {
 		MAX_CREATE_FUNCS = 64
 	};
@@ -278,7 +276,6 @@ public:
 	}
 
 	static void add_create_func(EditorPluginCreateFunc p_func) {
-
 		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
 		creation_funcs[creation_func_count++] = p_func;
 	}

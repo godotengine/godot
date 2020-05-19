@@ -42,7 +42,6 @@
 	This class is set apart that it assumes a single surface is always generated for our mesh.
 */
 class PrimitiveMesh : public Mesh {
-
 	GDCLASS(PrimitiveMesh, Mesh);
 
 private:
@@ -134,7 +133,6 @@ public:
 	Similar to test cube but with subdivision support and different texture coordinates
 */
 class CubeMesh : public PrimitiveMesh {
-
 	GDCLASS(CubeMesh, PrimitiveMesh);
 
 private:
@@ -168,7 +166,6 @@ public:
 */
 
 class CylinderMesh : public PrimitiveMesh {
-
 	GDCLASS(CylinderMesh, PrimitiveMesh);
 
 private:
@@ -205,7 +202,6 @@ public:
 	Similar to quadmesh but with tessellation support
 */
 class PlaneMesh : public PrimitiveMesh {
-
 	GDCLASS(PlaneMesh, PrimitiveMesh);
 
 private:
@@ -234,7 +230,6 @@ public:
 	A prism shapen, handy for ramps, triangles, etc.
 */
 class PrismMesh : public PrimitiveMesh {
-
 	GDCLASS(PrismMesh, PrimitiveMesh);
 
 private:
@@ -272,7 +267,6 @@ public:
 */
 
 class QuadMesh : public PrimitiveMesh {
-
 	GDCLASS(QuadMesh, PrimitiveMesh);
 
 private:
@@ -293,7 +287,6 @@ public:
 	A sphere..
 */
 class SphereMesh : public PrimitiveMesh {
-
 	GDCLASS(SphereMesh, PrimitiveMesh);
 
 private:
@@ -331,7 +324,6 @@ public:
 */
 
 class PointMesh : public PrimitiveMesh {
-
 	GDCLASS(PointMesh, PrimitiveMesh)
 
 protected:

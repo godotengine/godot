@@ -48,6 +48,7 @@
 #include "../mono_gd/gd_mono_marshal.h"
 #include "../utils/osx_utils.h"
 #include "bindings_generator.h"
+#include "code_completion.h"
 #include "godotsharp_export.h"
 #include "script_class_parser.h"
 
@@ -354,6 +355,12 @@ void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
 	}
 }
 
+MonoArray *godot_icall_Internal_CodeCompletionRequest(int32_t p_kind, MonoString *p_script_file) {
+	String script_file = GDMonoMarshal::mono_string_to_godot(p_script_file);
+	PackedStringArray suggestions = gdmono::get_code_completion((gdmono::CompletionKind)p_kind, script_file);
+	return GDMonoMarshal::PackedStringArray_to_mono_array(suggestions);
+}
+
 float godot_icall_Globals_EditorScale() {
 	return EDSCALE;
 }
@@ -392,7 +399,6 @@ MonoBoolean godot_icall_Utils_OS_UnixFileHasExecutableAccess(MonoString *p_file_
 }
 
 void register_editor_internal_calls() {
-
 	// GodotSharpDirs
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResDataDir", (void *)godot_icall_GodotSharpDirs_ResDataDir);
 	mono_add_internal_call("GodotTools.Internals.GodotSharpDirs::internal_ResMetadataDir", (void *)godot_icall_GodotSharpDirs_ResMetadataDir);
@@ -454,6 +460,7 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunPlay", (void *)godot_icall_Internal_EditorRunPlay);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunStop", (void *)godot_icall_Internal_EditorRunStop);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebugger_ReloadScripts", (void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_CodeCompletionRequest", (void *)godot_icall_Internal_CodeCompletionRequest);
 
 	// Globals
 	mono_add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", (void *)godot_icall_Globals_EditorScale);

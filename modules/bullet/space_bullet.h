@@ -87,35 +87,34 @@ public:
 };
 
 class SpaceBullet : public RIDBullet {
-
 	friend class AreaBullet;
 	friend void onBulletTickCallback(btDynamicsWorld *world, btScalar timeStep);
 	friend class BulletPhysicsDirectSpaceState;
 
-	btBroadphaseInterface *broadphase;
-	btDefaultCollisionConfiguration *collisionConfiguration;
-	btCollisionDispatcher *dispatcher;
-	btConstraintSolver *solver;
-	btDiscreteDynamicsWorld *dynamicsWorld;
-	btSoftBodyWorldInfo *soft_body_world_info;
-	btGhostPairCallback *ghostPairCallback;
-	GodotFilterCallback *godotFilterCallback;
+	btBroadphaseInterface *broadphase = nullptr;
+	btDefaultCollisionConfiguration *collisionConfiguration = nullptr;
+	btCollisionDispatcher *dispatcher = nullptr;
+	btConstraintSolver *solver = nullptr;
+	btDiscreteDynamicsWorld *dynamicsWorld = nullptr;
+	btSoftBodyWorldInfo *soft_body_world_info = nullptr;
+	btGhostPairCallback *ghostPairCallback = nullptr;
+	GodotFilterCallback *godotFilterCallback = nullptr;
 
 	btGjkEpaPenetrationDepthSolver *gjk_epa_pen_solver;
 	btVoronoiSimplexSolver *gjk_simplex_solver;
 
 	BulletPhysicsDirectSpaceState *direct_access;
-	Vector3 gravityDirection;
-	real_t gravityMagnitude;
+	Vector3 gravityDirection = Vector3(0, -1, 0);
+	real_t gravityMagnitude = 10;
 
-	real_t linear_damp;
-	real_t angular_damp;
+	real_t linear_damp = 0.0;
+	real_t angular_damp = 0.0;
 
 	Vector<AreaBullet *> areas;
 
 	Vector<Vector3> contactDebug;
-	int contactDebugCount;
-	real_t delta_time;
+	int contactDebugCount = 0;
+	real_t delta_time = 0.;
 
 public:
 	SpaceBullet();
@@ -170,7 +169,9 @@ public:
 		contactDebugCount = 0;
 	}
 	_FORCE_INLINE_ void add_debug_contact(const Vector3 &p_contact) {
-		if (contactDebugCount < contactDebug.size()) contactDebug.write[contactDebugCount++] = p_contact;
+		if (contactDebugCount < contactDebug.size()) {
+			contactDebug.write[contactDebugCount++] = p_contact;
+		}
 	}
 	_FORCE_INLINE_ Vector<Vector3> get_debug_contacts() { return contactDebug; }
 	_FORCE_INLINE_ int get_debug_contact_count() { return contactDebugCount; }
@@ -193,22 +194,15 @@ private:
 	void check_body_collision();
 
 	struct RecoverResult {
-		bool hasPenetration;
-		btVector3 normal;
-		btVector3 pointWorld;
-		btScalar penetration_distance; // Negative mean penetration
-		int other_compound_shape_index;
-		const btCollisionObject *other_collision_object;
-		int local_shape_most_recovered;
+		bool hasPenetration = false;
+		btVector3 normal = btVector3(0, 0, 0);
+		btVector3 pointWorld = btVector3(0, 0, 0);
+		btScalar penetration_distance = 1e20; // Negative mean penetration
+		int other_compound_shape_index = 0;
+		const btCollisionObject *other_collision_object = nullptr;
+		int local_shape_most_recovered = 0;
 
-		RecoverResult() :
-				hasPenetration(false),
-				normal(0, 0, 0),
-				pointWorld(0, 0, 0),
-				penetration_distance(1e20),
-				other_compound_shape_index(0),
-				other_collision_object(nullptr),
-				local_shape_most_recovered(0) {}
+		RecoverResult() {}
 	};
 
 	bool recover_from_penetration(RigidBodyBullet *p_body, const btTransform &p_body_position, btScalar p_recover_movement_scale, bool p_infinite_inertia, btVector3 &r_delta_recover_movement, RecoverResult *r_recover_result = nullptr);

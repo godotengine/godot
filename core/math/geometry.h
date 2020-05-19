@@ -31,13 +31,12 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include "core/math/delaunay.h"
+#include "core/math/delaunay_2d.h"
 #include "core/math/face3.h"
 #include "core/math/rect2.h"
 #include "core/math/triangulate.h"
 #include "core/math/vector3.h"
 #include "core/object.h"
-
 #include "core/print_string.h"
 #include "core/vector.h"
 
@@ -46,7 +45,6 @@ class Geometry {
 
 public:
 	static real_t get_closest_points_between_segments(const Vector2 &p1, const Vector2 &q1, const Vector2 &p2, const Vector2 &q2, Vector2 &c1, Vector2 &c2) {
-
 		Vector2 d1 = q1 - p1; // Direction vector of segment S1.
 		Vector2 d2 = q2 - p2; // Direction vector of segment S2.
 		Vector2 r = p1 - p2;
@@ -80,8 +78,9 @@ public:
 				// clamp to segment S1. Else pick arbitrary s (here 0).
 				if (denom != 0.0) {
 					s = CLAMP((b * f - c * e) / denom, 0.0, 1.0);
-				} else
+				} else {
 					s = 0.0;
+				}
 				// Compute point on L2 closest to S1(s) using
 				// t = Dot((P1 + D1*s) - P2,D2) / Dot(D2,D2) = (b*s + f) / e
 				t = (b * s + f) / e;
@@ -104,7 +103,6 @@ public:
 	}
 
 	static void get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2, Vector3 &c1, Vector3 &c2) {
-
 // Do the function 'd' as defined by pb. I think is is dot product of some sort.
 #define d_of(m, n, o, p) ((m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z))
 
@@ -113,10 +111,18 @@ public:
 		real_t mub = (d_of(p1, q1, q2, q1) + mua * d_of(q2, q1, p2, p1)) / d_of(q2, q1, q2, q1);
 
 		// Clip the value between [0..1] constraining the solution to lie on the original curves.
-		if (mua < 0) mua = 0;
-		if (mub < 0) mub = 0;
-		if (mua > 1) mua = 1;
-		if (mub > 1) mub = 1;
+		if (mua < 0) {
+			mua = 0;
+		}
+		if (mub < 0) {
+			mub = 0;
+		}
+		if (mua > 1) {
+			mua = 1;
+		}
+		if (mub > 1) {
+			mub = 1;
+		}
 		c1 = p1.lerp(p2, mua);
 		c2 = q1.lerp(q2, mub);
 	}
@@ -157,22 +163,22 @@ public:
 		if (tN < 0.0) { // tc < 0 => the t=0 edge is visible.
 			tN = 0.0;
 			// Recompute sc for this edge.
-			if (-d < 0.0)
+			if (-d < 0.0) {
 				sN = 0.0;
-			else if (-d > a)
+			} else if (-d > a) {
 				sN = sD;
-			else {
+			} else {
 				sN = -d;
 				sD = a;
 			}
 		} else if (tN > tD) { // tc > 1 => the t=1 edge is visible.
 			tN = tD;
 			// Recompute sc for this edge.
-			if ((-d + b) < 0.0)
+			if ((-d + b) < 0.0) {
 				sN = 0;
-			else if ((-d + b) > a)
+			} else if ((-d + b) > a) {
 				sN = sD;
-			else {
+			} else {
 				sN = (-d + b);
 				sD = a;
 			}
@@ -187,120 +193,134 @@ public:
 		return dP.length(); // Return the closest distance.
 	}
 
-	static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = 0) {
+	static inline bool ray_intersects_triangle(const Vector3 &p_from, const Vector3 &p_dir, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = nullptr) {
 		Vector3 e1 = p_v1 - p_v0;
 		Vector3 e2 = p_v2 - p_v0;
 		Vector3 h = p_dir.cross(e2);
 		real_t a = e1.dot(h);
-		if (Math::is_zero_approx(a)) // Parallel test.
+		if (Math::is_zero_approx(a)) { // Parallel test.
 			return false;
+		}
 
 		real_t f = 1.0 / a;
 
 		Vector3 s = p_from - p_v0;
 		real_t u = f * s.dot(h);
 
-		if (u < 0.0 || u > 1.0)
+		if (u < 0.0 || u > 1.0) {
 			return false;
+		}
 
 		Vector3 q = s.cross(e1);
 
 		real_t v = f * p_dir.dot(q);
 
-		if (v < 0.0 || u + v > 1.0)
+		if (v < 0.0 || u + v > 1.0) {
 			return false;
+		}
 
 		// At this stage we can compute t to find out where
 		// the intersection point is on the line.
 		real_t t = f * e2.dot(q);
 
 		if (t > 0.00001) { // ray intersection
-			if (r_res)
+			if (r_res) {
 				*r_res = p_from + p_dir * t;
+			}
 			return true;
-		} else // This means that there is a line intersection but not a ray intersection.
+		} else { // This means that there is a line intersection but not a ray intersection.
 			return false;
+		}
 	}
 
-	static inline bool segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = 0) {
-
+	static inline bool segment_intersects_triangle(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2, Vector3 *r_res = nullptr) {
 		Vector3 rel = p_to - p_from;
 		Vector3 e1 = p_v1 - p_v0;
 		Vector3 e2 = p_v2 - p_v0;
 		Vector3 h = rel.cross(e2);
 		real_t a = e1.dot(h);
-		if (Math::is_zero_approx(a)) // Parallel test.
+		if (Math::is_zero_approx(a)) { // Parallel test.
 			return false;
+		}
 
 		real_t f = 1.0 / a;
 
 		Vector3 s = p_from - p_v0;
 		real_t u = f * s.dot(h);
 
-		if (u < 0.0 || u > 1.0)
+		if (u < 0.0 || u > 1.0) {
 			return false;
+		}
 
 		Vector3 q = s.cross(e1);
 
 		real_t v = f * rel.dot(q);
 
-		if (v < 0.0 || u + v > 1.0)
+		if (v < 0.0 || u + v > 1.0) {
 			return false;
+		}
 
 		// At this stage we can compute t to find out where
 		// the intersection point is on the line.
 		real_t t = f * e2.dot(q);
 
 		if (t > CMP_EPSILON && t <= 1.0) { // Ray intersection.
-			if (r_res)
+			if (r_res) {
 				*r_res = p_from + rel * t;
+			}
 			return true;
-		} else // This means that there is a line intersection but not a ray intersection.
+		} else { // This means that there is a line intersection but not a ray intersection.
 			return false;
+		}
 	}
 
-	static inline bool segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 *r_res = 0, Vector3 *r_norm = 0) {
-
+	static inline bool segment_intersects_sphere(const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr) {
 		Vector3 sphere_pos = p_sphere_pos - p_from;
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
-		if (rel_l < CMP_EPSILON)
+		if (rel_l < CMP_EPSILON) {
 			return false; // Both points are the same.
+		}
 		Vector3 normal = rel / rel_l;
 
 		real_t sphere_d = normal.dot(sphere_pos);
 
 		real_t ray_distance = sphere_pos.distance_to(normal * sphere_d);
 
-		if (ray_distance >= p_sphere_radius)
+		if (ray_distance >= p_sphere_radius) {
 			return false;
+		}
 
 		real_t inters_d2 = p_sphere_radius * p_sphere_radius - ray_distance * ray_distance;
 		real_t inters_d = sphere_d;
 
-		if (inters_d2 >= CMP_EPSILON)
+		if (inters_d2 >= CMP_EPSILON) {
 			inters_d -= Math::sqrt(inters_d2);
+		}
 
 		// Check in segment.
-		if (inters_d < 0 || inters_d > rel_l)
+		if (inters_d < 0 || inters_d > rel_l) {
 			return false;
+		}
 
 		Vector3 result = p_from + normal * inters_d;
 
-		if (r_res)
+		if (r_res) {
 			*r_res = result;
-		if (r_norm)
+		}
+		if (r_norm) {
 			*r_norm = (result - p_sphere_pos).normalized();
+		}
 
 		return true;
 	}
 
-	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = 0, Vector3 *r_norm = 0) {
-
+	static inline bool segment_intersects_cylinder(const Vector3 &p_from, const Vector3 &p_to, real_t p_height, real_t p_radius, Vector3 *r_res = nullptr, Vector3 *r_norm = nullptr) {
 		Vector3 rel = (p_to - p_from);
 		real_t rel_l = rel.length();
-		if (rel_l < CMP_EPSILON)
+		if (rel_l < CMP_EPSILON) {
 			return false; // Both points are the same.
+		}
 
 		// First check if they are parallel.
 		Vector3 normal = (rel / rel_l);
@@ -317,13 +337,15 @@ public:
 
 		real_t dist = z_dir.dot(p_from);
 
-		if (dist >= p_radius)
+		if (dist >= p_radius) {
 			return false; // Too far away.
+		}
 
 		// Convert to 2D.
 		real_t w2 = p_radius * p_radius - dist * dist;
-		if (w2 < CMP_EPSILON)
+		if (w2 < CMP_EPSILON) {
 			return false; // Avoid numerical error.
+		}
 		Size2 size(Math::sqrt(w2), p_height * 0.5);
 
 		Vector3 x_dir = z_dir.cross(Vector3(0, 0, 1)).normalized();
@@ -336,7 +358,6 @@ public:
 		int axis = -1;
 
 		for (int i = 0; i < 2; i++) {
-
 			real_t seg_from = from2D[i];
 			real_t seg_to = to2D[i];
 			real_t box_begin = -size[i];
@@ -344,17 +365,17 @@ public:
 			real_t cmin, cmax;
 
 			if (seg_from < seg_to) {
-
-				if (seg_from > box_end || seg_to < box_begin)
+				if (seg_from > box_end || seg_to < box_begin) {
 					return false;
+				}
 				real_t length = seg_to - seg_from;
 				cmin = (seg_from < box_begin) ? ((box_begin - seg_from) / length) : 0;
 				cmax = (seg_to > box_end) ? ((box_end - seg_from) / length) : 1;
 
 			} else {
-
-				if (seg_to > box_end || seg_from < box_begin)
+				if (seg_to > box_end || seg_from < box_begin) {
 					return false;
+				}
 				real_t length = seg_to - seg_from;
 				cmin = (seg_from > box_end) ? (box_end - seg_from) / length : 0;
 				cmax = (seg_to < box_begin) ? (box_begin - seg_from) / length : 1;
@@ -364,10 +385,12 @@ public:
 				min = cmin;
 				axis = i;
 			}
-			if (cmax < max)
+			if (cmax < max) {
 				max = cmax;
-			if (max < min)
+			}
+			if (max < min) {
 				return false;
+			}
 		}
 
 		// Convert to 3D again.
@@ -383,45 +406,47 @@ public:
 
 		res_normal.normalize();
 
-		if (r_res)
+		if (r_res) {
 			*r_res = result;
-		if (r_norm)
+		}
+		if (r_norm) {
 			*r_norm = res_normal;
+		}
 
 		return true;
 	}
 
 	static bool segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Plane *p_planes, int p_plane_count, Vector3 *p_res, Vector3 *p_norm) {
-
 		real_t min = -1e20, max = 1e20;
 
 		Vector3 rel = p_to - p_from;
 		real_t rel_l = rel.length();
 
-		if (rel_l < CMP_EPSILON)
+		if (rel_l < CMP_EPSILON) {
 			return false;
+		}
 
 		Vector3 dir = rel / rel_l;
 
 		int min_index = -1;
 
 		for (int i = 0; i < p_plane_count; i++) {
-
 			const Plane &p = p_planes[i];
 
 			real_t den = p.normal.dot(dir);
 
-			if (Math::abs(den) <= CMP_EPSILON)
+			if (Math::abs(den) <= CMP_EPSILON) {
 				continue; // Ignore parallel plane.
+			}
 
 			real_t dist = -p.distance_to(p_from) / den;
 
 			if (den > 0) {
 				// Backwards facing plane.
-				if (dist < max)
+				if (dist < max) {
 					max = dist;
+				}
 			} else {
-
 				// Front facing plane.
 				if (dist > min) {
 					min = dist;
@@ -430,42 +455,46 @@ public:
 			}
 		}
 
-		if (max <= min || min < 0 || min > rel_l || min_index == -1) // Exit conditions.
+		if (max <= min || min < 0 || min > rel_l || min_index == -1) { // Exit conditions.
 			return false; // No intersection.
+		}
 
-		if (p_res)
+		if (p_res) {
 			*p_res = p_from + dir * min;
-		if (p_norm)
+		}
+		if (p_norm) {
 			*p_norm = p_planes[min_index].normal;
+		}
 
 		return true;
 	}
 
 	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 *p_segment) {
-
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20)
+		if (l2 < 1e-20) {
 			return p_segment[0]; // Both points are the same, just give any.
+		}
 
 		real_t d = n.dot(p) / l2;
 
-		if (d <= 0.0)
+		if (d <= 0.0) {
 			return p_segment[0]; // Before first point.
-		else if (d >= 1.0)
+		} else if (d >= 1.0) {
 			return p_segment[1]; // After first point.
-		else
+		} else {
 			return p_segment[0] + n * d; // Inside.
+		}
 	}
 
 	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 *p_segment) {
-
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20)
+		if (l2 < 1e-20) {
 			return p_segment[0]; // Both points are the same, just give any.
+		}
 
 		real_t d = n.dot(p) / l2;
 
@@ -473,21 +502,22 @@ public:
 	}
 
 	static Vector2 get_closest_point_to_segment_2d(const Vector2 &p_point, const Vector2 *p_segment) {
-
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20)
+		if (l2 < 1e-20) {
 			return p_segment[0]; // Both points are the same, just give any.
+		}
 
 		real_t d = n.dot(p) / l2;
 
-		if (d <= 0.0)
+		if (d <= 0.0) {
 			return p_segment[0]; // Before first point.
-		else if (d >= 1.0)
+		} else if (d >= 1.0) {
 			return p_segment[1]; // After first point.
-		else
+		} else {
 			return p_segment[0] + n * d; // Inside.
+		}
 	}
 
 	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
@@ -497,18 +527,20 @@ public:
 
 		bool orientation = an.cross(bn) > 0;
 
-		if ((bn.cross(cn) > 0) != orientation) return false;
+		if ((bn.cross(cn) > 0) != orientation) {
+			return false;
+		}
 
 		return (cn.cross(an) > 0) == orientation;
 	}
 
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 *p_segment) {
-
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
 		real_t l2 = n.length_squared();
-		if (l2 < 1e-20)
+		if (l2 < 1e-20) {
 			return p_segment[0]; // Both points are the same, just give any.
+		}
 
 		real_t d = n.dot(p) / l2;
 
@@ -516,7 +548,6 @@ public:
 	}
 
 	static bool line_intersects_line_2d(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b, Vector2 &r_result) {
-
 		// See http://paulbourke.net/geometry/pointlineplane/
 
 		const real_t denom = p_dir_b.y * p_dir_a.x - p_dir_b.x * p_dir_a.y;
@@ -531,62 +562,68 @@ public:
 	}
 
 	static bool segment_intersects_segment_2d(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b, Vector2 *r_result) {
-
 		Vector2 B = p_to_a - p_from_a;
 		Vector2 C = p_from_b - p_from_a;
 		Vector2 D = p_to_b - p_from_a;
 
 		real_t ABlen = B.dot(B);
-		if (ABlen <= 0)
+		if (ABlen <= 0) {
 			return false;
+		}
 		Vector2 Bn = B / ABlen;
 		C = Vector2(C.x * Bn.x + C.y * Bn.y, C.y * Bn.x - C.x * Bn.y);
 		D = Vector2(D.x * Bn.x + D.y * Bn.y, D.y * Bn.x - D.x * Bn.y);
 
-		if ((C.y < 0 && D.y < 0) || (C.y >= 0 && D.y >= 0))
+		if ((C.y < 0 && D.y < 0) || (C.y >= 0 && D.y >= 0)) {
 			return false;
+		}
 
 		real_t ABpos = D.x + (C.x - D.x) * D.y / (D.y - C.y);
 
 		// Fail if segment C-D crosses line A-B outside of segment A-B.
-		if (ABpos < 0 || ABpos > 1.0)
+		if (ABpos < 0 || ABpos > 1.0) {
 			return false;
+		}
 
 		// (4) Apply the discovered position to line A-B in the original coordinate system.
-		if (r_result)
+		if (r_result) {
 			*r_result = p_from_a + B * ABpos;
+		}
 
 		return true;
 	}
 
 	static inline bool point_in_projected_triangle(const Vector3 &p_point, const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
-
 		Vector3 face_n = (p_v1 - p_v3).cross(p_v1 - p_v2);
 
 		Vector3 n1 = (p_point - p_v3).cross(p_point - p_v2);
 
-		if (face_n.dot(n1) < 0)
+		if (face_n.dot(n1) < 0) {
 			return false;
+		}
 
 		Vector3 n2 = (p_v1 - p_v3).cross(p_v1 - p_point);
 
-		if (face_n.dot(n2) < 0)
+		if (face_n.dot(n2) < 0) {
 			return false;
+		}
 
 		Vector3 n3 = (p_v1 - p_point).cross(p_v1 - p_v2);
 
-		if (face_n.dot(n3) < 0)
+		if (face_n.dot(n3) < 0) {
 			return false;
+		}
 
 		return true;
 	}
 
 	static inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle, const Vector3 &p_normal, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 &r_triangle_contact, Vector3 &r_sphere_contact) {
-
 		real_t d = p_normal.dot(p_sphere_pos) - p_normal.dot(p_triangle[0]);
 
-		if (d > p_sphere_radius || d < -p_sphere_radius) // Not touching the plane of the face, return.
+		if (d > p_sphere_radius || d < -p_sphere_radius) {
+			// Not touching the plane of the face, return.
 			return false;
+		}
 
 		Vector3 contact = p_sphere_pos - (p_normal * d);
 
@@ -604,7 +641,6 @@ public:
 		const Vector3 verts[4] = { p_triangle[0], p_triangle[1], p_triangle[2], p_triangle[0] }; // for() friendly
 
 		for (int i = 0; i < 3; i++) {
-
 			// Check edge cylinder.
 
 			Vector3 n1 = verts[i] - verts[i + 1];
@@ -629,7 +665,6 @@ public:
 			real_t sphere_at = n1.dot(n2);
 
 			if (sphere_at >= 0 && sphere_at < n1.dot(n1)) {
-
 				r_triangle_contact = p_sphere_pos - axis * (axis.dot(n2));
 				r_sphere_contact = p_sphere_pos - axis * p_sphere_radius;
 				// Point inside here.
@@ -639,7 +674,6 @@ public:
 			real_t r2 = p_sphere_radius * p_sphere_radius;
 
 			if (n2.length_squared() < r2) {
-
 				Vector3 n = (p_sphere_pos - verts[i + 1]).normalized();
 
 				r_triangle_contact = verts[i + 1];
@@ -662,12 +696,10 @@ public:
 	}
 
 	static inline bool is_point_in_circle(const Vector2 &p_point, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-
 		return p_point.distance_squared_to(p_circle_pos) <= p_circle_radius * p_circle_radius;
 	}
 
 	static real_t segment_intersects_circle(const Vector2 &p_from, const Vector2 &p_to, const Vector2 &p_circle_pos, real_t p_circle_radius) {
-
 		Vector2 line_vec = p_to - p_from;
 		Vector2 vec_to_line = p_from - p_circle_pos;
 
@@ -683,7 +715,9 @@ public:
 
 		// If the term we intend to square root is less than 0 then the answer won't be real,
 		// so it definitely won't be t in the range 0 to 1.
-		if (sqrtterm < 0) return -1;
+		if (sqrtterm < 0) {
+			return -1;
+		}
 
 		// If we can assume that the line segment starts outside the circle (e.g. for continuous time collision detection)
 		// then the following can be skipped and we can just return the equivalent of res1.
@@ -691,21 +725,25 @@ public:
 		real_t res1 = (-b - sqrtterm) / (2 * a);
 		real_t res2 = (-b + sqrtterm) / (2 * a);
 
-		if (res1 >= 0 && res1 <= 1) return res1;
-		if (res2 >= 0 && res2 <= 1) return res2;
+		if (res1 >= 0 && res1 <= 1) {
+			return res1;
+		}
+		if (res2 >= 0 && res2 <= 1) {
+			return res2;
+		}
 		return -1;
 	}
 
 	static inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane &p_plane) {
-
 		enum LocationCache {
 			LOC_INSIDE = 1,
 			LOC_BOUNDARY = 0,
 			LOC_OUTSIDE = -1
 		};
 
-		if (polygon.size() == 0)
+		if (polygon.size() == 0) {
 			return polygon;
+		}
 
 		int *location_cache = (int *)alloca(sizeof(int) * polygon.size());
 		int inside_count = 0;
@@ -727,11 +765,8 @@ public:
 		}
 
 		if (outside_count == 0) {
-
 			return polygon; // No changes.
-
 		} else if (inside_count == 0) {
-
 			return Vector<Vector3>(); // Empty.
 		}
 
@@ -791,49 +826,40 @@ public:
 	};
 
 	static Vector<Vector<Point2>> merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> clip_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> intersect_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> exclude_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
-
 		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
 	}
 
 	static Vector<Vector<Point2>> clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
 		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
 	}
 
 	static Vector<Vector<Point2>> intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
-
 		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
 	}
 
 	static Vector<Vector<Point2>> offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
-
 		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
 	}
 
 	static Vector<Vector<Point2>> offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-
 		ERR_FAIL_COND_V_MSG(p_end_type == END_POLYGON, Vector<Vector<Point2>>(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
 
 		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
 	}
 
 	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
-
 		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(p_points);
 		Vector<int> triangles;
 
@@ -846,17 +872,18 @@ public:
 	}
 
 	static Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon) {
-
 		Vector<int> triangles;
-		if (!Triangulate::triangulate(p_polygon, triangles))
+		if (!Triangulate::triangulate(p_polygon, triangles)) {
 			return Vector<int>(); //fail
+		}
 		return triangles;
 	}
 
 	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
-		if (c < 3)
+		if (c < 3) {
 			return false;
+		}
 		const Vector2 *p = p_polygon.ptr();
 		real_t sum = 0;
 		for (int i = 0; i < c; i++) {
@@ -871,8 +898,9 @@ public:
 	// Alternate implementation that should be faster.
 	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
 		int c = p_polygon.size();
-		if (c < 3)
+		if (c < 3) {
 			return false;
+		}
 		const Vector2 *p = p_polygon.ptr();
 		Vector2 further_away(-1e20, -1e20);
 		Vector2 further_away_opposite(1e20, 1e20);
@@ -905,7 +933,6 @@ public:
 	static Vector<Face3> wrap_geometry(Vector<Face3> p_array, real_t *p_error = nullptr);
 
 	struct MeshData {
-
 		struct Face {
 			Plane plane;
 			Vector<int> indices;
@@ -914,7 +941,6 @@ public:
 		Vector<Face> faces;
 
 		struct Edge {
-
 			int a, b;
 		};
 
@@ -926,7 +952,6 @@ public:
 	};
 
 	_FORCE_INLINE_ static int get_uv84_normal_bit(const Vector3 &p_vector) {
-
 		int lat = Math::fast_ftoi(Math::floor(Math::acos(p_vector.dot(Vector3(0, 1, 0))) * 4.0 / Math_PI + 0.5));
 
 		if (lat == 0) {
@@ -941,33 +966,35 @@ public:
 	}
 
 	_FORCE_INLINE_ static int get_uv84_normal_bit_neighbors(int p_idx) {
-
 		if (p_idx == 24) {
 			return 1 | 2 | 4 | 8;
 		} else if (p_idx == 25) {
 			return (1 << 23) | (1 << 22) | (1 << 21) | (1 << 20);
 		} else {
-
 			int ret = 0;
-			if ((p_idx % 8) == 0)
+			if ((p_idx % 8) == 0) {
 				ret |= (1 << (p_idx + 7));
-			else
+			} else {
 				ret |= (1 << (p_idx - 1));
-			if ((p_idx % 8) == 7)
+			}
+			if ((p_idx % 8) == 7) {
 				ret |= (1 << (p_idx - 7));
-			else
+			} else {
 				ret |= (1 << (p_idx + 1));
+			}
 
 			int mask = ret | (1 << p_idx);
-			if (p_idx < 8)
+			if (p_idx < 8) {
 				ret |= 24;
-			else
+			} else {
 				ret |= mask >> 8;
+			}
 
-			if (p_idx >= 16)
+			if (p_idx >= 16) {
 				ret |= 25;
-			else
+			} else {
 				ret |= mask << 8;
+			}
 
 			return ret;
 		}
@@ -989,15 +1016,17 @@ public:
 
 		// Build lower hull.
 		for (int i = 0; i < n; ++i) {
-			while (k >= 2 && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0)
+			while (k >= 2 && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0) {
 				k--;
+			}
 			H.write[k++] = P[i];
 		}
 
 		// Build upper hull.
 		for (int i = n - 2, t = k + 1; i >= 0; i--) {
-			while (k >= t && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0)
+			while (k >= t && vec2_cross(H[k - 2], H[k - 1], P[i]) <= 0) {
 				k--;
+			}
 			H.write[k++] = P[i];
 		}
 
@@ -1015,6 +1044,263 @@ public:
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 
 	static Vector<Vector3> compute_convex_mesh_points(const Plane *p_planes, int p_plane_count);
+
+#define FINDMINMAX(x0, x1, x2, min, max) \
+	min = max = x0;                      \
+	if (x1 < min) {                      \
+		min = x1;                        \
+	}                                    \
+	if (x1 > max) {                      \
+		max = x1;                        \
+	}                                    \
+	if (x2 < min) {                      \
+		min = x2;                        \
+	}                                    \
+	if (x2 > max) {                      \
+		max = x2;                        \
+	}
+
+	_FORCE_INLINE_ static bool planeBoxOverlap(Vector3 normal, float d, Vector3 maxbox) {
+		int q;
+		Vector3 vmin, vmax;
+		for (q = 0; q <= 2; q++) {
+			if (normal[q] > 0.0f) {
+				vmin[q] = -maxbox[q];
+				vmax[q] = maxbox[q];
+			} else {
+				vmin[q] = maxbox[q];
+				vmax[q] = -maxbox[q];
+			}
+		}
+		if (normal.dot(vmin) + d > 0.0f) {
+			return false;
+		}
+		if (normal.dot(vmax) + d >= 0.0f) {
+			return true;
+		}
+
+		return false;
+	}
+
+/*======================== X-tests ========================*/
+#define AXISTEST_X01(a, b, fa, fb)                 \
+	p0 = a * v0.y - b * v0.z;                      \
+	p2 = a * v2.y - b * v2.z;                      \
+	if (p0 < p2) {                                 \
+		min = p0;                                  \
+		max = p2;                                  \
+	} else {                                       \
+		min = p2;                                  \
+		max = p0;                                  \
+	}                                              \
+	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
+	if (min > rad || max < -rad) {                 \
+		return false;                              \
+	}
+
+#define AXISTEST_X2(a, b, fa, fb)                  \
+	p0 = a * v0.y - b * v0.z;                      \
+	p1 = a * v1.y - b * v1.z;                      \
+	if (p0 < p1) {                                 \
+		min = p0;                                  \
+		max = p1;                                  \
+	} else {                                       \
+		min = p1;                                  \
+		max = p0;                                  \
+	}                                              \
+	rad = fa * boxhalfsize.y + fb * boxhalfsize.z; \
+	if (min > rad || max < -rad) {                 \
+		return false;                              \
+	}
+
+/*======================== Y-tests ========================*/
+#define AXISTEST_Y02(a, b, fa, fb)                 \
+	p0 = -a * v0.x + b * v0.z;                     \
+	p2 = -a * v2.x + b * v2.z;                     \
+	if (p0 < p2) {                                 \
+		min = p0;                                  \
+		max = p2;                                  \
+	} else {                                       \
+		min = p2;                                  \
+		max = p0;                                  \
+	}                                              \
+	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
+	if (min > rad || max < -rad) {                 \
+		return false;                              \
+	}
+
+#define AXISTEST_Y1(a, b, fa, fb)                  \
+	p0 = -a * v0.x + b * v0.z;                     \
+	p1 = -a * v1.x + b * v1.z;                     \
+	if (p0 < p1) {                                 \
+		min = p0;                                  \
+		max = p1;                                  \
+	} else {                                       \
+		min = p1;                                  \
+		max = p0;                                  \
+	}                                              \
+	rad = fa * boxhalfsize.x + fb * boxhalfsize.z; \
+	if (min > rad || max < -rad) {                 \
+		return false;                              \
+	}
+
+	/*======================== Z-tests ========================*/
+
+#define AXISTEST_Z12(a, b, fa, fb)                 \
+	p1 = a * v1.x - b * v1.y;                      \
+	p2 = a * v2.x - b * v2.y;                      \
+	if (p2 < p1) {                                 \
+		min = p2;                                  \
+		max = p1;                                  \
+	} else {                                       \
+		min = p1;                                  \
+		max = p2;                                  \
+	}                                              \
+	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
+	if (min > rad || max < -rad) {                 \
+		return false;                              \
+	}
+
+#define AXISTEST_Z0(a, b, fa, fb)                  \
+	p0 = a * v0.x - b * v0.y;                      \
+	p1 = a * v1.x - b * v1.y;                      \
+	if (p0 < p1) {                                 \
+		min = p0;                                  \
+		max = p1;                                  \
+	} else {                                       \
+		min = p1;                                  \
+		max = p0;                                  \
+	}                                              \
+	rad = fa * boxhalfsize.x + fb * boxhalfsize.y; \
+	if (min > rad || max < -rad) {                 \
+		return false;                              \
+	}
+
+	_FORCE_INLINE_ static bool triangle_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalfsize, const Vector3 *triverts) {
+		/*    use separating axis theorem to test overlap between triangle and box */
+		/*    need to test for overlap in these directions: */
+		/*    1) the {x,y,z}-directions (actually, since we use the AABB of the triangle */
+		/*       we do not even need to test these) */
+		/*    2) normal of the triangle */
+		/*    3) crossproduct(edge from tri, {x,y,z}-directin) */
+		/*       this gives 3x3=9 more tests */
+		Vector3 v0, v1, v2;
+		float min, max, d, p0, p1, p2, rad, fex, fey, fez;
+		Vector3 normal, e0, e1, e2;
+
+		/* This is the fastest branch on Sun */
+		/* move everything so that the boxcenter is in (0,0,0) */
+
+		v0 = triverts[0] - boxcenter;
+		v1 = triverts[1] - boxcenter;
+		v2 = triverts[2] - boxcenter;
+
+		/* compute triangle edges */
+		e0 = v1 - v0; /* tri edge 0 */
+		e1 = v2 - v1; /* tri edge 1 */
+		e2 = v0 - v2; /* tri edge 2 */
+
+		/* Bullet 3:  */
+		/*  test the 9 tests first (this was faster) */
+		fex = Math::abs(e0.x);
+		fey = Math::abs(e0.y);
+		fez = Math::abs(e0.z);
+		AXISTEST_X01(e0.z, e0.y, fez, fey);
+		AXISTEST_Y02(e0.z, e0.x, fez, fex);
+		AXISTEST_Z12(e0.y, e0.x, fey, fex);
+
+		fex = Math::abs(e1.x);
+		fey = Math::abs(e1.y);
+		fez = Math::abs(e1.z);
+		AXISTEST_X01(e1.z, e1.y, fez, fey);
+		AXISTEST_Y02(e1.z, e1.x, fez, fex);
+		AXISTEST_Z0(e1.y, e1.x, fey, fex);
+
+		fex = Math::abs(e2.x);
+		fey = Math::abs(e2.y);
+		fez = Math::abs(e2.z);
+		AXISTEST_X2(e2.z, e2.y, fez, fey);
+		AXISTEST_Y1(e2.z, e2.x, fez, fex);
+		AXISTEST_Z12(e2.y, e2.x, fey, fex);
+
+		/* Bullet 1: */
+		/*  first test overlap in the {x,y,z}-directions */
+		/*  find min, max of the triangle each direction, and test for overlap in */
+		/*  that direction -- this is equivalent to testing a minimal AABB around */
+		/*  the triangle against the AABB */
+
+		/* test in X-direction */
+		FINDMINMAX(v0.x, v1.x, v2.x, min, max);
+		if (min > boxhalfsize.x || max < -boxhalfsize.x) {
+			return false;
+		}
+
+		/* test in Y-direction */
+		FINDMINMAX(v0.y, v1.y, v2.y, min, max);
+		if (min > boxhalfsize.y || max < -boxhalfsize.y) {
+			return false;
+		}
+
+		/* test in Z-direction */
+		FINDMINMAX(v0.z, v1.z, v2.z, min, max);
+		if (min > boxhalfsize.z || max < -boxhalfsize.z) {
+			return false;
+		}
+
+		/* Bullet 2: */
+		/*  test if the box intersects the plane of the triangle */
+		/*  compute plane equation of triangle: normal*x+d=0 */
+		normal = e0.cross(e1);
+		d = -normal.dot(v0); /* plane eq: normal.x+d=0 */
+		return planeBoxOverlap(normal, d, boxhalfsize); /* if true, box and triangle overlaps */
+	}
+
+	static Vector<Point2i> pack_rects(const Vector<Size2i> &p_sizes, const Size2i &p_atlas_size);
+	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);
+
+	static Vector<uint32_t> generate_edf(const Vector<bool> &p_voxels, const Vector3i &p_size, bool p_negative);
+	static Vector<int8_t> generate_sdf8(const Vector<uint32_t> &p_positive, const Vector<uint32_t> &p_negative);
+
+	static Vector3 triangle_get_barycentric_coords(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, const Vector3 &p_pos) {
+		Vector3 v0 = p_b - p_a;
+		Vector3 v1 = p_c - p_a;
+		Vector3 v2 = p_pos - p_a;
+
+		float d00 = v0.dot(v0);
+		float d01 = v0.dot(v1);
+		float d11 = v1.dot(v1);
+		float d20 = v2.dot(v0);
+		float d21 = v2.dot(v1);
+		float denom = (d00 * d11 - d01 * d01);
+		if (denom == 0) {
+			return Vector3(); //invalid triangle, return empty
+		}
+		float v = (d11 * d20 - d01 * d21) / denom;
+		float w = (d00 * d21 - d01 * d20) / denom;
+		float u = 1.0f - v - w;
+		return Vector3(u, v, w);
+	}
+
+	static Color tetrahedron_get_barycentric_coords(const Vector3 &p_a, const Vector3 &p_b, const Vector3 &p_c, const Vector3 &p_d, const Vector3 &p_pos) {
+		Vector3 vap = p_pos - p_a;
+		Vector3 vbp = p_pos - p_b;
+
+		Vector3 vab = p_b - p_a;
+		Vector3 vac = p_c - p_a;
+		Vector3 vad = p_d - p_a;
+
+		Vector3 vbc = p_c - p_b;
+		Vector3 vbd = p_d - p_b;
+		// ScTP computes the scalar triple product
+#define STP(m_a, m_b, m_c) ((m_a).dot((m_b).cross((m_c))))
+		float va6 = STP(vbp, vbd, vbc);
+		float vb6 = STP(vap, vac, vad);
+		float vc6 = STP(vap, vad, vab);
+		float vd6 = STP(vap, vab, vac);
+		float v6 = 1 / STP(vab, vac, vad);
+		return Color(va6 * v6, vb6 * v6, vc6 * v6, vd6 * v6);
+#undef STP
+	}
 
 private:
 	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);

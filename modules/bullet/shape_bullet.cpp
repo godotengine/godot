@@ -46,8 +46,7 @@
 	@author AndreaCatania
 */
 
-ShapeBullet::ShapeBullet() :
-		margin(0.04) {}
+ShapeBullet::ShapeBullet() {}
 
 ShapeBullet::~ShapeBullet() {}
 
@@ -81,7 +80,9 @@ void ShapeBullet::add_owner(ShapeOwnerBullet *p_owner) {
 
 void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFromThisBody) {
 	Map<ShapeOwnerBullet *, int>::Element *E = owners.find(p_owner);
-	if (!E) return;
+	if (!E) {
+		return;
+	}
 	E->get()--;
 	if (p_permanentlyFromThisBody || 0 >= E->get()) {
 		owners.erase(E);
@@ -89,7 +90,6 @@ void ShapeBullet::remove_owner(ShapeOwnerBullet *p_owner, bool p_permanentlyFrom
 }
 
 bool ShapeBullet::is_owner(ShapeOwnerBullet *p_owner) const {
-
 	return owners.has(p_owner);
 }
 
@@ -151,8 +151,9 @@ btHeightfieldTerrainShape *ShapeBullet::create_shape_height_field(Vector<real_t>
 	btHeightfieldTerrainShape *heightfield = bulletnew(btHeightfieldTerrainShape(p_width, p_depth, heightsPtr, ignoredHeightScale, p_min_height, p_max_height, YAxis, PHY_FLOAT, flipQuadEdges));
 
 	// The shape can be created without params when you do PhysicsServer3D.shape_create(PhysicsServer3D.SHAPE_HEIGHTMAP)
-	if (heightsPtr)
+	if (heightsPtr) {
 		heightfield->buildAccelerator(16);
+	}
 
 	return heightfield;
 }
@@ -349,9 +350,10 @@ void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
 }
 
 btCollisionShape *ConvexPolygonShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
-	if (!vertices.size())
+	if (!vertices.size()) {
 		// This is necessary since 0 vertices
 		return prepare(ShapeBullet::create_shape_empty());
+	}
 	btCollisionShape *cs(ShapeBullet::create_shape_convex(vertices));
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
@@ -361,8 +363,7 @@ btCollisionShape *ConvexPolygonShapeBullet::create_bt_shape(const btVector3 &p_i
 /* Concave polygon */
 
 ConcavePolygonShapeBullet::ConcavePolygonShapeBullet() :
-		ShapeBullet(),
-		meshShape(nullptr) {}
+		ShapeBullet() {}
 
 ConcavePolygonShapeBullet::~ConcavePolygonShapeBullet() {
 	if (meshShape) {
@@ -395,7 +396,6 @@ void ConcavePolygonShapeBullet::setup(Vector<Vector3> p_faces) {
 	}
 	int src_face_count = faces.size();
 	if (0 < src_face_count) {
-
 		// It counts the faces and assert the array contains the correct number of vertices.
 		ERR_FAIL_COND(src_face_count % 3);
 
@@ -433,9 +433,10 @@ void ConcavePolygonShapeBullet::setup(Vector<Vector3> p_faces) {
 
 btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_extra_edge) {
 	btCollisionShape *cs = ShapeBullet::create_shape_concave(meshShape);
-	if (!cs)
+	if (!cs) {
 		// This is necessary since if 0 faces the creation of concave return null
 		cs = ShapeBullet::create_shape_empty();
+	}
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);
 	cs->setMargin(0);
@@ -458,10 +459,12 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	real_t l_max_height = 0.0;
 
 	// If specified, min and max height will be used as precomputed values
-	if (d.has("min_height"))
+	if (d.has("min_height")) {
 		l_min_height = d["min_height"];
-	if (d.has("max_height"))
+	}
+	if (d.has("max_height")) {
 		l_max_height = d["max_height"];
+	}
 
 	ERR_FAIL_COND(l_min_height > l_max_height);
 
@@ -514,7 +517,6 @@ void HeightMapShapeBullet::set_data(const Variant &p_data) {
 
 	// Compute min and max heights if not specified.
 	if (!d.has("min_height") && !d.has("max_height")) {
-
 		const real_t *r = l_heights.ptr();
 		int heights_size = l_heights.size();
 
@@ -562,18 +564,14 @@ btCollisionShape *HeightMapShapeBullet::create_bt_shape(const btVector3 &p_impli
 
 /* Ray shape */
 RayShapeBullet::RayShapeBullet() :
-		ShapeBullet(),
-		length(1),
-		slips_on_slope(false) {}
+		ShapeBullet() {}
 
 void RayShapeBullet::set_data(const Variant &p_data) {
-
 	Dictionary d = p_data;
 	setup(d["length"], d["slips_on_slope"]);
 }
 
 Variant RayShapeBullet::get_data() const {
-
 	Dictionary d;
 	d["length"] = length;
 	d["slips_on_slope"] = slips_on_slope;

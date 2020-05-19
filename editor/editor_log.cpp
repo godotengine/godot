@@ -38,10 +38,10 @@
 #include "scene/resources/dynamic_font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
-
 	EditorLog *self = (EditorLog *)p_self;
-	if (self->current != Thread::get_caller_id())
+	if (self->current != Thread::get_caller_id()) {
 		return;
+	}
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
@@ -58,29 +58,27 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 }
 
 void EditorLog::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		//button->set_icon(get_icon("Console","EditorIcons"));
 		log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
+		log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<DynamicFont> df_output_code = get_theme_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
 			if (log != nullptr) {
 				log->add_theme_font_override("normal_font", get_theme_font("output_source", "EditorFonts"));
+				log->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 			}
 		}
 	}
 }
 
 void EditorLog::_clear_request() {
-
 	log->clear();
 	tool_button->set_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
-
 	log->selection_copy();
 }
 
@@ -93,7 +91,6 @@ void EditorLog::copy() {
 }
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
-
 	log->add_newline();
 
 	bool restore = p_type != MSG_TYPE_STD;
@@ -122,8 +119,9 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 
 	log->add_text(p_msg);
 
-	if (restore)
+	if (restore) {
 		log->pop();
+	}
 }
 
 void EditorLog::set_tool_button(ToolButton *p_tool_button) {
@@ -131,19 +129,16 @@ void EditorLog::set_tool_button(ToolButton *p_tool_button) {
 }
 
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
-
 	EditorLog *self = (EditorLog *)p_self;
 	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
 void EditorLog::_bind_methods() {
-
 	ADD_SIGNAL(MethodInfo("clear_request"));
 	ADD_SIGNAL(MethodInfo("copy_request"));
 }
 
 EditorLog::EditorLog() {
-
 	VBoxContainer *vb = this;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -187,7 +182,6 @@ EditorLog::EditorLog() {
 }
 
 void EditorLog::deinit() {
-
 	remove_error_handler(&eh);
 }
 

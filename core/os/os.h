@@ -42,21 +42,20 @@
 #include <stdarg.h>
 
 class OS {
-
 	static OS *singleton;
 	String _execpath;
 	List<String> _cmdline;
-	bool _keep_screen_on;
-	bool low_processor_usage_mode;
-	int low_processor_usage_mode_sleep_usec;
-	bool _verbose_stdout;
+	bool _keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
+	bool low_processor_usage_mode = false;
+	int low_processor_usage_mode_sleep_usec = 10000;
+	bool _verbose_stdout = false;
 	String _local_clipboard;
 	uint64_t _msec_splash;
-	bool _no_window;
-	int _exit_code;
+	bool _no_window = false;
+	int _exit_code = 0;
 	int _orientation;
-	bool _allow_hidpi;
-	bool _allow_layered;
+	bool _allow_hidpi = false;
+	bool _allow_layered = false;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
 	bool _disable_wintab;
@@ -65,9 +64,9 @@ class OS {
 
 	void *_stack_bottom;
 
-	CompositeLogger *_logger;
+	CompositeLogger *_logger = nullptr;
 
-	bool restart_on_exit;
+	bool restart_on_exit = false;
 	List<String> restart_commandline;
 
 protected:
@@ -87,8 +86,8 @@ public:
 protected:
 	friend class Main;
 
-	HasServerFeatureCallback has_server_feature_callback;
-	RenderThreadMode _render_thread_mode;
+	HasServerFeatureCallback has_server_feature_callback = nullptr;
+	RenderThreadMode _render_thread_mode = RENDER_THREAD_SAFE;
 
 	// functions used by main to initialize/deinitialize the OS
 	void add_logger(Logger *p_logger);
@@ -185,7 +184,6 @@ public:
 	};
 
 	struct Date {
-
 		int year;
 		Month month;
 		int day;
@@ -194,7 +192,6 @@ public:
 	};
 
 	struct Time {
-
 		int hour;
 		int min;
 		int sec;

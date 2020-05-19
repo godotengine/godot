@@ -193,6 +193,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/immediate_geometry_3d.h"
 #include "scene/3d/light_3d.h"
+#include "scene/3d/lightmap_probe.h"
 #include "scene/3d/listener_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
@@ -225,8 +226,8 @@ static Ref<ResourceFormatLoaderText> resource_loader_text;
 
 static Ref<ResourceFormatLoaderDynamicFont> resource_loader_dynamic_font;
 
-static Ref<ResourceFormatLoaderStreamTexture> resource_loader_stream_texture;
-static Ref<ResourceFormatLoaderTextureLayered> resource_loader_texture_layered;
+static Ref<ResourceFormatLoaderStreamTexture2D> resource_loader_stream_texture;
+static Ref<ResourceFormatLoaderStreamTextureLayered> resource_loader_texture_layered;
 
 static Ref<ResourceFormatLoaderBMFont> resource_loader_bmfont;
 
@@ -234,7 +235,6 @@ static Ref<ResourceFormatSaverShader> resource_saver_shader;
 static Ref<ResourceFormatLoaderShader> resource_loader_shader;
 
 void register_scene_types() {
-
 	SceneStringNames::create();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -432,8 +432,10 @@ void register_scene_types() {
 	ClassDB::register_class<Decal>();
 	ClassDB::register_class<GIProbe>();
 	ClassDB::register_class<GIProbeData>();
-	//ClassDB::register_class<BakedLightmap>();
-	//ClassDB::register_class<BakedLightmapData>();
+	ClassDB::register_class<BakedLightmap>();
+	ClassDB::register_class<BakedLightmapData>();
+	ClassDB::register_class<LightmapProbe>();
+	ClassDB::register_virtual_class<Lightmapper>();
 	ClassDB::register_class<GPUParticles3D>();
 	ClassDB::register_class<CPUParticles3D>();
 	ClassDB::register_class<Position3D>();
@@ -675,7 +677,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Texture>();
 	ClassDB::register_virtual_class<Texture2D>();
 	ClassDB::register_class<Sky>();
-	ClassDB::register_class<StreamTexture>();
+	ClassDB::register_class<StreamTexture2D>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
 	ClassDB::register_class<MeshTexture>();
@@ -686,9 +688,15 @@ void register_scene_types() {
 	ClassDB::register_class<AnimatedTexture>();
 	ClassDB::register_class<CameraTexture>();
 	ClassDB::register_virtual_class<TextureLayered>();
+	ClassDB::register_virtual_class<ImageTextureLayered>();
 	ClassDB::register_class<Cubemap>();
 	ClassDB::register_class<CubemapArray>();
 	ClassDB::register_class<Texture2DArray>();
+	ClassDB::register_virtual_class<StreamTextureLayered>();
+	ClassDB::register_class<StreamCubemap>();
+	ClassDB::register_class<StreamCubemapArray>();
+	ClassDB::register_class<StreamTexture2DArray>();
+
 	ClassDB::register_class<Animation>();
 	ClassDB::register_virtual_class<Font>();
 	ClassDB::register_class<BitmapFont>();
@@ -867,6 +875,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarOp", "VisualShaderNodeFloatOp");
 	ClassDB::add_compatibility_class("VisualShaderNodeScalarUniform", "VisualShaderNodeFloatUniform");
 	ClassDB::add_compatibility_class("World", "World3D");
+	ClassDB::add_compatibility_class("StreamTexture", "StreamTexture2D");
 
 #endif
 
@@ -912,7 +921,6 @@ void register_scene_types() {
 }
 
 void unregister_scene_types() {
-
 	SceneDebugger::deinitialize();
 	clear_default_theme();
 

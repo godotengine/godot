@@ -38,28 +38,23 @@
 #include <stdlib.h>
 
 void *operator new(size_t p_size, const char *p_description) {
-
 	return Memory::alloc_static(p_size, false);
 }
 
 void *operator new(size_t p_size, void *(*p_allocfunc)(size_t p_size)) {
-
 	return p_allocfunc(p_size);
 }
 
 #ifdef _MSC_VER
 void operator delete(void *p_mem, const char *p_description) {
-
 	CRASH_NOW_MSG("Call to placement delete should not happen.");
 }
 
 void operator delete(void *p_mem, void *(*p_allocfunc)(size_t p_size)) {
-
 	CRASH_NOW_MSG("Call to placement delete should not happen.");
 }
 
 void operator delete(void *p_mem, void *p_pointer, size_t check, const char *p_description) {
-
 	CRASH_NOW_MSG("Call to placement delete should not happen.");
 }
 #endif
@@ -72,7 +67,6 @@ uint64_t Memory::max_usage = 0;
 uint64_t Memory::alloc_count = 0;
 
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
-
 #ifdef DEBUG_ENABLED
 	bool prepad = true;
 #else
@@ -102,7 +96,6 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 }
 
 void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
-
 	if (p_memory == nullptr) {
 		return alloc_static(p_bytes, p_pad_align);
 	}
@@ -144,7 +137,6 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 			return mem + PAD_ALIGN;
 		}
 	} else {
-
 		mem = (uint8_t *)realloc(mem, p_bytes);
 
 		ERR_FAIL_COND_V(mem == nullptr && p_bytes > 0, nullptr);
@@ -154,7 +146,6 @@ void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 }
 
 void Memory::free_static(void *p_ptr, bool p_pad_align) {
-
 	ERR_FAIL_COND(p_ptr == nullptr);
 
 	uint8_t *mem = (uint8_t *)p_ptr;
@@ -177,13 +168,11 @@ void Memory::free_static(void *p_ptr, bool p_pad_align) {
 
 		free(mem);
 	} else {
-
 		free(mem);
 	}
 }
 
 uint64_t Memory::get_mem_available() {
-
 	return -1; // 0xFFFF...
 }
 
@@ -204,8 +193,6 @@ uint64_t Memory::get_mem_max_usage() {
 }
 
 _GlobalNil::_GlobalNil() {
-
-	color = 1;
 	left = this;
 	right = this;
 	parent = this;

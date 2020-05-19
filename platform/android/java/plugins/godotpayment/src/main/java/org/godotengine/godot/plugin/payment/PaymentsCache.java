@@ -34,7 +34,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class PaymentsCache {
-
 	public Context context;
 
 	public PaymentsCache(Context context) {

@@ -37,7 +37,6 @@
 class SkeletonIK3D;
 
 class SkeletonIK3DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(SkeletonIK3DEditorPlugin, EditorPlugin);
 
 	SkeletonIK3D *skeleton_ik;

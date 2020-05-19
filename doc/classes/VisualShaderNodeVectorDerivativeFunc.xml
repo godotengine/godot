@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorDerivativeFunc" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Calculates a vector derivative within the visual shader graph.
 	</brief_description>
 	<description>
+		This node is only available in [code]Fragment[/code] and [code]Light[/code] visual shaders.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,14 +12,18 @@
 	</methods>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeVectorDerivativeFunc.Function" default="0">
+			A derivative type. See [enum Function] for options.
 		</member>
 	</members>
 	<constants>
 		<constant name="FUNC_SUM" value="0" enum="Function">
+			Sum of absolute derivative in [code]x[/code] and [code]y[/code].
 		</constant>
 		<constant name="FUNC_X" value="1" enum="Function">
+			Derivative in [code]x[/code] using local differencing.
 		</constant>
 		<constant name="FUNC_Y" value="2" enum="Function">
+			Derivative in [code]y[/code] using local differencing.
 		</constant>
 	</constants>
 </class>

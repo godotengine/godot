@@ -35,7 +35,6 @@
 
 class Camera3D;
 class VisibilityNotifier3D : public Node3D {
-
 	GDCLASS(VisibilityNotifier3D, Node3D);
 
 	Set<Camera3D *> cameras;
@@ -62,7 +61,6 @@ public:
 };
 
 class VisibilityEnabler3D : public VisibilityNotifier3D {
-
 	GDCLASS(VisibilityEnabler3D, VisibilityNotifier3D);
 
 public:

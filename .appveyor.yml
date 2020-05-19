@@ -29,7 +29,9 @@ cache:
 
 install:
   - SET "PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-  - pip install scons==3.1.2
+  - pip install -U wheel  # needed for pip install scons to work, otherwise a flag is missing
+  - pip install scons # use stable scons
+  - if defined VS call "%VS%" %ARCH%  # if defined - so we can also use mingw
 
 before_build:
   - echo %GD_PLATFORM%
@@ -39,3 +41,15 @@ before_build:
 
 build_script:
   - scons platform=%GD_PLATFORM% target=%TARGET% tools=%TOOLS% %OPTIONS% %EXTRA_ARGS%
+
+after_build:
+  - git rev-parse --short=9 HEAD > VERSION_HASH.txt
+  - set /P VERSION_HASH= < VERSION_HASH.txt
+  - cd bin
+  - mv godot.windows.opt.tools.64.exe godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.exe
+  - 7z a -mx9 godot_%APPVEYOR_REPO_BRANCH%-%VERSION_HASH%_win64.zip *.exe
+  
+artifacts:
+  - path: bin/godot_${APPVEYOR_REPO_BRANCH}-${VERSION_HASH}_win64.zip
+    name: Win64 release_debug editor build
+    type: zip

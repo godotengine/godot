@@ -36,12 +36,12 @@
 #include "core/math/transform_2d.h"
 #include "core/object.h"
 #include "core/rid.h"
+#include "core/typed_array.h"
 #include "core/variant.h"
 #include "servers/display_server.h"
 #include "servers/rendering/shader_language.h"
 
 class RenderingServer : public Object {
-
 	GDCLASS(RenderingServer, Object);
 
 	static RenderingServer *singleton;
@@ -106,7 +106,7 @@ public:
 
 	//these two APIs can be used together or in combination with the others.
 	virtual RID texture_2d_placeholder_create() = 0;
-	virtual RID texture_2d_layered_placeholder_create() = 0;
+	virtual RID texture_2d_layered_placeholder_create(TextureLayeredType p_layered_type) = 0;
 	virtual RID texture_3d_placeholder_create() = 0;
 
 	virtual Ref<Image> texture_2d_get(RID p_texture) const = 0;
@@ -243,7 +243,6 @@ public:
 	};
 
 	struct SurfaceData {
-
 		PrimitiveType primitive = PRIMITIVE_MAX;
 
 		uint32_t format = 0;
@@ -522,19 +521,20 @@ public:
 	virtual void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) = 0;
 	virtual float gi_probe_get_anisotropy_strength(RID p_gi_probe) const = 0;
 
-	/* LIGHTMAP CAPTURE */
+	/* LIGHTMAP */
 
-	virtual RID lightmap_capture_create() = 0;
-	virtual void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) = 0;
-	virtual AABB lightmap_capture_get_bounds(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree(RID p_capture, const Vector<uint8_t> &p_octree) = 0;
-	virtual void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) = 0;
-	virtual Transform lightmap_capture_get_octree_cell_transform(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_octree_cell_subdiv(RID p_capture, int p_subdiv) = 0;
-	virtual int lightmap_capture_get_octree_cell_subdiv(RID p_capture) const = 0;
-	virtual Vector<uint8_t> lightmap_capture_get_octree(RID p_capture) const = 0;
-	virtual void lightmap_capture_set_energy(RID p_capture, float p_energy) = 0;
-	virtual float lightmap_capture_get_energy(RID p_capture) const = 0;
+	virtual RID lightmap_create() = 0;
+
+	virtual void lightmap_set_textures(RID p_lightmap, RID p_light, bool p_uses_spherical_haromics) = 0;
+	virtual void lightmap_set_probe_bounds(RID p_lightmap, const AABB &p_bounds) = 0;
+	virtual void lightmap_set_probe_interior(RID p_lightmap, bool p_interior) = 0;
+	virtual void lightmap_set_probe_capture_data(RID p_lightmap, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree) = 0;
+	virtual PackedVector3Array lightmap_get_probe_capture_points(RID p_lightmap) const = 0;
+	virtual PackedColorArray lightmap_get_probe_capture_sh(RID p_lightmap) const = 0;
+	virtual PackedInt32Array lightmap_get_probe_capture_tetrahedra(RID p_lightmap) const = 0;
+	virtual PackedInt32Array lightmap_get_probe_capture_bsp_tree(RID p_lightmap) const = 0;
+
+	virtual void lightmap_set_probe_capture_update_speed(float p_speed) = 0;
 
 	/* PARTICLES API */
 
@@ -713,6 +713,7 @@ public:
 	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
 	virtual void sky_set_mode(RID p_sky, SkyMode p_mode) = 0;
 	virtual void sky_set_material(RID p_sky, RID p_material) = 0;
+	virtual Ref<Image> sky_bake_panorama(RID p_sky, float p_energy, bool p_bake_irradiance, const Size2i &p_size) = 0;
 
 	/* ENVIRONMENT API */
 
@@ -809,6 +810,8 @@ public:
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
 
+	virtual Ref<Image> environment_bake_panorama(RID p_env, bool p_bake_irradiance, const Size2i &p_size) = 0;
+
 	virtual void screen_space_roughness_limiter_set_active(bool p_enable, float p_curve) = 0;
 
 	enum SubSurfaceScatteringQuality {
@@ -885,7 +888,7 @@ public:
 		INSTANCE_REFLECTION_PROBE,
 		INSTANCE_DECAL,
 		INSTANCE_GI_PROBE,
-		INSTANCE_LIGHTMAP_CAPTURE,
+		INSTANCE_LIGHTMAP,
 		INSTANCE_MAX,
 
 		INSTANCE_GEOMETRY_MASK = (1 << INSTANCE_MESH) | (1 << INSTANCE_MULTIMESH) | (1 << INSTANCE_IMMEDIATE) | (1 << INSTANCE_PARTICLES)
@@ -903,8 +906,6 @@ public:
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight) = 0;
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material) = 0;
 	virtual void instance_set_visible(RID p_instance, bool p_visible) = 0;
-
-	virtual void instance_set_use_lightmap(RID p_instance, RID p_lightmap_instance, RID p_lightmap) = 0;
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB aabb) = 0;
 
@@ -942,11 +943,23 @@ public:
 
 	virtual void instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) = 0;
 	virtual void instance_geometry_set_as_instance_lod(RID p_instance, RID p_as_lod_of_instance) = 0;
+	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice) = 0;
 
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &, const Variant &p_value) = 0;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &) const = 0;
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const = 0;
+
+	/* Bake 3D objects */
+
+	enum BakeChannels {
+		BAKE_CHANNEL_ALBEDO_ALPHA,
+		BAKE_CHANNEL_NORMAL,
+		BAKE_CHANNEL_ORM,
+		BAKE_CHANNEL_EMISSION
+	};
+
+	virtual TypedArray<Image> bake_render_uv2(RID p_base, const Vector<RID> &p_material_overrides, const Size2i &p_image_size) = 0;
 
 	/* CANVAS (2D) */
 
@@ -1185,8 +1198,6 @@ public:
 	virtual void set_frame_profiling_enabled(bool p_enable) = 0;
 	virtual Vector<FrameProfileArea> get_frame_profile() = 0;
 	virtual uint64_t get_frame_profile_frame() = 0;
-
-	/* Materials for 2D on 3D */
 
 	/* TESTING */
 

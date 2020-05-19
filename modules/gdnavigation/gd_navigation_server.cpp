@@ -114,8 +114,7 @@
 	void GdNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
 GdNavigationServer::GdNavigationServer() :
-		NavigationServer3D(),
-		active(true) {
+		NavigationServer3D() {
 }
 
 GdNavigationServer::~GdNavigationServer() {
@@ -250,9 +249,9 @@ COMMAND_2(region_set_map, RID, p_region, RID, p_map) {
 	ERR_FAIL_COND(region == nullptr);
 
 	if (region->get_map() != nullptr) {
-
-		if (region->get_map()->get_self() == p_map)
+		if (region->get_map()->get_self() == p_map) {
 			return; // Pointless
+		}
 
 		region->get_map()->remove_region(region);
 		region->set_map(nullptr);
@@ -305,8 +304,9 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 	ERR_FAIL_COND(agent == nullptr);
 
 	if (agent->get_map()) {
-		if (agent->get_map()->get_self() == p_map)
+		if (agent->get_map()->get_self() == p_map) {
 			return; // Pointless
+		}
 
 		agent->get_map()->remove_agent(agent);
 	}

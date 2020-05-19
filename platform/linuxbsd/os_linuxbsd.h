@@ -43,7 +43,6 @@
 #include "servers/rendering_server.h"
 
 class OS_LinuxBSD : public OS_Unix {
-
 	virtual void delete_main_loop();
 
 	bool force_quit;

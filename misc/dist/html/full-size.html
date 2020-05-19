@@ -145,6 +145,7 @@ $GODOT_HEAD_INCLUDE
 
 			const EXECUTABLE_NAME = '$GODOT_BASENAME';
 			const MAIN_PACK = '$GODOT_BASENAME.pck';
+			const EXTRA_ARGS = JSON.parse('$GODOT_ARGS');
 			const INDETERMINATE_STATUS_STEP_MS = 100;
 
 			var canvas = document.getElementById('canvas');
@@ -169,8 +170,6 @@ $GODOT_HEAD_INCLUDE
 				var height = window.innerHeight;
 				canvas.width = width * scale;
 				canvas.height = height * scale;
-				canvas.style.width = width + "px";
-				canvas.style.height = height + "px";
 			}
 			animationCallbacks.push(adjustCanvasDimensions);
 			adjustCanvasDimensions();
@@ -256,7 +255,7 @@ $GODOT_HEAD_INCLUDE
 			} else {
 				setStatusMode('indeterminate');
 				engine.setCanvas(canvas);
-				engine.startGame(EXECUTABLE_NAME, MAIN_PACK).then(() => {
+				engine.startGame(EXECUTABLE_NAME, MAIN_PACK, EXTRA_ARGS).then(() => {
 					setStatusMode('hidden');
 					initializing = false;
 				}, displayFailureNotice);

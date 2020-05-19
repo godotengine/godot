@@ -37,18 +37,17 @@
 struct Vector2i;
 
 struct Vector2 {
-
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
 	};
 
 	union {
-		real_t x;
+		real_t x = 0;
 		real_t width;
 	};
 	union {
-		real_t y;
+		real_t y = 0;
 		real_t height;
 	};
 
@@ -123,13 +122,11 @@ struct Vector2 {
 	real_t angle() const;
 
 	_FORCE_INLINE_ Vector2 abs() const {
-
 		return Vector2(Math::abs(x), Math::abs(y));
 	}
 
 	Vector2 rotated(real_t p_by) const;
 	Vector2 tangent() const {
-
 		return Vector2(y, -x);
 	}
 
@@ -142,89 +139,78 @@ struct Vector2 {
 
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
+	_FORCE_INLINE_ Vector2() {}
 	_FORCE_INLINE_ Vector2(real_t p_x, real_t p_y) {
 		x = p_x;
 		y = p_y;
 	}
-	_FORCE_INLINE_ Vector2() { x = y = 0; }
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
-
 	return p_vec - *this * (dot(p_vec) - p_d);
 }
 
 _FORCE_INLINE_ Vector2 operator*(real_t p_scalar, const Vector2 &p_vec) {
-
 	return p_vec * p_scalar;
 }
 
 _FORCE_INLINE_ Vector2 Vector2::operator+(const Vector2 &p_v) const {
-
 	return Vector2(x + p_v.x, y + p_v.y);
 }
-_FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
 
+_FORCE_INLINE_ void Vector2::operator+=(const Vector2 &p_v) {
 	x += p_v.x;
 	y += p_v.y;
 }
-_FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
 
+_FORCE_INLINE_ Vector2 Vector2::operator-(const Vector2 &p_v) const {
 	return Vector2(x - p_v.x, y - p_v.y);
 }
-_FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
 
+_FORCE_INLINE_ void Vector2::operator-=(const Vector2 &p_v) {
 	x -= p_v.x;
 	y -= p_v.y;
 }
 
 _FORCE_INLINE_ Vector2 Vector2::operator*(const Vector2 &p_v1) const {
-
 	return Vector2(x * p_v1.x, y * p_v1.y);
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator*(const real_t &rvalue) const {
-
 	return Vector2(x * rvalue, y * rvalue);
-};
-_FORCE_INLINE_ void Vector2::operator*=(const real_t &rvalue) {
+}
 
+_FORCE_INLINE_ void Vector2::operator*=(const real_t &rvalue) {
 	x *= rvalue;
 	y *= rvalue;
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator/(const Vector2 &p_v1) const {
-
 	return Vector2(x / p_v1.x, y / p_v1.y);
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator/(const real_t &rvalue) const {
-
 	return Vector2(x / rvalue, y / rvalue);
-};
+}
 
 _FORCE_INLINE_ void Vector2::operator/=(const real_t &rvalue) {
-
 	x /= rvalue;
 	y /= rvalue;
-};
+}
 
 _FORCE_INLINE_ Vector2 Vector2::operator-() const {
-
 	return Vector2(-x, -y);
 }
 
 _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
-
 	return x == p_vec2.x && y == p_vec2.y;
 }
-_FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 
+_FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 	return x != p_vec2.x || y != p_vec2.y;
 }
 
 Vector2 Vector2::lerp(const Vector2 &p_b, real_t p_t) const {
-
 	Vector2 res = *this;
 
 	res.x += (p_t * (p_b.x - x));
@@ -253,18 +239,17 @@ typedef Vector2 Point2;
 /* INTEGER STUFF */
 
 struct Vector2i {
-
 	enum Axis {
 		AXIS_X,
 		AXIS_Y,
 	};
 
 	union {
-		int x;
+		int x = 0;
 		int width;
 	};
 	union {
-		int y;
+		int y = 0;
 		int height;
 	};
 
@@ -307,6 +292,8 @@ struct Vector2i {
 	operator String() const { return String::num(x) + ", " + String::num(y); }
 
 	operator Vector2() const { return Vector2(x, y); }
+
+	inline Vector2i() {}
 	inline Vector2i(const Vector2 &p_vec2) {
 		x = (int)p_vec2.x;
 		y = (int)p_vec2.y;
@@ -314,10 +301,6 @@ struct Vector2i {
 	inline Vector2i(int p_x, int p_y) {
 		x = p_x;
 		y = p_y;
-	}
-	inline Vector2i() {
-		x = 0;
-		y = 0;
 	}
 };
 

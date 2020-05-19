@@ -38,7 +38,6 @@
 //#include <android_native_app_glue.h>
 
 class FileAccessAndroid : public FileAccess {
-
 	static FileAccess *create_android();
 	mutable AAsset *a;
 	mutable size_t len;

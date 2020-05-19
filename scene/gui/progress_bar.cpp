@@ -31,7 +31,6 @@
 #include "progress_bar.h"
 
 Size2 ProgressBar::get_minimum_size() const {
-
 	Ref<StyleBox> bg = get_theme_stylebox("bg");
 	Ref<StyleBox> fg = get_theme_stylebox("fg");
 	Ref<Font> font = get_theme_font("font");
@@ -49,9 +48,7 @@ Size2 ProgressBar::get_minimum_size() const {
 }
 
 void ProgressBar::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
-
 		Ref<StyleBox> bg = get_theme_stylebox("bg");
 		Ref<StyleBox> fg = get_theme_stylebox("fg");
 		Ref<Font> font = get_theme_font("font");
@@ -62,7 +59,6 @@ void ProgressBar::_notification(int p_what) {
 		int mp = fg->get_minimum_size().width;
 		int p = r * (get_size().width - mp);
 		if (p > 0) {
-
 			draw_style_box(fg, Rect2(Point2(), Size2(p + fg->get_minimum_size().width, get_size().height)));
 		}
 
@@ -74,18 +70,15 @@ void ProgressBar::_notification(int p_what) {
 }
 
 void ProgressBar::set_percent_visible(bool p_visible) {
-
 	percent_visible = p_visible;
 	update();
 }
 
 bool ProgressBar::is_percent_visible() const {
-
 	return percent_visible;
 }
 
 void ProgressBar::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_percent_visible", "visible"), &ProgressBar::set_percent_visible);
 	ClassDB::bind_method(D_METHOD("is_percent_visible"), &ProgressBar::is_percent_visible);
 	ADD_GROUP("Percent", "percent_");
@@ -93,7 +86,6 @@ void ProgressBar::_bind_methods() {
 }
 
 ProgressBar::ProgressBar() {
-
 	set_v_size_flags(0);
 	set_step(0.01);
 	percent_visible = true;

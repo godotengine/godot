@@ -41,7 +41,6 @@
 class CryptoMbedTLS;
 class SSLContextMbedTLS;
 class CryptoKeyMbedTLS : public CryptoKey {
-
 private:
 	mbedtls_pk_context pkey;
 	int locks;
@@ -70,7 +69,6 @@ public:
 };
 
 class X509CertificateMbedTLS : public X509Certificate {
-
 private:
 	mbedtls_x509_crt cert;
 	int locks;
@@ -100,7 +98,6 @@ public:
 };
 
 class CryptoMbedTLS : public Crypto {
-
 private:
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;

@@ -596,6 +596,7 @@ public:
 		}
 	};
 
+	RID shader_create_from_bytecode(const Ref<RDShaderBytecode> &p_bytecode);
 	virtual RID shader_create(const Vector<ShaderStageData> &p_stages) = 0;
 	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
 
@@ -785,7 +786,6 @@ public:
 	};
 
 	struct PipelineDepthStencilState {
-
 		bool enable_depth_test;
 		bool enable_depth_write;
 		CompareOperator depth_compare_operator;
@@ -829,7 +829,6 @@ public:
 	};
 
 	struct PipelineColorBlendState {
-
 		bool enable_logic_op;
 		LogicOperation logic_op;
 		struct Attachment {
@@ -870,7 +869,6 @@ public:
 		static PipelineColorBlendState create_blend(int p_attachments = 1) {
 			PipelineColorBlendState bs;
 			for (int i = 0; i < p_attachments; i++) {
-
 				Attachment ba;
 				ba.enable_blend = true;
 				ba.src_color_blend_factor = BLEND_FACTOR_SRC_ALPHA;
@@ -1045,6 +1043,8 @@ public:
 	virtual void submit() = 0;
 	virtual void sync() = 0;
 
+	virtual uint64_t get_memory_usage() const = 0;
+
 	virtual RenderingDevice *create_local_device() = 0;
 
 	static RenderingDevice *get_singleton();
@@ -1063,7 +1063,6 @@ protected:
 	RID _vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers);
 
 	Ref<RDShaderBytecode> _shader_compile_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache = true);
-	RID _shader_create(const Ref<RDShaderBytecode> &p_bytecode);
 
 	RID _uniform_set_create(const Array &p_uniforms, RID p_shader, uint32_t p_shader_set);
 

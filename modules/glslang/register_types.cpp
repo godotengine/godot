@@ -130,20 +130,19 @@ static const TBuiltInResource default_builtin_resource = {
 	/*maxTaskWorkGroupSizeZ_NV*/ 0,
 	/*maxMeshViewCountNV*/ 0,
 	/*limits*/ {
-			/*nonInductiveForLoops*/ 1,
-			/*whileLoops*/ 1,
-			/*doWhileLoops*/ 1,
-			/*generalUniformIndexing*/ 1,
-			/*generalAttributeMatrixVectorIndexing*/ 1,
-			/*generalVaryingIndexing*/ 1,
-			/*generalSamplerIndexing*/ 1,
-			/*generalVariableIndexing*/ 1,
-			/*generalConstantMatrixVectorIndexing*/ 1,
+			/*nonInductiveForLoops*/ true,
+			/*whileLoops*/ true,
+			/*doWhileLoops*/ true,
+			/*generalUniformIndexing*/ true,
+			/*generalAttributeMatrixVectorIndexing*/ true,
+			/*generalVaryingIndexing*/ true,
+			/*generalSamplerIndexing*/ true,
+			/*generalVariableIndexing*/ true,
+			/*generalConstantMatrixVectorIndexing*/ true,
 	}
 };
 
 static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage, const String &p_source_code, RenderingDevice::ShaderLanguage p_language, String *r_error) {
-
 	Vector<uint8_t> ret;
 
 	ERR_FAIL_COND_V(p_language == RenderingDevice::SHADER_LANGUAGE_HLSL, ret);
@@ -177,7 +176,6 @@ static Vector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_stage
 
 	//preprocess
 	if (!shader.preprocess(&default_builtin_resource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
-
 		if (r_error) {
 			(*r_error) = "Failed pre-process:\n";
 			(*r_error) += shader.getInfoLog();
@@ -240,7 +238,7 @@ void preregister_glslang_types() {
 
 void register_glslang_types() {
 }
-void unregister_glslang_types() {
 
+void unregister_glslang_types() {
 	glslang::FinalizeProcess();
 }

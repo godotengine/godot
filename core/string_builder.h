@@ -32,12 +32,10 @@
 #define STRING_BUILDER_H
 
 #include "core/ustring.h"
-
 #include "core/vector.h"
 
 class StringBuilder {
-
-	uint32_t string_length;
+	uint32_t string_length = 0;
 
 	Vector<String> strings;
 	Vector<const char *> c_strings;
@@ -80,9 +78,7 @@ public:
 		return as_string();
 	}
 
-	StringBuilder() {
-		string_length = 0;
-	}
+	StringBuilder() {}
 };
 
 #endif // STRING_BUILDER_H

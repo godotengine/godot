@@ -36,7 +36,6 @@
 #include "servers/rendering_server.h"
 
 class RenderingServerWrapMT : public RenderingServer {
-
 	// the real visual server
 	mutable RenderingServer *rendering_server;
 
@@ -92,7 +91,7 @@ public:
 
 	//these also go pass-through
 	virtual RID texture_2d_placeholder_create() { return rendering_server->texture_2d_placeholder_create(); }
-	virtual RID texture_2d_layered_placeholder_create() { return rendering_server->texture_2d_layered_placeholder_create(); }
+	virtual RID texture_2d_layered_placeholder_create(TextureLayeredType p_type) { return rendering_server->texture_2d_layered_placeholder_create(p_type); }
 	virtual RID texture_3d_placeholder_create() { return rendering_server->texture_3d_placeholder_create(); }
 
 	FUNC1RC(Ref<Image>, texture_2d_get, RID)
@@ -324,19 +323,17 @@ public:
 
 	/* LIGHTMAP CAPTURE */
 
-	FUNCRID(lightmap_capture)
+	FUNCRID(lightmap)
+	FUNC3(lightmap_set_textures, RID, RID, bool)
+	FUNC2(lightmap_set_probe_bounds, RID, const AABB &)
+	FUNC2(lightmap_set_probe_interior, RID, bool)
+	FUNC5(lightmap_set_probe_capture_data, RID, const PackedVector3Array &, const PackedColorArray &, const PackedInt32Array &, const PackedInt32Array &)
+	FUNC1RC(PackedVector3Array, lightmap_get_probe_capture_points, RID)
+	FUNC1RC(PackedColorArray, lightmap_get_probe_capture_sh, RID)
+	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_tetrahedra, RID)
+	FUNC1RC(PackedInt32Array, lightmap_get_probe_capture_bsp_tree, RID)
 
-	FUNC2(lightmap_capture_set_bounds, RID, const AABB &)
-	FUNC1RC(AABB, lightmap_capture_get_bounds, RID)
-
-	FUNC2(lightmap_capture_set_octree, RID, const Vector<uint8_t> &)
-	FUNC1RC(Vector<uint8_t>, lightmap_capture_get_octree, RID)
-	FUNC2(lightmap_capture_set_octree_cell_transform, RID, const Transform &)
-	FUNC1RC(Transform, lightmap_capture_get_octree_cell_transform, RID)
-	FUNC2(lightmap_capture_set_octree_cell_subdiv, RID, int)
-	FUNC1RC(int, lightmap_capture_get_octree_cell_subdiv, RID)
-	FUNC2(lightmap_capture_set_energy, RID, float)
-	FUNC1RC(float, lightmap_capture_get_energy, RID)
+	FUNC1(lightmap_set_probe_capture_update_speed, float)
 
 	/* PARTICLES */
 
@@ -442,6 +439,7 @@ public:
 	FUNC2(sky_set_radiance_size, RID, int)
 	FUNC2(sky_set_mode, RID, SkyMode)
 	FUNC2(sky_set_material, RID, RID)
+	FUNC4R(Ref<Image>, sky_bake_panorama, RID, float, bool, const Size2i &)
 
 	/* ENVIRONMENT API */
 
@@ -478,6 +476,8 @@ public:
 	FUNC7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
+	FUNC3R(Ref<Image>, environment_bake_panorama, RID, bool, const Size2i &)
+
 	FUNC2(screen_space_roughness_limiter_set_active, bool, float)
 	FUNC1(sub_surface_scattering_set_quality, SubSurfaceScatteringQuality)
 	FUNC2(sub_surface_scattering_set_scale, float, float)
@@ -511,7 +511,6 @@ public:
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)
-	FUNC3(instance_set_use_lightmap, RID, RID, RID)
 
 	FUNC2(instance_set_custom_aabb, RID, AABB)
 
@@ -531,11 +530,16 @@ public:
 
 	FUNC5(instance_geometry_set_draw_range, RID, float, float, float, float)
 	FUNC2(instance_geometry_set_as_instance_lod, RID, RID)
+	FUNC4(instance_geometry_set_lightmap, RID, RID, const Rect2 &, int)
 
 	FUNC3(instance_geometry_set_shader_parameter, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter, RID, const StringName &)
 	FUNC2RC(Variant, instance_geometry_get_shader_parameter_default_value, RID, const StringName &)
 	FUNC2SC(instance_geometry_get_shader_parameter_list, RID, List<PropertyInfo> *)
+
+	/* BAKE */
+
+	FUNC3R(TypedArray<Image>, bake_render_uv2, RID, const Vector<RID> &, const Size2i &)
 
 	/* CANVAS (2D) */
 

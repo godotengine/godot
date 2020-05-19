@@ -57,6 +57,7 @@ NSMutableDictionary *pending_transactions = [NSMutableDictionary dictionary];
 	[numberFormatter release];
 	return formattedString;
 }
+
 @end
 
 InAppStore *InAppStore::instance = NULL;
@@ -80,7 +81,6 @@ void InAppStore::_bind_methods() {
 @implementation ProductsDelegate
 
 - (void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response {
-
 	NSArray *products = response.products;
 	Dictionary ret;
 	ret["type"] = "product_info";
@@ -93,7 +93,6 @@ void InAppStore::_bind_methods() {
 	PackedStringArray currency_codes;
 
 	for (NSUInteger i = 0; i < [products count]; i++) {
-
 		SKProduct *product = [products objectAtIndex:i];
 
 		const char *str = [product.localizedTitle UTF8String];
@@ -116,7 +115,6 @@ void InAppStore::_bind_methods() {
 	PackedStringArray invalid_ids;
 
 	for (NSString *ipid in response.invalidProductIdentifiers) {
-
 		invalid_ids.push_back(String::utf8([ipid UTF8String]));
 	};
 	ret["invalid_ids"] = invalid_ids;
@@ -129,7 +127,6 @@ void InAppStore::_bind_methods() {
 @end
 
 Error InAppStore::request_product_info(Variant p_params) {
-
 	Dictionary params = p_params;
 	ERR_FAIL_COND_V(!params.has("product_ids"), ERR_INVALID_PARAMETER);
 
@@ -155,7 +152,6 @@ Error InAppStore::request_product_info(Variant p_params) {
 };
 
 Error InAppStore::restore_purchases() {
-
 	printf("restoring purchases!\n");
 	[[SKPaymentQueue defaultQueue] restoreCompletedTransactions];
 
@@ -169,10 +165,8 @@ Error InAppStore::restore_purchases() {
 @implementation TransObserver
 
 - (void)paymentQueue:(SKPaymentQueue *)queue updatedTransactions:(NSArray *)transactions {
-
 	printf("transactions updated!\n");
 	for (SKPaymentTransaction *transaction in transactions) {
-
 		switch (transaction.transactionState) {
 			case SKPaymentTransactionStatePurchased: {
 				printf("status purchased!\n");
@@ -189,11 +183,9 @@ Error InAppStore::restore_purchases() {
 				int sdk_version = 6;
 
 				if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0) {
-
 					NSURL *receiptFileURL = nil;
 					NSBundle *bundle = [NSBundle mainBundle];
 					if ([bundle respondsToSelector:@selector(appStoreReceiptURL)]) {
-
 						// Get the transaction receipt file path location in the app bundle.
 						receiptFileURL = [bundle appStoreReceiptURL];
 
@@ -263,7 +255,6 @@ Error InAppStore::restore_purchases() {
 @end
 
 Error InAppStore::purchase(Variant p_params) {
-
 	ERR_FAIL_COND_V(![SKPaymentQueue canMakePayments], ERR_UNAVAILABLE);
 	if (![SKPaymentQueue canMakePayments])
 		return ERR_UNAVAILABLE;
@@ -286,7 +277,6 @@ int InAppStore::get_pending_event_count() {
 };
 
 Variant InAppStore::pop_pending_event() {
-
 	Variant front = pending_events.front()->get();
 	pending_events.pop_front();
 
@@ -294,12 +284,10 @@ Variant InAppStore::pop_pending_event() {
 };
 
 void InAppStore::_post_event(Variant p_event) {
-
 	pending_events.push_back(p_event);
 };
 
 void InAppStore::_record_purchase(String product_id) {
-
 	String skey = "purchased/" + product_id;
 	NSString *key = [[[NSString alloc] initWithUTF8String:skey.utf8().get_data()] autorelease];
 	[[NSUserDefaults standardUserDefaults] setBool:YES forKey:key];
@@ -307,7 +295,6 @@ void InAppStore::_record_purchase(String product_id) {
 };
 
 InAppStore *InAppStore::get_singleton() {
-
 	return instance;
 };
 
@@ -334,6 +321,6 @@ void InAppStore::set_auto_finish_transaction(bool b) {
 	auto_finish_transactions = b;
 }
 
-InAppStore::~InAppStore(){};
+InAppStore::~InAppStore() {}
 
 #endif

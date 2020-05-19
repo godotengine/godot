@@ -40,7 +40,6 @@
 class Tree;
 
 class TreeItem : public Object {
-
 	GDCLASS(TreeItem, Object);
 
 public:
@@ -63,7 +62,6 @@ private:
 	friend class Tree;
 
 	struct Cell {
-
 		TreeCellMode mode;
 
 		Ref<Texture2D> icon;
@@ -111,7 +109,6 @@ private:
 		Vector<Button> buttons;
 
 		Cell() {
-
 			custom_draw_obj = ObjectID();
 			custom_button = false;
 			mode = TreeItem::CELL_MODE_STRING;
@@ -293,7 +290,6 @@ VARIANT_ENUM_CAST(TreeItem::TextAlign);
 class VBoxContainer;
 
 class Tree : public Control {
-
 	GDCLASS(Tree, Control);
 
 public:
@@ -350,7 +346,6 @@ private:
 	int drop_mode_flags;
 
 	struct ColumnInfo {
-
 		int min_width;
 		bool expand;
 		String title;
@@ -404,7 +399,6 @@ private:
 	void propagate_set_columns(TreeItem *p_item);
 
 	struct Cache {
-
 		Ref<Font> font;
 		Ref<Font> tb_font;
 		Ref<StyleBox> bg;
@@ -544,7 +538,7 @@ public:
 
 	void clear();
 
-	TreeItem *create_item(TreeItem *p_parent = 0, int p_idx = -1);
+	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_idx = -1);
 	TreeItem *get_root();
 	TreeItem *get_last_item();
 

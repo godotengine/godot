@@ -35,11 +35,11 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_color_buffer,
 		const uint32_t color_table_size,
 		const bmp_header_s &p_header) {
-
 	Error err = OK;
 
-	if (p_buffer == nullptr)
+	if (p_buffer == nullptr) {
 		err = FAILED;
+	}
 
 	if (err == OK) {
 		size_t index = 0;
@@ -60,7 +60,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 			ERR_FAIL_COND_V(height % 2 != 0, ERR_UNAVAILABLE);
 
 		} else if (bits_per_pixel == 16) {
-
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 
@@ -153,7 +152,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 		if (p_color_buffer == nullptr || color_table_size == 0) { // regular pixels
 
-			p_image->create(width, height, 0, Image::FORMAT_RGBA8, data);
+			p_image->create(width, height, false, Image::FORMAT_RGBA8, data);
 
 		} else { // data is in indexed format, extend it
 
@@ -193,7 +192,7 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 				dest += 4;
 			}
-			p_image->create(width, height, 0, Image::FORMAT_RGBA8, extended_data);
+			p_image->create(width, height, false, Image::FORMAT_RGBA8, extended_data);
 		}
 	}
 	return err;
@@ -201,7 +200,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 
 Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 		bool p_force_linear, float p_scale) {
-
 	bmp_header_s bmp_header;
 	Error err = ERR_INVALID_DATA;
 
@@ -290,7 +288,6 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 
 void ImageLoaderBMP::get_recognized_extensions(
 		List<String> *p_extensions) const {
-
 	p_extensions->push_back("bmp");
 }
 

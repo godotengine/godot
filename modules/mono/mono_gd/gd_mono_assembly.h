@@ -40,7 +40,6 @@
 #include "gd_mono_utils.h"
 
 class GDMonoAssembly {
-
 	struct ClassKey {
 		struct Hasher {
 			static _FORCE_INLINE_ uint32_t hash(const ClassKey &p_key) {
@@ -73,10 +72,10 @@ class GDMonoAssembly {
 	MonoAssembly *assembly;
 
 #ifdef GD_MONO_HOT_RELOAD
-	uint64_t modified_time;
+	uint64_t modified_time = 0;
 #endif
 
-	bool gdobject_class_cache_updated;
+	bool gdobject_class_cache_updated = false;
 	Map<StringName, GDMonoClass *> gdobject_class_cache;
 
 	HashMap<ClassKey, GDMonoClass *, ClassKey::Hasher> cached_classes;
@@ -93,8 +92,8 @@ class GDMonoAssembly {
 	static MonoAssembly *_search_hook(MonoAssemblyName *aname, void *user_data, bool refonly);
 	static MonoAssembly *_preload_hook(MonoAssemblyName *aname, char **assemblies_path, void *user_data, bool refonly);
 
-	static MonoAssembly *_real_load_assembly_from(const String &p_path, bool p_refonly);
-	static MonoAssembly *_load_assembly_search(const String &p_name, const Vector<String> &p_search_dirs, bool p_refonly);
+	static MonoAssembly *_real_load_assembly_from(const String &p_path, bool p_refonly, MonoAssemblyName *p_aname = nullptr);
+	static MonoAssembly *_load_assembly_search(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
 
 	friend class GDMono;
 	static void initialize();
@@ -120,10 +119,16 @@ public:
 	static String find_assembly(const String &p_name);
 
 	static void fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config = String(), const String &p_custom_bcl_dir = String());
+	static const Vector<String> &get_default_search_dirs() { return search_dirs; }
 
+	static GDMonoAssembly *load(const String &p_name, MonoAssemblyName *p_aname, bool p_refonly, const Vector<String> &p_search_dirs);
 	static GDMonoAssembly *load_from(const String &p_name, const String &p_path, bool p_refonly);
 
-	GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly);
+	GDMonoAssembly(const String &p_name, MonoImage *p_image, MonoAssembly *p_assembly) :
+			name(p_name),
+			image(p_image),
+			assembly(p_assembly) {
+	}
 	~GDMonoAssembly();
 };
 

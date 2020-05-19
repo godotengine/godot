@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  subviewport_container.h                                                 */
+/*  subviewport_container.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class SubViewportContainer : public Container {
-
 	GDCLASS(SubViewportContainer, Container);
 
 	bool stretch;

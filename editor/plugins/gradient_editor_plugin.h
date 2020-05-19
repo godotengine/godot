@@ -62,7 +62,6 @@ public:
 };
 
 class GradientEditorPlugin : public EditorPlugin {
-
 	GDCLASS(GradientEditorPlugin, EditorPlugin);
 
 public:

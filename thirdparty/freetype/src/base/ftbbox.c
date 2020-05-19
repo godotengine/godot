@@ -4,7 +4,7 @@
  *
  *   FreeType bbox computation (body).
  *
- * Copyright (C) 1996-2019 by
+ * Copyright (C) 1996-2020 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used
@@ -294,10 +294,10 @@
       if ( shift > 2 )
         shift = 2;
 
-      q1 <<=  shift;
-      q2 <<=  shift;
-      q3 <<=  shift;
-      q4 <<=  shift;
+      q1 *= 1 << shift;
+      q2 *= 1 << shift;
+      q3 *= 1 << shift;
+      q4 *= 1 << shift;
     }
     else
     {

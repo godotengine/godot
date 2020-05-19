@@ -38,7 +38,6 @@
 class PhysicsDirectSpaceState2D;
 
 class PhysicsDirectBodyState2D : public Object {
-
 	GDCLASS(PhysicsDirectBodyState2D, Object);
 
 protected:
@@ -97,7 +96,6 @@ class PhysicsShapeQueryResult2D;
 
 //used for script
 class PhysicsShapeQueryParameters2D : public Reference {
-
 	GDCLASS(PhysicsShapeQueryParameters2D, Reference);
 	friend class PhysicsDirectSpaceState2D;
 	RID shape;
@@ -143,7 +141,6 @@ public:
 };
 
 class PhysicsDirectSpaceState2D : public Object {
-
 	GDCLASS(PhysicsDirectSpaceState2D, Object);
 
 	Dictionary _intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Vector<RID> &p_exclude = Vector<RID>(), uint32_t p_layers = 0, bool p_collide_with_bodies = true, bool p_collide_with_areas = false);
@@ -160,7 +157,6 @@ protected:
 
 public:
 	struct RayResult {
-
 		Vector2 position;
 		Vector2 normal;
 		RID rid;
@@ -173,7 +169,6 @@ public:
 	virtual bool intersect_ray(const Vector2 &p_from, const Vector2 &p_to, RayResult &r_result, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct ShapeResult {
-
 		RID rid;
 		ObjectID collider_id;
 		Object *collider;
@@ -191,7 +186,6 @@ public:
 	virtual bool collide_shape(RID p_shape, const Transform2D &p_shape_xform, const Vector2 &p_motion, float p_margin, Vector2 *r_results, int p_result_max, int &r_result_count, const Set<RID> &p_exclude = Set<RID>(), uint32_t p_collision_layer = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_areas = false) = 0;
 
 	struct ShapeRestInfo {
-
 		Vector2 point;
 		Vector2 normal;
 		RID rid;
@@ -207,7 +201,6 @@ public:
 };
 
 class PhysicsShapeQueryResult2D : public Reference {
-
 	GDCLASS(PhysicsShapeQueryResult2D, Reference);
 
 	Vector<PhysicsDirectSpaceState2D::ShapeResult> result;
@@ -230,7 +223,6 @@ public:
 class PhysicsTestMotionResult2D;
 
 class PhysicsServer2D : public Object {
-
 	GDCLASS(PhysicsServer2D, Object);
 
 	static PhysicsServer2D *singleton;
@@ -493,7 +485,6 @@ public:
 	virtual PhysicsDirectBodyState2D *body_get_direct_state(RID p_body) = 0;
 
 	struct MotionResult {
-
 		Vector2 motion;
 		Vector2 remainder;
 
@@ -516,7 +507,6 @@ public:
 	virtual bool body_test_motion(RID p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, float p_margin = 0.001, MotionResult *r_result = nullptr, bool p_exclude_raycast_shapes = true) = 0;
 
 	struct SeparationResult {
-
 		float collision_depth;
 		Vector2 collision_point;
 		Vector2 collision_normal;
@@ -607,7 +597,6 @@ public:
 };
 
 class PhysicsTestMotionResult2D : public Reference {
-
 	GDCLASS(PhysicsTestMotionResult2D, Reference);
 
 	PhysicsServer2D::MotionResult result;
@@ -640,11 +629,9 @@ typedef PhysicsServer2D *(*CreatePhysicsServer2DCallback)();
 class PhysicsServer2DManager {
 	struct ClassInfo {
 		String name;
-		CreatePhysicsServer2DCallback create_callback;
+		CreatePhysicsServer2DCallback create_callback = nullptr;
 
-		ClassInfo() :
-				name(""),
-				create_callback(nullptr) {}
+		ClassInfo() {}
 
 		ClassInfo(String p_name, CreatePhysicsServer2DCallback p_create_callback) :
 				name(p_name),

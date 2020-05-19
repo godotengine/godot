@@ -37,7 +37,6 @@
 #include "editor/editor_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_READY) {
 		AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AudioStreamEditor::_preview_changed));
 	}
@@ -75,7 +74,6 @@ void AudioStreamEditor::_draw_preview() {
 	lines.resize(size.width * 2);
 
 	for (int i = 0; i < size.width; i++) {
-
 		float ofs = i * preview_len / size.width;
 		float ofs_n = (i + 1) * preview_len / size.width;
 		float max = preview->get_max(ofs, ofs_n) * 0.5 + 0.5;
@@ -93,21 +91,19 @@ void AudioStreamEditor::_draw_preview() {
 }
 
 void AudioStreamEditor::_preview_changed(ObjectID p_which) {
-
 	if (stream.is_valid() && stream->get_instance_id() == p_which) {
 		_preview->update();
 	}
 }
 
 void AudioStreamEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-
-	if (!is_visible())
+	if (!is_visible()) {
 		return;
+	}
 	update();
 }
 
 void AudioStreamEditor::_play() {
-
 	if (_player->is_playing()) {
 		_player->stop();
 		_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
@@ -120,7 +116,6 @@ void AudioStreamEditor::_play() {
 }
 
 void AudioStreamEditor::_stop() {
-
 	_player->stop();
 	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 	_current = 0;
@@ -129,7 +124,6 @@ void AudioStreamEditor::_stop() {
 }
 
 void AudioStreamEditor::_on_finished() {
-
 	_play_button->set_icon(get_theme_icon("MainPlay", "EditorIcons"));
 	if (_current == _player->get_stream()->get_length()) {
 		_current = 0;
@@ -138,7 +132,6 @@ void AudioStreamEditor::_on_finished() {
 }
 
 void AudioStreamEditor::_draw_indicator() {
-
 	if (!stream.is_valid()) {
 		return;
 	}
@@ -178,9 +171,9 @@ void AudioStreamEditor::_seek_to(real_t p_x) {
 }
 
 void AudioStreamEditor::edit(Ref<AudioStream> p_stream) {
-
-	if (!stream.is_null())
+	if (!stream.is_null()) {
 		stream->remove_change_receptor(this);
+	}
 
 	stream = p_stream;
 	_player->set_stream(stream);
@@ -200,7 +193,6 @@ void AudioStreamEditor::_bind_methods() {
 }
 
 AudioStreamEditor::AudioStreamEditor() {
-
 	set_custom_minimum_size(Size2(1, 100) * EDSCALE);
 	_current = 0;
 	_dragging = false;
@@ -251,26 +243,23 @@ AudioStreamEditor::AudioStreamEditor() {
 }
 
 void AudioStreamEditorPlugin::edit(Object *p_object) {
-
 	AudioStream *s = Object::cast_to<AudioStream>(p_object);
-	if (!s)
+	if (!s) {
 		return;
+	}
 
 	audio_editor->edit(Ref<AudioStream>(s));
 }
 
 bool AudioStreamEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("AudioStream");
 }
 
 void AudioStreamEditorPlugin::make_visible(bool p_visible) {
-
 	audio_editor->set_visible(p_visible);
 }
 
 AudioStreamEditorPlugin::AudioStreamEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	audio_editor = memnew(AudioStreamEditor);
 	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM, audio_editor);

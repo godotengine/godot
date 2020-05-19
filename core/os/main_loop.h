@@ -36,7 +36,6 @@
 #include "core/script_language.h"
 
 class MainLoop : public Object {
-
 	GDCLASS(MainLoop, Object);
 	OBJ_CATEGORY("Main Loop");
 
@@ -64,8 +63,8 @@ public:
 
 	void set_init_script(const Ref<Script> &p_init_script);
 
-	MainLoop();
-	virtual ~MainLoop();
+	MainLoop() {}
+	virtual ~MainLoop() {}
 };
 
 #endif // MAIN_LOOP_H

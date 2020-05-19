@@ -57,7 +57,6 @@ void RemoteDebugger::_bind_profiler(const String &p_name, T *p_prof) {
 }
 
 struct RemoteDebugger::NetworkProfiler {
-
 public:
 	typedef DebuggerMarshalls::MultiplayerNodeInfo NodeInfo;
 	struct BandwidthFrame {
@@ -97,8 +96,9 @@ public:
 	}
 
 	void init_node(const ObjectID p_node) {
-		if (multiplayer_node_data.has(p_node))
+		if (multiplayer_node_data.has(p_node)) {
 			return;
+		}
 		multiplayer_node_data.insert(p_node, DebuggerMarshalls::MultiplayerNodeInfo());
 		multiplayer_node_data[p_node].node = p_node;
 		multiplayer_node_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
@@ -191,7 +191,6 @@ struct RemoteDebugger::ScriptsProfiler {
 	typedef DebuggerMarshalls::ScriptFunctionSignature FunctionSignature;
 	typedef DebuggerMarshalls::ScriptFunctionInfo FunctionInfo;
 	struct ProfileInfoSort {
-
 		bool operator()(ScriptLanguage::ProfilingInfo *A, ScriptLanguage::ProfilingInfo *B) const {
 			return A->total_time < B->total_time;
 		}
@@ -220,10 +219,11 @@ struct RemoteDebugger::ScriptsProfiler {
 	void write_frame_data(Vector<FunctionInfo> &r_funcs, uint64_t &r_total, bool p_accumulated) {
 		int ofs = 0;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-			if (p_accumulated)
+			if (p_accumulated) {
 				ofs += ScriptServer::get_language(i)->profiling_get_accumulated_data(&info.write[ofs], info.size() - ofs);
-			else
+			} else {
 				ofs += ScriptServer::get_language(i)->profiling_get_frame_data(&info.write[ofs], info.size() - ofs);
+			}
 		}
 
 		for (int i = 0; i < ofs; i++) {
@@ -270,7 +270,6 @@ struct RemoteDebugger::ScriptsProfiler {
 };
 
 struct RemoteDebugger::ServersProfiler {
-
 	bool skip_profile_frame = false;
 	typedef DebuggerMarshalls::ServerInfo ServerInfo;
 	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
@@ -347,7 +346,6 @@ struct RemoteDebugger::ServersProfiler {
 };
 
 struct RemoteDebugger::VisualProfiler {
-
 	typedef DebuggerMarshalls::ServerInfo ServerInfo;
 	typedef DebuggerMarshalls::ServerFunctionInfo ServerFunctionInfo;
 
@@ -362,8 +360,9 @@ struct RemoteDebugger::VisualProfiler {
 	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
 		Vector<RS::FrameProfileArea> profile_areas = RS::get_singleton()->get_frame_profile();
 		DebuggerMarshalls::VisualProfilerFrame frame;
-		if (!profile_areas.size())
+		if (!profile_areas.size()) {
 			return;
+		}
 
 		frame.frame_number = RS::get_singleton()->get_frame_profile_frame();
 		frame.areas.append_array(profile_areas);
@@ -372,19 +371,20 @@ struct RemoteDebugger::VisualProfiler {
 };
 
 struct RemoteDebugger::PerformanceProfiler {
-
 	Object *performance = nullptr;
 	int last_perf_time = 0;
 
 	void toggle(bool p_enable, const Array &p_opts) {}
 	void add(const Array &p_data) {}
 	void tick(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {
-		if (!performance)
+		if (!performance) {
 			return;
+		}
 
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
-		if (pt - last_perf_time < 1000)
+		if (pt - last_perf_time < 1000) {
 			return;
+		}
 		last_perf_time = pt;
 		int max = performance->get("MONITOR_MAX");
 		Array arr;
@@ -401,14 +401,12 @@ struct RemoteDebugger::PerformanceProfiler {
 };
 
 void RemoteDebugger::_send_resource_usage() {
-
 	DebuggerMarshalls::ResourceUsage usage;
 
 	List<RS::TextureInfo> tinfo;
 	RS::get_singleton()->texture_debug_usage(&tinfo);
 
 	for (List<RS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
-
 		DebuggerMarshalls::ResourceInfo info;
 		info.path = E->get().path;
 		info.vram = E->get().bytes;
@@ -430,26 +428,29 @@ Error RemoteDebugger::_put_msg(String p_message, Array p_data) {
 	msg.push_back(p_message);
 	msg.push_back(p_data);
 	Error err = peer->put_message(msg);
-	if (err != OK)
+	if (err != OK) {
 		n_messages_dropped++;
+	}
 	return err;
 }
 
 void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type) {
-
-	if (p_type == ERR_HANDLER_SCRIPT)
+	if (p_type == ERR_HANDLER_SCRIPT) {
 		return; //ignore script errors, those go through debugger
+	}
 
 	RemoteDebugger *rd = (RemoteDebugger *)p_this;
-	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) // Can't handle recursive errors during flush.
+	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive errors during flush.
 		return;
+	}
 
 	Vector<ScriptLanguage::StackInfo> si;
 
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		si = ScriptServer::get_language(i)->debug_get_current_stack_info();
-		if (si.size())
+		if (si.size()) {
 			break;
+		}
 	}
 
 	// send_error will lock internally.
@@ -457,17 +458,18 @@ void RemoteDebugger::_err_handler(void *p_this, const char *p_func, const char *
 }
 
 void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p_error) {
-
 	RemoteDebugger *rd = (RemoteDebugger *)p_this;
 
-	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) // Can't handle recursive prints during flush.
+	if (rd->flushing && Thread::get_caller_id() == rd->flush_thread) { // Can't handle recursive prints during flush.
 		return;
+	}
 
 	String s = p_string;
 	int allowed_chars = MIN(MAX(rd->max_chars_per_second - rd->char_count, 0), s.length());
 
-	if (allowed_chars == 0 && s.length() > 0)
+	if (allowed_chars == 0 && s.length() > 0) {
 		return;
+	}
 
 	if (allowed_chars < s.length()) {
 		s = s.substr(0, allowed_chars);
@@ -478,8 +480,9 @@ void RemoteDebugger::_print_handler(void *p_this, const String &p_string, bool p
 	rd->char_count += allowed_chars;
 	bool overflowed = rd->char_count >= rd->max_chars_per_second;
 	if (rd->is_peer_connected()) {
-		if (overflowed)
+		if (overflowed) {
 			s += "[...]";
+		}
 
 		OutputString output_string;
 		output_string.message = s;
@@ -511,17 +514,18 @@ void RemoteDebugger::flush_output() {
 	flush_thread = Thread::get_caller_id();
 	flushing = true;
 	MutexLock lock(mutex);
-	if (!is_peer_connected())
+	if (!is_peer_connected()) {
 		return;
+	}
 
 	if (n_messages_dropped > 0) {
 		ErrorMessage err_msg = _create_overflow_error("TOO_MANY_MESSAGES", "Too many messages! " + String::num_int64(n_messages_dropped) + " messages were dropped. Profiling might misbheave, try raising 'network/limits/debugger/max_queued_messages' in project setting.");
-		if (_put_msg("error", err_msg.serialize()) == OK)
+		if (_put_msg("error", err_msg.serialize()) == OK) {
 			n_messages_dropped = 0;
+		}
 	}
 
 	if (output_strings.size()) {
-
 		// Join output strings so we generate less messages.
 		Vector<String> joined_log_strings;
 		Vector<String> strings;
@@ -574,7 +578,6 @@ void RemoteDebugger::flush_output() {
 }
 
 void RemoteDebugger::send_message(const String &p_message, const Array &p_args) {
-
 	MutexLock lock(mutex);
 	if (is_peer_connected()) {
 		_put_msg(p_message, p_args);
@@ -582,7 +585,6 @@ void RemoteDebugger::send_message(const String &p_message, const Array &p_args) 
 }
 
 void RemoteDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type) {
-
 	ErrorMessage oe;
 	oe.error = p_err;
 	oe.error_descr = p_descr;
@@ -597,8 +599,9 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	oe.msec = time % 1000;
 	oe.callstack.append_array(script_debugger->get_error_stack_info());
 
-	if (flushing && Thread::get_caller_id() == flush_thread) // Can't handle recursive errors during flush.
+	if (flushing && Thread::get_caller_id() == flush_thread) { // Can't handle recursive errors during flush.
 		return;
+	}
 
 	MutexLock lock(mutex);
 
@@ -609,7 +612,6 @@ void RemoteDebugger::send_error(const String &p_func, const String &p_file, int 
 	}
 
 	if (is_peer_connected()) {
-
 		if (oe.warning) {
 			if (warn_count > max_warnings_per_second) {
 				n_warnings_dropped++;
@@ -657,21 +659,26 @@ Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, boo
 		return OK;
 	}
 	const String cap = p_msg.substr(0, idx);
-	if (!has_capture(cap))
+	if (!has_capture(cap)) {
 		return ERR_UNAVAILABLE; // Unknown message...
+	}
 	const String msg = p_msg.substr(idx + 1);
 	return capture_parse(cap, msg, p_data, r_captured);
 }
 
 void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
-
 	//this function is called when there is a debugger break (bug on script)
 	//or when execution is paused from editor
 
-	if (script_debugger->is_skipping_breakpoints() && !p_is_error_breakpoint)
+	if (script_debugger->is_skipping_breakpoints() && !p_is_error_breakpoint) {
 		return;
+	}
 
 	ERR_FAIL_COND_MSG(!is_peer_connected(), "Script Debugger failed to connect, but being used anyway.");
+
+	if (!peer->can_block()) {
+		return; // Peer does not support blocking IO. We could at least send the error though.
+	}
 
 	ScriptLanguage *script_lang = script_debugger->get_break_language();
 	const String error_str = script_lang ? script_lang->debug_get_error() : "";
@@ -683,8 +690,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	servers_profiler->skip_profile_frame = true; // Avoid frame time spike in debug.
 
 	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
+	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	}
 
 	uint64_t loop_begin_usec = 0;
 	uint64_t loop_time_sec = 0;
@@ -695,7 +703,6 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 		peer->poll();
 
 		if (peer->has_message()) {
-
 			Array cmd = peer->get_message();
 
 			ERR_CONTINUE(cmd.size() != 2);
@@ -773,10 +780,11 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "breakpoint") {
 				ERR_FAIL_COND(data.size() < 3);
 				bool set = data[2];
-				if (set)
+				if (set) {
 					script_debugger->insert_breakpoint(data[1], data[0]);
-				else
+				} else {
 					script_debugger->remove_breakpoint(data[1], data[0]);
+				}
 
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.size() < 1);
@@ -784,8 +792,9 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
-				if (!captured)
+				if (!captured) {
 					WARN_PRINT("Unknown message received from debugger: " + command);
+				}
 			}
 		} else {
 			OS::get_singleton()->delay_usec(10000);
@@ -802,18 +811,19 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 
 	send_message("debug_exit", Array());
 
-	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
+	if (mouse_mode != Input::MOUSE_MODE_VISIBLE) {
 		Input::get_singleton()->set_mouse_mode(mouse_mode);
+	}
 }
 
 void RemoteDebugger::poll_events(bool p_is_idle) {
-	if (peer.is_null())
+	if (peer.is_null()) {
 		return;
+	}
 
 	flush_output();
 	peer->poll();
 	while (peer->has_message()) {
-
 		Array arr = peer->get_message();
 
 		ERR_CONTINUE(arr.size() != 2);
@@ -829,8 +839,9 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 		}
 
 		const String cap = cmd.substr(0, idx);
-		if (!has_capture(cap))
+		if (!has_capture(cap)) {
 			continue; // Unknown message...
+		}
 
 		const String msg = cmd.substr(idx + 1);
 		capture_parse(cap, msg, arr[1], parsed);
@@ -853,10 +864,11 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 	} else if (p_cmd == "breakpoint") {
 		ERR_FAIL_COND_V(p_data.size() < 3, ERR_INVALID_DATA);
 		bool set = p_data[2];
-		if (set)
+		if (set) {
 			script_debugger->insert_breakpoint(p_data[1], p_data[0]);
-		else
+		} else {
 			script_debugger->remove_breakpoint(p_data[1], p_data[0]);
+		}
 
 	} else if (p_cmd == "set_skip_breakpoints") {
 		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
@@ -884,13 +896,6 @@ Error RemoteDebugger::_profiler_capture(const String &p_cmd, const Array &p_data
 	r_captured = true;
 	profiler_enable(p_cmd, p_data[0], opts);
 	return OK;
-}
-
-RemoteDebugger *RemoteDebugger::create_for_uri(const String &p_uri) {
-	Ref<RemoteDebuggerPeer> peer = RemoteDebuggerPeer::create_from_uri(p_uri);
-	if (peer.is_valid())
-		return memnew(RemoteDebugger(peer));
-	return nullptr;
 }
 
 RemoteDebugger::RemoteDebugger(Ref<RemoteDebuggerPeer> p_peer) {
@@ -954,6 +959,7 @@ RemoteDebugger::~RemoteDebugger() {
 	memdelete(servers_profiler);
 	memdelete(network_profiler);
 	memdelete(visual_profiler);
-	if (performance_profiler)
+	if (performance_profiler) {
 		memdelete(performance_profiler);
+	}
 }

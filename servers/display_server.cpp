@@ -127,6 +127,7 @@ void DisplayServer::global_menu_clear(const String &p_menu_root) {
 void DisplayServer::mouse_set_mode(MouseMode p_mode) {
 	WARN_PRINT("Mouse is not supported by this display server.");
 }
+
 DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
@@ -134,12 +135,15 @@ DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 void DisplayServer::mouse_warp_to_position(const Point2i &p_to) {
 	WARN_PRINT("Mouse warping is not supported by this display server.");
 }
+
 Point2i DisplayServer::mouse_get_absolute_position() const {
 	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
 }
+
 Point2i DisplayServer::mouse_get_position() const {
 	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
 }
+
 int DisplayServer::mouse_get_button_state() const {
 	ERR_FAIL_V_MSG(0, "Mouse is not supported by this display server.");
 }
@@ -147,6 +151,7 @@ int DisplayServer::mouse_get_button_state() const {
 void DisplayServer::clipboard_set(const String &p_text) {
 	WARN_PRINT("Clipboard is not supported by this display server.");
 }
+
 String DisplayServer::clipboard_get() const {
 	ERR_FAIL_V_MSG(String(), "Clipboard is not supported by this display server.");
 }
@@ -154,6 +159,7 @@ String DisplayServer::clipboard_get() const {
 void DisplayServer::screen_set_orientation(ScreenOrientation p_orientation, int p_screen) {
 	WARN_PRINT("Orientation not supported by this display server.");
 }
+
 DisplayServer::ScreenOrientation DisplayServer::screen_get_orientation(int p_screen) const {
 	return SCREEN_LANDSCAPE;
 }
@@ -170,6 +176,7 @@ bool DisplayServer::screen_is_touchscreen(int p_screen) const {
 void DisplayServer::screen_set_keep_on(bool p_enable) {
 	WARN_PRINT("Keeping screen on not supported by this display server.");
 }
+
 bool DisplayServer::screen_is_kept_on() const {
 	return false;
 }
@@ -177,6 +184,7 @@ bool DisplayServer::screen_is_kept_on() const {
 DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &) {
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
+
 void DisplayServer::delete_sub_window(WindowID p_id) {
 	ERR_FAIL_MSG("Sub-windows not supported by this display server.");
 }
@@ -184,6 +192,7 @@ void DisplayServer::delete_sub_window(WindowID p_id) {
 void DisplayServer::window_set_ime_active(const bool p_active, WindowID p_window) {
 	WARN_PRINT("IME not supported by this display server.");
 }
+
 void DisplayServer::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
 	WARN_PRINT("IME not supported by this display server.");
 }
@@ -191,6 +200,7 @@ void DisplayServer::window_set_ime_position(const Point2i &p_pos, WindowID p_win
 Point2i DisplayServer::ime_get_selection() const {
 	ERR_FAIL_V_MSG(Point2i(), "IME or NOTIFICATION_WM_IME_UPDATE not supported by this display server.");
 }
+
 String DisplayServer::ime_get_text() const {
 	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATEnot supported by this display server.");
 }
@@ -198,6 +208,7 @@ String DisplayServer::ime_get_text() const {
 void DisplayServer::console_set_visible(bool p_enabled) {
 	WARN_PRINT("Console window not supported by this display server.");
 }
+
 bool DisplayServer::is_console_visible() const {
 	return false;
 }
@@ -205,6 +216,7 @@ bool DisplayServer::is_console_visible() const {
 void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, int p_max_legth) {
 	WARN_PRINT("Virtual keyboard not supported by this display server.");
 }
+
 void DisplayServer::virtual_keyboard_hide() {
 	WARN_PRINT("Virtual keyboard not supported by this display server.");
 }
@@ -217,9 +229,11 @@ int DisplayServer::virtual_keyboard_get_height() const {
 void DisplayServer::cursor_set_shape(CursorShape p_shape) {
 	WARN_PRINT("Cursor shape not supported by this display server.");
 }
+
 DisplayServer::CursorShape DisplayServer::cursor_get_shape() const {
 	return CURSOR_ARROW;
 }
+
 void DisplayServer::cursor_set_custom_image(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	WARN_PRINT("Custom cursor shape not supported by this display server.");
 }
@@ -235,15 +249,19 @@ void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
 Error DisplayServer::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track, int p_screen) {
 	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Native video not supported by this display server.");
 }
+
 bool DisplayServer::native_video_is_playing() const {
 	return false;
 }
+
 void DisplayServer::native_video_pause() {
 	WARN_PRINT("Native video not supported by this display server.");
 }
+
 void DisplayServer::native_video_unpause() {
 	WARN_PRINT("Native video not supported by this display server.");
 }
+
 void DisplayServer::native_video_stop() {
 	WARN_PRINT("Native video not supported by this display server.");
 }
@@ -252,6 +270,7 @@ Error DisplayServer::dialog_show(String p_title, String p_description, Vector<St
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return OK;
 }
+
 Error DisplayServer::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return OK;
@@ -267,9 +286,11 @@ void DisplayServer::force_process_and_drop_events() {
 void DisplayServer::release_rendering_thread() {
 	WARN_PRINT("Rendering thread not supported by this display server.");
 }
+
 void DisplayServer::make_rendering_thread() {
 	WARN_PRINT("Rendering thread not supported by this display server.");
 }
+
 void DisplayServer::swap_buffers() {
 	WARN_PRINT("Swap buffers not supported by this display server.");
 }
@@ -277,6 +298,7 @@ void DisplayServer::swap_buffers() {
 void DisplayServer::set_native_icon(const String &p_filename) {
 	WARN_PRINT("Native icon not supported by this display server.");
 }
+
 void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
@@ -284,6 +306,7 @@ void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 void DisplayServer::_set_use_vsync(bool p_enable) {
 	WARN_PRINT("VSync not supported by this display server.");
 }
+
 void DisplayServer::vsync_set_enabled(bool p_enable) {
 	vsync_enabled = p_enable;
 	if (switch_vsync_function) { //if a function was set, use function
@@ -292,6 +315,7 @@ void DisplayServer::vsync_set_enabled(bool p_enable) {
 		_set_use_vsync(p_enable);
 	}
 }
+
 bool DisplayServer::vsync_is_enabled() const {
 	return vsync_enabled;
 }
@@ -299,6 +323,7 @@ bool DisplayServer::vsync_is_enabled() const {
 void DisplayServer::vsync_set_use_via_compositor(bool p_enable) {
 	WARN_PRINT("VSync via compositor not supported by this display server.");
 }
+
 bool DisplayServer::vsync_is_using_via_compositor() const {
 	return false;
 }
@@ -307,7 +332,6 @@ void DisplayServer::set_context(Context p_context) {
 }
 
 void DisplayServer::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
 
@@ -566,6 +590,7 @@ DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driv
 void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
 	singleton->mouse_set_mode(MouseMode(p_mode));
 }
+
 Input::MouseMode DisplayServer::_input_get_mouse_mode() {
 	return Input::MouseMode(singleton->mouse_get_mode());
 }
@@ -577,6 +602,7 @@ void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
 	return (Input::CursorShape)singleton->cursor_get_shape();
 }
+
 void DisplayServer::_input_set_custom_mouse_cursor_func(const RES &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
 }
@@ -589,5 +615,6 @@ DisplayServer::DisplayServer() {
 	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
 	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;
 }
+
 DisplayServer::~DisplayServer() {
 }

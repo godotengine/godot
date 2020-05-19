@@ -36,7 +36,6 @@
 #include "scene/resources/texture.h"
 
 class TextureEditor : public Control {
-
 	GDCLASS(TextureEditor, Control);
 
 	Ref<Texture2D> texture;
@@ -62,7 +61,6 @@ public:
 };
 
 class TextureEditorPlugin : public EditorPlugin {
-
 	GDCLASS(TextureEditorPlugin, EditorPlugin);
 
 public:

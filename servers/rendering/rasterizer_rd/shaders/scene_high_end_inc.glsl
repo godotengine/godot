@@ -3,7 +3,8 @@
 
 layout(push_constant, binding = 0, std430) uniform DrawCall {
 	uint instance_index;
-	uint pad[3]; //16 bits minimum size
+	uint pad; //16 bits minimum size
+	vec2 bake_uv2_offset; //used for bake to uv2, ignored otherwise
 }
 draw_call;
 
@@ -27,7 +28,6 @@ layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
 layout(set = 0, binding = 3, std140) uniform SceneData {
-
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
 
@@ -77,6 +77,10 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	bool roughness_limiter_enabled;
 
 	vec4 ao_color;
+	bool material_uv2_mode;
+	uint pad_material0;
+	uint pad_material1;
+	uint pad_material2;
 
 #if 0
 	vec4 ambient_light_color;
@@ -113,13 +117,13 @@ layout(set = 0, binding = 3, std140) uniform SceneData {
 	float fog_height_curve;
 #endif
 }
+
 scene_data;
 
-#define INSTANCE_FLAGS_FORWARD_MASK 0x7
-#define INSTANCE_FLAGS_FORWARD_OMNI_LIGHT_SHIFT 3
-#define INSTANCE_FLAGS_FORWARD_SPOT_LIGHT_SHIFT 6
-#define INSTANCE_FLAGS_FORWARD_DECAL_SHIFT 9
-
+#define INSTANCE_FLAGS_USE_LIGHTMAP_CAPTURE (1 << 8)
+#define INSTANCE_FLAGS_USE_LIGHTMAP (1 << 9)
+#define INSTANCE_FLAGS_USE_SH_LIGHTMAP (1 << 10)
+#define INSTANCE_FLAGS_USE_GIPROBE (1 << 11)
 #define INSTANCE_FLAGS_MULTIMESH (1 << 12)
 #define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D (1 << 13)
 #define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR (1 << 14)
@@ -135,8 +139,9 @@ struct InstanceData {
 	mat4 normal_transform;
 	uint flags;
 	uint instance_uniforms_ofs; //base offset in global buffer for instance variables
-	uint gi_offset; //GI information when using lightmapping (VCT or lightmap)
+	uint gi_offset; //GI information when using lightmapping (VCT or lightmap index)
 	uint layer_mask;
+	vec4 lightmap_uv_scale;
 };
 
 layout(set = 0, binding = 4, std430) restrict readonly buffer Instances {
@@ -171,7 +176,6 @@ layout(set = 0, binding = 5, std430) restrict readonly buffer Lights {
 lights;
 
 struct ReflectionData {
-
 	vec3 box_extents;
 	float index;
 	vec3 box_offset;
@@ -248,12 +252,35 @@ gi_probes;
 
 layout(set = 0, binding = 9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TEXTURES];
 
+#define LIGHTMAP_FLAG_USE_DIRECTION 1
+#define LIGHTMAP_FLAG_USE_SPECULAR_DIRECTION 2
+
+struct Lightmap {
+	mat3 normal_xform;
+};
+
+layout(set = 0, binding = 10, std140) restrict readonly buffer Lightmaps {
+	Lightmap data[];
+}
+lightmaps;
+
+layout(set = 0, binding = 11) uniform texture2DArray lightmap_textures[MAX_LIGHTMAP_TEXTURES];
+
+struct LightmapCapture {
+	vec4 sh[9];
+};
+
+layout(set = 0, binding = 12, std140) restrict readonly buffer LightmapCaptures {
+	LightmapCapture data[];
+}
+lightmap_captures;
+
 #define CLUSTER_COUNTER_SHIFT 20
 #define CLUSTER_POINTER_MASK ((1 << CLUSTER_COUNTER_SHIFT) - 1)
 #define CLUSTER_COUNTER_MASK 0xfff
 
-layout(set = 0, binding = 10) uniform texture2D decal_atlas;
-layout(set = 0, binding = 11) uniform texture2D decal_atlas_srgb;
+layout(set = 0, binding = 13) uniform texture2D decal_atlas;
+layout(set = 0, binding = 14) uniform texture2D decal_atlas_srgb;
 
 struct DecalData {
 	mat4 xform; //to decal transform
@@ -273,21 +300,21 @@ struct DecalData {
 	float normal_fade;
 };
 
-layout(set = 0, binding = 12, std430) restrict readonly buffer Decals {
+layout(set = 0, binding = 15, std430) restrict readonly buffer Decals {
 	DecalData data[];
 }
 decals;
 
-layout(set = 0, binding = 13) uniform utexture3D cluster_texture;
+layout(set = 0, binding = 16) uniform utexture3D cluster_texture;
 
-layout(set = 0, binding = 14, std430) restrict readonly buffer ClusterData {
+layout(set = 0, binding = 17, std430) restrict readonly buffer ClusterData {
 	uint indices[];
 }
 cluster_data;
 
-layout(set = 0, binding = 15) uniform texture2D directional_shadow_atlas;
+layout(set = 0, binding = 18) uniform texture2D directional_shadow_atlas;
 
-layout(set = 0, binding = 16, std430) restrict readonly buffer GlobalVariableData {
+layout(set = 0, binding = 19, std430) restrict readonly buffer GlobalVariableData {
 	vec4 data[];
 }
 global_variables;
@@ -312,7 +339,7 @@ layout(set = 2, binding = 0) uniform textureCubeArray reflection_atlas;
 
 layout(set = 2, binding = 1) uniform texture2D shadow_atlas;
 
-/* Set 1, Render Buffers */
+/* Set 3, Render Buffers */
 
 layout(set = 3, binding = 0) uniform texture2D depth_buffer;
 layout(set = 3, binding = 1) uniform texture2D color_buffer;

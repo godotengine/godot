@@ -44,48 +44,36 @@
 	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
 RID PhysicsServer3DSW::shape_create(ShapeType p_shape) {
-
 	Shape3DSW *shape = nullptr;
 	switch (p_shape) {
-
 		case SHAPE_PLANE: {
-
 			shape = memnew(PlaneShape3DSW);
 		} break;
 		case SHAPE_RAY: {
-
 			shape = memnew(RayShape3DSW);
 		} break;
 		case SHAPE_SPHERE: {
-
 			shape = memnew(SphereShape3DSW);
 		} break;
 		case SHAPE_BOX: {
-
 			shape = memnew(BoxShape3DSW);
 		} break;
 		case SHAPE_CAPSULE: {
-
 			shape = memnew(CapsuleShape3DSW);
 		} break;
 		case SHAPE_CYLINDER: {
-
 			ERR_FAIL_V_MSG(RID(), "CylinderShape3D is not supported in GodotPhysics3D. Please switch to Bullet in the Project Settings.");
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
-
 			shape = memnew(ConvexPolygonShape3DSW);
 		} break;
 		case SHAPE_CONCAVE_POLYGON: {
-
 			shape = memnew(ConcavePolygonShape3DSW);
 		} break;
 		case SHAPE_HEIGHTMAP: {
-
 			shape = memnew(HeightMapShape3DSW);
 		} break;
 		case SHAPE_CUSTOM: {
-
 			ERR_FAIL_V(RID());
 
 		} break;
@@ -98,28 +86,24 @@ RID PhysicsServer3DSW::shape_create(ShapeType p_shape) {
 };
 
 void PhysicsServer3DSW::shape_set_data(RID p_shape, const Variant &p_data) {
-
 	Shape3DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 	shape->set_data(p_data);
 };
 
 void PhysicsServer3DSW::shape_set_custom_solver_bias(RID p_shape, real_t p_bias) {
-
 	Shape3DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND(!shape);
 	shape->set_custom_bias(p_bias);
 }
 
 PhysicsServer3D::ShapeType PhysicsServer3DSW::shape_get_type(RID p_shape) const {
-
 	const Shape3DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, SHAPE_CUSTOM);
 	return shape->get_type();
 };
 
 Variant PhysicsServer3DSW::shape_get_data(RID p_shape) const {
-
 	const Shape3DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, Variant());
 	ERR_FAIL_COND_V(!shape->is_configured(), Variant());
@@ -134,14 +118,12 @@ real_t PhysicsServer3DSW::shape_get_margin(RID p_shape) const {
 }
 
 real_t PhysicsServer3DSW::shape_get_custom_solver_bias(RID p_shape) const {
-
 	const Shape3DSW *shape = shape_owner.getornull(p_shape);
 	ERR_FAIL_COND_V(!shape, 0);
 	return shape->get_custom_bias();
 }
 
 RID PhysicsServer3DSW::space_create() {
-
 	Space3DSW *space = memnew(Space3DSW);
 	RID id = space_owner.make_rid(space);
 	space->set_self(id);
@@ -160,17 +142,16 @@ RID PhysicsServer3DSW::space_create() {
 };
 
 void PhysicsServer3DSW::space_set_active(RID p_space, bool p_active) {
-
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND(!space);
-	if (p_active)
+	if (p_active) {
 		active_spaces.insert(space);
-	else
+	} else {
 		active_spaces.erase(space);
+	}
 }
 
 bool PhysicsServer3DSW::space_is_active(RID p_space) const {
-
 	const Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, false);
 
@@ -178,7 +159,6 @@ bool PhysicsServer3DSW::space_is_active(RID p_space) const {
 }
 
 void PhysicsServer3DSW::space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) {
-
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND(!space);
 
@@ -186,14 +166,12 @@ void PhysicsServer3DSW::space_set_param(RID p_space, SpaceParameter p_param, rea
 }
 
 real_t PhysicsServer3DSW::space_get_param(RID p_space, SpaceParameter p_param) const {
-
 	const Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, 0);
 	return space->get_param(p_param);
 }
 
 PhysicsDirectSpaceState3D *PhysicsServer3DSW::space_get_direct_state(RID p_space) {
-
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, nullptr);
 	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), nullptr, "Space state is inaccessible right now, wait for iteration or physics process notification.");
@@ -202,28 +180,24 @@ PhysicsDirectSpaceState3D *PhysicsServer3DSW::space_get_direct_state(RID p_space
 }
 
 void PhysicsServer3DSW::space_set_debug_contacts(RID p_space, int p_max_contacts) {
-
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND(!space);
 	space->set_debug_contacts(p_max_contacts);
 }
 
 Vector<Vector3> PhysicsServer3DSW::space_get_contacts(RID p_space) const {
-
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, Vector<Vector3>());
 	return space->get_debug_contacts();
 }
 
 int PhysicsServer3DSW::space_get_contact_count(RID p_space) const {
-
 	Space3DSW *space = space_owner.getornull(p_space);
 	ERR_FAIL_COND_V(!space, 0);
 	return space->get_debug_contact_count();
 }
 
 RID PhysicsServer3DSW::area_create() {
-
 	Area3DSW *area = memnew(Area3DSW);
 	RID rid = area_owner.make_rid(area);
 	area->set_self(rid);
@@ -231,7 +205,6 @@ RID PhysicsServer3DSW::area_create() {
 };
 
 void PhysicsServer3DSW::area_set_space(RID p_area, RID p_space) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -241,26 +214,26 @@ void PhysicsServer3DSW::area_set_space(RID p_area, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (area->get_space() == space)
+	if (area->get_space() == space) {
 		return; //pointless
+	}
 
 	area->clear_constraints();
 	area->set_space(space);
 };
 
 RID PhysicsServer3DSW::area_get_space(RID p_area) const {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, RID());
 
 	Space3DSW *space = area->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 };
 
 void PhysicsServer3DSW::area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -268,7 +241,6 @@ void PhysicsServer3DSW::area_set_space_override_mode(RID p_area, AreaSpaceOverri
 }
 
 PhysicsServer3D::AreaSpaceOverrideMode PhysicsServer3DSW::area_get_space_override_mode(RID p_area) const {
-
 	const Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, AREA_SPACE_OVERRIDE_DISABLED);
 
@@ -276,7 +248,6 @@ PhysicsServer3D::AreaSpaceOverrideMode PhysicsServer3DSW::area_get_space_overrid
 }
 
 void PhysicsServer3DSW::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_disabled) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -287,7 +258,6 @@ void PhysicsServer3DSW::area_add_shape(RID p_area, RID p_shape, const Transform 
 }
 
 void PhysicsServer3DSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -299,7 +269,6 @@ void PhysicsServer3DSW::area_set_shape(RID p_area, int p_shape_idx, RID p_shape)
 }
 
 void PhysicsServer3DSW::area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -307,14 +276,13 @@ void PhysicsServer3DSW::area_set_shape_transform(RID p_area, int p_shape_idx, co
 }
 
 int PhysicsServer3DSW::area_get_shape_count(RID p_area) const {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, -1);
 
 	return area->get_shape_count();
 }
-RID PhysicsServer3DSW::area_get_shape(RID p_area, int p_shape_idx) const {
 
+RID PhysicsServer3DSW::area_get_shape(RID p_area, int p_shape_idx) const {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, RID());
 
@@ -323,8 +291,8 @@ RID PhysicsServer3DSW::area_get_shape(RID p_area, int p_shape_idx) const {
 
 	return shape->get_self();
 }
-Transform PhysicsServer3DSW::area_get_shape_transform(RID p_area, int p_shape_idx) const {
 
+Transform PhysicsServer3DSW::area_get_shape_transform(RID p_area, int p_shape_idx) const {
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, Transform());
 
@@ -332,7 +300,6 @@ Transform PhysicsServer3DSW::area_get_shape_transform(RID p_area, int p_shape_id
 }
 
 void PhysicsServer3DSW::area_remove_shape(RID p_area, int p_shape_idx) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -340,16 +307,15 @@ void PhysicsServer3DSW::area_remove_shape(RID p_area, int p_shape_idx) {
 }
 
 void PhysicsServer3DSW::area_clear_shapes(RID p_area) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
-	while (area->get_shape_count())
+	while (area->get_shape_count()) {
 		area->remove_shape(0);
+	}
 }
 
 void PhysicsServer3DSW::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 	ERR_FAIL_INDEX(p_shape_idx, area->get_shape_count());
@@ -358,7 +324,6 @@ void PhysicsServer3DSW::area_set_shape_disabled(RID p_area, int p_shape_idx, boo
 }
 
 void PhysicsServer3DSW::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
-
 	if (space_owner.owns(p_area)) {
 		Space3DSW *space = space_owner.getornull(p_area);
 		p_area = space->get_default_area()->get_self();
@@ -367,8 +332,8 @@ void PhysicsServer3DSW::area_attach_object_instance_id(RID p_area, ObjectID p_id
 	ERR_FAIL_COND(!area);
 	area->set_instance_id(p_id);
 }
-ObjectID PhysicsServer3DSW::area_get_object_instance_id(RID p_area) const {
 
+ObjectID PhysicsServer3DSW::area_get_object_instance_id(RID p_area) const {
 	if (space_owner.owns(p_area)) {
 		Space3DSW *space = space_owner.getornull(p_area);
 		p_area = space->get_default_area()->get_self();
@@ -379,7 +344,6 @@ ObjectID PhysicsServer3DSW::area_get_object_instance_id(RID p_area) const {
 }
 
 void PhysicsServer3DSW::area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) {
-
 	if (space_owner.owns(p_area)) {
 		Space3DSW *space = space_owner.getornull(p_area);
 		p_area = space->get_default_area()->get_self();
@@ -390,14 +354,12 @@ void PhysicsServer3DSW::area_set_param(RID p_area, AreaParameter p_param, const 
 };
 
 void PhysicsServer3DSW::area_set_transform(RID p_area, const Transform &p_transform) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 	area->set_transform(p_transform);
 };
 
 Variant PhysicsServer3DSW::area_get_param(RID p_area, AreaParameter p_param) const {
-
 	if (space_owner.owns(p_area)) {
 		Space3DSW *space = space_owner.getornull(p_area);
 		p_area = space->get_default_area()->get_self();
@@ -409,7 +371,6 @@ Variant PhysicsServer3DSW::area_get_param(RID p_area, AreaParameter p_param) con
 };
 
 Transform PhysicsServer3DSW::area_get_transform(RID p_area) const {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, Transform());
 
@@ -417,7 +378,6 @@ Transform PhysicsServer3DSW::area_get_transform(RID p_area) const {
 };
 
 void PhysicsServer3DSW::area_set_collision_layer(RID p_area, uint32_t p_layer) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -425,7 +385,6 @@ void PhysicsServer3DSW::area_set_collision_layer(RID p_area, uint32_t p_layer) {
 }
 
 void PhysicsServer3DSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -433,7 +392,6 @@ void PhysicsServer3DSW::area_set_collision_mask(RID p_area, uint32_t p_mask) {
 }
 
 void PhysicsServer3DSW::area_set_monitorable(RID p_area, bool p_monitorable) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 	FLUSH_QUERY_CHECK(area);
@@ -442,7 +400,6 @@ void PhysicsServer3DSW::area_set_monitorable(RID p_area, bool p_monitorable) {
 }
 
 void PhysicsServer3DSW::area_set_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -450,7 +407,6 @@ void PhysicsServer3DSW::area_set_monitor_callback(RID p_area, Object *p_receiver
 }
 
 void PhysicsServer3DSW::area_set_ray_pickable(RID p_area, bool p_enable) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -458,7 +414,6 @@ void PhysicsServer3DSW::area_set_ray_pickable(RID p_area, bool p_enable) {
 }
 
 bool PhysicsServer3DSW::area_is_ray_pickable(RID p_area) const {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND_V(!area, false);
 
@@ -466,7 +421,6 @@ bool PhysicsServer3DSW::area_is_ray_pickable(RID p_area) const {
 }
 
 void PhysicsServer3DSW::area_set_area_monitor_callback(RID p_area, Object *p_receiver, const StringName &p_method) {
-
 	Area3DSW *area = area_owner.getornull(p_area);
 	ERR_FAIL_COND(!area);
 
@@ -476,19 +430,19 @@ void PhysicsServer3DSW::area_set_area_monitor_callback(RID p_area, Object *p_rec
 /* BODY API */
 
 RID PhysicsServer3DSW::body_create(BodyMode p_mode, bool p_init_sleeping) {
-
 	Body3DSW *body = memnew(Body3DSW);
-	if (p_mode != BODY_MODE_RIGID)
+	if (p_mode != BODY_MODE_RIGID) {
 		body->set_mode(p_mode);
-	if (p_init_sleeping)
+	}
+	if (p_init_sleeping) {
 		body->set_state(BODY_STATE_SLEEPING, p_init_sleeping);
+	}
 	RID rid = body_owner.make_rid(body);
 	body->set_self(rid);
 	return rid;
 };
 
 void PhysicsServer3DSW::body_set_space(RID p_body, RID p_space) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -498,26 +452,26 @@ void PhysicsServer3DSW::body_set_space(RID p_body, RID p_space) {
 		ERR_FAIL_COND(!space);
 	}
 
-	if (body->get_space() == space)
+	if (body->get_space() == space) {
 		return; //pointless
+	}
 
 	body->clear_constraint_map();
 	body->set_space(space);
 };
 
 RID PhysicsServer3DSW::body_get_space(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, RID());
 
 	Space3DSW *space = body->get_space();
-	if (!space)
+	if (!space) {
 		return RID();
+	}
 	return space->get_self();
 };
 
 void PhysicsServer3DSW::body_set_mode(RID p_body, BodyMode p_mode) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -525,7 +479,6 @@ void PhysicsServer3DSW::body_set_mode(RID p_body, BodyMode p_mode) {
 };
 
 PhysicsServer3D::BodyMode PhysicsServer3DSW::body_get_mode(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, BODY_MODE_STATIC);
 
@@ -533,7 +486,6 @@ PhysicsServer3D::BodyMode PhysicsServer3DSW::body_get_mode(RID p_body) const {
 };
 
 void PhysicsServer3DSW::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -544,7 +496,6 @@ void PhysicsServer3DSW::body_add_shape(RID p_body, RID p_shape, const Transform 
 }
 
 void PhysicsServer3DSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -554,8 +505,8 @@ void PhysicsServer3DSW::body_set_shape(RID p_body, int p_shape_idx, RID p_shape)
 
 	body->set_shape(p_shape_idx, shape);
 }
-void PhysicsServer3DSW::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) {
 
+void PhysicsServer3DSW::body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -563,14 +514,13 @@ void PhysicsServer3DSW::body_set_shape_transform(RID p_body, int p_shape_idx, co
 }
 
 int PhysicsServer3DSW::body_get_shape_count(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, -1);
 
 	return body->get_shape_count();
 }
-RID PhysicsServer3DSW::body_get_shape(RID p_body, int p_shape_idx) const {
 
+RID PhysicsServer3DSW::body_get_shape(RID p_body, int p_shape_idx) const {
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, RID());
 
@@ -581,7 +531,6 @@ RID PhysicsServer3DSW::body_get_shape(RID p_body, int p_shape_idx) const {
 }
 
 void PhysicsServer3DSW::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
@@ -591,7 +540,6 @@ void PhysicsServer3DSW::body_set_shape_disabled(RID p_body, int p_shape_idx, boo
 }
 
 Transform PhysicsServer3DSW::body_get_shape_transform(RID p_body, int p_shape_idx) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, Transform());
 
@@ -599,7 +547,6 @@ Transform PhysicsServer3DSW::body_get_shape_transform(RID p_body, int p_shape_id
 }
 
 void PhysicsServer3DSW::body_remove_shape(RID p_body, int p_shape_idx) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -607,16 +554,15 @@ void PhysicsServer3DSW::body_remove_shape(RID p_body, int p_shape_idx) {
 }
 
 void PhysicsServer3DSW::body_clear_shapes(RID p_body) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
-	while (body->get_shape_count())
+	while (body->get_shape_count()) {
 		body->remove_shape(0);
+	}
 }
 
 void PhysicsServer3DSW::body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -624,7 +570,6 @@ void PhysicsServer3DSW::body_set_enable_continuous_collision_detection(RID p_bod
 }
 
 bool PhysicsServer3DSW::body_is_continuous_collision_detection_enabled(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 
@@ -632,7 +577,6 @@ bool PhysicsServer3DSW::body_is_continuous_collision_detection_enabled(RID p_bod
 }
 
 void PhysicsServer3DSW::body_set_collision_layer(RID p_body, uint32_t p_layer) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -641,7 +585,6 @@ void PhysicsServer3DSW::body_set_collision_layer(RID p_body, uint32_t p_layer) {
 }
 
 uint32_t PhysicsServer3DSW::body_get_collision_layer(RID p_body) const {
-
 	const Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
@@ -649,7 +592,6 @@ uint32_t PhysicsServer3DSW::body_get_collision_layer(RID p_body) const {
 }
 
 void PhysicsServer3DSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -658,7 +600,6 @@ void PhysicsServer3DSW::body_set_collision_mask(RID p_body, uint32_t p_mask) {
 }
 
 uint32_t PhysicsServer3DSW::body_get_collision_mask(RID p_body) const {
-
 	const Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
@@ -666,7 +607,6 @@ uint32_t PhysicsServer3DSW::body_get_collision_mask(RID p_body) const {
 }
 
 void PhysicsServer3DSW::body_attach_object_instance_id(RID p_body, ObjectID p_id) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -674,7 +614,6 @@ void PhysicsServer3DSW::body_attach_object_instance_id(RID p_body, ObjectID p_id
 };
 
 ObjectID PhysicsServer3DSW::body_get_object_instance_id(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, ObjectID());
 
@@ -682,13 +621,11 @@ ObjectID PhysicsServer3DSW::body_get_object_instance_id(RID p_body) const {
 };
 
 void PhysicsServer3DSW::body_set_user_flags(RID p_body, uint32_t p_flags) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 };
 
 uint32_t PhysicsServer3DSW::body_get_user_flags(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
@@ -696,7 +633,6 @@ uint32_t PhysicsServer3DSW::body_get_user_flags(RID p_body) const {
 };
 
 void PhysicsServer3DSW::body_set_param(RID p_body, BodyParameter p_param, real_t p_value) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -704,7 +640,6 @@ void PhysicsServer3DSW::body_set_param(RID p_body, BodyParameter p_param, real_t
 };
 
 real_t PhysicsServer3DSW::body_get_param(RID p_body, BodyParameter p_param) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 
@@ -725,7 +660,6 @@ real_t PhysicsServer3DSW::body_get_kinematic_safe_margin(RID p_body) const {
 }
 
 void PhysicsServer3DSW::body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -733,7 +667,6 @@ void PhysicsServer3DSW::body_set_state(RID p_body, BodyState p_state, const Vari
 };
 
 Variant PhysicsServer3DSW::body_get_state(RID p_body, BodyState p_state) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, Variant());
 
@@ -741,7 +674,6 @@ Variant PhysicsServer3DSW::body_get_state(RID p_body, BodyState p_state) const {
 };
 
 void PhysicsServer3DSW::body_set_applied_force(RID p_body, const Vector3 &p_force) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -750,14 +682,12 @@ void PhysicsServer3DSW::body_set_applied_force(RID p_body, const Vector3 &p_forc
 };
 
 Vector3 PhysicsServer3DSW::body_get_applied_force(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, Vector3());
 	return body->get_applied_force();
 };
 
 void PhysicsServer3DSW::body_set_applied_torque(RID p_body, const Vector3 &p_torque) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -766,7 +696,6 @@ void PhysicsServer3DSW::body_set_applied_torque(RID p_body, const Vector3 &p_tor
 };
 
 Vector3 PhysicsServer3DSW::body_get_applied_torque(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, Vector3());
 
@@ -808,7 +737,6 @@ void PhysicsServer3DSW::body_apply_central_impulse(RID p_body, const Vector3 &p_
 }
 
 void PhysicsServer3DSW::body_apply_impulse(RID p_body, const Vector3 &p_pos, const Vector3 &p_impulse) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -819,7 +747,6 @@ void PhysicsServer3DSW::body_apply_impulse(RID p_body, const Vector3 &p_pos, con
 };
 
 void PhysicsServer3DSW::body_apply_torque_impulse(RID p_body, const Vector3 &p_impulse) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -830,7 +757,6 @@ void PhysicsServer3DSW::body_apply_torque_impulse(RID p_body, const Vector3 &p_i
 };
 
 void PhysicsServer3DSW::body_set_axis_velocity(RID p_body, const Vector3 &p_axis_velocity) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -845,7 +771,6 @@ void PhysicsServer3DSW::body_set_axis_velocity(RID p_body, const Vector3 &p_axis
 };
 
 void PhysicsServer3DSW::body_set_axis_lock(RID p_body, BodyAxis p_axis, bool p_lock) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -854,14 +779,12 @@ void PhysicsServer3DSW::body_set_axis_lock(RID p_body, BodyAxis p_axis, bool p_l
 }
 
 bool PhysicsServer3DSW::body_is_axis_locked(RID p_body, BodyAxis p_axis) const {
-
 	const Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 	return body->is_axis_locked(p_axis);
 }
 
 void PhysicsServer3DSW::body_add_collision_exception(RID p_body, RID p_body_b) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -870,7 +793,6 @@ void PhysicsServer3DSW::body_add_collision_exception(RID p_body, RID p_body_b) {
 };
 
 void PhysicsServer3DSW::body_remove_collision_exception(RID p_body, RID p_body_b) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -879,7 +801,6 @@ void PhysicsServer3DSW::body_remove_collision_exception(RID p_body, RID p_body_b
 };
 
 void PhysicsServer3DSW::body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -889,20 +810,17 @@ void PhysicsServer3DSW::body_get_collision_exceptions(RID p_body, List<RID> *p_e
 };
 
 void PhysicsServer3DSW::body_set_contacts_reported_depth_threshold(RID p_body, real_t p_threshold) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 };
 
 real_t PhysicsServer3DSW::body_get_contacts_reported_depth_threshold(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, 0);
 	return 0;
 };
 
 void PhysicsServer3DSW::body_set_omit_force_integration(RID p_body, bool p_omit) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 
@@ -910,49 +828,42 @@ void PhysicsServer3DSW::body_set_omit_force_integration(RID p_body, bool p_omit)
 };
 
 bool PhysicsServer3DSW::body_is_omitting_force_integration(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	return body->get_omit_force_integration();
 };
 
 void PhysicsServer3DSW::body_set_max_contacts_reported(RID p_body, int p_contacts) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_max_contacts_reported(p_contacts);
 }
 
 int PhysicsServer3DSW::body_get_max_contacts_reported(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, -1);
 	return body->get_max_contacts_reported();
 }
 
 void PhysicsServer3DSW::body_set_force_integration_callback(RID p_body, Object *p_receiver, const StringName &p_method, const Variant &p_udata) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_force_integration_callback(p_receiver ? p_receiver->get_instance_id() : ObjectID(), p_method, p_udata);
 }
 
 void PhysicsServer3DSW::body_set_ray_pickable(RID p_body, bool p_enable) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_ray_pickable(p_enable);
 }
 
 bool PhysicsServer3DSW::body_is_ray_pickable(RID p_body) const {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	return body->is_ray_pickable();
 }
 
 bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -964,7 +875,6 @@ bool PhysicsServer3DSW::body_test_motion(RID p_body, const Transform &p_from, co
 }
 
 int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
@@ -976,7 +886,6 @@ int PhysicsServer3DSW::body_test_ray_separation(RID p_body, const Transform &p_t
 }
 
 PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
-
 	Body3DSW *body = body_owner.getornull(p_body);
 	ERR_FAIL_COND_V(!body, nullptr);
 	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), nullptr, "Body state is inaccessible right now, wait for iteration or physics process notification.");
@@ -988,7 +897,6 @@ PhysicsDirectBodyState3D *PhysicsServer3DSW::body_get_direct_state(RID p_body) {
 /* JOINT API */
 
 RID PhysicsServer3DSW::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, RID p_body_B, const Vector3 &p_local_B) {
-
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 
@@ -1009,15 +917,14 @@ RID PhysicsServer3DSW::joint_create_pin(RID p_body_A, const Vector3 &p_local_A, 
 }
 
 void PhysicsServer3DSW::pin_joint_set_param(RID p_joint, PinJointParam p_param, real_t p_value) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_param(p_param, p_value);
 }
-real_t PhysicsServer3DSW::pin_joint_get_param(RID p_joint, PinJointParam p_param) const {
 
+real_t PhysicsServer3DSW::pin_joint_get_param(RID p_joint, PinJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, 0);
@@ -1026,15 +933,14 @@ real_t PhysicsServer3DSW::pin_joint_get_param(RID p_joint, PinJointParam p_param
 }
 
 void PhysicsServer3DSW::pin_joint_set_local_a(RID p_joint, const Vector3 &p_A) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_pos_a(p_A);
 }
-Vector3 PhysicsServer3DSW::pin_joint_get_local_a(RID p_joint) const {
 
+Vector3 PhysicsServer3DSW::pin_joint_get_local_a(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
@@ -1043,15 +949,14 @@ Vector3 PhysicsServer3DSW::pin_joint_get_local_a(RID p_joint) const {
 }
 
 void PhysicsServer3DSW::pin_joint_set_local_b(RID p_joint, const Vector3 &p_B) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_PIN);
 	PinJoint3DSW *pin_joint = static_cast<PinJoint3DSW *>(joint);
 	pin_joint->set_pos_b(p_B);
 }
-Vector3 PhysicsServer3DSW::pin_joint_get_local_b(RID p_joint) const {
 
+Vector3 PhysicsServer3DSW::pin_joint_get_local_b(RID p_joint) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, Vector3());
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_PIN, Vector3());
@@ -1060,7 +965,6 @@ Vector3 PhysicsServer3DSW::pin_joint_get_local_b(RID p_joint) const {
 }
 
 RID PhysicsServer3DSW::joint_create_hinge(RID p_body_A, const Transform &p_frame_A, RID p_body_B, const Transform &p_frame_B) {
-
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 
@@ -1081,7 +985,6 @@ RID PhysicsServer3DSW::joint_create_hinge(RID p_body_A, const Transform &p_frame
 }
 
 RID PhysicsServer3DSW::joint_create_hinge_simple(RID p_body_A, const Vector3 &p_pivot_A, const Vector3 &p_axis_A, RID p_body_B, const Vector3 &p_pivot_B, const Vector3 &p_axis_B) {
-
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 
@@ -1102,15 +1005,14 @@ RID PhysicsServer3DSW::joint_create_hinge_simple(RID p_body_A, const Vector3 &p_
 }
 
 void PhysicsServer3DSW::hinge_joint_set_param(RID p_joint, HingeJointParam p_param, real_t p_value) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_HINGE);
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	hinge_joint->set_param(p_param, p_value);
 }
-real_t PhysicsServer3DSW::hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const {
 
+real_t PhysicsServer3DSW::hinge_joint_get_param(RID p_joint, HingeJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_HINGE, 0);
@@ -1119,15 +1021,14 @@ real_t PhysicsServer3DSW::hinge_joint_get_param(RID p_joint, HingeJointParam p_p
 }
 
 void PhysicsServer3DSW::hinge_joint_set_flag(RID p_joint, HingeJointFlag p_flag, bool p_value) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_HINGE);
 	HingeJoint3DSW *hinge_joint = static_cast<HingeJoint3DSW *>(joint);
 	hinge_joint->set_flag(p_flag, p_value);
 }
-bool PhysicsServer3DSW::hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const {
 
+bool PhysicsServer3DSW::hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, false);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_HINGE, false);
@@ -1136,14 +1037,12 @@ bool PhysicsServer3DSW::hinge_joint_get_flag(RID p_joint, HingeJointFlag p_flag)
 }
 
 void PhysicsServer3DSW::joint_set_solver_priority(RID p_joint, int p_priority) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	joint->set_priority(p_priority);
 }
 
 int PhysicsServer3DSW::joint_get_solver_priority(RID p_joint) const {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
 	return joint->get_priority();
@@ -1177,14 +1076,12 @@ bool PhysicsServer3DSW::joint_is_disabled_collisions_between_bodies(RID p_joint)
 }
 
 PhysicsServer3DSW::JointType PhysicsServer3DSW::joint_get_type(RID p_joint) const {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, JOINT_PIN);
 	return joint->get_type();
 }
 
 RID PhysicsServer3DSW::joint_create_slider(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
-
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 
@@ -1205,15 +1102,14 @@ RID PhysicsServer3DSW::joint_create_slider(RID p_body_A, const Transform &p_loca
 }
 
 void PhysicsServer3DSW::slider_joint_set_param(RID p_joint, SliderJointParam p_param, real_t p_value) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_SLIDER);
 	SliderJoint3DSW *slider_joint = static_cast<SliderJoint3DSW *>(joint);
 	slider_joint->set_param(p_param, p_value);
 }
-real_t PhysicsServer3DSW::slider_joint_get_param(RID p_joint, SliderJointParam p_param) const {
 
+real_t PhysicsServer3DSW::slider_joint_get_param(RID p_joint, SliderJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_CONE_TWIST, 0);
@@ -1222,7 +1118,6 @@ real_t PhysicsServer3DSW::slider_joint_get_param(RID p_joint, SliderJointParam p
 }
 
 RID PhysicsServer3DSW::joint_create_cone_twist(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
-
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 
@@ -1243,15 +1138,14 @@ RID PhysicsServer3DSW::joint_create_cone_twist(RID p_body_A, const Transform &p_
 }
 
 void PhysicsServer3DSW::cone_twist_joint_set_param(RID p_joint, ConeTwistJointParam p_param, real_t p_value) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_CONE_TWIST);
 	ConeTwistJoint3DSW *cone_twist_joint = static_cast<ConeTwistJoint3DSW *>(joint);
 	cone_twist_joint->set_param(p_param, p_value);
 }
-real_t PhysicsServer3DSW::cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const {
 
+real_t PhysicsServer3DSW::cone_twist_joint_get_param(RID p_joint, ConeTwistJointParam p_param) const {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_CONE_TWIST, 0);
@@ -1260,7 +1154,6 @@ real_t PhysicsServer3DSW::cone_twist_joint_get_param(RID p_joint, ConeTwistJoint
 }
 
 RID PhysicsServer3DSW::joint_create_generic_6dof(RID p_body_A, const Transform &p_local_frame_A, RID p_body_B, const Transform &p_local_frame_B) {
-
 	Body3DSW *body_A = body_owner.getornull(p_body_A);
 	ERR_FAIL_COND_V(!body_A, RID());
 
@@ -1281,15 +1174,14 @@ RID PhysicsServer3DSW::joint_create_generic_6dof(RID p_body_A, const Transform &
 }
 
 void PhysicsServer3DSW::generic_6dof_joint_set_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param, real_t p_value) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	generic_6dof_joint->set_param(p_axis, p_param, p_value);
 }
-real_t PhysicsServer3DSW::generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) {
 
+real_t PhysicsServer3DSW::generic_6dof_joint_get_param(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisParam p_param) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, 0);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, 0);
@@ -1298,15 +1190,14 @@ real_t PhysicsServer3DSW::generic_6dof_joint_get_param(RID p_joint, Vector3::Axi
 }
 
 void PhysicsServer3DSW::generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable) {
-
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND(!joint);
 	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
 	Generic6DOFJoint3DSW *generic_6dof_joint = static_cast<Generic6DOFJoint3DSW *>(joint);
 	generic_6dof_joint->set_flag(p_axis, p_flag, p_enable);
 }
-bool PhysicsServer3DSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) {
 
+bool PhysicsServer3DSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag) {
 	Joint3DSW *joint = joint_owner.getornull(p_joint);
 	ERR_FAIL_COND_V(!joint, false);
 	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, false);
@@ -1315,11 +1206,9 @@ bool PhysicsServer3DSW::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p
 }
 
 void PhysicsServer3DSW::free(RID p_rid) {
-
 	_update_shapes(); //just in case
 
 	if (shape_owner.owns(p_rid)) {
-
 		Shape3DSW *shape = shape_owner.getornull(p_rid);
 
 		while (shape->get_owners().size()) {
@@ -1330,7 +1219,6 @@ void PhysicsServer3DSW::free(RID p_rid) {
 		shape_owner.free(p_rid);
 		memdelete(shape);
 	} else if (body_owner.owns(p_rid)) {
-
 		Body3DSW *body = body_owner.getornull(p_rid);
 
 		/*
@@ -1344,7 +1232,6 @@ void PhysicsServer3DSW::free(RID p_rid) {
 		body->set_space(nullptr);
 
 		while (body->get_shape_count()) {
-
 			body->remove_shape(0);
 		}
 
@@ -1352,7 +1239,6 @@ void PhysicsServer3DSW::free(RID p_rid) {
 		memdelete(body);
 
 	} else if (area_owner.owns(p_rid)) {
-
 		Area3DSW *area = area_owner.getornull(p_rid);
 
 		/*
@@ -1363,14 +1249,12 @@ void PhysicsServer3DSW::free(RID p_rid) {
 		area->set_space(nullptr);
 
 		while (area->get_shape_count()) {
-
 			area->remove_shape(0);
 		}
 
 		area_owner.free(p_rid);
 		memdelete(area);
 	} else if (space_owner.owns(p_rid)) {
-
 		Space3DSW *space = space_owner.getornull(p_rid);
 
 		while (space->get_objects().size()) {
@@ -1385,29 +1269,24 @@ void PhysicsServer3DSW::free(RID p_rid) {
 		space_owner.free(p_rid);
 		memdelete(space);
 	} else if (joint_owner.owns(p_rid)) {
-
 		Joint3DSW *joint = joint_owner.getornull(p_rid);
 
 		for (int i = 0; i < joint->get_body_count(); i++) {
-
 			joint->get_body_ptr()[i]->remove_constraint(joint);
 		}
 		joint_owner.free(p_rid);
 		memdelete(joint);
 
 	} else {
-
 		ERR_FAIL_MSG("Invalid ID.");
 	}
 };
 
 void PhysicsServer3DSW::set_active(bool p_active) {
-
 	active = p_active;
 };
 
 void PhysicsServer3DSW::init() {
-
 	doing_sync = true;
 	last_step = 0.001;
 	iterations = 8; // 8?
@@ -1416,11 +1295,11 @@ void PhysicsServer3DSW::init() {
 };
 
 void PhysicsServer3DSW::step(real_t p_step) {
-
 #ifndef _3D_DISABLED
 
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	_update_shapes();
 
@@ -1433,7 +1312,6 @@ void PhysicsServer3DSW::step(real_t p_step) {
 	active_objects = 0;
 	collision_pairs = 0;
 	for (Set<const Space3DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
-
 		stepper->step((Space3DSW *)E->get(), p_step, iterations);
 		island_count += E->get()->get_island_count();
 		active_objects += E->get()->get_active_objects();
@@ -1442,16 +1320,12 @@ void PhysicsServer3DSW::step(real_t p_step) {
 #endif
 }
 
-void PhysicsServer3DSW::sync(){
-
-};
-
 void PhysicsServer3DSW::flush_queries() {
-
 #ifndef _3D_DISABLED
 
-	if (!active)
+	if (!active) {
 		return;
+	}
 
 	doing_sync = true;
 
@@ -1460,7 +1334,6 @@ void PhysicsServer3DSW::flush_queries() {
 	uint64_t time_beg = OS::get_singleton()->get_ticks_usec();
 
 	for (Set<const Space3DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
-
 		Space3DSW *space = (Space3DSW *)E->get();
 		space->call_queries();
 	}
@@ -1468,7 +1341,6 @@ void PhysicsServer3DSW::flush_queries() {
 	flushing_queries = false;
 
 	if (EngineDebugger::is_profiling("servers")) {
-
 		uint64_t total_time[Space3DSW::ELAPSED_TIME_MAX];
 		static const char *time_name[Space3DSW::ELAPSED_TIME_MAX] = {
 			"integrate_forces",
@@ -1483,7 +1355,6 @@ void PhysicsServer3DSW::flush_queries() {
 		}
 
 		for (Set<const Space3DSW *>::Element *E = active_spaces.front(); E; E = E->next()) {
-
 			for (int i = 0; i < Space3DSW::ELAPSED_TIME_MAX; i++) {
 				total_time[i] += E->get()->get_elapsed_time(Space3DSW::ElapsedTime(i));
 			}
@@ -1505,24 +1376,19 @@ void PhysicsServer3DSW::flush_queries() {
 };
 
 void PhysicsServer3DSW::finish() {
-
 	memdelete(stepper);
 	memdelete(direct_state);
 };
 
 int PhysicsServer3DSW::get_process_info(ProcessInfo p_info) {
-
 	switch (p_info) {
-
 		case INFO_ACTIVE_OBJECTS: {
-
 			return active_objects;
 		} break;
 		case INFO_COLLISION_PAIRS: {
 			return collision_pairs;
 		} break;
 		case INFO_ISLAND_COUNT: {
-
 			return island_count;
 		} break;
 	}
@@ -1531,7 +1397,6 @@ int PhysicsServer3DSW::get_process_info(ProcessInfo p_info) {
 }
 
 void PhysicsServer3DSW::_update_shapes() {
-
 	while (pending_shape_update_list.first()) {
 		pending_shape_update_list.first()->self()->_shape_changed();
 		pending_shape_update_list.remove(pending_shape_update_list.first());
@@ -1539,18 +1404,17 @@ void PhysicsServer3DSW::_update_shapes() {
 }
 
 void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
-
 	CollCbkData *cbk = (CollCbkData *)p_userdata;
 
-	if (cbk->max == 0)
+	if (cbk->max == 0) {
 		return;
+	}
 
 	if (cbk->amount == cbk->max) {
 		//find least deep
 		real_t min_depth = 1e20;
 		int min_depth_idx = 0;
 		for (int i = 0; i < cbk->amount; i++) {
-
 			real_t d = cbk->ptr[i * 2 + 0].distance_squared_to(cbk->ptr[i * 2 + 1]);
 			if (d < min_depth) {
 				min_depth = d;
@@ -1559,13 +1423,13 @@ void PhysicsServer3DSW::_shape_col_cbk(const Vector3 &p_point_A, const Vector3 &
 		}
 
 		real_t d = p_point_A.distance_squared_to(p_point_B);
-		if (d < min_depth)
+		if (d < min_depth) {
 			return;
+		}
 		cbk->ptr[min_depth_idx * 2 + 0] = p_point_A;
 		cbk->ptr[min_depth_idx * 2 + 1] = p_point_B;
 
 	} else {
-
 		cbk->ptr[cbk->amount * 2 + 0] = p_point_A;
 		cbk->ptr[cbk->amount * 2 + 1] = p_point_B;
 		cbk->amount++;
@@ -1582,8 +1446,4 @@ PhysicsServer3DSW::PhysicsServer3DSW() {
 
 	active = true;
 	flushing_queries = false;
-};
-
-PhysicsServer3DSW::~PhysicsServer3DSW(){
-
 };

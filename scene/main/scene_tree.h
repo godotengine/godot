@@ -70,7 +70,6 @@ public:
 };
 
 class SceneTree : public MainLoop {
-
 	_THREAD_SAFE_CLASS_
 
 	GDCLASS(SceneTree, MainLoop);
@@ -80,7 +79,6 @@ public:
 
 private:
 	struct Group {
-
 		Vector<Node *> nodes;
 		//uint64_t last_tree_version;
 		bool changed;
@@ -121,7 +119,6 @@ private:
 	Node *edited_scene_root;
 #endif
 	struct UGCall {
-
 		StringName group;
 		StringName call;
 

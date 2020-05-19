@@ -43,10 +43,10 @@
 #include "scene/main/node.h"
 
 #include "modules/gdnative/gdnative.h"
+
 #include <nativescript/godot_nativescript.h>
 
 struct NativeScriptDesc {
-
 	struct Method {
 		godot_instance_method method;
 		MethodInfo info;
@@ -54,6 +54,7 @@ struct NativeScriptDesc {
 		uint16_t rpc_method_id;
 		String documentation;
 	};
+
 	struct Property {
 		godot_property_set_func setter;
 		godot_property_get_func getter;
@@ -69,9 +70,9 @@ struct NativeScriptDesc {
 		String documentation;
 	};
 
-	uint16_t rpc_count;
+	uint16_t rpc_count = 0;
 	Map<StringName, Method> methods;
-	uint16_t rset_count;
+	uint16_t rset_count = 0;
 	OrderedHashMap<StringName, Property> properties;
 	Map<StringName, Signal> signals_; // QtCreator doesn't like the name signals
 	StringName base;
@@ -82,20 +83,11 @@ struct NativeScriptDesc {
 
 	String documentation;
 
-	const void *type_tag;
+	const void *type_tag = nullptr;
 
 	bool is_tool;
 
-	inline NativeScriptDesc() :
-			rpc_count(0),
-			methods(),
-			rset_count(0),
-			properties(),
-			signals_(),
-			base(),
-			base_native_type(),
-			documentation(),
-			type_tag(nullptr) {
+	inline NativeScriptDesc() {
 		zeromem(&create_func, sizeof(godot_instance_create_func));
 		zeromem(&destroy_func, sizeof(godot_instance_destroy_func));
 	}
@@ -201,7 +193,6 @@ public:
 };
 
 class NativeScriptInstance : public ScriptInstance {
-
 	friend class NativeScript;
 
 	Object *owner;
@@ -252,7 +243,6 @@ public:
 class NativeReloadNode;
 
 class NativeScriptLanguage : public ScriptLanguage {
-
 	friend class NativeScript;
 	friend class NativeScriptInstance;
 	friend class NativeReloadNode;
@@ -396,14 +386,13 @@ inline NativeScriptDesc *NativeScript::get_script_desc() const {
 
 class NativeReloadNode : public Node {
 	GDCLASS(NativeReloadNode, Node);
-	bool unloaded;
+	bool unloaded = false;
 
 public:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-	NativeReloadNode() :
-			unloaded(false) {}
+	NativeReloadNode() {}
 };
 
 class ResourceFormatLoaderNativeScript : public ResourceFormatLoader {

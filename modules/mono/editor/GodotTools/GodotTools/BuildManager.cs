@@ -15,19 +15,13 @@ namespace GodotTools
     {
         private static readonly List<BuildInfo> BuildsInProgress = new List<BuildInfo>();
 
-        public const string PropNameMsbuildMono = "MSBuild (Mono)";
-        public const string PropNameMsbuildVs = "MSBuild (VS Build Tools)";
-        public const string PropNameMsbuildJetBrains = "MSBuild (JetBrains Rider)";
+        public const string PropNameMSBuildMono = "MSBuild (Mono)";
+        public const string PropNameMSBuildVs = "MSBuild (VS Build Tools)";
+        public const string PropNameMSBuildJetBrains = "MSBuild (JetBrains Rider)";
+        public const string PropNameDotnetCli = "dotnet CLI";
 
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
         public const string MsBuildLogFileName = "msbuild_log.txt";
-
-        public enum BuildTool
-        {
-            MsBuildMono,
-            MsBuildVs,
-            JetBrainsMsBuild
-        }
 
         private static void RemoveOldIssuesFile(BuildInfo buildInfo)
         {
@@ -181,10 +175,12 @@ namespace GodotTools
             {
                 pr.Step("Building project solution", 0);
 
-                var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, config);
+                var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, targets: new[] {"Restore", "Build"}, config);
+
+                bool escapeNeedsDoubleBackslash = buildTool == BuildTool.MsBuildMono || buildTool == BuildTool.DotnetCli;
 
                 // Add Godot defines
-                string constants = buildTool != BuildTool.MsBuildMono ? "GodotDefineConstants=\"" : "GodotDefineConstants=\\\"";
+                string constants = !escapeNeedsDoubleBackslash ? "GodotDefineConstants=\"" : "GodotDefineConstants=\\\"";
 
                 foreach (var godotDefine in godotDefines)
                     constants += $"GODOT_{godotDefine.ToUpper().Replace("-", "_").Replace(" ", "_").Replace(";", "_")};";
@@ -192,7 +188,7 @@ namespace GodotTools
                 if (Internal.GodotIsRealTDouble())
                     constants += "GODOT_REAL_T_IS_DOUBLE;";
 
-                constants += buildTool != BuildTool.MsBuildMono ? "\"" : "\\\"";
+                constants += !escapeNeedsDoubleBackslash ? "\"" : "\\\"";
 
                 buildInfo.CustomProperties.Add(constants);
 
@@ -219,7 +215,7 @@ namespace GodotTools
             if (File.Exists(editorScriptsMetadataPath))
                 File.Copy(editorScriptsMetadataPath, playerScriptsMetadataPath);
 
-            var currentPlayRequest = GodotSharpEditor.Instance.GodotIdeManager.GodotIdeServer.CurrentPlayRequest;
+            var currentPlayRequest = GodotSharpEditor.Instance.CurrentPlaySettings;
 
             if (currentPlayRequest != null)
             {
@@ -233,7 +229,8 @@ namespace GodotTools
                         ",server=n");
                 }
 
-                return true; // Requested play from an external editor/IDE which already built the project
+                if (!currentPlayRequest.Value.BuildBeforePlaying)
+                    return true; // Requested play from an external editor/IDE which already built the project
             }
 
             var godotDefines = new[]
@@ -249,22 +246,44 @@ namespace GodotTools
         {
             // Build tool settings
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var msbuild = BuildTool.MsBuildMono;
-            if (OS.IsWindows)
-                msbuild = RiderPathManager.IsExternalEditorSetToRider(editorSettings)
-                        ? BuildTool.JetBrainsMsBuild
-                        : BuildTool.MsBuildVs;
 
-            EditorDef("mono/builds/build_tool", msbuild);
+            BuildTool msbuildDefault;
+
+            if (OS.IsWindows)
+            {
+                if (RiderPathManager.IsExternalEditorSetToRider(editorSettings))
+                    msbuildDefault = BuildTool.JetBrainsMsBuild;
+                else
+                    msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildVs;
+            }
+            else
+            {
+                msbuildDefault = !string.IsNullOrEmpty(OS.PathWhich("dotnet")) ? BuildTool.DotnetCli : BuildTool.MsBuildMono;
+            }
+
+            EditorDef("mono/builds/build_tool", msbuildDefault);
+
+            string hintString;
+
+            if (OS.IsWindows)
+            {
+                hintString = $"{PropNameMSBuildMono}:{(int)BuildTool.MsBuildMono}," +
+                             $"{PropNameMSBuildVs}:{(int)BuildTool.MsBuildVs}," +
+                             $"{PropNameMSBuildJetBrains}:{(int)BuildTool.JetBrainsMsBuild}," +
+                             $"{PropNameDotnetCli}:{(int)BuildTool.DotnetCli}";
+            }
+            else
+            {
+                hintString = $"{PropNameMSBuildMono}:{(int)BuildTool.MsBuildMono}," +
+                             $"{PropNameDotnetCli}:{(int)BuildTool.DotnetCli}";
+            }
 
             editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
                 ["type"] = Godot.Variant.Type.Int,
                 ["name"] = "mono/builds/build_tool",
                 ["hint"] = Godot.PropertyHint.Enum,
-                ["hint_string"] = OS.IsWindows ?
-                    $"{PropNameMsbuildMono},{PropNameMsbuildVs},{PropNameMsbuildJetBrains}" :
-                    $"{PropNameMsbuildMono}"
+                ["hint_string"] = hintString
             });
 
             EditorDef("mono/builds/print_build_output", false);

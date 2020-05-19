@@ -37,7 +37,6 @@
 #include "core/io/stream_peer.h"
 
 class StreamPeerTCP : public StreamPeer {
-
 	GDCLASS(StreamPeerTCP, StreamPeer);
 	OBJ_CATEGORY("Networking");
 
@@ -52,10 +51,10 @@ public:
 
 protected:
 	Ref<NetSocket> _sock;
-	uint64_t timeout;
-	Status status;
+	uint64_t timeout = 0;
+	Status status = STATUS_NONE;
 	IP_Address peer_host;
-	uint16_t peer_port;
+	uint16_t peer_port = 0;
 
 	Error _connect(const String &p_address, int p_port);
 	Error _poll_connection();

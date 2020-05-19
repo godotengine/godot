@@ -37,7 +37,7 @@ extern "C" {
 
 #include <stdint.h>
 
-#define GODOT_VARIANT_SIZE (16 + sizeof(void *))
+#define GODOT_VARIANT_SIZE (16 + sizeof(int64_t))
 
 #ifndef GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
 #define GODOT_CORE_API_GODOT_VARIANT_TYPE_DEFINED
@@ -71,16 +71,21 @@ typedef enum godot_variant_type {
 
 	// misc types
 	GODOT_VARIANT_TYPE_COLOR,
+	GODOT_VARIANT_TYPE_STRING_NAME,
 	GODOT_VARIANT_TYPE_NODE_PATH,
 	GODOT_VARIANT_TYPE_RID,
 	GODOT_VARIANT_TYPE_OBJECT,
+	GODOT_VARIANT_TYPE_CALLABLE,
+	GODOT_VARIANT_TYPE_SIGNAL,
 	GODOT_VARIANT_TYPE_DICTIONARY,
 	GODOT_VARIANT_TYPE_ARRAY,
 
 	// arrays
 	GODOT_VARIANT_TYPE_PACKED_BYTE_ARRAY,
-	GODOT_VARIANT_TYPE_PACKED_INT_ARRAY,
-	GODOT_VARIANT_TYPE_PACKED_REAL_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_INT32_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_INT64_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_FLOAT32_ARRAY,
+	GODOT_VARIANT_TYPE_PACKED_FLOAT64_ARRAY,
 	GODOT_VARIANT_TYPE_PACKED_STRING_ARRAY,
 	GODOT_VARIANT_TYPE_PACKED_VECTOR2_ARRAY,
 	GODOT_VARIANT_TYPE_PACKED_VECTOR3_ARRAY,
@@ -149,15 +154,17 @@ typedef enum godot_variant_operator {
 #include <gdnative/aabb.h>
 #include <gdnative/array.h>
 #include <gdnative/basis.h>
+#include <gdnative/callable.h>
 #include <gdnative/color.h>
 #include <gdnative/dictionary.h>
 #include <gdnative/node_path.h>
+#include <gdnative/packed_arrays.h>
 #include <gdnative/plane.h>
-#include <gdnative/pool_arrays.h>
 #include <gdnative/quat.h>
 #include <gdnative/rect2.h>
 #include <gdnative/rid.h>
 #include <gdnative/string.h>
+#include <gdnative/string_name.h>
 #include <gdnative/transform.h>
 #include <gdnative/transform2d.h>
 #include <gdnative/variant.h>
@@ -181,9 +188,13 @@ void GDAPI godot_variant_new_uint(godot_variant *r_dest, const uint64_t p_i);
 void GDAPI godot_variant_new_int(godot_variant *r_dest, const int64_t p_i);
 void GDAPI godot_variant_new_real(godot_variant *r_dest, const double p_r);
 void GDAPI godot_variant_new_string(godot_variant *r_dest, const godot_string *p_s);
+void GDAPI godot_variant_new_string_name(godot_variant *r_dest, const godot_string_name *p_s);
 void GDAPI godot_variant_new_vector2(godot_variant *r_dest, const godot_vector2 *p_v2);
+void GDAPI godot_variant_new_vector2i(godot_variant *r_dest, const godot_vector2i *p_v2);
 void GDAPI godot_variant_new_rect2(godot_variant *r_dest, const godot_rect2 *p_rect2);
+void GDAPI godot_variant_new_rect2i(godot_variant *r_dest, const godot_rect2i *p_rect2);
 void GDAPI godot_variant_new_vector3(godot_variant *r_dest, const godot_vector3 *p_v3);
+void GDAPI godot_variant_new_vector3i(godot_variant *r_dest, const godot_vector3i *p_v3);
 void GDAPI godot_variant_new_transform2d(godot_variant *r_dest, const godot_transform2d *p_t2d);
 void GDAPI godot_variant_new_plane(godot_variant *r_dest, const godot_plane *p_plane);
 void GDAPI godot_variant_new_quat(godot_variant *r_dest, const godot_quat *p_quat);
@@ -193,12 +204,16 @@ void GDAPI godot_variant_new_transform(godot_variant *r_dest, const godot_transf
 void GDAPI godot_variant_new_color(godot_variant *r_dest, const godot_color *p_color);
 void GDAPI godot_variant_new_node_path(godot_variant *r_dest, const godot_node_path *p_np);
 void GDAPI godot_variant_new_rid(godot_variant *r_dest, const godot_rid *p_rid);
+void GDAPI godot_variant_new_callable(godot_variant *r_dest, const godot_callable *p_callable);
+void GDAPI godot_variant_new_signal(godot_variant *r_dest, const godot_signal *p_signal);
 void GDAPI godot_variant_new_object(godot_variant *r_dest, const godot_object *p_obj);
 void GDAPI godot_variant_new_dictionary(godot_variant *r_dest, const godot_dictionary *p_dict);
 void GDAPI godot_variant_new_array(godot_variant *r_dest, const godot_array *p_arr);
 void GDAPI godot_variant_new_packed_byte_array(godot_variant *r_dest, const godot_packed_byte_array *p_pba);
-void GDAPI godot_variant_new_packed_int_array(godot_variant *r_dest, const godot_packed_int_array *p_pia);
-void GDAPI godot_variant_new_packed_real_array(godot_variant *r_dest, const godot_packed_real_array *p_pra);
+void GDAPI godot_variant_new_packed_int32_array(godot_variant *r_dest, const godot_packed_int32_array *p_pia);
+void GDAPI godot_variant_new_packed_int64_array(godot_variant *r_dest, const godot_packed_int64_array *p_pia);
+void GDAPI godot_variant_new_packed_float32_array(godot_variant *r_dest, const godot_packed_float32_array *p_pra);
+void GDAPI godot_variant_new_packed_float64_array(godot_variant *r_dest, const godot_packed_float64_array *p_pra);
 void GDAPI godot_variant_new_packed_string_array(godot_variant *r_dest, const godot_packed_string_array *p_psa);
 void GDAPI godot_variant_new_packed_vector2_array(godot_variant *r_dest, const godot_packed_vector2_array *p_pv2a);
 void GDAPI godot_variant_new_packed_vector3_array(godot_variant *r_dest, const godot_packed_vector3_array *p_pv3a);
@@ -209,9 +224,13 @@ uint64_t GDAPI godot_variant_as_uint(const godot_variant *p_self);
 int64_t GDAPI godot_variant_as_int(const godot_variant *p_self);
 double GDAPI godot_variant_as_real(const godot_variant *p_self);
 godot_string GDAPI godot_variant_as_string(const godot_variant *p_self);
+godot_string_name GDAPI godot_variant_as_string_name(const godot_variant *p_self);
 godot_vector2 GDAPI godot_variant_as_vector2(const godot_variant *p_self);
+godot_vector2i GDAPI godot_variant_as_vector2i(const godot_variant *p_self);
 godot_rect2 GDAPI godot_variant_as_rect2(const godot_variant *p_self);
+godot_rect2i GDAPI godot_variant_as_rect2i(const godot_variant *p_self);
 godot_vector3 GDAPI godot_variant_as_vector3(const godot_variant *p_self);
+godot_vector3i GDAPI godot_variant_as_vector3i(const godot_variant *p_self);
 godot_transform2d GDAPI godot_variant_as_transform2d(const godot_variant *p_self);
 godot_plane GDAPI godot_variant_as_plane(const godot_variant *p_self);
 godot_quat GDAPI godot_variant_as_quat(const godot_variant *p_self);
@@ -221,12 +240,16 @@ godot_transform GDAPI godot_variant_as_transform(const godot_variant *p_self);
 godot_color GDAPI godot_variant_as_color(const godot_variant *p_self);
 godot_node_path GDAPI godot_variant_as_node_path(const godot_variant *p_self);
 godot_rid GDAPI godot_variant_as_rid(const godot_variant *p_self);
+godot_callable GDAPI godot_variant_as_callable(const godot_variant *p_self);
+godot_signal GDAPI godot_variant_as_signal(const godot_variant *p_self);
 godot_object GDAPI *godot_variant_as_object(const godot_variant *p_self);
 godot_dictionary GDAPI godot_variant_as_dictionary(const godot_variant *p_self);
 godot_array GDAPI godot_variant_as_array(const godot_variant *p_self);
 godot_packed_byte_array GDAPI godot_variant_as_packed_byte_array(const godot_variant *p_self);
-godot_packed_int_array GDAPI godot_variant_as_packed_int_array(const godot_variant *p_self);
-godot_packed_real_array GDAPI godot_variant_as_packed_real_array(const godot_variant *p_self);
+godot_packed_int32_array GDAPI godot_variant_as_packed_int32_array(const godot_variant *p_self);
+godot_packed_int64_array GDAPI godot_variant_as_packed_int64_array(const godot_variant *p_self);
+godot_packed_float32_array GDAPI godot_variant_as_packed_float32_array(const godot_variant *p_self);
+godot_packed_float64_array GDAPI godot_variant_as_packed_float64_array(const godot_variant *p_self);
 godot_packed_string_array GDAPI godot_variant_as_packed_string_array(const godot_variant *p_self);
 godot_packed_vector2_array GDAPI godot_variant_as_packed_vector2_array(const godot_variant *p_self);
 godot_packed_vector3_array GDAPI godot_variant_as_packed_vector3_array(const godot_variant *p_self);
@@ -239,6 +262,7 @@ godot_bool GDAPI godot_variant_has_method(const godot_variant *p_self, const god
 godot_bool GDAPI godot_variant_operator_equal(const godot_variant *p_self, const godot_variant *p_other);
 godot_bool GDAPI godot_variant_operator_less(const godot_variant *p_self, const godot_variant *p_other);
 
+uint32_t GDAPI godot_variant_hash(const godot_variant *p_self);
 godot_bool GDAPI godot_variant_hash_compare(const godot_variant *p_self, const godot_variant *p_other);
 
 godot_bool GDAPI godot_variant_booleanize(const godot_variant *p_self);

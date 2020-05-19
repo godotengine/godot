@@ -36,16 +36,14 @@
 class FileAccess;
 
 class PCKPacker : public Reference {
-
 	GDCLASS(PCKPacker, Reference);
 
-	FileAccess *file;
+	FileAccess *file = nullptr;
 	int alignment;
 
 	static void _bind_methods();
 
 	struct File {
-
 		String path;
 		String src_path;
 		int size;
@@ -58,7 +56,7 @@ public:
 	Error add_file(const String &p_file, const String &p_src);
 	Error flush(bool p_verbose = false);
 
-	PCKPacker();
+	PCKPacker() {}
 	~PCKPacker();
 };
 

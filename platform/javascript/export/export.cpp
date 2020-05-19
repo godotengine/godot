@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/io/json.h"
 #include "core/io/tcp_server.h"
 #include "core/io/zip_io.h"
 #include "editor/editor_export.h"
@@ -40,7 +41,6 @@
 #define EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG "webassembly_debug.zip"
 
 class EditorHTTPServer : public Reference {
-
 private:
 	Ref<TCP_Server> server;
 	Ref<StreamPeerTCP> connection;
@@ -148,11 +148,13 @@ public:
 	}
 
 	void poll() {
-		if (!server->is_listening())
+		if (!server->is_listening()) {
 			return;
+		}
 		if (connection.is_null()) {
-			if (!server->is_connection_available())
+			if (!server->is_connection_available()) {
 				return;
+			}
 			connection = server->take_connection();
 			time = OS::get_singleton()->get_ticks_usec();
 		}
@@ -160,11 +162,11 @@ public:
 			_clear_client();
 			return;
 		}
-		if (connection->get_status() != StreamPeerTCP::STATUS_CONNECTED)
+		if (connection->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 			return;
+		}
 
 		while (true) {
-
 			char *r = (char *)req_buf;
 			int l = req_pos - 1;
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
@@ -190,7 +192,6 @@ public:
 };
 
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
-
 	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
@@ -198,7 +199,7 @@ class EditorExportPlatformJavaScript : public EditorExportPlatform {
 	Ref<ImageTexture> stop_icon;
 	int menu_options;
 
-	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug);
+	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags);
 
 private:
 	Ref<EditorHTTPServer> server;
@@ -230,7 +231,6 @@ public:
 	virtual Ref<Texture2D> get_run_icon() const;
 
 	virtual void get_platform_features(List<String> *r_features) {
-
 		r_features->push_back("web");
 		r_features->push_back(get_os_name());
 	}
@@ -238,23 +238,28 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
 	}
 
+	String get_debug_protocol() const { return "ws://"; }
+
 	EditorExportPlatformJavaScript();
 	~EditorExportPlatformJavaScript();
 };
 
-void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug) {
-
+void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, int p_flags) {
 	String str_template = String::utf8(reinterpret_cast<const char *>(p_html.ptr()), p_html.size());
 	String str_export;
 	Vector<String> lines = str_template.split("\n");
+	Vector<String> flags;
+	String flags_json;
+	gen_export_flags(flags, p_flags);
+	flags_json = JSON::print(flags);
 
 	for (int i = 0; i < lines.size(); i++) {
-
 		String current_line = lines[i];
 		current_line = current_line.replace("$GODOT_BASENAME", p_name);
 		current_line = current_line.replace("$GODOT_PROJECT_NAME", ProjectSettings::get_singleton()->get_setting("application/config/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE", p_preset->get("html/head_include"));
 		current_line = current_line.replace("$GODOT_DEBUG_ENABLED", p_debug ? "true" : "false");
+		current_line = current_line.replace("$GODOT_ARGS", flags_json);
 		str_export += current_line + "\n";
 	}
 
@@ -266,7 +271,6 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 }
 
 void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
-
 	if (p_preset->get("vram_texture_compression/for_desktop")) {
 		r_features->push_back("s3tc");
 	}
@@ -283,7 +287,6 @@ void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportP
 }
 
 void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_options) {
-
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
@@ -293,22 +296,18 @@ void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_op
 }
 
 String EditorExportPlatformJavaScript::get_name() const {
-
 	return "HTML5";
 }
 
 String EditorExportPlatformJavaScript::get_os_name() const {
-
 	return "HTML5";
 }
 
 Ref<Texture2D> EditorExportPlatformJavaScript::get_logo() const {
-
 	return logo;
 }
 
 bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-
 	String err;
 	bool valid = false;
 
@@ -343,14 +342,14 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		}
 	}
 
-	if (!err.empty())
+	if (!err.empty()) {
 		r_error = err;
+	}
 
 	return valid;
 }
 
 List<String> EditorExportPlatformJavaScript::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
-
 	List<String> list;
 	list.push_back("html");
 	return list;
@@ -368,11 +367,11 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	template_path = template_path.strip_edges();
 
 	if (template_path == String()) {
-
-		if (p_debug)
+		if (p_debug) {
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
-		else
+		} else {
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
+		}
 	}
 
 	if (!DirAccess::exists(p_path.get_base_dir())) {
@@ -396,7 +395,6 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	unzFile pkg = unzOpen2(template_path.utf8().get_data(), &io);
 
 	if (!pkg) {
-
 		EditorNode::get_singleton()->show_warning(TTR("Could not open template for export:") + "\n" + template_path);
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -426,22 +424,18 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		//write
 
 		if (file == "godot.html") {
-
 			if (!custom_html.empty()) {
 				continue;
 			}
-			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug);
+			_fix_html(data, p_preset, p_path.get_file().get_basename(), p_debug, p_flags);
 			file = p_path.get_file();
 
 		} else if (file == "godot.js") {
-
 			file = p_path.get_file().get_basename() + ".js";
 		} else if (file == "godot.worker.js") {
-
 			file = p_path.get_file().get_basename() + ".worker.js";
 
 		} else if (file == "godot.wasm") {
-
 			file = p_path.get_file().get_basename() + ".wasm";
 		}
 
@@ -459,7 +453,6 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	unzClose(pkg);
 
 	if (!custom_html.empty()) {
-
 		FileAccess *f = FileAccess::open(custom_html, FileAccess::READ);
 		if (!f) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not read custom HTML shell:") + "\n" + custom_html);
@@ -469,7 +462,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 		buf.resize(f->get_len());
 		f->get_buffer(buf.ptrw(), buf.size());
 		memdelete(f);
-		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug);
+		_fix_html(buf, p_preset, p_path.get_file().get_basename(), p_debug, p_flags);
 
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (!f) {
@@ -523,11 +516,9 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 }
 
 bool EditorExportPlatformJavaScript::poll_export() {
-
 	Ref<EditorExportPreset> preset;
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
-
 		Ref<EditorExportPreset> ep = EditorExport::get_singleton()->get_export_preset(i);
 		if (ep->is_runnable() && ep->get_platform() == this) {
 			preset = ep;
@@ -553,12 +544,10 @@ Ref<ImageTexture> EditorExportPlatformJavaScript::get_option_icon(int p_index) c
 }
 
 int EditorExportPlatformJavaScript::get_options_count() const {
-
 	return menu_options;
 }
 
 Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
-
 	if (p_option == 1) {
 		MutexLock lock(server_lock);
 		server->stop();
@@ -606,7 +595,6 @@ Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_prese
 }
 
 Ref<Texture2D> EditorExportPlatformJavaScript::get_run_icon() const {
-
 	return run_icon;
 }
 
@@ -622,7 +610,6 @@ void EditorExportPlatformJavaScript::_server_thread_poll(void *data) {
 }
 
 EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
-
 	server.instance();
 	server_quit = false;
 	server_thread = Thread::create(_server_thread_poll, this);
@@ -636,10 +623,11 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	run_icon->create_from_image(img);
 
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	if (theme.is_valid())
+	if (theme.is_valid()) {
 		stop_icon = theme->get_icon("Stop", "EditorIcons");
-	else
+	} else {
 		stop_icon.instance();
+	}
 
 	menu_options = 0;
 }
@@ -652,7 +640,6 @@ EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 }
 
 void register_javascript_exporter() {
-
 	EDITOR_DEF("export/web/http_host", "localhost");
 	EDITOR_DEF("export/web/http_port", 8060);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/web/http_port", PROPERTY_HINT_RANGE, "1,65535,1"));

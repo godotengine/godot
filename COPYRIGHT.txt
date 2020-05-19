@@ -154,7 +154,7 @@ License: Expat and Bitstream Vera Fonts Copyright
 
 Files: ./thirdparty/freetype/
 Comment: The FreeType Project
-Copyright: 1996-2019, David Turner, Robert Wilhelm, and Werner Lemberg.
+Copyright: 1996-2020, David Turner, Robert Wilhelm, and Werner Lemberg.
 License: FTL
 
 Files: ./thirdparty/glad/
@@ -257,12 +257,6 @@ Comment: FastLZ
 Copyright: 2005-2020, Ariya Hidayat
 License: Expat
 
-Files: ./thirdparty/misc/hq2x.cpp
- ./thirdparty/misc/hq2x.h
-Comment: hq2x implementation
-Copyright: 2016, Bruno Ribeiro
-License: Apache-2.0
-
 Files: ./thirdparty/misc/ifaddrs-android.cc
  ./thirdparty/misc/ifaddrs-android.h
 Comment: libjingle
@@ -303,6 +297,11 @@ Comment: NanoSVG
 Copyright: 2013-2014, Mikko Mononen
 License: Zlib
 
+Files: ./thirdparty/oidn/
+Comment: Intel Open Image Denoise
+Copyright: 2009-2020, Intel Corporation
+License: Apache-2.0
+
 Files: ./thirdparty/opus/
 Comment: Opus
 Copyright: 2001-2011, Xiph.Org, Skype Limited, Octasic,
@@ -329,7 +328,7 @@ License: Zlib
 
 Files: ./thirdparty/rvo2/
 Comment: RVO2
-Copyright: 2016, University of North Carolina at Chapel Hill 
+Copyright: 2016, University of North Carolina at Chapel Hill
 License: Apache 2.0
 
 Files: ./thirdparty/squish/

@@ -134,6 +134,7 @@ extern thread_local int current_invoke_count;
 _FORCE_INLINE_ int get_runtime_invoke_count() {
 	return current_invoke_count;
 }
+
 _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 	return current_invoke_count;
 }
@@ -155,7 +156,7 @@ struct ScopeThreadAttach {
 	~ScopeThreadAttach();
 
 private:
-	MonoThread *mono_thread;
+	MonoThread *mono_thread = nullptr;
 };
 
 StringName get_native_godot_class_name(GDMonoClass *p_class);

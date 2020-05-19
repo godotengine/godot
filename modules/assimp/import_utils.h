@@ -162,7 +162,6 @@ public:
 	}
 
 	static String get_anim_string_from_assimp(const aiString &p_string) {
-
 		String name;
 		name.parse_utf8(p_string.C_Str() /*,p_string.length*/);
 		if (name.find(":") != -1) {
@@ -202,20 +201,34 @@ public:
      */
 	static float get_fbx_fps(int32_t time_mode, const aiScene *p_scene) {
 		switch (time_mode) {
-			case AssetImportFbx::TIME_MODE_DEFAULT: return 24; //hack
-			case AssetImportFbx::TIME_MODE_120: return 120;
-			case AssetImportFbx::TIME_MODE_100: return 100;
-			case AssetImportFbx::TIME_MODE_60: return 60;
-			case AssetImportFbx::TIME_MODE_50: return 50;
-			case AssetImportFbx::TIME_MODE_48: return 48;
-			case AssetImportFbx::TIME_MODE_30: return 30;
-			case AssetImportFbx::TIME_MODE_30_DROP: return 30;
-			case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME: return 29.9700262f;
-			case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME: return 29.9700262f;
-			case AssetImportFbx::TIME_MODE_PAL: return 25;
-			case AssetImportFbx::TIME_MODE_CINEMA: return 24;
-			case AssetImportFbx::TIME_MODE_1000: return 1000;
-			case AssetImportFbx::TIME_MODE_CINEMA_ND: return 23.976f;
+			case AssetImportFbx::TIME_MODE_DEFAULT:
+				return 24; //hack
+			case AssetImportFbx::TIME_MODE_120:
+				return 120;
+			case AssetImportFbx::TIME_MODE_100:
+				return 100;
+			case AssetImportFbx::TIME_MODE_60:
+				return 60;
+			case AssetImportFbx::TIME_MODE_50:
+				return 50;
+			case AssetImportFbx::TIME_MODE_48:
+				return 48;
+			case AssetImportFbx::TIME_MODE_30:
+				return 30;
+			case AssetImportFbx::TIME_MODE_30_DROP:
+				return 30;
+			case AssetImportFbx::TIME_MODE_NTSC_DROP_FRAME:
+				return 29.9700262f;
+			case AssetImportFbx::TIME_MODE_NTSC_FULL_FRAME:
+				return 29.9700262f;
+			case AssetImportFbx::TIME_MODE_PAL:
+				return 25;
+			case AssetImportFbx::TIME_MODE_CINEMA:
+				return 24;
+			case AssetImportFbx::TIME_MODE_1000:
+				return 1000;
+			case AssetImportFbx::TIME_MODE_CINEMA_ND:
+				return 23.976f;
 			case AssetImportFbx::TIME_MODE_CUSTOM:
 				int32_t frame_rate = -1;
 				p_scene->mMetaData->Get("FrameRate", frame_rate);
@@ -340,7 +353,6 @@ public:
 	  * Load or load from cache image :)
 	  */
 	static Ref<Image> load_image(ImportState &state, const aiScene *p_scene, String p_path) {
-
 		Map<String, Ref<Image>>::Element *match = state.path_to_image_cache.find(p_path);
 
 		// if our cache contains this image then don't bother

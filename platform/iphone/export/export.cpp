@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "export.h"
+
 #include "core/io/image_loader.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
@@ -47,7 +48,6 @@
 #include <sys/stat.h>
 
 class EditorExportPlatformIOS : public EditorExportPlatform {
-
 	GDCLASS(EditorExportPlatformIOS, EditorExportPlatform);
 
 	int version_code;
@@ -72,14 +72,10 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 		String modules_buildgrp;
 	};
 	struct ExportArchitecture {
-
 		String name;
-		bool is_default;
+		bool is_default = false;
 
-		ExportArchitecture() :
-				name(""),
-				is_default(false) {
-		}
+		ExportArchitecture() {}
 
 		ExportArchitecture(String p_name, bool p_is_default) {
 			name = p_name;
@@ -107,7 +103,6 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const {
-
 		String pname = p_package;
 
 		if (pname.length() == 0) {
@@ -150,7 +145,6 @@ public:
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const;
 
 	virtual void get_platform_features(List<String> *r_features) {
-
 		r_features->push_back("mobile");
 		r_features->push_back("iOS");
 	}
@@ -163,7 +157,6 @@ public:
 };
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
-
 	String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
 	if (driver == "GLES2") {
 		r_features->push_back("etc");
@@ -209,7 +202,6 @@ static const LoadingScreenInfo loading_screen_infos[] = {
 };
 
 void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) {
-
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
@@ -423,7 +415,9 @@ String EditorExportPlatformIOS::_get_linker_flags() {
 	String result;
 	for (int i = 0; i < export_plugins.size(); ++i) {
 		String flags = export_plugins[i]->get_ios_linker_flags();
-		if (flags.length() == 0) continue;
+		if (flags.length() == 0) {
+			continue;
+		}
 		if (result.length() > 0) {
 			result += ' ';
 		}
@@ -443,7 +437,6 @@ String EditorExportPlatformIOS::_get_cpp_code() {
 }
 
 void EditorExportPlatformIOS::_blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p_src, bool p_rot) {
-
 	ERR_FAIL_COND(p_dst.is_null());
 	ERR_FAIL_COND(p_src.is_null());
 
@@ -456,8 +449,12 @@ void EditorExportPlatformIOS::_blend_and_rotate(Ref<Image> &p_dst, Ref<Image> &p
 	int xs = (x_pos >= 0) ? 0 : -x_pos;
 	int ys = (y_pos >= 0) ? 0 : -y_pos;
 
-	if (sw + x_pos > p_dst->get_width()) sw = p_dst->get_width() - x_pos;
-	if (sh + y_pos > p_dst->get_height()) sh = p_dst->get_height() - y_pos;
+	if (sw + x_pos > p_dst->get_width()) {
+		sw = p_dst->get_width() - x_pos;
+	}
+	if (sh + y_pos > p_dst->get_height()) {
+		sh = p_dst->get_height() - y_pos;
+	}
 
 	for (int y = ys; y < sh; y++) {
 		for (int x = xs; x < sw; x++) {
@@ -927,8 +924,9 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 		ERR_FAIL_COND_V(err, err);
 
 		Vector<String> project_static_libs = export_plugins[i]->get_ios_project_static_libs();
-		for (int j = 0; j < project_static_libs.size(); j++)
+		for (int j = 0; j < project_static_libs.size(); j++) {
 			project_static_libs.write[j] = project_static_libs[j].get_file(); // Only the file name as it's copied to the project
+		}
 		err = _export_additional_assets(p_out_dir, project_static_libs, true, r_exported_assets);
 		ERR_FAIL_COND_V(err, err);
 
@@ -987,10 +985,11 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String team_id = p_preset->get("application/app_store_team_id");
 	ERR_FAIL_COND_V_MSG(team_id.length() == 0, ERR_CANT_OPEN, "App Store Team ID not specified - cannot configure the project.");
 
-	if (p_debug)
+	if (p_debug) {
 		src_pkg_name = p_preset->get("custom_template/debug");
-	else
+	} else {
 		src_pkg_name = p_preset->get("custom_template/release");
+	}
 
 	if (src_pkg_name == "") {
 		String err;
@@ -1036,8 +1035,9 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String pack_path = dest_dir + binary_name + ".pck";
 	Vector<SharedObject> libraries;
 	Error err = save_pack(p_preset, pack_path, &libraries);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	if (ep.step("Extracting and configuring Xcode project", 1)) {
 		return ERR_SKIP;
@@ -1047,12 +1047,13 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 
 	print_line("Static library: " + library_to_use);
 	String pkg_name;
-	if (p_preset->get("application/name") != "")
+	if (p_preset->get("application/name") != "") {
 		pkg_name = p_preset->get("application/name"); // app_name
-	else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "")
+	} else if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
 		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
-	else
+	} else {
 		pkg_name = "Unnamed";
+	}
 
 	bool found_library = false;
 	int total_size = 0;
@@ -1231,16 +1232,19 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		err = tmp_app_path->make_dir_recursive(iconset_dir);
 	}
 	memdelete(tmp_app_path);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	err = _export_icons(p_preset, iconset_dir);
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	err = _export_loading_screens(p_preset, dest_dir + binary_name + "/Images.xcassets/LaunchImage.launchimage/");
-	if (err)
+	if (err) {
 		return err;
+	}
 
 	print_line("Exporting additional assets");
 	Vector<IOSExportAsset> assets;
@@ -1310,7 +1314,6 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 }
 
 bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
-
 	String err;
 	bool valid = false;
 
@@ -1368,14 +1371,14 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		err += etc_error;
 	}
 
-	if (!err.empty())
+	if (!err.empty()) {
 		r_error = err;
+	}
 
 	return valid;
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
-
 	Ref<Image> img = memnew(Image(_iphone_logo));
 	logo.instance();
 	logo->create_from_image(img);
@@ -1385,7 +1388,6 @@ EditorExportPlatformIOS::~EditorExportPlatformIOS() {
 }
 
 void register_iphone_exporter() {
-
 	Ref<EditorExportPlatformIOS> platform;
 	platform.instance();
 

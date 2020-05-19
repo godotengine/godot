@@ -1,5 +1,4 @@
-/* clang-format off */
-[compute]
+#[compute]
 
 #version 450
 
@@ -8,7 +7,6 @@ VERSION_DEFINES
 #define BLOCK_SIZE 8
 
 layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) in;
-/* clang-format on */
 
 shared float tmp_data[BLOCK_SIZE * BLOCK_SIZE];
 
@@ -40,12 +38,10 @@ layout(push_constant, binding = 1, std430) uniform Params {
 params;
 
 void main() {
-
 	uint t = gl_LocalInvocationID.y * BLOCK_SIZE + gl_LocalInvocationID.x;
 	ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
 
 	if (any(lessThan(pos, params.source_size))) {
-
 #ifdef READ_TEXTURE
 		vec3 v = texelFetch(source_texture, pos, 0).rgb;
 		tmp_data[t] = max(v.r, max(v.g, v.b));
@@ -69,7 +65,6 @@ void main() {
 		barrier();
 
 		size >>= 1;
-
 	} while (size >= 1);
 
 	if (t == 0) {

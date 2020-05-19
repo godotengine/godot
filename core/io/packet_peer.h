@@ -36,7 +36,6 @@
 #include "core/ring_buffer.h"
 
 class PacketPeer : public Reference {
-
 	GDCLASS(PacketPeer, Reference);
 
 	Variant _bnd_get_var(bool p_allow_objects = false);
@@ -47,9 +46,9 @@ class PacketPeer : public Reference {
 	Vector<uint8_t> _get_packet();
 	Error _get_packet_error() const;
 
-	mutable Error last_get_error;
+	mutable Error last_get_error = OK;
 
-	int encode_buffer_max_size;
+	int encode_buffer_max_size = 8 * 1024 * 1024;
 	Vector<uint8_t> encode_buffer;
 
 public:
@@ -70,12 +69,11 @@ public:
 	void set_encode_buffer_max_size(int p_max_size);
 	int get_encode_buffer_max_size() const;
 
-	PacketPeer();
+	PacketPeer() {}
 	~PacketPeer() {}
 };
 
 class PacketPeerStream : public PacketPeer {
-
 	GDCLASS(PacketPeerStream, PacketPeer);
 
 	//the way the buffers work sucks, will change later

@@ -55,21 +55,18 @@
 #endif
 
 void OS_LinuxBSD::initialize() {
-
 	crash_handler.initialize();
 
 	OS_Unix::initialize_core();
 }
 
 void OS_LinuxBSD::initialize_joypads() {
-
 #ifdef JOYDEV_ENABLED
 	joypad = memnew(JoypadLinux(Input::get_singleton()));
 #endif
 }
 
 String OS_LinuxBSD::get_unique_id() const {
-
 	static String machine_id;
 	if (machine_id.empty()) {
 		if (FileAccess *f = FileAccess::open("/etc/machine-id", FileAccess::READ)) {
@@ -84,9 +81,9 @@ String OS_LinuxBSD::get_unique_id() const {
 }
 
 void OS_LinuxBSD::finalize() {
-
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 	main_loop = nullptr;
 
 #ifdef ALSAMIDI_ENABLED
@@ -99,24 +96,21 @@ void OS_LinuxBSD::finalize() {
 }
 
 MainLoop *OS_LinuxBSD::get_main_loop() const {
-
 	return main_loop;
 }
 
 void OS_LinuxBSD::delete_main_loop() {
-
-	if (main_loop)
+	if (main_loop) {
 		memdelete(main_loop);
+	}
 	main_loop = nullptr;
 }
 
 void OS_LinuxBSD::set_main_loop(MainLoop *p_main_loop) {
-
 	main_loop = p_main_loop;
 }
 
 String OS_LinuxBSD::get_name() const {
-
 #ifdef __linux__
 	return "Linux";
 #elif defined(__FreeBSD__)
@@ -129,27 +123,26 @@ String OS_LinuxBSD::get_name() const {
 }
 
 Error OS_LinuxBSD::shell_open(String p_uri) {
-
 	Error ok;
 	List<String> args;
 	args.push_back(p_uri);
 	ok = execute("xdg-open", args, false);
-	if (ok == OK)
+	if (ok == OK) {
 		return OK;
+	}
 	ok = execute("gnome-open", args, false);
-	if (ok == OK)
+	if (ok == OK) {
 		return OK;
+	}
 	ok = execute("kde-open", args, false);
 	return ok;
 }
 
 bool OS_LinuxBSD::_check_internal_feature_support(const String &p_feature) {
-
 	return p_feature == "pc";
 }
 
 String OS_LinuxBSD::get_config_path() const {
-
 	if (has_environment("XDG_CONFIG_HOME")) {
 		return get_environment("XDG_CONFIG_HOME");
 	} else if (has_environment("HOME")) {
@@ -160,7 +153,6 @@ String OS_LinuxBSD::get_config_path() const {
 }
 
 String OS_LinuxBSD::get_data_path() const {
-
 	if (has_environment("XDG_DATA_HOME")) {
 		return get_environment("XDG_DATA_HOME");
 	} else if (has_environment("HOME")) {
@@ -171,7 +163,6 @@ String OS_LinuxBSD::get_data_path() const {
 }
 
 String OS_LinuxBSD::get_cache_path() const {
-
 	if (has_environment("XDG_CACHE_HOME")) {
 		return get_environment("XDG_CACHE_HOME");
 	} else if (has_environment("HOME")) {
@@ -182,46 +173,37 @@ String OS_LinuxBSD::get_cache_path() const {
 }
 
 String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
-
 	String xdgparam;
 
 	switch (p_dir) {
 		case SYSTEM_DIR_DESKTOP: {
-
 			xdgparam = "DESKTOP";
 		} break;
 		case SYSTEM_DIR_DCIM: {
-
 			xdgparam = "PICTURES";
 
 		} break;
 		case SYSTEM_DIR_DOCUMENTS: {
-
 			xdgparam = "DOCUMENTS";
 
 		} break;
 		case SYSTEM_DIR_DOWNLOADS: {
-
 			xdgparam = "DOWNLOAD";
 
 		} break;
 		case SYSTEM_DIR_MOVIES: {
-
 			xdgparam = "VIDEOS";
 
 		} break;
 		case SYSTEM_DIR_MUSIC: {
-
 			xdgparam = "MUSIC";
 
 		} break;
 		case SYSTEM_DIR_PICTURES: {
-
 			xdgparam = "PICTURES";
 
 		} break;
 		case SYSTEM_DIR_RINGTONES: {
-
 			xdgparam = "MUSIC";
 
 		} break;
@@ -231,17 +213,18 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir) const {
 	List<String> arg;
 	arg.push_back(xdgparam);
 	Error err = const_cast<OS_LinuxBSD *>(this)->execute("xdg-user-dir", arg, true, nullptr, &pipe);
-	if (err != OK)
+	if (err != OK) {
 		return ".";
+	}
 	return pipe.strip_edges();
 }
 
 void OS_LinuxBSD::run() {
-
 	force_quit = false;
 
-	if (!main_loop)
+	if (!main_loop) {
 		return;
+	}
 
 	main_loop->init();
 
@@ -251,13 +234,13 @@ void OS_LinuxBSD::run() {
 	//uint64_t frame=0;
 
 	while (!force_quit) {
-
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
 		joypad->process_joypads();
 #endif
-		if (Main::iteration())
+		if (Main::iteration()) {
 			break;
+		}
 	};
 
 	main_loop->finish();
@@ -363,7 +346,6 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path) {
 }
 
 OS_LinuxBSD::OS_LinuxBSD() {
-
 	main_loop = nullptr;
 	force_quit = false;
 

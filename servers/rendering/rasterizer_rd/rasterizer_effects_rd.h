@@ -55,7 +55,6 @@
 #include "servers/rendering_server.h"
 
 class RasterizerEffectsRD {
-
 	enum CopyMode {
 		COPY_MODE_GAUSSIAN_COPY,
 		COPY_MODE_GAUSSIAN_COPY_8BIT,
@@ -66,6 +65,8 @@ class RasterizerEffectsRD {
 		COPY_MODE_SIMPLY_COPY_DEPTH,
 		COPY_MODE_MIPMAP,
 		COPY_MODE_LINEARIZE_DEPTH,
+		COPY_MODE_CUBE_TO_PANORAMA,
+		COPY_MODE_CUBE_ARRAY_TO_PANORAMA,
 		COPY_MODE_MAX,
 
 	};
@@ -82,7 +83,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct CopyPushConstant {
-
 		int32_t section[4];
 		int32_t target[2];
 		uint32_t flags;
@@ -119,7 +119,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct CopyToFbPushConstant {
-
 		float section[4];
 		float pixel_size[2];
 		uint32_t flip_y;
@@ -148,7 +147,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct CubemapRoughness {
-
 		CubemapRoughnessPushConstant push_constant;
 		CubemapRoughnessShaderRD shader;
 		RID shader_version;
@@ -212,7 +210,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct LuminanceReduce {
-
 		LuminanceReducePushConstant push_constant;
 		LuminanceReduceShaderRD shader;
 		RID shader_version;
@@ -229,7 +226,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct CoptToDP {
-
 		CubeToDpShaderRD shader;
 		RID shader_version;
 		RID pipeline;
@@ -270,7 +266,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct Bokeh {
-
 		BokehPushConstant push_constant;
 		BokehDofShaderRD shader;
 		RID shader_version;
@@ -331,7 +326,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct SSAO {
-
 		SSAOMinifyPushConstant minify_push_constant;
 		SsaoMinifyShaderRD minify_shader;
 		RID minify_shader_version;
@@ -354,7 +348,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct RoughnessLimiter {
-
 		RoughnessLimiterPushConstant push_constant;
 		RoughnessLimiterShaderRD shader;
 		RID shader_version;
@@ -368,7 +361,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct CubemapDownsampler {
-
 		CubemapDownsamplerPushConstant push_constant;
 		CubemapDownsamplerShaderRD shader;
 		RID shader_version;
@@ -385,7 +377,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct CubemapFilter {
-
 		CubemapFilterShaderRD shader;
 		RID shader_version;
 		RID pipelines[FILTER_MODE_MAX];
@@ -418,7 +409,6 @@ class RasterizerEffectsRD {
 	 */
 
 	struct SpecularMerge {
-
 		SpecularMergeShaderRD shader;
 		RID shader_version;
 		RenderPipelineVertexFormatCacheRD pipelines[SPECULAR_MERGE_MAX];
@@ -432,7 +422,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct ScreenSpaceReflectionPushConstant {
-
 		float proj_info[4];
 
 		int32_t screen_size[2];
@@ -453,7 +442,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct ScreenSpaceReflection {
-
 		ScreenSpaceReflectionPushConstant push_constant;
 		ScreenSpaceReflectionShaderRD shader;
 		RID shader_version;
@@ -462,7 +450,6 @@ class RasterizerEffectsRD {
 	} ssr;
 
 	struct ScreenSpaceReflectionFilterPushConstant {
-
 		float proj_info[4];
 
 		uint32_t orthogonal;
@@ -481,7 +468,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct ScreenSpaceReflectionFilter {
-
 		ScreenSpaceReflectionFilterPushConstant push_constant;
 		ScreenSpaceReflectionFilterShaderRD shader;
 		RID shader_version;
@@ -489,7 +475,6 @@ class RasterizerEffectsRD {
 	} ssr_filter;
 
 	struct ScreenSpaceReflectionScalePushConstant {
-
 		int32_t screen_size[2];
 		float camera_z_near;
 		float camera_z_far;
@@ -500,7 +485,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct ScreenSpaceReflectionScale {
-
 		ScreenSpaceReflectionScalePushConstant push_constant;
 		ScreenSpaceReflectionScaleShaderRD shader;
 		RID shader_version;
@@ -508,7 +492,6 @@ class RasterizerEffectsRD {
 	} ssr_scale;
 
 	struct SubSurfaceScatteringPushConstant {
-
 		int32_t screen_size[2];
 		float camera_z_far;
 		float camera_z_near;
@@ -523,7 +506,6 @@ class RasterizerEffectsRD {
 	};
 
 	struct SubSurfaceScattering {
-
 		SubSurfaceScatteringPushConstant push_constant;
 		SubsurfaceScatteringShaderRD shader;
 		RID shader_version;
@@ -564,6 +546,7 @@ class RasterizerEffectsRD {
 public:
 	void copy_to_fb_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_alpha_to_zero = false);
 	void copy_to_rect(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y = false, bool p_force_luminance = false, bool p_all_source = false, bool p_8_bit_dst = false);
+	void copy_cubemap_to_panorama(RID p_source_cube, RID p_dest_panorama, const Size2i &p_panorama_size, float p_lod, bool p_is_array);
 	void copy_depth_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2i &p_rect, bool p_flip_y = false);
 	void copy_depth_to_rect_and_linearize(RID p_source_rd_texture, RID p_dest_texture, const Rect2i &p_rect, bool p_flip_y, float p_z_near, float p_z_far);
 	void copy_to_atlas_fb(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_uv_rect, RD::DrawListID p_draw_list, bool p_flip_y = false, bool p_panorama = false);
@@ -577,7 +560,6 @@ public:
 	void bokeh_dof(RID p_base_texture, RID p_depth_texture, const Size2i &p_base_texture_size, RID p_secondary_texture, RID p_bokeh_texture1, RID p_bokeh_texture2, bool p_dof_far, float p_dof_far_begin, float p_dof_far_size, bool p_dof_near, float p_dof_near_begin, float p_dof_near_size, float p_bokeh_size, RS::DOFBokehShape p_bokeh_shape, RS::DOFBlurQuality p_quality, bool p_use_jitter, float p_cam_znear, float p_cam_zfar, bool p_cam_orthogonal);
 
 	struct TonemapSettings {
-
 		bool use_glow = false;
 		enum GlowMode {
 			GLOW_MODE_ADD,

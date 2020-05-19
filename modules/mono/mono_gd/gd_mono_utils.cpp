@@ -56,7 +56,6 @@
 namespace GDMonoUtils {
 
 MonoObject *unmanaged_get_managed(Object *unmanaged) {
-
 	if (!unmanaged)
 		return nullptr;
 
@@ -564,9 +563,10 @@ namespace Marshal {
 
 #ifdef MONO_GLUE_ENABLED
 #ifdef TOOLS_ENABLED
-#define NO_GLUE_RET(m_ret)                                                   \
-	{                                                                        \
-		if (!GDMonoCache::cached_data.godot_api_cache_updated) return m_ret; \
+#define NO_GLUE_RET(m_ret)                                     \
+	{                                                          \
+		if (!GDMonoCache::cached_data.godot_api_cache_updated) \
+			return m_ret;                                      \
 	}
 #else
 #define NO_GLUE_RET(m_ret) \
@@ -663,8 +663,7 @@ GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, Mon
 
 } // namespace Marshal
 
-ScopeThreadAttach::ScopeThreadAttach() :
-		mono_thread(nullptr) {
+ScopeThreadAttach::ScopeThreadAttach() {
 	if (likely(GDMono::get_singleton()->is_runtime_initialized()) && unlikely(!mono_domain_get())) {
 		mono_thread = GDMonoUtils::attach_current_thread();
 	}

@@ -34,7 +34,6 @@
 #include "visual_script.h"
 
 class VisualScriptYield : public VisualScriptNode {
-
 	GDCLASS(VisualScriptYield, VisualScriptNode);
 
 public:
@@ -84,7 +83,6 @@ public:
 VARIANT_ENUM_CAST(VisualScriptYield::YieldMode)
 
 class VisualScriptYieldSignal : public VisualScriptNode {
-
 	GDCLASS(VisualScriptYieldSignal, VisualScriptNode);
 
 public:

@@ -34,7 +34,6 @@
 #include "scene/main/window.h"
 
 class Popup : public Window {
-
 	GDCLASS(Popup, Window);
 
 	Window *parent_visible;
@@ -56,7 +55,6 @@ public:
 };
 
 class PopupPanel : public Popup {
-
 	GDCLASS(PopupPanel, Popup);
 
 	Panel *panel;

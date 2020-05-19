@@ -34,7 +34,6 @@
 #include "core/resource.h"
 
 class PackedDataContainer : public Resource {
-
 	GDCLASS(PackedDataContainer, Resource);
 
 	enum {
@@ -49,7 +48,7 @@ class PackedDataContainer : public Resource {
 	};
 
 	Vector<uint8_t> data;
-	int datalen;
+	int datalen = 0;
 
 	uint32_t _pack(const Variant &p_data, Vector<uint8_t> &tmpdata, Map<String, uint32_t> &string_cache);
 
@@ -78,7 +77,7 @@ public:
 
 	int size() const;
 
-	PackedDataContainer();
+	PackedDataContainer() {}
 };
 
 class PackedDataContainerRef : public Reference {
@@ -100,7 +99,7 @@ public:
 	int size() const;
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = nullptr) const;
 
-	PackedDataContainerRef();
+	PackedDataContainerRef() {}
 };
 
 #endif // PACKED_DATA_CONTAINER_H

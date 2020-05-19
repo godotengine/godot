@@ -42,15 +42,13 @@ void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void Popup::_parent_focused() {
-
 	_close_pressed();
 }
-void Popup::_notification(int p_what) {
 
+void Popup::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-
 				parent_visible = get_parent_visible_window();
 				if (parent_visible) {
 					parent_visible->connect("focus_entered", callable_mp(this, &Popup::_parent_focused));
@@ -79,7 +77,6 @@ void Popup::_notification(int p_what) {
 }
 
 void Popup::_close_pressed() {
-
 	Window *parent_window = parent_visible;
 	if (parent_visible) {
 		parent_visible->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
@@ -98,8 +95,8 @@ void Popup::_close_pressed() {
 void Popup::set_as_minsize() {
 	set_size(get_contents_minimum_size());
 }
-void Popup::_bind_methods() {
 
+void Popup::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("popup_hide"));
 }
 
@@ -133,7 +130,6 @@ Rect2i Popup::_popup_adjust_rect() const {
 }
 
 Popup::Popup() {
-
 	parent_visible = nullptr;
 
 	set_wrap_controls(true);
@@ -149,18 +145,19 @@ Popup::~Popup() {
 }
 
 Size2 PopupPanel::_get_contents_minimum_size() const {
-
 	Ref<StyleBox> p = get_theme_stylebox("panel", get_class_name());
 
 	Size2 ms;
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c || c == panel)
+		if (!c || c == panel) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		Size2 cms = c->get_combined_minimum_size();
 		ms.x = MAX(cms.x, ms.x);
@@ -171,7 +168,6 @@ Size2 PopupPanel::_get_contents_minimum_size() const {
 }
 
 void PopupPanel::_update_child_rects() {
-
 	Ref<StyleBox> p = get_theme_stylebox("panel", get_class_name());
 
 	Vector2 cpos(p->get_offset());
@@ -179,11 +175,13 @@ void PopupPanel::_update_child_rects() {
 
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(get_child(i));
-		if (!c)
+		if (!c) {
 			continue;
+		}
 
-		if (c->is_set_as_toplevel())
+		if (c->is_set_as_toplevel()) {
 			continue;
+		}
 
 		if (c == panel) {
 			c->set_position(Vector2());
@@ -196,21 +194,17 @@ void PopupPanel::_update_child_rects() {
 }
 
 void PopupPanel::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_THEME_CHANGED) {
 		panel->add_theme_style_override("panel", get_theme_stylebox("panel", get_class_name()));
 	} else if (p_what == NOTIFICATION_READY || p_what == NOTIFICATION_ENTER_TREE) {
-
 		panel->add_theme_style_override("panel", get_theme_stylebox("panel", get_class_name()));
 		_update_child_rects();
 	} else if (p_what == NOTIFICATION_WM_SIZE_CHANGED) {
-
 		_update_child_rects();
 	}
 }
 
 PopupPanel::PopupPanel() {
-
 	panel = memnew(Panel);
 	add_child(panel);
 }

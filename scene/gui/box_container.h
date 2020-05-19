@@ -34,7 +34,6 @@
 #include "scene/gui/container.h"
 
 class BoxContainer : public Container {
-
 	GDCLASS(BoxContainer, Container);
 
 public:
@@ -67,7 +66,6 @@ public:
 };
 
 class HBoxContainer : public BoxContainer {
-
 	GDCLASS(HBoxContainer, BoxContainer);
 
 public:
@@ -77,7 +75,6 @@ public:
 
 class MarginContainer;
 class VBoxContainer : public BoxContainer {
-
 	GDCLASS(VBoxContainer, BoxContainer);
 
 public:

@@ -36,7 +36,6 @@
 #include "core/script_language.h"
 
 class LocalDebugger : public EngineDebugger {
-
 private:
 	struct ScriptsProfiler;
 

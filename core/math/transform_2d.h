@@ -120,7 +120,6 @@ struct Transform2D {
 	operator String() const;
 
 	Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy) {
-
 		elements[0][0] = xx;
 		elements[0][1] = xy;
 		elements[1][0] = yx;
@@ -137,36 +136,33 @@ struct Transform2D {
 };
 
 Vector2 Transform2D::basis_xform(const Vector2 &p_vec) const {
-
 	return Vector2(
 			tdotx(p_vec),
 			tdoty(p_vec));
 }
 
 Vector2 Transform2D::basis_xform_inv(const Vector2 &p_vec) const {
-
 	return Vector2(
 			elements[0].dot(p_vec),
 			elements[1].dot(p_vec));
 }
 
 Vector2 Transform2D::xform(const Vector2 &p_vec) const {
-
 	return Vector2(
 				   tdotx(p_vec),
 				   tdoty(p_vec)) +
 		   elements[2];
 }
-Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {
 
+Vector2 Transform2D::xform_inv(const Vector2 &p_vec) const {
 	Vector2 v = p_vec - elements[2];
 
 	return Vector2(
 			elements[0].dot(v),
 			elements[1].dot(v));
 }
-Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 
+Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 	Vector2 x = elements[0] * p_rect.size.x;
 	Vector2 y = elements[1] * p_rect.size.y;
 	Vector2 pos = xform(p_rect.position);
@@ -180,7 +176,6 @@ Rect2 Transform2D::xform(const Rect2 &p_rect) const {
 }
 
 void Transform2D::set_rotation_and_scale(real_t p_rot, const Size2 &p_scale) {
-
 	elements[0][0] = Math::cos(p_rot) * p_scale.x;
 	elements[1][1] = Math::cos(p_rot) * p_scale.y;
 	elements[1][0] = -Math::sin(p_rot) * p_scale.y;
@@ -188,7 +183,6 @@ void Transform2D::set_rotation_and_scale(real_t p_rot, const Size2 &p_scale) {
 }
 
 void Transform2D::set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale, float p_skew) {
-
 	elements[0][0] = Math::cos(p_rot) * p_scale.x;
 	elements[1][1] = Math::cos(p_rot + p_skew) * p_scale.y;
 	elements[1][0] = -Math::sin(p_rot + p_skew) * p_scale.y;
@@ -196,7 +190,6 @@ void Transform2D::set_rotation_scale_and_skew(real_t p_rot, const Size2 &p_scale
 }
 
 Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
-
 	Vector2 ends[4] = {
 		xform_inv(p_rect.position),
 		xform_inv(Vector2(p_rect.position.x, p_rect.position.y + p_rect.size.y)),
@@ -214,7 +207,6 @@ Rect2 Transform2D::xform_inv(const Rect2 &p_rect) const {
 }
 
 Vector<Vector2> Transform2D::xform(const Vector<Vector2> &p_array) const {
-
 	Vector<Vector2> array;
 	array.resize(p_array.size());
 
@@ -228,7 +220,6 @@ Vector<Vector2> Transform2D::xform(const Vector<Vector2> &p_array) const {
 }
 
 Vector<Vector2> Transform2D::xform_inv(const Vector<Vector2> &p_array) const {
-
 	Vector<Vector2> array;
 	array.resize(p_array.size());
 

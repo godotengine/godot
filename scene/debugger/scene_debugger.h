@@ -39,7 +39,6 @@
 class Script;
 
 class SceneDebugger {
-
 public:
 	static void initialize();
 	static void deinitialize();
@@ -59,7 +58,6 @@ public:
 
 #ifdef DEBUG_ENABLED
 class SceneDebuggerObject {
-
 private:
 	void _parse_script_properties(Script *p_script, ScriptInstance *p_instance);
 
@@ -77,7 +75,6 @@ public:
 };
 
 class SceneDebuggerTree {
-
 public:
 	struct RemoteNode {
 		int child_count;
@@ -100,11 +97,10 @@ public:
 	void serialize(Array &r_arr);
 	void deserialize(const Array &p_arr);
 	SceneDebuggerTree(Node *p_root);
-	SceneDebuggerTree(){};
+	SceneDebuggerTree() {}
 };
 
 class LiveEditor {
-
 private:
 	friend class SceneDebugger;
 	Map<int, NodePath> live_edit_node_path_cache;

@@ -34,7 +34,6 @@
 #include "servers/audio_server.h"
 
 class AudioDriverJavaScript : public AudioDriver {
-
 	float *internal_buffer;
 
 	int _driver_id;
@@ -51,11 +50,13 @@ public:
 	virtual Error init();
 	virtual void start();
 	void resume();
+	virtual float get_latency();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+	void finish_async();
 
 	virtual Error capture_start();
 	virtual Error capture_stop();

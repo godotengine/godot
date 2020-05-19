@@ -56,24 +56,23 @@
 */
 
 class SoftBodyBullet : public CollisionObjectBullet {
-
 private:
-	btSoftBody *bt_soft_body;
+	btSoftBody *bt_soft_body = nullptr;
 	Vector<Vector<int>> indices_table;
 	btSoftBody::Material *mat0; // This is just a copy of pointer managed by btSoftBody
-	bool isScratched;
+	bool isScratched = false;
 
 	Ref<Mesh> soft_mesh;
 
-	int simulation_precision;
-	real_t total_mass;
-	real_t linear_stiffness; // [0,1]
-	real_t areaAngular_stiffness; // [0,1]
-	real_t volume_stiffness; // [0,1]
-	real_t pressure_coefficient; // [-inf,+inf]
-	real_t pose_matching_coefficient; // [0,1]
-	real_t damping_coefficient; // [0,1]
-	real_t drag_coefficient; // [0,1]
+	int simulation_precision = 5;
+	real_t total_mass = 1.;
+	real_t linear_stiffness = 0.5; // [0,1]
+	real_t areaAngular_stiffness = 0.5; // [0,1]
+	real_t volume_stiffness = 0.5; // [0,1]
+	real_t pressure_coefficient = 0.; // [-inf,+inf]
+	real_t pose_matching_coefficient = 0.; // [0,1]
+	real_t damping_coefficient = 0.01; // [0,1]
+	real_t drag_coefficient = 0.; // [0,1]
 	Vector<int> pinned_nodes;
 
 	// Other property to add

@@ -37,7 +37,6 @@
 #include "scene/resources/texture.h"
 
 class Shader : public Resource {
-
 	GDCLASS(Shader, Resource);
 	OBJ_SAVE_TYPE(Shader);
 
@@ -83,12 +82,14 @@ public:
 	virtual bool is_text_shader() const;
 
 	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
-		if (params_cache_dirty)
+		if (params_cache_dirty) {
 			get_param_list(nullptr);
+		}
 
 		const Map<StringName, StringName>::Element *E = params_cache.find(p_param);
-		if (E)
+		if (E) {
 			return E->get();
+		}
 		return StringName();
 	}
 

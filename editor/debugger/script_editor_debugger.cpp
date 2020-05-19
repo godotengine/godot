@@ -74,16 +74,19 @@ void ScriptEditorDebugger::_put_msg(String p_message, Array p_data) {
 
 void ScriptEditorDebugger::debug_copy() {
 	String msg = reason->get_text();
-	if (msg == "") return;
+	if (msg == "") {
+		return;
+	}
 	DisplayServer::get_singleton()->clipboard_set(msg);
 }
 
 void ScriptEditorDebugger::debug_skip_breakpoints() {
 	skip_breakpoints_value = !skip_breakpoints_value;
-	if (skip_breakpoints_value)
+	if (skip_breakpoints_value) {
 		skip_breakpoints->set_icon(get_theme_icon("DebugSkipBreakpointsOn", "EditorIcons"));
-	else
+	} else {
 		skip_breakpoints->set_icon(get_theme_icon("DebugSkipBreakpointsOff", "EditorIcons"));
+	}
 
 	Array msg;
 	msg.push_back(skip_breakpoints_value);
@@ -91,14 +94,13 @@ void ScriptEditorDebugger::debug_skip_breakpoints() {
 }
 
 void ScriptEditorDebugger::debug_next() {
-
 	ERR_FAIL_COND(!breaked);
 
 	_put_msg("next", Array());
 	_clear_execution();
 }
-void ScriptEditorDebugger::debug_step() {
 
+void ScriptEditorDebugger::debug_step() {
 	ERR_FAIL_COND(!breaked);
 
 	_put_msg("step", Array());
@@ -106,19 +108,18 @@ void ScriptEditorDebugger::debug_step() {
 }
 
 void ScriptEditorDebugger::debug_break() {
-
 	ERR_FAIL_COND(breaked);
 
 	_put_msg("break", Array());
 }
 
 void ScriptEditorDebugger::debug_continue() {
-
 	ERR_FAIL_COND(!breaked);
 
 	// Allow focus stealing only if we actually run this client for security.
-	if (remote_pid && EditorNode::get_singleton()->has_child_process(remote_pid))
+	if (remote_pid && EditorNode::get_singleton()->has_child_process(remote_pid)) {
 		DisplayServer::get_singleton()->enable_for_stealing_focus(remote_pid);
+	}
 
 	_clear_execution();
 	_put_msg("continue", Array());
@@ -130,10 +131,12 @@ void ScriptEditorDebugger::update_tabs() {
 		tabs->set_tab_icon(errors_tab->get_index(), Ref<Texture2D>());
 	} else {
 		errors_tab->set_name(TTR("Errors") + " (" + itos(error_count + warning_count) + ")");
-		if (error_count == 0) {
-			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Warning", "EditorIcons"));
-		} else {
+		if (error_count >= 1 && warning_count >= 1) {
+			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("ErrorWarning", "EditorIcons"));
+		} else if (error_count >= 1) {
 			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Error", "EditorIcons"));
+		} else {
+			tabs->set_tab_icon(errors_tab->get_index(), get_theme_icon("Warning", "EditorIcons"));
 		}
 	}
 }
@@ -150,7 +153,6 @@ void ScriptEditorDebugger::save_node(ObjectID p_id, const String &p_file) {
 }
 
 void ScriptEditorDebugger::_file_selected(const String &p_file) {
-
 	switch (file_dialog_purpose) {
 		case SAVE_MONITORS_CSV: {
 			Error err;
@@ -172,10 +174,8 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 			// values
 			List<Vector<float>>::Element *E = perf_history.back();
 			while (E) {
-
 				Vector<float> &perf_data = E->get();
 				for (int i = 0; i < perf_data.size(); i++) {
-
 					line.write[i] = String::num_real(perf_data[i]);
 				}
 				file->store_csv_line(line);
@@ -222,7 +222,6 @@ void ScriptEditorDebugger::_file_selected(const String &p_file) {
 }
 
 void ScriptEditorDebugger::request_remote_tree() {
-
 	_put_msg("scene:request_scene_tree", Array());
 }
 
@@ -231,7 +230,6 @@ const SceneDebuggerTree *ScriptEditorDebugger::get_remote_tree() {
 }
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value) {
-
 	Array msg;
 	msg.push_back(p_obj_id);
 	msg.push_back(p_prop);
@@ -240,7 +238,6 @@ void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String 
 }
 
 void ScriptEditorDebugger::request_remote_object(ObjectID p_obj_id) {
-
 	ERR_FAIL_COND(p_obj_id.is_null());
 	Array msg;
 	msg.push_back(p_obj_id);
@@ -265,12 +262,10 @@ void ScriptEditorDebugger::_remote_object_property_updated(ObjectID p_id, const 
 }
 
 void ScriptEditorDebugger::_video_mem_request() {
-
 	_put_msg("core:memory", Array());
 }
 
 void ScriptEditorDebugger::_video_mem_export() {
-
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog->clear_filters();
@@ -279,16 +274,13 @@ void ScriptEditorDebugger::_video_mem_export() {
 }
 
 Size2 ScriptEditorDebugger::get_minimum_size() const {
-
 	Size2 ms = MarginContainer::get_minimum_size();
 	ms.y = MAX(ms.y, 250 * EDSCALE);
 	return ms;
 }
 
 void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_data) {
-
 	if (p_msg == "debug_enter") {
-
 		_put_msg("get_stack_dump", Array());
 
 		ERR_FAIL_COND(p_data.size() != 2);
@@ -307,7 +299,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		inspector->clear_cache(); // Take a chance to force remote objects update.
 
 	} else if (p_msg == "debug_exit") {
-
 		breaked = false;
 		can_debug = false;
 		_clear_execution();
@@ -317,27 +308,23 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		profiler->set_enabled(true);
 		profiler->disable_seeking();
 	} else if (p_msg == "set_pid") {
-
 		ERR_FAIL_COND(p_data.size() < 1);
 		remote_pid = p_data[0];
 	} else if (p_msg == "scene:click_ctrl") {
-
 		ERR_FAIL_COND(p_data.size() < 2);
 		clicked_ctrl->set_text(p_data[0]);
 		clicked_ctrl_type->set_text(p_data[1]);
 	} else if (p_msg == "scene:scene_tree") {
-
 		scene_tree->nodes.clear();
 		scene_tree->deserialize(p_data);
 		emit_signal("remote_tree_updated");
 		_update_buttons_state();
 	} else if (p_msg == "scene:inspect_object") {
-
 		ObjectID id = inspector->add_object(p_data);
-		if (id.is_valid())
+		if (id.is_valid()) {
 			emit_signal("remote_object_updated", id);
+		}
 	} else if (p_msg == "memory:usage") {
-
 		vmem_tree->clear();
 		TreeItem *root = vmem_tree->create_item();
 		DebuggerMarshalls::ResourceUsage usage;
@@ -346,7 +333,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		int total = 0;
 
 		for (List<DebuggerMarshalls::ResourceInfo>::Element *E = usage.infos.front(); E; E = E->next()) {
-
 			TreeItem *it = vmem_tree->create_item(root);
 			String type = E->get().type;
 			int bytes = E->get().vram;
@@ -356,15 +342,15 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			it->set_text(3, String::humanize_size(bytes));
 			total += bytes;
 
-			if (has_theme_icon(type, "EditorIcons"))
+			if (has_theme_icon(type, "EditorIcons")) {
 				it->set_icon(0, get_theme_icon(type, "EditorIcons"));
+			}
 		}
 
 		vmem_total->set_tooltip(TTR("Bytes:") + " " + itos(total));
 		vmem_total->set_text(String::humanize_size(total));
 
 	} else if (p_msg == "stack_dump") {
-
 		DebuggerMarshalls::ScriptStackDump stack;
 		stack.deserialize(p_data);
 
@@ -373,7 +359,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		TreeItem *r = stack_dump->create_item();
 
 		for (int i = 0; i < stack.frames.size(); i++) {
-
 			TreeItem *s = stack_dump->create_item(r);
 			Dictionary d;
 			d["frame"] = i;
@@ -385,15 +370,14 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + d["function"];
 			s->set_text(0, line);
 
-			if (i == 0)
+			if (i == 0) {
 				s->select(0);
+			}
 		}
 	} else if (p_msg == "stack_frame_vars") {
-
 		inspector->clear_stack_variables();
 
 	} else if (p_msg == "stack_frame_var") {
-
 		inspector->add_stack_variable(p_data);
 
 	} else if (p_msg == "output") {
@@ -430,7 +414,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		for (int i = 0; i < p_data.size(); i++) {
 			p.write[i] = p_data[i];
 			if (i < perf_items.size()) {
-
 				const float value = p[i];
 				String label = rtos(value);
 				String tooltip = label;
@@ -450,8 +433,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 				perf_items[i]->set_text(1, label);
 				perf_items[i]->set_tooltip(1, tooltip);
-				if (p[i] > perf_max[i])
+				if (p[i] > perf_max[i]) {
 					perf_max.write[i] = p[i];
+				}
 			}
 		}
 		perf_history.push_front(p);
@@ -477,7 +461,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		visual_profiler->add_frame_metric(metric);
 
 	} else if (p_msg == "error") {
-
 		DebuggerMarshalls::OutputError oe;
 		ERR_FAIL_COND_MSG(oe.deserialize(p_data) == false, "Failed to deserialize error message");
 
@@ -517,8 +500,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		String error_title;
 		// Include method name, when given, in error title.
-		if (!oe.source_func.empty())
+		if (!oe.source_func.empty()) {
 			error_title += oe.source_func + ": ";
+		}
 		// If we have a (custom) error message, use it as title, and add a C++ Error
 		// item with the original error condition.
 		error_title += oe.error_descr.empty() ? oe.error : oe.error_descr;
@@ -532,16 +516,18 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			cpp_cond->set_text(1, oe.error);
 			cpp_cond->set_text_align(0, TreeItem::ALIGN_LEFT);
 			tooltip += TTR("C++ Error:") + " " + oe.error + "\n";
-			if (source_is_project_file)
+			if (source_is_project_file) {
 				cpp_cond->set_metadata(0, source_meta);
+			}
 		}
 		Vector<uint8_t> v;
 		v.resize(100);
 
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
-		if (!oe.source_func.empty())
+		if (!oe.source_func.empty()) {
 			source_txt += " @ " + oe.source_func + "()";
+		}
 
 		TreeItem *cpp_source = error_tree->create_item(error);
 		cpp_source->set_text(0, "<" + (source_is_project_file ? TTR("Source") : TTR("C++ Source")) + ">");
@@ -563,7 +549,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		// of the stack trace (script, method, line).
 		const ScriptLanguage::StackInfo *infos = oe.callstack.ptr();
 		for (unsigned int i = 0; i < (unsigned int)oe.callstack.size(); i++) {
-
 			TreeItem *stack_trace = error_tree->create_item(error);
 
 			Array meta;
@@ -579,10 +564,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			stack_trace->set_text(1, infos[i].file.get_file() + ":" + itos(infos[i].line) + " @ " + infos[i].func + "()");
 		}
 
-		if (oe.warning)
+		if (oe.warning) {
 			warning_count++;
-		else
+		} else {
 			error_count++;
+		}
 
 	} else if (p_msg == "servers:function_signature") {
 		// Cache a profiler signature.
@@ -636,7 +622,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		}
 
 		for (int i = 0; i < frame.servers.size(); i++) {
-
 			const DebuggerMarshalls::ServerInfo &srv = frame.servers[i];
 			EditorProfiler::Metric::Category c;
 			const String name = srv.name;
@@ -645,7 +630,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			c.total_time = 0;
 			c.signature = "categ::" + name;
 			for (int j = 0; j < srv.functions.size(); j++) {
-
 				EditorProfiler::Metric::Category::Item item;
 				item.calls = 1;
 				item.line = 0;
@@ -666,7 +650,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		funcs.name = "Script Functions";
 		funcs.signature = "script_functions";
 		for (int i = 0; i < frame.script_functions.size(); i++) {
-
 			int signature = frame.script_functions[i].sig_id;
 			int calls = frame.script_functions[i].call_count;
 			float total = frame.script_functions[i].total_time;
@@ -674,7 +657,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 			EditorProfiler::Metric::Category::Item item;
 			if (profiler_signature.has(signature)) {
-
 				item.signature = profiler_signature[signature];
 
 				String name = profiler_signature[signature];
@@ -701,10 +683,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		metric.categories.push_back(funcs);
 
-		if (p_msg == "servers:profile_frame")
+		if (p_msg == "servers:profile_frame") {
 			profiler->add_frame_metric(metric, false);
-		else
+		} else {
 			profiler->add_frame_metric(metric, true);
+		}
 
 	} else if (p_msg == "network:profile_frame") {
 		DebuggerMarshalls::NetworkProfilerFrame frame;
@@ -742,17 +725,15 @@ void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType 
 }
 
 void ScriptEditorDebugger::_performance_select() {
-
 	perf_draw->update();
 }
 
 void ScriptEditorDebugger::_performance_draw() {
-
 	Vector<int> which;
 	for (int i = 0; i < perf_items.size(); i++) {
-
-		if (perf_items[i]->is_checked(0))
+		if (perf_items[i]->is_checked(0)) {
 			which.push_back(i);
+		}
 	}
 
 	if (which.empty()) {
@@ -767,14 +748,14 @@ void ScriptEditorDebugger::_performance_draw() {
 
 	int cols = Math::ceil(Math::sqrt((float)which.size()));
 	int rows = Math::ceil((float)which.size() / cols);
-	if (which.size() == 1)
+	if (which.size() == 1) {
 		rows = 1;
+	}
 
 	int margin = 3;
 	int point_sep = 5;
 	Size2i s = Size2i(perf_draw->get_size()) / Size2i(cols, rows);
 	for (int i = 0; i < which.size(); i++) {
-
 		Point2i p(i % cols, i / cols);
 		Rect2i r(p * s, s);
 		r.position += Point2(margin, margin);
@@ -800,15 +781,16 @@ void ScriptEditorDebugger::_performance_draw() {
 		List<Vector<float>>::Element *E = perf_history.front();
 		float prev = -1;
 		while (from >= 0 && E) {
-
 			float m = perf_max[pi];
-			if (m == 0)
+			if (m == 0) {
 				m = 0.00001;
+			}
 			float h2 = E->get()[pi] / m;
 			h2 = (1.0 - h2) * r.size.y;
 
-			if (E != perf_history.front())
+			if (E != perf_history.front()) {
 				perf_draw->draw_line(r.position + Point2(from, h2), r.position + Point2(from + spacing, prev), c, Math::round(EDSCALE));
+			}
 			prev = h2;
 			E = E->next();
 			from -= spacing;
@@ -817,11 +799,8 @@ void ScriptEditorDebugger::_performance_draw() {
 }
 
 void ScriptEditorDebugger::_notification(int p_what) {
-
 	switch (p_what) {
-
 		case NOTIFICATION_ENTER_TREE: {
-
 			skip_breakpoints->set_icon(get_theme_icon("DebugSkipBreakpointsOff", "EditorIcons"));
 			copy->set_icon(get_theme_icon("ActionCopy", "EditorIcons"));
 
@@ -840,8 +819,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_PROCESS: {
-
 			if (is_session_active()) {
+				peer->poll();
 
 				if (camera_override == CameraOverride::OVERRIDE_2D) {
 					CanvasItemEditor *editor = CanvasItemEditor::get_singleton();
@@ -881,7 +860,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			const uint64_t until = OS::get_singleton()->get_ticks_msec() + 20;
 
 			while (peer.is_valid() && peer->has_message()) {
-
 				Array arr = peer->get_message();
 				if (arr.size() != 2 || arr[0].get_type() != Variant::STRING || arr[1].get_type() != Variant::ARRAY) {
 					_stop_and_notify();
@@ -889,8 +867,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				}
 				_parse_message(arr[0], arr[1]);
 
-				if (OS::get_singleton()->get_ticks_msec() > until)
+				if (OS::get_singleton()->get_ticks_msec() > until) {
 					break;
+				}
 			}
 			if (!is_session_active()) {
 				_stop_and_notify();
@@ -898,7 +877,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			};
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
 			if (tabs->has_theme_stylebox_override("panel")) {
 				tabs->add_theme_style_override("panel", editor->get_gui_base()->get_theme_stylebox("DebuggerPanel", "EditorStyles"));
 			}
@@ -916,8 +894,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 void ScriptEditorDebugger::_clear_execution() {
 	TreeItem *ti = stack_dump->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	Dictionary d = ti->get_metadata(0);
 
@@ -929,7 +908,6 @@ void ScriptEditorDebugger::_clear_execution() {
 }
 
 void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
-
 	error_count = 0;
 	warning_count = 0;
 	stop();
@@ -939,7 +917,6 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 
 	perf_history.clear();
 	for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-
 		perf_max.write[i] = 0;
 	}
 
@@ -973,7 +950,6 @@ void ScriptEditorDebugger::_stop_and_notify() {
 }
 
 void ScriptEditorDebugger::stop() {
-
 	set_process(false);
 	breaked = false;
 	can_debug = false;
@@ -998,7 +974,6 @@ void ScriptEditorDebugger::stop() {
 }
 
 void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
-
 	Array data;
 	data.push_back(p_enable);
 	switch (p_type) {
@@ -1026,14 +1001,13 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable, int p_type) {
 }
 
 void ScriptEditorDebugger::_profiler_seeked() {
-
-	if (breaked)
+	if (breaked) {
 		return;
+	}
 	debug_break();
 }
 
 void ScriptEditorDebugger::_stack_dump_frame_selected() {
-
 	emit_signal("stack_frame_selected");
 
 	int frame = get_stack_script_frame();
@@ -1048,7 +1022,6 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 }
 
 void ScriptEditorDebugger::_export_csv() {
-
 	file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
 	file_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	file_dialog_purpose = SAVE_MONITORS_CSV;
@@ -1056,16 +1029,17 @@ void ScriptEditorDebugger::_export_csv() {
 }
 
 String ScriptEditorDebugger::get_var_value(const String &p_var) const {
-	if (!breaked)
+	if (!breaked) {
 		return String();
+	}
 	return inspector->get_stack_variable(p_var);
 }
 
 int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
-
 	const int *r = node_path_cache.getptr(p_path);
-	if (r)
+	if (r) {
 		return *r;
+	}
 
 	last_path_id++;
 
@@ -1079,11 +1053,11 @@ int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
 }
 
 int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
-
 	Map<String, int>::Element *E = res_path_cache.find(p_path);
 
-	if (E)
+	if (E) {
 		return E->get();
+	}
 
 	last_path_id++;
 
@@ -1097,9 +1071,9 @@ int ScriptEditorDebugger::_get_res_path_cache(const String &p_path) {
 }
 
 void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE) {
-
-	if (!p_base || !live_debug || !is_session_active() || !editor->get_edited_scene())
+	if (!p_base || !live_debug || !is_session_active() || !editor->get_edited_scene()) {
 		return;
+	}
 
 	Node *node = Object::cast_to<Node>(p_base);
 
@@ -1107,12 +1081,12 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 
 	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
 		//no pointers, sorry
-		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::_RID))
+		if (argptr[i] && (argptr[i]->get_type() == Variant::OBJECT || argptr[i]->get_type() == Variant::_RID)) {
 			return;
+		}
 	}
 
 	if (node) {
-
 		NodePath path = editor->get_edited_scene()->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
@@ -1131,7 +1105,6 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 	Resource *res = Object::cast_to<Resource>(p_base);
 
 	if (res && res->get_path() != String()) {
-
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
@@ -1149,21 +1122,19 @@ void ScriptEditorDebugger::_method_changed(Object *p_base, const StringName &p_n
 }
 
 void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p_property, const Variant &p_value) {
-
-	if (!p_base || !live_debug || !editor->get_edited_scene())
+	if (!p_base || !live_debug || !editor->get_edited_scene()) {
 		return;
+	}
 
 	Node *node = Object::cast_to<Node>(p_base);
 
 	if (node) {
-
 		NodePath path = editor->get_edited_scene()->get_path_to(node);
 		int pathid = _get_node_path_cache(path);
 
 		if (p_value.is_ref()) {
 			Ref<Resource> res = p_value;
 			if (res.is_valid() && res->get_path() != String()) {
-
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);
@@ -1171,7 +1142,6 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 				_put_msg("scene:live_node_prop_res", msg);
 			}
 		} else {
-
 			Array msg;
 			msg.push_back(pathid);
 			msg.push_back(p_property);
@@ -1185,14 +1155,12 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 	Resource *res = Object::cast_to<Resource>(p_base);
 
 	if (res && res->get_path() != String()) {
-
 		String respath = res->get_path();
 		int pathid = _get_res_path_cache(respath);
 
 		if (p_value.is_ref()) {
 			Ref<Resource> res2 = p_value;
 			if (res2.is_valid() && res2->get_path() != String()) {
-
 				Array msg;
 				msg.push_back(pathid);
 				msg.push_back(p_property);
@@ -1200,7 +1168,6 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 				_put_msg("scene:live_res_prop_res", msg);
 			}
 		} else {
-
 			Array msg;
 			msg.push_back(pathid);
 			msg.push_back(p_property);
@@ -1214,41 +1181,44 @@ void ScriptEditorDebugger::_property_changed(Object *p_base, const StringName &p
 
 String ScriptEditorDebugger::get_stack_script_file() const {
 	TreeItem *ti = stack_dump->get_selected();
-	if (!ti)
+	if (!ti) {
 		return "";
+	}
 	Dictionary d = ti->get_metadata(0);
 	return d["file"];
 }
 
 int ScriptEditorDebugger::get_stack_script_line() const {
 	TreeItem *ti = stack_dump->get_selected();
-	if (!ti)
+	if (!ti) {
 		return -1;
+	}
 	Dictionary d = ti->get_metadata(0);
 	return d["line"];
 }
 
 int ScriptEditorDebugger::get_stack_script_frame() const {
 	TreeItem *ti = stack_dump->get_selected();
-	if (!ti)
+	if (!ti) {
 		return -1;
+	}
 	Dictionary d = ti->get_metadata(0);
 	return d["frame"];
 }
 
 void ScriptEditorDebugger::set_live_debugging(bool p_enable) {
-
 	live_debug = p_enable;
 }
 
 void ScriptEditorDebugger::_live_edit_set() {
-
-	if (!is_session_active() || !editor_remote_tree)
+	if (!is_session_active() || !editor_remote_tree) {
 		return;
+	}
 
 	TreeItem *ti = editor_remote_tree->get_selected();
-	if (!ti)
+	if (!ti) {
 		return;
+	}
 
 	String path;
 
@@ -1266,7 +1236,6 @@ void ScriptEditorDebugger::_live_edit_set() {
 }
 
 void ScriptEditorDebugger::_live_edit_clear() {
-
 	NodePath np = NodePath("/root");
 	editor->get_editor_data().set_edited_scene_live_edit_root(np);
 
@@ -1274,21 +1243,20 @@ void ScriptEditorDebugger::_live_edit_clear() {
 }
 
 void ScriptEditorDebugger::update_live_edit_root() {
-
 	NodePath np = editor->get_editor_data().get_edited_scene_live_edit_root();
 
 	Array msg;
 	msg.push_back(np);
-	if (editor->get_edited_scene())
+	if (editor->get_edited_scene()) {
 		msg.push_back(editor->get_edited_scene()->get_filename());
-	else
+	} else {
 		msg.push_back("");
+	}
 	_put_msg("scene:live_set_root", msg);
 	live_edit_root->set_text(np);
 }
 
 void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name) {
-
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_parent);
@@ -1299,7 +1267,6 @@ void ScriptEditorDebugger::live_debug_create_node(const NodePath &p_parent, cons
 }
 
 void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name) {
-
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_parent);
@@ -1308,16 +1275,16 @@ void ScriptEditorDebugger::live_debug_instance_node(const NodePath &p_parent, co
 		_put_msg("scene:live_instance_node", msg);
 	}
 }
-void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
 
+void ScriptEditorDebugger::live_debug_remove_node(const NodePath &p_at) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_at);
 		_put_msg("scene:live_remove_node", msg);
 	}
 }
-void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id) {
 
+void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_at);
@@ -1325,8 +1292,8 @@ void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath &p_at,
 		_put_msg("scene:live_remove_and_keep_node", msg);
 	}
 }
-void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 
+void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_id);
@@ -1335,8 +1302,8 @@ void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath
 		_put_msg("scene:live_restore_node", msg);
 	}
 }
-void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name) {
 
+void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_at);
@@ -1344,8 +1311,8 @@ void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath &p_at, const
 		_put_msg("scene:live_duplicate_node", msg);
 	}
 }
-void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 
+void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos) {
 	if (live_debug) {
 		Array msg;
 		msg.push_back(p_at);
@@ -1361,7 +1328,6 @@ CameraOverride ScriptEditorDebugger::get_camera_override() const {
 }
 
 void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
-
 	if (p_override == CameraOverride::OVERRIDE_2D && camera_override != CameraOverride::OVERRIDE_2D) {
 		Array msg;
 		msg.push_back(true);
@@ -1384,7 +1350,6 @@ void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 }
 
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
-
 	Array msg;
 	msg.push_back(p_path);
 	msg.push_back(p_line);
@@ -1393,7 +1358,6 @@ void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool
 }
 
 void ScriptEditorDebugger::reload_scripts() {
-
 	_put_msg("reload_scripts", Array());
 }
 
@@ -1421,10 +1385,10 @@ void ScriptEditorDebugger::_error_selected() {
 }
 
 void ScriptEditorDebugger::_expand_errors_list() {
-
 	TreeItem *root = error_tree->get_root();
-	if (!root)
+	if (!root) {
 		return;
+	}
 
 	TreeItem *item = root->get_children();
 	while (item) {
@@ -1434,10 +1398,10 @@ void ScriptEditorDebugger::_expand_errors_list() {
 }
 
 void ScriptEditorDebugger::_collapse_errors_list() {
-
 	TreeItem *root = error_tree->get_root();
-	if (!root)
+	if (!root) {
 		return;
+	}
 
 	TreeItem *item = root->get_children();
 	while (item) {
@@ -1447,7 +1411,6 @@ void ScriptEditorDebugger::_collapse_errors_list() {
 }
 
 void ScriptEditorDebugger::_clear_errors_list() {
-
 	error_tree->clear();
 	error_count = 0;
 	warning_count = 0;
@@ -1455,7 +1418,6 @@ void ScriptEditorDebugger::_clear_errors_list() {
 
 // Right click on specific file(s) or folder(s).
 void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
-
 	item_menu->clear();
 	item_menu->set_size(Size2(1, 1));
 
@@ -1471,8 +1433,9 @@ void ScriptEditorDebugger::_error_tree_item_rmb_selected(const Vector2 &p_pos) {
 
 void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 	TreeItem *ti = error_tree->get_selected();
-	while (ti->get_parent() != error_tree->get_root())
+	while (ti->get_parent() != error_tree->get_root()) {
 		ti = ti->get_parent();
+	}
 
 	String type;
 
@@ -1503,7 +1466,6 @@ void ScriptEditorDebugger::_tab_changed(int p_tab) {
 }
 
 void ScriptEditorDebugger::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("live_debug_create_node"), &ScriptEditorDebugger::live_debug_create_node);
 	ClassDB::bind_method(D_METHOD("live_debug_instance_node"), &ScriptEditorDebugger::live_debug_instance_node);
 	ClassDB::bind_method(D_METHOD("live_debug_remove_node"), &ScriptEditorDebugger::live_debug_remove_node);
@@ -1528,7 +1490,6 @@ void ScriptEditorDebugger::_bind_methods() {
 }
 
 ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
-
 	editor = p_editor;
 
 	tabs = memnew(TabContainer);
@@ -1724,7 +1685,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		TreeItem *root = perf_monitors->create_item();
 		perf_monitors->set_hide_root(true);
 		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-
 			String n = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
 			Performance::MonitorType mtype = Performance::get_singleton()->get_monitor_type(Performance::Monitor(i));
 			String base = n.get_slice("/", 0);
@@ -1861,7 +1821,6 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 }
 
 ScriptEditorDebugger::~ScriptEditorDebugger() {
-
 	if (peer.is_valid()) {
 		peer->close();
 		peer.unref();

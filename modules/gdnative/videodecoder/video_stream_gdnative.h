@@ -37,13 +37,11 @@
 #include "scene/resources/video_stream.h"
 
 struct VideoDecoderGDNative {
-	const godot_videodecoder_interface_gdnative *interface;
-	String plugin_name;
+	const godot_videodecoder_interface_gdnative *interface = nullptr;
+	String plugin_name = "none";
 	Vector<String> supported_extensions;
 
-	VideoDecoderGDNative() :
-			interface(nullptr),
-			plugin_name("none") {}
+	VideoDecoderGDNative() {}
 
 	VideoDecoderGDNative(const godot_videodecoder_interface_gdnative *p_interface) :
 			interface(p_interface),
@@ -88,8 +86,9 @@ public:
 	}
 
 	VideoDecoderGDNative *get_decoder(const String &extension) {
-		if (extensions.size() == 0 || !extensions.has(extension))
+		if (extensions.size() == 0 || !extensions.has(extension)) {
 			return nullptr;
+		}
 		return decoders[extensions[extension]];
 	}
 
@@ -107,27 +106,26 @@ public:
 };
 
 class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackGDNative, VideoStreamPlayback);
 
 	Ref<ImageTexture> texture;
-	bool playing;
-	bool paused;
+	bool playing = false;
+	bool paused = false;
 
 	Vector2 texture_size;
 
-	void *mix_udata;
-	AudioMixCallback mix_callback;
+	void *mix_udata = nullptr;
+	AudioMixCallback mix_callback = nullptr;
 
-	int num_channels;
-	float time;
-	bool seek_backward;
-	int mix_rate;
-	double delay_compensation;
+	int num_channels = -1;
+	float time = 0;
+	bool seek_backward = false;
+	int mix_rate = 0;
+	double delay_compensation = 0;
 
-	float *pcm;
-	int pcm_write_idx;
-	int samples_decoded;
+	float *pcm = nullptr;
+	int pcm_write_idx = 0;
+	int samples_decoded = 0;
 
 	void cleanup();
 	void update_texture();
@@ -135,10 +133,10 @@ class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
 protected:
 	String file_name;
 
-	FileAccess *file;
+	FileAccess *file = nullptr;
 
-	const godot_videodecoder_interface_gdnative *interface;
-	void *data_struct;
+	const godot_videodecoder_interface_gdnative *interface = nullptr;
+	void *data_struct = nullptr;
 
 public:
 	VideoStreamPlaybackGDNative();
@@ -177,11 +175,10 @@ public:
 };
 
 class VideoStreamGDNative : public VideoStream {
-
 	GDCLASS(VideoStreamGDNative, VideoStream);
 
 	String file;
-	int audio_track;
+	int audio_track = 0;
 
 protected:
 	static void
@@ -194,7 +191,7 @@ public:
 	virtual void set_audio_track(int p_track);
 	virtual Ref<VideoStreamPlayback> instance_playback();
 
-	VideoStreamGDNative() { audio_track = 0; }
+	VideoStreamGDNative() {}
 };
 
 class ResourceFormatLoaderVideoStreamGDNative : public ResourceFormatLoader {

@@ -38,7 +38,6 @@
 class Constraint3DSW;
 
 class Body3DSW : public CollisionObject3DSW {
-
 	PhysicsServer3D::BodyMode mode;
 
 	Vector3 linear_velocity;
@@ -54,7 +53,7 @@ class Body3DSW : public CollisionObject3DSW {
 	real_t angular_damp;
 	real_t gravity_scale;
 
-	uint16_t locked_axis;
+	uint16_t locked_axis = 0;
 
 	real_t kinematic_safe_margin;
 	real_t _inv_mass;
@@ -99,7 +98,6 @@ class Body3DSW : public CollisionObject3DSW {
 	Map<Constraint3DSW *, int> constraint_map;
 
 	struct AreaCMP {
-
 		Area3DSW *area;
 		int refCount;
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
@@ -114,7 +112,6 @@ class Body3DSW : public CollisionObject3DSW {
 	Vector<AreaCMP> areas;
 
 	struct Contact {
-
 		Vector3 local_pos;
 		Vector3 local_normal;
 		real_t depth;
@@ -130,7 +127,6 @@ class Body3DSW : public CollisionObject3DSW {
 	int contact_count;
 
 	struct ForceIntegrationCallback {
-
 		ObjectID id;
 		StringName method;
 		Variant udata;
@@ -167,15 +163,18 @@ public:
 		int index = areas.find(AreaCMP(p_area));
 		if (index > -1) {
 			areas.write[index].refCount -= 1;
-			if (areas[index].refCount < 1)
+			if (areas[index].refCount < 1) {
 				areas.remove(index);
+			}
 		}
 	}
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) {
 		contacts.resize(p_size);
 		contact_count = 0;
-		if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC && p_size) set_active(true);
+		if (mode == PhysicsServer3D::BODY_MODE_KINEMATIC && p_size) {
+			set_active(true);
+		}
 	}
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
@@ -222,18 +221,15 @@ public:
 	}
 
 	_FORCE_INLINE_ void apply_impulse(const Vector3 &p_pos, const Vector3 &p_j) {
-
 		linear_velocity += p_j * _inv_mass;
 		angular_velocity += _inv_inertia_tensor.xform((p_pos - center_of_mass).cross(p_j));
 	}
 
 	_FORCE_INLINE_ void apply_torque_impulse(const Vector3 &p_j) {
-
 		angular_velocity += _inv_inertia_tensor.xform(p_j);
 	}
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector3 &p_pos, const Vector3 &p_j, real_t p_max_delta_av = -1.0) {
-
 		biased_linear_velocity += p_j * _inv_mass;
 		if (p_max_delta_av != 0.0) {
 			Vector3 delta_av = _inv_inertia_tensor.xform((p_pos - center_of_mass).cross(p_j));
@@ -245,17 +241,14 @@ public:
 	}
 
 	_FORCE_INLINE_ void apply_bias_torque_impulse(const Vector3 &p_j) {
-
 		biased_angular_velocity += _inv_inertia_tensor.xform(p_j);
 	}
 
 	_FORCE_INLINE_ void add_central_force(const Vector3 &p_force) {
-
 		applied_force += p_force;
 	}
 
 	_FORCE_INLINE_ void add_force(const Vector3 &p_force, const Vector3 &p_pos) {
-
 		applied_force += p_force;
 		applied_torque += (p_pos - center_of_mass).cross(p_force);
 	}
@@ -268,8 +261,9 @@ public:
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
-		if ((!get_space()) || mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC)
+		if ((!get_space()) || mode == PhysicsServer3D::BODY_MODE_STATIC || mode == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 			return;
+		}
 		set_active(true);
 	}
 
@@ -309,12 +303,10 @@ public:
 	void integrate_velocities(real_t p_step);
 
 	_FORCE_INLINE_ Vector3 get_velocity_in_local_point(const Vector3 &rel_pos) const {
-
 		return linear_velocity + angular_velocity.cross(rel_pos - center_of_mass);
 	}
 
 	_FORCE_INLINE_ real_t compute_impulse_denominator(const Vector3 &p_pos, const Vector3 &p_normal) const {
-
 		Vector3 r0 = p_pos - get_transform().origin - center_of_mass;
 
 		Vector3 c0 = (r0).cross(p_normal);
@@ -325,7 +317,6 @@ public:
 	}
 
 	_FORCE_INLINE_ real_t compute_angular_impulse_denominator(const Vector3 &p_axis) const {
-
 		return p_axis.dot(_inv_inertia_tensor.xform_inv(p_axis));
 	}
 
@@ -342,11 +333,11 @@ public:
 //add contact inline
 
 void Body3DSW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_normal, real_t p_depth, int p_local_shape, const Vector3 &p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID &p_collider, const Vector3 &p_collider_velocity_at_pos) {
-
 	int c_max = contacts.size();
 
-	if (c_max == 0)
+	if (c_max == 0) {
 		return;
+	}
 
 	Contact *c = contacts.ptrw();
 
@@ -355,11 +346,9 @@ void Body3DSW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_no
 	if (contact_count < c_max) {
 		idx = contact_count++;
 	} else {
-
 		real_t least_depth = 1e20;
 		int least_deep = -1;
 		for (int i = 0; i < c_max; i++) {
-
 			if (i == 0 || c[i].depth < least_depth) {
 				least_deep = i;
 				least_depth = c[i].depth;
@@ -367,11 +356,11 @@ void Body3DSW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_no
 		}
 
 		if (least_deep >= 0 && least_depth < p_depth) {
-
 			idx = least_deep;
 		}
-		if (idx == -1)
+		if (idx == -1) {
 			return; //none least deepe than this
+		}
 	}
 
 	c[idx].local_pos = p_local_pos;
@@ -386,7 +375,6 @@ void Body3DSW::add_contact(const Vector3 &p_local_pos, const Vector3 &p_local_no
 }
 
 class PhysicsDirectBodyState3DSW : public PhysicsDirectBodyState3D {
-
 	GDCLASS(PhysicsDirectBodyState3DSW, PhysicsDirectBodyState3D);
 
 public:

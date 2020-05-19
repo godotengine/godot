@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  rendering_device_binds.h                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef RENDERING_DEVICE_BINDS_H
 #define RENDERING_DEVICE_BINDS_H
 
@@ -123,7 +153,6 @@ public:
 
 protected:
 	static void _bind_methods() {
-
 		RD_BIND(Variant::INT, RDSamplerState, mag_filter);
 		RD_BIND(Variant::INT, RDSamplerState, min_filter);
 		RD_BIND(Variant::INT, RDSamplerState, mip_filter);
@@ -292,8 +321,31 @@ public:
 		return base_error;
 	}
 
+	void print_errors(const String &p_file) {
+		if (base_error != "") {
+			ERR_PRINT("Error parsing shader '" + p_file + "':\n\n" + base_error);
+		} else {
+			for (Map<StringName, Ref<RDShaderBytecode>>::Element *E = versions.front(); E; E = E->next()) {
+				for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
+					String error = E->get()->get_stage_compile_error(RD::ShaderStage(i));
+					if (error != String()) {
+						static const char *stage_str[RD::SHADER_STAGE_MAX] = {
+							"vertex",
+							"fragment",
+							"tesselation_control",
+							"tesselation_evaluation",
+							"compute"
+						};
+
+						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E->key()) + "', stage '" + stage_str[i] + "':\n\n" + error);
+					}
+				}
+			}
+		}
+	}
+
 	typedef String (*OpenIncludeFunction)(const String &, void *userdata);
-	Error parse_versions_from_text(const String &p_text, OpenIncludeFunction p_include_func = nullptr, void *p_include_func_userdata = nullptr);
+	Error parse_versions_from_text(const String &p_text, const String p_defines = String(), OpenIncludeFunction p_include_func = nullptr, void *p_include_func_userdata = nullptr);
 
 protected:
 	Dictionary _get_versions() const {
@@ -516,7 +568,6 @@ public:
 	RD_SETGET(bool, write_a)
 
 	void set_as_mix() {
-
 		base = RD::PipelineColorBlendState::Attachment();
 		base.enable_blend = true;
 		base.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
@@ -527,7 +578,6 @@ public:
 
 protected:
 	static void _bind_methods() {
-
 		ClassDB::bind_method(D_METHOD("set_as_mix"), &RDPipelineColorBlendStateAttachment::set_as_mix);
 
 		RD_BIND(Variant::BOOL, RDPipelineColorBlendStateAttachment, enable_blend);

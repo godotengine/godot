@@ -42,7 +42,6 @@ class ScriptEditorDebugger;
 class TabContainer;
 
 class EditorDebuggerNode : public MarginContainer {
-
 	GDCLASS(EditorDebuggerNode, MarginContainer);
 
 public:
@@ -71,12 +70,13 @@ private:
 		int line = 0;
 
 		bool operator<(const Breakpoint &p_b) const {
-			if (line == p_b.line)
+			if (line == p_b.line) {
 				return source < p_b.source;
+			}
 			return line < p_b.line;
 		}
 
-		Breakpoint(){};
+		Breakpoint() {}
 
 		Breakpoint(const String &p_source, int p_line) {
 			line = p_line;
@@ -183,7 +183,7 @@ public:
 	void set_camera_override(CameraOverride p_override) { camera_override = p_override; }
 	CameraOverride get_camera_override() { return camera_override; }
 
-	Error start();
+	Error start(const String &p_protocol = "tcp://");
 
 	void stop();
 };

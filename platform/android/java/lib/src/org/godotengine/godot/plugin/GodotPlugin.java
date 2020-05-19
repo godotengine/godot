@@ -35,12 +35,12 @@ import org.godotengine.godot.Godot;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -76,7 +76,6 @@ import javax.microedition.khronos.opengles.GL10;
  * 'godot/plugin/v1/[PluginName]/'
  */
 public abstract class GodotPlugin {
-
 	private static final String TAG = GodotPlugin.class.getSimpleName();
 
 	private final Godot godot;

@@ -194,7 +194,6 @@ void light_compute(
 		vec3 light_color,
 		vec3 attenuation,
 		float roughness) {
-
 //this makes lights behave closer to linear, but then addition of lights looks bad
 //better left disabled
 
@@ -249,7 +248,6 @@ void light_compute(
 	diffuse_interp += light_color * diffuse_brdf_NL * attenuation;
 
 	if (roughness > 0.0) {
-
 		// D
 		float specular_brdf_NL = 0.0;
 
@@ -325,7 +323,6 @@ uniform mediump float fog_height_curve;
 #endif //fog
 
 void main() {
-
 	highp vec4 vertex = vertex_attrib;
 
 	mat4 world_matrix = world_transform;
@@ -394,7 +391,6 @@ void main() {
 #else
 	// look up transform from the "pose texture"
 	{
-
 		for (int i = 0; i < 4; i++) {
 			ivec2 tex_ofs = ivec2(int(bone_ids[i]) * 3, 0);
 
@@ -512,7 +508,6 @@ VERTEX_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
-
 		float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation);
 
 		vec3 attenuation = vec3(omni_attenuation);
@@ -532,7 +527,6 @@ VERTEX_SHADER_CODE
 	float normalized_distance = light_length / light_range;
 
 	if (normalized_distance < 1.0) {
-
 		float spot_attenuation = pow(1.0 - normalized_distance, light_attenuation);
 		vec3 spot_dir = light_direction;
 
@@ -541,7 +535,6 @@ VERTEX_SHADER_CODE
 		float angle = dot(-normalize(light_rel_vec), spot_dir);
 
 		if (angle > spot_cutoff) {
-
 			float scos = max(angle, spot_cutoff);
 			float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_cutoff));
 
@@ -645,7 +638,6 @@ VERTEX_SHADER_CODE
 #ifdef FOG_DEPTH_ENABLED
 
 	{
-
 		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
 		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;
@@ -1073,6 +1065,7 @@ float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// float sin2 = (1.0 - cos2);
 	// return 1.0 / (cos_theta_m + sqrt(cos2 + alpha * alpha * sin2));
 }
+
 */
 
 // This approximates G_GGX_2cos(cos_theta_l, alpha) * G_GGX_2cos(cos_theta_v, alpha)
@@ -1095,6 +1088,7 @@ float G_GGX_anisotropic_2cos(float cos_theta_m, float alpha_x, float alpha_y, fl
 	float s_y = alpha_y * sin_phi;
 	return 1.0 / max(cos_theta_m + sqrt(cos2 + (s_x * s_x + s_y * s_y) * sin2), 0.001);
 }
+
 */
 
 // This approximates G_GGX_anisotropic_2cos(cos_theta_l, ...) * G_GGX_anisotropic_2cos(cos_theta_v, ...)
@@ -1128,7 +1122,8 @@ float SchlickFresnel(float u) {
 }
 
 float GTR1(float NdotH, float a) {
-	if (a >= 1.0) return 1.0 / M_PI;
+	if (a >= 1.0)
+		return 1.0 / M_PI;
 	float a2 = a * a;
 	float t = 1.0 + (a2 - 1.0) * NdotH * NdotH;
 	return (a2 - 1.0) / (M_PI * log(a2) * t);
@@ -1156,7 +1151,6 @@ void light_compute(
 		inout vec3 diffuse_light,
 		inout vec3 specular_light,
 		inout float alpha) {
-
 //this makes lights behave closer to linear, but then addition of lights looks bad
 //better left disabled
 
@@ -1380,7 +1374,6 @@ LIGHT_SHADER_CODE
 #define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(texture2DProj(p_shadow, p_pos)))
 
 float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
-
 #ifdef SHADOW_MODE_PCF_13
 
 	spos.xyz /= spos.w;
@@ -1457,7 +1450,6 @@ uniform mediump float fog_height_curve;
 #endif //fog
 
 void main() {
-
 #ifdef RENDER_DEPTH_DUAL_PARABOLOID
 
 	if (dp_clip > 0.0)
@@ -1652,7 +1644,6 @@ FRAGMENT_SHADER_CODE
 
 	// environment BRDF approximation
 	{
-
 #if defined(DIFFUSE_TOON)
 		//simplify for toon, as
 		specular_light *= specular * metallic * albedo * 2.0;
@@ -1731,7 +1722,6 @@ FRAGMENT_SHADER_CODE
 
 	float normalized_distance = light_length / light_range;
 	if (normalized_distance < 1.0) {
-
 		float omni_attenuation = pow(1.0 - normalized_distance, light_attenuation);
 
 		light_att = vec3(omni_attenuation);
@@ -1828,7 +1818,6 @@ FRAGMENT_SHADER_CODE
 			}
 		} else {
 			if (depth_z < light_split_offsets.z) {
-
 				shadow_att = shadow3;
 
 #if defined(LIGHT_USE_PSSM_BLEND)
@@ -1837,7 +1826,6 @@ FRAGMENT_SHADER_CODE
 #endif
 
 			} else {
-
 				shadow_att = shadow4;
 				pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
 
@@ -1880,7 +1868,6 @@ FRAGMENT_SHADER_CODE
 			pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 		} else {
-
 			shadow_att = shadow2;
 			pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND
@@ -1944,7 +1931,6 @@ FRAGMENT_SHADER_CODE
 				}
 			} else {
 				if (depth_z < light_split_offsets.z) {
-
 					pssm_coord = shadow_coord3;
 
 #if defined(LIGHT_USE_PSSM_BLEND)
@@ -1953,7 +1939,6 @@ FRAGMENT_SHADER_CODE
 #endif
 
 				} else {
-
 					pssm_coord = shadow_coord4;
 					pssm_fade = smoothstep(light_split_offsets.z, light_split_offsets.w, depth_z);
 
@@ -1967,7 +1952,6 @@ FRAGMENT_SHADER_CODE
 
 #ifdef LIGHT_USE_PSSM2
 			if (depth_z < light_split_offsets.x) {
-
 				pssm_coord = shadow_coord;
 
 #ifdef LIGHT_USE_PSSM_BLEND
@@ -1975,7 +1959,6 @@ FRAGMENT_SHADER_CODE
 				pssm_blend = smoothstep(0.0, light_split_offsets.x, depth_z);
 #endif
 			} else {
-
 				pssm_coord = shadow_coord2;
 				pssm_fade = smoothstep(light_split_offsets.x, light_split_offsets.y, depth_z);
 #ifdef LIGHT_USE_PSSM_BLEND
@@ -2164,7 +2147,6 @@ FRAGMENT_SHADER_CODE
 #ifdef FOG_DEPTH_ENABLED
 
 	{
-
 		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
 		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;

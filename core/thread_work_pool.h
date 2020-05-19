@@ -33,10 +33,11 @@
 
 #include "core/os/memory.h"
 #include "core/os/semaphore.h"
+
 #include <atomic>
 #include <thread>
-class ThreadWorkPool {
 
+class ThreadWorkPool {
 	std::atomic<uint32_t> index;
 
 	struct BaseWork {
@@ -52,7 +53,6 @@ class ThreadWorkPool {
 		M method;
 		U userdata;
 		virtual void work() {
-
 			while (true) {
 				uint32_t work_index = index->fetch_add(1, std::memory_order_relaxed);
 				if (work_index >= max_elements) {
@@ -79,7 +79,6 @@ class ThreadWorkPool {
 public:
 	template <class C, class M, class U>
 	void do_work(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-
 		ERR_FAIL_COND(!threads); //never initialized
 
 		index.store(0);

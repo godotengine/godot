@@ -45,7 +45,6 @@ class Font;
 class StyleBox;
 
 class CanvasItemMaterial : public Material {
-
 	GDCLASS(CanvasItemMaterial, Material);
 
 public:
@@ -66,7 +65,6 @@ public:
 
 private:
 	union MaterialKey {
-
 		struct {
 			uint32_t blend_mode : 4;
 			uint32_t light_mode : 4;
@@ -99,7 +97,6 @@ private:
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
-
 		MaterialKey mk;
 		mk.key = 0;
 		mk.blend_mode = blend_mode;
@@ -162,7 +159,6 @@ VARIANT_ENUM_CAST(CanvasItemMaterial::BlendMode)
 VARIANT_ENUM_CAST(CanvasItemMaterial::LightMode)
 
 class CanvasItem : public Node {
-
 	GDCLASS(CanvasItem, Node);
 
 public:
@@ -247,9 +243,13 @@ private:
 
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
-		if (!is_inside_tree()) return;
+		if (!is_inside_tree()) {
+			return;
+		}
 		_notify_transform(this);
-		if (!block_transform_notify && notify_local_transform) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		if (!block_transform_notify && notify_local_transform) {
+			notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
+		}
 	}
 
 	void item_rect_changed(bool p_size_changed = true);
@@ -275,7 +275,7 @@ public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
 	// Save and restore a CanvasItem state
-	virtual void _edit_set_state(const Dictionary &p_state){};
+	virtual void _edit_set_state(const Dictionary &p_state) {}
 	virtual Dictionary _edit_get_state() const { return Dictionary(); };
 
 	// Used to move the node
@@ -288,18 +288,18 @@ public:
 
 	// Used to rotate the node
 	virtual bool _edit_use_rotation() const { return false; };
-	virtual void _edit_set_rotation(float p_rotation){};
+	virtual void _edit_set_rotation(float p_rotation) {}
 	virtual float _edit_get_rotation() const { return 0.0; };
 
 	// Used to resize/move the node
 	virtual bool _edit_use_rect() const { return false; }; // MAYBE REPLACE BY A _edit_get_editmode()
-	virtual void _edit_set_rect(const Rect2 &p_rect){};
+	virtual void _edit_set_rect(const Rect2 &p_rect) {}
 	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); };
 	virtual Size2 _edit_get_minimum_size() const { return Size2(-1, -1); }; // LOOKS WEIRD
 
 	// Used to set a pivot
 	virtual bool _edit_use_pivot() const { return false; };
-	virtual void _edit_set_pivot(const Point2 &p_pivot){};
+	virtual void _edit_set_pivot(const Point2 &p_pivot) {}
 	virtual Point2 _edit_get_pivot() const { return Point2(); };
 
 	virtual Transform2D _edit_get_transform() const;

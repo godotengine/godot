@@ -34,33 +34,33 @@
 #include "core/os/os.h"
 
 void Step3DSW::_populate_island(Body3DSW *p_body, Body3DSW **p_island, Constraint3DSW **p_constraint_island) {
-
 	p_body->set_island_step(_step);
 	p_body->set_island_next(*p_island);
 	*p_island = p_body;
 
 	for (Map<Constraint3DSW *, int>::Element *E = p_body->get_constraint_map().front(); E; E = E->next()) {
-
 		Constraint3DSW *c = (Constraint3DSW *)E->key();
-		if (c->get_island_step() == _step)
+		if (c->get_island_step() == _step) {
 			continue; //already processed
+		}
 		c->set_island_step(_step);
 		c->set_island_next(*p_constraint_island);
 		*p_constraint_island = c;
 
 		for (int i = 0; i < c->get_body_count(); i++) {
-			if (i == E->get())
+			if (i == E->get()) {
 				continue;
+			}
 			Body3DSW *b = c->get_body_ptr()[i];
-			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC)
+			if (b->get_island_step() == _step || b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 				continue; //no go
+			}
 			_populate_island(c->get_body_ptr()[i], p_island, p_constraint_island);
 		}
 	}
 }
 
 void Step3DSW::_setup_island(Constraint3DSW *p_island, real_t p_delta) {
-
 	Constraint3DSW *ci = p_island;
 	while (ci) {
 		ci->setup(p_delta);
@@ -70,13 +70,10 @@ void Step3DSW::_setup_island(Constraint3DSW *p_island, real_t p_delta) {
 }
 
 void Step3DSW::_solve_island(Constraint3DSW *p_island, int p_iterations, real_t p_delta) {
-
 	int at_priority = 1;
 
 	while (p_island) {
-
 		for (int i = 0; i < p_iterations; i++) {
-
 			Constraint3DSW *ci = p_island;
 			while (ci) {
 				ci->solve(p_delta);
@@ -97,7 +94,6 @@ void Step3DSW::_solve_island(Constraint3DSW *p_island, int p_iterations, real_t 
 						p_island = ci->get_island_next();
 					}
 				} else {
-
 					prev = ci;
 				}
 
@@ -108,19 +104,18 @@ void Step3DSW::_solve_island(Constraint3DSW *p_island, int p_iterations, real_t 
 }
 
 void Step3DSW::_check_suspend(Body3DSW *p_island, real_t p_delta) {
-
 	bool can_sleep = true;
 
 	Body3DSW *b = p_island;
 	while (b) {
-
 		if (b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
 			continue; //ignore for static
 		}
 
-		if (!b->sleep_test(p_delta))
+		if (!b->sleep_test(p_delta)) {
 			can_sleep = false;
+		}
 
 		b = b->get_island_next();
 	}
@@ -129,7 +124,6 @@ void Step3DSW::_check_suspend(Body3DSW *p_island, real_t p_delta) {
 
 	b = p_island;
 	while (b) {
-
 		if (b->get_mode() == PhysicsServer3D::BODY_MODE_STATIC || b->get_mode() == PhysicsServer3D::BODY_MODE_KINEMATIC) {
 			b = b->get_island_next();
 			continue; //ignore for static
@@ -137,15 +131,15 @@ void Step3DSW::_check_suspend(Body3DSW *p_island, real_t p_delta) {
 
 		bool active = b->is_active();
 
-		if (active == can_sleep)
+		if (active == can_sleep) {
 			b->set_active(!can_sleep);
+		}
 
 		b = b->get_island_next();
 	}
 }
 
 void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
-
 	p_space->lock(); // can't access space during this
 
 	p_space->setup(); //update inertias, etc
@@ -161,7 +155,6 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	const SelfList<Body3DSW> *b = body_list->first();
 	while (b) {
-
 		b->self()->integrate_forces(p_delta);
 		b = b->next();
 		active_count++;
@@ -187,7 +180,6 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 		Body3DSW *body = b->self();
 
 		if (body->get_island_step() != _step) {
-
 			Body3DSW *island = nullptr;
 			Constraint3DSW *constraint_island = nullptr;
 			_populate_island(body, &island, &constraint_island);
@@ -210,10 +202,10 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 
 	while (aml.first()) {
 		for (const Set<Constraint3DSW *>::Element *E = aml.first()->self()->get_constraints().front(); E; E = E->next()) {
-
 			Constraint3DSW *c = E->get();
-			if (c->get_island_step() == _step)
+			if (c->get_island_step() == _step) {
 				continue;
+			}
 			c->set_island_step(_step);
 			c->set_island_next(nullptr);
 			c->set_island_list_next(constraint_island_list);
@@ -233,7 +225,6 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	{
 		Constraint3DSW *ci = constraint_island_list;
 		while (ci) {
-
 			_setup_island(ci, p_delta);
 			ci = ci->get_island_list_next();
 		}
@@ -276,7 +267,6 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 	{
 		Body3DSW *bi = island_list;
 		while (bi) {
-
 			_check_suspend(bi, p_delta);
 			bi = bi->get_island_list_next();
 		}
@@ -294,6 +284,5 @@ void Step3DSW::step(Space3DSW *p_space, real_t p_delta, int p_iterations) {
 }
 
 Step3DSW::Step3DSW() {
-
 	_step = 1;
 }

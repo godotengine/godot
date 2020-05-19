@@ -33,7 +33,6 @@
 #include "scene/resources/shape_3d.h"
 
 class RayShape3D : public Shape3D {
-
 	GDCLASS(RayShape3D, Shape3D);
 	float length;
 	bool slips_on_slope;

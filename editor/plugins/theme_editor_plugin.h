@@ -42,7 +42,6 @@
 #include "editor/editor_node.h"
 
 class ThemeEditor : public VBoxContainer {
-
 	GDCLASS(ThemeEditor, VBoxContainer);
 
 	Panel *main_panel;
@@ -99,7 +98,6 @@ public:
 };
 
 class ThemeEditorPlugin : public EditorPlugin {
-
 	GDCLASS(ThemeEditorPlugin, EditorPlugin);
 
 	ThemeEditor *theme_editor;

@@ -41,7 +41,6 @@
 
 GodotCollisionConfiguration::GodotCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo) :
 		btDefaultCollisionConfiguration(constructionInfo) {
-
 	void *mem = nullptr;
 
 	mem = btAlignedAlloc(sizeof(GodotRayWorldAlgorithm::CreateFunc), 16);
@@ -60,44 +59,33 @@ GodotCollisionConfiguration::~GodotCollisionConfiguration() {
 }
 
 btCollisionAlgorithmCreateFunc *GodotCollisionConfiguration::getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1) {
-
 	if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		// This collision is not supported
 		return m_emptyCreateFunc;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0) {
-
 		return m_rayWorldCF;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		return m_swappedRayWorldCF;
 	} else {
-
 		return btDefaultCollisionConfiguration::getCollisionAlgorithmCreateFunc(proxyType0, proxyType1);
 	}
 }
 
 btCollisionAlgorithmCreateFunc *GodotCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(int proxyType0, int proxyType1) {
-
 	if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		// This collision is not supported
 		return m_emptyCreateFunc;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0) {
-
 		return m_rayWorldCF;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		return m_swappedRayWorldCF;
 	} else {
-
 		return btDefaultCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(proxyType0, proxyType1);
 	}
 }
 
 GodotSoftCollisionConfiguration::GodotSoftCollisionConfiguration(const btDiscreteDynamicsWorld *world, const btDefaultCollisionConstructionInfo &constructionInfo) :
 		btSoftBodyRigidBodyCollisionConfiguration(constructionInfo) {
-
 	void *mem = nullptr;
 
 	mem = btAlignedAlloc(sizeof(GodotRayWorldAlgorithm::CreateFunc), 16);
@@ -116,37 +104,27 @@ GodotSoftCollisionConfiguration::~GodotSoftCollisionConfiguration() {
 }
 
 btCollisionAlgorithmCreateFunc *GodotSoftCollisionConfiguration::getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1) {
-
 	if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		// This collision is not supported
 		return m_emptyCreateFunc;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0) {
-
 		return m_rayWorldCF;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		return m_swappedRayWorldCF;
 	} else {
-
 		return btSoftBodyRigidBodyCollisionConfiguration::getCollisionAlgorithmCreateFunc(proxyType0, proxyType1);
 	}
 }
 
 btCollisionAlgorithmCreateFunc *GodotSoftCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(int proxyType0, int proxyType1) {
-
 	if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0 && CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		// This collision is not supported
 		return m_emptyCreateFunc;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType0) {
-
 		return m_rayWorldCF;
 	} else if (CUSTOM_CONVEX_SHAPE_TYPE == proxyType1) {
-
 		return m_swappedRayWorldCF;
 	} else {
-
 		return btSoftBodyRigidBodyCollisionConfiguration::getClosestPointsAlgorithmCreateFunc(proxyType0, proxyType1);
 	}
 }

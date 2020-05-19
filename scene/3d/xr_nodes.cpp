@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "xr_nodes.h"
+
 #include "core/input/input.h"
 #include "servers/xr/xr_interface.h"
 #include "servers/xr_server.h"
@@ -55,8 +56,9 @@ void XRCamera3D::_notification(int p_what) {
 };
 
 String XRCamera3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
@@ -167,14 +169,6 @@ Vector<Plane> XRCamera3D::get_frustum() const {
 	return cm.get_projection_planes(get_camera_transform());
 };
 
-XRCamera3D::XRCamera3D(){
-	// nothing to do here yet for now..
-};
-
-XRCamera3D::~XRCamera3D(){
-	// nothing to do here yet for now..
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void XRController3D::_notification(int p_what) {
@@ -269,11 +263,11 @@ void XRController3D::set_controller_id(int p_controller_id) {
 	update_configuration_warning();
 };
 
-int XRController3D::get_controller_id(void) const {
+int XRController3D::get_controller_id() const {
 	return controller_id;
 };
 
-String XRController3D::get_controller_name(void) const {
+String XRController3D::get_controller_name() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());
@@ -364,8 +358,9 @@ XRPositionalTracker::TrackerHand XRController3D::get_hand() const {
 };
 
 String XRController3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	// must be child node of XROrigin!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
@@ -378,16 +373,6 @@ String XRController3D::get_configuration_warning() const {
 	};
 
 	return String();
-};
-
-XRController3D::XRController3D() {
-	controller_id = 1;
-	is_active = true;
-	button_states = 0;
-};
-
-XRController3D::~XRController3D(){
-	// nothing to do here yet for now..
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -443,7 +428,6 @@ void XRAnchor3D::_notification(int p_what) {
 };
 
 void XRAnchor3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_anchor_id", "anchor_id"), &XRAnchor3D::set_anchor_id);
 	ClassDB::bind_method(D_METHOD("get_anchor_id"), &XRAnchor3D::get_anchor_id);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "anchor_id", PROPERTY_HINT_RANGE, "0,32,1"), "set_anchor_id", "get_anchor_id");
@@ -465,7 +449,7 @@ void XRAnchor3D::set_anchor_id(int p_anchor_id) {
 	update_configuration_warning();
 };
 
-int XRAnchor3D::get_anchor_id(void) const {
+int XRAnchor3D::get_anchor_id() const {
 	return anchor_id;
 };
 
@@ -473,7 +457,7 @@ Vector3 XRAnchor3D::get_size() const {
 	return size;
 };
 
-String XRAnchor3D::get_anchor_name(void) const {
+String XRAnchor3D::get_anchor_name() const {
 	// get our XRServer
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, String());
@@ -491,8 +475,9 @@ bool XRAnchor3D::get_is_active() const {
 };
 
 String XRAnchor3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
 	// must be child node of XROrigin3D!
 	XROrigin3D *origin = Object::cast_to<XROrigin3D>(get_parent());
@@ -520,23 +505,16 @@ Ref<Mesh> XRAnchor3D::get_mesh() const {
 	return mesh;
 }
 
-XRAnchor3D::XRAnchor3D() {
-	anchor_id = 1;
-	is_active = true;
-};
-
-XRAnchor3D::~XRAnchor3D(){
-	// nothing to do here yet for now..
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 String XROrigin3D::get_configuration_warning() const {
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible() || !is_inside_tree()) {
 		return String();
+	}
 
-	if (tracked_camera == nullptr)
+	if (tracked_camera == nullptr) {
 		return TTR("XROrigin3D requires an XRCamera3D child node.");
+	}
 
 	return String();
 };
@@ -610,12 +588,4 @@ void XROrigin3D::_notification(int p_what) {
 			interface->notification(p_what);
 		}
 	}
-};
-
-XROrigin3D::XROrigin3D() {
-	tracked_camera = nullptr;
-};
-
-XROrigin3D::~XROrigin3D(){
-	// nothing to do here yet for now..
 };

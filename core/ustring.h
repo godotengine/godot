@@ -51,8 +51,9 @@ class CharProxy {
 
 public:
 	_FORCE_INLINE_ operator T() const {
-		if (unlikely(_index == _cowdata.size()))
+		if (unlikely(_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(_index);
 	}
@@ -71,7 +72,6 @@ public:
 };
 
 class CharString {
-
 	CowData<char> _cowdata;
 	static const char _null;
 
@@ -84,8 +84,9 @@ public:
 	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ const char &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size()))
+		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(p_index);
 	}
@@ -113,7 +114,6 @@ protected:
 typedef wchar_t CharType;
 
 struct StrRange {
-
 	const CharType *c_str;
 	int len;
 
@@ -124,7 +124,6 @@ struct StrRange {
 };
 
 class String {
-
 	CowData<CharType> _cowdata;
 	static const CharType _null;
 
@@ -154,8 +153,9 @@ public:
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ const CharType &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size()))
+		if (unlikely(p_index == _cowdata.size())) {
 			return _null;
+		}
 
 		return _cowdata.get(p_index);
 	}
@@ -254,7 +254,7 @@ public:
 	static int to_int(const char *p_str, int p_len = -1);
 	static double to_double(const char *p_str);
 	static double to_double(const CharType *p_str, const CharType **r_end = nullptr);
-	static int64_t to_int(const CharType *p_str, int p_len = -1);
+	static int64_t to_int(const CharType *p_str, int p_len = -1, bool p_clamp = false);
 	String capitalize() const;
 	String camelcase_to_underscore(bool lowercase = true) const;
 
@@ -377,36 +377,31 @@ String rtos(double p_val);
 String rtoss(double p_val); //scientific version
 
 struct NoCaseComparator {
-
 	bool operator()(const String &p_a, const String &p_b) const {
-
 		return p_a.nocasecmp_to(p_b) < 0;
 	}
 };
 
 struct NaturalNoCaseComparator {
-
 	bool operator()(const String &p_a, const String &p_b) const {
-
 		return p_a.naturalnocasecmp_to(p_b) < 0;
 	}
 };
 
 template <typename L, typename R>
 _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
-
 	while (true) {
-
-		if (*l_ptr == 0 && *r_ptr == 0)
+		if (*l_ptr == 0 && *r_ptr == 0) {
 			return false;
-		else if (*l_ptr == 0)
+		} else if (*l_ptr == 0) {
 			return true;
-		else if (*r_ptr == 0)
+		} else if (*r_ptr == 0) {
 			return false;
-		else if (*l_ptr < *r_ptr)
+		} else if (*l_ptr < *r_ptr) {
 			return true;
-		else if (*l_ptr > *r_ptr)
+		} else if (*l_ptr > *r_ptr) {
 			return false;
+		}
 
 		l_ptr++;
 		r_ptr++;

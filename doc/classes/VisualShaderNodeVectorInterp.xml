@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisualShaderNodeVectorInterp" inherits="VisualShaderNode" version="4.0">
 	<brief_description>
+		Linearly interpolates between two vectors within the visual shader graph.
 	</brief_description>
 	<description>
+		Translates to [code]mix(a, b, weight)[/code] in the shader language, where [code]weight[/code] is a [Vector3] with weights for each component.
 	</description>
 	<tutorials>
 	</tutorials>

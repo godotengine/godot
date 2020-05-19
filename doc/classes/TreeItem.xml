@@ -249,6 +249,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_suffix" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_text" qualifiers="const">
 			<return type="String">
 			</return>
@@ -570,6 +578,16 @@
 			</argument>
 			<description>
 				If [code]true[/code], the given column is selectable.
+			</description>
+		</method>
+		<method name="set_suffix">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_text">

@@ -247,37 +247,31 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
 						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonB) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_1,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_B,
 						gamepad.buttonB.isPressed);
 			} else if (element == gamepad.buttonX) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
 						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.buttonY) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_3,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_Y,
 						gamepad.buttonY.isPressed);
 			} else if (element == gamepad.leftShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_LEFT_SHOULDER,
 						gamepad.leftShoulder.isPressed);
 			} else if (element == gamepad.rightShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_RIGHT_SHOULDER,
 						gamepad.rightShoulder.isPressed);
-			} else if (element == gamepad.leftTrigger) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L2,
-						gamepad.leftTrigger.isPressed);
-			} else if (element == gamepad.rightTrigger) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R2,
-						gamepad.rightTrigger.isPressed);
 			} else if (element == gamepad.dpad) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
 						gamepad.dpad.up.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
 						gamepad.dpad.down.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT,
 						gamepad.dpad.left.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT,
 						gamepad.dpad.right.isPressed);
 			};
 
@@ -285,20 +279,20 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 			jx.min = -1;
 			if (element == gamepad.leftThumbstick) {
 				jx.value = gamepad.leftThumbstick.xAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_LX, jx);
+				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_AXIS_LEFT_X, jx);
 				jx.value = -gamepad.leftThumbstick.yAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_LY, jx);
+				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_AXIS_LEFT_Y, jx);
 			} else if (element == gamepad.rightThumbstick) {
 				jx.value = gamepad.rightThumbstick.xAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_RX, jx);
+				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_AXIS_RIGHT_X, jx);
 				jx.value = -gamepad.rightThumbstick.yAxis.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_RY, jx);
+				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_AXIS_RIGHT_Y, jx);
 			} else if (element == gamepad.leftTrigger) {
 				jx.value = gamepad.leftTrigger.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_L2, jx);
+				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_AXIS_TRIGGER_LEFT, jx);
 			} else if (element == gamepad.rightTrigger) {
 				jx.value = gamepad.rightTrigger.value;
-				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_ANALOG_R2, jx);
+				OSIPhone::get_singleton()->joy_axis(joy_id, JOY_AXIS_TRIGGER_RIGHT, jx);
 			};
 		};
 	} else if (controller.gamepad != nil) {
@@ -309,31 +303,31 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 			int joy_id = [self getJoyIdForController:controller];
 
 			if (element == gamepad.buttonA) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
 						gamepad.buttonA.isPressed);
 			} else if (element == gamepad.buttonB) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_1,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_B,
 						gamepad.buttonB.isPressed);
 			} else if (element == gamepad.buttonX) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
 						gamepad.buttonX.isPressed);
 			} else if (element == gamepad.buttonY) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_3,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_Y,
 						gamepad.buttonY.isPressed);
 			} else if (element == gamepad.leftShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_L,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_LEFT_SHOULDER,
 						gamepad.leftShoulder.isPressed);
 			} else if (element == gamepad.rightShoulder) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_R,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_RIGHT_SHOULDER,
 						gamepad.rightShoulder.isPressed);
 			} else if (element == gamepad.dpad) {
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
 						gamepad.dpad.up.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
 						gamepad.dpad.down.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT,
 						gamepad.dpad.left.isPressed);
-				OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
+				OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT,
 						gamepad.dpad.right.isPressed);
 			};
 		};
@@ -347,19 +341,19 @@ static void on_focus_in(ViewController *view_controller, bool *is_focus_out) {
 					int joy_id = [self getJoyIdForController:controller];
 
 					if (element == gamepad.buttonA) {
-						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_0,
+						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_A,
 								gamepad.buttonA.isPressed);
 					} else if (element == gamepad.buttonX) {
-						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_2,
+						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_X,
 								gamepad.buttonX.isPressed);
 					} else if (element == gamepad.dpad) {
-						OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_UP,
+						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_UP,
 								gamepad.dpad.up.isPressed);
-						OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_DOWN,
+						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_DOWN,
 								gamepad.dpad.down.isPressed);
-						OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_LEFT,
+						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_LEFT,
 								gamepad.dpad.left.isPressed);
-						OSIPhone::get_singleton()->joy_button(joy_id, JOY_DPAD_RIGHT,
+						OSIPhone::get_singleton()->joy_button(joy_id, JOY_BUTTON_DPAD_RIGHT,
 								gamepad.dpad.right.isPressed);
 					};
 				};
@@ -432,7 +426,6 @@ OS::VideoMode _get_video_mode() {
 static int frame_count = 0;
 - (void)drawView:(UIView *)view;
 {
-
 	switch (frame_count) {
 		case 0: {
 			OS::get_singleton()->set_video_mode(_get_video_mode());
@@ -469,7 +462,6 @@ static int frame_count = 0;
 		}; break;
 
 		case 1: {
-
 			Main::setup2();
 			++frame_count;
 
@@ -496,7 +488,6 @@ static int frame_count = 0;
 					ProjectSettings::get_singleton()->set("Info.plist/" + ukey, uval);
 
 				} else if ([value isKindOfClass:[NSNumber class]]) {
-
 					NSNumber *n = (NSNumber *)value;
 					double dval = [n doubleValue];
 
@@ -508,7 +499,6 @@ static int frame_count = 0;
 		}; break;
 
 		case 2: {
-
 			Main::start();
 			++frame_count;
 

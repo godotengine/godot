@@ -43,7 +43,7 @@ class Mesh : public Resource {
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
 	mutable Vector<Vector3> debug_lines;
-	Size2 lightmap_size_hint;
+	Size2i lightmap_size_hint;
 
 protected:
 	static void _bind_methods();
@@ -138,8 +138,8 @@ public:
 
 	virtual AABB get_aabb() const = 0;
 
-	void set_lightmap_size_hint(const Vector2 &p_size);
-	Size2 get_lightmap_size_hint() const;
+	void set_lightmap_size_hint(const Size2i &p_size);
+	Size2i get_lightmap_size_hint() const;
 	void clear_cache() const;
 
 	typedef Vector<Vector<Face3>> (*ConvexDecompositionFunc)(const Vector<Face3> &);
@@ -152,7 +152,6 @@ public:
 };
 
 class ArrayMesh : public Mesh {
-
 	GDCLASS(ArrayMesh, Mesh);
 	RES_BASE_EXTENSION("mesh");
 

@@ -39,7 +39,6 @@
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {
-
 	GDCLASS(AbstractPolygon2DEditor, HBoxContainer);
 
 	ToolButton *button_create;
@@ -47,23 +46,30 @@ class AbstractPolygon2DEditor : public HBoxContainer {
 	ToolButton *button_delete;
 
 	struct Vertex {
-		Vertex();
-		Vertex(int p_vertex);
-		Vertex(int p_polygon, int p_vertex);
+		Vertex() {}
+		Vertex(int p_vertex) :
+				vertex(p_vertex) {}
+		Vertex(int p_polygon, int p_vertex) :
+				polygon(p_polygon),
+				vertex(p_vertex) {}
 
 		bool operator==(const Vertex &p_vertex) const;
 		bool operator!=(const Vertex &p_vertex) const;
 
 		bool valid() const;
 
-		int polygon;
-		int vertex;
+		int polygon = -1;
+		int vertex = -1;
 	};
 
 	struct PosVertex : public Vertex {
-		PosVertex();
-		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos);
-		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos);
+		PosVertex() {}
+		PosVertex(const Vertex &p_vertex, const Vector2 &p_pos) :
+				Vertex(p_vertex.polygon, p_vertex.vertex),
+				pos(p_pos) {}
+		PosVertex(int p_polygon, int p_vertex, const Vector2 &p_pos) :
+				Vertex(p_polygon, p_vertex),
+				pos(p_pos) {}
 
 		Vector2 pos;
 	};
@@ -144,7 +150,6 @@ public:
 };
 
 class AbstractPolygon2DEditorPlugin : public EditorPlugin {
-
 	GDCLASS(AbstractPolygon2DEditorPlugin, EditorPlugin);
 
 	AbstractPolygon2DEditor *polygon_editor;

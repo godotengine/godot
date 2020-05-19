@@ -88,7 +88,6 @@ struct joypad {
 };
 
 class JoypadOSX {
-
 	enum {
 		JOYPADS_MAX = 16,
 	};

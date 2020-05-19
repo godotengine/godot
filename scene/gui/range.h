@@ -34,7 +34,6 @@
 #include "scene/gui/control.h"
 
 class Range : public Control {
-
 	GDCLASS(Range, Control);
 
 	struct Shared {

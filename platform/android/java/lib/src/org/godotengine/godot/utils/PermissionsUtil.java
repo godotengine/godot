@@ -37,8 +37,9 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
+
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,6 @@ import java.util.List;
  * @author Cagdas Caglak <cagdascaglak@gmail.com>
  */
 public final class PermissionsUtil {
-
 	private static final String TAG = PermissionsUtil.class.getSimpleName();
 
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;

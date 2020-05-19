@@ -32,68 +32,70 @@
 
 #include <mono/metadata/image.h>
 
+#include "core/io/file_access_pack.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "../mono_gd/gd_mono.h"
 #include "../mono_gd/gd_mono_assembly.h"
 #include "../mono_gd/gd_mono_cache.h"
+#include "../utils/macros.h"
 
 namespace GodotSharpExport {
 
-String get_assemblyref_name(MonoImage *p_image, int index) {
+struct AssemblyRefInfo {
+	String name;
+	uint16_t major;
+	uint16_t minor;
+	uint16_t build;
+	uint16_t revision;
+};
+
+AssemblyRefInfo get_assemblyref_name(MonoImage *p_image, int index) {
 	const MonoTableInfo *table_info = mono_image_get_table_info(p_image, MONO_TABLE_ASSEMBLYREF);
 
 	uint32_t cols[MONO_ASSEMBLYREF_SIZE];
 
 	mono_metadata_decode_row(table_info, index, cols, MONO_ASSEMBLYREF_SIZE);
 
-	return String::utf8(mono_metadata_string_heap(p_image, cols[MONO_ASSEMBLYREF_NAME]));
+	return {
+		String::utf8(mono_metadata_string_heap(p_image, cols[MONO_ASSEMBLYREF_NAME])),
+		(uint16_t)cols[MONO_ASSEMBLYREF_MAJOR_VERSION],
+		(uint16_t)cols[MONO_ASSEMBLYREF_MINOR_VERSION],
+		(uint16_t)cols[MONO_ASSEMBLYREF_BUILD_NUMBER],
+		(uint16_t)cols[MONO_ASSEMBLYREF_REV_NUMBER]
+	};
 }
 
 Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Dictionary &r_assembly_dependencies) {
 	MonoImage *image = p_assembly->get_image();
 
 	for (int i = 0; i < mono_image_get_table_rows(image, MONO_TABLE_ASSEMBLYREF); i++) {
-		String ref_name = get_assemblyref_name(image, i);
+		AssemblyRefInfo ref_info = get_assemblyref_name(image, i);
+
+		const String &ref_name = ref_info.name;
 
 		if (r_assembly_dependencies.has(ref_name))
 			continue;
 
 		GDMonoAssembly *ref_assembly = nullptr;
-		String path;
-		bool has_extension = ref_name.ends_with(".dll") || ref_name.ends_with(".exe");
 
-		for (int j = 0; j < p_search_dirs.size(); j++) {
-			const String &search_dir = p_search_dirs[j];
+		{
+			MonoAssemblyName *ref_aname = mono_assembly_name_new("A"); // We can't allocate an empty MonoAssemblyName, hence "A"
+			CRASH_COND(ref_aname == nullptr);
+			SCOPE_EXIT {
+				mono_assembly_name_free(ref_aname);
+				mono_free(ref_aname);
+			};
 
-			if (has_extension) {
-				path = search_dir.plus_file(ref_name);
-				if (FileAccess::exists(path)) {
-					GDMono::get_singleton()->load_assembly_from(ref_name.get_basename(), path, &ref_assembly, true);
-					if (ref_assembly != nullptr)
-						break;
-				}
-			} else {
-				path = search_dir.plus_file(ref_name + ".dll");
-				if (FileAccess::exists(path)) {
-					GDMono::get_singleton()->load_assembly_from(ref_name, path, &ref_assembly, true);
-					if (ref_assembly != nullptr)
-						break;
-				}
+			mono_assembly_get_assemblyref(image, i, ref_aname);
 
-				path = search_dir.plus_file(ref_name + ".exe");
-				if (FileAccess::exists(path)) {
-					GDMono::get_singleton()->load_assembly_from(ref_name, path, &ref_assembly, true);
-					if (ref_assembly != nullptr)
-						break;
-				}
+			if (!GDMono::get_singleton()->load_assembly(ref_name, ref_aname, &ref_assembly, /* refonly: */ true, p_search_dirs)) {
+				ERR_FAIL_V_MSG(ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
 			}
+
+			r_assembly_dependencies[ref_name] = ref_assembly->get_path();
 		}
-
-		ERR_FAIL_COND_V_MSG(!ref_assembly, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
-
-		// Use the path we got from the search. Don't try to get the path from the loaded assembly as we can't trust it will be from the selected BCL dir.
-		r_assembly_dependencies[ref_name] = path;
 
 		Error err = get_assembly_dependencies(ref_assembly, p_search_dirs, r_assembly_dependencies);
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load one of the dependencies for the assembly: '" + ref_name + "'.");
@@ -112,6 +114,11 @@ Error get_exported_assembly_dependencies(const Dictionary &p_initial_assemblies,
 
 	Vector<String> search_dirs;
 	GDMonoAssembly::fill_search_dirs(search_dirs, p_build_config, p_custom_bcl_dir);
+
+	if (p_custom_bcl_dir.length()) {
+		// Only one mscorlib can be loaded. We need this workaround to make sure we get it from the right BCL directory.
+		r_assembly_dependencies["mscorlib"] = p_custom_bcl_dir.plus_file("mscorlib.dll").simplify_path();
+	}
 
 	for (const Variant *key = p_initial_assemblies.next(); key; key = p_initial_assemblies.next(key)) {
 		String assembly_name = *key;

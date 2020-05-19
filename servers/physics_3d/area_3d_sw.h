@@ -41,7 +41,6 @@ class Body3DSW;
 class Constraint3DSW;
 
 class Area3DSW : public CollisionObject3DSW {
-
 	PhysicsServer3D::AreaSpaceOverrideMode space_override_mode;
 	real_t gravity;
 	Vector3 gravity_vector;
@@ -63,23 +62,21 @@ class Area3DSW : public CollisionObject3DSW {
 	SelfList<Area3DSW> moved_list;
 
 	struct BodyKey {
-
 		RID rid;
 		ObjectID instance_id;
 		uint32_t body_shape;
 		uint32_t area_shape;
 
 		_FORCE_INLINE_ bool operator<(const BodyKey &p_key) const {
-
 			if (rid == p_key.rid) {
-
 				if (body_shape == p_key.body_shape) {
-
 					return area_shape < p_key.area_shape;
-				} else
+				} else {
 					return body_shape < p_key.body_shape;
-			} else
+				}
+			} else {
 				return rid < p_key.rid;
+			}
 		}
 
 		_FORCE_INLINE_ BodyKey() {}
@@ -88,7 +85,6 @@ class Area3DSW : public CollisionObject3DSW {
 	};
 
 	struct BodyState {
-
 		int state;
 		_FORCE_INLINE_ void inc() { state++; }
 		_FORCE_INLINE_ void dec() { state--; }
@@ -171,33 +167,35 @@ public:
 };
 
 void Area3DSW::add_body_to_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
-
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].inc();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
-void Area3DSW::remove_body_from_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 
+void Area3DSW::remove_body_from_query(Body3DSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape) {
 	BodyKey bk(p_body, p_body_shape, p_area_shape);
 	monitored_bodies[bk].dec();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
 
 void Area3DSW::add_area_to_query(Area3DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
-
 	BodyKey bk(p_area, p_area_shape, p_self_shape);
 	monitored_areas[bk].inc();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
-void Area3DSW::remove_area_from_query(Area3DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
 
+void Area3DSW::remove_area_from_query(Area3DSW *p_area, uint32_t p_area_shape, uint32_t p_self_shape) {
 	BodyKey bk(p_area, p_area_shape, p_self_shape);
 	monitored_areas[bk].dec();
-	if (!monitor_query_list.in_list())
+	if (!monitor_query_list.in_list()) {
 		_queue_monitor_update();
+	}
 }
 
 #endif // AREA__SW_H

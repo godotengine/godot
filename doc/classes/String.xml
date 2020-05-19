@@ -620,6 +620,19 @@
 				Returns [code]true[/code] if this string contains a valid IP address.
 			</description>
 		</method>
+		<method name="join">
+			<return type="String">
+			</return>
+			<argument index="0" name="parts" type="PackedStringArray">
+			</argument>
+			<description>
+				Return a [String] which is the concatenation of the [code]parts[/code]. The separator between elements is the string providing this method.
+				Example:
+				[codeblock]
+				print(", ".join(["One", "Two", "Three", "Four"]))
+				[/codeblock]
+			</description>
+		</method>
 		<method name="json_escape">
 			<return type="String">
 			</return>

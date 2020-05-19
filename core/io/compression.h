@@ -34,7 +34,6 @@
 #include "core/typedefs.h"
 
 class Compression {
-
 public:
 	static int zlib_level;
 	static int gzip_level;
@@ -53,7 +52,7 @@ public:
 	static int get_max_compressed_buffer_size(int p_src_size, Mode p_mode = MODE_ZSTD);
 	static int decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p_src, int p_src_size, Mode p_mode = MODE_ZSTD);
 
-	Compression();
+	Compression() {}
 };
 
 #endif // COMPRESSION_H

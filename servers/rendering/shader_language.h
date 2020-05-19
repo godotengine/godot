@@ -40,7 +40,6 @@
 #include "core/variant.h"
 
 class ShaderLanguage {
-
 public:
 	enum TokenType {
 		TK_EMPTY,
@@ -79,6 +78,7 @@ public:
 		TK_TYPE_ISAMPLER3D,
 		TK_TYPE_USAMPLER3D,
 		TK_TYPE_SAMPLERCUBE,
+		TK_TYPE_SAMPLERCUBEARRAY,
 		TK_INTERPOLATION_FLAT,
 		TK_INTERPOLATION_SMOOTH,
 		TK_CONST,
@@ -218,6 +218,7 @@ public:
 		TYPE_ISAMPLER3D,
 		TYPE_USAMPLER3D,
 		TYPE_SAMPLERCUBE,
+		TYPE_SAMPLERCUBEARRAY,
 		TYPE_STRUCT,
 		TYPE_MAX
 	};
@@ -326,7 +327,7 @@ public:
 	};
 
 	struct Node {
-		Node *next;
+		Node *next = nullptr;
 
 		enum Type {
 			TYPE_SHADER,
@@ -350,7 +351,6 @@ public:
 		virtual String get_datatype_name() const { return ""; }
 
 		Node(Type t) :
-				next(nullptr),
 				type(t) {}
 		virtual ~Node() {}
 	};
@@ -366,41 +366,35 @@ public:
 	Node *nodes;
 
 	struct OperatorNode : public Node {
-		DataType return_cache;
-		DataPrecision return_precision_cache;
-		Operator op;
+		DataType return_cache = TYPE_VOID;
+		DataPrecision return_precision_cache = PRECISION_DEFAULT;
+		Operator op = OP_EQUAL;
 		StringName struct_name;
 		Vector<Node *> arguments;
 		virtual DataType get_datatype() const { return return_cache; }
 		virtual String get_datatype_name() const { return String(struct_name); }
 
 		OperatorNode() :
-				Node(TYPE_OPERATOR),
-				return_cache(TYPE_VOID),
-				return_precision_cache(PRECISION_DEFAULT),
-				op(OP_EQUAL),
-				struct_name("") {}
+				Node(TYPE_OPERATOR) {}
 	};
 
 	struct VariableNode : public Node {
-		DataType datatype_cache;
+		DataType datatype_cache = TYPE_VOID;
 		StringName name;
 		StringName struct_name;
 		virtual DataType get_datatype() const { return datatype_cache; }
 		virtual String get_datatype_name() const { return String(struct_name); }
-		bool is_const;
+		bool is_const = false;
 
 		VariableNode() :
-				Node(TYPE_VARIABLE),
-				datatype_cache(TYPE_VOID),
-				is_const(false) {}
+				Node(TYPE_VARIABLE) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
-		DataPrecision precision;
-		DataType datatype;
+		DataPrecision precision = PRECISION_DEFAULT;
+		DataType datatype = TYPE_VOID;
 		String struct_name;
-		bool is_const;
+		bool is_const = false;
 
 		struct Declaration {
 			StringName name;
@@ -411,47 +405,38 @@ public:
 		virtual DataType get_datatype() const { return datatype; }
 
 		VariableDeclarationNode() :
-				Node(TYPE_VARIABLE_DECLARATION),
-				precision(PRECISION_DEFAULT),
-				datatype(TYPE_VOID),
-				is_const(false) {}
+				Node(TYPE_VARIABLE_DECLARATION) {}
 	};
 
 	struct ArrayNode : public Node {
-		DataType datatype_cache;
+		DataType datatype_cache = TYPE_VOID;
 		StringName struct_name;
 		StringName name;
-		Node *index_expression;
-		Node *call_expression;
-		bool is_const;
+		Node *index_expression = nullptr;
+		Node *call_expression = nullptr;
+		bool is_const = false;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
 		virtual String get_datatype_name() const { return String(struct_name); }
 
 		ArrayNode() :
-				Node(TYPE_ARRAY),
-				datatype_cache(TYPE_VOID),
-				index_expression(nullptr),
-				call_expression(nullptr),
-				is_const(false) {}
+				Node(TYPE_ARRAY) {}
 	};
 
 	struct ArrayConstructNode : public Node {
-		DataType datatype;
+		DataType datatype = TYPE_VOID;
 		String struct_name;
 		Vector<Node *> initializer;
 
 		ArrayConstructNode() :
-				Node(TYPE_ARRAY_CONSTRUCT),
-				datatype(TYPE_VOID) {
-		}
+				Node(TYPE_ARRAY_CONSTRUCT) {}
 	};
 
 	struct ArrayDeclarationNode : public Node {
-		DataPrecision precision;
-		DataType datatype;
+		DataPrecision precision = PRECISION_DEFAULT;
+		DataType datatype = TYPE_VOID;
 		String struct_name;
-		bool is_const;
+		bool is_const = false;
 
 		struct Declaration {
 			StringName name;
@@ -463,14 +448,11 @@ public:
 		virtual DataType get_datatype() const { return datatype; }
 
 		ArrayDeclarationNode() :
-				Node(TYPE_ARRAY_DECLARATION),
-				precision(PRECISION_DEFAULT),
-				datatype(TYPE_VOID),
-				is_const(false) {}
+				Node(TYPE_ARRAY_DECLARATION) {}
 	};
 
 	struct ConstantNode : public Node {
-		DataType datatype;
+		DataType datatype = TYPE_VOID;
 
 		union Value {
 			bool boolean;
@@ -483,15 +465,14 @@ public:
 		virtual DataType get_datatype() const { return datatype; }
 
 		ConstantNode() :
-				Node(TYPE_CONSTANT),
-				datatype(TYPE_VOID) {}
+				Node(TYPE_CONSTANT) {}
 	};
 
 	struct FunctionNode;
 
 	struct BlockNode : public Node {
-		FunctionNode *parent_function;
-		BlockNode *parent_block;
+		FunctionNode *parent_function = nullptr;
+		BlockNode *parent_block = nullptr;
 
 		enum BlockType {
 			BLOCK_TYPE_STANDART,
@@ -501,8 +482,8 @@ public:
 			BLOCK_TYPE_DEFAULT,
 		};
 
-		int block_type;
-		SubClassTag block_tag;
+		int block_type = BLOCK_TYPE_STANDART;
+		SubClassTag block_tag = SubClassTag::TAG_GLOBAL;
 
 		struct Variable {
 			DataType type;
@@ -515,63 +496,48 @@ public:
 
 		Map<StringName, Variable> variables;
 		List<Node *> statements;
-		bool single_statement;
+		bool single_statement = false;
 
 		BlockNode() :
-				Node(TYPE_BLOCK),
-				parent_function(nullptr),
-				parent_block(nullptr),
-				block_type(BLOCK_TYPE_STANDART),
-				block_tag(SubClassTag::TAG_GLOBAL),
-				single_statement(false) {}
+				Node(TYPE_BLOCK) {}
 	};
 
 	struct ControlFlowNode : public Node {
-		FlowOperation flow_op;
+		FlowOperation flow_op = FLOW_OP_IF;
 		Vector<Node *> expressions;
 		Vector<BlockNode *> blocks;
 
 		ControlFlowNode() :
-				Node(TYPE_CONTROL_FLOW),
-				flow_op(FLOW_OP_IF) {}
+				Node(TYPE_CONTROL_FLOW) {}
 	};
 
 	struct MemberNode : public Node {
-		DataType basetype;
-		bool basetype_const;
+		DataType basetype = TYPE_VOID;
+		bool basetype_const = false;
 		StringName base_struct_name;
 		DataPrecision precision;
-		DataType datatype;
-		int array_size;
+		DataType datatype = TYPE_VOID;
+		int array_size = 0;
 		StringName struct_name;
 		StringName name;
-		Node *owner;
-		Node *index_expression;
-		bool has_swizzling_duplicates;
+		Node *owner = nullptr;
+		Node *index_expression = nullptr;
+		bool has_swizzling_duplicates = false;
 
 		virtual DataType get_datatype() const { return datatype; }
 		virtual String get_datatype_name() const { return String(struct_name); }
 
 		MemberNode() :
-				Node(TYPE_MEMBER),
-				basetype(TYPE_VOID),
-				basetype_const(false),
-				datatype(TYPE_VOID),
-				array_size(0),
-				owner(nullptr),
-				index_expression(nullptr),
-				has_swizzling_duplicates(false) {}
+				Node(TYPE_MEMBER) {}
 	};
 
 	struct StructNode : public Node {
-
 		List<MemberNode *> members;
 		StructNode() :
 				Node(TYPE_STRUCT) {}
 	};
 
 	struct FunctionNode : public Node {
-
 		struct Argument {
 			ArgumentQualifier qualifier;
 			StringName name;
@@ -589,23 +555,18 @@ public:
 		};
 
 		StringName name;
-		DataType return_type;
+		DataType return_type = TYPE_VOID;
 		StringName return_struct_name;
-		DataPrecision return_precision;
+		DataPrecision return_precision = PRECISION_DEFAULT;
 		Vector<Argument> arguments;
-		BlockNode *body;
-		bool can_discard;
+		BlockNode *body = nullptr;
+		bool can_discard = false;
 
 		FunctionNode() :
-				Node(TYPE_FUNCTION),
-				return_type(TYPE_VOID),
-				return_precision(PRECISION_DEFAULT),
-				body(nullptr),
-				can_discard(false) {}
+				Node(TYPE_FUNCTION) {}
 	};
 
 	struct ShaderNode : public Node {
-
 		struct Constant {
 			StringName name;
 			DataType type;
@@ -627,16 +588,12 @@ public:
 		};
 
 		struct Varying {
-			DataType type;
-			DataInterpolation interpolation;
-			DataPrecision precision;
-			int array_size;
+			DataType type = TYPE_VOID;
+			DataInterpolation interpolation = INTERPOLATION_FLAT;
+			DataPrecision precision = PRECISION_DEFAULT;
+			int array_size = 0;
 
-			Varying() :
-					type(TYPE_VOID),
-					interpolation(INTERPOLATION_FLAT),
-					precision(PRECISION_DEFAULT),
-					array_size(0) {}
+			Varying() {}
 		};
 
 		struct Uniform {
@@ -665,27 +622,19 @@ public:
 				SCOPE_GLOBAL,
 			};
 
-			int order;
-			int texture_order;
-			DataType type;
-			DataPrecision precision;
+			int order = 0;
+			int texture_order = 0;
+			DataType type = TYPE_VOID;
+			DataPrecision precision = PRECISION_DEFAULT;
 			Vector<ConstantNode::Value> default_value;
-			Scope scope;
-			Hint hint;
-			TextureFilter filter;
-			TextureRepeat repeat;
+			Scope scope = SCOPE_LOCAL;
+			Hint hint = HINT_NONE;
+			TextureFilter filter = FILTER_DEFAULT;
+			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
-			int instance_index;
+			int instance_index = 0;
 
-			Uniform() :
-					order(0),
-					texture_order(0),
-					type(TYPE_VOID),
-					precision(PRECISION_DEFAULT),
-					hint(HINT_NONE),
-					filter(FILTER_DEFAULT),
-					repeat(REPEAT_DEFAULT),
-					instance_index(0) {
+			Uniform() {
 				hint_range[0] = 0.0f;
 				hint_range[1] = 1.0f;
 				hint_range[2] = 0.001f;
@@ -765,12 +714,10 @@ public:
 	static void get_builtin_funcs(List<String> *r_keywords);
 
 	struct BuiltInInfo {
-		DataType type;
-		bool constant;
+		DataType type = TYPE_VOID;
+		bool constant = false;
 
-		BuiltInInfo() :
-				type(TYPE_VOID),
-				constant(false) {}
+		BuiltInInfo() {}
 
 		BuiltInInfo(DataType p_type, bool p_constant = false) :
 				type(p_type),
@@ -823,8 +770,9 @@ private:
 	}
 
 	void _set_error(const String &p_str) {
-		if (error_set)
+		if (error_set) {
 			return;
+		}
 
 		error_line = tk_line;
 		error_set = true;

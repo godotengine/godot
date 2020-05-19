@@ -36,7 +36,6 @@
 #include "servers/rendering_server.h"
 
 class Light3D : public VisualInstance3D {
-
 	GDCLASS(Light3D, VisualInstance3D);
 	OBJ_CATEGORY("3D Light Nodes");
 
@@ -140,7 +139,6 @@ VARIANT_ENUM_CAST(Light3D::Param);
 VARIANT_ENUM_CAST(Light3D::BakeMode);
 
 class DirectionalLight3D : public Light3D {
-
 	GDCLASS(DirectionalLight3D, Light3D);
 
 public:
@@ -180,7 +178,6 @@ VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowDepthRange)
 
 class OmniLight3D : public Light3D {
-
 	GDCLASS(OmniLight3D, Light3D);
 
 public:
@@ -208,7 +205,6 @@ public:
 VARIANT_ENUM_CAST(OmniLight3D::ShadowMode)
 
 class SpotLight3D : public Light3D {
-
 	GDCLASS(SpotLight3D, Light3D);
 
 protected:

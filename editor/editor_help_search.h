@@ -84,7 +84,6 @@ public:
 };
 
 class EditorHelpSearch::Runner : public Reference {
-
 	enum Phase {
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,
@@ -95,7 +94,7 @@ class EditorHelpSearch::Runner : public Reference {
 		PHASE_SELECT_MATCH,
 		PHASE_MAX
 	};
-	int phase;
+	int phase = 0;
 
 	struct ClassMatch {
 		DocData::ClassDoc *doc;

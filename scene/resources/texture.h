@@ -51,7 +51,6 @@ public:
 };
 
 class Texture2D : public Texture {
-
 	GDCLASS(Texture2D, Texture);
 	OBJ_SAVE_TYPE(Texture2D); // Saves derived classes with common type so they can be interchanged.
 
@@ -81,7 +80,6 @@ public:
 class BitMap;
 
 class ImageTexture : public Texture2D {
-
 	GDCLASS(ImageTexture, Texture2D);
 	RES_BASE_EXTENSION("tex");
 
@@ -132,9 +130,8 @@ public:
 	~ImageTexture();
 };
 
-class StreamTexture : public Texture2D {
-
-	GDCLASS(StreamTexture, Texture2D);
+class StreamTexture2D : public Texture2D {
+	GDCLASS(StreamTexture2D, Texture2D);
 
 public:
 	enum DataFormat {
@@ -181,8 +178,8 @@ protected:
 public:
 	static Ref<Image> load_image_from_file(FileAccess *p_file, int p_size_limit);
 
-	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture> &);
-	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<StreamTexture> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
+	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture2D> &);
+	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<StreamTexture2D> &, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_roughness_channel);
 
 	static TextureFormatRequestCallback request_3d_callback;
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
@@ -207,11 +204,11 @@ public:
 
 	virtual Ref<Image> get_data() const;
 
-	StreamTexture();
-	~StreamTexture();
+	StreamTexture2D();
+	~StreamTexture2D();
 };
 
-class ResourceFormatLoaderStreamTexture : public ResourceFormatLoader {
+class ResourceFormatLoaderStreamTexture2D : public ResourceFormatLoader {
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -220,7 +217,6 @@ public:
 };
 
 class AtlasTexture : public Texture2D {
-
 	GDCLASS(AtlasTexture, Texture2D);
 	RES_BASE_EXTENSION("atlastex");
 
@@ -264,7 +260,6 @@ public:
 class Mesh;
 
 class MeshTexture : public Texture2D {
-
 	GDCLASS(MeshTexture, Texture2D);
 	RES_BASE_EXTENSION("meshtex");
 
@@ -302,13 +297,11 @@ public:
 };
 
 class LargeTexture : public Texture2D {
-
 	GDCLASS(LargeTexture, Texture2D);
 	RES_BASE_EXTENSION("largetex");
 
 protected:
 	struct Piece {
-
 		Point2 offset;
 		Ref<Texture2D> texture;
 	};
@@ -349,10 +342,33 @@ public:
 };
 
 class TextureLayered : public Texture {
-
 	GDCLASS(TextureLayered, Texture);
 
-	RS::TextureLayeredType layered_type;
+protected:
+	static void _bind_methods();
+
+public:
+	enum LayeredType {
+		LAYERED_TYPE_2D_ARRAY,
+		LAYERED_TYPE_CUBEMAP,
+		LAYERED_TYPE_CUBEMAP_ARRAY
+	};
+
+	virtual Image::Format get_format() const = 0;
+	virtual LayeredType get_layered_type() const = 0;
+	virtual int get_width() const = 0;
+	virtual int get_height() const = 0;
+	virtual int get_layers() const = 0;
+	virtual bool has_mipmaps() const = 0;
+	virtual Ref<Image> get_layer_data(int p_layer) const = 0;
+};
+
+VARIANT_ENUM_CAST(TextureLayered::LayeredType)
+
+class ImageTextureLayered : public TextureLayered {
+	GDCLASS(ImageTextureLayered, TextureLayered);
+
+	LayeredType layered_type;
 
 	mutable RID texture;
 	Image::Format format;
@@ -370,57 +386,130 @@ protected:
 	static void _bind_methods();
 
 public:
-	Image::Format get_format() const;
-	uint32_t get_width() const;
-	uint32_t get_height() const;
-	uint32_t get_layers() const;
-	bool has_mipmaps() const;
+	virtual Image::Format get_format() const;
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual int get_layers() const;
+	virtual bool has_mipmaps() const;
+	virtual LayeredType get_layered_type() const;
 
 	Error create_from_images(Vector<Ref<Image>> p_images);
 	void update_layer(const Ref<Image> &p_image, int p_layer);
-	Ref<Image> get_layer_data(int p_layer) const;
+	virtual Ref<Image> get_layer_data(int p_layer) const;
 
 	virtual RID get_rid() const;
 	virtual void set_path(const String &p_path, bool p_take_over = false);
 
-	TextureLayered(RS::TextureLayeredType p_layered_type);
-	~TextureLayered();
+	ImageTextureLayered(LayeredType p_layered_type);
+	~ImageTextureLayered();
 };
 
-class Texture2DArray : public TextureLayered {
-
-	GDCLASS(Texture2DArray, TextureLayered)
+class Texture2DArray : public ImageTextureLayered {
+	GDCLASS(Texture2DArray, ImageTextureLayered)
 public:
 	Texture2DArray() :
-			TextureLayered(RS::TEXTURE_LAYERED_2D_ARRAY) {}
+			ImageTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
 };
 
-class Cubemap : public TextureLayered {
-
-	GDCLASS(Cubemap, TextureLayered);
+class Cubemap : public ImageTextureLayered {
+	GDCLASS(Cubemap, ImageTextureLayered);
 
 public:
 	Cubemap() :
-			TextureLayered(RS::TEXTURE_LAYERED_CUBEMAP) {}
+			ImageTextureLayered(LAYERED_TYPE_CUBEMAP) {}
 };
 
-class CubemapArray : public TextureLayered {
-
-	GDCLASS(CubemapArray, TextureLayered);
+class CubemapArray : public ImageTextureLayered {
+	GDCLASS(CubemapArray, ImageTextureLayered);
 
 public:
 	CubemapArray() :
-			TextureLayered(RS::TEXTURE_LAYERED_CUBEMAP_ARRAY) {}
+			ImageTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
 };
 
-class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {
+class StreamTextureLayered : public TextureLayered {
+	GDCLASS(StreamTextureLayered, TextureLayered);
+
 public:
-	enum Compression {
-		COMPRESSION_LOSSLESS,
-		COMPRESSION_VRAM,
-		COMPRESSION_UNCOMPRESSED
+	enum DataFormat {
+		DATA_FORMAT_IMAGE,
+		DATA_FORMAT_LOSSLESS,
+		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_BASIS_UNIVERSAL,
 	};
 
+	enum {
+		FORMAT_VERSION = 1
+	};
+
+	enum FormatBits {
+		FORMAT_MASK_IMAGE_FORMAT = (1 << 20) - 1,
+		FORMAT_BIT_LOSSLESS = 1 << 20,
+		FORMAT_BIT_LOSSY = 1 << 21,
+		FORMAT_BIT_STREAM = 1 << 22,
+		FORMAT_BIT_HAS_MIPMAPS = 1 << 23,
+	};
+
+private:
+	Error _load_data(const String &p_path, Vector<Ref<Image>> &images, int &mipmap_limit, int p_size_limit = 0);
+	String path_to_file;
+	mutable RID texture;
+	Image::Format format;
+	int w, h, layers;
+	bool mipmaps;
+	LayeredType layered_type;
+
+	virtual void reload_from_file();
+
+protected:
+	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
+
+public:
+	Image::Format get_format() const;
+	Error load(const String &p_path);
+	String get_load_path() const;
+	virtual LayeredType get_layered_type() const;
+
+	int get_width() const;
+	int get_height() const;
+	int get_layers() const;
+	virtual bool has_mipmaps() const;
+	virtual RID get_rid() const;
+
+	virtual void set_path(const String &p_path, bool p_take_over);
+
+	virtual Ref<Image> get_layer_data(int p_layer) const;
+
+	StreamTextureLayered(LayeredType p_layered_type);
+	~StreamTextureLayered();
+};
+
+class StreamTexture2DArray : public StreamTextureLayered {
+	GDCLASS(StreamTexture2DArray, StreamTextureLayered)
+public:
+	StreamTexture2DArray() :
+			StreamTextureLayered(LAYERED_TYPE_2D_ARRAY) {}
+};
+
+class StreamCubemap : public StreamTextureLayered {
+	GDCLASS(StreamCubemap, StreamTextureLayered);
+
+public:
+	StreamCubemap() :
+			StreamTextureLayered(LAYERED_TYPE_CUBEMAP) {}
+};
+
+class StreamCubemapArray : public StreamTextureLayered {
+	GDCLASS(StreamCubemapArray, StreamTextureLayered);
+
+public:
+	StreamCubemapArray() :
+			StreamTextureLayered(LAYERED_TYPE_CUBEMAP_ARRAY) {}
+};
+
+class ResourceFormatLoaderStreamTextureLayered : public ResourceFormatLoader {
+public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, bool p_no_cache = false);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
@@ -428,7 +517,6 @@ public:
 };
 
 class CurveTexture : public Texture2D {
-
 	GDCLASS(CurveTexture, Texture2D);
 	RES_BASE_EXTENSION("curvetex")
 
@@ -478,7 +566,6 @@ class GradientTexture : public Texture2D {
 
 public:
 	struct Point {
-
 		float offset;
 		Color color;
 		bool operator<(const Point &p_ponit) const {
@@ -555,7 +642,6 @@ private:
 	RID proxy;
 
 	struct Frame {
-
 		Ref<Texture2D> texture;
 		float delay_sec;
 

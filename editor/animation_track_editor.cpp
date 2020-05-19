@@ -41,7 +41,6 @@
 #include "servers/audio/audio_stream.h"
 
 class AnimationTrackKeyEdit : public Object {
-
 	GDCLASS(AnimationTrackKeyEdit, Object);
 
 public:
@@ -56,7 +55,6 @@ public:
 	}
 
 	static void _bind_methods() {
-
 		ClassDB::bind_method("_update_obj", &AnimationTrackKeyEdit::_update_obj);
 		ClassDB::bind_method("_key_ofs_changed", &AnimationTrackKeyEdit::_key_ofs_changed);
 		ClassDB::bind_method("_hide_script_from_inspector", &AnimationTrackKeyEdit::_hide_script_from_inspector);
@@ -65,11 +63,11 @@ public:
 	}
 
 	void _fix_node_path(Variant &value) {
-
 		NodePath np = value;
 
-		if (np == NodePath())
+		if (np == NodePath()) {
 			return;
+		}
 
 		Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
@@ -83,34 +81,33 @@ public:
 	}
 
 	void _update_obj(const Ref<Animation> &p_anim) {
-
-		if (setting || animation != p_anim)
+		if (setting || animation != p_anim) {
 			return;
+		}
 
 		notify_change();
 	}
 
 	void _key_ofs_changed(const Ref<Animation> &p_anim, float from, float to) {
-
-		if (animation != p_anim || from != key_ofs)
+		if (animation != p_anim || from != key_ofs) {
 			return;
+		}
 
 		key_ofs = to;
 
-		if (setting)
+		if (setting) {
 			return;
+		}
 
 		notify_change();
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-
 		int key = animation->track_find_key(track, key_ofs, true);
 		ERR_FAIL_COND_V(key == -1, false);
 
 		String name = p_name;
 		if (name == "time" || name == "frame") {
-
 			float new_time = p_value;
 
 			if (name == "frame") {
@@ -121,8 +118,9 @@ public:
 				new_time /= fps;
 			}
 
-			if (new_time == key_ofs)
+			if (new_time == key_ofs) {
 				return true;
+			}
 
 			int existing = animation->track_find_key(track, new_time, true);
 
@@ -151,7 +149,6 @@ public:
 		}
 
 		if (name == "easing") {
-
 			float val = p_value;
 			float prev_val = animation->track_get_key_transition(track, key);
 			setting = true;
@@ -167,9 +164,7 @@ public:
 		}
 
 		switch (animation->track_get_type(track)) {
-
 			case Animation::TYPE_TRANSFORM: {
-
 				Dictionary d_old = animation->track_get_key_value(track, key);
 				Dictionary d_new = d_old.duplicate();
 				d_new[p_name] = p_value;
@@ -185,9 +180,7 @@ public:
 				return true;
 			} break;
 			case Animation::TYPE_VALUE: {
-
 				if (name == "value") {
-
 					Variant value = p_value;
 
 					if (value.get_type() == Variant::NODE_PATH) {
@@ -208,7 +201,6 @@ public:
 				}
 			} break;
 			case Animation::TYPE_METHOD: {
-
 				Dictionary d_old = animation->track_get_key_value(track, key);
 				Dictionary d_new = d_old.duplicate();
 
@@ -216,16 +208,13 @@ public:
 				bool mergeable = false;
 
 				if (name == "name") {
-
 					d_new["method"] = p_value;
 				} else if (name == "arg_count") {
-
 					Vector<Variant> args = d_old["args"];
 					args.resize(p_value);
 					d_new["args"] = args;
 					change_notify_deserved = true;
 				} else if (name.begins_with("args/")) {
-
 					Vector<Variant> args = d_old["args"];
 					int idx = name.get_slice("/", 1).to_int();
 					ERR_FAIL_INDEX_V(idx, args.size(), false);
@@ -241,17 +230,14 @@ public:
 								Variant *ptrs[1] = { &old };
 								args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
 							} else {
-
 								args.write[idx] = Variant::construct(t, nullptr, 0, err);
 							}
 							change_notify_deserved = true;
 							d_new["args"] = args;
 						}
 					} else if (what == "value") {
-
 						Variant value = p_value;
 						if (value.get_type() == Variant::NODE_PATH) {
-
 							_fix_node_path(value);
 						}
 
@@ -261,10 +247,11 @@ public:
 					}
 				}
 
-				if (mergeable)
+				if (mergeable) {
 					undo_redo->create_action(TTR("Anim Change Call"), UndoRedo::MERGE_ENDS);
-				else
+				} else {
 					undo_redo->create_action(TTR("Anim Change Call"));
+				}
 
 				setting = true;
 				undo_redo->add_do_method(animation.ptr(), "track_set_key_value", track, key, d_new);
@@ -274,14 +261,13 @@ public:
 				undo_redo->commit_action();
 
 				setting = false;
-				if (change_notify_deserved)
+				if (change_notify_deserved) {
 					notify_change();
+				}
 				return true;
 			} break;
 			case Animation::TYPE_BEZIER: {
-
 				if (name == "value") {
-
 					const Variant &value = p_value;
 
 					setting = true;
@@ -298,7 +284,6 @@ public:
 				}
 
 				if (name == "in_handle") {
-
 					const Variant &value = p_value;
 
 					setting = true;
@@ -315,7 +300,6 @@ public:
 				}
 
 				if (name == "out_handle") {
-
 					const Variant &value = p_value;
 
 					setting = true;
@@ -332,9 +316,7 @@ public:
 				}
 			} break;
 			case Animation::TYPE_AUDIO: {
-
 				if (name == "stream") {
-
 					Ref<AudioStream> stream = p_value;
 
 					setting = true;
@@ -351,7 +333,6 @@ public:
 				}
 
 				if (name == "start_offset") {
-
 					float value = p_value;
 
 					setting = true;
@@ -368,7 +349,6 @@ public:
 				}
 
 				if (name == "end_offset") {
-
 					float value = p_value;
 
 					setting = true;
@@ -385,9 +365,7 @@ public:
 				}
 			} break;
 			case Animation::TYPE_ANIMATION: {
-
 				if (name == "animation") {
-
 					StringName anim_name = p_value;
 
 					setting = true;
@@ -409,7 +387,6 @@ public:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-
 		int key = animation->track_find_key(track, key_ofs, true);
 		ERR_FAIL_COND_V(key == -1, false);
 
@@ -420,7 +397,6 @@ public:
 		}
 
 		if (name == "frame") {
-
 			float fps = animation->get_step();
 			if (fps > 0) {
 				fps = 1.0 / fps;
@@ -436,7 +412,6 @@ public:
 
 		switch (animation->track_get_type(track)) {
 			case Animation::TYPE_TRANSFORM: {
-
 				Dictionary d = animation->track_get_key_value(track, key);
 				ERR_FAIL_COND_V(!d.has(name), false);
 				r_ret = d[p_name];
@@ -444,7 +419,6 @@ public:
 
 			} break;
 			case Animation::TYPE_VALUE: {
-
 				if (name == "value") {
 					r_ret = animation->track_get_key_value(track, key);
 					return true;
@@ -452,11 +426,9 @@ public:
 
 			} break;
 			case Animation::TYPE_METHOD: {
-
 				Dictionary d = animation->track_get_key_value(track, key);
 
 				if (name == "name") {
-
 					ERR_FAIL_COND_V(!d.has("method"), false);
 					r_ret = d["method"];
 					return true;
@@ -472,7 +444,6 @@ public:
 				}
 
 				if (name.begins_with("args/")) {
-
 					int idx = name.get_slice("/", 1).to_int();
 					ERR_FAIL_INDEX_V(idx, args.size(), false);
 
@@ -490,7 +461,6 @@ public:
 
 			} break;
 			case Animation::TYPE_BEZIER: {
-
 				if (name == "value") {
 					r_ret = animation->bezier_track_get_key_value(track, key);
 					return true;
@@ -508,7 +478,6 @@ public:
 
 			} break;
 			case Animation::TYPE_AUDIO: {
-
 				if (name == "stream") {
 					r_ret = animation->audio_track_get_key_stream(track, key);
 					return true;
@@ -526,7 +495,6 @@ public:
 
 			} break;
 			case Animation::TYPE_ANIMATION: {
-
 				if (name == "animation") {
 					r_ret = animation->animation_track_get_key_animation(track, key);
 					return true;
@@ -538,9 +506,9 @@ public:
 		return false;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-
-		if (animation.is_null())
+		if (animation.is_null()) {
 			return;
+		}
 
 		ERR_FAIL_INDEX(track, animation->get_track_count());
 		int key = animation->track_find_key(track, key_ofs, true);
@@ -554,25 +522,20 @@ public:
 		}
 
 		switch (animation->track_get_type(track)) {
-
 			case Animation::TYPE_TRANSFORM: {
-
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, "location"));
 				p_list->push_back(PropertyInfo(Variant::QUAT, "rotation"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
 
 			} break;
 			case Animation::TYPE_VALUE: {
-
 				Variant v = animation->track_get_key_value(track, key);
 
 				if (hint.type != Variant::NIL) {
-
 					PropertyInfo pi = hint;
 					pi.name = "value";
 					p_list->push_back(pi);
 				} else {
-
 					PropertyHint hint = PROPERTY_HINT_NONE;
 					String hint_string;
 
@@ -580,19 +543,18 @@ public:
 						//could actually check the object property if exists..? yes i will!
 						Ref<Resource> res = v;
 						if (res.is_valid()) {
-
 							hint = PROPERTY_HINT_RESOURCE_TYPE;
 							hint_string = res->get_class();
 						}
 					}
 
-					if (v.get_type() != Variant::NIL)
+					if (v.get_type() != Variant::NIL) {
 						p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
+					}
 				}
 
 			} break;
 			case Animation::TYPE_METHOD: {
-
 				p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
 				p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,5,1"));
 
@@ -601,40 +563,36 @@ public:
 				Vector<Variant> args = d["args"];
 				String vtypes;
 				for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-
-					if (i > 0)
+					if (i > 0) {
 						vtypes += ",";
+					}
 					vtypes += Variant::get_type_name(Variant::Type(i));
 				}
 
 				for (int i = 0; i < args.size(); i++) {
-
 					p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
-					if (args[i].get_type() != Variant::NIL)
+					if (args[i].get_type() != Variant::NIL) {
 						p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
+					}
 				}
 
 			} break;
 			case Animation::TYPE_BEZIER: {
-
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, "in_handle"));
 				p_list->push_back(PropertyInfo(Variant::VECTOR2, "out_handle"));
 
 			} break;
 			case Animation::TYPE_AUDIO: {
-
 				p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "end_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 
 			} break;
 			case Animation::TYPE_ANIMATION: {
-
 				String animations;
 
 				if (root_path && root_path->has_node(animation->track_get_path(track))) {
-
 					AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node(animation->track_get_path(track)));
 					if (ap) {
 						List<StringName> anims;
@@ -675,7 +633,6 @@ public:
 	bool use_fps;
 
 	void notify_change() {
-
 		_change_notify();
 	}
 
@@ -698,7 +655,6 @@ public:
 };
 
 class AnimationMultiTrackKeyEdit : public Object {
-
 	GDCLASS(AnimationMultiTrackKeyEdit, Object);
 
 public:
@@ -713,7 +669,6 @@ public:
 	}
 
 	static void _bind_methods() {
-
 		ClassDB::bind_method("_update_obj", &AnimationMultiTrackKeyEdit::_update_obj);
 		ClassDB::bind_method("_key_ofs_changed", &AnimationMultiTrackKeyEdit::_key_ofs_changed);
 		ClassDB::bind_method("_hide_script_from_inspector", &AnimationMultiTrackKeyEdit::_hide_script_from_inspector);
@@ -722,11 +677,11 @@ public:
 	}
 
 	void _fix_node_path(Variant &value, NodePath &base) {
-
 		NodePath np = value;
 
-		if (np == NodePath())
+		if (np == NodePath()) {
 			return;
+		}
 
 		Node *root = EditorNode::get_singleton()->get_tree()->get_root();
 
@@ -740,23 +695,21 @@ public:
 	}
 
 	void _update_obj(const Ref<Animation> &p_anim) {
-
-		if (setting || animation != p_anim)
+		if (setting || animation != p_anim) {
 			return;
+		}
 
 		notify_change();
 	}
 
 	void _key_ofs_changed(const Ref<Animation> &p_anim, float from, float to) {
-
-		if (animation != p_anim)
+		if (animation != p_anim) {
 			return;
+		}
 
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-
 			int key = 0;
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-
 				float key_ofs = F->get();
 				if (from != key_ofs) {
 					key++;
@@ -766,8 +719,9 @@ public:
 				int track = E->key();
 				key_ofs_map[track][key] = to;
 
-				if (setting)
+				if (setting) {
 					return;
+				}
 
 				notify_change();
 
@@ -777,21 +731,17 @@ public:
 	}
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-
 		bool update_obj = false;
 		bool change_notify_deserved = false;
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-
 			int track = E->key();
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-
 				float key_ofs = F->get();
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_FAIL_COND_V(key == -1, false);
 
 				String name = p_name;
 				if (name == "time" || name == "frame") {
-
 					float new_time = p_value;
 
 					if (name == "frame") {
@@ -825,7 +775,6 @@ public:
 						undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, new_time, v, trans);
 					}
 				} else if (name == "easing") {
-
 					float val = p_value;
 					float prev_val = animation->track_get_key_transition(track, key);
 
@@ -839,9 +788,7 @@ public:
 				}
 
 				switch (animation->track_get_type(track)) {
-
 					case Animation::TYPE_TRANSFORM: {
-
 						Dictionary d_old = animation->track_get_key_value(track, key);
 						Dictionary d_new = d_old.duplicate();
 						d_new[p_name] = p_value;
@@ -855,9 +802,7 @@ public:
 						update_obj = true;
 					} break;
 					case Animation::TYPE_VALUE: {
-
 						if (name == "value") {
-
 							Variant value = p_value;
 
 							if (value.get_type() == Variant::NODE_PATH) {
@@ -875,23 +820,19 @@ public:
 						}
 					} break;
 					case Animation::TYPE_METHOD: {
-
 						Dictionary d_old = animation->track_get_key_value(track, key);
 						Dictionary d_new = d_old.duplicate();
 
 						bool mergeable = false;
 
 						if (name == "name") {
-
 							d_new["method"] = p_value;
 						} else if (name == "arg_count") {
-
 							Vector<Variant> args = d_old["args"];
 							args.resize(p_value);
 							d_new["args"] = args;
 							change_notify_deserved = true;
 						} else if (name.begins_with("args/")) {
-
 							Vector<Variant> args = d_old["args"];
 							int idx = name.get_slice("/", 1).to_int();
 							ERR_FAIL_INDEX_V(idx, args.size(), false);
@@ -907,17 +848,14 @@ public:
 										Variant *ptrs[1] = { &old };
 										args.write[idx] = Variant::construct(t, (const Variant **)ptrs, 1, err);
 									} else {
-
 										args.write[idx] = Variant::construct(t, nullptr, 0, err);
 									}
 									change_notify_deserved = true;
 									d_new["args"] = args;
 								}
 							} else if (what == "value") {
-
 								Variant value = p_value;
 								if (value.get_type() == Variant::NODE_PATH) {
-
 									_fix_node_path(value, base_map[track]);
 								}
 
@@ -930,10 +868,11 @@ public:
 						Variant prev = animation->track_get_key_value(track, key);
 
 						if (!setting) {
-							if (mergeable)
+							if (mergeable) {
 								undo_redo->create_action(TTR("Anim Multi Change Call"), UndoRedo::MERGE_ENDS);
-							else
+							} else {
 								undo_redo->create_action(TTR("Anim Multi Change Call"));
+							}
 
 							setting = true;
 						}
@@ -943,9 +882,7 @@ public:
 						update_obj = true;
 					} break;
 					case Animation::TYPE_BEZIER: {
-
 						if (name == "value") {
-
 							const Variant &value = p_value;
 
 							if (!setting) {
@@ -957,7 +894,6 @@ public:
 							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_value", track, key, prev);
 							update_obj = true;
 						} else if (name == "in_handle") {
-
 							const Variant &value = p_value;
 
 							if (!setting) {
@@ -969,7 +905,6 @@ public:
 							undo_redo->add_undo_method(animation.ptr(), "bezier_track_set_key_in_handle", track, key, prev);
 							update_obj = true;
 						} else if (name == "out_handle") {
-
 							const Variant &value = p_value;
 
 							if (!setting) {
@@ -983,9 +918,7 @@ public:
 						}
 					} break;
 					case Animation::TYPE_AUDIO: {
-
 						if (name == "stream") {
-
 							Ref<AudioStream> stream = p_value;
 
 							if (!setting) {
@@ -997,7 +930,6 @@ public:
 							undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_stream", track, key, prev);
 							update_obj = true;
 						} else if (name == "start_offset") {
-
 							float value = p_value;
 
 							if (!setting) {
@@ -1009,7 +941,6 @@ public:
 							undo_redo->add_undo_method(animation.ptr(), "audio_track_set_key_start_offset", track, key, prev);
 							update_obj = true;
 						} else if (name == "end_offset") {
-
 							float value = p_value;
 
 							if (!setting) {
@@ -1023,9 +954,7 @@ public:
 						}
 					} break;
 					case Animation::TYPE_ANIMATION: {
-
 						if (name == "animation") {
-
 							StringName anim_name = p_value;
 
 							if (!setting) {
@@ -1043,7 +972,6 @@ public:
 		}
 
 		if (setting) {
-
 			if (update_obj) {
 				undo_redo->add_do_method(this, "_update_obj", animation);
 				undo_redo->add_undo_method(this, "_update_obj", animation);
@@ -1052,8 +980,9 @@ public:
 			undo_redo->commit_action();
 			setting = false;
 
-			if (change_notify_deserved)
+			if (change_notify_deserved) {
 				notify_change();
+			}
 
 			return true;
 		}
@@ -1062,12 +991,9 @@ public:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-
 			int track = E->key();
 			for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-
 				float key_ofs = F->get();
 				int key = animation->track_find_key(track, key_ofs, true);
 				ERR_CONTINUE(key == -1);
@@ -1079,7 +1005,6 @@ public:
 				}
 
 				if (name == "frame") {
-
 					float fps = animation->get_step();
 					if (fps > 0) {
 						fps = 1.0 / fps;
@@ -1094,9 +1019,7 @@ public:
 				}
 
 				switch (animation->track_get_type(track)) {
-
 					case Animation::TYPE_TRANSFORM: {
-
 						Dictionary d = animation->track_get_key_value(track, key);
 						ERR_FAIL_COND_V(!d.has(name), false);
 						r_ret = d[p_name];
@@ -1104,7 +1027,6 @@ public:
 
 					} break;
 					case Animation::TYPE_VALUE: {
-
 						if (name == "value") {
 							r_ret = animation->track_get_key_value(track, key);
 							return true;
@@ -1112,11 +1034,9 @@ public:
 
 					} break;
 					case Animation::TYPE_METHOD: {
-
 						Dictionary d = animation->track_get_key_value(track, key);
 
 						if (name == "name") {
-
 							ERR_FAIL_COND_V(!d.has("method"), false);
 							r_ret = d["method"];
 							return true;
@@ -1127,13 +1047,11 @@ public:
 						Vector<Variant> args = d["args"];
 
 						if (name == "arg_count") {
-
 							r_ret = args.size();
 							return true;
 						}
 
 						if (name.begins_with("args/")) {
-
 							int idx = name.get_slice("/", 1).to_int();
 							ERR_FAIL_INDEX_V(idx, args.size(), false);
 
@@ -1151,7 +1069,6 @@ public:
 
 					} break;
 					case Animation::TYPE_BEZIER: {
-
 						if (name == "value") {
 							r_ret = animation->bezier_track_get_key_value(track, key);
 							return true;
@@ -1169,7 +1086,6 @@ public:
 
 					} break;
 					case Animation::TYPE_AUDIO: {
-
 						if (name == "stream") {
 							r_ret = animation->audio_track_get_key_stream(track, key);
 							return true;
@@ -1187,7 +1103,6 @@ public:
 
 					} break;
 					case Animation::TYPE_ANIMATION: {
-
 						if (name == "animation") {
 							r_ret = animation->animation_track_get_key_animation(track, key);
 							return true;
@@ -1201,9 +1116,9 @@ public:
 		return false;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
-
-		if (animation.is_null())
+		if (animation.is_null()) {
 			return;
+		}
 
 		int first_track = -1;
 		float first_key = -1.0;
@@ -1212,38 +1127,38 @@ public:
 		bool same_track_type = true;
 		bool same_key_type = true;
 		for (Map<int, List<float>>::Element *E = key_ofs_map.front(); E; E = E->next()) {
-
 			int track = E->key();
 			ERR_FAIL_INDEX(track, animation->get_track_count());
 
-			if (first_track < 0)
+			if (first_track < 0) {
 				first_track = track;
+			}
 
-			if (show_time && E->value().size() > 1)
+			if (show_time && E->value().size() > 1) {
 				show_time = false;
+			}
 
 			if (same_track_type) {
-
 				if (animation->track_get_type(first_track) != animation->track_get_type(track)) {
 					same_track_type = false;
 					same_key_type = false;
 				}
 
 				for (List<float>::Element *F = E->value().front(); F; F = F->next()) {
-
 					int key = animation->track_find_key(track, F->get(), true);
 					ERR_FAIL_COND(key == -1);
-					if (first_key < 0)
+					if (first_key < 0) {
 						first_key = key;
+					}
 
-					if (animation->track_get_key_value(first_track, first_key).get_type() != animation->track_get_key_value(track, key).get_type())
+					if (animation->track_get_key_value(first_track, first_key).get_type() != animation->track_get_key_value(track, key).get_type()) {
 						same_key_type = false;
+					}
 				}
 			}
 		}
 
 		if (show_time) {
-
 			if (use_fps && animation->get_step() > 0) {
 				float max_frame = animation->get_length() / animation->get_step();
 				p_list->push_back(PropertyInfo(Variant::FLOAT, "frame", PROPERTY_HINT_RANGE, "0," + rtos(max_frame) + ",1"));
@@ -1254,27 +1169,23 @@ public:
 
 		if (same_track_type) {
 			switch (animation->track_get_type(first_track)) {
-
 				case Animation::TYPE_TRANSFORM: {
-
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "location"));
 					p_list->push_back(PropertyInfo(Variant::QUAT, "rotation"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR3, "scale"));
 				} break;
 				case Animation::TYPE_VALUE: {
-
-					if (!same_key_type)
+					if (!same_key_type) {
 						break;
+					}
 
 					Variant v = animation->track_get_key_value(first_track, first_key);
 
 					if (hint.type != Variant::NIL) {
-
 						PropertyInfo pi = hint;
 						pi.name = "value";
 						p_list->push_back(pi);
 					} else {
-
 						PropertyHint hint = PROPERTY_HINT_NONE;
 						String hint_string;
 
@@ -1282,20 +1193,19 @@ public:
 							//could actually check the object property if exists..? yes i will!
 							Ref<Resource> res = v;
 							if (res.is_valid()) {
-
 								hint = PROPERTY_HINT_RESOURCE_TYPE;
 								hint_string = res->get_class();
 							}
 						}
 
-						if (v.get_type() != Variant::NIL)
+						if (v.get_type() != Variant::NIL) {
 							p_list->push_back(PropertyInfo(v.get_type(), "value", hint, hint_string));
+						}
 					}
 
 					p_list->push_back(PropertyInfo(Variant::FLOAT, "easing", PROPERTY_HINT_EXP_EASING));
 				} break;
 				case Animation::TYPE_METHOD: {
-
 					p_list->push_back(PropertyInfo(Variant::STRING_NAME, "name"));
 					p_list->push_back(PropertyInfo(Variant::INT, "arg_count", PROPERTY_HINT_RANGE, "0,5,1"));
 
@@ -1304,40 +1214,37 @@ public:
 					Vector<Variant> args = d["args"];
 					String vtypes;
 					for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-
-						if (i > 0)
+						if (i > 0) {
 							vtypes += ",";
+						}
 						vtypes += Variant::get_type_name(Variant::Type(i));
 					}
 
 					for (int i = 0; i < args.size(); i++) {
-
 						p_list->push_back(PropertyInfo(Variant::INT, "args/" + itos(i) + "/type", PROPERTY_HINT_ENUM, vtypes));
-						if (args[i].get_type() != Variant::NIL)
+						if (args[i].get_type() != Variant::NIL) {
 							p_list->push_back(PropertyInfo(args[i].get_type(), "args/" + itos(i) + "/value"));
+						}
 					}
 				} break;
 				case Animation::TYPE_BEZIER: {
-
 					p_list->push_back(PropertyInfo(Variant::FLOAT, "value"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, "in_handle"));
 					p_list->push_back(PropertyInfo(Variant::VECTOR2, "out_handle"));
 				} break;
 				case Animation::TYPE_AUDIO: {
-
 					p_list->push_back(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"));
 					p_list->push_back(PropertyInfo(Variant::FLOAT, "start_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 					p_list->push_back(PropertyInfo(Variant::FLOAT, "end_offset", PROPERTY_HINT_RANGE, "0,3600,0.01,or_greater"));
 				} break;
 				case Animation::TYPE_ANIMATION: {
-
-					if (key_ofs_map.size() > 1)
+					if (key_ofs_map.size() > 1) {
 						break;
+					}
 
 					String animations;
 
 					if (root_path && root_path->has_node(animation->track_get_path(first_track))) {
-
 						AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(root_path->get_node(animation->track_get_path(first_track)));
 						if (ap) {
 							List<StringName> anims;
@@ -1376,7 +1283,6 @@ public:
 	UndoRedo *undo_redo;
 
 	void notify_change() {
-
 		_change_notify();
 	}
 
@@ -1397,14 +1303,12 @@ public:
 };
 
 void AnimationTimelineEdit::_zoom_changed(double) {
-
 	update();
 	play_position->update();
 	emit_signal("zoom_changed");
 }
 
 float AnimationTimelineEdit::get_zoom_scale() const {
-
 	float zv = zoom->get_max() - zoom->get_value();
 	if (zv < 1) {
 		zv = 1.0 - zv;
@@ -1415,9 +1319,9 @@ float AnimationTimelineEdit::get_zoom_scale() const {
 }
 
 void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
-
-	if (editing)
+	if (editing) {
 		return;
+	}
 
 	p_new_len = MAX(0.001, p_new_len);
 	if (use_fps && animation->get_step() > 0) {
@@ -1436,7 +1340,6 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 }
 
 void AnimationTimelineEdit::_anim_loop_pressed() {
-
 	undo_redo->create_action(TTR("Change Animation Loop"));
 	undo_redo->add_do_method(animation.ptr(), "set_loop", loop->is_pressed());
 	undo_redo->add_undo_method(animation.ptr(), "set_loop", animation->has_loop());
@@ -1444,7 +1347,6 @@ void AnimationTimelineEdit::_anim_loop_pressed() {
 }
 
 int AnimationTimelineEdit::get_buttons_width() const {
-
 	Ref<Texture2D> interp_mode = get_theme_icon("TrackContinuous", "EditorIcons");
 	Ref<Texture2D> interp_type = get_theme_icon("InterpRaw", "EditorIcons");
 	Ref<Texture2D> loop_type = get_theme_icon("InterpWrapClamp", "EditorIcons");
@@ -1458,7 +1360,6 @@ int AnimationTimelineEdit::get_buttons_width() const {
 }
 
 int AnimationTimelineEdit::get_name_limit() const {
-
 	Ref<Texture2D> hsize_icon = get_theme_icon("Hsize", "EditorIcons");
 
 	int limit = MAX(name_limit, add_track->get_minimum_size().width + hsize_icon->get_width());
@@ -1469,7 +1370,6 @@ int AnimationTimelineEdit::get_name_limit() const {
 }
 
 void AnimationTimelineEdit::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		add_track->set_icon(get_theme_icon("Add", "EditorIcons"));
 		loop->set_icon(get_theme_icon("Loop", "EditorIcons"));
@@ -1490,11 +1390,11 @@ void AnimationTimelineEdit::_notification(int p_what) {
 	}
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		int key_range = get_size().width - get_buttons_width() - get_name_limit();
 
-		if (!animation.is_valid())
+		if (!animation.is_valid()) {
 			return;
+		}
 
 		Ref<Font> font = get_theme_font("font", "Label");
 		Color color = get_theme_color("font_color", "Label");
@@ -1504,8 +1404,9 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		int h = get_size().height;
 
 		float l = animation->get_length();
-		if (l <= 0)
+		if (l <= 0) {
 			l = 0.001; //avoid crashor
+		}
 
 		Ref<Texture2D> hsize_icon = get_theme_icon("Hsize", "EditorIcons");
 		hsize_rect = Rect2(get_name_limit() - hsize_icon->get_width() - 2 * EDSCALE, (get_size().height - hsize_icon->get_height()) / 2, hsize_icon->get_width(), hsize_icon->get_height());
@@ -1515,24 +1416,24 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			float time_min = 0;
 			float time_max = animation->get_length();
 			for (int i = 0; i < animation->get_track_count(); i++) {
-
 				if (animation->track_get_key_count(i) > 0) {
-
 					float beg = animation->track_get_key_time(i, 0);
 					/*if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
 						beg += animation->bezier_track_get_key_in_handle(i, 0).x;
 					}* not worth it since they have no use */
 
-					if (beg < time_min)
+					if (beg < time_min) {
 						time_min = beg;
+					}
 
 					float end = animation->track_get_key_time(i, animation->track_get_key_count(i) - 1);
 					/*if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
 						end += animation->bezier_track_get_key_out_handle(i, animation->track_get_key_count(i) - 1).x;
 					} not worth it since they have no use */
 
-					if (end > time_max)
+					if (end > time_max) {
 						time_max = end;
+					}
 				}
 			}
 
@@ -1548,7 +1449,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				hscroll->show();
 
 			} else {
-
 				hscroll->hide();
 			}
 		}
@@ -1564,15 +1464,15 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		linecolor.a = 0.2;
 
 		{
-
 			draw_rect(Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)), notimecol);
 
 			if (begin_px < zoomw && end_px > 0) {
-
-				if (begin_px < 0)
+				if (begin_px < 0) {
 					begin_px = 0;
-				if (end_px > zoomw)
+				}
+				if (end_px > zoomw) {
 					end_px = zoomw;
+				}
 
 				draw_rect(Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px - 1, h)), timecolor);
 			}
@@ -1598,37 +1498,35 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		const int max_sc_width = String::num(max_sc).length() * max_digit_width;
 
 		while (!step_found) {
-
 			min = max_sc_width;
-			if (decimals > 0)
+			if (decimals > 0) {
 				min += period_width + max_digit_width * decimals;
+			}
 
 			static const int _multp[3] = { 1, 2, 5 };
 			for (int i = 0; i < 3; i++) {
-
 				step = (_multp[i] * dec);
 				if (step * scale / SC_ADJ > min) {
 					step_found = true;
 					break;
 				}
 			}
-			if (step_found)
+			if (step_found) {
 				break;
+			}
 			dec *= 10;
 			decimals--;
-			if (decimals < 0)
+			if (decimals < 0) {
 				decimals = 0;
+			}
 		}
 
 		if (use_fps) {
-
 			float step_size = animation->get_step();
 			if (step_size > 0) {
-
 				int prev_frame_ofs = -10000000;
 
 				for (int i = 0; i < zoomw; i++) {
-
 					float pos = get_value() + double(i) / scale;
 					float prev = get_value() + (double(i) - 1.0) / scale;
 
@@ -1638,7 +1536,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 					bool sub = Math::floor(prev) == Math::floor(pos);
 
 					if (frame != prev_frame && i >= prev_frame_ofs) {
-
 						draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 
 						draw_string(font, Point2(get_name_limit() + i + 3 * EDSCALE, (h - font->get_height()) / 2 + font->get_ascent()).floor(), itos(frame), sub ? color_time_dec : color_time_sec, zoomw - i);
@@ -1649,7 +1546,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 
 		} else {
 			for (int i = 0; i < zoomw; i++) {
-
 				float pos = get_value() + double(i) / scale;
 				float prev = get_value() + (double(i) - 1.0) / scale;
 
@@ -1658,7 +1554,6 @@ void AnimationTimelineEdit::_notification(int p_what) {
 				bool sub = (sc % SC_ADJ);
 
 				if ((sc / step) != (prev_sc / step) || (prev_sc < 0 && sc >= 0)) {
-
 					int scd = sc < 0 ? prev_sc : sc;
 					draw_line(Point2(get_name_limit() + i, 0), Point2(get_name_limit() + i, h), linecolor, Math::round(EDSCALE));
 					draw_string(font, Point2(get_name_limit() + i + 3, (h - font->get_height()) / 2 + font->get_ascent()).floor(), String::num((scd - (scd % step)) / double(SC_ADJ), decimals), sub ? color_time_dec : color_time_sec, zoomw - i);
@@ -1686,7 +1581,6 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation) {
 }
 
 Size2 AnimationTimelineEdit::get_minimum_size() const {
-
 	Size2 ms = add_track->get_minimum_size();
 	Ref<Font> font = get_theme_font("font", "Label");
 	ms.height = MAX(ms.height, font->get_height());
@@ -1704,7 +1598,6 @@ void AnimationTimelineEdit::set_zoom(Range *p_zoom) {
 }
 
 void AnimationTimelineEdit::set_play_position(float p_pos) {
-
 	play_position_pos = p_pos;
 	play_position->update();
 }
@@ -1718,9 +1611,9 @@ void AnimationTimelineEdit::update_play_position() {
 }
 
 void AnimationTimelineEdit::update_values() {
-
-	if (!animation.is_valid() || editing)
+	if (!animation.is_valid() || editing) {
 		return;
+	}
 
 	editing = true;
 	if (use_fps && animation->get_step() > 0) {
@@ -1739,9 +1632,9 @@ void AnimationTimelineEdit::update_values() {
 }
 
 void AnimationTimelineEdit::_play_position_draw() {
-
-	if (!animation.is_valid() || play_position_pos < 0)
+	if (!animation.is_valid() || play_position_pos < 0) {
 		return;
+	}
 
 	float scale = get_zoom_scale();
 	int h = play_position->get_size().height;
@@ -1759,11 +1652,9 @@ void AnimationTimelineEdit::_play_position_draw() {
 }
 
 void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && hsize_rect.has_point(mb->get_position())) {
-
 		dragging_hsize = true;
 		dragging_hsize_from = mb->get_position().x;
 		dragging_hsize_at = name_limit;
@@ -1773,7 +1664,6 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		dragging_hsize = false;
 	}
 	if (mb.is_valid() && mb->get_position().x > get_name_limit() && mb->get_position().x < (get_size().width - get_buttons_width())) {
-
 		if (!panning_timeline && mb->get_button_index() == BUTTON_LEFT) {
 			int x = mb->get_position().x - get_name_limit();
 
@@ -1800,7 +1690,6 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
-
 		if (hsize_rect.has_point(mm->get_position())) {
 			// Change the cursor to indicate that the track name column's width can be adjusted
 			set_default_cursor_shape(Control::CURSOR_HSIZE);
@@ -1834,12 +1723,12 @@ void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
 	update_values();
 	update();
 }
+
 bool AnimationTimelineEdit::is_using_fps() const {
 	return use_fps;
 }
 
 void AnimationTimelineEdit::set_hscroll(HScrollBar *p_hscroll) {
-
 	hscroll = p_hscroll;
 }
 
@@ -1858,7 +1747,6 @@ void AnimationTimelineEdit::_bind_methods() {
 }
 
 AnimationTimelineEdit::AnimationTimelineEdit() {
-
 	use_fps = false;
 	editing = false;
 	name_limit = 150 * EDSCALE;
@@ -1914,11 +1802,10 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 ////////////////////////////////////
 
 void AnimationTrackEdit::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
-
-		if (animation.is_null())
+		if (animation.is_null()) {
 			return;
+		}
 		ERR_FAIL_INDEX(track, animation->get_track_count());
 
 		int limit = timeline->get_name_limit();
@@ -1947,7 +1834,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 		// NAMES AND ICONS //
 
 		{
-
 			Ref<Texture2D> check = animation->track_is_enabled(track) ? get_theme_icon("checked", "CheckBox") : get_theme_icon("unchecked", "CheckBox");
 
 			int ofs = in_group ? check->get_width() : 0; //not the best reference for margin but..
@@ -1973,7 +1859,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 			}
 
 			if (in_group) {
-
 				if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
 					text = TTR("Functions:");
 				} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
@@ -2020,14 +1905,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 			int limit_end = get_size().width - timeline->get_buttons_width();
 
 			for (int i = 0; i < animation->track_get_key_count(track); i++) {
-
 				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 				if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
 					offset = editor->snap_time(offset + editor->get_moving_selection_offset(), true);
 				}
 				offset = offset * scale + limit;
 				if (i < animation->track_get_key_count(track) - 1) {
-
 					float offset_n = animation->track_get_key_time(track, i + 1) - timeline->get_value();
 					if (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) {
 						offset_n = editor->snap_time(offset_n + editor->get_moving_selection_offset());
@@ -2046,7 +1929,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 		// BUTTONS //
 
 		{
-
 			Ref<Texture2D> wrap_icon[2] = {
 				get_theme_icon("InterpWrapClamp", "EditorIcons"),
 				get_theme_icon("InterpWrapLoop", "EditorIcons"),
@@ -2220,15 +2102,17 @@ void AnimationTrackEdit::_notification(int p_what) {
 }
 
 int AnimationTrackEdit::get_key_height() const {
-	if (!animation.is_valid())
+	if (!animation.is_valid()) {
 		return 0;
+	}
 
 	return type_icon->get_height();
 }
-Rect2 AnimationTrackEdit::get_key_rect(int p_index, float p_pixels_sec) {
 
-	if (!animation.is_valid())
+Rect2 AnimationTrackEdit::get_key_rect(int p_index, float p_pixels_sec) {
+	if (!animation.is_valid()) {
 		return Rect2();
+	}
 	Rect2 rect = Rect2(-type_icon->get_width() / 2, 0, type_icon->get_width(), get_size().height);
 
 	//make it a big easier to click
@@ -2242,15 +2126,18 @@ bool AnimationTrackEdit::is_key_selectable_by_distance() const {
 }
 
 void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x, int p_next_x, int p_clip_left, int p_clip_right) {
-	if (p_next_x < p_clip_left)
+	if (p_next_x < p_clip_left) {
 		return;
-	if (p_x > p_clip_right)
+	}
+	if (p_x > p_clip_right) {
 		return;
+	}
 
 	Variant current = animation->track_get_key_value(get_track(), p_index);
 	Variant next = animation->track_get_key_value(get_track(), p_index + 1);
-	if (current != next)
+	if (current != next) {
 		return;
+	}
 
 	Color color = get_theme_color("font_color", "Label");
 	color.a = 0.5;
@@ -2262,12 +2149,13 @@ void AnimationTrackEdit::draw_key_link(int p_index, float p_pixels_sec, int p_x,
 }
 
 void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
-
-	if (!animation.is_valid())
+	if (!animation.is_valid()) {
 		return;
+	}
 
-	if (p_x < p_clip_left || p_x > p_clip_right)
+	if (p_x < p_clip_left || p_x > p_clip_right) {
 		return;
+	}
 
 	Ref<Texture2D> icon_to_draw = p_selected ? selected_icon : type_icon;
 
@@ -2290,16 +2178,18 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		Dictionary d = animation->track_get_key_value(track, p_index);
 		String text;
 
-		if (d.has("method"))
+		if (d.has("method")) {
 			text += String(d["method"]);
+		}
 		text += "(";
 		Vector<Variant> args;
-		if (d.has("args"))
+		if (d.has("args")) {
 			args = d["args"];
+		}
 		for (int i = 0; i < args.size(); i++) {
-
-			if (i > 0)
+			if (i > 0) {
 				text += ", ";
+			}
 			text += String(args[i]);
 		}
 		text += ")";
@@ -2315,14 +2205,15 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 
 //helper
 void AnimationTrackEdit::draw_rect_clipped(const Rect2 &p_rect, const Color &p_color, bool p_filled) {
-
 	int clip_left = timeline->get_name_limit();
 	int clip_right = get_size().width - timeline->get_buttons_width();
 
-	if (p_rect.position.x > clip_right)
+	if (p_rect.position.x > clip_right) {
 		return;
-	if (p_rect.position.x + p_rect.size.x < clip_left)
+	}
+	if (p_rect.position.x + p_rect.size.x < clip_left) {
 		return;
+	}
 	Rect2 clip = Rect2(clip_left, 0, clip_right - clip_left, get_size().height);
 	draw_rect(clip.clip(p_rect), p_color, p_filled);
 }
@@ -2334,20 +2225,20 @@ void AnimationTrackEdit::draw_fg(int p_clip_left, int p_clip_right) {
 }
 
 void AnimationTrackEdit::draw_texture_clipped(const Ref<Texture2D> &p_texture, const Vector2 &p_pos) {
-
 	draw_texture_region_clipped(p_texture, Rect2(p_pos, p_texture->get_size()), Rect2(Point2(), p_texture->get_size()));
 }
 
 void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region) {
-
 	int clip_left = timeline->get_name_limit();
 	int clip_right = get_size().width - timeline->get_buttons_width();
 
 	//clip left and right
-	if (clip_left > p_rect.position.x + p_rect.size.x)
+	if (clip_left > p_rect.position.x + p_rect.size.x) {
 		return;
-	if (clip_right < p_rect.position.x)
+	}
+	if (clip_right < p_rect.position.x) {
 		return;
+	}
 
 	Rect2 rect = p_rect;
 	Rect2 region = p_region;
@@ -2364,7 +2255,6 @@ void AnimationTrackEdit::draw_texture_region_clipped(const Ref<Texture2D> &p_tex
 	}
 
 	if (clip_right < rect.position.x + rect.size.x) {
-
 		int rect_pixels = rect.position.x + rect.size.x - clip_right;
 		int region_pixels = rect_pixels * region.size.x / rect.size.x;
 
@@ -2384,7 +2274,6 @@ Ref<Animation> AnimationTrackEdit::get_animation() const {
 }
 
 void AnimationTrackEdit::set_animation_and_track(const Ref<Animation> &p_animation, int p_track) {
-
 	animation = p_animation;
 	track = p_track;
 	update();
@@ -2410,7 +2299,6 @@ NodePath AnimationTrackEdit::get_path() const {
 }
 
 Size2 AnimationTrackEdit::get_minimum_size() const {
-
 	Ref<Texture2D> texture = get_theme_icon("Object", "EditorIcons");
 	Ref<Font> font = get_theme_font("font", "Label");
 	int separation = get_theme_constant("vseparation", "ItemList");
@@ -2430,14 +2318,15 @@ void AnimationTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationTrackEdit::_zoom_changed));
 	timeline->connect("name_limit_changed", callable_mp(this, &AnimationTrackEdit::_zoom_changed));
 }
+
 void AnimationTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
 }
 
 void AnimationTrackEdit::_play_position_draw() {
-
-	if (!animation.is_valid() || play_position_pos < 0)
+	if (!animation.is_valid() || play_position_pos < 0) {
 		return;
+	}
 
 	float scale = timeline->get_zoom_scale();
 	int h = get_size().height;
@@ -2451,7 +2340,6 @@ void AnimationTrackEdit::_play_position_draw() {
 }
 
 void AnimationTrackEdit::set_play_position(float p_pos) {
-
 	play_position_pos = p_pos;
 	play_position->update();
 }
@@ -2478,9 +2366,9 @@ void AnimationTrackEdit::_path_entered(const String &p_text) {
 }
 
 bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const {
-
-	if (root == nullptr)
+	if (root == nullptr) {
 		return false;
+	}
 
 	RES res;
 	Vector<StringName> leftover_path;
@@ -2502,7 +2390,6 @@ bool AnimationTrackEdit::_is_value_key_valid(const Variant &p_key_value, Variant
 }
 
 String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
-
 	if (check_rect.has_point(p_pos)) {
 		return TTR("Toggle this track on/off.");
 	}
@@ -2534,20 +2421,17 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 	int limit_start_hitbox = limit - type_icon->get_width();
 
 	if (p_pos.x >= limit_start_hitbox && p_pos.x <= limit_end) {
-
 		int key_idx = -1;
 		float key_distance = 1e20;
 
 		// Select should happen in the opposite order of drawing for more accurate overlap select.
 		for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-
 			Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_key_rect(i, timeline->get_zoom_scale());
 			float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 			offset = offset * timeline->get_zoom_scale() + limit;
 			rect.position.x += offset;
 
 			if (rect.has_point(p_pos)) {
-
 				if (const_cast<AnimationTrackEdit *>(this)->is_key_selectable_by_distance()) {
 					float distance = ABS(offset - p_pos.x);
 					if (key_idx == -1 || distance < key_distance) {
@@ -2562,22 +2446,21 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 		}
 
 		if (key_idx != -1) {
-
 			String text = TTR("Time (s): ") + rtos(animation->track_get_key_time(track, key_idx)) + "\n";
 			switch (animation->track_get_type(track)) {
-
 				case Animation::TYPE_TRANSFORM: {
-
 					Dictionary d = animation->track_get_key_value(track, key_idx);
-					if (d.has("location"))
+					if (d.has("location")) {
 						text += "Pos: " + String(d["location"]) + "\n";
-					if (d.has("rotation"))
+					}
+					if (d.has("rotation")) {
 						text += "Rot: " + String(d["rotation"]) + "\n";
-					if (d.has("scale"))
+					}
+					if (d.has("scale")) {
 						text += "Scale: " + String(d["scale"]) + "\n";
+					}
 				} break;
 				case Animation::TYPE_VALUE: {
-
 					const Variant &v = animation->track_get_key_value(track, key_idx);
 					text += "Type: " + Variant::get_type_name(v.get_type()) + "\n";
 					Variant::Type valid_type = Variant::NIL;
@@ -2590,25 +2473,25 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 				} break;
 				case Animation::TYPE_METHOD: {
-
 					Dictionary d = animation->track_get_key_value(track, key_idx);
-					if (d.has("method"))
+					if (d.has("method")) {
 						text += String(d["method"]);
+					}
 					text += "(";
 					Vector<Variant> args;
-					if (d.has("args"))
+					if (d.has("args")) {
 						args = d["args"];
+					}
 					for (int i = 0; i < args.size(); i++) {
-
-						if (i > 0)
+						if (i > 0) {
 							text += ", ";
+						}
 						text += String(args[i]);
 					}
 					text += ")\n";
 
 				} break;
 				case Animation::TYPE_BEZIER: {
-
 					float h = animation->bezier_track_get_key_value(track, key_idx);
 					text += "Value: " + rtos(h) + "\n";
 					Vector2 ih = animation->bezier_track_get_key_in_handle(track, key_idx);
@@ -2617,7 +2500,6 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += "Out-Handle: " + oh + "\n";
 				} break;
 				case Animation::TYPE_AUDIO: {
-
 					String stream_name = "null";
 					RES stream = animation->audio_track_get_key_stream(track, key_idx);
 					if (stream.is_valid()) {
@@ -2637,7 +2519,6 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 					text += "End (s): " + rtos(eo) + "\n";
 				} break;
 				case Animation::TYPE_ANIMATION: {
-
 					String name = animation->animation_track_get_key_animation(track, key_idx);
 					text += "Animation Clip: " + name + "\n";
 				} break;
@@ -2760,20 +2641,17 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		int limit_start_hitbox = limit - type_icon->get_width();
 
 		if (pos.x >= limit_start_hitbox && pos.x <= limit_end) {
-
 			int key_idx = -1;
 			float key_distance = 1e20;
 
 			// Select should happen in the opposite order of drawing for more accurate overlap select.
 			for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-
 				Rect2 rect = get_key_rect(i, scale);
 				float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 				offset = offset * scale + limit;
 				rect.position.x += offset;
 
 				if (rect.has_point(pos)) {
-
 					if (is_key_selectable_by_distance()) {
 						float distance = ABS(offset - pos.x);
 						if (key_idx == -1 || distance < key_distance) {
@@ -2845,7 +2723,6 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT && clicking_on_name) {
-
 		if (!path) {
 			path_popup = memnew(Popup);
 			path_popup->set_wrap_controls(true);
@@ -2867,7 +2744,6 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (mb.is_valid() && moving_selection_attempt) {
-
 		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 			moving_selection_attempt = false;
 			if (moving_selection) {
@@ -2880,7 +2756,6 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (moving_selection && mb->is_pressed() && mb->get_button_index() == BUTTON_RIGHT) {
-
 			moving_selection_attempt = false;
 			moving_selection = false;
 			emit_signal("move_selection_cancel");
@@ -2889,7 +2764,6 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_LEFT && moving_selection_attempt) {
-
 		if (!moving_selection) {
 			moving_selection = true;
 			emit_signal("move_selection_begin");
@@ -2901,9 +2775,9 @@ void AnimationTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
-
-	if (!clicking_on_name)
+	if (!clicking_on_name) {
 		return Variant();
+	}
 
 	Dictionary drag_data;
 	drag_data["type"] = "animation_track";
@@ -2923,7 +2797,6 @@ Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
 }
 
 bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-
 	Dictionary d = p_data;
 	if (!d.has("type")) {
 		return false;
@@ -2954,8 +2827,8 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 
 	return true;
 }
-void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 
+void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 	Dictionary d = p_data;
 	if (!d.has("type")) {
 		return;
@@ -2985,13 +2858,11 @@ void AnimationTrackEdit::drop_data(const Point2 &p_point, const Variant &p_data)
 }
 
 void AnimationTrackEdit::_menu_selected(int p_index) {
-
 	switch (p_index) {
 		case MENU_CALL_MODE_CONTINUOUS:
 		case MENU_CALL_MODE_DISCRETE:
 		case MENU_CALL_MODE_TRIGGER:
 		case MENU_CALL_MODE_CAPTURE: {
-
 			Animation::UpdateMode update_mode = Animation::UpdateMode(p_index);
 			undo_redo->create_action(TTR("Change Animation Update Mode"));
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", track, update_mode);
@@ -3003,7 +2874,6 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		case MENU_INTERPOLATION_NEAREST:
 		case MENU_INTERPOLATION_LINEAR:
 		case MENU_INTERPOLATION_CUBIC: {
-
 			Animation::InterpolationType interp_mode = Animation::InterpolationType(p_index - MENU_INTERPOLATION_NEAREST);
 			undo_redo->create_action(TTR("Change Animation Interpolation Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_type", track, interp_mode);
@@ -3013,7 +2883,6 @@ void AnimationTrackEdit::_menu_selected(int p_index) {
 		} break;
 		case MENU_LOOP_WRAP:
 		case MENU_LOOP_CLAMP: {
-
 			bool loop_wrap = p_index == MENU_LOOP_WRAP;
 			undo_redo->create_action(TTR("Change Animation Loop Mode"));
 			undo_redo->add_do_method(animation.ptr(), "track_set_interpolation_loop_wrap", track, loop_wrap);
@@ -3042,6 +2911,7 @@ void AnimationTrackEdit::cancel_drop() {
 		update();
 	}
 }
+
 void AnimationTrackEdit::set_in_group(bool p_enable) {
 	in_group = p_enable;
 	update();
@@ -3055,23 +2925,22 @@ void AnimationTrackEdit::append_to_selection(const Rect2 &p_box, bool p_deselect
 
 	// Select should happen in the opposite order of drawing for more accurate overlap select.
 	for (int i = animation->track_get_key_count(track) - 1; i >= 0; i--) {
-
 		Rect2 rect = const_cast<AnimationTrackEdit *>(this)->get_key_rect(i, timeline->get_zoom_scale());
 		float offset = animation->track_get_key_time(track, i) - timeline->get_value();
 		offset = offset * timeline->get_zoom_scale() + timeline->get_name_limit();
 		rect.position.x += offset;
 
 		if (select_rect.intersects(rect)) {
-			if (p_deselection)
+			if (p_deselection) {
 				emit_signal("deselect_key", i);
-			else
+			} else {
 				emit_signal("select_key", i, false);
+			}
 		}
 	}
 }
 
 void AnimationTrackEdit::_bind_methods() {
-
 	ClassDB::bind_method("_gui_input", &AnimationTrackEdit::_gui_input);
 
 	ADD_SIGNAL(MethodInfo("timeline_changed", PropertyInfo(Variant::FLOAT, "position"), PropertyInfo(Variant::BOOL, "drag")));
@@ -3147,7 +3016,6 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_value_track_edit(Object *p_
 }
 
 AnimationTrackEdit *AnimationTrackEditPlugin::create_audio_track_edit() {
-
 	if (get_script_instance()) {
 		return Object::cast_to<AnimationTrackEdit>(get_script_instance()->call("create_audio_track_edit").operator Object *());
 	}
@@ -3164,7 +3032,6 @@ AnimationTrackEdit *AnimationTrackEditPlugin::create_animation_track_edit(Object
 ///////////////////////////////////////
 
 void AnimationTrackEditGroup::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_DRAW) {
 		Ref<Font> font = get_theme_font("font", "Label");
 		int separation = get_theme_constant("hseparation", "ItemList");
@@ -3210,7 +3077,6 @@ void AnimationTrackEditGroup::set_type_and_name(const Ref<Texture2D> &p_type, co
 }
 
 Size2 AnimationTrackEditGroup::get_minimum_size() const {
-
 	Ref<Font> font = get_theme_font("font", "Label");
 	int separation = get_theme_constant("vseparation", "ItemList");
 
@@ -3242,19 +3108,17 @@ AnimationTrackEditGroup::AnimationTrackEditGroup() {
 //////////////////////////////////////
 
 void AnimationTrackEditor::add_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin) {
-
-	if (track_edit_plugins.find(p_plugin) != -1)
+	if (track_edit_plugins.find(p_plugin) != -1) {
 		return;
+	}
 	track_edit_plugins.push_back(p_plugin);
 }
 
 void AnimationTrackEditor::remove_track_edit_plugin(const Ref<AnimationTrackEditPlugin> &p_plugin) {
-
 	track_edit_plugins.erase(p_plugin);
 }
 
 void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
-
 	if (animation != p_anim && _get_track_selected() >= 0) {
 		track_edits[_get_track_selected()]->release_focus();
 	}
@@ -3302,7 +3166,6 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim) {
 }
 
 Ref<Animation> AnimationTrackEditor::get_current_animation() const {
-
 	return animation;
 }
 
@@ -3325,15 +3188,15 @@ void AnimationTrackEditor::set_root(Node *p_root) {
 }
 
 Node *AnimationTrackEditor::get_root() const {
-
 	return root;
 }
 
 void AnimationTrackEditor::update_keying() {
 	bool keying_enabled = is_visible_in_tree() && animation.is_valid();
 
-	if (keying_enabled == keying)
+	if (keying_enabled == keying) {
 		return;
+	}
 
 	keying = keying_enabled;
 	//_update_menu();
@@ -3343,6 +3206,7 @@ void AnimationTrackEditor::update_keying() {
 bool AnimationTrackEditor::has_keying() const {
 	return keying;
 }
+
 Dictionary AnimationTrackEditor::get_state() const {
 	Dictionary state;
 	state["fps_mode"] = timeline->is_using_fps();
@@ -3351,6 +3215,7 @@ Dictionary AnimationTrackEditor::get_state() const {
 	state["v_scroll"] = scroll->get_v_scrollbar()->get_value();
 	return state;
 }
+
 void AnimationTrackEditor::set_state(const Dictionary &p_state) {
 	if (p_state.has("fps_mode")) {
 		bool fps_mode = p_state["fps_mode"];
@@ -3386,22 +3251,18 @@ void AnimationTrackEditor::cleanup() {
 }
 
 void AnimationTrackEditor::_name_limit_changed() {
-
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update();
 	}
 }
 
 void AnimationTrackEditor::_timeline_changed(float p_new_pos, bool p_drag) {
-
 	emit_signal("timeline_changed", p_new_pos, p_drag);
 }
 
 void AnimationTrackEditor::_track_remove_request(int p_track) {
-
 	int idx = p_track;
 	if (idx >= 0 && idx < animation->get_track_count()) {
-
 		undo_redo->create_action(TTR("Remove Anim Track"));
 		undo_redo->add_do_method(this, "_clear_selection", false);
 		undo_redo->add_do_method(animation.ptr(), "remove_track", idx);
@@ -3410,7 +3271,6 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 
 		// TODO interpolation.
 		for (int i = 0; i < animation->track_get_key_count(idx); i++) {
-
 			Variant v = animation->track_get_key_value(idx, i);
 			float time = animation->track_get_key_time(idx, i);
 			float trans = animation->track_get_key_transition(idx, i);
@@ -3429,14 +3289,13 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 }
 
 void AnimationTrackEditor::_track_grab_focus(int p_track) {
-
 	// Don't steal focus if not working with the track editor.
-	if (Object::cast_to<AnimationTrackEdit>(get_focus_owner()))
+	if (Object::cast_to<AnimationTrackEdit>(get_focus_owner())) {
 		track_edits[p_track]->grab_focus();
+	}
 }
 
 void AnimationTrackEditor::set_anim_pos(float p_pos) {
-
 	timeline->set_play_position(p_pos);
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->set_play_position(p_pos);
@@ -3448,11 +3307,11 @@ void AnimationTrackEditor::set_anim_pos(float p_pos) {
 }
 
 void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
-
 	if (insert_frame != Engine::get_singleton()->get_frames_drawn()) {
 		//clear insert list for the frame if frame changed
-		if (insert_confirm->is_visible())
+		if (insert_confirm->is_visible()) {
 			return; //do nothing
+		}
 		insert_data.clear();
 		insert_query = false;
 	}
@@ -3460,8 +3319,9 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 
 	for (List<InsertData>::Element *E = insert_data.front(); E; E = E->next()) {
 		//prevent insertion of multiple tracks
-		if (E->get().path == p_id.path)
+		if (E->get().path == p_id.path) {
 			return; //already inserted a track for this on this frame
+		}
 	}
 
 	insert_data.push_back(p_id);
@@ -3472,14 +3332,17 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 			int num_tracks = 0;
 			bool all_bezier = true;
 			for (int i = 0; i < insert_data.size(); i++) {
-				if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER)
+				if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER) {
 					all_bezier = false;
+				}
 
-				if (insert_data[i].track_idx == -1)
+				if (insert_data[i].track_idx == -1) {
 					++num_tracks;
+				}
 
-				if (insert_data[i].type != Animation::TYPE_VALUE)
+				if (insert_data[i].type != Animation::TYPE_VALUE) {
 					continue;
+				}
 
 				switch (insert_data[i].value.get_type()) {
 					case Variant::INT:
@@ -3497,10 +3360,11 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 				}
 			}
 
-			if (num_tracks == 1)
+			if (num_tracks == 1) {
 				insert_confirm_text->set_text(vformat(TTR("Create NEW track for %s and insert key?"), p_id.query));
-			else
+			} else {
 				insert_confirm_text->set_text(vformat(TTR("Create %d NEW tracks and insert keys?"), num_tracks));
+			}
 
 			insert_confirm_bezier->set_visible(all_bezier);
 			insert_confirm->get_ok()->set_text(TTR("Create"));
@@ -3520,7 +3384,6 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 }
 
 void AnimationTrackEditor::_insert_delay() {
-
 	if (insert_query) {
 		//discard since it's entered into query mode
 		insert_queue = false;
@@ -3532,9 +3395,9 @@ void AnimationTrackEditor::_insert_delay() {
 	int last_track = animation->get_track_count();
 	bool advance = false;
 	while (insert_data.size()) {
-
-		if (insert_data.front()->get().advance)
+		if (insert_data.front()->get().advance) {
 			advance = true;
+		}
 		last_track = _confirm_insert(insert_data.front()->get(), last_track);
 		insert_data.pop_front();
 	}
@@ -3543,14 +3406,16 @@ void AnimationTrackEditor::_insert_delay() {
 
 	if (advance) {
 		float step = animation->get_step();
-		if (step == 0)
+		if (step == 0) {
 			step = 1;
+		}
 
 		float pos = timeline->get_play_position();
 
 		pos = Math::stepify(pos + step, step);
-		if (pos > animation->get_length())
+		if (pos > animation->get_length()) {
 			pos = animation->get_length();
+		}
 		set_anim_pos(pos);
 		emit_signal("timeline_changed", pos, true);
 	}
@@ -3558,28 +3423,31 @@ void AnimationTrackEditor::_insert_delay() {
 }
 
 void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_sub, const Transform &p_xform) {
-
-	if (!keying)
+	if (!keying) {
 		return;
-	if (!animation.is_valid())
+	}
+	if (!animation.is_valid()) {
 		return;
+	}
 
 	ERR_FAIL_COND(!root);
 	//let's build a node path
 	String path = root->get_path_to(p_node);
-	if (p_sub != "")
+	if (p_sub != "") {
 		path += ":" + p_sub;
+	}
 
 	NodePath np = path;
 
 	int track_idx = -1;
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
-
-		if (animation->track_get_type(i) != Animation::TYPE_TRANSFORM)
+		if (animation->track_get_type(i) != Animation::TYPE_TRANSFORM) {
 			continue;
-		if (animation->track_get_path(i) != np)
+		}
+		if (animation->track_get_path(i) != np) {
 			continue;
+		}
 
 		track_idx = i;
 		break;
@@ -3601,12 +3469,10 @@ void AnimationTrackEditor::insert_transform_key(Node3D *p_node, const String &p_
 }
 
 void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant &p_value) {
-
 	String path = p_path;
 
 	//animation property is a special case, always creates an animation track
 	for (int i = 0; i < animation->get_track_count(); i++) {
-
 		String np = animation->track_get_path(i);
 
 		if (path == np && animation->track_get_type(i) == Animation::TYPE_ANIMATION) {
@@ -3636,7 +3502,6 @@ void AnimationTrackEditor::_insert_animation_key(NodePath p_path, const Variant 
 }
 
 void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists) {
-
 	ERR_FAIL_COND(!root);
 	//let's build a node path
 
@@ -3655,7 +3520,6 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 
 	EditorHistory *history = EditorNode::get_singleton()->get_editor_history();
 	for (int i = 1; i < history->get_path_size(); i++) {
-
 		String prop = history->get_path_property(i);
 		ERR_FAIL_COND(prop == "");
 		path += ":" + prop;
@@ -3670,10 +3534,10 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 	bool inserted = false;
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
-
 		if (animation->track_get_type(i) == Animation::TYPE_VALUE) {
-			if (animation->track_get_path(i) != np)
+			if (animation->track_get_path(i) != np) {
 				continue;
+			}
 
 			InsertData id;
 			id.path = np;
@@ -3686,7 +3550,6 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			_query_insert(id);
 			inserted = true;
 		} else if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
-
 			Variant value;
 			String track_path = animation->track_get_path(i);
 			if (track_path == np) {
@@ -3698,10 +3561,12 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 					if (base_path == np) {
 						String value_name = track_path.substr(sep + 1);
 						value = p_value.get(value_name);
-					} else
+					} else {
 						continue;
-				} else
+					}
+				} else {
 					continue;
+				}
 			}
 
 			InsertData id;
@@ -3717,8 +3582,9 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 		}
 	}
 
-	if (inserted || p_only_if_exists)
+	if (inserted || p_only_if_exists) {
 		return;
+	}
 	InsertData id;
 	id.path = np;
 	id.track_idx = -1;
@@ -3731,7 +3597,6 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 }
 
 void AnimationTrackEditor::insert_value_key(const String &p_property, const Variant &p_value, bool p_advance) {
-
 	EditorHistory *history = EditorNode::get_singleton()->get_editor_history();
 
 	ERR_FAIL_COND(!root);
@@ -3754,7 +3619,6 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 	}
 
 	for (int i = 1; i < history->get_path_size(); i++) {
-
 		String prop = history->get_path_property(i);
 		ERR_FAIL_COND(prop == "");
 		path += ":" + prop;
@@ -3769,10 +3633,10 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 	bool inserted = false;
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
-
 		if (animation->track_get_type(i) == Animation::TYPE_VALUE) {
-			if (animation->track_get_path(i) != np)
+			if (animation->track_get_path(i) != np) {
 				continue;
+			}
 
 			InsertData id;
 			id.path = np;
@@ -3785,7 +3649,6 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 			_query_insert(id);
 			inserted = true;
 		} else if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
-
 			Variant value;
 			if (animation->track_get_path(i) == np) {
 				value = p_value; //all good
@@ -3827,12 +3690,10 @@ void AnimationTrackEditor::insert_value_key(const String &p_property, const Vari
 }
 
 void AnimationTrackEditor::_confirm_insert_list() {
-
 	undo_redo->create_action(TTR("Anim Create & Insert"));
 
 	int last_track = animation->get_track_count();
 	while (insert_data.size()) {
-
 		last_track = _confirm_insert(insert_data.front()->get(), last_track, insert_confirm_bezier->is_pressed());
 		insert_data.pop_front();
 	}
@@ -3841,7 +3702,6 @@ void AnimationTrackEditor::_confirm_insert_list() {
 }
 
 PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_base_path, Variant *r_current_val) {
-
 	r_base_path = NodePath();
 	ERR_FAIL_COND_V(!animation.is_valid(), PropertyInfo());
 	ERR_FAIL_INDEX_V(p_idx, animation->get_track_count(), PropertyInfo());
@@ -3896,7 +3756,6 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 	property_info_base.get_property_list(&pinfo);
 
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
-
 		if (E->get().name == leftover_path[leftover_path.size() - 1]) {
 			return E->get();
 		}
@@ -3955,13 +3814,12 @@ static Vector<String> _get_bezier_subindices_for_type(Variant::Type p_type, bool
 }
 
 int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, bool p_create_beziers) {
-
-	if (p_last_track == -1)
+	if (p_last_track == -1) {
 		p_last_track = animation->get_track_count();
+	}
 
 	bool created = false;
 	if (p_id.track_idx < 0) {
-
 		if (p_create_beziers) {
 			bool valid;
 			Vector<String> subindices = _get_bezier_subindices_for_type(p_id.value.get_type(), &valid);
@@ -4002,7 +3860,6 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 						h.type == Variant::PLANE ||
 						h.type == Variant::TRANSFORM2D ||
 						h.type == Variant::TRANSFORM) {
-
 					update_mode = Animation::UPDATE_CONTINUOUS;
 				}
 
@@ -4016,8 +3873,9 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 
 		undo_redo->add_do_method(animation.ptr(), "add_track", p_id.type);
 		undo_redo->add_do_method(animation.ptr(), "track_set_path", p_id.track_idx, p_id.path);
-		if (p_id.type == Animation::TYPE_VALUE)
+		if (p_id.type == Animation::TYPE_VALUE) {
 			undo_redo->add_do_method(animation.ptr(), "value_track_set_update_mode", p_id.track_idx, update_mode);
+		}
 
 	} else {
 		undo_redo->create_action(TTR("Anim Insert Key"));
@@ -4027,14 +3885,11 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 	Variant value;
 
 	switch (p_id.type) {
-
 		case Animation::TYPE_VALUE: {
-
 			value = p_id.value;
 
 		} break;
 		case Animation::TYPE_TRANSFORM: {
-
 			Transform tr = p_id.value;
 			Dictionary d;
 			d["location"] = tr.origin;
@@ -4063,13 +3918,11 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 	undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_id.track_idx, time, value);
 
 	if (created) {
-
 		// Just remove the track.
 		undo_redo->add_undo_method(this, "_clear_selection", false);
 		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 		p_last_track++;
 	} else {
-
 		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", p_id.track_idx, time);
 		int existing = animation->track_find_key(p_id.track_idx, time, true);
 		if (existing != -1) {
@@ -4085,12 +3938,10 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 }
 
 void AnimationTrackEditor::show_select_node_warning(bool p_show) {
-
 	info_message->set_visible(p_show);
 }
 
 bool AnimationTrackEditor::is_key_selected(int p_track, int p_key) const {
-
 	SelectedKey sk;
 	sk.key = p_key;
 	sk.track = p_track;
@@ -4107,7 +3958,6 @@ bool AnimationTrackEditor::is_snap_enabled() const {
 }
 
 void AnimationTrackEditor::_update_tracks() {
-
 	int selected = _get_track_selected();
 
 	while (track_vbox->get_child_count()) {
@@ -4117,8 +3967,9 @@ void AnimationTrackEditor::_update_tracks() {
 	track_edits.clear();
 	groups.clear();
 
-	if (animation.is_null())
+	if (animation.is_null()) {
 		return;
+	}
 
 	Map<String, VBoxContainer *> group_sort;
 
@@ -4145,7 +3996,6 @@ void AnimationTrackEditor::_update_tracks() {
 		}
 
 		if (animation->track_get_type(i) == Animation::TYPE_VALUE) {
-
 			NodePath path = animation->track_get_path(i);
 
 			if (root && root->has_node_and_resource(path)) {
@@ -4175,7 +4025,6 @@ void AnimationTrackEditor::_update_tracks() {
 			}
 		}
 		if (animation->track_get_type(i) == Animation::TYPE_AUDIO) {
-
 			for (int j = 0; j < track_edit_plugins.size(); j++) {
 				track_edit = track_edit_plugins.write[j]->create_audio_track_edit();
 				if (track_edit) {
@@ -4277,7 +4126,6 @@ void AnimationTrackEditor::_update_tracks() {
 }
 
 void AnimationTrackEditor::_animation_changed() {
-
 	if (animation_changing_awaiting_update) {
 		return; //all will be updated, don't bother with anything
 	}
@@ -4285,10 +4133,11 @@ void AnimationTrackEditor::_animation_changed() {
 	if (key_edit && key_edit->setting) {
 		//if editing a key, just update the edited track, makes refresh less costly
 		if (key_edit->track < track_edits.size()) {
-			if (animation->track_get_type(key_edit->track) == Animation::TYPE_BEZIER)
+			if (animation->track_get_type(key_edit->track) == Animation::TYPE_BEZIER) {
 				bezier_edit->update();
-			else
+			} else {
 				track_edits[key_edit->track]->update();
+			}
 		}
 		return;
 	}
@@ -4298,7 +4147,6 @@ void AnimationTrackEditor::_animation_changed() {
 }
 
 void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
-
 	timeline->set_use_fps(p_mode == 1);
 	if (key_edit) {
 		key_edit->set_use_fps(p_mode == 1);
@@ -4325,8 +4173,8 @@ void AnimationTrackEditor::_update_step_spinbox() {
 
 	step->set_block_signals(false);
 }
-void AnimationTrackEditor::_animation_update() {
 
+void AnimationTrackEditor::_animation_update() {
 	timeline->update();
 	timeline->update_values();
 
@@ -4405,7 +4253,6 @@ void AnimationTrackEditor::_update_scroll(double) {
 }
 
 void AnimationTrackEditor::_update_step(double p_new_step) {
-
 	undo_redo->create_action(TTR("Change Animation Step"));
 	float step_value = p_new_step;
 	if (timeline->is_using_fps()) {
@@ -4422,7 +4269,6 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 }
 
 void AnimationTrackEditor::_update_length(double p_new_len) {
-
 	emit_signal("animation_len_changed", p_new_len);
 }
 
@@ -4443,7 +4289,6 @@ void AnimationTrackEditor::_dropped_track(int p_from_track, int p_to_track) {
 }
 
 void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
-
 	ERR_FAIL_COND(!root);
 	Node *node = get_node(p_path);
 	ERR_FAIL_COND(!node);
@@ -4462,7 +4307,6 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 		} break;
 		case Animation::TYPE_TRANSFORM:
 		case Animation::TYPE_METHOD: {
-
 			undo_redo->create_action(TTR("Add Track"));
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", animation->get_track_count(), path_to);
@@ -4471,7 +4315,6 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 		} break;
 		case Animation::TYPE_BEZIER: {
-
 			Vector<Variant::Type> filter;
 			filter.push_back(Variant::INT);
 			filter.push_back(Variant::FLOAT);
@@ -4486,7 +4329,6 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			prop_selector->select_property_from_instance(node);
 		} break;
 		case Animation::TYPE_AUDIO: {
-
 			if (!node->is_class("AudioStreamPlayer") && !node->is_class("AudioStreamPlayer2D") && !node->is_class("AudioStreamPlayer3D")) {
 				EditorNode::get_singleton()->show_warning(TTR("Audio tracks can only point to nodes of type:\n-AudioStreamPlayer\n-AudioStreamPlayer2D\n-AudioStreamPlayer3D"));
 				return;
@@ -4500,7 +4342,6 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 		} break;
 		case Animation::TYPE_ANIMATION: {
-
 			if (!node->is_class("AnimationPlayer")) {
 				EditorNode::get_singleton()->show_warning(TTR("Animation tracks can only point to AnimationPlayer nodes."));
 				return;
@@ -4531,11 +4372,9 @@ void AnimationTrackEditor::_add_track(int p_type) {
 }
 
 void AnimationTrackEditor::_new_track_property_selected(String p_name) {
-
 	String full_path = String(adding_track_path) + ":" + p_name;
 
 	if (adding_track_type == Animation::TYPE_VALUE) {
-
 		Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
 		{
 			//hack
@@ -4554,7 +4393,6 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 					h.type == Variant::PLANE ||
 					h.type == Variant::TRANSFORM2D ||
 					h.type == Variant::TRANSFORM) {
-
 				update_mode = Animation::UPDATE_CONTINUOUS;
 			}
 
@@ -4598,7 +4436,6 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 }
 
 void AnimationTrackEditor::_timeline_value_changed(double) {
-
 	timeline->update_play_position();
 
 	for (int i = 0; i < track_edits.size(); i++) {
@@ -4615,17 +4452,16 @@ void AnimationTrackEditor::_timeline_value_changed(double) {
 }
 
 int AnimationTrackEditor::_get_track_selected() {
-
 	for (int i = 0; i < track_edits.size(); i++) {
-		if (track_edits[i]->has_focus())
+		if (track_edits[i]->has_focus()) {
 			return i;
+		}
 	}
 
 	return -1;
 }
 
 void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
-
 	ERR_FAIL_INDEX(p_track, animation->get_track_count());
 
 	if (snap->is_pressed() && step->get_value() != 0) {
@@ -4661,7 +4497,6 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 		} break;
 		case Animation::TYPE_VALUE: {
-
 			NodePath bp;
 			Variant value;
 			_find_hint_for_track(p_track, bp, &value);
@@ -4687,7 +4522,6 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 		} break;
 		case Animation::TYPE_BEZIER: {
-
 			NodePath bp;
 			Variant value;
 			_find_hint_for_track(p_track, bp, &value);
@@ -4706,7 +4540,6 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 		} break;
 		case Animation::TYPE_AUDIO: {
-
 			Dictionary ak;
 			ak["stream"] = RES();
 			ak["start_offset"] = 0;
@@ -4718,7 +4551,6 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 			undo_redo->commit_action();
 		} break;
 		case Animation::TYPE_ANIMATION: {
-
 			StringName anim = "[stop]";
 
 			undo_redo->create_action(TTR("Add Track Key"));
@@ -4730,7 +4562,6 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 }
 
 void AnimationTrackEditor::_add_method_key(const String &p_method) {
-
 	if (!root->has_node(animation->track_get_path(insert_key_from_track_call_track))) {
 		EditorNode::get_singleton()->show_warning(TTR("Track path is invalid, so can't add a method key."));
 		return;
@@ -4742,14 +4573,12 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 
 	for (List<MethodInfo>::Element *E = minfo.front(); E; E = E->next()) {
 		if (E->get().name == p_method) {
-
 			Dictionary d;
 			d["method"] = p_method;
 			Array params;
 			int first_defarg = E->get().arguments.size() - E->get().default_arguments.size();
 
 			for (int i = 0; i < E->get().arguments.size(); i++) {
-
 				if (i >= first_defarg) {
 					Variant arg = E->get().default_arguments[i - first_defarg];
 					params.push_back(arg);
@@ -4774,7 +4603,6 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 }
 
 void AnimationTrackEditor::_key_selected(int p_key, bool p_single, int p_track) {
-
 	ERR_FAIL_INDEX(p_track, animation->get_track_count());
 	ERR_FAIL_INDEX(p_key, animation->track_get_key_count(p_track));
 
@@ -4798,7 +4626,6 @@ void AnimationTrackEditor::_key_selected(int p_key, bool p_single, int p_track) 
 }
 
 void AnimationTrackEditor::_key_deselected(int p_key, int p_track) {
-
 	ERR_FAIL_INDEX(p_track, animation->get_track_count());
 	ERR_FAIL_INDEX(p_key, animation->track_get_key_count(p_track));
 
@@ -4829,7 +4656,6 @@ void AnimationTrackEditor::_move_selection(float p_offset) {
 }
 
 struct _AnimMoveRestore {
-
 	int track;
 	float time;
 	Variant key;
@@ -4860,7 +4686,6 @@ void AnimationTrackEditor::_clear_key_edit() {
 }
 
 void AnimationTrackEditor::_clear_selection(bool p_update) {
-
 	selection.clear();
 
 	if (p_update) {
@@ -4873,13 +4698,12 @@ void AnimationTrackEditor::_clear_selection(bool p_update) {
 }
 
 void AnimationTrackEditor::_update_key_edit() {
-
 	_clear_key_edit();
-	if (!animation.is_valid())
+	if (!animation.is_valid()) {
 		return;
+	}
 
 	if (selection.size() == 1) {
-
 		key_edit = memnew(AnimationTrackKeyEdit);
 		key_edit->animation = animation;
 		key_edit->track = selection.front()->key().track;
@@ -4896,7 +4720,6 @@ void AnimationTrackEditor::_update_key_edit() {
 
 		EditorNode::get_singleton()->push_item(key_edit);
 	} else if (selection.size() > 1) {
-
 		multi_key_edit = memnew(AnimationMultiTrackKeyEdit);
 		multi_key_edit->animation = animation;
 
@@ -4904,10 +4727,10 @@ void AnimationTrackEditor::_update_key_edit() {
 		Map<int, NodePath> base_map;
 		int first_track = -1;
 		for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
-
 			int track = E->key().track;
-			if (first_track < 0)
+			if (first_track < 0) {
 				first_track = track;
+			}
 
 			if (!key_ofs_map.has(track)) {
 				key_ofs_map[track] = List<float>();
@@ -4931,17 +4754,17 @@ void AnimationTrackEditor::_update_key_edit() {
 }
 
 void AnimationTrackEditor::_clear_selection_for_anim(const Ref<Animation> &p_anim) {
-
-	if (animation != p_anim)
+	if (animation != p_anim) {
 		return;
+	}
 
 	_clear_selection();
 }
 
 void AnimationTrackEditor::_select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos) {
-
-	if (animation != p_anim)
+	if (animation != p_anim) {
 		return;
+	}
 
 	int idx = animation->track_find_key(p_track, p_pos, true);
 	ERR_FAIL_COND(idx < 0);
@@ -4956,7 +4779,6 @@ void AnimationTrackEditor::_select_at_anim(const Ref<Animation> &p_anim, int p_t
 }
 
 void AnimationTrackEditor::_move_selection_commit() {
-
 	undo_redo->create_action(TTR("Anim Move Keys"));
 
 	List<_AnimMoveRestore> to_restore;
@@ -4964,21 +4786,21 @@ void AnimationTrackEditor::_move_selection_commit() {
 	float motion = moving_selection_offset;
 	// 1 - remove the keys
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 		undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
 	}
 	// 2 - remove overlapped keys
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 		float newtime = snap_time(E->get().pos + motion);
 		int idx = animation->track_find_key(E->key().track, newtime, true);
-		if (idx == -1)
+		if (idx == -1) {
 			continue;
+		}
 		SelectedKey sk;
 		sk.key = idx;
 		sk.track = E->key().track;
-		if (selection.has(sk))
+		if (selection.has(sk)) {
 			continue; //already in selection, don't save
+		}
 
 		undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_position", E->key().track, newtime);
 		_AnimMoveRestore amr;
@@ -4993,27 +4815,23 @@ void AnimationTrackEditor::_move_selection_commit() {
 
 	// 3 - move the keys (re insert them)
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 		float newpos = snap_time(E->get().pos + motion);
 		undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 	}
 
 	// 4 - (undo) remove inserted keys
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 		float newpos = snap_time(E->get().pos + motion);
 		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", E->key().track, newpos);
 	}
 
 	// 5 - (undo) reinsert keys
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 	}
 
 	// 6 - (undo) reinsert overlapped keys
 	for (List<_AnimMoveRestore>::Element *E = to_restore.front(); E; E = E->next()) {
-
 		_AnimMoveRestore &amr = E->get();
 		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
 	}
@@ -5023,7 +4841,6 @@ void AnimationTrackEditor::_move_selection_commit() {
 
 	// 7 - reselect
 	for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 		float oldpos = E->get().pos;
 		float newpos = snap_time(oldpos + motion);
 
@@ -5040,8 +4857,8 @@ void AnimationTrackEditor::_move_selection_commit() {
 
 	_update_key_edit();
 }
-void AnimationTrackEditor::_move_selection_cancel() {
 
+void AnimationTrackEditor::_move_selection_cancel() {
 	moving_selection = false;
 	for (int i = 0; i < track_edits.size(); i++) {
 		track_edits[i]->update();
@@ -5051,29 +4868,26 @@ void AnimationTrackEditor::_move_selection_cancel() {
 bool AnimationTrackEditor::is_moving_selection() const {
 	return moving_selection;
 }
+
 float AnimationTrackEditor::get_moving_selection_offset() const {
 	return moving_selection_offset;
 }
 
 void AnimationTrackEditor::_box_selection_draw() {
-
 	const Rect2 selection_rect = Rect2(Point2(), box_selection->get_size());
 	box_selection->draw_rect(selection_rect, get_theme_color("box_selection_fill_color", "Editor"));
 	box_selection->draw_rect(selection_rect, get_theme_color("box_selection_stroke_color", "Editor"), false, Math::round(EDSCALE));
 }
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
-
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-
 		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 		scroll->accept_event();
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_command() && mb->get_button_index() == BUTTON_WHEEL_UP) {
-
 		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 		scroll->accept_event();
 	}
@@ -5084,11 +4898,9 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 			box_selecting_from = scroll->get_global_transform().xform(mb->get_position());
 			box_select_rect = Rect2();
 		} else if (box_selecting) {
-
 			if (box_selection->is_visible_in_tree()) {
 				//only if moved
 				for (int i = 0; i < track_edits.size(); i++) {
-
 					Rect2 local_rect = box_select_rect;
 					local_rect.position -= track_edits[i]->get_global_position();
 					track_edits[i]->append_to_selection(local_rect, mb->get_command());
@@ -5109,12 +4921,10 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && mm->get_button_mask() & BUTTON_MASK_MIDDLE) {
-
 		timeline->set_value(timeline->get_value() - mm->get_relative().x / timeline->get_zoom_scale());
 	}
 
 	if (mm.is_valid() && box_selecting) {
-
 		if (!(mm->get_button_mask() & BUTTON_MASK_LEFT)) {
 			//no longer
 			box_selection->hide();
@@ -5161,7 +4971,6 @@ void AnimationTrackEditor::_cancel_bezier_edit() {
 }
 
 void AnimationTrackEditor::_bezier_edit(int p_for_track) {
-
 	_clear_selection(); //bezier probably wants to use a separate selection mode
 	bezier_edit->set_root(root);
 	bezier_edit->set_animation_and_track(animation, p_for_track);
@@ -5173,18 +4982,18 @@ void AnimationTrackEditor::_bezier_edit(int p_for_track) {
 void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 	//duplicait!
 	if (selection.size() && animation.is_valid() && (!transpose || (_get_track_selected() >= 0 && _get_track_selected() < animation->get_track_count()))) {
-
 		int top_track = 0x7FFFFFFF;
 		float top_time = 1e10;
 		for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 			const SelectedKey &sk = E->key();
 
 			float t = animation->track_get_key_time(sk.track, sk.key);
-			if (t < top_time)
+			if (t < top_time) {
 				top_time = t;
-			if (sk.track < top_track)
+			}
+			if (sk.track < top_track) {
 				top_track = sk.track;
+			}
 		}
 		ERR_FAIL_COND(top_track == 0x7FFFFFFF || top_time == 1e10);
 
@@ -5197,7 +5006,6 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 		List<Pair<int, float>> new_selection_values;
 
 		for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 			const SelectedKey &sk = E->key();
 
 			float t = animation->track_get_key_time(sk.track, sk.key);
@@ -5205,11 +5013,13 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 			float dst_time = t + (timeline->get_play_position() - top_time);
 			int dst_track = sk.track + (start_track - top_track);
 
-			if (dst_track < 0 || dst_track >= animation->get_track_count())
+			if (dst_track < 0 || dst_track >= animation->get_track_count()) {
 				continue;
+			}
 
-			if (animation->track_get_type(dst_track) != animation->track_get_type(sk.track))
+			if (animation->track_get_type(dst_track) != animation->track_get_type(sk.track)) {
 				continue;
+			}
 
 			int existing_idx = animation->track_find_key(dst_track, dst_time, true);
 
@@ -5222,7 +5032,6 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 			new_selection_values.push_back(p);
 
 			if (existing_idx != -1) {
-
 				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", dst_track, dst_time, animation->track_get_key_value(dst_track, existing_idx), animation->track_get_key_transition(dst_track, existing_idx));
 			}
 		}
@@ -5233,14 +5042,14 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 
 		Map<SelectedKey, KeyInfo> new_selection;
 		for (List<Pair<int, float>>::Element *E = new_selection_values.front(); E; E = E->next()) {
-
 			int track = E->get().first;
 			float time = E->get().second;
 
 			int existing_idx = animation->track_find_key(track, time, true);
 
-			if (existing_idx == -1)
+			if (existing_idx == -1) {
 				continue;
+			}
 			SelectedKey sk2;
 			sk2.track = track;
 			sk2.key = existing_idx;
@@ -5256,8 +5065,8 @@ void AnimationTrackEditor::_anim_duplicate_keys(bool transpose) {
 		_update_key_edit();
 	}
 }
-void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
+void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 	last_menu_track_opt = p_option;
 	switch (p_option) {
 		case EDIT_COPY_TRACKS: {
@@ -5265,7 +5074,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			TreeItem *troot = track_copy_select->create_item();
 
 			for (int i = 0; i < animation->get_track_count(); i++) {
-
 				NodePath path = animation->track_get_path(i);
 				Node *node = nullptr;
 
@@ -5297,10 +5105,18 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				}
 
 				switch (animation->track_get_type(i)) {
-					case Animation::TYPE_TRANSFORM: text += " (Transform)"; break;
-					case Animation::TYPE_METHOD: text += " (Methods)"; break;
-					case Animation::TYPE_BEZIER: text += " (Bezier)"; break;
-					case Animation::TYPE_AUDIO: text += " (Audio)"; break;
+					case Animation::TYPE_TRANSFORM:
+						text += " (Transform)";
+						break;
+					case Animation::TYPE_METHOD:
+						text += " (Methods)";
+						break;
+					case Animation::TYPE_BEZIER:
+						text += " (Bezier)";
+						break;
+					case Animation::TYPE_AUDIO:
+						text += " (Audio)";
+						break;
 					default: {
 					};
 				}
@@ -5320,11 +5136,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			track_copy_dialog->popup_centered(Size2(350, 500) * EDSCALE);
 		} break;
 		case EDIT_COPY_TRACKS_CONFIRM: {
-
 			track_clipboard.clear();
 			TreeItem *root = track_copy_select->get_root();
 			if (root) {
-
 				TreeItem *it = root->get_children();
 				while (it) {
 					Dictionary md = it->get_metadata(0);
@@ -5354,7 +5168,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 		} break;
 		case EDIT_PASTE_TRACKS: {
-
 			if (track_clipboard.size() == 0) {
 				EditorNode::get_singleton()->show_warning(TTR("Clipboard is empty"));
 				break;
@@ -5400,8 +5213,9 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
 		} break;
 		case EDIT_SCALE_CONFIRM: {
-			if (selection.empty())
+			if (selection.empty()) {
 				return;
+			}
 
 			float from_t = 1e20;
 			float to_t = -1e20;
@@ -5410,10 +5224,12 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.front(); E; E = E->next()) {
 				float t = animation->track_get_key_time(E->key().track, E->key().key);
-				if (t < from_t)
+				if (t < from_t) {
 					from_t = t;
-				if (t > to_t)
+				}
+				if (t > to_t) {
 					to_t = t;
+				}
 			}
 
 			len = to_t - from_t;
@@ -5421,7 +5237,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				pivot = timeline->get_play_position();
 
 			} else {
-
 				pivot = from_t;
 			}
 
@@ -5436,21 +5251,21 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			// 1-remove the keys
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 				undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
 			}
 			// 2- remove overlapped keys
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 				float newtime = (E->get().pos - from_t) * s + from_t;
 				int idx = animation->track_find_key(E->key().track, newtime, true);
-				if (idx == -1)
+				if (idx == -1) {
 					continue;
+				}
 				SelectedKey sk;
 				sk.key = idx;
 				sk.track = E->key().track;
-				if (selection.has(sk))
+				if (selection.has(sk)) {
 					continue; //already in selection, don't save
+				}
 
 				undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_position", E->key().track, newtime);
 				_AnimMoveRestore amr;
@@ -5466,27 +5281,23 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 #define _NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * ABS(s) + from_t
 			// 3-move the keys (re insert them)
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 				float newpos = _NEW_POS(E->get().pos);
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 			}
 
 			// 4-(undo) remove inserted keys
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 				float newpos = _NEW_POS(E->get().pos);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", E->key().track, newpos);
 			}
 
 			// 5-(undo) reinsert keys
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 			}
 
 			// 6-(undo) reinsert overlapped keys
 			for (List<_AnimMoveRestore>::Element *E = to_restore.front(); E; E = E->next()) {
-
 				_AnimMoveRestore &amr = E->get();
 				undo_redo->add_undo_method(animation.ptr(), "track_insert_key", amr.track, amr.time, amr.key, amr.transition);
 			}
@@ -5496,18 +5307,17 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 
 			// 7-reselect
 			for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 				float oldpos = E->get().pos;
 				float newpos = _NEW_POS(oldpos);
-				if (newpos >= 0)
+				if (newpos >= 0) {
 					undo_redo->add_do_method(this, "_select_at_anim", animation, E->key().track, newpos);
+				}
 				undo_redo->add_undo_method(this, "_select_at_anim", animation, E->key().track, oldpos);
 			}
 #undef _NEW_POS
 			undo_redo->commit_action();
 		} break;
 		case EDIT_DUPLICATE_SELECTION: {
-
 			if (bezier_edit->is_visible()) {
 				bezier_edit->duplicate_selection();
 				break;
@@ -5522,7 +5332,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			_anim_duplicate_keys(true);
 		} break;
 		case EDIT_DELETE_SELECTION: {
-
 			if (bezier_edit->is_visible()) {
 				bezier_edit->delete_selection();
 				break;
@@ -5532,7 +5341,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				undo_redo->create_action(TTR("Anim Delete Keys"));
 
 				for (Map<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
-
 					undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->key().track, E->key().key);
 					undo_redo->add_undo_method(animation.ptr(), "track_insert_key", E->key().track, E->get().pos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 				}
@@ -5543,34 +5351,39 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 			}
 		} break;
 		case EDIT_GOTO_NEXT_STEP: {
-
-			if (animation.is_null())
+			if (animation.is_null()) {
 				break;
+			}
 			float step = animation->get_step();
-			if (step == 0)
+			if (step == 0) {
 				step = 1;
+			}
 
 			float pos = timeline->get_play_position();
 
 			pos = Math::stepify(pos + step, step);
-			if (pos > animation->get_length())
+			if (pos > animation->get_length()) {
 				pos = animation->get_length();
+			}
 			set_anim_pos(pos);
 
 			emit_signal("timeline_changed", pos, true);
 
 		} break;
 		case EDIT_GOTO_PREV_STEP: {
-			if (animation.is_null())
+			if (animation.is_null()) {
 				break;
+			}
 			float step = animation->get_step();
-			if (step == 0)
+			if (step == 0) {
 				step = 1;
+			}
 
 			float pos = timeline->get_play_position();
 			pos = Math::stepify(pos - step, step);
-			if (pos < 0)
+			if (pos < 0) {
 				pos = 0;
+			}
 			set_anim_pos(pos);
 			emit_signal("timeline_changed", pos, true);
 
@@ -5605,9 +5418,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 }
 
 void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
-
 	for (int i = 0; i < p_animation->get_track_count(); i++) {
-
 		bool prop_exists = false;
 		Variant::Type valid_type = Variant::NIL;
 		Object *obj = nullptr;
@@ -5628,17 +5439,16 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 		}
 
 		if (!obj && cleanup_tracks->is_pressed()) {
-
 			p_animation->remove_track(i);
 			i--;
 			continue;
 		}
 
-		if (!prop_exists || p_animation->track_get_type(i) != Animation::TYPE_VALUE || !cleanup_keys->is_pressed())
+		if (!prop_exists || p_animation->track_get_type(i) != Animation::TYPE_VALUE || !cleanup_keys->is_pressed()) {
 			continue;
+		}
 
 		for (int j = 0; j < p_animation->track_get_key_count(i); j++) {
-
 			Variant v = p_animation->track_get_key_value(i, j);
 
 			if (!Variant::can_convert(v.get_type(), valid_type)) {
@@ -5658,13 +5468,11 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 }
 
 void AnimationTrackEditor::_view_group_toggle() {
-
 	_update_tracks();
 	view_group->set_icon(get_theme_icon(view_group->is_pressed() ? "AnimationTrackList" : "AnimationTrackGroup", "EditorIcons"));
 }
 
 bool AnimationTrackEditor::is_grouping_tracks() {
-
 	if (!view_group) {
 		return false;
 	}
@@ -5673,7 +5481,6 @@ bool AnimationTrackEditor::is_grouping_tracks() {
 }
 
 void AnimationTrackEditor::_selection_changed() {
-
 	if (selected_filter->is_pressed()) {
 		_update_tracks(); //needs updatin
 	} else {
@@ -5688,14 +5495,13 @@ void AnimationTrackEditor::_selection_changed() {
 }
 
 float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
-
 	if (is_snap_enabled()) {
-
 		double snap_increment;
-		if (timeline->is_using_fps() && step->get_value() > 0)
+		if (timeline->is_using_fps() && step->get_value() > 0) {
 			snap_increment = 1.0 / step->get_value();
-		else
+		} else {
 			snap_increment = step->get_value();
+		}
 
 		if (p_relative) {
 			double rel = Math::fmod(timeline->get_value(), snap_increment);
@@ -5709,22 +5515,22 @@ float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 }
 
 void AnimationTrackEditor::_show_imported_anim_warning() {
-
 	// It looks terrible on a single line but the TTR extractor doesn't support line breaks yet.
 	EditorNode::get_singleton()->show_warning(TTR("This animation belongs to an imported scene, so changes to imported tracks will not be saved.\n\nTo enable the ability to add custom tracks, navigate to the scene's import settings and set\n\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks\", then re-import.\nAlternatively, use an import preset that imports animations to separate files."),
 			TTR("Warning: Editing imported animation"));
 }
 
 void AnimationTrackEditor::_select_all_tracks_for_copy() {
-
 	TreeItem *track = track_copy_select->get_root()->get_children();
-	if (!track)
+	if (!track) {
 		return;
+	}
 
 	bool all_selected = true;
 	while (track) {
-		if (!track->is_checked(0))
+		if (!track->is_checked(0)) {
 			all_selected = false;
+		}
 
 		track = track->get_next();
 	}
@@ -5737,7 +5543,6 @@ void AnimationTrackEditor::_select_all_tracks_for_copy() {
 }
 
 void AnimationTrackEditor::_bind_methods() {
-
 	ClassDB::bind_method("_animation_update", &AnimationTrackEditor::_animation_update);
 	ClassDB::bind_method("_track_grab_focus", &AnimationTrackEditor::_track_grab_focus);
 	ClassDB::bind_method("_update_tracks", &AnimationTrackEditor::_update_tracks);
@@ -5947,7 +5752,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	insert_confirm_bezier->set_text(TTR("Use Bezier Curves"));
 	icvb->add_child(insert_confirm_bezier);
 	keying = false;
-	moving_selection = 0;
+	moving_selection = false;
 	key_edit = nullptr;
 	multi_key_edit = nullptr;
 

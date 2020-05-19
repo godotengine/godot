@@ -47,14 +47,14 @@ protected:
 	uint8_t recv_buffer[PACKET_BUFFER_SIZE];
 	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
 	IP_Address packet_ip;
-	int packet_port;
-	int queue_count;
+	int packet_port = 0;
+	int queue_count = 0;
 
 	IP_Address peer_addr;
-	int peer_port;
-	bool connected;
-	bool blocking;
-	bool broadcast;
+	int peer_port = 0;
+	bool connected = false;
+	bool blocking = true;
+	bool broadcast = false;
 	Ref<NetSocket> _sock;
 
 	static void _bind_methods();

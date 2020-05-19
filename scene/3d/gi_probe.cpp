@@ -101,15 +101,19 @@ void GIProbeData::allocate(const Transform &p_to_cell_xform, const AABB &p_aabb,
 AABB GIProbeData::get_bounds() const {
 	return bounds;
 }
+
 Vector3 GIProbeData::get_octree_size() const {
 	return octree_size;
 }
+
 Vector<uint8_t> GIProbeData::get_octree_cells() const {
 	return RS::get_singleton()->gi_probe_get_octree_cells(probe);
 }
+
 Vector<uint8_t> GIProbeData::get_data_cells() const {
 	return RS::get_singleton()->gi_probe_get_data_cells(probe);
 }
+
 Vector<uint8_t> GIProbeData::get_distance_field() const {
 	return RS::get_singleton()->gi_probe_get_distance_field(probe);
 }
@@ -117,6 +121,7 @@ Vector<uint8_t> GIProbeData::get_distance_field() const {
 Vector<int> GIProbeData::get_level_counts() const {
 	return RS::get_singleton()->gi_probe_get_level_counts(probe);
 }
+
 Transform GIProbeData::get_to_cell_xform() const {
 	return to_cell_xform;
 }
@@ -212,7 +217,6 @@ bool GIProbeData::is_using_two_bounces() const {
 }
 
 RID GIProbeData::get_rid() const {
-
 	return probe;
 }
 
@@ -283,7 +287,6 @@ void GIProbeData::_bind_methods() {
 }
 
 GIProbeData::GIProbeData() {
-
 	ao = 0.0;
 	ao_size = 0.5;
 	dynamic_range = 4;
@@ -299,7 +302,6 @@ GIProbeData::GIProbeData() {
 }
 
 GIProbeData::~GIProbeData() {
-
 	RS::get_singleton()->free(probe);
 }
 
@@ -307,7 +309,6 @@ GIProbeData::~GIProbeData() {
 //////////////////////
 
 void GIProbe::set_probe_data(const Ref<GIProbeData> &p_data) {
-
 	if (p_data.is_valid()) {
 		RS::get_singleton()->instance_set_base(get_instance(), p_data->get_rid());
 	} else {
@@ -318,41 +319,34 @@ void GIProbe::set_probe_data(const Ref<GIProbeData> &p_data) {
 }
 
 Ref<GIProbeData> GIProbe::get_probe_data() const {
-
 	return probe_data;
 }
 
 void GIProbe::set_subdiv(Subdiv p_subdiv) {
-
 	ERR_FAIL_INDEX(p_subdiv, SUBDIV_MAX);
 	subdiv = p_subdiv;
 	update_gizmo();
 }
 
 GIProbe::Subdiv GIProbe::get_subdiv() const {
-
 	return subdiv;
 }
 
 void GIProbe::set_extents(const Vector3 &p_extents) {
-
 	extents = p_extents;
 	update_gizmo();
 	_change_notify("extents");
 }
 
 Vector3 GIProbe::get_extents() const {
-
 	return extents;
 }
 
 void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
-
 	MeshInstance3D *mi = Object::cast_to<MeshInstance3D>(p_at_node);
-	if (mi && mi->get_flag(GeometryInstance3D::FLAG_USE_BAKED_LIGHT) && mi->is_visible_in_tree()) {
+	if (mi && mi->get_gi_mode() == GeometryInstance3D::GI_MODE_BAKED && mi->is_visible_in_tree()) {
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
-
 			AABB aabb = mesh->get_aabb();
 
 			Transform xf = get_global_transform().affine_inverse() * mi->get_global_transform();
@@ -372,16 +366,14 @@ void GIProbe::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 
 	Node3D *s = Object::cast_to<Node3D>(p_at_node);
 	if (s) {
-
 		if (s->is_visible_in_tree()) {
-
 			Array meshes = p_at_node->call("get_meshes");
 			for (int i = 0; i < meshes.size(); i += 2) {
-
 				Transform mxf = meshes[i];
 				Ref<Mesh> mesh = meshes[i + 1];
-				if (!mesh.is_valid())
+				if (!mesh.is_valid()) {
 					continue;
+				}
 
 				AABB aabb = mesh->get_aabb();
 
@@ -416,9 +408,9 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 	axis_cell_size[longest_axis] = 1 << cell_subdiv;
 
 	for (int i = 0; i < 3; i++) {
-
-		if (i == longest_axis)
+		if (i == longest_axis) {
 			continue;
+		}
 
 		axis_cell_size[i] = axis_cell_size[longest_axis];
 		float axis_size = bounds.size[longest_axis];
@@ -432,8 +424,8 @@ Vector3i GIProbe::get_estimated_cell_size() const {
 
 	return Vector3i(axis_cell_size[0], axis_cell_size[1], axis_cell_size[2]);
 }
-void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 
+void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	static const int subdiv_value[SUBDIV_MAX] = { 6, 7, 8, 9 };
 
 	Voxelizer baker;
@@ -451,7 +443,6 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 	int pmc = 0;
 
 	for (List<PlotMesh>::Element *E = mesh_list.front(); E; E = E->next()) {
-
 		if (bake_step_function) {
 			bake_step_function(pmc, RTR("Plotting Meshes") + " " + itos(pmc) + "/" + itos(mesh_list.size()));
 		}
@@ -483,11 +474,11 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 #endif
 
 	} else {
-
 		Ref<GIProbeData> probe_data = get_probe_data();
 
-		if (probe_data.is_null())
+		if (probe_data.is_null()) {
 			probe_data.instance();
+		}
 
 		if (bake_step_function) {
 			bake_step_function(pmc++, RTR("Generating Distance Field"));
@@ -511,22 +502,18 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 }
 
 void GIProbe::_debug_bake() {
-
 	bake(nullptr, true);
 }
 
 AABB GIProbe::get_aabb() const {
-
 	return AABB(-extents, extents * 2);
 }
 
 Vector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
-
 	return Vector<Face3>();
 }
 
 String GIProbe::get_configuration_warning() const {
-
 	if (RenderingServer::get_singleton()->is_low_end()) {
 		return TTR("GIProbes are not supported by the GLES2 video driver.\nUse a BakedLightmap instead.");
 	}
@@ -534,7 +521,6 @@ String GIProbe::get_configuration_warning() const {
 }
 
 void GIProbe::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_probe_data", "data"), &GIProbe::set_probe_data);
 	ClassDB::bind_method(D_METHOD("get_probe_data"), &GIProbe::get_probe_data);
 
@@ -560,7 +546,6 @@ void GIProbe::_bind_methods() {
 }
 
 GIProbe::GIProbe() {
-
 	subdiv = SUBDIV_128;
 	extents = Vector3(10, 10, 10);
 

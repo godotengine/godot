@@ -34,7 +34,6 @@
 #include "scene/gui/range.h"
 
 class Slider : public Range {
-
 	GDCLASS(Slider, Range);
 
 	struct Grab {
@@ -78,7 +77,6 @@ public:
 };
 
 class HSlider : public Slider {
-
 	GDCLASS(HSlider, Slider);
 
 public:
@@ -87,7 +85,6 @@ public:
 };
 
 class VSlider : public Slider {
-
 	GDCLASS(VSlider, Slider);
 
 public:

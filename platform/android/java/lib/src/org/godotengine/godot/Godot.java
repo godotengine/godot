@@ -66,10 +66,6 @@ import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
-import android.support.annotation.CallSuper;
-import android.support.annotation.Keep;
-import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentActivity;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -84,6 +80,11 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.CallSuper;
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
@@ -102,7 +103,6 @@ import java.util.List;
 import java.util.Locale;
 
 public abstract class Godot extends FragmentActivity implements SensorEventListener, IDownloaderClient {
-
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
@@ -251,7 +251,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		mRenderView.queueOnRenderThread(new Runnable() {
 			@Override
 			public void run() {
-
 				// Must occur after GodotLib.setup has completed.
 				for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 					plugin.onRegisterPluginWithGodotNative();
@@ -361,7 +360,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 			for (int i = 0; i < argc; i++) {
 				r = is.read(len);
 				if (r < 4) {
-
 					return new String[0];
 				}
 				int strlen = ((int)(len[3] & 0xFF) << 24) | ((int)(len[2] & 0xFF) << 16) | ((int)(len[1] & 0xFF) << 8) | ((int)(len[0] & 0xFF));
@@ -409,9 +407,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	String expansion_pack_path;
 
 	private void initializeGodot() {
-
 		if (expansion_pack_path != null) {
-
 			String[] new_cmdline;
 			int cll = 0;
 			if (command_line != null) {
@@ -458,7 +454,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 	@Override
 	protected void onCreate(Bundle icicle) {
-
 		super.onCreate(icicle);
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
@@ -475,7 +470,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 			List<String> new_args = new LinkedList<String>();
 
 			for (int i = 0; i < command_line.length; i++) {
-
 				boolean has_extra = i < command_line.length - 1;
 				if (command_line[i].equals(XRMode.REGULAR.cmdLineArg)) {
 					xrMode = XRMode.REGULAR;
@@ -519,7 +513,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 			if (new_args.isEmpty()) {
 				command_line = null;
 			} else {
-
 				command_line = new_args.toArray(new String[new_args.size()]);
 			}
 			if (use_apk_expansion && main_pack_md5 != null && main_pack_key != null) {
@@ -541,7 +534,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 				boolean pack_valid = true;
 
 				if (!f.exists()) {
-
 					pack_valid = false;
 
 				} else if (obbIsCorrupted(expansion_pack_path, main_pack_md5)) {
@@ -553,7 +545,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 				}
 
 				if (!pack_valid) {
-
 					Intent notifierIntent = new Intent(this, this.getClass());
 					notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
 											Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -602,7 +593,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 
 	@Override
 	protected void onDestroy() {
-
 		for (GodotPlugin plugin : pluginRegistry.getAllPlugins()) {
 			plugin.onMainDestroy();
 		}
@@ -637,7 +627,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	public String getClipboard() {
-
 		String copiedText = "";
 
 		if (mClipboard.getPrimaryClip() != null) {
@@ -649,7 +638,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	public void setClipboard(String p_text) {
-
 		ClipData clip = ClipData.newPlainText("myLabel", p_text);
 		mClipboard.setPrimaryClip(clip);
 	}
@@ -809,9 +797,7 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {
-
 		try {
-
 			InputStream fis = new FileInputStream(f);
 
 			// Create MD5 Hash
@@ -852,7 +838,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 	}
 
 	public boolean gotTouchEvent(final MotionEvent event) {
-
 		final int evcount = event.getPointerCount();
 		if (evcount == 0)
 			return true;
@@ -861,7 +846,6 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 			final int[] arr = new int[event.getPointerCount() * 3];
 
 			for (int i = 0; i < event.getPointerCount(); i++) {
-
 				arr[i * 3 + 0] = (int)event.getPointerId(i);
 				arr[i * 3 + 1] = (int)event.getX(i);
 				arr[i * 3 + 2] = (int)event.getY(i);
@@ -920,7 +904,8 @@ public abstract class Godot extends FragmentActivity implements SensorEventListe
 		int cnt = 0;
 		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0)
 			;
-		if (cnt == 0) return super.onKeyMultiple(inKeyCode, repeatCount, event);
+		if (cnt == 0)
+			return super.onKeyMultiple(inKeyCode, repeatCount, event);
 		mRenderView.queueOnRenderThread(new Runnable() {
 			// This method will be called on the rendering thread:
 			public void run() {

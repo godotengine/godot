@@ -35,7 +35,6 @@
 #include "servers/rendering/rendering_device.h"
 
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
-
 	name = p_name;
 	//split vertex and shader code (thank you, shader compiler programmers from you know what company).
 	if (p_vertex_code) {
@@ -64,7 +63,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			if (cpos == -1) {
 				vertex_code1 = code.ascii();
 			} else {
-
 				vertex_code1 = code.substr(0, cpos).ascii();
 				String code2 = code.substr(cpos + globals_tag.length(), code.length());
 
@@ -72,7 +70,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 				if (cpos == -1) {
 					vertex_code2 = code2.ascii();
 				} else {
-
 					vertex_code2 = code2.substr(0, cpos).ascii();
 					vertex_code3 = code2.substr(cpos + code_tag.length(), code2.length()).ascii();
 				}
@@ -106,7 +103,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			if (cpos == -1) {
 				fragment_code1 = code.ascii();
 			} else {
-
 				fragment_code1 = code.substr(0, cpos).ascii();
 				//print_line("CODE1:\n"+String(fragment_code1.get_data()));
 
@@ -116,7 +112,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 				if (cpos == -1) {
 					fragment_code2 = code2.ascii();
 				} else {
-
 					fragment_code2 = code2.substr(0, cpos).ascii();
 					//print_line("CODE2:\n"+String(fragment_code2.get_data()));
 
@@ -126,7 +121,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 					if (cpos == -1) {
 						fragment_code3 = code3.ascii();
 					} else {
-
 						fragment_code3 = code3.substr(0, cpos).ascii();
 						//print_line("CODE3:\n"+String(fragment_code3.get_data()));
 						fragment_code4 = code3.substr(cpos + code_tag.length(), code3.length()).ascii();
@@ -165,7 +159,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			if (cpos == -1) {
 				compute_code1 = code.ascii();
 			} else {
-
 				compute_code1 = code.substr(0, cpos).ascii();
 				String code2 = code.substr(cpos + globals_tag.length(), code.length());
 
@@ -173,7 +166,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 				if (cpos == -1) {
 					compute_code2 = code2.ascii();
 				} else {
-
 					compute_code2 = code2.substr(0, cpos).ascii();
 					compute_code3 = code2.substr(cpos + code_tag.length(), code2.length()).ascii();
 				}
@@ -183,7 +175,6 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 }
 
 RID ShaderRD::version_create() {
-
 	//initialize() was never called
 	ERR_FAIL_COND_V(variant_defines.size() == 0, RID());
 
@@ -208,7 +199,6 @@ void ShaderRD::_clear_version(Version *p_version) {
 }
 
 void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
-
 	Vector<RD::ShaderStageData> stages;
 
 	String error;
@@ -250,7 +240,6 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		if (stage.spir_v.size() == 0) {
 			build_ok = false;
 		} else {
-
 			stage.shader_stage = RD::SHADER_STAGE_VERTEX;
 			stages.push_back(stage);
 		}
@@ -295,7 +284,6 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		if (stage.spir_v.size() == 0) {
 			build_ok = false;
 		} else {
-
 			stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
 			stages.push_back(stage);
 		}
@@ -336,7 +324,6 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		if (stage.spir_v.size() == 0) {
 			build_ok = false;
 		} else {
-
 			stage.shader_stage = RD::SHADER_STAGE_COMPUTE;
 			stages.push_back(stage);
 		}
@@ -361,7 +348,6 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 }
 
 void ShaderRD::_compile_version(Version *p_version) {
-
 	_clear_version(p_version);
 
 	p_version->valid = false;
@@ -373,7 +359,6 @@ void ShaderRD::_compile_version(Version *p_version) {
 	RasterizerRD::thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
 #else
 	for (int i = 0; i < variant_defines.size(); i++) {
-
 		_compile_variant(i, p_version);
 	}
 #endif
@@ -402,7 +387,6 @@ void ShaderRD::_compile_version(Version *p_version) {
 }
 
 void ShaderRD::version_set_code(RID p_version, const String &p_uniforms, const String &p_vertex_globals, const String &p_vertex_code, const String &p_fragment_globals, const String &p_fragment_light, const String &p_fragment_code, const Vector<String> &p_custom_defines) {
-
 	ERR_FAIL_COND(is_compute);
 
 	Version *version = version_owner.getornull(p_version);
@@ -427,7 +411,6 @@ void ShaderRD::version_set_code(RID p_version, const String &p_uniforms, const S
 }
 
 void ShaderRD::version_set_compute_code(RID p_version, const String &p_uniforms, const String &p_compute_globals, const String &p_compute_code, const Vector<String> &p_custom_defines) {
-
 	ERR_FAIL_COND(!is_compute);
 
 	Version *version = version_owner.getornull(p_version);
@@ -460,7 +443,6 @@ bool ShaderRD::version_is_valid(RID p_version) {
 }
 
 bool ShaderRD::version_free(RID p_version) {
-
 	if (version_owner.owns(p_version)) {
 		Version *version = version_owner.getornull(p_version);
 		_clear_version(version);
@@ -477,7 +459,6 @@ void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String 
 	ERR_FAIL_COND(p_variant_defines.size() == 0);
 	general_defines = p_general_defines.utf8();
 	for (int i = 0; i < p_variant_defines.size(); i++) {
-
 		variant_defines.push_back(p_variant_defines[i].utf8());
 	}
 }

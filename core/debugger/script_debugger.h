@@ -38,7 +38,6 @@
 #include "core/vector.h"
 
 class ScriptDebugger {
-
 	typedef ScriptLanguage::StackInfo StackInfo;
 
 	int lines_left = -1;

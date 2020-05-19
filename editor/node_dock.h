@@ -35,7 +35,6 @@
 #include "groups_editor.h"
 
 class NodeDock : public VBoxContainer {
-
 	GDCLASS(NodeDock, VBoxContainer);
 
 	ToolButton *connections_button;

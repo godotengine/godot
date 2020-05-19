@@ -54,7 +54,6 @@ subject to the following restrictions:
 */
 
 class PinJoint3DSW : public Joint3DSW {
-
 	union {
 		struct {
 			Body3DSW *A;

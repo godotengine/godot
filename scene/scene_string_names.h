@@ -35,7 +35,6 @@
 #include "core/string_name.h"
 
 class SceneStringNames {
-
 	friend void register_scene_types();
 	friend void unregister_scene_types();
 
@@ -210,6 +209,10 @@ public:
 	StringName shader_overrides_group;
 	StringName shader_overrides_group_active;
 
+#ifndef DISABLE_DEPRECATED
+	StringName use_in_baked_light;
+	StringName use_dynamic_gi;
+#endif
 	enum {
 		MAX_MATERIALS = 32
 	};

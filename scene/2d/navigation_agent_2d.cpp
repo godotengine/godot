@@ -35,7 +35,6 @@
 #include "servers/navigation_server_2d.h"
 
 void NavigationAgent2D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("set_target_desired_distance", "desired_distance"), &NavigationAgent2D::set_target_desired_distance);
 	ClassDB::bind_method(D_METHOD("get_target_desired_distance"), &NavigationAgent2D::get_target_desired_distance);
 
@@ -91,7 +90,6 @@ void NavigationAgent2D::_bind_methods() {
 void NavigationAgent2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-
 			agent_parent = Object::cast_to<Node2D>(get_parent());
 
 			NavigationServer2D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
@@ -102,10 +100,11 @@ void NavigationAgent2D::_notification(int p_what) {
 				Node *p = get_parent();
 				while (p != nullptr) {
 					nav = Object::cast_to<Navigation2D>(p);
-					if (nav != nullptr)
+					if (nav != nullptr) {
 						p = nullptr;
-					else
+					} else {
 						p = p->get_parent();
+					}
 				}
 
 				set_navigation(nav);
@@ -120,7 +119,6 @@ void NavigationAgent2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent) {
-
 				NavigationServer2D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().get_origin());
 				if (!target_reached) {
 					if (distance_to_target() < target_desired_distance) {
@@ -133,15 +131,7 @@ void NavigationAgent2D::_notification(int p_what) {
 	}
 }
 
-NavigationAgent2D::NavigationAgent2D() :
-		agent_parent(nullptr),
-		navigation(nullptr),
-		agent(RID()),
-		target_desired_distance(1.0),
-		path_max_distance(3.0),
-		velocity_submitted(false),
-		target_reached(false),
-		navigation_finished(true) {
+NavigationAgent2D::NavigationAgent2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
 	set_neighbor_dist(500.0);
 	set_max_neighbors(10);
@@ -156,8 +146,9 @@ NavigationAgent2D::~NavigationAgent2D() {
 }
 
 void NavigationAgent2D::set_navigation(Navigation2D *p_nav) {
-	if (navigation == p_nav)
+	if (navigation == p_nav) {
 		return; // Pointless
+	}
 
 	navigation = p_nav;
 	NavigationServer2D::get_singleton()->agent_set_map(agent, navigation == nullptr ? RID() : navigation->get_rid());
@@ -287,10 +278,15 @@ String NavigationAgent2D::get_configuration_warning() const {
 }
 
 void NavigationAgent2D::update_navigation() {
-
-	if (agent_parent == nullptr) return;
-	if (navigation == nullptr) return;
-	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) return;
+	if (agent_parent == nullptr) {
+		return;
+	}
+	if (navigation == nullptr) {
+		return;
+	}
+	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
+		return;
+	}
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 
@@ -323,8 +319,9 @@ void NavigationAgent2D::update_navigation() {
 		emit_signal("path_changed");
 	}
 
-	if (navigation_path.size() == 0)
+	if (navigation_path.size() == 0) {
 		return;
+	}
 
 	// Check if we can advance the navigation path
 	if (navigation_finished == false) {

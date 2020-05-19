@@ -35,12 +35,10 @@
 #include "servers/display_server.h"
 
 EditorRun::Status EditorRun::get_status() const {
-
 	return status;
 }
 
 Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
-
 	List<String> args;
 
 	String resource_path = ProjectSettings::get_singleton()->get_resource_path();
@@ -53,7 +51,7 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	}
 
 	args.push_back("--remote-debug");
-	args.push_back(remote_host + ":" + String::num(remote_port));
+	args.push_back("tcp://" + remote_host + ":" + String::num(remote_port));
 
 	args.push_back("--allow_focus_steal_pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
@@ -106,7 +104,6 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	test_size.x = ProjectSettings::get_singleton()->get("display/window/size/test_width");
 	test_size.y = ProjectSettings::get_singleton()->get("display/window/size/test_height");
 	if (test_size.x > 0 && test_size.y > 0) {
-
 		desired_size = test_size;
 	}
 
@@ -155,14 +152,13 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 	}
 
 	if (p_breakpoints.size()) {
-
 		args.push_back("--breakpoints");
 		String bpoints;
 		for (const List<String>::Element *E = p_breakpoints.front(); E; E = E->next()) {
-
 			bpoints += E->get().replace(" ", "%20");
-			if (E->next())
+			if (E->next()) {
 				bpoints += ",";
+			}
 		}
 
 		args.push_back(bpoints);
@@ -187,7 +183,6 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 
 	printf("Running: %ls", exec.c_str());
 	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-
 		printf(" %ls", E->get().c_str());
 	};
 	printf("\n");
@@ -207,8 +202,9 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 
 bool EditorRun::has_child_process(OS::ProcessID p_pid) const {
 	for (const List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
-		if (E->get() == p_pid)
+		if (E->get() == p_pid) {
 			return true;
+		}
 	}
 	return false;
 }
@@ -221,9 +217,7 @@ void EditorRun::stop_child_process(OS::ProcessID p_pid) {
 }
 
 void EditorRun::stop() {
-
 	if (status != STATUS_STOP && pids.size() > 0) {
-
 		for (List<OS::ProcessID>::Element *E = pids.front(); E; E = E->next()) {
 			OS::get_singleton()->kill(E->get());
 		}
@@ -233,6 +227,5 @@ void EditorRun::stop() {
 }
 
 EditorRun::EditorRun() {
-
 	status = STATUS_STOP;
 }

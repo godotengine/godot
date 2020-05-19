@@ -32,8 +32,10 @@
 
 #include "core/math/basis.h"
 #include "core/math/camera_matrix.h"
+#include "core/math/delaunay_3d.h"
 #include "core/math/math_funcs.h"
 #include "core/math/transform.h"
+#include "core/method_ptrcall.h"
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -45,12 +47,9 @@
 #include "scene/resources/texture.h"
 #include "servers/rendering/shader_language.h"
 
-#include "core/method_ptrcall.h"
-
 namespace TestMath {
 
 class GetClassAndNamespace {
-
 	String code;
 	int idx;
 	int line;
@@ -77,12 +76,9 @@ class GetClassAndNamespace {
 	};
 
 	Token get_token() {
-
 		while (true) {
 			switch (code[idx]) {
-
 				case '\n': {
-
 					line++;
 					idx++;
 					break;
@@ -92,37 +88,30 @@ class GetClassAndNamespace {
 
 				} break;
 				case '{': {
-
 					idx++;
 					return TK_CURLY_BRACKET_OPEN;
 				};
 				case '}': {
-
 					idx++;
 					return TK_CURLY_BRACKET_CLOSE;
 				};
 				case '[': {
-
 					idx++;
 					return TK_BRACKET_OPEN;
 				};
 				case ']': {
-
 					idx++;
 					return TK_BRACKET_CLOSE;
 				};
 				case ':': {
-
 					idx++;
 					return TK_COLON;
 				};
 				case ',': {
-
 					idx++;
 					return TK_COMMA;
 				};
 				case '.': {
-
 					idx++;
 					return TK_PERIOD;
 				};
@@ -134,7 +123,6 @@ class GetClassAndNamespace {
 					continue;
 				} break;
 				case '/': {
-
 					switch (code[idx + 1]) {
 						case '*': { // block comment
 
@@ -145,7 +133,6 @@ class GetClassAndNamespace {
 									error = true;
 									return TK_ERROR;
 								} else if (code[idx] == '*' && code[idx + 1] == '/') {
-
 									idx += 2;
 									break;
 								} else if (code[idx] == '\n') {
@@ -174,7 +161,6 @@ class GetClassAndNamespace {
 				} break;
 				case '\'':
 				case '"': {
-
 					CharType begin_str = code[idx];
 					idx++;
 					String tk_string = String();
@@ -198,15 +184,24 @@ class GetClassAndNamespace {
 							CharType res = 0;
 
 							switch (next) {
-
-								case 'b': res = 8; break;
-								case 't': res = 9; break;
-								case 'n': res = 10; break;
-								case 'f': res = 12; break;
+								case 'b':
+									res = 8;
+									break;
+								case 't':
+									res = 9;
+									break;
+								case 'n':
+									res = 10;
+									break;
+								case 'f':
+									res = 12;
+									break;
 								case 'r':
 									res = 13;
 									break;
-								case '\"': res = '\"'; break;
+								case '\"':
+									res = '\"';
+									break;
 								case '\\':
 									res = '\\';
 									break;
@@ -218,8 +213,9 @@ class GetClassAndNamespace {
 							tk_string += res;
 
 						} else {
-							if (code[idx] == '\n')
+							if (code[idx] == '\n') {
 								line++;
+							}
 							tk_string += code[idx];
 						}
 						idx++;
@@ -231,7 +227,6 @@ class GetClassAndNamespace {
 
 				} break;
 				default: {
-
 					if (code[idx] <= 32) {
 						idx++;
 						break;
@@ -252,11 +247,9 @@ class GetClassAndNamespace {
 						return TK_NUMBER;
 
 					} else if ((code[idx] >= 'A' && code[idx] <= 'Z') || (code[idx] >= 'a' && code[idx] <= 'z') || code[idx] > 127) {
-
 						String id;
 
 						while ((code[idx] >= 'A' && code[idx] <= 'Z') || (code[idx] >= 'a' && code[idx] <= 'z') || code[idx] > 127) {
-
 							id += code[idx];
 							idx++;
 						}
@@ -275,7 +268,6 @@ class GetClassAndNamespace {
 
 public:
 	Error parse(const String &p_code, const String &p_known_class_name = String()) {
-
 		code = p_code;
 		idx = 0;
 		line = 0;
@@ -291,7 +283,6 @@ public:
 		int curly_stack = 0;
 
 		while (!error || tk != TK_EOF) {
-
 			if (tk == TK_BRACKET_OPEN) {
 				tk = get_token();
 				if (tk == TK_IDENTIFIER && String(value) == "ScriptClass") {
@@ -348,8 +339,9 @@ public:
 			tk = get_token();
 		}
 
-		if (error)
+		if (error) {
 			return ERR_PARSE_ERROR;
+		}
 
 		return OK;
 	}
@@ -364,7 +356,6 @@ public:
 };
 
 void test_vec(Plane p_vec) {
-
 	CameraMatrix cm;
 	cm.set_perspective(45, 1, 0, 100);
 	Plane v0 = cm.xform4(p_vec);
@@ -403,6 +394,54 @@ uint32_t ihash3(uint32_t a) {
 }
 
 MainLoop *test() {
+	{
+		Vector<Vector3> points;
+		points.push_back(Vector3(0, 0, 0));
+		points.push_back(Vector3(0, 0, 1));
+		points.push_back(Vector3(0, 1, 0));
+		points.push_back(Vector3(0, 1, 1));
+		points.push_back(Vector3(1, 1, 0));
+		points.push_back(Vector3(1, 0, 0));
+		points.push_back(Vector3(1, 0, 1));
+		points.push_back(Vector3(1, 1, 1));
+
+		for (int i = 0; i < 800; i++) {
+			points.push_back(Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0) * Vector3(25, 30, 33));
+		}
+
+		Vector<Delaunay3D::OutputSimplex> os = Delaunay3D::tetrahedralize(points);
+		print_line("simplices in the end: " + itos(os.size()));
+		for (int i = 0; i < os.size(); i++) {
+			print_line("Simplex " + itos(i) + ": ");
+			print_line(points[os[i].points[0]]);
+			print_line(points[os[i].points[1]]);
+			print_line(points[os[i].points[2]]);
+			print_line(points[os[i].points[3]]);
+		}
+
+		{
+			FileAccessRef f = FileAccess::open("res://bsp.obj", FileAccess::WRITE);
+			for (int i = 0; i < os.size(); i++) {
+				f->store_line("o Simplex" + itos(i));
+				for (int j = 0; j < 4; j++) {
+					f->store_line(vformat("v %f %f %f", points[os[i].points[j]].x, points[os[i].points[j]].y, points[os[i].points[j]].z));
+				}
+				static const int face_order[4][3] = {
+					{ 1, 2, 3 },
+					{ 1, 3, 4 },
+					{ 1, 2, 4 },
+					{ 2, 3, 4 }
+				};
+
+				for (int j = 0; j < 4; j++) {
+					f->store_line(vformat("f %d %d %d", 4 * i + face_order[j][0], 4 * i + face_order[j][1], 4 * i + face_order[j][2]));
+				}
+			}
+			f->close();
+		}
+
+		return nullptr;
+	}
 
 	{
 		float r = 1;
@@ -505,26 +544,22 @@ MainLoop *test() {
 	}
 
 	{
-
 		Vector<int> hashes;
 		List<StringName> tl;
 		ClassDB::get_class_list(&tl);
 
 		for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
-
 			Vector<uint8_t> m5b = E->get().operator String().md5_buffer();
 			hashes.push_back(hashes.size());
 		}
 
 		for (int i = nearest_shift(hashes.size()); i < 20; i++) {
-
 			bool success = true;
 			for (int s = 0; s < 10000; s++) {
 				Set<uint32_t> existing;
 				success = true;
 
 				for (int j = 0; j < hashes.size(); j++) {
-
 					uint32_t eh = ihash2(ihash3(hashes[j] + ihash(s) + s)) & ((1 << i) - 1);
 					if (existing.has(eh)) {
 						success = false;
@@ -538,8 +573,9 @@ MainLoop *test() {
 					break;
 				}
 			}
-			if (success)
+			if (success) {
 				break;
+			}
 		}
 
 		print_line("DONE");
@@ -662,4 +698,5 @@ MainLoop *test() {
 
 	return nullptr;
 }
+
 } // namespace TestMath

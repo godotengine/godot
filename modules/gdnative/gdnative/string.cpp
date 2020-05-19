@@ -40,6 +40,10 @@
 extern "C" {
 #endif
 
+static_assert(sizeof(godot_char_string) == sizeof(CharString), "CharString size mismatch");
+static_assert(sizeof(godot_string) == sizeof(String), "String size mismatch");
+static_assert(sizeof(godot_char_type) == sizeof(CharType), "CharType size mismatch");
+
 godot_int GDAPI godot_char_string_length(const godot_char_string *p_cs) {
 	const CharString *cs = (const CharString *)p_cs;
 
@@ -137,6 +141,7 @@ signed char GDAPI godot_string_nocasecmp_to(const godot_string *p_self, const go
 
 	return self->nocasecmp_to(*str);
 }
+
 signed char GDAPI godot_string_naturalnocasecmp_to(const godot_string *p_self, const godot_string *p_str) {
 	const String *self = (const String *)p_self;
 	const String *str = (const String *)p_str;

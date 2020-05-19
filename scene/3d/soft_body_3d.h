@@ -36,7 +36,6 @@
 class SoftBody3D;
 
 class SoftBodyRenderingServerHandler {
-
 	friend class SoftBody3D;
 
 	RID mesh;
@@ -68,9 +67,9 @@ class SoftBody3D : public MeshInstance3D {
 
 public:
 	struct PinnedPoint {
-		int point_index;
+		int point_index = -1;
 		NodePath spatial_attachment_path;
-		Node3D *spatial_attachment; // Cache
+		Node3D *spatial_attachment = nullptr; // Cache
 		Vector3 offset;
 
 		PinnedPoint();
@@ -83,19 +82,19 @@ private:
 
 	RID physics_rid;
 
-	bool mesh_owner;
-	uint32_t collision_mask;
-	uint32_t collision_layer;
+	bool mesh_owner = false;
+	uint32_t collision_mask = 1;
+	uint32_t collision_layer = 1;
 	NodePath parent_collision_ignore;
 	Vector<PinnedPoint> pinned_points;
-	bool simulation_started;
-	bool pinned_points_cache_dirty;
+	bool simulation_started = false;
+	bool pinned_points_cache_dirty = true;
 
 	Ref<ArrayMesh> debug_mesh_cache;
 	class MeshInstance3D *debug_mesh;
 
 	bool capture_input_on_drag;
-	bool ray_pickable;
+	bool ray_pickable = true;
 
 	void _update_pickable();
 

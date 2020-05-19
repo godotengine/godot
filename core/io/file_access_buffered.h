@@ -36,14 +36,13 @@
 #include "core/ustring.h"
 
 class FileAccessBuffered : public FileAccess {
-
 public:
 	enum {
 		DEFAULT_CACHE_SIZE = 128 * 1024,
 	};
 
 private:
-	int cache_size;
+	int cache_size = DEFAULT_CACHE_SIZE;
 
 	int cache_data_left() const;
 	mutable Error last_error;
@@ -52,7 +51,6 @@ protected:
 	Error set_error(Error p_error) const;
 
 	mutable struct File {
-
 		bool open;
 		int size;
 		int offset;
@@ -61,12 +59,11 @@ protected:
 	} file;
 
 	mutable struct Cache {
-
 		Vector<uint8_t> buffer;
 		int offset;
 	} cache;
 
-	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const = 0;
+	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = nullptr) const = 0;
 
 	void set_cache_size(int p_size);
 	int get_cache_size();
@@ -87,8 +84,8 @@ public:
 
 	virtual Error get_error() const;
 
-	FileAccessBuffered();
-	virtual ~FileAccessBuffered();
+	FileAccessBuffered() {}
+	virtual ~FileAccessBuffered() {}
 };
 
 #endif

@@ -63,7 +63,6 @@
 
 class JoypadWindows;
 class OS_Windows : public OS {
-
 #ifdef STDOUT_FILE
 	FILE *stdo;
 #endif
@@ -100,8 +99,9 @@ protected:
 	virtual void finalize_core();
 	virtual String get_stdin_string(bool p_block);
 
-	struct ProcessInfo {
+	String _quote_command_line_argument(const String &p_text) const;
 
+	struct ProcessInfo {
 		STARTUPINFO si;
 		PROCESS_INFORMATION pi;
 	};

@@ -36,12 +36,11 @@
 class ArrayMesh;
 
 class Shape3D : public Resource {
-
 	GDCLASS(Shape3D, Resource);
 	OBJ_SAVE_TYPE(Shape3D);
 	RES_BASE_EXTENSION("shape");
 	RID shape;
-	real_t margin;
+	real_t margin = 0.04;
 
 	Ref<ArrayMesh> debug_mesh_cache;
 

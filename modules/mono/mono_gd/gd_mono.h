@@ -48,9 +48,9 @@ enum Type {
 };
 
 struct Version {
-	uint64_t godot_api_hash;
-	uint32_t bindings_version;
-	uint32_t cs_glue_version;
+	uint64_t godot_api_hash = 0;
+	uint32_t bindings_version = 0;
+	uint32_t cs_glue_version = 0;
 
 	bool operator==(const Version &p_other) const {
 		return godot_api_hash == p_other.godot_api_hash &&
@@ -58,11 +58,7 @@ struct Version {
 			   cs_glue_version == p_other.cs_glue_version;
 	}
 
-	Version() :
-			godot_api_hash(0),
-			bindings_version(0),
-			cs_glue_version(0) {
-	}
+	Version() {}
 
 	Version(uint64_t p_godot_api_hash,
 			uint32_t p_bindings_version,
@@ -79,7 +75,6 @@ String to_string(Type p_type);
 } // namespace ApiAssemblyInfo
 
 class GDMono {
-
 public:
 	enum UnhandledExceptionPolicy {
 		POLICY_TERMINATE_APP,
@@ -87,13 +82,10 @@ public:
 	};
 
 	struct LoadedApiAssembly {
-		GDMonoAssembly *assembly;
-		bool out_of_sync;
+		GDMonoAssembly *assembly = nullptr;
+		bool out_of_sync = false;
 
-		LoadedApiAssembly() :
-				assembly(nullptr),
-				out_of_sync(false) {
-		}
+		LoadedApiAssembly() {}
 	};
 
 private:
@@ -241,6 +233,7 @@ public:
 
 	bool load_assembly(const String &p_name, GDMonoAssembly **r_assembly, bool p_refonly = false);
 	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly = false);
+	bool load_assembly(const String &p_name, MonoAssemblyName *p_aname, GDMonoAssembly **r_assembly, bool p_refonly, const Vector<String> &p_search_dirs);
 	bool load_assembly_from(const String &p_name, const String &p_path, GDMonoAssembly **r_assembly, bool p_refonly = false);
 
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
@@ -255,7 +248,6 @@ public:
 namespace gdmono {
 
 class ScopeDomain {
-
 	MonoDomain *prev_domain;
 
 public:

@@ -122,7 +122,7 @@ XRInterface::XRInterface() {
 	tracking_state = XR_UNKNOWN_TRACKING;
 };
 
-XRInterface::~XRInterface(){};
+XRInterface::~XRInterface() {}
 
 // optional render to external texture which enhances performance on those platforms that require us to submit our end result into special textures.
 unsigned int XRInterface::get_external_texture_for_eye(XRInterface::Eyes p_eye) {
@@ -134,9 +134,9 @@ bool XRInterface::get_anchor_detection_is_enabled() const {
 	return false;
 };
 
-void XRInterface::set_anchor_detection_is_enabled(bool p_enable){
+void XRInterface::set_anchor_detection_is_enabled(bool p_enable) {
 	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.
-};
+}
 
 int XRInterface::get_camera_feed_id() {
 	// don't do anything here, this needs to be implemented on AR interface to enable/disable things like plane detection etc.

@@ -142,7 +142,6 @@ public:
 };
 
 class RigidBodyBullet : public RigidCollisionObjectBullet {
-
 public:
 	struct CollisionData {
 		RigidBodyBullet *otherObject;
@@ -162,11 +161,10 @@ public:
 
 	/// Used to hold shapes
 	struct KinematicShape {
-		class btConvexShape *shape;
+		class btConvexShape *shape = nullptr;
 		btTransform transform;
 
-		KinematicShape() :
-				shape(nullptr) {}
+		KinematicShape() {}
 		bool is_active() const { return shape; }
 	};
 
@@ -190,19 +188,19 @@ private:
 	friend class BulletPhysicsDirectBodyState3D;
 
 	// This is required only for Kinematic movement
-	KinematicUtilities *kinematic_utilities;
+	KinematicUtilities *kinematic_utilities = nullptr;
 
 	PhysicsServer3D::BodyMode mode;
 	GodotMotionState *godotMotionState;
 	btRigidBody *btBody;
-	uint16_t locked_axis;
-	real_t mass;
-	real_t gravity_scale;
-	real_t linearDamp;
-	real_t angularDamp;
-	bool can_sleep;
-	bool omit_forces_integration;
-	bool can_integrate_forces;
+	uint16_t locked_axis = 0;
+	real_t mass = 1;
+	real_t gravity_scale = 1;
+	real_t linearDamp = 0;
+	real_t angularDamp = 0;
+	bool can_sleep = true;
+	bool omit_forces_integration = false;
+	bool can_integrate_forces = false;
 
 	Vector<CollisionData> collisions;
 	Vector<RigidBodyBullet *> collision_traces_1;
@@ -211,21 +209,21 @@ private:
 	Vector<RigidBodyBullet *> *curr_collision_traces;
 
 	// these parameters are used to avoid vector resize
-	int maxCollisionsDetection;
-	int collisionsCount;
-	int prev_collision_count;
+	int maxCollisionsDetection = 0;
+	int collisionsCount = 0;
+	int prev_collision_count = 0;
 
 	Vector<AreaBullet *> areasWhereIam;
 	// these parameters are used to avoid vector resize
-	int maxAreasWhereIam;
-	int areaWhereIamCount;
+	int maxAreasWhereIam = 10;
+	int areaWhereIamCount = 0;
 	// Used to know if the area is used as gravity point
-	int countGravityPointSpaces;
-	bool isScratchedSpaceOverrideModificator;
+	int countGravityPointSpaces = 0;
+	bool isScratchedSpaceOverrideModificator = false;
 
-	bool previousActiveState; // Last check state
+	bool previousActiveState = true; // Last check state
 
-	ForceIntegrationCallback *force_integration_callback;
+	ForceIntegrationCallback *force_integration_callback = nullptr;
 
 public:
 	RigidBodyBullet();
@@ -250,7 +248,6 @@ public:
 	virtual void on_collision_checker_end();
 
 	void set_max_collisions_detection(int p_maxCollisionsDetection) {
-
 		ERR_FAIL_COND(0 > p_maxCollisionsDetection);
 
 		maxCollisionsDetection = p_maxCollisionsDetection;

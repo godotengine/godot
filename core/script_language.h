@@ -112,7 +112,6 @@ class ScriptInstance;
 class PlaceHolderScriptInstance;
 
 class Script : public Resource {
-
 	GDCLASS(Script, Resource);
 	OBJ_SAVE_TYPE(Script);
 
@@ -205,8 +204,9 @@ public:
 	virtual void call_multilevel_reversed(const StringName &p_method, const Variant **p_args, int p_argcount);
 	virtual void notification(int p_notification) = 0;
 	virtual String to_string(bool *r_valid) {
-		if (r_valid)
+		if (r_valid) {
 			*r_valid = false;
+		}
 		return String();
 	}
 
@@ -253,14 +253,12 @@ struct ScriptCodeCompletionOption {
 		KIND_FILE_PATH,
 		KIND_PLAIN_TEXT,
 	};
-	Kind kind;
+	Kind kind = KIND_PLAIN_TEXT;
 	String display;
 	String insert_text;
 	RES icon;
 
-	ScriptCodeCompletionOption() {
-		kind = KIND_PLAIN_TEXT;
-	}
+	ScriptCodeCompletionOption() {}
 
 	ScriptCodeCompletionOption(const String &p_text, Kind p_kind) {
 		display = p_text;
@@ -270,7 +268,6 @@ struct ScriptCodeCompletionOption {
 };
 
 class ScriptCodeCompletionCache {
-
 	static ScriptCodeCompletionCache *singleton;
 
 public:
@@ -408,7 +405,6 @@ public:
 extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
-
 	Object *owner;
 	List<PropertyInfo> properties;
 	Map<StringName, Variant> values;

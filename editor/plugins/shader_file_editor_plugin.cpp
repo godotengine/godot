@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  shader_file_editor_plugin.cpp                                        */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "shader_file_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
@@ -19,7 +49,6 @@ void ShaderFileEditor::_update_version(const StringName &p_version_txt, const RD
 }
 
 void ShaderFileEditor::_version_selected(int p_option) {
-
 	int c = versions->get_current();
 	StringName version_txt = versions->get_item_metadata(c);
 
@@ -76,7 +105,6 @@ void ShaderFileEditor::_version_selected(int p_option) {
 }
 
 void ShaderFileEditor::_update_options() {
-
 	ERR_FAIL_COND(shader_file.is_null());
 
 	if (shader_file->get_base_error() != String()) {
@@ -172,7 +200,6 @@ void ShaderFileEditor::_update_options() {
 }
 
 void ShaderFileEditor::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_WM_FOCUS_IN) {
 		if (is_visible_in_tree() && shader_file.is_valid()) {
 			_update_options();
@@ -181,7 +208,6 @@ void ShaderFileEditor::_notification(int p_what) {
 }
 
 void ShaderFileEditor::_editor_settings_changed() {
-
 	if (is_visible_in_tree() && shader_file.is_valid()) {
 		_update_options();
 	}
@@ -191,7 +217,6 @@ void ShaderFileEditor::_bind_methods() {
 }
 
 void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
-
 	if (p_shader.is_null()) {
 		if (shader_file.is_valid()) {
 			shader_file->disconnect("changed", callable_mp(this, &ShaderFileEditor::_shader_changed));
@@ -199,8 +224,9 @@ void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 		return;
 	}
 
-	if (shader_file == p_shader)
+	if (shader_file == p_shader) {
 		return;
+	}
 
 	shader_file = p_shader;
 
@@ -212,7 +238,6 @@ void ShaderFileEditor::edit(const Ref<RDShaderFile> &p_shader) {
 }
 
 void ShaderFileEditor::_shader_changed() {
-
 	if (is_visible_in_tree()) {
 		_update_options();
 	}
@@ -264,33 +289,29 @@ ShaderFileEditor::ShaderFileEditor(EditorNode *p_node) {
 }
 
 void ShaderFileEditorPlugin::edit(Object *p_object) {
-
 	RDShaderFile *s = Object::cast_to<RDShaderFile>(p_object);
 	shader_editor->edit(s);
 }
 
 bool ShaderFileEditorPlugin::handles(Object *p_object) const {
-
 	RDShaderFile *shader = Object::cast_to<RDShaderFile>(p_object);
 	return shader != nullptr;
 }
 
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
 		button->show();
 		editor->make_bottom_panel_item_visible(shader_editor);
 
 	} else {
-
 		button->hide();
-		if (shader_editor->is_visible_in_tree())
+		if (shader_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
+		}
 	}
 }
 
 ShaderFileEditorPlugin::ShaderFileEditorPlugin(EditorNode *p_node) {
-
 	editor = p_node;
 	shader_editor = memnew(ShaderFileEditor(p_node));
 

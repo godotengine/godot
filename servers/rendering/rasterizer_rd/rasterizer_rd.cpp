@@ -37,7 +37,6 @@ void RasterizerRD::prepare_for_blitting_render_targets() {
 }
 
 void RasterizerRD::blit_render_targets_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen *p_render_targets, int p_amount) {
-
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin_for_screen(p_screen);
 
 	for (int i = 0; i < p_amount; i++) {
@@ -79,6 +78,7 @@ void RasterizerRD::blit_render_targets_to_screen(DisplayServer::WindowID p_scree
 
 void RasterizerRD::begin_frame(double frame_step) {
 	frame++;
+	delta = frame_step;
 	time += frame_step;
 
 	double time_roll_over = GLOBAL_GET("rendering/limits/time/time_rollover_secs");
@@ -89,7 +89,6 @@ void RasterizerRD::begin_frame(double frame_step) {
 }
 
 void RasterizerRD::end_frame(bool p_swap_buffers) {
-
 #ifndef _MSC_VER
 #warning TODO: likely passa bool to swap buffers to avoid display?
 #endif
@@ -97,7 +96,6 @@ void RasterizerRD::end_frame(bool p_swap_buffers) {
 }
 
 void RasterizerRD::initialize() {
-
 	{ //create framebuffer copy shader
 		RenderingDevice::ShaderStageData vert;
 		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
@@ -157,10 +155,9 @@ void RasterizerRD::initialize() {
 }
 
 ThreadWorkPool RasterizerRD::thread_work_pool;
-uint32_t RasterizerRD::frame = 1;
+uint64_t RasterizerRD::frame = 1;
 
 void RasterizerRD::finalize() {
-
 	thread_work_pool.finish();
 
 	memdelete(scene);
@@ -173,7 +170,10 @@ void RasterizerRD::finalize() {
 	RD::get_singleton()->free(copy_viewports_sampler);
 }
 
+RasterizerRD *RasterizerRD::singleton = nullptr;
+
 RasterizerRD::RasterizerRD() {
+	singleton = this;
 	thread_work_pool.init();
 	time = 0;
 

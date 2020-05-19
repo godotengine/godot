@@ -35,17 +35,14 @@
 #include "core/os/memory.h"
 
 Thread::ID ThreadWindows::get_id() const {
-
 	return id;
 }
 
 Thread *ThreadWindows::create_thread_windows() {
-
 	return memnew(ThreadWindows);
 }
 
 DWORD ThreadWindows::thread_callback(LPVOID userdata) {
-
 	ThreadWindows *t = reinterpret_cast<ThreadWindows *>(userdata);
 
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
@@ -60,7 +57,6 @@ DWORD ThreadWindows::thread_callback(LPVOID userdata) {
 }
 
 Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
-
 	ThreadWindows *tr = memnew(ThreadWindows);
 	tr->callback = p_callback;
 	tr->user = p_user;
@@ -70,12 +66,12 @@ Thread *ThreadWindows::create_func_windows(ThreadCreateCallback p_callback, void
 
 	return tr;
 }
-Thread::ID ThreadWindows::get_thread_id_func_windows() {
 
+Thread::ID ThreadWindows::get_thread_id_func_windows() {
 	return (ID)GetCurrentThreadId(); //must implement
 }
-void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 
+void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 	ThreadWindows *tp = static_cast<ThreadWindows *>(p_thread);
 	ERR_FAIL_COND(!tp);
 	WaitForSingleObject(tp->handle, INFINITE);
@@ -84,17 +80,9 @@ void ThreadWindows::wait_to_finish_func_windows(Thread *p_thread) {
 }
 
 void ThreadWindows::make_default() {
-
 	create_func = create_func_windows;
 	get_thread_id_func = get_thread_id_func_windows;
 	wait_to_finish_func = wait_to_finish_func_windows;
-}
-
-ThreadWindows::ThreadWindows() :
-		handle(nullptr) {
-}
-
-ThreadWindows::~ThreadWindows() {
 }
 
 #endif

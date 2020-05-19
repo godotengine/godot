@@ -37,53 +37,42 @@
 #include "scene/resources/particles_material.h"
 
 void CPUParticles2DEditorPlugin::edit(Object *p_object) {
-
 	particles = Object::cast_to<CPUParticles2D>(p_object);
 }
 
 bool CPUParticles2DEditorPlugin::handles(Object *p_object) const {
-
 	return p_object->is_class("CPUParticles2D");
 }
 
 void CPUParticles2DEditorPlugin::make_visible(bool p_visible) {
-
 	if (p_visible) {
-
 		toolbar->show();
 	} else {
-
 		toolbar->hide();
 	}
 }
 
 void CPUParticles2DEditorPlugin::_file_selected(const String &p_file) {
-
 	source_emission_file = p_file;
 	emission_mask->popup_centered();
 }
 
 void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
-
 	switch (p_idx) {
 		case MENU_LOAD_EMISSION_MASK: {
-
 			file->popup_centered_ratio();
 
 		} break;
 		case MENU_CLEAR_EMISSION_MASK: {
-
 			emission_mask->popup_centered();
 		} break;
 		case MENU_RESTART: {
-
 			particles->restart();
 		}
 	}
 }
 
 void CPUParticles2DEditorPlugin::_generate_emission_mask() {
-
 	Ref<Image> img;
 	img.instance();
 	Error err = ImageLoader::load_image(source_emission_file, img);
@@ -123,13 +112,10 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 
 		for (int i = 0; i < s.width; i++) {
 			for (int j = 0; j < s.height; j++) {
-
 				uint8_t a = r[(j * s.width + i) * 4 + 3];
 
 				if (a > 128) {
-
 					if (emode == EMISSION_MODE_SOLID) {
-
 						if (capture_colors) {
 							valid_colors.write[vpc * 4 + 0] = r[(j * s.width + i) * 4 + 0];
 							valid_colors.write[vpc * 4 + 1] = r[(j * s.width + i) * 4 + 1];
@@ -139,19 +125,18 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 						valid_positions.write[vpc++] = Point2(i, j);
 
 					} else {
-
 						bool on_border = false;
 						for (int x = i - 1; x <= i + 1; x++) {
 							for (int y = j - 1; y <= j + 1; y++) {
-
 								if (x < 0 || y < 0 || x >= s.width || y >= s.height || r[(y * s.width + x) * 4 + 3] <= 128) {
 									on_border = true;
 									break;
 								}
 							}
 
-							if (on_border)
+							if (on_border) {
 								break;
+							}
 						}
 
 						if (on_border) {
@@ -161,9 +146,9 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 								Vector2 normal;
 								for (int x = i - 2; x <= i + 2; x++) {
 									for (int y = j - 2; y <= j + 2; y++) {
-
-										if (x == i && y == j)
+										if (x == i && y == j) {
 											continue;
+										}
 
 										if (x < 0 || y < 0 || x >= s.width || y >= s.height || r[(y * s.width + x) * 4 + 3] <= 128) {
 											normal += Vector2(x - i, y - j).normalized();
@@ -237,9 +222,7 @@ void CPUParticles2DEditorPlugin::_generate_emission_mask() {
 }
 
 void CPUParticles2DEditorPlugin::_notification(int p_what) {
-
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-
 		menu->get_popup()->connect("id_pressed", callable_mp(this, &CPUParticles2DEditorPlugin::_menu_callback));
 		menu->set_icon(epoints->get_theme_icon("CPUParticles2D", "EditorIcons"));
 		file->connect("file_selected", callable_mp(this, &CPUParticles2DEditorPlugin::_file_selected));
@@ -250,7 +233,6 @@ void CPUParticles2DEditorPlugin::_bind_methods() {
 }
 
 CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
-
 	particles = nullptr;
 	editor = p_node;
 	undo_redo = editor->get_undo_redo();

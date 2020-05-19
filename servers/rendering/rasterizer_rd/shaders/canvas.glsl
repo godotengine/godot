@@ -1,5 +1,4 @@
-/* clang-format off */
-[vertex]
+#[vertex]
 
 #version 450
 
@@ -7,7 +6,6 @@ VERSION_DEFINES
 
 #ifdef USE_ATTRIBUTES
 layout(location = 0) in vec2 vertex_attrib;
-/* clang-format on */
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
@@ -40,7 +38,6 @@ VERTEX_SHADER_GLOBALS
 /* clang-format on */
 
 void main() {
-
 	vec4 instance_custom = vec4(0.0);
 #ifdef USE_PRIMITIVE
 
@@ -88,7 +85,6 @@ void main() {
 
 #if 0
 	if (draw_data.flags & FLAGS_INSTANCING_ENABLED) {
-
 		uint offset = draw_data.flags & FLAGS_INSTANCING_STRIDE_MASK;
 		offset *= gl_InstanceIndex;
 		mat4 instance_xform = mat4(
@@ -149,7 +145,6 @@ VERTEX_SHADER_CODE
 	color_interp = color;
 
 	if (bool(draw_data.flags & FLAGS_USE_PIXEL_SNAP)) {
-
 		vertex = floor(vertex + 0.5);
 		// precision issue on some hardware creates artifacts within texture
 		// offset uv by a small amount to avoid
@@ -160,7 +155,6 @@ VERTEX_SHADER_CODE
 #if 0
 	if (bool(draw_data.flags & FLAGS_USE_SKELETON) && bone_weights != vec4(0.0)) { //must be a valid bone
 		//skeleton transform
-
 		ivec4 bone_indicesi = ivec4(bone_indices);
 
 		uvec2 tex_ofs = bone_indicesi.x * 2;
@@ -211,8 +205,7 @@ VERTEX_SHADER_CODE
 #endif
 }
 
-/* clang-format off */
-[fragment]
+#[fragment]
 
 #version 450
 
@@ -221,7 +214,6 @@ VERSION_DEFINES
 #include "canvas_uniforms_inc.glsl"
 
 layout(location = 0) in vec2 uv_interp;
-/* clang-format on */
 layout(location = 1) in vec4 color_interp;
 layout(location = 2) in vec2 vertex_interp;
 
@@ -258,7 +250,6 @@ vec4 light_compute(
 		vec2 screen_uv,
 		vec2 uv,
 		vec4 color) {
-
 	vec4 light = vec4(0.0);
 	/* clang-format off */
 LIGHT_SHADER_CODE
@@ -271,7 +262,6 @@ LIGHT_SHADER_CODE
 #ifdef USE_NINEPATCH
 
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
-
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -313,7 +303,6 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 #endif
 
 void main() {
-
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
@@ -335,7 +324,6 @@ void main() {
 
 #endif
 	if (bool(draw_data.flags & FLAGS_CLIP_RECT_UV)) {
-
 		uv = clamp(uv, draw_data.src_rect.xy, draw_data.src_rect.xy + abs(draw_data.src_rect.zw));
 	}
 
@@ -348,7 +336,6 @@ void main() {
 	vec3 normal;
 
 #if defined(NORMAL_USED)
-
 	bool normal_used = true;
 #else
 	bool normal_used = false;
@@ -458,7 +445,6 @@ FRAGMENT_SHADER_CODE
 		light_color.rgb *= light_base_color.rgb * light_base_color.a;
 
 		if (normal_used) {
-
 			vec3 light_pos = vec3(light_array.data[light_base].position, light_array.data[light_base].height);
 			vec3 pos = light_vertex;
 			vec3 light_vec = normalize(light_pos - pos);
@@ -490,7 +476,6 @@ FRAGMENT_SHADER_CODE
 		}
 
 		if (bool(light_array.data[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
-
 			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array.data[light_base].shadow_matrix[0], light_array.data[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 
 			vec2 pos_norm = normalize(shadow_pos);

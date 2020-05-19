@@ -59,27 +59,21 @@ enum MethodFlags {
 
 template <class T>
 struct VariantCaster {
-
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-
 		return p_variant;
 	}
 };
 
 template <class T>
 struct VariantCaster<T &> {
-
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-
 		return p_variant;
 	}
 };
 
 template <class T>
 struct VariantCaster<const T &> {
-
 	static _FORCE_INLINE_ T cast(const Variant &p_variant) {
-
 		return p_variant;
 	}
 };
@@ -93,7 +87,6 @@ struct VariantCaster<const T &> {
 	MAKE_ENUM_TYPE_INFO(m_enum)                                              \
 	template <>                                                              \
 	struct VariantCaster<m_enum> {                                           \
-                                                                             \
 		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) {        \
 			return (m_enum)p_variant.operator int();                         \
 		}                                                                    \
@@ -114,7 +107,6 @@ struct VariantCaster<const T &> {
 	MAKE_ENUM_TYPE_INFO(m_enum)                                       \
 	template <>                                                       \
 	struct VariantCaster<m_enum> {                                    \
-                                                                      \
 		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) { \
 			return (m_enum)p_variant.operator int();                  \
 		}                                                             \
@@ -165,7 +157,9 @@ struct VariantObjectClassChecker<Control *> {
 #define CHECK_NOARG(m_arg)                             \
 	{                                                  \
 		if (p_arg##m_arg.get_type() != Variant::NIL) { \
-			if (r_argerror) *r_argerror = (m_arg - 1); \
+			if (r_argerror) {                          \
+				*r_argerror = (m_arg - 1);             \
+			}                                          \
 			return CALL_ERROR_EXTRA_ARGUMENT;          \
 		}                                              \
 	}
@@ -205,20 +199,19 @@ struct PtrToArg<wchar_t> {
 #endif
 
 class MethodBind {
-
 	int method_id;
-	uint32_t hint_flags;
+	uint32_t hint_flags = METHOD_FLAGS_DEFAULT;
 	StringName name;
 	Vector<Variant> default_arguments;
-	int default_argument_count;
-	int argument_count;
+	int default_argument_count = 0;
+	int argument_count = 0;
 
-	bool _const;
-	bool _returns;
+	bool _const = false;
+	bool _returns = false;
 
 protected:
 #ifdef DEBUG_METHODS_ENABLED
-	Variant::Type *argument_types;
+	Variant::Type *argument_types = nullptr;
 	Vector<StringName> arg_names;
 #endif
 	void _set_const(bool p_const);
@@ -236,29 +229,28 @@ public:
 	_FORCE_INLINE_ int get_default_argument_count() const { return default_argument_count; }
 
 	_FORCE_INLINE_ Variant has_default_argument(int p_arg) const {
-
 		int idx = argument_count - p_arg - 1;
 
-		if (idx < 0 || idx >= default_arguments.size())
+		if (idx < 0 || idx >= default_arguments.size()) {
 			return false;
-		else
+		} else {
 			return true;
+		}
 	}
 
 	_FORCE_INLINE_ Variant get_default_argument(int p_arg) const {
-
 		int idx = argument_count - p_arg - 1;
 
-		if (idx < 0 || idx >= default_arguments.size())
+		if (idx < 0 || idx >= default_arguments.size()) {
 			return Variant();
-		else
+		} else {
 			return default_arguments[idx];
+		}
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
 
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
-
 		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
 		return argument_types[p_argument + 1];
 	}
@@ -303,17 +295,15 @@ public:
 	typedef Variant (T::*NativeCall)(const Variant **, int, Callable::CallError &);
 
 protected:
-	NativeCall call_method;
+	NativeCall call_method = nullptr;
 #ifdef DEBUG_METHODS_ENABLED
-
 	MethodInfo arguments;
-
 #endif
+
 public:
 #ifdef DEBUG_METHODS_ENABLED
 
 	virtual PropertyInfo _gen_argument_type_info(int p_arg) const {
-
 		if (p_arg < 0) {
 			return arguments.return_val;
 		} else if (p_arg < arguments.arguments.size()) {
@@ -339,23 +329,19 @@ public:
 
 #endif
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-
 		T *instance = static_cast<T *>(p_object);
 		return (instance->*call_method)(p_args, p_arg_count, r_error);
 	}
 
 	void set_method_info(const MethodInfo &p_info, bool p_return_nil_is_variant) {
-
 		set_argument_count(p_info.arguments.size());
 #ifdef DEBUG_METHODS_ENABLED
 		Variant::Type *at = memnew_arr(Variant::Type, p_info.arguments.size() + 1);
 		at[0] = p_info.return_val.type;
 		if (p_info.arguments.size()) {
-
 			Vector<StringName> names;
 			names.resize(p_info.arguments.size());
 			for (int i = 0; i < p_info.arguments.size(); i++) {
-
 				at[i + 1] = p_info.arguments[i].type;
 				names.write[i] = p_info.arguments[i].name;
 			}
@@ -383,14 +369,12 @@ public:
 	virtual bool is_vararg() const { return true; }
 
 	MethodBindVarArg() {
-		call_method = nullptr;
 		_set_returns(true);
 	}
 };
 
 template <class T>
 MethodBind *create_vararg_method_bind(Variant (T::*p_method)(const Variant **, int, Callable::CallError &), const MethodInfo &p_info, bool p_return_nil_is_variant) {
-
 	MethodBindVarArg<T> *a = memnew((MethodBindVarArg<T>));
 	a->set_method(p_method);
 	a->set_method_info(p_info, p_return_nil_is_variant);

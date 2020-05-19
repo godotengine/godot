@@ -47,10 +47,11 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_COND_V_MSG(true, ERR_OUT_OF_MEMORY, "Response header too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK)
+			if (err != OK) {
 				return FAILED;
-			else if (read != 1) // Busy, wait until next poll
+			} else if (read != 1) { // Busy, wait until next poll
 				return ERR_BUSY;
+			}
 			char *r = (char *)req_buf;
 			int l = req_pos;
 
@@ -75,10 +76,11 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 				ERR_FAIL_COND_V_MSG(req_pos >= LSP_MAX_BUFFER_SIZE, ERR_OUT_OF_MEMORY, "Response content too big");
 			}
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
-			if (err != OK)
+			if (err != OK) {
 				return FAILED;
-			else if (read != 1)
+			} else if (read != 1) {
 				return ERR_BUSY;
+			}
 			req_pos++;
 		}
 
@@ -145,7 +147,6 @@ String GDScriptLanguageProtocol::process_message(const String &p_text) {
 }
 
 String GDScriptLanguageProtocol::format_output(const String &p_text) {
-
 	String header = "Content-Length: ";
 	CharString charstr = p_text.utf8();
 	size_t len = charstr.length();
@@ -168,7 +169,6 @@ void GDScriptLanguageProtocol::_bind_methods() {
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
-
 	lsp::InitializeResult ret;
 
 	String root_uri = p_params["rootUri"];
@@ -183,7 +183,6 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 	if (root_uri.length() && is_same_workspace) {
 		workspace->root_uri = root_uri;
 	} else {
-
 		workspace->root_uri = "file://" + workspace->root;
 
 		Dictionary params;
@@ -208,12 +207,10 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-
 	lsp::GodotCapabilities capabilities;
 
 	DocData *doc = EditorHelp::get_doc_data();
 	for (Map<String, DocData::ClassDoc>::Element *E = doc->class_list.front(); E; E = E->next()) {
-
 		lsp::GodotNativeClassInfo gdclass;
 		gdclass.name = E->get().name;
 		gdclass.class_doc = &(E->get());

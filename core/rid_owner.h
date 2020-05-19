@@ -39,11 +39,11 @@
 #include "core/safe_refcount.h"
 #include "core/set.h"
 #include "core/spin_lock.h"
+
 #include <stdio.h>
 #include <typeinfo>
 
 class RID_AllocBase {
-
 	static volatile uint64_t base_id;
 
 protected:
@@ -67,22 +67,20 @@ public:
 
 template <class T, bool THREAD_SAFE = false>
 class RID_Alloc : public RID_AllocBase {
-
-	T **chunks;
-	uint32_t **free_list_chunks;
-	uint32_t **validator_chunks;
+	T **chunks = nullptr;
+	uint32_t **free_list_chunks = nullptr;
+	uint32_t **validator_chunks = nullptr;
 
 	uint32_t elements_in_chunk;
-	uint32_t max_alloc;
-	uint32_t alloc_count;
+	uint32_t max_alloc = 0;
+	uint32_t alloc_count = 0;
 
-	const char *description;
+	const char *description = nullptr;
 
 	SpinLock spin_lock;
 
 public:
 	RID make_rid(const T &p_value) {
-
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
@@ -136,7 +134,6 @@ public:
 	}
 
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
-
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
@@ -171,7 +168,6 @@ public:
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) {
-
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
@@ -200,7 +196,6 @@ public:
 	}
 
 	_FORCE_INLINE_ void free(const RID &p_rid) {
-
 		if (THREAD_SAFE) {
 			spin_lock.lock();
 		}
@@ -288,14 +283,7 @@ public:
 	}
 
 	RID_Alloc(uint32_t p_target_chunk_byte_size = 4096) {
-		chunks = nullptr;
-		free_list_chunks = nullptr;
-		validator_chunks = nullptr;
-
 		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? 1 : (p_target_chunk_byte_size / sizeof(T));
-		max_alloc = 0;
-		alloc_count = 0;
-		description = nullptr;
 	}
 
 	~RID_Alloc() {
@@ -412,4 +400,5 @@ public:
 	RID_Owner(uint32_t p_target_chunk_byte_size = 4096) :
 			alloc(p_target_chunk_byte_size) {}
 };
+
 #endif // RID_OWNER_H

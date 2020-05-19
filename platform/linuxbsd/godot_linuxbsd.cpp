@@ -37,7 +37,6 @@
 #include "os_linuxbsd.h"
 
 int main(int argc, char *argv[]) {
-
 	OS_LinuxBSD os;
 
 	setlocale(LC_CTYPE, "");
@@ -52,8 +51,9 @@ int main(int argc, char *argv[]) {
 		return 255;
 	}
 
-	if (Main::start())
+	if (Main::start()) {
 		os.run(); // it is actually the OS that decides how to run
+	}
 	Main::cleanup();
 
 	if (ret) { // Previous getcwd was successful

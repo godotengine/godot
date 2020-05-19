@@ -54,19 +54,18 @@ struct ThreadArrayProcessData {
 
 template <class T>
 void process_array_thread(void *ud) {
-
 	T &data = *(T *)ud;
 	while (true) {
 		uint32_t index = atomic_increment(&data.index);
-		if (index >= data.elements)
+		if (index >= data.elements) {
 			break;
+		}
 		data.process(index);
 	}
 }
 
 template <class C, class M, class U>
 void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-
 	ThreadArrayProcessData<C, U> data;
 	data.method = p_method;
 	data.instance = p_instance;
@@ -93,7 +92,6 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 
 template <class C, class M, class U>
 void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_userdata) {
-
 	ThreadArrayProcessData<C, U> data;
 	data.method = p_method;
 	data.instance = p_instance;

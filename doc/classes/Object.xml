@@ -192,7 +192,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Deletes the object from memory. Any pre-existing reference to the freed object will now return [code]null[/code].
+				Deletes the object from memory. Any pre-existing reference to the freed object will become invalid, e.g. [code]is_instance_valid(object)[/code] will return [code]false[/code].
 			</description>
 		</method>
 		<method name="get" qualifiers="const">

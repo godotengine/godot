@@ -129,21 +129,19 @@
 				    child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/codeblock]
-				If you need the child node to be added below a specific node in the list of children, use [method add_child_below_node] instead of this method.
+				If you need the child node to be added below a specific node in the list of children, use [method add_sibling] instead of this method.
 				[b]Note:[/b] If you want a child to be persisted to a [PackedScene], you must set [member owner] in addition to calling [method add_child]. This is typically relevant for [url=https://godot.readthedocs.io/en/latest/tutorials/misc/running_code_in_the_editor.html]tool scripts[/url] and [url=https://godot.readthedocs.io/en/latest/tutorials/plugins/editor/index.html]editor plugins[/url]. If [method add_child] is called without setting [member owner], the newly added [Node] will not be visible in the scene tree, though it will be visible in the 2D/3D view.
 			</description>
 		</method>
-		<method name="add_child_below_node">
+		<method name="add_sibling">
 			<return type="void">
 			</return>
-			<argument index="0" name="preceding_node" type="Node">
+			<argument index="0" name="sibling" type="Node">
 			</argument>
-			<argument index="1" name="node" type="Node">
-			</argument>
-			<argument index="2" name="legible_unique_name" type="bool" default="false">
+			<argument index="1" name="legible_unique_name" type="bool" default="false">
 			</argument>
 			<description>
-				Adds a child node below the [code]preceding_node[/code].
+				Adds a [code]sibling[/code] node to current's node parent, at the the same level as that node, right below it.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 				Use [method add_child] instead of this method if you don't need the child node to be added below a specific node in the list of children.
 			</description>
@@ -305,7 +303,7 @@
 			<return type="Node">
 			</return>
 			<description>
-				Returns the parent node of the current node, or an empty [Node] if the node lacks a parent.
+				Returns the parent node of the current node, or a [code]null instance[/code] if the node lacks a parent.
 			</description>
 		</method>
 		<method name="get_path" qualifiers="const">

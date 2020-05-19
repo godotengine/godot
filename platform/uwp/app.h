@@ -45,7 +45,7 @@ namespace GodotUWP
 	ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
 	{
 	public:
-		App();
+		App() {}
 
 		// IFrameworkView Methods.
 		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
@@ -92,14 +92,14 @@ namespace GodotUWP
 
 		char** get_command_line(unsigned int* out_argc);
 
-		bool mWindowClosed;
-		bool mWindowVisible;
-		GLsizei mWindowWidth;
-		GLsizei mWindowHeight;
+		bool mWindowClosed = false;
+		bool mWindowVisible = true;
+		GLsizei mWindowWidth = 0;
+		GLsizei mWindowHeight = 0;
 
-		EGLDisplay mEglDisplay;
-		EGLContext mEglContext;
-		EGLSurface mEglSurface;
+		EGLDisplay mEglDisplay = EGL_NO_DISPLAY;
+		EGLContext mEglContext = EGL_NO_CONTEXT;
+		EGLSurface mEglSurface = EGL_NO_SURFACE;
 
 		CoreWindow^ window;
 		OS_UWP* os;

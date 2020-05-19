@@ -36,13 +36,11 @@
 #include "core/ustring.h"
 
 struct StaticCString {
-
 	const char *ptr;
 	static StaticCString create(const char *p_ptr);
 };
 
 class StringName {
-
 	enum {
 
 		STRING_TABLE_BITS = 12,
@@ -52,28 +50,22 @@ class StringName {
 
 	struct _Data {
 		SafeRefCount refcount;
-		const char *cname;
+		const char *cname = nullptr;
 		String name;
 
 		String get_name() const { return cname ? String(cname) : name; }
-		int idx;
-		uint32_t hash;
-		_Data *prev;
-		_Data *next;
-		_Data() {
-			cname = nullptr;
-			next = prev = nullptr;
-			idx = 0;
-			hash = 0;
-		}
+		int idx = 0;
+		uint32_t hash = 0;
+		_Data *prev = nullptr;
+		_Data *next = nullptr;
+		_Data() {}
 	};
 
 	static _Data *_table[STRING_TABLE_LEN];
 
-	_Data *_data;
+	_Data *_data = nullptr;
 
 	union _HashUnion {
-
 		_Data *ptr;
 		uint32_t hash;
 	};
@@ -90,13 +82,12 @@ class StringName {
 	StringName(_Data *p_data) { _data = p_data; }
 
 public:
-	operator const void *() const { return (_data && (_data->cname || !_data->name.empty())) ? (void *)1 : 0; }
+	operator const void *() const { return (_data && (_data->cname || !_data->name.empty())) ? (void *)1 : nullptr; }
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
 	_FORCE_INLINE_ bool operator<(const StringName &p_name) const {
-
 		return _data < p_name._data;
 	}
 	_FORCE_INLINE_ bool operator==(const StringName &p_name) const {
@@ -105,11 +96,11 @@ public:
 		return _data == p_name._data;
 	}
 	_FORCE_INLINE_ uint32_t hash() const {
-
-		if (_data)
+		if (_data) {
 			return _data->hash;
-		else
+		} else {
 			return 0;
+		}
 	}
 	_FORCE_INLINE_ const void *data_unique_pointer() const {
 		return (void *)_data;
@@ -117,12 +108,12 @@ public:
 	bool operator!=(const StringName &p_name) const;
 
 	_FORCE_INLINE_ operator String() const {
-
 		if (_data) {
-			if (_data->cname)
+			if (_data->cname) {
 				return String(_data->cname);
-			else
+			} else {
 				return _data->name;
+			}
 		}
 
 		return String();
@@ -133,24 +124,22 @@ public:
 	static StringName search(const String &p_name);
 
 	struct AlphCompare {
-
 		_FORCE_INLINE_ bool operator()(const StringName &l, const StringName &r) const {
-
 			const char *l_cname = l._data ? l._data->cname : "";
 			const char *r_cname = r._data ? r._data->cname : "";
 
 			if (l_cname) {
-
-				if (r_cname)
+				if (r_cname) {
 					return is_str_less(l_cname, r_cname);
-				else
+				} else {
 					return is_str_less(l_cname, r._data->name.ptr());
+				}
 			} else {
-
-				if (r_cname)
+				if (r_cname) {
 					return is_str_less(l._data->name.ptr(), r_cname);
-				else
+				} else {
 					return is_str_less(l._data->name.ptr(), r._data->name.ptr());
+				}
 			}
 		}
 	};
@@ -160,7 +149,7 @@ public:
 	StringName(const StringName &p_name);
 	StringName(const String &p_name);
 	StringName(const StaticCString &p_static_string);
-	StringName();
+	StringName() {}
 	~StringName();
 };
 

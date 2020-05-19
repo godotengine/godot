@@ -40,7 +40,6 @@ class BoneAttachment3D;
 class MeshInstance3D;
 
 class EditorSceneImporterGLTF : public EditorSceneImporter {
-
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
 
 	typedef int GLTFAccessorIndex;
@@ -92,92 +91,59 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	String _get_type_name(const GLTFType p_component);
 
 	struct GLTFNode {
-
 		//matrices need to be transformed to this
-		GLTFNodeIndex parent;
-		int height;
+		GLTFNodeIndex parent = -1;
+		int height = -1;
 
 		Transform xform;
 		String name;
 
-		GLTFMeshIndex mesh;
-		GLTFCameraIndex camera;
-		GLTFSkinIndex skin;
+		GLTFMeshIndex mesh = -1;
+		GLTFCameraIndex camera = -1;
+		GLTFSkinIndex skin = -1;
 
-		GLTFSkeletonIndex skeleton;
-		bool joint;
+		GLTFSkeletonIndex skeleton = -1;
+		bool joint = false;
 
 		Vector3 translation;
 		Quat rotation;
-		Vector3 scale;
+		Vector3 scale = Vector3(1, 1, 1);
 
 		Vector<int> children;
 
-		GLTFNodeIndex fake_joint_parent;
+		GLTFNodeIndex fake_joint_parent = -1;
 
-		GLTFNode() :
-				parent(-1),
-				height(-1),
-				mesh(-1),
-				camera(-1),
-				skin(-1),
-				skeleton(-1),
-				joint(false),
-				translation(0, 0, 0),
-				scale(Vector3(1, 1, 1)),
-				fake_joint_parent(-1) {}
+		GLTFNode() {}
 	};
 
 	struct GLTFBufferView {
-
-		GLTFBufferIndex buffer;
-		int byte_offset;
-		int byte_length;
-		int byte_stride;
-		bool indices;
+		GLTFBufferIndex buffer = -1;
+		int byte_offset = 0;
+		int byte_length = 0;
+		int byte_stride = 0;
+		bool indices = false;
 		//matrices need to be transformed to this
 
-		GLTFBufferView() :
-				buffer(-1),
-				byte_offset(0),
-				byte_length(0),
-				byte_stride(0),
-				indices(false) {
-		}
+		GLTFBufferView() {}
 	};
 
 	struct GLTFAccessor {
-
-		GLTFBufferViewIndex buffer_view;
-		int byte_offset;
-		int component_type;
-		bool normalized;
-		int count;
+		GLTFBufferViewIndex buffer_view = 0;
+		int byte_offset = 0;
+		int component_type = 0;
+		bool normalized = false;
+		int count = 0;
 		GLTFType type;
-		float min;
-		float max;
-		int sparse_count;
-		int sparse_indices_buffer_view;
-		int sparse_indices_byte_offset;
-		int sparse_indices_component_type;
-		int sparse_values_buffer_view;
-		int sparse_values_byte_offset;
+		float min = 0;
+		float max = 0;
+		int sparse_count = 0;
+		int sparse_indices_buffer_view = 0;
+		int sparse_indices_byte_offset = 0;
+		int sparse_indices_component_type = 0;
+		int sparse_values_buffer_view = 0;
+		int sparse_values_byte_offset = 0;
 
-		GLTFAccessor() {
-			buffer_view = 0;
-			byte_offset = 0;
-			component_type = 0;
-			normalized = false;
-			count = 0;
-			min = 0;
-			max = 0;
-			sparse_count = 0;
-			sparse_indices_buffer_view = 0;
-			sparse_indices_byte_offset = 0;
-			sparse_indices_component_type = 0;
-			sparse_values_buffer_view = 0;
-			sparse_values_byte_offset = 0;
-		}
+		GLTFAccessor() {}
 	};
 	struct GLTFTexture {
 		GLTFImageIndex src_image;
@@ -192,21 +158,19 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFNodeIndex> roots;
 
 		// The created Skeleton for the scene
-		Skeleton3D *godot_skeleton;
+		Skeleton3D *godot_skeleton = nullptr;
 
 		// Set of unique bone names for the skeleton
 		Set<String> unique_names;
 
-		GLTFSkeleton() :
-				godot_skeleton(nullptr) {
-		}
+		GLTFSkeleton() {}
 	};
 
 	struct GLTFSkin {
 		String name;
 
 		// The "skeleton" property defined in the gltf spec. -1 = Scene Root
-		GLTFNodeIndex skin_root;
+		GLTFNodeIndex skin_root = -1;
 
 		Vector<GLTFNodeIndex> joints_original;
 		Vector<Transform> inverse_binds;
@@ -226,7 +190,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<GLTFNodeIndex> roots;
 
 		// The GLTF Skeleton this Skin points to (after we determine skeletons)
-		GLTFSkeletonIndex skeleton;
+		GLTFSkeletonIndex skeleton = -1;
 
 		// A mapping from the joint indices (in the order of joints_original) to the
 		// Godot Skeleton's bone_indices
@@ -237,9 +201,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		// to the generated skeleton for the mesh instances.
 		Ref<Skin> godot_skin;
 
-		GLTFSkin() :
-				skin_root(-1),
-				skeleton(-1) {}
+		GLTFSkin() {}
 	};
 
 	struct GLTFMesh {
@@ -248,18 +210,12 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFCamera {
+		bool perspective = true;
+		float fov_size = 64;
+		float zfar = 500;
+		float znear = 0.1;
 
-		bool perspective;
-		float fov_size;
-		float zfar;
-		float znear;
-
-		GLTFCamera() {
-			perspective = true;
-			fov_size = 65;
-			zfar = 500;
-			znear = 0.1;
-		}
+		GLTFCamera() {}
 	};
 
 	struct GLTFAnimation {
@@ -280,7 +236,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		};
 
 		struct Track {
-
 			Channel<Vector3> translation_track;
 			Channel<Quat> rotation_track;
 			Channel<Vector3> scale_track;
@@ -293,7 +248,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	};
 
 	struct GLTFState {
-
 		Dictionary json;
 		int major_version;
 		int minor_version;

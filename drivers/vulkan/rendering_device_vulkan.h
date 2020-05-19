@@ -51,7 +51,6 @@
 class VulkanContext;
 
 class RenderingDeviceVulkan : public RenderingDevice {
-
 	_THREAD_SAFE_CLASS_
 
 	// Miscellaneous tables that map
@@ -123,7 +122,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// for a framebuffer to render into it.
 
 	struct Texture {
-
 		VkImage image;
 		VmaAllocation allocation;
 		VmaAllocationInfo allocation_info;
@@ -204,7 +202,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _insert_staging_block();
 
 	struct Buffer {
-
 		uint32_t size;
 		VkBuffer buffer;
 		VmaAllocation allocation;
@@ -237,7 +234,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct FramebufferFormatKey {
 		Vector<AttachmentFormat> attachments;
 		bool operator<(const FramebufferFormatKey &p_key) const {
-
 			int as = attachments.size();
 			int bs = p_key.attachments.size();
 			if (as != bs) {
@@ -521,9 +517,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// does not submit something invalid.
 
 	struct Shader {
-
 		struct Set {
-
 			Vector<UniformInfo> uniform_info;
 			VkDescriptorSetLayout descriptor_set_layout;
 		};
@@ -685,7 +679,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	RID_Owner<RenderPipeline, true> render_pipeline_owner;
 
 	struct ComputePipeline {
-
 		RID shader;
 		Vector<uint32_t> set_formats;
 		VkPipelineLayout pipeline_layout; // not owned, needed for push constants
@@ -719,7 +712,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Vector<SplitDrawListAllocator> split_draw_list_allocators;
 
 	struct DrawList {
-
 		VkCommandBuffer command_buffer; //if persistent, this is owned, otherwise it's shared with the ringbuffer
 		Rect2i viewport;
 
@@ -836,7 +828,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	/**********************/
 
 	struct ComputeList {
-
 		VkCommandBuffer command_buffer; //if persistent, this is owned, otherwise it's shared with the ringbuffer
 
 		struct SetState {
@@ -1137,6 +1128,8 @@ public:
 	virtual uint32_t get_frame_delay() const;
 
 	virtual RenderingDevice *create_local_device();
+
+	virtual uint64_t get_memory_usage() const;
 
 	RenderingDeviceVulkan();
 	~RenderingDeviceVulkan();

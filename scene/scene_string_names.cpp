@@ -33,7 +33,6 @@
 SceneStringNames *SceneStringNames::singleton = nullptr;
 
 SceneStringNames::SceneStringNames() {
-
 	_estimate_cost = StaticCString::create("_estimate_cost");
 	_compute_cost = StaticCString::create("_compute_cost");
 
@@ -189,7 +188,6 @@ SceneStringNames::SceneStringNames() {
 	_default = StaticCString::create("default");
 
 	for (int i = 0; i < MAX_MATERIALS; i++) {
-
 		mesh_materials[i] = "material/" + itos(i);
 	}
 
@@ -205,4 +203,9 @@ SceneStringNames::SceneStringNames() {
 
 	shader_overrides_group = StaticCString::create("_shader_overrides_group_");
 	shader_overrides_group_active = StaticCString::create("_shader_overrides_group_active_");
+
+#ifndef DISABLE_DEPRECATED
+	use_in_baked_light = StaticCString::create("use_in_baked_light");
+	use_dynamic_gi = StaticCString::create("use_dynamic_gi");
+#endif
 }

@@ -40,31 +40,30 @@ class VPXDecoder;
 class OpusVorbisDecoder;
 
 class VideoStreamPlaybackWebm : public VideoStreamPlayback {
-
 	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback);
 
 	String file_name;
-	int audio_track;
+	int audio_track = 0;
 
-	WebMDemuxer *webm;
-	VPXDecoder *video;
-	OpusVorbisDecoder *audio;
+	WebMDemuxer *webm = nullptr;
+	VPXDecoder *video = nullptr;
+	OpusVorbisDecoder *audio = nullptr;
 
-	WebMFrame **video_frames, *audio_frame;
-	int video_frames_pos, video_frames_capacity;
+	WebMFrame **video_frames = nullptr, *audio_frame = nullptr;
+	int video_frames_pos = 0, video_frames_capacity = 0;
 
-	int num_decoded_samples, samples_offset;
-	AudioMixCallback mix_callback;
-	void *mix_udata;
+	int num_decoded_samples = 0, samples_offset = -1;
+	AudioMixCallback mix_callback = nullptr;
+	void *mix_udata = nullptr;
 
-	bool playing, paused;
-	double delay_compensation;
-	double time, video_frame_delay, video_pos;
+	bool playing = false, paused = false;
+	double delay_compensation = 0.0;
+	double time = 0.0, video_frame_delay = 0.0, video_pos = 0.0;
 
 	Vector<uint8_t> frame_data;
 	Ref<ImageTexture> texture;
 
-	float *pcm;
+	float *pcm = nullptr;
 
 public:
 	VideoStreamPlaybackWebm();
@@ -107,11 +106,10 @@ private:
 /**/
 
 class VideoStreamWebm : public VideoStream {
-
 	GDCLASS(VideoStreamWebm, VideoStream);
 
 	String file;
-	int audio_track;
+	int audio_track = 0;
 
 protected:
 	static void _bind_methods();

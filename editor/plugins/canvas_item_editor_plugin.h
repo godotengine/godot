@@ -43,15 +43,14 @@
 class CanvasItemEditorViewport;
 
 class CanvasItemEditorSelectedItem : public Object {
-
 	GDCLASS(CanvasItemEditorSelectedItem, Object);
 
 public:
 	Transform2D prev_xform;
-	float prev_rot;
+	float prev_rot = 0;
 	Rect2 prev_rect;
 	Vector2 prev_pivot;
-	float prev_anchors[4];
+	float prev_anchors[4] = { 0.0f };
 
 	Transform2D pre_drag_xform;
 	Rect2 pre_drag_rect;
@@ -61,14 +60,10 @@ public:
 
 	Dictionary undo_state;
 
-	CanvasItemEditorSelectedItem() :
-			prev_anchors() {
-		prev_rot = 0;
-	}
+	CanvasItemEditorSelectedItem() {}
 };
 
 class CanvasItemEditor : public VBoxContainer {
-
 	GDCLASS(CanvasItemEditor, VBoxContainer);
 
 public:
@@ -293,7 +288,6 @@ private:
 	MenuOption last_option;
 
 	struct _SelectResult {
-
 		CanvasItem *item;
 		float z_index;
 		bool has_z;
@@ -304,7 +298,6 @@ private:
 	Vector<_SelectResult> selection_results;
 
 	struct _HoverResult {
-
 		Point2 position;
 		Ref<Texture2D> icon;
 		String name;
@@ -312,14 +305,11 @@ private:
 	Vector<_HoverResult> hovering_results;
 
 	struct BoneList {
-
 		Transform2D xform;
-		float length;
-		uint64_t last_pass;
+		float length = 0.f;
+		uint64_t last_pass = 0;
 
-		BoneList() :
-				length(0.f),
-				last_pass(0) {}
+		BoneList() {}
 	};
 
 	uint64_t bone_last_frame;
@@ -328,10 +318,11 @@ private:
 		ObjectID from;
 		ObjectID to;
 		_FORCE_INLINE_ bool operator<(const BoneKey &p_key) const {
-			if (from == p_key.from)
+			if (from == p_key.from) {
 				return to < p_key.to;
-			else
+			} else {
 				return from < p_key.from;
+			}
 		}
 	};
 
@@ -651,7 +642,6 @@ public:
 };
 
 class CanvasItemEditorPlugin : public EditorPlugin {
-
 	GDCLASS(CanvasItemEditorPlugin, EditorPlugin);
 
 	CanvasItemEditor *canvas_item_editor;

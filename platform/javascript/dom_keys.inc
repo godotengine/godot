@@ -219,7 +219,6 @@
 #define DOM_VK_WIN_OEM_CLEAR 0xFE
 
 int dom2godot_keycode(int dom_keycode) {
-
 	if (DOM_VK_0 <= dom_keycode && dom_keycode <= DOM_VK_Z) {
 		// ASCII intersection
 		return dom_keycode;
@@ -237,9 +236,12 @@ int dom2godot_keycode(int dom_keycode) {
 
 	switch (dom_keycode) {
 		//case DOM_VK_CANCEL: return KEY_UNKNOWN;
-		case DOM_VK_HELP: return KEY_HELP;
-		case DOM_VK_BACK_SPACE: return KEY_BACKSPACE;
-		case DOM_VK_TAB: return KEY_TAB;
+		case DOM_VK_HELP:
+			return KEY_HELP;
+		case DOM_VK_BACK_SPACE:
+			return KEY_BACKSPACE;
+		case DOM_VK_TAB:
+			return KEY_TAB;
 
 		case DOM_VK_CLEAR:
 		case DOM_VK_WIN_OEM_CLEAR: // OEM duplicate
@@ -249,14 +251,17 @@ int dom2godot_keycode(int dom_keycode) {
 		case DOM_VK_ENTER: // unused according to MDN
 			return KEY_ENTER;
 
-		case DOM_VK_SHIFT: return KEY_SHIFT;
-		case DOM_VK_CONTROL: return KEY_CONTROL;
+		case DOM_VK_SHIFT:
+			return KEY_SHIFT;
+		case DOM_VK_CONTROL:
+			return KEY_CONTROL;
 
 		case DOM_VK_ALT:
 		case DOM_VK_ALTGR:
 			return KEY_ALT;
 
-		case DOM_VK_PAUSE: return KEY_PAUSE;
+		case DOM_VK_PAUSE:
+			return KEY_PAUSE;
 		case DOM_VK_CAPS_LOCK:
 			return KEY_CAPSLOCK;
 
@@ -279,14 +284,22 @@ int dom2godot_keycode(int dom_keycode) {
 		case DOM_VK_MODECHANGE: return KEY_UNKNOWN;
 		*/
 
-		case DOM_VK_SPACE: return KEY_SPACE;
-		case DOM_VK_PAGE_UP: return KEY_PAGEUP;
-		case DOM_VK_PAGE_DOWN: return KEY_PAGEDOWN;
-		case DOM_VK_END: return KEY_END;
-		case DOM_VK_HOME: return KEY_HOME;
-		case DOM_VK_LEFT: return KEY_LEFT;
-		case DOM_VK_UP: return KEY_UP;
-		case DOM_VK_RIGHT: return KEY_RIGHT;
+		case DOM_VK_SPACE:
+			return KEY_SPACE;
+		case DOM_VK_PAGE_UP:
+			return KEY_PAGEUP;
+		case DOM_VK_PAGE_DOWN:
+			return KEY_PAGEDOWN;
+		case DOM_VK_END:
+			return KEY_END;
+		case DOM_VK_HOME:
+			return KEY_HOME;
+		case DOM_VK_LEFT:
+			return KEY_LEFT;
+		case DOM_VK_UP:
+			return KEY_UP;
+		case DOM_VK_RIGHT:
+			return KEY_RIGHT;
 		case DOM_VK_DOWN:
 			return KEY_DOWN;
 
@@ -297,24 +310,31 @@ int dom2godot_keycode(int dom_keycode) {
 			return KEY_PRINT;
 
 		//case DOM_VK_EXECUTE: return KEY_UNKNOWN;
-		case DOM_VK_INSERT: return KEY_INSERT;
-		case DOM_VK_DELETE: return KEY_DELETE;
+		case DOM_VK_INSERT:
+			return KEY_INSERT;
+		case DOM_VK_DELETE:
+			return KEY_DELETE;
 
 		case DOM_VK_META:
 		case DOM_VK_WIN:
 			return KEY_META;
 
-		case DOM_VK_CONTEXT_MENU: return KEY_MENU;
+		case DOM_VK_CONTEXT_MENU:
+			return KEY_MENU;
 		case DOM_VK_SLEEP:
 			return KEY_STANDBY;
 
 		// Numpad keys
-		case DOM_VK_MULTIPLY: return KEY_KP_MULTIPLY;
-		case DOM_VK_ADD: return KEY_KP_ADD;
+		case DOM_VK_MULTIPLY:
+			return KEY_KP_MULTIPLY;
+		case DOM_VK_ADD:
+			return KEY_KP_ADD;
 		case DOM_VK_SEPARATOR:
 			return KEY_KP_PERIOD; // Good enough?
-		case DOM_VK_SUBTRACT: return KEY_KP_SUBTRACT;
-		case DOM_VK_DECIMAL: return KEY_KP_PERIOD;
+		case DOM_VK_SUBTRACT:
+			return KEY_KP_SUBTRACT;
+		case DOM_VK_DECIMAL:
+			return KEY_KP_PERIOD;
 		case DOM_VK_DIVIDE:
 			return KEY_KP_DIVIDE;
 
@@ -329,7 +349,8 @@ int dom2godot_keycode(int dom_keycode) {
 		case DOM_VK_F24: return KEY_UNKNOWN;
 		*/
 
-		case DOM_VK_NUM_LOCK: return KEY_NUMLOCK;
+		case DOM_VK_NUM_LOCK:
+			return KEY_NUMLOCK;
 		case DOM_VK_SCROLL_LOCK:
 			return KEY_SCROLLLOCK;
 
@@ -341,40 +362,68 @@ int dom2godot_keycode(int dom_keycode) {
 		case DOM_VK_WIN_OEM_FJ_ROYA: return KEY_UNKNOWN;
 		*/
 
-		case DOM_VK_CIRCUMFLEX: return KEY_ASCIICIRCUM;
-		case DOM_VK_EXCLAMATION: return KEY_EXCLAM;
-		case DOM_VK_DOUBLE_QUOTE: return KEY_QUOTEDBL;
-		case DOM_VK_HASH: return KEY_NUMBERSIGN;
-		case DOM_VK_DOLLAR: return KEY_DOLLAR;
-		case DOM_VK_PERCENT: return KEY_PERCENT;
-		case DOM_VK_AMPERSAND: return KEY_AMPERSAND;
-		case DOM_VK_UNDERSCORE: return KEY_UNDERSCORE;
-		case DOM_VK_OPEN_PAREN: return KEY_PARENLEFT;
-		case DOM_VK_CLOSE_PAREN: return KEY_PARENRIGHT;
-		case DOM_VK_ASTERISK: return KEY_ASTERISK;
-		case DOM_VK_PLUS: return KEY_PLUS;
-		case DOM_VK_PIPE: return KEY_BAR;
-		case DOM_VK_HYPHEN_MINUS: return KEY_MINUS;
-		case DOM_VK_OPEN_CURLY_BRACKET: return KEY_BRACELEFT;
-		case DOM_VK_CLOSE_CURLY_BRACKET: return KEY_BRACERIGHT;
-		case DOM_VK_TILDE: return KEY_ASCIITILDE;
+		case DOM_VK_CIRCUMFLEX:
+			return KEY_ASCIICIRCUM;
+		case DOM_VK_EXCLAMATION:
+			return KEY_EXCLAM;
+		case DOM_VK_DOUBLE_QUOTE:
+			return KEY_QUOTEDBL;
+		case DOM_VK_HASH:
+			return KEY_NUMBERSIGN;
+		case DOM_VK_DOLLAR:
+			return KEY_DOLLAR;
+		case DOM_VK_PERCENT:
+			return KEY_PERCENT;
+		case DOM_VK_AMPERSAND:
+			return KEY_AMPERSAND;
+		case DOM_VK_UNDERSCORE:
+			return KEY_UNDERSCORE;
+		case DOM_VK_OPEN_PAREN:
+			return KEY_PARENLEFT;
+		case DOM_VK_CLOSE_PAREN:
+			return KEY_PARENRIGHT;
+		case DOM_VK_ASTERISK:
+			return KEY_ASTERISK;
+		case DOM_VK_PLUS:
+			return KEY_PLUS;
+		case DOM_VK_PIPE:
+			return KEY_BAR;
+		case DOM_VK_HYPHEN_MINUS:
+			return KEY_MINUS;
+		case DOM_VK_OPEN_CURLY_BRACKET:
+			return KEY_BRACELEFT;
+		case DOM_VK_CLOSE_CURLY_BRACKET:
+			return KEY_BRACERIGHT;
+		case DOM_VK_TILDE:
+			return KEY_ASCIITILDE;
 
-		case DOM_VK_VOLUME_MUTE: return KEY_VOLUMEMUTE;
-		case DOM_VK_VOLUME_DOWN: return KEY_VOLUMEDOWN;
-		case DOM_VK_VOLUME_UP: return KEY_VOLUMEUP;
+		case DOM_VK_VOLUME_MUTE:
+			return KEY_VOLUMEMUTE;
+		case DOM_VK_VOLUME_DOWN:
+			return KEY_VOLUMEDOWN;
+		case DOM_VK_VOLUME_UP:
+			return KEY_VOLUMEUP;
 
-		case DOM_VK_COMMA: return KEY_COMMA;
-		case DOM_VK_PERIOD: return KEY_PERIOD;
-		case DOM_VK_SLASH: return KEY_SLASH;
-		case DOM_VK_BACK_QUOTE: return KEY_QUOTELEFT;
-		case DOM_VK_OPEN_BRACKET: return KEY_BRACKETLEFT;
-		case DOM_VK_BACK_SLASH: return KEY_BACKSLASH;
-		case DOM_VK_CLOSE_BRACKET: return KEY_BRACKETRIGHT;
+		case DOM_VK_COMMA:
+			return KEY_COMMA;
+		case DOM_VK_PERIOD:
+			return KEY_PERIOD;
+		case DOM_VK_SLASH:
+			return KEY_SLASH;
+		case DOM_VK_BACK_QUOTE:
+			return KEY_QUOTELEFT;
+		case DOM_VK_OPEN_BRACKET:
+			return KEY_BRACKETLEFT;
+		case DOM_VK_BACK_SLASH:
+			return KEY_BACKSLASH;
+		case DOM_VK_CLOSE_BRACKET:
+			return KEY_BRACKETRIGHT;
 		case DOM_VK_QUOTE:
 			return KEY_APOSTROPHE;
 
 			// The rest is OEM/unusual.
 
-		default: return KEY_UNKNOWN;
+		default:
+			return KEY_UNKNOWN;
 	};
 }

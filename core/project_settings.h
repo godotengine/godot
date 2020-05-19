@@ -36,7 +36,6 @@
 #include "core/set.h"
 
 class ProjectSettings : public Object {
-
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
 
@@ -50,38 +49,31 @@ public:
 
 protected:
 	struct VariantContainer {
-		int order;
-		bool persist;
+		int order = 0;
+		bool persist = false;
 		Variant variant;
 		Variant initial;
-		bool hide_from_editor;
-		bool overridden;
-		bool restart_if_changed;
-		VariantContainer() :
-				order(0),
-				persist(false),
-				hide_from_editor(false),
-				overridden(false),
-				restart_if_changed(false) {
-		}
+		bool hide_from_editor = false;
+		bool overridden = false;
+		bool restart_if_changed = false;
+
+		VariantContainer() {}
+
 		VariantContainer(const Variant &p_variant, int p_order, bool p_persist = false) :
 				order(p_order),
 				persist(p_persist),
-				variant(p_variant),
-				hide_from_editor(false),
-				overridden(false),
-				restart_if_changed(false) {
+				variant(p_variant) {
 		}
 	};
 
-	bool registering_order;
-	int last_order;
-	int last_builtin_order;
+	bool registering_order = true;
+	int last_order = 0;
+	int last_builtin_order = NO_BUILTIN_ORDER_BASE;
 	Map<StringName, VariantContainer> props;
 	String resource_path;
 	Map<StringName, PropertyInfo> custom_prop_info;
-	bool disable_feature_overrides;
-	bool using_datapack;
+	bool disable_feature_overrides = false;
+	bool using_datapack = false;
 	List<String> input_presets;
 
 	Set<String> custom_features;

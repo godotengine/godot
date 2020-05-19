@@ -37,7 +37,6 @@
 #include <pthread.h>
 
 class RWLockPosix : public RWLock {
-
 	pthread_rwlock_t rwlock;
 
 	static RWLock *create_func_posix();

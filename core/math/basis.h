@@ -39,11 +39,9 @@ public:
 	Vector3 elements[3];
 
 	_FORCE_INLINE_ const Vector3 &operator[](int axis) const {
-
 		return elements[axis];
 	}
 	_FORCE_INLINE_ Vector3 &operator[](int axis) {
-
 		return elements[axis];
 	}
 
@@ -159,13 +157,13 @@ public:
 	bool is_rotation() const;
 
 	Basis slerp(const Basis &target, const real_t &t) const;
+	void rotate_sh(real_t *p_values);
 
 	operator String() const;
 
 	/* create / set */
 
 	_FORCE_INLINE_ void set(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz) {
-
 		elements[0][0] = xx;
 		elements[0][1] = xy;
 		elements[0][2] = xz;
@@ -177,18 +175,15 @@ public:
 		elements[2][2] = zz;
 	}
 	_FORCE_INLINE_ void set(const Vector3 &p_x, const Vector3 &p_y, const Vector3 &p_z) {
-
 		set_axis(0, p_x);
 		set_axis(1, p_y);
 		set_axis(2, p_z);
 	}
 	_FORCE_INLINE_ Vector3 get_column(int i) const {
-
 		return Vector3(elements[0][i], elements[1][i], elements[2][i]);
 	}
 
 	_FORCE_INLINE_ Vector3 get_row(int i) const {
-
 		return Vector3(elements[i][0], elements[i][1], elements[i][2]);
 	}
 	_FORCE_INLINE_ Vector3 get_main_diagonal() const {
@@ -220,7 +215,6 @@ public:
 				elements[0].z * m[0].z + elements[1].z * m[1].z + elements[2].z * m[2].z);
 	}
 	Basis(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz) {
-
 		set(xx, xy, xz, yx, yy, yz, zx, zy, zz);
 	}
 
@@ -248,7 +242,6 @@ public:
 	}
 
 	_FORCE_INLINE_ Basis() {
-
 		elements[0][0] = 1;
 		elements[0][1] = 0;
 		elements[0][2] = 0;
@@ -262,7 +255,6 @@ public:
 };
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
-
 	set(
 			p_matrix.tdotx(elements[0]), p_matrix.tdoty(elements[0]), p_matrix.tdotz(elements[0]),
 			p_matrix.tdotx(elements[1]), p_matrix.tdoty(elements[1]), p_matrix.tdotz(elements[1]),
@@ -270,7 +262,6 @@ _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
 }
 
 _FORCE_INLINE_ Basis Basis::operator*(const Basis &p_matrix) const {
-
 	return Basis(
 			p_matrix.tdotx(elements[0]), p_matrix.tdoty(elements[0]), p_matrix.tdotz(elements[0]),
 			p_matrix.tdotx(elements[1]), p_matrix.tdoty(elements[1]), p_matrix.tdotz(elements[1]),
@@ -278,49 +269,42 @@ _FORCE_INLINE_ Basis Basis::operator*(const Basis &p_matrix) const {
 }
 
 _FORCE_INLINE_ void Basis::operator+=(const Basis &p_matrix) {
-
 	elements[0] += p_matrix.elements[0];
 	elements[1] += p_matrix.elements[1];
 	elements[2] += p_matrix.elements[2];
 }
 
 _FORCE_INLINE_ Basis Basis::operator+(const Basis &p_matrix) const {
-
 	Basis ret(*this);
 	ret += p_matrix;
 	return ret;
 }
 
 _FORCE_INLINE_ void Basis::operator-=(const Basis &p_matrix) {
-
 	elements[0] -= p_matrix.elements[0];
 	elements[1] -= p_matrix.elements[1];
 	elements[2] -= p_matrix.elements[2];
 }
 
 _FORCE_INLINE_ Basis Basis::operator-(const Basis &p_matrix) const {
-
 	Basis ret(*this);
 	ret -= p_matrix;
 	return ret;
 }
 
 _FORCE_INLINE_ void Basis::operator*=(real_t p_val) {
-
 	elements[0] *= p_val;
 	elements[1] *= p_val;
 	elements[2] *= p_val;
 }
 
 _FORCE_INLINE_ Basis Basis::operator*(real_t p_val) const {
-
 	Basis ret(*this);
 	ret *= p_val;
 	return ret;
 }
 
 Vector3 Basis::xform(const Vector3 &p_vector) const {
-
 	return Vector3(
 			elements[0].dot(p_vector),
 			elements[1].dot(p_vector),
@@ -328,7 +312,6 @@ Vector3 Basis::xform(const Vector3 &p_vector) const {
 }
 
 Vector3 Basis::xform_inv(const Vector3 &p_vector) const {
-
 	return Vector3(
 			(elements[0][0] * p_vector.x) + (elements[1][0] * p_vector.y) + (elements[2][0] * p_vector.z),
 			(elements[0][1] * p_vector.x) + (elements[1][1] * p_vector.y) + (elements[2][1] * p_vector.z),
@@ -336,7 +319,6 @@ Vector3 Basis::xform_inv(const Vector3 &p_vector) const {
 }
 
 real_t Basis::determinant() const {
-
 	return elements[0][0] * (elements[1][1] * elements[2][2] - elements[2][1] * elements[1][2]) -
 		   elements[1][0] * (elements[0][1] * elements[2][2] - elements[2][1] * elements[0][2]) +
 		   elements[2][0] * (elements[0][1] * elements[1][2] - elements[1][1] * elements[0][2]);

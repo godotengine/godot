@@ -70,7 +70,6 @@ void TextEditor::_change_syntax_highlighter(int p_idx) {
 }
 
 void TextEditor::_load_theme_settings() {
-
 	TextEdit *text_edit = code_editor->get_text_edit();
 	text_edit->clear_colors();
 
@@ -164,7 +163,6 @@ String TextEditor::get_name() {
 }
 
 Ref<Texture2D> TextEditor::get_theme_icon() {
-
 	return EditorNode::get_singleton()->get_object_icon(text_file.operator->(), "");
 }
 
@@ -195,7 +193,6 @@ void TextEditor::get_breakpoints(List<int> *p_breakpoints) {
 }
 
 void TextEditor::reload_text() {
-
 	ERR_FAIL_COND(text_file.is_null());
 
 	TextEdit *te = code_editor->get_text_edit();
@@ -221,7 +218,6 @@ void TextEditor::_validate_script() {
 }
 
 void TextEditor::_update_bookmark_list() {
-
 	bookmarks_menu->clear();
 
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
@@ -249,7 +245,6 @@ void TextEditor::_update_bookmark_list() {
 }
 
 void TextEditor::_bookmark_item_pressed(int p_idx) {
-
 	if (p_idx < 4) { // Any item before the separator.
 		_edit_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
@@ -262,17 +257,14 @@ void TextEditor::apply_code() {
 }
 
 bool TextEditor::is_unsaved() {
-
 	return code_editor->get_text_edit()->get_version() != code_editor->get_text_edit()->get_saved_version();
 }
 
 Variant TextEditor::get_edit_state() {
-
 	return code_editor->get_edit_state();
 }
 
 void TextEditor::set_edit_state(const Variant &p_state) {
-
 	code_editor->set_edit_state(p_state);
 
 	Dictionary state = p_state;
@@ -285,42 +277,34 @@ void TextEditor::set_edit_state(const Variant &p_state) {
 }
 
 void TextEditor::trim_trailing_whitespace() {
-
 	code_editor->trim_trailing_whitespace();
 }
 
 void TextEditor::insert_final_newline() {
-
 	code_editor->insert_final_newline();
 }
 
 void TextEditor::convert_indent_to_spaces() {
-
 	code_editor->convert_indent_to_spaces();
 }
 
 void TextEditor::convert_indent_to_tabs() {
-
 	code_editor->convert_indent_to_tabs();
 }
 
 void TextEditor::tag_saved_version() {
-
 	code_editor->get_text_edit()->tag_saved_version();
 }
 
 void TextEditor::goto_line(int p_line, bool p_with_error) {
-
 	code_editor->goto_line(p_line);
 }
 
 void TextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
-
 	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
 void TextEditor::set_executing_line(int p_line) {
-
 	code_editor->set_executing_line(p_line);
 }
 
@@ -329,12 +313,10 @@ void TextEditor::clear_executing_line() {
 }
 
 void TextEditor::ensure_focus() {
-
 	code_editor->get_text_edit()->grab_focus();
 }
 
 Vector<String> TextEditor::get_functions() {
-
 	return Vector<String>();
 }
 
@@ -343,17 +325,14 @@ bool TextEditor::show_members_overview() {
 }
 
 void TextEditor::update_settings() {
-
 	code_editor->update_editor_settings();
 }
 
 void TextEditor::set_tooltip_request_func(String p_method, Object *p_obj) {
-
 	code_editor->get_text_edit()->set_tooltip_request_func(p_obj, p_method, this);
 }
 
 Control *TextEditor::get_edit_menu() {
-
 	return edit_hb;
 }
 
@@ -362,7 +341,6 @@ void TextEditor::clear_edit_menu() {
 }
 
 void TextEditor::_notification(int p_what) {
-
 	switch (p_what) {
 		case NOTIFICATION_READY:
 			_load_theme_settings();
@@ -375,116 +353,90 @@ void TextEditor::_edit_option(int p_op) {
 
 	switch (p_op) {
 		case EDIT_UNDO: {
-
 			tx->undo();
 			tx->call_deferred("grab_focus");
 		} break;
 		case EDIT_REDO: {
-
 			tx->redo();
 			tx->call_deferred("grab_focus");
 		} break;
 		case EDIT_CUT: {
-
 			tx->cut();
 			tx->call_deferred("grab_focus");
 		} break;
 		case EDIT_COPY: {
-
 			tx->copy();
 			tx->call_deferred("grab_focus");
 		} break;
 		case EDIT_PASTE: {
-
 			tx->paste();
 			tx->call_deferred("grab_focus");
 		} break;
 		case EDIT_SELECT_ALL: {
-
 			tx->select_all();
 			tx->call_deferred("grab_focus");
 		} break;
 		case EDIT_MOVE_LINE_UP: {
-
 			code_editor->move_lines_up();
 		} break;
 		case EDIT_MOVE_LINE_DOWN: {
-
 			code_editor->move_lines_down();
 		} break;
 		case EDIT_INDENT_LEFT: {
-
 			tx->indent_left();
 		} break;
 		case EDIT_INDENT_RIGHT: {
-
 			tx->indent_right();
 		} break;
 		case EDIT_DELETE_LINE: {
-
 			code_editor->delete_lines();
 		} break;
 		case EDIT_CLONE_DOWN: {
-
 			code_editor->clone_lines_down();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-
 			tx->toggle_fold_line(tx->cursor_get_line());
 			tx->update();
 		} break;
 		case EDIT_FOLD_ALL_LINES: {
-
 			tx->fold_all_lines();
 			tx->update();
 		} break;
 		case EDIT_UNFOLD_ALL_LINES: {
-
 			tx->unhide_all_lines();
 			tx->update();
 		} break;
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
-
 			trim_trailing_whitespace();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_SPACES: {
-
 			convert_indent_to_spaces();
 		} break;
 		case EDIT_CONVERT_INDENT_TO_TABS: {
-
 			convert_indent_to_tabs();
 		} break;
 		case EDIT_TO_UPPERCASE: {
-
 			_convert_case(CodeTextEditor::UPPER);
 		} break;
 		case EDIT_TO_LOWERCASE: {
-
 			_convert_case(CodeTextEditor::LOWER);
 		} break;
 		case EDIT_CAPITALIZE: {
-
 			_convert_case(CodeTextEditor::CAPITALIZE);
 		} break;
 		case SEARCH_FIND: {
-
 			code_editor->get_find_replace_bar()->popup_search();
 		} break;
 		case SEARCH_FIND_NEXT: {
-
 			code_editor->get_find_replace_bar()->search_next();
 		} break;
 		case SEARCH_FIND_PREV: {
-
 			code_editor->get_find_replace_bar()->search_prev();
 		} break;
 		case SEARCH_REPLACE: {
-
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_IN_FILES: {
-
 			String selected_text = code_editor->get_text_edit()->get_selection_text();
 
 			// Yep, because it doesn't make sense to instance this dialog for every single script open...
@@ -492,36 +444,29 @@ void TextEditor::_edit_option(int p_op) {
 			emit_signal("search_in_files_requested", selected_text);
 		} break;
 		case REPLACE_IN_FILES: {
-
 			String selected_text = code_editor->get_text_edit()->get_selection_text();
 
 			emit_signal("replace_in_files_requested", selected_text);
 		} break;
 		case SEARCH_GOTO_LINE: {
-
 			goto_line_dialog->popup_find_line(tx);
 		} break;
 		case BOOKMARK_TOGGLE: {
-
 			code_editor->toggle_bookmark();
 		} break;
 		case BOOKMARK_GOTO_NEXT: {
-
 			code_editor->goto_next_bookmark();
 		} break;
 		case BOOKMARK_GOTO_PREV: {
-
 			code_editor->goto_prev_bookmark();
 		} break;
 		case BOOKMARK_REMOVE_ALL: {
-
 			code_editor->remove_all_bookmarks();
 		} break;
 	}
 }
 
 void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
-
 	code_editor->convert_case(p_case);
 }
 
@@ -529,7 +474,6 @@ void TextEditor::_bind_methods() {
 }
 
 static ScriptEditorBase *create_editor(const RES &p_resource) {
-
 	if (Object::cast_to<TextFile>(*p_resource)) {
 		return memnew(TextEditor);
 	}
@@ -537,17 +481,14 @@ static ScriptEditorBase *create_editor(const RES &p_resource) {
 }
 
 void TextEditor::register_editor() {
-
 	ScriptEditor::register_create_script_editor_function(create_editor);
 }
 
 void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
-
 	Ref<InputEventMouseButton> mb = ev;
 
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == BUTTON_RIGHT) {
-
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
 			tx->_get_mouse_pos(mb->get_global_position() - tx->get_global_position(), row, col);
@@ -558,7 +499,6 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 			if (tx->is_right_click_moving_caret()) {
 				if (tx->is_selection_active()) {
-
 					int from_line = tx->get_selection_from_line();
 					int to_line = tx->get_selection_to_line();
 					int from_column = tx->get_selection_from_column();
@@ -591,7 +531,6 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 }
 
 void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is_folded, Vector2 p_position) {
-
 	context_menu->clear();
 	if (p_selection) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/cut"), EDIT_CUT);
@@ -613,8 +552,9 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
 	}
-	if (p_can_fold || p_is_folded)
+	if (p_can_fold || p_is_folded) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
+	}
 
 	context_menu->set_position(get_global_transform().xform(p_position));
 	context_menu->set_size(Vector2(1, 1));

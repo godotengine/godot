@@ -47,8 +47,8 @@ enum class GCHandleType : char {
 
 // Manual release of the GC handle must be done when using this struct
 struct MonoGCHandleData {
-	uint32_t handle;
-	gdmono::GCHandleType type;
+	uint32_t handle = 0;
+	gdmono::GCHandleType type = gdmono::GCHandleType::NIL;
 
 	_FORCE_INLINE_ bool is_released() const { return !handle; }
 	_FORCE_INLINE_ bool is_weak() const { return type == gdmono::GCHandleType::WEAK_HANDLE; }
@@ -68,10 +68,7 @@ struct MonoGCHandleData {
 
 	MonoGCHandleData(const MonoGCHandleData &) = default;
 
-	MonoGCHandleData() :
-			handle(0),
-			type(gdmono::GCHandleType::NIL) {
-	}
+	MonoGCHandleData() {}
 
 	MonoGCHandleData(uint32_t p_handle, gdmono::GCHandleType p_type) :
 			handle(p_handle),
@@ -84,7 +81,6 @@ struct MonoGCHandleData {
 };
 
 class MonoGCHandleRef : public Reference {
-
 	GDCLASS(MonoGCHandleRef, Reference);
 
 	MonoGCHandleData data;

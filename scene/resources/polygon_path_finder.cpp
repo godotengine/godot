@@ -32,11 +32,9 @@
 #include "core/math/geometry.h"
 
 bool PolygonPathFinder::_is_point_inside(const Vector2 &p_point) const {
-
 	int crosses = 0;
 
 	for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
-
 		const Edge &e = E->get();
 
 		Vector2 a = points[e.points[0]].pos;
@@ -51,7 +49,6 @@ bool PolygonPathFinder::_is_point_inside(const Vector2 &p_point) const {
 }
 
 void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int> &p_connections) {
-
 	ERR_FAIL_COND(p_connections.size() & 1);
 
 	points.clear();
@@ -64,7 +61,6 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 	bounds = Rect2();
 
 	for (int i = 0; i < p_points.size(); i++) {
-
 		points.write[i].pos = p_points[i];
 		points.write[i].penalty = 0;
 
@@ -84,7 +80,6 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 	//insert edges (which are also connetions)
 
 	for (int i = 0; i < p_connections.size(); i += 2) {
-
 		Edge e(p_connections[i], p_connections[i + 1]);
 		ERR_FAIL_INDEX(e.points[0], point_count);
 		ERR_FAIL_INDEX(e.points[1], point_count);
@@ -96,25 +91,25 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 	//fill the remaining connections based on visibility
 
 	for (int i = 0; i < point_count; i++) {
-
 		for (int j = i + 1; j < point_count; j++) {
-
-			if (edges.has(Edge(i, j)))
+			if (edges.has(Edge(i, j))) {
 				continue; //if in edge ignore
+			}
 
 			Vector2 from = points[i].pos;
 			Vector2 to = points[j].pos;
 
-			if (!_is_point_inside(from * 0.5 + to * 0.5)) //connection between points in inside space
+			if (!_is_point_inside(from * 0.5 + to * 0.5)) { //connection between points in inside space
 				continue;
+			}
 
 			bool valid = true;
 
 			for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
-
 				const Edge &e = E->get();
-				if (e.points[0] == i || e.points[1] == i || e.points[0] == j || e.points[1] == j)
+				if (e.points[0] == i || e.points[1] == i || e.points[0] == j || e.points[1] == j) {
 					continue;
+				}
 
 				Vector2 a = points[e.points[0]].pos;
 				Vector2 b = points[e.points[1]].pos;
@@ -134,7 +129,6 @@ void PolygonPathFinder::setup(const Vector<Vector2> &p_points, const Vector<int>
 }
 
 Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector2 &p_to) {
-
 	Vector<Vector2> path;
 
 	Vector2 from = p_from;
@@ -143,12 +137,10 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	Edge ignore_to_edge(-1, -1);
 
 	if (!_is_point_inside(from)) {
-
 		float closest_dist = 1e20;
 		Vector2 closest_point;
 
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
-
 			const Edge &e = E->get();
 			Vector2 seg[2] = {
 				points[e.points[0]].pos,
@@ -173,7 +165,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		Vector2 closest_point;
 
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
-
 			const Edge &e = E->get();
 			Vector2 seg[2] = {
 				points[e.points[0]].pos,
@@ -195,16 +186,16 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 
 	//test direct connection
 	{
-
 		bool can_see_eachother = true;
 
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
-
 			const Edge &e = E->get();
-			if (e.points[0] == ignore_from_edge.points[0] && e.points[1] == ignore_from_edge.points[1])
+			if (e.points[0] == ignore_from_edge.points[0] && e.points[1] == ignore_from_edge.points[1]) {
 				continue;
-			if (e.points[0] == ignore_to_edge.points[0] && e.points[1] == ignore_to_edge.points[1])
+			}
+			if (e.points[0] == ignore_to_edge.points[0] && e.points[1] == ignore_to_edge.points[1]) {
 				continue;
+			}
 
 			Vector2 a = points[e.points[0]].pos;
 			Vector2 b = points[e.points[1]].pos;
@@ -216,7 +207,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		}
 
 		if (can_see_eachother) {
-
 			path.push_back(from);
 			path.push_back(to);
 			return path;
@@ -237,7 +227,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	points.write[bidx].penalty = 0;
 
 	for (int i = 0; i < points.size() - 2; i++) {
-
 		bool valid_a = true;
 		bool valid_b = true;
 		points.write[i].prev = -1;
@@ -252,22 +241,20 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		}
 
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
-
 			const Edge &e = E->get();
 
-			if (e.points[0] == i || e.points[1] == i)
+			if (e.points[0] == i || e.points[1] == i) {
 				continue;
+			}
 
 			Vector2 a = points[e.points[0]].pos;
 			Vector2 b = points[e.points[1]].pos;
 
 			if (valid_a) {
-
 				if (e.points[0] != ignore_from_edge.points[1] &&
 						e.points[1] != ignore_from_edge.points[1] &&
 						e.points[0] != ignore_from_edge.points[0] &&
 						e.points[1] != ignore_from_edge.points[0]) {
-
 					if (Geometry::segment_intersects_segment_2d(a, b, from, points[i].pos, nullptr)) {
 						valid_a = false;
 					}
@@ -275,20 +262,19 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			}
 
 			if (valid_b) {
-
 				if (e.points[0] != ignore_to_edge.points[1] &&
 						e.points[1] != ignore_to_edge.points[1] &&
 						e.points[0] != ignore_to_edge.points[0] &&
 						e.points[1] != ignore_to_edge.points[0]) {
-
 					if (Geometry::segment_intersects_segment_2d(a, b, to, points[i].pos, nullptr)) {
 						valid_b = false;
 					}
 				}
 			}
 
-			if (!valid_a && !valid_b)
+			if (!valid_a && !valid_b) {
 				break;
+			}
 		}
 
 		if (valid_a) {
@@ -308,7 +294,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	points.write[aidx].distance = 0;
 	points.write[aidx].prev = aidx;
 	for (Set<int>::Element *E = points[aidx].connections.front(); E; E = E->next()) {
-
 		open_list.insert(E->get());
 		points.write[E->get()].distance = from.distance_to(points[E->get()].pos);
 		points.write[E->get()].prev = aidx;
@@ -317,7 +302,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	bool found_route = false;
 
 	while (true) {
-
 		if (open_list.size() == 0) {
 			printf("open list empty\n");
 			break;
@@ -329,14 +313,12 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 
 		//this could be faster (cache previous results)
 		for (Set<int>::Element *E = open_list.front(); E; E = E->next()) {
-
 			const Point &p = points[E->get()];
 			float cost = p.distance;
 			cost += p.pos.distance_to(to);
 			cost += p.penalty;
 
 			if (cost < least_cost) {
-
 				least_cost_point = E->get();
 				least_cost = cost;
 			}
@@ -346,7 +328,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		//open the neighbours for search
 
 		for (Set<int>::Element *E = np.connections.front(); E; E = E->next()) {
-
 			Point &p = points.write[E->get()];
 			float distance = np.pos.distance_to(p.pos) + np.distance;
 
@@ -354,7 +335,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 				//oh this was visited already, can we win the cost?
 
 				if (p.distance > distance) {
-
 					p.prev = least_cost_point; //reasign previous
 					p.distance = distance;
 				}
@@ -373,8 +353,9 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 			}
 		}
 
-		if (found_route)
+		if (found_route) {
 			break;
+		}
 
 		open_list.erase(least_cost_point);
 	}
@@ -391,7 +372,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	}
 
 	for (int i = 0; i < points.size() - 2; i++) {
-
 		points.write[i].connections.erase(aidx);
 		points.write[i].connections.erase(bidx);
 		points.write[i].prev = -1;
@@ -409,7 +389,6 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 }
 
 void PolygonPathFinder::_set_data(const Dictionary &p_data) {
-
 	ERR_FAIL_COND(!p_data.has("points"));
 	ERR_FAIL_COND(!p_data.has("connections"));
 	ERR_FAIL_COND(!p_data.has("segments"));
@@ -419,8 +398,9 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 	Array c = p_data["connections"];
 
 	ERR_FAIL_COND(c.size() != p.size());
-	if (c.size())
+	if (c.size()) {
 		return;
+	}
 
 	int pc = p.size();
 	points.resize(pc + 2);
@@ -432,13 +412,11 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 		const int *cr = con.ptr();
 		int cc = con.size();
 		for (int j = 0; j < cc; j++) {
-
 			points.write[i].connections.insert(cr[j]);
 		}
 	}
 
 	if (p_data.has("penalties")) {
-
 		Vector<float> penalties = p_data["penalties"];
 		if (penalties.size() == pc) {
 			const float *pr2 = penalties.ptr();
@@ -453,7 +431,6 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(sc & 1);
 	const int *sr = segs.ptr();
 	for (int i = 0; i < sc; i += 2) {
-
 		Edge e(sr[i], sr[i + 1]);
 		edges.insert(e);
 	}
@@ -461,7 +438,6 @@ void PolygonPathFinder::_set_data(const Dictionary &p_data) {
 }
 
 Dictionary PolygonPathFinder::_get_data() const {
-
 	Dictionary d;
 	Vector<Vector2> p;
 	Vector<int> ind;
@@ -491,7 +467,6 @@ Dictionary PolygonPathFinder::_get_data() const {
 		}
 	}
 	{
-
 		int *iw = ind.ptrw();
 		int idx = 0;
 		for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
@@ -510,17 +485,14 @@ Dictionary PolygonPathFinder::_get_data() const {
 }
 
 bool PolygonPathFinder::is_point_inside(const Vector2 &p_point) const {
-
 	return _is_point_inside(p_point);
 }
 
 Vector2 PolygonPathFinder::get_closest_point(const Vector2 &p_point) const {
-
 	float closest_dist = 1e20;
 	Vector2 closest_point;
 
 	for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
-
 		const Edge &e = E->get();
 		Vector2 seg[2] = {
 			points[e.points[0]].pos,
@@ -542,7 +514,6 @@ Vector2 PolygonPathFinder::get_closest_point(const Vector2 &p_point) const {
 }
 
 Vector<Vector2> PolygonPathFinder::get_intersections(const Vector2 &p_from, const Vector2 &p_to) const {
-
 	Vector<Vector2> inters;
 
 	for (Set<Edge>::Element *E = edges.front(); E; E = E->next()) {
@@ -559,24 +530,20 @@ Vector<Vector2> PolygonPathFinder::get_intersections(const Vector2 &p_from, cons
 }
 
 Rect2 PolygonPathFinder::get_bounds() const {
-
 	return bounds;
 }
 
 void PolygonPathFinder::set_point_penalty(int p_point, float p_penalty) {
-
 	ERR_FAIL_INDEX(p_point, points.size() - 2);
 	points.write[p_point].penalty = p_penalty;
 }
 
 float PolygonPathFinder::get_point_penalty(int p_point) const {
-
 	ERR_FAIL_INDEX_V(p_point, points.size() - 2, 0);
 	return points[p_point].penalty;
 }
 
 void PolygonPathFinder::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("setup", "points", "connections"), &PolygonPathFinder::setup);
 	ClassDB::bind_method(D_METHOD("find_path", "from", "to"), &PolygonPathFinder::find_path);
 	ClassDB::bind_method(D_METHOD("get_intersections", "from", "to"), &PolygonPathFinder::get_intersections);

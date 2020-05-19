@@ -39,7 +39,6 @@
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public Reference {
-
 	GDCLASS(GDScriptNativeClass, Reference);
 
 	StringName name;
@@ -56,7 +55,6 @@ public:
 };
 
 class GDScript : public Script {
-
 	GDCLASS(GDScript, Script);
 	bool tool;
 	bool valid;
@@ -117,6 +115,8 @@ class GDScript : public Script {
 	String fully_qualified_name;
 	SelfList<GDScript> script_list;
 
+	SelfList<GDScriptFunctionState>::List pending_func_states;
+
 	GDScriptInstance *_create_instance(const Variant **p_args, int p_argcount, Object *p_owner, bool p_isref, Callable::CallError &r_error);
 
 	void _set_subclass_path(Ref<GDScript> &p_sc, const String &p_path);
@@ -133,7 +133,7 @@ class GDScript : public Script {
 
 #endif
 
-	bool _update_exports();
+	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false);
 
 	void _save_orphaned_subclasses();
 	void _init_rpc_methods_properties();
@@ -209,11 +209,11 @@ public:
 
 	virtual int get_member_line(const StringName &p_member) const {
 #ifdef TOOLS_ENABLED
-		if (member_lines.has(p_member))
+		if (member_lines.has(p_member)) {
 			return member_lines[p_member];
-		else
+		}
 #endif
-			return -1;
+		return -1;
 	}
 
 	virtual void get_constants(Map<StringName, Variant> *p_constants);
@@ -253,6 +253,8 @@ class GDScriptInstance : public ScriptInstance {
 #endif
 	Vector<Variant> members;
 	bool base_ref;
+
+	SelfList<GDScriptFunctionState>::List pending_func_states;
 
 	void _ml_call_reversed(GDScript *sptr, const StringName &p_method, const Variant **p_args, int p_argcount);
 
@@ -330,22 +332,23 @@ struct GDScriptWarning {
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded
 		WARNING_MAX,
-	} code;
+	};
+
+	Code code = WARNING_MAX;
 	Vector<String> symbols;
-	int line;
+	int line = -1;
 
 	String get_name() const;
 	String get_message() const;
 	static String get_name_from_code(Code p_code);
 	static Code get_code_from_name(const String &p_name);
 
-	GDScriptWarning() :
-			code(WARNING_MAX),
-			line(-1) {}
+	GDScriptWarning() {}
 };
 #endif // DEBUG_ENABLED
 
 class GDScriptLanguage : public ScriptLanguage {
+	friend class GDScriptFunctionState;
 
 	static GDScriptLanguage *singleton;
 
@@ -355,7 +358,6 @@ class GDScriptLanguage : public ScriptLanguage {
 	Map<StringName, Variant> named_globals;
 
 	struct CallLevel {
-
 		Variant *stack;
 		GDScriptFunction *function;
 		GDScriptInstance *instance;
@@ -394,12 +396,13 @@ public:
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
 	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
+		}
 
 		if (_debug_call_stack_pos >= _debug_max_call_stack) {
 			//stack overflow
@@ -417,15 +420,15 @@ public:
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return; //no support for other threads than main for now
+		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0)
+		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
 			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
+		}
 
 		if (_debug_call_stack_pos == 0) {
-
 			_debug_error = "Stack Underflow (Engine Bug)";
 			EngineDebugger::get_script_debugger()->debug(this);
 			return;
@@ -435,8 +438,9 @@ public:
 	}
 
 	virtual Vector<StackInfo> debug_get_current_stack_info() {
-		if (Thread::get_main_id() != Thread::get_caller_id())
+		if (Thread::get_main_id() != Thread::get_caller_id()) {
 			return Vector<StackInfo>();
+		}
 
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);
@@ -451,7 +455,6 @@ public:
 	}
 
 	struct {
-
 		StringName _init;
 		StringName _notification;
 		StringName _set;

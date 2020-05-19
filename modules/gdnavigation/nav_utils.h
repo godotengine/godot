@@ -32,6 +32,7 @@
 #define NAV_UTILS_H
 
 #include "core/math/vector3.h"
+
 #include <vector>
 
 /**
@@ -44,7 +45,6 @@ namespace gd {
 struct Polygon;
 
 union PointKey {
-
 	struct {
 		int64_t x : 21;
 		int64_t y : 22;
@@ -56,7 +56,6 @@ union PointKey {
 };
 
 struct EdgeKey {
-
 	PointKey a;
 	PointKey b;
 
@@ -80,19 +79,15 @@ struct Point {
 
 struct Edge {
 	/// This edge ID
-	int this_edge;
+	int this_edge = -1;
 
 	/// Other Polygon
-	Polygon *other_polygon;
+	Polygon *other_polygon = nullptr;
 
 	/// The other `Polygon` at this edge id has this `Polygon`.
-	int other_edge;
+	int other_edge = -1;
 
-	Edge() {
-		this_edge = -1;
-		other_polygon = nullptr;
-		other_edge = -1;
-	}
+	Edge() {}
 };
 
 struct Polygon {
@@ -112,40 +107,29 @@ struct Polygon {
 };
 
 struct Connection {
+	Polygon *A = nullptr;
+	int A_edge = -1;
+	Polygon *B = nullptr;
+	int B_edge = -1;
 
-	Polygon *A;
-	int A_edge;
-	Polygon *B;
-	int B_edge;
-
-	Connection() {
-		A = nullptr;
-		B = nullptr;
-		A_edge = -1;
-		B_edge = -1;
-	}
+	Connection() {}
 };
 
 struct NavigationPoly {
-	uint32_t self_id;
+	uint32_t self_id = 0;
 	/// This poly.
 	const Polygon *poly;
 	/// The previous navigation poly (id in the `navigation_poly` array).
-	int prev_navigation_poly_id;
+	int prev_navigation_poly_id = -1;
 	/// The edge id in this `Poly` to reach the `prev_navigation_poly_id`.
-	uint32_t back_navigation_edge;
+	uint32_t back_navigation_edge = 0;
 	/// The entry location of this poly.
 	Vector3 entry;
 	/// The distance to the destination.
-	float traveled_distance;
+	float traveled_distance = 0.0;
 
 	NavigationPoly(const Polygon *p_poly) :
-			self_id(0),
-			poly(p_poly),
-			prev_navigation_poly_id(-1),
-			back_navigation_edge(0),
-			traveled_distance(0.0) {
-	}
+			poly(p_poly) {}
 
 	bool operator==(const NavigationPoly &other) const {
 		return this->poly == other.poly;

@@ -38,16 +38,15 @@
 class Navigation3D;
 
 class NavigationRegion3D : public Node3D {
-
 	GDCLASS(NavigationRegion3D, Node3D);
 
-	bool enabled;
+	bool enabled = true;
 	RID region;
 	Ref<NavigationMesh> navmesh;
 
-	Navigation3D *navigation;
-	Node *debug_view;
-	Thread *bake_thread;
+	Navigation3D *navigation = nullptr;
+	Node *debug_view = nullptr;
+	Thread *bake_thread = nullptr;
 
 protected:
 	void _notification(int p_what);

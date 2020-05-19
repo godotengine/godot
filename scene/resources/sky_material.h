@@ -35,7 +35,6 @@
 #define SKY_MATERIAL_H
 
 class ProceduralSkyMaterial : public Material {
-
 	GDCLASS(ProceduralSkyMaterial, Material);
 
 private:
@@ -140,6 +139,7 @@ private:
 	Color ground_color;
 	float exposure;
 	float dither_strength;
+	Ref<Texture2D> night_sky;
 
 protected:
 	static void _bind_methods();
@@ -175,6 +175,9 @@ public:
 
 	void set_dither_strength(float p_dither_strength);
 	float get_dither_strength() const;
+
+	void set_night_sky(const Ref<Texture2D> &p_night_sky);
+	Ref<Texture2D> get_night_sky() const;
 
 	virtual Shader::Mode get_shader_mode() const;
 	RID get_shader_rid() const;

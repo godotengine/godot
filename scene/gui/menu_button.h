@@ -35,7 +35,6 @@
 #include "scene/gui/popup_menu.h"
 
 class MenuButton : public Button {
-
 	GDCLASS(MenuButton, Button);
 
 	bool clicked;
