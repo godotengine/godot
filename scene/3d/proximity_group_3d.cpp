@@ -179,14 +179,5 @@ void ProximityGroup3D::_bind_methods() {
 };
 
 ProximityGroup3D::ProximityGroup3D() {
-	group_version = 0;
-	dispatch_mode = MODE_PROXY;
-
-	cell_size = 1.0;
-	grid_radius = Vector3(1, 1, 1);
 	set_notify_transform(true);
-};
-
-ProximityGroup3D::~ProximityGroup3D(){
-
 };

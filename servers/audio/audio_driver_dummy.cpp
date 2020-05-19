@@ -114,11 +114,3 @@ void AudioDriverDummy::finish() {
 	memdelete(thread);
 	thread = nullptr;
 };
-
-AudioDriverDummy::AudioDriverDummy() {
-	thread = nullptr;
-};
-
-AudioDriverDummy::~AudioDriverDummy(){
-
-};

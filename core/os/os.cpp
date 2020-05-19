@@ -94,10 +94,9 @@ uint64_t OS::get_system_time_msecs() const {
 	return 0;
 }
 
-void OS::debug_break(){
-
+void OS::debug_break() {
 	// something
-};
+}
 
 void OS::_set_logger(CompositeLogger *p_logger) {
 	if (_logger) {

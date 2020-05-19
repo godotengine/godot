@@ -59,11 +59,3 @@ void ThreadUWP::make_default() {
 	get_thread_id_func = get_thread_id_func_uwp;
 	wait_to_finish_func = wait_to_finish_func_uwp;
 };
-
-ThreadUWP::ThreadUWP(){
-
-};
-
-ThreadUWP::~ThreadUWP(){
-
-};

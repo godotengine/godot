@@ -445,11 +445,6 @@ void RigidBodyBullet::assert_no_constraints() {
 	if (btBody->getNumConstraintRefs()) {
 		WARN_PRINT("A body with a joints is destroyed. Please check the implementation in order to destroy the joint before the body.");
 	}
-	/*for(int i = btBody->getNumConstraintRefs()-1; 0<=i; --i){
-        btTypedConstraint* btConst = btBody->getConstraintRef(i);
-        JointBullet* joint = static_cast<JointBullet*>( btConst->getUserConstraintPtr() );
-        space->removeConstraint(joint);
-    }*/
 }
 
 void RigidBodyBullet::set_activation_state(bool p_active) {

@@ -56,7 +56,7 @@ abstract public class PurchaseTask {
 		PaymentsCache pc = new PaymentsCache(context);
 		Boolean isBlocked = pc.getConsumableFlag("block", sku);
 		/*
-		if(isBlocked){
+		if(isBlocked) {
 			Log.d("XXX", "Is awaiting payment confirmation");
 			error("Awaiting payment confirmation");
 			return;
