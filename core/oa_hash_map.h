@@ -298,7 +298,7 @@ public:
 		bool valid;
 
 		const TKey *key;
-		const TValue *value;
+		TValue *value;
 
 	private:
 		uint32_t pos;
