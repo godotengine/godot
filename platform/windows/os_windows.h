@@ -241,6 +241,9 @@ typedef struct {
 
 class JoypadWindows;
 class OS_Windows : public OS {
+	String tablet_driver;
+	Vector<String> tablet_drivers;
+
 	// WinTab API
 	static bool wintab_available;
 	static WTOpenPtr wintab_WTOpen;
@@ -250,6 +253,7 @@ class OS_Windows : public OS {
 	static WTEnablePtr wintab_WTEnable;
 
 	// Windows Ink API
+	static bool winink_available;
 	static GetPointerTypePtr win8p_GetPointerType;
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
 
@@ -411,6 +415,11 @@ public:
 	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
 	virtual VideoMode get_video_mode(int p_screen = 0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
+
+	virtual int get_tablet_driver_count() const;
+	virtual const char *get_tablet_driver_name(int p_driver) const;
+	virtual String get_current_tablet_driver() const;
+	virtual void set_current_tablet_driver(const String &p_driver);
 
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;

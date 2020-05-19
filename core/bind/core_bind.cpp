@@ -1178,6 +1178,22 @@ Vector<String> _OS::get_granted_permissions() const {
 	return OS::get_singleton()->get_granted_permissions();
 }
 
+int _OS::get_tablet_driver_count() const {
+	return OS::get_singleton()->get_tablet_driver_count();
+}
+
+String _OS::get_tablet_driver_name(int p_driver) const {
+	return OS::get_singleton()->get_tablet_driver_name(p_driver);
+}
+
+String _OS::get_current_tablet_driver() const {
+	return OS::get_singleton()->get_current_tablet_driver();
+}
+
+void _OS::set_current_tablet_driver(const String &p_driver) {
+	OS::get_singleton()->set_current_tablet_driver(p_driver);
+}
+
 _OS *_OS::singleton = NULL;
 
 void _OS::_bind_methods() {
@@ -1370,6 +1386,13 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("request_permission", "name"), &_OS::request_permission);
 	ClassDB::bind_method(D_METHOD("request_permissions"), &_OS::request_permissions);
 	ClassDB::bind_method(D_METHOD("get_granted_permissions"), &_OS::get_granted_permissions);
+
+	ClassDB::bind_method(D_METHOD("get_tablet_driver_count"), &_OS::get_tablet_driver_count);
+	ClassDB::bind_method(D_METHOD("get_tablet_driver_name", "idx"), &_OS::get_tablet_driver_name);
+	ClassDB::bind_method(D_METHOD("get_current_tablet_driver"), &_OS::get_current_tablet_driver);
+	ClassDB::bind_method(D_METHOD("set_current_tablet_driver", "name"), &_OS::set_current_tablet_driver);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "tablet_driver"), "set_current_tablet_driver", "get_current_tablet_driver");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "clipboard"), "set_clipboard", "get_clipboard");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen"), "set_current_screen", "get_current_screen");

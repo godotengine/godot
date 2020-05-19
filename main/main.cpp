@@ -134,7 +134,6 @@ static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
 static Vector2 init_custom_pos;
 static bool force_lowdpi = false;
-static bool disable_wintab = false;
 
 // Debug
 
@@ -263,7 +262,13 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --no-window                      Disable window creation (Windows only). Useful together with --script.\n");
 	OS::get_singleton()->print("  --enable-vsync-via-compositor    When vsync is enabled, vsync via the OS' window compositor (Windows only).\n");
 	OS::get_singleton()->print("  --disable-vsync-via-compositor   Disable vsync via the OS' window compositor (Windows only).\n");
-	OS::get_singleton()->print("  --disable-wintab                 Disable WinTab API and always use Windows Ink API for the pen input (Windows only).\n");
+	OS::get_singleton()->print("  --tablet-driver                  Tablet input driver (");
+	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+		if (i != 0)
+			OS::get_singleton()->print(", ");
+		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_tablet_driver_name(i));
+	}
+	OS::get_singleton()->print(") (Windows only).\n");
 	OS::get_singleton()->print("\n");
 #endif
 
@@ -391,6 +396,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	String video_driver = "";
 	String audio_driver = "";
+	String tablet_driver = "";
 	String project_path = ".";
 	bool upwards = false;
 	String debug_mode;
@@ -606,9 +612,26 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (I->get() == "--no-window") { // disable window creation (Windows only)
 
 			OS::get_singleton()->set_no_window_mode(true);
-		} else if (I->get() == "--disable-wintab") {
+		} else if (I->get() == "--tablet-driver") {
+			if (I->next()) {
+				tablet_driver = I->next()->get();
+				bool found = false;
+				for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+					if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+						found = true;
+					}
+				}
 
-			disable_wintab = true;
+				if (!found) {
+					OS::get_singleton()->print("Unknown tablet driver '%s', aborting.\n", tablet_driver.utf8().get_data());
+					goto error;
+				}
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing tablet driver argument, aborting.\n");
+				goto error;
+			}
 		} else if (I->get() == "--enable-vsync-via-compositor") {
 
 			video_mode.vsync_via_compositor = true;
@@ -1053,12 +1076,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	OS::get_singleton()->_vsync_via_compositor = video_mode.vsync_via_compositor;
 
-	if (!disable_wintab) {
-		// No "--disable_wintab" option
-		disable_wintab = GLOBAL_DEF("display/window/disable_wintab_api", false);
+	if (tablet_driver == "") { // specified in project.godot
+		tablet_driver = GLOBAL_DEF_RST("display/window/tablet_driver", OS::get_singleton()->get_tablet_driver_name(0));
 	}
 
-	OS::get_singleton()->_disable_wintab = disable_wintab;
+	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
+		if (tablet_driver == OS::get_singleton()->get_tablet_driver_name(i)) {
+			OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(i));
+			break;
+		}
+	}
+
+	if (tablet_driver == "") {
+		OS::get_singleton()->set_current_tablet_driver(OS::get_singleton()->get_tablet_driver_name(0));
+	}
 
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 	video_mode.layered = GLOBAL_DEF("display/window/per_pixel_transparency/enabled", false);
@@ -1173,6 +1204,7 @@ error:
 
 	video_driver = "";
 	audio_driver = "";
+	tablet_driver = "";
 	project_path = "";
 
 	args.clear();

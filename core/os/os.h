@@ -61,7 +61,6 @@ class OS {
 	bool _allow_layered;
 	bool _use_vsync;
 	bool _vsync_via_compositor;
-	bool _disable_wintab;
 
 	char *last_error;
 
@@ -193,6 +192,11 @@ public:
 
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
+
+	virtual int get_tablet_driver_count() const { return 0; };
+	virtual const char *get_tablet_driver_name(int p_driver) const { return ""; };
+	virtual String get_current_tablet_driver() const { return ""; };
+	virtual void set_current_tablet_driver(const String &p_driver){};
 
 	virtual PoolStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
@@ -525,7 +529,6 @@ public:
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
-	bool is_wintab_disabled() const { return _disable_wintab; }
 
 	void set_restart_on_exit(bool p_restart, const List<String> &p_restart_arguments);
 	bool is_restart_on_exit_set() const;
