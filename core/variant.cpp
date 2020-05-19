@@ -191,7 +191,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 	if (p_type_from == NIL) {
 		return (p_type_to == OBJECT);
-	};
+	}
 
 	const Type *valid_types = nullptr;
 	const Type *invalid_types = nullptr;
@@ -498,7 +498,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 	if (p_type_from == NIL) {
 		return (p_type_to == OBJECT);
-	};
+	}
 
 	const Type *valid_types = nullptr;
 
@@ -870,11 +870,6 @@ bool Variant::is_zero() const {
 			return *reinterpret_cast<const Plane *>(_data._mem) == Plane();
 
 		} break;
-		/*
-		case QUAT: {
-
-
-		} break;*/
 		case AABB: {
 			return *_data._aabb == ::AABB();
 		} break;
@@ -1284,7 +1279,7 @@ void Variant::clear() {
 		COLOR,
 		VECTOR2,
 		RECT2
-	*/
+		*/
 		case TRANSFORM2D: {
 			memdelete(_data._transform2d);
 		} break;
@@ -1421,26 +1416,6 @@ Variant::operator int64_t() const {
 	}
 }
 
-/*
-Variant::operator long unsigned int() const {
-
-	switch( type ) {
-
-		case NIL: return 0;
-		case BOOL: return _data._bool ? 1 : 0;
-		case INT: return _data._int;
-		case FLOAT: return _data._real;
-		case STRING: return operator String().to_int();
-		default: {
-
-			return 0;
-		}
-	}
-
-	return 0;
-};
-*/
-
 Variant::operator uint64_t() const {
 	switch (type) {
 		case NIL:
@@ -1488,7 +1463,7 @@ Variant::operator signed long() const {
 	}
 
 	return 0;
-};
+}
 
 Variant::operator unsigned long() const {
 	switch (type) {
@@ -1508,7 +1483,7 @@ Variant::operator unsigned long() const {
 	}
 
 	return 0;
-};
+}
 #endif
 
 Variant::operator signed short() const {
@@ -1858,7 +1833,7 @@ String Variant::stringify(List<const void *> &stack) const {
 			if (_get_obj().obj) {
 				if (!_get_obj().id.is_reference() && ObjectDB::get_instance(_get_obj().id) == nullptr) {
 					return "[Freed Object]";
-				};
+				}
 
 				return _get_obj().obj->to_string();
 			} else {
@@ -2075,7 +2050,7 @@ Variant::operator RID() const {
 #ifdef DEBUG_ENABLED
 		if (EngineDebugger::is_active()) {
 			ERR_FAIL_COND_V_MSG(ObjectDB::get_instance(_get_obj().id) == nullptr, RID(), "Invalid pointer (object was freed).");
-		};
+		}
 #endif
 		Callable::CallError ce;
 		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid, nullptr, 0, ce);
@@ -2386,14 +2361,6 @@ Variant::Variant(bool p_bool) {
 	type = BOOL;
 	_data._bool = p_bool;
 }
-
-/*
-Variant::Variant(long unsigned int p_long) {
-
-	type=INT;
-	_data._int=p_long;
-};
-*/
 
 Variant::Variant(signed int p_int) {
 	type = INT;
@@ -2939,11 +2906,6 @@ uint32_t Variant::hash() const {
 			return hash_djb2_one_float(reinterpret_cast<const Plane *>(_data._mem)->d, hash);
 
 		} break;
-		/*
-			case QUAT: {
-
-
-			} break;*/
 		case AABB: {
 			uint32_t hash = 5831;
 			for (int i = 0; i < 3; i++) {

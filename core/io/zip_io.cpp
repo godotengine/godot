@@ -80,7 +80,7 @@ long zipio_seek(voidpf opaque, voidpf stream, uLong offset, int origin) {
 			break;
 		default:
 			break;
-	};
+	}
 
 	f->seek(pos);
 	return 0;

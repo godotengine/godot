@@ -873,7 +873,7 @@ void Translation::get_message_list(List<StringName> *r_messages) const {
 
 int Translation::get_message_count() const {
 	return translation_map.size();
-};
+}
 
 void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &Translation::set_locale);
@@ -1022,7 +1022,7 @@ void TranslationServer::remove_translation(const Ref<Translation> &p_translation
 
 void TranslationServer::clear() {
 	translations.clear();
-};
+}
 
 StringName TranslationServer::translate(const StringName &p_message) const {
 	// Match given message against the translation catalog for the project locale.

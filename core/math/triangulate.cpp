@@ -79,7 +79,7 @@ bool Triangulate::is_inside_triangle(real_t Ax, real_t Ay,
 	} else {
 		return ((aCROSSbp >= 0.0) && (bCROSScp >= 0.0) && (cCROSSap >= 0.0));
 	}
-};
+}
 
 bool Triangulate::snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V, bool relaxed) {
 	int p;

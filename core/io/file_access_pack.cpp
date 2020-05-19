@@ -38,11 +38,11 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 	for (int i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files)) {
 			return OK;
-		};
-	};
+		}
+	}
 
 	return ERR_FILE_UNRECOGNIZED;
-};
+}
 
 void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
 	PathMD5 pmd5(path.md5_buffer());
@@ -96,7 +96,7 @@ void PackedData::add_pack_source(PackSource *p_source) {
 	if (p_source != nullptr) {
 		sources.push_back(p_source);
 	}
-};
+}
 
 PackedData *PackedData::singleton = nullptr;
 
@@ -192,16 +192,16 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) 
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
 		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5, this, p_replace_files);
-	};
+	}
 
 	f->close();
 	memdelete(f);
 	return true;
-};
+}
 
 FileAccess *PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 	return memnew(FileAccessPack(p_path, *p_file));
-};
+}
 
 //////////////////////////////////////////////////////////////////
 

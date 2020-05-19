@@ -247,15 +247,6 @@ String String::operator+(const String &p_str) const {
 	return res;
 }
 
-/*
-String String::operator+(CharType p_chr)  const {
-
-	String res=*this;
-	res+=p_chr;
-	return res;
-}
-
-*/
 String &String::operator+=(const String &p_str) {
 	if (empty()) {
 		*this = p_str;
@@ -1371,7 +1362,7 @@ String String::utf8(const char *p_utf8, int p_len) {
 	ret.parse_utf8(p_utf8, p_len);
 
 	return ret;
-};
+}
 
 bool String::parse_utf8(const char *p_utf8, int p_len) {
 #define _UNICERROR(m_err) print_line("Unicode parsing error: " + String(m_err) + ". Is the string valid UTF-8?");
@@ -1608,6 +1599,7 @@ String::String(CharType p_char) {
 	copy_from(p_char);
 }
 
+
 */
 
 String::String(const char *p_str) {
@@ -1833,7 +1825,7 @@ int String::to_int(const char *p_str, int p_len) {
 bool String::is_numeric() const {
 	if (length() == 0) {
 		return false;
-	};
+	}
 
 	int s = 0;
 	if (operator[](0) == '-') {
@@ -1845,16 +1837,16 @@ bool String::is_numeric() const {
 		if (c == '.') {
 			if (dot) {
 				return false;
-			};
+			}
 			dot = true;
 		}
 		if (c < '0' || c > '9') {
 			return false;
-		};
-	};
+		}
+	}
 
 	return true; // TODO: Use the parser below for this instead
-};
+}
 
 template <class C>
 static double built_in_strtod(const C *string, /* A decimal ASCII floating-point number,
@@ -2278,7 +2270,7 @@ Vector<uint8_t> String::md5_buffer() const {
 		ret.write[i] = hash[i];
 	}
 	return ret;
-};
+}
 
 Vector<uint8_t> String::sha1_buffer() const {
 	CharString cs = utf8();
@@ -2387,7 +2379,7 @@ int String::find(const String &p_str, int p_from) const {
 			if (read_pos >= len) {
 				ERR_PRINT("read_pos>=len");
 				return -1;
-			};
+			}
 
 			if (src[read_pos] != str[j]) {
 				found = false;
@@ -2439,7 +2431,7 @@ int String::find(const char *p_str, int p_from) const {
 				if (read_pos >= len) {
 					ERR_PRINT("read_pos>=len");
 					return -1;
-				};
+				}
 
 				if (src[read_pos] != p_str[j]) {
 					found = false;
@@ -2495,7 +2487,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 				if (read_pos >= len) {
 					found = false;
 					break;
-				};
+				}
 
 				if (src[read_pos] != cmp[j]) {
 					found = false;
@@ -2536,7 +2528,7 @@ int String::findn(const String &p_str, int p_from) const {
 			if (read_pos >= length()) {
 				ERR_PRINT("read_pos>=length()");
 				return -1;
-			};
+			}
 
 			CharType src = _find_lower(srcd[read_pos]);
 			CharType dst = _find_lower(p_str[j]);
@@ -2586,7 +2578,7 @@ int String::rfind(const String &p_str, int p_from) const {
 			if (read_pos >= len) {
 				ERR_PRINT("read_pos>=len");
 				return -1;
-			};
+			}
 
 			if (src[read_pos] != p_str[j]) {
 				found = false;
@@ -2633,7 +2625,7 @@ int String::rfindn(const String &p_str, int p_from) const {
 			if (read_pos >= len) {
 				ERR_PRINT("read_pos>=len");
 				return -1;
-			};
+			}
 
 			CharType srcc = _find_lower(src[read_pos]);
 			CharType dstc = _find_lower(p_str[j]);
@@ -3691,7 +3683,7 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 	}
 
 	return true;
-};
+}
 
 bool String::is_valid_float() const {
 	int len = length();
@@ -3851,11 +3843,11 @@ bool String::is_valid_ip_address() const {
 					return false;
 				}
 				continue;
-			};
+			}
 			if (!n.is_valid_ip_address()) {
 				return false;
 			}
-		};
+		}
 
 	} else {
 		Vector<String> ip = split(".");
@@ -3872,7 +3864,7 @@ bool String::is_valid_ip_address() const {
 				return false;
 			}
 		}
-	};
+	}
 
 	return true;
 }

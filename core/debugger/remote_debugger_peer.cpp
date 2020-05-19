@@ -178,13 +178,13 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
 			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
-		};
-	};
+		}
+	}
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 		ERR_PRINT("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
 		return FAILED;
-	};
+	}
 	connected = true;
 #ifndef NO_THREADS
 	running = true;

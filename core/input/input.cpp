@@ -339,7 +339,7 @@ float Input::get_joy_axis(int p_device, int p_axis) const {
 String Input::get_joy_name(int p_idx) {
 	_THREAD_SAFE_METHOD_
 	return joy_names[p_idx].name;
-};
+}
 
 Vector2 Input::get_joy_vibration_strength(int p_device) {
 	if (joy_vibration.has(p_device)) {
@@ -374,7 +374,7 @@ static String _hex_str(uint8_t p_byte) {
 	ret[1] = dict[p_byte & 0xf];
 
 	return ret;
-};
+}
 
 void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) {
 	_THREAD_SAFE_METHOD_
@@ -388,8 +388,8 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 			int uidlen = MIN(p_name.length(), 16);
 			for (int i = 0; i < uidlen; i++) {
 				uidname = uidname + _hex_str(p_name[i]);
-			};
-		};
+			}
+		}
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
@@ -397,8 +397,8 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
 				js.name = map_db[i].name;
-			};
-		};
+			}
+		}
 		js.mapping = mapping;
 	} else {
 		js.connected = false;
@@ -409,11 +409,11 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, String p_name, S
 		for (int i = 0; i < JOY_AXIS_MAX; i++) {
 			set_joy_axis(p_idx, i, 0.0f);
 		}
-	};
+	}
 	joy_names[p_idx] = js;
 
 	emit_signal("joy_connection_changed", p_idx, p_connected);
-};
+}
 
 Vector3 Input::get_gravity() const {
 	_THREAD_SAFE_METHOD_
@@ -918,7 +918,7 @@ void Input::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 	if (joy.mapping == -1) {
 		_axis_event(p_device, p_axis, val);
 		return;
-	};
+	}
 
 	JoyEvent map = _get_mapped_axis_event(map_db[joy.mapping], p_axis, p_value);
 
@@ -1003,7 +1003,7 @@ void Input::joy_hat(int p_device, int p_val) {
 
 	if (joy.mapping != -1) {
 		_get_mapped_hat_events(map_db[joy.mapping], 0, map);
-	};
+	}
 
 	int cur_val = joy_names[p_device].hat_current;
 
@@ -1042,7 +1042,7 @@ void Input::_axis_event(int p_device, int p_axis, float p_value) {
 	ievent->set_axis_value(p_value);
 
 	parse_input_event(ievent);
-};
+}
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, int p_button) {
 	JoyEvent event;
@@ -1274,10 +1274,10 @@ void Input::parse_mapping(String p_mapping) {
 		}
 
 		mapping.bindings.push_back(binding);
-	};
+	}
 
 	map_db.push_back(mapping);
-};
+}
 
 void Input::add_joy_mapping(String p_mapping, bool p_update_existing) {
 	parse_mapping(p_mapping);

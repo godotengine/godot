@@ -219,10 +219,10 @@ public:
 	bool is_ref() const;
 	_FORCE_INLINE_ bool is_num() const {
 		return type == INT || type == FLOAT;
-	};
+	}
 	_FORCE_INLINE_ bool is_array() const {
 		return type >= ARRAY;
-	};
+	}
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;

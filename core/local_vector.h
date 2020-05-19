@@ -185,8 +185,8 @@ public:
 		for (i = 0; i < count; i++) {
 			if (p_val < data[i]) {
 				break;
-			};
-		};
+			}
+		}
 		insert(i, p_val);
 	}
 
