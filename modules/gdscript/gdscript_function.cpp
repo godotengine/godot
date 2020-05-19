@@ -1818,8 +1818,6 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	state.result = Variant();
 
 	if (completed) {
-		_clear_stack();
-
 		if (first_state.is_valid()) {
 			first_state->emit_signal("completed", ret);
 		} else {
