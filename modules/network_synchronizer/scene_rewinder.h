@@ -277,17 +277,15 @@ private:
 struct Snapshot {
 	// This is an utility variable that is used for fast comparisons.
 	uint64_t player_controller_input_id;
-	// TODO worth store the pointer instead of the Object ID?
-	// TODO copy on write?
-	HashMap<ObjectID, uint64_t> controllers_input_id;
-	HashMap<ObjectID, NodeData> data; // TODO Can we just use Vetor<VarData> ?
+	OAHashMap<ObjectID, uint64_t> controllers_input_id;
+	OAHashMap<ObjectID, NodeData> data; // TODO Can we just use Vetor<VarData> ?
 
 	operator String() const;
 };
 
 struct IsleSnapshot {
 	uint64_t input_id;
-	HashMap<ObjectID, Vector<VarData>> node_vars;
+	OAHashMap<ObjectID, Vector<VarData>> node_vars;
 
 	operator String() const;
 };
@@ -348,6 +346,7 @@ class ClientRewinder : public Rewinder {
 
 	// TODO can we get rid of this?
 	uint64_t server_snapshot_id;
+	// TODO can we get rid of this?
 	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
 	// TODO use OAHashMap
