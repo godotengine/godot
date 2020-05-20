@@ -1112,7 +1112,7 @@ void ClientRewinder::process() {
 					int node_i = 0;
 					node_i < it.value->nodes.size();
 					node_i += 1) {
-				NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]); // TODO Is possible to avoid this?
+				NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
 				ERR_CONTINUE(node_data == nullptr);
 				node_data->process(delta);
 			}
@@ -1126,7 +1126,7 @@ void ClientRewinder::process() {
 					int node_i = 0;
 					node_i < it.value->nodes.size();
 					node_i += 1) {
-				NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]); // TODO Is possible to avoid this?
+				NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
 				ERR_CONTINUE(node_data == nullptr);
 
 				scene_rewinder->pull_node_changes(node_data);
