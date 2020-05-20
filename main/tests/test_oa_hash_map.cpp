@@ -210,6 +210,89 @@ MainLoop *test() {
 		}
 	}
 
+	// Test map with 0 capacity.
+	{
+		OAHashMap<int, String> original_map(0);
+		original_map.set(1, "1");
+		OS::get_singleton()->print("OAHashMap 0 capacity initialization passed.\n");
+	}
+
+	// Test copy constructor.
+	{
+		OAHashMap<int, String> original_map;
+		original_map.set(1, "1");
+		original_map.set(2, "2");
+		original_map.set(3, "3");
+		original_map.set(4, "4");
+		original_map.set(5, "5");
+
+		OAHashMap<int, String> map_copy(original_map);
+
+		bool pass = true;
+		for (
+				OAHashMap<int, String>::Iterator it = original_map.iter();
+				it.valid;
+				it = original_map.next_iter(it)) {
+			if (map_copy.lookup_ptr(*it.key) == nullptr) {
+				pass = false;
+			}
+			if (*it.value != *map_copy.lookup_ptr(*it.key)) {
+				pass = false;
+			}
+		}
+		if (pass) {
+			OS::get_singleton()->print("OAHashMap copy constructor test passed.\n");
+		} else {
+			OS::get_singleton()->print("OAHashMap copy constructor test FAILED.\n");
+		}
+
+		map_copy.set(1, "Random String");
+		if (*map_copy.lookup_ptr(1) == *original_map.lookup_ptr(1)) {
+			OS::get_singleton()->print("OAHashMap copy constructor, atomic copy test FAILED.\n");
+		} else {
+			OS::get_singleton()->print("OAHashMap copy constructor, atomic copy test passed.\n");
+		}
+	}
+
+	// Test assign operator.
+	{
+		OAHashMap<int, String> original_map;
+		original_map.set(1, "1");
+		original_map.set(2, "2");
+		original_map.set(3, "3");
+		original_map.set(4, "4");
+		original_map.set(5, "5");
+
+		OAHashMap<int, String> map_copy(100000);
+		map_copy.set(1, "Just a string.");
+		map_copy = original_map;
+
+		bool pass = true;
+		for (
+				OAHashMap<int, String>::Iterator it = map_copy.iter();
+				it.valid;
+				it = map_copy.next_iter(it)) {
+			if (original_map.lookup_ptr(*it.key) == nullptr) {
+				pass = false;
+			}
+			if (*it.value != *original_map.lookup_ptr(*it.key)) {
+				pass = false;
+			}
+		}
+		if (pass) {
+			OS::get_singleton()->print("OAHashMap assign operation test passed.\n");
+		} else {
+			OS::get_singleton()->print("OAHashMap assign operation test FAILED.\n");
+		}
+
+		map_copy.set(1, "Random String");
+		if (*map_copy.lookup_ptr(1) == *original_map.lookup_ptr(1)) {
+			OS::get_singleton()->print("OAHashMap assign operation atomic copy test FAILED.\n");
+		} else {
+			OS::get_singleton()->print("OAHashMap assign operation atomic copy test passed.\n");
+		}
+	}
+
 	return nullptr;
 }
 
