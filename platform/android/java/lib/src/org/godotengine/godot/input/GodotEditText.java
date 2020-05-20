@@ -58,6 +58,7 @@ public class GodotEditText extends EditText {
 	private GodotTextInputWrapper mInputWrapper;
 	private EditHandler sHandler = new EditHandler(this);
 	private String mOriginText;
+	private int mMaxInputLength;
 
 	private static class EditHandler extends Handler {
 		private final WeakReference<GodotEditText> mEdit;
@@ -104,11 +105,18 @@ public class GodotEditText extends EditText {
 				String text = edit.mOriginText;
 				if (edit.requestFocus()) {
 					edit.removeTextChangedListener(edit.mInputWrapper);
+					setMaxInputLength(edit);
 					edit.setText("");
 					edit.append(text);
+					if (msg.arg2 != -1) {
+						edit.setSelection(msg.arg1, msg.arg2);
+						edit.mInputWrapper.setSelection(true);
+					} else {
+						edit.mInputWrapper.setSelection(false);
+					}
+
 					edit.mInputWrapper.setOriginText(text);
 					edit.addTextChangedListener(edit.mInputWrapper);
-					setMaxInputLength(edit, msg.arg1);
 					final InputMethodManager imm = (InputMethodManager)mView.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 					imm.showSoftInput(edit, 0);
 				}
@@ -125,14 +133,10 @@ public class GodotEditText extends EditText {
 		}
 	}
 
-	private void setMaxInputLength(EditText p_edit_text, int p_max_input_length) {
-		if (p_max_input_length > 0) {
-			InputFilter[] filters = new InputFilter[1];
-			filters[0] = new InputFilter.LengthFilter(p_max_input_length);
-			p_edit_text.setFilters(filters);
-		} else {
-			p_edit_text.setFilters(new InputFilter[] {});
-		}
+	private void setMaxInputLength(EditText p_edit_text) {
+		InputFilter[] filters = new InputFilter[1];
+		filters[0] = new InputFilter.LengthFilter(this.mMaxInputLength);
+		p_edit_text.setFilters(filters);
 	}
 
 	// ===========================================================
@@ -164,13 +168,24 @@ public class GodotEditText extends EditText {
 	// ===========================================================
 	// Methods
 	// ===========================================================
-	public void showKeyboard(String p_existing_text, int p_max_input_length) {
-		this.mOriginText = p_existing_text;
+	public void showKeyboard(String p_existing_text, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
+		int maxInputLength = (p_max_input_length <= 0) ? Integer.MAX_VALUE : p_max_input_length;
+		if (p_cursor_start == -1) { // cursor position not given
+			this.mOriginText = p_existing_text;
+			this.mMaxInputLength = maxInputLength;
+		} else if (p_cursor_end == -1) { // not text selection
+			this.mOriginText = p_existing_text.substring(0, p_cursor_start);
+			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_start);
+		} else {
+			this.mOriginText = p_existing_text.substring(0, p_cursor_end);
+			this.mMaxInputLength = maxInputLength - (p_existing_text.length() - p_cursor_end);
+		}
 
 		final Message msg = new Message();
 		msg.what = HANDLER_OPEN_IME_KEYBOARD;
 		msg.obj = this;
-		msg.arg1 = p_max_input_length;
+		msg.arg1 = p_cursor_start;
+		msg.arg2 = p_cursor_end;
 		sHandler.sendMessage(msg);
 	}
 

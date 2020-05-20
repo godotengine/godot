@@ -30,6 +30,8 @@
 
 #include "audio_driver_javascript.h"
 
+#include "core/project_settings.h"
+
 #include <emscripten.h>
 
 AudioDriverJavaScript *AudioDriverJavaScript::singleton = NULL;
@@ -68,32 +70,32 @@ void AudioDriverJavaScript::process_capture(float sample) {
 
 Error AudioDriverJavaScript::init() {
 
+	int mix_rate = GLOBAL_GET("audio/mix_rate");
+	int latency = GLOBAL_GET("audio/output_latency");
+
 	/* clang-format off */
 	EM_ASM({
-		_audioDriver_audioContext = new (window.AudioContext || window.webkitAudioContext);
+		const MIX_RATE = $0;
+		const LATENCY = $1;
+		_audioDriver_audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: MIX_RATE, latencyHint: LATENCY});
 		_audioDriver_audioInput = null;
 		_audioDriver_inputStream = null;
 		_audioDriver_scriptNode = null;
-	});
+	}, mix_rate, latency);
 	/* clang-format on */
 
 	int channel_count = get_total_channels_by_speaker_mode(get_speaker_mode());
+	buffer_length = closest_power_of_2((latency * mix_rate / 1000) * channel_count);
 	/* clang-format off */
 	buffer_length = EM_ASM_INT({
-		var CHANNEL_COUNT = $0;
+		const BUFFER_LENGTH = $0;
+		const CHANNEL_COUNT = $1;
 
-		var channelCount = _audioDriver_audioContext.destination.channelCount;
-		try {
-			// Try letting the browser recommend a buffer length.
-			_audioDriver_scriptNode = _audioDriver_audioContext.createScriptProcessor(0, 2, channelCount);
-		} catch (e) {
-			// ...otherwise, default to 4096.
-			_audioDriver_scriptNode = _audioDriver_audioContext.createScriptProcessor(4096, 2, channelCount);
-		}
+		_audioDriver_scriptNode = _audioDriver_audioContext.createScriptProcessor(BUFFER_LENGTH, 2, CHANNEL_COUNT);
 		_audioDriver_scriptNode.connect(_audioDriver_audioContext.destination);
 
 		return _audioDriver_scriptNode.bufferSize;
-	}, channel_count);
+	}, buffer_length, channel_count);
 	/* clang-format on */
 	if (!buffer_length) {
 		return FAILED;
@@ -151,6 +153,23 @@ void AudioDriverJavaScript::resume() {
 	EM_ASM({
 		if (_audioDriver_audioContext.resume)
 			_audioDriver_audioContext.resume();
+	});
+	/* clang-format on */
+}
+
+float AudioDriverJavaScript::get_latency() {
+	/* clang-format off */
+	return EM_ASM_DOUBLE({
+		var latency = 0;
+		if (_audioDriver_audioContext) {
+			if (_audioDriver_audioContext.baseLatency) {
+				latency += _audioDriver_audioContext.baseLatency;
+			}
+			if (_audioDriver_audioContext.outputLatency) {
+				latency += _audioDriver_audioContext.outputLatency;
+			}
+		}
+		return latency;
 	});
 	/* clang-format on */
 }

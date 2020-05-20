@@ -377,6 +377,8 @@ protected:
 	void process_events();
 	void process_key_events();
 
+	String _quote_command_line_argument(const String &p_text) const;
+
 	struct ProcessInfo {
 
 		STARTUPINFO si;

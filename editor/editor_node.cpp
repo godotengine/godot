@@ -6249,7 +6249,11 @@ EditorNode::EditorNode() {
 
 	p = settings_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
+#ifdef OSX_ENABLED
+	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings..."), KEY_MASK_CMD + KEY_COMMA), SETTINGS_PREFERENCES);
+#else
 	p->add_shortcut(ED_SHORTCUT("editor/editor_settings", TTR("Editor Settings...")), SETTINGS_PREFERENCES);
+#endif
 	p->add_separator();
 
 	editor_layouts = memnew(PopupMenu);

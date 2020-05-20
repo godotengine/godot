@@ -1455,7 +1455,11 @@ bool Main::start() {
 		} else if (args[i].length() && args[i][0] != '-' && positional_arg == "") {
 			positional_arg = args[i];
 
-			if (args[i].ends_with(".scn") || args[i].ends_with(".tscn") || args[i].ends_with(".escn")) {
+			if (args[i].ends_with(".scn") ||
+					args[i].ends_with(".tscn") ||
+					args[i].ends_with(".escn") ||
+					args[i].ends_with(".res") ||
+					args[i].ends_with(".tres")) {
 				// Only consider the positional argument to be a scene path if it ends with
 				// a file extension associated with Godot scenes. This makes it possible
 				// for projects to parse command-line arguments for custom CLI arguments

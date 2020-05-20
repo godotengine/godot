@@ -251,6 +251,7 @@ void Navigation::_clip_path(Vector<Vector3> &path, Polygon *from_poly, const Vec
 	while (from_poly != p_to_poly) {
 
 		int pe = from_poly->prev_edge;
+		ERR_FAIL_COND(from_poly->edges.size() == 0);
 		Vector3 a = _get_vertex(from_poly->edges[pe].point);
 		Vector3 b = _get_vertex(from_poly->edges[(pe + 1) % from_poly->edges.size()].point);
 
@@ -261,7 +262,7 @@ void Navigation::_clip_path(Vector<Vector3> &path, Polygon *from_poly, const Vec
 
 			Vector3 inters;
 			if (cut_plane.intersects_segment(a, b, &inters)) {
-				if (inters.distance_to(p_to_point) > CMP_EPSILON && inters.distance_to(path[path.size() - 1]) > CMP_EPSILON) {
+				if (inters.distance_to(p_to_point) > CMP_EPSILON && inters.distance_to(from) > CMP_EPSILON) {
 					path.push_back(inters);
 				}
 			}
@@ -457,6 +458,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 					right = begin_point;
 				} else {
 					int prev = p->prev_edge;
+					ERR_FAIL_COND_V(p->edges.size() == 0, Vector<Vector3>());
 					int prev_n = (p->prev_edge + 1) % p->edges.size();
 					left = _get_vertex(p->edges[prev].point);
 					right = _get_vertex(p->edges[prev_n].point);
@@ -529,6 +531,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 #ifdef USE_ENTRY_POINT
 				Vector3 point = p->entry;
 #else
+				ERR_FAIL_COND_V(p->edges.size() == 0, Vector<Vector3>());
 				int prev_n = (p->prev_edge + 1) % p->edges.size();
 				Vector3 point = (_get_vertex(p->edges[prev].point) + _get_vertex(p->edges[prev_n].point)) * 0.5;
 #endif
@@ -586,6 +589,7 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Ve
 
 					Vector3 a, b;
 
+					ERR_FAIL_COND_V(p.edges.size() == 0, Vector3());
 					Geometry::get_closest_points_between_segments(p_from, p_to, _get_vertex(p.edges[i].point), _get_vertex(p.edges[(i + 1) % p.edges.size()].point), a, b);
 
 					float d = a.distance_to(b);

@@ -258,6 +258,14 @@ if selected_platform in platform_list:
     else:
         env = env_base.Clone()
 
+    # Compilation DB requires SCons 3.1.1+.
+    from SCons import __version__ as scons_raw_version
+
+    scons_ver = env._get_major_minor_revision(scons_raw_version)
+    if scons_ver >= (3, 1, 1):
+        env.Tool("compilation_db", toolpath=["misc/scons"])
+        env.Alias("compiledb", env.CompilationDatabase("compile_commands.json"))
+
     if env['dev']:
         env['verbose'] = True
         env['warnings'] = "extra"

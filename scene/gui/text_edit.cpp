@@ -1135,8 +1135,7 @@ void TextEdit::_notification(int p_what) {
 
 					int ofs_y = (i * get_row_height() + cache.line_spacing / 2) + ofs_readonly;
 					ofs_y -= cursor.wrap_ofs * get_row_height();
-					if (smooth_scroll_enabled)
-						ofs_y += (-get_v_scroll_offset()) * get_row_height();
+					ofs_y -= get_v_scroll_offset() * get_row_height();
 
 					// Check if line contains highlighted word.
 					int highlighted_text_col = -1;
