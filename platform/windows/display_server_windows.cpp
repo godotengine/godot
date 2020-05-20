@@ -521,7 +521,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 #endif
 
-	if (!OS::get_singleton()->is_wintab_disabled() && wintab_available && windows[p_window].wtctx) {
+	if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[p_window].wtctx) {
 		wintab_WTClose(windows[p_window].wtctx);
 		windows[p_window].wtctx = 0;
 	}
@@ -1791,7 +1791,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				alt_mem = false;
 			};
 
-			if (!OS::get_singleton()->is_wintab_disabled() && wintab_available && windows[window_id].wtctx) {
+			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				wintab_WTEnable(windows[window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
 			}
 
@@ -1924,7 +1924,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
-			if (!OS::get_singleton()->is_wintab_disabled() && wintab_available && windows[window_id].wtctx) {
+			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				AXIS pressure;
 				if (wintab_WTInfo(WTI_DEVICES + windows[window_id].wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					windows[window_id].min_pressure = int(pressure.axMin);
@@ -1938,7 +1938,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 		case WT_PACKET: {
-			if (!OS::get_singleton()->is_wintab_disabled() && wintab_available && windows[window_id].wtctx) {
+			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				PACKET packet;
 				if (wintab_WTPacket(windows[window_id].wtctx, wParam, &packet)) {
 					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
@@ -2017,7 +2017,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if (!win8p_GetPointerType || !win8p_GetPointerPenInfo) {
+			if ((OS::get_singleton()->get_current_tablet_driver() != "winink") || !winink_available) {
 				break;
 			}
 
@@ -2177,7 +2177,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
 
-			if (!OS::get_singleton()->is_wintab_disabled() && wintab_available && windows[window_id].wtctx) {
+			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not update recently.
 				if (windows[window_id].last_pressure_update < 10) {
 					windows[window_id].last_pressure_update++;
@@ -2729,6 +2729,44 @@ void DisplayServerWindows::_process_key_events() {
 	key_event_pos = 0;
 }
 
+void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const String &p_new_driver) {
+	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
+		WindowData &wd = E->get();
+		if ((p_old_driver == "wintab") && wintab_available && wd.wtctx) {
+			wintab_WTEnable(wd.wtctx, false);
+			wintab_WTClose(wd.wtctx);
+			wd.wtctx = 0;
+		}
+		if ((p_new_driver == "wintab") && wintab_available) {
+			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
+			wd.wtlc.lcOptions |= CXO_MESSAGES;
+			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+			wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+			wd.wtlc.lcPktMode = 0;
+			wd.wtlc.lcOutOrgX = 0;
+			wd.wtlc.lcOutExtX = wd.wtlc.lcInExtX;
+			wd.wtlc.lcOutOrgY = 0;
+			wd.wtlc.lcOutExtY = -wd.wtlc.lcInExtY;
+			wd.wtctx = wintab_WTOpen(wd.hWnd, &wd.wtlc, false);
+			if (wd.wtctx) {
+				wintab_WTEnable(wd.wtctx, true);
+				AXIS pressure;
+				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
+					wd.min_pressure = int(pressure.axMin);
+					wd.max_pressure = int(pressure.axMax);
+				}
+				AXIS orientation[3];
+				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
+					wd.tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
+				}
+				wintab_WTEnable(wd.wtctx, true);
+			} else {
+				print_verbose("WinTab context creation failed.");
+			}
+		}
+	}
+}
+
 DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
@@ -2785,7 +2823,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		DragAcceptFiles(wd.hWnd, true);
 
-		if (!OS::get_singleton()->is_wintab_disabled() && wintab_available) {
+		if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
 			wd.wtlc.lcOptions |= CXO_MESSAGES;
 			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
@@ -2844,6 +2882,7 @@ WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
 WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 
 // Windows Ink API
+bool DisplayServerWindows::winink_available = false;
 GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
 GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
 
@@ -2854,25 +2893,6 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 } SHC_PROCESS_DPI_AWARENESS;
 
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
-	//Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
-	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
-	if (wintab_lib) {
-		wintab_WTOpen = (WTOpenPtr)GetProcAddress(wintab_lib, "WTOpenW");
-		wintab_WTClose = (WTClosePtr)GetProcAddress(wintab_lib, "WTClose");
-		wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
-		wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
-		wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
-
-		wintab_available = wintab_WTOpen && wintab_WTClose && wintab_WTInfo && wintab_WTPacket && wintab_WTEnable;
-	}
-
-	//Note: Windows Ink API for pen input, available on Windows 8+ only.
-	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
-	if (user32_lib) {
-		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
-		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
-	}
-
 	drop_events = false;
 	key_event_pos = 0;
 
