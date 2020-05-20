@@ -341,17 +341,16 @@ public:
 class ClientRewinder : public Rewinder {
 	friend class SceneRewinder;
 
-	HashMap<uint32_t, ObjectID> node_id_map;
-	HashMap<uint32_t, NodePath> node_paths;
+	OAHashMap<uint32_t, ObjectID> node_id_map;
+	OAHashMap<uint32_t, NodePath> node_paths;
 
 	// TODO can we get rid of this?
 	uint64_t server_snapshot_id;
 	// TODO can we get rid of this?
 	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
-	// TODO use OAHashMap
-	HashMap<ControllerID, std::deque<IsleSnapshot>> client_controllers_snapshots;
-	HashMap<ControllerID, std::deque<IsleSnapshot>> server_controllers_snapshots;
+	OAHashMap<ControllerID, std::deque<IsleSnapshot>> client_controllers_snapshots;
+	OAHashMap<ControllerID, std::deque<IsleSnapshot>> server_controllers_snapshots;
 
 public:
 	ClientRewinder(SceneRewinder *p_node);
@@ -367,7 +366,7 @@ private:
 
 	void store_controllers_snapshot(
 			const Snapshot &p_snapshot,
-			HashMap<ControllerID, std::deque<IsleSnapshot>> &r_snapshot_storage);
+			OAHashMap<ControllerID, std::deque<IsleSnapshot>> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);

@@ -1180,10 +1180,10 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 	ERR_FAIL_COND(scene_rewinder->main_controller == nullptr);
 
-	std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.getptr(p_controller->get_instance_id());
+	std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.lookup_ptr(p_controller->get_instance_id());
 	if (client_snaps == nullptr) {
 		client_controllers_snapshots.set(p_controller->get_instance_id(), std::deque<IsleSnapshot>());
-		client_snaps = client_controllers_snapshots.getptr(p_controller->get_instance_id());
+		client_snaps = client_controllers_snapshots.lookup_ptr(p_controller->get_instance_id());
 	}
 
 #ifdef DEBUG_ENABLED
@@ -1198,12 +1198,13 @@ void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 		}
 	}
 
-	// TODO push the Isle and use the pointer to avoid extra copy.
-	IsleSnapshot snap;
-	snap.input_id = p_controller->get_current_input_id();
-
 	IsleData *isle_data = scene_rewinder->isle_data.lookup_ptr(p_controller->get_instance_id());
 	ERR_FAIL_COND(isle_data == nullptr);
+
+	client_snaps->push_back(IsleSnapshot());
+
+	IsleSnapshot &snap = client_snaps->back();
+	snap.input_id = p_controller->get_current_input_id();
 
 	const ObjectID *nodes = isle_data->nodes.ptr();
 	for (
@@ -1215,13 +1216,11 @@ void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 
 		snap.node_vars.set(node_data->instance_id, node_data->vars);
 	}
-
-	client_snaps->push_back(snap);
 }
 
 void ClientRewinder::store_controllers_snapshot(
 		const Snapshot &p_snapshot,
-		HashMap<ObjectID, std::deque<IsleSnapshot>> &r_snapshot_storage) {
+		OAHashMap<ObjectID, std::deque<IsleSnapshot>> &r_snapshot_storage) {
 	// Extract the controllers data from the snapshot and store it in the isle
 	// snapshot.
 	// The main controller takes with him all world nodes.
@@ -1238,10 +1237,10 @@ void ClientRewinder::store_controllers_snapshot(
 			continue;
 		}
 
-		std::deque<IsleSnapshot> *controller_snaps = r_snapshot_storage.getptr(controller->get_instance_id());
+		std::deque<IsleSnapshot> *controller_snaps = r_snapshot_storage.lookup_ptr(controller->get_instance_id());
 		if (controller_snaps == nullptr) {
 			r_snapshot_storage.set(controller->get_instance_id(), std::deque<IsleSnapshot>());
-			controller_snaps = r_snapshot_storage.getptr(controller->get_instance_id());
+			controller_snaps = r_snapshot_storage.lookup_ptr(controller->get_instance_id());
 		}
 
 #ifdef DEBUG_ENABLED
@@ -1322,13 +1321,13 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 		// --- Phase one, find snapshot to check. ---
 
-		std::deque<IsleSnapshot> *server_snaps = server_controllers_snapshots.getptr(controller->get_instance_id());
+		std::deque<IsleSnapshot> *server_snaps = server_controllers_snapshots.lookup_ptr(controller->get_instance_id());
 		if (server_snaps == nullptr || server_snaps->empty()) {
 			// No snapshots to recover for this controller. Skip it.
 			continue;
 		}
 
-		std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.getptr(controller->get_instance_id());
+		std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.lookup_ptr(controller->get_instance_id());
 
 		// Find the best recoverable input_id.
 		uint64_t checkable_input_id = UINT64_MAX;
@@ -1722,13 +1721,13 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 
 				node_id = v;
 
-				const ObjectID *object_id = node_id_map.getptr(node_id);
+				const ObjectID *object_id = node_id_map.lookup_ptr(node_id);
 				if (object_id != nullptr) {
 					Object *const obj = ObjectDB::get_instance(*object_id);
 					node = Object::cast_to<Node>(obj);
 					if (node == nullptr) {
 						// This node doesn't exist anymore.
-						node_id_map.erase(node_id);
+						node_id_map.remove(node_id);
 					}
 				}
 
@@ -1736,12 +1735,12 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 					// The node instance for this node ID was not found, try
 					// to find it now.
 
-					if (node_paths.has(node_id) == false) {
+					const NodePath *node_path = node_paths.lookup_ptr(node_id);
+					if (node_path == nullptr) {
 						NET_DEBUG_PRINT("The node with ID `" + itos(node_id) + "` is not know by this peer, this is not supposed to happen.");
 						// TODO notify the server so it sends a full snapshot, and so fix this issue.
 					} else {
-						const NodePath node_path = node_paths[node_id];
-						node = scene_rewinder->get_tree()->get_root()->get_node(node_path);
+						node = scene_rewinder->get_tree()->get_root()->get_node(*node_path);
 					}
 				}
 			} else {
