@@ -1174,6 +1174,9 @@ struct _VariantCall {
 		List<StringName> value_ordered;
 #endif
 		Map<StringName, Variant> variant_value;
+#ifdef DEBUG_ENABLED
+		List<StringName> variant_value_ordered;
+#endif
 	};
 
 	static ConstantData *constant_data;
@@ -1187,6 +1190,9 @@ struct _VariantCall {
 
 	static void add_variant_constant(int p_type, StringName p_constant_name, const Variant &p_constant_value) {
 		constant_data[p_type].variant_value[p_constant_name] = p_constant_value;
+#ifdef DEBUG_ENABLED
+		constant_data[p_type].variant_value_ordered.push_back(p_constant_name);
+#endif
 	}
 };
 
@@ -1652,8 +1658,13 @@ void Variant::get_constants_for_type(Variant::Type p_type, List<StringName> *p_c
 #endif
 	}
 
+#ifdef DEBUG_ENABLED
+	for (List<StringName>::Element *E = cd.variant_value_ordered.front(); E; E = E->next()) {
+		p_constants->push_back(E->get());
+#else
 	for (Map<StringName, Variant>::Element *E = cd.variant_value.front(); E; E = E->next()) {
 		p_constants->push_back(E->key());
+#endif
 	}
 }
 
