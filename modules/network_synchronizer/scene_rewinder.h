@@ -189,7 +189,7 @@ private:
 	uint32_t node_counter;
 	bool generate_id;
 	OAHashMap<ControllerID, IsleData> isle_data;
-	OAHashMap<ObjectID, NodeData> data;
+	OAHashMap<ObjectID, NodeData> nodes_data;
 	ObjectID main_controller_object_id;
 	NetworkedController *main_controller;
 
@@ -276,9 +276,10 @@ private:
 
 struct Snapshot {
 	// This is an utility variable that is used for fast comparisons.
+	// TODO remove this?
 	uint64_t player_controller_input_id;
 	OAHashMap<ObjectID, uint64_t> controllers_input_id;
-	OAHashMap<ObjectID, NodeData> data; // TODO Can we just use Vetor<VarData> ?
+	OAHashMap<ObjectID, Vector<VarData>> node_vars;
 
 	operator String() const;
 };
