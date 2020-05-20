@@ -145,7 +145,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	ERR_FAIL_COND_V_MSG(err != xatlas::AddMeshError::Enum::Success, false, xatlas::StringForEnum(err));
 
 	printf("Generate..\n");
-	xatlas::Generate(atlas, chart_options, nullptr, pack_options);
+	xatlas::Generate(atlas, chart_options, xatlas::ParameterizeOptions(), pack_options);
 
 	*r_size_hint_x = atlas->width;
 	*r_size_hint_y = atlas->height;
