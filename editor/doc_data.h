@@ -42,6 +42,9 @@ public:
 		String type;
 		String enumeration;
 		String default_value;
+		bool operator<(const ArgumentDoc &p_arg) const {
+			return name < p_arg.name;
+		}
 	};
 
 	struct MethodDoc {
@@ -51,8 +54,8 @@ public:
 		String qualifiers;
 		String description;
 		Vector<ArgumentDoc> arguments;
-		bool operator<(const MethodDoc &p_md) const {
-			return name < p_md.name;
+		bool operator<(const MethodDoc &p_method) const {
+			return name < p_method.name;
 		}
 	};
 
@@ -61,6 +64,9 @@ public:
 		String value;
 		String enumeration;
 		String description;
+		bool operator<(const ConstantDoc &p_const) const {
+			return name < p_const.name;
+		}
 	};
 
 	struct PropertyDoc {
@@ -70,12 +76,9 @@ public:
 		String description;
 		String setter, getter;
 		String default_value;
-		bool overridden;
+		bool overridden = false;
 		bool operator<(const PropertyDoc &p_prop) const {
 			return name < p_prop.name;
-		}
-		PropertyDoc() {
-			overridden = false;
 		}
 	};
 
@@ -91,6 +94,9 @@ public:
 		Vector<ConstantDoc> constants;
 		Vector<PropertyDoc> properties;
 		Vector<PropertyDoc> theme_properties;
+		bool operator<(const ClassDoc &p_class) const {
+			return name < p_class.name;
+		}
 	};
 
 	String version;
