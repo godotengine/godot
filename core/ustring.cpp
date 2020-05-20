@@ -1025,6 +1025,9 @@ String String::chr(CharType p_char) {
 }
 
 String String::num(double p_num, int p_decimals) {
+	if (Math::is_nan(p_num)) {
+		return "nan";
+	}
 #ifndef NO_USE_STDLIB
 
 	if (p_decimals > 16) {
@@ -1313,6 +1316,9 @@ String String::num_real(double p_num) {
 }
 
 String String::num_scientific(double p_num) {
+	if (Math::is_nan(p_num)) {
+		return "nan";
+	}
 #ifndef NO_USE_STDLIB
 
 	char buf[256];
