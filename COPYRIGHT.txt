@@ -350,7 +350,7 @@ License: Expat
 
 Files: ./thirdparty/xatlas/
 Comment: xatlas
-Copyright: 2018, Jonathan Young
+Copyright: 2018-2020, Jonathan Young
   2013, Thekla, Inc
   2006, NVIDIA Corporation, Ignacio Castano
 License: Expat
