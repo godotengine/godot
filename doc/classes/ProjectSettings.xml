@@ -418,9 +418,6 @@
 		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2( 10, 10 )">
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
-		<member name="display/window/disable_wintab_api" type="bool" setter="" getter="" default="false">
-			Disables WinTab API and always use Windows Ink API for the pen input (Windows only).
-		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], allows HiDPI display on Windows and macOS. This setting has no effect on desktop Linux, as DPI-awareness fallbacks are not supported there.
 		</member>
@@ -462,6 +459,9 @@
 		</member>
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
 			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
+		</member>
+		<member name="display/window/tablet_driver" type="String" setter="" getter="" default="&quot;wintab&quot;">
+			Specifies the tablet driver to use. If left empty, the default driver will be used.
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
