@@ -1091,7 +1091,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_vsync_via_compositor = window_vsync_via_compositor;
 
 	if (tablet_driver == "") { // specified in project.godot
-		tablet_driver = GLOBAL_DEF_RST("display/window/tablet_driver", OS::get_singleton()->get_tablet_driver_name(0));
+		tablet_driver = GLOBAL_DEF_RST_NOVAL("display/window/tablet_driver", OS::get_singleton()->get_tablet_driver_name(0));
 	}
 
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
@@ -1145,7 +1145,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (audio_driver == "") { // specified in project.godot
-		audio_driver = GLOBAL_DEF_RST("audio/driver", AudioDriverManager::get_driver(0)->get_name());
+		audio_driver = GLOBAL_DEF_RST_NOVAL("audio/driver", AudioDriverManager::get_driver(0)->get_name());
 	}
 
 	for (int i = 0; i < AudioDriverManager::get_driver_count(); i++) {

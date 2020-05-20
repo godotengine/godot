@@ -122,6 +122,22 @@ void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restar
 	props[p_name].restart_if_changed = p_restart;
 }
 
+void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
+	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
+#ifdef DEBUG_METHODS_ENABLED
+	props[p_name].ignore_value_in_docs = p_ignore;
+#endif
+}
+
+bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
+	ERR_FAIL_COND_V_MSG(!props.has(p_name), false, "Request for nonexistent project setting: " + p_name + ".");
+#ifdef DEBUG_METHODS_ENABLED
+	return props[p_name].ignore_value_in_docs;
+#else
+	return false;
+#endif
+}
+
 String ProjectSettings::globalize_path(const String &p_path) const {
 	if (p_path.begins_with("res://")) {
 		if (resource_path != "") {
@@ -876,7 +892,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 	}
 }
 
-Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed) {
+Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs) {
 	Variant ret;
 	if (!ProjectSettings::get_singleton()->has_setting(p_var)) {
 		ProjectSettings::get_singleton()->set(p_var, p_default);
@@ -886,6 +902,7 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 	ProjectSettings::get_singleton()->set_initial_value(p_var, p_default);
 	ProjectSettings::get_singleton()->set_builtin_order(p_var);
 	ProjectSettings::get_singleton()->set_restart_if_changed(p_var, p_restart_if_changed);
+	ProjectSettings::get_singleton()->set_ignore_value_in_docs(p_var, p_ignore_value_in_docs);
 	return ret;
 }
 
