@@ -323,7 +323,6 @@ class ServerRewinder : public Rewinder {
 	friend class SceneRewinder;
 
 	real_t state_notifier_timer;
-	uint64_t snapshot_count;
 
 public:
 	ServerRewinder(SceneRewinder *p_node);
@@ -342,8 +341,6 @@ class ClientRewinder : public Rewinder {
 	OAHashMap<uint32_t, ObjectID> node_id_map;
 	OAHashMap<uint32_t, NodePath> node_paths;
 
-	// TODO can we get rid of this?
-	uint64_t server_snapshot_id;
 	// TODO can we get rid of this?
 	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;

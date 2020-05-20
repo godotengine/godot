@@ -928,12 +928,10 @@ void NoNetRewinder::receive_snapshot(Variant _p_snapshot) {
 
 ServerRewinder::ServerRewinder(SceneRewinder *p_node) :
 		Rewinder(p_node),
-		state_notifier_timer(0.0),
-		snapshot_count(0) {}
+		state_notifier_timer(0.0) {}
 
 void ServerRewinder::clear() {
 	state_notifier_timer = 0.0;
-	snapshot_count = 0;
 }
 
 Variant ServerRewinder::generate_snapshot() {
@@ -941,7 +939,7 @@ Variant ServerRewinder::generate_snapshot() {
 	// client snapshot.
 	//
 	// It's composed as follows:
-	//  [SNAPSHOT ID,
+	//  [
 	//  NODE, VARIABLE, Value, VARIABLE, Value, VARIABLE, value, NIL,
 	//  NODE, INPUT ID, VARIABLE, Value, VARIABLE, Value, NIL,
 	//  NODE, VARIABLE, Value, VARIABLE, Value, NIL]
@@ -959,11 +957,7 @@ Variant ServerRewinder::generate_snapshot() {
 	// Using the function `Controller::get_active_doll_peers()` is possible to
 	// know the active controllers.
 
-	snapshot_count += 1;
-
 	Vector<Variant> snapshot_data;
-
-	snapshot_data.push_back(snapshot_count);
 
 	for (
 			OAHashMap<ObjectID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
@@ -1084,7 +1078,6 @@ ClientRewinder::ClientRewinder(SceneRewinder *p_node) :
 void ClientRewinder::clear() {
 	node_id_map.clear();
 	node_paths.clear();
-	server_snapshot_id = 0;
 	recovered_snapshot_id = 0;
 	server_snapshot.controllers_input_id.clear();
 	server_snapshot.node_vars.clear();
@@ -1650,7 +1643,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	// client snapshot.
 	//
 	// It's composed as follows:
-	//  [SNAPSHOT ID,
+	//  [
 	//  NODE, VARIABLE, Value, VARIABLE, Value, VARIABLE, value, NIL,
 	//  NODE, INPUT ID, VARIABLE, Value, VARIABLE, Value, NIL,
 	//  NODE, VARIABLE, Value, VARIABLE, Value, NIL]
@@ -1678,21 +1671,12 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	StringName variable_name;
 	int server_snap_variable_index = -1;
 
-	// Make sure the Snapshot ID is here.
-	ERR_FAIL_COND_V(raw_snapshot.size() < 1, false);
-	ERR_FAIL_COND_V(raw_snapshot_ptr[0].get_type() != Variant::INT, false);
-
-	const uint64_t snapshot_id = raw_snapshot_ptr[0];
 	uint64_t player_controller_input_id = UINT64_MAX;
-
-	// Make sure this snapshot is expected.
-	ERR_FAIL_COND_V(snapshot_id <= server_snapshot_id, false);
 
 	// We espect that the player_controller is updated by this new snapshot,
 	// so make sure it's done so.
 
-	// Start from 1 to skip the snapshot ID.
-	for (int snap_data_index = 1; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
+	for (int snap_data_index = 0; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
 		const Variant v = raw_snapshot_ptr[snap_data_index];
 		if (node == nullptr) {
 			// Node is null so we expect `v` has the node info.
@@ -1912,7 +1896,6 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 		NET_DEBUG_PRINT(p_snapshot);
 		return false;
 	} else {
-		server_snapshot_id = snapshot_id;
 		return true;
 	}
 }
