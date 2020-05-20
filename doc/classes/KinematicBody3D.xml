@@ -18,7 +18,7 @@
 			<argument index="0" name="axis" type="int" enum="PhysicsServer3D.BodyAxis">
 			</argument>
 			<description>
-				Returns [code]true[/code] if the specified [code]axis[/code] is locked. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
+				Returns [code]true[/code] if the specified [code]axis[/code] is locked. See also [member axis_lock_motion_x], [member axis_lock_motion_y] and [member axis_lock_motion_z].
 			</description>
 		</method>
 		<method name="get_floor_normal" qualifiers="const">
@@ -145,7 +145,7 @@
 			<argument index="1" name="lock" type="bool">
 			</argument>
 			<description>
-				Locks or unlocks the specified [code]axis[/code] depending on the value of [code]lock[/code]. See also [member move_lock_x], [member move_lock_y] and [member move_lock_z].
+				Locks or unlocks the specified [code]axis[/code] depending on the value of [code]lock[/code]. See also [member axis_lock_motion_x], [member axis_lock_motion_y] and [member axis_lock_motion_z].
 			</description>
 		</method>
 		<method name="test_move">
@@ -163,17 +163,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
-			If the body is at least this close to another body, this body will consider them to be colliding.
-		</member>
-		<member name="move_lock_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+		<member name="axis_lock_motion_x" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's X axis movement.
 		</member>
-		<member name="move_lock_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+		<member name="axis_lock_motion_y" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's Y axis movement.
 		</member>
-		<member name="move_lock_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
+		<member name="axis_lock_motion_z" type="bool" setter="set_axis_lock" getter="get_axis_lock" default="false">
 			Lock the body's Z axis movement.
+		</member>
+		<member name="collision/safe_margin" type="float" setter="set_safe_margin" getter="get_safe_margin" default="0.001">
+			If the body is at least this close to another body, this body will consider them to be colliding.
 		</member>
 	</members>
 	<constants>
