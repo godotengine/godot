@@ -47,7 +47,7 @@
 #define NET_DEBUG_WARN(msg)
 #endif
 
-/// Traces the arrived vs missing packets and estimate the connection loss.
+/// Traces the arrived vs missing packets and estimates the connection loss.
 class NetworkTracer {
 	int id;
 	std::vector<bool> flags;

@@ -111,7 +111,7 @@ public:
 	/// Begin write.
 	void begin_write();
 
-	/// Make sure the buffer takes less space possible.
+	/// Make sure the buffer takes least space possible.
 	void dry();
 
 	/// Seek to bit.

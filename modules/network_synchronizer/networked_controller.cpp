@@ -49,7 +49,6 @@
 #define TICK_SPEED_CHANGE_NOTIF_THRESHOLD 4
 
 void NetworkedController::_bind_methods() {
-
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_0);
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_1);
 	BIND_CONSTANT(INPUT_COMPRESSION_LEVEL_2);
@@ -136,7 +135,6 @@ NetworkedController::NetworkedController() :
 		scene_rewinder(nullptr),
 		packet_missing(false),
 		has_player_new_input(false) {
-
 	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -245,7 +243,7 @@ Vector3 NetworkedController::input_buffer_read_normalized_vector3(InputCompressi
 
 void NetworkedController::set_doll_peer_active(int p_peer_id, bool p_active) {
 	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "You can set doll activation only on server");
-	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equals to the Master `peer_id`, so it's not allowed.");
+	ERR_FAIL_COND_MSG(p_peer_id == get_network_master(), "This `peer_id` is equal to the Master `peer_id`, which is not allowed.");
 
 	const int index = disabled_doll_peers.find(p_peer_id);
 	if (p_active) {
@@ -374,15 +372,15 @@ void NetworkedController::_rpc_send_tick_additional_speed(int p_speed) {
 }
 
 void NetworkedController::_rpc_doll_send_inputs(Vector<uint8_t> p_data) {
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
-	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
+	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controller's node has the same name across all peers.");
+	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controller`s node has the same name across all peers.");
 
 	controller->receive_inputs(p_data);
 }
 
 void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
-	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
-	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controllers node have the same name across all peers.");
+	ERR_FAIL_COND_MSG(get_tree()->is_network_server() == true, "This controller is not supposed to receive this call, make sure the controller's node has the same name across all peers.");
+	ERR_FAIL_COND_MSG(is_network_master() == true, "This controller is not supposed to receive this call, make sure the controller`s node has the same name across all peers.");
 
 	if (p_open) {
 		static_cast<DollController *>(controller)->open_flow();
@@ -393,7 +391,7 @@ void NetworkedController::_rpc_doll_notify_connection_status(bool p_open) {
 
 void NetworkedController::process(real_t p_delta) {
 	if (controller) {
-		// This is called by the `sceneRewinder` that it's not aware about the
+		// This is called by the `sceneRewinder` that is not aware of the
 		// controller state; so check that the controller is not null.
 		controller->physics_process(p_delta);
 	}
@@ -582,7 +580,6 @@ bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSna
 }
 
 void ServerController::receive_inputs(Vector<uint8_t> p_data) {
-
 	// The packet is composed as follow:
 	// - The following four bytes for the first input ID.
 	// - Array of inputs:
@@ -611,7 +608,6 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 	pir.set_inputs_buffer(bit_array);
 
 	while (ofs < data_len) {
-
 		ERR_FAIL_COND_MSG(ofs + 1 > data_len, "The arrived packet size doesn't meet the expected size.");
 		// First byte is used for the duplication count.
 		const uint8_t duplication = p_data[ofs];
@@ -627,7 +623,6 @@ void ServerController::receive_inputs(Vector<uint8_t> p_data) {
 
 		// The input is valid, populate the buffer.
 		for (int sub = 0; sub <= duplication; sub += 1) {
-
 			const uint64_t input_id = first_input_id + inserted_input_count;
 			inserted_input_count += 1;
 
@@ -670,7 +665,7 @@ int ServerController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_pe
 }
 
 int ServerController::notify_input_checked(uint64_t p_input_id) {
-	ERR_PRINT("The method `notify_input_checked` must not be called on server. Be sure why it happened.");
+	ERR_PRINT("The method `notify_input_checked` must not be called on the server.");
 	return 0;
 }
 
@@ -683,12 +678,12 @@ uint64_t ServerController::last_known_input() const {
 }
 
 uint64_t ServerController::get_stored_input_id(int p_i) const {
-	ERR_PRINT("The method `get_input_id` must not be called on server. Be sure why it happened.");
+	ERR_PRINT("The method `get_input_id` must not be called on the server.");
 	return UINT64_MAX;
 }
 
 bool ServerController::process_instant(int p_i, real_t p_delta) {
-	ERR_PRINT("The method `process_instant` must not be called on server. Be sure why it happened.");
+	ERR_PRINT("The method `process_instant` must not be called on the server.");
 	return false;
 }
 
@@ -716,8 +711,7 @@ bool ServerController::fetch_next_input() {
 		} else {
 			is_new_input = false;
 		}
-		// Never notify a packet is missing untill the first one is not yet
-		// arrived.
+		// Don't notify about missed packets until at least one packet has arrived.
 		is_packet_missing = false;
 	} else {
 		// Search the next packet, the cycle is used to make sure to not stop
@@ -842,7 +836,6 @@ bool ServerController::fetch_next_input() {
 }
 
 void ServerController::adjust_player_tick_rate(real_t p_delta) {
-
 	const int miss_packets = network_tracer.get_missing_packets();
 	const int inputs_count = get_inputs_count();
 
@@ -899,9 +892,8 @@ PlayerController::PlayerController(NetworkedController *p_node) :
 }
 
 void PlayerController::physics_process(real_t p_delta) {
-
 	// We need to know if we can accept a new input because in case of bad
-	// internet connection we can't keep accumulates inputs up to infinite
+	// internet connection we can't keep accumulating inputs forever
 	// otherwise the server will differ too much from the client and we
 	// introduce virtual lag.
 	const bool accept_new_inputs = can_accept_new_inputs();
@@ -931,7 +923,7 @@ void PlayerController::physics_process(real_t p_delta) {
 }
 
 void PlayerController::receive_inputs(Vector<uint8_t> p_data) {
-	ERR_PRINT("The player is not supposed to receive snapshots. Check why this happened.");
+	ERR_PRINT("The player is not supposed to receive snapshots.");
 }
 
 int PlayerController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
@@ -977,7 +969,6 @@ uint64_t PlayerController::get_stored_input_id(int p_i) const {
 bool PlayerController::process_instant(int p_i, real_t p_delta) {
 	const size_t i = p_i;
 	if (i < frames_snapshot.size()) {
-
 		// Set snapshot inputs.
 		node->set_inputs_buffer(frames_snapshot[i].inputs_buffer);
 
@@ -1006,7 +997,6 @@ void PlayerController::store_input_buffer(uint64_t p_id) {
 }
 
 void PlayerController::send_frame_input_buffer_to_server() {
-
 	// The packet is composed as follow:
 	// - The following four bytes for the first input ID.
 	// - Array of inputs:
@@ -1038,7 +1028,6 @@ void PlayerController::send_frame_input_buffer_to_server() {
 
 	// Compose the packets
 	for (size_t i = frames_snapshot.size() - inputs_count; i < frames_snapshot.size(); i += 1) {
-
 		bool is_similar = false;
 
 		if (previous_input_id == UINT64_MAX) {
@@ -1150,7 +1139,6 @@ DollController::DollController(NetworkedController *p_node) :
 }
 
 void DollController::physics_process(real_t p_delta) {
-
 	// Lock mechanism when the server don't update anymore this doll!
 	if (is_flow_open) {
 		if (is_server_state_update_received &&
@@ -1194,7 +1182,6 @@ int DollController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_
 
 	if (server_controller.last_known_input() != UINT64_MAX &&
 			player_controller.get_stored_input_id(-1) != UINT64_MAX) {
-
 		// Try to stay only 2 frames behind the server.
 		const real_t difference = server_controller.last_known_input() - player_controller.get_stored_input_id(-1);
 		speed_up = CLAMP((difference - MIN_SNAPSHOTS_SIZE) / MIN_SNAPSHOTS_SIZE, -1.0, 1.0) * MAX_ADDITIONAL_TICK_SPEED;
@@ -1248,7 +1235,6 @@ void DollController::close_flow() {
 }
 
 void DollController::soft_reset_to_server_state() {
-
 	bool reset = false;
 
 	for (std::deque<FrameSnapshotSkinny>::const_reverse_iterator it = server_controller.snapshots.rbegin();

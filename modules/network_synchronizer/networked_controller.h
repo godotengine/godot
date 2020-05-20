@@ -102,8 +102,8 @@ private:
 	int player_input_storage_size;
 
 	/// Amount of time an inputs is re-sent to each peer.
-	/// Resend inputs is necessary because the packets may be lost since they
-	/// are sent in an unreliable way.
+	/// Resenging inputs is necessary because the packets may be lost since as
+	/// they are sent in an unreliable way.
 	int max_redundant_inputs;
 
 	/// Used to set the amount of traced frames to determine the connection healt trend.

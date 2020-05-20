@@ -346,7 +346,7 @@ int InputsBuffer::get_bit_taken(DataType p_data_type, CompressionLevel p_compres
 	}
 
 	// Unreachable
-	CRASH_NOW_MSG("Was not possible to obtain the bit taken by this input data.");
+	CRASH_NOW_MSG("It was not possible to obtain the bit taken by this input data.");
 	return 0; // Useless, but MS CI is too noisy.
 }
 
