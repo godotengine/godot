@@ -1078,7 +1078,6 @@ ClientRewinder::ClientRewinder(SceneRewinder *p_node) :
 void ClientRewinder::clear() {
 	node_id_map.clear();
 	node_paths.clear();
-	recovered_snapshot_id = 0;
 	server_snapshot.controllers_input_id.clear();
 	server_snapshot.node_vars.clear();
 }

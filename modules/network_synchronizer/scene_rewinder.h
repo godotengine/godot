@@ -341,8 +341,6 @@ class ClientRewinder : public Rewinder {
 	OAHashMap<uint32_t, ObjectID> node_id_map;
 	OAHashMap<uint32_t, NodePath> node_paths;
 
-	// TODO can we get rid of this?
-	uint64_t recovered_snapshot_id;
 	Snapshot server_snapshot;
 	OAHashMap<ControllerID, std::deque<IsleSnapshot>> client_controllers_snapshots;
 	OAHashMap<ControllerID, std::deque<IsleSnapshot>> server_controllers_snapshots;
