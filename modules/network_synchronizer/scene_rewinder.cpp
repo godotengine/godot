@@ -817,7 +817,7 @@ void SceneRewinder::pull_node_changes(NodeData *p_node_data) {
 
 Snapshot::operator String() const {
 	String s;
-	s += "Player ID: " + itos(player_controller_input_id) + "; ";
+	s += "Snapshot:\n";
 	for (
 			OAHashMap<ObjectID, uint64_t>::Iterator it = controllers_input_id.iter();
 			it.valid;
@@ -1086,7 +1086,6 @@ void ClientRewinder::clear() {
 	node_paths.clear();
 	server_snapshot_id = 0;
 	recovered_snapshot_id = 0;
-	server_snapshot.player_controller_input_id = 0;
 	server_snapshot.controllers_input_id.clear();
 	server_snapshot.node_vars.clear();
 }
@@ -1914,7 +1913,6 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 		return false;
 	} else {
 		server_snapshot_id = snapshot_id;
-		server_snapshot.player_controller_input_id = player_controller_input_id;
 		return true;
 	}
 }

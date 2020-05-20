@@ -275,9 +275,6 @@ private:
 };
 
 struct Snapshot {
-	// This is an utility variable that is used for fast comparisons.
-	// TODO remove this?
-	uint64_t player_controller_input_id;
 	OAHashMap<ObjectID, uint64_t> controllers_input_id;
 	OAHashMap<ObjectID, Vector<VarData>> node_vars;
 
