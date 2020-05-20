@@ -592,6 +592,10 @@
 			</argument>
 			<argument index="2" name="max_length" type="int" default="-1">
 			</argument>
+			<argument index="3" name="cursor_start" type="int" default="-1">
+			</argument>
+			<argument index="4" name="cursor_end" type="int" default="-1">
+			</argument>
 			<description>
 			</description>
 		</method>
