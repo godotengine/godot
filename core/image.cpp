@@ -3018,6 +3018,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
+	ClassDB::bind_method(D_METHOD("save_png_to_buffer"), &Image::save_png_to_buffer);
 	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);
