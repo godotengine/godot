@@ -65,9 +65,10 @@ void CollisionPolygon2D::_build_polygon() {
 		segments.resize(polygon.size() * 2);
 		PoolVector<Vector2>::Write w = segments.write();
 
-		for (int i = 0; i < polygon.size(); i++) {
+		int polygon_count = polygon.size();
+		for (int i = 0; i < polygon_count; i++) {
 			w[(i << 1) + 0] = polygon[i];
-			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
+			w[(i << 1) + 1] = polygon[(i + 1) % polygon_count];
 		}
 
 		w.release();
@@ -139,10 +140,11 @@ void CollisionPolygon2D::_notification(int p_what) {
 				break;
 			}
 
-			for (int i = 0; i < polygon.size(); i++) {
+			int polygon_count = polygon.size();
+			for (int i = 0; i < polygon_count; i++) {
 
 				Vector2 p = polygon[i];
-				Vector2 n = polygon[(i + 1) % polygon.size()];
+				Vector2 n = polygon[(i + 1) % polygon_count];
 				// draw line with width <= 1, so it does not scale with zoom and break pixel exact editing
 				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 1);
 			}
