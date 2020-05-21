@@ -216,7 +216,6 @@ Error VulkanContext::_create_validation_layers() {
 }
 
 Error VulkanContext::_initialize_extensions() {
-	VkResult err;
 	uint32_t instance_extension_count = 0;
 
 	enabled_extension_count = 0;
@@ -226,13 +225,13 @@ Error VulkanContext::_initialize_extensions() {
 	VkBool32 platformSurfaceExtFound = 0;
 	memset(extension_names, 0, sizeof(extension_names));
 
-	err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
-	ERR_FAIL_COND_V(err, ERR_CANT_CREATE);
+	VkResult err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
+	ERR_FAIL_COND_V(err != VK_SUCCESS && err != VK_INCOMPLETE, ERR_CANT_CREATE);
 
 	if (instance_extension_count > 0) {
 		VkExtensionProperties *instance_extensions = (VkExtensionProperties *)malloc(sizeof(VkExtensionProperties) * instance_extension_count);
 		err = vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, instance_extensions);
-		if (err) {
+		if (err != VK_SUCCESS && err != VK_INCOMPLETE) {
 			free(instance_extensions);
 			ERR_FAIL_V(ERR_CANT_CREATE);
 		}
