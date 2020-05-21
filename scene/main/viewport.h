@@ -79,7 +79,6 @@ protected:
 	static void _bind_methods();
 
 public:
-
 	void set_viewport_path_in_scene(const NodePath &p_path);
 	NodePath get_viewport_path_in_scene() const;
 

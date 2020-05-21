@@ -7164,7 +7164,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		GLint swizzleMask[] = { GL_RED, GL_RED, GL_RED, GL_ONE };
 		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
-		
+
 		glGenTextures(1, &rt->color);
 		glBindTexture(GL_TEXTURE_2D, rt->color);
 		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
