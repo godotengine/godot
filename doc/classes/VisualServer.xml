@@ -4047,7 +4047,7 @@
 			<argument index="1" name="force_mrt" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], then multiple render targets will be used by this [Viewport] no matter what. (See [Viewport.force_mrt]).
+				If [code]true[/code], then multiple render targets will be used by this [Viewport] no matter what. (See [member Viewport.force_mrt]).
 			</description>
 		</method>
 		<method name="viewport_set_global_canvas_transform">
