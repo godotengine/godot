@@ -712,6 +712,23 @@ struct _VariantCall {
 		r_ret = decompressed;
 	}
 
+	static void _call_PackedByteArray_decompress_dynamic(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		Variant::PackedArrayRef<uint8_t> *ba = reinterpret_cast<Variant::PackedArrayRef<uint8_t> *>(p_self._data.packed_array);
+		PackedByteArray decompressed;
+		int max_output_size = (int)(*p_args[0]);
+		Compression::Mode mode = (Compression::Mode)(int)(*p_args[1]);
+
+		int result = Compression::decompress_dynamic(&decompressed, max_output_size, ba->array.ptr(), ba->array.size(), mode);
+
+		if (result == OK) {
+			r_ret = decompressed;
+		} else {
+			decompressed.clear();
+			r_ret = decompressed;
+			ERR_FAIL_MSG("Decompression failed.");
+		}
+	}
+
 	static void _call_PackedByteArray_hex_encode(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 		Variant::PackedArrayRef<uint8_t> *ba = reinterpret_cast<Variant::PackedArrayRef<uint8_t> *>(p_self._data.packed_array);
 		if (ba->array.size() == 0) {
@@ -2177,6 +2194,7 @@ void register_variant_methods() {
 	ADDFUNC0R(PACKED_BYTE_ARRAY, STRING, PackedByteArray, hex_encode, varray());
 	ADDFUNC1R(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY, PackedByteArray, compress, INT, "compression_mode", varray(0));
 	ADDFUNC2R(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY, PackedByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
+	ADDFUNC2R(PACKED_BYTE_ARRAY, PACKED_BYTE_ARRAY, PackedByteArray, decompress_dynamic, INT, "max_output_size", INT, "compression_mode", varray(0));
 
 	ADDFUNC0R(PACKED_INT32_ARRAY, INT, PackedInt32Array, size, varray());
 	ADDFUNC0R(PACKED_INT32_ARRAY, BOOL, PackedInt32Array, empty, varray());
