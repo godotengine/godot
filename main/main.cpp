@@ -1958,6 +1958,16 @@ bool Main::start() {
 			ProjectSettings::get_singleton()->set_custom_property_info("rendering/canvas_textures/default_texture_repeat", PropertyInfo(Variant::INT, "rendering/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"));
 		}
 
+#ifdef TOOLS_ENABLED
+		if (editor) {
+			bool editor_embed_subwindows = EditorSettings::get_singleton()->get_setting("interface/editor/single_window_mode");
+
+			if (editor_embed_subwindows) {
+				sml->get_root()->set_embed_subwindows_hint(true);
+			}
+		}
+#endif
+
 		String local_game_path;
 		if (game_path != "" && !project_manager) {
 			local_game_path = game_path.replace("\\", "/");
@@ -1991,12 +2001,6 @@ bool Main::start() {
 
 #ifdef TOOLS_ENABLED
 			if (editor) {
-				bool editor_embed_subwindows = EditorSettings::get_singleton()->get_setting("interface/editor/single_window_mode");
-
-				if (editor_embed_subwindows) {
-					sml->get_root()->set_embed_subwindows_hint(true);
-				}
-
 				if (game_path != GLOBAL_GET("application/run/main_scene") || !editor_node->has_scenes_in_session()) {
 					Error serr = editor_node->load_scene(local_game_path);
 					if (serr != OK) {
