@@ -571,7 +571,7 @@ public:
 	virtual void render_target_set_force_mrt(RID p_render_target, bool p_force_mrt) = 0;
 
 	/* CANVAS SHADOW */
-	
+
 	virtual RID canvas_light_shadow_buffer_create(int p_width) = 0;
 
 	/* LIGHT SHADOW MAPPING */

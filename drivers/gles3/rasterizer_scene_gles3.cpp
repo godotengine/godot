@@ -4554,7 +4554,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_owner->getornull(rt->buffers.sss_texture)->tex_id, 0);
 			glBlitFramebuffer(0, 0, rt->width, rt->height, 0, 0, rt->width, rt->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 		}
-		
+
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
 		glBindFramebuffer(GL_FRAMEBUFFER, rt->buffers.fbo);

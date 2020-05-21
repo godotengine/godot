@@ -652,7 +652,7 @@ void VisualServerViewport::viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_
 }
 
 void VisualServerViewport::viewport_set_force_mrt(RID p_viewport, bool p_force_mrt) {
-	
+
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 

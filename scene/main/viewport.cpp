@@ -3395,7 +3395,7 @@ Viewport::Viewport() {
 	specular_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_SPECULAR));
 	normal_rough_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_NORMAL_ROUGH));
 	subsurface_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_SUBSURFACE));
-	
+
 	texture_flags = 0;
 
 	render_direct_to_screen = false;

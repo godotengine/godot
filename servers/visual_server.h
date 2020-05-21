@@ -680,7 +680,7 @@ public:
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
 	virtual void viewport_set_force_mrt(RID p_viewport, bool p_force_mrt) = 0;
-	
+
 	enum ViewportUsage {
 		VIEWPORT_USAGE_2D,
 		VIEWPORT_USAGE_2D_NO_SAMPLING,
