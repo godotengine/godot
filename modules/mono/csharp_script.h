@@ -125,6 +125,10 @@ class CSharpScript : public Script {
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	Set<StringName> exported_members_names;
+#endif
+
 	Map<StringName, PropertyInfo> member_info;
 
 	void _clear();
@@ -174,6 +178,8 @@ public:
 	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 	virtual void update_exports();
+
+	void get_members(Set<StringName> *p_members) override;
 
 	virtual bool is_tool() const { return tool; }
 	virtual bool is_valid() const { return valid; }

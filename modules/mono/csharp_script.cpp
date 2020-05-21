@@ -2394,15 +2394,22 @@ bool CSharpScript::_update_exports() {
 					StringName member_name = field->get_name();
 
 					member_info[member_name] = prop_info;
-#ifdef TOOLS_ENABLED
-					if (is_editor && exported) {
-						exported_members_cache.push_front(prop_info);
 
-						if (tmp_object) {
-							exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+					if (exported) {
+#ifdef TOOLS_ENABLED
+						if (is_editor) {
+							exported_members_cache.push_front(prop_info);
+
+							if (tmp_object) {
+								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(field->get_value(tmp_object));
+							}
 						}
-					}
 #endif
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+						exported_members_names.insert(member_name);
+#endif
+					}
 				}
 			}
 
@@ -2415,22 +2422,28 @@ bool CSharpScript::_update_exports() {
 					StringName member_name = property->get_name();
 
 					member_info[member_name] = prop_info;
-#ifdef TOOLS_ENABLED
-					if (is_editor && exported) {
-						exported_members_cache.push_front(prop_info);
 
-						if (tmp_object) {
-							MonoException *exc = NULL;
-							MonoObject *ret = property->get_value(tmp_object, &exc);
-							if (exc) {
-								exported_members_defval_cache[member_name] = Variant();
-								GDMonoUtils::debug_print_unhandled_exception(exc);
-							} else {
-								exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(ret);
+					if (exported) {
+#ifdef TOOLS_ENABLED
+						if (is_editor) {
+							exported_members_cache.push_front(prop_info);
+							if (tmp_object) {
+								MonoException *exc = nullptr;
+								MonoObject *ret = property->get_value(tmp_object, &exc);
+								if (exc) {
+									exported_members_defval_cache[member_name] = Variant();
+									GDMonoUtils::debug_print_unhandled_exception(exc);
+								} else {
+									exported_members_defval_cache[member_name] = GDMonoMarshal::mono_object_to_variant(ret);
+								}
 							}
 						}
-					}
 #endif
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+						exported_members_names.insert(member_name);
+#endif
+					}
 				}
 			}
 
@@ -3385,6 +3398,16 @@ CSharpScript::~CSharpScript() {
 #ifdef DEBUG_ENABLED
 	SCOPED_MUTEX_LOCK(CSharpLanguage::get_singleton()->script_instances_mutex);
 	CSharpLanguage::get_singleton()->script_list.remove(&this->script_list);
+#endif
+}
+
+void CSharpScript::get_members(Set<StringName> *p_members) {
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	if (p_members) {
+		for (Set<StringName>::Element *E = exported_members_names.front(); E; E = E->next()) {
+			p_members->insert(E->get());
+		}
+	}
 #endif
 }
 
