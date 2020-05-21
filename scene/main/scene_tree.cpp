@@ -54,6 +54,7 @@
 #include "window.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);
@@ -538,6 +539,9 @@ void SceneTree::quit(int p_exit_code) {
 		// Override the exit code if a positive argument is given (the default is `-1`).
 		// This is a shorthand for calling `set_exit_code()` on the OS singleton then quitting.
 		OS::get_singleton()->set_exit_code(p_exit_code);
+	} else if (!OS::get_singleton()->is_custom_exit_code()) {
+		// Must customize exit code, otherwise it will default to a non-zero value
+		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 	}
 
 	_quit = true;
