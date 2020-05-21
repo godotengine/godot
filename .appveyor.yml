@@ -8,7 +8,7 @@ environment:
   SCONS_CACHE_ROOT: "%HOME%\\scons_cache"
   SCONS_CACHE_LIMIT: 1024
   OPTIONS: "debug_symbols=no verbose=yes progress=no"
-  EXTRA_ARGS: "warnings=all werror=no"
+  EXTRA_ARGS: "warnings=all werror=yes"
   matrix:
   - GD_PLATFORM: windows
     TARGET: release_debug
