@@ -3074,18 +3074,6 @@ DisplayServerWindows::~DisplayServerWindows() {
 
 	cursors_cache.clear();
 
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		if (rendering_device_vulkan) {
-			rendering_device_vulkan->finalize();
-			memdelete(rendering_device_vulkan);
-		}
-
-		if (context_vulkan)
-			memdelete(context_vulkan);
-	}
-#endif
-
 	if (user_proc) {
 		SetWindowLongPtr(windows[MAIN_WINDOW_ID].hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
@@ -3102,4 +3090,16 @@ DisplayServerWindows::~DisplayServerWindows() {
 		}
 		DestroyWindow(windows[MAIN_WINDOW_ID].hWnd);
 	}
+
+#if defined(VULKAN_ENABLED)
+	if (rendering_driver == "vulkan") {
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+		}
+
+		if (context_vulkan)
+			memdelete(context_vulkan);
+	}
+#endif
 }
