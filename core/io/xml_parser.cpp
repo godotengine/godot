@@ -205,17 +205,20 @@ void XMLParser::_parse_comment() {
 
 	char *pCommentBegin = P;
 
-	int count = 1;
+	ERR_FAIL_COND_MSG(*P != '-', "Bad XML comment");
+	++P;
+	ERR_FAIL_COND_MSG(*P != '-', "Bad XML comment");
+	++P;
 
 	// move until end of comment reached
-	while (count) {
-		if (*P == '>') {
-			--count;
-		} else if (*P == '<') {
-			++count;
-		}
-
+	for (;;) {
+		while (*P != '-')
+			++P;
+		if (*P != '-')
+			continue;
 		++P;
+		if (*P == '>')
+			break;
 	}
 
 	P -= 3;
