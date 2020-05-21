@@ -278,7 +278,7 @@ void TabContainer::_notification(int p_what) {
 			Color font_color_bg = get_theme_color("font_color_bg");
 			Color font_color_disabled = get_theme_color("font_color_disabled");
 			int side_margin = get_theme_constant("side_margin");
-			int icon_text_distance = get_theme_constant("hseparation");
+			int icon_text_distance = get_theme_constant("icon_separation");
 
 			// Find out start and width of the header area.
 			int header_x = side_margin;
@@ -465,7 +465,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 		if (icon.is_valid()) {
 			width += icon->get_width();
 			if (text != "") {
-				width += get_theme_constant("hseparation");
+				width += get_theme_constant("icon_separation");
 			}
 		}
 	}
