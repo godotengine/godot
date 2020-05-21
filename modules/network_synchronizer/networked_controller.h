@@ -71,7 +71,7 @@ class NetworkedController : public Node {
 public:
 	enum ControllerType {
 		CONTROLLER_TYPE_NULL,
-		CONTROLLER_TYPE_NONET,
+		CONTROLLER_TYPE_NONETWORK,
 		CONTROLLER_TYPE_PLAYER,
 		CONTROLLER_TYPE_SERVER,
 		CONTROLLER_TYPE_DOLL
@@ -333,7 +333,7 @@ struct Controller {
 
 	virtual ~Controller() {}
 
-	virtual void physics_process(real_t p_delta) = 0;
+	virtual void process(real_t p_delta) = 0;
 	virtual void receive_inputs(Vector<uint8_t> p_data) = 0;
 	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) = 0;
 	virtual int notify_input_checked(uint64_t p_input_id) = 0;
@@ -357,7 +357,7 @@ struct ServerController : public Controller {
 			NetworkedController *p_node,
 			int p_traced_frames);
 
-	virtual void physics_process(real_t p_delta);
+	virtual void process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);
@@ -396,7 +396,7 @@ struct PlayerController : public Controller {
 
 	PlayerController(NetworkedController *p_node);
 
-	virtual void physics_process(real_t p_delta);
+	virtual void process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);
@@ -439,7 +439,7 @@ struct DollController : public Controller {
 
 	DollController(NetworkedController *p_node);
 
-	virtual void physics_process(real_t p_delta);
+	virtual void process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);
@@ -465,7 +465,7 @@ struct NoNetController : public Controller {
 
 	NoNetController(NetworkedController *p_node);
 
-	virtual void physics_process(real_t p_delta);
+	virtual void process(real_t p_delta);
 	virtual void receive_inputs(Vector<uint8_t> p_data);
 	virtual int calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds);
 	virtual int notify_input_checked(uint64_t p_input_id);

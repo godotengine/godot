@@ -328,7 +328,7 @@ bool NetworkedController::is_doll_controller() const {
 bool NetworkedController::is_nonet_controller() const {
 	ERR_FAIL_COND_V(get_tree() == nullptr, false);
 	if (controller_type != CONTROLLER_TYPE_NULL)
-		return controller_type == CONTROLLER_TYPE_NONET;
+		return controller_type == CONTROLLER_TYPE_NONETWORK;
 	return get_tree()->get_network_peer().is_null();
 }
 
@@ -393,7 +393,7 @@ void NetworkedController::process(real_t p_delta) {
 	if (controller) {
 		// This is called by the `sceneRewinder` that is not aware of the
 		// controller state; so check that the controller is not null.
-		controller->physics_process(p_delta);
+		controller->process(p_delta);
 	}
 }
 
@@ -415,7 +415,7 @@ void NetworkedController::_notification(int p_what) {
 			CRASH_COND(get_tree() == NULL);
 
 			if (get_tree()->get_network_peer().is_null()) {
-				controller_type = CONTROLLER_TYPE_NONET;
+				controller_type = CONTROLLER_TYPE_NONETWORK;
 				controller = memnew(NoNetController(this));
 			} else if (get_tree()->is_network_server()) {
 				controller_type = CONTROLLER_TYPE_SERVER;
@@ -561,7 +561,7 @@ ServerController::ServerController(
 		network_tracer(p_traced_frames) {
 }
 
-void ServerController::physics_process(real_t p_delta) {
+void ServerController::process(real_t p_delta) {
 	fetch_next_input();
 
 	if (unlikely(current_input_buffer_id == UINT64_MAX)) {
@@ -891,7 +891,7 @@ PlayerController::PlayerController(NetworkedController *p_node) :
 		tick_additional_speed(0.0) {
 }
 
-void PlayerController::physics_process(real_t p_delta) {
+void PlayerController::process(real_t p_delta) {
 	// We need to know if we can accept a new input because in case of bad
 	// internet connection we can't keep accumulating inputs forever
 	// otherwise the server will differ too much from the client and we
@@ -1138,7 +1138,7 @@ DollController::DollController(NetworkedController *p_node) :
 		time_bank(0) {
 }
 
-void DollController::physics_process(real_t p_delta) {
+void DollController::process(real_t p_delta) {
 	// Lock mechanism when the server don't update anymore this doll!
 	if (is_flow_open) {
 		if (is_server_state_update_received &&
@@ -1279,7 +1279,7 @@ NoNetController::NoNetController(NetworkedController *p_node) :
 		frame_id(0) {
 }
 
-void NoNetController::physics_process(real_t p_delta) {
+void NoNetController::process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_write();
 	node->call("collect_inputs", p_delta);
 	node->get_inputs_buffer_mut().dry();

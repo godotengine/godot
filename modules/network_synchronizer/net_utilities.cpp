@@ -53,13 +53,15 @@ void NetworkTracer::reset(int p_packets_to_track) {
 }
 
 void NetworkTracer::notify_packet_arrived() {
-	if (flags.size() == 0) return;
+	if (flags.size() == 0)
+		return;
 	id = (id + 1) % flags.size();
 	flags[id] = true;
 }
 
 void NetworkTracer::notify_missing_packet() {
-	if (flags.size() == 0) return;
+	if (flags.size() == 0)
+		return;
 	id = (id + 1) % flags.size();
 	flags[id] = false;
 }
