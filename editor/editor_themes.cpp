@@ -481,6 +481,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup->set_shadow_color(shadow_color);
 	style_popup->set_shadow_size(4 * EDSCALE);
 
+	Ref<StyleBoxFlat> style_popup_panel = style_popup->duplicate();
+	style_popup_panel->set_default_margin(MARGIN_LEFT, 0);
+	style_popup_panel->set_default_margin(MARGIN_TOP, 0);
+	style_popup_panel->set_default_margin(MARGIN_RIGHT, 0);
+	style_popup_panel->set_default_margin(MARGIN_BOTTOM, 0);
+
 	Ref<StyleBoxLine> style_popup_separator(memnew(StyleBoxLine));
 	style_popup_separator->set_color(separator_color);
 	style_popup_separator->set_grow_begin(popup_margin_size - MAX(EDSCALE, border_width));
@@ -1013,7 +1019,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("panel", "TooltipPanel", style_tooltip);
 
 	// PopupPanel
-	theme->set_stylebox("panel", "PopupPanel", style_popup);
+	theme->set_stylebox("panel", "PopupPanel", style_popup_panel);
 
 	// SpinBox
 	theme->set_icon("updown", "SpinBox", theme->get_icon("GuiSpinboxUpdown", "EditorIcons"));
