@@ -732,6 +732,13 @@ public:
 			texture_owner.free(p_rid);
 			memdelete(texture);
 		}
+
+		if (mesh_owner.owns(p_rid)) {
+			// delete the mesh
+			DummyMesh *mesh = mesh_owner.getornull(p_rid);
+			mesh_owner.free(p_rid);
+			memdelete(mesh);
+		}
 		return true;
 	}
 
