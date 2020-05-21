@@ -95,6 +95,13 @@ struct IsleData {
 	NetworkedController *controller = nullptr;
 };
 
+struct PeerData {
+	// For new peers notify the state as soon as possible.
+	bool force_notify_snapshot = true;
+	// For new peers a full snapshot is needed.
+	bool need_full_snapshot = true;
+};
+
 /// # SceneRewinder
 ///
 /// The `SceneRewinder` is responsible to keep the scene of all peers in sync.
@@ -186,6 +193,8 @@ private:
 	bool reset_in_progress;
 	bool rewinding_in_progress;
 
+	OAHashMap<int, PeerData> peer_data;
+
 	uint32_t node_counter;
 	bool generate_id;
 	OAHashMap<ControllerID, IsleData> isle_data;
@@ -235,6 +244,9 @@ public:
 
 	/// This function works only on server.
 	void force_state_notify();
+
+	void _on_peer_connected(int p_peer);
+	void _on_peer_disconnected(int p_peer);
 
 	// TODO this MUST disapper and __reset MUST be called automatically when the
 	// connection status of the game instance change
@@ -305,6 +317,9 @@ public:
 
 	virtual void process() = 0;
 	virtual void receive_snapshot(Variant p_snapshot) = 0;
+	virtual void on_node_added(ObjectID p_node_id) {}
+	virtual void on_variable_added(ObjectID p_node_id, StringName p_var_name) {}
+	virtual void on_variable_changed(ObjectID p_node_id, StringName p_var_name) {}
 };
 
 class NoNetRewinder : public Rewinder {
@@ -324,15 +339,25 @@ class ServerRewinder : public Rewinder {
 
 	real_t state_notifier_timer;
 
+	struct Change {
+		bool not_known_before = false;
+		Set<StringName> uknown_vars;
+		Set<StringName> vars;
+	};
+	OAHashMap<ObjectID, Change> changes;
+
 public:
 	ServerRewinder(SceneRewinder *p_node);
 
 	virtual void clear();
-
-	Variant generate_snapshot();
-
 	virtual void process();
 	virtual void receive_snapshot(Variant p_snapshot);
+	virtual void on_node_added(ObjectID p_node_id);
+	virtual void on_variable_added(ObjectID p_node_id, StringName p_var_name);
+	virtual void on_variable_changed(ObjectID p_node_id, StringName p_var_name);
+
+	void process_snapshot_notificator(real_t p_delta);
+	Variant generate_snapshot(bool p_full_snapshot) const;
 };
 
 class ClientRewinder : public Rewinder {

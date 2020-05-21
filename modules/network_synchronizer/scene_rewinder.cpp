@@ -87,7 +87,7 @@ int NodeData::find_var_by_id(uint32_t p_id) const {
 		return -1;
 	}
 	const VarData *v = vars.ptr();
-	for (int i = 0; i < vars.size(); i += 0) {
+	for (int i = 0; i < vars.size(); i += 1) {
 		if (v[i].id == p_id) {
 			return i;
 		}
@@ -155,6 +155,9 @@ void SceneRewinder::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_state_notify"), &SceneRewinder::force_state_notify);
 
+	ClassDB::bind_method(D_METHOD("_on_peer_connected"), &SceneRewinder::_on_peer_connected);
+	ClassDB::bind_method(D_METHOD("_on_peer_disconnected"), &SceneRewinder::_on_peer_disconnected);
+
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneRewinder::__clear);
 	ClassDB::bind_method(D_METHOD("__reset"), &SceneRewinder::__reset);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneRewinder::_rpc_send_state);
@@ -183,10 +186,16 @@ void SceneRewinder::_notification(int p_what) {
 			__clear();
 			__reset();
 
+			get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connected"));
+			get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
+
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
+
+			get_multiplayer()->disconnect("network_peer_connected", Callable(this, "_on_peer_connected"));
+			get_multiplayer()->disconnect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
 
 			__clear();
 
@@ -282,6 +291,8 @@ void SceneRewinder::register_variable(Node *p_node, StringName p_variable, Strin
 	if (p_on_change_notify != StringName()) {
 		track_variable_changes(p_node, p_variable, p_on_change_notify);
 	}
+
+	rewinder->on_variable_added(p_node->get_instance_id(), p_variable);
 }
 
 void SceneRewinder::unregister_variable(Node *p_node, StringName p_variable) {
@@ -503,6 +514,14 @@ void SceneRewinder::force_state_notify() {
 	r->state_notifier_timer = get_server_notify_state_interval() + 1.0;
 }
 
+void SceneRewinder::_on_peer_connected(int p_peer) {
+	peer_data.set(p_peer, PeerData());
+}
+
+void SceneRewinder::_on_peer_disconnected(int p_peer) {
+	peer_data.remove(p_peer);
+}
+
 void SceneRewinder::reset() {
 	if (rewinder_type == REWINDER_TYPE_NONET) {
 		__reset();
@@ -541,6 +560,16 @@ void SceneRewinder::__reset() {
 	const int lowest_priority_number = INT32_MAX;
 	set_process_priority(lowest_priority_number);
 	set_physics_process_internal(true);
+
+	if (rewinder) {
+		// Notify the presence all available nodes and its variables to the rewinder.
+		for (OAHashMap<ObjectID, NodeData>::Iterator it = nodes_data.iter(); it.valid; it = nodes_data.next_iter(it)) {
+			rewinder->on_node_added(*it.key);
+			for (int i = 0; i < it.value->vars.size(); i += 1) {
+				rewinder->on_variable_added(*it.key, it.value->vars[i].var.name);
+			}
+		}
+	}
 }
 
 void SceneRewinder::clear() {
@@ -598,6 +627,7 @@ NodeData *SceneRewinder::register_node(Node *p_node) {
 				NodeData(node_id, p_node->get_instance_id(), false));
 		node_data = nodes_data.lookup_ptr(p_node->get_instance_id());
 		node_data->node = p_node;
+		rewinder->on_node_added(p_node->get_instance_id());
 
 		// Register this node as controller if it's a controller.
 		NetworkedController *controller = Object::cast_to<NetworkedController>(p_node);
@@ -811,6 +841,7 @@ void SceneRewinder::pull_node_changes(NodeData *p_node_data) {
 		if (!rewinder_variant_evaluation(old_val, new_val)) {
 			object_vars[i].var.value = new_val;
 			node->emit_signal(get_changed_event_name(object_vars[i].var.name));
+			rewinder->on_variable_changed(node->get_instance_id(), object_vars[i].var.name);
 		}
 	}
 }
@@ -932,89 +963,7 @@ ServerRewinder::ServerRewinder(SceneRewinder *p_node) :
 
 void ServerRewinder::clear() {
 	state_notifier_timer = 0.0;
-}
-
-Variant ServerRewinder::generate_snapshot() {
-	// The packet data is an array that contains the informations to update the
-	// client snapshot.
-	//
-	// It's composed as follows:
-	//  [
-	//  NODE, VARIABLE, Value, VARIABLE, Value, VARIABLE, value, NIL,
-	//  NODE, INPUT ID, VARIABLE, Value, VARIABLE, Value, NIL,
-	//  NODE, VARIABLE, Value, VARIABLE, Value, NIL]
-	//
-	// Each node ends with a NIL, and the NODE and the VARIABLE are special:
-	// - NODE, can be an array of two variables [Node ID, NodePath] or directly
-	//         a Node ID. Obviously the array is sent only the first time.
-	// - INPUT ID, this is optional and is used only when the node is a controller.
-	// - VARIABLE, can be an array with the ID and the variable name, or just
-	//              the ID; similarly as is for the NODE the array is send only
-	//              the first time.
-
-	// TODO: in this moment the snapshot is the same for anyone. Optimize.
-	// TODO, make sure the generated snapshot only includes enabled controllers.
-	// Using the function `Controller::get_active_doll_peers()` is possible to
-	// know the active controllers.
-
-	Vector<Variant> snapshot_data;
-
-	for (
-			OAHashMap<ObjectID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
-			it.valid;
-			it = scene_rewinder->nodes_data.next_iter(it)) {
-		const NodeData *node_data = it.value;
-		if (node_data->node == nullptr || node_data->node->is_inside_tree() == false) {
-			continue;
-		}
-
-		// Insert NODE.
-		Vector<Variant> snap_node_data;
-		snap_node_data.resize(2);
-		snap_node_data.write[0] = node_data->id;
-		snap_node_data.write[1] = node_data->node->get_path();
-
-		// Check if this is a controller
-		if (node_data->is_controller) {
-			// This is a controller, make sure we can already sync it.
-
-			NetworkedController *controller = Object::cast_to<NetworkedController>(node_data->node);
-			CRASH_COND(controller == nullptr); // Unreachable
-
-			if (unlikely(controller->get_current_input_id() == UINT64_MAX)) {
-				// The first ID id is not yet arrived, so just skip this node.
-				continue;
-			} else {
-				snapshot_data.push_back(snap_node_data);
-				snapshot_data.push_back(controller->get_current_input_id());
-			}
-		} else {
-			// This is not a controller, we can insert this.
-			snapshot_data.push_back(snap_node_data);
-		}
-
-		// Insert the node variables.
-		const int size = node_data->vars.size();
-		const VarData *vars = node_data->vars.ptr();
-		for (int i = 0; i < size; i += 1) {
-			if (vars[i].enabled == false) {
-				continue;
-			}
-
-			Vector<Variant> var_info;
-			var_info.resize(2);
-			var_info.write[0] = vars[i].id;
-			var_info.write[1] = vars[i].var.name;
-
-			snapshot_data.push_back(var_info);
-			snapshot_data.push_back(vars[i].var.value);
-		}
-
-		// Insert NIL.
-		snapshot_data.push_back(Variant());
-	}
-
-	return snapshot_data;
+	changes.clear();
 }
 
 void ServerRewinder::process() {
@@ -1052,22 +1001,210 @@ void ServerRewinder::process() {
 		scene_rewinder->pull_node_changes(node_data);
 	}
 
-	// Notify the state if needed
-	state_notifier_timer += delta;
-	if (state_notifier_timer >= scene_rewinder->get_server_notify_state_interval()) {
-		state_notifier_timer = 0.0;
-
-		if (scene_rewinder->isle_data.empty() == false) {
-			// Do this only if other peers are listening.
-			Variant snapshot = generate_snapshot();
-			scene_rewinder->rpc("_rpc_send_state", snapshot);
-		}
-	}
+	process_snapshot_notificator(delta);
 }
 
 void ServerRewinder::receive_snapshot(Variant _p_snapshot) {
 	// Unreachable
 	CRASH_NOW();
+}
+
+void ServerRewinder::on_node_added(ObjectID p_node_id) {
+#ifdef DEBUG_ENABLED
+	// Can't happen on server
+	CRASH_COND(scene_rewinder->is_recovered());
+#endif
+	Change *c = changes.lookup_ptr(p_node_id);
+	if (c) {
+		c->not_known_before = true;
+	} else {
+		Change change;
+		change.not_known_before = true;
+		changes.set(p_node_id, change);
+	}
+}
+
+void ServerRewinder::on_variable_added(ObjectID p_node_id, StringName p_var_name) {
+#ifdef DEBUG_ENABLED
+	// Can't happen on server
+	CRASH_COND(scene_rewinder->is_recovered());
+#endif
+	Change *c = changes.lookup_ptr(p_node_id);
+	if (c) {
+		c->vars.insert(p_var_name);
+		c->uknown_vars.insert(p_var_name);
+	} else {
+		Change change;
+		change.vars.insert(p_var_name);
+		change.uknown_vars.insert(p_var_name);
+		changes.set(p_node_id, change);
+	}
+}
+
+void ServerRewinder::on_variable_changed(ObjectID p_node_id, StringName p_var_name) {
+#ifdef DEBUG_ENABLED
+	// Can't happen on server
+	CRASH_COND(scene_rewinder->is_recovered());
+#endif
+	Change *c = changes.lookup_ptr(p_node_id);
+	if (c) {
+		c->vars.insert(p_var_name);
+	} else {
+		Change change;
+		change.vars.insert(p_var_name);
+		changes.set(p_node_id, change);
+	}
+}
+
+void ServerRewinder::process_snapshot_notificator(real_t p_delta) {
+	if (scene_rewinder->peer_data.empty()) {
+		// No one is listening.
+		return;
+	}
+
+	// Notify the state if needed
+	state_notifier_timer += p_delta;
+	const bool notify_state = state_notifier_timer >= scene_rewinder->get_server_notify_state_interval();
+
+	if (notify_state) {
+		state_notifier_timer = 0.0;
+	}
+
+	Variant full_snapshot;
+	Variant delta_snapshot;
+	for (
+			OAHashMap<int, PeerData>::Iterator peer_it = scene_rewinder->peer_data.iter();
+			peer_it.valid;
+			peer_it = scene_rewinder->peer_data.next_iter(peer_it)) {
+		if (peer_it.value->force_notify_snapshot == false && notify_state == false) {
+			continue;
+		}
+		peer_it.value->force_notify_snapshot = false;
+
+		if (peer_it.value->need_full_snapshot) {
+			peer_it.value->need_full_snapshot = false;
+			if (full_snapshot.is_null()) {
+				full_snapshot = generate_snapshot(true);
+			}
+			scene_rewinder->rpc_id(*peer_it.key, "_rpc_send_state", full_snapshot);
+		} else {
+			if (delta_snapshot.is_null()) {
+				delta_snapshot = generate_snapshot(false);
+			}
+			scene_rewinder->rpc_id(*peer_it.key, "_rpc_send_state", delta_snapshot);
+		}
+	}
+
+	if (notify_state) {
+		// The state got notified, mark this as checkpoint so the next state
+		// will contains only the changed things.
+		changes.clear();
+	}
+}
+
+Variant ServerRewinder::generate_snapshot(bool p_full_snapshot) const {
+	// The packet data is an array that contains the informations to update the
+	// client snapshot.
+	//
+	// It's composed as follows:
+	//  [NODE, VARIABLE, Value, VARIABLE, Value, VARIABLE, value, NIL,
+	//  NODE, INPUT ID, VARIABLE, Value, VARIABLE, Value, NIL,
+	//  NODE, VARIABLE, Value, VARIABLE, Value, NIL]
+	//
+	// Each node ends with a NIL, and the NODE and the VARIABLE are special:
+	// - NODE, can be an array of two variables [Node ID, NodePath] or directly
+	//         a Node ID. Obviously the array is sent only the first time.
+	// - INPUT ID, this is optional and is used only when the node is a controller.
+	// - VARIABLE, can be an array with the ID and the variable name, or just
+	//              the ID; similarly as is for the NODE the array is send only
+	//              the first time.
+
+	Vector<Variant> snapshot_data;
+
+	for (
+			OAHashMap<ObjectID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
+			it.valid;
+			it = scene_rewinder->nodes_data.next_iter(it)) {
+		const NodeData *node_data = it.value;
+		if (node_data->node == nullptr || node_data->node->is_inside_tree() == false) {
+			continue;
+		}
+
+		const Change *change = changes.lookup_ptr(*it.key);
+
+		// Insert NODE DATA.
+		Variant snap_node_data;
+		if (p_full_snapshot || (change != nullptr && change->not_known_before)) {
+			Vector<Variant> _snap_node_data;
+			_snap_node_data.resize(2);
+			_snap_node_data.write[0] = node_data->id;
+			_snap_node_data.write[1] = node_data->node->get_path();
+			snap_node_data = _snap_node_data;
+		} else {
+			// This node is already known on clients, just set the node ID.
+			snap_node_data = node_data->id;
+		}
+
+		const bool node_has_changes = p_full_snapshot || (change != nullptr && change->vars.empty() == false);
+
+		if (node_data->is_controller) {
+			NetworkedController *controller = Object::cast_to<NetworkedController>(node_data->node);
+			CRASH_COND(controller == nullptr); // Unreachable
+
+			// TODO make sure to skip un-active controllers.
+			if (likely(controller->get_current_input_id() != UINT64_MAX)) {
+				// This is a controller, always sync it.
+				snapshot_data.push_back(snap_node_data);
+				snapshot_data.push_back(controller->get_current_input_id());
+			} else {
+				// The first ID id is not yet arrived, so just skip this node.
+				continue;
+			}
+		} else {
+			if (node_has_changes) {
+				snapshot_data.push_back(snap_node_data);
+			} else {
+				// It has no changes, skip this node.
+				continue;
+			}
+		}
+
+		if (node_has_changes) {
+			// Insert the node variables.
+			const int size = node_data->vars.size();
+			const VarData *vars = node_data->vars.ptr();
+			for (int i = 0; i < size; i += 1) {
+				if (vars[i].enabled == false) {
+					continue;
+				}
+
+				if (p_full_snapshot == false && change->vars.has(vars[i].var.name) == false) {
+					// This is a delta snapshot and this variable is the same as
+					// before. Skip it.
+					continue;
+				}
+
+				Variant var_info;
+				if (p_full_snapshot || change->uknown_vars.has(vars[i].var.name)) {
+					Vector<Variant> _var_info;
+					_var_info.resize(2);
+					_var_info.write[0] = vars[i].id;
+					_var_info.write[1] = vars[i].var.name;
+					var_info = _var_info;
+				} else {
+					var_info = vars[i].id;
+				}
+
+				snapshot_data.push_back(var_info);
+				snapshot_data.push_back(vars[i].var.value);
+			}
+		}
+
+		// Insert NIL.
+		snapshot_data.push_back(Variant());
+	}
+
+	return snapshot_data;
 }
 
 ClientRewinder::ClientRewinder(SceneRewinder *p_node) :
@@ -1642,8 +1779,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	// client snapshot.
 	//
 	// It's composed as follows:
-	//  [
-	//  NODE, VARIABLE, Value, VARIABLE, Value, VARIABLE, value, NIL,
+	//  [NODE, VARIABLE, Value, VARIABLE, Value, VARIABLE, value, NIL,
 	//  NODE, INPUT ID, VARIABLE, Value, VARIABLE, Value, NIL,
 	//  NODE, VARIABLE, Value, VARIABLE, Value, NIL]
 	//
@@ -1671,9 +1807,6 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	int server_snap_variable_index = -1;
 
 	uint64_t player_controller_input_id = UINT64_MAX;
-
-	// We espect that the player_controller is updated by this new snapshot,
-	// so make sure it's done so.
 
 	for (int snap_data_index = 0; snap_data_index < raw_snapshot.size(); snap_data_index += 1) {
 		const Variant v = raw_snapshot_ptr[snap_data_index];
@@ -1889,7 +2022,8 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 		}
 	}
 
-	// Just make sure that the local player input ID was received.
+	// We espect that the player_controller is updated by this new snapshot,
+	// so make sure it's done so.
 	if (player_controller_input_id == UINT64_MAX) {
 		NET_DEBUG_PRINT("Recovery aborted, the player controller (" + scene_rewinder->main_controller->get_path() + ") was not part of the received snapshot, probably the server doesn't have important informations for this peer. Snapshot:");
 		NET_DEBUG_PRINT(p_snapshot);
