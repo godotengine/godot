@@ -54,6 +54,11 @@ void EditorHelp::_init_colors() {
 	type_color = get_theme_color("accent_color", "Editor").lerp(text_color, 0.5);
 	class_desc->add_theme_color_override("selection_color", get_theme_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	class_desc->add_theme_constant_override("line_separation", Math::round(5 * EDSCALE));
+	float contrast = EDITOR_GET("interface/theme/contrast");
+	border_color = get_theme_color("base_color", "Editor").lerp(Color(0, 0, 0, 1), contrast * 2);
+	odd_row_bg_color = get_theme_color("base_color", "Editor");
+	even_row_bg_color = Color(0, 0, 0, 0);
+	padding = Rect2(5 * EDSCALE, 2 * EDSCALE, 5 * EDSCALE, 2 * EDSCALE);
 }
 
 void EditorHelp::_search(bool p_search_previous) {
@@ -230,6 +235,9 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 
 	if (p_overview) {
 		class_desc->push_cell();
+		class_desc->set_cell_row_background_color(odd_row_bg_color, even_row_bg_color);
+		class_desc->set_cell_border_color(border_color);
+		class_desc->set_cell_padding(padding);
 		class_desc->push_paragraph(RichTextLabel::ALIGN_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 	} else {
 		static const char32_t prefix[3] = { 0x25CF /* filled circle */, ' ', 0 };
@@ -242,6 +250,9 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->pop(); //align
 		class_desc->pop(); //cell
 		class_desc->push_cell();
+		class_desc->set_cell_row_background_color(odd_row_bg_color, even_row_bg_color);
+		class_desc->set_cell_border_color(border_color);
+		class_desc->set_cell_padding(padding);
 	} else {
 		class_desc->add_text(" ");
 	}
@@ -511,6 +522,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Properties"));
+		class_desc->add_newline();
 		class_desc->pop();
 		class_desc->pop();
 
@@ -528,6 +540,9 @@ void EditorHelp::_update_doc() {
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 
 			class_desc->push_cell();
+			class_desc->set_cell_row_background_color(odd_row_bg_color, even_row_bg_color);
+			class_desc->set_cell_border_color(border_color);
+			class_desc->set_cell_padding(padding);
 			class_desc->push_paragraph(RichTextLabel::ALIGN_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.properties[i].type, cd.properties[i].enumeration);
@@ -555,6 +570,9 @@ void EditorHelp::_update_doc() {
 			}
 
 			class_desc->push_cell();
+			class_desc->set_cell_row_background_color(odd_row_bg_color, even_row_bg_color);
+			class_desc->set_cell_border_color(border_color);
+			class_desc->set_cell_padding(padding);
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(headline_color);
 
@@ -648,6 +666,7 @@ void EditorHelp::_update_doc() {
 		class_desc->push_color(title_color);
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Methods"));
+		class_desc->add_newline();
 		class_desc->pop();
 		class_desc->pop();
 
@@ -669,10 +688,11 @@ void EditorHelp::_update_doc() {
 			}
 
 			if (any_previous && !m.is_empty()) {
-				class_desc->push_cell();
-				class_desc->pop(); //cell
-				class_desc->push_cell();
-				class_desc->pop(); //cell
+				for (int i = 0; i < 4; i++) {
+					class_desc->push_cell();
+					class_desc->set_cell_size_override(Size2(0, 0), Size2(0, 6 * EDSCALE));
+					class_desc->pop(); //cell
+				}
 			}
 
 			String group_prefix;
@@ -689,10 +709,11 @@ void EditorHelp::_update_doc() {
 				}
 
 				if (is_new_group && pass == 1) {
-					class_desc->push_cell();
-					class_desc->pop(); //cell
-					class_desc->push_cell();
-					class_desc->pop(); //cell
+					for (int j = 0; j < 4; j++) {
+						class_desc->push_cell();
+						class_desc->set_cell_size_override(Size2(0, 0), Size2(0, 6 * EDSCALE));
+						class_desc->pop(); //cell
+					}
 				}
 
 				if (m[i].description != "") {
@@ -721,6 +742,8 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->add_newline();
+		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, true);
@@ -729,6 +752,9 @@ void EditorHelp::_update_doc() {
 			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 
 			class_desc->push_cell();
+			class_desc->set_cell_row_background_color(odd_row_bg_color, even_row_bg_color);
+			class_desc->set_cell_border_color(border_color);
+			class_desc->set_cell_padding(padding);
 			class_desc->push_paragraph(RichTextLabel::ALIGN_RIGHT, Control::TEXT_DIRECTION_AUTO, "");
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.theme_properties[i].type);
@@ -737,6 +763,9 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 
 			class_desc->push_cell();
+			class_desc->set_cell_row_background_color(odd_row_bg_color, even_row_bg_color);
+			class_desc->set_cell_border_color(border_color);
+			class_desc->set_cell_padding(padding);
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(headline_color);
 			_add_text(cd.theme_properties[i].name);
@@ -769,6 +798,7 @@ void EditorHelp::_update_doc() {
 
 		class_desc->pop(); // table
 		class_desc->pop();
+		class_desc->pop(); // font
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
