@@ -2240,7 +2240,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		return true;
 	}
 
-	if (k.is_valid() && !k->is_pressed() && drag_type == DRAG_KEY_MOVE && tool == TOOL_SELECT &&
+	if (k.is_valid() && !k->is_pressed() && drag_type == DRAG_KEY_MOVE && (tool == TOOL_SELECT || tool == TOOL_MOVE) &&
 			(k->get_keycode() == KEY_UP || k->get_keycode() == KEY_DOWN || k->get_keycode() == KEY_LEFT || k->get_keycode() == KEY_RIGHT)) {
 		// Confirm canvas items move by arrow keys
 		if ((!Input::get_singleton()->is_key_pressed(KEY_UP)) &&
