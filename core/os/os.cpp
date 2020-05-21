@@ -226,6 +226,11 @@ int OS::get_exit_code() const {
 
 void OS::set_exit_code(int p_code) {
 	_exit_code = p_code;
+	_is_custom_exit_code = true;
+}
+
+bool OS::is_custom_exit_code() {
+	return _is_custom_exit_code;
 }
 
 String OS::get_locale() const {
