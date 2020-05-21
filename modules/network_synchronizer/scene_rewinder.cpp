@@ -161,6 +161,7 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneRewinder::__clear);
 	ClassDB::bind_method(D_METHOD("__reset"), &SceneRewinder::__reset);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneRewinder::_rpc_send_state);
+	ClassDB::bind_method(D_METHOD("_rpc_notify_need_full_snapshot"), &SceneRewinder::_rpc_notify_need_full_snapshot);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doll_desync_tolerance", PROPERTY_HINT_RANGE, "1,10000,1"), "set_doll_desync_tolerance", "get_doll_desync_tolerance");
 
@@ -226,6 +227,7 @@ SceneRewinder::SceneRewinder() :
 	rpc_config("__reset", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
+	rpc_config("_rpc_notify_need_full_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
 }
 
 SceneRewinder::~SceneRewinder() {
@@ -612,8 +614,16 @@ void SceneRewinder::__clear() {
 
 void SceneRewinder::_rpc_send_state(Variant p_snapshot) {
 	ERR_FAIL_COND(get_tree()->is_network_server() == true);
-
 	rewinder->receive_snapshot(p_snapshot);
+}
+
+void SceneRewinder::_rpc_notify_need_full_snapshot() {
+	ERR_FAIL_COND(get_tree()->is_network_server() == false);
+
+	const int sender_peer = get_tree()->get_multiplayer()->get_rpc_sender_id();
+	PeerData *pd = peer_data.lookup_ptr(sender_peer);
+	ERR_FAIL_COND(pd == nullptr);
+	pd->need_full_snapshot = true;
 }
 
 NodeData *SceneRewinder::register_node(Node *p_node) {
@@ -1791,6 +1801,8 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	//              the ID; similarly as is for the NODE the array is send only
 	//              the first time.
 
+	need_full_snapshot_notified = false;
+
 	ERR_FAIL_COND_V_MSG(
 			scene_rewinder->main_controller == nullptr,
 			false,
@@ -1853,7 +1865,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 					const NodePath *node_path = node_paths.lookup_ptr(node_id);
 					if (node_path == nullptr) {
 						NET_DEBUG_PRINT("The node with ID `" + itos(node_id) + "` is not know by this peer, this is not supposed to happen.");
-						// TODO notify the server so it sends a full snapshot, and so fix this issue.
+						notify_server_full_snapshot_is_needed();
 					} else {
 						node = scene_rewinder->get_tree()->get_root()->get_node(*node_path);
 					}
@@ -1973,7 +1985,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				if (index == -1) {
 					NET_DEBUG_PRINT("The var with ID `" + itos(var_id) + "` is not know by this peer, this is not supposed to happen.");
 
-					// TODO please notify the server that this peer need a full snapshot.
+					notify_server_full_snapshot_is_needed();
 
 					// Skip the next data since it should be the value, but we
 					// can't store it.
@@ -2084,4 +2096,14 @@ bool ClientRewinder::compare_vars(
 	// The vars are not different.
 	return false;
 #endif
+}
+
+void ClientRewinder::notify_server_full_snapshot_is_needed() {
+	if (need_full_snapshot_notified) {
+		return;
+	}
+
+	// Notify the server that a full snapshot is needed.
+	need_full_snapshot_notified = true;
+	scene_rewinder->rpc_id(1, "_rpc_notify_need_full_snapshot");
 }

@@ -259,6 +259,7 @@ public:
 	void __clear();
 
 	void _rpc_send_state(Variant p_snapshot);
+	void _rpc_notify_need_full_snapshot();
 
 private:
 	void put_into_isle(ObjectID p_node_id, ControllerID p_isle_id);
@@ -370,6 +371,8 @@ class ClientRewinder : public Rewinder {
 	OAHashMap<ControllerID, std::deque<IsleSnapshot>> client_controllers_snapshots;
 	OAHashMap<ControllerID, std::deque<IsleSnapshot>> server_controllers_snapshots;
 
+	bool need_full_snapshot_notified = false;
+
 public:
 	ClientRewinder(SceneRewinder *p_node);
 
@@ -389,6 +392,8 @@ private:
 	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
 	bool compare_vars(const NodeData *p_rewinder_node_data, const Vector<VarData> &p_server_vars, const Vector<VarData> &p_client_vars, Vector<Var> &r_postponed_recover);
+
+	void notify_server_full_snapshot_is_needed();
 };
 
 #endif
