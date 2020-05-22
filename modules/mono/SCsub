@@ -29,7 +29,7 @@ if env_mono["tools"] or env_mono["target"] != "release":
 
 mono_configure.configure(env, env_mono)
 
-if env_mono["tools"] and env_mono["mono_glue"]:
+if env_mono["tools"] and env_mono["mono_glue"] and env_mono["build_cil"]:
     # Build Godot API solution
     import build_scripts.api_solution_build as api_solution_build
 
