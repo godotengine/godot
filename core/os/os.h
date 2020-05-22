@@ -194,7 +194,7 @@ public:
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
 	virtual int get_tablet_driver_count() const { return 0; };
-	virtual const char *get_tablet_driver_name(int p_driver) const { return ""; };
+	virtual String get_tablet_driver_name(int p_driver) const { return ""; };
 	virtual String get_current_tablet_driver() const { return ""; };
 	virtual void set_current_tablet_driver(const String &p_driver){};
 

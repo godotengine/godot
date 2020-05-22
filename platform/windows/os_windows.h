@@ -218,6 +218,14 @@ typedef struct tagPOINTER_PEN_INFO {
 #define WM_POINTERUPDATE 0x0245
 #endif
 
+#ifndef WM_POINTERENTER
+#define WM_POINTERENTER 0x0249
+#endif
+
+#ifndef WM_POINTERLEAVE
+#define WM_POINTERLEAVE 0x024A
+#endif
+
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 
@@ -262,6 +270,7 @@ class OS_Windows : public OS {
 	int min_pressure;
 	int max_pressure;
 	bool tilt_supported;
+	bool block_mm = false;
 
 	int last_pressure_update;
 	float last_pressure;
@@ -419,7 +428,7 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual int get_tablet_driver_count() const;
-	virtual const char *get_tablet_driver_name(int p_driver) const;
+	virtual String get_tablet_driver_name(int p_driver) const;
 	virtual String get_current_tablet_driver() const;
 	virtual void set_current_tablet_driver(const String &p_driver);
 
