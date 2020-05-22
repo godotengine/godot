@@ -40,65 +40,60 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-/** @file  FBXUtil.h
- *  @brief FBX utility functions for internal use
+/** @file  FBXNoteAttribute.cpp
+ *  @brief Assimp::FBX::NodeAttribute (and subclasses) implementation
  */
-#ifndef INCLUDED_AI_FBX_UTIL_H
-#define INCLUDED_AI_FBX_UTIL_H
 
-#include "FBXCompileConfig.h"
-#include "FBXTokenizer.h"
-#include <stdint.h>
+#ifndef ASSIMP_BUILD_NO_FBX_IMPORTER
+
+#include "FBXDocument.h"
+#include "FBXDocumentUtil.h"
+#include "FBXParser.h"
+#include <iostream>
 
 namespace Assimp {
 namespace FBX {
 
-namespace Util {
+using namespace Util;
 
-/** helper for std::for_each to delete all heap-allocated items in a container */
-template <typename T>
-struct delete_fun {
-	void operator()(const volatile T *del) {
-		delete del;
+class FbxPoseNode;
+// ------------------------------------------------------------------------------------------------
+FbxPose::FbxPose(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		Object(id, element, name) {
+	const Scope &sc = GetRequiredScope(element);
+	const std::string &classname = ParseTokenAsString(GetRequiredToken(element, 2));
+	std::cout << "pose name: " << name << std::endl;
+
+	for (auto element : sc.Elements()) {
+		std::cout << "pose element: " << element.first << std::endl;
 	}
-};
 
-/** Get a string representation for a #TokenType. */
-const char *TokenTypeString(TokenType t);
+	const ElementCollection &PoseNodes = sc.GetCollection("PoseNode");
 
-/** Decode a single Base64-encoded character.
-*
-*  @param ch Character to decode (from base64 to binary).
-*  @return decoded byte value*/
-uint8_t DecodeBase64(char ch);
+	for( ElementMap::const_iterator it = PoseNodes.first; it != PoseNodes.second; ++it)
+    {
+        const TokenList &tokens = (*it).second->Tokens();
 
-/** Compute decoded size of a Base64-encoded string
-*
-*  @param in Characters to decode.
-*  @param inLength Number of characters to decode.
-*  @return size of the decoded data (number of bytes)*/
-size_t ComputeDecodedSizeBase64(const char *in, size_t inLength);
+        const Scope &pose_node_entry = GetRequiredScope(*(*it).second);
 
-/** Decode a Base64-encoded string
-*
-*  @param in Characters to decode.
-*  @param inLength Number of characters to decode.
-*  @param out Pointer where we will store the decoded data.
-*  @param maxOutLength Size of output buffer.
-*  @return size of the decoded data (number of bytes)*/
-size_t DecodeBase64(const char *in, size_t inLength, uint8_t *out, size_t maxOutLength);
+        std::string entry_name = (*it).first;
+        Element *element = (*it).second;
 
-char EncodeBase64(char byte);
+        std::cout << "name: " + name << std::endl;
+        std::shared_ptr<FbxPoseNode> pose_node(new FbxPoseNode(*element, doc, entry_name));
+        pose_nodes.push_back(pose_node);
 
-/** Encode bytes in base64-encoding
-*
-*  @param data Binary data to encode.
-*  @param inLength Number of bytes to encode.
-*  @return base64-encoded string*/
-std::string EncodeBase64(const char *data, size_t length);
 
-} // namespace Util
+    }
+}
+
+// ------------------------------------------------------------------------------------------------
+FbxPose::~FbxPose() {
+    pose_nodes.clear();
+	// empty
+}
+
 } // namespace FBX
 } // namespace Assimp
 
-#endif // ! INCLUDED_AI_FBX_UTIL_H
+#endif

@@ -46,10 +46,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef ASSIMP_BUILD_NO_FBX_IMPORTER
 
-#include "FBXParser.h"
 #include "FBXDocument.h"
-#include "FBXImporter.h"
 #include "FBXDocumentUtil.h"
+#include "FBXParser.h"
+#include <iostream>
 
 namespace Assimp {
 namespace FBX {
@@ -57,114 +57,107 @@ namespace FBX {
 using namespace Util;
 
 // ------------------------------------------------------------------------------------------------
-NodeAttribute::NodeAttribute(uint64_t id, const Element& element, const Document& doc, const std::string& name)
-: Object(id,element,name)
-, props()
-{
-    const Scope& sc = GetRequiredScope(element);
+NodeAttribute::NodeAttribute(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		Object(id, element, name), props() {
+	const Scope &sc = GetRequiredScope(element);
 
-    const std::string& classname = ParseTokenAsString(GetRequiredToken(element,2));
+	const std::string &classname = ParseTokenAsString(GetRequiredToken(element, 2));
 
-    // hack on the deriving type but Null/LimbNode attributes are the only case in which
-    // the property table is by design absent and no warning should be generated
-    // for it.
-    const bool is_null_or_limb = !strcmp(classname.c_str(), "Null") || !strcmp(classname.c_str(), "LimbNode");
-    props = GetPropertyTable(doc,"NodeAttribute.Fbx" + classname,element,sc, is_null_or_limb);
-}
-
-
-// ------------------------------------------------------------------------------------------------
-NodeAttribute::~NodeAttribute()
-{
-    // empty
-}
-
-
-// ------------------------------------------------------------------------------------------------
-CameraSwitcher::CameraSwitcher(uint64_t id, const Element& element, const Document& doc, const std::string& name)
-    : NodeAttribute(id,element,doc,name)
-{
-    const Scope& sc = GetRequiredScope(element);
-    const Element* const CameraId = sc["CameraId"];
-    const Element* const CameraName = sc["CameraName"];
-    const Element* const CameraIndexName = sc["CameraIndexName"];
-
-    if(CameraId) {
-        cameraId = ParseTokenAsInt(GetRequiredToken(*CameraId,0));
-    }
-
-    if(CameraName) {
-        cameraName = GetRequiredToken(*CameraName,0).StringContents();
-    }
-
-    if(CameraIndexName && CameraIndexName->Tokens().size()) {
-        cameraIndexName = GetRequiredToken(*CameraIndexName,0).StringContents();
-    }
+	// hack on the deriving type but Null/LimbNode attributes are the only case in which
+	// the property table is by design absent and no warning should be generated
+	// for it.
+	const bool is_null_or_limb = !strcmp(classname.c_str(), "Null") || !strcmp(classname.c_str(), "LimbNode");
+	props = GetPropertyTable(doc, "NodeAttribute.Fbx" + classname, element, sc, is_null_or_limb);
 }
 
 // ------------------------------------------------------------------------------------------------
-CameraSwitcher::~CameraSwitcher()
-{
-    // empty
+NodeAttribute::~NodeAttribute() {
+	// empty
 }
 
 // ------------------------------------------------------------------------------------------------
-Camera::Camera(uint64_t id, const Element& element, const Document& doc, const std::string& name)
-: NodeAttribute(id,element,doc,name)
-{
-    // empty
+CameraSwitcher::CameraSwitcher(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		NodeAttribute(id, element, doc, name) {
+	const Scope &sc = GetRequiredScope(element);
+	const Element *const CameraId = sc["CameraId"];
+	const Element *const CameraName = sc["CameraName"];
+	const Element *const CameraIndexName = sc["CameraIndexName"];
+
+	if (CameraId) {
+		cameraId = ParseTokenAsInt(GetRequiredToken(*CameraId, 0));
+	}
+
+	if (CameraName) {
+		cameraName = GetRequiredToken(*CameraName, 0).StringContents();
+	}
+
+	if (CameraIndexName && CameraIndexName->Tokens().size()) {
+		cameraIndexName = GetRequiredToken(*CameraIndexName, 0).StringContents();
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
-Camera::~Camera()
-{
-    // empty
+CameraSwitcher::~CameraSwitcher() {
+	// empty
 }
 
 // ------------------------------------------------------------------------------------------------
-Light::Light(uint64_t id, const Element& element, const Document& doc, const std::string& name)
-: NodeAttribute(id,element,doc,name)
-{
-    // empty
+Camera::Camera(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		NodeAttribute(id, element, doc, name) {
+	// empty
 }
-
 
 // ------------------------------------------------------------------------------------------------
-Light::~Light()
-{
+Camera::~Camera() {
+	// empty
 }
-
 
 // ------------------------------------------------------------------------------------------------
-Null::Null(uint64_t id, const Element& element, const Document& doc, const std::string& name)
-: NodeAttribute(id,element,doc,name)
-{
-
+Light::Light(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		NodeAttribute(id, element, doc, name) {
+	// empty
 }
-
 
 // ------------------------------------------------------------------------------------------------
-Null::~Null()
-{
-
+Light::~Light() {
 }
-
 
 // ------------------------------------------------------------------------------------------------
-LimbNode::LimbNode(uint64_t id, const Element& element, const Document& doc, const std::string& name)
-: NodeAttribute(id,element,doc,name)
-{
-
+Null::Null(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		NodeAttribute(id, element, doc, name) {
 }
-
 
 // ------------------------------------------------------------------------------------------------
-LimbNode::~LimbNode()
-{
-
+Null::~Null() {
 }
 
+// ------------------------------------------------------------------------------------------------
+LimbNode::LimbNode(uint64_t id, const Element &element, const Document &doc, const std::string &name) :
+		NodeAttribute(id, element, doc, name) {
+	//std::cout << "limb node: " << name << std::endl;
+	const Scope &sc = GetRequiredScope(element);
+
+	const Element *const TypeFlag = sc["TypeFlags"];
+
+	// keep this it can dump new properties for you
+	// for( auto element : sc.Elements())
+	// {
+	//     std::cout << "limbnode element: " << element.first << std::endl;
+	// }
+
+	// if(TypeFlag)
+	// {
+	// //    std::cout << "type flag: " << GetRequiredToken(*TypeFlag, 0).StringContents() << std::endl;
+	// }
+
+	return;
 }
+
+// ------------------------------------------------------------------------------------------------
+LimbNode::~LimbNode() {
 }
+
+} // namespace FBX
+} // namespace Assimp
 
 #endif

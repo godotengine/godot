@@ -216,7 +216,7 @@ protected:
 //  Default constructor
 inline
 Logger::Logger() AI_NO_EXCEPT
-: m_Severity(NORMAL) {
+: m_Severity(LogSeverity::VERBOSE) {
     // empty
 }
 
@@ -274,7 +274,7 @@ void Logger::info(const std::string &message) {
 }
 
 // ------------------------------------------------------------------------------------------------
-#define ASSIMP_LOG_WARN_F(string,...)\
+#define //ASSIMP_LOG_WARN_F(string,...)\
     DefaultLogger::get()->warn((Formatter::format(string),__VA_ARGS__))
 
 #define ASSIMP_LOG_ERROR_F(string,...)\

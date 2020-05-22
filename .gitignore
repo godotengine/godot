@@ -15,7 +15,6 @@ cmake-build-debug
 .gradle
 local.properties
 *.iml
-.idea
 .gradletasknamecache
 project.properties
 platform/android/java/app/libs/*

@@ -52,197 +52,178 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assimp/ParsingUtils.h>
 
 #include "FBXTokenizer.h"
-#include "FBXUtil.h"
-#include <assimp/Exceptional.h>
+#include <core/print_string.h>
 
 namespace Assimp {
 namespace FBX {
 
 // ------------------------------------------------------------------------------------------------
-Token::Token(const char* sbegin, const char* send, TokenType type, unsigned int line, unsigned int column)
-    :
+Token::Token(const char *p_sbegin, const char *p_send, TokenType p_type, unsigned int p_line, unsigned int p_column) :
 #ifdef DEBUG
-    contents(sbegin, static_cast<size_t>(send-sbegin)),
+		contents(sbegin, static_cast<size_t>(send - sbegin)),
 #endif
-    sbegin(sbegin)
-    , send(send)
-    , type(type)
-    , line(line)
-    , column(column)
-{
-    ai_assert(sbegin);
-    ai_assert(send);
-
-    // tokens must be of non-zero length
-    ai_assert(static_cast<size_t>(send-sbegin) > 0);
+		sbegin(p_sbegin),
+		send(p_send),
+		type(p_type),
+		line(p_line),
+		column(p_column) {
 }
 
 // ------------------------------------------------------------------------------------------------
-Token::~Token()
-{
+Token::~Token() {
 }
 
 namespace {
 
 // ------------------------------------------------------------------------------------------------
-// signal tokenization error, this is always unrecoverable. Throws DeadlyImportError.
-AI_WONT_RETURN void TokenizeError(const std::string& message, unsigned int line, unsigned int column) AI_WONT_RETURN_SUFFIX;
-AI_WONT_RETURN void TokenizeError(const std::string& message, unsigned int line, unsigned int column)
-{
-    throw DeadlyImportError(Util::AddLineAndColumn("FBX-Tokenize",message,line,column));
+void TokenizeError(const std::string &message, unsigned int line, unsigned int column) {
+	print_error("[FBX-Tokenize]" + String(message.c_str()) + " " + itos(line) + ":" + itos(column));
 }
-
 
 // process a potential data token up to 'cur', adding it to 'output_tokens'.
 // ------------------------------------------------------------------------------------------------
-void ProcessDataToken( TokenList& output_tokens, const char*& start, const char*& end,
-                      unsigned int line,
-                      unsigned int column,
-                      TokenType type = TokenType_DATA,
-                      bool must_have_token = false)
-{
-    if (start && end) {
-        // sanity check:
-        // tokens should have no whitespace outside quoted text and [start,end] should
-        // properly delimit the valid range.
-        bool in_double_quotes = false;
-        for (const char* c = start; c != end + 1; ++c) {
-            if (*c == '\"') {
-                in_double_quotes = !in_double_quotes;
-            }
+void ProcessDataToken(TokenList &output_tokens, const char *&start, const char *&end,
+		unsigned int line,
+		unsigned int column,
+		TokenType type = TokenType_DATA,
+		bool must_have_token = false) {
+	if (start && end) {
+		// sanity check:
+		// tokens should have no whitespace outside quoted text and [start,end] should
+		// properly delimit the valid range.
+		bool in_double_quotes = false;
+		for (const char *c = start; c != end + 1; ++c) {
+			if (*c == '\"') {
+				in_double_quotes = !in_double_quotes;
+			}
 
-            if (!in_double_quotes && IsSpaceOrNewLine(*c)) {
-                TokenizeError("unexpected whitespace in token", line, column);
-            }
-        }
+			if (!in_double_quotes && IsSpaceOrNewLine(*c)) {
+				TokenizeError("unexpected whitespace in token", line, column);
+			}
+		}
 
-        if (in_double_quotes) {
-            TokenizeError("non-terminated double quotes", line, column);
-        }
+		if (in_double_quotes) {
+			TokenizeError("non-terminated double quotes", line, column);
+		}
 
-        output_tokens.push_back(new_Token(start,end + 1,type,line,column));
-    }
-    else if (must_have_token) {
-        TokenizeError("unexpected character, expected data token", line, column);
-    }
+		output_tokens.push_back(new_Token(start, end + 1, type, line, column));
+	} else if (must_have_token) {
+		TokenizeError("unexpected character, expected data token", line, column);
+	}
 
-    start = end = NULL;
+	start = end = NULL;
 }
 
-}
+} // namespace
 
 // ------------------------------------------------------------------------------------------------
-void Tokenize(TokenList& output_tokens, const char* input)
-{
-    ai_assert(input);
+void Tokenize(TokenList &output_tokens, const char *input) {
+	ai_assert(input);
 
-    // line and column numbers numbers are one-based
-    unsigned int line = 1;
-    unsigned int column = 1;
+	// line and column numbers numbers are one-based
+	unsigned int line = 1;
+	unsigned int column = 1;
 
-    bool comment = false;
-    bool in_double_quotes = false;
-    bool pending_data_token = false;
+	bool comment = false;
+	bool in_double_quotes = false;
+	bool pending_data_token = false;
 
-    const char* token_begin = NULL, *token_end = NULL;
-    for (const char* cur = input;*cur;column += (*cur == '\t' ? ASSIMP_FBX_TAB_WIDTH : 1), ++cur) {
-        const char c = *cur;
+	const char *token_begin = NULL, *token_end = NULL;
+	for (const char *cur = input; *cur; column += (*cur == '\t' ? ASSIMP_FBX_TAB_WIDTH : 1), ++cur) {
+		const char c = *cur;
 
-        if (IsLineEnd(c)) {
-            comment = false;
+		if (IsLineEnd(c)) {
+			comment = false;
 
-            column = 0;
-            ++line;
-        }
+			column = 0;
+			++line;
+		}
 
-        if(comment) {
-            continue;
-        }
+		if (comment) {
+			continue;
+		}
 
-        if(in_double_quotes) {
-            if (c == '\"') {
-                in_double_quotes = false;
-                token_end = cur;
+		if (in_double_quotes) {
+			if (c == '\"') {
+				in_double_quotes = false;
+				token_end = cur;
 
-                ProcessDataToken(output_tokens,token_begin,token_end,line,column);
-                pending_data_token = false;
-            }
-            continue;
-        }
+				ProcessDataToken(output_tokens, token_begin, token_end, line, column);
+				pending_data_token = false;
+			}
+			continue;
+		}
 
-        switch(c)
-        {
-        case '\"':
-            if (token_begin) {
-                TokenizeError("unexpected double-quote", line, column);
-            }
-            token_begin = cur;
-            in_double_quotes = true;
-            continue;
+		switch (c) {
+			case '\"':
+				if (token_begin) {
+					TokenizeError("unexpected double-quote", line, column);
+				}
+				token_begin = cur;
+				in_double_quotes = true;
+				continue;
 
-        case ';':
-            ProcessDataToken(output_tokens,token_begin,token_end,line,column);
-            comment = true;
-            continue;
+			case ';':
+				ProcessDataToken(output_tokens, token_begin, token_end, line, column);
+				comment = true;
+				continue;
 
-        case '{':
-            ProcessDataToken(output_tokens,token_begin,token_end, line, column);
-            output_tokens.push_back(new_Token(cur,cur+1,TokenType_OPEN_BRACKET,line,column));
-            continue;
+			case '{':
+				ProcessDataToken(output_tokens, token_begin, token_end, line, column);
+				output_tokens.push_back(new_Token(cur, cur + 1, TokenType_OPEN_BRACKET, line, column));
+				continue;
 
-        case '}':
-            ProcessDataToken(output_tokens,token_begin,token_end,line,column);
-            output_tokens.push_back(new_Token(cur,cur+1,TokenType_CLOSE_BRACKET,line,column));
-            continue;
+			case '}':
+				ProcessDataToken(output_tokens, token_begin, token_end, line, column);
+				output_tokens.push_back(new_Token(cur, cur + 1, TokenType_CLOSE_BRACKET, line, column));
+				continue;
 
-        case ',':
-            if (pending_data_token) {
-                ProcessDataToken(output_tokens,token_begin,token_end,line,column,TokenType_DATA,true);
-            }
-            output_tokens.push_back(new_Token(cur,cur+1,TokenType_COMMA,line,column));
-            continue;
+			case ',':
+				if (pending_data_token) {
+					ProcessDataToken(output_tokens, token_begin, token_end, line, column, TokenType_DATA, true);
+				}
+				output_tokens.push_back(new_Token(cur, cur + 1, TokenType_COMMA, line, column));
+				continue;
 
-        case ':':
-            if (pending_data_token) {
-                ProcessDataToken(output_tokens,token_begin,token_end,line,column,TokenType_KEY,true);
-            }
-            else {
-                TokenizeError("unexpected colon", line, column);
-            }
-            continue;
-        }
+			case ':':
+				if (pending_data_token) {
+					ProcessDataToken(output_tokens, token_begin, token_end, line, column, TokenType_KEY, true);
+				} else {
+					TokenizeError("unexpected colon", line, column);
+				}
+				continue;
+		}
 
-        if (IsSpaceOrNewLine(c)) {
+		if (IsSpaceOrNewLine(c)) {
 
-            if (token_begin) {
-                // peek ahead and check if the next token is a colon in which
-                // case this counts as KEY token.
-                TokenType type = TokenType_DATA;
-                for (const char* peek = cur;  *peek && IsSpaceOrNewLine(*peek); ++peek) {
-                    if (*peek == ':') {
-                        type = TokenType_KEY;
-                        cur = peek;
-                        break;
-                    }
-                }
+			if (token_begin) {
+				// peek ahead and check if the next token is a colon in which
+				// case this counts as KEY token.
+				TokenType type = TokenType_DATA;
+				for (const char *peek = cur; *peek && IsSpaceOrNewLine(*peek); ++peek) {
+					if (*peek == ':') {
+						type = TokenType_KEY;
+						cur = peek;
+						break;
+					}
+				}
 
-                ProcessDataToken(output_tokens,token_begin,token_end,line,column,type);
-            }
+				ProcessDataToken(output_tokens, token_begin, token_end, line, column, type);
+			}
 
-            pending_data_token = false;
-        }
-        else {
-            token_end = cur;
-            if (!token_begin) {
-                token_begin = cur;
-            }
+			pending_data_token = false;
+		} else {
+			token_end = cur;
+			if (!token_begin) {
+				token_begin = cur;
+			}
 
-            pending_data_token = true;
-        }
-    }
+			pending_data_token = true;
+		}
+	}
 }
 
-} // !FBX
-} // !Assimp
+} // namespace FBX
+} // namespace Assimp
 
 #endif
