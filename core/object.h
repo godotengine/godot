@@ -145,6 +145,9 @@ struct PropertyInfo {
 	PropertyHint hint = PROPERTY_HINT_NONE;
 	String hint_string;
 	uint32_t usage = PROPERTY_USAGE_DEFAULT;
+#ifdef TOOLS_ENABLED
+	String doc_string;
+#endif
 
 	_FORCE_INLINE_ PropertyInfo added_usage(int p_fl) const {
 		PropertyInfo pi = *this;
@@ -198,6 +201,9 @@ struct MethodInfo {
 	int id = 0;
 	List<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
+#ifdef TOOLS_ENABLED
+	String doc_string;
+#endif
 
 	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }

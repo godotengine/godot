@@ -36,6 +36,7 @@
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/script_language.h"
+#include "editor/doc_data.h"
 #include "gdscript_function.h"
 
 class GDScriptNativeClass : public Reference {
@@ -101,6 +102,16 @@ class GDScript : public Script {
 	bool placeholder_fallback_enabled;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
+	DocData::ClassDoc doc;
+	String doc_brief_description;
+	String doc_description;
+	Vector<DocData::TutorialDoc> doc_tutorials;
+	Map<String, String> doc_functions;
+	Map<String, String> doc_constants;
+	Map<String, String> doc_signals;
+	void _clear_doc();
+	void _update_doc();
+
 #endif
 	Map<StringName, PropertyInfo> member_info;
 
@@ -137,6 +148,15 @@ class GDScript : public Script {
 
 	void _save_orphaned_subclasses();
 	void _init_rpc_methods_properties();
+
+	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
+	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
+	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
+
+	// returns the class name of script reference
+	// if GDScript class is a script -> class_name is "Reference"
+	// which will set the name as MyClass.InnerClass
+	static String _get_gdscript_reference_class_name(const GDScript *p_gdscript);
 
 protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;

@@ -146,6 +146,11 @@ public:
 		Vector<StringName> extends_class;
 		DataType base_type;
 		String icon_path;
+#ifdef TOOLS_ENABLED
+		String doc_description;
+		String doc_brief_description;
+		Vector<Pair<String, String>> doc_tutorials;
+#endif // TOOLS_ENABLED
 
 		struct Member {
 			PropertyInfo _export;
@@ -156,6 +161,9 @@ public:
 			DataType data_type;
 			StringName setter;
 			StringName getter;
+#ifdef TOOLS_ENABLED
+			String doc_description;
+#endif // TOOLS_ENABLED
 			int line;
 			Node *expression;
 			OperatorNode *initial_assignment;
@@ -166,11 +174,17 @@ public:
 		struct Constant {
 			Node *expression;
 			DataType type;
+#ifdef TOOLS_ENABLED
+			String doc_description;
+#endif // TOOLS_ENABLED
 		};
 
 		struct Signal {
 			StringName name;
 			Vector<StringName> arguments;
+#ifdef TOOLS_ENABLED
+			String doc_description;
+#endif // TOOLS_ENABLED
 			int emissions;
 			int line;
 		};
@@ -207,6 +221,10 @@ public:
 		Vector<StringName> arguments;
 		Vector<DataType> argument_types;
 		Vector<Node *> default_values;
+#ifdef TOOLS_ENABLED
+		Vector<Variant> default_arg_values;
+		String doc_description;
+#endif // TOOLS_ENABLED
 		BlockNode *body;
 #ifdef DEBUG_ENABLED
 		Vector<int> arguments_usage;
@@ -547,6 +565,10 @@ private:
 	List<GDScriptWarning> warnings;
 #endif // DEBUG_ENABLED
 
+#ifdef TOOLS_ENABLED
+	Map<int, GDScriptTokenizer::CommentData> comments;
+#endif // TOOLS_ENABLED
+
 	int pending_newline;
 
 	struct IndentLevel {
@@ -655,6 +677,11 @@ private:
 		}
 #endif // DEBUG_ENABLED
 	}
+
+#ifdef TOOLS_ENABLED
+	String _pop_doc_comment(int p_line);
+	void _pop_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_subclass);
+#endif // TOOLS_ENABLED
 
 	Error _parse(const String &p_base_path);
 

@@ -31,6 +31,7 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include "core/map.h"
 #include "core/pair.h"
 #include "core/set.h"
 #include "core/string_name.h"
@@ -176,6 +177,19 @@ public:
 	virtual bool is_ignoring_warnings() const = 0;
 #endif // DEBUG_ENABLED
 
+#ifdef TOOLS_ENABLED
+	struct CommentData {
+		String comment;
+		bool new_line = false;
+		CommentData() {}
+		CommentData(const String &p_comment, bool p_new_line) {
+			comment = p_comment;
+			new_line = p_new_line;
+		}
+	};
+	virtual const Map<int, CommentData> &get_comments() const = 0;
+#endif // TOOLS_ENABLED
+
 	virtual ~GDScriptTokenizer() {}
 };
 
@@ -228,6 +242,10 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	bool ignore_warnings;
 #endif // DEBUG_ENABLED
 
+#ifdef TOOLS_ENABLED
+	Map<int, CommentData> comments;
+#endif // TOOLS_ENABLED
+
 	void _advance();
 
 public:
@@ -248,6 +266,10 @@ public:
 	virtual const Set<String> &get_warning_global_skips() const { return warning_global_skips; }
 	virtual bool is_ignoring_warnings() const { return ignore_warnings; }
 #endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	virtual const Map<int, CommentData> &get_comments() const { return comments; }
+#endif // TOOLS_ENABLED
 };
 
 class GDScriptTokenizerBuffer : public GDScriptTokenizer {
@@ -292,6 +314,14 @@ public:
 	}
 	virtual bool is_ignoring_warnings() const { return true; }
 #endif // DEBUG_ENABLED
+
+#ifdef TOOLS_ENABLED
+	virtual const Map<int, CommentData> &get_comments() const {
+		static Map<int, CommentData> m;
+		return m;
+	}
+#endif
+
 	GDScriptTokenizerBuffer();
 };
 

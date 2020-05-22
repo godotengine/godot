@@ -794,6 +794,12 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			}
 		}
 
+		// TODO-DOC: not sure about calling here like this. (may need to refector)
+		//           ResourceLoader::load() will call compile and reload script and it'll update the doc.
+		if (fc && fc->type == "GDScript") {
+			RES scr = ResourceLoader::load(path);
+		}
+
 		p_dir->files.push_back(fi);
 		p_progress.update(idx, total);
 	}

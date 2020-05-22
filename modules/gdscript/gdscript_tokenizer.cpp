@@ -503,13 +503,13 @@ void GDScriptTokenizerText::_advance() {
 				INCPOS(1);
 				continue;
 			case '#': { // line comment skip
-#ifdef DEBUG_ENABLED
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 				String comment;
-#endif // DEBUG_ENABLED
+#endif
 				while (GETCHAR(0) != '\n') {
-#ifdef DEBUG_ENABLED
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 					comment += GETCHAR(0);
-#endif // DEBUG_ENABLED
+#endif
 					code_pos++;
 					if (GETCHAR(0) == 0) { //end of file
 						//_make_error("Unterminated Comment");
@@ -517,6 +517,11 @@ void GDScriptTokenizerText::_advance() {
 						return;
 					}
 				}
+
+#ifdef TOOLS_ENABLED
+				comments[line] = CommentData(comment, tk_rb_pos == 0 || tk_rb[tk_rb_pos - 1].type == Token::TK_NEWLINE);
+#endif // TOOLS_ENABLED
+
 #ifdef DEBUG_ENABLED
 				String comment_content = comment.trim_prefix("#").trim_prefix(" ");
 				if (comment_content.begins_with("warning-ignore:")) {

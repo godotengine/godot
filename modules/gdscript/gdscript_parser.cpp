@@ -3925,6 +3925,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				Vector<StringName> arguments;
 				Vector<DataType> argument_types;
 				Vector<Node *> default_values;
+#ifdef TOOLS_ENABLED
+				Vector<Variant> default_arg_values;
+#endif // TOOLS_ENABLED
 #ifdef DEBUG_ENABLED
 				Vector<int> arguments_usage;
 #endif // DEBUG_ENABLED
@@ -4000,12 +4003,17 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 							on->arguments.push_back(in);
 							on->arguments.push_back(defval);
-							/* no ..
-							if (defval->type!=Node::TYPE_CONSTANT) {
 
-								_set_error("default argument must be constant");
+#ifdef TOOLS_ENABLED
+							// Default argument doesn't necessary to be constant.
+							// func some_func(arg1, arg2 = f()): ...
+							if (defval->type == Node::TYPE_CONSTANT) {
+								default_arg_values.push_back(static_cast<ConstantNode *>(defval)->value);
+							} else {
+								default_arg_values.push_back(Variant());
 							}
-							*/
+#endif // TOOLS_ENABLED
+
 							default_values.push_back(on);
 						}
 
@@ -4035,6 +4043,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				function->arguments = arguments;
 				function->argument_types = argument_types;
 				function->default_values = default_values;
+#ifdef TOOLS_ENABLED
+				function->default_arg_values = default_arg_values;
+#endif // TOOLS_ENABLED
 				function->_static = _static;
 				function->line = fnline;
 #ifdef DEBUG_ENABLED
@@ -4990,17 +5001,20 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 					}
 #ifdef TOOLS_ENABLED
-					if (subexpr->type == Node::TYPE_CONSTANT && (member._export.type != Variant::NIL || member.data_type.has_type)) {
+					// Default values set regardless of if it's being exported.
+					if (subexpr->type == Node::TYPE_CONSTANT) {
 						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
 						if (cn->value.get_type() != Variant::NIL) {
-							if (member._export.type != Variant::NIL && cn->value.get_type() != member._export.type) {
-								if (Variant::can_convert(cn->value.get_type(), member._export.type)) {
-									Callable::CallError err;
-									const Variant *args = &cn->value;
-									cn->value = Variant::construct(member._export.type, &args, 1, err);
-								} else {
-									_set_error("Can't convert the provided value to the export type.");
-									return;
+							if (member._export.type != Variant::NIL || member.data_type.has_type) {
+								if (member._export.type != Variant::NIL && cn->value.get_type() != member._export.type) {
+									if (Variant::can_convert(cn->value.get_type(), member._export.type)) {
+										Callable::CallError err;
+										const Variant *args = &cn->value;
+										cn->value = Variant::construct(member._export.type, &args, 1, err);
+									} else {
+										_set_error("Can't convert the provided value to the export type.");
+										return;
+									}
 								}
 							}
 							member.default_value = cn->value;
@@ -7779,6 +7793,20 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 
 	_mark_line_as_safe(p_class->line);
 
+#ifdef TOOLS_ENABLED
+	int class_doc_line = -1;
+	for (Map<int, GDScriptTokenizer::CommentData>::Element *E = comments.front(); E; E = E->next()) {
+		if (E->get().new_line && E->get().comment.begins_with("##")) {
+			if (class_doc_line == -1) {
+				class_doc_line = E->key();
+			} else {
+				class_doc_line = MIN(class_doc_line, E->key());
+			}
+		}
+	}
+	bool have_class_doc = class_doc_line != -1; // will set to fales if not possible
+#endif // TOOLS_ENABLED
+
 	// Constants
 	for (Map<StringName, ClassNode::Constant>::Element *E = p_class->constant_expressions.front(); E; E = E->next()) {
 		ClassNode::Constant &c = E->get();
@@ -7802,6 +7830,15 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 			_set_error("The member \"" + String(constant_name) + "\" already exists in a parent class.", c.expression->line);
 			return;
 		}
+#ifdef TOOLS_ENABLED
+		int doc_line = c.expression->line - 1;
+		if (comments.has(doc_line)) {
+			c.doc_description = _pop_doc_comment(doc_line);
+		}
+		if (doc_line <= class_doc_line) {
+			have_class_doc = false;
+		}
+#endif // TOOLS_ENABLED
 	}
 
 	// Function declarations
@@ -7810,6 +7847,15 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		if (error_set) {
 			return;
 		}
+#ifdef TOOLS_ENABLED
+		int doc_line = p_class->static_functions[i]->line - 1;
+		if (comments.has(doc_line)) {
+			p_class->static_functions[i]->doc_description = _pop_doc_comment(doc_line);
+		}
+		if (doc_line <= class_doc_line) {
+			have_class_doc = false;
+		}
+#endif // TOOLS_ENABLED
 	}
 
 	for (int i = 0; i < p_class->functions.size(); i++) {
@@ -7817,6 +7863,15 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		if (error_set) {
 			return;
 		}
+#ifdef TOOLS_ENABLED
+		int doc_line = p_class->functions[i]->line - 1;
+		if (comments.has(doc_line)) {
+			p_class->functions[i]->doc_description = _pop_doc_comment(doc_line);
+		}
+		if (doc_line <= class_doc_line) {
+			have_class_doc = false;
+		}
+#endif // TOOLS_ENABLED
 	}
 
 	// Class variables
@@ -7894,6 +7949,16 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 				return;
 			}
 		}
+
+#ifdef TOOLS_ENABLED
+		int doc_line = v.line - 1;
+		if (comments.has(doc_line)) {
+			v.doc_description = _pop_doc_comment(doc_line);
+		}
+		if (doc_line <= class_doc_line) {
+			have_class_doc = false;
+		}
+#endif // TOOLS_ENABLED
 
 		// Setter and getter
 		if (v.setter == StringName() && v.getter == StringName()) {
@@ -8015,6 +8080,17 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 			}
 		}
 	}
+#ifdef TOOLS_ENABLED
+	for (int i = 0; i < p_class->_signals.size(); i++) {
+		int doc_line = p_class->_signals[i].line - 1;
+		if (comments.has(doc_line)) {
+			p_class->_signals.write[i].doc_description = _pop_doc_comment(doc_line);
+		}
+		if (doc_line <= class_doc_line) {
+			have_class_doc = false;
+		}
+	}
+#endif // TOOLS_ENABLED
 
 	// Inner classes
 	for (int i = 0; i < p_class->subclasses.size(); i++) {
@@ -8023,8 +8099,25 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 		if (error_set) {
 			return;
 		}
+#ifdef TOOLS_ENABLED
+		if (current_class->line <= class_doc_line) {
+			have_class_doc = false;
+		}
+#endif // TOOLS_ENABLED
 		current_class = p_class;
 	}
+
+#ifdef TOOLS_ENABLED
+	// Inner class doc should be right above it but the main script doc is inside.
+	if (!p_class->owner && have_class_doc) {
+		_pop_class_doc_comment(class_doc_line, p_class->doc_brief_description, p_class->doc_description,
+				p_class->doc_tutorials, false);
+	}
+	if (p_class->owner && comments.has(p_class->line - 1)) {
+		_pop_class_doc_comment(p_class->line - 1, p_class->doc_brief_description, p_class->doc_description,
+				p_class->doc_tutorials, true);
+	}
+#endif // TOOLS_ENABLED
 }
 
 void GDScriptParser::_check_function_types(FunctionNode *p_function) {
@@ -8664,6 +8757,162 @@ bool GDScriptParser::has_error() const {
 	return error_set;
 }
 
+#ifdef TOOLS_ENABLED
+static bool _in_codeblock(String p_line, bool p_already_in, int *r_block_begins = nullptr) {
+	int start_block = p_line.rfind("[codeblock]");
+	int end_block = p_line.rfind("[/codeblock]");
+
+	if (start_block != -1 && r_block_begins) {
+		*r_block_begins = start_block;
+	}
+
+	if (p_already_in) {
+		if (end_block == -1) {
+			return true;
+		} else if (start_block == -1) {
+			return false;
+		} else {
+			return start_block > end_block;
+		}
+	} else {
+		if (start_block == -1) {
+			return false;
+		} else if (end_block == -1) {
+			return true;
+		} else {
+			return start_block > end_block;
+		}
+	}
+}
+
+String GDScriptParser::_pop_doc_comment(int p_line) {
+	ERR_FAIL_COND_V(!comments.has(p_line), String());
+
+	String doc;
+
+	int line = p_line;
+	bool in_codeblock = false;
+
+	while (comments.has(line - 1)) {
+		if (!comments[line - 1].new_line || !comments[line - 1].comment.begins_with("##")) {
+			break;
+		}
+		line--;
+	}
+
+	int codeblock_begins = 0;
+	while (comments.has(line)) {
+		if (!comments[line].new_line || !comments[line].comment.begins_with("##")) {
+			break;
+		}
+		String doc_line = comments[line].comment.trim_prefix("##");
+
+		in_codeblock = _in_codeblock(doc_line, in_codeblock, &codeblock_begins);
+
+		if (in_codeblock) {
+			int i = 0;
+			for (; i < codeblock_begins; i++) {
+				if (doc_line[i] != ' ') {
+					break;
+				}
+			}
+			doc_line = doc_line.substr(i);
+		} else {
+			doc_line = doc_line.strip_edges();
+		}
+		String line_join = (in_codeblock) ? "\n" : " ";
+
+		doc = (doc.length() == 0) ? doc_line : doc + line_join + doc_line;
+
+		comments.erase(line);
+		line++;
+	}
+
+	return doc;
+}
+
+void GDScriptParser::_pop_class_doc_comment(int p_line, String &p_brief, String &p_desc, Vector<Pair<String, String>> &p_tutorials, bool p_subclass) {
+	if (!comments.has(p_line)) {
+		return;
+	}
+	ERR_FAIL_COND(p_brief != "" || p_desc != "" || p_tutorials.size() != 0);
+
+	int line = p_line;
+	bool in_codeblock = false;
+	enum Mode {
+		BRIEF,
+		DESC,
+		TUTORIALS,
+		DONE,
+	};
+	Mode mode = BRIEF;
+
+	if (p_subclass) {
+		while (comments.has(line - 1)) {
+			if (!comments[line - 1].new_line || !comments[line - 1].comment.begins_with("##")) {
+				break;
+			}
+			line--;
+		}
+	}
+
+	int codeblock_begins = 0;
+	while (comments.has(line)) {
+		if (!comments[line].new_line || !comments[line].comment.begins_with("##")) {
+			break;
+		}
+		String doc_line = comments[line++].comment.trim_prefix("##");
+		String striped_line = doc_line.strip_edges();
+
+		// set the read mode
+		if (striped_line.begins_with("@desc:") && p_desc == "") {
+			mode = DESC;
+			striped_line = striped_line.trim_prefix("@desc:");
+			in_codeblock = _in_codeblock(doc_line, in_codeblock);
+		} else if (striped_line.begins_with("@tutorial:")) {
+			mode = TUTORIALS;
+			striped_line = striped_line.trim_prefix("@tutorial:");
+			in_codeblock = false;
+		} else {
+			// after tutorial doc need an annotation
+			if (mode == TUTORIALS) {
+				mode = DONE;
+			}
+
+			in_codeblock = _in_codeblock(doc_line, in_codeblock, &codeblock_begins);
+		}
+
+		if (in_codeblock) {
+			int i = 0;
+			for (; i < codeblock_begins; i++) {
+				if (doc_line[i] != ' ') {
+					break;
+				}
+			}
+			doc_line = doc_line.substr(i);
+		} else {
+			doc_line = striped_line;
+		}
+		String line_join = (in_codeblock) ? "\n" : " ";
+
+		switch (mode) {
+			case BRIEF:
+				p_brief = (p_brief.length() == 0) ? doc_line : p_brief + line_join + doc_line;
+				break;
+			case DESC:
+				p_desc = (p_desc.length() == 0) ? doc_line : p_desc + line_join + doc_line;
+				break;
+			case TUTORIALS:
+				// TODO-DOC: tutorial title
+				p_tutorials.append(Pair<String, String>("", doc_line));
+				break;
+			case DONE:
+				return;
+		}
+	}
+}
+#endif // TOOLS_ENABLED
+
 Error GDScriptParser::_parse(const String &p_base_path) {
 	base_path = p_base_path;
 
@@ -8709,6 +8958,10 @@ Error GDScriptParser::_parse(const String &p_base_path) {
 	if (for_completion) {
 		check_types = false;
 	}
+
+#ifdef TOOLS_ENABLED
+	comments = tokenizer->get_comments();
+#endif
 
 	// Resolve all class-level stuff before getting into function blocks
 	_check_class_level_types(main_class);

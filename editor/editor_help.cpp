@@ -400,7 +400,7 @@ void EditorHelp::_update_doc() {
 	}
 
 	// Descendents
-	if (ClassDB::class_exists(cd.name)) {
+	if (cd.is_script_doc || ClassDB::class_exists(cd.name)) {
 		bool found = false;
 		bool prev = false;
 
@@ -1468,7 +1468,6 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
-
 		} else {
 			p_rt->add_text("["); //ignore
 			pos = brk_pos + 1;
@@ -1510,6 +1509,12 @@ void EditorHelp::go_to_help(const String &p_help) {
 
 void EditorHelp::go_to_class(const String &p_class, int p_scroll) {
 	_goto_desc(p_class, p_scroll);
+}
+
+void EditorHelp::update_doc() {
+	ERR_FAIL_COND(!doc->class_list.has(edited_class));
+	ERR_FAIL_COND(!doc->class_list[edited_class].is_script_doc);
+	_update_doc();
 }
 
 Vector<Pair<String, int>> EditorHelp::get_sections() {

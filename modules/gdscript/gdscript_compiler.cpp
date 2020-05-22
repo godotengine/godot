@@ -1725,7 +1725,15 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		for (int i = 0; i < p_func->argument_types.size(); i++) {
 			gdfunc->argument_types.write[i] = _gdtype_from_datatype(p_func->argument_types[i]);
 		}
-		gdfunc->return_type = _gdtype_from_datatype(p_func->return_type);
+		// if no return statement -> return type is void not unresolved Variant
+		if (p_func->body->has_return) {
+			gdfunc->return_type = _gdtype_from_datatype(p_func->return_type);
+		} else {
+			gdfunc->return_type = GDScriptDataType();
+			gdfunc->return_type.has_type = true;
+			gdfunc->return_type.kind = GDScriptDataType::BUILTIN;
+			gdfunc->return_type.builtin_type = Variant::NIL;
+		}
 	} else {
 		gdfunc->_static = false;
 		gdfunc->rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
@@ -1796,6 +1804,11 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		gdfunc->_default_arg_count = 0;
 		gdfunc->_default_arg_ptr = nullptr;
 	}
+#ifdef TOOLS_ENABLED
+	if (p_func) {
+		gdfunc->default_arg_values = p_func->default_arg_values;
+	}
+#endif // TOOLS_ENABLED
 
 	gdfunc->_argument_count = p_func ? p_func->arguments.size() : 0;
 	gdfunc->_stack_size = codegen.stack_max;
@@ -1855,6 +1868,12 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 		p_script->initializer = gdfunc;
 	}
 
+#if TOOLS_ENABLED
+	if (p_func) {
+		p_script->doc_functions[p_func->name] = p_func->doc_description;
+	}
+#endif
+
 	return OK;
 }
 
@@ -1891,6 +1910,18 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 
 	p_script->tool = p_class->tool;
 	p_script->name = p_class->name;
+
+#if TOOLS_ENABLED
+	p_script->doc_brief_description = p_class->doc_brief_description;
+	p_script->doc_description = p_class->doc_description;
+	p_script->doc_tutorials.clear();
+	for (int i = 0; i < p_class->doc_tutorials.size(); i++) {
+		DocData::TutorialDoc td;
+		td.title = p_class->doc_tutorials[i].first;
+		td.link = p_class->doc_tutorials[i].second;
+		p_script->doc_tutorials.append(td);
+	}
+#endif
 
 	Ref<GDScriptNativeClass> native;
 
@@ -1950,20 +1981,23 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 			prop_info.hint = export_info.hint;
 			prop_info.hint_string = export_info.hint_string;
 			prop_info.usage = export_info.usage;
-#ifdef TOOLS_ENABLED
-			if (p_class->variables[i].default_value.get_type() != Variant::NIL) {
-				p_script->member_default_values[name] = p_class->variables[i].default_value;
-			}
-#endif
 		} else {
 			prop_info.usage = PROPERTY_USAGE_SCRIPT_VARIABLE;
 		}
+#if TOOLS_ENABLED
+		prop_info.doc_string = p_class->variables[i].doc_description;
+#endif
 
 		p_script->member_info[name] = prop_info;
 		p_script->member_indices[name] = minfo;
 		p_script->members.insert(name);
 
 #ifdef TOOLS_ENABLED
+		if (p_class->variables[i].default_value.get_type() != Variant::NIL) {
+			p_script->member_default_values[name] = p_class->variables[i].default_value;
+		} else {
+			p_script->member_default_values.erase(name);
+		}
 		p_script->member_lines[name] = p_class->variables[i].line;
 #endif
 	}
@@ -1979,6 +2013,9 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 #ifdef TOOLS_ENABLED
 
 		p_script->member_lines[name] = E->get().expression->line;
+		if (E->get().doc_description != String()) {
+			p_script->doc_constants[name] = E->get().doc_description;
+		}
 #endif
 	}
 
@@ -2008,6 +2045,11 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, const GDScriptPar
 		}
 
 		p_script->_signals[name] = p_class->_signals[i].arguments;
+#if TOOLS_ENABLED
+		if (p_class->_signals[i].doc_description != String()) {
+			p_script->doc_signals[name] = p_class->_signals[i].doc_description;
+		}
+#endif
 	}
 
 	parsed_classes.insert(p_script);
