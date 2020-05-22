@@ -229,6 +229,14 @@ typedef struct tagPOINTER_PEN_INFO {
 #define WM_POINTERUPDATE 0x0245
 #endif
 
+#ifndef WM_POINTERENTER
+#define WM_POINTERENTER 0x0249
+#endif
+
+#ifndef WM_POINTERLEAVE
+#define WM_POINTERLEAVE 0x024A
+#endif
+
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
 
@@ -333,6 +341,7 @@ private:
 		int min_pressure;
 		int max_pressure;
 		bool tilt_supported;
+		bool block_mm = false;
 
 		int last_pressure_update;
 		float last_pressure;
