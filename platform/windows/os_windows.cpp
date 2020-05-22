@@ -593,10 +593,36 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
 					if (window_has_focus && main_loop)
-						input->parse_input_event(mm);
+						input->accumulate_input_event(mm);
 				}
 				return 0;
 			}
+		} break;
+		case WM_POINTERENTER: {
+			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+				break;
+			}
+
+			if ((get_current_tablet_driver() != "winink") || !winink_available) {
+				break;
+			}
+
+			uint32_t pointer_id = LOWORD(wParam);
+			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
+			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+				break;
+			}
+
+			if (pointer_type != PT_PEN) {
+				break;
+			}
+
+			block_mm = true;
+			return 0;
+		} break;
+		case WM_POINTERLEAVE: {
+			block_mm = false;
+			return 0;
 		} break;
 		case WM_POINTERUPDATE: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -713,11 +739,14 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 			if (window_has_focus && main_loop)
-				input->parse_input_event(mm);
-
-			return 0; //Pointer event handled return 0 to avoid duplicate WM_MOUSEMOVE event
+				input->accumulate_input_event(mm);
+			return 0;
 		} break;
 		case WM_MOUSEMOVE: {
+			if (block_mm) {
+				break;
+			}
+
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
 				break;
 			}
@@ -3466,11 +3495,11 @@ int OS_Windows::get_tablet_driver_count() const {
 	return tablet_drivers.size();
 }
 
-const char *OS_Windows::get_tablet_driver_name(int p_driver) const {
+String OS_Windows::get_tablet_driver_name(int p_driver) const {
 	if (p_driver < 0 || p_driver >= tablet_drivers.size()) {
 		return "";
 	} else {
-		return tablet_drivers[p_driver].utf8().get_data();
+		return tablet_drivers[p_driver];
 	}
 }
 
@@ -3487,6 +3516,7 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 	}
 	if (found) {
 		if (hWnd) {
+			block_mm = false;
 			if ((tablet_driver == "wintab") && wintab_available && wtctx) {
 				wintab_WTEnable(wtctx, false);
 				wintab_WTClose(wtctx);

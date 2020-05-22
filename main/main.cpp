@@ -266,7 +266,7 @@ void Main::print_help(const char *p_binary) {
 	for (int i = 0; i < OS::get_singleton()->get_tablet_driver_count(); i++) {
 		if (i != 0)
 			OS::get_singleton()->print(", ");
-		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_tablet_driver_name(i));
+		OS::get_singleton()->print("'%s'", OS::get_singleton()->get_tablet_driver_name(i).utf8().get_data());
 	}
 	OS::get_singleton()->print(") (Windows only).\n");
 	OS::get_singleton()->print("\n");
