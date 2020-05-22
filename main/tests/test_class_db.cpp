@@ -44,21 +44,21 @@ enum class [[nodiscard]] TestResult{
 	PASS
 };
 
-#define TEST_FAIL_COND_FATAL(m_cond, m_msg) \
-	if (unlikely(m_cond)) {                 \
-		ERR_PRINT(m_msg);                   \
-		return TestResult::FAILED;          \
-	} else                                  \
+#define TEST_FAIL_COND(m_cond, m_msg) \
+	if (unlikely(m_cond)) {           \
+		ERR_PRINT(m_msg);             \
+		return TestResult::FAILED;    \
+	} else                            \
 		((void)0)
 
-#define TEST_FAIL_COND(m_cond, m_msg)         \
+#define TEST_COND(m_cond, m_msg)              \
 	if (unlikely(m_cond)) {                   \
 		ERR_PRINT(m_msg);                     \
 		__test_result__ = TestResult::FAILED; \
 	} else                                    \
 		((void)0)
 
-#define TEST_CHECK_FATAL(m_test_expr)                    \
+#define TEST_FAIL_CHECK(m_test_expr)                     \
 	if (unlikely((m_test_expr) == TestResult::FAILED)) { \
 		return TestResult::FAILED;                       \
 	} else                                               \
@@ -229,18 +229,18 @@ struct Context {
 		return elem ? &elem.value() : nullptr;
 	}
 
-	bool has_type(const Context &p_context, const TypeReference &p_type_ref) const {
-		if (p_context.builtin_types.find(p_type_ref.name) >= 0) {
+	bool has_type(const TypeReference &p_type_ref) const {
+		if (builtin_types.find(p_type_ref.name) >= 0) {
 			return true;
 		}
 
 		if (p_type_ref.is_enum) {
-			if (p_context.enum_types.find(p_type_ref.name) >= 0) {
+			if (enum_types.find(p_type_ref.name) >= 0) {
 				return true;
 			}
 
 			// Enum not found. Most likely because none of its constants were bound, so it's empty. That's fine. Use int instead.
-			return p_context.builtin_types.find(p_context.names_cache.int_type);
+			return builtin_types.find(names_cache.int_type);
 		}
 
 		return false;
@@ -370,10 +370,10 @@ TestResult validate_property(const Context &p_context, const ExposedClass &p_cla
 
 	const ExposedClass *prop_class = p_context.find_exposed_class(prop_type_ref);
 	if (prop_class) {
-		TEST_FAIL_COND(prop_class->is_singleton,
+		TEST_COND(prop_class->is_singleton,
 				"Property type is a singleton: '" + p_class.name + "." + String(p_prop.name) + "'.");
 	} else {
-		TEST_FAIL_COND(!p_context.has_type(p_context, prop_type_ref),
+		TEST_FAIL_COND(!p_context.has_type(prop_type_ref),
 				"Property type '" + prop_type_ref.name + "' not found: '" + p_class.name + "." + String(p_prop.name) + "'.");
 	}
 
@@ -382,7 +382,7 @@ TestResult validate_property(const Context &p_context, const ExposedClass &p_cla
 			const ArgumentData &idx_arg = getter->arguments.front()->get();
 			if (idx_arg.type.name != p_context.names_cache.int_type) {
 				// If not an int, it can be an enum
-				TEST_FAIL_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
+				TEST_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
 						"Invalid type '" + idx_arg.type.name + "' for index argument of property getter: '" + p_class.name + "." + String(p_prop.name) + "'.");
 			}
 		}
@@ -394,7 +394,7 @@ TestResult validate_property(const Context &p_context, const ExposedClass &p_cla
 			if (idx_arg.type.name != p_context.names_cache.int_type) {
 				// Assume the index parameter is an enum
 				// If not an int, it can be an enum
-				TEST_FAIL_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
+				TEST_COND(p_context.enum_types.find(idx_arg.type.name) < 0,
 						"Invalid type '" + idx_arg.type.name + "' for index argument of property setter: '" + p_class.name + "." + String(p_prop.name) + "'.");
 			}
 		}
@@ -408,7 +408,7 @@ TestResult validate_method(const Context &p_context, const ExposedClass &p_class
 
 	const ExposedClass *return_class = p_context.find_exposed_class(p_method.return_type);
 	if (return_class) {
-		TEST_FAIL_COND(return_class->is_singleton,
+		TEST_COND(return_class->is_singleton,
 				"Method return type is a singleton: '" + p_class.name + "." + p_method.name + "'.");
 	}
 
@@ -417,15 +417,15 @@ TestResult validate_method(const Context &p_context, const ExposedClass &p_class
 
 		const ExposedClass *arg_class = p_context.find_exposed_class(arg.type);
 		if (arg_class) {
-			TEST_FAIL_COND(arg_class->is_singleton,
+			TEST_COND(arg_class->is_singleton,
 					"Argument type is a singleton: '" + arg.name + "' of method '" + p_class.name + "." + p_method.name + "'.");
 		} else {
-			TEST_FAIL_COND(!p_context.has_type(p_context, arg.type),
+			TEST_FAIL_COND(!p_context.has_type(arg.type),
 					"Argument type '" + arg.type.name + "' not found: '" + arg.name + "' of method" + p_class.name + "." + p_method.name + "'.");
 		}
 
 		if (arg.has_defval) {
-			TEST_FAIL_COND(!arg_default_value_is_assignable_to_type(p_context, arg.defval, arg.type),
+			TEST_COND(!arg_default_value_is_assignable_to_type(p_context, arg.defval, arg.type),
 					"Invalid default value for parameter '" + arg.name + "' of method '" + p_class.name + "." + p_method.name + "'.");
 		}
 	}
@@ -441,10 +441,10 @@ TestResult validate_signal(const Context &p_context, const ExposedClass &p_class
 
 		const ExposedClass *arg_class = p_context.find_exposed_class(arg.type);
 		if (arg_class) {
-			TEST_FAIL_COND(arg_class->is_singleton,
+			TEST_COND(arg_class->is_singleton,
 					"Argument class is a singleton: '" + arg.name + "' of signal" + p_class.name + "." + p_signal.name + "'.");
 		} else {
-			TEST_FAIL_COND(!p_context.has_type(p_context, arg.type),
+			TEST_FAIL_COND(!p_context.has_type(arg.type),
 					"Argument type '" + arg.type.name + "' not found: '" + arg.name + "' of signal" + p_class.name + "." + p_signal.name + "'.");
 		}
 	}
@@ -459,20 +459,20 @@ TestResult validate_class(const Context &p_context, const ExposedClass &p_expose
 
 	if (!is_derived_type) {
 		// Asserts about the base Object class
-		TEST_FAIL_COND_FATAL(p_exposed_class.name != p_context.names_cache.object_class,
+		TEST_FAIL_COND(p_exposed_class.name != p_context.names_cache.object_class,
 				"Class '" + p_exposed_class.name + "' has no base class.");
-		TEST_FAIL_COND_FATAL(!p_exposed_class.is_instantiable,
+		TEST_FAIL_COND(!p_exposed_class.is_instantiable,
 				"Object class is not instantiable.");
-		TEST_FAIL_COND_FATAL(p_exposed_class.api_type != ClassDB::API_CORE,
+		TEST_FAIL_COND(p_exposed_class.api_type != ClassDB::API_CORE,
 				"Object class is API is not API_CORE.");
-		TEST_FAIL_COND_FATAL(p_exposed_class.is_singleton,
+		TEST_FAIL_COND(p_exposed_class.is_singleton,
 				"Object class is registered as a singleton.");
 	}
 
-	CRASH_COND_MSG(p_exposed_class.is_singleton && p_exposed_class.base != p_context.names_cache.object_class,
+	TEST_FAIL_COND(p_exposed_class.is_singleton && p_exposed_class.base != p_context.names_cache.object_class,
 			"Singleton base class '" + String(p_exposed_class.base) + "' is not Object, for class '" + p_exposed_class.name + "'.");
 
-	CRASH_COND_MSG(is_derived_type && !p_context.exposed_classes.has(p_exposed_class.base),
+	TEST_FAIL_COND(is_derived_type && !p_context.exposed_classes.has(p_exposed_class.base),
 			"Base type '" + p_exposed_class.base.operator String() + "' does not exist, for class '" + p_exposed_class.name + "'.");
 
 	for (const List<PropertyData>::Element *F = p_exposed_class.properties.front(); F; F = F->next()) {
@@ -619,9 +619,9 @@ TestResult add_exposed_classes(Context &r_context) {
 
 				bool bad_reference_hint = !method.is_virtual && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE &&
 										  ClassDB::is_parent_class(return_info.class_name, r_context.names_cache.reference_class);
-				TEST_FAIL_COND(bad_reference_hint, String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
-														   " Are you returning a reference type by pointer? Method: '" +
-														   exposed_class.name + "." + method.name + "'.");
+				TEST_COND(bad_reference_hint, String() + "Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'." +
+													  " Are you returning a reference type by pointer? Method: '" +
+													  exposed_class.name + "." + method.name + "'.");
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				method.return_type.name = return_info.hint_string;
 			} else if (return_info.type == Variant::NIL && return_info.usage & PROPERTY_USAGE_NIL_IS_VARIANT) {
@@ -670,7 +670,7 @@ TestResult add_exposed_classes(Context &r_context) {
 				method.arguments.push_back(vararg);
 			}
 
-			TEST_FAIL_COND(exposed_class.find_property_by_name(method.name),
+			TEST_COND(exposed_class.find_property_by_name(method.name),
 					"Method name conflicts with property: '" + String(class_name) + "." + String(method.name) + "'.");
 
 			// Classes starting with an underscore are ignored unless they're used as a property setter or getter
@@ -851,13 +851,13 @@ TestResult run_class_db_tests() {
 
 	Context context;
 
-	TEST_CHECK_FATAL(add_exposed_classes(context));
+	TEST_FAIL_CHECK(add_exposed_classes(context));
 	add_builtin_types(context);
 	add_global_enums(context);
 
 	const ExposedClass *object_class = context.find_exposed_class(context.names_cache.object_class);
-	TEST_FAIL_COND_FATAL(!object_class, "Object class not found.");
-	TEST_FAIL_COND_FATAL(object_class->base != StringName(),
+	TEST_FAIL_COND(!object_class, "Object class not found.");
+	TEST_FAIL_COND(object_class->base != StringName(),
 			"Object class derives from another class: '" + object_class->base + "'.");
 
 	for (ExposedClasses::Element E = context.exposed_classes.front(); E; E = E.next()) {
