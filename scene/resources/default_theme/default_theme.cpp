@@ -681,7 +681,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
 	theme->set_constant("side_margin", "TabContainer", 8 * scale);
-	theme->set_constant("hseparation", "TabContainer", 4 * scale);
+	theme->set_constant("icon_separation", "TabContainer", 4 * scale);
 
 	// Tabs
 
