@@ -80,7 +80,7 @@ class VulkanContext {
 	} SwapchainImageResources;
 
 	struct Window {
-		bool is_minimzed;
+		bool is_minimized;
 		VkSurfaceKHR surface;
 		VkSwapchainKHR swapchain;
 		SwapchainImageResources *swapchain_image_resources;
@@ -100,7 +100,7 @@ class VulkanContext {
 			surface = VK_NULL_HANDLE;
 			swapchain_image_resources = VK_NULL_HANDLE;
 			swapchain = VK_NULL_HANDLE;
-			is_minimzed = false;
+			is_minimized = false;
 			presentMode = VK_PRESENT_MODE_FIFO_KHR;
 		}
 	};
