@@ -786,7 +786,7 @@ String OS_Windows::get_tablet_driver_name(int p_driver) const {
 	if (p_driver < 0 || p_driver >= tablet_drivers.size()) {
 		return "";
 	} else {
-		return tablet_drivers[p_driver].utf8().get_data();
+		return tablet_drivers[p_driver];
 	}
 }
 
