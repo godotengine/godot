@@ -155,18 +155,14 @@ void main() {
 
 		depth = imageLoad(source_depth, ivec2(pos - 0.5)).r;
 
-		if (-depth >= params.camera_z_far) { //went beyond camera
-			break;
-		}
-
 		z_from = z_to;
 		z_to = z / w;
 
 		if (depth > z_to) {
 			// if depth was surpassed
-			if (depth <= max(z_to, z_from) + params.depth_tolerance) {
-				// check the depth tolerance
-				//check that normal is valid
+			if (depth <= max(z_to, z_from) + params.depth_tolerance && -depth < params.camera_z_far) {
+				// check the depth tolerance and far clip
+				// check that normal is valid
 				found = true;
 			}
 			break;
