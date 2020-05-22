@@ -153,12 +153,9 @@ ObjectID EditorDebuggerInspector::add_object(const Array &p_arr) {
 				if (path.find("::") != -1) {
 					// built-in resource
 					String base_path = path.get_slice("::", 0);
-					if (ResourceLoader::get_resource_type(base_path) == "PackedScene") {
-						if (!EditorNode::get_singleton()->is_scene_open(base_path)) {
-							EditorNode::get_singleton()->load_scene(base_path);
-						}
-					} else {
-						EditorNode::get_singleton()->load_resource(base_path);
+					RES dependency = ResourceLoader::load(base_path);
+					if (dependency.is_valid()) {
+						remote_dependencies.insert(dependency);
 					}
 				}
 				var = ResourceLoader::load(path);
@@ -211,6 +208,7 @@ void EditorDebuggerInspector::clear_cache() {
 		memdelete(E->value());
 	}
 	remote_objects.clear();
+	remote_dependencies.clear();
 }
 
 Object *EditorDebuggerInspector::get_object(ObjectID p_id) {
