@@ -2007,10 +2007,36 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
 					if (windows[window_id].window_has_focus)
-						Input::get_singleton()->parse_input_event(mm);
+						Input::get_singleton()->accumulate_input_event(mm);
 				}
 				return 0;
 			}
+		} break;
+		case WM_POINTERENTER: {
+			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
+				break;
+			}
+
+			if ((OS::get_singleton()->get_current_tablet_driver() != "winink") || !winink_available) {
+				break;
+			}
+
+			uint32_t pointer_id = LOWORD(wParam);
+			POINTER_INPUT_TYPE pointer_type = PT_POINTER;
+			if (!win8p_GetPointerType(pointer_id, &pointer_type)) {
+				break;
+			}
+
+			if (pointer_type != PT_PEN) {
+				break;
+			}
+
+			windows[window_id].block_mm = true;
+			return 0;
+		} break;
+		case WM_POINTERLEAVE: {
+			windows[window_id].block_mm = false;
+			return 0;
 		} break;
 		case WM_POINTERUPDATE: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -2127,12 +2153,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 			if (windows[window_id].window_has_focus) {
-				Input::get_singleton()->parse_input_event(mm);
+				Input::get_singleton()->accumulate_input_event(mm);
 			}
 
 			return 0; //Pointer event handled return 0 to avoid duplicate WM_MOUSEMOVE event
 		} break;
 		case WM_MOUSEMOVE: {
+			if (windows[window_id].block_mm) {
+				break;
+			}
+
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
 				break;
 			}
@@ -2732,6 +2762,7 @@ void DisplayServerWindows::_process_key_events() {
 void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const String &p_new_driver) {
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 		WindowData &wd = E->get();
+		wd.block_mm = false;
 		if ((p_old_driver == "wintab") && wintab_available && wd.wtctx) {
 			wintab_WTEnable(wd.wtctx, false);
 			wintab_WTClose(wd.wtctx);
