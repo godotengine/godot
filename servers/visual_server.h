@@ -643,7 +643,7 @@ public:
 		VIEWPORT_TEXTURE_BUFFER_DEPTH,
 		VIEWPORT_TEXTURE_BUFFER_DIFFUSE,
 		VIEWPORT_TEXTURE_BUFFER_SPECULAR,
-		VIEWPORT_TEXTURE_BUFFER_NORMAL_ROUGH,
+		VIEWPORT_TEXTURE_BUFFER_NORMAL,
 		VIEWPORT_TEXTURE_BUFFER_SUBSURFACE
 	};
 
@@ -679,7 +679,7 @@ public:
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
-	virtual void viewport_set_force_mrt(RID p_viewport, bool p_force_mrt) = 0;
+	virtual void viewport_set_expose_gbuffer(RID p_viewport, bool p_expose_gbuffer) = 0;
 
 	enum ViewportUsage {
 		VIEWPORT_USAGE_2D,

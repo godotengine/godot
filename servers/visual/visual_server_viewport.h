@@ -190,7 +190,7 @@ public:
 	void viewport_set_shadow_atlas_quadrant_subdivision(RID p_viewport, int p_quadrant, int p_subdiv);
 
 	void viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_msaa);
-	void viewport_set_force_mrt(RID p_viewport, bool p_force_mrt);
+	void viewport_set_expose_gbuffer(RID p_viewport, bool p_expose_gbuffer);
 	void viewport_set_hdr(RID p_viewport, bool p_enabled);
 	void viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage);
 

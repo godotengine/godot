@@ -706,7 +706,7 @@ public:
 	bool render_target_was_used(RID p_render_target) { return false; }
 	void render_target_clear_used(RID p_render_target) {}
 	void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa) {}
-	void render_target_set_force_mrt(RID p_render_target, bool p_force_mrt) {}
+	void render_target_set_expose_gbuffer(RID p_render_target, bool p_expose_gbuffer) {}
 
 	/* CANVAS SHADOW */
 

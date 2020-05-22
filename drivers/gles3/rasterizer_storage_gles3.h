@@ -1303,7 +1303,7 @@ public:
 
 			RID specular_texture;
 			RID diffuse_texture;
-			RID normal_rough_texture;
+			RID normal_texture;
 			RID sss_texture;
 		} buffers;
 
@@ -1374,7 +1374,7 @@ public:
 
 		bool used_in_frame;
 		VS::ViewportMSAA msaa;
-		bool force_mrt;
+		bool expose_gbuffer;
 
 		RID texture;
 		RID depth_texture;
@@ -1387,7 +1387,7 @@ public:
 				height(0),
 				used_in_frame(false),
 				msaa(VS::VIEWPORT_MSAA_DISABLED),
-				force_mrt(false) {
+				expose_gbuffer(false) {
 			exposure.fbo = 0;
 			buffers.fbo = 0;
 			external.fbo = 0;
@@ -1415,7 +1415,7 @@ public:
 	virtual bool render_target_was_used(RID p_render_target);
 	virtual void render_target_clear_used(RID p_render_target);
 	virtual void render_target_set_msaa(RID p_render_target, VS::ViewportMSAA p_msaa);
-	virtual void render_target_set_force_mrt(RID p_render_target, bool p_force_mrt);
+	virtual void render_target_set_expose_gbuffer(RID p_render_target, bool p_expose_gbuffer);
 
 	/* CANVAS SHADOW */
 

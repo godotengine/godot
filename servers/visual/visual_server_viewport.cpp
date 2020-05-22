@@ -651,12 +651,12 @@ void VisualServerViewport::viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_
 	VSG::storage->render_target_set_msaa(viewport->render_target, p_msaa);
 }
 
-void VisualServerViewport::viewport_set_force_mrt(RID p_viewport, bool p_force_mrt) {
+void VisualServerViewport::viewport_set_expose_gbuffer(RID p_viewport, bool p_expose_gbuffer) {
 
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	VSG::storage->render_target_set_force_mrt(viewport->render_target, p_force_mrt);
+	VSG::storage->render_target_set_expose_gbuffer(viewport->render_target, p_expose_gbuffer);
 }
 
 void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {

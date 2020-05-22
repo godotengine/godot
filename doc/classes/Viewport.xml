@@ -235,8 +235,8 @@
 		<member name="disable_3d" type="bool" setter="set_disable_3d" getter="is_3d_disabled" default="false">
 			If [code]true[/code], the viewport will disable 3D rendering. For actual disabling use [code]usage[/code].
 		</member>
-		<member name="force_mrt" type="bool" setter="set_force_mrt" getter="is_force_mrt" default="false">
-			If [code]true[/code], the viewport will use multiple render targets even when effects like screen space reflections aren't enabled. This can be used to ensure that some buffers in a [ViewportTexture] stay available. It won't however work if the viewport were transparent, or if its usage is anything other than [constant USAGE_3D].
+		<member name="expose_gbuffer" type="bool" setter="set_expose_gbuffer" getter="is_expose_gbuffer" default="false">
+			If [code]true[/code], the viewport will expose its g-buffers (Diffuse, Specular, Normal and Subsurface) to any ViewportTexture that may use it. It won't however work if the viewport were transparent, or if its usage is anything other than [constant USAGE_3D]. It also won't work in GLES2.
 		</member>
 		<member name="global_canvas_transform" type="Transform2D" setter="set_global_canvas_transform" getter="get_global_canvas_transform">
 			The global canvas transform of the viewport. The canvas transform is relative to this.

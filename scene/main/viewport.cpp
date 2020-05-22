@@ -162,7 +162,7 @@ void ViewportTexture::set_buffer_mode(BufferMode p_buffer_mode) {
 		case BUFFER_SPECULAR:
 			buffer_rid = vp->specular_texture_rid;
 			break;
-		case BUFFER_NORMAL_ROUGH:
+		case BUFFER_NORMAL:
 			buffer_rid = vp->normal_rough_texture_rid;
 			break;
 		case BUFFER_SUBSURFACE:
@@ -187,13 +187,13 @@ void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"), &ViewportTexture::get_viewport_path_in_scene);
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "viewport_path", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Viewport", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT), "set_viewport_path_in_scene", "get_viewport_path_in_scene");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffer_mode", PROPERTY_HINT_ENUM, "Color,Depth,Diffuse,Specular,Normal Roughness, Subsurface"), "set_buffer_mode", "get_buffer_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "buffer_mode", PROPERTY_HINT_ENUM, "Color,Depth,Diffuse,Specular,Normal,Subsurface"), "set_buffer_mode", "get_buffer_mode");
 
 	BIND_ENUM_CONSTANT(BUFFER_COLOR);
 	BIND_ENUM_CONSTANT(BUFFER_DEPTH);
 	BIND_ENUM_CONSTANT(BUFFER_DIFFUSE);
 	BIND_ENUM_CONSTANT(BUFFER_SPECULAR);
-	BIND_ENUM_CONSTANT(BUFFER_NORMAL_ROUGH);
+	BIND_ENUM_CONSTANT(BUFFER_NORMAL);
 	BIND_ENUM_CONSTANT(BUFFER_SUBSURFACE);
 }
 
@@ -3062,17 +3062,17 @@ Viewport::MSAA Viewport::get_msaa() const {
 	return msaa;
 }
 
-void Viewport::set_force_mrt(bool p_force_mrt) {
+void Viewport::set_expose_gbuffer(bool p_expose_gbuffer) {
 
-	if (force_mrt == p_force_mrt)
+	if (expose_gbuffer == p_expose_gbuffer)
 		return;
-	force_mrt = p_force_mrt;
-	VS::get_singleton()->viewport_set_force_mrt(viewport, p_force_mrt);
+	expose_gbuffer = p_expose_gbuffer;
+	VS::get_singleton()->viewport_set_expose_gbuffer(viewport, p_expose_gbuffer);
 }
 
-bool Viewport::is_force_mrt() const {
+bool Viewport::is_expose_gbuffer() const {
 
-	return force_mrt;
+	return expose_gbuffer;
 }
 
 void Viewport::set_hdr(bool p_hdr) {
@@ -3210,8 +3210,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
 
-	ClassDB::bind_method(D_METHOD("set_force_mrt", "mrt"), &Viewport::set_force_mrt);
-	ClassDB::bind_method(D_METHOD("is_force_mrt"), &Viewport::is_force_mrt);
+	ClassDB::bind_method(D_METHOD("set_expose_gbuffer", "mrt"), &Viewport::set_expose_gbuffer);
+	ClassDB::bind_method(D_METHOD("is_expose_gbuffer"), &Viewport::is_expose_gbuffer);
 
 	ClassDB::bind_method(D_METHOD("set_hdr", "enable"), &Viewport::set_hdr);
 	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
@@ -3301,7 +3301,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"), "set_msaa", "get_msaa");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_mrt"), "set_force_mrt", "is_force_mrt");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expose_gbuffer"), "set_expose_gbuffer", "is_expose_gbuffer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
@@ -3393,7 +3393,7 @@ Viewport::Viewport() {
 	depth_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_DEPTH));
 	diffuse_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_DIFFUSE));
 	specular_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_SPECULAR));
-	normal_rough_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_NORMAL_ROUGH));
+	normal_rough_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_NORMAL));
 	subsurface_texture_rid = VisualServer::get_singleton()->viewport_get_texture(viewport, VS::ViewportTextureBuffer(ViewportTexture::BUFFER_SUBSURFACE));
 
 	texture_flags = 0;

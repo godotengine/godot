@@ -411,7 +411,7 @@ public:
 	FUNC2(viewport_set_shadow_atlas_size, RID, int)
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
-	FUNC2(viewport_set_force_mrt, RID, bool)
+	FUNC2(viewport_set_expose_gbuffer, RID, bool)
 	FUNC2(viewport_set_hdr, RID, bool)
 	FUNC2(viewport_set_usage, RID, ViewportUsage)
 

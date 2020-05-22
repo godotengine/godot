@@ -7013,7 +7013,8 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		glDeleteRenderbuffers(1, &rt->buffers.depth);
 		glDeleteRenderbuffers(1, &rt->buffers.diffuse);
 
-		glDeleteTextures(1, &texture_owner.getornull(rt->buffers.diffuse_texture)->tex_id);
+		if (rt->expose_gbuffer)
+			glDeleteTextures(1, &texture_owner.getornull(rt->buffers.diffuse_texture)->tex_id);
 
 		if (rt->buffers.effects_active) {
 			glDeleteRenderbuffers(1, &rt->buffers.specular);
@@ -7022,9 +7023,11 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 			glDeleteFramebuffers(1, &rt->buffers.effect_fbo);
 			glDeleteTextures(1, &rt->buffers.effect);
 
-			glDeleteTextures(1, &texture_owner.getornull(rt->buffers.specular_texture)->tex_id);
-			glDeleteTextures(1, &texture_owner.getornull(rt->buffers.normal_rough_texture)->tex_id);
-			glDeleteTextures(1, &texture_owner.getornull(rt->buffers.sss_texture)->tex_id);
+			if (rt->expose_gbuffer) {
+				glDeleteTextures(1, &texture_owner.getornull(rt->buffers.specular_texture)->tex_id);
+				glDeleteTextures(1, &texture_owner.getornull(rt->buffers.normal_texture)->tex_id);
+				glDeleteTextures(1, &texture_owner.getornull(rt->buffers.sss_texture)->tex_id);
+			}
 		}
 
 		rt->buffers.effects_active = false;
@@ -7076,7 +7079,7 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		rt->external.fbo = 0;
 	}
 	RID *rt_textures[6]{ &(rt->texture), &(rt->depth_texture), &(rt->buffers.diffuse_texture),
-		&(rt->buffers.specular_texture), &(rt->buffers.normal_rough_texture), &(rt->buffers.sss_texture) };
+		&(rt->buffers.specular_texture), &(rt->buffers.normal_texture), &(rt->buffers.sss_texture) };
 
 	for (int i = 0; i < 6; i++) {
 		Texture *tex = texture_owner.get(*rt_textures[i]);
@@ -7161,9 +7164,15 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		GLint swizzleMask[] = { GL_RED, GL_RED, GL_RED, GL_ONE };
-		glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+
+#ifndef JAVASCRIPT_ENABLED // Texture Swizzling is not supported in WebGL 2.0 :/
+		GLint const swizzle[] = { GL_RED, GL_RED, GL_RED, GL_ONE };
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, swizzle[0]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, swizzle[1]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, swizzle[2]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, swizzle[3]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->depth, 0);
+#endif // JAVASCRIPT_ENABLED
 
 		glGenTextures(1, &rt->color);
 		glBindTexture(GL_TEXTURE_2D, rt->color);
@@ -7253,29 +7262,32 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rt->buffers.diffuse);
 
-		GLuint diffuse;
-		glGenTextures(1, &diffuse);
-		glBindTexture(GL_TEXTURE_2D, diffuse);
-		glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
+		if (rt->expose_gbuffer) {
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			GLuint diffuse;
+			glGenTextures(1, &diffuse);
+			glBindTexture(GL_TEXTURE_2D, diffuse);
+			glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
 
-		Texture *diffuse_tex = texture_owner.get(rt->buffers.diffuse_texture);
-		diffuse_tex->format = image_format;
-		diffuse_tex->gl_format_cache = color_format;
-		diffuse_tex->gl_type_cache = color_type;
-		diffuse_tex->gl_internal_format_cache = color_internal_format;
-		diffuse_tex->tex_id = diffuse;
-		diffuse_tex->width = rt->width;
-		diffuse_tex->alloc_width = rt->width;
-		diffuse_tex->height = rt->height;
-		diffuse_tex->alloc_height = rt->height;
-		diffuse_tex->active = true;
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-		texture_set_flags(rt->buffers.diffuse_texture, diffuse_tex->flags);
+			Texture *diffuse_tex = texture_owner.get(rt->buffers.diffuse_texture);
+			diffuse_tex->format = image_format;
+			diffuse_tex->gl_format_cache = color_format;
+			diffuse_tex->gl_type_cache = color_type;
+			diffuse_tex->gl_internal_format_cache = color_internal_format;
+			diffuse_tex->tex_id = diffuse;
+			diffuse_tex->width = rt->width;
+			diffuse_tex->alloc_width = rt->width;
+			diffuse_tex->height = rt->height;
+			diffuse_tex->alloc_height = rt->height;
+			diffuse_tex->active = true;
+
+			texture_set_flags(rt->buffers.diffuse_texture, diffuse_tex->flags);
+		}
 
 		if (!rt->flags[RENDER_TARGET_NO_3D_EFFECTS]) {
 
@@ -7290,29 +7302,32 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_RENDERBUFFER, rt->buffers.specular);
 
-			GLuint specular;
-			glGenTextures(1, &specular);
-			glBindTexture(GL_TEXTURE_2D, specular);
-			glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
+			if (rt->expose_gbuffer) {
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				GLuint specular;
+				glGenTextures(1, &specular);
+				glBindTexture(GL_TEXTURE_2D, specular);
+				glTexImage2D(GL_TEXTURE_2D, 0, color_internal_format, rt->width, rt->height, 0, color_format, color_type, NULL);
 
-			Texture *specular_tex = texture_owner.get(rt->buffers.specular_texture);
-			specular_tex->format = image_format;
-			specular_tex->gl_format_cache = color_format;
-			specular_tex->gl_type_cache = color_type;
-			specular_tex->gl_internal_format_cache = color_internal_format;
-			specular_tex->tex_id = specular;
-			specular_tex->width = rt->width;
-			specular_tex->alloc_width = rt->width;
-			specular_tex->height = rt->height;
-			specular_tex->alloc_height = rt->height;
-			specular_tex->active = true;
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			texture_set_flags(rt->buffers.specular_texture, specular_tex->flags);
+				Texture *specular_tex = texture_owner.get(rt->buffers.specular_texture);
+				specular_tex->format = image_format;
+				specular_tex->gl_format_cache = color_format;
+				specular_tex->gl_type_cache = color_type;
+				specular_tex->gl_internal_format_cache = color_internal_format;
+				specular_tex->tex_id = specular;
+				specular_tex->width = rt->width;
+				specular_tex->alloc_width = rt->width;
+				specular_tex->height = rt->height;
+				specular_tex->alloc_height = rt->height;
+				specular_tex->active = true;
+
+				texture_set_flags(rt->buffers.specular_texture, specular_tex->flags);
+			}
 
 			glGenRenderbuffers(1, &rt->buffers.normal_rough);
 			glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.normal_rough);
@@ -7324,29 +7339,32 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_RENDERBUFFER, rt->buffers.normal_rough);
 
-			GLuint normal_rough;
-			glGenTextures(1, &normal_rough);
-			glBindTexture(GL_TEXTURE_2D, normal_rough);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			if (rt->expose_gbuffer) {
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				GLuint normal_rough;
+				glGenTextures(1, &normal_rough);
+				glBindTexture(GL_TEXTURE_2D, normal_rough);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-			Texture *normal_rough_tex = texture_owner.get(rt->buffers.normal_rough_texture);
-			normal_rough_tex->format = Image::FORMAT_RGBA8;
-			normal_rough_tex->gl_format_cache = GL_RGBA;
-			normal_rough_tex->gl_type_cache = GL_UNSIGNED_BYTE;
-			normal_rough_tex->gl_internal_format_cache = GL_RGBA8;
-			normal_rough_tex->tex_id = normal_rough;
-			normal_rough_tex->width = rt->width;
-			normal_rough_tex->alloc_width = rt->width;
-			normal_rough_tex->height = rt->height;
-			normal_rough_tex->alloc_height = rt->height;
-			normal_rough_tex->active = true;
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			texture_set_flags(rt->buffers.normal_rough_texture, normal_rough_tex->flags);
+				Texture *normal_rough_tex = texture_owner.get(rt->buffers.normal_texture);
+				normal_rough_tex->format = Image::FORMAT_RGBA8;
+				normal_rough_tex->gl_format_cache = GL_RGBA;
+				normal_rough_tex->gl_type_cache = GL_UNSIGNED_BYTE;
+				normal_rough_tex->gl_internal_format_cache = GL_RGBA8;
+				normal_rough_tex->tex_id = normal_rough;
+				normal_rough_tex->width = rt->width;
+				normal_rough_tex->alloc_width = rt->width;
+				normal_rough_tex->height = rt->height;
+				normal_rough_tex->alloc_height = rt->height;
+				normal_rough_tex->active = true;
+
+				texture_set_flags(rt->buffers.normal_texture, normal_rough_tex->flags);
+			}
 
 			glGenRenderbuffers(1, &rt->buffers.sss);
 			glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.sss);
@@ -7358,29 +7376,32 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt) {
 
 			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_RENDERBUFFER, rt->buffers.sss);
 
-			GLuint ss;
-			glGenTextures(1, &ss);
-			glBindTexture(GL_TEXTURE_2D, ss);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, rt->width, rt->height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+			if (rt->expose_gbuffer) {
 
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				GLuint ss;
+				glGenTextures(1, &ss);
+				glBindTexture(GL_TEXTURE_2D, ss);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, rt->width, rt->height, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
 
-			Texture *ss_tex = texture_owner.get(rt->buffers.sss_texture);
-			ss_tex->format = Image::FORMAT_R8;
-			ss_tex->gl_format_cache = GL_RED;
-			ss_tex->gl_type_cache = GL_UNSIGNED_BYTE;
-			ss_tex->gl_internal_format_cache = GL_R8;
-			ss_tex->tex_id = ss;
-			ss_tex->width = rt->width;
-			ss_tex->alloc_width = rt->width;
-			ss_tex->height = rt->height;
-			ss_tex->alloc_height = rt->height;
-			ss_tex->active = true;
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			texture_set_flags(rt->buffers.sss_texture, ss_tex->flags);
+				Texture *ss_tex = texture_owner.get(rt->buffers.sss_texture);
+				ss_tex->format = Image::FORMAT_R8;
+				ss_tex->gl_format_cache = GL_RED;
+				ss_tex->gl_type_cache = GL_UNSIGNED_BYTE;
+				ss_tex->gl_internal_format_cache = GL_R8;
+				ss_tex->tex_id = ss;
+				ss_tex->width = rt->width;
+				ss_tex->alloc_width = rt->width;
+				ss_tex->height = rt->height;
+				ss_tex->alloc_height = rt->height;
+				ss_tex->active = true;
+
+				texture_set_flags(rt->buffers.sss_texture, ss_tex->flags);
+			}
 
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
@@ -7598,7 +7619,7 @@ RID RasterizerStorageGLES3::render_target_create() {
 	RenderTarget *rt = memnew(RenderTarget);
 
 	RID *rt_textures[6]{ &(rt->texture), &(rt->depth_texture), &(rt->buffers.diffuse_texture),
-		&(rt->buffers.specular_texture), &(rt->buffers.normal_rough_texture), &(rt->buffers.sss_texture) };
+		&(rt->buffers.specular_texture), &(rt->buffers.normal_texture), &(rt->buffers.sss_texture) };
 
 	for (int i = 0; i < 6; i++) {
 		Texture *t = memnew(Texture);
@@ -7666,8 +7687,8 @@ RID RasterizerStorageGLES3::render_target_get_texture(RID p_render_target, VS::V
 			return rt->buffers.diffuse_texture;
 		case VS::VIEWPORT_TEXTURE_BUFFER_SPECULAR:
 			return rt->buffers.specular_texture;
-		case VS::VIEWPORT_TEXTURE_BUFFER_NORMAL_ROUGH:
-			return rt->buffers.normal_rough_texture;
+		case VS::VIEWPORT_TEXTURE_BUFFER_NORMAL:
+			return rt->buffers.normal_texture;
 		case VS::VIEWPORT_TEXTURE_BUFFER_SUBSURFACE:
 			return rt->buffers.sss_texture;
 	}
@@ -7813,12 +7834,17 @@ void RasterizerStorageGLES3::render_target_set_msaa(RID p_render_target, VS::Vie
 	_render_target_allocate(rt);
 }
 
-void RasterizerStorageGLES3::render_target_set_force_mrt(RID p_render_target, bool p_force_mrt) {
+void RasterizerStorageGLES3::render_target_set_expose_gbuffer(RID p_render_target, bool p_expose_gbuffer) {
 
 	RenderTarget *rt = render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	rt->force_mrt = p_force_mrt;
+	if (rt->expose_gbuffer == p_expose_gbuffer)
+		return;
+
+	_render_target_clear(rt);
+	rt->expose_gbuffer = p_expose_gbuffer;
+	_render_target_allocate(rt);
 }
 
 /* CANVAS SHADOW */
@@ -8026,8 +8052,6 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		bool buffers_active = rt->buffers.active;
 		bool buffer_effects_active = rt->buffers.effects_active;
 		_render_target_clear(rt);
-		/*RID *rt_textures[6]{ &(rt->texture), &(rt->depth_texture), &(rt->buffers.diffuse_texture),
-			&(rt->buffers.specular_texture), &(rt->buffers.normal_rough_texture), &(rt->buffers.sss_texture) };*/
 
 		Texture *t = texture_owner.get(rt->texture);
 		texture_owner.free(rt->texture);
@@ -8045,8 +8069,8 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 				texture_owner.free(rt->buffers.specular_texture);
 				memdelete(st);
 
-				Texture *nrt = texture_owner.get(rt->buffers.normal_rough_texture);
-				texture_owner.free(rt->buffers.normal_rough_texture);
+				Texture *nrt = texture_owner.get(rt->buffers.normal_texture);
+				texture_owner.free(rt->buffers.normal_texture);
 				memdelete(nrt);
 
 				Texture *sst = texture_owner.get(rt->buffers.sss_texture);

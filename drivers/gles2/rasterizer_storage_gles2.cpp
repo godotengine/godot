@@ -5208,7 +5208,7 @@ RID RasterizerStorageGLES2::render_target_get_texture(RID p_render_target, VS::V
 		case VS::VIEWPORT_TEXTURE_BUFFER_DEPTH:
 			return rt->depth_texture;
 		default:
-			//printf("The buffer ", p_buffer, " is not available in GLES2.");
+			WARN_PRINT(String("The buffer " + itos(p_buffer) + " is not available in GLES2.").utf8().get_data());
 			return RID();
 	}
 }
@@ -5404,7 +5404,7 @@ void RasterizerStorageGLES2::render_target_set_msaa(RID p_render_target, VS::Vie
 	_render_target_allocate(rt);
 }
 
-void RasterizerStorageGLES2::render_target_set_force_mrt(RID p_render_target, bool p_force_mrt) {
+void RasterizerStorageGLES2::render_target_set_expose_gbuffer(RID p_render_target, bool p_expose_gbuffer) {
 	// Only available in GLES3.
 }
 

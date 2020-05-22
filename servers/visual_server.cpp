@@ -1890,7 +1890,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_size", "viewport", "size"), &VisualServer::viewport_set_shadow_atlas_size);
 	ClassDB::bind_method(D_METHOD("viewport_set_shadow_atlas_quadrant_subdivision", "viewport", "quadrant", "subdivision"), &VisualServer::viewport_set_shadow_atlas_quadrant_subdivision);
 	ClassDB::bind_method(D_METHOD("viewport_set_msaa", "viewport", "msaa"), &VisualServer::viewport_set_msaa);
-	ClassDB::bind_method(D_METHOD("viewport_set_force_mrt", "viewport", "force_mrt"), &VisualServer::viewport_set_force_mrt);
+	ClassDB::bind_method(D_METHOD("viewport_set_expose_gbuffer", "viewport", "expose_gbuffer"), &VisualServer::viewport_set_expose_gbuffer);
 	ClassDB::bind_method(D_METHOD("viewport_set_hdr", "viewport", "enabled"), &VisualServer::viewport_set_hdr);
 	ClassDB::bind_method(D_METHOD("viewport_set_usage", "viewport", "usage"), &VisualServer::viewport_set_usage);
 	ClassDB::bind_method(D_METHOD("viewport_get_render_info", "viewport", "info"), &VisualServer::viewport_get_render_info);
@@ -2170,7 +2170,7 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_DEPTH);
 	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_DIFFUSE);
 	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_SPECULAR);
-	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_NORMAL_ROUGH);
+	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_NORMAL);
 	BIND_ENUM_CONSTANT(VIEWPORT_TEXTURE_BUFFER_SUBSURFACE);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_CLEAR_ALWAYS);

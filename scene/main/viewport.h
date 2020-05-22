@@ -59,7 +59,7 @@ public:
 		BUFFER_DEPTH,
 		BUFFER_DIFFUSE,
 		BUFFER_SPECULAR,
-		BUFFER_NORMAL_ROUGH,
+		BUFFER_NORMAL,
 		BUFFER_SUBSURFACE
 	};
 
@@ -305,7 +305,7 @@ private:
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
-	bool force_mrt;
+	bool expose_gbuffer;
 	bool hdr;
 
 	Ref<ViewportTexture> default_texture;
@@ -519,8 +519,8 @@ public:
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
 
-	void set_force_mrt(bool p_force_mrt);
-	bool is_force_mrt() const;
+	void set_expose_gbuffer(bool p_force_mrt);
+	bool is_expose_gbuffer() const;
 
 	void set_hdr(bool p_hdr);
 	bool get_hdr() const;

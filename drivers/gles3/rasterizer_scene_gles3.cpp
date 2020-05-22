@@ -38,8 +38,6 @@
 #include "servers/camera/camera_feed.h"
 #include "servers/visual/visual_server_raster.h"
 
-#include <iostream>
-
 #ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
@@ -4257,7 +4255,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 	} else {
 
 		use_mrt = env && (state.used_sss || env->ssao_enabled || env->ssr_enabled || env->dof_blur_far_enabled || env->dof_blur_near_enabled); //only enable MRT rendering if any of these is enabled
-		use_mrt = use_mrt || storage->frame.current_rt->force_mrt; // or if it's force to be used.
+		use_mrt = use_mrt || storage->frame.current_rt->expose_gbuffer; // or if it's force to be used.
 
 		//effects disabled and transparency also prevent using MRTs
 		use_mrt = use_mrt && !storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT];
@@ -4520,8 +4518,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 	//state.scene_shader.set_conditional( SceneShaderGLES3::USE_FOG,false);
 
-	// resolve buffers to textures
-	if (storage->frame.current_rt->buffers.active && use_mrt) {
+	// resolve buffers to textures before mid-processing
+	if (use_mrt && storage->frame.current_rt->expose_gbuffer) {
 		RID_Owner<RasterizerStorageGLES3::Texture> *texture_owner = &(storage->texture_owner);
 		RasterizerStorageGLES3::RenderTarget *rt = storage->frame.current_rt;
 
@@ -4546,7 +4544,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 
 			// normal roughness
 			glReadBuffer(GL_COLOR_ATTACHMENT2);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_owner->getornull(rt->buffers.normal_rough_texture)->tex_id, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_owner->getornull(rt->buffers.normal_texture)->tex_id, 0);
 			glBlitFramebuffer(0, 0, rt->width, rt->height, 0, 0, rt->width, rt->height, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
 			// subsurface
