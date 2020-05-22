@@ -618,11 +618,28 @@ void OS_UWP::delay_usec(uint32_t p_usec) const {
 uint64_t OS_UWP::get_ticks_usec() const {
 
 	uint64_t ticks;
-	uint64_t time;
+
 	// This is the number of clock ticks since start
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks);
+
 	// Divide by frequency to get the time in seconds
-	time = ticks * 1000000L / ticks_per_second;
+	// original calculation shown below is subject to overflow
+	// with high ticks_per_second and a number of days since the last reboot.
+	// time = ticks * 1000000L / ticks_per_second;
+
+	// we can prevent this by either using 128 bit math
+	// or separating into a calculation for seconds, and the fraction
+	uint64_t seconds = ticks / ticks_per_second;
+
+	// compiler will optimize these two into one divide
+	uint64_t leftover = ticks % ticks_per_second;
+
+	// remainder
+	uint64_t time = (leftover * 1000000L) / ticks_per_second;
+
+	// seconds
+	time += seconds * 1000000L;
+
 	// Subtract the time at game start to get
 	// the time since the game started
 	time -= ticks_start;
