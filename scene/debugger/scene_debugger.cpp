@@ -361,15 +361,6 @@ void SceneDebuggerObject::serialize(Array &r_arr, int p_max_size) {
 
 		RES res = var;
 
-		if (var.get_type() == Variant::OBJECT && var.is_ref()) {
-			REF r = var;
-			if (r.is_valid()) {
-				res = *r;
-			} else {
-				res = RES();
-			}
-		}
-
 		Array prop;
 		prop.push_back(pi.name);
 		prop.push_back(pi.type);
