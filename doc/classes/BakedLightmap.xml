@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Baked lightmaps are an alternative workflow for adding indirect (or baked) lighting to a scene. Unlike the [GIProbe] approach, baked lightmaps work fine on low-end PCs and mobile devices as they consume almost no resources in run-time.
+		[b]Note:[/b] This node has many known bugs and will be [url=https://godotengine.org/article/godot-40-will-get-new-modernized-lightmapper]rewritten for Godot 4.0[/url]. See [url=https://github.com/godotengine/godot/issues/30929]GitHub issue #30929[/url].
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/baked_lightmaps.html</link>
