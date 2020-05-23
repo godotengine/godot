@@ -682,15 +682,6 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 
 		RES res = var;
 
-		if (var.get_type() == Variant::OBJECT && var.is_ref()) {
-			REF r = var;
-			if (r.is_valid()) {
-				res = *r;
-			} else {
-				res = RES();
-			}
-		}
-
 		Array prop;
 		prop.push_back(pi.name);
 		prop.push_back(pi.type);
