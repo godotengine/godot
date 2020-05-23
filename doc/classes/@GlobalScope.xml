@@ -276,6 +276,15 @@
 				Easing function, based on exponent. The curve values are: 0 is constant, 1 is linear, 0 to 1 is ease-in, 1+ is ease out. Negative values are in-out/out in.
 			</description>
 		</method>
+		<method name="error_string">
+			<return type="String">
+			</return>
+			<argument index="0" name="error" type="int">
+			</argument>
+			<description>
+				Returns a human-readable name for the given error code.
+			</description>
+		</method>
 		<method name="exp">
 			<return type="float">
 			</return>
