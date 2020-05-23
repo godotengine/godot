@@ -325,6 +325,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Map<GLTFNodeIndex, Node *> scene_nodes;
 
+		// EditorSceneImporter::ImportFlags
+		uint32_t import_flags;
+
 		~GLTFState() {
 			for (int i = 0; i < nodes.size(); i++) {
 				memdelete(nodes[i]);

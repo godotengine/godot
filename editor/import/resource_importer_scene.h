@@ -37,7 +37,6 @@
 #include "scene/resources/shape.h"
 
 class Material;
-
 class EditorSceneImporter : public Reference {
 
 	GDCLASS(EditorSceneImporter, Reference);
