@@ -1184,7 +1184,6 @@ void EditorFileDialog::_update_drives() {
 void EditorFileDialog::_favorite_selected(int p_idx) {
 
 	dir_access->change_dir(favorites->get_item_metadata(p_idx));
-	file->set_text("");
 	update_dir();
 	invalidate();
 	_push_history();
