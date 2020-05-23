@@ -63,15 +63,24 @@
 
 #define WTI_DEFSYSCTX 4
 #define WTI_DEVICES 100
+#define WTI_INTERFACE 1
+#define IFC_WINTABID 1
+#define IFC_SPECVERSION 2
+#define IFC_IMPLVERSION 3
+#define IFC_CTXOPTIONS 7
 #define DVC_NPRESSURE 15
 #define DVC_TPRESSURE 16
 #define DVC_ORIENTATION 17
 #define DVC_ROTATION 18
 
 #define CXO_MESSAGES 0x0004
+#define CXO_CSRMESSAGES 0x0008
 #define PK_NORMAL_PRESSURE 0x0400
 #define PK_TANGENT_PRESSURE 0x0800
 #define PK_ORIENTATION 0x1000
+#define PK_X 0x0080
+#define PK_Y 0x0100
+#define PK_Z 0x0200
 
 typedef struct tagLOGCONTEXTW {
 	WCHAR lcName[40];
@@ -124,6 +133,9 @@ typedef struct tagORIENTATION {
 } ORIENTATION;
 
 typedef struct tagPACKET {
+	LONG pkX;
+	LONG pkY;
+	LONG pkZ;
 	int pkNormalPressure;
 	int pkTangentPressure;
 	ORIENTATION pkOrientation;
@@ -134,6 +146,10 @@ typedef BOOL(WINAPI *WTClosePtr)(HANDLE p_ctx);
 typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
+typedef int(WINAPI *WTPacketsGetPtr)(HANDLE p_ctx, int p_count, LPVOID p_buffer);
+typedef int(WINAPI *WTQueueSizeGetPtr)(HANDLE p_ctx);
+typedef BOOL(WINAPI *WTQueueSizeSetPtr)(HANDLE p_ctx, int p_size);
+typedef BOOL(WINAPI *WTOverlapPtr)(HANDLE p_ctx, BOOL p_enable);
 
 // Windows Ink API
 #ifndef POINTER_STRUCTURES
@@ -226,8 +242,15 @@ typedef struct tagPOINTER_PEN_INFO {
 #define WM_POINTERLEAVE 0x024A
 #endif
 
+#ifndef WM_POINTERCAPTURECHANGED
+#define WM_POINTERCAPTURECHANGED 0x024C
+#endif
+
 typedef BOOL(WINAPI *GetPointerTypePtr)(uint32_t p_id, POINTER_INPUT_TYPE *p_type);
 typedef BOOL(WINAPI *GetPointerPenInfoPtr)(uint32_t p_id, POINTER_PEN_INFO *p_pen_info);
+typedef BOOL(WINAPI *PhysicalToLogicalPointForPerMonitorDPIPtr)(HWND hWnd, LPPOINT lpPoint);
+typedef BOOL(WINAPI *LogicalToPhysicalPointForPerMonitorDPIPtr)(HWND hWnd, LPPOINT lpPoint);
+typedef UINT(WINAPI *GetDpiForWindowPtr)(HWND hwnd);
 
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
@@ -259,11 +282,16 @@ class OS_Windows : public OS {
 	static WTInfoPtr wintab_WTInfo;
 	static WTPacketPtr wintab_WTPacket;
 	static WTEnablePtr wintab_WTEnable;
+	static WTPacketsGetPtr wintab_WTPacketsGet;
+	static WTQueueSizeGetPtr wintab_WTQueueSizeGet;
+	static WTQueueSizeSetPtr wintab_WTQueueSizeSet;
+	static WTOverlapPtr wintab_WTOverlap;
 
 	// Windows Ink API
 	static bool winink_available;
 	static GetPointerTypePtr win8p_GetPointerType;
 	static GetPointerPenInfoPtr win8p_GetPointerPenInfo;
+	static PhysicalToLogicalPointForPerMonitorDPIPtr win8p_PhysicalToLogicalPointForPerMonitorDPI;
 
 	HANDLE wtctx;
 	LOGCONTEXTW wtlc;
@@ -272,12 +300,14 @@ class OS_Windows : public OS {
 	bool tilt_supported;
 	bool block_mm = false;
 
-	int last_pressure_update;
-	float last_pressure;
-	Vector2 last_tilt;
+	enum {
+		KEY_EVENT_BUFFER_SIZE = 512,
+		PACKET_QUERY_SIZE = 128
+	};
 
 	enum {
-		KEY_EVENT_BUFFER_SIZE = 512
+		MOVE_TIMER_ID = 1,
+		UNLOCK_TIMER_ID = 2
 	};
 
 #ifdef STDOUT_FILE
@@ -314,6 +344,7 @@ class OS_Windows : public OS {
 	bool layered_window;
 
 	uint32_t move_timer_id;
+	uint32_t unlock_timer_id;
 
 	HCURSOR hCursor;
 

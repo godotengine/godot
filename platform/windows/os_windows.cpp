@@ -204,11 +204,16 @@ WTClosePtr OS_Windows::wintab_WTClose = nullptr;
 WTInfoPtr OS_Windows::wintab_WTInfo = nullptr;
 WTPacketPtr OS_Windows::wintab_WTPacket = nullptr;
 WTEnablePtr OS_Windows::wintab_WTEnable = nullptr;
+WTPacketsGetPtr OS_Windows::wintab_WTPacketsGet = nullptr;
+WTQueueSizeGetPtr OS_Windows::wintab_WTQueueSizeGet = nullptr;
+WTQueueSizeSetPtr OS_Windows::wintab_WTQueueSizeSet = nullptr;
+WTOverlapPtr OS_Windows::wintab_WTOverlap = nullptr;
 
 // Windows Ink API
 bool OS_Windows::winink_available = false;
 GetPointerTypePtr OS_Windows::win8p_GetPointerType = NULL;
 GetPointerPenInfoPtr OS_Windows::win8p_GetPointerPenInfo = NULL;
+PhysicalToLogicalPointForPerMonitorDPIPtr OS_Windows::win8p_PhysicalToLogicalPointForPerMonitorDPI = NULL;
 
 void OS_Windows::initialize_debugging() {
 
@@ -376,6 +381,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			if ((get_current_tablet_driver() == "wintab") && wintab_available && wtctx) {
 				wintab_WTEnable(wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
+				if (LOWORD(wParam) == WA_ACTIVE) {
+					wintab_WTOverlap(wtctx, true);
+				}
 			}
 
 			return 0; // Return  To The Message Loop
@@ -510,6 +518,15 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
 			if ((get_current_tablet_driver() == "wintab") && wintab_available && wtctx) {
+				if (uMsg == WT_PROXIMITY) {
+					if (LOWORD(lParam) == 0) {
+						block_mm = false;
+						KillTimer(hWnd, unlock_timer_id);
+					} else {
+						block_mm = true;
+						unlock_timer_id = SetTimer(hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC)nullptr);
+					}
+				}
 				AXIS pressure;
 				if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					min_pressure = int(pressure.axMin);
@@ -523,80 +540,102 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			}
 		} break;
 		case WT_PACKET: {
-			if ((get_current_tablet_driver() == "wintab") && wintab_available && wtctx) {
-				PACKET packet;
-				if (wintab_WTPacket(wtctx, wParam, &packet)) {
+			if ((get_current_tablet_driver() != "wintab") || !wintab_available || !wtctx) {
+				break;
+			}
 
-					float pressure = float(packet.pkNormalPressure - min_pressure) / float(max_pressure - min_pressure);
-					last_pressure = pressure;
-					last_pressure_update = 0;
+			static PACKET packet_buffer[PACKET_QUERY_SIZE];
+			int count = wintab_WTPacketsGet(wtctx, PACKET_QUERY_SIZE, &packet_buffer);
 
-					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
-					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+			for (int i = 0; i < count; i++) {
 
-					if (tilt_supported) {
-						last_tilt = Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt));
-					} else {
-						last_tilt = Vector2();
+				PACKET &packet = packet_buffer[i];
+
+				block_mm = true;
+				unlock_timer_id = SetTimer(hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC)nullptr);
+
+				// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
+				if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED) {
+					break;
+				}
+
+				Ref<InputEventMouseMotion> mm;
+				mm.instance();
+
+				mm->set_pressure(float(packet.pkNormalPressure - min_pressure) / float(max_pressure - min_pressure));
+
+				double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
+				double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+				if (tilt_supported) {
+					mm->set_tilt(Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt)));
+				} else {
+					mm->set_tilt(Vector2());
+				}
+
+				mm->set_control(GetKeyState(VK_CONTROL) != 0);
+				mm->set_shift(GetKeyState(VK_SHIFT) != 0);
+				mm->set_alt(alt_mem);
+
+				mm->set_button_mask(last_button_state);
+
+				int tX = wtlc.lcSysOrgX;
+				int tY = wtlc.lcSysOrgY;
+				int tW = wtlc.lcSysExtX;
+				int tH = wtlc.lcSysExtY;
+
+				int minX = int(wtlc.lcOutOrgX);
+				int maxX = int(wtlc.lcOutExtX) + int(wtlc.lcOutOrgX);
+				int minY = int(wtlc.lcOutOrgY);
+				int maxY = -int(wtlc.lcOutExtY) + int(wtlc.lcOutOrgY);
+
+				POINT coords;
+				coords.x = (maxX > 0) ? ((packet.pkX - minX) * tW) / fabs(double(maxX - minX)) + tX : ((abs(maxX) - (packet.pkX - minX)) * tW) / fabs(double(maxX - minX)) + tX;
+				coords.y = (maxY > 0) ? ((packet.pkY - minY) * tH) / fabs(double(maxY - minY)) + tY : ((abs(maxY) - (packet.pkY - minY)) * tH) / fabs(double(maxY - minY)) + tY;
+
+				if (win8p_PhysicalToLogicalPointForPerMonitorDPI) {
+					win8p_PhysicalToLogicalPointForPerMonitorDPI(hWnd, &coords);
+				}
+
+				ScreenToClient(hWnd, &coords);
+
+				mm->set_position(Vector2(coords.x, coords.y));
+				mm->set_global_position(Vector2(coords.x, coords.y));
+
+				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+
+					Point2i c(video_mode.width / 2, video_mode.height / 2);
+					old_x = c.x;
+					old_y = c.y;
+
+					if (mm->get_position() == c) {
+						center = c;
+						return 0;
 					}
 
-					POINT coords;
-					GetCursorPos(&coords);
-					ScreenToClient(hWnd, &coords);
+					Point2i ncenter = mm->get_position();
+					center = ncenter;
+					POINT pos = { (int)c.x, (int)c.y };
+					ClientToScreen(hWnd, &pos);
+					SetCursorPos(pos.x, pos.y);
+				}
 
-					// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
-					if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
-						break;
+				input->set_mouse_position(mm->get_position());
+				mm->set_speed(input->get_last_mouse_speed());
 
-					Ref<InputEventMouseMotion> mm;
-					mm.instance();
-					mm->set_control(GetKeyState(VK_CONTROL) != 0);
-					mm->set_shift(GetKeyState(VK_SHIFT) != 0);
-					mm->set_alt(alt_mem);
-
-					mm->set_pressure(last_pressure);
-					mm->set_tilt(last_tilt);
-
-					mm->set_button_mask(last_button_state);
-
-					mm->set_position(Vector2(coords.x, coords.y));
-					mm->set_global_position(Vector2(coords.x, coords.y));
-
-					if (mouse_mode == MOUSE_MODE_CAPTURED) {
-
-						Point2i c(video_mode.width / 2, video_mode.height / 2);
-						old_x = c.x;
-						old_y = c.y;
-
-						if (mm->get_position() == c) {
-							center = c;
-							return 0;
-						}
-
-						Point2i ncenter = mm->get_position();
-						center = ncenter;
-						POINT pos = { (int)c.x, (int)c.y };
-						ClientToScreen(hWnd, &pos);
-						SetCursorPos(pos.x, pos.y);
-					}
-
-					input->set_mouse_position(mm->get_position());
-					mm->set_speed(input->get_last_mouse_speed());
-
-					if (old_invalid) {
-						old_x = mm->get_position().x;
-						old_y = mm->get_position().y;
-						old_invalid = false;
-					}
-
-					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+				if (old_invalid) {
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
-					if (window_has_focus && main_loop)
-						input->accumulate_input_event(mm);
+					old_invalid = false;
 				}
-				return 0;
+
+				mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+				old_x = mm->get_position().x;
+				old_y = mm->get_position().y;
+				if (window_has_focus && main_loop)
+					input->accumulate_input_event(mm);
 			}
+
+			return 0;
 		} break;
 		case WM_POINTERENTER: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -618,10 +657,16 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			}
 
 			block_mm = true;
+			unlock_timer_id = SetTimer(hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC)nullptr);
 			return 0;
 		} break;
+		case WM_POINTERCAPTURECHANGED:
 		case WM_POINTERLEAVE: {
+			if ((get_current_tablet_driver() != "winink") || !winink_available) {
+				break;
+			}
 			block_mm = false;
+			KillTimer(hWnd, unlock_timer_id);
 			return 0;
 		} break;
 		case WM_POINTERUPDATE: {
@@ -648,33 +693,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				break;
 			}
 
-			if (input->is_emulating_mouse_from_touch()) {
-				// Universal translation enabled; ignore OS translation
-				LPARAM extra = GetMessageExtraInfo();
-				if (IsTouchEvent(extra)) {
-					break;
-				}
-			}
-
-			if (outside) {
-				//mouse enter
-
-				if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
-					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-
-				CursorShape c = cursor_shape;
-				cursor_shape = CURSOR_MAX;
-				set_cursor_shape(c);
-				outside = false;
-
-				//Once-Off notification, must call again....
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
-			}
+			block_mm = true;
+			unlock_timer_id = SetTimer(hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC)nullptr);
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
 			if (!window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
@@ -744,7 +764,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 		} break;
 		case WM_MOUSEMOVE: {
 			if (block_mm) {
-				break;
+				return 0;
 			}
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -790,21 +810,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
 
-			if ((get_current_tablet_driver() == "wintab") && wintab_available && wtctx) {
-				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not update recently.
-				if (last_pressure_update < 10) {
-					last_pressure_update++;
-				} else {
-					last_tilt = Vector2();
-					last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
-				}
-			} else {
-				last_tilt = Vector2();
-				last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
-			}
-
-			mm->set_pressure(last_pressure);
-			mm->set_tilt(last_tilt);
+			mm->set_pressure((wParam & MK_LBUTTON) ? 1.0f : 0.0f);
+			mm->set_tilt(Vector2());
 
 			mm->set_button_mask(last_button_state);
 
@@ -1064,7 +1071,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		case WM_ENTERSIZEMOVE: {
 			input->release_pressed_events();
-			move_timer_id = SetTimer(hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC)NULL);
+			move_timer_id = SetTimer(hWnd, MOVE_TIMER_ID, USER_TIMER_MINIMUM, (TIMERPROC)NULL);
 		} break;
 		case WM_EXITSIZEMOVE: {
 			KillTimer(hWnd, move_timer_id);
@@ -1075,6 +1082,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				if (!Main::is_iterating()) {
 					Main::iteration();
 				}
+			}
+			if (wParam == unlock_timer_id) {
+				block_mm = false;
 			}
 		} break;
 
@@ -1393,7 +1403,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
 
 			if (SetProcessDpiAwareness) {
-				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
+				SetProcessDpiAwareness(SHC_PROCESS_PER_MONITOR_DPI_AWARE);
 			}
 		}
 	}
@@ -1551,8 +1561,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	}
 	if ((get_current_tablet_driver() == "wintab") && wintab_available) {
 		wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
-		wtlc.lcOptions |= CXO_MESSAGES;
-		wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+		wtlc.lcOptions |= CXO_MESSAGES | CXO_CSRMESSAGES;
+		wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION | PK_X | PK_Y | PK_Z;
 		wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 		wtlc.lcPktMode = 0;
 		wtlc.lcOutOrgX = 0;
@@ -1560,8 +1570,31 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		wtlc.lcOutOrgY = 0;
 		wtlc.lcOutExtY = -wtlc.lcInExtY;
 		wtctx = wintab_WTOpen(hWnd, &wtlc, false);
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			String info;
+			WORD imp_ver = 0;
+			WORD spec_ver = 0;
+			int info_size = wintab_WTInfo(WTI_INTERFACE, IFC_WINTABID, 0);
+			if (info_size) {
+				info.resize(info_size + 1);
+				wintab_WTInfo(WTI_INTERFACE, IFC_WINTABID, info.ptrw());
+				wintab_WTInfo(WTI_INTERFACE, IFC_IMPLVERSION, &imp_ver);
+				wintab_WTInfo(WTI_INTERFACE, IFC_SPECVERSION, &spec_ver);
+				print_verbose("WinTab: Device: " + info);
+				print_verbose("WinTab: Implementation: " + itos(imp_ver >> 8) + "." + itos(imp_ver & 0xFF));
+				print_verbose("WinTab: Specification: " + itos(spec_ver >> 8) + "." + itos(spec_ver & 0xFF));
+			}
+		}
 		if (wtctx) {
 			wintab_WTEnable(wtctx, true);
+			int queue_size = wintab_WTQueueSizeGet(wtctx);
+			if (queue_size != PACKET_QUERY_SIZE) {
+				if (!wintab_WTQueueSizeSet(wtctx, PACKET_QUERY_SIZE)) {
+					print_verbose("Unable to set WinTab queue size.");
+					wintab_WTClose(wtctx);
+					wtctx = 0;
+				}
+			}
 			AXIS pressure;
 			if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 				min_pressure = int(pressure.axMin);
@@ -1577,10 +1610,6 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	} else {
 		wtctx = 0;
 	}
-
-	last_pressure = 0;
-	last_pressure_update = 0;
-	last_tilt = Vector2();
 
 #if defined(OPENGL_ENABLED)
 
@@ -1683,7 +1712,8 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 
 	DragAcceptFiles(hWnd, true);
 
-	move_timer_id = 1;
+	move_timer_id = MOVE_TIMER_ID;
+	unlock_timer_id = UNLOCK_TIMER_ID;
 
 	if (!is_no_window_mode_enabled()) {
 		ShowWindow(hWnd, SW_SHOW); // Show The Window
@@ -2039,7 +2069,7 @@ static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 
 int OS_Windows::get_screen_dpi(int p_screen) const {
 
-	EnumDpiData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, 72 };
+	EnumDpiData data = { 0, p_screen == -1 ? get_current_screen() : p_screen, 96 };
 	EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
 }
@@ -3517,6 +3547,7 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 	if (found) {
 		if (hWnd) {
 			block_mm = false;
+			KillTimer(hWnd, unlock_timer_id);
 			if ((tablet_driver == "wintab") && wintab_available && wtctx) {
 				wintab_WTEnable(wtctx, false);
 				wintab_WTClose(wtctx);
@@ -3524,8 +3555,8 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 			}
 			if ((p_driver == "wintab") && wintab_available) {
 				wintab_WTInfo(WTI_DEFSYSCTX, 0, &wtlc);
-				wtlc.lcOptions |= CXO_MESSAGES;
-				wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+				wtlc.lcOptions |= CXO_MESSAGES | CXO_CSRMESSAGES;
+				wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION | PK_X | PK_Y | PK_Z;
 				wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 				wtlc.lcPktMode = 0;
 				wtlc.lcOutOrgX = 0;
@@ -3535,6 +3566,14 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 				wtctx = wintab_WTOpen(hWnd, &wtlc, false);
 				if (wtctx) {
 					wintab_WTEnable(wtctx, true);
+					int queue_size = wintab_WTQueueSizeGet(wtctx);
+					if (queue_size != PACKET_QUERY_SIZE) {
+						if (!wintab_WTQueueSizeSet(wtctx, PACKET_QUERY_SIZE)) {
+							print_verbose("Unable to set WinTab queue size.");
+							wintab_WTClose(wtctx);
+							wtctx = 0;
+						}
+					}
 					AXIS pressure;
 					if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 						min_pressure = int(pressure.axMin);
@@ -3544,7 +3583,6 @@ void OS_Windows::set_current_tablet_driver(const String &p_driver) {
 					if (wintab_WTInfo(WTI_DEVICES + wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
 						tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
 					}
-					wintab_WTEnable(wtctx, true);
 				} else {
 					print_verbose("WinTab context creation failed.");
 				}
@@ -3580,8 +3618,12 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 		wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
 		wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
 		wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
+		wintab_WTOverlap = (WTOverlapPtr)GetProcAddress(wintab_lib, "WTOverlap");
+		wintab_WTPacketsGet = (WTPacketsGetPtr)GetProcAddress(wintab_lib, "WTPacketsGet");
+		wintab_WTQueueSizeGet = (WTQueueSizeGetPtr)GetProcAddress(wintab_lib, "WTQueueSizeGet");
+		wintab_WTQueueSizeSet = (WTQueueSizeSetPtr)GetProcAddress(wintab_lib, "WTQueueSizeSet");
 
-		wintab_available = wintab_WTOpen && wintab_WTClose && wintab_WTInfo && wintab_WTPacket && wintab_WTEnable;
+		wintab_available = wintab_WTOpen && wintab_WTClose && wintab_WTInfo && wintab_WTPacket && wintab_WTEnable && wintab_WTPacketsGet && wintab_WTQueueSizeGet && wintab_WTQueueSizeSet && wintab_WTOverlap;
 	}
 
 	if (wintab_available) {
@@ -3593,6 +3635,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	if (user32_lib) {
 		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
 		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
+		win8p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
 
 		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
 	}
