@@ -20,7 +20,7 @@ env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/contrib/openddlparser/include'])
 env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/contrib/rapidjson/include'])
 env_assimp.Prepend(CPPPATH=['.'])
 env_assimp.Prepend(CPPPATH=['data/'])
-#env_assimp.Append(CPPDEFINES=['ASSIMP_DOUBLE_PRECISION']) # TODO default to what godot is compiled with for future double support
+# env_assimp.Append(CPPDEFINES=['ASSIMP_DOUBLE_PRECISION']) # TODO default to what godot is compiled with for future double support
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_BOOST_WORKAROUND'])
 env_assimp.Append(CPPDEFINES=['OPENDDLPARSER_BUILD'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_OWN_ZLIB'])
@@ -79,16 +79,16 @@ env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_MMD_IMPORTER'])
 
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_SINGLETHREADED'])
 
-if(env['platform'] == 'windows'):
+if (env['platform'] == 'windows'):
     env_assimp.Append(CPPDEFINES=['PLATFORM_WINDOWS'])
     env_assimp.Append(CPPDEFINES=[('PLATFORM', 'WINDOWS')])
-elif(env['platform'] == 'x11'):
+elif (env['platform'] == 'x11'):
     env_assimp.Append(CPPDEFINES=['PLATFORM_LINUX'])
     env_assimp.Append(CPPDEFINES=[('PLATFORM', 'LINUX')])
-elif(env['platform'] == 'osx'):
+elif (env['platform'] == 'osx'):
     env_assimp.Append(CPPDEFINES=['PLATFORM_DARWIN'])
     env_assimp.Append(CPPDEFINES=[('PLATFORM', 'DARWIN')])
-    
+
 env_thirdparty = env_assimp.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/Common/*.cpp'))

@@ -39,13 +39,11 @@ struct ModelAbstraction {
 		fbx_model = p_model;
 	}
 
-	bool has_model() const
-	{
+	bool has_model() const {
 		return fbx_model != nullptr;
 	}
 
-	const Assimp::FBX::Model * get_model() const
-	{
+	const Assimp::FBX::Model *get_model() const {
 		return fbx_model;
 	}
 };

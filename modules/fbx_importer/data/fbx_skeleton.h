@@ -28,7 +28,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-
 #ifndef EDITOR_SCENE_FBX_SKELETON_H
 #define EDITOR_SCENE_FBX_SKELETON_H
 
@@ -44,10 +43,10 @@ struct FBXBone;
 
 struct FBXSkeleton : Reference, ModelAbstraction {
 	Ref<FBXNode> fbx_node;
-	Vector<Ref<FBXBone>> skeleton_bones;
+	Vector<Ref<FBXBone> > skeleton_bones;
 	Skeleton *skeleton = nullptr;
 
-	void init_skeleton( const ImportState& state );
+	void init_skeleton(const ImportState &state);
 };
 
 #endif // EDITOR_SCENE_FBX_SKELETON_H

@@ -34,30 +34,24 @@
 void FBXSkeleton::init_skeleton(const ImportState &state) {
 	int skeleton_bone_count = skeleton_bones.size();
 
-	if(skeleton == nullptr && skeleton_bone_count > 0)
-	{
+	if (skeleton == nullptr && skeleton_bone_count > 0) {
 		skeleton = memnew(Skeleton);
 
 		Ref<FBXNode> skeleton_parent_node;
-		if(fbx_node.is_valid())
-		{
+		if (fbx_node.is_valid()) {
 			// cache skeleton attachment for later during node creation
 			// can't be done until after node hierarchy is built
-			if(fbx_node->godot_node != state.root) {
+			if (fbx_node->godot_node != state.root) {
 				fbx_node->skeleton_node = Ref<FBXSkeleton>(this);
 				print_verbose("cached armature skeleton attachment for node " + fbx_node->node_name);
-			}
-			else
-			{
+			} else {
 				// root node must never be a skeleton to prevent cyclic skeletons from being allowed (skeleton in a skeleton)
 				fbx_node->godot_node->add_child(skeleton);
 				skeleton->set_owner(state.root);
 				skeleton->set_name("Skeleton");
 				print_verbose("created armature skeleton for root");
 			}
-		}
-		else
-		{
+		} else {
 			memfree(skeleton);
 			print_error("[doc] skeleton has no valid node to parent nodes to - erasing");
 			skeleton_bones.clear();
@@ -65,13 +59,12 @@ void FBXSkeleton::init_skeleton(const ImportState &state) {
 		}
 	}
 
-	Map<int, Ref<FBXBone>> bone_map;
+	Map<int, Ref<FBXBone> > bone_map;
 	// implement fbx cluster skin logic here this is where it goes
 	int bone_count = 0;
-	for( int x = 0; x < skeleton_bone_count; x++)
-	{
+	for (int x = 0; x < skeleton_bone_count; x++) {
 		Ref<FBXBone> bone = skeleton_bones[x];
-		if(bone.is_valid()) {
+		if (bone.is_valid()) {
 			skeleton->add_bone(bone->bone_name);
 			bone->godot_bone_id = bone_count;
 			bone->fbx_skeleton = Ref<FBXSkeleton>(this);

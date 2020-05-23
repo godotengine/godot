@@ -59,7 +59,6 @@
 
 #define CONVERT_FBX_TIME(time) static_cast<double>(time) / 46186158000LL
 
-
 class EditorSceneImporterFBX : public EditorSceneImporter {
 private:
 	GDCLASS(EditorSceneImporterFBX, EditorSceneImporter);

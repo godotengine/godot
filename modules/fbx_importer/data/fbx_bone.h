@@ -67,14 +67,13 @@ struct FBXBone : Reference {
 	Transform transform_matrix; // todo remove
 
 	/* get associate model - the model can be invalid sometimes */
-	Ref<FBXBone> get_associate_model() const
-	{
+	Ref<FBXBone> get_associate_model() const {
 		return parent_bone;
 	}
 
 	/* link node is the parent bone */
-	Ref<FBXNode> get_link( const ImportState& state ) const;
-	Transform get_vertex_skin_xform( const ImportState& state, Transform mesh_global_position);
+	Ref<FBXNode> get_link(const ImportState &state) const;
+	Transform get_vertex_skin_xform(const ImportState &state, Transform mesh_global_position);
 	Transform vertex_transform_matrix;
 	Transform local_cluster_matrix; // set_bone_pose
 
@@ -93,6 +92,5 @@ struct FBXBone : Reference {
 	Ref<PivotTransform> pivot_xform;
 	Ref<FBXSkeleton> fbx_skeleton;
 };
-
 
 #endif // MODEL_ABSTRACTION_FBX_BONE_H

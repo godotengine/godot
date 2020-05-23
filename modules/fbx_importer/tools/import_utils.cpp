@@ -53,9 +53,9 @@ Quat AssimpUtils::EulerToQuaternion(Assimp::FBX::Model::RotOrder mode, const Vec
 	const Quat z = Quat(Vector3(0, 0, Math::deg2rad(rotation.z)));
 
 	//return Quat(Vector3(Math::deg2rad(rotation.x), Math::deg2rad(rotation.y), Math::deg2rad(rotation.z));
-//		if (Math::is_equal_approx(0, rotation.x) && Math::is_equal_approx(0, rotation.y) && Math::is_equal_approx(0, rotation.z)) {
-//			return Quat();
-//		}
+	//		if (Math::is_equal_approx(0, rotation.x) && Math::is_equal_approx(0, rotation.y) && Math::is_equal_approx(0, rotation.z)) {
+	//			return Quat();
+	//		}
 
 	Quat result;
 	// So we can theoretically convert calls

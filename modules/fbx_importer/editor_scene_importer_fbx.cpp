@@ -95,7 +95,7 @@ void EditorSceneImporterFBX::_bind_methods() {
 Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps,
 		List<String> *r_missing_deps, Error *r_err) {
 	// done for performance when re-importing lots of files when testing importer in verbose only!
-	if(OS::get_singleton()->is_stdout_verbose()) {
+	if (OS::get_singleton()->is_stdout_verbose()) {
 		EditorLog *log = EditorNode::get_log();
 		log->clear();
 	}
@@ -116,7 +116,6 @@ Node *EditorSceneImporterFBX::import_scene(const String &p_path, uint32_t p_flag
 	for (int32_t byte_i = 0; byte_i < 64; byte_i++) {
 		fbx_header.write()[byte_i] = data.read()[byte_i];
 	}
-
 
 	String fbx_header_string;
 	if (fbx_header.size() >= 0) {
@@ -300,16 +299,13 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 	Ref<SurfaceTool> st;
 	st.instance();
 
-	const std::vector<int>& material_indices = mesh_geometry->GetMaterialIndices();
+	const std::vector<int> &material_indices = mesh_geometry->GetMaterialIndices();
 
 	bool no_material_found = material_indices.size() == 0;
 
-	if(no_material_found)
-	{
+	if (no_material_found) {
 		print_error("no material is configured for mesh...");
-	}
-	else
-	{
+	} else {
 		for (size_t x = 0; x < material_indices.size(); x++) {
 			// so this array is by vertex
 			print_verbose("material index: " + itos(material_indices[x]) + "indices idx: " + itos(x));
@@ -329,7 +325,7 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 	const std::vector<Color> &vertex_colors = mesh_geometry->GetVertexColors(0);
 
 	// material id, primitive_type(triangles,lines, points etc), SurfaceData
-	Map<int, Map<uint32_t, FBXSplitBySurfaceVertexMapping>> surface_split_by_material_primitive;
+	Map<int, Map<uint32_t, FBXSplitBySurfaceVertexMapping> > surface_split_by_material_primitive;
 
 	// we need to map faces back to vertexes
 	{
@@ -343,12 +339,11 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 		// material id, indices list
 		//Map<int, Vector<int>> material_surfaces;
 
-
-//		// fbx vertex id - value stored in the array is the material number
-//		for(uint32_t fbx_vertex_id = 0; fbx_vertex_id < material_indices.size(); fbx_vertex_id++) {
-//			const int material_id = material_indices[fbx_vertex_id];
-//			material_surfaces[material_id].push_back(fbx_vertex_id);
-//		}
+		//		// fbx vertex id - value stored in the array is the material number
+		//		for(uint32_t fbx_vertex_id = 0; fbx_vertex_id < material_indices.size(); fbx_vertex_id++) {
+		//			const int material_id = material_indices[fbx_vertex_id];
+		//			material_surfaces[material_id].push_back(fbx_vertex_id);
+		//		}
 
 		// Mesh face data - split based on geometry type
 		uint32_t cursor = 0;
@@ -358,7 +353,7 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 
 				// some files don't have these configured at all :P
 				int material_id = 0;
-				if(cursor < material_indices.size()) {
+				if (cursor < material_indices.size()) {
 					material_id = material_indices[cursor];
 				}
 
@@ -374,13 +369,11 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 					mapping.add_uv_1(uv_coordinates_1[cursor]);
 				}
 
-				if(cursor < normals.size())
-				{
+				if (cursor < normals.size()) {
 					mapping.normals.push_back(normals[cursor]);
 				}
 
-				if(cursor < vertex_colors.size())
-				{
+				if (cursor < vertex_colors.size()) {
 					mapping.colors.push_back(vertex_colors[cursor]);
 				}
 
@@ -393,8 +386,7 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 	print_verbose("[vertex count for mesh] " + itos(vertices.size()));
 
 	// triangles surface for triangles
-	for(int material = 0; material < surface_split_by_material_primitive.size(); material++)
-	{
+	for (int material = 0; material < surface_split_by_material_primitive.size(); material++) {
 		if (surface_split_by_material_primitive[material].has(3)) {
 			FBXSplitBySurfaceVertexMapping &mapping = surface_split_by_material_primitive[material][3];
 			Vector<size_t> &mesh_vertex_ids = mapping.vertex_id;
@@ -479,10 +471,9 @@ MeshInstance *EditorSceneImporterFBX::create_fbx_mesh(Ref<FBXMeshVertexData> ren
 			Array morphs;
 			mesh->add_surface_from_arrays(Mesh::PrimitiveType::PRIMITIVE_TRIANGLES, triangle_mesh, morphs);
 		}
-
 	}
 
-	if(normals.size() > 0) {
+	if (normals.size() > 0) {
 		st->generate_tangents();
 	}
 	// const std::vector<uint32_t> &face_primitives = mesh_geometry->GetFaceIndexCounts();
@@ -623,7 +614,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 	root_node->godot_node = state.root;
 
 	// cache this node onto the fbx_target map.
-	state.fbx_target_map.insert(0, root_node );
+	state.fbx_target_map.insert(0, root_node);
 
 	// cache basic node information from FBX document
 	// grabs all FBX bones
@@ -685,44 +676,37 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 			Ref<FBXSkeleton> fbx_skeleton_inst;
 
 			uint64_t armature_id = bone->armature_id;
-			if(state.skeleton_map.has(armature_id))
-			{
+			if (state.skeleton_map.has(armature_id)) {
 				fbx_skeleton_inst = state.skeleton_map[armature_id];
-			}
-			else
-			{
+			} else {
 				fbx_skeleton_inst.instance();
 				state.skeleton_map.insert(armature_id, fbx_skeleton_inst);
 			}
 
 			print_verbose("populating skeleton with bone: " + bone->bone_name);
 
-//			// populate bone skeleton - since fbx has no DOM for the skeleton just a node.
-//			bone->bone_skeleton = fbx_skeleton_inst;
+			//			// populate bone skeleton - since fbx has no DOM for the skeleton just a node.
+			//			bone->bone_skeleton = fbx_skeleton_inst;
 
 			// now populate bone on the armature node list
 			fbx_skeleton_inst->skeleton_bones.push_back(bone);
 
 			// we need to have a valid armature id and the model configured for the bone to be assigned fully.
 			// happens once per skeleton
-			if(state.fbx_target_map.has(armature_id) && !fbx_skeleton_inst->has_model())
-			{
+			if (state.fbx_target_map.has(armature_id) && !fbx_skeleton_inst->has_model()) {
 				Ref<FBXNode> node = state.fbx_target_map[armature_id];
 
 				fbx_skeleton_inst->set_model(node->get_model());
 				fbx_skeleton_inst->fbx_node = node;
 				print_verbose("allocated fbx skeleton primary / armature node for the level: " + node->node_name);
-			}
-			else if(!state.fbx_target_map.has(armature_id) && !fbx_skeleton_inst->has_model())
-			{
+			} else if (!state.fbx_target_map.has(armature_id) && !fbx_skeleton_inst->has_model()) {
 				print_error("bones are not mapped to an armature node for armature id: " + itos(armature_id) + " bone: " + bone->bone_name);
 				// this means bone will be removed and not used, which is safe actually and no skeleton will be created.
 			}
 		}
 
 		// setup skeleton instances if required :)
-		for(Map<uint64_t, Ref<FBXSkeleton>>::Element *skeleton_node = state.skeleton_map.front(); skeleton_node; skeleton_node = skeleton_node->next())
-		{
+		for (Map<uint64_t, Ref<FBXSkeleton> >::Element *skeleton_node = state.skeleton_map.front(); skeleton_node; skeleton_node = skeleton_node->next()) {
 			skeleton_node->value()->init_skeleton(state);
 		}
 	}
@@ -755,8 +739,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 						// mesh node, mesh id
 						mesh_node = create_fbx_mesh(mesh_data_precached, mesh_geometry, fbx_node->fbx_model);
 
-						if(!state.MeshNodes.has(mesh_id))
-						{
+						if (!state.MeshNodes.has(mesh_id)) {
 							print_verbose("caching skin creation call for later");
 							state.MeshNodes.insert(mesh_id, fbx_node);
 						}
@@ -771,7 +754,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 
 			Ref<FBXSkeleton> node_skeleton = fbx_node->skeleton_node;
 
-			if(node_skeleton.is_valid()) {
+			if (node_skeleton.is_valid()) {
 				Skeleton *skel = node_skeleton->skeleton;
 				fbx_node->godot_node = skel;
 			} else if (mesh_node == nullptr) {
@@ -792,38 +775,34 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 			fbx_node->godot_node->set_transform(fbx_node->pivot_transform->LocalTransform);
 
 			// populate our mesh node reference
-			if(mesh_node != nullptr && mesh_data_precached.is_valid()) {
+			if (mesh_node != nullptr && mesh_data_precached.is_valid()) {
 				mesh_data_precached->godot_mesh_instance = mesh_node;
 			}
 		}
 	}
 
-	for(Map<uint64_t, Ref<FBXNode>>::Element *skin_mesh = state.MeshNodes.front(); skin_mesh; skin_mesh = skin_mesh->next())
-	{
+	for (Map<uint64_t, Ref<FBXNode> >::Element *skin_mesh = state.MeshNodes.front(); skin_mesh; skin_mesh = skin_mesh->next()) {
 		create_mesh_data_skin(state, skin_mesh->value(), skin_mesh->key());
 	}
 
 	// mesh data iteration for populating skeleton mapping
-	for(Map<uint64_t, Ref<FBXMeshVertexData>>::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next())
-	{
+	for (Map<uint64_t, Ref<FBXMeshVertexData> >::Element *mesh_data = state.renderer_mesh_data.front(); mesh_data; mesh_data = mesh_data->next()) {
 		Ref<FBXMeshVertexData> mesh = mesh_data->value();
-		MeshInstance * mesh_instance = mesh->godot_mesh_instance;
+		MeshInstance *mesh_instance = mesh->godot_mesh_instance;
 		int mesh_weights = mesh->max_weight_count;
 		Ref<FBXSkeleton> skeleton;
 		bool valid_armature = mesh->valid_armature_id;
 		uint64_t armature = mesh->armature_id;
 
-		if(mesh_weights > 0 && valid_armature) {
-			if(state.skeleton_map.has(armature)) {
+		if (mesh_weights > 0 && valid_armature) {
+			if (state.skeleton_map.has(armature)) {
 				skeleton = state.skeleton_map[armature];
 				print_verbose("[doc] armature mesh to skeleton mapping has been allocated");
-			}
-			else
-			{
+			} else {
 				print_error("[doc] unable to find armature mapping");
 			}
 
-			if(skeleton.is_valid()) {
+			if (skeleton.is_valid()) {
 				mesh_instance->set_skeleton_path(mesh_instance->get_path_to(skeleton->skeleton));
 				print_verbose("[doc] allocated skeleton to mesh " + mesh_instance->get_name());
 
@@ -1334,7 +1313,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 							}
 
 							//Quat final_rotation = pre_rotation * rot_key_value * post_rotation.inverse();
-							Quat final_rotation =rot_key_value;
+							Quat final_rotation = rot_key_value;
 
 							lastQuat = final_rotation;
 
@@ -1367,8 +1346,8 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 								scale = _interpolate_track<Vector3>(scale_times, scale_values, time,
 										AssetImportAnimation::INTERP_LINEAR);
 							}
-//
-//							// node animations must also include pivots
+							//
+							//							// node animations must also include pivots
 							if (state.fbx_bone_map.has(target_id)) {
 								//print_verbose("this animation is for bone on skeleton: " + itos(target_id));
 
@@ -1390,7 +1369,7 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 										//AssimpUtils::debug_xform("bone", bone_matrix);
 
 										// populate this again
-										rot =  final_matrix.basis.get_rotation_quat() * rot;
+										rot = final_matrix.basis.get_rotation_quat() * rot;
 										scale = final_matrix.basis.get_scale() * scale;
 										pos = final_matrix.origin + pos;
 									} else {
@@ -1447,16 +1426,14 @@ EditorSceneImporterFBX::_generate_scene(const String &p_path,
 	state.fbx_target_map.clear();
 	state.fbx_node_list.clear();
 
-	for(Map<uint64_t, Ref<FBXBone>>::Element * element = state.fbx_bone_map.front(); element; element = element->next())
-	{
+	for (Map<uint64_t, Ref<FBXBone> >::Element *element = state.fbx_bone_map.front(); element; element = element->next()) {
 		Ref<FBXBone> bone = element->value();
 		bone->parent_bone.unref();
 		bone->pivot_xform.unref();
 		bone->fbx_skeleton.unref();
 	}
 
-	for(Map<uint64_t, Ref<FBXSkeleton>>::Element * element = state.skeleton_map.front(); element; element = element->next())
-	{
+	for (Map<uint64_t, Ref<FBXSkeleton> >::Element *element = state.skeleton_map.front(); element; element = element->next()) {
 		Ref<FBXSkeleton> skel = element->value();
 		skel->fbx_node.unref();
 		skel->skeleton_bones.clear();
@@ -1499,7 +1476,7 @@ void EditorSceneImporterFBX::create_mesh_data_skin(ImportState &state, const Ref
 			Transform ignore_t;
 			Ref<FBXSkeleton> skeleton = bone->fbx_skeleton;
 
-			if(bone->get_link(state).is_valid()) {
+			if (bone->get_link(state).is_valid()) {
 				skin->add_named_bind(bone->bone_name, bone->get_vertex_skin_xform(state, fbx_node->pivot_transform->GlobalTransform));
 			}
 		}

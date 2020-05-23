@@ -88,8 +88,7 @@
 #define AI_MATKEY_FBX_MAYA_STINGRAY_AO_UV_XFORM "$raw.Maya|TEX_ao_map|uvtrafo"
 
 /* filter out values which could potentially break affine_inverse() calls */
-static Vector3 safe_import_vector3( const Vector3& p_vec)
-{
+static Vector3 safe_import_vector3(const Vector3 &p_vec) {
 	Vector3 vector = p_vec;
 	if (Math::is_equal_approx(0, vector.x)) {
 		vector.x = 0;

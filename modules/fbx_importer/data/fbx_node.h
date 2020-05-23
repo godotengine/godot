@@ -33,8 +33,8 @@
 #include "FBXDocument.h"
 #include "fbx_node.h"
 #include "fbx_skeleton.h"
-#include "pivot_transform.h"
 #include "model_abstraction.h"
+#include "pivot_transform.h"
 
 #include "core/bind/core_bind.h"
 #include "core/io/resource_importer.h"
@@ -64,7 +64,6 @@ struct FBXNode : Reference, ModelAbstraction {
 	void set_pivot_transform(Ref<PivotTransform> p_pivot_transform) {
 		pivot_transform = p_pivot_transform;
 	}
-
 
 	Ref<PivotTransform> pivot_transform; // local and global xform data
 	Ref<FBXNode> fbx_parent; // parent node

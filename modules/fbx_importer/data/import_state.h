@@ -65,7 +65,7 @@ struct ImportState {
 	Spatial *root;
 	Ref<FBXNode> fbx_root_node;
 	// skeleton map - merged automatically when they are on the same x node in the tree so we can merge them automatically.
-	Map<uint64_t, Ref<FBXSkeleton>> skeleton_map;
+	Map<uint64_t, Ref<FBXSkeleton> > skeleton_map;
 
 	// nodes on the same level get merged automatically.
 	//Map<uint64_t, Skeleton *> armature_map;
@@ -87,7 +87,7 @@ struct ImportState {
 	Map<uint64_t, Ref<FBXNode> > fbx_target_map;
 
 	// mesh nodes which are created in node / mesh step - used for populating skin poses in MeshSkins
-	Map<uint64_t, Ref<FBXNode>> MeshNodes;
+	Map<uint64_t, Ref<FBXNode> > MeshNodes;
 	// mesh skin map
 	Map<uint64_t, Ref<Skin> > MeshSkins;
 
@@ -99,6 +99,5 @@ struct ImportState {
 	// fbx mesh id, FBXMeshData
 	Map<uint64_t, Ref<FBXMeshVertexData> > renderer_mesh_data;
 };
-
 
 #endif // EDITOR_SCENE_IMPORT_STATE_H

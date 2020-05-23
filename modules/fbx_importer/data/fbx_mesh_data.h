@@ -57,8 +57,6 @@
 #include <code/FBX/FBXTokenizer.h>
 #include <code/FBX/FBXUtil.h>
 
-
-
 struct FBXMeshVertexData;
 struct FBXBone;
 
@@ -68,65 +66,54 @@ struct FBXSplitBySurfaceVertexMapping {
 	Vector<Vector3> normals;
 	Vector<Color> colors;
 
-	void add_uv_0( Vector2 vec )
-	{
+	void add_uv_0(Vector2 vec) {
 		vec.y = 1.0f - vec.y;
 		//print_verbose("added uv_0 " + vec);
 		uv_0.push_back(vec);
 	}
 
-	void add_uv_1( Vector2 vec )
-	{
+	void add_uv_1(Vector2 vec) {
 		vec.y = 1.0f - vec.y;
 		uv_1.push_back(vec);
 	}
 
-	Vector3 get_normal( int vertex_id, bool& found ) const
-    {
+	Vector3 get_normal(int vertex_id, bool &found) const {
 		found = false;
-		if( vertex_id < normals.size() )
-        {
+		if (vertex_id < normals.size()) {
 			found = true;
 			return normals[vertex_id];
 		}
 		return Vector3();
 	}
 
-	Color get_colors( int vertex_id, bool& found ) const
-    {
-        found = false;
-        if( vertex_id < colors.size() )
-        {
-            found = true;
-            return colors[vertex_id];
-        }
-        return Color();
+	Color get_colors(int vertex_id, bool &found) const {
+		found = false;
+		if (vertex_id < colors.size()) {
+			found = true;
+			return colors[vertex_id];
+		}
+		return Color();
 	}
 
-	Vector2 get_uv_0( int vertex_id, bool& found) const
-	{
+	Vector2 get_uv_0(int vertex_id, bool &found) const {
 		found = false;
-		if( vertex_id < uv_0.size() )
-		{
+		if (vertex_id < uv_0.size()) {
 			found = true;
 			return uv_0[vertex_id];
 		}
 		return Vector2();
 	}
 
-	Vector2 get_uv_1( int vertex_id, bool& found) const
-	{
+	Vector2 get_uv_1(int vertex_id, bool &found) const {
 		found = false;
-		if( vertex_id < uv_1.size() )
-		{
+		if (vertex_id < uv_1.size()) {
 			found = true;
 			return uv_1[vertex_id];
 		}
 		return Vector2();
 	}
 
-	void GenerateSurfaceMaterial( Ref<SurfaceTool> st, size_t vertex_id )
-	{
+	void GenerateSurfaceMaterial(Ref<SurfaceTool> st, size_t vertex_id) {
 		bool uv_0 = false;
 		bool uv_1 = false;
 		bool normal_found = false;
@@ -135,23 +122,20 @@ struct FBXSplitBySurfaceVertexMapping {
 		Vector2 uv_1_vec = get_uv_1(vertex_id, uv_1);
 		Vector3 normal = get_normal(vertex_id, normal_found);
 		Color color = get_colors(vertex_id, color_found);
-		if(uv_0) {
+		if (uv_0) {
 			//print_verbose("added uv_0 st " + uv_0_vec);
 			st->add_uv(uv_0_vec);
 		}
-		if(uv_1)
-		{
+		if (uv_1) {
 			//print_verbose("added uv_1 st " + uv_1_vec);
 			st->add_uv2(uv_1_vec);
 		}
 
-		if(normal_found)
-        {
+		if (normal_found) {
 			st->add_normal(normal);
 		}
 
-		if(color_found)
-        {
+		if (color_found) {
 			st->add_color(color);
 		}
 	}
@@ -212,7 +196,7 @@ struct FBXMeshVertexData : Reference {
 	uint64_t mesh_id; // fbx mesh id
 	uint64_t armature_id;
 	bool valid_armature_id = false;
-	MeshInstance * godot_mesh_instance = nullptr;
+	MeshInstance *godot_mesh_instance = nullptr;
 };
 
 #endif // EDITOR_SCENE_FBX_MESH_DATA_H

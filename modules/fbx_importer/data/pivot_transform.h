@@ -61,12 +61,11 @@ struct PivotTransform : Reference, ModelAbstraction {
 	/* Read pivots from the document */
 	void ReadTransformChain();
 
-	void debug_pivot_xform(String p_name)
-	{
+	void debug_pivot_xform(String p_name) {
 		print_verbose("debugging node name: " + p_name);
-		print_verbose("raw rotation: " + raw_rotation * (180/Math_PI));
-		print_verbose("raw pre_rotation " + raw_pre_rotation * (180/Math_PI));
-		print_verbose("raw post_rotation " + raw_post_rotation * (180/Math_PI));
+		print_verbose("raw rotation: " + raw_rotation * (180 / Math_PI));
+		print_verbose("raw pre_rotation " + raw_pre_rotation * (180 / Math_PI));
+		print_verbose("raw post_rotation " + raw_post_rotation * (180 / Math_PI));
 	}
 
 	/* Extract into xforms and calculate once */
@@ -89,6 +88,5 @@ struct PivotTransform : Reference, ModelAbstraction {
 	Transform GeometricTransform; // 3DS max only
 	Assimp::FBX::TransformInheritance inherit_type; // maya fbx requires this - sorry <3
 };
-
 
 #endif // MODEL_ABSTRACTION_PIVOT_TRANSFORM_H
