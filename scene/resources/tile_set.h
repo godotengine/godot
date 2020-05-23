@@ -46,7 +46,7 @@ public:
 	struct ShapeData {
 		Ref<Shape2D> shape;
 		Transform2D shape_transform;
-		Vector2 autotile_coord;
+		Vector2 subtile_coordinate;
 		bool one_way_collision = false;
 		float one_way_collision_margin = 1.0;
 
@@ -91,7 +91,7 @@ public:
 		BitmaskMode bitmask_mode = BITMASK_2X2;
 		// Default size to prevent invalid value
 		Size2 size = Size2(64, 64);
-		Vector2 icon_coord = Vector2(0, 0);
+		Vector2 icon_coordinate = Vector2(0, 0);
 		int spacing = 0;
 		Map<Vector2, uint32_t> flags;
 		Map<Vector2, Ref<OccluderPolygon2D>> occluder_map;
@@ -161,29 +161,29 @@ public:
 	void tile_set_tile_mode(int p_id, TileMode p_tile_mode);
 	TileMode tile_get_tile_mode(int p_id) const;
 
-	void autotile_set_icon_coordinate(int p_id, Vector2 coord);
-	Vector2 autotile_get_icon_coordinate(int p_id) const;
+	void subtile_set_icon_coordinate(int p_id, const Vector2 &p_icon_coordinate);
+	Vector2 subtile_get_icon_coordinate(int p_id) const;
 
-	void autotile_set_spacing(int p_id, int p_spacing);
-	int autotile_get_spacing(int p_id) const;
+	void subtile_set_spacing(int p_id, int p_spacing);
+	int subtile_get_spacing(int p_id) const;
 
-	void autotile_set_size(int p_id, Size2 p_size);
-	Size2 autotile_get_size(int p_id) const;
+	void subtile_set_size(int p_id, Size2 p_size);
+	Size2 subtile_get_size(int p_id) const;
 
 	void autotile_clear_bitmask_map(int p_id);
-	void autotile_set_subtile_priority(int p_id, const Vector2 &p_coord, int p_priority);
-	int autotile_get_subtile_priority(int p_id, const Vector2 &p_coord);
+	void autotile_set_subtile_priority(int p_id, const Vector2 &p_subtile_coordinate, int p_priority);
+	int autotile_get_subtile_priority(int p_id, const Vector2 &p_subtile_coordinate);
 	const Map<Vector2, int> &autotile_get_priority_map(int p_id) const;
 
-	void autotile_set_z_index(int p_id, const Vector2 &p_coord, int p_z_index);
-	int autotile_get_z_index(int p_id, const Vector2 &p_coord);
-	const Map<Vector2, int> &autotile_get_z_index_map(int p_id) const;
+	void subtile_set_z_index(int p_id, const Vector2 &p_subtile_coordinate, int p_z_index);
+	int subtile_get_z_index(int p_id, const Vector2 &p_subtile_coordinate);
+	const Map<Vector2, int> &subtile_get_z_index_map(int p_id) const;
 
-	void autotile_set_bitmask(int p_id, Vector2 p_coord, uint32_t p_flag);
-	uint32_t autotile_get_bitmask(int p_id, Vector2 p_coord);
+	void autotile_set_bitmask(int p_id, Vector2 p_subtile_coordinate, uint32_t p_flag);
+	uint32_t autotile_get_bitmask(int p_id, Vector2 p_subtile_coordinate);
 	const Map<Vector2, uint32_t> &autotile_get_bitmask_map(int p_id);
-	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
-	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = nullptr, const Vector2 &p_tile_location = Vector2());
+	Vector2 autotile_get_subtile_for_bitmask(int p_id, uint16_t p_bitmask, const Node *p_tilemap_node = nullptr, const Vector2 &p_cell_position = Vector2());
+	Vector2 atlastile_get_subtile_by_priority(int p_id, const Node *p_tilemap_node = nullptr, const Vector2 &p_cell_position = Vector2());
 
 	void tile_set_shape(int p_id, int p_shape_id, const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> tile_get_shape(int p_id, int p_shape_id) const;
@@ -201,7 +201,7 @@ public:
 	float tile_get_shape_one_way_margin(int p_id, int p_shape_id) const;
 
 	void tile_clear_shapes(int p_id);
-	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way = false, const Vector2 &p_autotile_coord = Vector2());
+	void tile_add_shape(int p_id, const Ref<Shape2D> &p_shape, const Transform2D &p_transform, bool p_one_way = false, const Vector2 &p_subtile_coordinate = Vector2());
 	int tile_get_shape_count(int p_id) const;
 
 	void tile_set_shapes(int p_id, const Vector<ShapeData> &p_shapes);
@@ -219,9 +219,9 @@ public:
 	void tile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder);
 	Ref<OccluderPolygon2D> tile_get_light_occluder(int p_id) const;
 
-	void autotile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder, const Vector2 &p_coord);
-	Ref<OccluderPolygon2D> autotile_get_light_occluder(int p_id, const Vector2 &p_coord) const;
-	const Map<Vector2, Ref<OccluderPolygon2D>> &autotile_get_light_oclusion_map(int p_id) const;
+	void subtile_set_light_occluder(int p_id, const Ref<OccluderPolygon2D> &p_light_occluder, const Vector2 &p_subtile_coordinate);
+	Ref<OccluderPolygon2D> subtile_get_light_occluder(int p_id, const Vector2 &p_subtile_coordinate) const;
+	const Map<Vector2, Ref<OccluderPolygon2D>> &subtile_get_light_oclusion_map(int p_id) const;
 
 	void tile_set_navigation_polygon_offset(int p_id, const Vector2 &p_offset);
 	Vector2 tile_get_navigation_polygon_offset(int p_id) const;
@@ -229,9 +229,9 @@ public:
 	void tile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon);
 	Ref<NavigationPolygon> tile_get_navigation_polygon(int p_id) const;
 
-	void autotile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon, const Vector2 &p_coord);
-	Ref<NavigationPolygon> autotile_get_navigation_polygon(int p_id, const Vector2 &p_coord) const;
-	const Map<Vector2, Ref<NavigationPolygon>> &autotile_get_navigation_map(int p_id) const;
+	void subtile_set_navigation_polygon(int p_id, const Ref<NavigationPolygon> &p_navigation_polygon, const Vector2 &p_subtile_coordinate);
+	Ref<NavigationPolygon> subtile_get_navigation_polygon(int p_id, const Vector2 &p_subtile_coordinate) const;
+	const Map<Vector2, Ref<NavigationPolygon>> &subtile_get_navigation_map(int p_id) const;
 
 	void tile_set_z_index(int p_id, int p_z_index);
 	int tile_get_z_index(int p_id) const;

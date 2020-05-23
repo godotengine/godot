@@ -10,30 +10,20 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_forward_atlas_subtile_selection" qualifiers="virtual">
-			<return type="Vector2">
-			</return>
-			<argument index="0" name="atlastile_id" type="int">
-			</argument>
-			<argument index="1" name="tilemap" type="Object">
-			</argument>
-			<argument index="2" name="tile_location" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="_forward_subtile_selection" qualifiers="virtual">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="autotile_id" type="int">
+			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="bitmask" type="int">
 			</argument>
 			<argument index="2" name="tilemap" type="Object">
 			</argument>
-			<argument index="3" name="tile_location" type="Vector2">
+			<argument index="3" name="cell_position" type="Vector2">
 			</argument>
 			<description>
+				Forwards the subtile selection. Overriding this method allows you to create custom logic to select wich subtile to use when painting. Works with [constant AUTO_TILE] and [constant ATLAS_TILE], but when it is an atlas, [code]bitmask[/code] will always be zero.
+				[b]Note:[/b] For this method to be called by auto tile, the option "Disable Autotile" in the editor must be inactive and for atlas tile, the option "Enable Priority" must be active.
 			</description>
 		</method>
 		<method name="_is_tile_bound" qualifiers="virtual">
@@ -60,11 +50,17 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Returns the bitmask of the subtile from an autotile given its coordinates.
 				The value is the sum of the values in [enum AutotileBindings] present in the subtile (e.g. a value of 5 means the bitmask has bindings in both the top left and top right).
+				[b]Note:[/b] The bitmask has 32 bits, the first 16 bits are the sum of the activated flags as described above and the last 16 bits are the sum of the wildcard/ignore flags (e.g. a value 131096 means the bitmask for "activated" has bindings in center and left and wildcard/ignore has binding for top), so if you are using wildcard/ignore flag and need to extract these masks, use this code below:
+				[codeblock]
+				var bitmask = autotile_get_bitmask(id, subtile_coordinate)
+				var activated_mask = bitmask &amp; 0xFFFF
+				var wildcard_mask = bitmask >> 16
+				[/codeblock]
 			</description>
 		</method>
 		<method name="autotile_get_bitmask_mode" qualifiers="const">
@@ -76,7 +72,7 @@
 				Returns the [enum BitmaskMode] of the autotile.
 			</description>
 		</method>
-		<method name="autotile_get_icon_coordinate" qualifiers="const">
+		<method name="subtile_get_icon_coordinate" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="id" type="int">
@@ -86,29 +82,29 @@
 				The subtile defined as the icon will be used as a fallback when the atlas/autotile's bitmask information is incomplete. It will also be used to represent it in the TileSet editor.
 			</description>
 		</method>
-		<method name="autotile_get_light_occluder" qualifiers="const">
+		<method name="subtile_get_light_occluder" qualifiers="const">
 			<return type="OccluderPolygon2D">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Returns the light occluder of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
-		<method name="autotile_get_navigation_polygon" qualifiers="const">
+		<method name="subtile_get_navigation_polygon" qualifiers="const">
 			<return type="NavigationPolygon">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Returns the navigation polygon of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
-		<method name="autotile_get_size" qualifiers="const">
+		<method name="subtile_get_size" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="id" type="int">
@@ -117,7 +113,7 @@
 				Returns the size of the subtiles in an atlas/autotile.
 			</description>
 		</method>
-		<method name="autotile_get_spacing" qualifiers="const">
+		<method name="subtile_get_spacing" qualifiers="const">
 			<return type="int">
 			</return>
 			<argument index="0" name="id" type="int">
@@ -131,19 +127,19 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Returns the priority of the subtile from an autotile given its coordinates.
 				When more than one subtile has the same bitmask value, one of them will be picked randomly for drawing. Its priority will define how often it will be picked.
 			</description>
 		</method>
-		<method name="autotile_get_z_index">
+		<method name="subtile_get_z_index">
 			<return type="int">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Returns the drawing index of the subtile from an atlas/autotile given its coordinates.
@@ -174,45 +170,45 @@
 				Sets the [enum BitmaskMode] of the autotile.
 			</description>
 		</method>
-		<method name="autotile_set_icon_coordinate">
+		<method name="subtile_set_icon_coordinate">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Sets the subtile that will be used as an icon in an atlas/autotile given its coordinates.
 				The subtile defined as the icon will be used as a fallback when the atlas/autotile's bitmask information is incomplete. It will also be used to represent it in the TileSet editor.
 			</description>
 		</method>
-		<method name="autotile_set_light_occluder">
+		<method name="subtile_set_light_occluder">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="light_occluder" type="OccluderPolygon2D">
 			</argument>
-			<argument index="2" name="coord" type="Vector2">
+			<argument index="2" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Sets the light occluder of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
-		<method name="autotile_set_navigation_polygon">
+		<method name="subtile_set_navigation_polygon">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
 			<argument index="1" name="navigation_polygon" type="NavigationPolygon">
 			</argument>
-			<argument index="2" name="coord" type="Vector2">
+			<argument index="2" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<description>
 				Sets the navigation polygon of the subtile from an atlas/autotile given its coordinates.
 			</description>
 		</method>
-		<method name="autotile_set_size">
+		<method name="subtile_set_size">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
@@ -223,7 +219,7 @@
 				Sets the size of the subtiles in an atlas/autotile.
 			</description>
 		</method>
-		<method name="autotile_set_spacing">
+		<method name="subtile_set_spacing">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
@@ -239,7 +235,7 @@
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<argument index="2" name="priority" type="int">
 			</argument>
@@ -248,12 +244,12 @@
 				When more than one subtile has the same bitmask value, one of them will be picked randomly for drawing. Its priority will define how often it will be picked.
 			</description>
 		</method>
-		<method name="autotile_set_z_index">
+		<method name="subtile_set_z_index">
 			<return type="void">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="coord" type="Vector2">
+			<argument index="1" name="subtile_coordinate" type="Vector2">
 			</argument>
 			<argument index="2" name="z_index" type="int">
 			</argument>
@@ -320,7 +316,7 @@
 			</argument>
 			<argument index="3" name="one_way" type="bool" default="false">
 			</argument>
-			<argument index="4" name="autotile_coord" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="4" name="subtile_coordinate" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
 				Adds a shape to the tile.

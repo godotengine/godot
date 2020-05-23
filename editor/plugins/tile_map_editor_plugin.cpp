@@ -232,14 +232,14 @@ void TileMapEditor::set_selected_tiles(Vector<int> p_tiles) {
 	palette->ensure_current_is_visible();
 }
 
-Dictionary TileMapEditor::_create_cell_dictionary(int tile, bool flip_x, bool flip_y, bool transpose, Vector2 autotile_coord) {
+Dictionary TileMapEditor::_create_cell_dictionary(int tile, bool flip_x, bool flip_y, bool transpose, Vector2 subtile_coordinate) {
 	Dictionary cell;
 
 	cell["id"] = tile;
 	cell["flip_h"] = flip_x;
 	cell["flip_y"] = flip_y;
 	cell["transpose"] = transpose;
-	cell["auto_coord"] = autotile_coord;
+	cell["subtile_coordinate"] = subtile_coordinate;
 
 	return cell;
 }
@@ -269,7 +269,7 @@ void TileMapEditor::_finish_undo() {
 	undo_redo->commit_action();
 }
 
-void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord) {
+void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_subtile_coordinate) {
 	ERR_FAIL_COND(!node);
 
 	if (p_values.size() == 0) {
@@ -282,7 +282,7 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 	bool prev_flip_h = node->is_cell_x_flipped(p_pos.x, p_pos.y);
 	bool prev_flip_v = node->is_cell_y_flipped(p_pos.x, p_pos.y);
 	bool prev_transpose = node->is_cell_transposed(p_pos.x, p_pos.y);
-	Vector2 prev_position = node->get_cell_autotile_coord(p_pos.x, p_pos.y);
+	Vector2 prev_position = node->get_cell_subtile_coordinate(p_pos.x, p_pos.y);
 
 	Vector2 position;
 	int current = manual_palette->get_current();
@@ -290,7 +290,7 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 		if (tool != TOOL_PASTING) {
 			position = manual_palette->get_item_metadata(current);
 		} else {
-			position = p_autotile_coord;
+			position = p_subtile_coordinate;
 		}
 	} else {
 		// If there is no manual tile selected, that either means that
@@ -313,7 +313,7 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 		}
 	}
 
-	node->_set_celld(p_pos, _create_cell_dictionary(p_value, p_flip_h, p_flip_v, p_transpose, p_autotile_coord));
+	node->_set_celld(p_pos, _create_cell_dictionary(p_value, p_flip_h, p_flip_v, p_transpose, p_subtile_coordinate));
 
 	if (tool == TOOL_PASTING) {
 		return;
@@ -321,7 +321,7 @@ void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p
 
 	if (manual_autotile || (p_value != -1 && node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE)) {
 		if (current != -1) {
-			node->set_cell_autotile_coord(p_pos.x, p_pos.y, position);
+			node->set_cell_subtile_coordinate(p_pos.x, p_pos.y, position);
 		} else if (node->get_tileset()->tile_get_tile_mode(p_value) == TileSet::ATLAS_TILE && priority_atlastile) {
 			// BIND_CENTER is used to indicate that bitmask should not update for this tile cell.
 			node->get_tileset()->autotile_set_bitmask(p_value, Vector2(p_pos.x, p_pos.y), TileSet::BIND_CENTER);
@@ -467,9 +467,9 @@ void TileMapEditor::_update_palette() {
 			Rect2 region = tileset->tile_get_region(entries[i].id);
 
 			if (tileset->tile_get_tile_mode(entries[i].id) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(entries[i].id) == TileSet::ATLAS_TILE) {
-				int spacing = tileset->autotile_get_spacing(entries[i].id);
-				region.size = tileset->autotile_get_size(entries[i].id);
-				region.position += (region.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(entries[i].id);
+				int spacing = tileset->subtile_get_spacing(entries[i].id);
+				region.size = tileset->subtile_get_size(entries[i].id);
+				region.position += (region.size + Vector2(spacing, spacing)) * tileset->subtile_get_icon_coordinate(entries[i].id);
 			}
 
 			// Transpose and flip.
@@ -528,8 +528,8 @@ void TileMapEditor::_update_palette() {
 
 			if (tex.is_valid()) {
 				Rect2 region = tileset->tile_get_region(sel_tile);
-				int spacing = tileset->autotile_get_spacing(sel_tile);
-				region.size = tileset->autotile_get_size(sel_tile); // !!
+				int spacing = tileset->subtile_get_spacing(sel_tile);
+				region.size = tileset->subtile_get_size(sel_tile); // !!
 				region.position += (region.size + Vector2(spacing, spacing)) * entries2[i];
 
 				if (!region.has_no_area()) {
@@ -578,7 +578,7 @@ void TileMapEditor::_pick_tile(const Point2 &p_pos) {
 	flip_h = node->is_cell_x_flipped(p_pos.x, p_pos.y);
 	flip_v = node->is_cell_y_flipped(p_pos.x, p_pos.y);
 	transpose = node->is_cell_transposed(p_pos.x, p_pos.y);
-	autotile_coord = node->get_cell_autotile_coord(p_pos.x, p_pos.y);
+	subtile_coordinate = node->get_cell_subtile_coordinate(p_pos.x, p_pos.y);
 
 	Vector<int> selected;
 	selected.push_back(id);
@@ -586,7 +586,7 @@ void TileMapEditor::_pick_tile(const Point2 &p_pos) {
 	_update_palette();
 
 	if ((manual_autotile && node->get_tileset()->tile_get_tile_mode(id) == TileSet::AUTO_TILE) || (!priority_atlastile && node->get_tileset()->tile_get_tile_mode(id) == TileSet::ATLAS_TILE)) {
-		manual_palette->select(manual_palette->find_metadata((Point2)autotile_coord));
+		manual_palette->select(manual_palette->find_metadata((Point2)subtile_coordinate));
 	}
 
 	CanvasItemEditor::get_singleton()->update_viewport();
@@ -751,7 +751,7 @@ void TileMapEditor::_erase_selection() {
 	}
 }
 
-void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform) {
+void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_subtile_coordinate, const Transform2D &p_xform) {
 	Ref<Texture2D> t = node->get_tileset()->tile_get_texture(p_cell);
 
 	if (t.is_null()) {
@@ -768,14 +768,14 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 			if ((manual_autotile || (node->get_tileset()->tile_get_tile_mode(p_cell) == TileSet::ATLAS_TILE && !priority_atlastile)) && selected != -1) {
 				offset = manual_palette->get_item_metadata(selected);
 			} else {
-				offset = node->get_tileset()->autotile_get_icon_coordinate(p_cell);
+				offset = node->get_tileset()->subtile_get_icon_coordinate(p_cell);
 			}
 		} else {
-			offset = p_autotile_coord;
+			offset = p_subtile_coordinate;
 		}
 
-		int spacing = node->get_tileset()->autotile_get_spacing(p_cell);
-		r.size = node->get_tileset()->autotile_get_size(p_cell);
+		int spacing = node->get_tileset()->subtile_get_spacing(p_cell);
+		r.size = node->get_tileset()->subtile_get_size(p_cell);
 		r.position += (r.size + Vector2(spacing, spacing)) * offset;
 	}
 	Size2 sc = p_xform.get_scale();
@@ -875,13 +875,13 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 	}
 }
 
-void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform) {
+void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_subtile_coordinate, const Transform2D &p_xform) {
 	Vector<Vector2> points = _bucket_fill(p_point, false, true);
 	const Vector2 *pr = points.ptr();
 	int len = points.size();
 
 	for (int i = 0; i < len; ++i) {
-		_draw_cell(p_viewport, p_cell, pr[i], p_flip_h, p_flip_v, p_transpose, p_autotile_coord, p_xform);
+		_draw_cell(p_viewport, p_cell, pr[i], p_flip_h, p_flip_v, p_transpose, p_subtile_coordinate, p_xform);
 	}
 }
 
@@ -909,7 +909,7 @@ void TileMapEditor::_update_copydata() {
 				tcd.flip_h = node->is_cell_x_flipped(j, i);
 				tcd.flip_v = node->is_cell_y_flipped(j, i);
 				tcd.transpose = node->is_cell_transposed(j, i);
-				tcd.autotile_coord = node->get_cell_autotile_coord(j, i);
+				tcd.subtile_coordinate = node->get_cell_subtile_coordinate(j, i);
 			}
 
 			copydata.push_back(tcd);
@@ -1070,7 +1070,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						ids.push_back(0);
 						for (List<TileData>::Element *E = copydata.front(); E; E = E->next()) {
 							ids.write[0] = E->get().cell;
-							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose, E->get().autotile_coord);
+							_set_cell(E->get().pos + ofs, ids, E->get().flip_h, E->get().flip_v, E->get().transpose, E->get().subtile_coordinate);
 						}
 						_finish_undo();
 
@@ -1633,7 +1633,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			}
 
 			for (Map<Point2i, CellOp>::Element *E = paint_undo.front(); E; E = E->next()) {
-				_draw_cell(p_overlay, ids[0], E->key(), flip_h, flip_v, transpose, autotile_coord, xform);
+				_draw_cell(p_overlay, ids[0], E->key(), flip_h, flip_v, transpose, subtile_coordinate, xform);
 			}
 
 		} else if (tool == TOOL_RECTANGLE_PAINT) {
@@ -1645,7 +1645,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 			for (int i = rectangle.position.y; i <= rectangle.position.y + rectangle.size.y; i++) {
 				for (int j = rectangle.position.x; j <= rectangle.position.x + rectangle.size.x; j++) {
-					_draw_cell(p_overlay, ids[0], Point2i(j, i), flip_h, flip_v, transpose, autotile_coord, xform);
+					_draw_cell(p_overlay, ids[0], Point2i(j, i), flip_h, flip_v, transpose, subtile_coordinate, xform);
 				}
 			}
 		} else if (tool == TOOL_PASTING) {
@@ -1668,7 +1668,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 				TileData tcd = E->get();
 
-				_draw_cell(p_overlay, tcd.cell, tcd.pos + ofs, tcd.flip_h, tcd.flip_v, tcd.transpose, tcd.autotile_coord, xform);
+				_draw_cell(p_overlay, tcd.cell, tcd.pos + ofs, tcd.flip_h, tcd.flip_v, tcd.transpose, tcd.subtile_coordinate, xform);
 			}
 
 			Rect2i duplicate = rectangle;
@@ -1684,7 +1684,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 		} else if (tool == TOOL_BUCKET) {
 			Vector<int> tiles = get_selected_tiles();
-			_draw_fill_preview(p_overlay, tiles[0], over_tile, flip_h, flip_v, transpose, autotile_coord, xform);
+			_draw_fill_preview(p_overlay, tiles[0], over_tile, flip_h, flip_v, transpose, subtile_coordinate, xform);
 
 		} else {
 			Vector<int> st = get_selected_tiles();
@@ -1693,7 +1693,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 				return;
 			}
 
-			_draw_cell(p_overlay, st[0], over_tile, flip_h, flip_v, transpose, autotile_coord, xform);
+			_draw_cell(p_overlay, st[0], over_tile, flip_h, flip_v, transpose, subtile_coordinate, xform);
 		}
 	}
 }
@@ -1770,7 +1770,7 @@ TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i &p_pos) {
 		if (node->is_cell_transposed(p_pos.x, p_pos.y)) {
 			op.tr = true;
 		}
-		op.ac = node->get_cell_autotile_coord(p_pos.x, p_pos.y);
+		op.ac = node->get_cell_subtile_coordinate(p_pos.x, p_pos.y);
 	}
 	return op;
 }
