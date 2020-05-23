@@ -4876,7 +4876,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 #endif
 					tokenizer->advance();
 
-					Node *subexpr = _parse_and_reduce_expression(p_class, false, autoexport || member._export.type != Variant::NIL);
+					Node *subexpr = _parse_and_reduce_expression(p_class, false, false);
 					if (!subexpr) {
 						if (_recover_from_completion()) {
 							break;
@@ -4899,32 +4899,38 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					member.expression = subexpr;
 
 					if (autoexport && !member.data_type.has_type) {
-						if (subexpr->type != Node::TYPE_CONSTANT) {
-							_set_error("Type-less export needs a constant expression assigned to infer type.");
-							return;
-						}
-
-						ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
-						if (cn->value.get_type() == Variant::NIL) {
-							_set_error("Can't accept a null constant expression for inferring export type.");
-							return;
-						}
-
-						if (!_reduce_export_var_type(cn->value, member.line)) {
-							return;
-						}
-
-						member._export.type = cn->value.get_type();
-						member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
-						if (cn->value.get_type() == Variant::OBJECT) {
-							Object *obj = cn->value;
-							Resource *res = Object::cast_to<Resource>(obj);
-							if (res == nullptr) {
-								_set_error("The exported constant isn't a type or resource.");
+						if (subexpr->type == Node::TYPE_CONSTANT) {
+							ConstantNode *cn = static_cast<ConstantNode *>(subexpr);
+							if (cn->value.get_type() == Variant::NIL) {
+								_set_error("Can't accept a null constant expression for inferring export type.");
 								return;
 							}
-							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
-							member._export.hint_string = res->get_class();
+
+							if (!_reduce_export_var_type(cn->value, member.line)) {
+								return;
+							}
+
+							member._export.type = cn->value.get_type();
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							if (cn->value.get_type() == Variant::OBJECT) {
+								Object *obj = cn->value;
+								Resource *res = Object::cast_to<Resource>(obj);
+								if (res == nullptr) {
+									_set_error("The exported constant isn't a type or resource.", member.line);
+									return;
+								}
+								member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+								member._export.hint_string = res->get_class();
+							}
+						} else if (subexpr->type == Node::TYPE_ARRAY) {
+							member._export.type = Variant::ARRAY;
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+						} else if (subexpr->type == Node::TYPE_DICTIONARY) {
+							member._export.type = Variant::DICTIONARY;
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+						} else {
+							_set_error("Type-less export needs a constant expression assigned to infer type.", member.line);
+							return;
 						}
 					}
 #ifdef TOOLS_ENABLED
@@ -4937,7 +4943,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 									const Variant *args = &cn->value;
 									cn->value = Variant::construct(member._export.type, &args, 1, err);
 								} else {
-									_set_error("Can't convert the provided value to the export type.");
+									_set_error("Can't convert the provided value to the export type.", member.line);
 									return;
 								}
 							}
@@ -4974,7 +4980,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 				} else {
 					if (autoexport && !member.data_type.has_type) {
-						_set_error("Type-less export needs a constant expression assigned to infer type.");
+						_set_error("Type-less export needs a constant expression assigned to infer type.", member.line);
 						return;
 					}
 
