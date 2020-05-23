@@ -155,6 +155,21 @@ Error MessageQueue::push_callable(const Callable &p_callable, const Variant **p_
 	return OK;
 }
 
+Error MessageQueue::push_callable(const Callable &p_callable, VARIANT_ARG_DECLARE) {
+	VARIANT_ARGPTRS;
+
+	int argc = 0;
+
+	for (int i = 0; i < VARIANT_ARG_MAX; i++) {
+		if (argptr[i]->get_type() == Variant::NIL) {
+			break;
+		}
+		argc++;
+	}
+
+	return push_callable(p_callable, argptr, argc);
+}
+
 void MessageQueue::statistics() {
 	Map<StringName, int> set_count;
 	Map<int, int> notify_count;
