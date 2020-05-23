@@ -2285,7 +2285,7 @@ bool RasterizerCanvasGLES2::try_join_item(Item *p_ci, RenderItemState &r_ris, bo
 
 	// does the shader contain BUILTINs which should break the batching?
 	bdata.joined_item_batch_flags = 0;
-	if (r_ris.shader_cache && !unshaded) {
+	if (r_ris.shader_cache) {
 
 		unsigned int and_flags = r_ris.shader_cache->canvas_item.batch_flags & (RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_COLOR_BAKING | RasterizerStorageGLES2::Shader::CanvasItem::PREVENT_VERTEX_BAKING);
 		if (and_flags) {
