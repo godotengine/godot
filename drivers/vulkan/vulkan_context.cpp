@@ -635,19 +635,36 @@ Error VulkanContext::_initialize_queues(VkSurfaceKHR surface) {
 		free(surfFormats);
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
+
 	// If the format list includes just one entry of VK_FORMAT_UNDEFINED,
 	// the surface has no preferred format.  Otherwise, at least one
 	// supported format will be returned.
-	if (true || (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED)) {
+	if (formatCount == 0) {
+		free(surfFormats);
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "there are not surface available.");
+	} else if (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED) {
+		// No preference found, use VK_FORMAT_B8G8R8A8_UNORM
 		format = VK_FORMAT_B8G8R8A8_UNORM;
+		color_space = surfFormats[0].colorSpace;
 	} else {
-		if (formatCount < 1) {
-			free(surfFormats);
-			ERR_FAIL_V_MSG(ERR_CANT_CREATE, "formatCount less than 1");
+		// We desire VK_FORMAT_B8G8R8A8_UNORM
+		bool found_VK_FORMAT_B8G8R8A8_UNORM = false;
+		for (uint32_t i = 0; i < formatCount; i++) {
+			if (surfFormats[i].format == VK_FORMAT_B8G8R8A8_UNORM) {
+				format = VK_FORMAT_B8G8R8A8_UNORM;
+				color_space = surfFormats[i].colorSpace;
+				found_VK_FORMAT_B8G8R8A8_UNORM = true;
+				break;
+			}
 		}
-		format = surfFormats[0].format;
+
+		if (!found_VK_FORMAT_B8G8R8A8_UNORM) {
+			// Cannot find VK_FORMAT_B8G8R8A8_UNORM.
+			// Defaults to anything to the first available format.
+			format = surfFormats[0].format;
+			color_space = surfFormats[0].colorSpace;
+		}
 	}
-	color_space = surfFormats[0].colorSpace;
 
 	free(surfFormats);
 
