@@ -625,6 +625,18 @@ void ScriptTextEditor::_validate_script() {
 	for (List<ScriptLanguage::Warning>::Element *E = warnings.front(); E; E = E->next()) {
 		ScriptLanguage::Warning w = E->get();
 
+		Dictionary ignore_meta;
+		ignore_meta["line"] = w.line;
+		ignore_meta["code"] = w.string_code.to_lower();
+		warnings_panel->push_cell();
+		warnings_panel->push_meta(ignore_meta);
+		warnings_panel->push_color(
+				warnings_panel->get_color("accent_color", "Editor").linear_interpolate(warnings_panel->get_color("mono_color", "Editor"), 0.5));
+		warnings_panel->add_text(TTR("[Ignore]"));
+		warnings_panel->pop(); // Color.
+		warnings_panel->pop(); // Meta ignore.
+		warnings_panel->pop(); // Cell.
+
 		warnings_panel->push_cell();
 		warnings_panel->push_meta(w.line - 1);
 		warnings_panel->push_color(warnings_panel->get_color("warning_color", "Editor"));
@@ -636,15 +648,6 @@ void ScriptTextEditor::_validate_script() {
 
 		warnings_panel->push_cell();
 		warnings_panel->add_text(w.message);
-		warnings_panel->pop(); // Cell.
-
-		Dictionary ignore_meta;
-		ignore_meta["line"] = w.line;
-		ignore_meta["code"] = w.string_code.to_lower();
-		warnings_panel->push_cell();
-		warnings_panel->push_meta(ignore_meta);
-		warnings_panel->add_text(TTR("(ignore)"));
-		warnings_panel->pop(); // Meta ignore.
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
@@ -1805,6 +1808,8 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	warnings_panel = memnew(RichTextLabel);
 	editor_box->add_child(warnings_panel);
+	warnings_panel->add_font_override(
+			"normal_font", EditorNode::get_singleton()->get_gui_base()->get_font("main", "EditorFonts"));
 	warnings_panel->set_custom_minimum_size(Size2(0, 100 * EDSCALE));
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	warnings_panel->set_meta_underline(true);
