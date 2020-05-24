@@ -114,6 +114,7 @@ void EditorSceneImporter::_bind_methods() {
 
 	BIND_CONSTANT(IMPORT_SCENE);
 	BIND_CONSTANT(IMPORT_ANIMATION);
+	BIND_CONSTANT(IMPORT_META);
 	BIND_CONSTANT(IMPORT_ANIMATION_DETECT_LOOP);
 	BIND_CONSTANT(IMPORT_ANIMATION_OPTIMIZE);
 	BIND_CONSTANT(IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
@@ -1161,6 +1162,7 @@ void ResourceImporterScene::get_import_options(List<ImportOption> *r_options, in
 	bool animations_out = p_preset == PRESET_SEPARATE_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MATERIALS_AND_ANIMATIONS || p_preset == PRESET_SEPARATE_MESHES_MATERIALS_AND_ANIMATIONS;
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/meta"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/custom_script", PROPERTY_HINT_FILE, script_ext_hint), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "nodes/storage", PROPERTY_HINT_ENUM, "Single Scene,Instanced Sub-Scenes"), scenes_out ? 1 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/location", PROPERTY_HINT_ENUM, "Node,Mesh"), (meshes_out || materials_out) ? 1 : 0));
@@ -1299,6 +1301,9 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	float fps = p_options["animation/fps"];
 
 	int import_flags = EditorSceneImporter::IMPORT_ANIMATION_DETECT_LOOP;
+	if (bool(p_options["nodes/meta"]))
+		import_flags |= EditorSceneImporter::IMPORT_META;
+
 	if (!bool(p_options["animation/optimizer/remove_unused_tracks"]))
 		import_flags |= EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS;
 

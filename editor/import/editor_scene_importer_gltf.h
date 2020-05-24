@@ -99,6 +99,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Transform xform;
 		String name;
+		Dictionary extras;
 
 		GLTFMeshIndex mesh;
 		GLTFCameraIndex camera;
@@ -300,6 +301,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		Vector<uint8_t> glb_data;
 
 		bool use_named_skin_binds;
+		bool import_meta;
 
 		Vector<GLTFNode *> nodes;
 		Vector<Vector<uint8_t> > buffers;
@@ -394,6 +396,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _parse_cameras(GLTFState &state);
 
 	Error _parse_animations(GLTFState &state);
+
+	void _set_meta_from_gltf_extras(GLTFState &state, Node *node, const GLTFNode *gltf_node);
 
 	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index);
 	MeshInstance *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
