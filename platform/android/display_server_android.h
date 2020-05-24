@@ -166,6 +166,8 @@ public:
 	static Vector<String> get_rendering_drivers_func();
 	static void register_android_driver();
 
+	void reset_window();
+
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error);
 	~DisplayServerAndroid();
 };

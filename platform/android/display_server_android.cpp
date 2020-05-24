@@ -367,6 +367,25 @@ void DisplayServerAndroid::register_android_driver() {
 	register_create_function("android", create_func, get_rendering_drivers_func);
 }
 
+void DisplayServerAndroid::reset_window() {
+#if defined(VULKAN_ENABLED)
+	if (rendering_driver == "vulkan") {
+		ANativeWindow *native_window = OS_Android::get_singleton()->get_native_window();
+		ERR_FAIL_COND(!native_window);
+
+		ERR_FAIL_COND(!context_vulkan);
+		context_vulkan->window_destroy(MAIN_WINDOW_ID);
+
+		Size2i display_size = OS_Android::get_singleton()->get_display_size();
+		if (context_vulkan->window_create(native_window, display_size.width, display_size.height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = nullptr;
+			ERR_FAIL_MSG("Failed to reset Vulkan window.");
+		}
+	}
+#endif
+}
+
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, uint32_t p_flags, const Vector2i &p_resolution, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
