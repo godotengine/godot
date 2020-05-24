@@ -955,9 +955,9 @@ Color Control::get_colors(Control *p_theme_owner, Window *p_theme_owner_window, 
 	return Theme::get_default()->get_color(p_name, p_type);
 }
 
-int Control::get_theme_constant(const StringName &p_name, const StringName &p_type) const {
+float Control::get_theme_constant(const StringName &p_name, const StringName &p_type) const {
 	if (p_type == StringName() || p_type == get_class_name()) {
-		const int *constant = data.constant_override.getptr(p_name);
+		const float *constant = data.constant_override.getptr(p_name);
 		if (constant) {
 			return *constant;
 		}
@@ -968,8 +968,8 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_ty
 	return get_constants(data.theme_owner, data.theme_owner_window, p_name, type);
 }
 
-int Control::get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
-	int constant;
+float Control::get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type) {
+	float constant;
 
 	if (_find_theme_item(p_theme_owner, p_theme_owner_window, constant, &Theme::get_constant, &Theme::has_constant, p_name, p_type)) {
 		return constant;
@@ -1009,7 +1009,7 @@ bool Control::has_theme_color_override(const StringName &p_name) const {
 }
 
 bool Control::has_theme_constant_override(const StringName &p_name) const {
-	const int *constant = data.constant_override.getptr(p_name);
+	const float *constant = data.constant_override.getptr(p_name);
 	return constant != nullptr;
 }
 
@@ -1789,7 +1789,7 @@ void Control::add_theme_color_override(const StringName &p_name, const Color &p_
 	notification(NOTIFICATION_THEME_CHANGED);
 }
 
-void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
+void Control::add_theme_constant_override(const StringName &p_name, float p_constant) {
 	data.constant_override[p_name] = p_constant;
 	notification(NOTIFICATION_THEME_CHANGED);
 }

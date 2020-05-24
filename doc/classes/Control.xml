@@ -105,10 +105,10 @@
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>
-			<argument index="1" name="constant" type="int">
+			<argument index="1" name="constant" type="float">
 			</argument>
 			<description>
-				Overrides an integer constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is empty or invalid, the override is cleared and the constant from assigned [Theme] is used.
+				Overrides a floating-point constant with given [code]name[/code] in the [member theme] resource the control uses. If the [code]constant[/code] is empty or invalid, the override is cleared and the constant from assigned [Theme] is used.
 			</description>
 		</method>
 		<method name="add_theme_font_override">
@@ -341,7 +341,7 @@
 			</description>
 		</method>
 		<method name="get_theme_constant" qualifiers="const">
-			<return type="int">
+			<return type="float">
 			</return>
 			<argument index="0" name="name" type="StringName">
 			</argument>

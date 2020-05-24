@@ -49,7 +49,7 @@ class Theme : public Resource {
 	HashMap<StringName, HashMap<StringName, Ref<Font>>> font_map;
 	HashMap<StringName, HashMap<StringName, Ref<Shader>>> shader_map;
 	HashMap<StringName, HashMap<StringName, Color>> color_map;
-	HashMap<StringName, HashMap<StringName, int>> constant_map;
+	HashMap<StringName, HashMap<StringName, float>> constant_map;
 
 	Vector<String> _get_icon_list(const String &p_type) const;
 	Vector<String> _get_stylebox_list(const String &p_type) const;
@@ -119,8 +119,8 @@ public:
 	void clear_color(const StringName &p_name, const StringName &p_type);
 	void get_color_list(StringName p_type, List<StringName> *p_list) const;
 
-	void set_constant(const StringName &p_name, const StringName &p_type, int p_constant);
-	int get_constant(const StringName &p_name, const StringName &p_type) const;
+	void set_constant(const StringName &p_name, const StringName &p_type, float p_constant);
+	float get_constant(const StringName &p_name, const StringName &p_type) const;
 	bool has_constant(const StringName &p_name, const StringName &p_type) const;
 	void clear_constant(const StringName &p_name, const StringName &p_type);
 	void get_constant_list(StringName p_type, List<StringName> *p_list) const;

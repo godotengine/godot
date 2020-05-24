@@ -194,7 +194,7 @@ private:
 		HashMap<StringName, Ref<StyleBox>> style_override;
 		HashMap<StringName, Ref<Font>> font_override;
 		HashMap<StringName, Color> color_override;
-		HashMap<StringName, int> constant_override;
+		HashMap<StringName, float> constant_override;
 
 	} data;
 
@@ -245,7 +245,7 @@ private:
 	static Ref<StyleBox> get_styleboxs(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
 	static Ref<Font> get_fonts(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
 	static Color get_colors(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
-	static int get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
+	static float get_constants(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
 
 	static bool has_icons(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
 	static bool has_shaders(Control *p_theme_owner, Window *p_theme_owner_window, const StringName &p_name, const StringName &p_type = StringName());
@@ -427,14 +427,14 @@ public:
 	void add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style);
 	void add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font);
 	void add_theme_color_override(const StringName &p_name, const Color &p_color);
-	void add_theme_constant_override(const StringName &p_name, int p_constant);
+	void add_theme_constant_override(const StringName &p_name, float p_constant);
 
 	Ref<Texture2D> get_theme_icon(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<Shader> get_theme_shader(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<StyleBox> get_theme_stylebox(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Ref<Font> get_theme_font(const StringName &p_name, const StringName &p_type = StringName()) const;
 	Color get_theme_color(const StringName &p_name, const StringName &p_type = StringName()) const;
-	int get_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
+	float get_theme_constant(const StringName &p_name, const StringName &p_type = StringName()) const;
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_shader_override(const StringName &p_name) const;
