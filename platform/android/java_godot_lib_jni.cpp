@@ -448,8 +448,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 	return env->NewStringUTF(ProjectSettings::get_singleton()->get(js).operator String().utf8().get_data());
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jint ID, jstring method, jobjectArray params) {
-
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
 	Object *obj = ObjectDB::get_instance(ID);
 	ERR_FAIL_COND(!obj);
 
@@ -480,8 +479,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 	env->PopLocalFrame(NULL);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jclass clazz, jint ID, jstring method, jobjectArray params) {
-
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
 	Object *obj = ObjectDB::get_instance(ID);
 	ERR_FAIL_COND(!obj);
 

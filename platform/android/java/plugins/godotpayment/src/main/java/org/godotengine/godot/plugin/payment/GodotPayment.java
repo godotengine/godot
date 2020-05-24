@@ -48,8 +48,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class GodotPayment extends GodotPlugin {
-
-	private Integer purchaseCallbackId = 0;
+	private Long purchaseCallbackId = 0L;
 	private String accessToken;
 	private String purchaseValidationUrlPrefix;
 	private String transactionId;
@@ -130,11 +129,11 @@ public class GodotPayment extends GodotPlugin {
 		GodotLib.calldeferred(purchaseCallbackId, "purchase_owned", new Object[] { sku });
 	}
 
-	public int getPurchaseCallbackId() {
+	public long getPurchaseCallbackId() {
 		return purchaseCallbackId;
 	}
 
-	public void setPurchaseCallbackId(int purchaseCallbackId) {
+	public void setPurchaseCallbackId(long purchaseCallbackId) {
 		this.purchaseCallbackId = purchaseCallbackId;
 	}
 
