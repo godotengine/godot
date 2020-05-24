@@ -1793,6 +1793,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
 				wintab_WTEnable(windows[window_id].wtctx, GET_WM_ACTIVATE_STATE(wParam, lParam));
+				if (LOWORD(wParam) == WA_ACTIVE) {
+					wintab_WTOverlap(windows[window_id].wtctx, true);
+				}
 			}
 
 			return 0; // Return  To The Message Loop
@@ -1925,6 +1928,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WT_CSRCHANGE:
 		case WT_PROXIMITY: {
 			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
+				if (uMsg == WT_PROXIMITY) {
+					if (LOWORD(lParam) == 0) {
+						windows[window_id].block_mm = false;
+						KillTimer(windows[window_id].hWnd, unlock_timer_id);
+					} else {
+						windows[window_id].block_mm = true;
+						unlock_timer_id = SetTimer(windows[window_id].hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC) nullptr);
+					}
+				}
 				AXIS pressure;
 				if (wintab_WTInfo(WTI_DEVICES + windows[window_id].wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					windows[window_id].min_pressure = int(pressure.axMin);
@@ -1938,79 +1950,101 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 		} break;
 		case WT_PACKET: {
-			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
-				PACKET packet;
-				if (wintab_WTPacket(windows[window_id].wtctx, wParam, &packet)) {
-					float pressure = float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure);
-					windows[window_id].last_pressure = pressure;
-					windows[window_id].last_pressure_update = 0;
+			if ((OS::get_singleton()->get_current_tablet_driver() != "wintab") || !wintab_available || !windows[window_id].wtctx) {
+				break;
+			}
 
-					double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
-					double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+			static PACKET packet_buffer[PACKET_QUERY_SIZE];
+			int count = wintab_WTPacketsGet(windows[window_id].wtctx, PACKET_QUERY_SIZE, &packet_buffer);
 
-					if (windows[window_id].tilt_supported) {
-						windows[window_id].last_tilt = Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt));
-					} else {
-						windows[window_id].last_tilt = Vector2();
+			for (int i = 0; i < count; i++) {
+				PACKET &packet = packet_buffer[i];
+
+				windows[window_id].block_mm = true;
+				unlock_timer_id = SetTimer(windows[window_id].hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC) nullptr);
+
+				// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
+				if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED) {
+					break;
+				}
+
+				Ref<InputEventMouseMotion> mm;
+				mm.instance();
+				mm->set_window_id(window_id);
+
+				mm->set_pressure(float(packet.pkNormalPressure - windows[window_id].min_pressure) / float(windows[window_id].max_pressure - windows[window_id].min_pressure));
+
+				double azim = (packet.pkOrientation.orAzimuth / 10.0f) * (Math_PI / 180);
+				double alt = Math::tan((Math::abs(packet.pkOrientation.orAltitude / 10.0f)) * (Math_PI / 180));
+				if (windows[window_id].tilt_supported) {
+					mm->set_tilt(Vector2(Math::atan(Math::sin(azim) / alt), Math::atan(Math::cos(azim) / alt)));
+				} else {
+					mm->set_tilt(Vector2());
+				}
+
+				mm->set_control(GetKeyState(VK_CONTROL) != 0);
+				mm->set_shift(GetKeyState(VK_SHIFT) != 0);
+				mm->set_alt(alt_mem);
+
+				mm->set_button_mask(last_button_state);
+
+				int tX = windows[window_id].wtlc.lcSysOrgX;
+				int tY = windows[window_id].wtlc.lcSysOrgY;
+				int tW = windows[window_id].wtlc.lcSysExtX;
+				int tH = windows[window_id].wtlc.lcSysExtY;
+
+				int minX = int(windows[window_id].wtlc.lcOutOrgX);
+				int maxX = int(windows[window_id].wtlc.lcOutExtX) + int(windows[window_id].wtlc.lcOutOrgX);
+				int minY = int(windows[window_id].wtlc.lcOutOrgY);
+				int maxY = -int(windows[window_id].wtlc.lcOutExtY) + int(windows[window_id].wtlc.lcOutOrgY);
+
+				POINT coords;
+				coords.x = (maxX > 0) ? ((packet.pkX - minX) * tW) / fabs(double(maxX - minX)) + tX : ((abs(maxX) - (packet.pkX - minX)) * tW) / fabs(double(maxX - minX)) + tX;
+				coords.y = (maxY > 0) ? ((packet.pkY - minY) * tH) / fabs(double(maxY - minY)) + tY : ((abs(maxY) - (packet.pkY - minY)) * tH) / fabs(double(maxY - minY)) + tY;
+
+				if (win8p_PhysicalToLogicalPointForPerMonitorDPI) {
+					win8p_PhysicalToLogicalPointForPerMonitorDPI(windows[window_id].hWnd, &coords);
+				}
+
+				ScreenToClient(windows[window_id].hWnd, &coords);
+
+				mm->set_position(Vector2(coords.x, coords.y));
+				mm->set_global_position(Vector2(coords.x, coords.y));
+
+				if (mouse_mode == MOUSE_MODE_CAPTURED) {
+					Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
+					old_x = c.x;
+					old_y = c.y;
+
+					if (mm->get_position() == c) {
+						center = c;
+						return 0;
 					}
 
-					POINT coords;
-					GetCursorPos(&coords);
-					ScreenToClient(windows[window_id].hWnd, &coords);
+					Point2i ncenter = mm->get_position();
+					center = ncenter;
+					POINT pos = { (int)c.x, (int)c.y };
+					ClientToScreen(windows[window_id].hWnd, &pos);
+					SetCursorPos(pos.x, pos.y);
+				}
 
-					// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
-					if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
-						break;
+				Input::get_singleton()->set_mouse_position(mm->get_position());
+				mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
 
-					Ref<InputEventMouseMotion> mm;
-					mm.instance();
-					mm->set_window_id(window_id);
-					mm->set_control(GetKeyState(VK_CONTROL) != 0);
-					mm->set_shift(GetKeyState(VK_SHIFT) != 0);
-					mm->set_alt(alt_mem);
-
-					mm->set_pressure(windows[window_id].last_pressure);
-					mm->set_tilt(windows[window_id].last_tilt);
-
-					mm->set_button_mask(last_button_state);
-
-					mm->set_position(Vector2(coords.x, coords.y));
-					mm->set_global_position(Vector2(coords.x, coords.y));
-
-					if (mouse_mode == MOUSE_MODE_CAPTURED) {
-						Point2i c(windows[window_id].width / 2, windows[window_id].height / 2);
-						old_x = c.x;
-						old_y = c.y;
-
-						if (mm->get_position() == c) {
-							center = c;
-							return 0;
-						}
-
-						Point2i ncenter = mm->get_position();
-						center = ncenter;
-						POINT pos = { (int)c.x, (int)c.y };
-						ClientToScreen(windows[window_id].hWnd, &pos);
-						SetCursorPos(pos.x, pos.y);
-					}
-
-					Input::get_singleton()->set_mouse_position(mm->get_position());
-					mm->set_speed(Input::get_singleton()->get_last_mouse_speed());
-
-					if (old_invalid) {
-						old_x = mm->get_position().x;
-						old_y = mm->get_position().y;
-						old_invalid = false;
-					}
-
-					mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+				if (old_invalid) {
 					old_x = mm->get_position().x;
 					old_y = mm->get_position().y;
-					if (windows[window_id].window_has_focus)
-						Input::get_singleton()->accumulate_input_event(mm);
+					old_invalid = false;
 				}
-				return 0;
+
+				mm->set_relative(Vector2(mm->get_position() - Vector2(old_x, old_y)));
+				old_x = mm->get_position().x;
+				old_y = mm->get_position().y;
+				if (windows[window_id].window_has_focus)
+					Input::get_singleton()->accumulate_input_event(mm);
 			}
+
+			return 0;
 		} break;
 		case WM_POINTERENTER: {
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -2032,10 +2066,16 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			windows[window_id].block_mm = true;
+			unlock_timer_id = SetTimer(windows[window_id].hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC) nullptr);
 			return 0;
 		} break;
+		case WM_POINTERCAPTURECHANGED:
 		case WM_POINTERLEAVE: {
+			if ((OS::get_singleton()->get_current_tablet_driver() != "winink") || !winink_available) {
+				break;
+			}
 			windows[window_id].block_mm = false;
+			KillTimer(windows[window_id].hWnd, unlock_timer_id);
 			return 0;
 		} break;
 		case WM_POINTERUPDATE: {
@@ -2062,34 +2102,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			if (Input::get_singleton()->is_emulating_mouse_from_touch()) {
-				// Universal translation enabled; ignore OS translation
-				LPARAM extra = GetMessageExtraInfo();
-				if (IsTouchEvent(extra)) {
-					break;
-				}
-			}
-
-			if (outside) {
-				//mouse enter
-
-				if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
-				}
-
-				CursorShape c = cursor_shape;
-				cursor_shape = CURSOR_MAX;
-				cursor_set_shape(c);
-				outside = false;
-
-				//Once-Off notification, must call again....
-				TRACKMOUSEEVENT tme;
-				tme.cbSize = sizeof(TRACKMOUSEEVENT);
-				tme.dwFlags = TME_LEAVE;
-				tme.hwndTrack = hWnd;
-				tme.dwHoverTime = HOVER_DEFAULT;
-				TrackMouseEvent(&tme);
-			}
+			windows[window_id].block_mm = true;
+			unlock_timer_id = SetTimer(windows[window_id].hWnd, UNLOCK_TIMER_ID, 500, (TIMERPROC) nullptr);
 
 			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
 			if (!windows[window_id].window_has_focus && mouse_mode == MOUSE_MODE_CAPTURED)
@@ -2160,7 +2174,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		} break;
 		case WM_MOUSEMOVE: {
 			if (windows[window_id].block_mm) {
-				break;
+				return 0;
 			}
 
 			if (mouse_mode == MOUSE_MODE_CAPTURED && use_raw_input) {
@@ -2207,21 +2221,8 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mm->set_shift((wParam & MK_SHIFT) != 0);
 			mm->set_alt(alt_mem);
 
-			if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available && windows[window_id].wtctx) {
-				// Note: WinTab sends both WT_PACKET and WM_xBUTTONDOWN/UP/MOUSEMOVE events, use mouse 1/0 pressure only when last_pressure was not update recently.
-				if (windows[window_id].last_pressure_update < 10) {
-					windows[window_id].last_pressure_update++;
-				} else {
-					windows[window_id].last_tilt = Vector2();
-					windows[window_id].last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
-				}
-			} else {
-				windows[window_id].last_tilt = Vector2();
-				windows[window_id].last_pressure = (wParam & MK_LBUTTON) ? 1.0f : 0.0f;
-			}
-
-			mm->set_pressure(windows[window_id].last_pressure);
-			mm->set_tilt(windows[window_id].last_tilt);
+			mm->set_pressure((wParam & MK_LBUTTON) ? 1.0f : 0.0f);
+			mm->set_tilt(Vector2());
 
 			mm->set_button_mask(last_button_state);
 
@@ -2517,7 +2518,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 		case WM_ENTERSIZEMOVE: {
 			Input::get_singleton()->release_pressed_events();
-			move_timer_id = SetTimer(windows[window_id].hWnd, 1, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
+			move_timer_id = SetTimer(windows[window_id].hWnd, MOVE_TIMER_ID, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
 		} break;
 		case WM_EXITSIZEMOVE: {
 			KillTimer(windows[window_id].hWnd, move_timer_id);
@@ -2528,6 +2529,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				if (!Main::is_iterating()) {
 					Main::iteration();
 				}
+			}
+			if (wParam == unlock_timer_id) {
+				windows[window_id].block_mm = false;
 			}
 		} break;
 
@@ -2763,36 +2767,46 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	for (Map<WindowID, WindowData>::Element *E = windows.front(); E; E = E->next()) {
 		WindowData &wd = E->get();
 		wd.block_mm = false;
+		KillTimer(wd.hWnd, unlock_timer_id);
 		if ((p_old_driver == "wintab") && wintab_available && wd.wtctx) {
 			wintab_WTEnable(wd.wtctx, false);
 			wintab_WTClose(wd.wtctx);
 			wd.wtctx = 0;
 		}
-		if ((p_new_driver == "wintab") && wintab_available) {
-			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
-			wd.wtlc.lcOptions |= CXO_MESSAGES;
-			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
-			wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
-			wd.wtlc.lcPktMode = 0;
-			wd.wtlc.lcOutOrgX = 0;
-			wd.wtlc.lcOutExtX = wd.wtlc.lcInExtX;
-			wd.wtlc.lcOutOrgY = 0;
-			wd.wtlc.lcOutExtY = -wd.wtlc.lcInExtY;
-			wd.wtctx = wintab_WTOpen(wd.hWnd, &wd.wtlc, false);
-			if (wd.wtctx) {
-				wintab_WTEnable(wd.wtctx, true);
-				AXIS pressure;
-				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
-					wd.min_pressure = int(pressure.axMin);
-					wd.max_pressure = int(pressure.axMax);
+		if (wd.hWnd) {
+			if ((p_new_driver == "wintab") && wintab_available) {
+				wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
+				wd.wtlc.lcOptions |= CXO_MESSAGES | CXO_CSRMESSAGES;
+				wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION | PK_X | PK_Y | PK_Z;
+				wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
+				wd.wtlc.lcPktMode = 0;
+				wd.wtlc.lcOutOrgX = 0;
+				wd.wtlc.lcOutExtX = wd.wtlc.lcInExtX;
+				wd.wtlc.lcOutOrgY = 0;
+				wd.wtlc.lcOutExtY = -wd.wtlc.lcInExtY;
+				wd.wtctx = wintab_WTOpen(wd.hWnd, &wd.wtlc, false);
+				if (wd.wtctx) {
+					wintab_WTEnable(wd.wtctx, true);
+					int queue_size = wintab_WTQueueSizeGet(wd.wtctx);
+					if (queue_size != PACKET_QUERY_SIZE) {
+						if (!wintab_WTQueueSizeSet(wd.wtctx, PACKET_QUERY_SIZE)) {
+							print_verbose("Unable to set WinTab queue size.");
+							wintab_WTClose(wd.wtctx);
+							wd.wtctx = 0;
+						}
+					}
+					AXIS pressure;
+					if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
+						wd.min_pressure = int(pressure.axMin);
+						wd.max_pressure = int(pressure.axMax);
+					}
+					AXIS orientation[3];
+					if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
+						wd.tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
+					}
+				} else {
+					print_verbose("WinTab context creation failed.");
 				}
-				AXIS orientation[3];
-				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_ORIENTATION, &orientation)) {
-					wd.tilt_supported = orientation[0].axResolution && orientation[1].axResolution;
-				}
-				wintab_WTEnable(wd.wtctx, true);
-			} else {
-				print_verbose("WinTab context creation failed.");
 			}
 		}
 	}
@@ -2856,8 +2870,8 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		if ((OS::get_singleton()->get_current_tablet_driver() == "wintab") && wintab_available) {
 			wintab_WTInfo(WTI_DEFSYSCTX, 0, &wd.wtlc);
-			wd.wtlc.lcOptions |= CXO_MESSAGES;
-			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION;
+			wd.wtlc.lcOptions |= CXO_MESSAGES | CXO_CSRMESSAGES;
+			wd.wtlc.lcPktData = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE | PK_ORIENTATION | PK_X | PK_Y | PK_Z;
 			wd.wtlc.lcMoveMask = PK_NORMAL_PRESSURE | PK_TANGENT_PRESSURE;
 			wd.wtlc.lcPktMode = 0;
 			wd.wtlc.lcOutOrgX = 0;
@@ -2865,8 +2879,31 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			wd.wtlc.lcOutOrgY = 0;
 			wd.wtlc.lcOutExtY = -wd.wtlc.lcInExtY;
 			wd.wtctx = wintab_WTOpen(wd.hWnd, &wd.wtlc, false);
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				String info;
+				WORD imp_ver = 0;
+				WORD spec_ver = 0;
+				int info_size = wintab_WTInfo(WTI_INTERFACE, IFC_WINTABID, 0);
+				if (info_size) {
+					info.resize(info_size + 1);
+					wintab_WTInfo(WTI_INTERFACE, IFC_WINTABID, info.ptrw());
+					wintab_WTInfo(WTI_INTERFACE, IFC_IMPLVERSION, &imp_ver);
+					wintab_WTInfo(WTI_INTERFACE, IFC_SPECVERSION, &spec_ver);
+					print_verbose("WinTab: Device: " + info);
+					print_verbose("WinTab: Implementation: " + itos(imp_ver >> 8) + "." + itos(imp_ver & 0xFF));
+					print_verbose("WinTab: Specification: " + itos(spec_ver >> 8) + "." + itos(spec_ver & 0xFF));
+				}
+			}
 			if (wd.wtctx) {
 				wintab_WTEnable(wd.wtctx, true);
+				int queue_size = wintab_WTQueueSizeGet(wd.wtctx);
+				if (queue_size != PACKET_QUERY_SIZE) {
+					if (!wintab_WTQueueSizeSet(wd.wtctx, PACKET_QUERY_SIZE)) {
+						print_verbose("Unable to set WinTab queue size.");
+						wintab_WTClose(wd.wtctx);
+						wd.wtctx = 0;
+					}
+				}
 				AXIS pressure;
 				if (wintab_WTInfo(WTI_DEVICES + wd.wtlc.lcDevice, DVC_NPRESSURE, &pressure)) {
 					wd.min_pressure = int(pressure.axMin);
@@ -2882,10 +2919,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		} else {
 			wd.wtctx = 0;
 		}
-
-		wd.last_pressure = 0;
-		wd.last_pressure_update = 0;
-		wd.last_tilt = Vector2();
 
 		// IME
 		wd.im_himc = ImmGetContext(wd.hWnd);
@@ -2911,11 +2944,16 @@ WTClosePtr DisplayServerWindows::wintab_WTClose = nullptr;
 WTInfoPtr DisplayServerWindows::wintab_WTInfo = nullptr;
 WTPacketPtr DisplayServerWindows::wintab_WTPacket = nullptr;
 WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
+WTPacketsGetPtr DisplayServerWindows::wintab_WTPacketsGet = nullptr;
+WTQueueSizeGetPtr DisplayServerWindows::wintab_WTQueueSizeGet = nullptr;
+WTQueueSizeSetPtr DisplayServerWindows::wintab_WTQueueSizeSet = nullptr;
+WTOverlapPtr DisplayServerWindows::wintab_WTOverlap = nullptr;
 
 // Windows Ink API
 bool DisplayServerWindows::winink_available = false;
 GetPointerTypePtr DisplayServerWindows::win8p_GetPointerType = nullptr;
 GetPointerPenInfoPtr DisplayServerWindows::win8p_GetPointerPenInfo = nullptr;
+PhysicalToLogicalPointForPerMonitorDPIPtr DisplayServerWindows::win8p_PhysicalToLogicalPointForPerMonitorDPI = NULL;
 
 typedef enum _SHC_PROCESS_DPI_AWARENESS {
 	SHC_PROCESS_DPI_UNAWARE = 0,
@@ -2950,7 +2988,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
 
 			if (SetProcessDpiAwareness) {
-				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
+				SetProcessDpiAwareness(SHC_PROCESS_PER_MONITOR_DPI_AWARE);
 			}
 		}
 	}
@@ -3049,7 +3087,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 #endif
 
-	move_timer_id = 1;
+	move_timer_id = MOVE_TIMER_ID;
+	unlock_timer_id = UNLOCK_TIMER_ID;
 
 	//set_ime_active(false);
 

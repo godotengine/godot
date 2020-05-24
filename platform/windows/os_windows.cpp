@@ -820,8 +820,12 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 		DisplayServerWindows::wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
 		DisplayServerWindows::wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
 		DisplayServerWindows::wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
+		DisplayServerWindows::wintab_WTPacketsGet = (WTPacketsGetPtr)GetProcAddress(wintab_lib, "WTPacketsGet");
+		DisplayServerWindows::wintab_WTQueueSizeGet = (WTQueueSizeGetPtr)GetProcAddress(wintab_lib, "WTQueueSizeGet");
+		DisplayServerWindows::wintab_WTQueueSizeSet = (WTQueueSizeSetPtr)GetProcAddress(wintab_lib, "WTQueueSizeSet");
+		DisplayServerWindows::wintab_WTOverlap = (WTOverlapPtr)GetProcAddress(wintab_lib, "WTOverlap");
 
-		DisplayServerWindows::wintab_available = DisplayServerWindows::wintab_WTOpen && DisplayServerWindows::wintab_WTClose && DisplayServerWindows::wintab_WTInfo && DisplayServerWindows::wintab_WTPacket && DisplayServerWindows::wintab_WTEnable;
+		DisplayServerWindows::wintab_available = DisplayServerWindows::wintab_WTOpen && DisplayServerWindows::wintab_WTClose && DisplayServerWindows::wintab_WTInfo && DisplayServerWindows::wintab_WTPacket && DisplayServerWindows::wintab_WTEnable && DisplayServerWindows::wintab_WTPacketsGet && DisplayServerWindows::wintab_WTQueueSizeGet && DisplayServerWindows::wintab_WTQueueSizeSet && DisplayServerWindows::wintab_WTOverlap;
 	}
 
 	if (DisplayServerWindows::wintab_available) {
@@ -833,6 +837,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	if (user32_lib) {
 		DisplayServerWindows::win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
 		DisplayServerWindows::win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
+		DisplayServerWindows::win8p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
 
 		DisplayServerWindows::winink_available = DisplayServerWindows::win8p_GetPointerType && DisplayServerWindows::win8p_GetPointerPenInfo;
 	}
