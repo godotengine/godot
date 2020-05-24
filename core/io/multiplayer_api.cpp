@@ -1001,10 +1001,10 @@ void MultiplayerAPI::_server_disconnected() {
 	emit_signal("server_disconnected");
 }
 
-void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
-	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to call an RPC while no network peer is active.");
-	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to call an RPC on a node which is not inside SceneTree.");
-	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a network peer which is not connected.");
+Variant MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
+	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), Variant(), "Trying to call an RPC while no network peer is active.");
+	ERR_FAIL_COND_V_MSG(!p_node->is_inside_tree(), Variant(), "Trying to call an RPC on a node which is not inside SceneTree.");
+	ERR_FAIL_COND_V_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, Variant(), "Trying to call an RPC via a network peer which is not connected.");
 
 	int node_id = network_peer->get_unique_id();
 	bool skip_rpc = node_id == p_peer_id;
@@ -1035,17 +1035,19 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		_send_rpc(p_node, p_peer_id, p_unreliable, false, p_method, p_arg, p_argcount);
 	}
 
+	Variant local_call_return;
+
 	if (call_local_native) {
 		int temp_id = rpc_sender_id;
 		rpc_sender_id = get_network_unique_id();
 		Callable::CallError ce;
-		p_node->call(p_method, p_arg, p_argcount, ce);
+		local_call_return = p_node->call(p_method, p_arg, p_argcount, ce);
 		rpc_sender_id = temp_id;
 		if (ce.error != Callable::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in local call:  - " + error + ".";
 			ERR_PRINT(error);
-			return;
+			return local_call_return;
 		}
 	}
 
@@ -1054,17 +1056,18 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		rpc_sender_id = get_network_unique_id();
 		Callable::CallError ce;
 		ce.error = Callable::CallError::CALL_OK;
-		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
+		local_call_return = p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
 		rpc_sender_id = temp_id;
 		if (ce.error != Callable::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
 			error = "rpc() aborted in script local call:  - " + error + ".";
 			ERR_PRINT(error);
-			return;
+			return local_call_return;
 		}
 	}
 
-	ERR_FAIL_COND_MSG(skip_rpc && !(call_local_native || call_local_script), "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
+	ERR_FAIL_COND_V_MSG(skip_rpc && !(call_local_native || call_local_script), local_call_return, "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
+	return local_call_return;
 }
 
 void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {

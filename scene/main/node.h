@@ -431,9 +431,9 @@ public:
 	uint16_t rpc_config(const StringName &p_method, MultiplayerAPI::RPCMode p_mode); // config a local method for RPC
 	uint16_t rset_config(const StringName &p_property, MultiplayerAPI::RPCMode p_mode); // config a local property for RPC
 
-	void rpc(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
+	Variant rpc(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
 	void rpc_unreliable(const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
-	void rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
+	Variant rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
 	void rpc_unreliable_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_LIST); //rpc call, honors RPCMode
 
 	void rset(const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
@@ -441,7 +441,7 @@ public:
 	void rset_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
 	void rset_unreliable_id(int p_peer_id, const StringName &p_property, const Variant &p_value); //remote set call, honors RPCMode
 
-	void rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
+	Variant rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	void rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;

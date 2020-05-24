@@ -120,7 +120,7 @@ public:
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST, NetworkedMultiplayerPeer::TransferMode p_mode = NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 
 	// Called by Node.rpc
-	void rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
+	Variant rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount);
 	// Called by Node.rset
 	void rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value);
 

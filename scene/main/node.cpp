@@ -494,7 +494,7 @@ uint16_t Node::rset_config(const StringName &p_property, MultiplayerAPI::RPCMode
 
 /***** RPC FUNCTIONS ********/
 
-void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
+Variant Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
@@ -505,10 +505,10 @@ void Node::rpc(const StringName &p_method, VARIANT_ARG_DECLARE) {
 		argc++;
 	}
 
-	rpcp(0, false, p_method, argptr, argc);
+	return rpcp(0, false, p_method, argptr, argc);
 }
 
-void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
+Variant Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE) {
 	VARIANT_ARGPTRS;
 
 	int argc = 0;
@@ -519,7 +519,7 @@ void Node::rpc_id(int p_peer_id, const StringName &p_method, VARIANT_ARG_DECLARE
 		argc++;
 	}
 
-	rpcp(p_peer_id, false, p_method, argptr, argc);
+	return rpcp(p_peer_id, false, p_method, argptr, argc);
 }
 
 void Node::rpc_unreliable(const StringName &p_method, VARIANT_ARG_DECLARE) {
@@ -566,10 +566,10 @@ Variant Node::_rpc_bind(const Variant **p_args, int p_argcount, Callable::CallEr
 
 	StringName method = *p_args[0];
 
-	rpcp(0, false, method, &p_args[1], p_argcount - 1);
+	Variant local_call_return = rpcp(0, false, method, &p_args[1], p_argcount - 1);
 
 	r_error.error = Callable::CallError::CALL_OK;
-	return Variant();
+	return local_call_return;
 }
 
 Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -596,10 +596,10 @@ Variant Node::_rpc_id_bind(const Variant **p_args, int p_argcount, Callable::Cal
 	int peer_id = *p_args[0];
 	StringName method = *p_args[1];
 
-	rpcp(peer_id, false, method, &p_args[2], p_argcount - 2);
+	Variant local_call_return = rpcp(peer_id, false, method, &p_args[2], p_argcount - 2);
 
 	r_error.error = Callable::CallError::CALL_OK;
-	return Variant();
+	return local_call_return;
 }
 
 Variant Node::_rpc_unreliable_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
@@ -654,9 +654,9 @@ Variant Node::_rpc_unreliable_id_bind(const Variant **p_args, int p_argcount, Ca
 	return Variant();
 }
 
-void Node::rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
-	ERR_FAIL_COND(!is_inside_tree());
-	get_multiplayer()->rpcp(this, p_peer_id, p_unreliable, p_method, p_arg, p_argcount);
+Variant Node::rpcp(int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
+	ERR_FAIL_COND_V(!is_inside_tree(), Variant());
+	return get_multiplayer()->rpcp(this, p_peer_id, p_unreliable, p_method, p_arg, p_argcount);
 }
 
 void Node::rsetp(int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
