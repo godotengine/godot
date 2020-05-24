@@ -87,23 +87,6 @@
 #define AI_MATKEY_FBX_MAYA_STINGRAY_AO_TEXTURE "$raw.Maya|TEX_ao_map|file"
 #define AI_MATKEY_FBX_MAYA_STINGRAY_AO_UV_XFORM "$raw.Maya|TEX_ao_map|uvtrafo"
 
-/* filter out values which could potentially break affine_inverse() calls */
-static Vector3 safe_import_vector3(const Vector3 &p_vec) {
-	Vector3 vector = p_vec;
-	if (Math::is_equal_approx(0, vector.x)) {
-		vector.x = 0;
-	}
-
-	if (Math::is_equal_approx(0, vector.y)) {
-		vector.y = 0;
-	}
-
-	if (Math::is_equal_approx(0, vector.z)) {
-		vector.z = 0;
-	}
-	return vector;
-}
-
 /**
  * Assimp Utils
  * Conversion tools / glue code to convert from assimp to godot
@@ -114,6 +97,22 @@ public:
 
 	static void debug_xform(String name, const Transform &t) {
 		print_verbose(name + " " + t.origin + " rotation: " + (t.basis.get_euler() * (180 / Math_PI)));
+	}
+
+	static Vector3 safe_import_vector3(const Vector3 &p_vec) {
+		Vector3 vector = p_vec;
+		if (Math::is_equal_approx(0, vector.x)) {
+			vector.x = 0;
+		}
+
+		if (Math::is_equal_approx(0, vector.y)) {
+			vector.y = 0;
+		}
+
+		if (Math::is_equal_approx(0, vector.z)) {
+			vector.z = 0;
+		}
+		return vector;
 	}
 
 	static void debug_xform(String name, const Basis &t) {

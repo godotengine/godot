@@ -38,53 +38,53 @@ void PivotTransform::ReadTransformChain() {
 	inherit_type = inheritType; // copy the inherit type we need it in the second step.
 	print_verbose("Model: " + String(fbx_model->Name().c_str()) + " Has inherit type: " + itos(fbx_model->InheritType()));
 	bool ok = false;
-	raw_pre_rotation = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "PreRotation", ok));
+	raw_pre_rotation = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "PreRotation", ok));
 	if (ok) {
 		pre_rotation = AssimpUtils::EulerToQuaternion(Assimp::FBX::Model::RotOrder_EulerXYZ, raw_pre_rotation);
 		print_verbose("valid pre_rotation: " + raw_pre_rotation + " euler conversion: " + (pre_rotation.get_euler() * (180 / Math_PI)));
 	}
-	raw_post_rotation = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "PostRotation", ok));
+	raw_post_rotation = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "PostRotation", ok));
 	if (ok) {
 		post_rotation = AssimpUtils::EulerToQuaternion(Assimp::FBX::Model::RotOrder_EulerXYZ, raw_post_rotation);
 		print_verbose("valid post_rotation: " + raw_post_rotation + " euler conversion: " + (pre_rotation.get_euler() * (180 / Math_PI)));
 	}
-	const Vector3 &RotationPivot = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "RotationPivot", ok));
+	const Vector3 &RotationPivot = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "RotationPivot", ok));
 	if (ok) {
 		rotation_pivot = AssimpUtils::FixAxisConversions(RotationPivot);
 	}
-	const Vector3 &RotationOffset = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "RotationOffset", ok));
+	const Vector3 &RotationOffset = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "RotationOffset", ok));
 	if (ok) {
 		rotation_offset = AssimpUtils::FixAxisConversions(RotationOffset);
 	}
-	const Vector3 &ScalingOffset = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "ScalingOffset", ok));
+	const Vector3 &ScalingOffset = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "ScalingOffset", ok));
 	if (ok) {
 		scaling_offset = AssimpUtils::FixAxisConversions(ScalingOffset);
 	}
-	const Vector3 &ScalingPivot = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "ScalingPivot", ok));
+	const Vector3 &ScalingPivot = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "ScalingPivot", ok));
 	if (ok) {
 		scaling_pivot = AssimpUtils::FixAxisConversions(ScalingPivot);
 	}
-	const Vector3 &Translation = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "Lcl Translation", ok));
+	const Vector3 &Translation = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "Lcl Translation", ok));
 	if (ok) {
 		translation = AssimpUtils::FixAxisConversions(Translation);
 	}
-	raw_rotation = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "Lcl Rotation", ok));
+	raw_rotation = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "Lcl Rotation", ok));
 	if (ok) {
 		rotation = AssimpUtils::EulerToQuaternion(rot, raw_rotation);
 	}
-	const Vector3 &Scaling = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "Lcl Scaling", ok));
+	const Vector3 &Scaling = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "Lcl Scaling", ok));
 	if (ok) {
 		scaling = Scaling;
 	}
-	const Vector3 &GeometricScaling = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "GeometricScaling", ok));
+	const Vector3 &GeometricScaling = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "GeometricScaling", ok));
 	if (ok) {
 		geometric_scaling = GeometricScaling;
 	}
-	const Vector3 &GeometricRotation = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "GeometricRotation", ok));
+	const Vector3 &GeometricRotation = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "GeometricRotation", ok));
 	if (ok) {
 		geometric_rotation = AssimpUtils::EulerToQuaternion(rot, GeometricRotation);
 	}
-	const Vector3 &GeometricTranslation = safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "GeometricTranslation", ok));
+	const Vector3 &GeometricTranslation = AssimpUtils::safe_import_vector3(Assimp::FBX::PropertyGet<Vector3>(props, "GeometricTranslation", ok));
 	if (ok) {
 		geometric_translation = AssimpUtils::FixAxisConversions(GeometricTranslation);
 	}
