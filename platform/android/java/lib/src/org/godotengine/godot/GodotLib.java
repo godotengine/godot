@@ -66,11 +66,12 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.
-	 * @param width
-	 * @param height
+	 * @param p_surface
+	 * @param p_width
+	 * @param p_height
 	 * @see android.opengl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
 	 */
-	public static native void resize(int width, int height);
+	public static native void resize(Surface p_surface, int p_width, int p_height);
 
 	/**
 	 * Invoked on the render thread when the underlying Android surface is created or recreated.
