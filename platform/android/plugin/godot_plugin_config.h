@@ -70,6 +70,8 @@ The `dependencies` section and fields are optional and defined as follow:
 struct PluginConfig {
 	// Set to true when the config file is properly loaded.
 	bool valid_config = false;
+	// Unix timestamp of last change to this plugin.
+	uint64_t last_updated = 0;
 
 	// Required config section
 	String name;
@@ -87,6 +89,7 @@ struct PluginConfig {
  */
 static const PluginConfig GODOT_PAYMENT = {
 	/*.valid_config =*/true,
+	/*.last_updated =*/0,
 	/*.name =*/"GodotPayment",
 	/*.binary_type =*/"local",
 	/*.binary =*/"res://android/build/libs/plugins/GodotPayment.release.aar",
@@ -150,6 +153,18 @@ static inline bool is_plugin_config_valid(PluginConfig plugin_config) {
 	return valid_name && valid_binary && valid_binary_type && valid_local_dependencies;
 }
 
+static inline uint64_t get_plugin_modification_time(const PluginConfig &plugin_config, const String &config_path) {
+	uint64_t last_updated = FileAccess::get_modified_time(config_path);
+	last_updated = MAX(last_updated, FileAccess::get_modified_time(plugin_config.binary));
+
+	for (int i = 0; i < plugin_config.local_dependencies.size(); i++) {
+		String binary = plugin_config.local_dependencies.get(i);
+		last_updated = MAX(last_updated, FileAccess::get_modified_time(binary));
+	}
+
+	return last_updated;
+}
+
 static inline PluginConfig load_plugin_config(Ref<ConfigFile> config_file, const String &path) {
 	PluginConfig plugin_config = {};
 
@@ -177,6 +192,7 @@ static inline PluginConfig load_plugin_config(Ref<ConfigFile> config_file, const
 			}
 
 			plugin_config.valid_config = is_plugin_config_valid(plugin_config);
+			plugin_config.last_updated = get_plugin_modification_time(plugin_config, path);
 		}
 	}
 
