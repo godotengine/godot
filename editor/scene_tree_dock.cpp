@@ -114,7 +114,12 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
+	} else {
+		return;
 	}
+
+	// Accept event if one of the shortcuts matched
+	accept_event();
 }
 
 void SceneTreeDock::instance(const String &p_file) {

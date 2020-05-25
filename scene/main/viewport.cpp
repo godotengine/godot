@@ -3000,7 +3000,17 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coor
 
 	get_tree()->_call_input_pause(unhandled_input_group, "_unhandled_input", ev, this);
 	if (!is_input_handled() && Object::cast_to<InputEventKey>(*ev) != nullptr) {
-		get_tree()->_call_input_pause(unhandled_key_input_group, "_unhandled_key_input", ev, this);
+		Array arg;
+		arg.push_back(ev);
+		// Start with the control which is focused
+		Node *node = _gui_get_focus_owner();
+
+		// Iterate through focused node parents until input is handled. Stop when this viewport is reached.
+		while (node && !is_input_handled() && node != this) {
+			node->propagate_call("_unhandled_key_input", arg, true);
+
+			node = node->get_parent();
+		}
 	}
 
 	if (physics_object_picking && !is_input_handled()) {
