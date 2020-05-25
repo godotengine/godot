@@ -572,7 +572,8 @@ void ServerController::process(real_t p_delta) {
 	node->get_inputs_buffer_mut().begin_read();
 	node->call("controller_process", p_delta);
 
-	adjust_player_tick_rate(p_delta);
+	calculates_player_tick_rate(p_delta);
+	adjust_player_tick_rate();
 }
 
 bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSnapshotSkinny &p_snap_b) {
@@ -835,7 +836,13 @@ bool ServerController::fetch_next_input() {
 	return is_new_input;
 }
 
-void ServerController::adjust_player_tick_rate(real_t p_delta) {
+void ServerController::calculates_player_tick_rate(real_t p_delta) {
+	// TODO Improve the algorithm that has the following problems:
+	// - Tweaking is really difficult (requires too much tests).
+	// - It's too slow to recover packets.
+	// - It start doing something only when a packets is marked as missing,
+	//     instead it should start healing the connection even before the input is used (and so marked as used).
+
 	const int miss_packets = network_tracer.get_missing_packets();
 	const int inputs_count = get_inputs_count();
 
@@ -867,19 +874,21 @@ void ServerController::adjust_player_tick_rate(real_t p_delta) {
 		// but I need to move fast toward new targets when they appear.
 		client_tick_additional_speed += acc + damp * ((SGN(acc) * SGN(damp) + 1) / 2.0);
 		client_tick_additional_speed = CLAMP(client_tick_additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
+	}
+}
 
-		int new_speed = 100 * (client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED);
+void ServerController::adjust_player_tick_rate() {
+	int new_speed = 100 * (client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED);
 
-		if (ABS(client_tick_additional_speed_compressed - new_speed) >= TICK_SPEED_CHANGE_NOTIF_THRESHOLD) {
-			client_tick_additional_speed_compressed = new_speed;
+	if (ABS(client_tick_additional_speed_compressed - new_speed) >= TICK_SPEED_CHANGE_NOTIF_THRESHOLD) {
+		client_tick_additional_speed_compressed = new_speed;
 
-			// TODO Send bytes please.
-			// TODO consider to send this unreliably each X sec
-			node->rpc_id(
-					node->get_network_master(),
-					"_rpc_send_tick_additional_speed",
-					client_tick_additional_speed_compressed);
-		}
+		// TODO Send bytes please.
+		// TODO consider to send this unreliably each X sec
+		node->rpc_id(
+				node->get_network_master(),
+				"_rpc_send_tick_additional_speed",
+				client_tick_additional_speed_compressed);
 	}
 }
 
@@ -1129,7 +1138,7 @@ bool PlayerController::can_accept_new_inputs() const {
 
 DollController::DollController(NetworkedController *p_node) :
 		Controller(p_node),
-		server_controller(p_node, 0),
+		server_controller(p_node, p_node->get_network_traced_frames()),
 		player_controller(p_node),
 		is_server_communication_detected(false),
 		is_server_state_update_received(false),
@@ -1139,6 +1148,8 @@ DollController::DollController(NetworkedController *p_node) :
 }
 
 void DollController::process(real_t p_delta) {
+	server_controller.calculates_player_tick_rate(p_delta);
+
 	// Lock mechanism when the server don't update anymore this doll!
 	if (is_flow_open) {
 		if (is_server_state_update_received &&
@@ -1175,17 +1186,11 @@ void DollController::receive_inputs(Vector<uint8_t> p_data) {
 }
 
 int DollController::calculates_sub_ticks(real_t p_delta, real_t p_iteration_per_seconds) {
-	// TODO use the same algorithm the server uses to determinates the speedup
-	// so the input pool is enlarged when interned problems are detected and constrained
-	// otherwise.
-	real_t speed_up = 0.0;
-
-	if (server_controller.last_known_input() != UINT64_MAX &&
-			player_controller.get_stored_input_id(-1) != UINT64_MAX) {
-		// Try to stay only 2 frames behind the server.
-		const real_t difference = server_controller.last_known_input() - player_controller.get_stored_input_id(-1);
-		speed_up = CLAMP((difference - MIN_SNAPSHOTS_SIZE) / MIN_SNAPSHOTS_SIZE, -1.0, 1.0) * MAX_ADDITIONAL_TICK_SPEED;
-	}
+	// When some packets are missing, the server speedup the client.
+	// For the doll we have to use the inverse algorithm because it's necessary
+	// to slow down the doll to consume the inputs slowly, to accumulates a bit
+	// of buffer (vice versa, when we have too much inputs).
+	const real_t speed_up = server_controller.client_tick_additional_speed * -1;
 
 	const real_t pretended_delta = 1.0 / (p_iteration_per_seconds + speed_up);
 	time_bank += p_delta;

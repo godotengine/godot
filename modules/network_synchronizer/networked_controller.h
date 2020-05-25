@@ -382,7 +382,8 @@ struct ServerController : public Controller {
 	/// the server is artificial and no more dependent on the internet. For this
 	/// reason the server tells the client to slowdown so to keep the `frames_inputs`
 	/// size moderate to the needs.
-	void adjust_player_tick_rate(real_t p_delta);
+	void calculates_player_tick_rate(real_t p_delta);
+	void adjust_player_tick_rate();
 };
 
 struct PlayerController : public Controller {
