@@ -99,12 +99,16 @@ private:
 	///
 	/// With 60 iteration per seconds a good value is `300`, but is adviced to
 	/// perform some tests until you find a better suitable value for your needs.
-	int player_input_storage_size;
+	int player_input_storage_size = 300;
 
 	/// Amount of time an inputs is re-sent to each peer.
 	/// Resenging inputs is necessary because the packets may be lost since as
 	/// they are sent in an unreliable way.
-	int max_redundant_inputs;
+	int max_redundant_inputs = 50;
+
+	/// Time in seconds between each `tick_speedup` that the server sends to the
+	/// client.
+	real_t tick_speedup_notification_delay = 0.33;
 
 	/// Used to set the amount of traced frames to determine the connection healt trend.
 	///
@@ -115,37 +119,37 @@ private:
 	/// A smaller value will make the recovery mechanism too noisy and so useless,
 	/// on the other hand a too big value will make the recovery mechanism too
 	/// slow.
-	int network_traced_frames;
+	int network_traced_frames = 1200;
 
 	/// Max tolerance for missing snapshots in the `network_traced_frames`.
-	int missing_input_max_tolerance;
+	int missing_input_max_tolerance = 4;
 
 	/// Used to control the `player` tick acceleration, so to produce more
 	/// inputs.
-	real_t tick_acceleration;
+	real_t tick_acceleration = 2.0;
 
 	/// The "optimal input size" is dynamically updated and its size
 	/// change at a rate that can be controlled by this parameter.
-	real_t optimal_size_acceleration;
+	real_t optimal_size_acceleration = 2.5;
 
 	/// The server is several frames behind the client, the maxim amount
 	/// of these frames is defined by the value of this parameter.
 	///
 	/// To prevent introducing virtual lag.
-	int server_input_storage_size;
+	int server_input_storage_size = 30;
 
-	ControllerType controller_type;
-	Controller *controller;
+	ControllerType controller_type = CONTROLLER_TYPE_NULL;
+	Controller *controller = nullptr;
 	InputsBuffer inputs_buffer;
 
-	SceneRewinder *scene_rewinder;
+	SceneRewinder *scene_rewinder = nullptr;
 
 	Vector<int> active_doll_peers;
 	// Disabled peers is used to stop information propagation to a particular peer.
 	Vector<int> disabled_doll_peers;
 
-	bool packet_missing;
-	bool has_player_new_input;
+	bool packet_missing = false;
+	bool has_player_new_input = false;
 
 public:
 	static void _bind_methods();
@@ -158,6 +162,9 @@ public:
 
 	void set_max_redundant_inputs(int p_max);
 	int get_max_redundant_inputs() const;
+
+	void set_tick_speedup_notification_delay(real_t p_delay);
+	real_t get_tick_speedup_notification_delay() const;
 
 	void set_network_traced_frames(int p_size);
 	int get_network_traced_frames() const;
@@ -344,12 +351,11 @@ struct Controller {
 };
 
 struct ServerController : public Controller {
-	uint64_t current_input_buffer_id;
-	uint32_t ghost_input_count;
-	real_t optimal_snapshots_size;
-	real_t client_tick_additional_speed;
-	// It goes from -100 to 100
-	uint8_t client_tick_additional_speed_compressed;
+	uint64_t current_input_buffer_id = UINT64_MAX;
+	uint32_t ghost_input_count = 0;
+	real_t optimal_snapshots_size = 0.0;
+	real_t client_tick_additional_speed = 0.0;
+	real_t additional_speed_notif_timer = 0.0;
 	NetworkTracer network_tracer;
 	std::deque<FrameSnapshotSkinny> snapshots;
 
@@ -383,7 +389,7 @@ struct ServerController : public Controller {
 	/// reason the server tells the client to slowdown so to keep the `frames_inputs`
 	/// size moderate to the needs.
 	void calculates_player_tick_rate(real_t p_delta);
-	void adjust_player_tick_rate();
+	void adjust_player_tick_rate(real_t p_delta);
 };
 
 struct PlayerController : public Controller {

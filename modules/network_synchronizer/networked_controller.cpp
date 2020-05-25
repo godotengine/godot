@@ -60,6 +60,9 @@ void NetworkedController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_redundant_inputs", "max_redundand_inputs"), &NetworkedController::set_max_redundant_inputs);
 	ClassDB::bind_method(D_METHOD("get_max_redundant_inputs"), &NetworkedController::get_max_redundant_inputs);
 
+	ClassDB::bind_method(D_METHOD("set_tick_speedup_notification_delay", "tick_speedup_notification_delay"), &NetworkedController::set_tick_speedup_notification_delay);
+	ClassDB::bind_method(D_METHOD("get_tick_speedup_notification_delay"), &NetworkedController::get_tick_speedup_notification_delay);
+
 	ClassDB::bind_method(D_METHOD("set_network_traced_frames", "size"), &NetworkedController::set_network_traced_frames);
 	ClassDB::bind_method(D_METHOD("get_network_traced_frames"), &NetworkedController::get_network_traced_frames);
 
@@ -112,6 +115,7 @@ void NetworkedController::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_storage_size", PROPERTY_HINT_RANGE, "100,2000,1"), "set_player_input_storage_size", "get_player_input_storage_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redundant_inputs", PROPERTY_HINT_RANGE, "0,1000,1"), "set_max_redundant_inputs", "get_max_redundant_inputs");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_speedup_notification_delay", PROPERTY_HINT_RANGE, "0.001,2.0,0.001"), "set_tick_speedup_notification_delay", "get_tick_speedup_notification_delay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "network_traced_frames", PROPERTY_HINT_RANGE, "100,10000,1"), "set_network_traced_frames", "get_network_traced_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "missing_snapshots_max_tolerance", PROPERTY_HINT_RANGE, "3,50,1"), "set_missing_snapshots_max_tolerance", "get_missing_snapshots_max_tolerance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tick_acceleration", PROPERTY_HINT_RANGE, "0.1,20.0,0.01"), "set_tick_acceleration", "get_tick_acceleration");
@@ -122,19 +126,7 @@ void NetworkedController::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("doll_server_comunication_closed"));
 }
 
-NetworkedController::NetworkedController() :
-		player_input_storage_size(300),
-		max_redundant_inputs(50),
-		network_traced_frames(1200),
-		missing_input_max_tolerance(4),
-		tick_acceleration(2.0),
-		optimal_size_acceleration(2.5),
-		server_input_storage_size(30),
-		controller_type(CONTROLLER_TYPE_NULL),
-		controller(nullptr),
-		scene_rewinder(nullptr),
-		packet_missing(false),
-		has_player_new_input(false) {
+NetworkedController::NetworkedController() {
 	rpc_config("_rpc_server_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_tick_additional_speed", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_doll_send_inputs", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -155,6 +147,14 @@ void NetworkedController::set_max_redundant_inputs(int p_max) {
 
 int NetworkedController::get_max_redundant_inputs() const {
 	return max_redundant_inputs;
+}
+
+void NetworkedController::set_tick_speedup_notification_delay(real_t p_delay) {
+	tick_speedup_notification_delay = p_delay;
+}
+
+real_t NetworkedController::get_tick_speedup_notification_delay() const {
+	return tick_speedup_notification_delay;
 }
 
 void NetworkedController::set_network_traced_frames(int p_size) {
@@ -554,11 +554,6 @@ ServerController::ServerController(
 		NetworkedController *p_node,
 		int p_traced_frames) :
 		Controller(p_node),
-		current_input_buffer_id(UINT64_MAX),
-		ghost_input_count(0),
-		optimal_snapshots_size(0.0),
-		client_tick_additional_speed(0.0),
-		client_tick_additional_speed_compressed(0),
 		network_tracer(p_traced_frames) {
 }
 
@@ -574,7 +569,7 @@ void ServerController::process(real_t p_delta) {
 	node->call("controller_process", p_delta);
 
 	calculates_player_tick_rate(p_delta);
-	adjust_player_tick_rate();
+	adjust_player_tick_rate(p_delta);
 }
 
 bool is_remote_frame_A_older(const FrameSnapshotSkinny &p_snap_a, const FrameSnapshotSkinny &p_snap_b) {
@@ -878,17 +873,17 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 	}
 }
 
-void ServerController::adjust_player_tick_rate() {
+void ServerController::adjust_player_tick_rate(real_t p_delta) {
 	const uint8_t new_speed = UINT8_MAX * (((client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED) + 1.0) / 2.0);
 
-	if (ABS(static_cast<int>(client_tick_additional_speed_compressed) - static_cast<int>(new_speed)) >= TICK_SPEED_CHANGE_NOTIF_THRESHOLD) {
-		client_tick_additional_speed_compressed = new_speed;
+	additional_speed_notif_timer += p_delta;
+	if (additional_speed_notif_timer >= node->get_tick_speedup_notification_delay()) {
+		additional_speed_notif_timer = 0.0;
 
 		Vector<uint8_t> packet_data;
 		packet_data.push_back(new_speed);
 
-		// TODO consider to send this unreliably each X sec
-		node->rpc_id(
+		node->rpc_unreliable_id(
 				node->get_network_master(),
 				"_rpc_send_tick_additional_speed",
 				packet_data);
