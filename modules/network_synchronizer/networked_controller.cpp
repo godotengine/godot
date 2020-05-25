@@ -361,14 +361,15 @@ void NetworkedController::_rpc_server_send_inputs(Vector<uint8_t> p_data) {
 	controller->receive_inputs(p_data);
 }
 
-void NetworkedController::_rpc_send_tick_additional_speed(int p_speed) {
+void NetworkedController::_rpc_send_tick_additional_speed(Vector<uint8_t> p_data) {
 	ERR_FAIL_COND(is_player_controller() == false);
+	ERR_FAIL_COND(p_data.size() != 1);
 
-	real_t additional_speed = (static_cast<real_t>(p_speed) / 100.0) * MAX_ADDITIONAL_TICK_SPEED;
-	additional_speed = CLAMP(additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
+	const uint8_t speed = p_data[0];
+	const real_t additional_speed = MAX_ADDITIONAL_TICK_SPEED * (((static_cast<real_t>(speed) / static_cast<real_t>(UINT8_MAX)) - 0.5) / 0.5);
 
 	PlayerController *player_controller = static_cast<PlayerController *>(controller);
-	player_controller->tick_additional_speed = additional_speed;
+	player_controller->tick_additional_speed = CLAMP(additional_speed, -MAX_ADDITIONAL_TICK_SPEED, MAX_ADDITIONAL_TICK_SPEED);
 }
 
 void NetworkedController::_rpc_doll_send_inputs(Vector<uint8_t> p_data) {
@@ -878,17 +879,19 @@ void ServerController::calculates_player_tick_rate(real_t p_delta) {
 }
 
 void ServerController::adjust_player_tick_rate() {
-	int new_speed = 100 * (client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED);
+	const uint8_t new_speed = UINT8_MAX * (((client_tick_additional_speed / MAX_ADDITIONAL_TICK_SPEED) + 1.0) / 2.0);
 
-	if (ABS(client_tick_additional_speed_compressed - new_speed) >= TICK_SPEED_CHANGE_NOTIF_THRESHOLD) {
+	if (ABS(static_cast<int>(client_tick_additional_speed_compressed) - static_cast<int>(new_speed)) >= TICK_SPEED_CHANGE_NOTIF_THRESHOLD) {
 		client_tick_additional_speed_compressed = new_speed;
 
-		// TODO Send bytes please.
+		Vector<uint8_t> packet_data;
+		packet_data.push_back(new_speed);
+
 		// TODO consider to send this unreliably each X sec
 		node->rpc_id(
 				node->get_network_master(),
 				"_rpc_send_tick_additional_speed",
-				client_tick_additional_speed_compressed);
+				packet_data);
 	}
 }
 

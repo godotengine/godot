@@ -261,7 +261,7 @@ public:
 	void _rpc_server_send_inputs(Vector<uint8_t> p_data);
 
 	/* On client rpc functions. */
-	void _rpc_send_tick_additional_speed(int p_speed);
+	void _rpc_send_tick_additional_speed(Vector<uint8_t> p_data);
 
 	/* On puppet rpc functions. */
 	void _rpc_doll_send_inputs(Vector<uint8_t> p_data);
@@ -349,7 +349,7 @@ struct ServerController : public Controller {
 	real_t optimal_snapshots_size;
 	real_t client_tick_additional_speed;
 	// It goes from -100 to 100
-	int client_tick_additional_speed_compressed;
+	uint8_t client_tick_additional_speed_compressed;
 	NetworkTracer network_tracer;
 	std::deque<FrameSnapshotSkinny> snapshots;
 
