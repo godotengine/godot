@@ -48,17 +48,19 @@
  *
  * Only used keys and values are constructed. For free positions there's space
  * in the arrays for each, but that memory is kept uninitialized.
+ * 
+ * The assignment operator copy the pairs from one map to the other.
  */
 template <class TKey, class TValue,
 		class Hasher = HashMapHasherDefault,
 		class Comparator = HashMapComparatorDefault<TKey>>
 class OAHashMap {
 private:
-	TValue *values;
-	TKey *keys;
-	uint32_t *hashes;
+	TValue *values = nullptr;
+	TKey *keys = nullptr;
+	uint32_t *hashes = nullptr;
 
-	uint32_t capacity;
+	uint32_t capacity = 0;
 
 	uint32_t num_elements = 0;
 
@@ -142,7 +144,9 @@ private:
 
 	void _resize_and_rehash(uint32_t p_new_capacity) {
 		uint32_t old_capacity = capacity;
-		capacity = p_new_capacity;
+
+		// Capacity can't be 0.
+		capacity = MAX(1, p_new_capacity);
 
 		TKey *old_keys = keys;
 		TValue *old_values = values;
@@ -155,6 +159,11 @@ private:
 
 		for (uint32_t i = 0; i < capacity; i++) {
 			hashes[i] = 0;
+		}
+
+		if (old_capacity == 0) {
+			// Nothing to do.
+			return;
 		}
 
 		for (uint32_t i = 0; i < old_capacity; i++) {
@@ -341,17 +350,32 @@ public:
 		return it;
 	}
 
-	OAHashMap(const OAHashMap &) = delete; // Delete the copy constructor so we don't get unexpected copies and dangling pointers.
-	OAHashMap &operator=(const OAHashMap &) = delete; // Same for assignment operator.
+	OAHashMap(const OAHashMap &p_other) {
+		(*this) = p_other;
+	}
+
+	OAHashMap &operator=(const OAHashMap &p_other) {
+		if (capacity != 0) {
+			clear();
+		}
+
+		_resize_and_rehash(p_other.capacity);
+
+		for (Iterator it = p_other.iter(); it.valid; it = p_other.next_iter(it)) {
+			set(*it.key, *it.value);
+		}
+		return *this;
+	}
 
 	OAHashMap(uint32_t p_initial_capacity = 64) {
-		capacity = p_initial_capacity;
+		// Capacity can't be 0.
+		capacity = MAX(1, p_initial_capacity);
 
 		keys = static_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 		values = static_cast<TValue *>(Memory::alloc_static(sizeof(TValue) * capacity));
 		hashes = static_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
 
-		for (uint32_t i = 0; i < p_initial_capacity; i++) {
+		for (uint32_t i = 0; i < capacity; i++) {
 			hashes[i] = EMPTY_HASH;
 		}
 	}
