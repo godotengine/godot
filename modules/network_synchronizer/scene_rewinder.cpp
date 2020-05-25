@@ -123,7 +123,7 @@ void NodeData::process(const real_t p_delta) const {
 }
 
 void SceneRewinder::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("reset"), &SceneRewinder::reset);
+	ClassDB::bind_method(D_METHOD("reset_synchronizer_mode"), &SceneRewinder::reset_synchronizer_mode);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneRewinder::clear);
 
 	ClassDB::bind_method(D_METHOD("set_doll_desync_tolerance", "tolerance"), &SceneRewinder::set_doll_desync_tolerance);
@@ -159,7 +159,6 @@ void SceneRewinder::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_peer_disconnected"), &SceneRewinder::_on_peer_disconnected);
 
 	ClassDB::bind_method(D_METHOD("__clear"), &SceneRewinder::__clear);
-	ClassDB::bind_method(D_METHOD("__reset"), &SceneRewinder::__reset);
 	ClassDB::bind_method(D_METHOD("_rpc_send_state"), &SceneRewinder::_rpc_send_state);
 	ClassDB::bind_method(D_METHOD("_rpc_notify_need_full_snapshot"), &SceneRewinder::_rpc_notify_need_full_snapshot);
 
@@ -175,6 +174,11 @@ void SceneRewinder::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint())
 				return;
 
+			// TODO add a signal that allows to not check this each frame.
+			if (unlikely(peer_ptr != get_multiplayer()->get_network_peer().ptr())) {
+				reset_synchronizer_mode();
+			}
+
 			const int lowest_priority_number = INT32_MAX;
 			ERR_FAIL_COND_MSG(get_process_priority() != lowest_priority_number, "The process priority MUST not be changed, is likely there is a better way of doing what you are trying to do, if you really need it please open an issue.");
 
@@ -185,7 +189,7 @@ void SceneRewinder::_notification(int p_what) {
 				return;
 
 			__clear();
-			__reset();
+			reset_synchronizer_mode();
 
 			get_multiplayer()->connect("network_peer_connected", Callable(this, "_on_peer_connected"));
 			get_multiplayer()->connect("network_peer_disconnected", Callable(this, "_on_peer_disconnected"));
@@ -224,7 +228,6 @@ SceneRewinder::SceneRewinder() :
 		generate_id(false),
 		main_controller_object_id(),
 		main_controller(nullptr) {
-	rpc_config("__reset", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_notify_need_full_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -524,17 +527,7 @@ void SceneRewinder::_on_peer_disconnected(int p_peer) {
 	peer_data.remove(p_peer);
 }
 
-void SceneRewinder::reset() {
-	if (rewinder_type == REWINDER_TYPE_NONET) {
-		__reset();
-	} else {
-		ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "The reset function must be called on server");
-		__reset();
-		rpc("__reset");
-	}
-}
-
-void SceneRewinder::__reset() {
+void SceneRewinder::reset_synchronizer_mode() {
 	set_physics_process_internal(false);
 	generate_id = false;
 
@@ -543,6 +536,8 @@ void SceneRewinder::__reset() {
 		rewinder = nullptr;
 		rewinder_type = REWINDER_TYPE_NULL;
 	}
+
+	peer_ptr = get_multiplayer()->get_network_peer().ptr();
 
 	if (get_tree() == nullptr || get_tree()->get_network_peer().is_null()) {
 		rewinder_type = REWINDER_TYPE_NONET;

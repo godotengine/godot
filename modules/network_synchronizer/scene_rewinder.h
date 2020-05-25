@@ -202,6 +202,9 @@ private:
 	ObjectID main_controller_object_id;
 	NetworkedController *main_controller;
 
+	// Don't use this.
+	void *peer_ptr = nullptr;
+
 public:
 	static void _bind_methods();
 
@@ -248,12 +251,7 @@ public:
 	void _on_peer_connected(int p_peer);
 	void _on_peer_disconnected(int p_peer);
 
-	// TODO this MUST disapper and __reset MUST be called automatically when the
-	// connection status of the game instance change
-	// TODO improve the name. Reset is missleading
-	/// Can only be called on the server
-	void reset();
-	void __reset();
+	void reset_synchronizer_mode();
 	/// Can only be called on the server
 	void clear();
 	void __clear();
