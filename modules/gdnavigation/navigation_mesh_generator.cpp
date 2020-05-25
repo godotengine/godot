@@ -218,7 +218,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 					ConvexPolygonShape3D *convex_polygon = Object::cast_to<ConvexPolygonShape3D>(*s);
 					if (convex_polygon) {
 						Vector<Vector3> varr = Variant(convex_polygon->get_points());
-						Geometry::MeshData md;
+						Geometry3D::MeshData md;
 
 						Error err = QuickHull::build(varr, md);
 
@@ -226,7 +226,7 @@ void NavigationMeshGenerator::_parse_geometry(Transform p_accumulated_transform,
 							PackedVector3Array faces;
 
 							for (int j = 0; j < md.faces.size(); ++j) {
-								Geometry::MeshData::Face face = md.faces[j];
+								Geometry3D::MeshData::Face face = md.faces[j];
 
 								for (int k = 2; k < face.indices.size(); ++k) {
 									faces.push_back(md.vertices[face.indices[0]]);

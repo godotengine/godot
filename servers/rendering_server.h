@@ -32,7 +32,7 @@
 #define RENDERING_SERVER_H
 
 #include "core/image.h"
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/math/transform_2d.h"
 #include "core/object.h"
 #include "core/rid.h"
@@ -1208,7 +1208,7 @@ public:
 
 	virtual RID make_sphere_mesh(int p_lats, int p_lons, float p_radius);
 
-	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry::MeshData &p_mesh_data);
+	virtual void mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry3D::MeshData &p_mesh_data);
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const Vector<Plane> &p_planes);
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;

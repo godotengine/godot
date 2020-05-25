@@ -30,7 +30,7 @@
 
 #include "polygon_2d.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
 #include "skeleton_2d.h"
 
 #ifdef TOOLS_ENABLED
@@ -86,7 +86,7 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 	if (internal_vertices > 0) {
 		polygon2d.resize(polygon2d.size() - internal_vertices);
 	}
-	return Geometry::is_point_in_polygon(p_point - get_offset(), polygon2d);
+	return Geometry2D::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
 #endif
 
@@ -300,7 +300,7 @@ void Polygon2D::_notification(int p_what) {
 			}
 
 			if (invert || polygons.size() == 0) {
-				Vector<int> indices = Geometry::triangulate_polygon(points);
+				Vector<int> indices = Geometry2D::triangulate_polygon(points);
 				if (indices.size()) {
 					RS::get_singleton()->canvas_item_add_triangle_array(get_canvas_item(), indices, points, colors, uvs, bones, weights, texture.is_valid() ? texture->get_rid() : RID(), -1, normal_map.is_valid() ? normal_map->get_rid() : RID(), specular_map.is_valid() ? specular_map->get_rid() : RID(), Color(specular_color.r, specular_color.g, specular_color.b, shininess));
 				}
@@ -323,7 +323,7 @@ void Polygon2D::_notification(int p_what) {
 						ERR_CONTINUE(idx < 0 || idx >= points.size());
 						tmp_points.write[j] = points[r[j]];
 					}
-					Vector<int> indices = Geometry::triangulate_polygon(tmp_points);
+					Vector<int> indices = Geometry2D::triangulate_polygon(tmp_points);
 					int ic2 = indices.size();
 					const int *r2 = indices.ptr();
 

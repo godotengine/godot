@@ -32,6 +32,7 @@
 
 #include "collision_object_2d.h"
 #include "core/engine.h"
+#include "core/math/geometry_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 
@@ -75,7 +76,7 @@ void CollisionPolygon2D::_build_polygon() {
 }
 
 Vector<Vector<Vector2>> CollisionPolygon2D::_decompose_in_convex() {
-	Vector<Vector<Vector2>> decomp = Geometry::decompose_polygon_in_convex(polygon);
+	Vector<Vector<Vector2>> decomp = Geometry2D::decompose_polygon_in_convex(polygon);
 	return decomp;
 }
 
@@ -224,7 +225,7 @@ bool CollisionPolygon2D::_edit_use_rect() const {
 }
 
 bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	return Geometry::is_point_in_polygon(p_point, Variant(polygon));
+	return Geometry2D::is_point_in_polygon(p_point, Variant(polygon));
 }
 #endif
 

@@ -30,7 +30,7 @@
 
 #include "csg.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_2d.h"
 #include "core/math/math_funcs.h"
 #include "core/sort_array.h"
 
@@ -964,7 +964,7 @@ void CSGBrushOperation::Build2DFaces::_merge_faces(const Vector<int> &p_segment_
 						face_points[face_edge_idx],
 						face_points[(face_edge_idx + 1) % 3]
 					};
-					Vector2 closest_point = Geometry::get_closest_point_to_segment_2d(point_2D, edge_points);
+					Vector2 closest_point = Geometry2D::get_closest_point_to_segment(point_2D, edge_points);
 
 					if ((closest_point - point_2D).length_squared() < vertex_snap2) {
 						int opposite_vertex_idx = face.vertex_idx[(face_edge_idx + 2) % 3];
@@ -1028,7 +1028,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 			// First check if the ends of the segment are on the edge.
 			bool on_edge = false;
 			for (int edge_point_idx = 0; edge_point_idx < 2; ++edge_point_idx) {
-				intersection_point = Geometry::get_closest_point_to_segment_2d(p_segment_points[edge_point_idx], edge_points);
+				intersection_point = Geometry2D::get_closest_point_to_segment(p_segment_points[edge_point_idx], edge_points);
 				if ((intersection_point - p_segment_points[edge_point_idx]).length_squared() < vertex_snap2) {
 					on_edge = true;
 					break;
@@ -1036,7 +1036,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 			}
 
 			// Else check if the segment intersects the edge.
-			if (on_edge || Geometry::segment_intersects_segment_2d(p_segment_points[0], p_segment_points[1], edge_points[0], edge_points[1], &intersection_point)) {
+			if (on_edge || Geometry2D::segment_intersects_segment(p_segment_points[0], p_segment_points[1], edge_points[0], edge_points[1], &intersection_point)) {
 				// Check if intersection point is an edge point.
 				if ((intersection_point - edge_points[0]).length_squared() < vertex_snap2 ||
 						(intersection_point - edge_points[1]).length_squared() < vertex_snap2) {
@@ -1074,7 +1074,7 @@ void CSGBrushOperation::Build2DFaces::_find_edge_intersections(const Vector2 p_s
 				}
 
 				// If opposite point is on the segemnt, add its index to segment indices too.
-				Vector2 closest_point = Geometry::get_closest_point_to_segment_2d(vertices[opposite_vertex_idx].point, p_segment_points);
+				Vector2 closest_point = Geometry2D::get_closest_point_to_segment(vertices[opposite_vertex_idx].point, p_segment_points);
 				if ((closest_point - vertices[opposite_vertex_idx].point).length_squared() < vertex_snap2) {
 					_add_vertex_idx_sorted(r_segment_indices, opposite_vertex_idx);
 				}
@@ -1141,7 +1141,7 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 				uvs[(face_edge_idx + 1) % 3]
 			};
 
-			Vector2 closest_point = Geometry::get_closest_point_to_segment_2d(p_point, edge_points);
+			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, edge_points);
 			if ((closest_point - p_point).length_squared() < vertex_snap2) {
 				on_edge = true;
 
@@ -1192,7 +1192,7 @@ int CSGBrushOperation::Build2DFaces::_insert_point(const Vector2 &p_point) {
 		}
 
 		// If not on an edge, check if the point is inside the face.
-		if (!on_edge && Geometry::is_point_in_triangle(p_point, face_vertices[0].point, face_vertices[1].point, face_vertices[2].point)) {
+		if (!on_edge && Geometry2D::is_point_in_triangle(p_point, face_vertices[0].point, face_vertices[1].point, face_vertices[2].point)) {
 			// Add the point as a new vertex.
 			Vertex2D new_vertex;
 			new_vertex.point = p_point;

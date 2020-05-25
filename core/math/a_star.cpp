@@ -30,7 +30,7 @@
 
 #include "a_star.h"
 
-#include "core/math/geometry.h"
+#include "core/math/geometry_3d.h"
 #include "core/script_language.h"
 #include "scene/scene_string_names.h"
 
@@ -309,7 +309,7 @@ Vector3 AStar::get_closest_position_in_segment(const Vector3 &p_point) const {
 			to_point->pos,
 		};
 
-		Vector3 p = Geometry::get_closest_point_to_segment(p_point, segment);
+		Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment);
 		real_t d = p_point.distance_squared_to(p);
 		if (!found || d < closest_dist) {
 			closest_point = p;
