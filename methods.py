@@ -130,31 +130,41 @@ def parse_cg_file(fname, uniforms, sizes, conditionals):
     fs.close()
 
 
-def detect_modules():
+def detect_modules(at_path):
+    module_list = {}  # name : path
 
-    module_list = []
+    modules_glob = os.path.join(at_path, "*")
+    files = glob.glob(modules_glob)
+    files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
+
+    for x in files:
+        if not is_module(x):
+            continue
+        name = os.path.basename(x)
+        path = x.replace("\\", "/")  # win32
+        module_list[name] = path
+
+    return module_list
+
+
+def is_module(path):
+    return os.path.isdir(path) and os.path.exists(path + "/config.py")
+
+
+def write_modules(module_list):
     includes_cpp = ""
     register_cpp = ""
     unregister_cpp = ""
 
-    files = glob.glob("modules/*")
-    files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
-    for x in files:
-        if not os.path.isdir(x):
-            continue
-        if not os.path.exists(x + "/config.py"):
-            continue
-        x = x.replace("modules/", "")  # rest of world
-        x = x.replace("modules\\", "")  # win32
-        module_list.append(x)
+    for name, path in module_list.items():
         try:
-            with open("modules/" + x + "/register_types.h"):
-                includes_cpp += '#include "modules/' + x + '/register_types.h"\n'
-                register_cpp += '#ifdef MODULE_' + x.upper() + '_ENABLED\n'
-                register_cpp += '\tregister_' + x + '_types();\n'
+            with open(os.path.join(path, "register_types.h")):
+                includes_cpp += '#include "' + path + '/register_types.h"\n'
+                register_cpp += '#ifdef MODULE_' + name.upper() + '_ENABLED\n'
+                register_cpp += '\tregister_' + name + '_types();\n'
                 register_cpp += '#endif\n'
-                unregister_cpp += '#ifdef MODULE_' + x.upper() + '_ENABLED\n'
-                unregister_cpp += '\tunregister_' + x + '_types();\n'
+                unregister_cpp += '#ifdef MODULE_' + name.upper() + '_ENABLED\n'
+                unregister_cpp += '\tunregister_' + name + '_types();\n'
                 unregister_cpp += '#endif\n'
         except IOError:
             pass
@@ -178,7 +188,18 @@ void unregister_module_types() {
     with open("modules/register_module_types.gen.cpp", "w") as f:
         f.write(modules_cpp)
 
-    return module_list
+
+def convert_custom_modules_path(path):
+    if not path:
+        return path
+    err_msg = "Build option 'custom_modules' must %s"
+    if not os.path.isdir(path):
+        raise ValueError(err_msg % "point to an existing directory.")
+    if os.path.realpath(path) == os.path.realpath("modules"):
+        raise ValueError(err_msg % "be a directory other than built-in `modules` directory.")
+    if is_module(path):
+        raise ValueError(err_msg % "point to a directory with modules, not a single module.")
+    return os.path.realpath(os.path.expanduser(path))
 
 
 def disable_module(self):
