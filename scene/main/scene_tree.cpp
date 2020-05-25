@@ -170,6 +170,7 @@ void SceneTree::_flush_ugc() {
 			v[i] = E->get()[i];
 		}
 
+		static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
 		call_group_flags(GROUP_CALL_REALTIME, E->key().group, E->key().call, v[0], v[1], v[2], v[3], v[4]);
 
 		unique_group_calls.erase(E);
@@ -907,6 +908,7 @@ Variant SceneTree::_call_group_flags(const Variant **p_args, int p_argcount, Cal
 		v[i] = *p_args[i + 3];
 	}
 
+	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
 	call_group_flags(flags, group, method, v[0], v[1], v[2], v[3], v[4]);
 	return Variant();
 }
@@ -926,6 +928,7 @@ Variant SceneTree::_call_group(const Variant **p_args, int p_argcount, Callable:
 		v[i] = *p_args[i + 2];
 	}
 
+	static_assert(VARIANT_ARG_MAX == 5, "This code needs to be updated if VARIANT_ARG_MAX != 5");
 	call_group_flags(0, group, method, v[0], v[1], v[2], v[3], v[4]);
 	return Variant();
 }
