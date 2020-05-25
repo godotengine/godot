@@ -43,65 +43,6 @@
 class Rewinder;
 class NetworkedController;
 
-// TODO use a name space or put this into the SceneRewinder class.
-
-typedef ObjectID ControllerID;
-
-struct Var {
-	StringName name;
-	Variant value;
-};
-
-struct VarData {
-	uint32_t id;
-	Var var;
-	bool skip_rewinding;
-	bool enabled;
-
-	VarData();
-	VarData(StringName p_name);
-	VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
-
-	bool operator==(const VarData &p_other) const;
-};
-
-struct NodeData {
-	// ID used to reference this Node in the networked calls.
-	uint32_t id;
-	ObjectID instance_id;
-	bool is_controller;
-	ControllerID controlled_by;
-	ControllerID isle_id;
-	Vector<ObjectID> controlled_nodes;
-	Vector<VarData> vars;
-	Vector<StringName> functions;
-
-	// This is valid to use only inside the process function.
-	Node *node;
-
-	NodeData();
-	NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller);
-
-	// Returns the index to access the variable.
-	int find_var_by_id(uint32_t p_id) const;
-	bool can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_controller) const;
-	void process(const real_t p_delta) const;
-};
-
-struct IsleData {
-	ControllerID controller_instance_id;
-	Vector<ObjectID> nodes;
-
-	NetworkedController *controller = nullptr;
-};
-
-struct PeerData {
-	// For new peers notify the state as soon as possible.
-	bool force_notify_snapshot = true;
-	// For new peers a full snapshot is needed.
-	bool need_full_snapshot = true;
-};
-
 /// # SceneRewinder
 ///
 /// The `SceneRewinder` is responsible to keep the scene of all peers in sync.
@@ -179,30 +120,106 @@ public:
 		REWINDER_TYPE_SERVER
 	};
 
+	typedef ObjectID ControllerID;
+
+	struct Var {
+		StringName name;
+		Variant value;
+	};
+
+	struct VarData {
+		uint32_t id = 0;
+		Var var;
+		bool skip_rewinding = false;
+		bool enabled = false;
+
+		VarData();
+		VarData(StringName p_name);
+		VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled);
+
+		bool operator==(const VarData &p_other) const;
+	};
+
+	struct NodeData {
+		// ID used to reference this Node in the networked calls.
+		uint32_t id = 0;
+		ObjectID instance_id = ObjectID();
+		bool is_controller = false;
+		ControllerID controlled_by = ControllerID();
+		ControllerID isle_id = ControllerID();
+		Vector<ObjectID> controlled_nodes;
+		Vector<VarData> vars;
+		Vector<StringName> functions;
+
+		// This is valid to use only inside the process function.
+		Node *node = nullptr;
+
+		NodeData();
+		NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller);
+
+		// Returns the index to access the variable.
+		int find_var_by_id(uint32_t p_id) const;
+		bool can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_controller) const;
+		void process(const real_t p_delta) const;
+	};
+
+	struct IsleData {
+		ControllerID controller_instance_id = ControllerID();
+		Vector<ObjectID> nodes;
+
+		NetworkedController *controller = nullptr;
+	};
+
+	struct PeerData {
+		// For new peers notify the state as soon as possible.
+		bool force_notify_snapshot = true;
+		// For new peers a full snapshot is needed.
+		bool need_full_snapshot = true;
+	};
+
+	struct Snapshot {
+		OAHashMap<ObjectID, uint64_t> controllers_input_id;
+		OAHashMap<ObjectID, Vector<SceneRewinder::VarData>> node_vars;
+
+		operator String() const;
+	};
+
+	struct IsleSnapshot {
+		uint64_t input_id;
+		OAHashMap<ObjectID, Vector<SceneRewinder::VarData>> node_vars;
+
+		operator String() const;
+	};
+
+	struct PostponedRecover {
+		SceneRewinder::NodeData *node_data = nullptr;
+		Vector<SceneRewinder::Var> vars;
+	};
+
 private:
 	/// How much frames the doll is allowed to be processed out of sync.
 	/// This is useful to avoid time jumps each rewinding.
-	int doll_desync_tolerance;
+	int doll_desync_tolerance = 120;
 
-	real_t server_notify_state_interval;
-	real_t comparison_float_tolerance;
+	real_t server_notify_state_interval = 1.0;
+	real_t comparison_float_tolerance = 0.001;
 
-	RewinderType rewinder_type;
-	Rewinder *rewinder;
-	bool recover_in_progress;
-	bool reset_in_progress;
-	bool rewinding_in_progress;
+	RewinderType rewinder_type = REWINDER_TYPE_NULL;
+	Rewinder *rewinder = nullptr;
+	bool recover_in_progress = false;
+	bool reset_in_progress = false;
+	bool rewinding_in_progress = false;
 
 	OAHashMap<int, PeerData> peer_data;
 
-	uint32_t node_counter;
-	bool generate_id;
+	uint32_t node_counter = 1;
+	bool generate_id = false;
 	OAHashMap<ControllerID, IsleData> isle_data;
 	OAHashMap<ObjectID, NodeData> nodes_data;
-	ObjectID main_controller_object_id;
-	NetworkedController *main_controller;
+	ObjectID main_controller_object_id = ObjectID();
+	NetworkedController *main_controller = nullptr;
 
-	// Don't use this.
+	// Just used to detect when the peer change. TODO Rimve this and use a singnal instead.
 	void *peer_ptr = nullptr;
 
 public:
@@ -252,7 +269,7 @@ public:
 	void _on_peer_disconnected(int p_peer);
 
 	void reset_synchronizer_mode();
-	/// Can only be called on the server
+	/// Can only be called by the server
 	void clear();
 	void __clear();
 
@@ -283,25 +300,6 @@ private:
 	bool rewinder_variant_evaluation(const Variant &v_1, const Variant &v_2);
 
 	bool is_client() const;
-};
-
-struct Snapshot {
-	OAHashMap<ObjectID, uint64_t> controllers_input_id;
-	OAHashMap<ObjectID, Vector<VarData>> node_vars;
-
-	operator String() const;
-};
-
-struct IsleSnapshot {
-	uint64_t input_id;
-	OAHashMap<ObjectID, Vector<VarData>> node_vars;
-
-	operator String() const;
-};
-
-struct PostponedRecover {
-	NodeData *node_data = nullptr;
-	Vector<Var> vars;
 };
 
 class Rewinder {
@@ -365,9 +363,9 @@ class ClientRewinder : public Rewinder {
 	OAHashMap<uint32_t, ObjectID> node_id_map;
 	OAHashMap<uint32_t, NodePath> node_paths;
 
-	Snapshot server_snapshot;
-	OAHashMap<ControllerID, std::deque<IsleSnapshot>> client_controllers_snapshots;
-	OAHashMap<ControllerID, std::deque<IsleSnapshot>> server_controllers_snapshots;
+	SceneRewinder::Snapshot server_snapshot;
+	OAHashMap<SceneRewinder::ControllerID, std::deque<SceneRewinder::IsleSnapshot>> client_controllers_snapshots;
+	OAHashMap<SceneRewinder::ControllerID, std::deque<SceneRewinder::IsleSnapshot>> server_controllers_snapshots;
 
 	bool need_full_snapshot_notified = false;
 
@@ -384,12 +382,12 @@ private:
 	void store_snapshot(const NetworkedController *p_controller);
 
 	void store_controllers_snapshot(
-			const Snapshot &p_snapshot,
-			OAHashMap<ControllerID, std::deque<IsleSnapshot>> &r_snapshot_storage);
+			const SceneRewinder::Snapshot &p_snapshot,
+			OAHashMap<SceneRewinder::ControllerID, std::deque<SceneRewinder::IsleSnapshot>> &r_snapshot_storage);
 
 	void process_controllers_recovery(real_t p_delta);
 	bool parse_snapshot(Variant p_snapshot);
-	bool compare_vars(const NodeData *p_rewinder_node_data, const Vector<VarData> &p_server_vars, const Vector<VarData> &p_client_vars, Vector<Var> &r_postponed_recover);
+	bool compare_vars(const SceneRewinder::NodeData *p_rewinder_node_data, const Vector<SceneRewinder::VarData> &p_server_vars, const Vector<SceneRewinder::VarData> &p_client_vars, Vector<SceneRewinder::Var> &r_postponed_recover);
 
 	void notify_server_full_snapshot_is_needed();
 };

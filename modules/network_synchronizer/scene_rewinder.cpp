@@ -40,19 +40,13 @@
 
 // TODO add back the DOLL disabling
 
-VarData::VarData() :
-		id(0),
-		skip_rewinding(false),
-		enabled(false) {}
+SceneRewinder::VarData::VarData() {}
 
-VarData::VarData(StringName p_name) :
-		id(0),
-		skip_rewinding(false),
-		enabled(false) {
+SceneRewinder::VarData::VarData(StringName p_name) {
 	var.name = p_name;
 }
 
-VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled) :
+SceneRewinder::VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_rewinding, bool p_enabled) :
 		id(p_id),
 		skip_rewinding(p_skip_rewinding),
 		enabled(p_enabled) {
@@ -60,29 +54,18 @@ VarData::VarData(uint32_t p_id, StringName p_name, Variant p_val, bool p_skip_re
 	var.value = p_val;
 }
 
-bool VarData::operator==(const VarData &p_other) const {
+bool SceneRewinder::VarData::operator==(const VarData &p_other) const {
 	return var.name == p_other.var.name;
 }
 
-NodeData::NodeData() :
-		id(0),
-		instance_id(uint64_t(0)),
-		is_controller(false),
-		controlled_by(uint64_t(0)),
-		isle_id(uint64_t(0)),
-		node(nullptr) {
-}
+SceneRewinder::NodeData::NodeData() {}
 
-NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
+SceneRewinder::NodeData::NodeData(uint32_t p_id, ObjectID p_instance_id, bool is_controller) :
 		id(p_id),
 		instance_id(p_instance_id),
-		is_controller(is_controller),
-		controlled_by(uint64_t(0)),
-		isle_id(uint64_t(0)),
-		node(nullptr) {
-}
+		is_controller(is_controller) {}
 
-int NodeData::find_var_by_id(uint32_t p_id) const {
+int SceneRewinder::NodeData::find_var_by_id(uint32_t p_id) const {
 	if (p_id == 0) {
 		return -1;
 	}
@@ -95,7 +78,7 @@ int NodeData::find_var_by_id(uint32_t p_id) const {
 	return -1;
 }
 
-bool NodeData::can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_controller) const {
+bool SceneRewinder::NodeData::can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_controller) const {
 	if (instance_id == p_controller_id) {
 		return true;
 	} else if (controlled_by == p_controller_id) {
@@ -107,7 +90,7 @@ bool NodeData::can_be_part_of_isle(ControllerID p_controller_id, bool p_is_main_
 	}
 }
 
-void NodeData::process(const real_t p_delta) const {
+void SceneRewinder::NodeData::process(const real_t p_delta) const {
 	if (functions.size() <= 0)
 		return;
 
@@ -120,6 +103,65 @@ void NodeData::process(const real_t p_delta) const {
 	for (int i = 0; i < functions.size(); i += 1) {
 		node->call(funcs[i], &fake_array_vars, 1, e);
 	}
+}
+
+SceneRewinder::Snapshot::operator String() const {
+	String s;
+	s += "Snapshot:\n";
+	for (
+			OAHashMap<ObjectID, uint64_t>::Iterator it = controllers_input_id.iter();
+			it.valid;
+			it = controllers_input_id.next_iter(it)) {
+		s += "\nController: ";
+		if (nullptr != ObjectDB::get_instance(*it.key))
+			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
+		else
+			s += " (Object ID): " + itos(*it.key);
+		s += " - ";
+		s += "input ID: ";
+		s += itos(*it.value);
+	}
+
+	for (
+			OAHashMap<ObjectID, Vector<SceneRewinder::VarData>>::Iterator it = node_vars.iter();
+			it.valid;
+			it = node_vars.next_iter(it)) {
+		s += "\nNode Data: ";
+		if (nullptr != ObjectDB::get_instance(*it.key))
+			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
+		else
+			s += " (Object ID): " + itos(*it.key);
+		for (int i = 0; i < it.value->size(); i += 1) {
+			s += "\n|- Variable: ";
+			s += (*it.value)[i].var.name;
+			s += " = ";
+			s += String((*it.value)[i].var.value);
+		}
+	}
+	return s;
+}
+
+SceneRewinder::IsleSnapshot::operator String() const {
+	String s;
+	s += "Input ID: " + itos(input_id) + "; ";
+	for (
+			OAHashMap<ObjectID, Vector<SceneRewinder::VarData>>::Iterator it = node_vars.iter();
+			it.valid;
+			it = node_vars.next_iter(it)) {
+		s += "\nNode: ";
+		if (nullptr != ObjectDB::get_instance(*it.key))
+			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
+		else
+			s += " (Object ID): " + itos(*it.key);
+
+		for (int i = 0; i < it.value->size(); i += 1) {
+			s += "\n|- Variable: ";
+			s += (*it.value)[i].var.name;
+			s += " = ";
+			s += String((*it.value)[i].var.value);
+		}
+	}
+	return s;
 }
 
 void SceneRewinder::_bind_methods() {
@@ -215,19 +257,7 @@ void SceneRewinder::_notification(int p_what) {
 	}
 }
 
-SceneRewinder::SceneRewinder() :
-		doll_desync_tolerance(120),
-		server_notify_state_interval(1.0),
-		comparison_float_tolerance(0.001),
-		rewinder_type(REWINDER_TYPE_NULL),
-		rewinder(nullptr),
-		recover_in_progress(false),
-		reset_in_progress(false),
-		rewinding_in_progress(false),
-		node_counter(1),
-		generate_id(false),
-		main_controller_object_id(),
-		main_controller(nullptr) {
+SceneRewinder::SceneRewinder() {
 	rpc_config("__clear", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_send_state", MultiplayerAPI::RPC_MODE_REMOTE);
 	rpc_config("_rpc_notify_need_full_snapshot", MultiplayerAPI::RPC_MODE_REMOTE);
@@ -621,7 +651,7 @@ void SceneRewinder::_rpc_notify_need_full_snapshot() {
 	pd->need_full_snapshot = true;
 }
 
-NodeData *SceneRewinder::register_node(Node *p_node) {
+SceneRewinder::NodeData *SceneRewinder::register_node(Node *p_node) {
 	ERR_FAIL_COND_V(p_node == nullptr, nullptr);
 
 	NodeData *node_data = nodes_data.lookup_ptr(p_node->get_instance_id());
@@ -851,65 +881,6 @@ void SceneRewinder::pull_node_changes(NodeData *p_node_data) {
 	}
 }
 
-Snapshot::operator String() const {
-	String s;
-	s += "Snapshot:\n";
-	for (
-			OAHashMap<ObjectID, uint64_t>::Iterator it = controllers_input_id.iter();
-			it.valid;
-			it = controllers_input_id.next_iter(it)) {
-		s += "\nController: ";
-		if (nullptr != ObjectDB::get_instance(*it.key))
-			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
-		else
-			s += " (Object ID): " + itos(*it.key);
-		s += " - ";
-		s += "input ID: ";
-		s += itos(*it.value);
-	}
-
-	for (
-			OAHashMap<ObjectID, Vector<VarData>>::Iterator it = node_vars.iter();
-			it.valid;
-			it = node_vars.next_iter(it)) {
-		s += "\nNode Data: ";
-		if (nullptr != ObjectDB::get_instance(*it.key))
-			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
-		else
-			s += " (Object ID): " + itos(*it.key);
-		for (int i = 0; i < it.value->size(); i += 1) {
-			s += "\n|- Variable: ";
-			s += (*it.value)[i].var.name;
-			s += " = ";
-			s += String((*it.value)[i].var.value);
-		}
-	}
-	return s;
-}
-
-IsleSnapshot::operator String() const {
-	String s;
-	s += "Input ID: " + itos(input_id) + "; ";
-	for (
-			OAHashMap<ObjectID, Vector<VarData>>::Iterator it = node_vars.iter();
-			it.valid;
-			it = node_vars.next_iter(it)) {
-		s += "\nNode: ";
-		if (nullptr != ObjectDB::get_instance(*it.key))
-			s += static_cast<Node *>(ObjectDB::get_instance(*it.key))->get_path();
-		else
-			s += " (Object ID): " + itos(*it.key);
-
-		for (int i = 0; i < it.value->size(); i += 1) {
-			s += "\n|- Variable: ";
-			s += (*it.value)[i].var.name;
-			s += " = ";
-			s += String((*it.value)[i].var.value);
-		}
-	}
-	return s;
-}
-
 Rewinder::Rewinder(SceneRewinder *p_node) :
 		scene_rewinder(p_node) {
 }
@@ -928,10 +899,10 @@ void NoNetRewinder::process() {
 
 	// Process the scene
 	for (
-			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
 			it.valid;
 			it = scene_rewinder->nodes_data.next_iter(it)) {
-		NodeData *node_data = it.value;
+		SceneRewinder::NodeData *node_data = it.value;
 		ERR_CONTINUE(node_data == nullptr);
 
 		node_data->process(delta);
@@ -939,7 +910,7 @@ void NoNetRewinder::process() {
 
 	// Process the controllers
 	for (
-			OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::IsleData>::Iterator it = scene_rewinder->isle_data.iter();
 			it.valid;
 			it = scene_rewinder->isle_data.next_iter(it)) {
 		NetworkedController *controller = it.value->controller;
@@ -949,10 +920,10 @@ void NoNetRewinder::process() {
 
 	// Pull the changes.
 	for (
-			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
 			it.valid;
 			it = scene_rewinder->nodes_data.next_iter(it)) {
-		NodeData *node_data = it.value;
+		SceneRewinder::NodeData *node_data = it.value;
 		ERR_CONTINUE(node_data == nullptr);
 
 		scene_rewinder->pull_node_changes(node_data);
@@ -976,10 +947,10 @@ void ServerRewinder::process() {
 
 	// Process the scene
 	for (
-			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
 			it.valid;
 			it = scene_rewinder->nodes_data.next_iter(it)) {
-		NodeData *node_data = it.value;
+		SceneRewinder::NodeData *node_data = it.value;
 		ERR_CONTINUE(node_data == nullptr);
 
 		node_data->process(delta);
@@ -987,7 +958,7 @@ void ServerRewinder::process() {
 
 	// Process the controllers
 	for (
-			OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::IsleData>::Iterator it = scene_rewinder->isle_data.iter();
 			it.valid;
 			it = scene_rewinder->isle_data.next_iter(it)) {
 		NetworkedController *controller = it.value->controller;
@@ -997,10 +968,10 @@ void ServerRewinder::process() {
 
 	// Pull the changes.
 	for (
-			OAHashMap<ControllerID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
 			it.valid;
 			it = scene_rewinder->nodes_data.next_iter(it)) {
-		NodeData *node_data = it.value;
+		SceneRewinder::NodeData *node_data = it.value;
 		ERR_CONTINUE(node_data == nullptr);
 
 		scene_rewinder->pull_node_changes(node_data);
@@ -1078,7 +1049,7 @@ void ServerRewinder::process_snapshot_notificator(real_t p_delta) {
 	Variant full_snapshot;
 	Variant delta_snapshot;
 	for (
-			OAHashMap<int, PeerData>::Iterator peer_it = scene_rewinder->peer_data.iter();
+			OAHashMap<int, SceneRewinder::PeerData>::Iterator peer_it = scene_rewinder->peer_data.iter();
 			peer_it.valid;
 			peer_it = scene_rewinder->peer_data.next_iter(peer_it)) {
 		if (peer_it.value->force_notify_snapshot == false && notify_state == false) {
@@ -1127,10 +1098,10 @@ Variant ServerRewinder::generate_snapshot(bool p_full_snapshot) const {
 	Vector<Variant> snapshot_data;
 
 	for (
-			OAHashMap<ObjectID, NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
+			OAHashMap<ObjectID, SceneRewinder::NodeData>::Iterator it = scene_rewinder->nodes_data.iter();
 			it.valid;
 			it = scene_rewinder->nodes_data.next_iter(it)) {
-		const NodeData *node_data = it.value;
+		const SceneRewinder::NodeData *node_data = it.value;
 		if (node_data->node == nullptr || node_data->node->is_inside_tree() == false) {
 			continue;
 		}
@@ -1177,7 +1148,7 @@ Variant ServerRewinder::generate_snapshot(bool p_full_snapshot) const {
 		if (node_has_changes) {
 			// Insert the node variables.
 			const int size = node_data->vars.size();
-			const VarData *vars = node_data->vars.ptr();
+			const SceneRewinder::VarData *vars = node_data->vars.ptr();
 			for (int i = 0; i < size; i += 1) {
 				if (vars[i].enabled == false) {
 					continue;
@@ -1229,7 +1200,7 @@ void ClientRewinder::process() {
 	const real_t iteration_per_second = Engine::get_singleton()->get_iterations_per_second();
 
 	for (
-			OAHashMap<ControllerID, IsleData>::Iterator it = scene_rewinder->isle_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::IsleData>::Iterator it = scene_rewinder->isle_data.iter();
 			it.valid;
 			it = scene_rewinder->isle_data.next_iter(it)) {
 		NetworkedController *controller = it.value->controller;
@@ -1254,7 +1225,7 @@ void ClientRewinder::process() {
 					int node_i = 0;
 					node_i < it.value->nodes.size();
 					node_i += 1) {
-				NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
+				SceneRewinder::NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
 				ERR_CONTINUE(node_data == nullptr);
 				node_data->process(delta);
 			}
@@ -1268,7 +1239,7 @@ void ClientRewinder::process() {
 					int node_i = 0;
 					node_i < it.value->nodes.size();
 					node_i += 1) {
-				NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
+				SceneRewinder::NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
 				ERR_CONTINUE(node_data == nullptr);
 
 				scene_rewinder->pull_node_changes(node_data);
@@ -1313,9 +1284,9 @@ void ClientRewinder::receive_snapshot(Variant p_snapshot) {
 void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 	ERR_FAIL_COND(scene_rewinder->main_controller == nullptr);
 
-	std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.lookup_ptr(p_controller->get_instance_id());
+	std::deque<SceneRewinder::IsleSnapshot> *client_snaps = client_controllers_snapshots.lookup_ptr(p_controller->get_instance_id());
 	if (client_snaps == nullptr) {
-		client_controllers_snapshots.set(p_controller->get_instance_id(), std::deque<IsleSnapshot>());
+		client_controllers_snapshots.set(p_controller->get_instance_id(), std::deque<SceneRewinder::IsleSnapshot>());
 		client_snaps = client_controllers_snapshots.lookup_ptr(p_controller->get_instance_id());
 	}
 
@@ -1331,12 +1302,12 @@ void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 		}
 	}
 
-	IsleData *isle_data = scene_rewinder->isle_data.lookup_ptr(p_controller->get_instance_id());
+	SceneRewinder::IsleData *isle_data = scene_rewinder->isle_data.lookup_ptr(p_controller->get_instance_id());
 	ERR_FAIL_COND(isle_data == nullptr);
 
-	client_snaps->push_back(IsleSnapshot());
+	client_snaps->push_back(SceneRewinder::IsleSnapshot());
 
-	IsleSnapshot &snap = client_snaps->back();
+	SceneRewinder::IsleSnapshot &snap = client_snaps->back();
 	snap.input_id = p_controller->get_current_input_id();
 
 	const ObjectID *nodes = isle_data->nodes.ptr();
@@ -1344,7 +1315,7 @@ void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 			int node_i = 0;
 			node_i < isle_data->nodes.size();
 			node_i += 1) {
-		const NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
+		const SceneRewinder::NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(nodes[node_i]);
 		ERR_CONTINUE(node_data == nullptr);
 
 		snap.node_vars.set(node_data->instance_id, node_data->vars);
@@ -1352,14 +1323,14 @@ void ClientRewinder::store_snapshot(const NetworkedController *p_controller) {
 }
 
 void ClientRewinder::store_controllers_snapshot(
-		const Snapshot &p_snapshot,
-		OAHashMap<ObjectID, std::deque<IsleSnapshot>> &r_snapshot_storage) {
+		const SceneRewinder::Snapshot &p_snapshot,
+		OAHashMap<ObjectID, std::deque<SceneRewinder::IsleSnapshot>> &r_snapshot_storage) {
 	// Extract the controllers data from the snapshot and store it in the isle
 	// snapshot.
 	// The main controller takes with him all world nodes.
 
 	for (
-			OAHashMap<ControllerID, IsleData>::Iterator isle_it = scene_rewinder->isle_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::IsleData>::Iterator isle_it = scene_rewinder->isle_data.iter();
 			isle_it.valid;
 			isle_it = scene_rewinder->isle_data.next_iter(isle_it)) {
 		const NetworkedController *controller = isle_it.value->controller;
@@ -1370,9 +1341,9 @@ void ClientRewinder::store_controllers_snapshot(
 			continue;
 		}
 
-		std::deque<IsleSnapshot> *controller_snaps = r_snapshot_storage.lookup_ptr(controller->get_instance_id());
+		std::deque<SceneRewinder::IsleSnapshot> *controller_snaps = r_snapshot_storage.lookup_ptr(controller->get_instance_id());
 		if (controller_snaps == nullptr) {
-			r_snapshot_storage.set(controller->get_instance_id(), std::deque<IsleSnapshot>());
+			r_snapshot_storage.set(controller->get_instance_id(), std::deque<SceneRewinder::IsleSnapshot>());
 			controller_snaps = r_snapshot_storage.lookup_ptr(controller->get_instance_id());
 		}
 
@@ -1387,14 +1358,14 @@ void ClientRewinder::store_controllers_snapshot(
 			ERR_FAIL_COND_MSG((*input_id) <= last_stored_input_id, "This doll snapshot (with ID: " + itos(*input_id) + ") is not expected because the last stored id is: " + itos(last_stored_input_id));
 		}
 
-		IsleSnapshot snap;
+		SceneRewinder::IsleSnapshot snap;
 		snap.input_id = *input_id;
 
 		for (
-				OAHashMap<ObjectID, Vector<VarData>>::Iterator it = p_snapshot.node_vars.iter();
+				OAHashMap<ObjectID, Vector<SceneRewinder::VarData>>::Iterator it = p_snapshot.node_vars.iter();
 				it.valid;
 				it = p_snapshot.node_vars.next_iter(it)) {
-			const NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(*it.key);
+			const SceneRewinder::NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(*it.key);
 
 			if (
 					node_data != nullptr &&
@@ -1446,7 +1417,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 	// the recovering only on such nodes. Saving so performance.
 
 	for (
-			OAHashMap<ControllerID, IsleData>::Iterator isle_it = scene_rewinder->isle_data.iter();
+			OAHashMap<SceneRewinder::ControllerID, SceneRewinder::IsleData>::Iterator isle_it = scene_rewinder->isle_data.iter();
 			isle_it.valid;
 			isle_it = scene_rewinder->isle_data.next_iter(isle_it)) {
 		NetworkedController *controller = isle_it.value->controller;
@@ -1454,13 +1425,13 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 		// --- Phase one, find snapshot to check. ---
 
-		std::deque<IsleSnapshot> *server_snaps = server_controllers_snapshots.lookup_ptr(controller->get_instance_id());
+		std::deque<SceneRewinder::IsleSnapshot> *server_snaps = server_controllers_snapshots.lookup_ptr(controller->get_instance_id());
 		if (server_snaps == nullptr || server_snaps->empty()) {
 			// No snapshots to recover for this controller. Skip it.
 			continue;
 		}
 
-		std::deque<IsleSnapshot> *client_snaps = client_controllers_snapshots.lookup_ptr(controller->get_instance_id());
+		std::deque<SceneRewinder::IsleSnapshot> *client_snaps = client_controllers_snapshots.lookup_ptr(controller->get_instance_id());
 
 		// Find the best recoverable input_id.
 		uint64_t checkable_input_id = UINT64_MAX;
@@ -1526,8 +1497,8 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 		bool need_recover = false;
 		bool recover_controller = false;
-		std::vector<NodeData *> nodes_to_recover;
-		std::vector<PostponedRecover> postponed_recover;
+		std::vector<SceneRewinder::NodeData *> nodes_to_recover;
+		std::vector<SceneRewinder::PostponedRecover> postponed_recover;
 
 		if (client_snaps == nullptr || client_snaps->empty() || client_snaps->front().input_id != checkable_input_id) {
 			// We don't have any snapshot on client for this controller.
@@ -1538,10 +1509,10 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 			nodes_to_recover.reserve(server_snaps->size());
 			for (
-					OAHashMap<ObjectID, Vector<VarData>>::Iterator s_snap_it = server_snaps->front().node_vars.iter();
+					OAHashMap<ObjectID, Vector<SceneRewinder::VarData>>::Iterator s_snap_it = server_snaps->front().node_vars.iter();
 					s_snap_it.valid;
 					s_snap_it = server_snaps->front().node_vars.next_iter(s_snap_it)) {
-				NodeData *nd = scene_rewinder->nodes_data.lookup_ptr(*s_snap_it.key);
+				SceneRewinder::NodeData *nd = scene_rewinder->nodes_data.lookup_ptr(*s_snap_it.key);
 				if (nd == nullptr ||
 						nd->controlled_by.is_null() == false ||
 						nd->is_controller) {
@@ -1562,10 +1533,10 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 #endif
 
 			for (
-					OAHashMap<ObjectID, Vector<VarData>>::Iterator s_snap_it = server_snaps->front().node_vars.iter();
+					OAHashMap<ObjectID, Vector<SceneRewinder::VarData>>::Iterator s_snap_it = server_snaps->front().node_vars.iter();
 					s_snap_it.valid;
 					s_snap_it = server_snaps->front().node_vars.next_iter(s_snap_it)) {
-				NodeData *rew_node_data = scene_rewinder->nodes_data.lookup_ptr(*s_snap_it.key);
+				SceneRewinder::NodeData *rew_node_data = scene_rewinder->nodes_data.lookup_ptr(*s_snap_it.key);
 				if (rew_node_data == nullptr) {
 					continue;
 				}
@@ -1577,12 +1548,12 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 					// found.
 					recover_this_node = true;
 				} else {
-					const Vector<VarData> *c_vars = client_snaps->front().node_vars.lookup_ptr(*s_snap_it.key);
+					const Vector<SceneRewinder::VarData> *c_vars = client_snaps->front().node_vars.lookup_ptr(*s_snap_it.key);
 					if (c_vars == nullptr) {
 						NET_DEBUG_PRINT("Rewind is needed because the client snapshot doesn't contains this node: " + rew_node_data->node->get_path());
 						recover_this_node = true;
 					} else {
-						PostponedRecover rec;
+						SceneRewinder::PostponedRecover rec;
 
 						const bool different = compare_vars(
 								rew_node_data,
@@ -1625,7 +1596,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				// Note, the controller stuffs are added here to ensure that if the
 				// controller need a recover, all its nodes are added; no matter
 				// at which point the difference is found.
-				NodeData *nd = scene_rewinder->nodes_data.lookup_ptr(controller->get_instance_id());
+				SceneRewinder::NodeData *nd = scene_rewinder->nodes_data.lookup_ptr(controller->get_instance_id());
 				if (nd) {
 					nodes_to_recover.reserve(
 							nodes_to_recover.size() +
@@ -1639,7 +1610,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 							int i = 0;
 							i < nd->controlled_nodes.size();
 							i += 1) {
-						NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(controlled_nodes[i]);
+						SceneRewinder::NodeData *node_data = scene_rewinder->nodes_data.lookup_ptr(controlled_nodes[i]);
 						if (node_data) {
 							nodes_to_recover.push_back(node_data);
 						}
@@ -1651,20 +1622,20 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			// so to be able to correctly reply the movements.
 			scene_rewinder->reset_in_progress = true;
 			for (
-					std::vector<NodeData *>::const_iterator it = nodes_to_recover.begin();
+					std::vector<SceneRewinder::NodeData *>::const_iterator it = nodes_to_recover.begin();
 					it != nodes_to_recover.end();
 					it += 1) {
-				NodeData *rew_node_data = *it;
+				SceneRewinder::NodeData *rew_node_data = *it;
 
-				VarData *rew_vars = rew_node_data->vars.ptrw();
+				SceneRewinder::VarData *rew_vars = rew_node_data->vars.ptrw();
 				Node *node = rew_node_data->node;
 
-				const Vector<VarData> *s_vars = server_snaps->front().node_vars.lookup_ptr(rew_node_data->instance_id);
+				const Vector<SceneRewinder::VarData> *s_vars = server_snaps->front().node_vars.lookup_ptr(rew_node_data->instance_id);
 				if (s_vars == nullptr) {
 					NET_DEBUG_WARN("The node: " + rew_node_data->node->get_path() + " was not found on the server snapshot, this is not supposed to happen a lot.");
 					continue;
 				}
-				const VarData *s_vars_ptr = s_vars->ptr();
+				const SceneRewinder::VarData *s_vars_ptr = s_vars->ptr();
 
 				NET_DEBUG_PRINT("Full reset node: " + node->get_path());
 				for (int i = 0; i < s_vars->size(); i += 1) {
@@ -1704,7 +1675,7 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 				// Step 1 -- Process the nodes into the scene that need to be
 				// processed.
 				for (
-						std::vector<NodeData *>::iterator it = nodes_to_recover.begin();
+						std::vector<SceneRewinder::NodeData *>::iterator it = nodes_to_recover.begin();
 						it != nodes_to_recover.end();
 						it += 1) {
 					(*it)->process(p_delta);
@@ -1717,10 +1688,10 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 
 				// Step 3 -- Pull node changes and Update snapshots.
 				for (
-						std::vector<NodeData *>::iterator it = nodes_to_recover.begin();
+						std::vector<SceneRewinder::NodeData *>::iterator it = nodes_to_recover.begin();
 						it != nodes_to_recover.end();
 						it += 1) {
-					NodeData *rew_node_data = *it;
+					SceneRewinder::NodeData *rew_node_data = *it;
 
 					scene_rewinder->pull_node_changes(rew_node_data);
 
@@ -1739,12 +1710,12 @@ void ClientRewinder::process_controllers_recovery(real_t p_delta) {
 			// Apply found differences without rewind.
 			scene_rewinder->reset_in_progress = true;
 			for (
-					std::vector<PostponedRecover>::const_iterator it = postponed_recover.begin();
+					std::vector<SceneRewinder::PostponedRecover>::const_iterator it = postponed_recover.begin();
 					it != postponed_recover.end();
 					it += 1) {
-				NodeData *rew_node_data = it->node_data;
+				SceneRewinder::NodeData *rew_node_data = it->node_data;
 				Node *node = rew_node_data->node;
-				const Var *vars = it->vars.ptr();
+				const SceneRewinder::Var *vars = it->vars.ptr();
 
 				NET_DEBUG_PRINT("[Snapshot partial reset] Node: " + node->get_path());
 
@@ -1808,8 +1779,8 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 	const Variant *raw_snapshot_ptr = raw_snapshot.ptr();
 
 	Node *node = nullptr;
-	NodeData *rewinder_node_data = nullptr;
-	Vector<VarData> *server_snapshot_node_data = nullptr;
+	SceneRewinder::NodeData *rewinder_node_data = nullptr;
+	Vector<SceneRewinder::VarData> *server_snapshot_node_data = nullptr;
 	StringName variable_name;
 	int server_snap_variable_index = -1;
 
@@ -1894,7 +1865,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 
 				scene_rewinder->nodes_data.set(
 						node->get_instance_id(),
-						NodeData(node_id,
+						SceneRewinder::NodeData(node_id,
 								node->get_instance_id(),
 								is_controller));
 				rewinder_node_data = scene_rewinder->nodes_data.lookup_ptr(node->get_instance_id());
@@ -1907,7 +1878,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 			if (server_snapshot_node_data == nullptr) {
 				server_snapshot.node_vars.set(
 						node->get_instance_id(),
-						Vector<VarData>());
+						Vector<SceneRewinder::VarData>());
 				server_snapshot_node_data = server_snapshot.node_vars.lookup_ptr(node->get_instance_id());
 			}
 
@@ -1960,7 +1931,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 					const bool enabled = false;
 					rewinder_node_data->vars
 							.push_back(
-									VarData(
+									SceneRewinder::VarData(
 											var_id,
 											variable_name,
 											Variant(),
@@ -2004,7 +1975,7 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 				const bool skip_rewinding = false;
 				const bool enabled = true;
 				server_snapshot_node_data->push_back(
-						VarData(
+						SceneRewinder::VarData(
 								var_id,
 								variable_name,
 								Variant(),
@@ -2041,12 +2012,12 @@ bool ClientRewinder::parse_snapshot(Variant p_snapshot) {
 }
 
 bool ClientRewinder::compare_vars(
-		const NodeData *p_rewinder_node_data,
-		const Vector<VarData> &p_server_vars,
-		const Vector<VarData> &p_client_vars,
-		Vector<Var> &r_postponed_recover) {
-	const VarData *s_vars = p_server_vars.ptr();
-	const VarData *c_vars = p_client_vars.ptr();
+		const SceneRewinder::NodeData *p_rewinder_node_data,
+		const Vector<SceneRewinder::VarData> &p_server_vars,
+		const Vector<SceneRewinder::VarData> &p_client_vars,
+		Vector<SceneRewinder::Var> &r_postponed_recover) {
+	const SceneRewinder::VarData *s_vars = p_server_vars.ptr();
+	const SceneRewinder::VarData *c_vars = p_client_vars.ptr();
 
 #ifdef DEBUG_ENABLED
 	bool diff = false;
