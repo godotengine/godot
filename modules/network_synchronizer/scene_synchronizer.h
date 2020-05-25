@@ -115,7 +115,7 @@ class SceneSynchronizer : public Node {
 public:
 	enum SynchronizerType {
 		SYNCHRONIZER_TYPE_NULL,
-		SYNCHRONIZER_TYPE_NONET,
+		SYNCHRONIZER_TYPE_NONETWORK,
 		SYNCHRONIZER_TYPE_CLIENT,
 		SYNCHRONIZER_TYPE_SERVER
 	};
@@ -334,7 +334,7 @@ public:
 class ServerSynchronizer : public Synchronizer {
 	friend class SceneSynchronizer;
 
-	real_t state_notifier_timer;
+	real_t state_notifier_timer = 0.0;
 
 	struct Change {
 		bool not_known_before = false;

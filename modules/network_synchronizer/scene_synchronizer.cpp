@@ -570,7 +570,7 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 	peer_ptr = get_multiplayer()->get_network_peer().ptr();
 
 	if (get_tree() == nullptr || get_tree()->get_network_peer().is_null()) {
-		synchronizer_type = SYNCHRONIZER_TYPE_NONET;
+		synchronizer_type = SYNCHRONIZER_TYPE_NONETWORK;
 		synchronizer = memnew(NoNetSynchronizer(this));
 		generate_id = true;
 
@@ -600,7 +600,7 @@ void SceneSynchronizer::reset_synchronizer_mode() {
 }
 
 void SceneSynchronizer::clear() {
-	if (synchronizer_type == SYNCHRONIZER_TYPE_NONET) {
+	if (synchronizer_type == SYNCHRONIZER_TYPE_NONETWORK) {
 		__clear();
 	} else {
 		ERR_FAIL_COND_MSG(get_tree()->is_network_server() == false, "The clear function must be called on server");
@@ -934,8 +934,7 @@ void NoNetSynchronizer::receive_snapshot(Variant _p_snapshot) {
 }
 
 ServerSynchronizer::ServerSynchronizer(SceneSynchronizer *p_node) :
-		Synchronizer(p_node),
-		state_notifier_timer(0.0) {}
+		Synchronizer(p_node) {}
 
 void ServerSynchronizer::clear() {
 	state_notifier_timer = 0.0;
