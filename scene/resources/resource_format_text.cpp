@@ -800,6 +800,11 @@ Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const 
 	f->seek(tag_end);
 
 	uint8_t c = f->get_8();
+	if (c == '\n' && !f->eof_reached()) {
+		// Skip first newline character since we added one
+		c = f->get_8();
+	}
+
 	while (!f->eof_reached()) {
 		fw->store_8(c);
 		c = f->get_8();
